@@ -41,10 +41,16 @@
  */
 package org.netbeans.modules.php.editor.verification;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.Stack;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
-import javax.swing.text.BadLocationException;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintSeverity;
@@ -60,9 +66,42 @@ import org.netbeans.modules.php.editor.model.Model;
 import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.modules.php.editor.model.TypeScope;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
-import org.netbeans.modules.php.editor.parser.astnodes.*;
+import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
+import org.netbeans.modules.php.editor.parser.astnodes.ArrayAccess;
+import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
+import org.netbeans.modules.php.editor.parser.astnodes.CatchClause;
+import org.netbeans.modules.php.editor.parser.astnodes.ConstantDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.ContinueStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.DoStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.Expression;
+import org.netbeans.modules.php.editor.parser.astnodes.FieldsDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.ForEachStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
+import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
+import org.netbeans.modules.php.editor.parser.astnodes.GlobalStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.GotoLabel;
+import org.netbeans.modules.php.editor.parser.astnodes.GotoStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
+import org.netbeans.modules.php.editor.parser.astnodes.InterfaceDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.ListVariable;
+import org.netbeans.modules.php.editor.parser.astnodes.MethodInvocation;
+import org.netbeans.modules.php.editor.parser.astnodes.NamespaceDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocBlock;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocMethodTag;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocStaticAccessType;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTypeTag;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocVarTypeTag;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPVarComment;
+import org.netbeans.modules.php.editor.parser.astnodes.Program;
+import org.netbeans.modules.php.editor.parser.astnodes.Reference;
+import org.netbeans.modules.php.editor.parser.astnodes.SingleFieldDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.StaticFieldAccess;
+import org.netbeans.modules.php.editor.parser.astnodes.UseStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.UseStatementPart;
+import org.netbeans.modules.php.editor.parser.astnodes.Variable;
+import org.netbeans.modules.php.editor.parser.astnodes.VariableBase;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
-import org.netbeans.modules.php.editor.verification.PHPHintsProvider.Kind;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle.Messages;
 
@@ -70,7 +109,7 @@ import org.openide.util.NbBundle.Messages;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class UninitializedVariableHint extends AbstractRule implements PHPRuleWithPreferences {
+public class UninitializedVariableHint extends AbstractHint implements PHPRuleWithPreferences {
 
     private static final String HINT_ID = "Uninitialized.Variable.Hint"; //NOI18N
     private static final String CHECK_VARIABLES_INITIALIZED_BY_REFERENCE = "php.verification.check.variables.initialized.by.reference"; //NOI18N
@@ -96,18 +135,21 @@ public class UninitializedVariableHint extends AbstractRule implements PHPRuleWi
     }
 
     @Override
-    void computeHintsImpl(PHPRuleContext context, List<Hint> hints, Kind kind) throws BadLocationException {
+    void compute(PHPRuleContext context, List<Hint> hints) {
         PHPParseResult phpParseResult = (PHPParseResult) context.parserResult;
         if (phpParseResult.getProgram() == null) {
             return;
         }
         FileObject fileObject = phpParseResult.getSnapshot().getSource().getFileObject();
+        if (fileObject == null) {
+            return;
+        }
         CheckVisitor checkVisitor = new CheckVisitor(fileObject, phpParseResult.getModel());
         phpParseResult.getProgram().accept(checkVisitor);
         hints.addAll(checkVisitor.getHints());
     }
 
-    private class CheckVisitor extends DefaultVisitor {
+    private final class CheckVisitor extends DefaultVisitor {
 
         private final FileObject fileObject;
         private final Stack<ASTNode> parentNodes = new Stack<ASTNode>();
@@ -260,20 +302,22 @@ public class UninitializedVariableHint extends AbstractRule implements PHPRuleWi
         }
 
         private void processAllFunctions(Set<BaseFunctionElement> allFunctions, List<Expression> invocationParametersExp) {
-            if (!allFunctions.isEmpty()) {
+            if (allFunctions != null && !allFunctions.isEmpty()) {
                 BaseFunctionElement methodElement = ModelUtils.getFirst(allFunctions);
-                List<ParameterElement> methodParameters = methodElement.getParameters();
-                if (methodParameters.size() == invocationParametersExp.size()) {
-                    for (int i = 0; i < methodParameters.size(); i++) {
-                        Expression invocationParameterExp = invocationParametersExp.get(i);
-                        if (methodParameters.get(i).isReference()) {
-                            initializeExpression(invocationParameterExp);
-                        } else {
-                            scan(invocationParameterExp);
+                if (methodElement != null) {
+                    List<ParameterElement> methodParameters = methodElement.getParameters();
+                    if (methodParameters.size() == invocationParametersExp.size()) {
+                        for (int i = 0; i < methodParameters.size(); i++) {
+                            Expression invocationParameterExp = invocationParametersExp.get(i);
+                            if (methodParameters.get(i).isReference()) {
+                                initializeExpression(invocationParameterExp);
+                            } else {
+                                scan(invocationParameterExp);
+                            }
                         }
+                    } else {
+                        scan(invocationParametersExp);
                     }
-                } else {
-                    scan(invocationParametersExp);
                 }
             } else {
                 scan(invocationParametersExp);

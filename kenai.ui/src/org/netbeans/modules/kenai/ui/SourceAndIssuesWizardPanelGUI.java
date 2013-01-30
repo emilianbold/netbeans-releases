@@ -77,11 +77,11 @@ import javax.swing.JSeparator;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiService.Type;
 import org.netbeans.modules.kenai.api.KenaiService;
 import org.netbeans.modules.kenai.ui.NewKenaiProjectWizardIterator.SharedItem;
+import org.netbeans.modules.team.ui.spi.TeamUIUtils;
 import org.netbeans.modules.versioning.spi.VersioningSupport;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.WizardDescriptor;
@@ -89,7 +89,6 @@ import org.openide.WizardValidationException;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -222,7 +221,7 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
 
     private void setupServicesListModels(final boolean isEmptyKenaiProject) {
 
-        RequestProcessor.getDefault().post(new Runnable() {
+        Utilities.getRequestProcessor().post(new Runnable() {
             public void run() {
                 Collection<KenaiService> services = null;
                 try {
@@ -350,7 +349,7 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
                 setRepoLocal(parent.getAbsolutePath());
             } else {
                 String prjName = (String) this.settings.getProperty(NewKenaiProjectWizardIterator.PROP_PRJ_NAME);
-                setRepoLocal(Utilities.getDefaultRepoFolder().getPath() + File.separator +
+                setRepoLocal(TeamUIUtils.getDefaultRepoFolder().getPath() + File.separator +
                         MessageFormat.format(DEFAULT_REPO_FOLDER, prjName, getRepoName()));
             }
         }
@@ -989,7 +988,7 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
                 setRepoLocal(parent.getAbsolutePath());
             } else {
                 String prjName = (String) this.settings.getProperty(NewKenaiProjectWizardIterator.PROP_PRJ_NAME);
-                setRepoLocal(Utilities.getDefaultRepoFolder().getPath() + File.separator +
+                setRepoLocal(TeamUIUtils.getDefaultRepoFolder().getPath() + File.separator +
                         MessageFormat.format(DEFAULT_REPO_FOLDER, prjName, getRepoName()));
             }
         } else {

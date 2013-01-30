@@ -97,10 +97,7 @@ public class BuildBaseImpl extends POMComponentImpl implements BuildBase {
 
     @Override
     public void removeResource(Resource res) {
-        ModelList<Resource> childs = getChild(ResourceImpl.ResList.class);
-        if (childs != null) {
-            childs.removeListChild(res);
-        }
+        remove(res, getModel().getPOMQNames().RESOURCES.getName(), ResourceImpl.ResList.class);
     }
 
     @Override
@@ -128,10 +125,7 @@ public class BuildBaseImpl extends POMComponentImpl implements BuildBase {
 
     @Override
     public void removeTestResource(Resource res) {
-        ModelList<Resource> childs = getChild(ResourceImpl.TestResList.class);
-        if (childs != null) {
-            childs.removeListChild(res);
-        }
+        remove(res, getModel().getPOMQNames().TESTRESOURCES.getName(), ResourceImpl.TestResList.class);    
     }
 
     @Override
@@ -170,10 +164,7 @@ public class BuildBaseImpl extends POMComponentImpl implements BuildBase {
 
     @Override
     public void removePlugin(Plugin plugin) {
-        ModelList<Plugin> childs = getChild(PluginImpl.List.class);
-        if (childs != null) {
-            childs.removeListChild(plugin);
-        }
+        remove(plugin, getModel().getPOMQNames().PLUGINS.getName(), PluginImpl.List.class);        
     }
 
     @Override

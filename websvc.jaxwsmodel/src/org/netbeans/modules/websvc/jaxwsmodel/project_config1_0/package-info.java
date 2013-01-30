@@ -45,7 +45,8 @@
     schemaType=SchemaType.DTD,
     mddFile="../resources/jax-ws.mdd",
     outputType=OutputType.TRADITIONAL_BASEBEAN,
-    attrProp=true
+    attrProp=true,
+    java5=true
 )
 package org.netbeans.modules.websvc.jaxwsmodel.project_config1_0;
 

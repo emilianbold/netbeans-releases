@@ -1,8 +1,30 @@
 #Signature file v4.1
-#Version 1.27
+#Version 1.31.1
 
 CLSS public abstract interface java.io.Closeable
 meth public abstract void close() throws java.io.IOException
+
+CLSS public abstract interface java.io.Serializable
+
+CLSS public abstract interface java.lang.Comparable<%0 extends java.lang.Object>
+meth public abstract int compareTo({java.lang.Comparable%0})
+
+CLSS public abstract java.lang.Enum<%0 extends java.lang.Enum<{java.lang.Enum%0}>>
+cons protected init(java.lang.String,int)
+intf java.io.Serializable
+intf java.lang.Comparable<{java.lang.Enum%0}>
+meth protected final java.lang.Object clone() throws java.lang.CloneNotSupportedException
+meth protected final void finalize()
+meth public final boolean equals(java.lang.Object)
+meth public final int compareTo({java.lang.Enum%0})
+meth public final int hashCode()
+meth public final int ordinal()
+meth public final java.lang.Class<{java.lang.Enum%0}> getDeclaringClass()
+meth public final java.lang.String name()
+meth public java.lang.String toString()
+meth public static <%0 extends java.lang.Enum<{%%0}>> {%%0} valueOf(java.lang.Class<{%%0}>,java.lang.String)
+supr java.lang.Object
+hfds name,ordinal
 
 CLSS public java.lang.Object
 cons public init()
@@ -20,6 +42,32 @@ meth public java.lang.String toString()
 
 CLSS public abstract interface java.lang.Runnable
 meth public abstract void run()
+
+CLSS public abstract interface java.lang.annotation.Annotation
+meth public abstract boolean equals(java.lang.Object)
+meth public abstract int hashCode()
+meth public abstract java.lang.Class<? extends java.lang.annotation.Annotation> annotationType()
+meth public abstract java.lang.String toString()
+
+CLSS public abstract interface !annotation java.lang.annotation.Documented
+ anno 0 java.lang.annotation.Documented()
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[ANNOTATION_TYPE])
+intf java.lang.annotation.Annotation
+
+CLSS public abstract interface !annotation java.lang.annotation.Retention
+ anno 0 java.lang.annotation.Documented()
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[ANNOTATION_TYPE])
+intf java.lang.annotation.Annotation
+meth public abstract java.lang.annotation.RetentionPolicy value()
+
+CLSS public abstract interface !annotation java.lang.annotation.Target
+ anno 0 java.lang.annotation.Documented()
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[ANNOTATION_TYPE])
+intf java.lang.annotation.Annotation
+meth public abstract java.lang.annotation.ElementType[] value()
 
 CLSS public abstract interface java.util.concurrent.Callable<%0 extends java.lang.Object>
 meth public abstract {java.util.concurrent.Callable%0} call() throws java.lang.Exception
@@ -48,6 +96,9 @@ meth public org.netbeans.api.extexecution.ExecutionDescriptor errProcessorFactor
  anno 0 org.netbeans.api.annotations.common.NonNull()
  anno 1 org.netbeans.api.annotations.common.NullAllowed()
 meth public org.netbeans.api.extexecution.ExecutionDescriptor frontWindow(boolean)
+ anno 0 org.netbeans.api.annotations.common.CheckReturnValue()
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+meth public org.netbeans.api.extexecution.ExecutionDescriptor frontWindowOnError(boolean)
  anno 0 org.netbeans.api.annotations.common.CheckReturnValue()
  anno 0 org.netbeans.api.annotations.common.NonNull()
 meth public org.netbeans.api.extexecution.ExecutionDescriptor inputOutput(org.openide.windows.InputOutput)
@@ -94,7 +145,7 @@ meth public org.netbeans.api.extexecution.ExecutionDescriptor showSuspended(bool
  anno 0 org.netbeans.api.annotations.common.CheckReturnValue()
  anno 0 org.netbeans.api.annotations.common.NonNull()
 supr java.lang.Object
-hfds charset,controllable,errConvertorFactory,errLineBased,errProcessorFactory,front,input,inputOutput,noReset,optionsPath,outConvertorFactory,outLineBased,outProcessorFactory,postExecution,preExecution,progress,rerunCondition,suspend
+hfds charset,controllable,errConvertorFactory,errLineBased,errProcessorFactory,front,frontWindowOnError,input,inputOutput,noReset,optionsPath,outConvertorFactory,outLineBased,outProcessorFactory,postExecution,preExecution,progress,rerunCondition,suspend
 hcls DescriptorData
 
 CLSS public abstract interface static org.netbeans.api.extexecution.ExecutionDescriptor$InputProcessorFactory
@@ -163,6 +214,28 @@ meth public static void destroy(java.lang.Process,java.util.Map<java.lang.String
  anno 1 org.netbeans.api.annotations.common.NonNull()
  anno 2 org.netbeans.api.annotations.common.NonNull()
 supr java.lang.Object
+
+CLSS public final org.netbeans.api.extexecution.ProcessBuilder
+intf java.util.concurrent.Callable<java.lang.Process>
+meth public java.lang.Process call() throws java.io.IOException
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+meth public java.lang.String getDescription()
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+meth public static org.netbeans.api.extexecution.ProcessBuilder getLocal()
+meth public void setArguments(java.util.List<java.lang.String>)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+meth public void setEnvironmentVariables(java.util.Map<java.lang.String,java.lang.String>)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+meth public void setExecutable(java.lang.String)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+meth public void setPaths(java.util.List<java.lang.String>)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+meth public void setRedirectErrorStream(boolean)
+meth public void setWorkingDirectory(java.lang.String)
+ anno 1 org.netbeans.api.annotations.common.NullAllowed()
+supr java.lang.Object
+hfds arguments,description,envVariables,executable,implementation,paths,redirectErrorStream,workingDirectory
+hcls LocalProcessFactory
 
 CLSS public abstract interface org.netbeans.api.extexecution.input.InputProcessor
 intf java.io.Closeable
@@ -324,10 +397,72 @@ meth public abstract org.openide.filesystems.FileObject find(java.lang.String)
 
 CLSS abstract interface org.netbeans.api.extexecution.print.package-info
 
+CLSS public final org.netbeans.api.extexecution.startup.StartupExtender
+innr public final static !enum StartMode
+meth public java.lang.String getDescription()
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+meth public java.util.List<java.lang.String> getArguments()
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+meth public static java.util.List<org.netbeans.api.extexecution.startup.StartupExtender> getExtenders(org.openide.util.Lookup,org.netbeans.api.extexecution.startup.StartupExtender$StartMode)
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+ anno 2 org.netbeans.api.annotations.common.NonNull()
+supr java.lang.Object
+hfds LOG,arguments,description
+
+CLSS public final static !enum org.netbeans.api.extexecution.startup.StartupExtender$StartMode
+ outer org.netbeans.api.extexecution.startup.StartupExtender
+fld public final static org.netbeans.api.extexecution.startup.StartupExtender$StartMode DEBUG
+fld public final static org.netbeans.api.extexecution.startup.StartupExtender$StartMode NORMAL
+fld public final static org.netbeans.api.extexecution.startup.StartupExtender$StartMode PROFILE
+fld public final static org.netbeans.api.extexecution.startup.StartupExtender$StartMode TEST_DEBUG
+fld public final static org.netbeans.api.extexecution.startup.StartupExtender$StartMode TEST_NORMAL
+fld public final static org.netbeans.api.extexecution.startup.StartupExtender$StartMode TEST_PROFILE
+meth public java.lang.String toString()
+meth public static org.netbeans.api.extexecution.startup.StartupExtender$StartMode valueOf(java.lang.String)
+meth public static org.netbeans.api.extexecution.startup.StartupExtender$StartMode[] values()
+supr java.lang.Enum<org.netbeans.api.extexecution.startup.StartupExtender$StartMode>
+hfds mode
+
+CLSS abstract interface org.netbeans.api.extexecution.startup.package-info
+
+CLSS public org.netbeans.spi.extexecution.ProcessBuilderFactory
+meth public static org.netbeans.api.extexecution.ProcessBuilder createProcessBuilder(org.netbeans.spi.extexecution.ProcessBuilderImplementation,java.lang.String)
+supr java.lang.Object
+
+CLSS public abstract interface org.netbeans.spi.extexecution.ProcessBuilderImplementation
+meth public abstract java.lang.Process createProcess(java.lang.String,java.lang.String,java.util.List<java.lang.String>,java.util.List<java.lang.String>,java.util.Map<java.lang.String,java.lang.String>,boolean) throws java.io.IOException
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+ anno 2 org.netbeans.api.annotations.common.NullAllowed()
+ anno 3 org.netbeans.api.annotations.common.NonNull()
+ anno 4 org.netbeans.api.annotations.common.NonNull()
+ anno 5 org.netbeans.api.annotations.common.NonNull()
+
 CLSS public abstract interface org.netbeans.spi.extexecution.destroy.ProcessDestroyPerformer
 meth public abstract void destroy(java.lang.Process,java.util.Map<java.lang.String,java.lang.String>)
 
 CLSS abstract interface org.netbeans.spi.extexecution.destroy.package-info
+
+CLSS abstract interface org.netbeans.spi.extexecution.package-info
+
+CLSS public abstract interface org.netbeans.spi.extexecution.startup.StartupExtenderImplementation
+innr public abstract interface static !annotation Registration
+meth public abstract java.util.List<java.lang.String> getArguments(org.openide.util.Lookup,org.netbeans.api.extexecution.startup.StartupExtender$StartMode)
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+ anno 2 org.netbeans.api.annotations.common.NonNull()
+
+CLSS public abstract interface static !annotation org.netbeans.spi.extexecution.startup.StartupExtenderImplementation$Registration
+ outer org.netbeans.spi.extexecution.startup.StartupExtenderImplementation
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=SOURCE)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[TYPE, METHOD])
+intf java.lang.annotation.Annotation
+meth public abstract !hasdefault int position()
+meth public abstract java.lang.String displayName()
+meth public abstract org.netbeans.api.extexecution.startup.StartupExtender$StartMode[] startMode()
+
+CLSS abstract interface org.netbeans.spi.extexecution.startup.package-info
 
 CLSS public abstract interface org.openide.util.Cancellable
 meth public abstract boolean cancel()

@@ -253,7 +253,7 @@ key:TabbedPane:TabbedPaneTab[Selected].backgroundPainter
             o = UIManager.get("TabbedPane:TabbedPaneTab[Enabled].backgroundPainter");
         }
 
-        if( NimbusEditorTabCellRenderer.IS_JDK_17 ) {
+        if( NimbusEditorTabCellRenderer.IS_JDK_17_OR_18 ) {
             if ((o != null) && (o instanceof javax.swing.Painter)) {
                 javax.swing.Painter painter = (javax.swing.Painter) o;
                 BufferedImage bufIm = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
@@ -291,7 +291,7 @@ key:TabbedPane:TabbedPaneTab[Selected].backgroundPainter
         Object o = null;
         o = UIManager.get("TabbedPane:TabbedPaneTab[Enabled].backgroundPainter");
 
-        if( NimbusEditorTabCellRenderer.IS_JDK_17 ) {
+        if( NimbusEditorTabCellRenderer.IS_JDK_17_OR_18 ) {
             if ((o != null) && (o instanceof javax.swing.Painter)) {
                 javax.swing.Painter painter = (javax.swing.Painter) o;
                 BufferedImage bufIm = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);

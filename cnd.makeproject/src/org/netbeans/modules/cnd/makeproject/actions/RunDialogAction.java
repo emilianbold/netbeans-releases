@@ -74,6 +74,8 @@ public class RunDialogAction extends NodeAction {
     protected JButton runButton = null;
     private Object options[];
     private FileObject contextFileObject;
+    
+    private static final RequestProcessor RP = new RequestProcessor("RunDialogAction", 1); // NOI18N
 
     public RunDialogAction(){
     }
@@ -148,7 +150,7 @@ public class RunDialogAction extends NodeAction {
         return true;
     }
 
-    protected void perform(FileObject executableFO, boolean isRun) {
+    public void perform(FileObject executableFO, boolean isRun) {
         init(isRun);
         try {
             perform(new RunDialogPanel(executableFO, runButton, isRun), isRun);
@@ -164,7 +166,7 @@ public class RunDialogAction extends NodeAction {
 
                 @Override
                 public void run() {
-                    RequestProcessor.getDefault().post(new Runnable() {
+                    RP.post(new Runnable() {
 
                         @Override
                         public void run() {

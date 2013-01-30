@@ -6,7 +6,7 @@ public class CreateConstructor1 {
     }
 
     private CreateConstructor1(int i) {
-        throw new UnsupportedOperationException("Not yet implemented");
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
     
     public final void main(String[] args) {

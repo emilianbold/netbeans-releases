@@ -52,6 +52,7 @@ import java.nio.charset.Charset;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
@@ -67,7 +68,6 @@ import org.netbeans.modules.php.project.connections.transfer.TransferFile;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotificationLineSupport;
-import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -112,16 +112,21 @@ public final class DiffPanel extends JPanel {
 
     @NbBundle.Messages({
         "# {0} - file path",
-        "DiffPanel.title=Remote Diff for {0}"
+        "DiffPanel.title=Remote Diff for {0}",
+        "DiffPanel.button.titleWithMnemonics=&Take Over Local Changes"
     })
     public boolean open() throws IOException {
         assert SwingUtilities.isEventDispatchThread();
+        JButton okButton = new JButton();
+        Mnemonics.setLocalizedText(okButton, Bundle.DiffPanel_button_titleWithMnemonics());
         descriptor = new DialogDescriptor(
                 this,
                 Bundle.DiffPanel_title(syncItem.getPath()),
                 true,
-                NotifyDescriptor.OK_CANCEL_OPTION,
-                NotifyDescriptor.OK_OPTION,
+                new Object[] {okButton, DialogDescriptor.CANCEL_OPTION},
+                okButton,
+                DialogDescriptor.DEFAULT_ALIGN,
+                null,
                 null);
         notificationLineSupport = descriptor.createNotificationLineSupport();
         descriptor.setValid(false);
@@ -133,7 +138,7 @@ public final class DiffPanel extends JPanel {
             dialog.dispose();
             DiffFileEncodingQueryImpl.clear();
         }
-        boolean ok = descriptor.getValue() == NotifyDescriptor.OK_OPTION;
+        boolean ok = descriptor.getValue() == okButton;
         boolean fileModified = false;
         try {
             if (editableTmpLocalFileStreamSource != null) {
@@ -327,14 +332,10 @@ public final class DiffPanel extends JPanel {
     void rememberEncoding(TmpLocalFile tmpLocalFile) {
         if (tmpLocalFile != null) {
             String path = tmpLocalFile.getAbsolutePath();
-            assert path != null;
-            if (path != null) {
-                FileObject fo = FileUtil.toFileObject(new File(path));
-                assert fo != null;
-                if (fo != null) {
-                    DiffFileEncodingQueryImpl.addCharset(fo, Charset.forName(charsetName));
-                }
-            }
+            assert path != null : "Path for local tmp file should be present";
+            FileObject fo = FileUtil.toFileObject(new File(path));
+            assert fo != null : "Fileobject for " + path + " should exist";
+            DiffFileEncodingQueryImpl.addCharset(fo, Charset.forName(charsetName));
         }
     }
 

@@ -48,6 +48,7 @@ import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
+import javax.swing.Action;
 import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.api.db.explorer.DatabaseMetaDataTransfer;
 import org.netbeans.api.db.explorer.node.BaseNode;
@@ -59,6 +60,7 @@ import org.netbeans.modules.db.explorer.ConnectionList;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.explorer.DatabaseConnectionAccessor;
 import org.netbeans.modules.db.explorer.DatabaseMetaDataTransferAccessor;
+import org.netbeans.modules.db.explorer.action.ConnectAction;
 import org.netbeans.modules.db.explorer.metadata.MetadataModelManager;
 import org.netbeans.modules.db.metadata.model.api.MetadataModel;
 import org.netbeans.modules.db.metadata.model.api.MetadataModels;
@@ -66,6 +68,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.actions.SystemAction;
 import org.openide.util.datatransfer.ExTransferable;
 
 /**
@@ -430,4 +433,14 @@ public class ConnectionNode extends BaseNode {
         return null;
     }
 
+    @Override
+    public Action getPreferredAction() {
+        boolean disconnected = !DatabaseConnection.isVitalConnection(
+                connection.getConnection(), null);
+        if (disconnected) {
+            return SystemAction.get(ConnectAction.class);
+        } else {
+            return null;
+        }
+    }
 }

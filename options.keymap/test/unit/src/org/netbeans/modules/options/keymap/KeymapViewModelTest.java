@@ -55,6 +55,7 @@ import javax.swing.Action;
 import javax.swing.text.TextAction;
 import org.netbeans.core.options.keymap.api.ShortcutAction;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 
 /**
  * @author Jan Jancura
@@ -66,47 +67,46 @@ public class KeymapViewModelTest extends NbTestCase {
     }
     
     public void testCancelCurrentProfile () {
-        KeymapViewModel model = new KeymapViewModel ();
+        MutableShortcutsModel model = new KeymapViewModel().getMutableModel();
         String currentProfile = model.getCurrentProfile ();
         model.setCurrentProfile ("mine");
         assertEquals ("mine", model.getCurrentProfile ());
         model.cancel ();
         assertEquals (currentProfile, model.getCurrentProfile ());
-        assertEquals (currentProfile, new KeymapViewModel ().getCurrentProfile ());
+        assertEquals (currentProfile, new KeymapViewModel ().getMutableModel().getCurrentProfile ());
     }
     
+    @RandomlyFails
     public void testOkCurrentProfile () {
-        KeymapViewModel model = new KeymapViewModel ();
+        MutableShortcutsModel model = new KeymapViewModel().getMutableModel();
         String currentProfile = model.getCurrentProfile ();
         model.setCurrentProfile ("mine");
         assertEquals ("mine", model.getCurrentProfile ());
-        assertEquals (currentProfile, new KeymapViewModel ().getCurrentProfile ());
-        model.apply ();
+        assertEquals (currentProfile, new KeymapViewModel ().getMutableModel().getCurrentProfile ());
+        model.postApply().waitFinished();
         assertEquals ("mine", model.getCurrentProfile ());
-        // TODO: this no longer works:
-        // assertEquals ("mine", new KeymapViewModel ().getCurrentProfile ());
     }
     
     public void testChangeShortcuts () {
-        KeymapViewModel model = new KeymapViewModel ();
+        MutableShortcutsModel model = new KeymapViewModel().getMutableModel();
         forAllActions (model, new R () {
-            public void run (KeymapViewModel model, ShortcutAction action) {
+            public void run (MutableShortcutsModel model, ShortcutAction action) {
                 model.setShortcuts(action, Collections.<String>emptySet());
             }
         });
         forAllActions (model, new R () {
-            public void run (KeymapViewModel model, ShortcutAction action) {
+            public void run (MutableShortcutsModel model, ShortcutAction action) {
                 assertEquals (0, model.getShortcuts (action).length);
             }
         });
         final Set<String> set = Collections.singleton ("Alt+K");
         forAllActions (model, new R () {
-            public void run (KeymapViewModel model, ShortcutAction action) {
+            public void run (MutableShortcutsModel model, ShortcutAction action) {
                 model.setShortcuts (action, set);
             }
         });
         forAllActions (model, new R () {
-            public void run (KeymapViewModel model, ShortcutAction action) {
+            public void run (MutableShortcutsModel model, ShortcutAction action) {
                 String[] s = model.getShortcuts (action);
                 assertEquals (1, s.length);
                 assertEquals ("Alt+K", s [0]);
@@ -128,18 +128,18 @@ public class KeymapViewModelTest extends NbTestCase {
      */
     
     public void testChangeShortcutsCancel () {
-        KeymapViewModel model = new KeymapViewModel ();
+        MutableShortcutsModel model = new KeymapViewModel().getMutableModel();
         Map<Set<String>,ShortcutAction> shortcuts = getShortcuts (model);
         Map<Set<String>,ShortcutAction> shortcuts2 = setRandomShortcuts (model);
         checkShortcuts (model, shortcuts2, false);
         System.out.println ("cancel changes");
         model.cancel ();
         checkShortcuts (model, shortcuts, false);
-        checkShortcuts (new KeymapViewModel (), shortcuts, false);
+        checkShortcuts (new KeymapViewModel ().getMutableModel(), shortcuts, false);
     }
 
     public void testFindConflictingMultiKeyBinding0() {
-        KeymapViewModel model = new KeymapViewModel();
+        MutableShortcutsModel model = new KeymapViewModel().getMutableModel();
         ShortcutAction sa0 = model.findActionForShortcut("F5");
         ShortcutAction sa1 = model.findActionForShortcut("F6");
         model.addShortcut(sa1, "Ctrl+J A");
@@ -152,7 +152,7 @@ public class KeymapViewModelTest extends NbTestCase {
     }
 
     public void testFindConflictingMultiKeyBinding1() {
-        KeymapViewModel model = new KeymapViewModel();
+        MutableShortcutsModel model = new KeymapViewModel().getMutableModel();
         ShortcutAction sa0 = model.findActionForShortcut("F5");
         model.addShortcut(sa0, "Ctrl+J");
         Set<ShortcutAction> found = model.findActionForShortcutPrefix("Ctrl+J B");
@@ -160,7 +160,7 @@ public class KeymapViewModelTest extends NbTestCase {
     }
 
     public void testFindConflictingMultiKeyBinding2() {
-        KeymapViewModel model = new KeymapViewModel();
+        MutableShortcutsModel model = new KeymapViewModel().getMutableModel();
         ShortcutAction sa0 = model.findActionForShortcut("F5");
         ShortcutAction sa1 = model.findActionForShortcut("F6");
         model.addShortcut(sa1, "Ctrl+J A");
@@ -174,7 +174,7 @@ public class KeymapViewModelTest extends NbTestCase {
     }
 
     public void testFindConflictingMultiKeyBinding3() {
-        KeymapViewModel model = new KeymapViewModel();
+        MutableShortcutsModel model = new KeymapViewModel().getMutableModel();
         ShortcutAction sa0 = model.findActionForShortcut("F5");
         model.addShortcut(sa0, "Shift+Meta+F2");
         Set<ShortcutAction> found = model.findActionForShortcutPrefix("Shift+Meta+F");
@@ -185,12 +185,12 @@ public class KeymapViewModelTest extends NbTestCase {
      * Sets random shortcuts and returns them in 
      * Map (Set (String (shortcut)) > String (action name)).
      */
-    private Map<Set<String>,ShortcutAction> setRandomShortcuts(final KeymapViewModel model) {
+    private Map<Set<String>,ShortcutAction> setRandomShortcuts(final MutableShortcutsModel model) {
         final int[] ii = {1};
         final Map<Set<String>,ShortcutAction> result = new HashMap<Set<String>,ShortcutAction>();
         System.out.println("set random shortcuts");
         forAllActions (model, new R () {
-            public void run (KeymapViewModel model, ShortcutAction action) {
+            public void run (MutableShortcutsModel model, ShortcutAction action) {
                 String shortcut = Integer.toString (ii [0], 36).toUpperCase ();
                 StringBuffer sb = new StringBuffer ();
                 int i, k = shortcut.length ();
@@ -211,11 +211,11 @@ public class KeymapViewModelTest extends NbTestCase {
      * Returns Map (Set (String (shortcut)) > String (action name)) containing 
      * all current shortcuts.
      */
-    private Map<Set<String>,ShortcutAction> getShortcuts(final KeymapViewModel model) {
+    private Map<Set<String>,ShortcutAction> getShortcuts(final MutableShortcutsModel model) {
         final Map<Set<String>,ShortcutAction> result = new HashMap<Set<String>,ShortcutAction>();
         System.out.println("get shortcuts");
         forAllActions (model, new R () {
-            public void run (KeymapViewModel model, ShortcutAction action) {
+            public void run (MutableShortcutsModel model, ShortcutAction action) {
                 String[] sh = model.getShortcuts (action);
                 if (sh.length == 0) return;
                 Set<String> shortcuts = new HashSet<String>(Arrays.asList(sh));
@@ -235,11 +235,11 @@ public class KeymapViewModelTest extends NbTestCase {
         return action.toString ();
     }
     
-    private void checkShortcuts(final KeymapViewModel model, final Map<Set<String>,ShortcutAction> shortcuts, final boolean print) {
+    private void checkShortcuts(final MutableShortcutsModel model, final Map<Set<String>,ShortcutAction> shortcuts, final boolean print) {
         System.out.println("check shortcuts");
         final Map<Set<String>,ShortcutAction> localCopy = new HashMap<Set<String>,ShortcutAction>(shortcuts);
         forAllActions (model, new R () {
-            public void run (KeymapViewModel model, ShortcutAction action) {
+            public void run (MutableShortcutsModel model, ShortcutAction action) {
                 String[] sh = model.getShortcuts (action);
                 if (sh.length == 0) return;
                 Set<String> s = new HashSet<String>(Arrays.asList(sh));
@@ -252,23 +252,20 @@ public class KeymapViewModelTest extends NbTestCase {
         assertTrue ("Some shortcuts found: " + localCopy, localCopy.isEmpty ());
     }
     
-    private void forAllActions (KeymapViewModel model, R r) {
+    private void forAllActions (MutableShortcutsModel model, R r) {
         forAllActions (model, r, "");
     }
     
-    private void forAllActions (KeymapViewModel model, R r, String folder) {
+    private void forAllActions (MutableShortcutsModel model, R r, String folder) {
         Iterator it = model.getItems (folder).iterator ();
         while (it.hasNext ()) {
             Object o = it.next ();
-            if (o instanceof String) 
-                forAllActions (model, r, (String) o);
-            else
-                r.run (model, (ShortcutAction) o);
+            r.run (model, (ShortcutAction) o);
         }
     }
     
     interface R {
-        void run (KeymapViewModel model, ShortcutAction action);
+        void run (MutableShortcutsModel model, ShortcutAction action);
     }
 }
 

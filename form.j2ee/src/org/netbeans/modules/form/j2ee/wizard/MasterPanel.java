@@ -592,7 +592,7 @@ public class MasterPanel implements WizardDescriptor.Panel {
      */
     @Override
     public HelpCtx getHelp() {
-        return new HelpCtx("org.netbeans.modules.form.j2ee.wizard.MasterPanel"); // NOI18N
+        return new HelpCtx("gui.masterdetail-wizard.master"); // NOI18N
     }
 
     @Override

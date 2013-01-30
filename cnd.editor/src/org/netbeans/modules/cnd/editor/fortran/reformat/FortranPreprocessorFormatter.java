@@ -55,6 +55,7 @@ import static org.netbeans.cnd.api.lexer.CppTokenId.PREPROCESSOR_IF;
 import static org.netbeans.cnd.api.lexer.CppTokenId.PREPROCESSOR_IFDEF;
 import static org.netbeans.cnd.api.lexer.CppTokenId.PREPROCESSOR_IFNDEF;
 import static org.netbeans.cnd.api.lexer.CppTokenId.PREPROCESSOR_START;
+import static org.netbeans.cnd.api.lexer.CppTokenId.PREPROCESSOR_START_ALT;
 import static org.netbeans.cnd.api.lexer.CppTokenId.WHITESPACE;
 import org.netbeans.cnd.api.lexer.FortranTokenId;
 import org.netbeans.modules.cnd.editor.fortran.options.FortranCodeStyle;
@@ -91,7 +92,8 @@ public class FortranPreprocessorFormatter {
         prep.moveStart();
         while (prep.moveNext()) {
             if (!(prep.token().id() == WHITESPACE ||
-                    prep.token().id() == PREPROCESSOR_START)) {
+                    prep.token().id() == PREPROCESSOR_START ||
+                    prep.token().id() == PREPROCESSOR_START_ALT)) {
                 break;
             }
         }
@@ -123,7 +125,7 @@ public class FortranPreprocessorFormatter {
             }
             if (context.doFormat()) {
                 while(prep.movePrevious()) {
-                    if (prep.token().id() == PREPROCESSOR_START) {
+                    if (prep.token().id() == PREPROCESSOR_START || prep.token().id() == PREPROCESSOR_START_ALT) {
                         atSharp = true;
                         break;
                     }

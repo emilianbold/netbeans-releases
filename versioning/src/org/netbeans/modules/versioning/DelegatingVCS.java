@@ -405,8 +405,11 @@ public class DelegatingVCS extends org.netbeans.modules.versioning.core.spi.Vers
         return root.toFile() != null;
     }   
     
-    // package private due unit tests
-    boolean isMetadataFile(VCSFileProxy file) {
+    @Override
+    public boolean isMetadataFile(VCSFileProxy file) {
+        if(map == null) {
+            return false;
+        }
         return getMetadataFolderNames().contains(file.getName());
     }
 

@@ -96,14 +96,14 @@ public class DeclarationContainerProjectStorage implements DatabaseTableDescript
 
 
     public static final class KeyDataPresentationImpl implements KeyDataPresentation, Serializable, Comparable<KeyDataPresentationImpl>{
-        private final short unit;
+        private final int unit;
         private final String name;
         private final short kind;
         private final int file;
         private final int start;
         private final int end;
 
-        public KeyDataPresentationImpl(short unit, CharSequence name, short kind, int file, int start, int end) {
+        public KeyDataPresentationImpl(int unit, CharSequence name, short kind, int file, int start, int end) {
             this.unit = unit;
             this.name = name.toString();
             this.kind = kind;
@@ -113,7 +113,7 @@ public class DeclarationContainerProjectStorage implements DatabaseTableDescript
         }
 
         @Override
-        public short getUnitPresentation() {
+        public int getUnitPresentation() {
             return unit;
         }
 
@@ -229,7 +229,7 @@ public class DeclarationContainerProjectStorage implements DatabaseTableDescript
     }
 
     public static final class DataPresentationImpl implements KeyDataPresentation, Serializable {
-        private final short unit;
+        private final int unit;
         private final String name;
         private final short kind;
         private final int file;
@@ -248,7 +248,7 @@ public class DeclarationContainerProjectStorage implements DatabaseTableDescript
         }
 
         @Override
-        public short getUnitPresentation() {
+        public int getUnitPresentation() {
             return unit;
         }
 

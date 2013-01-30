@@ -45,30 +45,49 @@
 package org.netbeans.modules.autoupdate.updateprovider;
 
 import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.StringWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 import java.util.Stack;
+import java.util.TreeSet;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+import javax.xml.transform.Result;
+import javax.xml.transform.Source;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 import org.netbeans.modules.autoupdate.services.Trampoline;
 import org.netbeans.modules.autoupdate.services.UpdateLicenseImpl;
 import org.netbeans.modules.autoupdate.services.Utilities;
 import org.netbeans.spi.autoupdate.UpdateItem;
 import org.netbeans.spi.autoupdate.UpdateLicense;
+import org.netbeans.updater.XMLUtil;
+import org.openide.util.Exceptions;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.xml.sax.Attributes;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
@@ -162,7 +181,13 @@ public class AutoupdateInfoParser extends DefaultHandler {
         Map<String, UpdateItem> items = new HashMap<String, UpdateItem> ();
         try {
             SAXParser saxParser = SAXParserFactory.newInstance ().newSAXParser ();
-            saxParser.parse (getAutoupdateInfoInputStream (nbmFile), new AutoupdateInfoParser (items, nbmFile));
+            if (!isOSGiBundle(nbmFile)) {
+                // standard NBM
+                saxParser.parse(getAutoupdateInfoInputSource(nbmFile), new AutoupdateInfoParser(items, nbmFile));
+            } else {
+                // OSGi
+                saxParser.parse(getAutoupdateInfoInputStream(nbmFile), new AutoupdateInfoParser(items, nbmFile));
+            }
         } catch (SAXException ex) {
             ERR.log (Level.INFO, ex.getMessage (), ex);
         } catch (IOException ex) {
@@ -395,8 +420,7 @@ public class AutoupdateInfoParser extends DefaultHandler {
         return mf;
     }
 
-    // package-private only for unit testing purpose
-    static InputSource getAutoupdateInfoInputStream (File nbmFile) throws IOException, SAXException {
+    private static InputSource getAutoupdateInfoInputSource (File nbmFile) throws IOException, SAXException {
         // find info.xml entry
         JarFile jf = null;
         try {
@@ -416,4 +440,406 @@ public class AutoupdateInfoParser extends DefaultHandler {
         return new InputSource (new BufferedInputStream (jf.getInputStream (entry)));
     }
     
+    private static InputStream getAutoupdateInfoInputStream (File nbmFile) throws IOException, SAXException {
+        try {
+            // find info.xml entry
+            JarFile jf = null;
+            try {
+                jf = new JarFile (nbmFile);
+            } catch (IOException ex) {
+                throw new IOException("Cannot open NBM file " + nbmFile + ": " + ex, ex);
+            }
+            Element fakeOSGiInfoXml = fakeOSGiInfoXml(jf, nbmFile);
+            
+            TransformerFactory factory = TransformerFactory.newInstance();
+            Transformer transformer = factory.newTransformer();
+            StringWriter writer = new StringWriter();
+            Result result = new StreamResult(writer);
+            Source source = new DOMSource(fakeOSGiInfoXml.getOwnerDocument());
+            transformer.transform(source, result);
+            writer.close();
+            String xml = writer.toString();
+            
+            InputStream inputStream = new ByteArrayInputStream(xml.getBytes("UTF-8"));  
+            
+            
+            return inputStream;
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return null;
+    }
+    
+    private static boolean isOSGiBundle(File jarFile) {
+        try {
+            JarFile jar = new JarFile(jarFile);
+            Manifest mf = jar.getManifest();
+            return mf != null && mf.getMainAttributes().getValue("Bundle-SymbolicName") != null; // NOI18N
+        } catch (IOException ioe) {
+            ERR.log(Level.INFO, ioe.getLocalizedMessage(), ioe);
+        }
+        return false;
+    }
+
+    /**
+     * Create the equivalent of {@code Info/info.xml} for an OSGi bundle.
+     *
+     * @param jar a bundle
+     * @return a {@code <module ...><manifest .../></module>} valid according to
+     * <a href="http://www.netbeans.org/dtds/autoupdate-info-2_5.dtd">DTD</a>
+     */
+    private static Element fakeOSGiInfoXml(JarFile jar, File whereFrom) throws IOException {
+        java.util.jar.Attributes attr = jar.getManifest().getMainAttributes();
+        Properties localized = new Properties();
+        String bundleLocalization = attr.getValue("Bundle-Localization");
+        if (bundleLocalization != null) {
+            InputStream is = jar.getInputStream(jar.getEntry(bundleLocalization + ".properties"));
+            try {
+                localized.load(is);
+            } finally {
+                is.close();
+            }
+        }
+        return fakeOSGiInfoXml(attr, localized, whereFrom);
+    }
+
+    public static final String BUNDLE_EXPORT_PACKAGE = "Export-Package"; // NOI18N
+    public static final String BUNDLE_IMPORT_PACKAGE = "Import-Package"; // NOI18N
+    
+    static Element fakeOSGiInfoXml(java.util.jar.Attributes attr, Properties localized, File whereFrom) {
+        Document doc = XMLUtil.createDocument("module");
+        Element module = doc.getDocumentElement();
+        String cnb = extractCodeName(attr, null);
+        module.setAttribute("codenamebase", cnb);
+        module.setAttribute("distribution", ""); // seems to be ignored anyway
+        module.setAttribute("downloadsize", "0"); // recalculated anyway
+        module.setAttribute("targetcluster", whereFrom.getParentFile().getName()); // #207075 comment #3
+        Element manifest = doc.createElement("manifest");
+        module.appendChild(manifest);
+        manifest.setAttribute("AutoUpdate-Show-In-Client", "true"); // show me in UI
+        manifest.setAttribute("OpenIDE-Module", cnb);
+        String bundleName = loc(localized, attr, "Bundle-Name");
+        manifest.setAttribute("OpenIDE-Module-Name", bundleName != null ? bundleName : cnb);
+        String bundleVersion = attr.getValue("Bundle-Version");
+        manifest.setAttribute("OpenIDE-Module-Specification-Version",
+                bundleVersion != null ? bundleVersion.replaceFirst("^(\\d+([.]\\d+([.]\\d+)?)?)([.].+)?$", "$1") : "0");
+        String requireBundle = attr.getValue("Require-Bundle");
+        if (requireBundle != null) {
+            StringBuilder b = new StringBuilder();
+            boolean needsNetbinox = false;
+            // http://stackoverflow.com/questions/1757065/java-splitting-a-comma-separated-string-but-ignoring-commas-in-quotes
+            for (String dep : requireBundle.split(",(?=([^\"]*\"[^\"]*\")*[^\"]*$)")) {
+                Matcher m = Pattern.compile("([^;]+)(.*)").matcher(dep);
+                if (!m.matches()) {
+                    throw new RuntimeException("Could not parse dependency: " + dep + " in " + whereFrom);
+                }
+                String requiredBundleName = m.group(1); // dep CNB
+                if (requiredBundleName.trim().equals("org.eclipse.osgi")) {
+                    needsNetbinox = true;
+                    continue;
+                }
+                Matcher m2 = Pattern.compile(";([^:=]+):?=\"?([^;\"]+)\"?").matcher(m.group(2));
+                boolean isOptional = false;
+                while (m2.find()) {
+                    if (m2.group(1).equals("resolution") && m2.group(2).equals("optional")) {
+                        isOptional = true;
+                        break;
+                    }
+                }
+                if (isOptional) {
+                    continue;
+                }
+                m2.reset();
+                if (b.length() > 0) {
+                    b.append(", ");
+                }
+                b.append(requiredBundleName); // dep CNB
+                while (m2.find()) {
+                    if (!m2.group(1).equals("bundle-version")) {
+                        continue;
+                    }
+                    String val = m2.group(2);
+                    if (val.matches("[0-9]+([.][0-9]+)*")) {
+                        // non-range dep occasionally used in OSGi; no exact equivalent in NB
+                        b.append(" > ").append(val);
+                        continue;
+                    }
+                    Matcher m3 = Pattern.compile("\\[([0-9]+)((?:[.][0-9]+)*),([0-9.]+)\\)").matcher(val);
+                    if (!m3.matches()) {
+                        throw new RuntimeException("Could not parse version range: " + val + " in " + whereFrom);
+                    }
+                    int major = Integer.parseInt(m3.group(1));
+                    String rest = m3.group(2);
+                    try {
+                        int max = Integer.parseInt(m3.group(3));
+                        if (major > 99) {
+                            b.append('/').append(major / 100);
+                            if (max > major + 100) {
+                                b.append('-').append(max / 100 - 1);
+                            }
+                        } else if (max > 100) {
+                            b.append("/0-").append(max / 100 - 1);
+                        }
+                    } catch (NumberFormatException x) {
+                        // never mind end boundary, does not match NB conventions
+                    }
+                    b.append(" > ").append(major % 100).append(rest);
+                }
+            }
+            if (b.length() > 0) {
+                manifest.setAttribute("OpenIDE-Module-Module-Dependencies", b.toString());
+            }
+            if (needsNetbinox) {
+                manifest.setAttribute("OpenIDE-Module-Needs", "org.netbeans.Netbinox");
+            }
+        }
+
+        String pp = attr.getValue(BUNDLE_EXPORT_PACKAGE);
+        StringBuilder provides = new StringBuilder();
+        if (pp != null) {
+            for (String p : pp.replaceAll("\"[^\"]*\"", "").split(",")) {
+                if (provides.length() > 0) {
+                    provides.append(',');
+                }
+                provides.append(p.replaceAll(";.*$", "").trim());
+            }
+        }
+        if (provides.length() > 0) {
+            manifest.setAttribute("OpenIDE-Module-Provides", provides.toString());
+        }
+
+        String ip = attr.getValue(BUNDLE_IMPORT_PACKAGE);
+        StringBuilder requires = new StringBuilder();
+        StringBuilder recommends = new StringBuilder();
+        if (ip != null) {
+            for (String p : ip.replaceAll("\"[^\"]*\"", "").split(",")) {
+                String pkg = p.replaceAll(";.*$", "").trim();
+                if (JAVA_PLATFORM_PACKAGES.contains(pkg)) {
+                    continue;
+                }
+                if (p.matches(".*; *resolution *:= *optional.*")) {
+                    if (recommends.length() > 0) {
+                        recommends.append(',');
+                    }
+                    recommends.append(p.replaceAll(";.*$", "").trim());
+                } else {
+                    if (requires.length() > 0) {
+                        requires.append(',');
+                    }
+                    requires.append(p.replaceAll(";.*$", "").trim());
+                }
+            }
+        }
+        if (requires.length() > 0) {
+            manifest.setAttribute("OpenIDE-Module-Requires", requires.toString().replace('-', '_'));
+        }
+        if (recommends.length() > 0) {
+            manifest.setAttribute("OpenIDE-Module-Recommends", recommends.toString().replace('-', '_'));
+        }
+            
+        String bundleCategory = loc(localized, attr, "Bundle-Category");
+        if (bundleCategory != null) {
+            manifest.setAttribute("OpenIDE-Module-Display-Category", bundleCategory);
+        }
+        String bundleDescription = loc(localized, attr, "Bundle-Description");
+        if (bundleDescription != null) {
+            manifest.setAttribute("OpenIDE-Module-Short-Description", bundleDescription);
+        }
+        // XXX anything else need to be set?
+        return module;
+    }
+
+    private static String loc(Properties localized, java.util.jar.Attributes attr, String key) {
+        String val = attr.getValue(key);
+        if (val == null) {
+            return null;
+        } else if (val.startsWith("%")) {
+            return localized.getProperty(val.substring(1));
+        } else {
+            return val;
+        }
+    }
+    
+    private static String extractCodeName(java.util.jar.Attributes attr, boolean[] osgi) {
+        String codename = attr.getValue("OpenIDE-Module");
+        if (codename != null) {
+            return codename;
+        }
+        codename = attr.getValue("Bundle-SymbolicName");
+        if (codename == null) {
+            return null;
+        }
+        codename = codename.replace('-', '_');
+        if (osgi != null) {
+            osgi[0] = true;
+        }
+        int params = codename.indexOf(';');
+        if (params >= 0) {
+            return codename.substring(0, params);
+        } else {
+            return codename;
+        }
+    }
+
+    /**
+     * List of packages guaranteed to be in the Java platform;
+     * taken from JDK 6 Javadoc package-list after removing java.* packages.
+     * Note that Felix's default.properties actually includes a few more packages
+     * (such as org.w3c.dom.ranges) which can be found in src.zip but are not documented.
+     * COPIED FROM: MakeOSGi
+     */
+    private static final Set<String> JAVA_PLATFORM_PACKAGES = new TreeSet<String>(Arrays.asList(
+        "javax.accessibility",
+        "javax.activation",
+        "javax.activity",
+        "javax.annotation",
+        "javax.annotation.processing",
+        "javax.crypto",
+        "javax.crypto.interfaces",
+        "javax.crypto.spec",
+        "javax.imageio",
+        "javax.imageio.event",
+        "javax.imageio.metadata",
+        "javax.imageio.plugins.bmp",
+        "javax.imageio.plugins.jpeg",
+        "javax.imageio.spi",
+        "javax.imageio.stream",
+        "javax.jws",
+        "javax.jws.soap",
+        "javax.lang.model",
+        "javax.lang.model.element",
+        "javax.lang.model.type",
+        "javax.lang.model.util",
+        "javax.management",
+        "javax.management.loading",
+        "javax.management.modelmbean",
+        "javax.management.monitor",
+        "javax.management.openmbean",
+        "javax.management.relation",
+        "javax.management.remote",
+        "javax.management.remote.rmi",
+        "javax.management.timer",
+        "javax.naming",
+        "javax.naming.directory",
+        "javax.naming.event",
+        "javax.naming.ldap",
+        "javax.naming.spi",
+        "javax.net",
+        "javax.net.ssl",
+        "javax.print",
+        "javax.print.attribute",
+        "javax.print.attribute.standard",
+        "javax.print.event",
+        "javax.rmi",
+        "javax.rmi.CORBA",
+        "javax.rmi.ssl",
+        "javax.script",
+        "javax.security.auth",
+        "javax.security.auth.callback",
+        "javax.security.auth.kerberos",
+        "javax.security.auth.login",
+        "javax.security.auth.spi",
+        "javax.security.auth.x500",
+        "javax.security.cert",
+        "javax.security.sasl",
+        "javax.sound.midi",
+        "javax.sound.midi.spi",
+        "javax.sound.sampled",
+        "javax.sound.sampled.spi",
+        "javax.sql",
+        "javax.sql.rowset",
+        "javax.sql.rowset.serial",
+        "javax.sql.rowset.spi",
+        "javax.swing",
+        "javax.swing.border",
+        "javax.swing.colorchooser",
+        "javax.swing.event",
+        "javax.swing.filechooser",
+        "javax.swing.plaf",
+        "javax.swing.plaf.basic",
+        "javax.swing.plaf.metal",
+        "javax.swing.plaf.multi",
+        "javax.swing.plaf.synth",
+        "javax.swing.table",
+        "javax.swing.text",
+        "javax.swing.text.html",
+        "javax.swing.text.html.parser",
+        "javax.swing.text.rtf",
+        "javax.swing.tree",
+        "javax.swing.undo",
+        "javax.tools",
+        "javax.transaction",
+        "javax.transaction.xa",
+        "javax.xml",
+        "javax.xml.bind",
+        "javax.xml.bind.annotation",
+        "javax.xml.bind.annotation.adapters",
+        "javax.xml.bind.attachment",
+        "javax.xml.bind.helpers",
+        "javax.xml.bind.util",
+        "javax.xml.crypto",
+        "javax.xml.crypto.dom",
+        "javax.xml.crypto.dsig",
+        "javax.xml.crypto.dsig.dom",
+        "javax.xml.crypto.dsig.keyinfo",
+        "javax.xml.crypto.dsig.spec",
+        "javax.xml.datatype",
+        "javax.xml.namespace",
+        "javax.xml.parsers",
+        "javax.xml.soap",
+        "javax.xml.stream",
+        "javax.xml.stream.events",
+        "javax.xml.stream.util",
+        "javax.xml.transform",
+        "javax.xml.transform.dom",
+        "javax.xml.transform.sax",
+        "javax.xml.transform.stax",
+        "javax.xml.transform.stream",
+        "javax.xml.validation",
+        "javax.xml.ws",
+        "javax.xml.ws.handler",
+        "javax.xml.ws.handler.soap",
+        "javax.xml.ws.http",
+        "javax.xml.ws.soap",
+        "javax.xml.ws.spi",
+        "javax.xml.ws.wsaddressing",
+        "javax.xml.xpath",
+        "org.ietf.jgss",
+        "org.omg.CORBA",
+        "org.omg.CORBA.DynAnyPackage",
+        "org.omg.CORBA.ORBPackage",
+        "org.omg.CORBA.TypeCodePackage",
+        "org.omg.CORBA.portable",
+        "org.omg.CORBA_2_3",
+        "org.omg.CORBA_2_3.portable",
+        "org.omg.CosNaming",
+        "org.omg.CosNaming.NamingContextExtPackage",
+        "org.omg.CosNaming.NamingContextPackage",
+        "org.omg.Dynamic",
+        "org.omg.DynamicAny",
+        "org.omg.DynamicAny.DynAnyFactoryPackage",
+        "org.omg.DynamicAny.DynAnyPackage",
+        "org.omg.IOP",
+        "org.omg.IOP.CodecFactoryPackage",
+        "org.omg.IOP.CodecPackage",
+        "org.omg.Messaging",
+        "org.omg.PortableInterceptor",
+        "org.omg.PortableInterceptor.ORBInitInfoPackage",
+        "org.omg.PortableServer",
+        "org.omg.PortableServer.CurrentPackage",
+        "org.omg.PortableServer.POAManagerPackage",
+        "org.omg.PortableServer.POAPackage",
+        "org.omg.PortableServer.ServantLocatorPackage",
+        "org.omg.PortableServer.portable",
+        "org.omg.SendingContext",
+        "org.omg.stub.java.rmi",
+        "org.w3c.dom",
+        "org.w3c.dom.bootstrap",
+        "org.w3c.dom.events",
+        "org.w3c.dom.ls",
+        "org.xml.sax",
+        "org.xml.sax.ext",
+        "org.xml.sax.helpers"
+    ));
+
 }

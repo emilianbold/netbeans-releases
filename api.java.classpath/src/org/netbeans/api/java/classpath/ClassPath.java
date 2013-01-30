@@ -1042,11 +1042,28 @@ public final class ClassPath {
      * the first String in a pair is the basename, the second is the extension or null
      * for no extension.
      */
-    private static FileObject findPath(FileObject parent, String[] nameParts) {
+    private static FileObject findPath(
+            @NonNull FileObject parent,
+            @NonNull final String[] nameParts,
+            @NonNull /*out*/ final String[] relativePath) {
+        assert relativePath.length == 1;
+        final StringBuilder relativePathBuilder = new StringBuilder();
         FileObject child;
-
-        for (int i = 0; i < nameParts.length && parent != null; i += 2, parent = child) {
+        String separator = "";    //NOI18N
+        for (int i = 0; i < nameParts.length && parent != null; i += 2, parent = child) {            
             child = parent.getFileObject(nameParts[i], nameParts[i + 1]);
+            if (child != null) {
+                relativePathBuilder.append(separator).append(child.getNameExt());
+            }
+            separator = "/";      //NOI18N
+        }
+        if (parent != null) {
+            if (parent.isFolder()) {
+                relativePathBuilder.append(separator);
+            }
+            relativePath[0] = relativePathBuilder.toString();
+        } else {
+            relativePath[0] = null;
         }
         return parent;
     }
@@ -1059,21 +1076,13 @@ public final class ClassPath {
         int[] rootIndex, String[] nameComponents) {
         int ridx;
         FileObject f = null;
+        final String[] pathOut = new String[1];
         for (ridx = rootIndex[0]; ridx < roots.length && f == null; ridx++) {
-            f = findPath(roots[ridx], nameComponents);
+            f = findPath(roots[ridx], nameComponents, pathOut);
             FilteringPathResourceImplementation filter = root2Filter.get(roots[ridx]);
             if (filter != null) {
-                    if (f != null) {
-                        String path = FileUtil.getRelativePath(roots[ridx], f);
-                        assert path != null : String.format("FileUtil.getRelativePath(%s(%b),%s(%b)) returned null",
-                                FileUtil.getFileDisplayName(roots[ridx]),
-                                roots[ridx].isValid(),
-                                FileUtil.getFileDisplayName(f),
-                                f.isValid());
-                        if (f.isFolder()) {
-                            path += "/"; // NOI18N
-                        }
-                        if (!filter.includes(roots[ridx].toURL(), path)) {
+                    if (f != null) {                        
+                        if (!filter.includes(roots[ridx].toURL(), pathOut[0].toString())) {
                             f = null;
                         }
                     }

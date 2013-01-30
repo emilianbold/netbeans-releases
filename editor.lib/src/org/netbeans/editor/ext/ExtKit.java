@@ -167,12 +167,6 @@ public class ExtKit extends BaseKit {
    
     /** Trimmed text for go to submenu*/
     public static final String TRIMMED_TEXT = "trimmed-text";    //NOI18N
-    
-    /** Shared suport for find and replace dialogs */
-    private static FindDialogSupport findDialogSupport;
-    
-    private static FindAction findActionDef = new FindAction();
-    private static ReplaceAction replaceActionDef = new ReplaceAction();
 
     private static final String editorBundleHash = "org.netbeans.editor.Bundle#";
 
@@ -473,59 +467,6 @@ public class ExtKit extends BaseKit {
                 if (tts != null) {
                     tts.setToolTipText(buildText(target));
                 }
-            }
-        }
-
-    }
-
-    /**
-     * @deprecated Without any replacement.
-     */
-    public static class FindAction extends BaseKitLocalizedAction {
-    // Not registered by annotation since it's not actively used
-
-        static final long serialVersionUID =719554648887497427L;
-
-        public FindAction() {
-            super(findAction, ABBREV_RESET
-                  | MAGIC_POSITION_RESET | UNDO_MERGE_RESET | NO_RECORDING);
-            putValue(BaseAction.ICON_RESOURCE_PROPERTY,
-                    "org/netbeans/modules/editor/resources/find"); //NOI18N
-        }
-
-        public FindDialogSupport getSupport() {
-            return FindDialogSupport.getFindDialogSupport();
-        }
-
-        public void actionPerformed(ActionEvent evt, JTextComponent target) {
-            if (target != null) {
-                getSupport().showFindDialog(new KeyEventBlocker(target, false));
-            }
-        }
-
-    }
-
-    /**
-     * @deprecated Without any replacement.
-     */
-    public static class ReplaceAction extends BaseKitLocalizedAction {
-
-        static final long serialVersionUID =1828017436079834384L;
-
-        public ReplaceAction() {
-            super(replaceAction, ABBREV_RESET
-                  | MAGIC_POSITION_RESET | UNDO_MERGE_RESET | NO_RECORDING);
-        }
-
-        public FindDialogSupport getSupport() {
-            return FindDialogSupport.getFindDialogSupport();
-        }
-
-        public void actionPerformed(ActionEvent evt, JTextComponent target) {
-            if (target != null) {
-                // make KeyEventBlocker to discard the first key typed event (Ctrl-H)
-                // because it is mapped to backspace in the replace dialog
-                getSupport().showReplaceDialog(new KeyEventBlocker(target, true));
             }
         }
 

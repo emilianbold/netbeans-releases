@@ -45,6 +45,7 @@
 package org.netbeans.modules.cnd.api.model;
 
 import java.util.Collection;
+import org.openide.filesystems.FileSystem;
 
 /**
  *
@@ -68,6 +69,9 @@ public interface CsmProject extends CsmNamedElement, CsmValidable {
 
     /** Gets this project display name in HTML form */
     String getHtmlDisplayName();
+    
+    /** Gets this project file system */
+    FileSystem getFileSystem();
 
     /**
      * Finds namespace by its qualified name

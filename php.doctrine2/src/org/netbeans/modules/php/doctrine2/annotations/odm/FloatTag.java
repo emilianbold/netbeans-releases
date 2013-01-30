@@ -41,10 +41,10 @@
  */
 package org.netbeans.modules.php.doctrine2.annotations.odm;
 
-import org.netbeans.modules.php.spi.annotations.PhpAnnotationTag;
+import org.netbeans.modules.php.spi.annotation.AnnotationCompletionTag;
 import org.openide.util.NbBundle;
 
-public class FloatTag extends PhpAnnotationTag {
+public class FloatTag extends AnnotationCompletionTag {
 
     public FloatTag() {
         super("Float", // NOI18N

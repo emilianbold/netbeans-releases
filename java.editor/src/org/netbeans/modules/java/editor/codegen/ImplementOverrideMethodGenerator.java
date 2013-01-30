@@ -172,10 +172,12 @@ public class ImplementOverrideMethodGenerator implements CodeGenerator {
                                 ArrayList<ExecutableElement> methodElements = new ArrayList<ExecutableElement>();
                                 for (ElementHandle<? extends Element> elementHandle : panel.getSelectedMethods())
                                     methodElements.add((ExecutableElement)elementHandle.resolve(copy));
-                                if (isImplement)
-                                    GeneratorUtils.generateAbstractMethodImplementations(copy, path, methodElements, caretOffset);
-                                else
-                                    GeneratorUtils.generateMethodOverrides(copy, path, methodElements, caretOffset);
+                                if (!methodElements.isEmpty()) {
+                                    if (isImplement)
+                                        GeneratorUtils.generateAbstractMethodImplementations(copy, path, methodElements, caretOffset);
+                                    else
+                                        GeneratorUtils.generateMethodOverrides(copy, path, methodElements, caretOffset);
+                                }
                             }
                         }
                     });

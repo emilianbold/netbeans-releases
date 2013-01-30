@@ -42,7 +42,7 @@
 package org.netbeans.modules.php.symfony2.ui.actions;
 
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
-import org.netbeans.modules.php.spi.actions.RunCommandAction;
+import org.netbeans.modules.php.spi.framework.actions.RunCommandAction;
 import org.netbeans.modules.php.symfony2.Symfony2PhpFrameworkProvider;
 import org.openide.util.NbBundle.Messages;
 
@@ -68,7 +68,7 @@ public class Symfony2RunCommandAction extends RunCommandAction {
             return;
         }
 
-        Symfony2PhpFrameworkProvider.getInstance().getFrameworkCommandSupport(phpModule).runCommand();
+        Symfony2PhpFrameworkProvider.getInstance().getFrameworkCommandSupport(phpModule).openPanel();
     }
 
     @Messages({

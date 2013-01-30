@@ -44,6 +44,9 @@
 
 package org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.types;
 
+import java.io.IOException;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.cnd.debugger.common2.utils.props.IntegerProperty;
 import org.netbeans.modules.cnd.debugger.common2.utils.props.StringProperty;
 import org.netbeans.modules.cnd.debugger.common2.utils.IpeUtils;
@@ -52,6 +55,7 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerManager;
 import org.netbeans.modules.cnd.debugger.common2.debugger.EditorBridge;
 import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.NativeBreakpoint;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.text.Line;
 
@@ -146,20 +150,14 @@ public final class LineBreakpoint extends NativeBreakpoint {
 	    lineNumber.setFromObjectInitial(newLineNumber);
 	}
     }
-    
-    @Override
-    public void addAnnotation(String filename, int line, long addr) {
-	Line l = null;
 
-	if (line != 0) {
-            if (fs != null) {
-                l = EditorBridge.getLine(filename, line, fs);
-            } else {
-                l = EditorBridge.getLine(filename, line, currentDebugger());
-            }
+    @Override
+    protected Line getLine(String filename, int line) {
+        if (line != 0 && fs != null) {
+            return EditorBridge.getLine(filename, line, fs);
+        } else {
+            return super.getLine(filename, line);
         }
-	//if (l != null)
-	addAnnotation(l, addr);
     }
     
     @Override
@@ -233,5 +231,41 @@ public final class LineBreakpoint extends NativeBreakpoint {
 
     protected void processOriginalEventspec(String oeventspec) {
 	assert IpeUtils.isEmpty(oeventspec);
+    }
+
+    @Override
+    public GroupProperties getGroupProperties() {
+        return new LineGroupProperties();
+    }
+    
+    private class LineGroupProperties extends NativeGroupProperties {
+        private final FileObject fo = EditorBridge.findFileObject(getFileName(), getDebugger());
+
+        @Override
+        public FileObject[] getFiles() {
+            if (fo != null) {
+                return new FileObject[]{ fo };
+            }
+            return null;
+        }
+
+        @Override
+        public Project[] getProjects() {
+            FileObject f = fo;
+            while (f != null) {
+                f = f.getParent();
+                if (f != null && ProjectManager.getDefault().isProject(f)) {
+                    break;
+                }
+            }
+            if (f != null) {
+                try {
+                    return new Project[] { ProjectManager.getDefault().findProject(f) };
+                } catch (IOException ex) {
+                } catch (IllegalArgumentException ex) {
+                }
+            }
+            return null;
+        }
     }
 }

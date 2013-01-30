@@ -66,6 +66,7 @@ import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.java.queries.SourceForBinaryQuery.Result;
+import org.netbeans.api.java.queries.UnitTestForSourceQuery;
 import org.netbeans.api.java.source.*;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -210,22 +211,6 @@ public class RefactoringUtils {
      * @return true if given element comes from library
      */
     public static boolean isFromLibrary(ElementHandle<? extends Element> element, ClasspathInfo info) {
-        FileObject file = SourceUtils.getFile(element, info);
-        if (file == null) {
-            //no source for given element. Element is from library
-            return true;
-        }
-        return FileUtil.getArchiveFile(file) != null;
-    }
-    
-    /**
-     * @param element
-     * @param info
-     * @return true if given element comes from library
-     * @deprecated
-     */
-    @SuppressWarnings("deprecation")
-    public static boolean isFromLibrary(Element element, ClasspathInfo info) {
         FileObject file = SourceUtils.getFile(element, info);
         if (file == null) {
             //no source for given element. Element is from library
@@ -419,17 +404,7 @@ public class RefactoringUtils {
      * @throws IOException
      */
     public static FileObject getClassPathRoot(URL url) throws IOException {
-        FileObject result = URLMapper.findFileObject(url);
-        File f;
-        try {
-            f = result != null ? null : FileUtil.normalizeFile(new File(url.toURI())); //NOI18N
-        } catch (URISyntaxException ex) {
-            throw new IOException(ex);
-        }
-        while (result == null) {
-            result = FileUtil.toFileObject(f);
-            f = f.getParentFile();
-        }
+        FileObject result = getRootFileObject(url);
         return ClassPath.getClassPath(result, ClassPath.SOURCE).findOwnerRoot(result);
     }
 
@@ -564,7 +539,8 @@ public class RefactoringUtils {
     @SuppressWarnings("CollectionContainsUrl")
     public static ClasspathInfo getClasspathInfoFor(boolean dependencies, boolean backSource, FileObject... files) {
         assert files.length > 0;
-        Set<URL> dependentRoots = new HashSet();
+        Set<URL> dependentSourceRoots = new HashSet();
+        Set<URL> dependentCompileRoots = new HashSet();
         for (FileObject fo : files) {
             ClassPath cp = null;
             FileObject ownerRoot = null;
@@ -577,19 +553,31 @@ public class RefactoringUtils {
             if (cp != null && ownerRoot != null && FileUtil.getArchiveFile(ownerRoot) == null) {
                 URL sourceRoot = URLMapper.findURL(ownerRoot, URLMapper.INTERNAL);
                 if (dependencies) {
-                    dependentRoots.addAll(SourceUtils.getDependentRoots(sourceRoot));
+                    Set<URL> urls = SourceUtils.getDependentRoots(sourceRoot, false);
+                    Set<ClassPath> cps = GlobalPathRegistry.getDefault().getPaths(ClassPath.SOURCE);
+                    Set<URL> toRetain = new HashSet<URL>();
+                    for (ClassPath path : cps) {
+                        for (ClassPath.Entry e : path.entries()) {
+                            toRetain.add(e.getURL());
+                        }
+                    }
+                    Set<URL> compile = new HashSet<URL>(urls);
+                    urls.retainAll(toRetain);
+                    compile.removeAll(toRetain);
+                    dependentSourceRoots.addAll(urls);
+                    dependentCompileRoots.addAll(compile);
                 } else {
-                    dependentRoots.add(sourceRoot);
+                    dependentSourceRoots.add(sourceRoot);
                 }
                 if (FileOwnerQuery.getOwner(fo) != null) {
                     for (FileObject f : cp.getRoots()) {
-                        dependentRoots.add(URLMapper.findURL(f, URLMapper.INTERNAL));
+                        dependentCompileRoots.add(URLMapper.findURL(f, URLMapper.INTERNAL));
                     }
                 }
             } else {
                 for (ClassPath scp : GlobalPathRegistry.getDefault().getPaths(ClassPath.SOURCE)) {
                     for (FileObject root : scp.getRoots()) {
-                        dependentRoots.add(URLMapper.findURL(root, URLMapper.INTERNAL));
+                        dependentSourceRoots.add(URLMapper.findURL(root, URLMapper.INTERNAL));
                     }
                 }
             }
@@ -602,14 +590,14 @@ public class RefactoringUtils {
                     for (Entry root : source.entries()) {
                         Result r = SourceForBinaryQuery.findSourceRoots(root.getURL());
                         for (FileObject root2 : r.getRoots()) {
-                            dependentRoots.add(URLMapper.findURL(root2, URLMapper.INTERNAL));
+                            dependentSourceRoots.add(URLMapper.findURL(root2, URLMapper.INTERNAL));
                         }
                     }
                 }
             }
         }
 
-        ClassPath rcp = ClassPathSupport.createClassPath(dependentRoots.toArray(new URL[dependentRoots.size()]));
+        ClassPath rcp = ClassPathSupport.createClassPath(dependentSourceRoots.toArray(new URL[dependentSourceRoots.size()]));
         ClassPath nullPath = ClassPathSupport.createClassPath(new FileObject[0]);
         ClassPath boot = files[0] != null ? ClassPath.getClassPath(files[0], ClassPath.BOOT) : nullPath;
         ClassPath compile = files[0] != null ? ClassPath.getClassPath(files[0], ClassPath.COMPILE) : nullPath;
@@ -624,6 +612,7 @@ public class RefactoringUtils {
             LOG.warning("No classpath for: " + FileUtil.getFileDisplayName(files[0]) + " " + FileOwnerQuery.getOwner(files[0]));
             compile = nullPath;
         }
+        compile = merge(compile, ClassPathSupport.createClassPath(dependentCompileRoots.toArray(new URL[dependentCompileRoots.size()])));
         ClasspathInfo cpInfo = ClasspathInfo.create(boot, compile, rcp);
         return cpInfo;
     }
@@ -884,8 +873,11 @@ public class RefactoringUtils {
         LocalVarScanner lookup = new LocalVarScanner(info, newName);
         TreePath scopeBlok = tp;
         EnumSet set = EnumSet.of(Tree.Kind.BLOCK, Tree.Kind.FOR_LOOP, Tree.Kind.METHOD);
-        while (!set.contains(scopeBlok.getLeaf().getKind())) {
+        while (scopeBlok != null && !set.contains(scopeBlok.getLeaf().getKind())) {
             scopeBlok = scopeBlok.getParentPath();
+        }
+        if(scopeBlok == null) {
+            return null;
         }
         Element var = info.getTrees().getElement(tp);
         lookup.scan(scopeBlok, var);
@@ -976,6 +968,48 @@ public class RefactoringUtils {
             return "public"; //NOI18N
         }
         return "<default>"; //NOI18N
+    }
+
+    public static boolean isFromTestRoot(FileObject file, ClassPath cp) {
+        boolean inTest = false;
+        if (cp != null) {
+            FileObject root = cp.findOwnerRoot(file);
+            if (UnitTestForSourceQuery.findSources(root).length > 0) {
+                inTest = true;
+            }
+        }
+        return inTest;
+    }
+
+    public static FileObject getRootFileObject(URL url) throws IOException {
+        FileObject result = URLMapper.findFileObject(url);
+        File f;
+        try {
+            f = result != null ? null : FileUtil.normalizeFile(Utilities.toFile(url.toURI())); //NOI18N
+        } catch (URISyntaxException ex) {
+            throw new IOException(ex);
+        }
+        while (result == null) {
+            result = FileUtil.toFileObject(f);
+            f = f.getParentFile();
+        }
+        return result;
+    }
+
+    @SuppressWarnings("CollectionContainsUrl")
+    public static ClassPath merge(final ClassPath... cps) {
+        final Set<URL> roots = new LinkedHashSet<URL>(cps.length);
+        for (final ClassPath cp : cps) {
+            if (cp != null) {
+                for (final ClassPath.Entry entry : cp.entries()) {
+                    final URL root = entry.getURL();
+                    if (!roots.contains(root)) {
+                        roots.add(root);
+                    }
+                }
+            }
+        }
+        return ClassPathSupport.createClassPath(roots.toArray(new URL[roots.size()]));
     }
 
     private RefactoringUtils() {

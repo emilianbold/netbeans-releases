@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -49,6 +49,7 @@ import java.io.IOException;
 import org.netbeans.modules.autoupdate.updateprovider.UpdateItemImpl;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.autoupdate.InstallSupport;
 import org.netbeans.api.autoupdate.OperationContainer;
 import org.netbeans.api.autoupdate.OperationContainer.OperationInfo;
 import org.netbeans.api.autoupdate.UpdateElement;
@@ -58,7 +59,7 @@ import org.netbeans.modules.autoupdate.services.OperationContainerImpl.Operation
 import org.netbeans.spi.autoupdate.AutoupdateClusterCreator;
 import org.netbeans.spi.autoupdate.UpdateItem;
 
-/** Trampline to access internals of API and SPI.
+/** Trampoline to access internals of API and SPI.
  *
  * @author Jiri Rechtacek
  */
@@ -99,6 +100,9 @@ public abstract class Trampoline<Support> extends Object {
     // api.UpdateUnitProvider
     protected abstract UpdateUnitProvider createUpdateUnitProvider (UpdateUnitProviderImpl impl);
     public abstract UpdateUnitProviderImpl impl (UpdateUnitProvider provider);
+    
+    // api.InstallSupport
+    public abstract InstallSupportImpl impl(InstallSupport support);
 
     // spi.UpdateItem
     public abstract UpdateItemImpl impl (UpdateItem item);

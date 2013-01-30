@@ -78,7 +78,10 @@ import org.netbeans.modules.cnd.apt.support.APTMacroMap;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.support.APTHandlersSupport;
 import org.netbeans.modules.cnd.apt.support.APTIncludePathStorage;
+import org.netbeans.modules.cnd.apt.support.APTToken;
+import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
 import org.netbeans.modules.cnd.apt.support.IncludeDirEntry;
+import org.netbeans.modules.cnd.apt.support.ResolvedPath;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
@@ -900,7 +903,21 @@ public class TraceModel extends TraceModelBase {
         int lastLine = -1;
         for (Token t = ts.nextToken(); !APTUtils.isEOF(t); t = ts.nextToken()) {
             if (printTokens) {
-                print(" " + t.getText(), t.getLine() != lastLine); // NOI18N
+                String text = " " + t.getText(); // NOI18N
+                boolean newLine = t.getLine() != lastLine;
+                if (isIncludeToken(t.getType())) {
+                    APTToken aptToken = (APTToken)t;
+                    ResolvedPath path = (ResolvedPath) aptToken.getProperty(ResolvedPath.class);
+                    if (path != null) {
+                        assert aptToken.getProperty(Boolean.class) != null;
+                        String prefix = ((Boolean)aptToken.getProperty(Boolean.class)) ? "#=> " : "#<= "; // NOI18N
+                        text = prefix + "\"" + path.getPath() + "\" [" + path.getFolder() + "]"; // NOI18N
+                    } else {
+                        text = "#include " + t.toString(); // NOI18N
+                    }
+                    newLine = true;
+                }
+                print(text, newLine); 
             }
             lastLine = t.getLine();
         }
@@ -916,6 +933,10 @@ public class TraceModel extends TraceModelBase {
         return time;
     }
 
+    private static boolean isIncludeToken(int kind) {
+        return kind == APTTokenTypes.INCLUDE || kind == APTTokenTypes.INCLUDE_NEXT;
+    }
+    
     private long testAPTParser(NativeFileItem item, boolean cleanAPT) throws IOException, RecognitionException, TokenStreamException {
         FileBuffer buffer = ModelSupport.createFileBuffer(item.getFileObject());
         print("Testing APT Parser"); // NOI18N
@@ -1153,7 +1174,7 @@ public class TraceModel extends TraceModelBase {
                 sleep(100); // so that we don't run ahead of fileParsingFinished event
             }
             APTPreprocHandler preprocHandler = states.get(fileImpl);
-            assert preprocHandler != null;
+            assert preprocHandler != null : "no handler was kept for " + fileImpl;
             dumpMacroMap(preprocHandler.getMacroMap());
         }
         time = System.currentTimeMillis() - time;
@@ -1288,8 +1309,8 @@ public class TraceModel extends TraceModelBase {
     }
 
     private void testLibProject() {
-        LibProjectImpl libProject = LibProjectImpl.createInstance(getModel(), CndFileUtils.getLocalFileSystem(), "/usr/include"); // NOI18N
-        getModel().addProject(libProject);
+        LibProjectImpl libProject = LibProjectImpl.createInstance(getModel(), CndFileUtils.getLocalFileSystem(), "/usr/include", null); // NOI18N
+        getModel().testAddProject(libProject);
         tracer.dumpModel(libProject);
     }
 

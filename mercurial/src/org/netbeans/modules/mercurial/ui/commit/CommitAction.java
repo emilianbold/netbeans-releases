@@ -496,6 +496,7 @@ public class CommitAction extends ContextAction {
                 }
                 hookFiles = candidates.toArray(new File[candidates.size()]);
             }
+            String originalMessage = message;
             HgHookContext context = new HgHookContext(hookFiles, message, new HgHookContext.LogEntry[] {});
             for (HgHook hook : hooks) {
                 try {
@@ -509,7 +510,7 @@ public class CommitAction extends ContextAction {
                 }
             }
             final Cmd.CommitCmd commitCmd = new Cmd.CommitCmd(commitCandidates, logger, message, support, rootFiles, locallyModifiedExcluded, filesToRefresh, closeBranch);
-            commitCmd.setCommitHooks(context, hooks, hookFiles);
+            commitCmd.setCommitHooks(context, hooks, hookFiles, originalMessage);
             commitCmd.handle();
         } catch (HgException.HgCommandCanceledException ex) {
             // canceled by user, do nothing
@@ -608,6 +609,7 @@ public class CommitAction extends ContextAction {
             private final Map<File, Set<File>> refreshFilesPerRepository;
             private final Map<File, Boolean> locallyModifiedExcluded;
             private final boolean closingBranch;
+            private String originalMessage;
 
             public CommitCmd(Map<File, List<File>> m, OutputLogger logger, String commitMessage, HgProgressSupport support,
                     Map<File, Set<File>> rootFilesPerRepository, Map<File, Boolean> locallyModifiedExcluded, Map<File, Set<File>> filesToRefresh, boolean closingBranch) {
@@ -619,10 +621,11 @@ public class CommitAction extends ContextAction {
                 this.closingBranch = closingBranch;
             }
 
-            public void setCommitHooks (HgHookContext context, Collection<HgHook> hooks, File[] hookFiles) {
+            public void setCommitHooks (HgHookContext context, Collection<HgHook> hooks, File[] hookFiles, String originalMessage) {
                 this.context = context;
                 this.hooks = hooks;
                 this.hookFiles = hookFiles;
+                this.originalMessage = originalMessage;
             }
 
             @Override
@@ -694,7 +697,7 @@ public class CommitAction extends ContextAction {
 
                 HgLogMessage tip = HgCommand.doTip(repository, logger);
                 
-                context = new HgHookContext(hookFiles, msg, new HgHookContext.LogEntry(
+                context = new HgHookContext(hookFiles, originalMessage, new HgHookContext.LogEntry(
                         tip.getMessage(),
                         tip.getAuthor(),
                         tip.getCSetShortID(),

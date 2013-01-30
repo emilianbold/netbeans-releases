@@ -134,7 +134,7 @@ public final class M2RepositoryBrowser extends AbstractNode {
         }
     }
 
-    private static class SearchAction extends AbstractAction {
+    private class SearchAction extends AbstractAction {
         @Messages("LBL_REPO_Find=Find...")
         SearchAction() {
             super(LBL_REPO_Find());
@@ -147,10 +147,12 @@ public final class M2RepositoryBrowser extends AbstractNode {
             pnl.attachDesc(dd);
             Object ret = DialogDisplayer.getDefault().notify(dd);
             if (ret == DialogDescriptor.OK_OPTION) {
+                QueryRequest request = new QueryRequest(pnl.getQuery(), RepositoryPreferences.getInstance().getRepositoryInfos());
                 synchronized (searches) {
-                    searches.add(new QueryRequest(pnl.getQuery(), RepositoryPreferences.getInstance().getRepositoryInfos()));
+                    searches.add(request);
                 }
                 cs.fireChange();
+                //TODO we need to find, select and expand the node of the query here.
             }
         }
     }
@@ -200,7 +202,12 @@ public final class M2RepositoryBrowser extends AbstractNode {
             RepositoryPreferences.getInstance().removeChangeListener(this);
             removeChangeListener(this);
             if (addNotifyCalled) { //#213038
-                FileUtil.removeFileChangeListener(this, MavenCli.DEFAULT_USER_SETTINGS_FILE);
+                try {
+                    FileUtil.removeFileChangeListener(this, MavenCli.DEFAULT_USER_SETTINGS_FILE);
+                } catch (IllegalArgumentException exc) {
+                    //we just ignore, who cares
+                }
+                addNotifyCalled = false;
             }
         }
         @Override public void stateChanged(ChangeEvent e) {

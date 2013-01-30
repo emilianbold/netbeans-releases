@@ -43,6 +43,7 @@ package org.netbeans.modules.cnd.modelimpl.repository;
 
 import java.io.IOException;
 import org.netbeans.modules.cnd.modelimpl.csm.core.CsmObjectFactory;
+import org.netbeans.modules.cnd.repository.api.CacheLocation;
 import org.netbeans.modules.cnd.repository.spi.*;
 import org.openide.util.CharSequences;
 
@@ -56,8 +57,9 @@ public class ReferencesIndexKey extends ProjectNameBasedKey {
     private final int hashCode; // cashed hash code
 
     public ReferencesIndexKey() {
-        super(UNIT_NAME);
-        KeyUtilities.getFileIdByName(getUnitId(), "ReferencesIndexKey$$"); // NOI18N
+        super(KeyUtilities.getUnitId(UNIT_NAME, CacheLocation.DEFAULT));
+        // TODO: ???
+//        KeyUtilities.getFileIdByName(getUnitId(), "ReferencesIndexKey$$"); // NOI18N
         hashCode = _hashCode();
     }
 

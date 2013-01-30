@@ -104,8 +104,13 @@ public class NotifyModifiedOnNbEditorLikeKitTest extends NotifyModifiedTest {
                     assertNotNull (doc);
                     // we have to pass thru read access
                     doc.render (this);
-                    
-                    if (ok) {
+
+                    // Document modifications in Env.markModified() disabled
+                    // due to deadlock after fixing of #218626.
+                    // Since markModified() is called from doc.insertString()/remove()
+                    // which already have an offset passed it would not be wise
+                    // to modify the document at this moment anyway.
+                    if (false && ok) {
                         try {
                             // we have to be allowed to do modifications as well
                             doc.insertString (-1, "A", null);

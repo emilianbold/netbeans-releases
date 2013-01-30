@@ -55,6 +55,7 @@ import java.util.Arrays;
 
 import java.util.List;
 import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
 import javax.swing.event.TreeModelEvent;
 import javax.swing.event.TreeModelListener;
 import javax.swing.tree.*;
@@ -201,7 +202,6 @@ public class NodeTreeModel extends DefaultTreeModel {
             }
         }
     }
-
 
     /** The listener */
     private static final class Listener implements NodeModel {

@@ -44,6 +44,7 @@
 package org.netbeans.spi.search.impl;
 
 import java.io.File;
+import java.net.URI;
 import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.api.queries.SharabilityQuery.Sharability;
 import org.netbeans.spi.search.SearchFilterDefinition;
@@ -77,6 +78,29 @@ public final class SharabilityFilter extends SearchFilterDefinition {
         } else {
             return SharabilityQuery.getSharability(file)
                     != Sharability.NOT_SHARABLE;
+        }
+    }
+
+    @Override
+    public boolean searchFile(URI uri) {
+        return SharabilityQuery.getSharability(uri)
+                != Sharability.NOT_SHARABLE;
+    }
+
+    @Override
+    public FolderResult traverseFolder(URI uri)
+            throws IllegalArgumentException {
+        switch (SharabilityQuery.getSharability(uri)) {
+            case SHARABLE:
+                return FolderResult.TRAVERSE_ALL_SUBFOLDERS;
+            case MIXED:
+                return FolderResult.TRAVERSE;
+            case UNKNOWN:
+                return FolderResult.TRAVERSE;
+            case NOT_SHARABLE:
+                return FolderResult.DO_NOT_TRAVERSE;
+            default:
+                return FolderResult.TRAVERSE;
         }
     }
 

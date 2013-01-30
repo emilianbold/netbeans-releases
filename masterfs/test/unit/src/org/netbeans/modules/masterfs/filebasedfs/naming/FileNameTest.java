@@ -51,7 +51,9 @@ import java.io.File;
 import java.lang.ref.Reference;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import org.netbeans.modules.masterfs.filebasedfs.utils.Utils;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -152,6 +154,31 @@ public class FileNameTest extends NbTestCase {
         String dump = NamingFactory.dump(Utils.hashCode(f), f);
         if (!dump.contains("References: 1")) {
             fail("We expect just one reference:\n" + dump);
+        }
+    }
+    
+    public void testListRoots() {
+        for (File f : File.listRoots()) {
+            String n = f.getPath();
+            if (n.length() <= 1) {
+                continue;
+            }
+            
+            String withoutN;
+            if (n.endsWith(File.separator)) {
+                withoutN = n.substring(0, n.length() - 1);
+            } else {
+                continue;
+            }
+            FileNaming fWith = NamingFactory.fromFile(f);
+            FileNaming fWithout = NamingFactory.fromFile(new File(withoutN));
+            
+            assertEquals("Roots should be the same", fWith, fWithout);
+            if (Utilities.isWindows()) {
+                FileNaming fUpper = NamingFactory.fromFile(new File(f.getPath().toUpperCase(Locale.ENGLISH)));
+                FileNaming fLower = NamingFactory.fromFile(new File(f.getPath().toLowerCase(Locale.ENGLISH)));
+                assertEquals("Lower and Upper case roots are equal on Windows", fUpper, fLower);
+            }
         }
     }
     

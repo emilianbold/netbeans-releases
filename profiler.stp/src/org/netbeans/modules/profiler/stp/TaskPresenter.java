@@ -91,6 +91,7 @@ import org.netbeans.modules.profiler.stp.ui.HyperlinkTextArea;
  * @author Jiri Sedlacek
  */
 @NbBundle.Messages({
+    "TaskPresenter_LoadingSettingsMsg=Loading settings...",
     "TaskPresenter_CreateCustomString=Create Custom...",
     "TaskPresenter_RenameItemText=Rename",
     "TaskPresenter_DuplicateItemText=Duplicate",
@@ -194,6 +195,8 @@ public class TaskPresenter implements TaskChooser.Item {
         }
 
         public void resetProfilingSettings() {
+            configurationsContainer.removeAll();
+            configurationsContainer.add(new JLabel(Bundle.TaskPresenter_LoadingSettingsMsg()));
             selectedSettingsIndex = -1;
             profilingSettings.clear();
         }

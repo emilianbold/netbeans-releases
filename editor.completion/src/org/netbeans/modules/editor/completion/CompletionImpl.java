@@ -138,7 +138,6 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
 
     static LazyListModel.Filter filter = new LazyListModel.Filter() {
         public boolean accept(Object obj) {
-            get().documentationCancel();
             if (obj instanceof LazyCompletionItem)
                 return ((LazyCompletionItem)obj).accept();
             return true;
@@ -355,7 +354,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
     public void changedUpdate(javax.swing.event.DocumentEvent e) {
     }
     
-    public synchronized void caretUpdate(javax.swing.event.CaretEvent e) {
+    public void caretUpdate(javax.swing.event.CaretEvent e) {
         assert (SwingUtilities.isEventDispatchThread());
 
         if (ensureActiveProviders()) {
@@ -739,7 +738,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
             synchronized (this) {
                 completionResult = refreshResult;
             }
-            refreshResult.invokeRefresh();
+            refreshResult.invokeRefresh(true);
         }
     }
     
@@ -968,7 +967,7 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
 
         final boolean noSuggestions = sortedResultItems.size() == 0;
         if (noSuggestions) {
-            if (hasAdditionalItems && qType == CompletionProvider.COMPLETION_QUERY_TYPE) {
+            if (hasAdditionalItems && qType == CompletionProvider.COMPLETION_QUERY_TYPE && !this.refreshedQuery) {
                 showCompletion(this.explicitQuery, this.refreshedQuery, false, CompletionProvider.COMPLETION_ALL_QUERY_TYPE);
                 return;
             }
@@ -1301,7 +1300,7 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
             synchronized (this) {
                 toolTipResult = refreshResult;
             }
-            refreshResult.invokeRefresh();
+            refreshResult.invokeRefresh(false);
         }
     }
 
@@ -1546,6 +1545,16 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
     }
 
     // ..........................................................................
+
+    /**
+     * Workaround for http://netbeans.org/bugzilla/show_bug.cgi?id=223290 .
+     * 
+     * Client needs to explicitly repaint its CompletionItem-s when their full 
+     * state is computation is finished in a background thread.
+     */
+    public void repaintCompletionView() {
+        layout.repaintCompletionView();
+    }
     
     private final class CompletionShowAction extends AbstractAction {
         private int queryType;
@@ -1777,13 +1786,15 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
          * This method should be invoked on the result set returned from
          * {@link #createRefreshResult()}.
          */
-        void invokeRefresh() {
+        void invokeRefresh(boolean docCancel) {
             refreshResultSets(getResultSets(), beforeQuery);
             if (!beforeQuery) {
                 queryInvoked();
                 synchronized (CompletionImpl.this) {
                     if (completionResult != null) {
                         if (!isAllResultsFinished(completionResult.getResultSets())) {
+                            if (docCancel)
+                                documentationCancel();
                             pleaseWaitTimer.restart();
                         }
                     }

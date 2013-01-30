@@ -77,9 +77,7 @@ public class SpecialkeyPanel extends javax.swing.JPanel implements ActionListene
 
             @Override
             public void focusLost(FocusEvent e) {
-                final Popup popup = parent.getPopup();
-                if (popup != null)
-                    popup.hide();
+                parent.hidePopup();
             }
         });
 
@@ -214,7 +212,7 @@ public class SpecialkeyPanel extends javax.swing.JPanel implements ActionListene
         final Object source = e.getSource();
         //someone clicked a button, hide popup and add text
         if ((source instanceof JButton) && parent != null) {
-            parent.getPopup().hide();
+            parent.hidePopup();
 
             if (source == upButton) {
                 text = "UP"; // NOI18N

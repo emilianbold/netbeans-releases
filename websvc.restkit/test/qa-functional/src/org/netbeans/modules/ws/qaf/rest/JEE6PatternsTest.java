@@ -43,7 +43,6 @@ package org.netbeans.modules.ws.qaf.rest;
 
 import junit.framework.Test;
 import org.netbeans.jellytools.Bundle;
-import org.netbeans.junit.NbModuleSuite;
 
 /**
  * Tests for New REST from Patterns wizard
@@ -72,7 +71,7 @@ public class JEE6PatternsTest extends PatternsTest {
      * Creates suite from particular test cases. You can define order of testcases here.
      */
     public static Test suite() {
-        return NbModuleSuite.create(addServerTests(server, NbModuleSuite.createConfiguration(JEE6PatternsTest.class),
+        return createAllModulesServerSuite(Server.GLASSFISH, JEE6PatternsTest.class,
                 "testSingletonDef", //NOI18N
                 "testContainerIDef", //NOI18N
                 "testCcContainerIDef", //NOI18N
@@ -85,10 +84,8 @@ public class JEE6PatternsTest extends PatternsTest {
                 "testContainerI3", //NOI18N
                 "testCcContainerI2", //NOI18N
                 "testCcContainerI3", //NOI18N
-                "testNodes", //NOI18N
                 "testDeploy", //NOI18N
-                "testUndeploy" //NOI18N
-                ).enableModules(".*").clusters(".*")); //NOI18N
+                "testUndeploy"); //NOI18N
     }
 
     static class Pkg extends JComponentByLabelFinder {

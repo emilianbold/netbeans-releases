@@ -46,20 +46,20 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.Random;
-import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
+import junit.framework.Test;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import junit.framework.Test;
 import org.netbeans.modules.nativeexecution.ConcurrentTasksSupport;
-import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
+import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestSuite;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionTestSupport;
 import org.openide.util.Exceptions;
@@ -449,20 +449,20 @@ public class HostInfoUtilsTest extends NativeExecutionBaseTestCase {
         File testFile = File.createTempFile("some (", ") file", testDir); // NOI18N
         testFile.createNewFile();
 
-        System.out.println("Use file '" + testFile.getAbsolutePath() + "' for testing"); // NOI18N
+        System.out.println("Use file '" + testFile.getCanonicalPath() + "' for testing"); // NOI18N
 
         try {
             String result = null;
-            result = HostInfoUtils.searchFile(env, Arrays.asList("/wrong Path", testDir.getAbsolutePath(), "/usr/bin"), testFile.getName(), true); // NOI18N
+            result = HostInfoUtils.searchFile(env, Arrays.asList("/wrong Path", testDir.getCanonicalPath(), "/usr/bin"), testFile.getName(), true); // NOI18N
             assertNotNull(result);
 
-            String expectedPath = testFile.getAbsolutePath();
+            String expectedPath = testFile.getCanonicalPath();
 
             if (info.getOSFamily() == HostInfo.OSFamily.WINDOWS) {
                 expectedPath = WindowsSupport.getInstance().convertToShellPath(result);
             }
 
-            assertEquals(result, expectedPath);
+            assertEquals(expectedPath, result);
 
             result = HostInfoUtils.searchFile(env, Arrays.asList("/wrongPath", "/bin", "/usr/bin"), "rm", true); // NOI18N
             assertNotNull(result);
@@ -505,12 +505,12 @@ public class HostInfoUtilsTest extends NativeExecutionBaseTestCase {
 
         assertTrue("Cannot create test file in " + testDir, testFile.exists() && testFile.canWrite()); // NOI18N
 
-        System.out.println("Use file '" + testFile.getAbsolutePath() + "' for testing"); // NOI18N
+        System.out.println("Use file '" + testFile.getCanonicalPath() + "' for testing"); // NOI18N
 
         try {
             String result;
 
-            result = HostInfoUtils.searchFile(env, Arrays.asList("/wrongPath", "c:\\Windows", testDir.getAbsolutePath()), testFile.getName(), true); // NOI18N
+            result = HostInfoUtils.searchFile(env, Arrays.asList("/wrongPath", "c:\\Windows", testDir.getCanonicalPath()), testFile.getName(), true); // NOI18N
             assertNotNull(result);
 
             assertEquals(testFile.getCanonicalPath(), result);

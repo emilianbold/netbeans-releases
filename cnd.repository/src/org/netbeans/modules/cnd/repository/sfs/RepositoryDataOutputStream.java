@@ -45,21 +45,31 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
+import org.netbeans.modules.cnd.repository.relocate.api.UnitCodec;
 
 /**
  *
  * @author Alexander Simon 
  */
 public class RepositoryDataOutputStream extends DataOutputStream implements RepositoryDataOutput, SharedStringBuffer {
-    public RepositoryDataOutputStream(OutputStream out) {
+    
+    private final UnitCodec unitCodec;
+    
+    public RepositoryDataOutputStream(OutputStream out, UnitCodec unitCodec) {
         super(out);
+        this.unitCodec = unitCodec;
     }
 
     @Override
     public void writeCharSequenceUTF(CharSequence s) throws IOException {
         UTF.writeUTF(s, this);
     }
-    
+
+    @Override
+    public void writeUnitId(int unitId) throws IOException {
+        writeInt(unitCodec.unmaskRepositoryID(unitId));
+    }
+
     private static final int sharedArrySize = 1024;
     private final byte[] sharedByteArray = new byte[sharedArrySize];
     private final char[] sharedCharArray = new char[sharedArrySize];

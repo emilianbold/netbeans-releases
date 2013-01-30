@@ -472,13 +472,18 @@ public final class UEIEmulatorConfiguratorImpl {
             }
 
             final String profile = properties.getProperty(deviceName + ".version.profile"); //NOI18N
-            final int i = profile.lastIndexOf('-');
-            final String version = profile.substring(i + 1);
-            final String profileName = "NG".equalsIgnoreCase(version) ? profile : profile.substring(0, i);
+            String profileName = null;
+            if(profile != null) {
+                final int i = profile.lastIndexOf('-');
+                final String version = (i + 1 == profile.length()) ? "" : profile.substring(i + 1);
+                profileName = ("NG".equalsIgnoreCase(version) || (i == -1)) ? profile : profile.substring(0, i);
+            }
             final List<J2MEPlatform.J2MEProfile> jars = analyzePath(plDir, jarsString, bootClassPathString);
             List<J2MEPlatform.J2MEProfile> official = new ArrayList<J2MEPlatform.J2MEProfile>();
             for(J2MEPlatform.J2MEProfile p : jars) {
-                if(!p.getType().equalsIgnoreCase("profile") || p.getName().startsWith(profileName)) {
+                if(!p.getType().equalsIgnoreCase("profile") || 
+                        ( (profileName != null) && (p.getName().startsWith(profileName)) )
+                        ) {
                     official.add(p);
                 }
             }

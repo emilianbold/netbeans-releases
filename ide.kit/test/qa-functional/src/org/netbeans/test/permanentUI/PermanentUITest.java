@@ -51,51 +51,13 @@ import org.netbeans.junit.NbModuleSuite;
  */
 public class PermanentUITest {
     public static Test suite() {
-    return
-      NbModuleSuite.emptyConfiguration()
-        .clusters(".*").enableModules(".*")
-        .addTest(MainMenuTest.class, 
-                  "testFileMenu", //stable
-                  "testEditMenu", //stable
-                  "testViewMenu", //stable
-                  //"testNavigateMenu",//#139450
-                  "testSourceMenu",//stable
-                  "testRefactorMenu",//stable
-                  "testRunMenu",//stable                  
-                  "testDebugMenu",//stable
-                  "testHelpMenu",//stable
-                  //"testToolsMenu",//#146446
-                  "testVersioningMenu",//stable
-                  "testWindowMenu",//stable
-                  "testMnemonicsCollision",//stable
-
-                  "testFile_ProjectGroupSubMenu",  //stable                
-                  "testNavigate_InspectSubMenu", //stable
-                  //"testView_CodeFoldsSubMenu",//???
-                  //"testView_ToolbarsSubMenu",//#149237
-                  "testProfile_AdvancedCommandsSubMenu",//failing 154811
-                  "testProfile_ProfileOtherSubMenu",//failing 154811
-                  "testRun_SetMainProjectSubMenu",
-                  "testDebug_StackSubMenu",
-                  //"testSource_PreprocessorBlocksSubMenu",
-                  "testTools_InternationalizationSubMenu",
-                  "testTools_PaletteSubMenu",
-                  "testVersioning_CVSSubMenu",
-                  "testVersioning_CVS_BranchesSubMenu",
-                  "testVersioning_LocalHistorySubMenu",
-                  "testVersioning_Mercurial_MergeSubMenu",
-                  "testVersioning_Mercurial_RecoverSubMenu",
-                  "testVersioning_Mercurial_ShareSubMenu",
-                  "testVersioning_Mercurial_ShowSubMenu",
-                  "testWindow_DebuggingSubMenu",
-                  "testWindow_NavigatingSubMenu",
-                  "testWindow_OtherSubMenu",
-                  "testWindow_OutputSubMenu",
-                  "testWindow_ProfilingSubMenu",
-                  "testWindow_VersioningSubMenu")
-        .addTest(NewProjectTest.class)
-        .addTest(OptionsTest.class)
-    .suite();
+        return NbModuleSuite.emptyConfiguration()
+                .clusters(".*").enableModules(".*")
+                .addTest(MainMenuTest.class, MainMenuTest.ALL_TESTS)
+                .addTest(MainMenuTestJava.class, MainMenuTest.ALL_TESTS)
+                //.addTest(NewProjectTest.class)
+                //.addTest(OptionsTest.class)
+                .suite();
   }
 
 }

@@ -66,7 +66,7 @@ public class RunProjectCommand extends Command implements Displayable {
     }
 
     @Override
-    public void invokeAction(Lookup context) {
+    public void invokeActionInternal(Lookup context) {
         ConfigAction configAction = getConfigAction();
         if (!configAction.isProjectValid()) {
             // property not set yet
@@ -76,7 +76,7 @@ public class RunProjectCommand extends Command implements Displayable {
     }
 
     @Override
-    public boolean isActionEnabled(Lookup context) {
+    public boolean isActionEnabledInternal(Lookup context) {
         return getConfigAction().isRunProjectEnabled();
     }
 

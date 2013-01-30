@@ -163,7 +163,7 @@ public class SettingsTableModel extends AbstractTableModel {
     
     @Override
     public int getRowCount () {
-        return updateProviders.size ();
+        return updateProviders == null ? 0 : updateProviders.size ();
     }
     
     @Override

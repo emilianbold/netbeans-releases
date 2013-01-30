@@ -60,6 +60,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -169,6 +171,8 @@ public final class NbModuleProject implements Project {
     
     public static final String SOURCES_TYPE_JAVAHELP = "javahelp"; // NOI18N
     static final String[] COMMON_TEST_TYPES = {"unit", "qa-functional"}; // NOI18N
+    
+    public static final String OPENIDE_MODULE_NAME = "OpenIDE-Module-Name"; // NOI18N
     
     private final AntProjectHelper helper;
     private final Evaluator eval;
@@ -496,6 +500,17 @@ public final class NbModuleProject implements Project {
         }
     }
     
+    private String getModuleName() {
+        Manifest m = getManifest();
+        if (m != null) {
+            String moduleName = m.getMainAttributes().getValue(OPENIDE_MODULE_NAME);
+            if (moduleName != null) {
+                return moduleName;
+            }
+        }
+        return null;
+    }
+    
     public @CheckForNull String getSpecVersion() {
         //TODO shall we check for illegal cases like "none-defined" or "both-defined" here?
         Manifest m = getManifest();
@@ -806,15 +821,22 @@ public final class NbModuleProject implements Project {
         private final PropertyChangeSupport changeSupport = new PropertyChangeSupport(this);
 
         private final String name;
+        private final String openideModuleName;
         private String displayName;
         
         Info() {
             String cnb = getCodeNameBase();
             name = cnb != null ? cnb : /* #70490 */getProjectDirectory().toString();
+            String omn = getModuleName();
+            openideModuleName = omn;
         }
         
         @Override public String getName() {
             return name;
+        }
+
+        private String getOpenideModuleName() {
+            return openideModuleName;
         }
         
         @Override public String getDisplayName() {
@@ -823,6 +845,9 @@ public final class NbModuleProject implements Project {
                 if (bundleInfo != null) {
                     displayName = bundleInfo.getDisplayName();
                 }
+            }
+            if (displayName == null) {
+                displayName = getOpenideModuleName();
             }
             if (/* #70490 */displayName == null) {
                 displayName = getName();
@@ -1035,15 +1060,15 @@ public final class NbModuleProject implements Project {
                 @Override public void propertyChange(PropertyChangeEvent evt) {
                     final String prop = evt.getPropertyName();
                     if (prop == null || prop.startsWith(SOURCE_START) || prop.startsWith(JAVADOC_START)) {
-                        cache = null;
+                        cache.set(null);
                         pcs.firePropertyChange(evt);
                     }
                 }
             });
         }
 
-        PropertyChangeSupport pcs = new PropertyChangeSupport(this);
-        private HashMap<String, String> cache;
+        private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+        private final AtomicReference<Map<String, String>> cache = new AtomicReference<Map<String, String>>();
 
         @Override public String getProperty(String prop) {
             return getProperties().get(prop);
@@ -1054,23 +1079,30 @@ public final class NbModuleProject implements Project {
         }
 
         @Override @NonNull public Map<String, String> getProperties() {
-            if (cache == null) {
-                cache = new HashMap<String, String>();
+            Map<String,String> ce = cache.get();
+            if (ce == null) {
+                ce = new HashMap<String, String>();
                 ProjectXMLManager pxm = new ProjectXMLManager(NbModuleProject.this);
                 String[] cpExts = pxm.getBinaryOrigins();
                 for (String cpe : cpExts) {
-                    addFileRef(cache, cpe);
+                    addFileRef(ce, cpe);
                 }
                 Map<String, String> prjProps = evaluator().getProperties();
                 if (prjProps != null) {
-                for (Map.Entry<String, String> entry : prjProps.entrySet()) {
-                    if (entry.getKey().startsWith(SOURCE_START) || entry.getKey().startsWith(JAVADOC_START)) {
-                        cache.put(entry.getKey(), entry.getValue());
+                    for (Map.Entry<String, String> entry : prjProps.entrySet()) {
+                        if (entry.getKey().startsWith(SOURCE_START) || entry.getKey().startsWith(JAVADOC_START)) {
+                            ce.put(entry.getKey(), entry.getValue());
+                        }
                     }
                 }
+                if (!cache.compareAndSet(null, ce)) {
+                    Map<String,String> tmp = cache.get();
+                    if (tmp != null) {
+                        ce = tmp;
+                    }
                 }
             }
-            return cache;
+            return ce;
         }
 
         private void addFileRef(Map<String, String> props, String path) {

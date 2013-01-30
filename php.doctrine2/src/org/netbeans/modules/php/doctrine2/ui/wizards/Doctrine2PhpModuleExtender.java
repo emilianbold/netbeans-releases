@@ -47,7 +47,7 @@ import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.doctrine2.preferences.Doctrine2Preferences;
-import org.netbeans.modules.php.spi.phpmodule.PhpModuleExtender;
+import org.netbeans.modules.php.spi.framework.PhpModuleExtender;
 import org.openide.filesystems.FileObject;
 import org.openide.util.HelpCtx;
 

@@ -41,12 +41,7 @@
  */
 package org.netbeans.modules.php.editor.model.impl;
 
-import org.netbeans.modules.php.editor.api.ElementQuery.Index;
-import org.netbeans.modules.php.editor.api.QualifiedName;
-import org.netbeans.modules.php.editor.api.PhpModifiers;
-import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.php.editor.model.*;
-import java.util.HashSet;
+import java.util.EnumSet;
 import java.util.Set;
 import java.util.regex.Pattern;
 import org.netbeans.api.annotations.common.CheckForNull;
@@ -55,12 +50,22 @@ import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
+import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.editor.api.ElementQuery;
 import org.netbeans.modules.php.editor.api.PhpElementKind;
+import org.netbeans.modules.php.editor.api.PhpModifiers;
+import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.api.elements.PhpElement;
 import org.netbeans.modules.php.editor.elements.PhpElementImpl;
 import org.netbeans.modules.php.editor.index.PHPElement;
+import org.netbeans.modules.php.editor.model.FileScope;
+import org.netbeans.modules.php.editor.model.IndexScope;
+import org.netbeans.modules.php.editor.model.ModelElement;
+import org.netbeans.modules.php.editor.model.ModelUtils;
+import org.netbeans.modules.php.editor.model.NamespaceScope;
+import org.netbeans.modules.php.editor.model.Scope;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -80,17 +85,21 @@ abstract class ModelElementImpl extends PHPElement implements ModelElement {
     private PhpModifiers modifiers;
     private Scope inScope;
     protected ElementHandle indexedElement;
-    protected String filenameUrl;
+    private final String filenameUrl;
 
     //new contructors
     ModelElementImpl(Scope inScope, ASTNodeInfo info, PhpModifiers modifiers) {
-        this(inScope, info.getName(),inScope.getFile(),info.getRange(),info.getPhpElementKind(),modifiers);
+        this(inScope, info.getName(), inScope.getFile(), info.getRange(), info.getPhpElementKind(), modifiers);
     }
 
     ModelElementImpl(Scope inScope, PhpElement element, PhpElementKind kind) {
-        this(inScope, element.getName(),Union2.<String, FileObject>createFirst(element.getFilenameUrl()),
-                new OffsetRange(element.getOffset(), element.getOffset()+element.getName().length()),
-                kind, PhpModifiers.fromBitMask(element.getFlags()));
+        this(
+                inScope,
+                element.getName(),
+                Union2.<String, FileObject>createFirst(element.getFilenameUrl()),
+                new OffsetRange(element.getOffset(), element.getOffset() + element.getName().length()),
+                kind,
+                PhpModifiers.fromBitMask(element.getFlags()));
         this.indexedElement = element;
     }
 
@@ -104,11 +113,16 @@ abstract class ModelElementImpl extends PHPElement implements ModelElement {
             Union2<String/*url*/, FileObject> file, OffsetRange offsetRange, PhpElementKind kind,
             PhpModifiers modifiers) {
         if (name == null || file == null || kind == null || modifiers == null) {
-            throw new IllegalArgumentException("null for name | fo | kind: " //NOI18N
-                    + name + " | " + file + " | " + kind);//NOI18N
+            throw new IllegalArgumentException("null for name | fo | kind: " + name + " | " + file + " | " + kind);
         }
         assert file.hasFirst() || file.hasSecond();
-        this.filenameUrl = (file.hasFirst()) ? file.first() : null;
+        if (file.hasFirst() && file.first() != null) {
+            this.filenameUrl = file.first();
+        } else if (file.hasSecond() && file.second() != null) {
+            this.filenameUrl = file.second().toURL().toExternalForm();
+        } else {
+            this.filenameUrl = "";
+        }
         this.inScope = inScope;
         this.name = name;
         this.offsetRange = offsetRange;
@@ -116,7 +130,7 @@ abstract class ModelElementImpl extends PHPElement implements ModelElement {
         this.file = file;
         this.modifiers = modifiers;
         if (inScope instanceof ScopeImpl && !(this instanceof AssignmentImpl)/* && !(inScope instanceof IndexScope)*/) {
-            ((ScopeImpl)inScope).addElement(this);
+            ((ScopeImpl) inScope).addElement(this);
         }
     }
 
@@ -144,13 +158,12 @@ abstract class ModelElementImpl extends PHPElement implements ModelElement {
     }
 
     public String getNormalizedName() {
-        String filePath = "";//NOI18N
+        String filePath = ""; //NOI18N
         final FileObject fileObject = getFileObject();
         if (fileObject != null) {
             filePath = fileObject.getPath();
         }
-        return getNamespaceName().append(QualifiedName.create(getName())).toString().toLowerCase() +
-                String.valueOf(offsetRange.getStart())+filePath;
+        return getNamespaceName().append(QualifiedName.create(getName())).toString().toLowerCase() + String.valueOf(offsetRange.getStart()) + filePath;
     }
 
     static boolean nameKindMatch(Pattern p, String text) {
@@ -166,42 +179,53 @@ abstract class ModelElementImpl extends PHPElement implements ModelElement {
     }
 
     private static boolean nameKindMatch(boolean forceCaseInsensitivity, String text, QuerySupport.Kind nameKind, String... queries) {
+        boolean result = false;
         for (String query : queries) {
             switch (nameKind) {
                 case CAMEL_CASE:
                     if (ModelUtils.toCamelCase(text).startsWith(query)) {
-                        return true;
+                        result = true;
                     }
                     break;
                 case CASE_INSENSITIVE_PREFIX:
                     if (text.toLowerCase().startsWith(query.toLowerCase())) {
-                        return true;
+                        result = true;
                     }
                     break;
                 case CASE_INSENSITIVE_REGEXP:
                     text = text.toLowerCase();
+                    result = regexpMatch(text, query);
+                    break;
                 case REGEXP:
                     //TODO: might be perf. problem if called for large collections
                     // and ever and ever again would be compiled still the same query
-                    Pattern p = Pattern.compile(query);
-                    if (nameKindMatch(p, text)) {
-                        return true;
-                    }
+                    result = regexpMatch(text, query);
                     break;
                 case EXACT:
                     boolean retval = (forceCaseInsensitivity) ? text.equalsIgnoreCase(query) : text.equals(query);
                     if (retval) {
-                        return true;
+                        result = true;
                     }
                     break;
                 case PREFIX:
                     if (text.startsWith(query)) {
-                        return true;
+                        result = true;
                     }
                     break;
+                default:
+                    //no-op
             }
         }
-        return false;
+        return result;
+    }
+
+    private static boolean regexpMatch(String text, String query) {
+        boolean result = false;
+        Pattern p = Pattern.compile(query);
+        if (nameKindMatch(p, text)) {
+            result = true;
+        }
+        return result;
     }
 
     @Override
@@ -237,7 +261,7 @@ abstract class ModelElementImpl extends PHPElement implements ModelElement {
         if (fileObject == null) {
             assert file.hasFirst();
             String fileUrl = file.first();
-            if (fileUrl != null) {
+            if (StringUtils.hasText(fileUrl)) {
                 fileObject = PhpElementImpl.resolveFileObject(fileUrl);
                 synchronized (ModelElementImpl.class) {
                     if (fileObject != null) {
@@ -252,7 +276,7 @@ abstract class ModelElementImpl extends PHPElement implements ModelElement {
     @Override
     public Set<Modifier> getModifiers() {
         assert modifiers != null;
-        Set<Modifier> retval = new HashSet<Modifier>();
+        Set<Modifier> retval = EnumSet.noneOf(Modifier.class);
         if (modifiers.isPublic()) {
             retval.add(Modifier.PUBLIC);
         }
@@ -359,7 +383,7 @@ abstract class ModelElementImpl extends PHPElement implements ModelElement {
         //TODO: FileScope should implement ElementQuery
         FileScope fileScope = ModelUtils.getFileScope(this);
         if (fileScope == null && getInScope() instanceof IndexScope) {
-            return ((IndexScope)getInScope()).getIndex();
+            return ((IndexScope) getInScope()).getIndex();
         }
         assert fileScope != null : this;
         assert fileScope.getIndexScope() != null : this;

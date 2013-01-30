@@ -148,12 +148,12 @@ public final class ContextAwareSupport {
             Exceptions.printStackTrace(
                     Exceptions.attachMessage(
                     e,
-                    "The service "+service+" can not be instantiated."));
+                    "The service "+service+" can not be instantiated. Context = "+context));
         } catch (IllegalAccessException e) {
             Exceptions.printStackTrace(
                     Exceptions.attachMessage(
                     e,
-                    "The service "+service+" can not be accessed."));
+                    "The service "+service+" can not be accessed. Context = "+context));
         } catch (InvocationTargetException ex) {
             if (ex.getCause() instanceof ThreadDeath) {
                 throw (ThreadDeath) ex.getCause();
@@ -161,12 +161,12 @@ public final class ContextAwareSupport {
             Exceptions.printStackTrace(
                     Exceptions.attachMessage(
                     ex,
-                    "The service "+service+" can not be created."));
+                    "The service "+service+" can not be created. Context = "+context));
         } catch (ExceptionInInitializerError ex) {
             Exceptions.printStackTrace(
                     Exceptions.attachMessage(
                     ex,
-                    "The service "+service+" can not be initialized."));
+                    "The service "+service+" can not be initialized. Context = "+context));
         }
         return null;
     }

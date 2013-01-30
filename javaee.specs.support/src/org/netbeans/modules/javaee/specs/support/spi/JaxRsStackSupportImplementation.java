@@ -79,4 +79,12 @@ public interface JaxRsStackSupportImplementation {
      */
     public void configureCustomJersey( Project project );
 
+    /**
+     * Checks whether class with <code>classFqn</code> FQN is bundled with
+     * JEE server distribution. 
+     * @param classFqn class FQN 
+     * @return true if JEE server bundled with <code>classFqn</code> 
+     */
+    boolean isBundled( String classFqn );
+
 }

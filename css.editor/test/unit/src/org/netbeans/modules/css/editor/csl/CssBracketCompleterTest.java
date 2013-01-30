@@ -41,21 +41,31 @@
  */
 package org.netbeans.modules.css.editor.csl;
 
-import org.netbeans.modules.css.editor.api.CssCslParserResult;
+import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
 import java.util.List;
 import javax.swing.JEditorPane;
+import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import javax.swing.text.EditorKit;
+import junit.framework.TestCase;
+import org.netbeans.api.html.lexer.HTMLTokenId;
+import org.netbeans.api.lexer.Language;
 import org.netbeans.editor.BaseAction;
+import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.csl.api.KeystrokeHandler;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.css.editor.test.TestBase;
+import org.netbeans.modules.css.lib.api.CssParserResult;
 import org.netbeans.modules.css.lib.api.NodeUtil;
 import org.netbeans.modules.editor.NbEditorKit;
+import org.netbeans.modules.html.editor.api.HtmlKit;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
@@ -86,6 +96,7 @@ public class CssBracketCompleterTest extends TestBase {
     protected void setUp() throws Exception {
         super.setUp();
         setupEditor();
+        CssParserResult.IN_UNIT_TESTS = true;
     }
 
     @Override
@@ -98,7 +109,7 @@ public class CssBracketCompleterTest extends TestBase {
         // this doesn't work since the JTextPane doesn't like our Kits since they aren't StyleEditorKits.
         //            Document doc = createDocument();
         //            JTextPane pane = new JTextPane((StyledDocument)doc);
-        //            EditorKit kit = CloneableEditorSupport.getEditorKit("text/x-css");
+        //            EditorKit kit = CloneableEditorSupport.getEditorKit("text/css");
         //            pane.setEditorKit(kit);
 
         File tmpFile = new File(getWorkDir(), "bracketCompleterTest.css");
@@ -156,7 +167,25 @@ public class CssBracketCompleterTest extends TestBase {
         assertEquals(18, pane.getCaretPosition()); //+1
 
     }
+    
+    public void testQuoteAutocompletion() throws BadLocationException, IOException {
+        //test pair autocomplete
+        clear(doc);
 
+        //test skipping closing curly bracket
+        String text = "h1 { color:  } ";
+        //             0123456789012345678        
+        doc.insertString(0, text , null);
+
+        pane.setCaretPosition(12);
+        type('"');
+
+        assertEquals("h1 { color: \"\" } ", getText()); //no change in the text
+        //             0123456789012345678        
+        assertEquals(13, pane.getCaretPosition()); //+1
+
+    }
+    
     public void testLogicalRanges() throws ParseException {
         assertLogicalRanges("h1 { col|or: red; }", new int[][]{{5,10}, {5,15}, {0,18}});
         //                   01234567 89012345678
@@ -236,9 +265,9 @@ public class CssBracketCompleterTest extends TestBase {
 
         Result result = _result[0];
         assertNotNull(result);
-        assertTrue(result instanceof CssCslParserResult);
+        assertTrue(result instanceof CssParserResult);
 
-        CssCslParserResult cssResult = (CssCslParserResult)result;
+        CssParserResult cssResult = (CssParserResult)result;
         NodeUtil.dumpTree(cssResult.getParseTree());
         
         assertNotNull(cssResult.getParseTree());
@@ -264,8 +293,8 @@ public class CssBracketCompleterTest extends TestBase {
         }
 
     }
-
-
+    
+    
     //------- utilities -------
 
     private String expectedRangesToString(List<OffsetRange> ranges) {

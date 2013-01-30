@@ -74,6 +74,10 @@ public class AppliedFilters<T> {
         return filters.isEmpty();
     }
 
+    public void clear() {
+        filters.clear();
+    }
+
     public boolean isInFilter(T entry) {
         for (DashboardFilter<T> filter : filters) {
             if (!filter.isInFilter(entry)) {

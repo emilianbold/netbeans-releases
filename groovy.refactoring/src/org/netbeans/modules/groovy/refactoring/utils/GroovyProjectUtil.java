@@ -45,6 +45,9 @@
 package org.netbeans.modules.groovy.refactoring.utils;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -59,14 +62,19 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
-import org.netbeans.modules.groovy.support.spi.GroovyFeature;
+import org.netbeans.modules.groovy.support.api.GroovySources;
+import org.netbeans.modules.groovy.support.spi.GroovyExtender;
+import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
+import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -80,9 +88,44 @@ import org.openide.util.Exceptions;
  */
 public class GroovyProjectUtil {
 
+    public static boolean isFromEditor(EditorCookie ec) {
+        if (ec != null && ec.getOpenedPanes() != null) {
+            // This doesn't seem to work well - a lot of the time, I'm right clicking
+            // on the editor and it still has another activated view (this is on the mac)
+            // and as a result does file-oriented refactoring rather than the specific
+            // editor node...
+            //            TopComponent activetc = TopComponent.getRegistry().getActivated();
+            //            if (activetc instanceof CloneableEditorSupport.Pane) {
+            //
+            return true;
+            //            }
+        }
+
+        return false;
+    }
+
+
+    public static boolean isOnSourceClasspath(FileObject fo) {
+        Project project = FileOwnerQuery.getOwner(fo);
+        if (project == null) {
+            return false;
+        }
+        if (OpenProjects.getDefault().isProjectOpen(project)) {
+            for (SourceGroup group : GroovySources.getGroovySourceGroups(ProjectUtils.getSources(project))) {
+                if (group.getRootFolder().equals(fo)) {
+                    return true;
+                }
+                if (FileUtil.isParentOf(group.getRootFolder(), fo)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     public static ClasspathInfo getClasspathInfoFor(FileObject ... files) {
-        assert files.length >0;
-        Set<URL> dependentRoots = new HashSet<URL>();
+        assert files.length > 0;
+        final Set<URL> dependentRoots = new HashSet<URL>();
         for (FileObject fo : files) {
             if (fo != null) {
                 Project p = FileOwnerQuery.getOwner(fo);
@@ -90,14 +133,16 @@ public class GroovyProjectUtil {
                 if (p != null) {
                     ClassPath sourceClasspath = ClassPath.getClassPath(fo, ClassPath.SOURCE);
                     if (sourceClasspath != null) {
-                        URL sourceRoot = URLMapper.findURL(sourceClasspath.findOwnerRoot(fo), URLMapper.INTERNAL);
-                        dependentRoots.addAll(SourceUtils.getDependentRoots(sourceRoot));
+                        final URL sourceRoot = URLMapper.findURL(sourceClasspath.findOwnerRoot(fo), URLMapper.INTERNAL);
+                        for (URL root : SourceUtils.getDependentRoots(sourceRoot)) {
+                            dependentRoots.add(root);
+                        }
                     }
 
                     for (SourceGroup root : ProjectUtils.getSources(p).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
                         dependentRoots.add(URLMapper.findURL(root.getRootFolder(), URLMapper.INTERNAL));
                     }
-                    
+
                 } else {
                     for(ClassPath cp : GlobalPathRegistry.getDefault().getPaths(ClassPath.SOURCE)) {
                         for (FileObject root : cp.getRoots()) {
@@ -108,12 +153,24 @@ public class GroovyProjectUtil {
             }
         }
 
-        ClassPath rcp = ClassPathSupport.createClassPath(dependentRoots.toArray(new URL[dependentRoots.size()]));
-        ClassPath nullPath = ClassPathSupport.createClassPath(new FileObject[0]);
-        ClassPath boot = files[0]!=null?ClassPath.getClassPath(files[0], ClassPath.BOOT):nullPath;
-        ClassPath compile = files[0]!=null?ClassPath.getClassPath(files[0], ClassPath.COMPILE):nullPath;
-        ClasspathInfo cpInfo = ClasspathInfo.create(boot, compile, rcp);
-        return cpInfo;
+        final ClassPath bootCP = getClassPath(files[0], ClassPath.BOOT);
+        final ClassPath compileCP = getClassPath(files[0], ClassPath.COMPILE);
+        final ClassPath sourceCP = ClassPathSupport.createClassPath(dependentRoots.toArray(new URL[dependentRoots.size()]));
+        
+        return ClasspathInfo.create(bootCP, compileCP, sourceCP);
+    }
+
+    private static ClassPath getClassPath(FileObject fo, String classPathType) {
+        if (fo != null) {
+            final ClassPath classPath = ClassPath.getClassPath(fo, classPathType);
+            if (classPath != null) {
+                return classPath;
+            } else {
+                return ClassPath.EMPTY;
+            }
+        } else {
+            return ClassPath.EMPTY;
+        }
     }
 
     public static List<FileObject> getGroovyFilesInProject(FileObject fileInProject) {
@@ -141,9 +198,9 @@ public class GroovyProjectUtil {
     public static boolean isInGroovyProject(FileObject f) {
         Project project = FileOwnerQuery.getOwner(f);
         if (project != null) {
-            GroovyFeature groovyFeature = project.getLookup().lookup(GroovyFeature.class);
-            if (groovyFeature != null) {
-                return groovyFeature.isGroovyEnabled();
+            GroovyExtender groovyExtender = project.getLookup().lookup(GroovyExtender.class);
+            if (groovyExtender != null) {
+                return groovyExtender.isActive();
             }
         }
         return false;
@@ -153,21 +210,12 @@ public class GroovyProjectUtil {
         return GroovyTokenId.GROOVY_MIME_TYPE.equals(f.getMIMEType());
     }
 
-    public static boolean isGspFile(FileObject f) {
-        // TODO check GSP file
-        return false;
-    }
-
-    public static boolean isGroovyOrGspFile(FileObject f) {
-        return isGroovyFile(f) || isGspFile(f);
-    }
-
     private static LineCookie getLineCookie(final FileObject fo) {
         LineCookie result = null;
         try {
             DataObject dataObject = DataObject.find(fo);
             if (dataObject != null) {
-                result = dataObject.getCookie(LineCookie.class);
+                result = dataObject.getLookup().lookup(LineCookie.class);
             }
         } catch (DataObjectNotFoundException e) {
         }
@@ -186,21 +234,21 @@ public class GroovyProjectUtil {
     }
 
     public static CloneableEditorSupport findCloneableEditorSupport(FileObject fileObject) {
-        DataObject dob = null;
         try {
-            dob = DataObject.find(fileObject);
+            final DataObject dob = DataObject.find(fileObject);
+            return GroovyProjectUtil.findCloneableEditorSupport(dob);
         } catch (DataObjectNotFoundException ex) {
             Exceptions.printStackTrace(ex);
         }
-        return GroovyProjectUtil.findCloneableEditorSupport(dob);
+        return null;
     }
 
     public static CloneableEditorSupport findCloneableEditorSupport(DataObject dob) {
-        Object obj = dob.getCookie(org.openide.cookies.OpenCookie.class);
+        Object obj = dob.getLookup().lookup(OpenCookie.class);
         if (obj instanceof CloneableEditorSupport) {
             return (CloneableEditorSupport)obj;
         }
-        obj = dob.getCookie(org.openide.cookies.EditorCookie.class);
+        obj = dob.getLookup().lookup(EditorCookie.class);
         if (obj instanceof CloneableEditorSupport) {
             return (CloneableEditorSupport)obj;
         }
@@ -218,8 +266,8 @@ public class GroovyProjectUtil {
 
             if (doc == null) {
                 // Gotta open it first
-                DataObject od = DataObject.find(fo);
-                EditorCookie ec = od.getCookie(EditorCookie.class);
+                DataObject dataObject = DataObject.find(fo);
+                EditorCookie ec = dataObject.getLookup().lookup(EditorCookie.class);
 
                 if (ec != null) {
                     doc = (BaseDocument)ec.openDocument();
@@ -229,5 +277,34 @@ public class GroovyProjectUtil {
             Exceptions.printStackTrace(ex);
         }
         return doc;
+    }
+
+    /**
+     * Sets the given <code>toAdd</code> as the following problem for
+     * the given <code>existing</code> problem.
+     *
+     * @param toAdd the problem to add, may be null.
+     * @param existing the problem whose following problem should be set, may be null.
+     *
+     * @return the existing problem with its following problem
+     * set to the given problem or null if both of the params
+     * were null.
+     *
+     */
+    public static Problem addToEnd(Problem toAdd, Problem existing){
+        if (existing == null){
+            return toAdd;
+        }
+        if (toAdd == null){
+            return existing;
+        }
+
+        Problem tail = existing;
+        while(tail.getNext() != null){
+            tail = tail.getNext();
+        }
+        tail.setNext(toAdd);
+
+        return tail;
     }
 }

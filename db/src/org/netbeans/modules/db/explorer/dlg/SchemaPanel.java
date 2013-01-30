@@ -121,6 +121,8 @@ public class SchemaPanel extends javax.swing.JPanel {
         progressMessageLabel = new javax.swing.JLabel();
         progressContainerPanel = new javax.swing.JPanel();
 
+        setMinimumSize(new java.awt.Dimension(163, 163));
+        setPreferredSize(new java.awt.Dimension(163, 1));
         setLayout(new java.awt.GridBagLayout());
 
         commentTextArea.setEditable(false);

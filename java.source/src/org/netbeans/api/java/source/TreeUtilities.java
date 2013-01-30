@@ -77,6 +77,7 @@ import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.java.source.builder.CommentHandlerService;
 import org.netbeans.modules.java.source.builder.CommentSetImpl;
+import org.netbeans.lib.nbjavac.services.NBTreeMaker.IndexedClassDecl;
 import org.netbeans.modules.java.source.pretty.ImportAnalysis2;
 import org.netbeans.modules.java.source.transform.ImmutableTreeTranslator;
 
@@ -220,12 +221,12 @@ public final class TreeUtilities {
 
             assert assertsEnabled = true;
 
-            if (assertsEnabled) {
+            if (true) {
                 TreePath tp = info.getCompilationUnit() == tree ? new TreePath(info.getCompilationUnit()) : TreePath.getPath(info.getCompilationUnit(), tree);
 
                 if (tp == null) {
-                    Logger.getLogger(TreeUtilities.class.getName()).log(Level.WARNING, "Comment automap requested for Tree not from the root compilation info. Please, make sure to call GeneratorUtilities.importComments before Treeutilities.getComments. Tree: {0}", tree);
-                    Logger.getLogger(TreeUtilities.class.getName()).log(Level.INFO, "Caller", new Exception());
+                    Logger.getLogger(TreeUtilities.class.getName()).log(assertsEnabled ? Level.WARNING : Level.FINE, "Comment automap requested for Tree not from the root compilation info. Please, make sure to call GeneratorUtilities.importComments before Treeutilities.getComments. Tree: {0}", tree);
+                    Logger.getLogger(TreeUtilities.class.getName()).log(assertsEnabled ? Level.INFO : Level.FINE, "Caller", new Exception());
                     automap = false;
                 }
             }
@@ -1019,7 +1020,7 @@ public final class TreeUtilities {
             public Void visitClass(ClassTree node, Void p) {
                 if (fromIdx[0] < -2)
                     return super.visitClass(node, p);
-                fromIdx[0] = ((JCClassDecl)node).index;
+                fromIdx[0] = ((IndexedClassDecl)node).index;
                 return null;
             }
             @Override
@@ -1045,7 +1046,7 @@ public final class TreeUtilities {
         scanner = new TreeScanner<Void, Void>() {
             @Override
             public Void visitClass(ClassTree node, Void p) {
-                ((JCClassDecl)node).index = fromIdx[0]++;
+                ((IndexedClassDecl)node).index = fromIdx[0]++;
                 return null;
             }
         };

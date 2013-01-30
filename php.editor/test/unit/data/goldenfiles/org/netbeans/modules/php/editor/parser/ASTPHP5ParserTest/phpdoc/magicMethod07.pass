@@ -23,7 +23,7 @@
         <Comments>
             <PHPDocBlock start='10' end='78'>
                 <Tags>
-                    <PHPDocMethodTag start='14' end='74' kind='METHOD'>
+                    <PHPDocMethodTag start='14' end='74' kind='method'>
                         <Name>
                             <PHPDocNode start='24' end='26' value='m1'/>
                         </Name>
@@ -31,7 +31,7 @@
                             <PHPDocTypeNode start='22' end='23' value='A' isArray='false'/>
                         </Return Types>
                         <Parameters>
-                            <PHPDocVarTypeTag start='32' end='48' kind='PARAM'>
+                            <PHPDocVarTypeTag start='32' end='48' kind='param'>
                                 <Variable>
                                     <PHPDocNode start='41' end='48' value='$param1'/>
                                 </Variable>
@@ -40,7 +40,7 @@
                                     <PHPDocTypeNode start='39' end='40' value='A' isArray='false'/>
                                 </Types>
                             </PHPDocVarTypeTag>
-                            <PHPDocVarTypeTag start='49' end='55' kind='PARAM'>
+                            <PHPDocVarTypeTag start='49' end='55' kind='param'>
                                 <Variable>
                                     <PHPDocNode start='52' end='55' value='$p2'/>
                                 </Variable>
@@ -54,7 +54,7 @@
             </PHPDocBlock>
             <PHPDocBlock start='10' end='78'>
                 <Tags>
-                    <PHPDocMethodTag start='14' end='74' kind='METHOD'>
+                    <PHPDocMethodTag start='14' end='74' kind='method'>
                         <Name>
                             <PHPDocNode start='24' end='26' value='m1'/>
                         </Name>
@@ -62,7 +62,7 @@
                             <PHPDocTypeNode start='22' end='23' value='A' isArray='false'/>
                         </Return Types>
                         <Parameters>
-                            <PHPDocVarTypeTag start='32' end='48' kind='PARAM'>
+                            <PHPDocVarTypeTag start='32' end='48' kind='param'>
                                 <Variable>
                                     <PHPDocNode start='41' end='48' value='$param1'/>
                                 </Variable>
@@ -71,7 +71,7 @@
                                     <PHPDocTypeNode start='39' end='40' value='A' isArray='false'/>
                                 </Types>
                             </PHPDocVarTypeTag>
-                            <PHPDocVarTypeTag start='49' end='55' kind='PARAM'>
+                            <PHPDocVarTypeTag start='49' end='55' kind='param'>
                                 <Variable>
                                     <PHPDocNode start='52' end='55' value='$p2'/>
                                 </Variable>

@@ -91,9 +91,6 @@ public class GuiRunLevel implements RunLevel {
         StartLog.logProgress ("LoaderPool notified"); // NOI18N
         Splash.getInstance().increment(10);
 
-        // install java.net.ProxySelector
-        NbProxySelector.register();
-        
         if (CLIOptions.isGui()) {
         //---------------------------------------------------------------------------------------------------------
         // initialize main window AFTER the setup wizard is finished

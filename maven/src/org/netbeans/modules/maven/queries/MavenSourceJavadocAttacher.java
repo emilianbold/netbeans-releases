@@ -41,6 +41,7 @@ package org.netbeans.modules.maven.queries;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.repository.ArtifactRepository;
@@ -77,7 +78,7 @@ public class MavenSourceJavadocAttacher implements SourceJavadocAttacherImplemen
 
     @Messages({"# {0} - artifact ID", "attaching=Attaching {0}"})
     private boolean attach(@NonNull final URL root, @NonNull final AttachmentListener listener, final boolean javadoc) throws IOException {
-        File file = FileUtil.archiveOrDirForURL(root);
+        final File file = FileUtil.archiveOrDirForURL(root);
         if (file == null) {
             return false;
         }
@@ -125,7 +126,32 @@ public class MavenSourceJavadocAttacher implements SourceJavadocAttacherImplemen
                         if (result.isFile()) {
                             attached = true;
                             if (byHash) {
-                                SourceJavadocByHash.register(root, result, javadoc);
+                                SourceJavadocByHash.register(root, new File[] {result}, javadoc);
+                            }
+                        } else {
+                            if (file.isFile()) {
+                                List<RepositoryForBinaryQueryImpl.Coordinates> coordinates = RepositoryForBinaryQueryImpl.getShadedCoordinates(result);
+                                List<File> res = new ArrayList<File>();
+                                if (coordinates != null) {
+                                    for (RepositoryForBinaryQueryImpl.Coordinates coordinate : coordinates) {
+                                        Artifact sources = EmbedderFactory.getOnlineEmbedder().createArtifactWithClassifier(
+                                                     coordinate.groupId,
+                                                     coordinate.artifactId,
+                                                     coordinate.version,
+                                                     "jar",
+                                                     javadoc ? "javadoc" : "sources"); //NOI18N
+                                        online.resolve(sources, repos, online.getLocalRepository());
+                                        if (sources.getFile() != null && sources.getFile().isFile()) {
+                                            res.add(sources.getFile());
+                                        }
+                                    }
+                                    attached = true;
+                                    if (byHash) {
+                                        SourceJavadocByHash.register(root, res.toArray(new File[0]), javadoc);
+                                    } else {
+                                        //we have a problem here, there is noone listening on these source jars being downloaded.
+                                    }                                    
+                                }
                             }
                         }
                     } catch (ThreadDeath d) {

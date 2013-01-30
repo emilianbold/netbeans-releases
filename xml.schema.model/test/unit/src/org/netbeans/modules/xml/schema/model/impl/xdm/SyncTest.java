@@ -56,6 +56,7 @@ import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.Map;
 import javax.swing.text.Document;
 import javax.swing.undo.UndoManager;
 import junit.framework.*;
@@ -106,8 +107,9 @@ public class SyncTest extends TestCase {
     }
     
     @Override
-    protected void tearDown() {
+    protected void tearDown() throws Exception {
         TestCatalogModel.getDefault().clearDocumentPool();
+        clearModelCache();
     }
     
     static class TestPropertyListener implements PropertyChangeListener {
@@ -599,6 +601,15 @@ public class SyncTest extends TestCase {
         plistener.assertEvent(DocumentComponent.TEXT_CONTENT_PROPERTY, type);
         clistener.assertEvent(ComponentEvent.EventType.VALUE_CHANGED, type);
         assertNotNull(model.getSchema().getElements().iterator().next().getAnnotation());
+    }
+    
+    private void clearModelCache() throws Exception {
+        SchemaModelFactory f = SchemaModelFactory.getDefault();
+        Class absModelFactoryClass = f.getClass().getSuperclass();
+        java.lang.reflect.Field cache = absModelFactoryClass.getDeclaredField("cachedModels");
+        cache.setAccessible(true);
+        Map m = (Map)cache.get(f);
+        m.clear();
     }
     
     public void testSyncInvalidRoot() throws Exception {

@@ -75,6 +75,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.Disposable;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
+import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.repository.KeyUtilities;
 import org.netbeans.modules.cnd.repository.spi.Key;
@@ -124,12 +125,12 @@ public class UIDUtilities {
                 uid = new DeclarationUID<T>(declaration);
             }
         }
-        return UIDManager.instance().getSharedUID(uid);
+        return updateCachedUIDIfNeeded(uid, declaration);
     }
 
     public static <T extends CsmInstantiation> CsmUID<T> createInstantiationUID(T inst) {
         CsmUID<T> uid = new InstantiationUID<T>(inst);
-        return UIDManager.instance().getSharedUID(uid);
+        return updateCachedUIDIfNeeded(uid, inst);
     }
     
     private static <T extends CsmOffsetableDeclaration> boolean namedDeclaration(T declaration) {
@@ -151,21 +152,25 @@ public class UIDUtilities {
     }
 
     public static CsmUID<CsmClass> createUnresolvedClassUID(String name, CsmProject project) {
-        return UIDManager.instance().getSharedUID(new UnresolvedClassUID(name, project));
+        CsmUID<CsmClass> sharedUID = UIDManager.instance().getSharedUID(new UnresolvedClassUID(name, project));
+        assert !(sharedUID instanceof CachedUID);
+        return sharedUID;
     }
 
     public static CsmUID<CsmFile> createUnresolvedFileUID(CsmProject project) {
-        return UIDManager.instance().getSharedUID(new UnresolvedFileUID(project));
+        CsmUID<CsmFile> sharedUID = UIDManager.instance().getSharedUID(new UnresolvedFileUID(project));
+        assert !(sharedUID instanceof CachedUID);
+        return sharedUID;
     }
 
     public static CsmUID<CsmNamespace> createUnresolvedNamespaceUID(CsmProject project) {
-        return UIDManager.instance().getSharedUID(new UnresolvedNamespaceUID(project));
+        CsmUID<CsmNamespace> sharedUID = UIDManager.instance().getSharedUID(new UnresolvedNamespaceUID(project));
+        assert !(sharedUID instanceof CachedUID);
+        return sharedUID;
     }
 
-    private static <T> CsmUID<T> getCachedUID(CachedUID<T> uid, T obj) {
-        CachedUID<T> cachedUid = (CachedUID<T>)UIDManager.instance().getSharedUID(uid);
-        cachedUid.update(obj);
-        return cachedUid;
+    private static <T extends CsmObject> CsmUID<T> getCachedUID(CachedUID<T> uid, T obj) {
+        return updateCachedUID(uid, obj);
     }
 
     public static int getProjectID(CsmUID<?> uid) {
@@ -441,6 +446,16 @@ public class UIDUtilities {
             return new UnnamedOffsetableDeclarationUID<T>(decl, UnnamedID.incrementAndGet());
         }
     }
+    
+    private static <T extends CsmOffsetableDeclaration> CsmUID<T> handleUnnamedDeclaration(CsmDeclaration.Kind kind, FileImpl containingFile, int startOffset) {
+        Key key = KeyUtilities.createUnnamedOffsetableDeclarationKey(containingFile, startOffset, Utils.getCsmDeclarationKindkey(kind), UnnamedID.incrementAndGet());
+        if (kind == CsmDeclaration.Kind.CLASS) {
+            return new UnnamedClassifierUID<T>(key);
+        } else {
+            return new UnnamedOffsetableDeclarationUID<T>(key);
+        }
+    }
+    
     private static final AtomicInteger UnnamedID = new AtomicInteger(0);
     //////////////////////////////////////////////////////////////////////////
     // impl details
@@ -457,6 +472,11 @@ public class UIDUtilities {
             weakT = TraceFlags.USE_WEAK_MEMORY_CACHE && key.hasCache() ? new WeakReference<Object>(obj) : DUMMY;
         }
 
+        protected CachedUID(Key key) {
+            super(key);
+            weakT = DUMMY;
+        }
+        
         CachedUID(RepositoryDataInput aStream) throws IOException {
             super(aStream);
             weakT = TraceFlags.USE_WEAK_MEMORY_CACHE && getKey().hasCache() ? new WeakReference<Object>(null) : DUMMY;
@@ -557,6 +577,10 @@ public class UIDUtilities {
             super(key, obj);
         }
 
+        protected OffsetableDeclarationUIDBase(Key key) {
+            super(key);
+        }
+        
         /* package */ OffsetableDeclarationUIDBase(RepositoryDataInput aStream) throws IOException {
             super(aStream);
         }
@@ -585,6 +609,10 @@ public class UIDUtilities {
             super(key, obj);
         }
 
+        protected OffsetableDeclarationUIDBaseCached(Key key) {
+            super(key);
+        }
+        
         /* package */ OffsetableDeclarationUIDBaseCached(RepositoryDataInput aStream) throws IOException {
             super(aStream);
         }
@@ -615,6 +643,10 @@ public class UIDUtilities {
 //            assert ((RegistarableDeclaration)typedef).isRegistered();            
         }
 
+        public TypedefUID(Key key) {
+            super(key);
+        }
+        
         /* package */ TypedefUID(RepositoryDataInput aStream) throws IOException {
             super(aStream);
         }
@@ -675,6 +707,10 @@ public class UIDUtilities {
         public DeclarationUID(T decl) {
             super(decl);
         }
+        
+        public DeclarationUID(Key key) {
+            super(key);
+        }        
 
         /* package */ DeclarationUID(RepositoryDataInput aStream) throws IOException {
             super(aStream);
@@ -695,6 +731,10 @@ public class UIDUtilities {
             super(classifier);
         }
 
+        public ClassifierUID(Key key) {
+            super(key);
+        }        
+        
         /* package */ ClassifierUID(RepositoryDataInput aStream) throws IOException {
             super(aStream);
         }
@@ -714,6 +754,10 @@ public class UIDUtilities {
             super(classifier);
         }
 
+        public ForwardClassUID(Key key) {
+            super(key);
+        }
+        
         /* package */ ForwardClassUID(RepositoryDataInput aStream) throws IOException {
             super(aStream);
         }
@@ -733,6 +777,10 @@ public class UIDUtilities {
             super(KeyUtilities.createUnnamedOffsetableDeclarationKey((OffsetableDeclarationBase<?>) classifier, index), classifier);
         }
 
+        public UnnamedClassifierUID(Key key) {
+            super(key);
+        }
+        
         /* package */ UnnamedClassifierUID(RepositoryDataInput aStream) throws IOException {
             super(aStream);
         }
@@ -752,6 +800,10 @@ public class UIDUtilities {
             super(KeyUtilities.createUnnamedOffsetableDeclarationKey((OffsetableDeclarationBase<?>) decl, index), decl);
         }
 
+        public UnnamedOffsetableDeclarationUID(Key key) {
+            super(key);
+        }
+        
         /* package */ UnnamedOffsetableDeclarationUID(RepositoryDataInput aStream) throws IOException {
             super(aStream);
         }
@@ -947,4 +999,18 @@ public class UIDUtilities {
         }
     }
 
+    private static <T extends CsmObject> CsmUID<T> updateCachedUIDIfNeeded(CsmUID<T> uid, T declaration) {
+        CsmUID<T> sharedUID = UIDManager.instance().getSharedUID(uid);
+        if(sharedUID instanceof CachedUID) {
+            ((CachedUID)sharedUID).update(declaration);
+        }
+        return sharedUID;
+    }
+
+    private static <T extends CsmObject> CsmUID<T> updateCachedUID(CachedUID<T> uid, T obj) {
+        CachedUID<T> cachedUid = (CachedUID<T>)UIDManager.instance().getSharedUID(uid);
+        cachedUid.update(obj);
+        return cachedUid;
+    }
+    
 }

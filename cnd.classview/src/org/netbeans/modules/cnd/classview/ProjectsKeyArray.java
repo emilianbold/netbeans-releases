@@ -63,6 +63,9 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.classview.model.CVUtil;
 import org.netbeans.modules.cnd.classview.model.ProjectNode;
+import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
+import org.openide.filesystems.FileSystem;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.RequestProcessor;
@@ -72,35 +75,56 @@ import org.openide.util.RequestProcessor;
  * @author Alexander Simon
  */
 public class ProjectsKeyArray extends Children.Keys<CsmProject> {
+
     private java.util.Map<CsmProject,SortedName> myProjects;
     private ChildrenUpdater childrenUpdater;
-    private static Comparator<java.util.Map.Entry<CsmProject, SortedName>> COMARATOR = new ProjectComparator();
-    private final Object lock = new Object();
+    private static Comparator<java.util.Map.Entry<CsmProject, SortedName>> COMARATOR = new ProjectComparator();    
+    
+    /** guards myProjects */
+    private final Object myProjectsLock = new Object();
+    
+    private final CsmProject libOwnerProject;
     private static final RequestProcessor RP = new RequestProcessor(ProjectsKeyArray.class.getName(), 1);
     
-    public ProjectsKeyArray(ChildrenUpdater childrenUpdater){
+    public ProjectsKeyArray(CsmProject libOwnerProject, ChildrenUpdater childrenUpdater){
         this.childrenUpdater = childrenUpdater;
+        this.libOwnerProject= libOwnerProject;
     }
 
     private void resetKeys(){
-        synchronized(lock) {
+        CndUtils.assertFalse(Thread.holdsLock(myProjectsLock), "resetKeys should never be caled under the lock"); //NOI18N
+        final List<CsmProject> res = new ArrayList<CsmProject>();
+        synchronized(myProjectsLock) {
             if (myProjects != null) {
                 List<java.util.Map.Entry<CsmProject, SortedName>> list = new ArrayList<java.util.Map.Entry<CsmProject, SortedName>>(myProjects.entrySet());
-                Collections.sort(list, COMARATOR);
-                final List<CsmProject> res = new ArrayList<CsmProject>();
+                Collections.sort(list, COMARATOR);                
                 for (java.util.Map.Entry<CsmProject, SortedName> entry : list) {
                     CsmProject key = entry.getKey();
                     res.add(key);
-                }
-                setKeys(res);
-            } else {
-                setKeys(Collections.<CsmProject>emptyList());
+                }                
             }
         }
+        setKeys(res);
     }
-    
+
+    public void projectLibsChanged(CsmProject owner) {
+        if (owner == libOwnerProject) {
+            synchronized(myProjectsLock) {
+                if (myProjects == null) {
+                    myProjects = createProjectsMap();
+                } else {
+                    myProjects.clear();
+                }
+                for (CsmProject p : owner.getLibraries()) {
+                    myProjects.put(p, getSortedName(p, true));
+                }
+            }
+            resetKeys();
+        }
+    }
+
     public void dispose(){
-        synchronized(lock) {
+        synchronized(myProjectsLock) {
             if (myProjects != null) {
                 myProjects.clear();
             }
@@ -111,35 +135,40 @@ public class ProjectsKeyArray extends Children.Keys<CsmProject> {
     
     private Set<CsmProject> getProjects(){
         Set<CsmProject> projects = new HashSet<CsmProject>();
-        for (CsmProject p : CsmModelAccessor.getModel().projects()) {
-            if (ClassViewModel.isShowLibs()) {
-                for(CsmProject lib : p.getLibraries()) {
-                    projects.add(lib);
-                }
+        if (libOwnerProject == null) {
+            for (CsmProject p : CsmModelAccessor.getModel().projects()) {
+                projects.add(p);
             }
-            projects.add(p);
+        } else {
+            for(CsmProject lib : libOwnerProject.getLibraries()) {
+                projects.add(lib);
+            }
         }
         return projects;
     }
     
     private SortedName getSortedName(CsmProject project, boolean isLibrary){
         if (isLibrary){
-            return new SortedName(1,project.getName(), 0);
+            return new IgnoreCaseSortedName(1,project.getName(), 0);
         }
-        return new SortedName(0,project.getName(), 0);
+        return new IgnoreCaseSortedName(0,project.getName(), 0);
     }
     
     public boolean isEmpty(){
-        synchronized(lock) {
-            if (myProjects != null) {
-                return myProjects.isEmpty();
-            }
+        synchronized(myProjectsLock) {
+            return (myProjects == null) || myProjects.isEmpty();
         }
-        return true;
     }
     
-    public void openProject(CsmProject project){
-        synchronized(lock) {
+    public void openProject(CsmProject project) {
+        if (project.isArtificial()) {
+            if (libOwnerProject == null) {
+                return;
+            } else if (!libOwnerProject.getLibraries().contains(project)) {
+                return;
+            }
+        }
+        synchronized(myProjectsLock) {
             if (myProjects == null) {
                 return;
             }
@@ -158,7 +187,7 @@ public class ProjectsKeyArray extends Children.Keys<CsmProject> {
     }
     
     public void closeProject(CsmProject project){
-        synchronized(lock) {
+        synchronized(myProjectsLock) {
             if (myProjects == null || myProjects.isEmpty()){
                 return;
             }
@@ -186,7 +215,7 @@ public class ProjectsKeyArray extends Children.Keys<CsmProject> {
     }
     
     private void resetProjects(){
-        synchronized(lock) {
+        synchronized(myProjectsLock) {
             if (myProjects != null) {
                 for (CsmProject p : myProjects.keySet()) {
                     childrenUpdater.unregister(p);
@@ -200,7 +229,7 @@ public class ProjectsKeyArray extends Children.Keys<CsmProject> {
             @Override
             public void run() {
                 Set<CsmProject> newProjects = getProjects();
-                synchronized(lock) {
+                synchronized(myProjectsLock) {
                     if (myProjects != null) {
                         for (CsmProject p : myProjects.keySet()) {
                             if (!newProjects.contains(p)) {
@@ -258,7 +287,11 @@ public class ProjectsKeyArray extends Children.Keys<CsmProject> {
     }
     
     void ensureAddNotify() {
-        if (myProjects == null){
+        boolean nullProjects;
+        synchronized (myProjectsLock) {
+            nullProjects = (myProjects == null);
+        }
+        if (nullProjects){
             addNotify();
         }
     }
@@ -273,12 +306,24 @@ public class ProjectsKeyArray extends Children.Keys<CsmProject> {
     @Override
     protected void removeNotify() {
         super.removeNotify();
-        synchronized(lock) {
+        synchronized(myProjectsLock) {
             if (myProjects != null) {
-                myProjects.clear();
-                resetKeys();
+                myProjects.clear();                
             }
             myProjects = null;
+        }
+        resetKeys();
+    }
+    
+    private static class IgnoreCaseSortedName extends SortedName {
+        
+        public IgnoreCaseSortedName(int prefix, CharSequence name, int suffix) {
+            super(prefix, name, suffix);
+        }
+
+        @Override
+        protected Comparator<CharSequence> getCharSequenceComparator() {
+            return CharSequenceUtils.ComparatorIgnoreCase;
         }
     }
     
@@ -311,6 +356,11 @@ public class ProjectsKeyArray extends Children.Keys<CsmProject> {
 
         @Override
         public String getDisplayName() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public FileSystem getFileSystem() {
             throw new UnsupportedOperationException();
         }
 

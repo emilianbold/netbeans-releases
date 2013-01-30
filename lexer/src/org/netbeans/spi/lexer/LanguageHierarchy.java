@@ -372,7 +372,11 @@ public abstract class LanguageHierarchy<T extends TokenId> {
 
         public <T extends TokenId> Lexer<T> createLexer(
         LanguageHierarchy<T> languageHierarchy, LexerRestartInfo<T> info) {
-            return languageHierarchy.createLexer(info);
+            Lexer<T> lexer = languageHierarchy.createLexer(info);
+            if (lexer == null) {
+                throw new IllegalStateException("Null from createLexer() for languageHierarchy=" + languageHierarchy);
+            }
+            return lexer;
         }
 
         public <T extends TokenId> LexerRestartInfo<T> createLexerRestartInfo(

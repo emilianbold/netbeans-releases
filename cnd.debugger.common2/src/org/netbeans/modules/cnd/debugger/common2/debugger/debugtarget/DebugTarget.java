@@ -72,9 +72,12 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.api.EngineType;
 import org.netbeans.modules.cnd.debugger.common2.debugger.api.EngineTypeManager;
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerSettingsBridge;
+import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationAuxObject;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationSupport;
+import org.netbeans.modules.cnd.makeproject.api.configurations.DevelopmentHostConfiguration;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.openide.util.Lookup;
 
@@ -137,7 +140,20 @@ public final class DebugTarget implements Record {
     private String argsUnparsed = null;
 
     private MakeConfiguration configuration = null;
-    private boolean new_project = false;
+    
+    /**
+     * Describes how a new debug session should be related to a project.
+     */
+    public static enum ProjectMode {
+        NO_PROJECT,	// Debug session not associated with any project.
+                    // In fact a temporary, in-memory project is created
+                    // but is not user-visible/manipulable.
+
+        NEW_PROJECT,// Create a new project just for this executable.
+
+        OLD_PROJECT	// Reuse an existing project
+    };
+    private ProjectMode projectMode = ProjectMode.OLD_PROJECT;
 
     /** Has the configuration changed such that we need to save */
     private boolean needSave = true; // Save empty ones too!
@@ -252,7 +268,7 @@ public final class DebugTarget implements Record {
             return false;
         }
 	configuration = conf.clone();
-        createProject(false);
+        setProjectMode(ProjectMode.OLD_PROJECT);
 
 	return true;
     }
@@ -312,7 +328,7 @@ public final class DebugTarget implements Record {
 	this.setHostName(that.getHostName());
 	this.setEngine(that.getEngine());
 	this.setCorefile(that.getCorefile());
-	this.createProject(that.newProject());
+	this.setProjectMode(that.getProjectMode());
     }
     
     // interface Record
@@ -532,7 +548,10 @@ public final class DebugTarget implements Record {
 	engine = e;
 	getEngineProfile().setEngineType(engine);
     }
-
+    
+    public void setCompilerSet(CompilerSet cs) {
+        configuration.getCompilerSet().assign(new CompilerSet2Configuration(new DevelopmentHostConfiguration(configuration.getFileSystemHost()), cs));
+    }
     /**
      * for settings from decoder
      * @param id
@@ -583,12 +602,12 @@ public final class DebugTarget implements Record {
 	return argsUnparsed;
     }
 
-    public void createProject(boolean b) {
-	new_project = b;
+    public void setProjectMode(ProjectMode b) {
+	projectMode = b;
     }
 
-    public boolean newProject() {
-	return new_project;
+    public ProjectMode getProjectMode() {
+	return projectMode;
     }
     
     /**

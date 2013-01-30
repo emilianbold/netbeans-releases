@@ -280,12 +280,11 @@ public abstract class CndLexer implements Lexer<CppTokenId> {
                         backup(1);
                         return token(CppTokenId.AMP);
 
-                    case '%':
-                        if (read(true) == '=') {
-                            return token(CppTokenId.PERCENTEQ);
-                        }
-                        backup(1);
-                        return token(CppTokenId.PERCENT);
+                    case '%': {
+                        Token<CppTokenId> out = finishPercent();
+                        assert out != null : "not handled %";
+                        return out;
+                    }
 
                     case '^':
                         if (read(true) == '=') {
@@ -458,8 +457,8 @@ public abstract class CndLexer implements Lexer<CppTokenId> {
                             if (c == 'L' || c == 'U' || c == 'u' || c == 'R') {
                                 int next = read(true);
                                 boolean raw_string = (c == 'R');
-                                if (next == 'R' && (c == 'u' || c == 'U')) {
-                                    // uR or UR
+                                if (next == 'R' && (c == 'u' || c == 'U' || c == 'L')) {
+                                    // uR, UR or LR
                                     raw_string = true;
                                     next = read(true);
                                 } else if (next == '8' && c == 'u') {
@@ -716,6 +715,14 @@ public abstract class CndLexer implements Lexer<CppTokenId> {
         }
         backup(1);
         return token(CppTokenId.SHARP);
+    }
+
+    protected Token<CppTokenId> finishPercent() {
+        if (read(true) == '=') {
+            return token(CppTokenId.PERCENTEQ);
+        }
+        backup(1);
+        return token(CppTokenId.PERCENT);
     }
 
     private Token<CppTokenId> finishRawString() {

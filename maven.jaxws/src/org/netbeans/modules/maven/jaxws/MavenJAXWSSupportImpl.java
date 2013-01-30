@@ -56,6 +56,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.j2ee.dd.api.webservices.WebservicesMetadata;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.websvc.jaxws.light.spi.JAXWSLightSupportImpl;
@@ -97,14 +98,7 @@ public class MavenJAXWSSupportImpl implements JAXWSLightSupportImpl {
         services.add(service);
 
         if (service.isServiceProvider() && !WSUtils.isJsr109Supported(prj)) {
-            boolean generateNonJsr109Stuff = false;
-            FileObject ddFolder = getDeploymentDescriptorFolder();
-            if (ddFolder == null || ddFolder.getFileObject("sun-jaxws.xml") == null) {
-                // ask user if non jsr109 stuff should be generated
-                generateNonJsr109Stuff = WSUtils.generateNonJsr109Artifacts(prj);
-            } else {
-                generateNonJsr109Stuff = true;
-            }
+            boolean generateNonJsr109Stuff = WSUtils.needNonJsr109Artifacts(prj);
             if (generateNonJsr109Stuff) {
                 // modify web.xml file
                 try {
@@ -243,8 +237,15 @@ public class MavenJAXWSSupportImpl implements JAXWSLightSupportImpl {
 
     @Override
     public MetadataModel<WebservicesMetadata> getWebservicesMetadataModel() {
-        return WSUtils.getModuleProvider(prj).getJ2eeModule().getMetadataModel(
-                WebservicesMetadata.class);
+        J2eeModuleProvider provider = WSUtils.getModuleProvider(prj);
+        if ( provider == null ){
+            return null;
+        }
+        J2eeModule module = provider.getJ2eeModule();
+        if (module==null){
+            return null;
+        }
+        return module.getMetadataModel(WebservicesMetadata.class);
     }
     
 }

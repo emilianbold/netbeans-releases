@@ -35,6 +35,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.EditorKit;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.editor.api.CodeStyle;
 import org.netbeans.modules.cnd.editor.fortran.FKit;
 import org.netbeans.modules.cnd.editor.fortran.reformat.FortranReformatter;
@@ -154,21 +155,26 @@ public class EditorBase extends BaseDocumentUnitTestCase {
      */
     protected void reformat() {
         final Reformat f = Reformat.get(getDocument());
-        getDocument().runAtomic(new Runnable() {
+        final Runnable runnable = new Runnable() {
 
-            @Override
-            public void run() {
-                f.lock();
-                try {
-                    f.reformat(0, getDocument().getLength());
-                } catch (BadLocationException e) {
-                    e.printStackTrace(getLog());
-                    fail(e.getMessage());
-                } finally {
-                    f.unlock();
-                }
-            }
-        });
+              @Override
+              public void run() {
+                  f.lock();
+                  try {
+                      f.reformat(0, getDocument().getLength());
+                  } catch (BadLocationException e) {
+                      e.printStackTrace(getLog());
+                      fail(e.getMessage());
+                  } finally {
+                      f.unlock();
+                  }
+              }
+          };
+        if (getDocument() instanceof BaseDocument) {
+            getDocument().runAtomic(runnable);
+        } else {
+            runnable.run();
+        }
     }
 
     // ------- help methods -------------

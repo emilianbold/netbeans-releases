@@ -266,6 +266,9 @@ public class TaskCache {
 
         while ((line = pw.readLine()) != null) {
             String[] parts = line.split(":"); //NOI18N
+            if (parts.length != 3) {
+                continue;
+            }
 
             ErrorKind kind = null;
             try {
@@ -360,7 +363,7 @@ public class TaskCache {
             return !getErrors(file, ERR_EXT).isEmpty();
         } else {
             try {
-                ClassPath cp = ClassPath.getClassPath(file, ClassPath.SOURCE);
+                ClassPath cp = Utilities.getSourceClassPathFor (file);
                 
                 if (cp == null) {
                     return false;

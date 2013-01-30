@@ -47,6 +47,7 @@ import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.Scope;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
@@ -65,6 +66,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -344,8 +346,18 @@ public class DelegateMethodGenerator implements CodeGenerator {
         ExpressionTree exp = make.MethodInvocation(Collections.<ExpressionTree>emptyList(), make.MemberSelect(methodSelect, method.getSimpleName()), args);
         StatementTree stmt = method.getReturnType().getKind() == TypeKind.VOID ? make.ExpressionStatement(exp) : make.Return(exp);
         BlockTree body = make.Block(Collections.singletonList(stmt), false);
-        MethodTree prototype = GeneratorUtilities.get(wc).createMethod(delegate.asType().getKind() == TypeKind.DECLARED ? (DeclaredType)delegate.asType() : type, method);
         
-        return make.Method(prototype.getModifiers(), prototype.getName(), prototype.getReturnType(), prototype.getTypeParameters(), prototype.getParameters(), prototype.getThrows(), body, (ExpressionTree) prototype.getDefaultValue());
+        MethodTree prototype = GeneratorUtilities.get(wc).createMethod(delegate.asType().getKind() == TypeKind.DECLARED ? (DeclaredType)delegate.asType() : type, method);
+        ModifiersTree mt = prototype.getModifiers();
+        try {
+            if (wc.getElements().getTypeElement("java.lang.Override") != null //NOI18N
+                    && wc.getSourceVersion().compareTo(SourceVersion.RELEASE_5) >= 0
+                    && wc.getTypes().asMemberOf(type, method) != null) {
+                //add @Override annotation:
+                mt = make.addModifiersAnnotation(mt, make.Annotation(make.Identifier("Override"), Collections.<ExpressionTree>emptyList())); //NOI18N
+            }
+        } catch (IllegalArgumentException iae) {}
+        
+        return make.Method(mt, prototype.getName(), prototype.getReturnType(), prototype.getTypeParameters(), prototype.getParameters(), prototype.getThrows(), body, (ExpressionTree) prototype.getDefaultValue());
     }
 }

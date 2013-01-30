@@ -96,6 +96,7 @@ public class DBSchemaTableProvider implements TableProvider {
         
     }
 
+    @Override
     public Set<Table> getTables() {
         return tables;
     }
@@ -215,9 +216,12 @@ public class DBSchemaTableProvider implements TableProvider {
 
         String fqClassName = persistenceGen.getFQClassName(tableElement.getName().getName());
         if (fqClassName != null) {
-            if(source == null || source.findResource(fqClassName.replace('.', '/')+".java")!=null)
-            result.add(new ExistingDisabledReason(fqClassName));
-            else result.add(new Table.ExistingNotInSourceDisabledReason(fqClassName));
+            if(source == null || source.findResource(fqClassName.replace('.', '/')+".java")!=null) {
+                result.add(new ExistingDisabledReason(fqClassName));
+            }
+            else {
+                result.add(new Table.ExistingNotInSourceDisabledReason(fqClassName));
+            }
         }
 
         return result;
@@ -229,8 +233,6 @@ public class DBSchemaTableProvider implements TableProvider {
 
     private static final class DBSchemaTable extends Table {
 
-        private final PersistenceGenerator persistenceGen;
-
         private Set<Table> referencedTables;
         private Set<Table> referencedByTables;
         private Set<Table> joinTables;
@@ -240,14 +242,13 @@ public class DBSchemaTableProvider implements TableProvider {
         
         public DBSchemaTable(String catalog, String schema, String name, boolean join, DisabledReason disabledReason, PersistenceGenerator persistenceGen) {
             super(catalog, schema, name, join, disabledReason);
-            this.persistenceGen = persistenceGen;
         }
         
         public DBSchemaTable(String catalog, String schema, String name, boolean join, DisabledReason disabledReason, PersistenceGenerator persistenceGen, boolean isTable) {
             super(catalog, schema, name, join, disabledReason, isTable);
-            this.persistenceGen = persistenceGen;
         }
 
+        @Override
         public Set<Table> getReferencedTables() {
             return referencedTables;
         }
@@ -256,6 +257,7 @@ public class DBSchemaTableProvider implements TableProvider {
             this.referencedTables = referencedTables;
         }
 
+        @Override
         public Set<Table> getReferencedByTables() {
             return referencedByTables;
         }
@@ -264,6 +266,7 @@ public class DBSchemaTableProvider implements TableProvider {
             this.referencedByTables = referencedByTables;
         }
 
+        @Override
         public Set<Table> getJoinTables() {
             return joinTables;
         }
@@ -272,6 +275,7 @@ public class DBSchemaTableProvider implements TableProvider {
             this.joinTables = joinTables;
         }
         
+        @Override
         public Set<List<String>> getUniqueConstraints() {
             return this.uniqueConstraints;
         }

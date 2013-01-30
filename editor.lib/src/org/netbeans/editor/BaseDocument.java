@@ -52,7 +52,6 @@ import java.util.Enumeration;
 import java.io.Reader;
 import java.io.Writer;
 import java.io.IOException;
-import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeSupport;
 import java.util.Collection;
@@ -91,14 +90,15 @@ import javax.swing.undo.CannotRedoException;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.SimpleValueNames;
+import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.lib.editor.util.ListenerList;
 import org.netbeans.lib.editor.util.swing.DocumentListenerPriority;
 import org.netbeans.modules.editor.indent.api.Reformat;
 import org.netbeans.modules.editor.lib.BaseDocument_PropertyHandler;
+import org.netbeans.modules.editor.lib.BeforeSaveTasks;
 import org.netbeans.modules.editor.lib.EditorPackageAccessor;
 import org.netbeans.modules.editor.lib2.EditorPreferencesDefaults;
 import org.netbeans.modules.editor.lib2.EditorPreferencesKeys;
-import org.netbeans.modules.editor.lib.TrailingWhitespaceRemove;
 import org.netbeans.modules.editor.lib.SettingsConversions;
 import org.netbeans.modules.editor.lib.drawing.DrawEngine;
 import org.netbeans.modules.editor.lib.drawing.DrawGraphics;
@@ -108,8 +108,9 @@ import org.netbeans.modules.editor.lib2.document.ContentEdit;
 import org.netbeans.modules.editor.lib2.document.EditorDocumentContent;
 import org.netbeans.modules.editor.lib2.document.EditorDocumentHandler;
 import org.netbeans.modules.editor.lib2.document.EditorDocumentServices;
-import org.netbeans.modules.editor.lib2.document.LineElementRoot;
+import org.netbeans.modules.editor.lib2.document.LineRootElement;
 import org.netbeans.modules.editor.lib2.document.ListUndoableEdit;
+import org.netbeans.modules.editor.lib2.document.ModRootElement;
 import org.netbeans.modules.editor.lib2.document.ReadWriteBuffer;
 import org.netbeans.modules.editor.lib2.document.ReadWriteUtils;
 import org.netbeans.modules.editor.lib2.document.StableCompoundEdit;
@@ -270,9 +271,6 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
     /* Was the document modified by doing inert/remove */
     protected boolean modified;
 
-    /** Listener to changes in find support */
-    PropertyChangeListener findSupportListener;
-
     /** Default element - lazily inited */
     protected Element defaultRootElem;
 
@@ -299,7 +297,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
 //    private final ArrayList<Syntax> syntaxList = new ArrayList<Syntax>();
 
     /** Root element of line elements representation */
-    LineElementRoot lineElementRoot;
+    LineRootElement lineRootElement;
 
     /** Last document event to be undone. The field is filled
      * by the lastly done modification undoable edit.
@@ -541,7 +539,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
         });
         putProperty(PropertyChangeSupport.class, new PropertyChangeSupport(this));
 
-        lineElementRoot = new LineElementRoot(this);
+        lineRootElement = new LineRootElement(this);
 
         // Line separators default to platform ones
         putProperty(READ_LINE_SEPARATOR_PROP, ReadWriteUtils.getSystemLineSeparator());
@@ -557,18 +555,11 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
             ((BaseKit) kit).initDocument(this);
         }
 
-        // Start listen on find-support
-        findSupportListener = new PropertyChangeListener() {
-                                  public @Override void propertyChange(PropertyChangeEvent evt) {
-                                      findSupportChange(evt);
-                                  }
-                              };
-        findSupportChange(null); // update doc by find settings
+        ModRootElement modElementRoot = new ModRootElement(this);
+        this.addUpdateDocumentListener(modElementRoot);
+        modElementRoot.setEnabled(true);
 
-        FindSupport.getFindSupport().addPropertyChangeListener(findSupportListener);
-        findSupportChange(null); // update doc by find settings
-
-        TrailingWhitespaceRemove.install(this);
+        BeforeSaveTasks.get(this); // Ensure that "beforeSaveRunnable" gets initialized
 
         undoEditWrappers = MimeLookup.getLookup(mimeType).lookupAll(UndoableEditWrapper.class);
         if (undoEditWrappers != null && undoEditWrappers.isEmpty()) {
@@ -595,13 +586,6 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
                 return text.charAt(index);
             }
         };
-    }
-
-    private void findSupportChange(PropertyChangeEvent evt) {
-        // set all finders to null
-        putProperty(STRING_FINDER_PROP, null);
-        putProperty(STRING_BWD_FINDER_PROP, null);
-        putProperty(BLOCKS_FINDER_PROP, null);
     }
 
     Syntax getFreeSyntax() {
@@ -786,20 +770,32 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
 
         preInsertCheck(offset, text, attrs);
 
-        UndoableEdit edit = getContent().insertString(offset, text);
-
         if (LOG.isLoggable(Level.FINE)) {
-            String msg = "BaseDocument.insertString(): doc=" + this // NOI18N
-                    + (modified ? "" : " - first modification") // NOI18N
-                    + ", offset=" + Utilities.offsetToLineColumnString(this, offset) // NOI18N
-                    + (debugNoText ? "" : (", text='" + text + "'")); // NOI18N
+            StringBuilder sb = new StringBuilder(200);
+            sb.append("insertString(): doc="); // NOI18N
+            appendInfoTerse(sb);
+            sb.append(modified ? "" : " - first modification"). // NOI18N
+                    append(", offset=").append(Utilities.offsetToLineColumnString(this, offset)); // NOI18N
+            if (!debugNoText) {
+                sb.append(" \"");
+                appendContext(sb, offset);
+                sb.append("\" + \""); // NOI18N
+                if (modified) {
+                    CharSequenceUtilities.debugText(sb, text);
+                } else { // For first modification display regular text for easier orientation
+                    sb.append(text);
+                }
+                sb.append("\""); // NOI18N
+            }
 
             if (debugStack) {
-                LOG.log(Level.FINE, msg, new Throwable(msg));
+                LOG.log(Level.FINE, sb.toString(), new Throwable("Insert stack"));  // NOI18N
             } else {
-                LOG.log(Level.FINE, msg);
+                LOG.log(Level.FINE, sb.toString());
             }
         }
+
+        UndoableEdit edit = getContent().insertString(offset, text);
 
         BaseDocumentEvent evt = getDocumentEvent(offset, text.length(), DocumentEvent.EventType.INSERT, attrs);
 
@@ -845,6 +841,38 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
             for (DocumentListener listener : postModificationDocumentListenerList.getListeners()) {
                 listener.insertUpdate(evt);
             }
+        }
+    }
+    
+    private void appendContext(StringBuilder sb, int offset) {
+        CharSequence docText = org.netbeans.lib.editor.util.swing.DocumentUtilities.getText(this);
+        int contextLen = 20; // Context in forward and backward directions
+        int back = contextLen;
+        int endOffset = offset;
+        int startOffset = offset;
+        while (back > 0 && startOffset > 0) {
+            if (docText.charAt(startOffset) == '\n') {
+                break;
+            }
+            startOffset--;
+            back--;
+        }
+        int docTextLen = docText.length();
+        int forward = contextLen;
+        while (forward > 0 && endOffset < docTextLen) {
+            if (docText.charAt(endOffset++) == '\n') {
+                break;
+            }
+            forward--;
+        }
+        if (startOffset > 0) {
+            sb.append("...");
+        }
+        CharSequenceUtilities.debugText(sb, docText.subSequence(startOffset, offset));
+        sb.append("|"); // Denote caret
+        CharSequenceUtilities.debugText(sb, docText.subSequence(offset, endOffset));
+        if (endOffset < docTextLen) {
+            sb.append("...");
         }
     }
 
@@ -952,16 +980,24 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
         }
 
         if (LOG.isLoggable(Level.FINE)) {
-            String msg = "BaseDocument.remove(): doc=" + this // NOI18N
-                    + ", origDocLen=" + docLen // NOI18N
-                    + ", offset=" + Utilities.offsetToLineColumnString(this, offset) // NOI18N
-                    + ", len=" + length // NOI18N
-                    + (debugNoText ? "" : (", removedText='" + ((ContentEdit) edit).getText() + "'")); //NOI18N
+            StringBuilder sb = new StringBuilder(200);
+            sb.append("remove(): doc="); // NOI18N
+            appendInfoTerse(sb);
+            sb.append(",origDocLen=").append(docLen); // NOI18N
+            sb.append(", offset=").append(Utilities.offsetToLineColumnString(this, offset)); // NOI18N
+            sb.append(",len=").append(length); // NOI18N
+            if (!debugNoText) {
+                sb.append(" \"");
+                appendContext(sb, offset);
+                sb.append("\" - \""); // NOI18N
+                CharSequenceUtilities.debugText(sb, ((ContentEdit) edit).getText());
+                sb.append("\""); // NOI18N
+            }
 
             if (debugStack) {
-                LOG.log(Level.FINE, msg, new Throwable(msg));
+                LOG.log(Level.FINE, sb.toString(), new Throwable("Remove text")); // NOI18N
             } else {
-                LOG.log(Level.FINE, msg);
+                LOG.log(Level.FINE, sb.toString());
             }
         }
 
@@ -1047,7 +1083,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
         org.netbeans.lib.editor.util.swing.DocumentUtilities.putEventProperty(chng, String.class,
                 ((BaseDocumentEvent)chng).getText());
 
-        lineElementRoot.insertUpdate(chng, attr);
+        lineRootElement.insertUpdate(chng, attr);
 
         fixLineSyntaxState.update(false);
         chng.addEdit(fixLineSyntaxState.createAfterLineUndo());
@@ -1075,7 +1111,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
 
         // Remember the line changes here but add them to chng during postRemoveUpdate()
         // in order to satisfy the legacy syntax update mechanism
-        removeUpdateLineUndo = lineElementRoot.legacyRemoveUpdate(chng);
+        removeUpdateLineUndo = lineRootElement.legacyRemoveUpdate(chng);
 
         fixLineSyntaxState = new FixLineSyntaxState(chng);
         chng.addEdit(fixLineSyntaxState.createBeforeLineUndo());
@@ -1335,7 +1371,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
     /** Return default root element */
     public @Override Element getDefaultRootElement() {
         if (defaultRootElem == null) {
-            defaultRootElem = lineElementRoot;
+            defaultRootElem = lineRootElement;
         }
         return defaultRootElem;
     }
@@ -1420,7 +1456,10 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
             // Reset modified regions accounting after the initial load
             Boolean inPaste = BaseKit.IN_PASTE.get();
             if (inPaste == null || !inPaste) {
-                TrailingWhitespaceRemove.install(this).resetModRegions();
+                ModRootElement modElementRoot = ModRootElement.get(this);
+                if (modElementRoot != null) {
+                    modElementRoot.resetMods(null);
+                }
             }
             lastModifyUndoEdit = null;
         } finally {
@@ -1566,7 +1605,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
     public void resetUndoMerge() {
         undoMergeReset = true;
     }
-
+    
     /* Defined because of the hack for undo()
      * in the BaseDocumentEvent.
      */
@@ -1704,21 +1743,9 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
             }
 
             if (--atomicDepth == 0) { // lock really ended
-                AtomicCompoundEdit nonEmptyAtomicEdits = null;
                 fireAtomicUnlock(atomicLockEventInstance);
 
-                if (atomicEdits != null && atomicEdits.size() > 0) {
-                    // Some edits performed
-                    atomicEdits.end();
-                    nonEmptyAtomicEdits = atomicEdits;
-                    atomicEdits = null; // Clear the var to allow doc.runAtomic() in undoableEditHappened()
-                } else {
-                    noModsAndOuterUnlock = true;
-                }
-
-                if (nonEmptyAtomicEdits != null) {
-                    fireUndoableEditUpdate(new UndoableEditEvent(this, nonEmptyAtomicEdits));
-                }
+                noModsAndOuterUnlock = !checkAndFireAtomicEdits();
                 atomicLockListenerList = null;
                 extWriteUnlock();
             }
@@ -1753,18 +1780,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
     * This method is not synced as it must be called only from writer thread.
     */
     public final void breakAtomicLock() {
-        if (atomicEdits != null && atomicEdits.size() > 0) {
-            atomicEdits.end();
-            if (atomicEdits.canUndo()) {
-                atomicEdits.undo();
-            } else {
-                LOG.log(Level.WARNING,
-                        "Cannot UNDO: " + atomicEdits.toString() + // NOI18N
-                        " Edits: " + atomicEdits.getEdits(),       // NOI18N
-                        new CannotUndoException());
-            }
-            atomicEdits = null;
-        }
+        undoAtomicEdits();
     }
 
     public @Override void atomicUndo() {
@@ -1970,7 +1986,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
     }
 
     public @Override Element getParagraphElement(int pos) {
-        return lineElementRoot.getElement(lineElementRoot.getElementIndex(pos));
+        return lineRootElement.getElement(lineRootElement.getElementIndex(pos));
     }
 
     /** Returns object which represent list of annotations which are
@@ -2055,6 +2071,65 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
         return new LazyPropertyMap(origDocumentProperties);
     }
 
+    private void ensureAtomicEditsInited() {
+        if (atomicEdits == null) {
+            atomicEdits = new AtomicCompoundEdit();
+        }
+    }
+
+    private boolean checkAndFireAtomicEdits() {
+        if (atomicEdits != null && atomicEdits.size() > 0) {
+            // Some edits performed
+            atomicEdits.end();
+            AtomicCompoundEdit nonEmptyAtomicEdits = atomicEdits;
+            atomicEdits = null; // Clear the var to allow doc.runAtomic() in undoableEditHappened()
+            fireUndoableEditUpdate(new UndoableEditEvent(this, nonEmptyAtomicEdits));
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    private void undoAtomicEdits() {
+        if (atomicEdits != null && atomicEdits.size() > 0) {
+            atomicEdits.end();
+            if (atomicEdits.canUndo()) {
+                atomicEdits.undo();
+            } else {
+                LOG.log(Level.WARNING,
+                        "Cannot UNDO: " + atomicEdits.toString() + // NOI18N
+                        " Edits: " + atomicEdits.getEdits(),       // NOI18N
+                        new CannotUndoException());
+            }
+            atomicEdits = null;
+        }
+    }
+
+    void clearAtomicEdits() {
+        atomicEdits = null;
+    }
+    
+    UndoableEdit startOnSaveTasks() {
+        assert (atomicDepth > 0); // Should only be called under atomic lock
+        // If there would be any pending edits
+        // fire them so that they don't clash with on-save tasks in undo manager.
+        // Pending edits could occur due to an outer atomic lock
+        // around CES.saveDocument(). Anyway it would generally be an undesirable situation
+        // due to possibly invalid lock order (doc's atomic lock would then precede on-save tasks' locks).
+        checkAndFireAtomicEdits();
+        ensureAtomicEditsInited();
+        return atomicEdits;
+
+    }
+    
+    void endOnSaveTasks(boolean success) {
+        if (success) { // Possibly fire atomic edit
+            checkAndFireAtomicEdits();
+        } else { // Undo edits contained in atomic edit
+            undoAtomicEdits();
+        }
+    }
+
     UndoableEdit markAtomicEditsNonSignificant() {
         assert (atomicDepth > 0); // Should only be called under atomic lock
         ensureAtomicEditsInited();
@@ -2062,13 +2137,10 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
         return atomicEdits;
     }
     
-    void clearAtomicEdits() {
-        atomicEdits = null;
-    }
-
-    private void ensureAtomicEditsInited() {
-        if (atomicEdits == null)
-            atomicEdits = new AtomicCompoundEdit();
+    void appendInfoTerse(StringBuilder sb) {
+        sb.append(getClass().getSimpleName()).append("@").append(System.identityHashCode(this));
+        sb.append(",version=").append(org.netbeans.lib.editor.util.swing.DocumentUtilities.getDocumentVersion(this));
+        sb.append(",StreamDesc=").append(getProperty(StreamDescriptionProperty));
     }
     
     public @Override String toString() {
@@ -2429,6 +2501,23 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
             bDoc.runExclusive(r);
         }
 
+        @Override
+        public void resetUndoMerge(Document doc) {
+            BaseDocument bDoc = (BaseDocument) doc;
+            bDoc.resetUndoMerge();
+        }
+
+        @Override
+        public UndoableEdit startOnSaveTasks(Document doc) {
+            BaseDocument bDoc = (BaseDocument) doc;
+            return bDoc.startOnSaveTasks();
+        }
+
+        @Override
+        public void endOnSaveTasks(Document doc, boolean success) {
+            BaseDocument bDoc = (BaseDocument) doc;
+            bDoc.endOnSaveTasks(success);
+        }
 
     }
 

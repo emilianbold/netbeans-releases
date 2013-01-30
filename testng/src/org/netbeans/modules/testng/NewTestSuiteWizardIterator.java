@@ -66,7 +66,8 @@ import org.openide.util.NbBundle;
         scriptEngine = "freemarker",
         displayName = "#TestNGSuite_displayName",
         description = "/org/netbeans/modules/testng/resources/newTestSuite.html",
-        iconBase = "org/netbeans/modules/testng/resources/testng.gif")
+        iconBase = "org/netbeans/modules/testng/resources/testng.gif",
+        category="junit")
 @NbBundle.Messages("TestNGSuite_displayName=TestNG Test Suite")
 public final class NewTestSuiteWizardIterator implements WizardDescriptor.InstantiatingIterator<WizardDescriptor> {
 

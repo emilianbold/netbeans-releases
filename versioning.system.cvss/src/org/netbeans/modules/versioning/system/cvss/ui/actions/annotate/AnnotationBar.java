@@ -775,7 +775,8 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
                             err.notify(ErrorManager.INFORMATIONAL, e1);
                         }
                         if (escaped != null) {
-                            String lined = escaped.replaceAll(System.getProperty("line.separator"), "<br>");  // NOI18N
+                            String lined = escaped.replaceAll("\r\n", "\n").replaceAll("\r", "\n") //NOI18N
+                                    .replaceAll("\n", "<br>"); //NOI18N
                             annotation.append("<p>" + lined); // NOI18N
                         }
                     }

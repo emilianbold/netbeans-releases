@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,9 +34,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
@@ -52,7 +52,7 @@ import org.netbeans.modules.php.editor.parser.ParserTestBase;
  * @author Petr Pisl
  */
 public class PHPLexerTestBase extends ParserTestBase {
-    
+
     public PHPLexerTestBase(String testName) {
         super(testName);
     }
@@ -60,17 +60,16 @@ public class PHPLexerTestBase extends ParserTestBase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        clearWorkDir();
     }
 
     @Override
     protected void tearDown() throws Exception {
         super.tearDown();
     }
-      
+
     protected String createResult (TokenSequence<?> ts) throws Exception {
-        StringBuffer result = new StringBuffer ();
-        
+        StringBuilder result = new StringBuilder ();
+
         while (ts.moveNext()) {
             TokenId tokenId = ts.token().id();
             CharSequence text = ts.token().text();

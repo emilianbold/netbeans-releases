@@ -557,6 +557,13 @@ public class FileStatusCache {
             Map<File, FileInformation> files = getScannedFiles(dir);
             if (files == NOT_MANAGED_MAP && repositoryStatus == REPOSITORY_STATUS_UNKNOWN) return FILE_INFORMATION_NOTMANAGED;
             current = files.get(file);
+            for (Map.Entry<File, FileInformation> e : files.entrySet()) {
+                File fKey = e.getKey();
+                if (fKey.getAbsolutePath().equals(file.getAbsolutePath())) {
+                    current = e.getValue();
+                    break;
+                }
+            }
 
             ISVNStatus status = null;
             boolean symlink = false;
@@ -606,8 +613,8 @@ public class FileStatusCache {
                     content = listFiles(new File[] {file}, ~0);
                 } 
 
-                file = FileUtil.normalizeFile(file);
                 dir = FileUtil.normalizeFile(dir);
+                file = new File(dir, file.getName());
                 Map<File, FileInformation> newFiles = new HashMap<File, FileInformation>(files);
                 if (fi.getStatus() == FileInformation.STATUS_UNKNOWN) {
                     newFiles.remove(file);
@@ -616,6 +623,7 @@ public class FileStatusCache {
                 else if (fi.getStatus() == FileInformation.STATUS_VERSIONED_UPTODATE && file.isFile()) {
                     newFiles.remove(file);
                 } else {
+                    newFiles.remove(file);
                     newFiles.put(file, fi);
                 }
                 assert newFiles.containsKey(dir) == false : "Dir " + dir + "contains " + files.toString(); //NOI18N
@@ -692,8 +700,10 @@ public class FileStatusCache {
      * @return true if supplied entries contain equivalent information
      */ 
     private static boolean equal(ISVNStatus e1, ISVNStatus e2) {
-        if (!SVNStatusKind.IGNORED.equals(e1.getTextStatus()) && !SVNStatusKind.UNVERSIONED.equals(e1.getTextStatus())) {
+        if (!SVNStatusKind.IGNORED.equals(e1.getTextStatus()) && !SVNStatusKind.UNVERSIONED.equals(e1.getTextStatus())
+                 && !SVNStatusKind.ADDED.equals(e1.getTextStatus())) {
             // check revisions just when it's meaningful, unversioned or ignored files have no revision and thus should be considered equal
+            // added/copied files make no sense either, they have no revision yet
             long r1 = -1;
             if (e1 != null) {
                 SVNRevision r = e1.getRevision();
@@ -1092,7 +1102,8 @@ public class FileStatusCache {
         }
         
         if (exists) {
-            if (Subversion.getInstance().isIgnored(file)) {
+            if (Subversion.getInstance().isIgnored(file) 
+                    || repositoryStatus != null && repositoryStatus.getStatus().getTextStatus() == SVNStatusKind.EXTERNAL) {
                 return new FileInformation(FileInformation.STATUS_NOTVERSIONED_EXCLUDED, file.isDirectory());
             } else {
                 return new FileInformation(FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY, file.isDirectory());

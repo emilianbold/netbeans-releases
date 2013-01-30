@@ -45,6 +45,7 @@
 package org.netbeans.modules.j2ee.ejbjarproject;
 
 import java.util.*;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.AttachingDICookie;
@@ -64,6 +65,9 @@ import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.java.project.classpath.support.ProjectClassPathSupport;
+import org.netbeans.spi.project.ActionProvider;
+import org.netbeans.spi.project.LookupProvider;
+import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.SingleMethod;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -71,12 +75,13 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.Parameters;
 
 
 /** Action provider of the Web project. This is the place where to do
  * strange things to Web actions. E.g. compile-single.
  */
-class EjbJarActionProvider extends BaseActionProvider {
+public class EjbJarActionProvider extends BaseActionProvider {
 
     private static final String DIRECTORY_DEPLOYMENT_SUPPORTED = "directory.deployment.supported"; // NOI18N
 
@@ -143,7 +148,7 @@ class EjbJarActionProvider extends BaseActionProvider {
     
     /** Map from commands to ant targets */
     private Map<String,String[]> commands;
-    
+
     public EjbJarActionProvider(EjbJarProject project, UpdateHelper updateHelper) {
         super(project, updateHelper, project.evaluator(), project.getSourceRoots(), project.getTestSourceRoots(), 
                 project.getAntProjectHelper(), new CallbackImpl(new BaseActionProvider.CallbackImpl(project.getClassPathProvider()), project.getEjbModule()));
@@ -208,7 +213,7 @@ class EjbJarActionProvider extends BaseActionProvider {
 
     @Override
     public String[] getSupportedActions() {
-        return supportedActions;
+        return supportedActions.clone();
     }
 
     @Override
@@ -393,6 +398,17 @@ class EjbJarActionProvider extends BaseActionProvider {
         public void antTargetInvocationStarted(String command, Lookup context) {
             Deployment.getDefault().suspendDeployOnSave(provider);
         }
+    }
+
+    @ProjectServiceProvider(
+            service = ActionProvider.class,
+            projectTypes = {@LookupProvider.Registration.ProjectType(id = "org-netbeans-modules-j2ee-ejbjarproject", position=1)})
+    public static EjbJarActionProvider create(@NonNull final Lookup lkp) {
+            Parameters.notNull("lkp", lkp); //NOI18N
+        final EjbJarProject project = lkp.lookup(EjbJarProject.class);
+        final EjbJarActionProvider ejbActionProvider = new EjbJarActionProvider(project, project.getUpdateHelper());
+        ejbActionProvider.startFSListener();
+        return ejbActionProvider;
     }
 
 }

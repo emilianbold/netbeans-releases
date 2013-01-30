@@ -49,7 +49,7 @@ import org.netbeans.modules.php.editor.api.PhpElementKind;
  * @author Radek Matous
  */
 public interface ConstantElement extends FullyQualifiedElement {
-    public final static PhpElementKind KIND = PhpElementKind.CONSTANT;
+    PhpElementKind KIND = PhpElementKind.CONSTANT;
     @CheckForNull
     String getValue();
 }

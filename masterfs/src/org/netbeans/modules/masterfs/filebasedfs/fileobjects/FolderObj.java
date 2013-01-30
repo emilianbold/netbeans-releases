@@ -78,6 +78,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
+import org.openide.util.NbBundle;
 
 /**
  * @author rm111737
@@ -294,7 +295,10 @@ public final class FolderObj extends BaseFileObj {
             FSException.io("EXC_CannotCreateFolder", folder2Create.getName(), getPath());// NOI18N   
         } else if (FileChangedManager.getInstance().exists(folder2Create)) {
             extensions.createFailure(this, folder2Create.getName(), true);            
-            throw new SyncFailedException(folder2Create.getAbsolutePath());// NOI18N               
+            SyncFailedException sfe = new SyncFailedException(folder2Create.getAbsolutePath()); // NOI18N               
+            String msg = NbBundle.getMessage(FileBasedFileSystem.class, "EXC_CannotCreateFolder", folder2Create.getName(), getPath()); // NOI18N
+            Exceptions.attachLocalizedMessage(sfe, msg);
+            throw sfe;
         } else if (!folder2Create.mkdirs()) {
             extensions.createFailure(this, folder2Create.getName(), true);
             FSException.io("EXC_CannotCreateFolder", folder2Create.getName(), getPath());// NOI18N               
@@ -394,7 +398,10 @@ public final class FolderObj extends BaseFileObj {
             FSException.io("EXC_CannotCreateData", file2Create.getName(), getPath());// NOI18N
         } else if (FileChangedManager.getInstance().exists(file2Create)) {
             extensions.createFailure(this, file2Create.getName(), false);
-            throw new SyncFailedException(file2Create.getAbsolutePath());// NOI18N               
+            SyncFailedException sfe = new SyncFailedException(file2Create.getAbsolutePath()); // NOI18N               
+            String msg = NbBundle.getMessage(FileBasedFileSystem.class, "EXC_CannotCreateData", file2Create.getName(), getPath()); // NOI18N
+            Exceptions.attachLocalizedMessage(sfe, msg);
+            throw sfe;
         } else if (!file2Create.createNewFile()) {
             extensions.createFailure(this, file2Create.getName(), false);            
             FSException.io("EXC_CannotCreateData", file2Create.getName(), getPath());// NOI18N
@@ -482,7 +489,10 @@ public final class FolderObj extends BaseFileObj {
             final FileNaming child = entry.getKey();
             final Integer operationId = entry.getValue();
 
-            BaseFileObj newChild = (operationId == ChildrenCache.ADDED_CHILD) ? factory.getFileObject(new FileInfo(child.getFile()), FileObjectFactory.Caller.Others) : factory.getCachedOnly(child.getFile());
+            BaseFileObj newChild = (operationId == ChildrenCache.ADDED_CHILD) ? 
+                factory.getFileObject(new FileInfo(child.getFile()), FileObjectFactory.Caller.Refresh) 
+                : 
+                factory.getCachedOnly(child.getFile());
             newChild = (BaseFileObj) ((newChild != null) ? newChild : getFileObject(child.getName()));
             if (operationId == ChildrenCache.ADDED_CHILD && newChild != null) {
 
@@ -501,11 +511,12 @@ public final class FolderObj extends BaseFileObj {
             } else if (operationId == ChildrenCache.REMOVED_CHILD) {
                 if (newChild != null) {
                     if (newChild.isValid()) {
-                        newChild.setValid(false);
                         if (newChild instanceof FolderObj) {
                             getProvidedExtensions().deletedExternally(newChild);
                             ((FolderObj)newChild).refreshImpl(expected, fire);
+                            newChild.setValid(false);
                         } else {
+                            newChild.setValid(false);
                             if (fire) {
                                 getProvidedExtensions().deletedExternally(newChild);
                                 newChild.fireFileDeletedEvent(expected);
@@ -536,8 +547,7 @@ public final class FolderObj extends BaseFileObj {
         }
         boolean validityFlag = FileChangedManager.getInstance().exists(getFileName().getFile());
         if (!validityFlag) {
-            //fileobject is invalidated                
-            setValid(false);
+            getFactory().invalidateSubtree(this);
             if (fire) {
                 fireFileDeletedEvent(expected);
             }
@@ -641,6 +651,15 @@ public final class FolderObj extends BaseFileObj {
         }
     }
     
+    @Override
+    protected void afterRename() {
+        synchronized (FolderChildrenCache.class) {
+            if (folderChildren != null) {
+                folderChildren = folderChildren.cloneFor(getFileName());
+            }
+        }
+    }
+    
     public final boolean hasRecursiveListener() {
         FileObjectKeeper k = keeper;
         return k != null && k.isOn();
@@ -695,6 +714,12 @@ public final class FolderObj extends BaseFileObj {
         @Override
         public void removeChild(FileNaming childName) {
             removeChild(getFileName(), childName);
+        }
+
+        final FolderChildrenCache cloneFor(FileNaming fileName) {
+            FolderChildrenCache newCache = new FolderChildrenCache();
+            copyTo(newCache, getFileName());
+            return newCache;
         }
     }
 

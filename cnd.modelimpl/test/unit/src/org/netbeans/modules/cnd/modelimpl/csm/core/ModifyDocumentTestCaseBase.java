@@ -43,7 +43,9 @@ package org.netbeans.modules.cnd.modelimpl.csm.core;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -314,7 +316,7 @@ public class ModifyDocumentTestCaseBase extends ProjectBasedTestCase {
     }
 
     private void checkModifiedObjects(int expected) {
-        assertEquals("unexpected number of modified objects:\n" + DataObject.getRegistry().getModified() + "\n Our List:\n" + this.doListener.modifiedDOs + "\n", expected, this.doListener.size());
+        assertEquals("unexpected number of modified objects:\n" + Arrays.toString(DataObject.getRegistry().getModified()) + "\n Our List:\n" + this.doListener.getModified() + "\n", expected, this.doListener.size());
     }
 
     private void saveDocument(final File sourceFile, final BaseDocument doc, final CsmProject project) throws DataObjectNotFoundException, BadLocationException, IOException {
@@ -563,7 +565,7 @@ public class ModifyDocumentTestCaseBase extends ProjectBasedTestCase {
     private static final class ObjectsChangeListener implements ChangeListener {
         private final Set<DataObject> modifiedDOs = new HashSet<DataObject>();
         @Override
-        public void stateChanged(ChangeEvent e) {
+        public synchronized void stateChanged(ChangeEvent e) {
             DataObject[] objs = DataObject.getRegistry().getModified();
             modifiedDOs.clear();
             modifiedDOs.addAll(Arrays.asList(objs));
@@ -573,11 +575,15 @@ public class ModifyDocumentTestCaseBase extends ProjectBasedTestCase {
             }
         }
 
-        public void clear() {
+        public synchronized Collection<DataObject> getModified() {
+            return new ArrayList<DataObject>(modifiedDOs);
+        }
+        
+        public synchronized void clear() {
             modifiedDOs.clear();
         }
 
-        public int size() {
+        public synchronized int size() {
             return modifiedDOs.size();
         }
     }

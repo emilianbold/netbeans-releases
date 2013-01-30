@@ -152,9 +152,9 @@ public class ExpanderWidget extends ButtonWidget {
             GeneralPath path = new GeneralPath();
             float y1 = (float) (height+cos*height/2) / 2;
             float y2 = (float) (height-cos*height/2) / 2;
-            path.moveTo(width / 2, y1);
+            path.moveTo(width / 2f, y1);
             path.lineTo(0, y2);
-            path.moveTo(width / 2, y1);
+            path.moveTo(width / 2f, y1);
             path.lineTo(width, y2);
             return path;
         }

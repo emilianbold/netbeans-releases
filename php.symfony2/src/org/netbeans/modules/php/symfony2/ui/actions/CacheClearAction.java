@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.php.symfony2.ui.actions;
 
+import org.netbeans.modules.php.api.executable.InvalidPhpExecutableException;
+import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.symfony2.commands.Symfony2Script;
 import org.openide.util.NbBundle;
 
@@ -58,8 +60,8 @@ public final class CacheClearAction extends Symfony2Action {
     }
 
     @Override
-    protected String getCommand() {
-        return Symfony2Script.CACHE_CLEAR_COMMAND;
+    protected void runCommand(PhpModule phpModule) throws InvalidPhpExecutableException {
+        Symfony2Script.forPhpModule(phpModule, true).clearCache(phpModule);
     }
 
     @NbBundle.Messages("LBL_ClearCache=Clear Cache")

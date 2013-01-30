@@ -152,7 +152,7 @@ class OrigSurroundWithTryCatchFix implements Fix {
                                     nueStatements.add(tryTree);
                                     nueStatements.addAll(bt.getStatements().subList(index + 1, bt.getStatements().size()));
 
-                                    parameter.rewrite(bt, make.Block(nueStatements, false));
+                                    parameter.rewrite(bt, make.Block(nueStatements, bt.isStatic()));
                                 } else {
                                     CaseTree ct = (CaseTree) block.getLeaf();
                                     int index = ct.getStatements().indexOf(leaf);

@@ -49,6 +49,7 @@ import java.util.logging.Logger;
 
 public final class PHPPaletteCustomizerAction implements ActionListener {
 
+    @Override
     public void actionPerformed(ActionEvent e) {
         try {
             PHPPaletteFactory.getPalette().showCustomizer();
@@ -56,4 +57,5 @@ public final class PHPPaletteCustomizerAction implements ActionListener {
             Logger.getLogger(Logger.GLOBAL_LOGGER_NAME).log(Level.INFO, null, ioe);
         }
     }
+
 }

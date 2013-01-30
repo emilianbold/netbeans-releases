@@ -208,6 +208,9 @@ public class MetroConfigLoader {
     public MetroConfig loadDefaultMetroConfig(Project project) {
         SourceGroup[] sgs = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
         ClassPath classPath = ClassPath.getClassPath(sgs[0].getRootFolder(),ClassPath.COMPILE);
+        if ( classPath == null ){
+	    return null;
+	}
         FileObject defFO = classPath.findResource("META-INF/metro-default.xml"); // NOI18N
         try {
             if (defFO != null) {

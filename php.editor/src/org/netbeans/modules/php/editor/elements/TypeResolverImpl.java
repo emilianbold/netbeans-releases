@@ -48,9 +48,9 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.php.editor.api.elements.*;
-import org.netbeans.modules.php.editor.elements.PhpElementImpl.SEPARATOR;
 import org.netbeans.modules.php.editor.api.QualifiedName;
+import org.netbeans.modules.php.editor.api.elements.TypeResolver;
+import org.netbeans.modules.php.editor.elements.PhpElementImpl.Separator;
 import org.netbeans.modules.php.editor.model.impl.VariousUtils;
 
 /**
@@ -65,20 +65,20 @@ public final class TypeResolverImpl implements TypeResolver {
     public static Set<TypeResolver> parseTypes(final String typeSignature) {
         Set<TypeResolver> retval = new HashSet<TypeResolver>();
         if (typeSignature != null && typeSignature.length() > 0) {
-            final String regexp = String.format("\\%s", SEPARATOR.PIPE.toString());//NOI18N
+            final String regexp = String.format("\\%s", Separator.PIPE.toString()); //NOI18N
             for (String typeName : typeSignature.split(regexp)) {
-                String encodedTypeName = null;
+                String encodedTypeName;
                 if (isResolvedImpl(typeName)) {
                     encodedTypeName = ParameterElementImpl.encode(typeName);
                 } else {
-                    final EnumSet<SEPARATOR> separators = SEPARATOR.toEnumSet();
-                    separators.remove(SEPARATOR.COLON);
+                    final EnumSet<Separator> separators = Separator.toEnumSet();
+                    separators.remove(Separator.COLON);
                     encodedTypeName = ParameterElementImpl.encode(typeName, separators);
                 }
                 if (typeName.equals(encodedTypeName)) {
                     retval.add(new TypeResolverImpl(typeName));
                 } else {
-                    log(String.format("wrong typename: \"%s\" parsed from \"%s\"", typeSignature, typeName), Level.FINE);//NOI18N
+                    log(String.format("wrong typename: \"%s\" parsed from \"%s\"", typeSignature, typeName), Level.FINE); //NOI18N
                 }
             }
         }
@@ -92,7 +92,7 @@ public final class TypeResolverImpl implements TypeResolver {
                 if (typeName.equals(ParameterElementImpl.encode(typeName))) {
                     retval.add(new TypeResolverImpl(typeName));
                 } else {
-                    log(String.format("wrong typename: \"%s\"", typeName), Level.FINE);//NOI18N
+                    log(String.format("wrong typename: \"%s\"", typeName), Level.FINE); //NOI18N
                 }
 
 
@@ -104,12 +104,12 @@ public final class TypeResolverImpl implements TypeResolver {
         this.typeName = semiTypeName;
     }
 
-    public final String getSignature() {
+    public String getSignature() {
         return getRawTypeName();
     }
 
     @Override
-    public final boolean isResolved() {
+    public boolean isResolved() {
         return isResolvedImpl(typeName);
     }
 
@@ -118,17 +118,17 @@ public final class TypeResolverImpl implements TypeResolver {
     }
 
     @Override
-    public final boolean canBeResolved() {
+    public boolean canBeResolved() {
         return isResolved();
     }
 
     @Override
-    public final synchronized QualifiedName getTypeName(boolean resolve) {
+    public synchronized QualifiedName getTypeName(boolean resolve) {
         return isResolved() ? QualifiedName.create(typeName) : null;
     }
 
     @Override
-    public final String getRawTypeName() {
+    public String getRawTypeName() {
         return typeName;
     }
 

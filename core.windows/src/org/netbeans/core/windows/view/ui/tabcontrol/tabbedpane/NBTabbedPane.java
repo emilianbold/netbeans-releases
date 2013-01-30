@@ -101,6 +101,8 @@ public class NBTabbedPane extends JTabbedPane {
         this.winsysInfo = winsysInfo;
 
         updateUI();
+
+        setFocusable( false );
     }
 
     public WinsysInfoForTabbedContainer getWinsysInfoForTabbedContainer() {
@@ -140,14 +142,9 @@ public class NBTabbedPane extends JTabbedPane {
      * Get the index of a component
      */
     public int indexOf( Component comp ) {
-        int max = getDataModel().size();
-        TabDataModel mdl = getDataModel();
-        for( int i = 0; i < max; i++ ) {
-            if( getComponentConverter().getComponent( mdl.getTab( i ) ) == comp ) {
-                return i;
-            }
-        }
-        return -1;
+        if( null == comp )
+            return -1;
+        return indexOfComponent( comp );
     }
 
     /**
@@ -266,6 +263,16 @@ public class NBTabbedPane extends JTabbedPane {
 
     public final void cancelRequestAttention( int tab ) {
         stopBlinking();
+    }
+
+    /**
+     *
+     * @param tabIndex
+     * @param highlight
+     * @since 2.54
+     */
+    public final void setAttentionHighlight( int tabIndex, boolean highlight ) {
+        //TODO implement
     }
 
     public final void setActive( boolean active ) {

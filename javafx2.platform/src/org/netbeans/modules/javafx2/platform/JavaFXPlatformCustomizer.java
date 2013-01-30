@@ -354,8 +354,13 @@ private void browseSDKButtonActionPerformed(java.awt.event.ActionEvent evt) {//G
             String srcLocation = JavaFXPlatformUtils.predictSourcesLocation(file.getPath());
             srcTextField.setText(srcLocation == null ? "" : srcLocation); // NOI18N
 
-            String runtimeLocation = JavaFXPlatformUtils.predictRuntimeLocation(file.getPath());
-            if(runtimeLocation == null) runtimeLocation = JavaFXPlatformUtils.predictRuntimeLocation(file.getParent());
+            String runtimeLocation = JavaFXPlatformUtils.predictRuntimeLocation(file.getPath(), false);
+            if(runtimeLocation == null) {
+                runtimeLocation = JavaFXPlatformUtils.predictRuntimeLocation(file.getParent());
+            }
+            if(runtimeLocation == null) {
+                runtimeLocation = JavaFXPlatformUtils.predictRuntimeLocation(file.getPath(), true);
+            }
             if (!JavaFXPlatformUtils.isRuntimePathCorrect(runtimeTextField.getText())) {
                 runtimeTextField.setText(runtimeLocation);
                 File rtDir = new File(runtimeLocation);
@@ -363,15 +368,18 @@ private void browseSDKButtonActionPerformed(java.awt.event.ActionEvent evt) {//G
                     lastUsedRTFolder = rtDir.getParentFile();
                 }
             } else {
-                File rtDir = new File(runtimeLocation);
-                if(rtDir.exists() && FileUtil.isParentOf(FileUtil.toFileObject(file), FileUtil.toFileObject(rtDir))) {
-                    NotifyDescriptor d =
+                File newDir = new File(runtimeLocation);
+                File oldDir = new File(runtimeTextField.getText());
+                if(newDir.exists() && !newDir.equals(oldDir)) {
+                    NotifyDescriptor d = FileUtil.isParentOf(FileUtil.toFileObject(file), FileUtil.toFileObject(newDir)) ?
                         new NotifyDescriptor(NbBundle.getMessage(JavaFXPlatformCustomizer.class,"MSG_RTfoundInSubDir"), // NOI18N
-                            NbBundle.getMessage(JavaFXPlatformCustomizer.class,"MSG_RTfoundInSubDirDialogTitle"), // NOI18N
-                            NotifyDescriptor.YES_NO_OPTION, NotifyDescriptor.QUESTION_MESSAGE, null, NotifyDescriptor.YES_OPTION);
-                    if (DialogDisplayer.getDefault().notify(d) == NotifyDescriptor.YES_OPTION) {
+                            NbBundle.getMessage(JavaFXPlatformCustomizer.class,"MSG_RTUpdateDialogTitle"), // NOI18N
+                            NotifyDescriptor.YES_NO_OPTION, NotifyDescriptor.QUESTION_MESSAGE, null, NotifyDescriptor.YES_OPTION) :
+                        new NotifyDescriptor(NbBundle.getMessage(JavaFXPlatformCustomizer.class,"MSG_OtherRTfound",newDir.getPath()), // NOI18N
+                            NbBundle.getMessage(JavaFXPlatformCustomizer.class,"MSG_RTUpdateDialogTitle"), // NOI18N
+                            NotifyDescriptor.YES_NO_OPTION, NotifyDescriptor.QUESTION_MESSAGE, null, NotifyDescriptor.YES_OPTION);                    if (DialogDisplayer.getDefault().notify(d) == NotifyDescriptor.YES_OPTION) {
                         runtimeTextField.setText(runtimeLocation);
-                        lastUsedRTFolder = rtDir.getParentFile();
+                        lastUsedRTFolder = newDir.getParentFile();
                     }
                 }
             }

@@ -45,6 +45,7 @@ package org.netbeans.api.java.source.gen;
 
 import com.sun.source.tree.*;
 import com.sun.source.util.SourcePositions;
+import com.sun.source.util.TreePathScanner;
 import com.sun.source.util.TreeScanner;
 import java.io.File;
 import java.io.IOException;
@@ -950,6 +951,89 @@ public class AnnotationTest extends GeneratorTestBase {
         }
     }
 
+    public void test203333() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        String code=
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "@Entity\n" +
+            "@NamedQueries({\n" +
+            "    @NamedQuery(name = MyEntity.A, query=\"a\")\n" +
+            "    , @NamedQuery(name = MyEntity.B, query=\"b\")\n" +
+            "    , @NamedQuery(name = MyEntity.C, query=\"c\")\n" +
+            "})\n" +
+            "@NamedNativeQuery(name = MyEntity.D, query=\"d\")\n" +
+            "public class MyEntity {\n" +
+            "}\n";
+        TestUtilities.copyStringToFile(testFile, code);
+        String golden = code.replace("MyEntity", "MyEntity1");
+
+        JavaSource src = getJavaSource(testFile);
+        Task task = new Task<WorkingCopy>() {
+
+            public void run(final WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.PARSED);
+                final TreeMaker make = workingCopy.getTreeMaker();
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                
+                new TreePathScanner<Void, Void>() {
+                    @Override public Void visitIdentifier(IdentifierTree node, Void p) {
+                        if (node.getName().contentEquals("MyEntity"))
+                            workingCopy.rewrite(node, make.Identifier("MyEntity1"));
+                        
+                        return super.visitIdentifier(node, p);
+                    }
+                    @Override public Void visitClass(ClassTree node, Void p) {
+                        workingCopy.rewrite(node, make.setLabel(node, "MyEntity1"));
+                        return super.visitClass(node, p);
+                    }
+                }.scan(cut, null);
+            }
+
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    public void testFirstAnnotationWithImport() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        String code = "package hierbas.del.litoral;\n" +
+                      "\n" +
+                      "public class Test {\n" +
+                      "}\n";
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "import java.lang.annotation.Retention;\n" +
+            "\n" +
+            "@Retention\n" +
+            "public class Test {\n" +
+            "}\n";
+
+        TestUtilities.copyStringToFile(testFile, code);
+
+        JavaSource src = getJavaSource(testFile);
+        Task task = new Task<WorkingCopy>() {
+            public void run(final WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                ModifiersTree mods = clazz.getModifiers();
+                TreeMaker make = workingCopy.getTreeMaker();
+                workingCopy.rewrite(mods,
+                                    make.addModifiersAnnotation(mods,
+                                                                make.Annotation(make.Type("java.lang.annotation.Retention"),
+                                                                                Collections.<ExpressionTree>emptyList())));
+            }
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
     String getGoldenPckg() {
         return "";
     }

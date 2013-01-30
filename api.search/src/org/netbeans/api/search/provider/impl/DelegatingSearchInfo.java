@@ -41,6 +41,7 @@
  */
 package org.netbeans.api.search.provider.impl;
 
+import java.net.URI;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -73,6 +74,13 @@ public class DelegatingSearchInfo extends SearchInfo {
             SearchScopeOptions options, SearchListener listener,
             AtomicBoolean terminated) {
         return delegate.filesToSearch(options, listener, terminated);
+    }
+
+    @Override
+    protected Iterator<URI> createUrisToSearchIterator(
+            SearchScopeOptions options, SearchListener listener,
+            AtomicBoolean terminated) {
+        return delegate.urisToSearch(options, listener, terminated);
     }
 
     @Override

@@ -62,7 +62,7 @@ public class KeyMapSuite {
                     .addTest(KeyMapTest.class, "testAssignAlternativeShortcut")
                     //.addTest(KeyMapTest.class, "testProfileRestore")//fails due to issue 151254
                     .addTest(KeyMapTest.class, "testProfileDuplicte")
-                    .addTest(KeyMapTest.class, "testHelp")                    
+                    .addTest(KeyMapTest.class, "testHelp")                                    
                     .clusters(".*").enableModules(".*"));
     }
 }

@@ -47,6 +47,8 @@ import com.sun.source.tree.TreeVisitor;
 import com.sun.tools.javac.code.Symbol.VarSymbol;
 import com.sun.tools.javac.code.Symtab;
 import com.sun.tools.javac.tree.JCTree;
+import com.sun.tools.javac.tree.JCTree.JCAnnotation;
+import com.sun.tools.javac.tree.JCTree.JCBlock;
 import com.sun.tools.javac.tree.JCTree.JCCase;
 import com.sun.tools.javac.tree.JCTree.JCCatch;
 import com.sun.tools.javac.tree.JCTree.JCModifiers;
@@ -62,13 +64,13 @@ import com.sun.tools.javac.util.Name;
  * @author lahvac
  */
 public class JackpotTrees {
-    public static class ModifiersWildcard extends FakeModifiers implements IdentifierTree {
+    public static class AnnotationWildcard extends JCAnnotation implements IdentifierTree {
 
         private final Name ident;
         private final JCIdent jcIdent;
 
-        public ModifiersWildcard(Name ident, JCIdent jcIdent) {
-            super();
+        public AnnotationWildcard(Name ident, JCIdent jcIdent) {
+            super(jcIdent, List.<JCExpression>nil());
             this.ident = ident;
             this.jcIdent = jcIdent;
         }
@@ -232,5 +234,13 @@ public class JackpotTrees {
             return "case " + ident.toString();
         }
 
+    }
+    
+    public static class FakeBlock extends JCBlock {
+
+        public FakeBlock(long flags, List<JCStatement> stats) {
+            super(flags, stats);
+        }
+        
     }
 }

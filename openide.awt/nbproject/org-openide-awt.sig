@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 7.39
+#Version 7.46.1
 
 CLSS public java.awt.Canvas
 cons public init()
@@ -1405,6 +1405,15 @@ meth public abstract int hashCode()
 meth public final java.lang.String toString()
 meth public final void save() throws java.io.IOException
 supr java.lang.Object
+hfds LOG
+
+CLSS public abstract org.openide.awt.AcceleratorBinding
+cons protected init()
+meth protected abstract javax.swing.KeyStroke keyStrokeForAction(javax.swing.Action,org.openide.filesystems.FileObject)
+meth public static void setAccelerator(javax.swing.Action,org.openide.filesystems.FileObject)
+supr java.lang.Object
+hfds ALL
+hcls Iter
 
 CLSS public abstract interface !annotation org.openide.awt.ActionID
  anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=SOURCE)
@@ -1436,6 +1445,7 @@ CLSS public abstract interface !annotation org.openide.awt.ActionRegistration
 intf java.lang.annotation.Annotation
 meth public abstract !hasdefault boolean asynchronous()
 meth public abstract !hasdefault boolean iconInMenu()
+meth public abstract !hasdefault boolean lazy()
 meth public abstract !hasdefault boolean surviveFocusChange()
 meth public abstract !hasdefault java.lang.String iconBase()
 meth public abstract !hasdefault java.lang.String key()
@@ -1457,6 +1467,7 @@ meth public static java.lang.String cutAmpersand(java.lang.String)
 meth public static java.lang.String findKey(org.openide.util.actions.SystemAction)
 meth public static javax.swing.Action alwaysEnabled(java.awt.event.ActionListener,java.lang.String,java.lang.String,boolean)
 meth public static javax.swing.Action checkbox(java.lang.String,java.lang.String,java.lang.String,java.lang.String,boolean)
+meth public static javax.swing.Action forID(java.lang.String,java.lang.String)
 meth public static org.openide.util.ContextAwareAction callback(java.lang.String,javax.swing.Action,boolean,java.lang.String,java.lang.String,boolean)
 meth public static org.openide.util.ContextAwareAction context(java.lang.Class<?>,boolean,boolean,org.openide.util.ContextAwareAction,java.lang.String,java.lang.String,java.lang.String,boolean)
 meth public static void connect(javax.swing.AbstractButton,javax.swing.Action)
@@ -1470,7 +1481,7 @@ meth public static void connect(javax.swing.JMenuItem,org.openide.util.actions.S
 meth public static void setMenuText(javax.swing.AbstractButton,java.lang.String,boolean)
  anno 0 java.lang.Deprecated()
 supr java.lang.Object
-hfds GET
+hfds FQN,GET,IDENTIFIER
 hcls BooleanButtonBridge,Bridge,ButtonActionConnectorGetter,ButtonBridge,CheckMenuBridge,ISubActionListener,MenuBridge,SubMenuBridge
 
 CLSS public abstract interface static org.openide.awt.Actions$ButtonActionConnector
@@ -1534,6 +1545,11 @@ meth public java.awt.Dimension getMaximumSize()
 meth public java.awt.Dimension getMinimumSize()
 supr org.openide.awt.ToolbarToggleButton
 hfds serialVersionUID
+
+CLSS public abstract interface org.openide.awt.CheckForUpdatesProvider
+meth public abstract boolean notifyAvailableUpdates(boolean)
+meth public abstract boolean openCheckForUpdatesWizard(boolean)
+meth public abstract java.lang.String getContentDescription()
 
 CLSS public final org.openide.awt.CloseButtonFactory
 meth public static javax.swing.JButton createBigCloseButton()
@@ -1768,7 +1784,6 @@ meth public abstract org.openide.awt.Notification notify(java.lang.String,javax.
 meth public org.openide.awt.Notification notify(java.lang.String,javax.swing.Icon,java.lang.String,java.awt.event.ActionListener)
 meth public static org.openide.awt.NotificationDisplayer getDefault()
 supr java.lang.Object
-hfds LOG,ndID
 hcls NotificationImpl,SimpleNotificationDisplayer
 
 CLSS public final static !enum org.openide.awt.NotificationDisplayer$Priority
@@ -1780,6 +1795,29 @@ fld public final static org.openide.awt.NotificationDisplayer$Priority SILENT
 meth public static org.openide.awt.NotificationDisplayer$Priority valueOf(java.lang.String)
 meth public static org.openide.awt.NotificationDisplayer$Priority[] values()
 supr java.lang.Enum<org.openide.awt.NotificationDisplayer$Priority>
+
+CLSS public org.openide.awt.QuickSearch
+innr public abstract interface static Callback
+meth public boolean isEnabled()
+meth public static java.lang.String findMaxPrefix(java.lang.String,java.lang.String,boolean)
+meth public static org.openide.awt.QuickSearch attach(javax.swing.JComponent,java.lang.Object,org.openide.awt.QuickSearch$Callback)
+meth public static org.openide.awt.QuickSearch attach(javax.swing.JComponent,java.lang.Object,org.openide.awt.QuickSearch$Callback,boolean)
+meth public static org.openide.awt.QuickSearch attach(javax.swing.JComponent,java.lang.Object,org.openide.awt.QuickSearch$Callback,boolean,javax.swing.JMenu)
+meth public static org.openide.awt.QuickSearch attach(javax.swing.JComponent,java.lang.Object,org.openide.awt.QuickSearch$Callback,javax.swing.JMenu)
+meth public void detach()
+meth public void processKeyEvent(java.awt.event.KeyEvent)
+meth public void setEnabled(boolean)
+supr java.lang.Object
+hfds CLIENT_PROPERTY_KEY,ICON_FIND,ICON_FIND_WITH_MENU,animationTimer,asynchronous,callback,component,constraints,enabled,popupMenu,quickSearchKeyAdapter,rp,searchFieldListener,searchPanel,searchTextField
+hcls AnimationTimer,LazyFire,QS_FIRE,SearchFieldListener,SearchPanel,SearchTextField
+
+CLSS public abstract interface static org.openide.awt.QuickSearch$Callback
+ outer org.openide.awt.QuickSearch
+meth public abstract java.lang.String findMaxPrefix(java.lang.String)
+meth public abstract void quickSearchCanceled()
+meth public abstract void quickSearchConfirmed()
+meth public abstract void quickSearchUpdate(java.lang.String)
+meth public abstract void showNextSelection(boolean)
 
 CLSS public org.openide.awt.SpinButton
  anno 0 java.lang.Deprecated()
@@ -2024,17 +2062,38 @@ CLSS public static org.openide.awt.UndoRedo$Manager
  outer org.openide.awt.UndoRedo
 cons public init()
 intf org.openide.awt.UndoRedo
+meth protected javax.swing.undo.UndoableEdit editToBeRedone()
+meth protected javax.swing.undo.UndoableEdit editToBeUndone()
+meth protected javax.swing.undo.UndoableEdit lastEdit()
+meth protected void redoTo(javax.swing.undo.UndoableEdit)
+meth protected void trimEdits(int,int)
+meth protected void trimForLimit()
+meth protected void undoTo(javax.swing.undo.UndoableEdit)
+meth public boolean addEdit(javax.swing.undo.UndoableEdit)
+meth public boolean canRedo()
+meth public boolean canUndo()
+meth public boolean canUndoOrRedo()
+meth public boolean isInProgress()
+meth public boolean isSignificant()
+meth public boolean replaceEdit(javax.swing.undo.UndoableEdit)
+meth public int getLimit()
+meth public java.lang.String getPresentationName()
 meth public java.lang.String getRedoPresentationName()
+meth public java.lang.String getUndoOrRedoPresentationName()
 meth public java.lang.String getUndoPresentationName()
+meth public java.lang.String toString()
 meth public void addChangeListener(javax.swing.event.ChangeListener)
+meth public void die()
 meth public void discardAllEdits()
+meth public void end()
 meth public void redo()
 meth public void removeChangeListener(javax.swing.event.ChangeListener)
+meth public void setLimit(int)
 meth public void undo()
 meth public void undoOrRedo()
 meth public void undoableEditHappened(javax.swing.event.UndoableEditEvent)
 supr javax.swing.undo.UndoManager
-hfds cs,serialVersionUID
+hfds alive,cs,hasBeenDone,inProgress,indexOfNextAdd,limit,serialVersionUID
 
 CLSS public abstract interface static org.openide.awt.UndoRedo$Provider
  outer org.openide.awt.UndoRedo

@@ -117,7 +117,8 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
             ip = InstanceProperties.getInstanceProperties(url);
             if (ip == null) {
                 String username = props.get(InstanceProperties.USERNAME_ATTR);
-                String password = props.get(InstanceProperties.PASSWORD_ATTR);
+                // Password shall not be read from keyring during initialization
+                String password = null;
                 String displayName = props.get(InstanceProperties.DISPLAY_NAME_ATTR);
                     try {
                         ip = InstanceProperties.createInstancePropertiesNonPersistent(

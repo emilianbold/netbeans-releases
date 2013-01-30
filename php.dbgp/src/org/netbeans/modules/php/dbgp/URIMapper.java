@@ -59,6 +59,7 @@ import org.netbeans.modules.php.api.util.Pair;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.Utilities;
 
 /**
  * Converts remote (or also local) URI to local project File an vice versa
@@ -126,7 +127,7 @@ abstract class URIMapper {
         if (!"file".equals(webServerURI.getScheme())) {//NOI18N
             return null;
         }
-        File webServerFile = new File(webServerURI);
+        File webServerFile = Utilities.toFile(webServerURI);
         File sourceFile = FileUtil.toFile(sourceFileObj);
         String sourcePath = FileUtil.getRelativePath(sourceRoot, sourceFileObj);
         //debugged file must be part of the debugged project (for now)
@@ -135,8 +136,7 @@ abstract class URIMapper {
                 //TODO: not sure about this (should be reviewed)
                 sourceFile = new File(sourceFile, webServerFile.getName());
                 if (!sourceFile.exists()) {
-                    LOGGER.fine("No default path mapping: "+//NOI18N
-                            "webServerURI: "+webServerURI.toString() + " sourceFile: " + sourceFile.getAbsolutePath());//NOI18N
+                    LOGGER.log(Level.FINE,"No default path mapping: " + "webServerURI: {0} sourceFile: {1}", new Object[]{webServerURI.toString(), sourceFile.getAbsolutePath()});//NOI18N
                     return null;
                 }
             }
@@ -144,9 +144,9 @@ abstract class URIMapper {
                 File sourceRootFile = FileUtil.toFile(sourceRoot);
                 assert sourceRootFile != null;
                 URI[] bases = findBases(webServerURI, sourceFile, sourceRootFile);
-                if (bases != null) {
+                if (bases.length > 0) {
                     URI webServerBase = bases[0];
-                    File sourceBase = new File(bases[1]);
+                    File sourceBase = Utilities.toFile(bases[1]);
                     assert webServerBase != null;
                     assert sourceBase != null;
                     return new BaseMapper(webServerBase, sourceBase);
@@ -154,8 +154,7 @@ abstract class URIMapper {
             }
         }
         //no decision how to map - must exist user's defined mapping
-        LOGGER.fine("No default path mapping: " +//NOI18N
-                "webServerURI: " + webServerURI.toString() + " sourceFile: " + sourceFile.getAbsolutePath());//NOI18N
+        LOGGER.log(Level.FINE,"No default path mapping: " + "webServerURI: {0} sourceFile: {1}", new Object[]{webServerURI.toString(), sourceFile.getAbsolutePath()});//NOI18N
         return null;
     }
 
@@ -165,7 +164,7 @@ abstract class URIMapper {
 
             @Override
             File toSourceFile(URI remoteURI) {
-                File retval = new File(remoteURI);
+                File retval = Utilities.toFile(remoteURI);
                 File absFile = can2AbsFile.get(retval);
                 retval = (absFile != null) ? absFile : retval;
                 if (LOGGER.isLoggable(Level.INFO)) {
@@ -218,7 +217,7 @@ abstract class URIMapper {
             }
         }
         if (nullRetVal) {
-            return null;
+            return new URI[0];
         }
         assert baseFile.isDirectory();
         int basePathLen = webServerURI.getPath().length() -
@@ -227,7 +226,7 @@ abstract class URIMapper {
         URI baseURI = createURI(webServerURI.getScheme(), webServerURI.getHost(),
                basePath, webServerURI.getFragment(),
                 true, true);
-        return new URI[]{baseURI, baseFile.toURI()};
+        return new URI[]{baseURI, Utilities.toURI(baseFile)};
     }
 
     private static class BaseMapper extends URIMapper {
@@ -250,25 +249,25 @@ abstract class URIMapper {
             boolean isLoggable = LOGGER.isLoggable(Level.FINE);
             if (isLoggable) {
                 if (!FILE_SCHEME.equals(baseWebServerURI.getScheme())) {
-                    LOGGER.fine("Unexpected scheme: "+baseWebServerURI.toString());//NOI18N
+                    LOGGER.log(Level.FINE, "Unexpected scheme: {0}", baseWebServerURI.toString());//NOI18N
                 }
                 if (baseWebServerURI.getPath() == null) {
-                    LOGGER.fine("URI.getPath() == null: "+baseWebServerURI.toString());//NOI18N
+                    LOGGER.log(Level.FINE, "URI.getPath() == null: {0}", baseWebServerURI.toString());//NOI18N
                 }
                 if (baseWebServerURI.getPath() == null) {
-                    LOGGER.fine("URI.getPath() == null: "+baseWebServerURI.toString());//NOI18N
+                    LOGGER.log(Level.FINE, "URI.getPath() == null: {0}", baseWebServerURI.toString());//NOI18N
                 } else if (!baseWebServerURI.getPath().endsWith("/")) {
-                    LOGGER.fine("Not \"/\" at the end of URI.getPath(): "+baseWebServerURI.toString());//NOI18N
+                    LOGGER.log(Level.FINE, "Not \"/\" at the end of URI.getPath(): {0}", baseWebServerURI.toString());//NOI18N
                 }
                 if (!baseWebServerURI.isAbsolute()) {
-                    LOGGER.fine("URI not absolute: "+baseWebServerURI.toString());//NOI18N
+                    LOGGER.log(Level.FINE, "URI not absolute: {0}", baseWebServerURI.toString());//NOI18N
                 }
             }
             assert FILE_SCHEME.equals(baseWebServerURI.getScheme());
             assert baseWebServerURI.getPath() != null;//NOI18N
             assert baseWebServerURI.getPath().endsWith("/") : baseWebServerURI.getPath();//NOI18N
             assert baseWebServerURI.isAbsolute();
-            this.baseSourceURI = baseSourceFolder.toURI();
+            this.baseSourceURI = Utilities.toURI(baseSourceFolder);
             assert baseSourceURI.isAbsolute();
         }
 
@@ -278,7 +277,7 @@ abstract class URIMapper {
             File retval = null;
             if (!relativizedURI.isAbsolute()) {
                 assert FILE_SCHEME.equals(webServerURI.getScheme());
-                retval = new File(baseSourceURI.resolve(relativizedURI));
+                retval = Utilities.toFile(baseSourceURI.resolve(relativizedURI));
             }
             if (LOGGER.isLoggable(Level.INFO)) {
                 LOGGER.log(Level.INFO, String.format("%s: %s -> %s", getClass().toString(), webServerURI, retval));
@@ -292,7 +291,7 @@ abstract class URIMapper {
             if (sourceFile.equals(baseSourceFolder)) {
                 retval = baseWebServerURI;
             } else {
-                URI relativizedURI = baseSourceURI.relativize(sourceFile.toURI());
+                URI relativizedURI = baseSourceURI.relativize(Utilities.toURI(sourceFile));
                 if (!relativizedURI.isAbsolute()) {
                     URI uri = baseWebServerURI.resolve(relativizedURI);
                     retval = createURI(uri.getScheme(), uri.getHost(),
@@ -362,7 +361,7 @@ abstract class URIMapper {
     }
 
     private static URI toURI(File webServerBase, boolean includeHostPart) {
-        URI webServerBaseURI = webServerBase.toURI();
+        URI webServerBaseURI = Utilities.toURI(webServerBase);
         return createURI(webServerBaseURI.getScheme(), webServerBaseURI.getHost(),
                 webServerBaseURI.getPath(),webServerBaseURI.getFragment(),
                 includeHostPart, webServerBase.exists() && webServerBase.isDirectory());

@@ -122,6 +122,8 @@ public class UpdateWithDependenciesAction extends ContextAction {
             }
             Project project =  (Project) node.getLookup().lookup(Project.class);
             projectsToUpdate.add(project);
+            //mkleint: see subprojectprovider for official contract, see #210465
+            // do we care if all or just the direct subprojects are included?
             SubprojectProvider deps = (SubprojectProvider) project.getLookup().lookup(SubprojectProvider.class);
             if(deps != null) {
                 Set<? extends Project> children = deps.getSubprojects();

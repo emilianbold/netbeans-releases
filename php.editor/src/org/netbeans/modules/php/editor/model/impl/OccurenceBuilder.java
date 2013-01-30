@@ -41,9 +41,19 @@
  */
 package org.netbeans.modules.php.editor.model.impl;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
-import java.util.*;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.api.ElementQuery;
 import org.netbeans.modules.php.editor.api.ElementQuery.Index;
@@ -51,14 +61,75 @@ import org.netbeans.modules.php.editor.api.NameKind;
 import org.netbeans.modules.php.editor.api.NameKind.Exact;
 import org.netbeans.modules.php.editor.api.PhpElementKind;
 import org.netbeans.modules.php.editor.api.QualifiedName;
+import org.netbeans.modules.php.editor.api.elements.ElementFilter;
 import org.netbeans.modules.php.editor.api.elements.FieldElement;
-import org.netbeans.modules.php.editor.api.elements.*;
+import org.netbeans.modules.php.editor.api.elements.FunctionElement;
+import org.netbeans.modules.php.editor.api.elements.MethodElement;
+import org.netbeans.modules.php.editor.api.elements.PhpElement;
+import org.netbeans.modules.php.editor.api.elements.TypeConstantElement;
+import org.netbeans.modules.php.editor.api.elements.TypeElement;
+import org.netbeans.modules.php.editor.api.elements.TypeMemberElement;
+import org.netbeans.modules.php.editor.model.ClassConstantElement;
+import org.netbeans.modules.php.editor.model.ClassMemberElement;
+import org.netbeans.modules.php.editor.model.ClassScope;
 import org.netbeans.modules.php.editor.model.ConstantElement;
+import org.netbeans.modules.php.editor.model.FileScope;
+import org.netbeans.modules.php.editor.model.FunctionScope;
+import org.netbeans.modules.php.editor.model.IncludeElement;
+import org.netbeans.modules.php.editor.model.IndexScope;
+import org.netbeans.modules.php.editor.model.InterfaceScope;
+import org.netbeans.modules.php.editor.model.MethodScope;
+import org.netbeans.modules.php.editor.model.ModelElement;
+import org.netbeans.modules.php.editor.model.ModelUtils;
+import org.netbeans.modules.php.editor.model.NamespaceScope;
+import org.netbeans.modules.php.editor.model.Occurence;
 import org.netbeans.modules.php.editor.model.Occurence.Accuracy;
-import org.netbeans.modules.php.editor.model.*;
+import org.netbeans.modules.php.editor.model.Scope;
+import org.netbeans.modules.php.editor.model.TraitScope;
+import org.netbeans.modules.php.editor.model.TypeScope;
+import org.netbeans.modules.php.editor.model.UseAliasElement;
+import org.netbeans.modules.php.editor.model.UseScope;
+import org.netbeans.modules.php.editor.model.VariableName;
+import org.netbeans.modules.php.editor.model.VariableScope;
+import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo.Kind;
-import org.netbeans.modules.php.editor.model.nodes.*;
-import org.netbeans.modules.php.editor.parser.astnodes.*;
+import org.netbeans.modules.php.editor.model.nodes.ClassConstantDeclarationInfo;
+import org.netbeans.modules.php.editor.model.nodes.ClassDeclarationInfo;
+import org.netbeans.modules.php.editor.model.nodes.ConstantDeclarationInfo;
+import org.netbeans.modules.php.editor.model.nodes.FunctionDeclarationInfo;
+import org.netbeans.modules.php.editor.model.nodes.IncludeInfo;
+import org.netbeans.modules.php.editor.model.nodes.InterfaceDeclarationInfo;
+import org.netbeans.modules.php.editor.model.nodes.MagicMethodDeclarationInfo;
+import org.netbeans.modules.php.editor.model.nodes.MethodDeclarationInfo;
+import org.netbeans.modules.php.editor.model.nodes.PhpDocTypeTagInfo;
+import org.netbeans.modules.php.editor.model.nodes.SingleFieldDeclarationInfo;
+import org.netbeans.modules.php.editor.model.nodes.TraitDeclarationInfo;
+import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
+import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.ClassInstanceCreation;
+import org.netbeans.modules.php.editor.parser.astnodes.ClassName;
+import org.netbeans.modules.php.editor.parser.astnodes.Expression;
+import org.netbeans.modules.php.editor.parser.astnodes.FieldAccess;
+import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
+import org.netbeans.modules.php.editor.parser.astnodes.GotoLabel;
+import org.netbeans.modules.php.editor.parser.astnodes.GotoStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
+import org.netbeans.modules.php.editor.parser.astnodes.Include;
+import org.netbeans.modules.php.editor.parser.astnodes.InterfaceDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.MethodInvocation;
+import org.netbeans.modules.php.editor.parser.astnodes.NamespaceName;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTypeTag;
+import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
+import org.netbeans.modules.php.editor.parser.astnodes.SingleFieldDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.StaticConstantAccess;
+import org.netbeans.modules.php.editor.parser.astnodes.StaticDispatch;
+import org.netbeans.modules.php.editor.parser.astnodes.StaticFieldAccess;
+import org.netbeans.modules.php.editor.parser.astnodes.StaticMethodInvocation;
+import org.netbeans.modules.php.editor.parser.astnodes.TraitDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.Variable;
+import org.netbeans.modules.php.editor.parser.astnodes.VariableBase;
 import org.openide.util.Union2;
 
 /**
@@ -66,6 +137,9 @@ import org.openide.util.Union2;
  */
 class OccurenceBuilder {
 
+    private static final int INITIAL_CAPACITY = 16;
+    private static final float LOAD_FACTOR = 0.75f;
+    private static final int ACCESSING_THREADS = 2;
     private Map<ASTNodeInfo<Scalar>, ConstantElement> constDeclarations;
     private Map<ConstantDeclarationInfo, ConstantElement> constDeclarations53;
     private Map<ASTNodeInfo<Scalar>, Scope> constInvocations;
@@ -82,16 +156,16 @@ class OccurenceBuilder {
     private Map<ClassDeclarationInfo, ClassScope> clasDeclarations;
     private Map<InterfaceDeclarationInfo, InterfaceScope> ifaceDeclarations;
     private Map<TraitDeclarationInfo, TraitScope> traitDeclarations;
-    private HashMap<PhpDocTypeTagInfo, Scope> docTags;
+    private Map<PhpDocTypeTagInfo, Scope> docTags;
     private Map<ASTNodeInfo<ClassName>, Scope> clasNames;
     private Map<ASTNodeInfo<ClassInstanceCreation>, Scope> clasInstanceCreations;
     private Map<ASTNodeInfo<Expression>, Scope> clasIDs;
     private Map<ASTNodeInfo<Expression>, Scope> ifaceIDs;
     private Map<ASTNodeInfo<Expression>, Scope> traitIDs;
     private Map<ASTNodeInfo<Variable>, Scope> variables;
-    private HashMap<IncludeInfo, IncludeElement> includes;
-    private HashMap<SingleFieldDeclarationInfo, FieldElementImpl> fldDeclarations;
-    private HashMap<ASTNodeInfo<FieldAccess>, Scope> fieldInvocations;
+    private Map<IncludeInfo, IncludeElement> includes;
+    private Map<SingleFieldDeclarationInfo, FieldElementImpl> fldDeclarations;
+    private Map<ASTNodeInfo<FieldAccess>, Scope> fieldInvocations;
     private volatile ElementInfo elementInfo;
     private Map<ASTNodeInfo<GotoLabel>, Scope> gotoLabel;
     private Map<ASTNodeInfo<GotoStatement>, Scope> gotoStatement;
@@ -103,37 +177,42 @@ class OccurenceBuilder {
     }
 
     OccurenceBuilder(int offset) {
-        this.constInvocations = new HashMap<ASTNodeInfo<Scalar>, Scope>();
-        this.nsConstInvocations = new HashMap<ASTNodeInfo<Expression>, Scope>();
-        this.constDeclarations = new HashMap<ASTNodeInfo<Scalar>, ConstantElement>();
-        this.constDeclarations53 = new HashMap<ConstantDeclarationInfo, ConstantElement>();
-        this.includes = new HashMap<IncludeInfo, IncludeElement>();
-        this.fncInvocations = new HashMap<ASTNodeInfo<FunctionInvocation>, Scope>();
-        this.fncDeclarations = new HashMap<ASTNodeInfo<FunctionDeclaration>, FunctionScope>();
-        this.staticMethodInvocations = new HashMap<ASTNodeInfo<StaticMethodInvocation>, Scope>();
-        this.methodDeclarations = new HashMap<ASTNodeInfo<MethodDeclaration>, MethodScope>();
-        this.magicMethodDeclarations = new HashMap<MagicMethodDeclarationInfo, MethodScope>();
-        this.methodInvocations = new HashMap<ASTNodeInfo<MethodInvocation>, Scope>();
-        this.fieldInvocations = new HashMap<ASTNodeInfo<FieldAccess>, Scope>();
-        this.staticFieldInvocations = new HashMap<ASTNodeInfo<StaticFieldAccess>, Scope>();
-        this.staticConstantInvocations = new HashMap<ASTNodeInfo<StaticConstantAccess>, Scope>();
-        this.clasDeclarations = new HashMap<ClassDeclarationInfo, ClassScope>();
-        this.ifaceDeclarations = new HashMap<InterfaceDeclarationInfo, InterfaceScope>();
-        this.traitDeclarations = new HashMap<TraitDeclarationInfo, TraitScope>();
-        this.clasNames = new HashMap<ASTNodeInfo<ClassName>, Scope>();
-        this.clasInstanceCreations = new HashMap<ASTNodeInfo<ClassInstanceCreation>, Scope>();
-        this.clasIDs = new HashMap<ASTNodeInfo<Expression>, Scope>();
-        this.ifaceIDs = new HashMap<ASTNodeInfo<Expression>, Scope>();
-        this.traitIDs = new HashMap<ASTNodeInfo<Expression>, Scope>();
-        this.classConstantDeclarations = new HashMap<ASTNodeInfo<Identifier>, ClassConstantElement>();
-        this.variables = new HashMap<ASTNodeInfo<Variable>, Scope>();
-        this.fldDeclarations = new HashMap<SingleFieldDeclarationInfo, FieldElementImpl>();
-        this.docTags = new HashMap<PhpDocTypeTagInfo, Scope>();
-        this.gotoStatement = new HashMap<ASTNodeInfo<GotoStatement>, Scope>();
-        this.gotoLabel = new HashMap<ASTNodeInfo<GotoLabel>, Scope>();
-        this.useAliases = new HashMap<ASTNodeInfo<Expression>, Scope>();
+        this.constInvocations = this.<ASTNodeInfo<Scalar>, Scope>initMap();
+        this.nsConstInvocations = this.<ASTNodeInfo<Expression>, Scope>initMap();
+        this.constDeclarations = this.<ASTNodeInfo<Scalar>, ConstantElement>initMap();
+        this.constDeclarations53 = this.<ConstantDeclarationInfo, ConstantElement>initMap();
+        this.includes = this.<IncludeInfo, IncludeElement>initMap();
+        this.fncInvocations = this.<ASTNodeInfo<FunctionInvocation>, Scope>initMap();
+        this.fncDeclarations = this.<ASTNodeInfo<FunctionDeclaration>, FunctionScope>initMap();
+        this.staticMethodInvocations = this.<ASTNodeInfo<StaticMethodInvocation>, Scope>initMap();
+        this.methodDeclarations = this.<ASTNodeInfo<MethodDeclaration>, MethodScope>initMap();
+        this.magicMethodDeclarations = this.<MagicMethodDeclarationInfo, MethodScope>initMap();
+        this.methodInvocations = this.<ASTNodeInfo<MethodInvocation>, Scope>initMap();
+        this.fieldInvocations = this.<ASTNodeInfo<FieldAccess>, Scope>initMap();
+        this.staticFieldInvocations = this.<ASTNodeInfo<StaticFieldAccess>, Scope>initMap();
+        this.staticConstantInvocations = this.<ASTNodeInfo<StaticConstantAccess>, Scope>initMap();
+        this.clasDeclarations = this.<ClassDeclarationInfo, ClassScope>initMap();
+        this.ifaceDeclarations = this.<InterfaceDeclarationInfo, InterfaceScope>initMap();
+        this.traitDeclarations = this.<TraitDeclarationInfo, TraitScope>initMap();
+        this.clasNames = this.<ASTNodeInfo<ClassName>, Scope>initMap();
+        this.clasInstanceCreations = this.<ASTNodeInfo<ClassInstanceCreation>, Scope>initMap();
+        this.clasIDs = this.<ASTNodeInfo<Expression>, Scope>initMap();
+        this.ifaceIDs = this.<ASTNodeInfo<Expression>, Scope>initMap();
+        this.traitIDs = this.<ASTNodeInfo<Expression>, Scope>initMap();
+        this.classConstantDeclarations = this.<ASTNodeInfo<Identifier>, ClassConstantElement>initMap();
+        this.variables = this.<ASTNodeInfo<Variable>, Scope>initMap();
+        this.fldDeclarations = this.<SingleFieldDeclarationInfo, FieldElementImpl>initMap();
+        this.docTags = this.<PhpDocTypeTagInfo, Scope>initMap();
+        this.gotoStatement = this.<ASTNodeInfo<GotoStatement>, Scope>initMap();
+        this.gotoLabel = this.<ASTNodeInfo<GotoLabel>, Scope>initMap();
+        this.useAliases = this.<ASTNodeInfo<Expression>, Scope>initMap();
+        this.useAliases = this.<ASTNodeInfo<Expression>, Scope>initMap();
 
         this.cachedOccurences = new ArrayList<Occurence>();
+    }
+
+    private <K, V> Map<K, V> initMap() {
+        return new ConcurrentHashMap<K, V>(INITIAL_CAPACITY, LOAD_FACTOR, ACCESSING_THREADS);
     }
 
     void prepare(GotoStatement statement, ScopeImpl scope) {
@@ -351,7 +430,12 @@ class OccurenceBuilder {
             }
             List<Expression> interfaes = classDeclaration.getInterfaes();
             for (Expression iface : interfaes) {
-                prepare(Kind.IFACE, iface, scope);
+                QualifiedName ifaceName = QualifiedName.create(iface);
+                if (ifaceName != null && VariousUtils.isAlias(ifaceName, classDeclaration.getStartOffset(), scope)) {
+                    prepare(Kind.USE_ALIAS, iface, scope);
+                } else {
+                    prepare(Kind.IFACE, iface, scope);
+                }
             }
 
         }
@@ -388,7 +472,13 @@ class OccurenceBuilder {
         if (canBePrepared(methodDeclaration, scope)) {
             MethodDeclarationInfo node = MethodDeclarationInfo.create(methodDeclaration, scope.getTypeScope());
             methodDeclarations.put(node, scope);
-
+            if (scope.getInScope() instanceof ClassScope) {
+                ClassScope classScope = (ClassScope) scope.getInScope();
+                String className = classScope.getName();
+                if (className != null && className.equals(CodeUtils.extractMethodName(methodDeclaration))) {
+                    prepare(Kind.CLASS, methodDeclaration.getFunction().getFunctionName(), scope);
+                }
+            }
         }
     }
 
@@ -444,7 +534,10 @@ class OccurenceBuilder {
         }
 
         for (Entry<IncludeInfo, IncludeElement> entry : includes.entrySet()) {
-            setOffsetElementInfo(new ElementInfo(entry.getKey(), ModelUtils.getNamespaceScope(entry.getValue())), offset);
+            NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(entry.getValue());
+            if (namespaceScope != null) {
+                setOffsetElementInfo(new ElementInfo(entry.getKey(), namespaceScope), offset);
+            }
         }
 
         for (Entry<ASTNodeInfo<FieldAccess>, Scope> entry : fieldInvocations.entrySet()) {
@@ -557,7 +650,6 @@ class OccurenceBuilder {
     }
 
     private void build(FileScopeImpl fileScope) {
-//        List<Occurence> retval = new ArrayList<Occurence>();
         ASTNodeInfo.Kind kind = elementInfo != null ? elementInfo.getKind() : null;
         if (elementInfo != null && kind != null) {
             final IndexScope indexScope = ModelUtils.getIndexScope(fileScope);
@@ -622,7 +714,10 @@ class OccurenceBuilder {
                     break;
                 case TRAIT:
                     final QualifiedName traitQualifiedName = elementInfo.getNodeInfo() != null
-                            ? VariousUtils.getFullyQualifiedName(elementInfo.getNodeInfo().getQualifiedName(), elementInfo.getNodeInfo().getOriginalNode().getStartOffset(), elementInfo.getScope())
+                            ? VariousUtils.getFullyQualifiedName(
+                                    elementInfo.getNodeInfo().getQualifiedName(),
+                                    elementInfo.getNodeInfo().getOriginalNode().getStartOffset(),
+                                    elementInfo.getScope())
                             : elementInfo.getQualifiedName();
                     final Set<TypeElement> traitTypes = index.getTypes(NameKind.exact(traitQualifiedName));
                     if (elementInfo.setDeclarations(traitTypes)) {
@@ -839,7 +934,7 @@ class OccurenceBuilder {
         Scope scope = elementInfo.getScope() instanceof TypeScope ? elementInfo.getScope() : elementInfo.getScope().getInScope();
         if (clzName.getKind().isUnqualified() && scope instanceof TypeScope) {
             if (clzName.getName().equalsIgnoreCase("self") //NOI18N
-                    || clzName.getName().equalsIgnoreCase("static")) {//NOI18N
+                    || clzName.getName().equalsIgnoreCase("static")) { //NOI18N
                 clzName = QualifiedName.create(((TypeScope) scope).getName());
             } else if (clzName.getName().equalsIgnoreCase("parent") && scope instanceof ClassScope) { //NOI18N
                 clzName = ((ClassScope) scope).getSuperClassName();
@@ -866,9 +961,9 @@ class OccurenceBuilder {
         final Set<MethodElement> methods = new HashSet<MethodElement>();
         Scope scope = elementInfo.getScope().getInScope();
         if (clzName.getKind().isUnqualified() && scope instanceof TypeScope) {
-            if (clzName.getName().equalsIgnoreCase("self") || clzName.getName().equalsIgnoreCase("static")) {//NOI18N
+            if (clzName.getName().equalsIgnoreCase("self") || clzName.getName().equalsIgnoreCase("static")) { //NOI18N
                 clzName = ((TypeScope) scope).getFullyQualifiedName();
-            } else if (clzName.getName().equalsIgnoreCase("parent") && scope instanceof ClassScope) {//NOI18N
+            } else if (clzName.getName().equalsIgnoreCase("parent") && scope instanceof ClassScope) { //NOI18N
                 clzName = ((ClassScope) scope).getSuperClassName();
             }
         }
@@ -909,7 +1004,9 @@ class OccurenceBuilder {
                     isTheRightType = true;
                 } else {
                     final Collection<QualifiedName> queryComposedNames = VariousUtils.getComposedNames(queryQN, nodeCtxInfo.getNamespaceScope());
-                    final Collection<QualifiedName> nodeQomposedNames = VariousUtils.getComposedNames(nodeQN, ModelUtils.getNamespaceScope(entry.getValue()));
+                    NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(entry.getValue());
+                    assert namespaceScope != null;
+                    final Collection<QualifiedName> nodeQomposedNames = VariousUtils.getComposedNames(nodeQN, namespaceScope);
                     queryComposedNames.retainAll(nodeQomposedNames);
                     isTheRightType = !queryComposedNames.isEmpty();
                 }
@@ -1405,7 +1502,7 @@ class OccurenceBuilder {
                 PhpDocTypeTagInfo nodeInfo = entry.getKey();
                 final QualifiedName qualifiedName = VariousUtils.getFullyQualifiedName(nodeInfo.getQualifiedName(), nodeInfo.getOriginalNode().getStartOffset(), entry.getValue());
                 final String name = nodeInfo.getName();
-                if (name != null && !name.trim().isEmpty() && NameKind.exact(name).matchesName(PhpElementKind.CLASS, phpElement.getName())
+                if (StringUtils.hasText(name) && NameKind.exact(name).matchesName(PhpElementKind.CLASS, phpElement.getName())
                         && NameKind.exact(qualifiedName).matchesName(phpElement)) {
                     if (qualifiedName.getKind().isUnqualified()) {
                         occurences.add(new OccurenceImpl(ElementFilter.forFiles(fileScope.getFileObject()).prefer(elements), nodeInfo.getRange()));
@@ -1424,7 +1521,10 @@ class OccurenceBuilder {
                 ASTNodeInfo<ClassInstanceCreation> nodeInfo = entry.getKey();
                 final boolean isAliased = VariousUtils.isAliased(nodeInfo.getQualifiedName(), nodeInfo.getOriginalNode().getStartOffset(), entry.getValue());
                 if (!isAliased || nodeInfo.getQualifiedName().getSegments().size() > 1) {
-                    final QualifiedName qualifiedName = VariousUtils.getFullyQualifiedName(nodeInfo.getQualifiedName(), nodeInfo.getOriginalNode().getStartOffset(), entry.getValue());
+                    final QualifiedName qualifiedName = VariousUtils.getFullyQualifiedName(
+                            nodeInfo.getQualifiedName(),
+                            nodeInfo.getOriginalNode().getStartOffset(),
+                            entry.getValue());
                     Set<? extends PhpElement> contextTypes = elements;
                     if (NameKind.exact(qualifiedName).matchesName(phpElement)) {
                         if (qualifiedName.getKind().isUnqualified()) {
@@ -1705,15 +1805,12 @@ class OccurenceBuilder {
     }
 
     private void buildDocTagsForFields(ElementInfo nodeCtxInfo, FileScopeImpl fileScope, final List<Occurence> occurences) {
-        Collection<QualifiedName> matchingTypeNames = new HashSet<QualifiedName>();
         Set<? extends PhpElement> elements = nodeCtxInfo.getDeclarations();
         for (PhpElement phpElement : elements) {
             if (phpElement instanceof FieldElement) {
                 FieldElement fieldElement = (FieldElement) phpElement;
                 TypeElement typeElement = fieldElement.getType();
                 Exact typeName = NameKind.exact(typeElement.getFullyQualifiedName());
-                matchingTypeNames.add(typeElement.getFullyQualifiedName());
-                matchingTypeNames.add(nodeCtxInfo.getTypeQualifiedName());
                 Exact fieldName = NameKind.exact(phpElement.getName());
                 for (Entry<PhpDocTypeTagInfo, Scope> entry : docTags.entrySet()) {
                     PhpDocTypeTagInfo nodeInfo = entry.getKey();
@@ -1764,8 +1861,7 @@ class OccurenceBuilder {
         }
         final VariableScope ctxVarScope = (VariableScope) ctxScope;
         final ElementFilter nameFilter = ElementFilter.forName(NameKind.exact(nodeCtxInfo.getName()));
-        final Set<VariableName> vars = ctxVarScope != null ? nameFilter.filter(new HashSet<VariableName>(ctxVarScope.getDeclaredVariables()))
-                : Collections.<VariableName>emptySet();
+        final Set<VariableName> vars = nameFilter.filter(new HashSet<VariableName>(ctxVarScope.getDeclaredVariables()));
         final VariableName var = (vars.size() == 1) ? vars.iterator().next() : null;
         if (var != null) {
             for (Entry<PhpDocTypeTagInfo, Scope> entry : docTags.entrySet()) {
@@ -1794,55 +1890,60 @@ class OccurenceBuilder {
     }
 
     private void buildVariables(ElementInfo nodeCtxInfo, FileScopeImpl fileScope, final List<Occurence> occurences) {
-        final Scope ctxScope = nodeCtxInfo.getScope() instanceof VariableName ? nodeCtxInfo.getScope().getInScope() : nodeCtxInfo.getScope();
+        Scope ctxScope = nodeCtxInfo.getScope() instanceof VariableName ? nodeCtxInfo.getScope().getInScope() : nodeCtxInfo.getScope();
+        if (ctxScope instanceof VarAssignmentImpl) {
+            ctxScope = ctxScope.getInScope();
+        }
         if (!(ctxScope instanceof VariableScope)) {
             return;
         }
         final VariableScope ctxVarScope = (VariableScope) ctxScope;
-        final ElementFilter nameFilter = ElementFilter.forName(NameKind.exact(nodeCtxInfo.getName()));
-        final Set<VariableName> vars = ctxVarScope != null ? nameFilter.filter(new HashSet<VariableName>(ctxVarScope.getDeclaredVariables()))
-                : Collections.<VariableName>emptySet();
-        final VariableName var = (vars.size() == 1) ? vars.iterator().next() : null;
-        if (var != null) {
-            for (Entry<ASTNodeInfo<Variable>, Scope> entry : variables.entrySet()) {
-                ASTNodeInfo<Variable> nodeInfo = entry.getKey();
-                boolean addOccurence = false;
-                if (NameKind.exact(nodeInfo.getName()).matchesName(PhpElementKind.VARIABLE, nodeCtxInfo.getName())) {
-                    if (!var.isGloballyVisible()) {
-                        Scope nextScope = entry.getValue();
-                        if (var.representsThis() && nextScope.getInScope() instanceof TypeScope) {
-                            final Scope inScope = ctxVarScope instanceof MethodScope ? ctxVarScope.getInScope() : ctxVarScope;
-                            if (nextScope.getInScope().equals(inScope)) {
-                                addOccurence = true;
+        String nodeName = nodeCtxInfo.getName();
+        if (StringUtils.hasText(nodeName)) {
+            final ElementFilter nameFilter = ElementFilter.forName(NameKind.exact(nodeName));
+            final Set<VariableName> vars = nameFilter.filter(new HashSet<VariableName>(ctxVarScope.getDeclaredVariables()));
+            final VariableName var = (vars.size() == 1) ? vars.iterator().next() : null;
+            if (var != null) {
+                for (Entry<ASTNodeInfo<Variable>, Scope> entry : variables.entrySet()) {
+                    ASTNodeInfo<Variable> nodeInfo = entry.getKey();
+                    boolean addOccurence = false;
+                    if (NameKind.exact(nodeInfo.getName()).matchesName(PhpElementKind.VARIABLE, nodeName)) {
+                        if (!var.isGloballyVisible()) {
+                            Scope nextScope = entry.getValue();
+                            if (var.representsThis() && nextScope.getInScope() instanceof TypeScope) {
+                                final Scope inScope = ctxVarScope instanceof MethodScope ? ctxVarScope.getInScope() : ctxVarScope;
+                                if (nextScope.getInScope().equals(inScope)) {
+                                    addOccurence = true;
+                                }
+                            } else {
+                                if (ctxVarScope.equals(nextScope)) {
+                                    addOccurence = true;
+                                }
                             }
                         } else {
-                            if (ctxVarScope.equals(nextScope)) {
-                                addOccurence = true;
-                            }
-                        }
-                    } else {
-                        Scope nextScope = entry.getValue();
-                        if (nextScope instanceof VariableScope) {
-                            final Set<VariableName> nextVars = nameFilter.filter(new HashSet<VariableName>(((VariableScope) nextScope).getDeclaredVariables()));
-                            final VariableName nextVar = (nextVars.size() == 1) ? nextVars.iterator().next() : null;
-                            if (nextVar != null && nextVar.isGloballyVisible()) {
-                                addOccurence = true;
+                            Scope nextScope = entry.getValue();
+                            if (nextScope instanceof VariableScope) {
+                                final Set<VariableName> nextVars = nameFilter.filter(new HashSet<VariableName>(((VariableScope) nextScope).getDeclaredVariables()));
+                                final VariableName nextVar = (nextVars.size() == 1) ? nextVars.iterator().next() : null;
+                                if (nextVar != null && nextVar.isGloballyVisible()) {
+                                    addOccurence = true;
+                                }
                             }
                         }
                     }
-                }
-                if (addOccurence) {
-                    if ((var instanceof VariableNameImpl) && (((VariableNameImpl) var).indexedElement instanceof PhpElement)) {
-                        final VariableNameImpl nameImpl = (VariableNameImpl) var;
-                        occurences.add(new OccurenceImpl(var, nodeInfo.getRange()) {
+                    if (addOccurence) {
+                        if ((var instanceof VariableNameImpl) && (((VariableNameImpl) var).indexedElement instanceof PhpElement)) {
+                            final VariableNameImpl nameImpl = (VariableNameImpl) var;
+                            occurences.add(new OccurenceImpl(var, nodeInfo.getRange()) {
 
-                            @Override
-                            public Collection<? extends PhpElement> gotoDeclarations() {
-                                return Collections.singleton((PhpElement) nameImpl.indexedElement);
-                            }
-                        });
-                    } else {
-                        occurences.add(new OccurenceImpl(var, nodeInfo.getRange()));
+                                @Override
+                                public Collection<? extends PhpElement> gotoDeclarations() {
+                                    return Collections.singleton((PhpElement) nameImpl.indexedElement);
+                                }
+                            });
+                        } else {
+                            occurences.add(new OccurenceImpl(var, nodeInfo.getRange()));
+                        }
                     }
                 }
             }
@@ -1921,15 +2022,13 @@ class OccurenceBuilder {
                 return true;
             }
             final Collection<QualifiedName> queryComposedNames = VariousUtils.getComposedNames(queryQN, query.getNamespaceScope());
-            final Collection<QualifiedName> nodeQomposedNames = VariousUtils.getComposedNames(nodeQN, ModelUtils.getNamespaceScope(nodeScope));
+            NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(nodeScope);
+            assert namespaceScope != null;
+            final Collection<QualifiedName> nodeQomposedNames = VariousUtils.getComposedNames(nodeQN, namespaceScope);
             queryComposedNames.retainAll(nodeQomposedNames);
             return !queryComposedNames.isEmpty();
         }
         return false;
-    }
-
-    private static QualifiedName getTypeFullyQualifedName(ASTNodeInfo nodeInfo, Scope inScope) {
-        return null;
     }
 
     private class OccurenceImpl implements Occurence {
@@ -1937,7 +2036,6 @@ class OccurenceBuilder {
         private final OffsetRange occurenceRange;
         final PhpElement declaration;
         private Collection<? extends PhpElement> allDeclarations;
-        private Collection<? extends PhpElement> gotoDeclarations;
         private Accuracy accuracy = Accuracy.EXACT;
 
         public OccurenceImpl(Collection<? extends PhpElement> allDeclarations, OffsetRange occurenceRange) {
@@ -1977,7 +2075,7 @@ class OccurenceBuilder {
 
         @Override
         public Collection<? extends PhpElement> gotoDeclarations() {
-            return gotoDeclarations == null ? allDeclarations : gotoDeclarations;
+            return allDeclarations;
         }
 
         public void setAccuracy(Accuracy accuracy) {
@@ -2036,7 +2134,7 @@ class OccurenceBuilder {
 
         public QualifiedName getTypeQualifiedName() {
             ASTNodeInfo nodeInfo = getNodeInfo();
-            QualifiedName qualifiedName = null;
+            QualifiedName qualifiedName;
             if (nodeInfo != null) {
                 ASTNode originalNode = nodeInfo.getOriginalNode();
                 if (nodeInfo instanceof ClassConstantDeclarationInfo && originalNode instanceof Identifier) {
@@ -2071,7 +2169,7 @@ class OccurenceBuilder {
 
         public QualifiedName getQualifiedName() {
             ASTNodeInfo nodeInfo = getNodeInfo();
-            QualifiedName qualifiedName = null;
+            QualifiedName qualifiedName;
             if (nodeInfo != null) {
                 qualifiedName = nodeInfo.getQualifiedName();
             } else {
@@ -2140,6 +2238,8 @@ class OccurenceBuilder {
                 case TRAIT:
                     kind = Kind.TRAIT;
                     break;
+                default:
+                    assert false;
             }
             assert kind != null;
             return kind;

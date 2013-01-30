@@ -55,6 +55,7 @@ import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
+import org.openide.DialogDescriptor;
 
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.SaveCookie;
@@ -156,14 +157,18 @@ public class ExternalChangeOfModifiedFileTest extends NbTestCase {
         assertNotNull("Panes are still open", arr);
         assertTrue("Document is remains modified", edit.isModified());
 
-     //   DD.toReturn.push(DialogDescriptor.CLOSED_OPTION);
+        DD.toReturn.push(DialogDescriptor.YES_NO_OPTION);
 
         SaveCookie sc = obj.getLookup().lookup(SaveCookie.class);
         assertNotNull("File is modified and has save cookie", sc);
         try {
             edit.saveDocument();
-            fail("External modification detected, expect UserQuestionException");
+            // Since fix of #186364 UQE is catched in DataEditorSupport
+//            fail("External modification detected, expect UserQuestionException");
         } catch (UserQuestionException ex) {
+            // Since fix of #186364 UQE is catched in DataEditorSupport
+            fail("UserQuestionException should no longer be thrown");
+
             waitEQ();
             String txt2 = doc.getText(0, doc.getLength());
             assertEquals("The right text from the IDE remains", txt2, "Internal change\n");

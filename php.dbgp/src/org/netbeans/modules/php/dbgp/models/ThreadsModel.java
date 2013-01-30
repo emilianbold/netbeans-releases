@@ -46,16 +46,14 @@ package org.netbeans.modules.php.dbgp.models;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import javax.swing.Action;
-
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.php.dbgp.ConversionUtils;
 import org.netbeans.modules.php.dbgp.DebugSession;
-import org.netbeans.modules.php.dbgp.SessionManager;
 import org.netbeans.modules.php.dbgp.SessionId;
+import org.netbeans.modules.php.dbgp.SessionManager;
 import org.netbeans.modules.php.dbgp.packets.StatusCommand;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.ui.Constants;
@@ -74,24 +72,24 @@ import org.openide.util.NbBundle;
  * @author ads
  */
 public class ThreadsModel extends ViewModelSupport
-        implements TreeModel, NodeModel, NodeActionsProvider, TableModel 
+        implements TreeModel, NodeModel, NodeActionsProvider, TableModel
 {
 
-    private static final String RUNNING_STATE 
+    private static final String RUNNING_STATE
                                       = "LBL_Running";                        // NOI18N
 
-    private static final String SUSPENDED_STATE 
+    private static final String SUSPENDED_STATE
                                       = "LBL_Suspended";                      // NOI18N
 
-    private static final String INACTIVE_THREAD_STATE 
+    private static final String INACTIVE_THREAD_STATE
                                       = "LBL_InactiveThreadState";            // NOI18N
 
-    private static final String ACTIVE_THREAD_STATE 
+    private static final String ACTIVE_THREAD_STATE
                                        = "LBL_ActiveThreadState";             // NOI18N
 
-    private static final String THREAD_NAME         
+    private static final String THREAD_NAME
                                        = "LBL_ThreadName";                    // NOI18N
-    
+
     public static final String CURRENT =
         "org/netbeans/modules/debugger/resources/threadsView/CurrentThread";  // NOI18N
     public static final String RUNNING =
@@ -102,7 +100,7 @@ public class ThreadsModel extends ViewModelSupport
     public ThreadsModel(ContextProvider contextProvider) {
         myProvider = contextProvider;
     }
-    
+
     /* (non-Javadoc)
      * @see org.netbeans.modules.php.dbgp.models.ViewModelSupport#clearModel()
      */
@@ -110,7 +108,7 @@ public class ThreadsModel extends ViewModelSupport
     public void clearModel() {
         update();
     }
-    
+
     /* (non-Javadoc)
      * @see org.netbeans.spi.viewmodel.TreeModel#getRoot()
      */
@@ -118,11 +116,11 @@ public class ThreadsModel extends ViewModelSupport
     public Object getRoot() {
         return ROOT;
     }
-    
+
     public void update( ){
         refresh();
     }
-    
+
     public void updateSession( DebugSession session ){
         updateThreadState(session);
     }
@@ -131,8 +129,8 @@ public class ThreadsModel extends ViewModelSupport
      * @see org.netbeans.spi.viewmodel.TreeModel#getChildren(java.lang.Object, int, int)
      */
     @Override
-    public Object[] getChildren(Object parent, int from, int to) 
-        throws UnknownTypeException 
+    public Object[] getChildren(Object parent, int from, int to)
+        throws UnknownTypeException
     {
         if (parent == ROOT) {
             SessionId id = getSessionId();
@@ -141,7 +139,7 @@ public class ThreadsModel extends ViewModelSupport
             }
             DebugSession debugSession = ConversionUtils.toDebugSession(id);
             int size = (debugSession != null) ? 1 : 0;
-            
+
             if ( from >= size ){
                 return new Object[0];
             }
@@ -154,7 +152,7 @@ public class ThreadsModel extends ViewModelSupport
             List<DebugSession> result = list.subList( from , end );
             return result.toArray( new Object[ result.size() ] );
         }
-        
+
         throw new UnknownTypeException(parent);
     }
 
@@ -197,14 +195,14 @@ public class ThreadsModel extends ViewModelSupport
         if (node instanceof DebugSession ) {
             DebugSession session = (DebugSession) node;
             String scriptName = getScriptName( session );
-            
-            return NbBundle.getMessage(ThreadsModel.class, THREAD_NAME, 
+
+            return NbBundle.getMessage(ThreadsModel.class, THREAD_NAME,
                     scriptName );
         }
         else if (node == ROOT) {
             return ROOT.toString();
         }
-        
+
         throw new UnknownTypeException(node);
     }
 
@@ -221,7 +219,7 @@ public class ThreadsModel extends ViewModelSupport
             else {
                 if ( isCurrent( session ) ) {
                     return CURRENT;
-                }                
+                }
                 else {
                     return RUNNING;
                 }
@@ -230,7 +228,7 @@ public class ThreadsModel extends ViewModelSupport
         else if (node == ROOT) {
             return null;
         }
-        
+
         throw new UnknownTypeException(node);
     }
 
@@ -259,18 +257,18 @@ public class ThreadsModel extends ViewModelSupport
             if ( id == null ){
                 return;
             }
-            DebugSession current = 
+            DebugSession current =
                 SessionManager.getInstance().getSession(id);
-            
+
             if (! session.equals( current)) {
-                StatusCommand command = new StatusCommand( 
+                StatusCommand command = new StatusCommand(
                         session.getTransactionId() );
                 session.sendCommandLater(command);
                 updateThreadState(current);
                 updateThreadState(session);
             }
         }
-        
+
         throw new UnknownTypeException(node);
     }
 
@@ -286,8 +284,8 @@ public class ThreadsModel extends ViewModelSupport
      * @see org.netbeans.spi.viewmodel.TableModel#getValueAt(java.lang.Object, java.lang.String)
      */
     @Override
-    public Object getValueAt(Object node, String columnID) 
-        throws UnknownTypeException 
+    public Object getValueAt(Object node, String columnID)
+        throws UnknownTypeException
     {
         if (node == ROOT) {
             return null;
@@ -295,14 +293,14 @@ public class ThreadsModel extends ViewModelSupport
 
         if (node instanceof DebugSession) {
             DebugSession session = (DebugSession)node;
-            
-            if (columnID == Constants.THREAD_SUSPENDED_COLUMN_ID) {
+
+            if (Constants.THREAD_SUSPENDED_COLUMN_ID.equals(columnID)) {
                 return session.getBridge().isSuspended();
             }
-            else if (columnID == Constants.THREAD_STATE_COLUMN_ID) {
-                String key = isCurrent(session) ? ACTIVE_THREAD_STATE : 
+            else if (Constants.THREAD_STATE_COLUMN_ID.equals(columnID)) {
+                String key = isCurrent(session) ? ACTIVE_THREAD_STATE :
                         INACTIVE_THREAD_STATE;
-                String value = session.getBridge().isSuspended() ? 
+                String value = session.getBridge().isSuspended() ?
                         SUSPENDED_STATE : RUNNING_STATE;
                 String result = NbBundle.getMessage(ThreadsModel.class,
                         key,NbBundle.getMessage(ThreadsModel.class, value ));
@@ -317,8 +315,8 @@ public class ThreadsModel extends ViewModelSupport
      * @see org.netbeans.spi.viewmodel.TableModel#isReadOnly(java.lang.Object, java.lang.String)
      */
     @Override
-    public boolean isReadOnly(Object node, String columnID) 
-        throws UnknownTypeException 
+    public boolean isReadOnly(Object node, String columnID)
+        throws UnknownTypeException
     {
         if (node == ROOT || node instanceof DebugSession ) {
             return true;
@@ -331,8 +329,8 @@ public class ThreadsModel extends ViewModelSupport
      * @see org.netbeans.spi.viewmodel.TableModel#setValueAt(java.lang.Object, java.lang.String, java.lang.Object)
      */
     @Override
-    public void setValueAt(Object node, String columnID, Object value) 
-        throws UnknownTypeException 
+    public void setValueAt(Object node, String columnID, Object value)
+        throws UnknownTypeException
     {
         throw new UnknownTypeException(node);
     }
@@ -341,7 +339,7 @@ public class ThreadsModel extends ViewModelSupport
     private void updateThreadState(DebugSession session) {
         fireChangeEvent(new ModelEvent.NodeChanged(this, session));
     }
-    
+
     private String getScriptName( DebugSession session ) {
         SessionId id = session.getSessionId();
         if ( id == null ){
@@ -355,11 +353,11 @@ public class ThreadsModel extends ViewModelSupport
         Project project = FileOwnerQuery.getOwner( script );
         return FileUtil.getRelativePath( project.getProjectDirectory(), script );
     }
-    
+
     private Session getSession(){
         return (Session)getContextProvider().lookupFirst( null , Session.class );
     }
-    
+
     private SessionId getSessionId(){
         ContextProvider provider = getContextProvider();
         if ( provider == null ){
@@ -367,18 +365,18 @@ public class ThreadsModel extends ViewModelSupport
         }
         return (SessionId)provider.lookupFirst( null , SessionId.class );
     }
-    
+
     private ContextProvider getContextProvider() {
         return myProvider;
     }
-    
+
     private boolean isCurrent( DebugSession session ){
         SessionId id = getSessionId();
-        DebugSession current = 
+        DebugSession current =
             SessionManager.getInstance().getSession(id);
         return session.equals( current );
     }
-    
+
     private ContextProvider myProvider;
 
 }

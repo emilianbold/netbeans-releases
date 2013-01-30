@@ -60,6 +60,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -70,12 +71,12 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.JarFileSystem;
 import org.openide.filesystems.Repository;
 import org.openide.filesystems.URLMapper;
-import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.ServiceProvider;
 
 @ServiceProvider(service=URLMapper.class)
 public class ArchiveURLMapper extends URLMapper {
+    private static final Logger LOG = Logger.getLogger(ArchiveURLMapper.class.getName());
 
     private static final String JAR_PROTOCOL = "jar";   //NOI18N
 
@@ -103,8 +104,7 @@ public class ArchiveURLMapper extends URLMapper {
                         }
                     }
                 } catch (/*IO,URISyntax*/Exception e) {
-                    Exceptions.attachMessage(e, "fo: " + fo + " archiveFile: " + archiveFile); // NOI18N
-                    Exceptions.printStackTrace(e);
+                    LOG.log(Level.INFO, "fo: " + fo + " archiveFile: " + archiveFile, e);
                 }
             }
         }
@@ -124,7 +124,7 @@ public class ArchiveURLMapper extends URLMapper {
                     try {
                         archiveFileURL = archiveFileURI.toURL();
                     } catch (IllegalArgumentException x) {
-                        ModuleLayeredFileSystem.err.log(Level.INFO, "checking " + archiveFileURI, x);
+                        LOG.log(Level.INFO, "checking " + archiveFileURI, x);
                         return null;
                     }
                     FileObject fo = URLMapper.findFileObject (archiveFileURL);
@@ -143,10 +143,9 @@ public class ArchiveURLMapper extends URLMapper {
                         return new FileObject[] {resource};
                     }
                 } catch (IOException e) {                    
-                    ModuleLayeredFileSystem.err.log(Level.INFO, "checking " + url, e);
-                }
-                catch (URISyntaxException e) {
-                    Exceptions.printStackTrace(e);
+                    LOG.log(Level.INFO, "checking " + url, e);
+                } catch (URISyntaxException e) {
+                    LOG.log(Level.INFO, "Can't get fo for " + url, e);
                 }
             }
         }
@@ -234,7 +233,7 @@ public class ArchiveURLMapper extends URLMapper {
                                 // and register again
                                 getFileSystem(root);
                             } catch (IOException e) {
-                                Exceptions.printStackTrace(e);
+                                LOG.log(Level.INFO, "Can't copy JAR " + fe.getFile() + " to " + nestedRootURIFinal, e);
                             }
                         }
                     }

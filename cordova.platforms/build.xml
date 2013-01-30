@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project basedir="." default="netbeans" name="cordova.platforms">
+    <description>Builds, tests, and runs the project org.netbeans.modules.cordova.platforms</description>
+    <import file="../nbbuild/templates/projectized.xml"/>
+</project>

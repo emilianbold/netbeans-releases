@@ -54,7 +54,6 @@ public final class PhpModifiers extends Modifier {
     public static final int ALL_FLAGS = 0xFFFFFFFF;
 
     private static final PhpModifiers EMPTY = new PhpModifiers(NO_FLAGS);
-    private static final PhpModifiers ANY = new PhpModifiers(ALL_FLAGS);
 
     public static PhpModifiers noModifiers() {
         return fromBitMask(new int[]{});
@@ -68,7 +67,7 @@ public final class PhpModifiers extends Modifier {
         return this;
     }
 
-    public PhpModifiers setPrivate(){
+    public PhpModifiers setPrivate() {
         mod |= Modifier.PRIVATE;
         return this;
     }
@@ -128,7 +127,7 @@ public final class PhpModifiers extends Modifier {
         return Modifier.isPublic(mod);
     }
 
-    public boolean isPrivate(){
+    public boolean isPrivate() {
         return Modifier.isPrivate(mod);
     }
 
@@ -155,8 +154,7 @@ public final class PhpModifiers extends Modifier {
 
     @Override
     public boolean equals(Object obj) {
-        return (obj instanceof PhpModifiers) ?
-            ((PhpModifiers)obj).mod == mod : false;
+        return (obj instanceof PhpModifiers) ? ((PhpModifiers) obj).mod == mod : false;
     }
 
     @Override

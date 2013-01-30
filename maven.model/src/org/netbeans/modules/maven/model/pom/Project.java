@@ -47,7 +47,7 @@ import java.util.*;
  *
  * @author mkleint
  */
-public interface Project extends VersionablePOMComponent, DependencyContainer {
+public interface Project extends VersionablePOMComponent, DependencyContainer, RepositoryContainer {
 //  <!--xs:complexType name="Model">
 //    <xs:all>
 //      <xs:element name="parent" minOccurs="0" type="Parent">
@@ -229,23 +229,6 @@ public interface Project extends VersionablePOMComponent, DependencyContainer {
     public List<String> getModules();
     public void addModule(String module);
     public void removeModule(String module);
-
-    /**
-     * POM RELATED PROPERTY
-     * @return
-     */
-    public List<Repository> getRepositories();
-    public void addRepository(Repository repository);
-    public void removeRepository(Repository repository);
-
-    /**
-     * POM RELATED PROPERTY
-     * @return
-     */
-    public List<Repository> getPluginRepositories();
-    public void addPluginRepository(Repository pluginRepository);
-    public void removePluginRepository(Repository pluginRepository);
-
 
     /**
      * POM RELATED PROPERTY

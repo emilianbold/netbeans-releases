@@ -55,7 +55,13 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
@@ -76,6 +82,7 @@ import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
+import javax.swing.plaf.ComboBoxUI;
 import javax.swing.plaf.UIResource;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
@@ -161,6 +168,17 @@ public class ActiveConfigAction extends CallableSystemAction implements LookupLi
                 }
                 return sz;
             }
+
+            @Override
+            public void setUI(ComboBoxUI ui) {
+                super.setUI(ui);
+                //#208060 you will not believe this. When a Windows Desktop Connection connects to a computer running netbeans,
+                // the look and feel will call setUI on everything, in effect clearing the set renderer we have.
+                // so this call is here to have the last word.
+                setRenderer(new ConfigCellRenderer());
+            }
+            
+            
         };
         configListCombo.addPopupMenuListener(new PopupMenuListener() {
             private Component prevFocusOwner = null;
@@ -354,39 +372,87 @@ public class ActiveConfigAction extends CallableSystemAction implements LookupLi
             }
         }
 
-        private ProjectConfigurationProvider<?> findPCP() {
+        private Collection<ProjectConfigurationProvider<?>> findPCPs() {
             if (context != null) {
                 Collection<? extends Project> projects = context.lookupAll(Project.class);
-                if (projects.size() == 1) {
-                    return projects.iterator().next().getLookup().lookup(ProjectConfigurationProvider.class);
+                if (projects.size() > 0) {
+                    Collection<ProjectConfigurationProvider<?>> toRet = new HashSet<ProjectConfigurationProvider<?>>();
+                    for (Project p : projects) {
+                        ProjectConfigurationProvider tempPcp = p.getLookup().lookup(ProjectConfigurationProvider.class);
+                        if (tempPcp != null) {
+                            toRet.add(tempPcp);
+                        }
+                    }
+                    return toRet;
                 } else {
                     // No selection, or multiselection.
                     return null;
                 }
             } else {
                 synchronized (ActiveConfigAction.this) {
-                    return pcp; // global menu item; take from main project
+                    if (pcp != null) {
+                        return Collections.<ProjectConfigurationProvider<?>>singleton(pcp); // global menu item; take from main project
+                    } else {
+                        return Collections.<ProjectConfigurationProvider<?>>emptySet();
+                    }
                 }
             }
         }
         
         public @Override JComponent[] getMenuPresenters() {
             removeAll();
-            final ProjectConfigurationProvider<?> pcp = findPCP();
-            if (pcp != null) {
+            final Collection<ProjectConfigurationProvider<?>> pcps = findPCPs();
+            if (pcps != null && pcps.size() > 0) {
                 boolean something = false;
-                ProjectConfiguration activeConfig = getActiveConfiguration(pcp);
-                for (final ProjectConfiguration config : getConfigurations(pcp)) {
-                    JRadioButtonMenuItem jmi = new JRadioButtonMenuItem(config.getDisplayName(), config.equals(activeConfig));
+                int size = pcps.size();
+                ProjectConfiguration activeConfig = null;
+                if (size == 1) {
+                    activeConfig = getActiveConfiguration(pcps.iterator().next());
+                }
+                class Wrapper {
+                    final ProjectConfiguration config;
+                    final ProjectConfigurationProvider<?> prov;
+
+                    public Wrapper(ProjectConfiguration config, ProjectConfigurationProvider<?> prov) {
+                        this.config = config;
+                        this.prov = prov;
+                    }
+                    
+                }
+                Map<String, Collection<Wrapper>> name2pc = new HashMap<String, Collection<Wrapper>>();
+                
+                for (ProjectConfigurationProvider<?> pcp : pcps) {
+                    for (ProjectConfiguration config : getConfigurations(pcp)) {
+                        Collection<Wrapper> found = name2pc.get(config.getDisplayName());
+                        if (found == null) {
+                            found = new ArrayList<Wrapper>();
+                            name2pc.put(config.getDisplayName(), found);
+                        }
+                        found.add(new Wrapper(config, pcp));
+                    } 
+                }
+                
+                Iterator<Map.Entry<String, Collection<Wrapper>>> it = name2pc.entrySet().iterator();
+                while (it.hasNext()) {
+                    Map.Entry<String, Collection<Wrapper>> ent = it.next();
+                    if (ent.getValue().size() != size) {
+                        it.remove(); //only accept entries represented in all projects..
+                    }
+                }
+                for (final Map.Entry<String, Collection<Wrapper>> config : name2pc.entrySet()) {
+                    boolean active = size == 1 ? config.getValue().iterator().next().config.equals(activeConfig) : false;
+                    JRadioButtonMenuItem jmi = new JRadioButtonMenuItem(config.getKey(), active);
                     jmi.addActionListener(new ActionListener() {
                         public @Override void actionPerformed(ActionEvent e) {
-                            activeConfigurationSelected(config, findPCP());
+                            for (Wrapper w : config.getValue()) {
+                                activeConfigurationSelected(w.config, w.prov);
+                            }
                         }
                     });
                     add(jmi);
                     something = true;
                 }
-                if (pcp.hasCustomizer()) {
+                if (size == 1 && pcps.iterator().next().hasCustomizer()) {
                     if (something) {
                         addSeparator();
                     }
@@ -412,9 +478,9 @@ public class ActiveConfigAction extends CallableSystemAction implements LookupLi
         }
 
         public @Override void actionPerformed(ActionEvent e) {
-            ProjectConfigurationProvider<?> pcp = findPCP();
-            if (pcp != null) {
-                pcp.customize();
+            Collection<ProjectConfigurationProvider<?>> pcp = findPCPs();
+            if (pcp != null && pcp.size() == 1) {
+                pcp.iterator().next().customize();
             }
         }
 

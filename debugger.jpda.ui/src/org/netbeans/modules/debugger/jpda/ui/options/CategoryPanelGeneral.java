@@ -51,12 +51,18 @@ package org.netbeans.modules.debugger.jpda.ui.options;
 import java.util.prefs.Preferences;
 import org.netbeans.api.debugger.Properties;
 import org.netbeans.api.debugger.jpda.JPDABreakpoint;
+import org.netbeans.modules.options.java.api.JavaOptions;
+import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.NbPreferences;
 
 /**
  *
  * @author Martin Entlicher
  */
+@OptionsPanelController.Keywords(keywords={"#CategoryPanelGeneral.kw1", "#CategoryPanelGeneral.kw2",
+                                           "#CategoryPanelGeneral.kw3", "#CategoryPanelGeneral.kw4",
+                                           "#CategoryPanelGeneral.kw5", "#CategoryPanelGeneral.kw6"},
+                                 location=JavaOptions.JAVA, tabTitle="#LBL_JavaDebugger")
 class CategoryPanelGeneral extends StorablePanel {
 
     /** Creates new form CategoryPanelGeneral */

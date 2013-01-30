@@ -46,13 +46,7 @@ package org.netbeans.modules.glassfish.common.wizards;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -61,11 +55,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.server.ServerInstance;
-import org.netbeans.modules.glassfish.common.CreateDomain;
-import org.netbeans.modules.glassfish.common.GlassfishInstance;
-import org.netbeans.modules.glassfish.common.GlassfishInstanceProvider;
-import org.netbeans.modules.glassfish.common.PortCollection;
-import org.netbeans.modules.glassfish.common.ServerDetails;
+import org.netbeans.modules.glassfish.common.*;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.glassfish.spi.RegisteredDerbyServer;
 import org.netbeans.modules.glassfish.spi.ServerUtilities;
@@ -259,8 +249,10 @@ public class ServerWizardIterator extends PortCollection implements WizardDescri
         }
     }
     
-//    private String userName;
-//    private String password;
+    /** GlassFish server administrator's user name. */
+    private String userName;
+    /** GlassFish server administrator's password. */
+    private String password;
     private String installRoot;
     private String glassfishRoot;
     private String hostName;
@@ -274,21 +266,47 @@ public class ServerWizardIterator extends PortCollection implements WizardDescri
         this.useDefaultPorts = useDefaultPorts;
     }
 
-    public String formatUri(String host, int port, String target, String domainsD, String domainN) {
+    public String formatUri(String host, int port, String target,
+            String domainsD, String domainN) {
         String domainInfo = "";
         if (null != domainsD && domainsD.length() > 0 &&
                 null != domainN && domainN.length() > 0) {
-            domainInfo = File.pathSeparator + domainsD + File.separator + domainN;
+            domainInfo
+                    = File.pathSeparator + domainsD + File.separator + domainN;
         }
         if (null == target || "".equals(target.trim())) {
-            return null != sd ? "[" + glassfishRoot + domainInfo + "]" + sd.getUriFragment() + ":" + host + ":" + port // NOI18N
-                    : "[" + glassfishRoot + domainInfo + "]null:" + host + ":" + port; // NOI18N
+            return null != sd
+                    ? "[" + glassfishRoot + domainInfo + "]"
+                    + sd.getUriFragment() + ":" + host + ":" + port
+                    : "[" + glassfishRoot + domainInfo + "]null:"
+                    + host + ":" + port;
         } else {
-            return null != sd ? "[" + glassfishRoot + domainInfo + "]" + sd.getUriFragment() + ":" + host + ":" + port+":"+target // NOI18N
-                    : "[" + glassfishRoot + domainInfo + "]null:" + host + ":" + port+":"+target; // NOI18N
+            return null != sd
+                    ? "[" + glassfishRoot + domainInfo + "]"
+                    + sd.getUriFragment() + ":" + host + ":" + port+":"+target
+                    : "[" + glassfishRoot + domainInfo + "]null:"
+                    + host + ":" + port+":"+target;
         }
     }
-    
+
+    /**
+     * Set GlassFish server administrator's user name.
+     * <p/>
+     * @param userName GlassFish server administrator's user name to set.
+     */
+    public void setUserName(String userName) {
+        this.userName = userName;
+    }
+
+    /**
+     * Set GlassFish server administrator's password.
+     * <p/>
+     * @param password GlassFish server administrator's password to set.
+     */
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
     public void setInstallRoot(String installRoot) {
         this.installRoot = installRoot;
     }
@@ -443,17 +461,16 @@ public class ServerWizardIterator extends PortCollection implements WizardDescri
             GlassfishInstance instance = GlassfishInstance.create(
                     (String) wizard.getProperty("ServInstWizard_displayName"),  // NOI18N
                     installRoot, glassfishRoot, domainsDir, domainName, 
-                    newHttpPort, newAdminPort, 
-                    formatUri("localhost", newAdminPort,getTargetValue(),domainsDir,domainName), 
-                    sd.getUriFragment(),
+                    newHttpPort, newAdminPort, userName, password, targetValue,
+                    formatUri("localhost", newAdminPort, getTargetValue(),domainsDir,domainName), 
                     gip);
             result.add(instance.getCommonInstance());
         } else {
             GlassfishInstance instance = GlassfishInstance.create(
                     (String) wizard.getProperty("ServInstWizard_displayName"),  // NOI18N
-                    installRoot, glassfishRoot, domainsDir, domainName, getHttpPort(),
-                    getAdminPort(), formatUri("localhost", getAdminPort(), getTargetValue(), domainsDir, domainName),
-                    sd.getUriFragment(),
+                    installRoot, glassfishRoot, domainsDir, domainName,
+                    getHttpPort(), getAdminPort(), userName, password, targetValue,
+                    formatUri("localhost", getAdminPort(), getTargetValue(), domainsDir, domainName),
                     gip);
             result.add(instance.getCommonInstance());
         }
@@ -468,8 +485,9 @@ public class ServerWizardIterator extends PortCollection implements WizardDescri
         }
         GlassfishInstance instance = GlassfishInstance.create(
                 (String) wizard.getProperty("ServInstWizard_displayName"),   // NOI18N
-                installRoot, glassfishRoot, null, null, getHttpPort(), getAdminPort(),
-                formatUri(hn, getAdminPort(), getTargetValue(),null,null), sd.getUriFragment(), gip);
+                installRoot, glassfishRoot, null, null,
+                getHttpPort(), getAdminPort(), userName, password, targetValue,
+                formatUri(hn, getAdminPort(), getTargetValue(),null,null), gip);
         result.add(instance.getCommonInstance());
     }
 

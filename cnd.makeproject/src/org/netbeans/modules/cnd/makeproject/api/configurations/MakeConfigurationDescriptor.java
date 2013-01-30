@@ -45,7 +45,6 @@ package org.netbeans.modules.cnd.makeproject.api.configurations;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -67,40 +66,40 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.VisibilityQuery;
-import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.project.NativeProjectChangeSupport;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
+import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelSupport;
 import org.netbeans.modules.cnd.api.utils.CndFileVisibilityQuery;
 import org.netbeans.modules.cnd.api.utils.CndVisibilityQuery;
-import org.netbeans.modules.cnd.makeproject.configurations.ConfigurationMakefileWriter;
-import org.netbeans.modules.cnd.makeproject.configurations.ConfigurationXMLWriter;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
-import org.netbeans.modules.cnd.makeproject.MakeProject;
-import org.netbeans.modules.cnd.makeproject.MakeProjectTypeImpl;
-import org.netbeans.modules.cnd.makeproject.MakeSources;
-import org.netbeans.modules.cnd.makeproject.api.SourceFolderInfo;
-import org.netbeans.modules.cnd.makeproject.configurations.CommonConfigurationXMLCodec;
-import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
-import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelSupport;
 import org.netbeans.modules.cnd.makeproject.FullRemoteExtension;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
+import org.netbeans.modules.cnd.makeproject.MakeProject;
+import org.netbeans.modules.cnd.makeproject.MakeProjectTypeImpl;
 import org.netbeans.modules.cnd.makeproject.MakeProjectUtils;
+import org.netbeans.modules.cnd.makeproject.MakeSources;
 import org.netbeans.modules.cnd.makeproject.NativeProjectProvider;
 import org.netbeans.modules.cnd.makeproject.api.LogicalFolderItemsInfo;
 import org.netbeans.modules.cnd.makeproject.api.LogicalFoldersInfo;
 import org.netbeans.modules.cnd.makeproject.api.MakeProjectCustomizer;
 import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
 import org.netbeans.modules.cnd.makeproject.api.ProjectSupport;
+import org.netbeans.modules.cnd.makeproject.api.SourceFolderInfo;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider.Delta;
 import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectHelper;
+import org.netbeans.modules.cnd.makeproject.configurations.CommonConfigurationXMLCodec;
+import org.netbeans.modules.cnd.makeproject.configurations.ConfigurationMakefileWriter;
+import org.netbeans.modules.cnd.makeproject.configurations.ConfigurationXMLWriter;
 import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
+import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.FileObjectFilter;
 import org.netbeans.modules.cnd.utils.MIMEExtensions;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.ui.ModalMessageDlg;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
@@ -111,6 +110,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -124,7 +124,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 public final class MakeConfigurationDescriptor extends ConfigurationDescriptor implements ChangeListener {
-
+    
     public static final String EXTERNAL_FILES_FOLDER = "ExternalFiles"; // NOI18N
     public static final String TEST_FILES_FOLDER = "TestFiles"; // NOI18N
     public static final String ROOT_FOLDER = "root"; // NOI18N
@@ -139,6 +139,9 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
     public static final String DEFAULT_NO_IGNORE_FOLDERS_PATTERN = "^$"; // NOI18N
     private static final Logger LOGGER = Logger.getLogger("org.netbeans.modules.cnd.makeproject"); // NOI18N
     private Project project = null;
+    
+    private static final RequestProcessor RP = new RequestProcessor("MakeConfigurationDescriptor", 1); // NOI18N
+        
     
     /*
      * For full remote, configuration base and project base might be different -
@@ -160,11 +163,13 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
     private final List<String> sourceRoots = new ArrayList<String>();
     private final List<String> testRoots = new ArrayList<String>();
     private final Set<ChangeListener> projectItemsChangeListeners = new HashSet<ChangeListener>();
-    private volatile NativeProject nativeProject = null;
+    private volatile NativeProjectChangeSupport nativeProjectChangeSupport = null;
     public static final String DEFAULT_PROJECT_MAKFILE_NAME = "Makefile"; // NOI18N
     private String projectMakefileName = DEFAULT_PROJECT_MAKFILE_NAME;
     private Task initTask = null;
+    private volatile Task initFoldersTask = null;
     private CndVisibilityQuery folderVisibilityQuery = null;
+    private boolean defaultConfigurationsRestored = false;
     
     private static ConcurrentHashMap<String, Object> projectWriteLocks = new ConcurrentHashMap<String, Object>();
 
@@ -185,7 +190,17 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         rootFolder = new Folder(this, null, "root", "root", true, Folder.Kind.ROOT); // NOI18N
         projectItems = new ConcurrentHashMap<String, Item>();
         setModified();
-        ToolsPanelSupport.addCompilerSetModifiedListener(MakeConfigurationDescriptor.this);
+    }
+
+    void opened() {
+        ToolsPanelSupport.addCompilerSetModifiedListener(this);
+        for (Item item : getProjectItems()) {
+            item.onOpen();
+        }        
+        Task foldersTask = this.initFoldersTask;
+        if (foldersTask != null) {
+            foldersTask.schedule(0);
+        }
     }
 
     /*
@@ -302,7 +317,8 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
     }
 
     public void initLogicalFolders(Iterator<SourceFolderInfo> sourceFileFolders, boolean createLogicalFolders,
-            Iterator<SourceFolderInfo> testFileFolders, Iterator<LogicalFoldersInfo> logicalFolders, Iterator<LogicalFolderItemsInfo> logicalFolderItems, Iterator<String> importantItems, String mainFilePath, boolean addGeneratedMakefileToLogicalView) {
+            Iterator<SourceFolderInfo> testFileFolders, Iterator<LogicalFoldersInfo> logicalFolders, Iterator<LogicalFolderItemsInfo> logicalFolderItems, Iterator<String> importantItems, 
+            String mainFilePath, DataObject mainFileTemplate, boolean addGeneratedMakefileToLogicalView) {
         if (createLogicalFolders) {
             sourceFileItems = rootFolder.addNewFolder(SOURCE_FILES_FOLDER, getString("SourceFilesTxt"), true, Folder.Kind.SOURCE_LOGICAL_FOLDER);
             headerFileItems = rootFolder.addNewFolder(HEADER_FILES_FOLDER, getString("HeaderFilesTxt"), true, Folder.Kind.SOURCE_LOGICAL_FOLDER);
@@ -351,7 +367,11 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         if (mainFilePath != null) {
             Folder srcFolder = rootFolder.findFolderByName(MakeConfigurationDescriptor.SOURCE_FILES_FOLDER);
             if (srcFolder != null) {
-                srcFolder.addItem(Item.createInFileSystem(baseDirFS, mainFilePath));
+                Item added = srcFolder.addItem(Item.createInFileSystem(baseDirFS, mainFilePath));
+                PredefinedToolKind defaultToolForItem = Item.getDefaultToolForItem(mainFileTemplate, added);
+                for (ItemConfiguration ic : added.getItemConfigurations()) {
+                    ic.setTool(defaultToolForItem);
+                }
             }
         }
         // Handle test folders
@@ -583,7 +603,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             if (CndPathUtilitities.isPathAbsolute(path)) {
                 newPath = CndPathUtilitities.toRelativePath(getBaseDir(), CndPathUtilitities.naturalizeSlashes(path));
             } else {
-                newPath = CndPathUtilitities.toAbsolutePath(getBaseDir(), path);
+                newPath = CndPathUtilitities.toAbsolutePath(getBaseDirFileObject(), path);
             }
             newPath = CndPathUtilitities.normalizeSlashes(newPath);
             item = projectItems.get(newPath);
@@ -604,7 +624,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             if (CndPathUtilitities.isPathAbsolute(path)) {
                 newPath = CndPathUtilitities.toRelativePath(getBaseDir(), CndPathUtilitities.naturalizeSlashes(path));
             } else {
-                newPath = CndPathUtilitities.toAbsolutePath(getBaseDir(), path);
+                newPath = CndPathUtilitities.toAbsolutePath(getBaseDirFileObject(), path);
             }
             newPath = CndPathUtilitities.normalizeSlashes(newPath);
             item = externalFileItems.findItemByPath(newPath);
@@ -648,14 +668,14 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
 
     public void checkForChangedItems(Project project, Folder folder, Item item) {
         if (getNativeProjectChangeSupport() != null) { // once not null, it never becomes null
-            checkForChangedItems(folder, item);
+            checkForChangedItems2(folder, item);
         }
         MakeLogicalViewProvider.checkForChangedViewItemNodes(project, folder, item);
     }
-    
-    public void checkForChangedItems(final Folder folder, final Item item) {
+
+    private void checkForChangedItems2(final Folder folder, final Item item) {
         if (SwingUtilities.isEventDispatchThread()) {
-            RequestProcessor.getDefault().post(new Runnable() {
+            RP.post(new Runnable() {
 
                 @Override
                 public void run() {
@@ -675,7 +695,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         boolean projectChanged = false;
         VectorConfiguration<String> cIncludeDirectories = null;
         BooleanConfiguration cInheritIncludes = null;
-        VectorConfiguration<String> cPpreprocessorOption = null;
+        VectorConfiguration<String> cPreprocessorOption = null;
         BooleanConfiguration cInheritMacros = null;
         VectorConfiguration<String> cPreprocessorUndefinedOption = null;
         BooleanConfiguration cInheritUndefinedMacros = null;
@@ -709,7 +729,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             }
             cIncludeDirectories = folderConfiguration.getCCompilerConfiguration().getIncludeDirectories();
             cInheritIncludes = folderConfiguration.getCCompilerConfiguration().getInheritIncludes();
-            cPpreprocessorOption = folderConfiguration.getCCompilerConfiguration().getPreprocessorConfiguration();
+            cPreprocessorOption = folderConfiguration.getCCompilerConfiguration().getPreprocessorConfiguration();
             cInheritMacros = folderConfiguration.getCCompilerConfiguration().getInheritPreprocessor();
             cPreprocessorUndefinedOption = folderConfiguration.getCCompilerConfiguration().getUndefinedPreprocessorConfiguration();
             cInheritUndefinedMacros = folderConfiguration.getCCompilerConfiguration().getInheritUndefinedPreprocessor();
@@ -742,7 +762,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
                 cIncludeDirectories = itemConfiguration.getCCompilerConfiguration().getIncludeDirectories();
                 cInheritIncludes = itemConfiguration.getCCompilerConfiguration().getInheritIncludes();
                 cInheritMacros = itemConfiguration.getCCompilerConfiguration().getInheritPreprocessor();
-                cPpreprocessorOption = itemConfiguration.getCCompilerConfiguration().getPreprocessorConfiguration();
+                cPreprocessorOption = itemConfiguration.getCCompilerConfiguration().getPreprocessorConfiguration();
                 cPreprocessorUndefinedOption = itemConfiguration.getCCompilerConfiguration().getUndefinedPreprocessorConfiguration();
                 cInheritUndefinedMacros = itemConfiguration.getCCompilerConfiguration().getInheritUndefinedPreprocessor();
                 if (itemConfiguration.getCCompilerConfiguration().getCommandLineConfiguration().getDirty()){
@@ -796,7 +816,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
                     || makeConfiguration.getLinkerConfiguration().getLibrariesConfiguration().getDirty();
             cIncludeDirectories = makeConfiguration.getCCompilerConfiguration().getIncludeDirectories();
             cInheritIncludes = makeConfiguration.getCCompilerConfiguration().getInheritIncludes();
-            cPpreprocessorOption = makeConfiguration.getCCompilerConfiguration().getPreprocessorConfiguration();
+            cPreprocessorOption = makeConfiguration.getCCompilerConfiguration().getPreprocessorConfiguration();
             cPreprocessorUndefinedOption = makeConfiguration.getCCompilerConfiguration().getUndefinedPreprocessorConfiguration();
             if (makeConfiguration.getCCompilerConfiguration().getCommandLineConfiguration().getDirty()){
                 makeConfiguration.getCCompilerConfiguration().getCommandLineConfiguration().setDirty(false);
@@ -809,7 +829,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             if (!cFiles && makeConfiguration.getCCompilerConfiguration().getSixtyfourBits().getDirty()) {
                 makeConfiguration.getCCompilerConfiguration().getSixtyfourBits().setDirty(false);
                 cFiles = true;
-            }                            
+            }
             cInheritMacros = makeConfiguration.getCCompilerConfiguration().getInheritPreprocessor();
             cInheritUndefinedMacros = makeConfiguration.getCCompilerConfiguration().getInheritUndefinedPreprocessor();
             ccIncludeDirectories = makeConfiguration.getCCCompilerConfiguration().getIncludeDirectories();
@@ -829,17 +849,17 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             if (!ccFiles && makeConfiguration.getCCCompilerConfiguration().getSixtyfourBits().getDirty()) {
                 makeConfiguration.getCCCompilerConfiguration().getSixtyfourBits().setDirty(false);
                 ccFiles = true;
-            }                            
+            }
             items = descriptor.getProjectItems();
             projectChanged = true;
         }
 
         if (cIncludeDirectories != null
-                && (cIncludeDirectories.getDirty() || cPpreprocessorOption.getDirty()
+                && (cIncludeDirectories.getDirty() || cPreprocessorOption.getDirty()
                 || cInheritIncludes.getDirty() || cInheritMacros.getDirty() || cPreprocessorUndefinedOption.getDirty() || cInheritUndefinedMacros.getDirty())) {
             cFiles = true;
             cIncludeDirectories.setDirty(false);
-            cPpreprocessorOption.setDirty(false);
+            cPreprocessorOption.setDirty(false);
             cInheritIncludes.setDirty(false);
             cInheritMacros.setDirty(false);
             cPreprocessorUndefinedOption.setDirty(false);
@@ -878,9 +898,9 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         MakeLogicalViewProvider.checkForChangedViewItemNodes(project, delta);
     }
 
-    public void checkForChangedItems2(final Delta delta) {
+    private void checkForChangedItems2(final Delta delta) {
         if (SwingUtilities.isEventDispatchThread()) {
-            RequestProcessor.getDefault().post(new Runnable() {
+            RP.post(new Runnable() {
 
                 @Override
                 public void run() {
@@ -896,18 +916,23 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         if (delta.isEmpty()) {
             return;
         }
-        if (!(delta.deleted.isEmpty() && delta.exluded.isEmpty())) {
-            List<NativeFileItem> list = new ArrayList<NativeFileItem>(delta.deleted);
-            list.addAll(delta.exluded);
+        List<Item> deleted = delta.getDeleted();
+        List<Item> excluded = delta.getExcluded();
+        if (!(deleted.isEmpty() && excluded.isEmpty())) {
+            List<NativeFileItem> list = new ArrayList<NativeFileItem>(deleted);
+            list.addAll(excluded);
             getNativeProjectChangeSupport().fireFilesRemoved(list);
         }
-        if (!(delta.added.isEmpty() && delta.included.isEmpty())) {
-            List<NativeFileItem> list = new ArrayList<NativeFileItem>(delta.added);
-            list.addAll(delta.included);
+        List<Item> added = delta.getAdded();
+        List<Item> included = delta.getIncluded();
+        if (!(added.isEmpty() && included.isEmpty())) {
+            List<NativeFileItem> list = new ArrayList<NativeFileItem>(added);
+            list.addAll(included);
             getNativeProjectChangeSupport().fireFilesAdded(list);
         }
-        if (!delta.changed.isEmpty()) {
-            getNativeProjectChangeSupport().fireFilesPropertiesChanged(new ArrayList<NativeFileItem>(delta.changed));
+        List<Item> changed = delta.getChanged();
+        if (!changed.isEmpty()) {
+            getNativeProjectChangeSupport().fireFilesPropertiesChanged(new ArrayList<NativeFileItem>(changed));
         }
     }
     
@@ -929,9 +954,10 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         Configuration[] newConfs = new Configuration[clonedConfs.length];
 
         for (int i = 0; i < clonedConfs.length; i++) {
-            if (clonedConfs[i].getCloneOf() != null) {
-                clonedConfs[i].getCloneOf().assign(clonedConfs[i]);
-                newConfs[i] = clonedConfs[i].getCloneOf();
+            final Configuration cloneOf = clonedConfs[i].getCloneOf();
+            if (cloneOf != null) {
+                cloneOf.assign(clonedConfs[i]);
+                newConfs[i] = cloneOf;
             } else {
                 newConfs[i] = clonedConfs[i];
             }
@@ -1025,7 +1051,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         }
         return saveRunnable.ret;
     }
-
+    
     /**
      * Check needed header extensions and store list in the NB/project properties.
      * @param needAdd list of needed extensions of header files.
@@ -1046,7 +1072,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         if (folderVisibilityQuery == null) {
             folderVisibilityQuery = new CndVisibilityQuery(regex);
         } else {
-            folderVisibilityQuery.setPattern(regex);
+            folderVisibilityQuery.setIgnoredPattern(regex);
         }
     }
 
@@ -1055,7 +1081,15 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         Object oldLock = projectWriteLocks.putIfAbsent(project.getProjectDirectory().getPath(), lock);
         return (oldLock == null) ? lock : oldLock;
     }
-    
+
+    public void setFoldersTask(Task task) {
+        RequestProcessor.Task prevTask = this.initFoldersTask;
+        if (prevTask != null) {
+            prevTask.cancel();
+        }
+        this.initFoldersTask = task;
+    }
+
     private class SaveRunnable implements Runnable {
 
         private boolean ret = false;
@@ -1146,14 +1180,17 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             if (extraMessage != null) {
                 text.append("\n\n").append(extraMessage); // NOI18N
             }
-            NotifyDescriptor d = new NotifyDescriptor.Message(text, NotifyDescriptor.ERROR_MESSAGE);
-            DialogDisplayer.getDefault().notify(d);
+            if (CndUtils.isStandalone()) {
+                System.err.println(text);
+            } else {
+                NotifyDescriptor d = new NotifyDescriptor.Message(text, NotifyDescriptor.ERROR_MESSAGE);
+                DialogDisplayer.getDefault().notify(d);
+            }
             return allOk;
         }
 
         // ALl OK
-        FileObject fo = null;
-        fo = getProjectDirFileObject();
+        FileObject fo = getProjectDirFileObject();
         if (fo != null) {
             LOGGER.log(Level.FINE, "Start of writting project descriptor MakeConfigurationDescriptor@{0} for project {1} @{2}", new Object[]{System.identityHashCode(this), fo.getName(), System.identityHashCode(this.project)}); // NOI18N
             try {
@@ -1288,15 +1325,18 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
 
         // Create active configuration type node
         NodeList nodeList = data.getElementsByTagName(MakeProjectTypeImpl.ACTIVE_CONFIGURATION_TYPE_ELEMENT);
-        if (nodeList != null && nodeList.getLength() > 0) {
-            // Node already there
-            Node node = nodeList.item(0);
-            node.setTextContent("" + ((MakeConfiguration) getConfs().getActive()).getConfigurationType().getValue());
-        } else {
-            // Create node
-            Element elem = doc.createElementNS(MakeProjectTypeImpl.PRIVATE_CONFIGURATION_NAMESPACE, MakeProjectTypeImpl.ACTIVE_CONFIGURATION_TYPE_ELEMENT); // NOI18N
-            elem.appendChild(doc.createTextNode("" + ((MakeConfiguration) getConfs().getActive()).getConfigurationType().getValue()));
-            data.appendChild(elem);
+        MakeConfiguration active = (MakeConfiguration) getConfs().getActive();
+        if (active != null) {
+            if (nodeList != null && nodeList.getLength() > 0) {
+                // Node already there
+                Node node = nodeList.item(0);
+                node.setTextContent("" + active.getConfigurationType().getValue());
+            } else {
+                // Create node
+                Element elem = doc.createElementNS(MakeProjectTypeImpl.PRIVATE_CONFIGURATION_NAMESPACE, MakeProjectTypeImpl.ACTIVE_CONFIGURATION_TYPE_ELEMENT); // NOI18N
+                elem.appendChild(doc.createTextNode("" + active.getConfigurationType().getValue()));
+                data.appendChild(elem);
+            }
         }
 
         // Create active configuration type node
@@ -1312,17 +1352,17 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             data.appendChild(elem);
         }
 
-        if (((MakeConfiguration) getConfs().getActive()).isCustomConfiguration()) {
+        if (active != null && active.isCustomConfiguration()) {
             // Create custumizerid type node
             nodeList = data.getElementsByTagName(MakeProjectTypeImpl.ACTIVE_CONFIGURATION_CUSTOMIZERID);
             if (nodeList != null && nodeList.getLength() > 0) {
                 // Node already there
                 Node node = nodeList.item(0);
-                node.setTextContent(((MakeConfiguration) getConfs().getActive()).getCustomizerId());
+                node.setTextContent(active.getCustomizerId());
             } else {
                 // Create node
                 Element elem = doc.createElementNS(MakeProjectTypeImpl.PRIVATE_CONFIGURATION_NAMESPACE, MakeProjectTypeImpl.ACTIVE_CONFIGURATION_CUSTOMIZERID); // NOI18N
-                elem.appendChild(doc.createTextNode(((MakeConfiguration) getConfs().getActive()).getCustomizerId()));
+                elem.appendChild(doc.createTextNode(active.getCustomizerId()));
                 data.appendChild(elem);
             }
         }
@@ -1388,10 +1428,9 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         Configuration[] confs = getConfs().toArray();
         for (int i = 0; i < confs.length; i++) {
             MakeConfiguration makeConfiguration = (MakeConfiguration) confs[i];
-            LibrariesConfiguration librariesConfiguration = null;
 
             if (((MakeConfiguration) confs[i]).isLinkerConfiguration()) {
-                librariesConfiguration = makeConfiguration.getLinkerConfiguration().getLibrariesConfiguration();
+                LibrariesConfiguration librariesConfiguration = makeConfiguration.getLinkerConfiguration().getLibrariesConfiguration();
                 for (LibraryItem item : librariesConfiguration.getValue()) {
                     if (item instanceof LibraryItem.ProjectItem) {
                         LibraryItem.ProjectItem projectItem = (LibraryItem.ProjectItem) item;
@@ -1421,7 +1460,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
     }
 
     private void addTestRoot(String path) {
-        String absPath = CndPathUtilitities.toAbsolutePath(getBaseDir(), path);
+        String absPath = CndPathUtilitities.toAbsolutePath(getBaseDirFileObject(), path);
         String relPath = CndPathUtilitities.normalizeSlashes(CndPathUtilitities.toRelativePath(getBaseDir(), path));
         boolean addPath = true;
 
@@ -1450,7 +1489,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
      */
     public void addSourceRoot(String path) {
         String absPath = CndPathUtilitities.toAbsolutePath(getBaseDirFileObject(), path);
-        String canonicalPath = null;
+        String canonicalPath;
         try {
             canonicalPath = FileSystemProvider.getCanonicalPath(baseDirFS, absPath);
         } catch (IOException ioe) {
@@ -1464,8 +1503,8 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             if (canonicalPath != null) {
                 int canonicalPathLength = canonicalPath.length();
                 for (String sourceRoot : sourceRoots) {
-                    String absSourceRoot = CndPathUtilitities.toAbsolutePath(getBaseDir(), sourceRoot);
-                    String canonicalSourceRoot = null;
+                    String absSourceRoot = CndPathUtilitities.toAbsolutePath(getBaseDirFileObject(), sourceRoot);
+                    String canonicalSourceRoot;
                     try {
                         canonicalSourceRoot = FileSystemProvider.getCanonicalPath(baseDirFS, absSourceRoot);
                     } catch (IOException ioe) {
@@ -1709,22 +1748,24 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
 
     private NativeProjectChangeSupport getNativeProjectChangeSupport() {
         // the cons
-        if (nativeProject == null) {
+        if (nativeProjectChangeSupport == null) {
             FileObject fo = projectDirFO;
             try {
                 Project aProject = ProjectManager.getDefault().findProject(fo);
-                nativeProject = aProject.getLookup().lookup(NativeProject.class);
+                nativeProjectChangeSupport = aProject.getLookup().lookup(NativeProjectChangeSupport.class);
+                if (nativeProjectChangeSupport == null) {
+                    NativeProject nativeProject = aProject.getLookup().lookup(NativeProject.class);
+                    if (nativeProject instanceof NativeProjectChangeSupport) {
+                        nativeProjectChangeSupport = (NativeProjectChangeSupport) nativeProject;
+                    }
+                }
             } catch (Exception e) {
                 // This may be ok. The project could have been removed ....
                 System.err.println("getNativeProject " + e);
             }
 
         }
-        if(nativeProject instanceof NativeProjectChangeSupport) {
-            return (NativeProjectChangeSupport) nativeProject;
-        } else {
-            return null;
-        }
+        return nativeProjectChangeSupport;
     }
 
     public static class ProjectItemChangeEvent extends ChangeEvent {
@@ -1756,47 +1797,59 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             return;
         }
         ArrayList<NativeFileItem> filesAdded = new ArrayList<NativeFileItem>();
-        Folder top;
-        top = folder.findFolderByAbsolutePath(dir.getPath());
-        if (top == null) {
-            top = new Folder(folder.getConfigurationDescriptor(), folder, dir.getNameExt(), dir.getNameExt(), true, folderKind);
-            folder.addFolder(top, true);
-        }
-        assert top.getKind() == folderKind;
+        Folder srcRoot;
+        srcRoot = folder.findFolderByAbsolutePath(dir.getPath());
+        String rootPath = null;
         if (folderKind == Folder.Kind.SOURCE_DISK_FOLDER) {
-            String rootPath = ProjectSupport.toProperPath(baseDirFO, dir, project);
+            rootPath = ProjectSupport.toProperPath(baseDirFO, dir, project);
             rootPath = CndPathUtilitities.normalizeSlashes(rootPath);
-            top.setRoot(rootPath);
         }
-        addFiles(new HashSet<String>(), top, dir, null, filesAdded, true, true, fileFilter);
+        if (srcRoot == null) {
+            srcRoot = new Folder(folder.getConfigurationDescriptor(), folder, dir.getNameExt(), dir.getNameExt(), true, folderKind);
+            if (folderKind == Folder.Kind.SOURCE_DISK_FOLDER) {
+                srcRoot.setRoot(rootPath);
+            }
+            srcRoot = folder.addFolder(srcRoot, true);
+        }
+        assert srcRoot.getKind() == folderKind;
+        addFilesImpl(new HashSet<String>(), srcRoot, dir, null, filesAdded, true, true, fileFilter, true/*all found are included by default*/);
         if (getNativeProjectChangeSupport() != null) { // once not null, it never becomes null
             getNativeProjectChangeSupport().fireFilesAdded(filesAdded);
         }
         if (attachListeners) {
-            top.attachListeners();
+            srcRoot.attachListeners();
         }
 
         addSourceRoot(dir.getPath());
+    }
 
-        return;
+    public Folder addFilesFromRefreshedDir(Folder folder, FileObject dir, boolean attachListeners, boolean setModified, @NullAllowed FileObjectFilter fileFilter, boolean useOldSchemeBehavior) {
+        return addFilesFromDirImpl(folder, dir, attachListeners, setModified, fileFilter, useOldSchemeBehavior);
     }
 
     public Folder addFilesFromDir(Folder folder, FileObject dir, boolean attachListeners, boolean setModified, @NullAllowed FileObjectFilter fileFilter) {
+        return addFilesFromDirImpl(folder, dir, attachListeners, setModified, fileFilter, false);
+    }
+    
+    private Folder addFilesFromDirImpl(Folder folder, FileObject dir, boolean attachListeners, boolean setModified, @NullAllowed FileObjectFilter fileFilter, boolean useOldSchemeBehavior) {
         ArrayList<NativeFileItem> filesAdded = new ArrayList<NativeFileItem>();
-        Folder top = new Folder(folder.getConfigurationDescriptor(), folder, dir.getNameExt(), dir.getNameExt(), true, null);
-        folder.addFolder(top, setModified);
-        addFiles(new HashSet<String>(), top, dir, null, filesAdded, true, setModified, fileFilter);
+        Folder subFolder = folder.findFolderByName(dir.getNameExt());
+        if (subFolder == null) {
+            subFolder = new Folder(folder.getConfigurationDescriptor(), folder, dir.getNameExt(), dir.getNameExt(), true, null);
+        }
+        subFolder = folder.addFolder(subFolder, setModified);
+        addFilesImpl(new HashSet<String>(), subFolder, dir, null, filesAdded, true, setModified, fileFilter, useOldSchemeBehavior);
         if (getNativeProjectChangeSupport() != null) { // once not null, it never becomes null
             getNativeProjectChangeSupport().fireFilesAdded(filesAdded);
         }
         if (attachListeners) {
-            top.attachListeners();
+            subFolder.attachListeners();
         }
-        return top;
+        return subFolder;
     }
 
-    private void addFiles(Set<String> antiLoop, Folder folder, FileObject dir, ProgressHandle handle, ArrayList<NativeFileItem> filesAdded,
-            boolean notify, boolean setModified, final @NullAllowed FileObjectFilter fileFilter) {
+    private void addFilesImpl(Set<String> antiLoop, Folder folder, FileObject dir, ProgressHandle handle, ArrayList<NativeFileItem> filesAdded, boolean notify, boolean setModified, @NullAllowed
+    final FileObjectFilter fileFilter, boolean useOldSchemeBehavior) {
         List<String> absTestRootsList = getAbsoluteTestRoots();
         try {
             String canPath = RemoteFileUtil.getCanonicalPath(dir);
@@ -1826,7 +1879,12 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             if (hideBinaryFiles && CndFileVisibilityQuery.getDefault().isIgnored(file.getNameExt())) {
                 continue;
             }
-            if (file.isFolder() && getFolderVisibilityQuery().isVisible(file)) {
+            if (file.isData() && folder.isDiskFolder() && !CndFileVisibilityQuery.getDefault().isVisible(file)) {
+                // be consistent in checks to prevent adding item here followed
+                // by remove in Folder.refreshDiskFolder due to !CndFileVisibilityQuery.getDefault().isIgnored(file)
+                continue;
+            }
+            if (file.isFolder() && getFolderVisibilityQuery().isIgnored(file)) {
                 continue;
             }
             if (file.isFolder()) {
@@ -1841,20 +1899,21 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
                     LOGGER.log(Level.INFO, ex.getMessage(), ex);
                     continue;
                 }
-                Folder dirfolder = folder;
-                dirfolder = folder.findFolderByName(file.getNameExt());
+                Folder dirfolder = folder.findFolderByName(file.getNameExt());
                 if (dirfolder == null) {
+                    // child folder inherits kind of parent folder
                     if (inList(absTestRootsList, RemoteFileUtil.getAbsolutePath(file)) || folder.isTestLogicalFolder()) {
                         dirfolder = folder.addNewFolder(file.getNameExt(), file.getNameExt(), true, Folder.Kind.TEST_LOGICAL_FOLDER);
                     } else {
-                        dirfolder = folder.addNewFolder(file.getNameExt(), file.getNameExt(), true, Folder.Kind.SOURCE_LOGICAL_FOLDER);
+                        dirfolder = folder.addNewFolder(file.getNameExt(), file.getNameExt(), true, (Folder.Kind)null);
                     }
                 }
-                addFiles(antiLoop, dirfolder, file, handle, filesAdded, notify, setModified, fileFilter);
+                dirfolder.markRemoved(false);
+                addFilesImpl(antiLoop, dirfolder, file, handle, filesAdded, notify, setModified, fileFilter, useOldSchemeBehavior);
             } else {
                 String path = ProjectSupport.toProperPath(baseDirFO, file, project);
                 Item item = Item.createInBaseDir(baseDirFO, path);
-                if (folder.addItem(item, notify, setModified) != null) {
+                if (folder.addItemFromRefreshDir(item, notify, setModified, useOldSchemeBehavior) == item) {
                     filesAdded.add(item);
                 }
                 if (handle != null) {
@@ -1868,10 +1927,15 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         int previousVersion = getVersion();
         int currentVersion = CommonConfigurationXMLCodec.CURRENT_VERSION;
         if (previousVersion < currentVersion) {
-            String txt = getString("UPGRADE_TXT");
-            NotifyDescriptor d = new NotifyDescriptor.Confirmation(txt, getString("UPGRADE_DIALOG_TITLE"), NotifyDescriptor.YES_NO_OPTION); // NOI18N
-            if (DialogDisplayer.getDefault().notify(d) != NotifyDescriptor.YES_OPTION) {
-                return false;
+            String txt = getString("UPGRADE_TXT"); //NOI18N
+            if (CndUtils.isStandalone()) {
+                System.err.print(txt);
+                System.err.println(getString("UPGRADE_TXT_AUTO")); //NOI18N
+            } else {
+                NotifyDescriptor d = new NotifyDescriptor.Confirmation(txt, getString("UPGRADE_DIALOG_TITLE"), NotifyDescriptor.YES_NO_OPTION); // NOI18N
+                if (DialogDisplayer.getDefault().notify(d) != NotifyDescriptor.YES_OPTION) {
+                    return false;
+                }
             }
             setVersion(currentVersion);
         }

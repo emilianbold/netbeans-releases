@@ -336,10 +336,19 @@ public final class J2MEPlatform extends JavaPlatform {
     public String getHomePath() {
         return homeFile.getAbsolutePath();
     }
+
+    private boolean hasEssentialTools(Collection<FileObject> folders) {
+        return findTool("emulator", folders)!=null && findTool("preverify", folders)!=null; //NOI18N
+    }
     
     public Collection<FileObject> getInstallFolders() {
         if (home == null) home = FileUtil.toFileObject(homeFile);
-        return home != null && home.isValid() && home.isFolder() ? Collections.singleton(home) : Collections.EMPTY_SET;
+        Collection<FileObject> folders;
+        if(home != null && home.isValid() && home.isFolder()) {
+            folders = Collections.singleton(home);
+            return hasEssentialTools(folders) ? folders : Collections.EMPTY_SET;
+        }
+        return Collections.EMPTY_SET;
     }
     
     public List<URL> getJavadocFolders() {
@@ -427,7 +436,7 @@ public final class J2MEPlatform extends JavaPlatform {
     }
     
     public boolean isValid() {
-        if (getInstallFolders().size() == 0 || devices == null) return false;
+        if (getInstallFolders().isEmpty() || devices == null) return false;
         for (int i=0; i<devices.length; i++) if (devices[i].isValid()) return true;
         return false;
     }

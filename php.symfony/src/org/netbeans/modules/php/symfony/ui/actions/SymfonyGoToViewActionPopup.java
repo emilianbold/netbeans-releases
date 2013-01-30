@@ -181,7 +181,8 @@ public class SymfonyGoToViewActionPopup {
         
         return newLocation;
     }
-    
+
+    @org.netbeans.api.annotations.common.SuppressWarnings("ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD")
     public void hide() {
         if (popupWindow != null) {
             removeHideListener();

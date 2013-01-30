@@ -117,19 +117,19 @@ public class WrappedTextView extends View implements TabExpander {
 
     static final Color arrowColor = new Color (80, 162, 80);
 
-    private static Map hintsMap = null;
+    private static Map<RenderingHints.Key, Object> hintsMap = null;
     
     int tabSize;
     int tabBase;
     private int tabOffsetX = 0;
     
     @SuppressWarnings("unchecked")
-    static final Map getHints() {
+    static Map<RenderingHints.Key, Object> getHints() {
         if (hintsMap == null) {
             //Thanks to Phil Race for making this possible
             hintsMap = (Map)(Toolkit.getDefaultToolkit().getDesktopProperty("awt.font.desktophints")); //NOI18N
             if (hintsMap == null) {
-                hintsMap = new HashMap();
+                hintsMap = new HashMap<RenderingHints.Key, Object>();
                 if (antialias) {
                     hintsMap.put(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
                     hintsMap.put(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
@@ -357,7 +357,8 @@ public class WrappedTextView extends View implements TabExpander {
                                     arrowDrawn = currLogicalLine;
                                     drawArrow(g, y, currLogicalLine == logicalLines - 2);
                                 }
-                                drawText(seg, g, x, y, lineStart, charpos, selStart, charsToDraw, selEnd);
+                                Color bg = ls.getCustomBackground();
+                                drawText(seg, g, x, y, lineStart, charpos, selStart, charsToDraw, selEnd, bg);
                                 if (ls.getListener() != null) {
                                     underline(g, seg, charpos, charsToDraw, x, y);
                                 }
@@ -415,7 +416,9 @@ public class WrappedTextView extends View implements TabExpander {
      * @param lenToDraw The number of characters we'll draw before we're outside the clip rectangle
      * @param selEnd The end of the selected range of text, if any
      */
-    private void drawText(Segment seg, Graphics g, int x, int y, int lineStart, int charpos, int selStart, int lenToDraw, int selEnd) {
+    private void drawText(Segment seg, Graphics g, int x, int y, int lineStart,
+            int charpos, int selStart, int lenToDraw, int selEnd, Color bg) {
+        Color clr = g.getColor();
         if (selStart != selEnd) {
             int realPos = lineStart + charpos;
             int a = Math.max(selStart, realPos);
@@ -430,10 +433,9 @@ public class WrappedTextView extends View implements TabExpander {
                 if (start - margin() + len > w) {
                     len = w - start + margin();
                 }
-                Color c = g.getColor();
                 g.setColor (comp.getSelectionColor());
                 g.fillRect (start, y + fontDescent - charHeight, len, charHeight);
-                g.setColor (c);
+                g.setColor (clr);
             }
         }
         //g.drawChars(seg.array, charpos, lenToDraw, margin() + x, y);
@@ -441,9 +443,23 @@ public class WrappedTextView extends View implements TabExpander {
         int offset = seg.offset;
         seg.count = lenToDraw;
         seg.offset = charpos;
+        drawTextBackground(g, clr, bg, selStart != selEnd, seg, x, y, charpos);
         Utilities.drawTabbedText(seg, margin() + x, y, g, this, charpos);
         seg.count = count;
         seg.offset = offset;
+    }
+
+    private void drawTextBackground(Graphics g, Color fg, Color bg,
+            boolean selection, Segment seg, int x, int y, int charpos) {
+        if (bg != null && !selection) {
+            int w = Utilities.getTabbedTextWidth(
+                    seg, g.getFontMetrics(), x, this, charpos);
+            int h = g.getFontMetrics().getHeight();
+            g.setColor(bg);
+            g.fillRect(x + margin(), y - h + g.getFontMetrics().getDescent(),
+                    w, h);
+        }
+        g.setColor(fg);
     }
 
     private void drawSelection(Graphics g, int x1, int x2, int y) {
@@ -454,6 +470,9 @@ public class WrappedTextView extends View implements TabExpander {
     }
 
     private void underline(Graphics g, Segment seg, int charpos, int lenToDraw, int x, int y) {
+        if (!ExtPlainView.isLinkUndeliningEnabled(this)) {
+            return;
+        }
         int underlineStart = margin() + x;
         FontMetrics fm = g.getFontMetrics();
         int underlineEnd = underlineStart + fm.charsWidth(seg.array, charpos, lenToDraw);

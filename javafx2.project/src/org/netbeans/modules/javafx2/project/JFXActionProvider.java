@@ -48,9 +48,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import javax.script.ScriptEngineFactory;
+import javax.script.ScriptEngineManager;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.extexecution.startup.StartupExtender;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -73,7 +76,7 @@ import org.openide.util.Task;
 import org.openide.util.TaskListener;
 
 /**
- * Skeleton of JFX Action Provider
+ * JFX Action Provider
  */
 @ProjectServiceProvider(
     service=ActionProvider.class,
@@ -81,17 +84,29 @@ import org.openide.util.TaskListener;
 public class JFXActionProvider implements ActionProvider {
 
     private final Project prj;
+    private boolean isJSAvailable = true;
+    private boolean isJSAvailableChecked = false;
 
     private static final Map<String,String> ACTIONS = new HashMap<String,String>(){
         {
+            put(COMMAND_BUILD,"jfx-build"); //NOI18N
+            put(COMMAND_REBUILD,"jfx-rebuild"); //NOI18N
             put(COMMAND_RUN,"run"); //NOI18N
             put(COMMAND_DEBUG,"debug"); //NOI18N
             put(COMMAND_PROFILE,"profile"); //NOI18N
         }
     };
 
+    private static final Map<String,String> RUN_ACTIONS = new HashMap<String,String>(){
+        {
+            put(COMMAND_RUN,"run"); //NOI18N
+            put(COMMAND_DEBUG,"debug"); //NOI18N
+            put(COMMAND_PROFILE,"profile"); //NOI18N
+        }
+    };
+    
     public JFXActionProvider(@NonNull final Project project) {
-        Parameters.notNull("project", project);
+        Parameters.notNull("project", project); // NOI18N
         this.prj = project;
     }
 
@@ -104,7 +119,7 @@ public class JFXActionProvider implements ActionProvider {
     @Override
     public void invokeAction(@NonNull String command, @NonNull Lookup context) throws IllegalArgumentException {
         if (command != null) {
-            if(JFXProjectUtils.isFXPreloaderProject(prj)) {
+            if(RUN_ACTIONS.containsKey(command) && JFXProjectUtils.isFXPreloaderProject(prj)) {
                 NotifyDescriptor d =
                     new NotifyDescriptor.Message(NbBundle.getMessage(JFXActionProvider.class,"WARN_PreloaderExecutionUnsupported", // NOI18N
                         ProjectUtils.getInformation(prj).getDisplayName()), NotifyDescriptor.INFORMATION_MESSAGE);
@@ -113,6 +128,7 @@ public class JFXActionProvider implements ActionProvider {
             }
             FileObject buildFo = findBuildXml();
             assert buildFo != null && buildFo.isValid();
+            String noScript = isJavaScriptAvailable() ? "" : "-noscript"; // NOI18N
             String runAs = JFXProjectUtils.getFXProjectRunAs(prj);
             if(runAs == null) {
                 runAs = JFXProjectProperties.RunAsType.STANDALONE.getString();
@@ -120,13 +136,17 @@ public class JFXActionProvider implements ActionProvider {
             final ActionProgress listener = ActionProgress.start(context);
             try {
                 String target;
-                if(runAs.equalsIgnoreCase(JFXProjectProperties.RunAsType.STANDALONE.getString())) {
-                    target = "jfxsa-".concat(command); //NOI18N
+                if(command.equalsIgnoreCase(COMMAND_BUILD) || command.equalsIgnoreCase(COMMAND_REBUILD)) {
+                    target = ACTIONS.get(command).concat(noScript); // NOI18N
                 } else {
-                    if(runAs.equalsIgnoreCase(JFXProjectProperties.RunAsType.ASWEBSTART.getString())) {
-                        target = "jfxws-".concat(command); //NOI18N
-                    } else { //JFXProjectProperties.RunAsType.INBROWSER
-                        target = "jfxbe-".concat(command); //NOI18N
+                    if(runAs.equalsIgnoreCase(JFXProjectProperties.RunAsType.STANDALONE.getString())) {
+                        target = "jfxsa-".concat(ACTIONS.get(command)).concat(noScript); //NOI18N
+                    } else {
+                        if(runAs.equalsIgnoreCase(JFXProjectProperties.RunAsType.ASWEBSTART.getString())) {
+                            target = "jfxws-".concat(ACTIONS.get(command)).concat(noScript); //NOI18N
+                        } else { //JFXProjectProperties.RunAsType.INBROWSER
+                            target = "jfxbe-".concat(ACTIONS.get(command)).concat(noScript); //NOI18N
+                        }
                     }
                 }
                 
@@ -149,13 +169,13 @@ public class JFXActionProvider implements ActionProvider {
 
     @Override
     public boolean isActionEnabled(@NonNull String command, @NonNull Lookup context) throws IllegalArgumentException {
-        if (!JFXProjectUtils.isFXProject(prj)) {
-            return false;
+        if (isFXProject(prj)) {
+            if (findBuildXml() == null) {
+                return false;
+            }
+            return findTarget(command) != null;
         }
-        if (findBuildXml() == null) {
-            return false;
-        }
-        return findTarget(command) != null;
+        return false;
     }
 
     @NonNull
@@ -182,10 +202,10 @@ public class JFXActionProvider implements ActionProvider {
     private void collectStartupExtenderArgs(Map<? super String,? super String> p, String command, Lookup context) {
         StringBuilder b = new StringBuilder();
         for (String arg : runJvmargsIde(command, context)) {
-            b.append(' ').append(arg);
+            b.append(' ').append(arg); // NOI18N
         }
         if (b.length() > 0) {
-            p.put("run.jvmargs.ide", b.toString());
+            p.put("run.jvmargs.ide", b.toString()); // NOI18N
         }
     }
     
@@ -212,5 +232,43 @@ public class JFXActionProvider implements ActionProvider {
             args.addAll(group.getArguments());
         }
         return args;
+    }
+    
+    private boolean isJavaScriptAvailable() {
+        if(isJSAvailableChecked) {
+            return isJSAvailable;
+        }
+        ScriptEngineManager mgr = new ScriptEngineManager();
+        List<ScriptEngineFactory> factories = mgr.getEngineFactories();
+        for (ScriptEngineFactory factory: factories) {
+            List<String> engNames = factory.getNames();
+            for(String name: engNames) {
+                if(name.equalsIgnoreCase("js") || name.equalsIgnoreCase("javascript")) { //NOI18N
+                    isJSAvailableChecked = true;
+                    isJSAvailable = true;
+                    return isJSAvailable;
+                }
+            }
+        }
+        isJSAvailableChecked = true;
+        isJSAvailable = false;
+        return isJSAvailable;
+    }
+
+    private static boolean isFXProject(@NonNull final Project prj) {
+        final J2SEPropertyEvaluator eval = prj.getLookup().lookup(J2SEPropertyEvaluator.class);
+        if (eval == null) {
+            return false;
+        }
+        //Don't use JFXProjectProperties.isTrue to prevent JFXProjectProperties from being loaded
+        //JFXProjectProperties.JAVAFX_ENABLED is inlined by compliler
+        return isTrue(eval.evaluator().getProperty(JFXProjectProperties.JAVAFX_ENABLED));
+    }
+
+    private static boolean isTrue(@NullAllowed final String value) {
+        return  value != null && (
+           "true".equalsIgnoreCase(value) ||    //NOI18N
+           "yes".equalsIgnoreCase(value) ||     //NOI18N
+           "on".equalsIgnoreCase(value));       //NOI18N
     }
 }

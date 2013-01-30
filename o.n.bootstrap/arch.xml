@@ -603,6 +603,13 @@ made subject to such option by the copyright holder.
                     to be replaced by another.
                 </api>
             </li>
+            <li>
+                <api type="export" group="systemproperty" name="sun.awt.datatransfer.timeout" category="devel">
+                    Specifies the amount of milliseconds the call to
+                    <code>getContent()</code> method of <code>ExClipboard</code>
+                    waits to synchronize with system clipboard. Defaults to 1000ms.
+                </api>
+            </li>
         </ul>
         <p>
             There are also some options passed to the launcher (interpreted

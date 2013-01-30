@@ -422,6 +422,7 @@ public final class ProjectCustomizer {
         private String errorMessage;
         private ActionListener okListener;
         private ActionListener storeListener;
+        private ActionListener closeListener;
         
         /** Private constructor. See the factory method.
          */
@@ -572,6 +573,26 @@ public final class ProjectCustomizer {
          */
         public ActionListener getStoreListener() {
             return storeListener;
+        }
+
+        /**
+         * Set the action listener that will get notified when the customizer is going to be closed
+         * Listener is executed outside of AWT EventQueue. Usually to be used to do cleanup.
+         * @param listener ActionListener to notify 
+         * @since org.netbeans.modules.projectuiapi/1 1.65
+         */
+        public void setCloseListener(ActionListener listener) {
+            closeListener = listener;
+        }
+        
+        /**
+         * Returns the action listener that is executed outside of AWT EQ and is associated 
+         * with this category that gets notified when the customizer is going to be closed.
+         * @return instance of ActionListener or null if not set.
+         * @since org.netbeans.modules.projectuiapi/1 1.65
+         */
+        public ActionListener getCloseListener() {
+            return closeListener;
         }
         
     }

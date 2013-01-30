@@ -2099,12 +2099,15 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
             }
             if (draggedComponent == null) {
                 // first move event, pre-create visual component to be added
-                draggedComponent = new NewComponentDrag( item );
+                draggedComponent = new NewComponentDrag(item);
             }
-            draggedComponent.move(e);
-            repaint();
-        }
-        else if (formDesigner.getDesignerMode() == FormDesigner.MODE_SELECT
+            if (draggedComponent.isValid()) {
+                draggedComponent.move(e);
+                repaint();
+            } else { // new component failed
+                formDesigner.toggleSelectionMode(); // also calls endDragging(null)
+            }
+        } else if (formDesigner.getDesignerMode() == FormDesigner.MODE_SELECT
                  && !anyDragger()) {
             mouseHint = null;
             checkResizing(e);
@@ -2434,6 +2437,10 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
             this.hotSpot = hotspot == null ?
                 new Point(4, 4) :
                 new Point(hotspot.x - convertPoint.x, hotspot.y - convertPoint.y);
+        }
+
+        boolean isValid() {
+            return showingComponents != null; // if null, initialization failed
         }
 
         final void setMovingComponents(RADVisualComponent[] components) {
@@ -3270,8 +3277,14 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
 
         @Override
         void init() { // can be re-inited
-            RADVisualComponent precreated =
-                getComponentCreator().precreateVisualComponent(paletteItem);
+            boolean failed = true;
+            RADVisualComponent precreated = null;
+            try {
+                precreated = getComponentCreator().precreateVisualComponent(paletteItem);
+                failed = false;
+            } catch (Exception ex) { // creation failed, already reported to the user
+            } catch (LinkageError ex) { // creation failed, already reported to the user
+            }
 
             if (precreated != null) {
                 if (movingComponents == null) {
@@ -3325,42 +3338,32 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
                 }
 
                 newDrag = oldDrag = true;
-            }
-            else {
-                if (paletteItem.getComponentClass() != null) {
-                    // non-visual component - present it as icon
-                    Node node = paletteItem.getNode();
-                    Image icon;
-                    if (node == null) {
-                        icon = paletteItem.getIcon(java.beans.BeanInfo.ICON_COLOR_16x16);
-                        if (icon == null) {
-                            icon = ImageUtilities.loadImage("org/netbeans/modules/form/resources/form.gif"); // NOI18N
-                        }
-                    } else {
-                        icon = node.getIcon(java.beans.BeanInfo.ICON_COLOR_16x16);
+            } else if (!failed) { // It's a non visual component, don't trying to instantiate
+                // yet, present it as icon.
+                Node node = paletteItem.getNode();
+                Image icon;
+                if (node == null) {
+                    icon = paletteItem.getIcon(java.beans.BeanInfo.ICON_COLOR_16x16);
+                    if (icon == null) {
+                        icon = ImageUtilities.loadImage("org/netbeans/modules/form/resources/form.gif"); // NOI18N
                     }
-                    showingComponents[0] = new JLabel(new ImageIcon(icon));
-                    Dimension dim = showingComponents[0].getPreferredSize();
-                    hotSpot = new Point(dim.width/2, dim.height/2);
-                    if (hotSpot.x < 0) {
-                        hotSpot.x = 0;
-                    }
-                    originalBounds = new Rectangle[] { new Rectangle(convertPoint.x, convertPoint.y, dim.width, dim.height) };
-                    showingComponents[0].setBounds(originalBounds[0]);
-                    movingBounds = new Rectangle[] { showingComponents[0].getBounds() };
-
-                    newDrag = oldDrag = false;
                 } else {
-                    // The corresponding class cannot be loaded - cancel the drag.
-                    showingComponents = null;
-                    movingBounds = new Rectangle[0];
-                    EventQueue.invokeLater(new Runnable() {
-                        @Override
-                        public void run() {
-                            formDesigner.toggleSelectionMode(); // calls endDragging(null)
-                        }
-                    });
+                    icon = node.getIcon(java.beans.BeanInfo.ICON_COLOR_16x16);
                 }
+                showingComponents[0] = new JLabel(new ImageIcon(icon));
+                Dimension dim = showingComponents[0].getPreferredSize();
+                hotSpot = new Point(dim.width/2, dim.height/2);
+                if (hotSpot.x < 0) {
+                    hotSpot.x = 0;
+                }
+                originalBounds = new Rectangle[] { new Rectangle(convertPoint.x, convertPoint.y, dim.width, dim.height) };
+                showingComponents[0].setBounds(originalBounds[0]);
+                movingBounds = new Rectangle[] { showingComponents[0].getBounds() };
+
+                newDrag = oldDrag = false;
+            } else { // The corresponding class cannot be loaded, or the component instantiated. Cancel the drag.
+                showingComponents = null;
+                movingBounds = new Rectangle[0];
             }
 
             super.init();
@@ -3530,7 +3533,7 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
                 } else {
                     ClassSource classSource = CopySupport.getCopiedBeanClassSource(transferable);
                     if (classSource != null) {
-                        Class componentClass = getComponentCreator().prepareClass(classSource);
+                        Class componentClass = getComponentCreator().prepareClass(classSource); // possible failure was reported
                         if (componentClass != null) {
                             item = new PaletteItem(classSource, componentClass);
                         }
@@ -3564,14 +3567,23 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
                 }
                 if (item != null) {
                     if ((item.getComponentClassName().indexOf('.') != -1) // Issue 79573
-                        || FormJavaSource.isInDefaultPackage(getFormModel())) {
+                            || FormJavaSource.isInDefaultPackage(getFormModel())) {
                         draggedComponent = new NewComponentDrag(item);
-                        draggedComponent.move(dtde.getLocation(), 0);
-                        repaint();
-                    } else {
+                        if (draggedComponent.isValid()) {
+                            draggedComponent.move(dtde.getLocation(), 0);
+                            repaint();
+                        } else { // failed to create instance of the component (already reported)
+                            if (formDesigner.getDesignerMode() == FormDesigner.MODE_ADD) {
+                                formDesigner.toggleSelectionMode(); // also calls endDragging(null)
+                            } else {
+                                draggedComponent = null;
+                            }
+                            dtde.rejectDrag();
+                        }
+                    } else { // can't use class from default package
                         dtde.rejectDrag();
                     }
-                } else {
+                } else { // could not load the dragged class, or dragging something unknown
                     dtde.rejectDrag();
                 }
             } catch (Exception ex) {

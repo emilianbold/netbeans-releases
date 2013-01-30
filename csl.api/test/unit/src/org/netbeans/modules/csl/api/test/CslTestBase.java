@@ -649,16 +649,31 @@ public abstract class CslTestBase extends NbTestCase {
             fail(getContentDifferences(relFilePath, ext, includeTestName, expectedUnified, actualUnified));
         }
     }
-    
+
     private String getContentDifferences(String relFilePath, String ext, boolean includeTestName, String expected, String actual) {
         StringBuilder sb = new StringBuilder();
         sb.append("Content does not match between '").append(relFilePath).append("' and '").append(relFilePath);
         if (includeTestName) {
             sb.append(getName());
         }
-        sb.append(ext).append("'\n");
-        sb.append("Expected content is: \n\n").append(expected).append("\n\nbut actual is: \n\n").append(actual).append("\n\n");
-        sb.append("It differs in the following things: \n\n");
+        sb.append(ext).append("'").append(lineSeparator(1));
+        sb.append(getContentDifferences(expected, actual));
+
+        return sb.toString();
+    }
+
+    private String getContentDifferences(String expected, String actual) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Expected content is:").
+           append(lineSeparator(2)).
+           append(expected).
+           append(lineSeparator(2)).
+           append("but actual is:").
+           append(lineSeparator(2)).
+           append(actual).
+           append(lineSeparator(2)).
+           append("It differs in the following things:").
+           append(lineSeparator(2));
 
         List<String> expectedLines = Arrays.asList(expected.split("\n"));
         List<String> actualLines = Arrays.asList(actual.split("\n"));
@@ -672,10 +687,10 @@ public abstract class CslTestBase extends NbTestCase {
         for (String actualLine : actualLines) {
             if (expectedLines.contains(actualLine) == false) {
                 if (firstOccurence) {
-                    sb.append("Actual content contains following lines which are missing in expected content: \n");
+                    sb.append("Actual content contains following lines which are missing in expected content: ").append(lineSeparator(1));
                     firstOccurence = false;
                 }
-                sb.append("\t").append(actualLine).append("\n");
+                sb.append("\t").append(actualLine).append(lineSeparator(1));
             }
         }
 
@@ -685,13 +700,13 @@ public abstract class CslTestBase extends NbTestCase {
             if (actualLines.contains(expectedLine) == false) {
                 // If at least one line missing in actual content we want to append header line
                 if (firstOccurence) {
-                    sb.append("Expected content contains following lines which are missing in actual content: \n");
+                    sb.append("Expected content contains following lines which are missing in actual content: ").append(lineSeparator(1));
                     firstOccurence = false;
                 }
-                sb.append("\t").append(expectedLine).append("\n");
+                sb.append("\t").append(expectedLine).append(lineSeparator(1));
             }
         }
-        
+
         return sb.toString();
     }
 
@@ -736,7 +751,44 @@ public abstract class CslTestBase extends NbTestCase {
             }
         }
 
-        assertEquals("Not matching goldenfile: " + FileUtil.getFileDisplayName(fileObject), expected.trim(), description.trim());
+        final String expectedTrimmed = expected.trim();
+        final String actualTrimmed = description.trim();
+
+        if (expectedTrimmed.equals(actualTrimmed)) {
+            return; // Actual and expected content are equals --> Test passed
+        } else {
+            // We want to ignore different line separators (like \r\n against \n) because they
+            // might be causing failing tests on a different operation systems like Windows :]
+            final String expectedUnified = expectedTrimmed.replaceAll("\r", "");
+            final String actualUnified = actualTrimmed.replaceAll("\r", "");
+
+            if (expectedUnified.equals(actualUnified)) {
+                return; // Only difference is in line separation --> Test passed
+            }
+
+            // There are some diffrerences between expected and actual content --> Test failed
+
+            fail("Not matching goldenfile: " + FileUtil.getFileDisplayName(fileObject) + lineSeparator(2) + getContentDifferences(expectedUnified, actualUnified));
+        }
+    }
+
+    /**
+     * Returns line separators with respect to the current platform.
+     *
+     * @param number use if you want to get more than one file separator
+     * @return one or more independent line separators in one <code>String</code>
+     */
+    private String lineSeparator(int number) {
+        final String lineSeparator = System.getProperty("line.separator");
+        if (number > 1) {
+            final StringBuilder sb = new StringBuilder();
+
+            for (int i = 0; i < number; i++) {
+                sb.append(lineSeparator);
+            }
+            return sb.toString();
+        }
+        return lineSeparator;
     }
     
     protected void assertFileContentsMatches(String relFilePath, String description, boolean includeTestName, String ext) throws Exception {
@@ -3681,7 +3733,7 @@ public abstract class CslTestBase extends NbTestCase {
                 List<Hint> descsOnLine = null;
                 int underlineStart = -1;
                 int underlineEnd = -1;
-                for (int i = lineStart; i <= lineEnd; i++) {
+                for (int i = lineStart; i <= lineEnd && i < text.length(); i++) {
                     if (i == caretOffset) {
                         sb.append("^");
                     }

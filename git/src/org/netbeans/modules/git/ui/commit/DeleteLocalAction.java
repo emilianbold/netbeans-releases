@@ -114,14 +114,19 @@ public final class DeleteLocalAction extends GitAction {
                 };
                 for (Map.Entry<File, Set<File>> e : sortedFiles.entrySet()) {
                     File root = e.getKey();
+                    GitClient client = null;
                     try {
-                        GitClient client = Git.getInstance().getClient(root);
+                        client = Git.getInstance().getClient(root);
                         client.addNotificationListener(list);
                         File[] roots = e.getValue().toArray(new File[e.getValue().size()]);
                         client.reset(roots, GitUtils.HEAD, false, getProgressMonitor());
                         client.clean(roots, getProgressMonitor());
                     } catch (GitException ex) {
                         LOG.log(Level.INFO, null, ex);
+                    } finally {
+                        if (client != null) {
+                            client.release();
+                        }
                     }
                 }
             }

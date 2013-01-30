@@ -124,8 +124,12 @@ public final class JaxWsDataLoader extends MultiFileLoader {
             return null;
         }
         
-        if ( fo.getExt().equals(JAVA_EXTENSION) && Utils.isService(fo)){
-            return fo;    
+        if ( fo.getExt().equals(JAVA_EXTENSION) ){
+            if ( fo.getAttribute("jax-ws-service")!=null && 
+                    fo.getAttribute("jax-ws-service-provider")==null)       // NOI18N
+            {
+                return fo;
+            }
         }
         return null;
     }

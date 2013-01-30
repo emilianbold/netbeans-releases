@@ -167,8 +167,11 @@ public final class DocumentViewOp
     
     /**
      * Visible rectangle of the viewport or a text component if there is no viewport.
+     * Initial size should not be zero since when querying DocView for preferred horizontal span
+     * for a component that was not laid out yet (e.g. a FoldView)
+     * with linewrap set to "anywhere" the views would attempt to fit into zero width.
      */
-    private Rectangle visibleRect = new Rectangle();
+    private Rectangle visibleRect = new Rectangle(0, 0, Integer.MAX_VALUE, Integer.MAX_VALUE);
 
     private float availableWidth;
     
@@ -444,8 +447,8 @@ public final class DocumentViewOp
         }
 
         if (ViewHierarchyImpl.REPAINT_LOG.isLoggable(Level.FINE)) {
-            String msg = "NOTIFY-REPAINT [x0,y0][x1,y1]: [" + x0 + "," + y0 + "][" + x1 + "," + y1 + "] => [" // NOI18N
-                     + repaintX0 + "," + repaintY0 + "][" + repaintX1 + "," + repaintY1 + "]\n"; // NOI18N
+            String msg = "NOTIFY-REPAINT XYWH[" + x0 + ";" + y0 + ";" + (x1-x0) + ";" + (y1-y0) + "] => [" // NOI18N
+                     + repaintX0 + ";" + repaintY0 + ";" + (repaintX1-repaintX0) + ";" + (repaintY1-repaintY0) + "]\n"; // NOI18N
             ViewUtils.log(ViewHierarchyImpl.REPAINT_LOG, msg);
         }
     }
@@ -467,7 +470,7 @@ public final class DocumentViewOp
                 public void run() {
                     JTextComponent textComponent = docView.getTextComponent();
                     if (textComponent != null) {
-                        if (ViewHierarchyImpl.REPAINT_LOG.isLoggable(Level.FINER)) {
+                        if (ViewHierarchyImpl.REPAINT_LOG.isLoggable(Level.FINE)) {
                             ViewHierarchyImpl.REPAINT_LOG.finer("REPAINT [x0,y0][x1,y1]: [" +
                                     x0 + "," + y0 + "][" + x1 + "," + y1 + "]\n"); // NOI18N
                         }
@@ -497,8 +500,7 @@ public final class DocumentViewOp
         textComponent.addPropertyChangeListener(this);
         viewHierarchyImpl = ViewHierarchyImpl.get(textComponent);
         viewHierarchyImpl.setDocumentView(docView);
-        updateVisibleDimension(false);
-        if (ViewHierarchyImpl.REPAINT_LOG.isLoggable(Level.FINE)) {
+        if (ViewHierarchyImpl.REPAINT_LOG.isLoggable(Level.FINER)) {
             DebugRepaintManager.register(textComponent);
         }
     }
@@ -686,7 +688,7 @@ public final class DocumentViewOp
                 boolean heightDiffers = (newVisibleRect.height != visibleRect.height);
                 if (ViewHierarchyImpl.SPAN_LOG.isLoggable(Level.FINE)) {
                     ViewUtils.log(ViewHierarchyImpl.SPAN_LOG, "DVOp.updateVisibleDimension: widthDiffers=" + widthDiffers + // NOI18N
-                            ", newVisibleRect=" + newVisibleRect + // NOI18N
+                            ", newVisibleRect=" + ViewUtils.toString(newVisibleRect) + // NOI18N
                             ", extraHeight=" + extraHeight + "\n"); // NOI18N
                 }
                 if (clearAllocationWidthChange) {
@@ -888,8 +890,9 @@ public final class DocumentViewOp
         // #183797 - most likely seeing a non-nb document during the editor pane creation
         Integer dllw = (Integer) doc.getProperty(SimpleValueNames.TEXT_LIMIT_WIDTH);
         int textLimitLineColumn = (dllw != null) ? dllw.intValue() : EditorPreferencesDefaults.defaultTextLimitWidth;
-        if (prefs != null) {
-            boolean drawTextLimitLine = prefs.getBoolean(SimpleValueNames.TEXT_LIMIT_LINE_VISIBLE, true);
+        Preferences prefsLocal = prefs;
+        if (prefsLocal != null) {
+            boolean drawTextLimitLine = prefsLocal.getBoolean(SimpleValueNames.TEXT_LIMIT_LINE_VISIBLE, true);
             textLimitLineX = drawTextLimitLine ? (int) (textLimitLineColumn * defaultCharWidth) : -1;
         }
     }
@@ -932,6 +935,7 @@ public final class DocumentViewOp
             
             tabTextLayout = null;
             singleCharTabTextLayout = null;
+            newlineTextLayout = null;
             lineContinuationTextLayout = null;
 
             updateTextLimitLine(docView.getDocument());
@@ -1096,7 +1100,7 @@ public final class DocumentViewOp
 
     public boolean isNonPrintableCharactersVisible() {
         checkSettingsInfo();
-        return isAnyStatusBit(NON_PRINTABLE_CHARACTERS_VISIBLE);
+        return isAnyStatusBit(NON_PRINTABLE_CHARACTERS_VISIBLE) && !asTextField;
     }
 
     LineWrapType getLineWrapType() {

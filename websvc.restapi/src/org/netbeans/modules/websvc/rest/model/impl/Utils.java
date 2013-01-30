@@ -189,13 +189,13 @@ public class Utils {
         return value;
     }
     
-    static boolean checkForJsr311Bootstrap(TypeElement element, Project project, 
+    static void checkForJsr311Bootstrap(TypeElement element, Project project, 
             AnnotationModelHelper helper) 
     {
         RestSupport restSupport = project.getLookup().lookup(RestSupport.class);
         
         if ( restSupport == null || restSupport.isRestSupportOn() ){
-            return false;
+            return;
         }
         if ( isRest(element, helper) ){
             // Fix for BZ#201039 - REST configuration dialog appears after expanding a web project with WebLogic target
@@ -203,16 +203,14 @@ public class Utils {
                     create(element), helper.getClasspathInfo());
             if ( sourceFile == null ){
                 // the element is not in source , it's binary
-                return false;
+                return;
             }
             try {
                 restSupport.ensureRestDevelopmentReady();
-                return true;
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
         }
-        return false;
     }
     
     public static ClasspathInfo getClassPathInfo(RestSupport restSupport) {

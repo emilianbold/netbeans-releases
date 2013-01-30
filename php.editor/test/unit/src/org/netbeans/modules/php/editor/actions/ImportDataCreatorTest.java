@@ -57,6 +57,7 @@ import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.modules.php.editor.PHPCodeCompletionTestBase;
 import org.netbeans.modules.php.editor.actions.FixUsesAction.Options;
+import org.netbeans.modules.php.editor.actions.ImportData.ItemVariant;
 import org.netbeans.modules.php.editor.api.ElementQuery.Index;
 import org.netbeans.modules.php.editor.api.ElementQueryFactory;
 import org.netbeans.modules.php.editor.api.QuerySupportFactory;
@@ -100,15 +101,16 @@ public class ImportDataCreatorTest extends PHPCodeCompletionTestBase {
     }
 
     public void testImportData_04() throws Exception {
+        // see issue #219548
         performTest("Homepage^Presenter");
     }
 
     public void testImportData_05() throws Exception {
-        performTest("Homepage^Presenter", new Options(true, false, false));
+        performTest("Homepage^Presenter", new Options(true, false, false, false));
     }
 
     public void testImportData_06() throws Exception {
-        performTest("Homepage^Presenter", new Options(false, false, false));
+        performTest("Homepage^Presenter", new Options(false, false, false, false));
     }
 
     public void testImportData_07() throws Exception {
@@ -116,6 +118,7 @@ public class ImportDataCreatorTest extends PHPCodeCompletionTestBase {
     }
 
     public void testImportData_08() throws Exception {
+        // see issue #219548
         performTest("class ^Blah");
     }
 
@@ -177,17 +180,17 @@ public class ImportDataCreatorTest extends PHPCodeCompletionTestBase {
         sb.append("Caret position: ").append(testResult.caretPosition);
         sb.append("\nShould show uses panel: ").append(testResult.shouldShowUsesPanel ? "true" : "false");
         sb.append("\nDefaults:\n");
-        for (String def : testResult.defaults) {
-            sb.append(" ").append(def).append("\n");
+        for (ImportData.DataItem dataItem : testResult.getItems()) {
+            sb.append(" ").append(dataItem.getDefaultVariant().getName()).append("\n");
         }
         sb.append("\nNames:\n");
-        for (String name : testResult.names) {
-            sb.append(" ").append(name).append("\n");
+        for (ImportData.DataItem dataItem : testResult.getItems()) {
+            sb.append(" ").append(dataItem.getTypeName()).append("\n");
         }
         sb.append("\nVariants:\n");
-        for (String[] variants : testResult.variants) {
-            for (String variant : variants) {
-                sb.append(" ").append(variant).append("\n");
+        for (ImportData.DataItem dataItem : testResult.getItems()) {
+            for (ItemVariant itemVariant : dataItem.getVariants()) {
+                sb.append(" ").append(itemVariant.getName()).append("\n");
             }
             sb.append("\n");
         }

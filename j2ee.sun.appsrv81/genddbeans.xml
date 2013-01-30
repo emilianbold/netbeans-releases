@@ -97,7 +97,8 @@ made subject to such option by the copyright holder.
 			rootDir="${rootDir}"
 			throwErrors="true"
 			validate="true"
-			attrProp="true"/>
+			attrProp="true"
+                        java5="true"/>
 	</target>
 	
 	<target name="gen_appclient" depends="ddbeans_dependencies" unless="appclient.uptodate">
@@ -111,7 +112,8 @@ made subject to such option by the copyright holder.
 			rootDir="${rootDir}"
 			throwErrors="true"
 			validate="true"
-			attrProp="true"/>
+			attrProp="true"
+                        java5="true"/>
 		<replace dir="${appclient_res_root}">
 			<include name="**/*.java"/>
 			<replacefilter token="${basePackage}.appclient.EjbRef" value="${basePackage}.EjbRef"/>
@@ -133,7 +135,8 @@ made subject to such option by the copyright holder.
 			rootDir="${rootDir}"
 			throwErrors="true"
 			validate="true"
-			attrProp="true"/>
+			attrProp="true"
+                        java5="true"/>
 		<replace dir="${application_res_root}">
 			<include name="**/*.java"/>
 			<replacefilter token="${basePackage}.application.SecurityRoleMapping" value="${basePackage}.SecurityRoleMapping"/>
@@ -151,7 +154,8 @@ made subject to such option by the copyright holder.
 			rootDir="${rootDir}"
 			throwErrors="true"
 			validate="true"
-			attrProp="true"/>
+			attrProp="true"
+                        java5="true"/>
 	</target>
 	
 	<target name="gen_cmpmapping" depends="ddbeans_dependencies" unless="cmpmapping.uptodate">
@@ -165,7 +169,8 @@ made subject to such option by the copyright holder.
 			rootDir="${rootDir}"
 			throwErrors="true"
 			validate="true"
-			attrProp="true"/>
+			attrProp="true"
+                        java5="true"/>
 	</target>
 	
 	<target name="gen_ejb" depends="ddbeans_dependencies" unless="ejb.uptodate">
@@ -179,7 +184,8 @@ made subject to such option by the copyright holder.
 			rootDir="${rootDir}"
 			throwErrors="true"
 			validate="true"
-			attrProp="true"/>
+			attrProp="true"
+                        java5="true"/>
 		<replace dir="${ejb_res_root}">
 			<include name="**/*.java"/>
 			<replacefilter token="${basePackage}.ejb.SecurityRoleMapping" value="${basePackage}.SecurityRoleMapping"/>
@@ -204,7 +210,8 @@ made subject to such option by the copyright holder.
 			rootDir="${rootDir}"
 			throwErrors="true"
 			validate="true"
-			attrProp="true"/>
+			attrProp="true"
+                        java5="true"/>
 		<replace dir="${webapp_res_root}">
 			<include name="**/*.java"/>
 			<replacefilter token="${basePackage}.webapp.SecurityRoleMapping" value="${basePackage}.SecurityRoleMapping"/>

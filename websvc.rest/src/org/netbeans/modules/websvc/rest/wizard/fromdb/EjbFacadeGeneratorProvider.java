@@ -46,6 +46,7 @@ package org.netbeans.modules.websvc.rest.wizard.fromdb;
 
 import org.netbeans.modules.j2ee.persistence.wizard.fromdb.FacadeGenerator;
 import org.netbeans.modules.j2ee.persistence.wizard.fromdb.FacadeGeneratorProvider;
+import org.netbeans.modules.websvc.rest.codegen.model.EntityResourceBeanModel;
 
 /**
  *
@@ -60,5 +61,9 @@ public class EjbFacadeGeneratorProvider implements FacadeGeneratorProvider {
 
     public FacadeGenerator createGenerator() {
         return new EjbFacadeGenerator();
+    }
+    
+    public FacadeGenerator createGenerator(EntityResourceBeanModel model) {
+        return new EjbFacadeGenerator(model);
     }
 }

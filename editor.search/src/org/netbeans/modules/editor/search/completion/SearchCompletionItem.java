@@ -62,14 +62,13 @@ import org.netbeans.spi.editor.completion.support.CompletionUtilities;
 import org.openide.text.NbDocument;
 
 public class SearchCompletionItem implements CompletionItem {
-    
+
     private String word;
-    
+
     /** Creates a new instance of WordCompletionItem */
     public SearchCompletionItem(String word) {
         this.word = word;
     }
-    
 
     @Override
     public void defaultAction(final JTextComponent component) {
@@ -79,7 +78,7 @@ public class SearchCompletionItem implements CompletionItem {
             @Override
             public void run() {
                 Document doc = component.getDocument();
-                
+
                 try {
                     doc.remove(0, doc.getLength());
                     doc.insertString(0, getText(), null);
@@ -89,17 +88,17 @@ public class SearchCompletionItem implements CompletionItem {
             }
         });
     }
-    
+
     @Override
     public void processKeyEvent(KeyEvent evt) {
     }
-    
+
     @Override
     public int getPreferredWidth(Graphics g, Font defaultFont) {
         return CompletionUtilities.getPreferredWidth(
                 escapeFirstLessThanSign(getText()), null, g, defaultFont);
     }
-    
+
     private static String escapeFirstLessThanSign(String text) {
         String result = text;
         if ((result != null) && (result.startsWith("<"))) {
@@ -108,7 +107,7 @@ public class SearchCompletionItem implements CompletionItem {
         }
         return result;
     }
-    
+
     @Override
     public void render(Graphics g, Font defaultFont, Color defaultColor, Color backgroundColor, int width, int height, boolean selected) {
         if (selected) {
@@ -118,36 +117,36 @@ public class SearchCompletionItem implements CompletionItem {
         }
         CompletionUtilities.renderHtml(null, escapeFirstLessThanSign(getText()), null, g, defaultFont, defaultColor, width, height, selected);
     }
-    
+
     @Override
     public CompletionTask createDocumentationTask() {
         return null;
     }
-    
+
     @Override
     public CompletionTask createToolTipTask() {
         return null;
     }
-    
+
     @Override
     public boolean instantSubstitution(JTextComponent component) {
         return true;
     }
-    
+
     @Override
     public int getSortPriority() {
         return 100;
     }
-    
+
     @Override
     public CharSequence getSortText() {
         return getText();
     }
-    
+
     protected String getText() {
         return word;
     }
-    
+
     @Override
     public CharSequence getInsertPrefix() {
         return getText();
@@ -178,5 +177,5 @@ public class SearchCompletionItem implements CompletionItem {
             return false;
         }
         return true;
-    }    
+    }
 }

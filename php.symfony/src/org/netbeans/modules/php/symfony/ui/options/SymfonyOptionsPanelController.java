@@ -59,7 +59,7 @@ import org.openide.util.Lookup;
 @OptionsPanelController.SubRegistration(
     location=UiUtils.OPTIONS_PATH,
     id=SymfonyScript.OPTIONS_SUB_PATH,
-    displayName="#LBL_OptionsName",
+    displayName="#LBL_PHPSymfonyOptionsName",
 //    toolTip="#LBL_OptionsTooltip"
     position=200
 )
@@ -123,7 +123,7 @@ public class SymfonyOptionsPanelController extends OptionsPanelController implem
 
     @Override
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(SymfonyOptions.class);
+        return new HelpCtx("org.netbeans.modules.php.symfony.ui.options.SymfonyOptions"); // NOI18N
     }
 
     @Override

@@ -45,6 +45,7 @@ package org.netbeans.modules.bugtracking.ui.selectors;
 import javax.swing.GroupLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -57,9 +58,11 @@ import javax.swing.event.ChangeListener;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import static java.lang.Character.MAX_RADIX;
-import org.netbeans.modules.bugtracking.APIAccessor;
 import org.netbeans.modules.bugtracking.RepositoryImpl;
+import org.netbeans.modules.bugtracking.kenai.TeamRepositoryPanel;
+import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
 import org.netbeans.modules.bugtracking.spi.RepositoryController;
+import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
 
 /**
  *
@@ -177,26 +180,33 @@ public class RepositoryFormPanel extends JPanel {
         }
     }
 
-    private boolean displayFormPanel(RepositoryImpl repository, String initialErrMsg) {
-        if (repository == selectedRepository) {
+    private boolean displayFormPanel(RepositoryImpl repositoryImpl, String initialErrMsg) {
+        if (repositoryImpl == selectedRepository) {
             return false;
         }
 
         stopListeningOnController();
 
-        if(repository != null) {
-            String cardName = getCardName(repository);
-            RepositoryController controller = repository.getController();
+        if(repositoryImpl != null) {
+            String cardName = getCardName(repositoryImpl);
+            RepositoryController controller = repositoryImpl.getController();
 
             boolean firstTimeUse = registerCard(cardName);
             if (firstTimeUse) {
-                cardsPanel.add(controller.getComponent(), cardName);
+                RepositoryInfo info = repositoryImpl.getInfo();
+                Component cmp;
+                if(info != null && KenaiUtil.isKenai(repositoryImpl.getRepository())) {
+                    cmp = new TeamRepositoryPanel(info);
+                } else {
+                    cmp = controller.getComponent();
+                }
+                cardsPanel.add(cmp, cardName);
             }
 
             ((CardLayout) cardsPanel.getLayout()).show(cardsPanel, cardName);
 
             selectedFormController = controller;
-            selectedRepository = repository;
+            selectedRepository = repositoryImpl;
 
             startListeningOnController();
             selectedFormController.populate();
@@ -209,7 +219,7 @@ public class RepositoryFormPanel extends JPanel {
             }
             return firstTimeUse;
         } else {
-            String cardName = getCardName(repository);
+            String cardName = getCardName(repositoryImpl);
             if(emptyPanel == null) {
                 emptyPanel = new JPanel();
             }

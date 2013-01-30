@@ -204,12 +204,17 @@ public final class TransactionContext {
      * The transaction contains {@link FileManagerTransaction},
      * {@link PersistentIndexTransaction} and {@link ClassIndexEventsTransaction}
      * services.
-     * @param srcIndex he source flag, should be true for source roots, false for binary roots.
      * @param root the root.
+     * @param srcIndex the source flag, should be true for source roots, false for binary roots.
+     * @param allFilesIndexing  the all files indexing flag.
      * @return the transaction.
      * @throws IllegalStateException when scan transaction was already started.
      */
-    public static TransactionContext beginStandardTransaction(boolean srcIndex, URL root) throws IllegalStateException {
+    @NonNull
+    public static TransactionContext beginStandardTransaction(
+            @NonNull final URL root,
+            final boolean srcIndex,
+            final boolean allFilesIndexing) throws IllegalStateException {
         boolean hasCache;
         if (srcIndex) {
             hasCache = JavaIndex.hasSourceCache(root, false);
@@ -224,10 +229,13 @@ public final class TransactionContext {
                     FileManagerTransaction.writeThrough()).
             register(
                 ProcessorGenerated.class,
-                ProcessorGenerated.create()).
+                ProcessorGenerated.create(root)).
             register(
                 PersistentIndexTransaction.class, 
-                PersistentIndexTransaction.create()).
+                PersistentIndexTransaction.create(root)).
+            register(
+                CacheAttributesTransaction.class,
+                CacheAttributesTransaction.create(root, srcIndex, allFilesIndexing)).
             register(
                 ClassIndexEventsTransaction.class,
                 ClassIndexEventsTransaction.create(srcIndex)

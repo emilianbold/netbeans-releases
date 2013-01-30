@@ -460,7 +460,11 @@ public class JBPluginUtils {
         Document document = null;
         try {
             inputStream = new FileInputStream(serverXmlFile);
-            document = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(inputStream);
+            try {
+                document = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(inputStream);
+            } finally {
+                inputStream.close();
+            }
 
             // get the root element
             Element root = document.getDocumentElement();
@@ -523,7 +527,11 @@ public class JBPluginUtils {
         Document document = null;
         try {
             inputStream = new FileInputStream(xmlFile);
-            document = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(inputStream);
+            try {
+                document = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(inputStream);
+            } finally {
+                inputStream.close();
+            }
 
             // get the root element
             Element root = document.getDocumentElement();
@@ -563,7 +571,11 @@ public class JBPluginUtils {
         Document document = null;
         try {
             inputStream = new FileInputStream(xmlFile);
-            document = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(inputStream);
+            try {
+                document = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(inputStream);
+            } finally {
+                inputStream.close();
+            }
 
             // get the root element
             Element root = document.getDocumentElement();
@@ -603,7 +615,11 @@ public class JBPluginUtils {
         Document document = null;
         try {
             inputStream = new FileInputStream(xmlFile);
-            document = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(inputStream);
+            try {
+                document = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(inputStream);
+            } finally {
+                inputStream.close();
+            }
 
             // get the root element
             Element root = document.getDocumentElement();

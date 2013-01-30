@@ -8,7 +8,7 @@
       xmlns:ace="http://www.icefaces.org/icefaces/components">
     <h:head>
         <title>ICEfaces Welcome Page</title>
-        <!-- This line is only for ice component, remove it if no ice component is used in this page.-->
+        <!-- This line is only for ICE component, remove it if no ice component is used in this page.-->
         <link rel="stylesheet" type="text/css" href="./xmlhttp/css/rime/rime.css"/>
     </h:head>
     <h:body>
@@ -16,13 +16,14 @@
 
             <ace:panel header="Welcome to ICEfaces">
                 <h:panelGrid columns="1">
+                    <!-- NOTICE -To run this page you must have also ICEfaces ACE components library on your classpath (project dependencies). -->
                     <ace:linkButton id="linkButton1" value="ICEfaces Overview" href="http://wiki.icesoft.org/display/ICE/ICEfaces+Overview"></ace:linkButton>
                     <ace:linkButton id="linkButton2" value="General Documentation" href="http://wiki.icesoft.org/display/ICE/ICEfaces+Documentation"></ace:linkButton>
                     <ace:linkButton id="linkButton3" value="ICEfaces Demos" href="http://www.icesoft.org/demos/icefaces-demos.jsf"></ace:linkButton>
                     <ace:linkButton id="linkButton4" value="Tutorials" href="http://www.icesoft.org/community/tutorials-samples.jsf"></ace:linkButton>
                     <ace:linkButton id="linkButton5" value="ACE components" href="http://wiki.icesoft.org/display/ICE/ACE+Components"></ace:linkButton>
                     <ace:linkButton id="linkButton6" value="ICE components" href="http://wiki.icesoft.org/display/ICE/ICE+Components"></ace:linkButton>
-                    <!-- You can also use ice components. Adds ice namespace in that case: xmlns:ice="http://www.icesoft.com/icefaces/component" -->
+                    <!-- You can also use ICE components. Adds ICE namespace in that case: xmlns:ice="http://www.icesoft.com/icefaces/component" -->
                     <!-- <ice:outputLink id="aceLink" value="http://wiki.icesoft.org/display/ICE/ACE+Components" target="_blank">ACE components</ice:outputLink> -->
                     <!-- <ice:outputLink id="iceLink" value="http://wiki.icesoft.org/display/ICE/ICE+Components" target="_blank">ICE components</ice:outputLink> -->
                 </h:panelGrid>

@@ -66,6 +66,7 @@ import org.netbeans.modules.cnd.repository.sfs.statistics.RangeStatistics;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.testbench.Stats;
+import org.netbeans.modules.cnd.repository.relocate.api.UnitCodec;
 
 /**
  * Represents the data file with the indexed access
@@ -86,13 +87,15 @@ class IndexedStorageFile extends FileStorage {
     private long usedSize;
     private static final class Lock {}
     private final Object writeLock = new Lock();
+    private final UnitCodec unitCodec;
 
-    public IndexedStorageFile(final File basePath, final String name, final boolean create) throws IOException {
+    public IndexedStorageFile(final File basePath, final String name, final boolean create, UnitCodec unitCodec) throws IOException {
+        this.unitCodec = unitCodec;
         dataFile = new File(basePath, name + "-data"); // NOI18N
         indexFile = new File(basePath, name + "-index"); // NOI18N
         fileStatistics = new FileStatistics();
         boolean filesExists = (dataFile.exists() && indexFile.exists());
-        fileRWAccess = createFileRWAccess(dataFile);
+        fileRWAccess = createFileRWAccess(dataFile, unitCodec);
         boolean recreate = create || !filesExists;
 
         if (!recreate) {
@@ -168,15 +171,17 @@ class IndexedStorageFile extends FileStorage {
             fileStatistics.removeNotify(key);
         }
 
-        final int oldSize = index.remove(key);
+        synchronized (writeLock) {
+            final int oldSize = index.remove(key);
 
-        if (oldSize != 0) {
-            if (index.size() == 0) {
-                fileRWAccess.truncate(0);
-                fileRWAccessSize.set(0);
-                usedSize = 0;
-            } else {
-                usedSize -= -oldSize;
+            if (oldSize != 0) {
+                if (index.size() == 0) {
+                    fileRWAccess.truncate(0);
+                    fileRWAccessSize.set(0);
+                    usedSize = 0;
+                } else {
+                    usedSize -= -oldSize;
+                }
             }
         }
     }
@@ -355,17 +360,14 @@ class IndexedStorageFile extends FileStorage {
         return fileRWAccess;
     }
 
-    private FileRWAccess createFileRWAccess(File file) throws IOException {
+    private FileRWAccess createFileRWAccess(File file, UnitCodec unitCodec) throws IOException {
         FileRWAccess result;
         switch (Stats.fileRWAccess) {
             case 0:
-                result = new BufferedRWAccess(file);
-                break;
-            case 1:
-                result = new SimpleRWAccess(file);
+                result = new BufferedRWAccess(file, unitCodec);
                 break;
             default:
-                result = new BufferedRWAccess(file);
+                result = new BufferedRWAccess(file, unitCodec);
         }
         //result.truncate(0);
         return result;
@@ -378,7 +380,7 @@ class IndexedStorageFile extends FileStorage {
         try {
             in = new FileInputStream(indexFile);
             bin = new BufferedInputStream(in);
-            din = new RepositoryDataInputStream(bin);
+            din = new RepositoryDataInputStream(bin, unitCodec);
 
             index = FileIndexFactory.getDefaultFactory().readIndex(din);
 
@@ -396,7 +398,7 @@ class IndexedStorageFile extends FileStorage {
         try {
             out = new FileOutputStream(indexFile);
             bos = new BufferedOutputStream(out, 1024);
-            dos = new RepositoryDataOutputStream(bos);
+            dos = new RepositoryDataOutputStream(bos, unitCodec);
 
             FileIndexFactory.getDefaultFactory().writeIndex(index, dos);
         } finally {
@@ -440,19 +442,25 @@ class IndexedStorageFile extends FileStorage {
             assert currentKey != null;
             final ChunkInfo chi = getChunkInfo(currentKey);
             indexIterator.remove();
-
-            if (index.size() == 0) {
-                try {
-                    fileRWAccess.truncate(0);
-                    fileRWAccessSize.set(0);
-                } catch (IOException ex) {
-                    ex.printStackTrace();
+            synchronized (writeLock) {
+                if (index.size() == 0) {
+                    try {
+                        fileRWAccess.truncate(0);
+                        fileRWAccessSize.set(0);
+                    } catch (IOException ex) {
+                        ex.printStackTrace();
+                    }
+                    usedSize = 0;
+                } else {
+                    final int size = chi.getSize();
+                    usedSize -= size;
                 }
-                usedSize = 0;
-            } else {
-                final int size = chi.getSize();
-                usedSize -= size;
             }
         }
+    }
+
+    @Override
+    public void debugDump(Key key) {
+        // not implemented so far
     }
 }

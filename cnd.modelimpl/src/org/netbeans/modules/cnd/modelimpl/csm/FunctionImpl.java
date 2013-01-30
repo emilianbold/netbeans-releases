@@ -77,6 +77,8 @@ import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
+import org.netbeans.modules.cnd.modelimpl.csm.FunctionParameterListImpl.FunctionParameterListBuilder;
+import org.netbeans.modules.cnd.modelimpl.csm.NamespaceDefinitionImpl.NamespaceBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstRenderer;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
 import org.netbeans.modules.cnd.modelimpl.csm.core.CsmIdentifiable;
@@ -808,6 +810,52 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         }
         return out;
     }
+    
+    public static class FunctionBuilder extends SimpleDeclarationBuilder {
+    
+        @Override
+        public FunctionImpl create() {
+            CsmScope scope = AstRenderer.FunctionRenderer.getScope(getScope(), getFile(), isStatic(), false);
+
+            FunctionImpl fun = new FunctionImpl(getName(), getRawName(), scope, isStatic(), isConst(), getFile(), getStartOffset(), getEndOffset(), isGlobal());
+            
+            init(fun);
+            
+            return fun;
+        }
+        
+        protected void init(FunctionImpl fun) {
+            temporaryRepositoryRegistration(isGlobal(), fun);
+
+            setTemplateDescriptor(fun);
+            setReturnType(fun);
+            setParameters(fun);
+
+            postObjectCreateRegistration(isGlobal(), fun);
+            addReference(fun);
+            
+            addDeclaration(fun);
+        }
+        
+        protected void setReturnType(FunctionImpl fun) {
+            fun.setReturnType(getType());
+        }
+
+        protected void setParameters(FunctionImpl fun) {
+            if(getParametersListBuilder() instanceof FunctionParameterListBuilder) {
+                ((FunctionParameterListBuilder)getParametersListBuilder()).setScope(fun);
+                fun.setParameters(((FunctionParameterListBuilder)getParametersListBuilder()).create(), true);
+            }
+        }
+        
+        protected void setTemplateDescriptor(FunctionImpl fun) {
+            if(getTemplateDescriptorBuilder() != null) {
+                fun.setTemplateDescriptor(getTemplateDescriptor(), NameCache.getManager().getString(CharSequences.create(""))); // NOI18N
+            }
+        }        
+
+    }          
+    
     
     ////////////////////////////////////////////////////////////////////////////
     // iml of SelfPersistent

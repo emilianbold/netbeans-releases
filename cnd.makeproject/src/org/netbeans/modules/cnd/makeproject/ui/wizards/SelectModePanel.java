@@ -88,6 +88,7 @@ public class SelectModePanel extends javax.swing.JPanel {
     private static final String SOURCES_FILE_KEY = "sourcesField"; // NOI18N
     private ExecutionEnvironment env;
     private FileSystem fileSystem;
+    private static final RequestProcessor RP = new RequestProcessor("SelectModePanel", 1); // NOI18N
 
     /** Creates new form SelectModePanel */
     public SelectModePanel(SelectModeDescriptorPanel controller) {
@@ -372,7 +373,7 @@ public class SelectModePanel extends javax.swing.JPanel {
         String hostUID = (String) wizardDescriptor.getProperty(WizardConstants.PROPERTY_HOST_UID);
         CompilerSet cs = (CompilerSet) wizardDescriptor.getProperty(WizardConstants.PROPERTY_TOOLCHAIN);
         boolean isDefaultCompilerSet = Boolean.TRUE.equals(wizardDescriptor.getProperty(WizardConstants.PROPERTY_TOOLCHAIN_DEFAULT));
-        RequestProcessor.getDefault().post(new DevHostsInitializer(hostUID, cs, isDefaultCompilerSet, false,
+        RP.post(new DevHostsInitializer(hostUID, cs, isDefaultCompilerSet, false,
                 (ToolsCacheManager) wizardDescriptor.getProperty(WizardConstants.PROPERTY_TOOLS_CACHE_MANAGER)) { // NOI18N
             @Override
             public void updateComponents(Collection<ServerRecord> records, ServerRecord srToSelect, CompilerSet csToSelect, boolean isDefaultCompilerSet, boolean enabled) {

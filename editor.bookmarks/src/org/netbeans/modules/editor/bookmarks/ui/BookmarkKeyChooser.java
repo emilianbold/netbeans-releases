@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.editor.bookmarks.ui;
 
-import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dialog;
@@ -53,6 +52,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.HashMap;
 import java.util.Map;
 import javax.swing.JButton;
@@ -100,11 +101,12 @@ public class BookmarkKeyChooser implements KeyListener, ActionListener {
     public void show(Component parent, Runnable runOnClose) {
         this.runOnClose = runOnClose;
         key2bookmark = new HashMap<Character, BookmarkInfo>(2 * 46, 0.5f);
-        BookmarksPersistence.get().ensureAllOpenedProjectsBookmarksLoaded();
         BookmarkManager lockedBookmarkManager = BookmarkManager.getLocked();
         try {
-            for (ProjectBookmarks projectBookmarks : lockedBookmarkManager.allLoadedProjectBookmarks()) {
-                for (FileBookmarks fileBookmarks : projectBookmarks.allFileBookmarks()) {
+            // Open projects should have their bookmarks loaded before invocation of this method
+            // so that it's possible to enumerate present keys properly
+            for (ProjectBookmarks projectBookmarks : lockedBookmarkManager.activeProjectBookmarks()) {
+                for (FileBookmarks fileBookmarks : projectBookmarks.getFileBookmarks()) {
                     for (BookmarkInfo bookmark : fileBookmarks.getBookmarks()) {
                         String key = bookmark.getKey();
                         if (key != null && key.length() > 0) {
@@ -194,11 +196,20 @@ public class BookmarkKeyChooser implements KeyListener, ActionListener {
                         super.paintComponent(g);
                     }
                 };
-                BookmarkInfo bookmark = key2bookmark.get(start);
+                final BookmarkInfo bookmark = key2bookmark.get(start);
                 if (bookmark != null) {
                     cell.setForeground(selForeColor);
                     cell.setBackground(selBackColor);
                     cell.setToolTipText(bookmark.getDescription(true, false, false));
+                    cell.addMouseListener(new MouseAdapter() {
+                        @Override
+                        public void mouseClicked(MouseEvent e) {
+                            if (e.getClickCount() == 1) {
+                                result = bookmark;
+                                dispose();
+                            }
+                        }
+                    });
                 } else {
                     cell.setForeground(foreColor);
                     cell.setBackground(backColor);

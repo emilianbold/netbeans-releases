@@ -60,6 +60,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import javax.swing.AbstractAction;
@@ -67,6 +69,7 @@ import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenuItem;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.apache.maven.artifact.Artifact;
@@ -77,6 +80,9 @@ import org.apache.maven.model.Dependency;
 import org.apache.maven.model.DependencyManagement;
 import org.apache.maven.model.Profile;
 import org.codehaus.plexus.util.FileUtils;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.java.queries.JavadocForBinaryQuery;
 import org.netbeans.api.progress.aggregate.AggregateProgressFactory;
@@ -101,8 +107,11 @@ import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.Utilities;
 import org.netbeans.modules.maven.model.pom.Exclusion;
 import org.netbeans.modules.maven.model.pom.POMModel;
+import org.netbeans.spi.project.ui.PathFinder;
 import static org.netbeans.modules.maven.nodes.Bundle.*;
 import org.netbeans.modules.maven.queries.MavenFileOwnerQueryImpl;
+import org.netbeans.modules.maven.queries.RepositoryForBinaryQueryImpl;
+import org.netbeans.modules.maven.queries.RepositoryForBinaryQueryImpl.Coordinates;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -149,6 +158,10 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
     private boolean longLiving;
     private PropertyChangeListener listener;
     private ChangeListener listener2;
+    private java.util.concurrent.atomic.AtomicReference<FileObject> fileObject;
+    private java.util.concurrent.atomic.AtomicBoolean sourceExists = new AtomicBoolean(false);
+    private java.util.concurrent.atomic.AtomicBoolean javadocExists = new AtomicBoolean(false);
+    
     private volatile String iconBase = DEPENDENCY_ICON;
     
     private static String toolTipJavadoc = "<img src=\"" + DependencyNode.class.getClassLoader().getResource(JAVADOC_BADGE_ICON) + "\">&nbsp;" //NOI18N
@@ -162,23 +175,46 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
 
     private static final RequestProcessor RP = new RequestProcessor(DependencyNode.class);
 
-    public static Children createChildren(Artifact art, boolean longLiving) {
-        assert art != null;
-        assert art.getFile() != null;
-        if (!longLiving) {
-            return Children.LEAF;
-        }
-        FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(art.getFile()));
-        if (fo != null && FileUtil.isArchiveFile(fo)) {
-            return new JarContentFilterChildren(PackageView.createPackageView(new ArtifactSourceGroup(art)));
-        }
-        return Children.LEAF;
+    private static Children createChildren(@NullAllowed Node nodeDelegate) {
+        return nodeDelegate == null ? Children.LEAF : new JarContentFilterChildren(nodeDelegate);
     }
 
-    public DependencyNode(NbMavenProjectImpl project, Artifact art, boolean isLongLiving) {
-        super(createChildren(art, isLongLiving), Lookups.fixed(project, art));
+    @NonNull
+    private static Lookup createLookup(@NonNull final Project project, @NonNull final Artifact art, @NullAllowed final Node nodeDelegate) {
+        final PathFinder pathFinderDelegate = nodeDelegate == null ? null : nodeDelegate.getLookup().lookup(PathFinder.class);
+        final FileObject fo = nodeDelegate == null ? null : nodeDelegate.getLookup().lookup(FileObject.class);
+        if (fo != null) {
+            return Lookups.fixed(project, art, PathFinders.createDelegatingPathFinder(pathFinderDelegate), fo);
+        } else {
+            return Lookups.fixed(project, art, PathFinders.createDelegatingPathFinder(pathFinderDelegate));
+        }
+    }
+
+    @CheckForNull
+    private static Node createNodeDelegate(@NonNull final Artifact art, FileObject fo, final boolean longLiving) {
+        if (!longLiving) {
+            return null;
+        }
+        //artifact.getFile() should be eagerly normalized
+        if (fo != null) {
+            return PackageView.createPackageView(new ArtifactSourceGroup(art));
+        }
+        return null;        
+    }
+    public DependencyNode(NbMavenProjectImpl project, Artifact art, FileObject fo, boolean isLongLiving) {
+        this(project, art, fo, isLongLiving, createNodeDelegate(art, fo, isLongLiving));
+    }
+
+    private DependencyNode(
+            NbMavenProjectImpl project,
+            final Artifact art,
+            final FileObject fo,
+            boolean isLongLiving,
+            Node nodeDelegate) {
+        super(createChildren(nodeDelegate), createLookup(project, art, nodeDelegate));
         this.project = project;
         this.art = art;
+        this.fileObject = new AtomicReference<FileObject>(fo);
         longLiving = isLongLiving;
         if (longLiving) {
             listener = new PropertyChangeListener() {
@@ -193,7 +229,14 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
             listener2 = new ChangeListener() {
                 @Override
                 public void stateChanged(ChangeEvent event) {
-                    refreshNode();
+                    if (event instanceof MavenFileOwnerQueryImpl.GAVCHangeEvent) {
+                        MavenFileOwnerQueryImpl.GAVCHangeEvent ev = (MavenFileOwnerQueryImpl.GAVCHangeEvent) event;
+                        if (ev.matches(art)) {
+                            refreshNode();
+                        }
+                    } else {
+                        refreshNode();
+                    }
                 }
             };
             //TODO check if this one is a performance bottleneck.
@@ -314,6 +357,14 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
 
     
     private void refreshNode() {
+        assert !SwingUtilities.isEventDispatchThread();
+        FileObject fo = FileUtil.toFileObject(art.getFile());
+        if (fo != null && !FileUtil.isArchiveFile(fo)) {
+            fo = null;
+        }
+        sourceExists.set(getSourceFile().exists());
+        javadocExists.set(getJavadocFile().exists());
+        fileObject.set(fo);
         setDisplayName(createName(longLiving));
         setIconBase(longLiving);
         fireIconChange();
@@ -324,9 +375,11 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
         //#142784
         if (longLiving) {
             if (Children.LEAF == getChildren()) {
-                Children childs = createChildren(art, true);
+                final Node nodeDelegate = createNodeDelegate(art, fo, true);
+                Children childs = createChildren(nodeDelegate);
                 if (childs != Children.LEAF) {
                     setChildren(childs);
+                    PathFinders.updateDelegate(getLookup().lookup(PathFinder.class), nodeDelegate.getLookup().lookup(PathFinder.class));
                 }
             }
         }
@@ -440,38 +493,32 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
     }
 
     public boolean isLocal() {
-        return art.getFile().exists() && !NbArtifactFixer.isFallbackFile(art.getFile());
+        FileObject fo = fileObject.get();
+        return fo != null && fo.isValid() && !NbArtifactFixer.isFallbackFile(art.getFile());
     }
 
     public boolean hasJavadocInRepository() {
-        return (!Artifact.SCOPE_SYSTEM.equals(art.getScope())) && getJavadocFile().exists();
+        return javadocExists.get() && (!Artifact.SCOPE_SYSTEM.equals(art.getScope())) ;
     }
 
+    //normalized
     public File getJavadocFile() {
-        return getJavadocFile(art.getFile());
-    }
-
-    private static File getJavadocFile(File artifact) {
+        File artifact = art.getFile();
         String version = artifact.getParentFile().getName();
         String artifactId = artifact.getParentFile().getParentFile().getName();
-        return new File(artifact.getParentFile(), artifactId + "-" + version + "-javadoc.jar"); //NOI18N
+        return new File(artifact.getParentFile(), artifactId + "-" + version + (art.getClassifier() != null ? "-" + art.getClassifier() : "") + "-javadoc.jar"); //NOI18N
     }
 
+    //normalized
     public File getSourceFile() {
-        return getSourceFile(art.getFile());
-    }
-
-    private static File getSourceFile(File artifact) {
+        File artifact = art.getFile();
         String version = artifact.getParentFile().getName();
         String artifactId = artifact.getParentFile().getParentFile().getName();
-        return new File(artifact.getParentFile(), artifactId + "-" + version + "-sources.jar"); //NOI18N
+        return new File(artifact.getParentFile(), artifactId + "-" + version + (art.getClassifier() != null ? "-" + art.getClassifier() : "") + "-sources.jar"); //NOI18N
     }
 
     public boolean hasSourceInRepository() {
-        if (Artifact.SCOPE_SYSTEM.equals(art.getScope())) {
-            return false;
-        }
-        return getSourceFile().exists();
+        return sourceExists.get() && (!Artifact.SCOPE_SYSTEM.equals(art.getScope()));
     }
 
     void downloadJavadocSources(ProgressContributor progress, boolean isjavadoc) {
@@ -482,24 +529,38 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
             return;
         }
         try {
+            String classifier;
+            String bundleName;
             if (isjavadoc) {
-                Artifact javadoc = project.getEmbedder().createArtifactWithClassifier(
-                    art.getGroupId(),
-                    art.getArtifactId(),
-                    art.getVersion(),
-                    art.getType(),
-                    "javadoc"); //NOI18N
-                progress.progress(org.openide.util.NbBundle.getMessage(DependencyNode.class, "MSG_Checking_Javadoc", art.getId()), 1);
-                online.resolve(javadoc, project.getOriginalMavenProject().getRemoteArtifactRepositories(), project.getEmbedder().getLocalRepository());
+                classifier = "javadoc";
+                bundleName = "MSG_Checking_Javadoc";
             } else {
-                Artifact sources = project.getEmbedder().createArtifactWithClassifier(
-                    art.getGroupId(),
-                    art.getArtifactId(),
-                    art.getVersion(),
-                    art.getType(),
-                    "sources"); //NOI18N
-                progress.progress(org.openide.util.NbBundle.getMessage(DependencyNode.class, "MSG_Checking_Sources",art.getId()), 1);
-                online.resolve(sources, project.getOriginalMavenProject().getRemoteArtifactRepositories(), project.getEmbedder().getLocalRepository());
+                classifier = "sources";
+                bundleName = "MSG_Checking_Sources";
+            }
+                
+            Artifact sources = project.getEmbedder().createArtifactWithClassifier(
+                art.getGroupId(),
+                art.getArtifactId(),
+                art.getVersion(),
+                art.getType(),
+                (art.getClassifier() != null ? art.getClassifier() + "-" : "") + classifier); 
+            progress.progress(org.openide.util.NbBundle.getMessage(DependencyNode.class, bundleName,art.getId()), 1);
+            online.resolve(sources, project.getOriginalMavenProject().getRemoteArtifactRepositories(), project.getEmbedder().getLocalRepository());
+            if (art.getFile() != null && art.getFile().exists()) {
+                List<Coordinates> coordinates = RepositoryForBinaryQueryImpl.getShadedCoordinates(art.getFile());
+                if (coordinates != null) {
+                    for (Coordinates coordinate : coordinates) {
+                        sources = project.getEmbedder().createArtifactWithClassifier(
+                            coordinate.groupId,
+                            coordinate.artifactId,
+                            coordinate.version,
+                            "jar",
+                            classifier);
+                        progress.progress(org.openide.util.NbBundle.getMessage(DependencyNode.class, bundleName, art.getId()), 1);
+                        online.resolve(sources, project.getOriginalMavenProject().getRemoteArtifactRepositories(), project.getEmbedder().getLocalRepository());
+                    }
+                }
             }
         } catch (ArtifactNotFoundException ex) {
             // just ignore..ex.printStackTrace();
@@ -1048,9 +1109,10 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
             this.art = art;
         }
 
+        //art.getFile() should be normalized
         @Override
         public FileObject getRootFolder() {
-            FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(art.getFile()));
+            FileObject fo = FileUtil.toFileObject(art.getFile());
             if (fo != null) {
                 return FileUtil.getArchiveRoot(fo);
             }

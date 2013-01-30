@@ -6,6 +6,7 @@
             <code-name-base>org.netbeans.modules.cnd.dwarfdump</code-name-base>
             <module-dependencies/>
             <friend-packages>
+                <friend>com.oracle.tools.ide.projectless.impl</friend>
                 <friend>com.sun.tools.analytics.codemodel.bridge</friend>
                 <friend>com.sun.tools.analytics.indicators</friend>
                 <friend>com.sun.tools.analytics.management</friend>

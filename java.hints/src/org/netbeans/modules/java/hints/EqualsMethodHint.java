@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.java.hints;
 
+import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.InstanceOfTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
@@ -114,12 +115,20 @@ public class EqualsMethodHint {
 
         @Override
         public Void visitMethodInvocation(MethodInvocationTree node, Void p) {
-            if (node.getArguments().isEmpty() && node.getMethodSelect().getKind() == Kind.MEMBER_SELECT) {
-                MemberSelectTree mst = (MemberSelectTree) node.getMethodSelect();
-                Element e = info.getTrees().getElement(new TreePath(new TreePath(getCurrentPath(), mst), mst.getExpression()));
+            if (node.getArguments().isEmpty()) {
+                if (node.getMethodSelect().getKind() == Kind.MEMBER_SELECT) {
+                    MemberSelectTree mst = (MemberSelectTree) node.getMethodSelect();
+                    Element e = info.getTrees().getElement(new TreePath(new TreePath(getCurrentPath(), mst), mst.getExpression()));
 
-                if (parameter.equals(e) && mst.getIdentifier().contentEquals("getClass")) { // NOI18N
-                    throw new Found();
+                    if (parameter.equals(e) && mst.getIdentifier().contentEquals("getClass")) { // NOI18N
+                        throw new Found();
+                    }
+                } else if (node.getMethodSelect().getKind() == Kind.IDENTIFIER) {
+                    IdentifierTree it = (IdentifierTree) node.getMethodSelect();
+
+                    if (it.getName().contentEquals("getClass")) { // NOI18N
+                        throw new Found();
+                    }
                 }
             }
             

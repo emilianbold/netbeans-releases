@@ -45,6 +45,7 @@
 package org.netbeans.modules.javafx2.editor;
 
 import java.io.*;
+import java.lang.reflect.Field;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
@@ -53,6 +54,7 @@ import java.util.regex.Pattern;
 import javax.swing.JEditorPane;
 import javax.swing.text.Document;
 import junit.framework.Assert;
+import org.netbeans.ModuleManager;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ClasspathInfo;
@@ -62,6 +64,8 @@ import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.gen.WhitespaceIgnoringDiff;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.xml.lexer.XMLTokenId;
+import org.netbeans.core.ModuleActions;
+import org.netbeans.core.startup.ModuleLifecycleManager;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.editor.completion.CompletionItemComparator;
 import org.netbeans.modules.editor.java.Utilities;
@@ -73,6 +77,7 @@ import org.netbeans.modules.java.source.usages.BinaryAnalyser;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl;
 import org.netbeans.modules.java.source.usages.ClassIndexManager;
 import org.netbeans.modules.java.source.usages.IndexUtil;
+import org.netbeans.modules.javafx2.editor.parser.FxmlParserFactory;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater.IndexingState;
 import org.netbeans.modules.xml.text.structure.XMLDocumentModelProvider;
@@ -86,6 +91,8 @@ import org.openide.LifecycleManager;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.*;
 import org.openide.loaders.DataObject;
+import org.openide.modules.ModuleInfo;
+import org.openide.modules.ModuleInstall;
 import org.openide.util.Lookup;
 import org.openide.util.SharedClassObject;
 import org.openide.util.lookup.Lookups;
@@ -98,7 +105,7 @@ import org.openide.util.lookup.ProxyLookup;
 public class FXMLCompletionTestBase extends NbTestCase {
     
     static {
-        FXMLCompletionTest.class.getClassLoader().setDefaultAssertionStatus(true);
+        FXMLCompletionTestBase.class.getClassLoader().setDefaultAssertionStatus(true);
         System.setProperty("org.openide.util.Lookup", Lkp.class.getName());
         Assert.assertEquals(Lkp.class, Lookup.getDefault().getClass());
 
@@ -106,6 +113,10 @@ public class FXMLCompletionTestBase extends NbTestCase {
     }
 
     static final int FINISH_OUTTIME = 5 * 60 * 1000;
+    
+    protected ClasspathInfo cpInfo;
+    
+    protected ClassPathProvider cpProvider;
     
     public static class Lkp extends ProxyLookup {
         
@@ -130,14 +141,35 @@ public class FXMLCompletionTestBase extends NbTestCase {
     public FXMLCompletionTestBase(String testName) {
         super(testName);
     }
+
+    @Override
+    protected void tearDown() throws Exception {
+        Field f = org.netbeans.modules.parsing.impl.Utilities.class.getDeclaredField("status");
+        f.setAccessible(true);
+        f.set(null, null);
+        super.tearDown();
+    }
     
     @Override
     protected void setUp() throws Exception {
         XMLFileSystem system = new XMLFileSystem();
-        system.setXmlUrls(new URL[] {
-            FXMLCompletionTest.class.getResource("/org/netbeans/modules/javafx2/editor/resources/layer.xml"),
-            FXMLCompletionTest.class.getResource("/org/netbeans/modules/defaults/mf-layer.xml")
-        });
+        String[] initUrls = new String[] {
+            "/org/netbeans/modules/javafx2/editor/resources/layer.xml",
+            "/org/netbeans/modules/javafx2/editor/test/layer.xml",
+            "/META-INF/generated-layer.xml",
+            "/org/netbeans/modules/defaults/mf-layer.xml",
+            "/org/netbeans/modules/xml/text/resources/mf-layer.xml",
+        };
+        Collection<URL> allUrls = new ArrayList<URL>();
+        for (String u : initUrls) {
+            if (u.charAt(0) == '/') {
+                u = u.substring(1);
+            }
+            for (Enumeration<URL> en = Thread.currentThread().getContextClassLoader().getResources(u); en.hasMoreElements(); ) {
+                allUrls.add(en.nextElement());
+            }
+        }
+        system.setXmlUrls(allUrls.toArray(new URL[allUrls.size()]));
         Repository repository = new Repository(new MultiFileSystem(new FileSystem[] {FileUtil.createMemoryFileSystem(), system}));
         final ClassPath bootPath = createClassPath(System.getProperty("sun.boot.class.path"));
         final ClassPath fxPath = ClassPathSupport.createClassPath(getFxrtJarURL());
@@ -147,7 +179,7 @@ public class FXMLCompletionTestBase extends NbTestCase {
                 try {
                     if (ClassPath.SOURCE.equals(type)) {
                         return ClassPathSupport.createClassPath(new FileObject[]{FileUtil.toFileObject(getWorkDir())});
-                    }
+                                }
                     if (ClassPath.COMPILE.equals(type)) {
                         return fxPath;
                     }
@@ -158,14 +190,30 @@ public class FXMLCompletionTestBase extends NbTestCase {
                 return null;
             }
         };
+        this.cpProvider = cpp;
         SharedClassObject loader = JavaDataLoader.findObject(JavaDataLoader.class, true);
         MimeDataProvider mdp = new MimeDataProvider() {
             @Override
             public Lookup getLookup(MimePath mimePath) {
-                return Lookups.fixed(new XMLKit(), new JavacParserFactory(), new XMLDocumentModelProvider());
+                if (mimePath.toString().contains("/x-fxml")) {
+                    return Lookups.fixed(
+                            new XMLKit(), 
+                            new FxmlParserFactory(), 
+                            new XMLDocumentModelProvider(), 
+                            XMLTokenId.language()
+                            );
+                } else {
+                    return Lookups.fixed(
+                            new XMLKit(), 
+                            new JavacParserFactory(), 
+                            new XMLDocumentModelProvider(), 
+                            XMLTokenId.language()
+                            );
+                }
             }
         };
-        Lkp.initLookups(new Object[] {repository, loader, cpp, mdp});
+        Lkp.initLookups(new Object[] {repository, loader, cpp /*, mdp */});
+        //Collection<? extends ModuleInfo> mods = Lookup.getDefault().lookupAll(ModuleInfo.class);
         File cacheFolder = new File(getWorkDir(), "var/cache/index");
         cacheFolder.mkdirs();
         IndexUtil.setCacheFolder(cacheFolder);
@@ -173,14 +221,14 @@ public class FXMLCompletionTestBase extends NbTestCase {
         final ClassPath sourcePath = ClassPathSupport.createClassPath(new FileObject[] {FileUtil.toFileObject(getDataDir())});
         final ClassIndexManager mgr  = ClassIndexManager.getDefault();
         for (ClassPath.Entry entry : sourcePath.entries()) {
-            TransactionContext tx = TransactionContext.beginStandardTransaction(true, entry.getURL());
+            TransactionContext tx = TransactionContext.beginStandardTransaction(entry.getURL(), true, true);
             try {
                 mgr.createUsagesQuery(entry.getURL(), true);
             } finally {
                 tx.commit();
             }
         }
-        final ClasspathInfo cpInfo = ClasspathInfo.create(bootPath, fxPath, sourcePath);
+        cpInfo = ClasspathInfo.create(bootPath, fxPath, sourcePath);
         assertNotNull(cpInfo);
         final JavaSource js = JavaSource.create(cpInfo);
         assertNotNull(js);
@@ -191,7 +239,7 @@ public class FXMLCompletionTestBase extends NbTestCase {
                 entries.addAll(fxPath.entries());
                 for (ClassPath.Entry entry : entries) {
                     final URL url = entry.getURL();
-                    TransactionContext.beginStandardTransaction(false, entry.getURL());
+                    TransactionContext.beginStandardTransaction(entry.getURL(), false, true);
                     try {
                         final ClassIndexImpl cii = mgr.createUsagesQuery(url, false);
                         BinaryAnalyser ba = cii.getBinaryAnalyser();
@@ -229,7 +277,20 @@ public class FXMLCompletionTestBase extends NbTestCase {
         performTest(source, caretPos, textToInsert, goldenFileName, null, null);
     }
     
+    private String getClassDir() {
+        String clName = getClass().getName();
+        return clName.replaceAll("\\.", "/");
+    }
+    
     protected void performTest(String source, int caretPos, String textToInsert, String goldenFileName, String toPerformItemRE, String goldenFileName2) throws Exception {
+        performTest(source, caretPos, textToInsert, CompletionProvider.COMPLETION_QUERY_TYPE, goldenFileName, toPerformItemRE, goldenFileName2);
+    }
+    
+    protected void performTest(String source, int caretPos, String textToInsert, int queryType, String goldenFileName, String toPerformItemRE, String goldenFileName2) throws Exception {
+        performTest(source, caretPos, 0, -1, textToInsert, queryType, goldenFileName, toPerformItemRE, goldenFileName2);
+    }
+    
+    protected void performTest(String source, int caretPos, int charsDelete, int caret2Pos, String textToInsert, int queryType, String goldenFileName, String toPerformItemRE, String goldenFileName2) throws Exception {
         File testSource = new File(getWorkDir(), "test/test.fxml");
         testSource.getParentFile().mkdirs();
         copyToWorkDir(new File(getDataDir(), "org/netbeans/modules/javafx2/editor/completion/data/" + source + ".fxml"), testSource);
@@ -242,29 +303,40 @@ public class FXMLCompletionTestBase extends NbTestCase {
         final Document doc = ec.openDocument();
         assertNotNull(doc);
         doc.putProperty(Language.class, XMLTokenId.language());
-        doc.putProperty("mimeType", "text/xml");
+        doc.putProperty("mimeType", "text/x-fxml+xml");
         int textToInsertLength = textToInsert != null ? textToInsert.length() : 0;
+        if (charsDelete > 0) {
+            doc.remove(caretPos, charsDelete);
+        }
+        if (caret2Pos != -1) {
+            caretPos = caret2Pos;
+        }
         if (textToInsertLength > 0)
             doc.insertString(caretPos, textToInsert, null);
         Source s = Source.create(doc);
-        List<? extends CompletionItem> items = query(s, CompletionProvider.COMPLETION_QUERY_TYPE, caretPos + textToInsertLength, caretPos + textToInsertLength, doc);
+        List<? extends CompletionItem> items = performQuery(s, queryType, caretPos + textToInsertLength, caretPos + textToInsertLength, doc);
         Collections.sort(items, CompletionItemComparator.BY_PRIORITY);
         
         File output = new File(getWorkDir(), getName() + ".out");
         Writer out = new FileWriter(output);
+        List<String> sorted = new ArrayList<String>(items.size());
         for (CompletionItem item : items) {
             String itemString = item.toString();
             if (!(org.openide.util.Utilities.isMac() && itemString.equals("apple"))) { //ignoring 'apple' package
-                out.write(itemString);
-                out.write("\n");
+                sorted.add(itemString);
             }
+        }
+        Collections.sort(sorted);
+        for (String itemString : sorted) {
+            out.write(itemString);
+            out.write("\n");
         }
         out.close();
         
         String version = System.getProperty("java.specification.version");
         version = "1.5".equals(version) ? "" : version + "/";
         
-        File goldenFile = new File(getDataDir(), "/goldenfiles/org/netbeans/modules/javafx2/editor/completion/FXMLCompletionProviderTest/" + version + goldenFileName);
+        File goldenFile = new File(getDataDir(), "/goldenfiles/" + getClassDir() + "/" + version + goldenFileName);
         File diffFile = new File(getWorkDir(), getName() + ".diff");        
         assertFile(output, goldenFile, diffFile);
         
@@ -291,7 +363,7 @@ public class FXMLCompletionTestBase extends NbTestCase {
             out2.write(doc.getText(0, doc.getLength()));
             out2.close();
             
-            File goldenFile2 = new File(getDataDir(), "/goldenfiles/org/netbeans/modules/javafx2/editor/completion/FXMLCompletionProviderTest/" + goldenFileName2);
+            File goldenFile2 = new File(getDataDir(), "/goldenfiles/" + getClassDir() + "/" + goldenFileName2);
             File diffFile2 = new File(getWorkDir(), getName() + ".diff2");
             
             assertFile(output2, goldenFile2, diffFile2, new WhitespaceIgnoringDiff());
@@ -361,13 +433,14 @@ public class FXMLCompletionTestBase extends NbTestCase {
         return fileName.endsWith(".jar") || fileName.endsWith(".zip");    //NOI18N
     }
     
+    protected List<? extends CompletionItem> performQuery(Source source, int queryType, int offset, int substitutionOffset, Document doc) throws Exception {
+        return query(source, queryType, offset, substitutionOffset, doc);
+    }
+    
     // ONLY FOR TESTS!
     static List<? extends CompletionItem> query(Source source, int queryType, int offset, int substitutionOffset, Document doc) throws Exception {
         assert source != null;
-        assert (queryType & FXMLCompletion.COMPLETION_QUERY_TYPE) != 0;
-        FXMLCompletion.Query query = new FXMLCompletion.Query();
-        query.query(null, doc, offset);
-        return query.results;
+        return FXMLCompletion2.testQuery(source, doc, queryType, offset);
     }
 
 }

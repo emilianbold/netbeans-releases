@@ -63,7 +63,6 @@ import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
 import org.netbeans.jemmy.operators.*;
 import org.netbeans.jemmy.operators.Operator.DefaultStringComparator;
-import org.netbeans.junit.NbModuleSuite;
 import org.openide.util.Exceptions;
 
 /**
@@ -88,13 +87,11 @@ public class EndToEndTest extends J2eeTestCase {
      * testcases here.
      */
     public static Test suite() {
-        NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(EndToEndTest.class);
-        conf = addServerTests(Server.GLASSFISH, conf, "testSetupStrutsProject", "testCreateLoginPage", "testCreateLoginBean",
+        return createAllModulesServerSuite(Server.GLASSFISH, EndToEndTest.class,
+                "testSetupStrutsProject", "testCreateLoginPage", "testCreateLoginBean",
                 "testCreateLoginAction", "testCreateSecurityManager", "testCreateForward", "testCreateShopPage",
                 "testCreateLogoutPage", "testCreateForwardInclude", "testCreateAction", "testCreateException",
                 "testCreateActionFormBean", "testCreateActionFormBeanProperty", "testRunApplication");
-        conf = conf.enableModules(".*").clusters(".*");
-        return NbModuleSuite.create(conf);
     }
 
     /**

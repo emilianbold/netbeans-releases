@@ -113,7 +113,7 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
     private transient int currentState = INPUT_PARAMETERS;
     private boolean cancelRequest = false;
     private boolean canceledDialog;
-    private boolean forcePreview = false;
+    private boolean inspect = false;
 
     /**
      * Enables/disables Preview button of dialog. Can be used by
@@ -164,9 +164,9 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
         Mnemonics.setLocalizedText(next, NbBundle.getMessage(ParametersPanel.class, rui.isQuery() ? "CTL_Find" : "CTL_Finish"));
 
         //TODO: Ugly Hack
-        forcePreview = "org.netbeans.modules.java.hints.spiimpl.refactoring.InspectAndRefactorUI".equals(rui.getClass().getName());
+        inspect = "org.netbeans.modules.java.hints.spiimpl.refactoring.InspectAndRefactorUI".equals(rui.getClass().getName());
         //cancel.setEnabled(false);
-        next.setVisible(!forcePreview);
+        next.setVisible(!isPreviewRequired());
         validate();
         Dimension preferredSize = progressPanel.getPreferredSize();
         progressPanel.setPreferredSize(preferredSize);
@@ -352,6 +352,7 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
             if (evt != null && evt.getSource() instanceof Cancellable) {
                 putResult(null);
                 if (dialog != null) {
+                    setPanelEnabled(true);
                     dialog.setVisible(false);
                 }
             } else {
@@ -397,7 +398,6 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
         }
 
         //next is Finish
-
         setPanelEnabled(false);
         cancel.setEnabled(true);
         openInNewTab.setVisible(false);
@@ -476,7 +476,11 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
                             } else {
                                 //UndoWatcher.watch(session, ParametersPanel.this);
                                 session.addProgressListener(ParametersPanel.this);
-                                session.doRefactoring(true);
+                                try {
+                                    session.doRefactoring(true);
+                                } finally {
+                                    session.removeProgressListener(ParametersPanel.this);
+                                }
                                 //UndoWatcher.stopWatching(ParametersPanel.this);
                             }
                         }
@@ -666,6 +670,7 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
         descriptor.setMessage("");
 
         if (rui != null) {
+            stop(null);
             rui.getRefactoring().removeProgressListener(this);
         }
         if (!cancelRequest) {
@@ -740,7 +745,7 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
         containerPanel.add(errorPanel, BorderLayout.CENTER);
 
         next.setEnabled(!problem.isFatal() && !isPreviewRequired());
-        dialog.getRootPane().setDefaultButton(forcePreview ? previewButton : next);
+        dialog.getRootPane().setDefaultButton(isPreviewRequired() ? previewButton : next);
         next.setVisible(true);
         if (currentState == PRE_CHECK) {
             Mnemonics.setLocalizedText(next, NbBundle.getMessage(ParametersPanel.class, "CTL_Next"));
@@ -779,18 +784,18 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
             return;
         }
         Mnemonics.setLocalizedText(next, NbBundle.getMessage(ParametersPanel.class, rui.isQuery() ? "CTL_Find" : "CTL_Finish"));
-        Mnemonics.setLocalizedText(previewButton, NbBundle.getMessage(ParametersPanel.class, forcePreview ? "CTL_Inspect" : "CTL_PreviewAll"));
+        Mnemonics.setLocalizedText(previewButton, NbBundle.getMessage(ParametersPanel.class, inspect ? "CTL_Inspect" : "CTL_PreviewAll"));
         customPanel.setBorder(new EmptyBorder(new Insets(12, 12, 11, 11)));
         containerPanel.removeAll();
         containerPanel.add(customPanel, BorderLayout.CENTER);
         back.setVisible(false);
-        next.setVisible(!forcePreview);
+        next.setVisible(!isPreviewRequired());
         previewButton.setVisible(!rui.isQuery());
         next.setEnabled(!isPreviewRequired());
         currentState = INPUT_PARAMETERS;
         setPanelEnabled(true);
         cancel.setEnabled(true);
-        dialog.getRootPane().setDefaultButton(forcePreview ? previewButton : next);
+        dialog.getRootPane().setDefaultButton(isPreviewRequired() ? previewButton : next);
         //Initial errors are ignored by on-line error checker
         //stateChanged(null);
         if (customPanel.isEnabled()) {
@@ -822,6 +827,7 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
+                if (dialog == null) return;
                 if (progressBar != null && progressBar.isVisible()) {
                     LOGGER.log(Level.INFO, "{0} called start multiple times", event.getSource());
                     stop(event);
@@ -911,6 +917,7 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
                 //progressPanel.validate();
                 //setButtonsEnabled(true); 
                 //validate();
+                progressHandle = null;
             }
         };
         if (SwingUtilities.isEventDispatchThread()) {
@@ -1003,7 +1010,7 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
                     problem=null;
                     if (rui.isQuery()) {
                         //run queries asynchronously
-                        RequestProcessor.Task post = RequestProcessor.getDefault().post(new Runnable() {
+                        RP.post(new Runnable() {
                             @Override
                             public void run() {
                                     problem = rui.getRefactoring().prepare(refactoringSession);

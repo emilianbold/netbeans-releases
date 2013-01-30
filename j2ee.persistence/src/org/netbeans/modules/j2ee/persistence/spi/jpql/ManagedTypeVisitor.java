@@ -62,34 +62,46 @@ public class ManagedTypeVisitor implements IManagedTypeVisitor{
     
     @Override
     public void visit(IEmbeddable ie) {
-        if(embeddables == null) embeddables = new ArrayList<IEmbeddable>();
+        if(embeddables == null) {
+            embeddables = new ArrayList<IEmbeddable>();
+        }
         embeddables.add(ie);
     }
 
     @Override
     public void visit(IEntity ie) {
-        if(entities == null) entities = new ArrayList<IEntity>();
+        if(entities == null) {
+            entities = new ArrayList<IEntity>();
+        }
         entities .add(ie);
     }
 
     @Override
     public void visit(IMappedSuperclass ims) {
-        if(mappedSupeclasses == null) mappedSupeclasses = new ArrayList<IMappedSuperclass>();
+        if(mappedSupeclasses == null) {
+            mappedSupeclasses = new ArrayList<IMappedSuperclass>();
+        }
         mappedSupeclasses.add(ims);
     }
     
     public ArrayList<IEntity> getEntities(){
-        if(entities == null) entities = new ArrayList<IEntity>();
+        if(entities == null) {
+            entities = new ArrayList<IEntity>();
+        }
         return entities;//? make copy ?
     }
     
     public ArrayList<IMappedSuperclass> getMappedSuperclasses(){
-        if(mappedSupeclasses == null) mappedSupeclasses = new ArrayList<IMappedSuperclass>();
+        if(mappedSupeclasses == null) {
+            mappedSupeclasses = new ArrayList<IMappedSuperclass>();
+        }
         return mappedSupeclasses;
     }
     
     public ArrayList<IEmbeddable> getEmbeddable() {
-        if(embeddables == null) embeddables = new ArrayList<IEmbeddable>();
+        if(embeddables == null) {
+            embeddables = new ArrayList<IEmbeddable>();
+        }
         return embeddables;
     }
 }

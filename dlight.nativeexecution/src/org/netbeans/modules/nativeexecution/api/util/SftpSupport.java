@@ -221,6 +221,7 @@ class SftpSupport {
 
         @Override
         public Integer call() throws InterruptedException {
+            long time = System.currentTimeMillis();
             int rc = -1;
             try {                
                 Thread.currentThread().setName(PREFIX + ": " + getTraceName()); // NOI18N
@@ -259,8 +260,10 @@ class SftpSupport {
             } catch (ExecutionException ex) {
                 logException(ex);
                 rc = 7;
+            } finally {
+                time = System.currentTimeMillis() - time;
             }
-            LOG.log(Level.FINE, "{0}{1}", new Object[]{getTraceName(), rc == 0 ? " OK" : " FAILED"});
+            LOG.log(Level.FINE, "{0}{1} ({2} ms)", new Object[]{getTraceName(), rc == 0 ? " OK" : " FAILED", time});
             return rc;
         }
 
@@ -526,6 +529,7 @@ class SftpSupport {
             LOG.log(Level.FINE, "{0} started", getTraceName());
             StatInfo result;
             ChannelSftp cftp = getChannel();
+            Object activityID = RemoteStatistics.stratChannelActivity("statload", cftp, path); // NOI18N
             try {
                 Thread.currentThread().setName(PREFIX + ": " + getTraceName()); // NOI18N
                 SftpATTRS attrs = cftp.lstat(path);            
@@ -542,6 +546,7 @@ class SftpSupport {
             } catch (SftpException e) {
                 throw decorateSftpException(e, path);
             } finally {
+                RemoteStatistics.stopChannelActivity(activityID);
                 releaseChannel(cftp);
             }
             LOG.log(Level.FINE, "{0} finished", getTraceName());
@@ -570,6 +575,7 @@ class SftpSupport {
             LOG.log(Level.FINE, "{0} started", getTraceName());
             List<StatInfo> result = Collections.<StatInfo>emptyList();
             ChannelSftp cftp = getChannel();
+            Object lsLoadID = RemoteStatistics.stratChannelActivity("lsload", cftp, path); // NOI18N
             try {
                 Thread.currentThread().setName(PREFIX + ": " + getTraceName()); // NOI18N
                 List<LsEntry> entries = (List<LsEntry>) cftp.ls(path);
@@ -591,6 +597,7 @@ class SftpSupport {
             } catch (SftpException e) {
                 throw decorateSftpException(e, path);
             } finally {
+                RemoteStatistics.stopChannelActivity(lsLoadID);
                 releaseChannel(cftp);
             }
             LOG.log(Level.FINE, "{0} finished", getTraceName());

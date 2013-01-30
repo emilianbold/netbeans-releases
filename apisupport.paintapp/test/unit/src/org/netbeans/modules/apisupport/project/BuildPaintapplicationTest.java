@@ -49,6 +49,7 @@ import java.io.InputStream;
 import java.util.Properties;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.apisupport.project.layers.LayerTestBase;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;

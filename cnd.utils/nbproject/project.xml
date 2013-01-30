@@ -14,15 +14,6 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.utilities</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.34</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.openide.awt</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -67,6 +58,10 @@
                 <test-type>
                     <name>unit</name>
                     <test-dependency>
+                        <code-name-base>org.netbeans.insane</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
                         <code-name-base>org.netbeans.libs.junit4</code-name-base>
                         <compile-dependency/>
                     </test-dependency>
@@ -80,7 +75,9 @@
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.dlight.nativeexecution</code-name-base>
+                        <recursive/>
                         <compile-dependency/>
+                        <test/>
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.dlight.remote</code-name-base>
@@ -91,7 +88,19 @@
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
+                        <code-name-base>org.netbeans.modules.extexecution</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
                         <code-name-base>org.netbeans.modules.masterfs</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.nbjunit</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.openide.modules</code-name-base>
                         <compile-dependency/>
                     </test-dependency>
                 </test-type>
@@ -101,6 +110,8 @@
                 <friend>com.microchip.mplab.debugger.mdb</friend>
                 <friend>com.microchip.mplab.nbide.embedded</friend>
                 <friend>com.microchip.mplab.nbide.embedded.makeproject</friend>
+                <friend>com.oracle.tools.ide.projectless.debug.impl</friend>
+                <friend>com.oracle.tools.ide.projectless.impl</friend>
                 <friend>com.sun.tools.analytics.codemodel.bridge</friend>
                 <friend>com.sun.tools.analytics.indicators</friend>
                 <friend>com.sun.tools.analytics.oss.support</friend>
@@ -119,6 +130,7 @@
                 <friend>com.sun.tools.ide.analysis.analytics</friend>
                 <friend>com.sun.tools.ide.analysis.common</friend>
                 <friend>com.sun.tools.ide.analysis.discover</friend>
+                <friend>com.sun.tools.ide.analysis.parfait</friend>
                 <friend>com.sun.tools.ide.analysis.previse</friend>
                 <friend>com.sun.tools.ide.analysis.tha</friend>
                 <friend>com.sun.tools.ide.remote</friend>
@@ -154,6 +166,7 @@
                 <friend>org.netbeans.modules.cnd.gizmo</friend>
                 <friend>org.netbeans.modules.cnd.gotodeclaration</friend>
                 <friend>org.netbeans.modules.cnd.highlight</friend>
+                <friend>org.netbeans.modules.cnd.indexing</friend>
                 <friend>org.netbeans.modules.cnd.lexer</friend>
                 <friend>org.netbeans.modules.cnd.makeproject</friend>
                 <friend>org.netbeans.modules.cnd.makeproject.source.bridge</friend>

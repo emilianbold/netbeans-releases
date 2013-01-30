@@ -44,6 +44,10 @@
  * Author: Tomas Holy
  */
 
+#ifndef _WIN32_WINNT        
+#define _WIN32_WINNT 0x05010100
+#endif
+
 #include "nblauncher.h"
 #include "../../../o.n.bootstrap/launcher/windows/utilsfuncs.h"
 #include "../../../o.n.bootstrap/launcher/windows/argnames.h"
@@ -61,10 +65,6 @@ const char *NbLauncher::ENV_USER_PROFILE = "USERPROFILE";
 const char *NbLauncher::HOME_TOKEN = "${HOME}";
 const char *NbLauncher::DEFAULT_USERDIR_ROOT_TOKEN = "${DEFAULT_USERDIR_ROOT}";
 const char *NbLauncher::DEFAULT_CACHEDIR_ROOT_TOKEN = "${DEFAULT_CACHEDIR_ROOT}";
-const char *NbLauncher::REG_SHELL_FOLDERS_KEY = "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Folders";
-const char *NbLauncher::REG_DESKTOP_NAME = "Desktop";
-const char *NbLauncher::REG_DEFAULT_USERDIR_ROOT = "AppData";
-const char *NbLauncher::REG_DEFAULT_CACHEDIR_ROOT = "Local AppData";
 const char *NbLauncher::NETBEANS_DIRECTORY = "\\NetBeans\\";
 const char *NbLauncher::NETBEANS_CACHES_DIRECTORY = "\\NetBeans\\Cache\\";
 
@@ -116,6 +116,7 @@ int NbLauncher::start(int argc, char *argv[]) {
     adjustHeapAndPermGenSize();
     addExtraClusters();
     string nbexecPath;
+    SetDllDirectory(baseDir.c_str());
     if (dirExists(platformDir.c_str())) {
         nbexecPath = platformDir;
     } else {
@@ -190,7 +191,7 @@ bool NbLauncher::initBaseNames() {
         return false;
     }
     appName = bslash + 1;
-    appName.erase(appName.find('.'));
+    appName.erase(appName.rfind('.'));
     
     if (ARCHITECTURE == 64) {
         appName = appName.erase(appName.length() - 2);
@@ -358,37 +359,33 @@ bool NbLauncher::parseArgs(int argc, char *argv[]) {
 }
 
 bool NbLauncher::findUserDir(const char *str) {
-    logMsg("NbLauncher::findUserDir()");
+    logMsg("NbLauncher::findUserDir()");    
     if (strncmp(str, HOME_TOKEN, strlen(HOME_TOKEN)) == 0) {
         if (userHome.empty()) {
             char *userProfile = getenv(ENV_USER_PROFILE);
             if (userProfile) {
                 userHome = userProfile;
             } else {
-
-                if (!getStringFromRegistry(HKEY_CURRENT_USER, REG_SHELL_FOLDERS_KEY, REG_DESKTOP_NAME, userHome)) {
+                TCHAR userHomeChar[MAX_PATH]; 
+                if (FAILED(SHGetFolderPath(NULL, CSIDL_DESKTOP, NULL, 0, userHomeChar))) {    
                     return false;
                 }
+                userHome = userHomeChar;
                 userHome.erase(userHome.rfind('\\'));
             }
             logMsg("User home: %s", userHome.c_str());
         }
         userDir = userHome + (str + strlen(HOME_TOKEN));
     } else if (strncmp(str, DEFAULT_USERDIR_ROOT_TOKEN, strlen(DEFAULT_USERDIR_ROOT_TOKEN)) == 0) {
-        if (!getStringFromRegistry(HKEY_CURRENT_USER, REG_SHELL_FOLDERS_KEY, REG_DEFAULT_USERDIR_ROOT, defUserDirRoot)) {
+        TCHAR defUserDirRootChar[MAX_PATH];
+        if (FAILED(SHGetFolderPath(NULL, CSIDL_APPDATA, NULL, 0, defUserDirRootChar))) {
             return false;
         }
-        defUserDirRoot = defUserDirRoot + NETBEANS_DIRECTORY;
+        defUserDirRoot = ((string) defUserDirRootChar) + NETBEANS_DIRECTORY;
         defUserDirRoot.erase(defUserDirRoot.rfind('\\'));
         logMsg("Default Userdir Root: %s", defUserDirRoot.c_str());
         userDir = defUserDirRoot + (str + strlen(DEFAULT_USERDIR_ROOT_TOKEN));
     } else {
-        if (!getStringFromRegistry(HKEY_CURRENT_USER, REG_SHELL_FOLDERS_KEY, REG_DEFAULT_USERDIR_ROOT, defUserDirRoot)) {
-            return false;
-        }
-        defUserDirRoot = defUserDirRoot + NETBEANS_DIRECTORY;
-        defUserDirRoot.erase(defUserDirRoot.rfind('\\'));
-        logMsg("Default Userdir Root: %s", defUserDirRoot.c_str());
         userDir = str;
     }
     return true;
@@ -402,30 +399,26 @@ bool NbLauncher::findCacheDir(const char *str) {
             if (userProfile) {
                 userHome = userProfile;
             } else {
-
-                if (!getStringFromRegistry(HKEY_CURRENT_USER, REG_SHELL_FOLDERS_KEY, REG_DESKTOP_NAME, userHome)) {
+                TCHAR userHomeChar[MAX_PATH]; 
+                if (FAILED(SHGetFolderPath(NULL, CSIDL_DESKTOP, NULL, 0, userHomeChar))) {    
                     return false;
                 }
+                userHome = userHomeChar;
                 userHome.erase(userHome.rfind('\\'));
             }
             logMsg("User home: %s", userHome.c_str());
         }
         cacheDir = userHome + (str + strlen(HOME_TOKEN));
     } else if (strncmp(str, DEFAULT_CACHEDIR_ROOT_TOKEN, strlen(DEFAULT_CACHEDIR_ROOT_TOKEN)) == 0) {
-        if (!getStringFromRegistry(HKEY_CURRENT_USER, REG_SHELL_FOLDERS_KEY, REG_DEFAULT_CACHEDIR_ROOT, defCacheDirRoot)) {
+        TCHAR defCacheDirRootChar[MAX_PATH];
+        if (FAILED(SHGetFolderPath(NULL, CSIDL_LOCAL_APPDATA, NULL, 0, defCacheDirRootChar))) {
             return false;
         }
-        defCacheDirRoot = defCacheDirRoot + NETBEANS_CACHES_DIRECTORY;
+        defCacheDirRoot = ((string) defCacheDirRootChar) + NETBEANS_CACHES_DIRECTORY;
         defCacheDirRoot.erase(defCacheDirRoot.rfind('\\'));
         logMsg("Default Cachedir Root: %s", defCacheDirRoot.c_str());
         cacheDir = defCacheDirRoot + (str + strlen(DEFAULT_CACHEDIR_ROOT_TOKEN));
-    } else {
-        if (!getStringFromRegistry(HKEY_CURRENT_USER, REG_SHELL_FOLDERS_KEY, REG_DEFAULT_CACHEDIR_ROOT, defCacheDirRoot)) {
-            return false;
-        }
-        defCacheDirRoot = defCacheDirRoot + NETBEANS_CACHES_DIRECTORY;
-        defCacheDirRoot.erase(defCacheDirRoot.rfind('\\'));
-        logMsg("Default Cachedir Root: %s", defCacheDirRoot.c_str());
+    } else {               
         cacheDir = str;
     }
     return true;

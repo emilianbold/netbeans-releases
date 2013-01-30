@@ -222,6 +222,9 @@ public enum CppTokenId implements TokenId {
     CHAR16_T("char16_t", "keyword"), // c++11 // NOI18N
     CHAR32_T("char32_t", "keyword"), // c++11 // NOI18N
     NOEXCEPT("noexcept", "keyword"), // c++11 // NOI18N
+
+    // C11
+    _NORETURN("_Noreturn", "keyword"), // c11 // NOI18N
     
     // extension points
     BUILT_IN_TYPE(null, "keyword"), // NOI18N
@@ -329,6 +332,7 @@ public enum CppTokenId implements TokenId {
     PREPROCESSOR_DIRECTIVE(null, "preprocessor"), // NOI18N
     //   - tokens
     PREPROCESSOR_START("#", "preprocessor"), // NOI18N
+    PREPROCESSOR_START_ALT("%:", "preprocessor"), // NOI18N alternative start preprocess token
     PREPROCESSOR_IF("if", "preprocessor-keyword-directive"), // NOI18N
     PREPROCESSOR_IFDEF("ifdef", "preprocessor-keyword-directive"), // NOI18N
     PREPROCESSOR_IFNDEF("ifndef", "preprocessor-keyword-directive"), // NOI18N

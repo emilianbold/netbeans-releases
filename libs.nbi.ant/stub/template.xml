@@ -16,9 +16,10 @@
         <property file="${suite.location}/nbproject/project.properties" prefix="suite.props."/>    
     </target>
     <target name="-init-maven-props" if="do.load.maven.props" depends="-init-props">
-        <xmlproperty file="${suite.location}/pom.xml" prefix="pom.props"/>
+        <!-- There is no need to read any property from pom.xml - the properties are solved by maven plug-in. -->
+        <!-- xmlproperty file="${suite.location}/pom.xml" prefix="pom.props"/>
         <property name="suite.props.app.name"  value="${pom.props.project.properties.brandingToken}"/>
-        <property name="suite.props.app.title" value="${pom.props.project.artifactId}"/>
+        <property name="suite.props.app.title" value="${pom.props.project.artifactId}"/ -->
     </target>
     
     <target name="init" depends="-clean,-init-ant-props,-init-maven-props">

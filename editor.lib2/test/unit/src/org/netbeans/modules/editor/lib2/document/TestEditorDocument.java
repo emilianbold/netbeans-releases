@@ -51,12 +51,12 @@ import javax.swing.text.PlainDocument;
 
 public class TestEditorDocument extends PlainDocument {
     
-    LineElementRoot lineElementRoot;
+    LineRootElement lineElementRoot;
 
     public TestEditorDocument() {
         super(new EditorDocumentContent()); // Content to be tested
         ((EditorDocumentContent)getContent()).init(this);
-        lineElementRoot = new LineElementRoot(this);
+        lineElementRoot = new LineRootElement(this);
     }
     
     EditorDocumentContent getDocumentContent() {

@@ -72,6 +72,7 @@ final class Subprojects implements SubprojectProvider {
         this.project = project;
     }
 
+    @Override
     public Set<? extends Project> getSubprojects() {
         return new LazySubprojectsSet();
     }
@@ -107,10 +108,12 @@ final class Subprojects implements SubprojectProvider {
                 try {
                     Project p = ProjectManager.getDefault().findProject(subprjDir);
                     if (p != null) {
-                        if (subprojects == null)
+                        if (subprojects == null) {
                             return Collections.emptySet();
-                        else
+                        }
+                        else {
                             subprojects.add(p);
+                        }
                     }
                 } catch (IOException e) {
                     org.netbeans.modules.ant.freeform.Util.err.notify(ErrorManager.INFORMATIONAL, e);
@@ -121,10 +124,12 @@ final class Subprojects implements SubprojectProvider {
         return subprojects;
     }
 
+    @Override
     public void addChangeListener(ChangeListener listener) {
         // XXX
     }
 
+    @Override
     public void removeChangeListener(ChangeListener listener) {
         // XXX
     }
@@ -144,46 +149,57 @@ final class Subprojects implements SubprojectProvider {
             return delegateTo;
         }
         
+        @Override
         public boolean contains(Object o) {
             return getDelegateTo().contains(o);
         }
         
+        @Override
         public boolean add(Project p) {
             throw new UnsupportedOperationException();
         }
         
+        @Override
         public boolean remove(Object o) {
             throw new UnsupportedOperationException();
         }
         
+        @Override
         public boolean removeAll(Collection c) {
             throw new UnsupportedOperationException();
         }
         
+        @Override
         public boolean retainAll(Collection c) {
             throw new UnsupportedOperationException();
         }
         
+        @Override
         public boolean addAll(Collection<? extends Project> c) {
             throw new UnsupportedOperationException();
         }
         
+        @Override
         public boolean containsAll(Collection c) {
             return getDelegateTo().containsAll(c);
         }
         
+        @Override
         public <T> T[] toArray(T[] a) {
             return getDelegateTo().toArray(a);
         }
         
+        @Override
         public void clear() {
             throw new UnsupportedOperationException();
         }
         
+        @Override
         public int size() {
             return getDelegateTo().size();
         }
         
+        @Override
         public synchronized boolean isEmpty() {
             if (delegateTo == null) {
                 return createSubprojects(null) == null;
@@ -192,22 +208,27 @@ final class Subprojects implements SubprojectProvider {
             }
         }
         
+        @Override
         public Iterator<Project> iterator() {
             return getDelegateTo().iterator();
         }
         
+        @Override
         public Object[] toArray() {
             return getDelegateTo().toArray();
         }
 
+        @Override
         public int hashCode() {
             return getDelegateTo().hashCode();
         }
 
+        @Override
         public boolean equals(Object obj) {
             return getDelegateTo().equals(obj);
         }
 
+        @Override
         public String toString() {
             return getDelegateTo().toString();
         }

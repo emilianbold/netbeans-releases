@@ -49,6 +49,7 @@ import java.io.FileNotFoundException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.extexecution.input.LineProcessors;
 import org.netbeans.api.extexecution.print.LineConvertor;
@@ -178,10 +179,14 @@ public final class UnitTestRunner {
 
     private void deleteOldLogFiles() {
         if (PhpUnit.XML_LOG.exists()) {
-            PhpUnit.XML_LOG.delete();
+            if (!PhpUnit.XML_LOG.delete()) {
+                LOGGER.log(Level.INFO, "Cannot delete PHPUnit log {0}", PhpUnit.XML_LOG);
+            }
         }
         if (PhpUnit.COVERAGE_LOG.exists()) {
-            PhpUnit.COVERAGE_LOG.delete();
+            if (!PhpUnit.COVERAGE_LOG.delete()) {
+                LOGGER.log(Level.INFO, "Cannot delete code coverage log {0}", PhpUnit.COVERAGE_LOG);
+            }
         }
     }
 
@@ -200,7 +205,9 @@ public final class UnitTestRunner {
         TestSessionVO session = new TestSessionVO();
         boolean parsed = PhpUnitLogParser.parse(reader, session);
         if (!PhpUnit.KEEP_LOGS) {
-            PhpUnit.XML_LOG.delete();
+            if (!PhpUnit.XML_LOG.delete()) {
+                LOGGER.log(Level.INFO, "Cannot delete PHPUnit log {0}", PhpUnit.XML_LOG);
+            }
         }
         if (!parsed) {
             processPhpUnitError();

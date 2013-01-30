@@ -263,7 +263,7 @@ public class SampleWizardPanelVisual extends JPanel implements DocumentListener 
     protected void store( WizardDescriptor d ) {
         
         String name = projectNameTextField.getText().trim();
-        String location = projectLocationTextField.getText().trim();
+        //String location = projectLocationTextField.getText().trim();
         String folder = createdFolderTextField.getText().trim();
         
         d.putProperty(SampleWizardIterator.PROJDIR, new File( folder ));
@@ -328,7 +328,7 @@ public class SampleWizardPanelVisual extends JPanel implements DocumentListener 
     }
     
     private String validFreeProjectName(final File parentFolder, final String formater, final int index) {
-        String name = MessageFormat.format(formater, new Object[]{new Integer(index)});
+        String name = MessageFormat.format(formater, new Object[]{index});
         File file = new File(parentFolder, name);
         return file.exists() ? null : name;
     }

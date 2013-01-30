@@ -180,14 +180,21 @@ public class ClassifierResolverImpl extends CsmClassifierResolver {
                 }
                 if (ir.isObjectVisible(file, decl)) {
                     if (CsmKindUtilities.isTypedef(decl)) {
-                        CharSequence classifierText = ((CsmTypedef)decl).getType().getClassifierText();
-                        if (decl.getName().equals(classifierText)) {
-                            if (!hasClassifier.get()) {
+                        if (!hasClassifier.get()) {
+                            // if no any visible classifiers found so far
+                            // check if same typedef is not yet added
+                            CharSequence typeTxt = ((CsmTypedef)decl).getType().getClassifierText();
+                            boolean foundSameTD = false;
+                            for (CsmClassifier cls : visibles) {
+                                if (CsmKindUtilities.isTypedef(cls) && typeTxt.equals(((CsmTypedef)cls).getType().getClassifierText())) {
+                                    foundSameTD = true;
+                                    break;
+                                }
+                            }
+                            if (!foundSameTD) {
                                 visibles.add(decl);
                                 td.add((CsmTypedef) decl);
                             }
-                        } else {
-                            visibles.add(decl);
                         }
                     } else if (CsmKindUtilities.isClassForwardDeclaration(decl) || ForwardClass.isForwardClass(decl)) {
                         if (!hasClassifier.get()) {
@@ -195,7 +202,7 @@ public class ClassifierResolverImpl extends CsmClassifierResolver {
                             td.add(decl);
                         }
                     } else {
-                        if (td != null) {
+                        if (!td.isEmpty()) {
                             // remove typedef
                             visibles.removeAll(td);
                             td.clear();
@@ -215,7 +222,14 @@ public class ClassifierResolverImpl extends CsmClassifierResolver {
                     System.err.printf("findVisibleDeclaration: we have several classifiers %s visible from %s\n", uniqueName, file.getAbsolutePath()); // NOI18N
                     int ind = 0;
                     for (CsmClassifier csmClassifier : visibles) {
-                        System.err.printf("[%d] %s\n", ind++, csmClassifier); // NOI18N
+                        String fileName = "<builtin"; // NOI18N
+                        if (CsmKindUtilities.isOffsetable(csmClassifier)) {
+                            CsmFile containingFile = ((CsmOffsetable)csmClassifier).getContainingFile();
+                            if (containingFile != null) {
+                                fileName = containingFile.getAbsolutePath().toString();
+                            }
+                        }
+                        System.err.printf("[%d] %s from %s\n", ind++, csmClassifier, fileName); // NOI18N
                     }
                 }
             }

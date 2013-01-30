@@ -253,7 +253,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     }
 
     private void initAttachmentsPanel() {
-        attachmentsPanel = new AttachmentsPanel();
+        attachmentsPanel = new AttachmentsPanel(this);
         GroupLayout layout = (GroupLayout)getLayout();
         layout.replace(dummyAttachmentPanel, attachmentsPanel);
         attachmentLabel.setLabelFor(attachmentsPanel);
@@ -654,10 +654,12 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             boolean isKenaiRepository = (issue.getRepository() instanceof KenaiRepository);
             if ((reporterStatusLabel.getIcon() == null) && isKenaiRepository) {
                 String host = ((KenaiRepository) issue.getRepository()).getHost();
-                JLabel label = KenaiUtil.createUserWidget(reporter, host, KenaiUtil.getChatLink(issue.getID()));
-                label.setText(null);
-                ((GroupLayout)getLayout()).replace(reporterStatusLabel, label);
-                reporterStatusLabel = label;
+                JLabel label = KenaiUtil.createUserWidget(issue.getRepository().getUrl(), reporter, host, KenaiUtil.getChatLink(issue.getID()));
+                if (label != null) {
+                    label.setText(null);
+                    ((GroupLayout)getLayout()).replace(reporterStatusLabel, label);
+                    reporterStatusLabel = label;
+                }
             }
             String projectId = issue.getFieldValue(NbJiraIssue.IssueField.PROJECT);
             Project project = config.getProjectById(projectId);
@@ -681,10 +683,12 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             String selectedAssignee = (assigneeField.getParent() == null) ? assigneeCombo.getSelectedItem().toString() : assigneeField.getText();
             if (isKenaiRepository && (assignee.trim().length() > 0) && (force || !selectedAssignee.equals(assignee))) {
                 String host = ((KenaiRepository) issue.getRepository()).getHost();
-                JLabel label = KenaiUtil.createUserWidget(assignee, host, KenaiUtil.getChatLink(issue.getID()));
-                label.setText(null);
-                ((GroupLayout)getLayout()).replace(assigneeStatusLabel, label);
-                assigneeStatusLabel = label;
+                JLabel label = KenaiUtil.createUserWidget(issue.getRepository().getUrl(), assignee, host, KenaiUtil.getChatLink(issue.getID()));
+                if (label != null) {
+                    label.setText(null);
+                    ((GroupLayout)getLayout()).replace(assigneeStatusLabel, label);
+                    assigneeStatusLabel = label;
+                }
             }
             if (force) {
                 assigneeStatusLabel.setVisible(assignee.trim().length() > 0);
@@ -721,14 +725,14 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
 
             // Comments
             commentsPanel.setIssue(issue);
-            UIUtils.keepFocusedComponentVisible(commentsPanel);
+            UIUtils.keepFocusedComponentVisible(commentsPanel, this);
             if (force) {
                 addCommentArea.setText(""); // NOI18N
             }
 
             // Attachments
             attachmentsPanel.setIssue(issue);
-            UIUtils.keepFocusedComponentVisible(attachmentsPanel);
+            UIUtils.keepFocusedComponentVisible(attachmentsPanel, this);
 
             // NbJiraIssue-links
             boolean anyLink = (issue.getLinkedIssues().length != 0);

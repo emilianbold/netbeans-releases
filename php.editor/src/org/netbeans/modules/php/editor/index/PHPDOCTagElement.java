@@ -48,7 +48,7 @@ import org.netbeans.modules.csl.api.ElementKind;
  *
  * @author tomslot
  */
-public class PHPDOCTagElement extends PHPElement{
+public class PHPDOCTagElement extends PHPElement {
     private String tagName;
     private final String documentation;
 
@@ -67,7 +67,7 @@ public class PHPDOCTagElement extends PHPElement{
         return ElementKind.OTHER;
     }
 
-    public String getDoc(){
+    public String getDoc() {
         return documentation;
     }
 }

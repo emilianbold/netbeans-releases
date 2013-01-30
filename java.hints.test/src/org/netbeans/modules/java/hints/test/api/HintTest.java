@@ -67,7 +67,9 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Handler;
 import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.prefs.AbstractPreferences;
 import java.util.prefs.BackingStoreException;
@@ -82,6 +84,8 @@ import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertNotNull;
 import static junit.framework.Assert.assertNotSame;
 import static junit.framework.Assert.assertTrue;
+
+import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
@@ -92,6 +96,7 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.lexer.Language;
+import org.netbeans.core.startup.Main;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.JavaDataLoader;
 import org.netbeans.modules.java.hints.providers.code.CodeHintProviderImpl;
@@ -125,6 +130,7 @@ import org.openide.filesystems.URLMapper;
 import org.openide.filesystems.XMLFileSystem;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
@@ -279,6 +285,8 @@ public class HintTest {
         NbBundle.setBranding("test");
 
         sourcePath = ClassPathSupport.createClassPath(sourceRoot);
+        
+        Main.initializeURLFactory();
     }
 
     /**Bootstraps the test framework.
@@ -471,7 +479,21 @@ public class HintTest {
 
         List<ErrorDescription> result = new ArrayList<ErrorDescription>();
 
-        for (Entry<HintDescription, List<ErrorDescription>> e : computeErrors(info, total, new AtomicBoolean()).entrySet()) {
+        Handler h = new Handler() {
+            @Override public void publish(LogRecord record) {
+                if (   record.getLevel().intValue() >= Level.WARNING.intValue()
+                    && record.getThrown() != null) {
+                    throw new IllegalStateException(record.getThrown());
+                }
+            }
+            @Override public void flush() { }
+            @Override public void close() throws SecurityException { }
+        };
+        Logger log = Logger.getLogger(Exceptions.class.getName());
+        log.addHandler(h);
+        Map<HintDescription, List<ErrorDescription>> errors = computeErrors(info, total, new AtomicBoolean());
+        log.removeHandler(h);
+        for (Entry<HintDescription, List<ErrorDescription>> e : errors.entrySet()) {
             result.addAll(e.getValue());
         }
 
@@ -838,7 +860,13 @@ public class HintTest {
 
             assertEquals(1, fixes.size());
 
-            fixes.get(0).implement();
+            Preferences preferences = MimeLookup.getLookup(JavaTokenId.language().mimeType()).lookup(Preferences.class);
+            preferences.putBoolean("importInnerClasses", true);
+            try {
+                fixes.get(0).implement();
+            } finally {
+                preferences.remove("importInnerClasses");
+            }
 
             if (saveAll)
                 LifecycleManager.getDefault().saveAll();
@@ -960,12 +988,36 @@ public class HintTest {
             String realCode = toCheckDocument.getText(0, toCheckDocument.getLength());
 
             //ignore whitespaces:
-            realCode = realCode.replaceAll("[ \t\n]+", " ");
+            realCode = reduceWhitespaces(realCode);
 
-            assertEquals("The output code does not match the expected code.", code.replaceAll("[ \t\n]+", " "), realCode);
+            assertEquals("The output code does not match the expected code.", reduceWhitespaces(code), realCode);
 
             return this;
         }
+        
+        private String reduceWhitespaces(String str) {
+            StringBuilder result = new StringBuilder();
+            int i = 0;
+            boolean wasWhitespace = false;
+            
+            while (i < str.length()) {
+                int codePoint = str.codePointAt(i);
+                
+                if (Character.isWhitespace(codePoint)) {
+                    if (!wasWhitespace) {
+                        result.append(" ");
+                        wasWhitespace = true;
+                    }
+                } else {
+                    result.appendCodePoint(codePoint);
+                    wasWhitespace = false;
+                }
+                i += Character.charCount(codePoint);
+            }
+            
+            return result.toString();
+        }
+        
         /**Verify the content of the resulting file. Equivalent to {@code assertVerbatimOutput("test/Test.java")}.
          *
          * This method will compare the content of the file exactly with the provided
@@ -1173,17 +1225,15 @@ public class HintTest {
 
     private static Properties readProperties() {
         Properties result = new Properties();
-        InputStream is= null;
         try {
             File propFile = getPreferencesFile();
-            is= new FileInputStream(propFile);
-            result.load(is);
-        }  catch (IOException e) {
+            FileInputStream is = new FileInputStream(propFile);
             try {
-                if (is != null)
-                    is.close();
-            }  catch (IOException e1) {
+                result.load(is);
+            } finally {
+                is.close();
             }
+        }  catch (IOException e) {
         }
         
         return result;

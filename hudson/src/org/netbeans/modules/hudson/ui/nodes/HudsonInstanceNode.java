@@ -121,11 +121,9 @@ public class HudsonInstanceNode extends AbstractNode {
     @Messages({
         "# {0} - supported Hudson version number", "MSG_WrongVersion=[Older version than {0}]",
         "MSG_Disconnected=[Disconnected]",
-        "MSG_forbidden=[Unauthorized]",
-        "HudsonInstanceNode.from_open_project=(from open project)"
+        "MSG_forbidden=[Unauthorized]"
     })
     @Override public String getHtmlDisplayName() {
-        boolean pers = instance.isPersisted();
         String selectedView = instance.prefs().get(SELECTED_VIEW, null);
         return (run ? "<b>" : "") + (warn ? "<font color=\"#A40000\">" : "") + // NOI18N
                 instance.getName() + (warn ? "</font>" : "") + (run ? "</b>" : "") + // NOI18N
@@ -134,10 +132,20 @@ public class HudsonInstanceNode extends AbstractNode {
                     MSG_WrongVersion(HudsonVersion.SUPPORTED_VERSION) + "</font>") :
                     " <font color=\"#A40000\">" + // NOI18N
                 (forbidden ? MSG_forbidden() : MSG_Disconnected()) + "</font>") +
-                (!pers ? " <font color='!controlShadow'>" + // NOI18N
-                    HudsonInstanceNode_from_open_project() + "</font>" : "");
+                getProjectInfoString();
     }
     
+    @Messages({
+        "HudsonInstanceNode.from_open_project=(from open project)"
+    })
+    private String getProjectInfoString() {
+        boolean pers = instance.isPersisted();
+        String info = instance.getPersistence().getInfo(
+                HudsonInstanceNode_from_open_project());
+        return (!pers ? " <font color='!controlShadow'>" + // NOI18N
+                info + "</font>" : "");                                 //NOI18N
+    }
+
     public @Override Action[] getActions(boolean context) {
         List<? extends Action> actions = org.openide.util.Utilities.actionsForPath(HudsonInstance.ACTION_PATH);
         return actions.toArray(new Action[actions.size()]);
@@ -245,6 +253,7 @@ public class HudsonInstanceNode extends AbstractNode {
                 }
                 jobs.add(job);
             }
+            Collections.sort(jobs);
             setKeys(jobs);
         }
         

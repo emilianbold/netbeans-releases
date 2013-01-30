@@ -112,6 +112,20 @@ public abstract class ElementFilter {
         };
     }
 
+    public static ElementFilter forConstructor() {
+        return new ElementFilter() {
+
+            @Override
+            public boolean isAccepted(PhpElement element) {
+                boolean result = false;
+                if (element instanceof MethodElement) {
+                    result = ((MethodElement) element).isConstructor();
+                }
+                return result;
+            }
+        };
+    }
+
     public static ElementFilter forIncludedNames(final Collection<String> includedNames, final PhpElementKind kind) {
         return new ElementFilter() {
 
@@ -198,7 +212,9 @@ public abstract class ElementFilter {
                 boolean retval = true;
                 for (FileObject fileObject : files) {
                     //if file is deleted
-                    if (fileObject == null) continue;
+                    if (fileObject == null) {
+                        continue;
+                    }
                     String nameExt = fileObject.getNameExt();
                     String elementURL = element.getFilenameUrl();
                     if ((elementURL != null && elementURL.indexOf(nameExt) < 0) || element.getFileObject() != fileObject) {
@@ -218,7 +234,7 @@ public abstract class ElementFilter {
             public boolean isAccepted(PhpElement element) {
                 if (element instanceof ClassElement) {
                     final QualifiedName nextSuperName = ((ClassElement) element).getSuperClassName();
-                    return nextSuperName != null ? superNameKind.matchesName(PhpElementKind.CLASS, nextSuperName): false;
+                    return nextSuperName != null ? superNameKind.matchesName(PhpElementKind.CLASS, nextSuperName) : false;
                 }
                 return true;
             }
@@ -474,7 +490,7 @@ public abstract class ElementFilter {
                     filters.add(ElementFilter.forName(NameKind.exact(baseElement.getName())));
                 }
                 if (baseElement instanceof TypeMemberElement) {
-                    TypeMemberElement member = (TypeMemberElement)baseElement;
+                    TypeMemberElement member = (TypeMemberElement) baseElement;
                     filters.add(ElementFilter.forMembersOfTypeName(member.getType()));
                 }
                 accepted.put(baseElement, ElementFilter.allOf(filters));

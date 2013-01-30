@@ -49,7 +49,7 @@ import org.netbeans.modules.php.editor.PredefinedSymbols;
  *
  * @author tomslot
  */
-public class PredefinedSymbolElement extends PHPElement{
+public class PredefinedSymbolElement extends PHPElement {
     private String symbolName;
 
     public PredefinedSymbolElement(String symbolName) {
@@ -66,7 +66,7 @@ public class PredefinedSymbolElement extends PHPElement{
         return ElementKind.VARIABLE;
     }
 
-    public String getDoc(){
+    public String getDoc() {
         return PredefinedSymbols.getDocumentation(symbolName);
     }
 }

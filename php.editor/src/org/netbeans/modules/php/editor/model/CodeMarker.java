@@ -43,13 +43,15 @@
 package org.netbeans.modules.php.editor.model;
 
 import java.util.List;
-import org.netbeans.modules.csl.api.OffsetRange;
 
 /**
  *
  * @author Radek Matous
  */
 public interface CodeMarker {
+
     List<? extends CodeMarker> getAllMarkers();
-    OffsetRange getOffsetRange();
+    boolean containsInclusive(int offset);
+    void highlight(OccurrenceHighlighter highlighter);
+
 }

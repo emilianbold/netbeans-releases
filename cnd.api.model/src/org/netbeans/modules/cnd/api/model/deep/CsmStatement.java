@@ -104,6 +104,9 @@ public interface CsmStatement extends CsmOffsetable, CsmObject, CsmScopeElement 
             /** For statement. An instance is guaranteed to implement CsmForStatement */
             FOR,
 
+            /** Range-based for statement. An instance is guaranteed to implement CsmRangeForStatement */
+            RANGE_FOR,
+            
             /** Break statement. No special derived interface. */
             BREAK,
 

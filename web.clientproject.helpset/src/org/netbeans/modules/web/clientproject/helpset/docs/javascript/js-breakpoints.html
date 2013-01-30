@@ -1,0 +1,103 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--       
+*     Copyright © 1997, 2011, Oracle and/or its affiliates. All rights reserved. 
+*     Use is subject to license terms.
+-->
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>Setting JavaScript Breakpoints</title>
+<link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+
+<h2>Setting JavaScript Breakpoints</h2>
+<p> <small><a href="#seealso">See Also</a>&nbsp; </small>
+
+ <p>To debug the JavaScript in your application in the IDE you need to specify 
+     breakpoints that will pause execution of the scripts when they are hit.
+     You can set the following JavaScript breakpoints in the IDE.</p>
+     
+ <ul>
+     <li><strong>DOM.</strong> Use this breakpoint to debug changes
+     that are made to the DOM tree.</li>
+     <li><strong>Line.</strong> Use this breakpoint to debug specific
+     lines of code in your JavaScript file.</li>
+     <li><strong>Event.</strong> Use this breakpoint to debug actions
+     in your application that are invoked by events.</li>
+     <li><strong>XMLHttpRequest.</strong> Use this breakpoint to debug 
+     requests for URLs.</li>
+ </ul>
+ 
+ <p>The steps for setting JavaScript breakpoints will depend upon
+     the type of breakpoint. 
+     You can open the New Breakpoint dialog box in the following ways.
+ </p>
+ 
+ <ul>
+     <li>Choose Debug &gt; New Breakpoint from the main menu.</li>
+     <li>Open the Breakpoints window and click the New Breakpoint icon
+     (<img src="../images/js/NewBreakpoint.gif" alt="New Breakpoint icon">) in the left margin.</li>
+ </ul>
+ 
+ <h3>Setting DOM Breakpoints</h3>
+ <p>You set DOM breakpoints by selecting a DOM node in the Navigator window
+     and then specifying the changes that will trigger the DOM breakpoint.</p>
+ 
+ <ol>
+     <li>Open the HTML file in the editor.</li>
+     <li>Open the Navigator window, if not already open.</li>
+     <li>In the Navigator window, locate the object in the DOM tree that you want to debug.</li>
+     <li>Right-click the object and choose one of the DOM breakpoint properties in the popup menu.</li>
+ </ol>
+ 
+
+ <h3>Setting Line Breakpoints</h3>
+ <p>You set line breakpoints by setting a breakpoint in the line in 
+     the JavaScript file that you want to debug.</p>
+  <ol>
+     <li>Open the JavaScript file in the editor.</li>
+     <li>Click in the left margin of the editor next to the line where you want to set the breakpoint.
+         <p>The breakpoint icon (<img src="../images/js/Breakpoint.gif" alt="Breakpoint icon">) 
+         will appear in the margin.</p>
+     </li>
+ </ol>
+
+
+<h3>Setting Events Breakpoints</h3>
+<p>You set events breakpoints by specifying the actions in the application that
+will trigger the breakpoint.</p>
+<ol>
+     <li>Open a JavaScript file or HTML file in the editor.</li>
+     <li>Place the insert cursor in the file and choose Debug &gt; New Breakpoint in the main menu to open
+     the New Breakpoint dialog box.</li>
+     <li>Select JavaScript in the Debugger dropdown list and select Event in the Breakpoint Type dropdown list.</li>
+     <li>Select any actions that you want to trigger the breakpoint.
+     Click OK.</li>
+</ol>
+
+<h3>Setting XMLHttpRequest Breakpoints</h3>
+<p>You set XMLHttpRequest breakpoints by specifying a URL 
+    that will trigger the breakpoint when it is requested by a script.</p>
+
+<ol>
+     <li>Open a JavaScript file or HTML file in the editor.</li>
+     <li>Place the insert cursor in the file and choose Debug &gt; New Breakpoint in the main menu to open
+     the New Breakpoint dialog box.</li>
+     <li>Select JavaScript in the Debugger dropdown list and select XMLHttpRequest in the Breakpoint Type dropdown list.</li>
+     <li>Specify the URL.
+     Click OK.</li>
+</ol>
+
+<dl>
+<dt><a name="seealso">See Also</a></dt>
+<dd><a href="js-debug.html">About Debugging JavaScript Files</a></dd>
+<dd><a href="../html5/html5-chrome.html">Integrating an HTML5 Project with a Browser</a></dd>
+</dl>
+
+<hr><small><a href="../credits.html">Legal Notices</a></small>
+
+<table border="0" cellpadding="50">
+<tr><td>&nbsp;</td></tr>
+</table></body>
+</html>

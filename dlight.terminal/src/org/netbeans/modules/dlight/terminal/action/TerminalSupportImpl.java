@@ -249,9 +249,18 @@ public final class TerminalSupportImpl {
             if (IOVisibility.PROP_VISIBILITY.equals(evt.getPropertyName()) && Boolean.FALSE.equals(evt.getNewValue())) {
                 if (destroyed.compareAndSet(false, true)) {
                     // term is closing => destroy process
-                    NativeProcess proc = processRef.get();
+                    final NativeProcess proc = processRef.get();
                     if (proc != null) {
-                        proc.destroy();
+                        RP.submit(new Runnable() {
+
+                            @Override
+                            public void run() {
+                                try {
+                                    proc.destroy();
+                                } catch (Throwable th) {
+                                }
+                            }
+                        });
                     }
                 }
             }

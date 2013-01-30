@@ -114,6 +114,7 @@ public final class FoldManagerTesting {
     public static void addFolds(final Context context, final Integer[] offsetPairs) throws Exception {
         JEditorPane pane = EditorPaneTesting.getValidEditorPane(context);
         FoldHierarchy.get(pane); // Ensure fold hierarchy exists and TestFoldManager gets used
+        FoldHierarchyExecution.waitHierarchyInitialized(pane);
         final TestFoldManager foldManager = getFoldManager(context);
         SwingUtilities.invokeAndWait(new Runnable() {
             @Override

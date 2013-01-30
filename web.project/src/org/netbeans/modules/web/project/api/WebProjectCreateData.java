@@ -223,7 +223,7 @@ public final class WebProjectCreateData {
      * @return the array of source folders
      */    
     public File[] getSourceFolders() {
-        return sourceFolders;
+        return sourceFolders != null ? sourceFolders.clone() : null;
     }
 
     /**
@@ -231,7 +231,7 @@ public final class WebProjectCreateData {
      * @param sourceFolders the array of source folders. Cannot be null.
      */    
     public void setSourceFolders(File[] sourceFolders) {
-        this.sourceFolders = sourceFolders;
+        this.sourceFolders = sourceFolders != null ? sourceFolders.clone() : null;
     }
 
     /**
@@ -239,7 +239,7 @@ public final class WebProjectCreateData {
      * @return the array of test folders
      */    
     public File[] getTestFolders() {
-        return testFolders;
+        return testFolders != null ? testFolders.clone() : testFolders;
     }
 
     /**
@@ -247,7 +247,7 @@ public final class WebProjectCreateData {
      * @param testFolders the array of test folders
      */    
     public void setTestFolders(File[] testFolders) {
-        this.testFolders = testFolders;
+        this.testFolders = testFolders != null ? testFolders.clone() : null;
     }
 
     /**

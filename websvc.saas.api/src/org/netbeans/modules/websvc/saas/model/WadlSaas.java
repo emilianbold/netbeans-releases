@@ -48,6 +48,8 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
+import javax.annotation.Resources;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
@@ -87,7 +89,7 @@ public class WadlSaas extends Saas {
 
     public WadlSaas(SaasGroup parent, String url, String displayName, String packageName) {
         super(parent, url, displayName, packageName);
-        getDelegate().setType(NS_WADL);
+        getDelegate().setType(NS_WADL_09);
     }
 
     public Application getWadlModel() throws IOException {
@@ -122,10 +124,15 @@ public class WadlSaas extends Saas {
         if (resources == null) {
             resources = new ArrayList<WadlSaasResource>();
             try {
-                for (Resource r : getWadlModel().getResources().getResource()) {
-                    resources.add(new WadlSaasResource(this, null, r));
+                for (org.netbeans.modules.websvc.saas.model.wadl.Resources wadlResources : 
+                    getWadlModel().getResources()) 
+                {
+                    for (Resource r : wadlResources.getResource()) {
+                        resources.add(new WadlSaasResource(this, null, r));
+                    }
                 }
-            } catch (Exception ex) {
+            } 
+            catch (Exception ex) {
                 Exceptions.printStackTrace(ex);
                 return Collections.<WadlSaasResource>emptyList();
             }
@@ -204,7 +211,12 @@ public class WadlSaas extends Saas {
 
     public String getBaseURL() {
         try {
-            return getWadlModel().getResources().getBase();
+            List<org.netbeans.modules.websvc.saas.model.wadl.Resources> wadlResources = 
+                    getWadlModel().getResources();
+            if ( wadlResources.size() >0 ){
+                return wadlResources.get(0).getBase();
+            }
+            return null;
         } catch (IOException ioe) {
             // should not happen at this point
             return NbBundle.getMessage(WadlSaas.class, "LBL_BAD_WADL");

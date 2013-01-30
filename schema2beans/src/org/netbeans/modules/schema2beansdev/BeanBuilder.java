@@ -265,7 +265,7 @@ public class BeanBuilder {
         }
     }
 
-    class Finder {
+    static class Finder {
         private String findExpr, byExpr;
         private boolean listFindExpr;
         
@@ -1042,9 +1042,12 @@ public class BeanBuilder {
             }
             if (config.getDumpBeanTree() != null) {
                 Writer out = new FileWriter(config.getDumpBeanTree());
-                CodeGeneratorClass bc = (CodeGeneratorClass) generators.get(rootElement);
-                bc.dumpBeanTree(out, "", config.getIndent());
-                close(out);
+                try {
+                    CodeGeneratorClass bc = (CodeGeneratorClass) generators.get(rootElement);
+                    bc.dumpBeanTree(out, "", config.getIndent());
+                } finally {
+                    close(out);
+                }
             }
             if (config.isGenerateTagsFile()) {
                 String tagsClassName = "Tags";
@@ -1059,8 +1062,11 @@ public class BeanBuilder {
         }
         if (config.getGenerateDotGraph() != null) {
             Writer out = new FileWriter(config.getGenerateDotGraph());
-            generateDotGraph(out, rootElement.getGraphNode());
-            close(out);
+            try {
+                generateDotGraph(out, rootElement.getGraphNode());
+            } finally {
+                close(out);
+            }
         }
 
         if (!config.isQuiet())
@@ -1355,28 +1361,32 @@ public class BeanBuilder {
     protected void generateTagsFile(OutputStream out,
                                     String packageName, String className) throws IOException {
         JavaWriter jw = new JavaWriter();
-        jw.bigComment("This class has all element and attribute names as constants.\n\n@"+Common.GENERATED_TAG);
-        jw.cr();
-        jw.writePackage(packageName);
-        jw.cr();
+        try {
+            jw.bigComment("This class has all element and attribute names as constants.\n\n@"+Common.GENERATED_TAG);
+            jw.cr();
+            jw.writePackage(packageName);
+            jw.cr();
 
-        jw.writeClassDecl(className, null, null, jw.PUBLIC);
-        jw.select(jw.DECL_SECTION);
+            jw.writeClassDecl(className, null, null, jw.PUBLIC);
+            jw.select(jw.DECL_SECTION);
 
-        for (Iterator it = constNameMap.keySet().iterator(); it.hasNext(); ) {
-            String constName = (String) it.next();
-            String dtdName = (String) constNameMap.get(constName);
-            jw.write("public final static String ", constName, " = ");
-            jw.writeEol("\"", dtdName, "\"");
+            for (Iterator it = constNameMap.keySet().iterator(); it.hasNext(); ) {
+                String constName = (String) it.next();
+                String dtdName = (String) constNameMap.get(constName);
+                jw.write("public final static String ", constName, " = ");
+                jw.writeEol("\"", dtdName, "\"");
+            }
+            jw.cr();
+
+            jw.select(jw.CONSTRUCTOR_SECTION);
+            jw.comment("This class is not to be instantiated.");
+            jw.beginConstructor(className, "", null, jw.PRIVATE);
+            jw.end();
+
+            jw.writeTo(out);
+        } finally {
+            jw.close();
         }
-        jw.cr();
-
-        jw.select(jw.CONSTRUCTOR_SECTION);
-        jw.comment("This class is not to be instantiated.");
-        jw.beginConstructor(className, "", null, jw.PRIVATE);
-        jw.end();
-        
-        jw.writeTo(out);
     }
 
     /**

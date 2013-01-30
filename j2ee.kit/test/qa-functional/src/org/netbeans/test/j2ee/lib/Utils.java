@@ -111,9 +111,19 @@ public class Utils {
     public static void prepareDatabase() {
         try {
             new Node(new RuntimeTabOperator().getRootNode(), "Databases|/sample").performPopupActionNoBlock("Connect");
+            try {
+                new NbDialogOperator("Connecting to Database").waitClosed();
+            } catch (TimeoutExpiredException e) {
+                // ignore if already connected
+            }
         } catch (TimeoutExpiredException tee) {
             // try once more to prevent re-selection of Databases node by IDE and "Has right selection" error
             new Node(new RuntimeTabOperator().getRootNode(), "Databases|/sample").performPopupActionNoBlock("Connect");
+            try {
+                new NbDialogOperator("Connecting to Database").waitClosed();
+            } catch (TimeoutExpiredException e) {
+                // ignore if already connected
+            }
         }
     }
 

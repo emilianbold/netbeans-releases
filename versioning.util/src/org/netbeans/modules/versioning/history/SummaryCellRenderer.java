@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.versioning.history;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
@@ -84,14 +85,18 @@ import javax.swing.text.StyledDocument;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.FontColorSettings;
+import org.netbeans.modules.versioning.history.AbstractSummaryView.LogEntry;
 import org.netbeans.modules.versioning.history.AbstractSummaryView.LogEntry.Event;
 import org.netbeans.modules.versioning.history.AbstractSummaryView.RevisionItem;
 import org.netbeans.modules.versioning.history.AbstractSummaryView.SummaryViewMaster.SearchHighlight;
 import org.netbeans.modules.versioning.util.Utils;
 import org.netbeans.modules.versioning.util.VCSHyperlinkProvider;
 import org.netbeans.modules.versioning.util.VCSHyperlinkSupport;
+import org.netbeans.modules.versioning.util.VCSHyperlinkSupport.AuthorLinker;
+import org.netbeans.modules.versioning.util.VCSHyperlinkSupport.IssueLinker;
 import org.netbeans.modules.versioning.util.VCSKenaiAccessor;
 import org.openide.ErrorManager;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -212,20 +217,22 @@ class SummaryCellRenderer implements ListCellRenderer {
                 ? revision.getUserData().getEvents()
                 : revision.getUserData().getDummyEvents();
         int maxWidth = -1;
-        for (AbstractSummaryView.LogEntry.Event event : events) {
-            int i = 0;
-            for (String path : getInterestingPaths(event)) {
-                if (++i == 2) {
-                    if (path == null) {
-                        break;
-                    } else {
-                        path = PREFIX_PATH_FROM + path;
+        if (events.size() < 20) {
+            for (AbstractSummaryView.LogEntry.Event event : events) {
+                int i = 0;
+                for (String path : getInterestingPaths(event)) {
+                    if (++i == 2) {
+                        if (path == null) {
+                            break;
+                        } else {
+                            path = PREFIX_PATH_FROM + path;
+                        }
                     }
+                    StringBuilder sb = new StringBuilder(event.getAction()).append(" ").append(path);
+                    FontMetrics fm = list.getFontMetrics(list.getFont());
+                    Rectangle2D rect = fm.getStringBounds(sb.toString(), g);
+                    maxWidth = Math.max(maxWidth, (int) rect.getWidth() + 1);
                 }
-                StringBuilder sb = new StringBuilder(event.getAction()).append(" ").append(path);
-                FontMetrics fm = list.getFontMetrics(list.getFont());
-                Rectangle2D rect = fm.getStringBounds(sb.toString(), g);
-                maxWidth = Math.max(maxWidth, (int) rect.getWidth() + 1);
             }
         }
         return maxWidth;
@@ -250,18 +257,9 @@ class SummaryCellRenderer implements ListCellRenderer {
     private class RevisionRenderer extends JPanel implements ListCellRenderer {
 
         private String id;
-        private final Style selectedStyle;
-        private final Style normalStyle;
-        private final Style indentStyle;
-        private final Style noindentStyle;
-        private final Style issueHyperlinkStyle;
-        private final Style linkStyle;
-        private final Style authorStyle;
-        private final Style hiliteStyle;
         private boolean lastSelection = false;
-        private final JTextPane textPane;
+        private final RevisionItemCell revisionCell = new RevisionItemCell();
         private final JButton expandButton;
-        private String commitMessage = ""; //NOI18N
         private boolean lastMessageExpanded;
         private boolean lastRevisionExpanded;
         private int lastWidth;
@@ -269,46 +267,16 @@ class SummaryCellRenderer implements ListCellRenderer {
 
         public RevisionRenderer() {
             selectionForeground = new JList().getSelectionForeground();
-            textPane = new JTextPane();
             expandButton = new LinkButton(ICON_COLLAPSED);
             expandButton.setBorder(BorderFactory.createEmptyBorder());
 
-            selectedStyle = textPane.addStyle("selected", null); //NOI18N
-            StyleConstants.setForeground(selectedStyle, selectionForeground);
-            StyleConstants.setBackground(selectedStyle, selectionBackground);
-            normalStyle = textPane.addStyle("normal", null); //NOI18N
-            StyleConstants.setForeground(normalStyle, UIManager.getColor("List.foreground")); //NOI18N
-            indentStyle = textPane.addStyle("indent", null); //NOI18N
-            StyleConstants.setLeftIndent(indentStyle, 50);
-            noindentStyle = textPane.addStyle("noindent", null); //NOI18N
-            StyleConstants.setLeftIndent(noindentStyle, 0);
+            this.setBorder(BorderFactory.createMatteBorder(3, 0, 0, 0, UIManager.getColor("List.background"))); //NOI18N
+            this.setLayout(new BorderLayout(3, 0));
 
-            issueHyperlinkStyle = textPane.addStyle("issuehyperlink", normalStyle); //NOI18N
-            StyleConstants.setForeground(issueHyperlinkStyle, Color.BLUE);
-            StyleConstants.setUnderline(issueHyperlinkStyle, true);
-
-            linkStyle = textPane.addStyle("link", normalStyle); //NOI18N
-            StyleConstants.setForeground(linkStyle, Color.BLUE);
-            StyleConstants.setBold(linkStyle, true);
-
-            authorStyle = textPane.addStyle("author", normalStyle); //NOI18N
-            StyleConstants.setForeground(authorStyle, Color.BLUE);
-
-            hiliteStyle = textPane.addStyle("hilite", normalStyle); //NOI18N
-            
-            Color c = (Color) searchHiliteAttrs.getAttribute(StyleConstants.Background);
-            if (c != null) StyleConstants.setBackground(hiliteStyle, c);
-            c = (Color) searchHiliteAttrs.getAttribute(StyleConstants.Foreground);
-            if (c != null) StyleConstants.setForeground(hiliteStyle, c);
-
-            textPane.setBorder(BorderFactory.createEmptyBorder(3, 3, 3, 3));
-            setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
-            setBorder(BorderFactory.createMatteBorder(3, 0, 0, 0, UIManager.getColor("List.background"))); //NOI18N
-            
-            add(expandButton);
             expandButton.setMaximumSize(expandButton.getPreferredSize());
             expandButton.setMinimumSize(expandButton.getPreferredSize());
-            add(textPane);
+            this.add(expandButton, BorderLayout.WEST);
+            this.add(revisionCell, BorderLayout.CENTER);
         }
 
         @Override
@@ -316,32 +284,25 @@ class SummaryCellRenderer implements ListCellRenderer {
             AbstractSummaryView.RevisionItem item = (AbstractSummaryView.RevisionItem) value;
             AbstractSummaryView.LogEntry entry = item.getUserData();
 
-            StyledDocument sd = textPane.getStyledDocument();
             Collection<SearchHighlight> highlights = summaryView.getMaster().getSearchHighlights();
-            if (sd.getLength() == 0 || selected != lastSelection || item.messageExpanded != lastMessageExpanded || item.revisionExpanded != lastRevisionExpanded
+            if (revisionCell.getRevisionControl().getStyledDocument().getLength() == 0 || revisionCell.getDateControl().getStyledDocument().getLength() == 0 || revisionCell.getAuthorControl().getStyledDocument().getLength() == 0 || revisionCell.getCommitMessageControl().getStyledDocument().getLength() == 0 || selected != lastSelection || item.messageExpanded != lastMessageExpanded || item.revisionExpanded != lastRevisionExpanded
                     || !highlights.equals(lastHighlights)) {
                 lastSelection = selected;
                 lastMessageExpanded = item.messageExpanded;
                 lastRevisionExpanded = item.revisionExpanded;
                 lastHighlights = highlights;
 
-                Style style;
                 Color backgroundColor;
-                Color foregroundColor;
 
                 if (selected) {
-                    foregroundColor = selectionForeground;
                     backgroundColor = selectionBackground;
-                    style = selectedStyle;
                 } else {
-                    foregroundColor = UIManager.getColor("List.foreground"); //NOI18N
                     backgroundColor = UIManager.getColor("List.background"); //NOI18N
                     backgroundColor = entry.isLessInteresting() ? darkerUninteresting(backgroundColor) : darker(backgroundColor);
-                    style = normalStyle;
                 }
-                textPane.setOpaque(false);
-                textPane.setBackground(new Color(0, 0, 0, 0));
-                setBackground(backgroundColor);
+                this.setBackground(backgroundColor);
+                revisionCell.setBackground(backgroundColor);
+
                 if (item.revisionExpanded) {
                     expandButton.setIcon(ICON_EXPANDED);
                 } else {
@@ -354,166 +315,22 @@ class SummaryCellRenderer implements ListCellRenderer {
                 }
 
                 try {
-                    // clear document
-                    sd.remove(0, sd.getLength());
-                    sd.setParagraphAttributes(0, sd.getLength(), noindentStyle, false);
-
-                    // add revision
-                    sd.insertString(0, item.getUserData().getRevision(), null);
-                    sd.setCharacterAttributes(0, sd.getLength(), normalStyle, false);
-                    if (!selected) {
-                        for (AbstractSummaryView.LogEntry.RevisionHighlight highlight : item.getUserData().getRevisionHighlights()) {
-                            Style s = textPane.addStyle(null, normalStyle);
-                            StyleConstants.setForeground(s, highlight.getForeground());
-                            StyleConstants.setBackground(s, highlight.getBackground());
-                            sd.setCharacterAttributes(highlight.getStart(), highlight.getLength(), s, false);
-                        }
-                        for (SearchHighlight highlight : highlights) {
-                            if (highlight.getKind() == SearchHighlight.Kind.REVISION) {
-                                int doclen = sd.getLength();
-                                String highlightMessage = highlight.getSearchText();
-                                String revisionText = item.getUserData().getRevision().toLowerCase();
-                                int idx = revisionText.indexOf(highlightMessage);
-                                if (idx > -1) {
-                                    sd.setCharacterAttributes(doclen - revisionText.length() + idx, highlightMessage.length(), hiliteStyle, false);
-                                }
-                            }
-                        }
-                    }
-
-                    // add author
-                    sd.insertString(sd.getLength(), FIELDS_SEPARATOR, style);
-                    String author = entry.getAuthor();
-                    VCSHyperlinkSupport.StyledDocumentHyperlink l = linkerSupport.getLinker(VCSHyperlinkSupport.AuthorLinker.class, id);
-                    if(l == null) {
-                        VCSKenaiAccessor.KenaiUser kenaiUser = getKenaiUser(author);
-                        if (kenaiUser != null) {
-                            l = new VCSHyperlinkSupport.AuthorLinker(kenaiUser, authorStyle, sd, author);
-                            linkerSupport.add(l, id);
-                        }
-                    }
-                    int pos = sd.getLength();
-                    if(l != null) {
-                        l.insertString(sd, selected ? style : null);
-                    } else {
-                        sd.insertString(sd.getLength(), author, style);
-                    }
-                    if (!selected) {
-                        for (SearchHighlight highlight : highlights) {
-                            if (highlight.getKind() == SearchHighlight.Kind.AUTHOR) {
-                                int doclen = sd.getLength();
-                                String highlightMessage = highlight.getSearchText();
-                                String authorText = sd.getText(pos, doclen - pos).toLowerCase();
-                                int idx = authorText.indexOf(highlightMessage);
-                                if (idx > -1) {
-                                    sd.setCharacterAttributes(doclen - authorText.length() + idx, highlightMessage.length(), hiliteStyle, false);
-                                }
-                            }
-                        }
-                    }
-
-                    // add date
-                    sd.insertString(sd.getLength(), FIELDS_SEPARATOR + entry.getDate(), null);
-
-                    // add commit msg
-                    boolean messageChanged = !entry.getMessage().equals(commitMessage);
-                    commitMessage = entry.getMessage();
-                    if (commitMessage.endsWith("\n")) commitMessage = commitMessage.substring(0, commitMessage.length() - 1); //NOI18N
-                    sd.insertString(sd.getLength(), "\n", null); //NOI18N
-                    int nlc, i;
-                    for (i = 0, nlc = -1; i != -1 ; i = commitMessage.indexOf('\n', i + 1), nlc++);
-                    if (nlc > 0 && !item.messageExpanded) {
-                        commitMessage = commitMessage.substring(0, commitMessage.indexOf("\n")); //NOI18N
-                    }
-
-                    // compute issue hyperlinks
-                    l = linkerSupport.getLinker(VCSHyperlinkSupport.IssueLinker.class, id);
-                    if (messageChanged) {
-                        lastWidth = -1;
-                        if (l != null) {
-                            // must reinitialize issue linker to paint the new message
-                            linkerSupport.remove(l, id);
-                            l = null;
-                        }
-                    }
-                    if(l == null) {
-                        for (VCSHyperlinkProvider hp : getHyperlinkProviders()) {
-                            l = VCSHyperlinkSupport.IssueLinker.create(hp, issueHyperlinkStyle, summaryView.getRoot(), sd, commitMessage);
-                            if(l != null) {
-                                linkerSupport.add(l, id);
-                                break; // get the first one
-                            }
-                        }
-                    }
-                    pos = sd.getLength();
-                    if(l != null) {
-                        l.insertString(sd, style);
-                    } else {
-                        sd.insertString(sd.getLength(), commitMessage, style);
-                    }
-
-                    // tooltip for message
-                    MessageTooltip mtt = linkerSupport.getLinker(MessageTooltip.class, id);
-                    if (messageChanged) {
-                        linkerSupport.remove(mtt, id);
-                        mtt = null;
-                    }
-                    if (mtt == null) {
-                        linkerSupport.add(new MessageTooltip(entry.getMessage(), pos, sd.getLength()), id);
-                    }
-                    
-                    // paint first line of commit message bold
-                    int lineEnd = sd.getText(pos, sd.getLength() - pos).indexOf("\n");
-                    if (lineEnd == -1) {
-                        lineEnd = sd.getLength() - pos;
-                    }
-                    Style s = textPane.addStyle(null, style);
-                    StyleConstants.setBold(s, true);
-                    sd.setCharacterAttributes(pos, lineEnd, s, false);
-                    int msglen = commitMessage.length();
-                    int doclen = sd.getLength();
-
-                    if (nlc > 0 && !item.messageExpanded) {
-                        l = linkerSupport.getLinker(ExpandMsgHyperlink.class, id);
-                        if (l == null) {
-                            l = new ExpandMsgHyperlink(item, sd.getLength(), id);
-                            linkerSupport.add(l, id);
-                        }
-                        l.insertString(sd, linkStyle);
-                    }
-                    
-
-                    if (!selected) {
-                        for (SearchHighlight highlight : highlights) {
-                            if (highlight.getKind() == SearchHighlight.Kind.MESSAGE) {
-                                String highlightMessage = highlight.getSearchText();
-                                int idx = commitMessage.toLowerCase().indexOf(highlightMessage);
-                                if (idx == -1) {
-                                    if (nlc > 0 && !item.messageExpanded && entry.getMessage().toLowerCase().contains(highlightMessage)) {
-                                        sd.setCharacterAttributes(doclen, sd.getLength(), hiliteStyle, false);
-                                    }
-                                } else {
-                                    sd.setCharacterAttributes(doclen - msglen + idx, highlightMessage.length(), hiliteStyle, false);
-                                }
-                            }
-                        }
-                    }
-
-                    if (selected) {
-                        sd.setCharacterAttributes(0, Integer.MAX_VALUE, style, false);
-                    }
+                    addRevision(revisionCell.getRevisionControl(), item, selected, highlights);
+                    addCommitMessage(revisionCell.getCommitMessageControl(), item, selected, highlights);
+                    addAuthor(revisionCell.getAuthorControl(), item, selected, highlights);
+                    addDate(revisionCell.getDateControl(), item, selected, highlights);
                 } catch (BadLocationException e) {
                     ErrorManager.getDefault().notify(e);
                 }
             }
-            lastWidth = resizePane(textPane.getText(), list, lastWidth);
+            lastWidth = resizePane(revisionCell.getCommitMessageControl().getText(), list, lastWidth);
 
             return this;
         }
-        
+
         @SuppressWarnings("empty-statement")
-        private int resizePane(String text, JList list, int lastWidth) {
-            if(text == null) {
+        private int resizePane (String text, JList list, int lastWidth) {
+            if (text == null) {
                 text = ""; //NOI18N
             }
             int width = summaryView.getMaster().getComponent().getWidth();
@@ -522,23 +339,311 @@ class SummaryCellRenderer implements ListCellRenderer {
                 FontMetrics fm = list.getFontMetrics(list.getFont());
                 int lines = 0;
                 for (String row : rows) {
-                    Rectangle2D rect = fm.getStringBounds(row, textPane.getGraphics());
+                    Rectangle2D rect = fm.getStringBounds(row, revisionCell.getGraphics());
                     lines += (int) (rect.getWidth() / (width - 80) + 1);
                 }
-                int ph = fm.getHeight() * lines + 9;
-                textPane.setPreferredSize(new Dimension(width - 50 - ICON_COLLAPSED.getIconWidth(), ph));
-                setPreferredSize(textPane.getPreferredSize());
+                int ph = fm.getHeight() * (lines + 1) + 4;
+                revisionCell.setPreferredSize(new Dimension(width - 50 - ICON_COLLAPSED.getIconWidth(), ph));
+                setPreferredSize(revisionCell.getPreferredSize());
             }
             return width;
+        }
+
+        private void addRevision (JTextPane pane, RevisionItem item, boolean selected, Collection<SearchHighlight> highlights) throws BadLocationException {
+            StyledDocument sd = pane.getStyledDocument();
+            // clear document
+            clearSD(pane, sd);
+
+            Style selectedStyle = createSelectedStyle(pane);
+            Style normalStyle = createNormalStyle(pane);
+            Style hiliteStyle = createHiliteStyleStyle(pane, normalStyle, searchHiliteAttrs);
+            Style style;
+            if (selected) {
+                style = selectedStyle;
+            } else {
+                style = normalStyle;
+            }
+
+
+            // add revision
+            sd.insertString(0, item.getUserData().getRevision(), style);
+            if (!selected) {
+                for (AbstractSummaryView.LogEntry.RevisionHighlight highlight : item.getUserData().getRevisionHighlights()) {
+                    Style s = pane.addStyle(null, normalStyle);
+                    StyleConstants.setForeground(s, highlight.getForeground());
+                    StyleConstants.setBackground(s, highlight.getBackground());
+                    sd.setCharacterAttributes(highlight.getStart(), highlight.getLength(), s, false);
+                }
+                for (SearchHighlight highlight : highlights) {
+                    if (highlight.getKind() == SearchHighlight.Kind.REVISION) {
+                        int doclen = sd.getLength();
+                        String highlightMessage = highlight.getSearchText();
+                        String revisionText = item.getUserData().getRevision().toLowerCase();
+                        int idx = revisionText.indexOf(highlightMessage);
+                        if (idx > -1) {
+                            sd.setCharacterAttributes(doclen - revisionText.length() + idx, highlightMessage.length(), hiliteStyle, false);
+                        }
+                    }
+                }
+            }
+        }
+
+        private void addAuthor (JTextPane pane, RevisionItem item, boolean selected, Collection<SearchHighlight> highlights) throws BadLocationException {
+            LogEntry entry = item.getUserData();
+            StyledDocument sd = pane.getStyledDocument();
+            clearSD(pane, sd);
+            Style selectedStyle = createSelectedStyle(pane);
+            Style normalStyle = createNormalStyle(pane);
+            Style style;
+            if (selected) {
+                style = selectedStyle;
+            } else {
+                style = normalStyle;
+            }
+            Style authorStyle = createAuthorStyle(pane, normalStyle);
+            Style hiliteStyle = createHiliteStyleStyle(pane, normalStyle, searchHiliteAttrs);
+            String author = entry.getAuthor();
+            AuthorLinker l = linkerSupport.getLinker(VCSHyperlinkSupport.AuthorLinker.class, id);
+            if(l == null) {
+                VCSKenaiAccessor.KenaiUser kenaiUser = getKenaiUser(author);
+                if (kenaiUser != null) {
+                    l = new VCSHyperlinkSupport.AuthorLinker(kenaiUser, authorStyle, sd, author);
+                    linkerSupport.add(l, id);
+                }
+            }
+            int pos = sd.getLength();
+            if(l != null) {
+                l.insertString(sd, selected ? style : null);
+            } else {
+                sd.insertString(sd.getLength(), author, style);
+            }
+            if (!selected) {
+                for (SearchHighlight highlight : highlights) {
+                    if (highlight.getKind() == SearchHighlight.Kind.AUTHOR) {
+                        int doclen = sd.getLength();
+                        String highlightMessage = highlight.getSearchText();
+                        String authorText = sd.getText(pos, doclen - pos).toLowerCase();
+                        int idx = authorText.indexOf(highlightMessage);
+                        if (idx > -1) {
+                            sd.setCharacterAttributes(doclen - authorText.length() + idx, highlightMessage.length(), hiliteStyle, false);
+                        }
+                    }
+                }
+            }
+        }
+
+        private void addDate (JTextPane pane, RevisionItem item, boolean selected, Collection<SearchHighlight> highlights) throws BadLocationException {
+
+            LogEntry entry = item.getUserData();
+            StyledDocument sd = pane.getStyledDocument();
+            // clear document
+            clearSD(pane, sd);
+
+            Style selectedStyle = createSelectedStyle(pane);
+            Style normalStyle = createNormalStyle(pane);
+            Style style;
+            if (selected) {
+                style = selectedStyle;
+            } else {
+                style = normalStyle;
+            }
+
+            // add date
+            sd.insertString(sd.getLength(), entry.getDate(), style);
+        }
+
+        private void addCommitMessage (JTextPane pane, RevisionItem item, boolean selected, Collection<SearchHighlight> highlights) throws BadLocationException {
+            LogEntry entry = item.getUserData();
+            StyledDocument sd = pane.getStyledDocument();
+            clearSD(pane, sd);
+            Style selectedStyle = createSelectedStyle(pane);
+            Style normalStyle = createNormalStyle(pane);
+            Style linkStyle = createLinkStyle(pane, normalStyle);
+            Style hiliteStyle = createHiliteStyleStyle(pane, normalStyle, searchHiliteAttrs);
+            Style issueHyperlinkStyle = createIssueHyperlinkStyle(pane, normalStyle);
+            Style style;
+            if (selected) {
+                style = selectedStyle;
+            } else {
+                style = normalStyle;
+            }
+            boolean messageChanged = !entry.getMessage().isEmpty();
+            String commitMessage = entry.getMessage().trim();
+            int nlc;
+            int i;
+            for (i = 0, nlc = -1; i != -1; i = commitMessage.indexOf('\n', i + 1), nlc++);
+            
+            if (nlc > 0 && !item.messageExpanded) {
+                //get first line of comment if collapsed
+                commitMessage = commitMessage.substring(0, commitMessage.indexOf("\n")); //NOI18N
+            }
+            IssueLinker l = linkerSupport.getLinker(VCSHyperlinkSupport.IssueLinker.class, id);
+            if (messageChanged) {
+                lastWidth = -1;
+                if (l != null) {
+                    // must reinitialize issue linker to paint the new message
+                    linkerSupport.remove(l, id);
+                    l = null;
+                }
+            }
+            if(l == null) {
+                for (VCSHyperlinkProvider hp : getHyperlinkProviders()) {
+                    l = VCSHyperlinkSupport.IssueLinker.create(hp, issueHyperlinkStyle, summaryView.getRoot(), sd, commitMessage);
+                    if(l != null) {
+                        linkerSupport.add(l, id);
+                        break; // get the first one
+                    }
+                }
+            }
+            if(l != null) {
+                l.insertString(sd, style);
+            } else {
+                sd.insertString(0, commitMessage, style);
+            }
+
+            {
+                //make the first line bold
+                int lineEnd = sd.getText(0, sd.getLength()).indexOf("\n");
+                if (lineEnd == -1) {
+                    lineEnd = sd.getLength();
+                }
+                Style s = pane.addStyle(null, style);
+                StyleConstants.setBold(s, true);
+                sd.setCharacterAttributes(0, lineEnd, s, false);
+            }
+            
+            int msglen = commitMessage.length();
+            int doclen = sd.getLength();
+
+            
+            if (nlc > 0 && !item.messageExpanded) 
+            {
+                //insert expand link
+                ExpandMsgHyperlink el = linkerSupport.getLinker(ExpandMsgHyperlink.class, id);
+                if (el == null) {
+                    el = new ExpandMsgHyperlink(item, sd.getLength(), id);
+                    linkerSupport.add(el, id);
+                }
+                el.insertString(sd, linkStyle);
+
+            }
+
+            {
+                // remove previous tooltips
+                MessageTooltip mtt = linkerSupport.getLinker(MessageTooltip.class, id);
+                linkerSupport.remove(mtt, id);
+                //insert commit message tooltip
+                MessageTooltip messageTooltip = new MessageTooltip(entry.getMessage(), 0, sd.getLength());
+                linkerSupport.add(messageTooltip, id);
+            }
+            
+            if (!selected) {
+                for (SearchHighlight highlight : highlights) {
+                    if (highlight.getKind() == SearchHighlight.Kind.MESSAGE) {
+                        String highlightMessage = highlight.getSearchText();
+                        int idx = commitMessage.toLowerCase().indexOf(highlightMessage);
+                        if (idx == -1) {
+                            if (nlc > 0 && !item.messageExpanded && entry.getMessage().toLowerCase().contains(highlightMessage)) {
+                                sd.setCharacterAttributes(doclen, sd.getLength(), hiliteStyle, false);
+                            }
+                        } else {
+                            sd.setCharacterAttributes(doclen - msglen + idx, highlightMessage.length(), hiliteStyle, false);
+                        }
+                    }
+                }
+            }
+
+            if (selected) {
+                sd.setCharacterAttributes(0, Integer.MAX_VALUE, style, false);
+            }
+        }
+
+        private Style createNormalStyle (JTextPane textPane) {
+            Style normalStyle = textPane.addStyle("normal", null); //NOI18N
+            StyleConstants.setForeground(normalStyle, UIManager.getColor("List.foreground")); //NOI18N
+            return normalStyle;
+        }
+
+        private Style createIssueHyperlinkStyle (JTextPane textPane, Style normalStyle) {
+            Style issueHyperlinkStyle = textPane.addStyle("issuehyperlink", normalStyle); //NOI18N
+            StyleConstants.setForeground(issueHyperlinkStyle, Color.BLUE);
+            StyleConstants.setUnderline(issueHyperlinkStyle, true);
+            return issueHyperlinkStyle;
+        }
+
+        private Style createAuthorStyle (JTextPane textPane, Style normalStyle) {
+            Style authorStyle = textPane.addStyle("author", normalStyle); //NOI18N
+            StyleConstants.setForeground(authorStyle, Color.BLUE);
+            return authorStyle;
+        }
+
+        private Style createLinkStyle (JTextPane textPane, Style normalStyle) {
+            Style linkStyle = textPane.addStyle("link", normalStyle); //NOI18N
+            StyleConstants.setForeground(linkStyle, Color.BLUE);
+            StyleConstants.setBold(linkStyle, true);
+            return linkStyle;
+        }
+
+        private Style createNoindentStyle (JTextPane textPane) {
+            Style noindentStyle = textPane.addStyle("noindent", null); //NOI18N
+            StyleConstants.setLeftIndent(noindentStyle, 0);
+            return noindentStyle;
+        }
+
+        private Style createSelectedStyle (JTextPane textPane) {
+            Style selectedStyle = textPane.addStyle("selected", null); //NOI18N
+            StyleConstants.setForeground(selectedStyle, selectionForeground);
+            StyleConstants.setBackground(selectedStyle, selectionBackground);
+            return selectedStyle;
+        }
+
+        private Style createHiliteStyleStyle (JTextPane textPane, Style normalStyle, AttributeSet searchHiliteAttrs) {
+            Style hiliteStyle = textPane.addStyle("hilite", normalStyle); //NOI18N
+
+            Color c = (Color) searchHiliteAttrs.getAttribute(StyleConstants.Background);
+            if (c != null) {
+                StyleConstants.setBackground(hiliteStyle, c);
+            }
+            c = (Color) searchHiliteAttrs.getAttribute(StyleConstants.Foreground);
+            if (c != null) {
+                StyleConstants.setForeground(hiliteStyle, c);
+            }
+
+            return hiliteStyle;
         }
         
         @Override
         public void paint(Graphics g) {
             super.paint(g);
-            linkerSupport.computeBounds(textPane, id);
+            AuthorLinker author = linkerSupport.getLinker(AuthorLinker.class, id);
+            if (author != null) {
+                author.computeBounds(revisionCell.getAuthorControl(), revisionCell);
+            }
+            IssueLinker issue = linkerSupport.getLinker(IssueLinker.class, id);
+            if (issue != null) {
+                issue.computeBounds(revisionCell.getCommitMessageControl(), revisionCell);
+            }
+            ExpandMsgHyperlink expandMsg = linkerSupport.getLinker(ExpandMsgHyperlink.class, id);
+            if (expandMsg != null) {
+                expandMsg.computeBounds(revisionCell.getCommitMessageControl(), revisionCell);
+            }
+            MessageTooltip tt = linkerSupport.getLinker(MessageTooltip.class, id);
+            if (tt != null) {
+                tt.computeBounds(revisionCell.getCommitMessageControl(), revisionCell);
+            }
             ExpandLink link = linkerSupport.getLinker(ExpandLink.class, id);
             if (link != null) {
                 link.computeBounds(expandButton);
+            }
+        }
+
+        private void clearSD (JTextPane pane, StyledDocument sd) {
+            try {
+                Style noindentStyle = createNoindentStyle(pane);
+                sd.remove(0, sd.getLength());
+                sd.setParagraphAttributes(0, sd.getLength(), noindentStyle, false);
+            } catch (BadLocationException ex) {
+                Exceptions.printStackTrace(ex);
             }
         }
     }
@@ -572,9 +677,13 @@ class SummaryCellRenderer implements ListCellRenderer {
         public boolean mouseClicked (Point p) {
             return false;
         }
-
+        
         @Override
-        public void computeBounds (JTextPane textPane) {
+        public void computeBounds(JTextPane textPane) {
+            computeBounds(textPane, null);
+        }
+        
+        public void computeBounds(JTextPane textPane, VCSHyperlinkSupport.BoundsTranslator translator) {
             Rectangle tpBounds = textPane.getBounds();
             TextUI tui = textPane.getUI();
             try {
@@ -585,6 +694,9 @@ class SummaryCellRenderer implements ListCellRenderer {
                 for (int pos = start; pos <= end; ++pos) {
                     Rectangle startr = tui.modelToView(textPane, pos, Position.Bias.Forward);
                     Rectangle endr = tui.modelToView(textPane, pos + 1, Position.Bias.Backward);
+                    //prevent NPE if width is too small
+                    if (null == startr) {continue;}
+                    if (null == endr) {continue;}
                     if (startr.y > lastY) {
                         rects.add(rec);
                         rec = new Rectangle(tpBounds.x + startr.x, startr.y, endr.x - startr.x, startr.height);
@@ -592,6 +704,10 @@ class SummaryCellRenderer implements ListCellRenderer {
                     } else {
                         rec.setSize(rec.width + endr.x - startr.x, rec.height);
                     }
+                }
+                // NOTE the textPane is positioned within a parent panel so the relative bound has to be modified too
+                if (null != translator){
+                    translator.correctTranslation(textPane, rec);
                 }
                 rects.add(rec);
                 rects.remove(0);
@@ -689,8 +805,10 @@ class SummaryCellRenderer implements ListCellRenderer {
                 }
                 pathLabel.setText(sb.append("</body></html>").toString()); //NOI18N
                 int width = getMaxPathWidth(list, item.getParent(), pathLabel.getGraphics());
-                width = width + 15 + INDENT - actionLabel.getPreferredSize().width;
-                pathLabel.setPreferredSize(new Dimension(width, pathLabel.getPreferredSize().height));
+                if (width > -1) {
+                    width = width + 15 + INDENT - actionLabel.getPreferredSize().width;
+                    pathLabel.setPreferredSize(new Dimension(width, pathLabel.getPreferredSize().height));
+                }
             }
             return this;
         }
@@ -995,7 +1113,7 @@ class SummaryCellRenderer implements ListCellRenderer {
         }
     }
 
-    private static final String LINK_STRING = "..."; //NOI18N
+    private static final String LINK_STRING = " ..."; //NOI18N
     private static final int LINK_STRING_LEN = LINK_STRING.length();
     private class ExpandMsgHyperlink extends VCSHyperlinkSupport.StyledDocumentHyperlink {
         private Rectangle bounds;
@@ -1029,9 +1147,13 @@ class SummaryCellRenderer implements ListCellRenderer {
             }
             return false;
         }
-
+        
         @Override
         public void computeBounds(JTextPane textPane) {
+            computeBounds(textPane, null);
+        }
+        
+        public void computeBounds(JTextPane textPane, VCSHyperlinkSupport.BoundsTranslator translator) {
             Rectangle tpBounds = textPane.getBounds();
             TextUI tui = textPane.getUI();
             bounds = new Rectangle();
@@ -1044,6 +1166,9 @@ class SummaryCellRenderer implements ListCellRenderer {
                 Rectangle endr = mtv.getBounds();
 
                 bounds = new Rectangle(tpBounds.x + startr.x, startr.y, endr.x - startr.x, startr.height);
+                if (null != translator) {
+                    translator.correctTranslation(textPane, bounds);
+                }
             } catch (BadLocationException ex) {
                 throw new RuntimeException(ex);
             }

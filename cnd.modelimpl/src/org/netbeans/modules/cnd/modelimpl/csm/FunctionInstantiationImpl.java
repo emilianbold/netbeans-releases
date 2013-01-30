@@ -51,10 +51,13 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
+import org.netbeans.modules.cnd.modelimpl.csm.FunctionParameterListImpl.FunctionParameterListBuilder;
+import org.netbeans.modules.cnd.modelimpl.csm.core.AstRenderer;
 import org.netbeans.modules.cnd.modelimpl.csm.core.CsmIdentifiable;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
+import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
@@ -80,6 +83,13 @@ public final class FunctionInstantiationImpl extends OffsetableDeclarationBase<C
         _setScope(scope);
         name = QualifiedNameCache.getManager().getString(nameHolder.getName());        
     }
+   
+    private FunctionInstantiationImpl(CharSequence name, CsmScope scope, FunctionParameterListImpl params, CsmFile file, int startOffset, int endOffset) {
+        super(file, startOffset, endOffset);
+        this.parameterList = params;
+        _setScope(scope);
+        this.name = name;        
+    }    
 
     public static FunctionInstantiationImpl create(AST ast, CsmFile file, FileContent fileContent, boolean register) throws AstRendererException {
         NameHolder nameHolder = NameHolder.createFunctionName(ast);
@@ -190,6 +200,20 @@ public final class FunctionInstantiationImpl extends OffsetableDeclarationBase<C
             assert (this.scopeRef != null || this.scopeUID == null) : "empty scope for UID " + this.scopeUID;
         }
     }    
+    
+
+    public static class FunctionInstantiationBuilder extends SimpleDeclarationBuilder {
+    
+        @Override
+        public FunctionInstantiationImpl create() {
+            FunctionInstantiationImpl fun = new FunctionInstantiationImpl(getName(), null, ((FunctionParameterListBuilder)getParametersListBuilder()).create(), getFile(), getStartOffset(), getEndOffset());
+            
+            postObjectCreateRegistration(isGlobal(), fun);
+            getNameHolder().addReference(getFileContent(), fun);
+            
+            return fun;
+        }
+    }      
     
     ////////////////////////////////////////////////////////////////////////////
     // iml of SelfPersistent

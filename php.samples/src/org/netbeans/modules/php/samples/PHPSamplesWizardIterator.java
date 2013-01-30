@@ -133,7 +133,7 @@ public class PHPSamplesWizardIterator implements WizardDescriptor./*Progress*/In
 
             urlTempF.deleteOnExit();
             FileObject readmeURL = FileUtil.toFileObject(FileUtil.normalizeFile(urlTempF));
-            writeLines(readmeURL, dir.getFileObject("readme.html").getURL().toString()); // NOI18N
+            writeLines(readmeURL, dir.getFileObject("readme.html").toURL().toString()); // NOI18N
 
             resultSet.add(readmeURL);
         }
@@ -144,7 +144,7 @@ public class PHPSamplesWizardIterator implements WizardDescriptor./*Progress*/In
     // Workaround for opening the readme.html file
     // TODO: use FileUtils when #118087 is fixed
     private static void writeLines(final FileObject readme, final String... lines) throws FileAlreadyLockedException, IOException {
-        PrintWriter readmeW = new PrintWriter(readme.getOutputStream());
+        PrintWriter readmeW = new PrintWriter(FileUtil.toFile(readme), "UTF-8"); // NOI18N
         for (String line : lines) {
             readmeW.println(line);
         }
@@ -169,7 +169,7 @@ public class PHPSamplesWizardIterator implements WizardDescriptor./*Progress*/In
 
                 JComponent jc = (JComponent) c;
                 // Step #.
-                jc.putClientProperty(WizardProperties.SELECTED_INDEX, new Integer(i));
+                jc.putClientProperty(WizardProperties.SELECTED_INDEX, Integer.valueOf(i));
                 // Step name (actually the whole list for reference).
                 jc.putClientProperty(WizardProperties.CONTENT_DATA, steps);
             }
@@ -189,7 +189,7 @@ public class PHPSamplesWizardIterator implements WizardDescriptor./*Progress*/In
 
     public String name() {
         return MessageFormat.format("{0} of {1}",
-                new Object[]{new Integer(index + 1), new Integer(panels.length)});
+                new Object[]{Integer.valueOf(index + 1), Integer.valueOf(panels.length)});
     }
 
     public boolean hasNext() {

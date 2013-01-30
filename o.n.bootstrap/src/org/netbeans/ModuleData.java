@@ -173,7 +173,11 @@ class ModuleData {
                 }
             } else {
                 // XXX new link?
-                Util.err.log(Level.WARNING, "module {0} does not declare OpenIDE-Module-Public-Packages in its manifest, so all packages are considered public by default: http://www.netbeans.org/download/dev/javadoc/OpenAPIs/org/openide/doc-files/upgrade.html#3.4-public-packages", codeNameBase);
+                Util.err.log(Level.WARNING, "module {0} does not declare OpenIDE-Module-Public-Packages "
+                    + "in its manifest, so all packages are considered public by default: "
+                    + "http://bits.netbeans.org/dev/javadoc/org-openide-modules/org/openide/modules/doc-files/api.html#how-vers", 
+                    codeNameBase
+                );
                 publicPackages = null;
             }
 

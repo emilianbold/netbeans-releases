@@ -47,6 +47,7 @@ import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.type.TypeMirror;
 import javax.swing.ImageIcon;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
@@ -83,6 +84,7 @@ final class ELJavaCompletionItem extends DefaultCompletionProposal {
     private final String javaElementSimpleName;
     private final String javaElementTypeName;
     private final String javaElementParametersAsString;
+    private final TypeMirror javaElementReturnType;
     private final List<String> javaElementParametersList;
     private final boolean isMethod;
     private final boolean isMethodWithParams;
@@ -108,8 +110,12 @@ final class ELJavaCompletionItem extends DefaultCompletionProposal {
         javaElementParametersList = isMethod
                 ? ELTypeUtilities.getParameterNames(info, (ExecutableElement) javaElement)
                 : Collections.<String>emptyList();
+        javaElementReturnType = isMethod
+                ? ((ExecutableElement) javaElement).getReturnType()
+                : null;
         
         isMethodWithParams = isMethod && !javaElementParametersList.isEmpty();
+
         
         adapter = new ElementHandleAdapter(info, javaElement);
         
@@ -123,7 +129,7 @@ final class ELJavaCompletionItem extends DefaultCompletionProposal {
 
     @Override
     public String getName() {
-        return elementName != null ? elementName : RefactoringUtil.getPropertyName(javaElementSimpleName, false);
+        return elementName != null ? elementName : RefactoringUtil.getPropertyName(javaElementSimpleName, javaElementReturnType, false);
     }
         
     @Override
@@ -205,7 +211,7 @@ final class ELJavaCompletionItem extends DefaultCompletionProposal {
 
     private boolean isPropertyMethod() {
         return isMethod() && !isMethodWithParamaters() && 
-                RefactoringUtil.isPropertyAccessor(javaElementSimpleName);
+                RefactoringUtil.isPropertyAccessor(javaElementSimpleName, javaElementReturnType);
     }
 
     

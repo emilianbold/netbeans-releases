@@ -94,6 +94,14 @@ public abstract class Table implements Comparable<Table> {
         }
     }
 
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 89 * hash + (this.name != null ? this.name.hashCode() : 0);
+        return hash;
+    }
+
+    @Override
     public int compareTo(Table that) {
         if (that == null) {
             return 1;
@@ -139,6 +147,7 @@ public abstract class Table implements Comparable<Table> {
         return disabledReason != null;
     }
 
+    @Override
     public String toString() {
         return "TableItem[name='" + name + "']"; // NOI18N
     }

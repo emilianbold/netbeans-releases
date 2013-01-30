@@ -1543,6 +1543,58 @@ public class EnumTest extends GeneratorTestBase {
         System.err.println(res);
         assertEquals(golden, res);
     }
+    
+    public void test218318() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package hierbas.del.litoral;\n" +
+            "public enum Test {\n"+
+            "    A {\n" +
+            "    };\n"+
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "public enum Test {\n"+
+            "    A {\n" +
+            "\n"+
+            "        public void run() {\n"+
+            "        }\n"+
+            "    };\n"+
+            "}\n";
+        JavaSource src = getJavaSource(testFile);
+
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(final WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                final TreeMaker make = workingCopy.getTreeMaker();
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                new TreePathScanner<Void, Void>() {
+                    @Override public Void visitClass(ClassTree node, Void p) {
+                        if (node.getSimpleName().length() == 0) {
+                            MethodTree method = make.Method(make.Modifiers(EnumSet.of(Modifier.PUBLIC)),
+                                                            "run",
+                                                            make.PrimitiveType(TypeKind.VOID),
+                                                            Collections.<TypeParameterTree>emptyList(),
+                                                            Collections.<VariableTree>emptyList(),
+                                                            Collections.<ExpressionTree>emptyList(),
+                                                            "{}",
+                                                            null);
+                            
+                            workingCopy.rewrite(node, make.addClassMember(node, method));
+                        }
+                        return super.visitClass(node, p);
+                    }
+                }.scan(cut, null);
+            }
+
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
 
     String getGoldenPckg() {
         return "";

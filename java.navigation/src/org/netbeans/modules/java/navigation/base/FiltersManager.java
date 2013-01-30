@@ -53,6 +53,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.prefs.Preferences;
+import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -63,6 +64,7 @@ import javax.swing.JToolBar;
 import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.java.navigation.NoBorderToolBar;
 import org.openide.util.Mutex;
 import org.openide.util.NbPreferences;
@@ -95,7 +97,7 @@ public final class FiltersManager {
     }
 
     /** @return component instance visually representing filters */ 
-    public JComponent getComponent ( JToggleButton[] sortButtons ) {
+    public JComponent getComponent (@NonNull final Iterable<? extends AbstractButton> sortButtons ) {
         comp.addSortButtons( sortButtons );
         return comp;
     }
@@ -218,7 +220,7 @@ public final class FiltersManager {
             // configure toolbar
             toolbar = new NoBorderToolBar(JToolBar.HORIZONTAL);
             toolbar.setFloatable(false);
-            toolbar.setRollover(true);
+            toolbar.setRollover(true);            
             toolbar.setBorderPainted(false);
             toolbar.setBorder(BorderFactory.createEmptyBorder());
             toolbar.setOpaque(false);
@@ -254,15 +256,32 @@ public final class FiltersManager {
             }
         }
         
-        private void addSortButtons( JToggleButton[] sortButtons ) {
-            Dimension space = new Dimension(3, 0);
-            for( JToggleButton button : sortButtons ) {
-                Icon icon = button.getIcon();
-                Dimension size = new Dimension(icon.getIconWidth() + 6, icon.getIconHeight() + 4);
-                button.setPreferredSize(size);
-                button.setMargin(new Insets(2,3,2,3));
-                toolbar.addSeparator(space);
-                toolbar.add( button );
+        private void addSortButtons(@NonNull final Iterable<? extends AbstractButton> buttons ) {
+            if (!toggles.isEmpty()) {
+                toolbar.addSeparator();
+            }
+            final Dimension space = new Dimension(3, 0);
+            boolean addSeparator = false;
+            for(AbstractButton button : buttons) {
+                if (button == null) {
+                    if (addSeparator) {
+                        toolbar.addSeparator();
+                        addSeparator = false;
+                    } else {
+                        addSeparator = true;
+                    }
+                } else {
+                    if (addSeparator) {
+                        toolbar.addSeparator(space);
+                    } else {
+                        addSeparator = true;
+                    }
+                    Icon icon = button.getIcon();
+                    Dimension size = new Dimension(icon.getIconWidth() + 6, icon.getIconHeight() + 4);
+                    button.setPreferredSize(size);
+                    button.setMargin(new Insets(2,3,2,3));
+                    toolbar.add( button );
+                }
             }
         }
         

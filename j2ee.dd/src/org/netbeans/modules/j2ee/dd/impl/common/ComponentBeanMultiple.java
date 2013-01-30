@@ -113,11 +113,12 @@ public abstract class ComponentBeanMultiple extends DescriptionBeanMultiple impl
     public void setAllDisplayNames(java.util.Map displayNames) throws VersionNotSupportedException {
         removeAllDisplayNames();
         if (displayNames!=null) {
-            java.util.Iterator keys = displayNames.keySet().iterator();
+            java.util.Iterator entries = displayNames.entrySet().iterator();
             int i=0;
-            while (keys.hasNext()) {
-                String key = (String) keys.next();
-                addDisplayName((String)displayNames.get(key));
+            while (entries.hasNext()) {
+                java.util.Map.Entry entry = (java.util.Map.Entry) entries.next();
+                String key = (String) entry.getKey();
+                addDisplayName((String) entry.getValue());
                 setDisplayNameXmlLang(i++, key);
             }
         }

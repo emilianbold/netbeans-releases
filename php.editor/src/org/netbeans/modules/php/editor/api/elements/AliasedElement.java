@@ -61,7 +61,12 @@ import org.openide.filesystems.FileObject;
  * @author Radek Matous
  */
 public class AliasedElement implements FullyQualifiedElement {
-    public enum Trait {ALIAS, ELEMENT};
+
+    public enum Trait {
+        ALIAS,
+        ELEMENT
+    };
+
     protected final FullyQualifiedElement element;
     private final AliasedName aliasedName;
     private QualifiedName aliasFqn;

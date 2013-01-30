@@ -124,6 +124,20 @@ public class ElementOverlay {
 
     public List<Element> getEnclosedElements(ASTService ast, Elements elements, String parent) {
         List<Element> result = new LinkedList<Element>();
+        List<String> enclosed = class2Enclosed.get(parent);
+
+        if (enclosed != null) {
+            for (String enc : enclosed) {
+                Element el = resolve(ast, elements, enc);
+
+                if (el != null) {
+                    result.add(el);
+                }
+            }
+            
+            return result;
+        }
+        
         Element parentEl = resolve(ast, elements, parent);
 
         if (parentEl == null) throw new IllegalStateException(parent);
@@ -139,17 +153,6 @@ public class ElementOverlay {
             result.addAll(parentEl.getEnclosedElements());
         }
 
-        List<String> enclosed = class2Enclosed.get(parent);
-
-        if (enclosed != null) {
-            for (String enc : enclosed) {
-                Element el = resolve(ast, elements, enc);
-
-                if (el != null) {
-                    result.add(el);
-                }
-            }
-        }
 
         return result;
     }
@@ -217,7 +220,7 @@ public class ElementOverlay {
         return result;
     }
 
-    public void registerClass(String parent, String clazz, ClassTree tree) {
+    public void registerClass(String parent, String clazz, ClassTree tree, boolean modified) {
         if (clazz == null) return;
         
         Element myself = ASTService.getElementImpl(tree);
@@ -226,7 +229,7 @@ public class ElementOverlay {
                                 || (!myself.getKind().isClass() && !myself.getKind().isInterface())
                                 || !((QualifiedNameable) myself).getQualifiedName().contentEquals(clazz);
 
-        if (newOrModified) {
+        if (newOrModified || class2Enclosed.containsKey(parent)) {
             List<String> c = class2Enclosed.get(parent);
 
             if (c == null) {
@@ -235,7 +238,11 @@ public class ElementOverlay {
 
             c.add(clazz);
         }
-        
+
+        if (modified) {
+            class2Enclosed.put(clazz, new ArrayList<String>());
+        }
+
         Set<String> superFQNs = superFQNs(tree);
 
         boolean hadObject = superFQNs.remove("java.lang.Object");

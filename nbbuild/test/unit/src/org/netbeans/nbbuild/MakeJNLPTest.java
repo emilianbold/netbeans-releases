@@ -243,12 +243,27 @@ public class MakeJNLPTest extends TestBase {
         
     }
 
-    public void testGenerateOSOnlySimpleModule() throws Exception {
+    public void testGenerateMacOSOnlySimpleModule() throws Exception {
+        doGenerateOSOnlySimpleModule("org.openide.modules.os.MacOSX", "<resources os='Mac OS X'>");
+    }
+
+    public void testGenerateLinuxOSOnlySimpleModule() throws Exception {
+        doGenerateOSOnlySimpleModule("org.openide.modules.os.Linux", "<resources os='Linux'>");
+    }
+
+    public void testGenerateWindowsOSOnlySimpleModule() throws Exception {
+        doGenerateOSOnlySimpleModule("org.openide.modules.os.Windows", "<resources os='Windows'>");
+    }
+    public void testGenerateSolarisOSOnlySimpleModule() throws Exception {
+        doGenerateOSOnlySimpleModule("org.openide.modules.os.Solaris", "<resources os='Solaris'>");
+    }
+    
+    private void doGenerateOSOnlySimpleModule(String tok, String find) throws Exception {
         Manifest m;
         
         m = createManifest ();
         m.getMainAttributes ().putValue ("OpenIDE-Module", "org.my.module/3");
-        m.getMainAttributes ().putValue ("OpenIDE-Module-Requires", "org.openide.modules.os.MacOSX, pepa.z.bota");
+        m.getMainAttributes ().putValue ("OpenIDE-Module-Requires", tok + ", pepa.z.bota");
         File simpleJar = generateJar (new String[0], m);
 
         File parent = simpleJar.getParentFile ();
@@ -277,7 +292,7 @@ public class MakeJNLPTest extends TestBase {
         String res = readFile (jnlp);
         
         assertTrue ("Component JNLP type: " + res, res.indexOf ("<component-desc/>") >= 0);
-        assertTrue ("Resource is os dependant: " + res, res.indexOf ("<resources os='Mac OS X'>") >= 0);
+        assertTrue ("Resource is os dependant: " + res, res.indexOf (find) >= 0);
         assertTrue ("We support all permissions by default: " + res, res.indexOf ("<all-permissions/>") >= 0);
         
         Matcher match = Pattern.compile(".*codebase=['\\\"]([^'\\\"]*)['\\\"]").matcher(res);

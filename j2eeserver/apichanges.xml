@@ -116,6 +116,26 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+    
+        <!-- not used for 7.3
+        <change id="deployOnSaveListeners">
+    	    <api name="devmodules"/>
+            <summary>
+                Allows listening for deploy on save operations.
+            </summary>
+            <version major="1" minor="91"/>
+            <date day="1" month="2" year="2012"/>
+            <author login="phejl"/>
+            <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes"/>
+            <description>
+               <p>
+                    Client can add/remove listeners which will be notified on
+                    deploy on save event.
+                </p>
+            </description>
+            <class package="org.netbeans.modules.j2ee.deployment.devmodules.spi" name="J2eeModuleProvider"/>
+            <issue number="207724"/>
+       </change> -->
        <change id="commonServerBridge">
     	    <api name="j2eeserver"/>
             <summary>

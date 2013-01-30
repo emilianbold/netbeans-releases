@@ -1560,7 +1560,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
                     JPDAThread t = allThreads.get(i);
                     int status = t.getState();
                     if (status == JPDAThread.STATE_ZOMBIE || status == JPDAThread.STATE_UNKNOWN ||
-                        t.getName().contains(ThreadsCache.THREAD_NAME_FILTER_PATTERN)) {
+                        t.getName().contains(ThreadsCache.THREAD_NAME_FILTER_PATTERN) && !t.isSuspended()) {
                         if (!modifiableAllThreads) {
                             allThreads = new ArrayList<JPDAThread>(allThreads);
                             modifiableAllThreads = true;
@@ -2272,6 +2272,8 @@ public class JPDADebuggerImpl extends JPDADebugger {
             return deadlockDetector;
         }
     }
+    
+    private static final String COMPUTING_INTERFACES = "computing"; // NOI18N
 
     public List<JPDAClassType> getAllInterfaces(ClassType ct) {
         try {
@@ -2281,7 +2283,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
                 allInterfaces = allInterfacesMap.get(ct);
                 if (allInterfaces == null) {
                     allInterfaces = new ArrayList();
-                    allInterfaces.add("computing");             // NOI18N
+                    allInterfaces.add(COMPUTING_INTERFACES);
                     allInterfacesMap.put(ct, allInterfaces);
                     toCompute = true;
                 }
@@ -2309,13 +2311,18 @@ public class JPDADebuggerImpl extends JPDADebugger {
                 }
             } else {
                 synchronized (allInterfaces) {
-                    if (allInterfaces.contains("computing")) {  // NOI18N
+                    if (allInterfaces.contains(COMPUTING_INTERFACES)) {
                         try {
                             allInterfaces.wait();
                         } catch (InterruptedException ex) {
                             return null;
                         }
                     }
+                }
+                if (allInterfaces.contains(COMPUTING_INTERFACES)) {
+                    // some race-condition? (http://netbeans.org/bugzilla/show_bug.cgi?id=219823)
+                    assert !allInterfaces.contains(COMPUTING_INTERFACES);
+                    return null;
                 }
             }
             return Collections.unmodifiableList(allInterfaces);

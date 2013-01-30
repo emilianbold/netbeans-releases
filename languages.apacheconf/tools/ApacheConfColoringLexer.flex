@@ -44,6 +44,8 @@ package org.netbeans.modules.languages.apacheconf;
 
 import org.netbeans.spi.lexer.LexerInput;
 import org.netbeans.spi.lexer.LexerRestartInfo;
+
+@org.netbeans.api.annotations.common.SuppressWarnings({"SF_SWITCH_FALLTHROUGH", "URF_UNREAD_FIELD", "DLS_DEAD_LOCAL_STORE", "DM_DEFAULT_ENCODING"})
 %%
 
 %public
@@ -184,7 +186,7 @@ CLOSE_TAG="</"{IDENTIFIER}">"
 
 TAG_PARAM=[^"\r""\n""\r\n""\t"" ""<"">"]*
 
-DIRECTIVE_PARAM=[^"\r""\n""\r\n""\t"" "]*
+DIRECTIVE_PARAM_TOKEN=[^"\r""\n""\r\n""\t"" "]
 
 %state ST_HIGHLIGHTING_ERROR
 %state ST_IN_OPEN_TAG
@@ -240,8 +242,8 @@ DIRECTIVE_PARAM=[^"\r""\n""\r\n""\t"" "]*
     {STRING} {
         return ApacheConfTokenId.AC_STRING;
     }
-    {DIRECTIVE_PARAM} {
-        return ApacheConfTokenId.AC_DIRECTIVE_PARAM;
+    {DIRECTIVE_PARAM_TOKEN} {
+        return ApacheConfTokenId.AC_DIRECTIVE_PARAM_TOKEN;
     }
     {NEWLINE} {
         popState();

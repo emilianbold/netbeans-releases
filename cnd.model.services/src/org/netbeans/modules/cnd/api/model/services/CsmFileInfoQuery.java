@@ -156,6 +156,13 @@ public abstract class CsmFileInfoQuery {
     public abstract long getFileVersion(CsmFile file);
 
     /**
+     * Attempts to get origin of file.
+     * @param file - the file to get a buffer origin.
+     * @return true if file buffer is document based
+     */
+    public abstract boolean isDocumentBasedFile(CsmFile file);
+
+    /**
      * Calculates offset by line and column
      * @param file - file.
      * @param line - line in file.
@@ -250,6 +257,11 @@ public abstract class CsmFileInfoQuery {
                 return file.getAbsolutePath();
             }
             return CharSequences.empty();
+        }
+
+        @Override
+        public boolean isDocumentBasedFile(CsmFile file) {
+            return false;
         }
     }
 }

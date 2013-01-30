@@ -62,6 +62,7 @@ import java.util.Collections;
 import javax.swing.*;
 import javax.swing.JComponent.AccessibleJComponent;
 import javax.swing.text.*;
+import org.netbeans.modules.cnd.api.project.NativeProjectRegistry;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerUtils;
 import org.openide.explorer.view.BeanTreeView;
@@ -263,7 +264,7 @@ public class ClassView extends JComponent implements ExplorerManager.Provider, A
         }
         init();
         addRemoveViewListeners(true);
-        if( CsmModelAccessor.getModel().projects().isEmpty() ) {
+        if( NativeProjectRegistry.getDefault().getOpenProjects().isEmpty() ) {
             setupRootContext(createEmptyRoot());
         } else {
             setupRootContext(getModel().getRoot());

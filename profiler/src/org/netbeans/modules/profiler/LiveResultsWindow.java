@@ -72,6 +72,8 @@ import org.netbeans.modules.profiler.utils.IDEUtils;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.ServiceProvider;
+import org.openide.util.lookup.ServiceProviders;
 import org.openide.windows.TopComponent;
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -105,6 +107,7 @@ import org.netbeans.lib.profiler.ui.graphs.AllocationsHistoryGraphPanel;
 import org.netbeans.lib.profiler.ui.graphs.LivenessHistoryGraphPanel;
 import org.netbeans.lib.profiler.ui.memory.ClassHistoryActionsHandler;
 import org.netbeans.lib.profiler.ui.memory.ClassHistoryModels;
+import org.netbeans.lib.profiler.ui.memory.LiveSampledResultsPanel;
 import org.netbeans.lib.profiler.utils.VMUtils;
 import org.netbeans.modules.profiler.api.GoToSource;
 import org.netbeans.modules.profiler.api.ProfilerDialogs;
@@ -116,7 +119,6 @@ import org.netbeans.modules.profiler.api.icons.Icons;
 import org.netbeans.modules.profiler.api.icons.ProfilerIcons;
 import org.netbeans.modules.profiler.utilities.Delegate;
 import org.netbeans.modules.profiler.utilities.ProfilerUtils;
-import org.openide.util.lookup.ServiceProvider;
 
 
 /**
@@ -163,12 +165,18 @@ public final class LiveResultsWindow extends ProfilerTopComponent
 
         @Override
         public void resultsAvailable() {
-            getDefault().resultsAvailableinTA = true;
+            LiveResultsWindow win = getDelegate();
+            win.resultsAvailableinTA = true;
+            TargetAppRunner runner = Profiler.getDefault().getTargetAppRunner();
+            int instrType = runner.getProfilerClient().getCurrentInstrType();
+            if (instrType == ProfilerEngineSettings.INSTR_NONE_MEMORY_SAMPLING) {
+                win.resultsAvailable();
+            }
         }
 
         @Override
         public void resultsReset() {
-            getDefault().resultsAvailableinTA = false;
+            getDefault().resultsAvailableinTA = false; // getDefault() causes #223672, fix it!
             if (getDelegate() != null) getDelegate().reset();
         }
         
@@ -176,6 +184,10 @@ public final class LiveResultsWindow extends ProfilerTopComponent
     
     public static final class EmptyLiveResultsPanel extends JPanel implements LiveResultsPanel {
         //~ Methods --------------------------------------------------------------------------------------------------------------
+        
+        public EmptyLiveResultsPanel() {
+            setOpaque(false);
+        }
 
         public int getSortingColumn() {
             return -1;
@@ -218,7 +230,7 @@ public final class LiveResultsWindow extends ProfilerTopComponent
         }
     }
     
-    @org.openide.util.lookup.ServiceProviders({@org.openide.util.lookup.ServiceProvider(service=org.netbeans.lib.profiler.results.cpu.CPUCCTProvider.Listener.class), @org.openide.util.lookup.ServiceProvider(service=org.netbeans.lib.profiler.results.memory.MemoryCCTProvider.Listener.class)})
+    @ServiceProviders({@ServiceProvider(service=CPUCCTProvider.Listener.class), @ServiceProvider(service=MemoryCCTProvider.Listener.class)})
     public static final class ResultsMonitor implements CPUCCTProvider.Listener, MemoryCCTProvider.Listener {
         //~ Methods --------------------------------------------------------------------------------------------------------------
 
@@ -226,13 +238,7 @@ public final class LiveResultsWindow extends ProfilerTopComponent
             CommonUtils.runInEventDispatchThread(new Runnable() {
                 public void run() {
                     if (!empty) {
-                        getDefault().resultsAvailable = true;
-                        if (resultsDumpForced.getAndSet(false) && 
-                            getDefault().autoRefreshRequested.getAndDecrement() > 0) {
-                            getDefault().updateResultsDisplay();
-                        } else {
-                            getDefault().autoRefreshRequested.compareAndSet(-1, 0);
-                        }
+                        getDefault().resultsAvailable();
                     } else {
                         resultsDumpForced.set(false); // fix for issue #114638
                     }
@@ -411,6 +417,7 @@ public final class LiveResultsWindow extends ProfilerTopComponent
                     chartActions.clear();
                     Action[] actions = null;
 
+                    TargetAppRunner runner = Profiler.getDefault().getTargetAppRunner();
                     if (runner.getProfilerClient().getCurrentInstrType() ==
                         ProfilerEngineSettings.INSTR_OBJECT_ALLOCATIONS) {
                         if (allocationsHistoryPanel == null)
@@ -453,8 +460,6 @@ public final class LiveResultsWindow extends ProfilerTopComponent
     private static final HelpCtx HELP_CTX_DEFAULT = new HelpCtx(HELP_CTX_KEY);
     private static HelpCtx HELP_CTX = HELP_CTX_DEFAULT;
     private static LiveResultsWindow defaultLiveInstance;
-    private static final TargetAppRunner runner = Profiler.getDefault().getTargetAppRunner();
-    private static final Image liveWindowIcon = Icons.getImage(ProfilerIcons.WINDOW_LIVE_RESULTS);
     private static final AtomicBoolean resultsDumpForced = new AtomicBoolean(false);
 
     //~ Instance fields ----------------------------------------------------------------------------------------------------------
@@ -508,7 +513,7 @@ public final class LiveResultsWindow extends ProfilerTopComponent
     
     private void initUI() {
         setName(Bundle.LAB_ResultsWindowName());
-        setIcon(liveWindowIcon);
+        setIcon(Icons.getImage(ProfilerIcons.WINDOW_LIVE_RESULTS));
         getAccessibleContext().setAccessibleDescription(Bundle.LiveResultsWindow_LiveResultsAccessDescr());
         //        setBorder(new EmptyBorder(5, 5, 5, 5));
         setLayout(new BorderLayout());
@@ -542,10 +547,12 @@ public final class LiveResultsWindow extends ProfilerTopComponent
 
         //*************
         memoryTabPanel = new JPanel(new BorderLayout());
+        memoryTabPanel.setOpaque(false);
 
         graphButtonsSeparator = new JToolBar.Separator();
         toolBar.add(graphButtonsSeparator);
         final int chartButtonsOffset = toolBar.getComponentCount();
+        graphButtonsSeparator.setVisible(false);
 
         resultsView = new ResultsView();
         memoryTabPanel.add(resultsView, BorderLayout.CENTER);
@@ -616,7 +623,7 @@ public final class LiveResultsWindow extends ProfilerTopComponent
         if (hasDefault()) {
             CommonUtils.runInEventDispatchThread(new Runnable() {
                     public void run() {
-                        if (defaultLiveInstance.isOpened()) {
+                        if (defaultLiveInstance.isShowing()) {
                             defaultLiveInstance.close();
                         }
                     }
@@ -758,7 +765,7 @@ public final class LiveResultsWindow extends ProfilerTopComponent
             // Temporary workaround to refresh profiling points when LiveResultsWindow is not refreshing
             // Temporary workaround to refresh sampling data when LiveResultsWindow is not refreshing
             // TODO: move this code to a separate class performing the update if necessary
-            ProfilerClient client = runner.getProfilerClient();
+            ProfilerClient client = Profiler.getDefault().getTargetAppRunner().getProfilerClient();
             if (NetBeansProfiler.getDefaultNB().processesProfilingPoints() 
                 || client.getCurrentInstrType() == ProfilerEngineSettings.INSTR_NONE_SAMPLING) {
                 callForceObtainedResultsDump(client, false);
@@ -772,7 +779,9 @@ public final class LiveResultsWindow extends ProfilerTopComponent
     public void exportData(int exportedFileType, ExportDataDumper eDD) {
         Component selectedView = resultsView.getSelectedView();
         if (currentDisplayComponent == memoryTabPanel) {
-            if (selectedView instanceof LiveAllocResultsPanel) {
+            if (selectedView instanceof LiveSampledResultsPanel) {
+                ((LiveSampledResultsPanel) currentDisplay).exportData(exportedFileType, eDD, Bundle.LAB_ResultsWindowName());
+            } else if (selectedView instanceof LiveAllocResultsPanel) {
                 ((LiveAllocResultsPanel) currentDisplay).exportData(exportedFileType, eDD, Bundle.LAB_ResultsWindowName());
             } else if (selectedView instanceof LiveLivenessResultsPanel) {
                 ((LiveLivenessResultsPanel) currentDisplay).exportData(exportedFileType, eDD, Bundle.LAB_ResultsWindowName());
@@ -825,7 +834,13 @@ public final class LiveResultsWindow extends ProfilerTopComponent
 
     protected void componentShowing() {
         super.componentShowing();
-        updateResultsDisplay();
+        SwingUtilities.invokeLater(new Runnable() {
+
+            @Override
+            public void run() {
+                updateResultsDisplay();
+            }
+        });
     }
 
     /**
@@ -869,7 +884,9 @@ public final class LiveResultsWindow extends ProfilerTopComponent
         }
 
         try {
-            if (instrType != ProfilerEngineSettings.INSTR_CODE_REGION) {
+            if (instrType == ProfilerEngineSettings.INSTR_NONE_MEMORY_SAMPLING) {
+                resultsAvailable();
+            } else if (instrType != ProfilerEngineSettings.INSTR_CODE_REGION) {
                 client.forceObtainedResultsDump(true);
             }
 
@@ -880,6 +897,7 @@ public final class LiveResultsWindow extends ProfilerTopComponent
     }
 
     private boolean isProfiling() {
+        TargetAppRunner runner = Profiler.getDefault().getTargetAppRunner();
         return runner.getProfilerClient().getCurrentInstrType() != ProfilerEngineSettings.INSTR_NONE;
     }
 
@@ -909,7 +927,7 @@ public final class LiveResultsWindow extends ProfilerTopComponent
         runGCButton.addActionListener(new ActionListener() {
                 public void actionPerformed(final ActionEvent e) {
                     try {
-                        runner.runGC();
+                        Profiler.getDefault().getTargetAppRunner().runGC();
                     } catch (ClientUtils.TargetAppOrVMTerminated ex) {
                         ProfilerDialogs.displayError(ex.getMessage());
                         ProfilerLogger.log(ex);
@@ -939,7 +957,23 @@ public final class LiveResultsWindow extends ProfilerTopComponent
         HELP_CTX = HELP_CTX_DEFAULT;
         LiveResultsPanel aPanel = null;
         
+        TargetAppRunner runner = Profiler.getDefault().getTargetAppRunner();
         switch (instrumentationType) {
+            case ProfilerEngineSettings.INSTR_NONE_MEMORY_SAMPLING: {
+                LiveSampledResultsPanel samplingPanel = new LiveSampledResultsPanel(runner,
+                                                    memoryActionsHandler);
+                currentDisplayComponent = memoryTabPanel;
+
+                if (resultsView.getViewsCount() > 0) {
+                    resultsView.removeViews();
+                }
+
+                resultsView.addView(Bundle.LiveResultsWindow_LiveResultsTabName(), null, null, samplingPanel, null);
+                aPanel = samplingPanel;
+                HELP_CTX = new HelpCtx(HELP_CTX_KEY_MEM);
+
+                break;
+            }
             case ProfilerEngineSettings.INSTR_OBJECT_ALLOCATIONS: {
                 LiveAllocResultsPanel allocPanel = new LiveAllocResultsPanel(runner,
                                                     memoryActionsHandler,
@@ -1026,13 +1060,30 @@ public final class LiveResultsWindow extends ProfilerTopComponent
                             public void run() {
                                 // send a command to server to generate the newest live data
                                 autoRefreshRequested.incrementAndGet();
-                                callForceObtainedResultsDump(runner.getProfilerClient());
+                                callForceObtainedResultsDump(Profiler.getDefault().
+                                        getTargetAppRunner().getProfilerClient());
                             }
                         });
                 }
             });
     }
+    
+    private void resultsAvailable() {
+        CommonUtils.runInEventDispatchThread(new Runnable() {
 
+            @Override
+            public void run() {
+                resultsAvailable = true;
+                if (resultsDumpForced.getAndSet(false) && 
+                    autoRefreshRequested.getAndDecrement() > 0) {
+                    updateResultsDisplay();
+                } else {
+                    autoRefreshRequested.compareAndSet(-1, 0);
+                }
+            }
+        });
+    }
+        
     private void resetResultsDisplay() {
         if ((currentDisplayComponent != null) && (currentDisplayComponent != noResultsPanel)) {
             remove(currentDisplayComponent);
@@ -1085,6 +1136,7 @@ public final class LiveResultsWindow extends ProfilerTopComponent
             return;
         }
 
+        TargetAppRunner runner = Profiler.getDefault().getTargetAppRunner();
         int instrType = runner.getProfilerClient().getCurrentInstrType();
 
         if (instrType != CommonConstants.INSTR_NONE) {

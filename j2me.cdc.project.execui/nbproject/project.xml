@@ -10,10 +10,10 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>7.9</specification-version>
+                        <specification-version>8.0</specification-version>
                     </run-dependency>
                 </dependency>
-            </module-dependencies>
+                </module-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.j2me.cdc.project</friend>
                 <friend>org.netbeans.modules.j2me.cdc.project.execuiimpl</friend>

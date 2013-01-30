@@ -71,7 +71,8 @@ final class NimbusEditorTabCellRenderer extends AbstractTabCellRenderer {
     
     static final Color ATTENTION_COLOR = new Color(255, 238, 120);
 
-    static final boolean IS_JDK_17 = System.getProperty("java.version").startsWith("1.7"); //NOI18N
+    static final boolean IS_JDK_17_OR_18 = System.getProperty("java.version").startsWith("1.7")
+            || System.getProperty("java.version").startsWith("1.8"); //NOI18N
     
     /**
      * Creates a new instance of GtkEditorTabCellRenderer
@@ -142,7 +143,7 @@ final class NimbusEditorTabCellRenderer extends AbstractTabCellRenderer {
         } else {
             o = UIManager.get("TabbedPane:TabbedPaneTab[Enabled].backgroundPainter");
         }
-        if( IS_JDK_17 ) {
+        if( IS_JDK_17_OR_18 ) {
             if ((o != null) && (o instanceof javax.swing.Painter)) {
                 javax.swing.Painter painter = (javax.swing.Painter) o;
                 BufferedImage bufIm = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);

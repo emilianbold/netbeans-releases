@@ -56,7 +56,7 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.groovy.editor.api.AstPath;
-import org.netbeans.modules.groovy.editor.api.AstUtilities;
+import org.netbeans.modules.groovy.editor.api.ASTUtils;
 import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
 
 /**
@@ -190,7 +190,7 @@ public final class ContextHelper {
         return false;
     }
 
-    private static boolean isEqualsNew(Token<? extends GroovyTokenId> token) {
+    private static boolean isEqualsNew(Token<GroovyTokenId> token) {
         if (token != null && token.text().toString().equals("new")) {
             return true;
         }
@@ -321,16 +321,16 @@ public final class ContextHelper {
         return false;
     }
 
-    private static ASTNode getASTNodeForToken(Token<? extends GroovyTokenId> tid, CompletionRequest request) {
+    private static ASTNode getASTNodeForToken(Token<GroovyTokenId> tokenId, CompletionRequest request) {
         LOG.log(Level.FINEST, "getASTNodeForToken()"); //NOI18N
         TokenHierarchy<Document> th = TokenHierarchy.get((Document) request.doc);
-        int position = tid.offset(th);
+        int position = tokenId.offset(th);
 
-        ModuleNode rootNode = AstUtilities.getRoot(request.info);
+        ModuleNode rootNode = ASTUtils.getRoot(request.info);
         if (rootNode == null) {
             return null;
         }
-        int astOffset = AstUtilities.getAstOffset(request.info, position);
+        int astOffset = ASTUtils.getAstOffset(request.info, position);
         if (astOffset == -1) {
             return null;
         }

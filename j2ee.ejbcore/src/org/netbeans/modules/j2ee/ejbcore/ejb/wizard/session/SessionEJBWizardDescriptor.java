@@ -225,6 +225,7 @@ public class SessionEJBWizardDescriptor implements WizardDescriptor.FinishablePa
         if (projectToCheck == null) {
             return false;
         }
+        //mkleint: see subprojectprovider for official contract, maybe classpath should be checked instead? see #210465
         SubprojectProvider subprojectProvider = projectToCheck.getLookup().lookup(SubprojectProvider.class);
         if (subprojectProvider != null) {
             Set<? extends Project> subprojects = subprojectProvider.getSubprojects();

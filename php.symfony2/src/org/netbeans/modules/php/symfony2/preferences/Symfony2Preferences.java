@@ -61,6 +61,7 @@ public final class Symfony2Preferences {
     private Symfony2Preferences() {
     }
 
+    @org.netbeans.api.annotations.common.SuppressWarnings("NP_BOOLEAN_RETURN_NULL")
     public static Boolean isEnabled(PhpModule module) {
         String enabled = getPreferences(module).get(ENABLED, null);
         if (enabled == null) {

@@ -78,6 +78,7 @@ import org.openide.modules.Dependency;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /** Object representing one module, possibly installed.
  * Responsible for opening of module JAR file; reading
@@ -663,6 +664,28 @@ class StandardModule extends Module {
             if (lib != null) {
                 CL_LOG.log(Level.FINE, "found {0}", lib);
                 return lib.getAbsolutePath();
+            }
+            
+            if( Utilities.isMac() ) {
+                String jniMapped = mapped.replaceFirst("\\.dylib$",".jnilib");
+                lib = ifl.locate("modules/lib/" + jniMapped, getCodeNameBase(), false); // NOI18N
+                if (lib != null) {
+                    CL_LOG.log(Level.FINE, "found {0}", lib);
+                    return lib.getAbsolutePath();
+                }
+
+                lib = ifl.locate("modules/lib/" + arch + "/" + jniMapped, getCodeNameBase(), false); // NOI18N
+                if (lib != null) {
+                    CL_LOG.log(Level.FINE, "found {0}", lib);
+                    return lib.getAbsolutePath();
+                }
+
+                lib = ifl.locate("modules/lib/" + arch + "/" + system + "/" + jniMapped, getCodeNameBase(), false); // NOI18N
+                if (lib != null) {
+                    CL_LOG.log(Level.FINE, "found {0}", lib);
+                    return lib.getAbsolutePath();
+                }
+                CL_LOG.log(Level.FINE, "found nothing like modules/lib/{0}/{1}/{2}", new Object[] {arch, system, jniMapped});
             }
 
             CL_LOG.log(Level.FINE, "found nothing like modules/lib/{0}/{1}/{2}", new Object[] {arch, system, mapped});

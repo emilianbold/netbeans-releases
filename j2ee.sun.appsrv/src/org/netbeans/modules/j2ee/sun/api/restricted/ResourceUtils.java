@@ -913,12 +913,16 @@ public class ResourceUtils implements WizardConstants{
         try{
             if(! primaryFile.isDirectory()){
                 FileInputStream in = new FileInputStream(primaryFile);
-                Resources resources = DDProvider.getDefault().getResourcesGraph(in);
+                try {
+                    Resources resources = DDProvider.getDefault().getResourcesGraph(in);
 
-                // identify JDBC Connection Pool xml
-                JdbcConnectionPool[] pools = resources.getJdbcConnectionPool();
-                for(int i=0; i<pools.length; i++){
-                    projectCP.add(pools[i].getName());
+                    // identify JDBC Connection Pool xml
+                    JdbcConnectionPool[] pools = resources.getJdbcConnectionPool();
+                    for(int i=0; i<pools.length; i++){
+                        projectCP.add(pools[i].getName());
+                    }
+                } finally {
+                    in.close();
                 }
             }
         }catch(Exception ex){
@@ -932,12 +936,16 @@ public class ResourceUtils implements WizardConstants{
         try{
             if(! primaryFile.isDirectory()){
                 FileInputStream in = new FileInputStream(primaryFile);
-                Resources resources = DDProvider.getDefault().getResourcesGraph(in);
+                try {
+                    Resources resources = DDProvider.getDefault().getResourcesGraph(in);
 
-                // identify JDBC Resources xml
-                JdbcResource[] dataSources = resources.getJdbcResource();
-                for(int i=0; i<dataSources.length; i++){
-                    projectDS.add(dataSources[i].getJndiName());
+                    // identify JDBC Resources xml
+                    JdbcResource[] dataSources = resources.getJdbcResource();
+                    for(int i=0; i<dataSources.length; i++){
+                        projectDS.add(dataSources[i].getJndiName());
+                    }
+                } finally {
+                    in.close();
                 }
             }
         }catch(Exception ex){
@@ -951,12 +959,16 @@ public class ResourceUtils implements WizardConstants{
         try{
             if(! primaryFile.isDirectory()){
                 FileInputStream in = new FileInputStream(primaryFile);
-                Resources resources = DDProvider.getDefault().getResourcesGraph(in);
+                try {
+                    Resources resources = DDProvider.getDefault().getResourcesGraph(in);
 
-                // identify MailResource xml
-                MailResource[] res = resources.getMailResource();
-                for(int i=0; i<res.length; i++){
-                    projectRes.add(res[i].getJndiName());
+                    // identify MailResource xml
+                    MailResource[] res = resources.getMailResource();
+                    for(int i=0; i<res.length; i++){
+                        projectRes.add(res[i].getJndiName());
+                    }
+                } finally {
+                    in.close();
                 }
             }
         }catch(Exception ex){
@@ -969,17 +981,21 @@ public class ResourceUtils implements WizardConstants{
         try{
             if(! primaryFile.isDirectory()){
                 FileInputStream in = new FileInputStream(primaryFile);
-                Resources resources = DDProvider.getDefault().getResourcesGraph(in);
+                try {
+                    Resources resources = DDProvider.getDefault().getResourcesGraph(in);
 
-                // identify AdminObjectResource xml
-                AdminObjectResource[] aoRes = resources.getAdminObjectResource();
-                for(int i=0; i<aoRes.length; i++){
-                    projectRes.add(aoRes[i].getJndiName());
-                }
-                // identify ConnectorResource xml
-                ConnectorResource[] connRes = resources.getConnectorResource();
-                for(int i=0; i<connRes.length; i++){
-                    projectRes.add(connRes[i].getJndiName());
+                    // identify AdminObjectResource xml
+                    AdminObjectResource[] aoRes = resources.getAdminObjectResource();
+                    for(int i=0; i<aoRes.length; i++){
+                        projectRes.add(aoRes[i].getJndiName());
+                    }
+                    // identify ConnectorResource xml
+                    ConnectorResource[] connRes = resources.getConnectorResource();
+                    for(int i=0; i<connRes.length; i++){
+                        projectRes.add(connRes[i].getJndiName());
+                    }
+                } finally {
+                    in.close();
                 }
             }
         }catch(Exception ex){
@@ -992,12 +1008,16 @@ public class ResourceUtils implements WizardConstants{
         try{
             if(! primaryFile.isDirectory()){
                 FileInputStream in = new FileInputStream(primaryFile);
-                Resources resources = DDProvider.getDefault().getResourcesGraph(in);
+                try {
+                    Resources resources = DDProvider.getDefault().getResourcesGraph(in);
 
-                // identify AdminObjectResource xml
-                PersistenceManagerFactoryResource[] pmfRes = resources.getPersistenceManagerFactoryResource();
-                for(int i=0; i<pmfRes.length; i++){
-                    projectRes.add(pmfRes[i].getJndiName());
+                    // identify AdminObjectResource xml
+                    PersistenceManagerFactoryResource[] pmfRes = resources.getPersistenceManagerFactoryResource();
+                    for(int i=0; i<pmfRes.length; i++){
+                        projectRes.add(pmfRes[i].getJndiName());
+                    }
+                } finally {
+                    in.close();
                 }
             }
         }catch(Exception ex){
@@ -1010,35 +1030,39 @@ public class ResourceUtils implements WizardConstants{
         try{
             if(! primaryFile.isDirectory()){
                 FileInputStream in = new FileInputStream(primaryFile);
-                Resources resources = DDProvider.getDefault().getResourcesGraph(in);
+                try {
+                    Resources resources = DDProvider.getDefault().getResourcesGraph(in);
 
-                // identify JDBC Connection Pool xml
-                JdbcConnectionPool[] pools = resources.getJdbcConnectionPool();
-                for(int i=0; i<pools.length; i++){
-                    projectRes.add(pools[i].getName());
-                }
+                    // identify JDBC Connection Pool xml
+                    JdbcConnectionPool[] pools = resources.getJdbcConnectionPool();
+                    for(int i=0; i<pools.length; i++){
+                        projectRes.add(pools[i].getName());
+                    }
 
-                // identify JDBC Resources xml
-                JdbcResource[] dataSources = resources.getJdbcResource();
-                for(int i=0; i<dataSources.length; i++){
-                    projectRes.add(dataSources[i].getJndiName());
-                }
+                    // identify JDBC Resources xml
+                    JdbcResource[] dataSources = resources.getJdbcResource();
+                    for(int i=0; i<dataSources.length; i++){
+                        projectRes.add(dataSources[i].getJndiName());
+                    }
 
-                // identify MailResource xml
-                MailResource[] mailRes = resources.getMailResource();
-                for(int i=0; i<mailRes.length; i++){
-                    projectRes.add(mailRes[i].getJndiName());
-                }
+                    // identify MailResource xml
+                    MailResource[] mailRes = resources.getMailResource();
+                    for(int i=0; i<mailRes.length; i++){
+                        projectRes.add(mailRes[i].getJndiName());
+                    }
 
-                // identify AdminObjectResource xml
-                AdminObjectResource[] aoRes = resources.getAdminObjectResource();
-                for(int i=0; i<aoRes.length; i++){
-                    projectRes.add(aoRes[i].getJndiName());
-                }
-                // identify ConnectorResource xml
-                ConnectorResource[] connRes = resources.getConnectorResource();
-                for(int i=0; i<connRes.length; i++){
-                    projectRes.add(connRes[i].getJndiName());
+                    // identify AdminObjectResource xml
+                    AdminObjectResource[] aoRes = resources.getAdminObjectResource();
+                    for(int i=0; i<aoRes.length; i++){
+                        projectRes.add(aoRes[i].getJndiName());
+                    }
+                    // identify ConnectorResource xml
+                    ConnectorResource[] connRes = resources.getConnectorResource();
+                    for(int i=0; i<connRes.length; i++){
+                        projectRes.add(connRes[i].getJndiName());
+                    }
+                } finally {
+                    in.close();
                 }
             }
         }catch(Exception ex){

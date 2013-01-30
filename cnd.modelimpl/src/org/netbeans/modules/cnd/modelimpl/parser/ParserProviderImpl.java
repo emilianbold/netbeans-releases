@@ -72,6 +72,7 @@ import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.fsm.core.DataRenderer;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.FortranParser;
 import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
+import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.openide.util.Exceptions;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -128,7 +129,7 @@ public final class ParserProviderImpl extends CsmParserProvider {
             parserContainer = object;
             CppParserActionEx cppCallback = (CppParserActionEx)callback;
             if (cppCallback == null) {
-                if(TraceFlags.CPP_PARSER_ACTION) {
+                if(TraceFlags.CPP_PARSER_ACTION && ((FileImpl)params.getMainFile()).getParsingFileContent() != null) {
                     cppCallback = new CppParserActionImpl(params);
                 } else {
                     cppCallback = new CppParserEmptyActionImpl(file);
@@ -198,7 +199,6 @@ public final class ParserProviderImpl extends CsmParserProvider {
                             parseFileContent = ((FileImpl.ParseDescriptor)descr).getFileContent();
                         }
                         new AstRenderer(file, parseFileContent, objects).render(ast);
-                        file.incParseCount();
                     }            
                     break;
                 case NAMESPACE_DEFINITION_BODY:
@@ -209,7 +209,8 @@ public final class ParserProviderImpl extends CsmParserProvider {
                     CsmNamespace ns = nsDef.getNamespace();
                     if (ast != null && ns instanceof NamespaceImpl) {
                         new AstRenderer(nsBodyFile, fileContent, objects).render(ast, (NamespaceImpl) ns, nsDef);
-                    }                    
+                    }     
+                    RepositoryUtils.put(ns);
                     break;
                 }
                 case CLASS_BODY:
@@ -219,6 +220,9 @@ public final class ParserProviderImpl extends CsmParserProvider {
                     CsmVisibility visibility = (CsmVisibility) context[2];
                     boolean localClass = (Boolean) context[3];
                     cls.fixFakeRender(fileContent, visibility, ast, localClass);
+                    if (!localClass) {
+                        RepositoryUtils.put(cls);
+                    }
                     break;
                 }
                 case ENUM_BODY:
@@ -227,11 +231,15 @@ public final class ParserProviderImpl extends CsmParserProvider {
                     EnumImpl enumImpl = (EnumImpl) context[1];
                     boolean localEnum = (Boolean) context[2];
                     enumImpl.fixFakeRender(fileContent, ast, localEnum);
+                    if (!localEnum) {
+                        RepositoryUtils.put(enumImpl);
+                    }                    
                     break;
                 }
                 default:
                     assert false : "unexpected parse kind " + kind;
             }
+            file.incParseCount();
         }
         
         @Override
@@ -309,11 +317,11 @@ public final class ParserProviderImpl extends CsmParserProvider {
                 case TRANSLATION_UNIT_WITH_COMPOUND:
                 case TRANSLATION_UNIT:
                     new DataRenderer((FileImpl.ParseDescriptor)context[0]).render(parser.parsedObjects);
-                    file.incParseCount();
                     break;
                 default:
                     assert false : "unexpected render kind " + kind;
             }
+            file.incParseCount();
         }
 
         @Override
@@ -344,8 +352,8 @@ public final class ParserProviderImpl extends CsmParserProvider {
     }
 
     static Token convertToken(org.antlr.runtime.Token token) {
-        assert token instanceof Antlr3CXXParser.MyToken;
-        return ((Antlr3CXXParser.MyToken) token).t;
+        //assert token == null || token instanceof Antlr3CXXParser.MyToken;
+        return (token instanceof Antlr3CXXParser.MyToken) ? ((Antlr3CXXParser.MyToken) token).t : null;
     }
 
     private final static class Antlr3CXXParser implements CsmParserProvider.CsmParser, CsmParserProvider.CsmParserResult {
@@ -368,11 +376,7 @@ public final class ParserProviderImpl extends CsmParserProvider {
             assert ts != null;
             CXXParserActionEx cppCallback = (CXXParserActionEx)callback;
             if (cppCallback == null) {
-                if (TraceFlags.CPP_PARSER_ACTION) {
-                    cppCallback = new CXXParserActionImpl(params);
-                } else {
-                    cppCallback = new CXXParserEmptyActionImpl(file);
-                }
+                cppCallback = new CXXParserActionImpl(params);
             } else {
                 cppCallback.pushFile(file);
             }            
@@ -514,6 +518,8 @@ public final class ParserProviderImpl extends CsmParserProvider {
         static private class MyTokenStream implements org.antlr.runtime.TokenStream {
             org.netbeans.modules.cnd.antlr.TokenBuffer tb;
 
+            int lastMark;
+            
             public MyTokenStream(org.netbeans.modules.cnd.antlr.TokenBuffer tb) {
                 this.tb = tb;
             }
@@ -535,6 +541,7 @@ public final class ParserProviderImpl extends CsmParserProvider {
 
             @Override
             public int mark() {
+                lastMark = tb.index();
                 return tb.mark();
             }
 
@@ -550,7 +557,8 @@ public final class ParserProviderImpl extends CsmParserProvider {
 
             @Override
             public void rewind() {
-                tb.rewind(0);
+                tb.mark();
+                tb.rewind(lastMark);
             }
 
             @Override

@@ -46,6 +46,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import javax.xml.namespace.QName;
+import org.netbeans.modules.maven.model.pom.ModelList;
 import org.netbeans.modules.maven.model.pom.POMComponent;
 import org.netbeans.modules.maven.model.pom.POMComponentFactory;
 import org.netbeans.modules.maven.model.pom.POMExtensibilityElement;
@@ -223,5 +224,14 @@ public abstract class POMComponentImpl extends AbstractDocumentComponent<POMComp
         return toRet;
     }
     
+    protected final <T extends POMComponent> void remove(T valueToRemove, String listname, Class<? extends ModelList<T>> listClazz) {
+        ModelList<T> childs = getChild(listClazz);
+        if (childs != null) {
+            childs.removeListChild(valueToRemove);
+            if (childs.getListChildren().isEmpty()) {
+                removeChild(listname, childs);
+            }
+        }
+    }
 }
 

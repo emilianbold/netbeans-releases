@@ -297,7 +297,6 @@ public class CompletionContextImpl extends CompletionContext {
      */
     private void addNamespace(String attrName, String value, String nodePrefix) {
         String defNS = XMLConstants.XMLNS_ATTRIBUTE;
-        if(nodePrefix != null) defNS = defNS+":"+nodePrefix; //NOI18N
 
         if(CompletionUtil.getLocalNameFromTag(attrName).
                 equals(XSI_SCHEMALOCATION)) {
@@ -786,10 +785,6 @@ public class CompletionContextImpl extends CompletionContext {
             }
         }
         
-        //handle no namespace
-        if(defaultNamespace == null)
-            return false;
-        
         return !fromSameNamespace(thisTag, previousTag);
     }
     
@@ -805,31 +800,41 @@ public class CompletionContextImpl extends CompletionContext {
         return null;
     }
     
+    /**
+     * This is onlyused from createPath() for the path from the current element to the root.
+     * It's possible to use elementsFromRoot so that content need not to be lexed (so much)
+     * as with navigation using tag.getParent().
+     * @param tag
+     * @return 
+     */
     private QName createQName(Tag tag) {
-        QName qname = null;
         String tagName = tag.getTagName();
         String prefix = CompletionUtil.getPrefixFromTag(tagName);
-        String lName = CompletionUtil.getLocalNameFromTag(tagName);        
-        if(prefix == null) {
-            Attr attrNode = tag.getAttributeNode(XMLConstants.XMLNS_ATTRIBUTE);
-            if(attrNode == null) {
-                qname = new QName(defaultNamespace, lName);
+        String lName = CompletionUtil.getLocalNameFromTag(tagName);     
+        
+        int index = elementsFromRoot.indexOf(tag);
+        if (index == -1) {
+            throw new IllegalStateException();
+        }
+        for (int i = index; i < elementsFromRoot.size(); i++) {
+            Tag t = elementsFromRoot.get(i);
+            if (prefix == null) {
+                Attr attrNode = t.getAttributeNode(XMLConstants.XMLNS_ATTRIBUTE);
+                if (attrNode != null) {
+                    return new QName(attrNode.getValue(), lName);
+                }
             } else {
-                String ns = attrNode.getValue();
-                qname = new QName(ns, lName);
-            }
-        } else {
-            //first try ns declaration in the tag
-            Attr attrNode = tag.getAttributeNode(XMLConstants.XMLNS_ATTRIBUTE+":"+prefix);
-            if(attrNode != null) {
-                String ns = attrNode.getValue();
-                qname = new QName(ns, lName, prefix); //NOI18N
-            } else {
-                qname = new QName(declaredNamespaces.
-                        get(XMLConstants.XMLNS_ATTRIBUTE+":"+prefix), lName, prefix); //NOI18N
+                Attr attrNode = t.getAttributeNode(XMLConstants.XMLNS_ATTRIBUTE+":"+prefix);
+                if(attrNode != null) {
+                    return new QName(attrNode.getValue(), lName, prefix); //NOI18N
+                }
             }
         }
-        return qname;
+        if (prefix == null) {
+            return new QName(defaultNamespace, lName);
+        } else {
+            return new QName(null, lName, prefix);
+        }
     }
     
     /**

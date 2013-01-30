@@ -44,16 +44,15 @@
 
 package org.netbeans.performance.j2se.dialogs;
 
-import org.netbeans.modules.performance.utilities.PerformanceTestCase;
-import org.netbeans.performance.j2se.setup.J2SESetup;
-
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JMenuBarOperator;
-import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.junit.NbTestSuite;
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
+import org.netbeans.performance.j2se.setup.J2SEBaseSetup;
 
 /**
  * Test of HTTP Monitor Window
@@ -78,7 +77,7 @@ public class HttpMonitorWindowTest extends PerformanceTestCase {
 
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(J2SESetup.class)
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(J2SEBaseSetup.class)
              .addTest(HttpMonitorWindowTest.class)
              .enableModules(".*").clusters(".*")));
         return suite;
@@ -98,7 +97,10 @@ public class HttpMonitorWindowTest extends PerformanceTestCase {
     }
     
     public ComponentOperator open() {
-        new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenu(MENU,"|");
+        JMenuBarOperator jmbo = new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar());
+        jmbo.pushMenu("Window"); //NOI18N
+        jmbo.closeSubmenus();
+        jmbo.pushMenuNoBlock(MENU);
         return new TopComponentOperator(TITLE);
     }
     

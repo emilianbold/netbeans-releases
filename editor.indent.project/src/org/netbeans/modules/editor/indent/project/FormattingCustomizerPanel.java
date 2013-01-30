@@ -360,7 +360,7 @@ private void projectButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN
 private void loadButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_loadButtonActionPerformed
     JFileChooser chooser = ProjectChooser.projectChooser();
     if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
-        File f = chooser.getSelectedFile();
+        File f = FileUtil.normalizeFile(chooser.getSelectedFile());
         FileObject fo = FileUtil.toFileObject(f);
         if (fo != null) {
             Object ret;

@@ -48,6 +48,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Level;
+import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
@@ -58,7 +60,6 @@ import org.netbeans.modules.tasks.ui.settings.DashboardSettings;
 import org.netbeans.modules.tasks.ui.treelist.AsynchronousNode;
 import org.netbeans.modules.tasks.ui.treelist.TreeLabel;
 import org.netbeans.modules.tasks.ui.treelist.TreeListNode;
-import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 
 /**
@@ -72,15 +73,12 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<Issue>> {
     private TaskListener taskListener;
     private boolean refresh;
     private final Object LOCK = new Object();
-    private Collection<Issue> toSelect;
+    private Collection<TaskNode> toSelect;
     protected List<TreeLabel> labels;
     protected List<LinkButton> buttons;
     private int pageSize;
     private int pageCountShown;
-
-    public TaskContainerNode(boolean expandable, TreeListNode parent, String title) {
-        this(false, expandable, parent, title);
-    }
+    private boolean error;
 
     public TaskContainerNode(boolean refresh, boolean expandable, TreeListNode parent, String title) {
         super(expandable, parent, title);
@@ -97,6 +95,17 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<Issue>> {
     abstract void updateCounts();
 
     abstract boolean isTaskLimited();
+
+    abstract void refreshTaskContainer();
+
+    @Override
+    protected List<Issue> load() {
+        if (refresh) {
+            refreshTaskContainer();
+            refresh = false;
+        }
+        return getTasks();
+    }
 
     @Override
     protected void childrenLoadingFinished() {
@@ -122,6 +131,12 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<Issue>> {
     }
 
     @Override
+    protected void attach() {
+        super.attach();
+        addTaskListeners();
+    }
+
+    @Override
     protected void dispose() {
         super.dispose();
         removeTaskListeners();
@@ -131,7 +146,7 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<Issue>> {
         updateContentAndSelect(null);
     }
 
-    void updateContentAndSelect(Collection<Issue> toSelect) {
+    void updateContentAndSelect(Collection<TaskNode> toSelect) {
         this.toSelect = toSelect;
         final boolean empty = getChildren().isEmpty();
         boolean expand = toSelect != null && !toSelect.isEmpty() && !isExpanded();
@@ -154,11 +169,11 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<Issue>> {
         refresh();
     }
 
-    public final List<TaskNode> getFilteredTaskNodes() {
+    final List<TaskNode> getFilteredTaskNodes() {
         return filteredTaskNodes;
     }
 
-    public final List<TaskNode> getTaskNodes() {
+    final List<TaskNode> getTaskNodes() {
         return taskNodes;
     }
 
@@ -182,17 +197,20 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<Issue>> {
         }
     }
 
-    public final int getTotalTaskCount() {
+    public final int getFilteredTaskCount() {
         synchronized (LOCK) {
-            return filteredTaskNodes.size();
+            return filteredTaskNodes != null ? filteredTaskNodes.size() : 0;
         }
     }
-    
+
     final void updateNodes() {
+        updateNodes(getTasks());
+    }
+
+    final void updateNodes(List<Issue> issues) {
         synchronized (LOCK) {
             DashboardViewer dashboard = DashboardViewer.getInstance();
             AppliedFilters appliedFilters = dashboard.getAppliedTaskFilters();
-            List<Issue> issues = getTasks();
             removeTaskListeners();
             if (taskListener == null) {
                 taskListener = new TaskListener();
@@ -205,7 +223,6 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<Issue>> {
                 adjustTaskNode(taskNode);
                 taskNodes.add(taskNode);
                 if (appliedFilters.isInFilter(issue)) {
-                    dashboard.addTaskMapEntry(issue, taskNode);
                     filteredTaskNodes.add(taskNode);
                 }
             }
@@ -214,7 +231,7 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<Issue>> {
 
     final String getTotalString() {
         String bundleName = DashboardViewer.getInstance().expandNodes() ? "LBL_Matches" : "LBL_Total"; //NOI18N
-        return getTotalTaskCount() + " " + NbBundle.getMessage(TaskContainerNode.class, bundleName);
+        return getFilteredTaskCount() + " " + NbBundle.getMessage(TaskContainerNode.class, bundleName);
     }
 
     final String getChangedString() {
@@ -223,8 +240,8 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<Issue>> {
 
     final void removeTaskListeners() {
         synchronized (LOCK) {
-            if (taskListener != null) {
-                for (TaskNode taskNode : filteredTaskNodes) {
+            if (taskListener != null && taskNodes != null) {
+                for (TaskNode taskNode : taskNodes) {
                     taskNode.getTask().removePropertyChangeListener(taskListener);
                 }
             }
@@ -233,23 +250,24 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<Issue>> {
 
     final void addTaskListeners() {
         synchronized (LOCK) {
-            if (taskListener == null) {
-                taskListener = new TaskListener();
-            }
-            for (TaskNode taskNode : filteredTaskNodes) {
-                taskNode.getTask().addPropertyChangeListener(taskListener);
+            if (taskListener != null && taskNodes != null) {
+                for (TaskNode taskNode : taskNodes) {
+                    taskNode.getTask().addPropertyChangeListener(taskListener);
+                }
             }
         }
     }
 
-    final void showAdditionalPage(){
+    final void showAdditionalPage() {
+        Collection<TaskNode> list = new ArrayList<TaskNode>(1);
+        list.add(filteredTaskNodes.get(getTaskCountToShow() - 1));
         pageCountShown++;
-        updateContent();
+        updateContentAndSelect(list);
     }
 
     @Override
     protected List<TreeListNode> createChildren() {
-        List<TaskNode> filteredNodes = getFilteredTaskNodes();
+        List<TaskNode> filteredNodes = filteredTaskNodes;
         Collections.sort(filteredNodes);
         List<TaskNode> taskNodesToShow;
         boolean addShowNext = false;
@@ -267,24 +285,49 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<Issue>> {
         return children;
     }
 
-    private int getTaskCountToShow(){
+    private int getTaskCountToShow() {
         return pageSize * pageCountShown;
     }
 
-    void initPaging() {
-        pageSize = DashboardSettings.getInstance().getTasksLimitValue();
+    final void initPaging() {
+        pageSize = DashboardSettings.getInstance().isTasksLimit() ? DashboardSettings.getInstance().getTasksLimitValue() : Integer.MAX_VALUE;
         pageCountShown = 1;
+    }
+
+    final void handleError(Throwable throwable) {
+        setRefresh(true);
+        setError(true);
+        DashboardViewer.LOG.log(Level.WARNING, "Tasks loading failed due to: {0}", throwable); //NOI18N
+    }
+
+    boolean isError() {
+        return error;
+    }
+
+    void setError(boolean error) {
+        this.error = error;
+    }
+
+    private void refilterTaskNodes() {
+        DashboardViewer dashboard = DashboardViewer.getInstance();
+        AppliedFilters appliedFilters = dashboard.getAppliedTaskFilters();
+        filteredTaskNodes.clear();
+        for (TaskNode taskNode : taskNodes) {
+            if (appliedFilters.isInFilter(taskNode.getTask())) {
+                filteredTaskNodes.add(taskNode);
+            }
+        }
     }
 
     private class TaskListener implements PropertyChangeListener {
 
         @Override
-        public void propertyChange(PropertyChangeEvent evt) {
+        public void propertyChange(final PropertyChangeEvent evt) {
             if (evt.getPropertyName().equals(Issue.EVENT_ISSUE_REFRESHED)) {
-                Mutex.EVENT.readAccess(new Runnable() {
+                SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {
-                        updateNodes();
+                        refilterTaskNodes();
                         updateCounts();
                     }
                 });

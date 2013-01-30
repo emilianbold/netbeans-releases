@@ -14,8 +14,8 @@ token #12 WHITESPACE
 token #13 PHP_TOKEN =
 token #14 WHITESPACE  
 token #15 PHP_HEREDOC_TAG <<<THISMUSTNOTERROR\n
-token #16 PHP_CONSTANT_ENCAPSED_STRING If you see this, everything is ok.\n
-token #17 PHP_HEREDOC_TAG THISMUSTNOTERROR
+token #16 PHP_CONSTANT_ENCAPSED_STRING If you see this, everything is ok.
+token #17 PHP_HEREDOC_TAG \nTHISMUSTNOTERROR
 token #18 PHP_SEMICOLON ;
 token #19 WHITESPACE \n\n
 token #20 PHP_CURLY_CLOSE }

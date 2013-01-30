@@ -41,12 +41,12 @@
  */
 package org.netbeans.modules.ws.qaf.rest;
 
+import java.awt.Component;
 import junit.framework.Test;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jemmy.EventTool;
-import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.jemmy.ComponentChooser;
 
 /**
  * Tests REST node in project logical view
@@ -105,7 +105,6 @@ public class RestNodeTest extends RestTestBase {
         String open = Bundle.getStringTrimmed("org.openide.actions.Bundle", "Open");
         n.performPopupAction(open);
         EditorOperator eo = new EditorOperator(services[2].substring(0, 14));
-        assertNotNull(services[2] + " not opened?", eo); //NOI18N
     }
 
     /**
@@ -115,21 +114,39 @@ public class RestNodeTest extends RestTestBase {
         Node n = new Node(getMethodsNode(services[0]), "getXML"); //NOI18N
         String open = Bundle.getStringTrimmed("org.openide.actions.Bundle", "Open");
         n.performPopupAction(open);
-        EditorOperator eo = new EditorOperator(services[0]);
-        assertNotNull(services[0] + " not opened?", eo); //NOI18N
-        assertEquals("wrong line", 40, eo.getLineNumber()); //NOI18N
+        final EditorOperator eo = new EditorOperator(services[0]);
+        eo.waitState(new ComponentChooser() {
+            @Override
+            public boolean checkComponent(Component comp) {
+                return eo.getLineNumber() == 73;
+            }
+
+            @Override
+            public String getDescription() {
+                return "Line number 73 reached in " + services[0];
+            }
+        });
     }
 
     /**
-     * Test "Open" action on the resource's subresource locator node
+     * Test "Open" action on the resource's sub resource locator node
      */
     public void testOpenOnLocator() {
         Node n = new Node(getSubresourcesNode(services[1]), "{name}"); //NOI18N
         String open = Bundle.getStringTrimmed("org.openide.actions.Bundle", "Open");
         n.performPopupAction(open);
-        EditorOperator eo = new EditorOperator(services[1].substring(0, 13));
-        assertNotNull(services[0] + " not opened?", eo); //NOI18N
-        assertEquals("wrong line", 47, eo.getLineNumber()); //NOI18N
+        final EditorOperator eo = new EditorOperator(services[1].substring(0, 13));
+        eo.waitState(new ComponentChooser() {
+            @Override
+            public boolean checkComponent(Component comp) {
+                return eo.getLineNumber() == 80;
+            }
+
+            @Override
+            public String getDescription() {
+                return "Line number 80 reached in " + services[1];
+            }
+        });
     }
 
     /**
@@ -137,31 +154,24 @@ public class RestNodeTest extends RestTestBase {
      */
     public void testAddMethod() {
         EditorOperator eo = new EditorOperator(services[0]);
-        assertNotNull(services[0] + " not opened?", eo); //NOI18N
-        eo.select(59);
+        eo.select(92);
         eo.insert(addMethod);
         eo.save();
-        // let's wait for a while here...
-        new EventTool().waitNoEvent(2000);
-        assertEquals("New method not shown for " + services[0], 4, //NOI18N
-                getMethodsNode(services[0]).getChildren().length); //NOI18N
+        Node addedMethodNode = new Node(getMethodsNode(services[0]), "postXml");
     }
 
     /**
      * Test new node visibility after removing a method from the resource
      */
     public void testRemoveMethod() {
+        Node addedMethodNode = new Node(getMethodsNode(services[0]), "postXml");
         EditorOperator eo = new EditorOperator(services[0]);
-        assertNotNull(services[0] + " not opened?", eo); //NOI18N
-        eo.deleteLine(60);
-        eo.deleteLine(60);
-        eo.deleteLine(60);
-        eo.deleteLine(60);
+        eo.deleteLine(93);
+        eo.deleteLine(93);
+        eo.deleteLine(93);
+        eo.deleteLine(93);
         eo.save();
-        // let's wait for a while here...
-        new EventTool().waitNoEvent(2000);
-        assertEquals("New method still shown for " + services[0], 3, //NOI18N
-                getMethodsNode(services[0]).getChildren().length); //NOI18N
+        addedMethodNode.waitNotPresent();
     }
 
     protected Node getResourceNode(String resourceName) {
@@ -202,13 +212,13 @@ public class RestNodeTest extends RestTestBase {
      * Creates suite from particular test cases. You can define order of testcases here.
      */
     public static Test suite() {
-        return NbModuleSuite.create(addServerTests(Server.GLASSFISH, NbModuleSuite.createConfiguration(RestNodeTest.class),
+        return createAllModulesServerSuite(Server.GLASSFISH, RestNodeTest.class,
                 "testNodesAfterOpen",
                 "testOpenOnResource",
                 "testOpenOnMethod",
                 "testOpenOnLocator",
                 "testAddMethod",
                 "testRemoveMethod",
-                "testCloseProject").enableModules(".*").clusters(".*"));
+                "testCloseProject");
     }
 }

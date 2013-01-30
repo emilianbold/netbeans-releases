@@ -114,6 +114,7 @@ import org.openide.util.WeakListeners;
 public class EditableDiffView extends DiffControllerImpl implements DiffView, DocumentListener, AncestorListener, PropertyChangeListener, PreferenceChangeListener, ChangeListener {
 
     private static final int INITIAL_DIVIDER_SIZE = 32;
+    private static final String CONTENT_TYPE_PLAIN = "text/plain";
     
     private Stroke boldStroke = new BasicStroke(3);
     
@@ -263,9 +264,22 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
                     jEditorPane1.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, borderColor));
                     jEditorPane2.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, borderColor));
                     
-                    jEditorPane1.getEditorPane().setEditorKit(CloneableEditorSupport.getEditorKit(f1));
+                    EditorKit editorKit;
+                    try {
+                        editorKit = CloneableEditorSupport.getEditorKit(f1);
+                    } catch (IllegalArgumentException ex) {
+                        LOG.log(Level.INFO, ss1.toString(), ex);
+                        editorKit = CloneableEditorSupport.getEditorKit(CONTENT_TYPE_PLAIN);
+                    }
+                    jEditorPane1.getEditorPane().setEditorKit(editorKit);
                     repairTextUI(jEditorPane1.getEditorPane());
-                    jEditorPane2.getEditorPane().setEditorKit(CloneableEditorSupport.getEditorKit(f2));
+                    try {
+                        editorKit = CloneableEditorSupport.getEditorKit(f2);
+                    } catch (IllegalArgumentException ex) {
+                        LOG.log(Level.INFO, ss2.toString(), ex);
+                        editorKit = CloneableEditorSupport.getEditorKit(CONTENT_TYPE_PLAIN);
+                    }
+                    jEditorPane2.getEditorPane().setEditorKit(editorKit);
                     repairTextUI(jEditorPane2.getEditorPane());
                     
                     try {
@@ -354,7 +368,7 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
                                                   JTextComponent rightEditor) {
         String mimeType = DocumentUtilities.getMimeType(leftEditor);
         if (mimeType == null) {
-            mimeType = "text/plain";                                    //NOI18N
+            mimeType = CONTENT_TYPE_PLAIN;                                    //NOI18N
         }
 
         Color bgColor = null;
@@ -843,7 +857,7 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
             } else {
                 int lastLine = org.openide.text.NbDocument.findLineNumber(doc2, doc2.getLength()) + 1;
                 if(diff.getSecondStart() < lastLine) {
-                    offSecondEnd = org.openide.text.NbDocument.findLineOffset(doc2, diff.getSecondStart() + 1);
+                    offSecondEnd = org.openide.text.NbDocument.findLineOffset(doc2, diff.getSecondStart());
                 } else {
                     offSecondEnd = doc2.getLength();
                 }
@@ -977,7 +991,7 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
                 int ext1 = scrollBarH1.getModel().getExtent();
                 int ext2 = scrollBarH2.getModel().getExtent();
                 if (max1 == ext1) horizontalScroll2ChangedValue = 0;
-                else horizontalScroll2ChangedValue = (value*(max2 - ext2))/(max1 - ext1);
+                else horizontalScroll2ChangedValue = (int) (((long) value * (max2 - ext2)) / (max1 - ext1));
                 horizontalScroll1ChangedValue = -1;
                 scrollBarH2.setValue(horizontalScroll2ChangedValue);
             }
@@ -992,7 +1006,7 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
                 int ext1 = scrollBarH1.getModel().getExtent();
                 int ext2 = scrollBarH2.getModel().getExtent();
                 if (max2 == ext2) horizontalScroll1ChangedValue = 0;
-                else horizontalScroll1ChangedValue = (value*(max1 - ext1))/(max2 - ext2);
+                else horizontalScroll1ChangedValue = (int) (((long) value * (max1 - ext1)) / (max2 - ext2));
                 horizontalScroll2ChangedValue = -1;
                 scrollBarH1.setValue(horizontalScroll1ChangedValue);
             }
@@ -1443,7 +1457,7 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
 
         private Difference[] computeDiff() {
             
-            if(editableDocument != null && "true".equals(System.getProperty("org.netbeans.modules.diff.forceFORefresh", "false"))) { // NOI18N
+            if(editableDocument != null) { 
                 // refresh fo before computing the diff, external changes might not have been recognized in some setups
                 // see also issue #210834
                 DataObject dao = (DataObject) editableDocument.getProperty(Document.StreamDescriptionProperty);
@@ -1507,7 +1521,7 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
         TextUI ui = pane.getUI();
         if (!(ui instanceof BaseTextUI)) {
             // use plain editor
-            pane.setEditorKit(CloneableEditorSupport.getEditorKit("text/plain")); //NOI18N
+            pane.setEditorKit(CloneableEditorSupport.getEditorKit(CONTENT_TYPE_PLAIN)); //NOI18N
         }
     }
 

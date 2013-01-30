@@ -43,6 +43,7 @@
 package org.netbeans.modules.editor.bracesmatching.api;
 
 import javax.swing.text.Document;
+import org.netbeans.modules.editor.bracesmatching.MasterMatcher;
 import org.netbeans.modules.editor.bracesmatching.SpiAccessor;
 import org.netbeans.spi.editor.bracesmatching.MatcherContext;
 
@@ -53,6 +54,7 @@ import org.netbeans.spi.editor.bracesmatching.MatcherContext;
 public class BracesMatchingTestUtils {
     
     public static MatcherContext createMatcherContext(Document document, int offset, boolean backward, int lookahead) {
+        MasterMatcher.markTestThread();
         return SpiAccessor.get().createCaretContext(document, offset, backward, lookahead);
     }
     

@@ -1085,9 +1085,13 @@ public class CommonUtilities {
     }
 
     public static void processUnitTestsResults(String className, PerformanceData pd) {
+        processUnitTestsResults(className, className, pd);
+    }
+    
+    public static void processUnitTestsResults(String className, String suiteName, PerformanceData pd) {
         long[] result=new long[2];
         result[1]=pd.value;
-        CommonUtilities.xmlTestResults(System.getProperty("nbjunit.workdir"), "Unit Tests Suite", pd.name, className, className, pd.unit, "passed", 120000 , result, 1);
+        CommonUtilities.xmlTestResults(System.getProperty("nbjunit.workdir"), "Unit Tests Suite", pd.name, className, suiteName, pd.unit, "passed", 120000 , result, 1);
     }
     
     public static void maximizeWholeNetbeansWindow() {

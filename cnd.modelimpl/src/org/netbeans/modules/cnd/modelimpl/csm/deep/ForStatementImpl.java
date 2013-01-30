@@ -52,24 +52,32 @@ import org.netbeans.modules.cnd.api.model.deep.*;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 
 import org.netbeans.modules.cnd.antlr.collections.AST;
+import org.netbeans.modules.cnd.modelimpl.csm.deep.ConditionDeclarationImpl.ConditionDeclarationBuilder;
+import org.netbeans.modules.cnd.modelimpl.csm.deep.ConditionExpressionImpl.ConditionExpressionBuilder;
+import org.netbeans.modules.cnd.modelimpl.csm.deep.ExpressionBase.ExpressionBuilder;
+import org.netbeans.modules.cnd.modelimpl.csm.deep.ExpressionBase.ExpressionBuilderContainer;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 
 /**
  * Implements CsmForStatement statements
  * @author Vladimir Kvashin
  */
-public final class ForStatementImpl extends StatementBase implements CsmForStatement {
+public final class ForStatementImpl extends StatementBase implements CsmForStatement, CsmRangeForStatement {
     
     private StatementBase init;
     private CsmCondition condition;
     private ExpressionBase iteration;
     private StatementBase body;
-    private boolean rendered = false;
+    private boolean rangeBased = false;
     
     private ForStatementImpl(AST ast, CsmFile file, CsmScope scope) {
         super(ast, file, scope);
     }
 
+    private ForStatementImpl(CsmScope scope, CsmFile file, int start, int end) {
+        super(file, start, end, scope);
+    }    
+    
     public static ForStatementImpl create(AST ast, CsmFile file, CsmScope scope) {
         ForStatementImpl stmt = new ForStatementImpl(ast, file, scope);
         stmt.init(ast);
@@ -82,7 +90,7 @@ public final class ForStatementImpl extends StatementBase implements CsmForState
     
     @Override
     public CsmStatement.Kind getKind() {
-        return CsmStatement.Kind.FOR;
+        return rangeBased ? CsmStatement.Kind.RANGE_FOR : CsmStatement.Kind.FOR;
     }
 
     @Override
@@ -160,6 +168,9 @@ public final class ForStatementImpl extends StatementBase implements CsmForState
             case CPPTokenTypes.CSM_CONDITION:
                 condition = renderer.renderCondition(token, this);
                 break;
+            case CPPTokenTypes.COLON:
+                rangeBased = true;
+                break;
             default:
                 if( AstRenderer.isStatement(token) ) {
                     body = AstRenderer.renderStatement(token, getContainingFile(), this);
@@ -192,6 +203,89 @@ public final class ForStatementImpl extends StatementBase implements CsmForState
         }
         return l;
     }
+
+    @Override
+    public CsmDeclarationStatement getDeclaration() {
+        assert rangeBased && init instanceof CsmDeclarationStatement;
+        return (CsmDeclarationStatement) init;
+    }
+
+    @Override
+    public CsmExpression getInitializer() {
+        assert rangeBased;
+        return iteration;
+    }
     
+    public static class ForStatementBuilder extends StatementBuilder implements StatementBuilderContainer, ExpressionBuilderContainer {
+
+        ExpressionBuilder iteration;
+        ConditionDeclarationBuilder conditionDeclaration;
+        ConditionExpressionBuilder conditionExpression;
+        StatementBuilder init;
+        StatementBuilder body;
+        boolean head = true;
+
+        @Override
+        public void addExpressionBuilder(ExpressionBuilder expression) {
+            setIteration(expression);
+        }
+        
+        public void setIteration(ExpressionBuilder iteration) {
+            this.iteration = iteration;
+        }
+
+        public void setInit(StatementBuilder init) {
+            this.init = init;
+        }
+        
+        public void setConditionExpression(ConditionExpressionBuilder conditionExpression) {
+            this.conditionExpression = conditionExpression;
+        }
+
+        public void setConditionDeclaration(ConditionDeclarationBuilder conditionDeclaration) {
+            this.conditionDeclaration = conditionDeclaration;
+        }
+
+        public void setBody(StatementBuilder body) {
+            this.body = body;
+        }
+
+        public void body() {
+            this.head = false;
+        }
+        
+        @Override
+        public ForStatementImpl create() {
+            ForStatementImpl stmt = new ForStatementImpl(getScope(), getFile(), getStartOffset(), getEndOffset());
+            body.setScope(stmt);
+            stmt.body = body.create();
+            if(conditionDeclaration != null) {
+                conditionDeclaration.setScope(stmt);
+                stmt.condition = conditionDeclaration.create();
+            } else if(conditionExpression != null) {
+                conditionExpression.setScope(stmt);
+                stmt.condition = conditionExpression.create();
+            }
+            if(iteration != null) {
+                iteration.setScope(stmt);
+                stmt.iteration = iteration.create();
+            }
+            if(init != null) {
+                init.setScope(stmt);
+                stmt.init = init.create();
+            }
+            
+            return stmt;
+        }
+
+        @Override
+        public void addStatementBuilder(StatementBuilder builder) {
+            if(head) {
+                init = builder;
+            } else {
+                body = builder;
+            }
+        }
+    }         
     
 }

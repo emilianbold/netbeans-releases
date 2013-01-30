@@ -45,9 +45,13 @@ package org.netbeans.modules.php.project.connections.ui;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.math.BigInteger;
+import java.nio.charset.Charset;
+import java.nio.charset.UnsupportedCharsetException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Vector;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.GroupLayout.Alignment;
@@ -66,18 +70,34 @@ import org.openide.DialogDisplayer;
 import org.openide.NotificationLineSupport;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
  * @author Tomas Mysik
  */
 public final class NewRemoteConnectionPanel extends JPanel {
+
     private static final long serialVersionUID = 2806958431387531044L;
+
+    private static final Logger LOGGER = Logger.getLogger(NewRemoteConnectionPanel.class.getName());
+
+    private static final Charset DIGEST_CHARSET;
 
     private final ConfigManager configManager;
     private DialogDescriptor descriptor;
     private NotificationLineSupport notificationLineSupport;
+
+    static {
+        Charset charset;
+        try {
+            charset = Charset.forName("UTF-8"); // NOI18N
+        } catch (UnsupportedCharsetException ex) {
+            // fallback
+            LOGGER.log(Level.WARNING, null, ex);
+            charset = Charset.defaultCharset();
+        }
+        DIGEST_CHARSET = charset;
+    }
 
     public NewRemoteConnectionPanel(ConfigManager configManager) {
         this.configManager = configManager;
@@ -113,14 +133,16 @@ public final class NewRemoteConnectionPanel extends JPanel {
     }
 
     public String getConfigName() {
-        MessageDigest md = null;
+        MessageDigest md;
         try {
             md = MessageDigest.getInstance("MD5"); // NOI18N
         } catch (NoSuchAlgorithmException ex) {
-            Exceptions.printStackTrace(ex);
+            LOGGER.log(Level.WARNING, null, ex);
+            // fallback
+            return getOldConfigName();
         }
 
-        md.update(getConnectionName().getBytes());
+        md.update(getConnectionName().getBytes(DIGEST_CHARSET));
         byte[] digest = md.digest();
         BigInteger hash = new BigInteger(1, digest);
         String hashWord = hash.toString(16);

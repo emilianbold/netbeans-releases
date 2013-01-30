@@ -88,9 +88,15 @@ public class Mapping implements IMapping {
     public IType getType() {
         if(type == null){
             if(attribute.getType() != null) {
-                type = new Type(parent.getProvider().getTypeRepository(), attribute.getType());
+               type = parent.getProvider().getTypeRepository().getType(attribute.getType().getQualifiedName().toString());
+            } else if(attribute.getClass1() !=null) {
+                type = parent.getProvider().getTypeRepository().getType(attribute.getClass1());
             } else {
-                type = new Type(parent.getProvider().getTypeRepository(), attribute.getTypeName());
+                type = parent.getProvider().getTypeRepository().getType(attribute.getTypeName());
+                if(type == null) {
+                    //fall back to simplest definition.
+                    type = new Type(parent.getProvider().getTypeRepository(), attribute.getTypeName());
+                }
             }
         }
         return type;

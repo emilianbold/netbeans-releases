@@ -43,10 +43,8 @@
 package org.netbeans.modules.php.editor.model.nodes;
 
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.api.QualifiedName;
@@ -61,8 +59,9 @@ import org.netbeans.modules.php.editor.parser.astnodes.Reference;
  *
  * @author Radek Matous
  */
-public class FormalParameterInfo extends ASTNodeInfo<FormalParameter> {
+public final class FormalParameterInfo extends ASTNodeInfo<FormalParameter> {
     private ParameterElement parameter;
+
     private FormalParameterInfo(FormalParameter node, Map<String, List<QualifiedName>> paramDocTypes) {
         super(node);
         FormalParameter formalParameter = getOriginalNode();

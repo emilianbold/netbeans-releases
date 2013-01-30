@@ -45,7 +45,11 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
-import java.util.concurrent.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.Document;
@@ -53,9 +57,13 @@ import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.modules.csl.api.DeclarationFinder;
 import org.netbeans.modules.csl.api.DeclarationFinder.AlternativeLocation;
 import org.netbeans.modules.csl.api.DeclarationFinder.DeclarationLocation;
-import org.netbeans.modules.csl.api.*;
+import org.netbeans.modules.csl.api.ElementHandle;
+import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.csl.api.HtmlFormatter;
+import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
@@ -77,7 +85,11 @@ import org.netbeans.modules.php.editor.model.nodes.PhpDocTypeTagInfo;
 import org.netbeans.modules.php.editor.parser.PHPDocCommentParser;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.api.Utils;
-import org.netbeans.modules.php.editor.parser.astnodes.*;
+import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocBlock;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocMethodTag;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTag;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTypeTag;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Parameters;
@@ -129,7 +141,9 @@ public class DeclarationFinderImpl implements DeclarationFinder {
     }
 
     public static DeclarationLocation findDeclarationImpl(ParserResult info, int caretOffset) {
-        if (!(info instanceof PHPParseResult)) return DeclarationLocation.NONE;
+        if (!(info instanceof PHPParseResult)) {
+            return DeclarationLocation.NONE;
+        }
         PHPParseResult result = (PHPParseResult) info;
         final Model model = result.getModel();
         OccurencesSupport occurencesSupport = model.getOccurencesSupport(caretOffset);
@@ -171,15 +185,16 @@ public class DeclarationFinderImpl implements DeclarationFinder {
                     }
                     alternatives.addAlternative(al);
                 }
-                return (numberOfCurrentDeclaration == 1 &&
-                        !EnumSet.<Occurence.Accuracy>of(Occurence.Accuracy.MORE_TYPES, Occurence.Accuracy.MORE).contains(underCaret.degreeOfAccuracy()))
-                        ? location : alternatives;
+                return (numberOfCurrentDeclaration == 1
+                        && !EnumSet.<Occurence.Accuracy>of(Occurence.Accuracy.MORE_TYPES, Occurence.Accuracy.MORE).contains(underCaret.degreeOfAccuracy()))
+                        ? location
+                        : alternatives;
             }
         }
         return location;
     }
 
-    private class ReferenceSpanCrate {
+    private static class ReferenceSpanCrate {
         private Model model;
         private TokenHierarchy<?> tokenHierarchy;
 
@@ -211,7 +226,7 @@ public class DeclarationFinderImpl implements DeclarationFinder {
 
     }
 
-    private class ReferenceSpanCrateFetcher implements Callable<ReferenceSpanCrate> {
+    private static class ReferenceSpanCrateFetcher implements Callable<ReferenceSpanCrate> {
         private final Source source;
 
         public ReferenceSpanCrateFetcher(final Source source) {
@@ -268,21 +283,24 @@ public class DeclarationFinderImpl implements DeclarationFinder {
                     for (int i = 0; i < maxForgingTokens && ts.movePrevious(); i++) {
                         token = ts.token();
                         id = token.id();
-                        if (id.equals(PHPTokenId.PHP_INCLUDE) || id.equals(PHPTokenId.PHP_INCLUDE_ONCE) || id.equals(PHPTokenId.PHP_REQUIRE) || id.equals(PHPTokenId.PHP_REQUIRE_ONCE)) {
+                        if (id.equals(PHPTokenId.PHP_INCLUDE)
+                                || id.equals(PHPTokenId.PHP_INCLUDE_ONCE)
+                                || id.equals(PHPTokenId.PHP_REQUIRE)
+                                || id.equals(PHPTokenId.PHP_REQUIRE_ONCE)) {
                             return retval;
-                        } if (id.equals(PHPTokenId.PHP_STRING) && token.text().toString().equalsIgnoreCase("define")) {//NOI18N
+                        }
+                        if (id.equals(PHPTokenId.PHP_STRING) && token.text().toString().equalsIgnoreCase("define")) { //NOI18N
                             return retval;
                         }
                     }
                 } else if (id.equals(PHPTokenId.PHPDOC_COMMENT)) {
                     PHPDocCommentParser docParser = new PHPDocCommentParser();
-                    PHPDocBlock docBlock = docParser.parse(ts.offset()-3, ts.offset() + token.length(), token.toString());
+                    PHPDocBlock docBlock = docParser.parse(ts.offset() - 3, ts.offset() + token.length(), token.text().toString());
                     ASTNode[] hierarchy = Utils.getNodeHierarchyAtOffset(docBlock, caretOffset);
                     PhpDocTypeTagInfo node = null;
-                    PHPDocTypeTag typeTag = null;
                     if (hierarchy != null && hierarchy.length > 0) {
                         if (hierarchy[0] instanceof PHPDocTypeTag) {
-                            typeTag = (PHPDocTypeTag) hierarchy[0];
+                            PHPDocTypeTag typeTag = (PHPDocTypeTag) hierarchy[0];
                             if (typeTag.getStartOffset() < caretOffset && caretOffset < typeTag.getEndOffset()) {
                                 VariableScope scope = model.getVariableScope(caretOffset);
                                 List<? extends PhpDocTypeTagInfo> tagInfos = PhpDocTypeTagInfo.create(typeTag, Kind.CLASS, scope);
@@ -335,8 +353,8 @@ public class DeclarationFinderImpl implements DeclarationFinder {
                         String[] segments = text.split("\\s");
                         for (int i = 0; i < segments.length; i++) {
                             String seg = segments[i];
-                            if (seg.equals(dollaredVar) && segments.length > i+2) {
-                                for (int j = 1; j <= 2 ; j++) {
+                            if (seg.equals(dollaredVar) && segments.length > i + 2) {
+                                for (int j = 1; j <= 2; j++) {
                                     seg = segments[i + j];
                                     if (seg != null && seg.trim().length() > 0) {
                                         int indexOf = text.indexOf(seg);
@@ -392,9 +410,6 @@ public class DeclarationFinderImpl implements DeclarationFinder {
             this.modelElement = modelElement;
             this.declaration = declaration;
         }
-        public AlternativeLocationImpl(PhpElement modelElement) {
-            this(modelElement, new DeclarationLocation(modelElement.getFileObject(), modelElement.getOffset(), modelElement));
-        }
 
         @Override
         public ElementHandle getElement() {
@@ -406,18 +421,14 @@ public class DeclarationFinderImpl implements DeclarationFinder {
             formatter.reset();
             ElementKind ek = modelElement.getKind();
 
-            if (ek != null) {
-                formatter.name(ek, true);
-                if ((modelElement instanceof FullyQualifiedElement) && !((FullyQualifiedElement)modelElement).getNamespaceName().isDefaultNamespace()) {
-                    QualifiedName namespaceName = ((FullyQualifiedElement) modelElement).getNamespaceName();
-                    formatter.appendText(namespaceName.append(modelElement.getName()).toString());
-                } else {
-                    formatter.appendText(modelElement.getName());
-                }
-                formatter.name(ek, false);
+            formatter.name(ek, true);
+            if ((modelElement instanceof FullyQualifiedElement) && !((FullyQualifiedElement) modelElement).getNamespaceName().isDefaultNamespace()) {
+                QualifiedName namespaceName = ((FullyQualifiedElement) modelElement).getNamespaceName();
+                formatter.appendText(namespaceName.append(modelElement.getName()).toString());
             } else {
                 formatter.appendText(modelElement.getName());
             }
+            formatter.name(ek, false);
 
             if (declaration.getFileObject() != null) {
                 formatter.appendText(" in ");
@@ -437,5 +448,32 @@ public class DeclarationFinderImpl implements DeclarationFinder {
             AlternativeLocationImpl i = (AlternativeLocationImpl) o;
             return this.modelElement.getName().compareTo(i.modelElement.getName());
         }
+
+        @Override
+        public int hashCode() {
+            int hash = 5;
+            hash = 89 * hash + (this.modelElement != null ? this.modelElement.hashCode() : 0);
+            hash = 89 * hash + (this.declaration != null ? this.declaration.hashCode() : 0);
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final AlternativeLocationImpl other = (AlternativeLocationImpl) obj;
+            if (this.modelElement != other.modelElement && (this.modelElement == null || !this.modelElement.equals(other.modelElement))) {
+                return false;
+            }
+            if (this.declaration != other.declaration && (this.declaration == null || !this.declaration.equals(other.declaration))) {
+                return false;
+            }
+            return true;
+        }
+
     }
 }

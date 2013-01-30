@@ -57,6 +57,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
 import javax.swing.text.StyledDocument;
+import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.util.UIDs;
@@ -211,7 +212,12 @@ public abstract class BaseAnnotation extends Annotation {
     }
     
     public boolean attach() {
-        if(pos.getOffset() == -1 || pos.getOffset() >= document.getEndPosition().getOffset()) {
+        int offset = pos.getOffset();
+        if (offset == -1) {
+            return false;
+        }
+        Position endPos = document.getEndPosition();
+        if (endPos == null || offset >= endPos.getOffset()) {
             return false;
         }
         if (!(document instanceof NbDocument.Annotatable)) {
@@ -347,9 +353,17 @@ public abstract class BaseAnnotation extends Annotation {
             all.addAll(baseTemplateUIDs);
             all.addAll(specializationUIDs);
             CsmUID<? extends CsmOffsetableDeclaration> uid = all.iterator().next();
-            CsmOffsetableDeclaration decl = uid.getObject();
+            final CsmOffsetableDeclaration decl = uid.getObject();
             if (decl != null) { // although openSource seems to process nulls ok, it's better to check here
-                CsmUtilities.openSource(decl);
+                final String taskName = "Open override function"; //NOI18N
+                Runnable run = new Runnable() {
+
+                    @Override
+                    public void run() {
+                        CsmUtilities.openSource(decl);
+                    }
+                };
+                CsmModelAccessor.getModel().enqueue(run, taskName);
             }
         } else if (baseUIDs.size() + descUIDs.size() + baseTemplateUIDs.size() + specializationUIDs.size() > 1) { 
             String caption = getShortDescription();
@@ -370,21 +384,5 @@ public abstract class BaseAnnotation extends Annotation {
             }
         }
         return decls;
-    }
-
-
-    private static class DeclarationPosition implements Position {
-
-        private final int offset;
-
-        public DeclarationPosition(CsmOffsetableDeclaration decl) {
-            this.offset = decl.getStartOffset();
-        }
-
-        @Override
-        public int getOffset() {
-            return offset;
-        }
-
     }
 }

@@ -1,3 +1,44 @@
+/*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Oracle in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ */
 package org.netbeans.modules.php.editor.parser;
 
 import java.util.*;
@@ -6,12 +47,12 @@ import org.netbeans.modules.php.editor.parser.astnodes.*;
 parser code {:
     private static short[][] getActionTable() {}
 
-	protected final static Integer PUBLIC = new Integer(BodyDeclaration.Modifier.PUBLIC);
-	protected final static Integer PRIVATE = new Integer(BodyDeclaration.Modifier.PRIVATE);
-	protected final static Integer PROTECTED = new Integer(BodyDeclaration.Modifier.PROTECTED);
-	protected final static Integer ABSTRACT = new Integer(BodyDeclaration.Modifier.ABSTRACT);
-	protected final static Integer FINAL = new Integer(BodyDeclaration.Modifier.FINAL);
-	protected final static Integer STATIC = new Integer(BodyDeclaration.Modifier.STATIC);
+	protected final static Integer PUBLIC = Integer.valueOf(BodyDeclaration.Modifier.PUBLIC);
+	protected final static Integer PRIVATE = Integer.valueOf(BodyDeclaration.Modifier.PRIVATE);
+	protected final static Integer PROTECTED = Integer.valueOf(BodyDeclaration.Modifier.PROTECTED);
+	protected final static Integer ABSTRACT = Integer.valueOf(BodyDeclaration.Modifier.ABSTRACT);
+	protected final static Integer FINAL = Integer.valueOf(BodyDeclaration.Modifier.FINAL);
+	protected final static Integer STATIC = Integer.valueOf(BodyDeclaration.Modifier.STATIC);
 
         private ErrorStrategy defaultStrategy = new DefaultErrorStrategy();;
         private ErrorStrategy errorStrategy = defaultStrategy;
@@ -137,7 +178,6 @@ terminal  T_INLINE_HTML;
 terminal  String T_ENCAPSED_AND_WHITESPACE;
 terminal  String T_CONSTANT_ENCAPSED_STRING;
 terminal  T_ECHO;
-terminal  T_OPEN_TAG;
 terminal  T_DO;
 terminal  T_WHILE;
 terminal  T_ENDWHILE;
@@ -485,10 +525,9 @@ statement:statement
 	RESULT = statement;
 :}
 
-| T_HALT_COMPILER T_OPEN_PARENTHESE T_CLOSE_PARENTHESE T_OPEN_TAG T_SEMICOLON:statement
+| T_HALT_COMPILER:halt
 {:
-	// Note: we never generate T_HALT_COMPILER
-	RESULT = null;
+	RESULT = new HaltCompiler(haltleft, haltright);
 :}
 
 | T_NAMESPACE:s namespace_name:list T_SEMICOLON:e
@@ -596,13 +635,6 @@ statement:statement
 | class_declaration_statement:statement
 {:
 	RESULT = statement;
-:}
-
-| T_HALT_COMPILER:halt T_OPEN_PARENTHESE T_CLOSE_PARENTHESE:close T_SEMICOLON
-{:
-	// Note: we never generate K_HALT_COMPILER
-        RESULT = null;
-        System.out.println("Syntax error ??????");
 :}
 ;
 
@@ -1313,7 +1345,7 @@ elseif_list ::=
 {:
 	((LinkedList)elseifList[0]).addFirst(condition);
 	((LinkedList)elseifList[1]).addFirst(iftrue);
-	((LinkedList)elseifList[2]).addFirst(new Integer(tokenleft));
+	((LinkedList)elseifList[2]).addFirst(Integer.valueOf(tokenleft));
 
 	RESULT = elseifList;
 :}
@@ -1336,7 +1368,7 @@ new_elseif_list ::=
 	Block block = new Block(colonleft, statementListright, statementList, false);
 	((LinkedList)elseifList[0]).addFirst(condition);
 	((LinkedList)elseifList[1]).addFirst(block);
-	((LinkedList)elseifList[2]).addFirst(new Integer(tokenleft));
+	((LinkedList)elseifList[2]).addFirst(Integer.valueOf(tokenleft));
 
 	RESULT = elseifList;
 :}
@@ -1783,12 +1815,12 @@ T_SEMICOLON /* abstract method */
 variable_modifiers ::=
 ppp_modifiers:modifier
 {:
-    RESULT = new Integer(modifier.intValue());
+    RESULT = modifier;
 :}
 
 | static_modifier:modifier
 {:
-    RESULT = new Integer(modifier.intValue());
+    RESULT = modifier;
 :}
 
 | static_modifier:fModifier ppp_modifiers:sModifier
@@ -1796,7 +1828,7 @@ ppp_modifiers:modifier
     int result = 0;
     result |= fModifier.intValue();
     result |= sModifier.intValue();
-    RESULT = new Integer(result);
+    RESULT = Integer.valueOf(result);
 :}
 
 | ppp_modifiers:fModifier static_modifier:sModifier
@@ -1804,7 +1836,7 @@ ppp_modifiers:modifier
     int result = 0;
     result |= fModifier.intValue();
     result |= sModifier.intValue();
-    RESULT = new Integer(result);
+    RESULT = Integer.valueOf(result);
 :}
 
 | T_VAR
@@ -1821,17 +1853,17 @@ method_modifiers ::=
 
 | af_modifiers:modifier
 {:
-    RESULT = new Integer(modifier.intValue());
+    RESULT = modifier;
 :}
 
 | static_modifier:modifier
 {:
-    RESULT = new Integer(modifier.intValue());
+    RESULT = modifier;
 :}
 
 | ppp_modifiers:modifier
 {:
-    RESULT = new Integer(modifier.intValue());
+    RESULT = modifier;
 :}
 
 | static_modifier:fModifier ppp_modifiers:sModifier
@@ -1839,7 +1871,7 @@ method_modifiers ::=
     int result = 0;
     result |= fModifier.intValue();
 	result |= sModifier.intValue();
-	RESULT = new Integer(result);
+	RESULT = Integer.valueOf(result);
 :}
 
 | static_modifier:fModifier af_modifiers:sModifier
@@ -1847,7 +1879,7 @@ method_modifiers ::=
     int result = 0;
     result |= fModifier.intValue();
 	result |= sModifier.intValue();
-	RESULT = new Integer(result);
+	RESULT = Integer.valueOf(result);
 :}
 
 | ppp_modifiers:fModifier static_modifier:sModifier
@@ -1855,7 +1887,7 @@ method_modifiers ::=
     int result = 0;
     result |= fModifier.intValue();
 	result |= sModifier.intValue();
-	RESULT = new Integer(result);
+	RESULT = Integer.valueOf(result);
 :}
 
 | ppp_modifiers:fModifier af_modifiers:sModifier
@@ -1863,7 +1895,7 @@ method_modifiers ::=
     int result = 0;
     result |= fModifier.intValue();
 	result |= sModifier.intValue();
-	RESULT = new Integer(result);
+	RESULT = Integer.valueOf(result);
 :}
 
 | af_modifiers:fModifier static_modifier:sModifier
@@ -1871,7 +1903,7 @@ method_modifiers ::=
     int result = 0;
     result |= fModifier.intValue();
 	result |= sModifier.intValue();
-	RESULT = new Integer(result);
+	RESULT = Integer.valueOf(result);
 :}
 
 | af_modifiers:fModifier ppp_modifiers:sModifier
@@ -1879,7 +1911,7 @@ method_modifiers ::=
     int result = 0;
     result |= fModifier.intValue();
 	result |= sModifier.intValue();
-	RESULT = new Integer(result);
+	RESULT = Integer.valueOf(result);
 :}
 
 | static_modifier:fModifier ppp_modifiers:sModifier af_modifiers:tModifier
@@ -1888,7 +1920,7 @@ method_modifiers ::=
     result |= fModifier.intValue();
 	result |= sModifier.intValue();
     result |= tModifier.intValue();
-	RESULT = new Integer(result);
+	RESULT = Integer.valueOf(result);
 :}
 
 | static_modifier:fModifier af_modifiers:sModifier ppp_modifiers:tModifier
@@ -1897,7 +1929,7 @@ method_modifiers ::=
     result |= fModifier.intValue();
 	result |= sModifier.intValue();
     result |= tModifier.intValue();
-	RESULT = new Integer(result);
+	RESULT = Integer.valueOf(result);
 :}
 
 | ppp_modifiers:fModifier static_modifier:sModifier af_modifiers:tModifier
@@ -1906,7 +1938,7 @@ method_modifiers ::=
     result |= fModifier.intValue();
 	result |= sModifier.intValue();
     result |= tModifier.intValue();
-	RESULT = new Integer(result);
+	RESULT = Integer.valueOf(result);
 :}
 
 | ppp_modifiers:fModifier af_modifiers:sModifier static_modifier:tModifier
@@ -1915,7 +1947,7 @@ method_modifiers ::=
     result |= fModifier.intValue();
 	result |= sModifier.intValue();
     result |= tModifier.intValue();
-	RESULT = new Integer(result);
+	RESULT = Integer.valueOf(result);
 :}
 
 | af_modifiers:fModifier static_modifier:sModifier ppp_modifiers:tModifier
@@ -1924,7 +1956,7 @@ method_modifiers ::=
     result |= fModifier.intValue();
 	result |= sModifier.intValue();
     result |= tModifier.intValue();
-	RESULT = new Integer(result);
+	RESULT = Integer.valueOf(result);
 :}
 
 | af_modifiers:fModifier ppp_modifiers:sModifier static_modifier:tModifier
@@ -1933,7 +1965,7 @@ method_modifiers ::=
     result |= fModifier.intValue();
 	result |= sModifier.intValue();
     result |= tModifier.intValue();
-	RESULT = new Integer(result);
+	RESULT = Integer.valueOf(result);
 :}
 ;
 
@@ -2442,7 +2474,15 @@ T_OPEN_PARENTHESE parameter_list:paramList T_CLOSE_PARENTHESE lexical_vars:varsL
 T_CURLY_OPEN:blockStart inner_statement_list:list T_CURLY_CLOSE:blockEnd
 {:
 	RESULT = new LambdaFunctionDeclaration(sleft, blockEndright, paramList, varsList,
-		new Block(blockStartleft, blockEndright, list), isReference.booleanValue());
+		new Block(blockStartleft, blockEndright, list), isReference.booleanValue(), false);
+:}
+
+| T_STATIC:st T_FUNCTION:s is_reference:isReference
+T_OPEN_PARENTHESE parameter_list:paramList T_CLOSE_PARENTHESE lexical_vars:varsList
+T_CURLY_OPEN:blockStart inner_statement_list:list T_CURLY_CLOSE:blockEnd
+{:
+	RESULT = new LambdaFunctionDeclaration(sleft, blockEndright, paramList, varsList,
+		new Block(blockStartleft, blockEndright, list), isReference.booleanValue(), true);
 :}
 ;
 
@@ -3251,12 +3291,12 @@ string_st:varName
 simple_indirect_reference ::=
 T_DOLLAR
 {:
-	RESULT = new Integer(1);
+	RESULT = Integer.valueOf(1);
 :}
 
 | simple_indirect_reference:ref T_DOLLAR
 {:
-	RESULT = new Integer(1 + ref.intValue());
+	RESULT = Integer.valueOf(1 + ref.intValue());
 :}
 ;
 

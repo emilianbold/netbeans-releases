@@ -63,7 +63,6 @@ import com.sun.source.tree.Tree;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import java.beans.PropertyChangeEvent;
-import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -71,12 +70,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import javax.lang.model.element.TypeElement;
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.jpda.ClassLoadUnloadBreakpoint;
@@ -84,13 +81,10 @@ import org.netbeans.api.debugger.jpda.LineBreakpoint;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
-import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.CancellableTask;
-import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
-import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
@@ -110,11 +104,10 @@ import org.netbeans.modules.debugger.jpda.jdi.event.LocatableEventWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.request.BreakpointRequestWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.request.EventRequestManagerWrapper;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
-import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.netbeans.spi.debugger.jpda.BreakpointsClassFilter.ClassNames;
 import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -267,14 +260,23 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
             return ;
         }
         logger.fine("LineBreakpoint "+breakpoint+" - setting request for "+className);
+        ClassNames classNames = getClassFilter().filterClassNames(
+                new ClassNames(
+                    new String[] {
+                        className // The class name is correct even for inner classes now
+                    },
+                    new String [0]),
+                breakpoint);
+        String[] names = classNames.getClassNames();
+        String[] excludedNames = classNames.getExcludedClassNames();
         setClassRequests (
-            new String[] {
-                className // The class name is correct even for inner classes now
-            }, 
-            new String [0],
+            names,
+            excludedNames,
             ClassLoadUnloadBreakpoint.TYPE_CLASS_LOADED
         );
-        checkLoadedClasses (className, null);
+        for (String cn : names) {
+            checkLoadedClasses (cn, excludedNames);
+        }
     }
 
     private void setInvalid(String reason) {
@@ -282,101 +284,6 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
                 "Unable to submit line breakpoint to "+getBreakpoint().getURL()+
                 " at line "+lineNumber+", reason: "+reason);
         setValidity(Breakpoint.VALIDITY.INVALID, reason);
-    }
-
-    private static boolean classExistsInSources(final String className, String[] projectSourceRoots) {
-        /*
-        ClassIndexManager cim = ClassIndexManager.getDefault();
-        List<FileObject> sourcePaths = new ArrayList<FileObject>(projectSourceRoots.length);
-        for (String sr : projectSourceRoots) {
-            FileObject fo = getFileObject(sr);
-            if (fo != null) {
-                sourcePaths.add(fo);
-                ClassIndexImpl ci;
-                try {
-                    ci = cim.getUsagesQuery(fo.getURL());
-                    if (ci != null) {
-                        String sourceName = ci.getSourceName(className);
-                        if (sourceName != null) {
-                            return true;
-                        }
-                    }
-                } catch (FileStateInvalidException ex) {
-                    continue;
-                } catch (java.io.IOException ioex) {
-                    continue;
-                }
-            }
-        }
-        return false;
-         */
-        List<FileObject> sourcePaths = new ArrayList<FileObject>(projectSourceRoots.length);
-        for (String sr : projectSourceRoots) {
-            FileObject fo = getFileObject(sr);
-            if (fo != null) {
-                sourcePaths.add(fo);
-            }
-        }
-        ClassPath cp = ClassPathSupport.createClassPath(sourcePaths.toArray(new FileObject[0]));
-        ClassPathSupport.createClassPath(new FileObject[] {});
-        ClasspathInfo cpInfo = ClasspathInfo.create(ClassPathSupport.createClassPath(new FileObject[] {}),
-                                                    ClassPathSupport.createClassPath(new FileObject[] {}),
-                                                    cp);
-        //ClassIndex ci = cpInfo.getClassIndex();
-        JavaSource js = JavaSource.create(cpInfo);
-        final boolean[] found = new boolean[] { false };
-        try {
-            js.runUserActionTask(new Task<CompilationController>() {
-                @Override
-                public void run(CompilationController cc) throws Exception {
-                    cc.toPhase(Phase.ELEMENTS_RESOLVED);
-                    TypeElement te = cc.getElements().getTypeElement(className);
-                    if (te != null) { // found
-                        found[0] = true;
-                    }
-                }
-            }, true);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        return found[0];
-        /*
-        SourceUtils.getFile(null, null);
-        ClasspathInfo.create(null, null, cp);
-
-        cp = org.netbeans.modules.java.source.classpath.SourcePath.create(cp, true);
-        try {
-            ClassLoader cl = cp.getClassLoader(true);
-            FileObject fo = cp.findResource(className.replace('.', '/').concat(".class"));
-            Class c = cl.loadClass(className);
-            System.err.println("classExistsInSources("+className+"): fo = "+fo+", class = "+c);
-            return c != null;
-        } catch (ClassNotFoundException ex) {
-            return false;
-        }
-        */
-    }
-
-    /**
-     * Returns FileObject for given String.
-     */
-    private static FileObject getFileObject (String file) {
-        File f = new File (file);
-        FileObject fo = FileUtil.toFileObject (f);
-        String path = null;
-        if (fo == null && file.contains("!/")) {
-            int index = file.indexOf("!/");
-            f = new File(file.substring(0, index));
-            fo = FileUtil.toFileObject (f);
-            path = file.substring(index + "!/".length());
-        }
-        if (fo != null && FileUtil.isArchiveFile (fo)) {
-            fo = FileUtil.getArchiveRoot (fo);
-            if (path !=null) {
-                fo = fo.getFileObject(path);
-            }
-        }
-        return fo;
     }
 
     @Override

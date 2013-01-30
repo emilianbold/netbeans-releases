@@ -42,6 +42,7 @@
 package org.netbeans.modules.autoupdate.ui.actions;
 
 import java.util.Collection;
+import java.util.HashSet;
 import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.autoupdate.UpdateUnitProvider;
 import org.netbeans.api.autoupdate.UpdateUnitProviderFactory;
@@ -90,7 +91,8 @@ public class CheckForUpdatesProviderImpl implements CheckForUpdatesProvider {
 
     @Override
     public boolean notifyAvailableUpdates(boolean reload) {
-        Collection<UpdateElement> updateElements = AutoupdateCheckScheduler.checkUpdateElements(OperationWizardModel.OperationType.UPDATE, reload);
+        Collection<UpdateElement> updateElements = new HashSet<UpdateElement> ();
+        AutoupdateCheckScheduler.checkUpdateElements(OperationWizardModel.OperationType.UPDATE, null, reload, updateElements);
         if (updateElements != null && ! updateElements.isEmpty()) {
             AutoupdateCheckScheduler.notifyAvailableUpdates(updateElements);
             return true;

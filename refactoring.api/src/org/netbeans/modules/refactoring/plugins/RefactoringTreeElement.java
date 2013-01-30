@@ -56,9 +56,11 @@ import org.netbeans.modules.refactoring.spi.ui.TreeElementFactory;
 public class RefactoringTreeElement implements TreeElement {
 
     RefactoringElement element;
+    private final Icon icon;
 
     RefactoringTreeElement(RefactoringElement element) {
         this.element = element;
+        icon = element.getLookup().lookup(Icon.class);
     }
 
     @Override
@@ -74,7 +76,7 @@ public class RefactoringTreeElement implements TreeElement {
     
     @Override
     public Icon getIcon() {
-        return null;
+        return icon;
     }
 
     @Override

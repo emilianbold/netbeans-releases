@@ -52,6 +52,8 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.CsmValidable;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
+import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
+import org.netbeans.modules.cnd.modelimpl.csm.CsmObjectBuilder;
 import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
@@ -64,8 +66,7 @@ import org.netbeans.modules.cnd.utils.CndUtils;
  * @author Vladimir Kvashin
  */
 public abstract class OffsetableBase implements CsmOffsetable, Disposable, CsmValidable {
-    // only one of fileRef/fileUID must be used (USE_UID_TO_CONTAINER)
-    private /*final*/ CsmFile fileRef; // can be set in onDispose or contstructor only
+    private /*final*/ CsmFile fileRef; // set in onDispose, used as marker of invalid object
     private final CsmUID<CsmFile> fileUID;
     
     private final int startPosition;
@@ -145,7 +146,7 @@ public abstract class OffsetableBase implements CsmOffsetable, Disposable, CsmVa
 
     @Override
     public boolean isValid() {
-        return CsmBaseUtilities.isValid(_getFile(false));
+        return CsmBaseUtilities.isValid(_getFile(false)) && this.fileRef == null;
     }
     
     @Override
@@ -201,7 +202,7 @@ public abstract class OffsetableBase implements CsmOffsetable, Disposable, CsmVa
     protected CharSequence getPositionString() {
         StringBuilder sb = new StringBuilder(); 
         sb.append('[');
-        CsmFile containingFile = getContainingFile();
+        CsmFile containingFile = _getFile(false);
         if (containingFile == null) {
             sb.append(" NO CONTAINER ").append(fileUID);// NOI18N
         } else {
@@ -256,4 +257,52 @@ public abstract class OffsetableBase implements CsmOffsetable, Disposable, CsmVa
         hash = 47 * hash + this.endPosition;
         return hash;
     }
+    
+    
+    public static abstract class OffsetableBuilder implements CsmObjectBuilder {
+        
+        private CsmFile file;
+        private FileContent fileContent;
+        private int startOffset;
+        private int endOffset;
+
+        public OffsetableBuilder() {
+        }
+
+        protected OffsetableBuilder(OffsetableBuilder builder) {
+            file = builder.file;
+            fileContent = builder.fileContent;
+            startOffset = builder.startOffset;
+            endOffset = builder.endOffset;
+        }
+        
+        public void setFile(CsmFile file) {
+            this.file = file;
+            this.fileContent = ((FileImpl)file).getParsingFileContent();
+        }
+        
+        public void setStartOffset(int startOffset) {
+            this.startOffset = startOffset;
+        }
+        
+        public void setEndOffset(int endOffset) {
+            this.endOffset = endOffset;
+        }
+
+        public CsmFile getFile() {
+            return file;
+        }
+
+        public FileContent getFileContent() {
+            return fileContent;
+        }
+
+        public int getStartOffset() {
+            return startOffset;
+        }
+
+        public int getEndOffset() {
+            return endOffset;
+        }
+    }    
 }

@@ -64,8 +64,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
-import org.openide.util.Lookup;
-import org.openide.util.Lookup.Result;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
@@ -188,48 +186,55 @@ public class EditorHyperlinkProviderImpl implements HyperlinkProviderExt, Lookup
         return issueId;
     }
 
-    private HyperlinkSpanInfo getIssueSpan(Document doc, int offset, HyperlinkType type) {
+    private HyperlinkSpanInfo getIssueSpan(final Document doc, final int offset, final HyperlinkType type) {
         if (issueFinders.length == 0) {
             return null;
         }
 
-        TokenHierarchy th = TokenHierarchy.get(doc);
-        List<TokenSequence> list = th.embeddedTokenSequences(offset, false);
+        final HyperlinkSpanInfo hyperlinkSpanInfo[] = new HyperlinkSpanInfo[1];
+        doc.render(new Runnable() {
+            @Override
+            public void run() {
+                TokenHierarchy th = TokenHierarchy.get(doc);
+                List<TokenSequence> list = th.embeddedTokenSequences(offset, false);
 
-        for (TokenSequence ts : list) {
-            if (ts == null) {
-                return null;
-            }
-            ts.move(offset);
-            if (!ts.moveNext()) {
-                return null;
-            }
-            Token t = ts.token();
-            TokenId tokenId;
-            String primCategory, name;
+                for (TokenSequence ts : list) {
+                    if (ts == null) {
+                        return;
+                    }
+                    ts.move(offset);
+                    if (!ts.moveNext()) {
+                        return;
+                    }
+                    Token t = ts.token();
+                    TokenId tokenId;
+                    String primCategory, name;
 
-            if (((tokenId = t.id()) == null)
-                    || ((primCategory = tokenId.primaryCategory()) == null)
-                    || ((name = tokenId.name()) == null)) {
-                continue;
-            }
-            if (primCategory.toUpperCase().indexOf("COMMENT") > -1      ||  // primaryCategory == commment should be more or less a convention // NOI18N
-                name.toUpperCase().indexOf("COMMENT") > -1)                    // consider this as a fallback // NOI18N
-            {
-                CharSequence text = t.text();
-                for (IssueFinder issueFinder : issueFinders) {
-                    int[] span = issueFinder.getIssueSpans(text);
-                    for (int i = 1; i < span.length; i += 2) {
-                        if(ts.offset() + span[i-1] <= offset && offset <= ts.offset() + span[i]) {
-                            return new HyperlinkSpanInfo(issueFinder,
-                                                         ts.offset() + span[i-1],
-                                                         ts.offset() + span[i]);
+                    if (((tokenId = t.id()) == null)
+                            || ((primCategory = tokenId.primaryCategory()) == null)
+                            || ((name = tokenId.name()) == null)) {
+                        continue;
+                    }
+                    if (primCategory.toUpperCase().indexOf("COMMENT") > -1 || // primaryCategory == commment should be more or less a convention // NOI18N
+                            name.toUpperCase().indexOf("COMMENT") > -1) // consider this as a fallback // NOI18N
+                    {
+                        CharSequence text = t.text();
+                        for (IssueFinder issueFinder : issueFinders) {
+                            int[] span = issueFinder.getIssueSpans(text);
+                            for (int i = 1; i < span.length; i += 2) {
+                                if (ts.offset() + span[i - 1] <= offset && offset <= ts.offset() + span[i]) {
+                                    hyperlinkSpanInfo[0] = new HyperlinkSpanInfo(issueFinder,
+                                            ts.offset() + span[i - 1],
+                                            ts.offset() + span[i]);
+                                    return;
+                                }
+                            }
                         }
                     }
                 }
             }
-        }
-        return null;
+        });
+        return hyperlinkSpanInfo[0];
     }
 
 }

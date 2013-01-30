@@ -41,6 +41,10 @@
  */
 package org.netbeans.modules.css.editor.module.main;
 
+import org.netbeans.modules.css.lib.api.properties.TokenAcceptor;
+import org.netbeans.modules.css.lib.api.properties.TokenAcceptor.Length;
+import org.netbeans.modules.parsing.spi.ParseException;
+
 /**
  *
  * @author mfukala@netbeans.org
@@ -109,4 +113,21 @@ public class FontsModuleTest extends CssModuleTestBase {
         
     }
     
+    //Bug 217424 - Editor does not know CSS3 rem and vmin units - Unexpected value token
+    public void testIssue217424() {
+        assertPropertyDeclaration("font-size: 1rem");
+        assertPropertyDeclaration("font-size: 8vmin");
+        
+    }
+    
+    //Bug 217544 - Value of font property without number marked with Unexpected value token 
+    public void testIssue217544() throws ParseException {
+        //allow:
+        //sup {
+        //    font: cursive;
+        //}
+        //which is not according to the spec
+        
+        assertCssCode("div { font: cursive }");
+    }
 }

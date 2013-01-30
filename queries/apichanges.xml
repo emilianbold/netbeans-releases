@@ -107,6 +107,25 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="VQChangeEvent">
+            <api name="general"/>
+            <summary>VisibilityQueryChangeEvent added</summary>
+            <version major="1" minor="32"/>
+            <date day="9" month="11" year="2012"/>
+            <author login="mkleint"/>
+            <compatibility addition="yes" binary="compatible" semantic="compatible" source="compatible">
+            </compatibility>
+            <description>
+                <p>
+                    Added new class <code>VisibilityQueryChangeEvent</code> which extends <code>ChangeEvent</code> and can be used by <code>VisibilityQueryImplementation</code> implementors
+                    to fire a change event with additional information attached. <code>ChangeListener</code> implementions listening on <code>VisibilityQuery</code> can then check the
+                    event's type when it arrives and use the additional information to their advantage.
+                </p>
+          
+            </description>
+            <class package="org.netbeans.spi.queries" name="VisibilityQueryChangeEvent"/>
+            <issue number="220749"/>
+        </change>        
        <change id="SharabilityQueryBasedOnURI">
         <api name="general"/>
         <summary>SharabilityQuery and CollocationQuery extended to use URI</summary>

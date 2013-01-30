@@ -62,7 +62,7 @@ import org.netbeans.modules.html.editor.indexing.HtmlFileModel;
 import org.netbeans.modules.html.editor.indexing.Entry;
 import org.netbeans.modules.web.common.api.DependenciesGraph;
 import org.netbeans.modules.web.common.api.DependenciesGraph.Node;
-import org.netbeans.modules.html.editor.indexing.HtmlIndex;
+import org.netbeans.modules.html.editor.api.index.HtmlIndex;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.refactoring.api.Problem;

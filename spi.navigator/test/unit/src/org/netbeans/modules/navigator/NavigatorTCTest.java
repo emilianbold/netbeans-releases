@@ -63,6 +63,7 @@ import org.netbeans.junit.RandomlyFails;
 import org.netbeans.spi.navigator.NavigatorHandler;
 import org.netbeans.spi.navigator.NavigatorLookupHint;
 import org.netbeans.spi.navigator.NavigatorPanel;
+import org.netbeans.spi.navigator.NavigatorPanelWithToolbar;
 import org.netbeans.spi.navigator.NavigatorPanelWithUndo;
 import org.openide.awt.UndoRedo;
 import org.openide.filesystems.FileObject;
@@ -445,6 +446,7 @@ public class NavigatorTCTest extends NbTestCase {
 
     /** 
      */
+    @RandomlyFails // NB-Core-Build #9367: Still Unstable
     public void test_118082_ExplorerView () throws Exception {
         System.out.println("Testing #118082, Explorer view integration...");
 
@@ -595,6 +597,34 @@ public class NavigatorTCTest extends NbTestCase {
             navTCH.close();
             ic.remove(mime1Node);
             ic.remove(mime2Hint);
+        }
+    }
+
+    public void testFeature217091_Toolbar () throws Exception {
+        InstanceContent ic = getInstanceContent();
+
+        TestLookupHint toolbarHint = new TestLookupHint("toolbar/tester");
+        ic.add(toolbarHint);
+
+        NavigatorTC navTC = NavigatorTC.getInstance();
+        NavigatorTCHandle navTCH = new NavigatorTCHandle(navTC);
+        try {
+            navTCH.open();
+            waitForProviders(navTC);
+
+            NavigatorPanel selPanel = navTC.getSelectedPanel();
+            assertNotNull("Selected panel should not be null", navTC.getSelectedPanel());
+            assertTrue("Panel class not expected", selPanel instanceof ToolbarProvider);
+            ToolbarProvider provider = (ToolbarProvider)selPanel;
+
+            JComponent toolbarProvider = provider.getToolbarComponent();
+            JComponent toolbarTC = navTC.getToolbar();
+
+            assertTrue("Expected toolbar " + toolbarProvider + ", but got " + toolbarTC, toolbarProvider == toolbarTC);
+        } finally {
+            // cleanup
+            navTCH.close();
+            ic.remove(toolbarHint);
         }
     }
     
@@ -872,6 +902,43 @@ public class NavigatorTCTest extends NbTestCase {
 
         public JComponent getComponent() {
             return new JLabel("test");
+        }
+
+        public void panelActivated(Lookup context) {
+            // no operation
+        }
+
+        public void panelDeactivated() {
+            // no operation
+        }
+
+        public Lookup getLookup() {
+            return null;
+        }
+    }
+
+    public static final class ToolbarProvider implements NavigatorPanelWithToolbar {
+
+        private JComponent toolbar;
+
+        @Override
+        public JComponent getToolbarComponent() {
+            if (toolbar == null) {
+                toolbar = new JLabel("dummy toolbar");
+            }
+            return toolbar;
+        }
+
+        public String getDisplayName() {
+            return "Toolbar provider";
+        }
+
+        public String getDisplayHint() {
+            return null;
+        }
+
+        public JComponent getComponent() {
+            return new JLabel("dummy component");
         }
 
         public void panelActivated(Lookup context) {

@@ -112,7 +112,7 @@ public class ClassifierContainer extends ProjectComponent implements Persistent,
     
     /** Creates a new instance of ClassifierContainer */
     public ClassifierContainer(ProjectBase project) {
-        super(new ClassifierContainerKey(project.getUniqueName()));
+        super(new ClassifierContainerKey(project.getUnitId()));
         classifiers = new HashMap<CharSequence, CsmUID<CsmClassifier>>();
         shortClassifiers = new HashMap<CharSequence, CsmUID<CsmClassifier>>();
         typedefs = new HashMap<CharSequence, CsmUID<CsmClassifier>>();

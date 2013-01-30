@@ -45,8 +45,10 @@
 package org.netbeans.spi.jumpto.type;
 
 import java.util.List;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.jumpto.type.TypeProviderAccessor;
+import org.openide.util.Parameters;
 
 /**
  * A Type Provider participates in the Goto Type dialog by providing TypeDescriptors,
@@ -192,7 +194,14 @@ public interface TypeProvider {
         private String[] message;
         private int retry;
 
-        Result(List<? super TypeDescriptor> result, String[] message) {
+        Result(
+                @NonNull final List<? super TypeDescriptor> result,
+                @NonNull final String[] message) {
+            Parameters.notNull("result", result);   //NOI18N
+            Parameters.notNull("message", message); //NOI18N
+            if (message.length != 1) {
+                throw new IllegalArgumentException("Message.length != 1");  //NOI18N
+            }
             this.result = result;
             this.message = message;
         }

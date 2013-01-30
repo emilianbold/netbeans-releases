@@ -38,7 +38,7 @@
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.4</specification-version>
+                        <specification-version>1.22</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -152,6 +152,7 @@
             </test-dependencies>
             <friend-packages>
                 <friend>org.javeleon.netbeans</friend>
+                <friend>org.netbeans.modules.groovy.support</friend>
                 <friend>org.netbeans.modules.hudson.maven</friend>
                 <friend>org.netbeans.modules.kenai.maven</friend>
                 <friend>org.netbeans.modules.maven</friend>
@@ -159,6 +160,7 @@
                 <friend>org.netbeans.modules.maven.checkstyle</friend>
                 <friend>org.netbeans.modules.maven.grammar</friend>
                 <friend>org.netbeans.modules.maven.graph</friend>
+                <friend>org.netbeans.modules.maven.groovy</friend>
                 <friend>org.netbeans.modules.maven.hints</friend>
                 <friend>org.netbeans.modules.maven.j2ee</friend>
                 <friend>org.netbeans.modules.maven.jaxws</friend>

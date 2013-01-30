@@ -183,10 +183,10 @@ public final class GoToJavaSourceProvider extends GoToSourceProvider {
 
                     @Override
                     public boolean cancel() {
-                        // close the progress dialog
-                        pd.close();
-                        // set as cancelled
-                        return cancelled.compareAndSet(false, true);
+                        if (cancelled.compareAndSet(false, true)) { // set as cancelled
+                            pd.close(); // close the progress dialog if needed
+                        }
+                        return true;
                     }
                 };
                 // get the formmatted target name out of class/method/signature information

@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.53.0
+#Version 1.57.1
 
 CLSS public java.lang.Object
 cons public init()
@@ -113,8 +113,20 @@ meth public static void performDefaultMoveOperation(org.netbeans.api.project.Pro
 meth public static void performDefaultRenameOperation(org.netbeans.api.project.Project,java.lang.String)
 supr java.lang.Object
 
+CLSS public abstract interface org.netbeans.spi.project.ui.support.FileActionPerformer
+meth public abstract boolean enable(org.openide.filesystems.FileObject)
+meth public abstract void perform(org.openide.filesystems.FileObject)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+
 CLSS public org.netbeans.spi.project.ui.support.FileSensitiveActions
 meth public static javax.swing.Action fileCommandAction(java.lang.String,java.lang.String,javax.swing.Icon)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+ anno 2 org.netbeans.api.annotations.common.NonNull()
+ anno 3 org.netbeans.api.annotations.common.NullAllowed()
+meth public static javax.swing.Action fileSensitiveAction(org.netbeans.spi.project.ui.support.FileActionPerformer,java.lang.String,javax.swing.Icon)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+ anno 2 org.netbeans.api.annotations.common.NonNull()
+ anno 3 org.netbeans.api.annotations.common.NullAllowed()
 supr java.lang.Object
 
 CLSS public org.netbeans.spi.project.ui.support.MainProjectSensitiveActions
@@ -164,9 +176,15 @@ innr public abstract interface static CategoryComponentProvider
 innr public abstract interface static CompositeCategoryProvider
 innr public final static Category
 meth public static java.awt.Dialog createCustomizerDialog(java.lang.String,org.openide.util.Lookup,java.lang.String,java.awt.event.ActionListener,java.awt.event.ActionListener,org.openide.util.HelpCtx)
+ anno 4 org.netbeans.api.annotations.common.NonNull()
+ anno 5 org.netbeans.api.annotations.common.NullAllowed()
 meth public static java.awt.Dialog createCustomizerDialog(java.lang.String,org.openide.util.Lookup,java.lang.String,java.awt.event.ActionListener,org.openide.util.HelpCtx)
+ anno 4 org.netbeans.api.annotations.common.NonNull()
 meth public static java.awt.Dialog createCustomizerDialog(org.netbeans.spi.project.ui.support.ProjectCustomizer$Category[],org.netbeans.spi.project.ui.support.ProjectCustomizer$CategoryComponentProvider,java.lang.String,java.awt.event.ActionListener,java.awt.event.ActionListener,org.openide.util.HelpCtx)
+ anno 4 org.netbeans.api.annotations.common.NonNull()
+ anno 5 org.netbeans.api.annotations.common.NullAllowed()
 meth public static java.awt.Dialog createCustomizerDialog(org.netbeans.spi.project.ui.support.ProjectCustomizer$Category[],org.netbeans.spi.project.ui.support.ProjectCustomizer$CategoryComponentProvider,java.lang.String,java.awt.event.ActionListener,org.openide.util.HelpCtx)
+ anno 4 org.netbeans.api.annotations.common.NonNull()
 meth public static javax.swing.ComboBoxModel encodingModel(java.lang.String)
 meth public static javax.swing.ListCellRenderer encodingRenderer()
 supr java.lang.Object
@@ -245,6 +263,7 @@ meth public static org.openide.filesystems.FileObject getExistingSourcesFolder(o
 meth public static org.openide.filesystems.FileObject getTargetFolder(org.openide.WizardDescriptor)
 meth public static org.openide.filesystems.FileObject getTemplate(org.openide.WizardDescriptor)
 meth public static void setDefinesMainProject(org.openide.WizardDescriptor,boolean)
+ anno 0 java.lang.Deprecated()
 meth public static void setTargetFolder(org.openide.WizardDescriptor,org.openide.filesystems.FileObject)
 meth public static void setTargetName(org.openide.WizardDescriptor,java.lang.String)
 supr java.lang.Object

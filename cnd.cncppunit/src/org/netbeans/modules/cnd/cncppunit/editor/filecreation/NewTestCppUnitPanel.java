@@ -52,6 +52,7 @@ import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
 import org.netbeans.modules.cnd.editor.filecreation.CndPanel;
 import org.netbeans.modules.cnd.settings.CppSettings;
+import org.netbeans.modules.cnd.simpleunit.utils.MakefileUtils;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -202,6 +203,11 @@ public class NewTestCppUnitPanel extends CndPanel {
             setErrorMessage(errorMessage);
         }
 
+        if (MakefileUtils.getMakefile(project) == null) {
+            setInfoMessage( NbBundle.getMessage(NewTestCppUnitPanel.class, "MSG_Missing_Makefile") );
+            return false;
+        }
+        
         return errorMessage == null;
     }
 

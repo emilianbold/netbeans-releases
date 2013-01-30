@@ -63,7 +63,6 @@ import javax.swing.AbstractAction;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.KeyStroke;
-import javax.swing.text.Keymap;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.DeadlockDetector.Deadlock;
@@ -82,6 +81,7 @@ public final class ThreadsHistoryAction extends AbstractAction {
         putValue(NAME, NbBundle.getMessage(ThreadsHistoryAction.class, "CTL_ThreadsHistoryAction"));
     }
     
+    @Override
     public void actionPerformed(ActionEvent evt) {
         List<JPDAThread> threads = getThreads();
         int threadsCount = threads.size();
@@ -191,6 +191,7 @@ public final class ThreadsHistoryAction extends AbstractAction {
         private ActivatableElement(JPDAThread thread) {
             this.thread = thread;
         }
+        @Override
         public void activate() {
             thread.makeCurrent();
         }
@@ -248,6 +249,7 @@ public final class ThreadsHistoryAction extends AbstractAction {
             iconBase = new ImageIcon(image);
         }
         
+        @Override
         public void paintIcon(Component c, Graphics g, int x, int y) {
             int width = iconBase.getIconWidth();
             int height = iconBase.getIconHeight();
@@ -280,10 +282,12 @@ public final class ThreadsHistoryAction extends AbstractAction {
             g.setColor(originalColor);
         }
 
+        @Override
         public int getIconWidth() {
             return 2 * iconBase.getIconWidth();
         }
 
+        @Override
         public int getIconHeight() {
             return iconBase.getIconHeight();
         }

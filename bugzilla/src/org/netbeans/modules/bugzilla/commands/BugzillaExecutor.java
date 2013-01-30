@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.bugzilla.commands;
 
+import org.netbeans.modules.mylyn.util.PerformQueryCommand;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.UnknownHostException;
@@ -51,6 +52,8 @@ import java.util.logging.Level;
 import org.apache.commons.httpclient.RedirectException;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.mylyn.internal.bugzilla.core.BugzillaStatus;
+import org.eclipse.mylyn.internal.bugzilla.core.BugzillaUserMatchResponse;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaVersion;
 import org.eclipse.mylyn.tasks.core.RepositoryStatus;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
@@ -59,6 +62,7 @@ import org.netbeans.modules.bugzilla.autoupdate.BugzillaAutoupdate;
 import org.netbeans.modules.bugzilla.repository.BugzillaConfiguration;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
+import org.netbeans.modules.mylyn.util.BugtrackingCommand;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -87,23 +91,23 @@ public class BugzillaExecutor {
         this.repository = repository;
     }
 
-    public void execute(BugzillaCommand cmd) {
+    public void execute(BugtrackingCommand cmd) {
         execute(cmd, true);
     }
 
-    public void execute(BugzillaCommand cmd, boolean handleExceptions) {
+    public void execute(BugtrackingCommand cmd, boolean handleExceptions) {
         execute(cmd, handleExceptions, true);
     }
 
-    public void execute(BugzillaCommand cmd, boolean handleExceptions, boolean checkVersion) {
+    public void execute(BugtrackingCommand cmd, boolean handleExceptions, boolean checkVersion) {
         execute(cmd, handleExceptions, checkVersion, true, true);
     }
 
-    public void execute(BugzillaCommand cmd, boolean handleExceptions, boolean checkVersion, boolean ensureCredentials) {
+    public void execute(BugtrackingCommand cmd, boolean handleExceptions, boolean checkVersion, boolean ensureCredentials) {
         execute(cmd, handleExceptions, checkVersion, ensureCredentials, true);
     }
     
-    public void execute(BugzillaCommand cmd, boolean handleExceptions, boolean checkVersion, boolean ensureCredentials, boolean reexecute) {
+    public void execute(BugtrackingCommand cmd, boolean handleExceptions, boolean checkVersion, boolean ensureCredentials, boolean reexecute) {
         try {
             cmd.setFailed(true);
 
@@ -439,7 +443,36 @@ public class BugzillaExecutor {
         private static void notifyError(CoreException ce, BugzillaRepository repository) {
             String msg = getMessage(ce);
             IStatus status = ce.getStatus();
-            if (status instanceof RepositoryStatus) {
+            if (status instanceof BugzillaStatus) {
+                BugzillaStatus bs = (BugzillaStatus) status;
+                BugzillaUserMatchResponse res = bs.getUserMatchResponse();
+                
+                if(res != null) {
+                    String assignedMsg = res.getAssignedToMsg();
+                    String newCCMsg = res.getNewCCMsg();
+                    String qaContactMsg = res.getQaContactMsg();
+
+                    StringBuilder sb = new StringBuilder();
+                    if(msg != null) {
+                        sb.append(msg);
+                    }
+                    if(assignedMsg != null) {
+                        sb.append('\n');
+                        sb.append(assignedMsg);
+                    }
+                    if (newCCMsg != null) {
+                        sb.append('\n');
+                        sb.append(newCCMsg);
+                    }
+                    if (qaContactMsg != null) {
+                        sb.append('\n');
+                        sb.append(qaContactMsg);
+                    }
+                    msg = sb.toString();
+                }
+            }
+            
+            if (msg == null && status instanceof RepositoryStatus) {
                 RepositoryStatus rs = (RepositoryStatus) status;
                 String html = rs.getHtmlMessage();
                 if(notifyHtmlMessage(html, repository, msg == null)) return;

@@ -117,8 +117,12 @@ public class EjbJarEMGenStrategyResolver implements EntityManagerGenerationStrat
     private boolean isInjectionTarget(FileObject target) {
         final boolean[] result = new boolean[1];
         JavaSource source = JavaSource.forFileObject(target);
+        if (source == null) {
+            return false;
+        }
         try{
             source.runModificationTask(new Task<WorkingCopy>(){
+                @Override
                 public void run(WorkingCopy parameter) throws Exception {
                     parameter.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                     TypeElement typeElement = SourceUtils.getPublicTopLevelElement(parameter);

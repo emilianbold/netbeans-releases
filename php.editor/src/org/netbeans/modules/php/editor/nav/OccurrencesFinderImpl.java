@@ -42,7 +42,13 @@
 
 package org.netbeans.modules.php.editor.nav;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.prefs.Preferences;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -62,6 +68,7 @@ import org.netbeans.modules.php.editor.model.Model;
 import org.netbeans.modules.php.editor.model.Occurence;
 import org.netbeans.modules.php.editor.model.Occurence.Accuracy;
 import org.netbeans.modules.php.editor.model.OccurencesSupport;
+import org.netbeans.modules.php.editor.model.OccurrenceHighlighter;
 import org.netbeans.modules.php.editor.options.MarkOccurencesSettings;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 
@@ -96,25 +103,25 @@ public class OccurrencesFinderImpl extends OccurrencesFinder {
         //remove the last occurrences - the CSL caches the last found occurences for us
         range2Attribs = null;
 
-        if(cancelled) {
+        if (cancelled) {
             cancelled = false;
-            return ;
+            return;
         }
 
         Preferences node = MarkOccurencesSettings.getCurrentNode();
-        Map<OffsetRange, ColoringAttributes> localRange2Attribs= new HashMap<OffsetRange, ColoringAttributes>();
+        Map<OffsetRange, ColoringAttributes> localRange2Attribs = new HashMap<OffsetRange, ColoringAttributes>();
         if (node.getBoolean(MarkOccurencesSettings.ON_OFF, true)) {
             for (OffsetRange r : compute((ParserResult) result, caretPosition)) {
                 localRange2Attribs.put(r, ColoringAttributes.MARK_OCCURRENCES);
             }
         }
 
-        if(cancelled) {
+        if (cancelled) {
             cancelled = false;
-            return ;
+            return;
         }
 
-        if(!node.getBoolean(MarkOccurencesSettings.KEEP_MARKS, true) || localRange2Attribs.size() > 0) {
+        if (!node.getBoolean(MarkOccurencesSettings.KEEP_MARKS, true) || localRange2Attribs.size() > 0) {
             //store the occurrences if not empty, return null in getOccurrences() otherwise
             range2Attribs = localRange2Attribs;
         }
@@ -129,7 +136,7 @@ public class OccurrencesFinderImpl extends OccurrencesFinder {
             }
         });
         final TokenHierarchy<?> tokenHierarchy = parseResult.getSnapshot().getTokenHierarchy();
-        TokenSequence<PHPTokenId> tokenSequence = tokenHierarchy != null ? LexUtilities.getPHPTokenSequence( tokenHierarchy, offset) : null;
+        TokenSequence<PHPTokenId> tokenSequence = tokenHierarchy != null ? LexUtilities.getPHPTokenSequence(tokenHierarchy, offset) : null;
         OffsetRange referenceSpan = tokenSequence != null ? DeclarationFinderImpl.getReferenceSpan(tokenSequence, offset, parseResult.getModel()) : OffsetRange.NONE;
         if (!referenceSpan.equals(OffsetRange.NONE)) {
             Model model = parseResult.getModel();
@@ -152,6 +159,7 @@ public class OccurrencesFinderImpl extends OccurrencesFinder {
                 }
             }
         } else {
+            OccurrenceHighlighterImpl highlighter = new OccurrenceHighlighterImpl();
             OffsetRange referenceSpanForCodeMarkers = tokenSequence != null ? getReferenceSpanForCodeMarkers(tokenSequence, offset) : OffsetRange.NONE;
             if (!referenceSpanForCodeMarkers.equals(OffsetRange.NONE)) {
                 Model model = parseResult.getModel();
@@ -160,10 +168,11 @@ public class OccurrencesFinderImpl extends OccurrencesFinder {
                 if (codeMarker != null) {
                     Collection<? extends CodeMarker> allMarkers = codeMarker.getAllMarkers();
                     for (CodeMarker marker : allMarkers) {
-                        result.add(marker.getOffsetRange());
+                        marker.highlight(highlighter);
                     }
                 }
             }
+            result.addAll(highlighter.getRanges());
         }
         return result;
     }
@@ -188,5 +197,18 @@ public class OccurrencesFinderImpl extends OccurrencesFinder {
     @Override
     public Class<? extends Scheduler> getSchedulerClass() {
         return Scheduler.CURSOR_SENSITIVE_TASK_SCHEDULER;
+    }
+
+    private static final class OccurrenceHighlighterImpl implements OccurrenceHighlighter {
+        private Set<OffsetRange> offsetRanges = new TreeSet<OffsetRange>();
+
+        @Override
+        public void add(OffsetRange offsetRange) {
+            offsetRanges.add(offsetRange);
+        }
+
+        private Set<OffsetRange> getRanges() {
+            return new TreeSet<OffsetRange>(offsetRanges);
+        }
     }
 }

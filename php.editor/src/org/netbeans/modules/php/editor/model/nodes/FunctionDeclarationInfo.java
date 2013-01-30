@@ -61,6 +61,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.Program;
  */
 public class FunctionDeclarationInfo extends ASTNodeInfo<FunctionDeclaration> {
     Map<String, List<QualifiedName>> paramDocTypes = Collections.emptyMap();
+
     protected FunctionDeclarationInfo(Program program, FunctionDeclaration node) {
         super(node);
         if (program != null) {
@@ -71,10 +72,9 @@ public class FunctionDeclarationInfo extends ASTNodeInfo<FunctionDeclaration> {
     public static FunctionDeclarationInfo create(FunctionDeclaration functionDeclaration) {
         return new FunctionDeclarationInfo(null, functionDeclaration);
     }
-    public static FunctionDeclarationInfo create(Program program,FunctionDeclaration functionDeclaration) {
+    public static FunctionDeclarationInfo create(Program program, FunctionDeclaration functionDeclaration) {
         return new FunctionDeclarationInfo(program, functionDeclaration);
     }
-
 
     @Override
     public Kind getKind() {

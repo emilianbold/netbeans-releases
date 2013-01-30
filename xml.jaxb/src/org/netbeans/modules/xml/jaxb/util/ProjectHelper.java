@@ -103,6 +103,7 @@ import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
+import org.openide.awt.StatusDisplayer;
 import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileLock;
@@ -276,6 +277,14 @@ public class ProjectHelper {
     
     public static void disableCoS(Project p, final boolean enable) {
         final AntProjectHelper helper = getAntProjectHelper(p);
+        if (helper == null) {
+            if (enable) {
+                StatusDisplayer.getDefault().setStatusText(
+                        NbBundle.getMessage(ProjectHelper.class, "WARN_couldNotEnableCoS"),
+                        StatusDisplayer.IMPORTANCE_ERROR_HIGHLIGHT);
+            }
+            return;
+        }
         try {
             ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
                 @Override
@@ -746,7 +755,7 @@ public class ProjectHelper {
                 return helper;
             }
         } catch (NoSuchMethodException nme) {
-            Exceptions.printStackTrace(nme);
+            // somewhat expected for non-ant projects
         } catch (Exception ex) {
             Exceptions.printStackTrace(ex);
         }

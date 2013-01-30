@@ -46,6 +46,7 @@ package org.netbeans.modules.db.explorer.action;
 
 import java.awt.Dialog;
 import java.awt.Dimension;
+import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
@@ -293,7 +294,16 @@ public class ConnectAction extends BaseAction {
                     
                     final PropertyChangeListener connectionListener = new PropertyChangeListener() {
                         @Override
-                        public void propertyChange(PropertyChangeEvent event) {
+                        public void propertyChange(final PropertyChangeEvent event) {
+                            EventQueue.invokeLater(new Runnable() {
+                                @Override
+                                public void run() {
+                                    handlePropertyChange(event);
+                                }
+                            });
+                        }
+
+                        private void handlePropertyChange(PropertyChangeEvent event) {
                             if (event.getPropertyName().equals("connected")) { //NOI18N
                                 try {
                                     connector.finishConnect(null, dbcon, dbcon.getConnection());

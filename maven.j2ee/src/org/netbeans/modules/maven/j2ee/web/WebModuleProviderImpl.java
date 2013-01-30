@@ -142,6 +142,10 @@ public class WebModuleProviderImpl extends BaseEEModuleProvider implements WebMo
     @Override
     public FileObject[] getSourceRoots() {
         ProjectSourcesClassPathProvider cppImpl = project.getLookup().lookup(ProjectSourcesClassPathProvider.class);
+        if (cppImpl == null) {
+            return new FileObject[0];
+        }
+
         ClassPath cp = cppImpl.getProjectSourcesClassPath(ClassPath.SOURCE);
         NbMavenProject prj = project.getLookup().lookup(NbMavenProject.class);
         List<URL> resUris = new ArrayList<URL>();

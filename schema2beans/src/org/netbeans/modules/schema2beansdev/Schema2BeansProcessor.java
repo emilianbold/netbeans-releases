@@ -129,6 +129,7 @@ public class Schema2BeansProcessor extends AbstractProcessor {
             String inputUri = fileObjectToUri(schema).toString();
             processingEnv.getMessager().printMessage(Kind.NOTE, "parsing: " + inputUri);
             config.setInputURI(inputUri);
+            config.setJava5(s2b.java5());
             switch (s2b.schemaType()) {
             case DTD:
                 config.setSchemaType(Config.DTD);

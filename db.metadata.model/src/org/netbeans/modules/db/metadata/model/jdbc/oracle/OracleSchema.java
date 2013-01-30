@@ -144,6 +144,7 @@ public class OracleSchema extends JDBCSchema {
                     rs.close();
                 }
             }
+            stmt.close();
         } catch (Exception e) {
             LOGGER.log(Level.INFO, "Error while analyzing the recycle bin. JDBC Driver: " + driverName + "(" + driverVer + ")", e);
         }
@@ -176,6 +177,7 @@ public class OracleSchema extends JDBCSchema {
                     rs.close();
                 }
             }
+            stmt.close();
         } catch (SQLException e) {
             throw new MetadataException(e);
         }

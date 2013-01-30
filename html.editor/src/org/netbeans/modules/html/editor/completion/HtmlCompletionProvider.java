@@ -159,8 +159,13 @@ public class HtmlCompletionProvider implements CompletionProvider {
                 //check the items
                 for (CompletionItem item : items) {
                     if (item instanceof HtmlCompletionItem) {
-                        if (startsWithIgnoreCase(((HtmlCompletionItem) item).getItemText(), prefix)) {
-                            return true; //at least one item will remain
+                        String itemText = ((HtmlCompletionItem) item).getItemText();
+                        if(itemText != null) { //http://netbeans.org/bugzilla/show_bug.cgi?id=222234
+                            if (startsWithIgnoreCase(itemText, prefix)) {
+                                return true; //at least one item will remain
+                            }
+                        } else {
+                            LOG.log(Level.WARNING, "CompletionItem {0} returned null from getItemText()!", item);
                         }
                     }
                 }
@@ -341,7 +346,7 @@ public class HtmlCompletionProvider implements CompletionProvider {
                         TokenSequence ts = Utils.getJoinedHtmlSequence(doc, dotPos);
                         if (ts == null) {
                             //no suitable token sequence found
-                            value.set(true);
+                            value.set(false);
                             return;
                         }
 
@@ -522,18 +527,22 @@ public class HtmlCompletionProvider implements CompletionProvider {
 
     private static class HtmlTagDocumetationItem implements CompletionDocumentation {
 
-        HtmlCompletionItem item;
+        private final HtmlCompletionItem item;
+        private final String documentationText;
 
         public HtmlTagDocumetationItem(HtmlCompletionItem ri) {
             this.item = ri;
+            
+            //initialize the text in constructor as it is not called from EDT
+            //in contrary to the {@link #getText()} method.
+            this.documentationText = loadDocText(); 
         }
 
         private HelpItem getHelpItem() {
             return item.getHelpItem();
         }
 
-        @Override
-        public String getText() {
+        private String loadDocText() {
             //normally it should be enough to return null here
             //and the documentation would be loaded from the URL.
             //However it seems that the html5 anchor navigation doesn't
@@ -555,6 +564,11 @@ public class HtmlCompletionProvider implements CompletionProvider {
             sb.append(helpContent);
 
             return sb.toString();
+        }
+        
+        @Override
+        public String getText() {
+            return documentationText;
         }
 
         @Override

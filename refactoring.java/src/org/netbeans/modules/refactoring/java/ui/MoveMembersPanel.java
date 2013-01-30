@@ -104,7 +104,7 @@ public class MoveMembersPanel extends javax.swing.JPanel implements CustomRefact
     private static final RequestProcessor RP = new RequestProcessor(MoveMembersPanel.class.getName(), 1);
     private final ListCellRenderer GROUP_CELL_RENDERER = new MoveClassPanel.GroupCellRenderer();
     private final ListCellRenderer PROJECT_CELL_RENDERER = new MoveClassPanel.ProjectCellRenderer();
-    private final ListCellRenderer CLASS_CELL_RENDERER = new ClassListCellRenderer();
+    private final ListCellRenderer CLASS_CELL_RENDERER = new MoveClassPanel.ClassListCellRenderer();
     private ChangeListener parent;
     private FiltersManager filtersManager;
     private final ExplorerManager manager;
@@ -1189,79 +1189,6 @@ public class MoveMembersPanel extends javax.swing.JPanel implements CustomRefact
         @Override
         public int getIconHeight() {
             return delegate.getHeight();
-        }
-    }
-
-    /**
-     * The renderer which just displays {@link PackageItem#getLabel} and {@link PackageItem#getIcon}.
-     */
-    private static final class ClassListCellRenderer extends JLabel implements ListCellRenderer, UIResource {
-
-        public ClassListCellRenderer() {
-            setOpaque(true);
-        }
-
-        @Override
-        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-            // #93658: GTK needs name to render cell renderer "natively"
-            setName("ComboBox.listRenderer"); // NOI18N
-
-            if (value instanceof ClassItem) {
-                ClassItem item = (ClassItem) value;
-                setText(item.getDisplayName());
-                setIcon(item.getIcon());
-            } else if (value instanceof Node) {
-                Node node = (Node) value;
-                setText(node.getHtmlDisplayName());
-                setIcon(new ImageIcon(node.getIcon(BeanInfo.ICON_COLOR_16x16)));
-            } else {
-                // #49954: render a specially inserted class somehow.
-                String item = (String) value;
-                setText(item);
-                setIcon(null);
-            }
-
-            if (isSelected) {
-                setBackground(list.getSelectionBackground());
-                setForeground(list.getSelectionForeground());
-            } else {
-                setBackground(list.getBackground());
-                setForeground(list.getForeground());
-            }
-
-            return this;
-        }
-
-        // #93658: GTK needs name to render cell renderer "natively"
-        @Override
-        public String getName() {
-            String name = super.getName();
-            return name == null ? "ComboBox.renderer" : name;  // NOI18N
-        }
-    }
-
-    private static class ClassItem {
-
-        private final String displayName;
-        private final Icon icon;
-        private final TreePathHandle handle;
-
-        public ClassItem(String displayName, Icon icon, TreePathHandle handle) {
-            this.displayName = displayName;
-            this.icon = icon;
-            this.handle = handle;
-        }
-
-        public String getDisplayName() {
-            return displayName;
-        }
-
-        public Icon getIcon() {
-            return icon;
-        }
-
-        private TreePathHandle getHandle() {
-            return handle;
         }
     }
 }

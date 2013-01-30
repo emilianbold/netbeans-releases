@@ -69,7 +69,7 @@ public class RunTestCommand extends Command implements Displayable {
     }
 
     @Override
-    public void invokeAction(Lookup context) {
+    public void invokeActionInternal(Lookup context) {
         FileObject testClass = findTest(context);
         if (testClass == null) {
             DialogDisplayer.getDefault().notify(
@@ -80,7 +80,7 @@ public class RunTestCommand extends Command implements Displayable {
     }
 
     @Override
-    public boolean isActionEnabled(Lookup context) {
+    public boolean isActionEnabledInternal(Lookup context) {
         return true;
     }
 

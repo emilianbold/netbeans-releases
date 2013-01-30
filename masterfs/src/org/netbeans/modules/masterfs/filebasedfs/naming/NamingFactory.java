@@ -50,6 +50,7 @@ import java.util.*;
 import org.netbeans.modules.masterfs.filebasedfs.utils.FileInfo;
 import org.netbeans.modules.masterfs.filebasedfs.utils.Utils;
 import org.netbeans.modules.masterfs.providers.ProvidedExtensions;
+import org.openide.util.Utilities;
 
 /**
  * @author Radek Matous
@@ -58,7 +59,10 @@ public final class NamingFactory {
     private static NameRef[] names = new NameRef[2];
     private static int namesCount;
 
-    public static FileNaming fromFile(final File file) {
+    public static FileNaming fromFile(File file) {
+        if (Utilities.isWindows() && file.getPath().length() == 2 && file.getPath().charAt(1) == ':') {
+            file = new File(file.getPath() + File.separator);
+        }
         final LinkedList<FileInfo> list = new LinkedList<FileInfo>();
         File current = file;
         while (current != null) {
@@ -138,12 +142,20 @@ public final class NamingFactory {
         
         synchronized(NamingFactory.class) {        
             all.add(newNaming);
-            renameChildren(fNaming, all);
+            collectSubnames(fNaming, all);
             return (retVal) ? ((FileNaming[]) all.toArray(new FileNaming[all.size()])) : null;
         }
     }
-
-    private static void renameChildren(FileNaming root, Collection<FileNaming> all) {
+    
+    public static Collection<FileNaming> findSubTree(FileNaming root) {
+        final Collection<FileNaming> all = new LinkedHashSet<FileNaming>();
+        synchronized (NamingFactory.class) {
+            collectSubnames(root, all);
+        }
+        return all;
+    }
+    
+    private static void collectSubnames(FileNaming root, Collection<FileNaming> all) {
         assert Thread.holdsLock(NamingFactory.class);
         Collection<FileNaming> not = new HashSet<FileNaming>(names.length);
         for (int i = 0; i < names.length; i++) {

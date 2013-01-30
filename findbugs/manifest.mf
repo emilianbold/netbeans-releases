@@ -1,9 +1,10 @@
 Manifest-Version: 1.0
 AutoUpdate-Show-In-Client: true
 OpenIDE-Module: org.netbeans.modules.findbugs
+OpenIDE-Module-Install: org/netbeans/modules/findbugs/Installer.class
 OpenIDE-Module-Layer: org/netbeans/modules/findbugs/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/findbugs/Bundle.properties
 xOpenIDE-Module-Package-Dependencies: [edu.umd.cs.findbugs.BugPattern]
-OpenIDE-Module-Specification-Version: 1.14.2
+OpenIDE-Module-Specification-Version: 1.21
 OpenIDE-Module-Recommends: org.netbeans.modules.findbugs.installer
 

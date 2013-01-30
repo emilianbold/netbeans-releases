@@ -23,7 +23,7 @@
         <Comments>
             <PHPVarComment start='7' end='31'>
                 <Variable>
-                    <PHPDocVarTypeTag start='10' end='26' kind='VAR'>
+                    <PHPDocVarTypeTag start='10' end='26' kind='var'>
                         <Variable>
                             <PHPDocNode start='15' end='21' value='$items'/>
                         </Variable>
@@ -35,7 +35,7 @@
             </PHPVarComment>
             <PHPVarComment start='7' end='31'>
                 <Variable>
-                    <PHPDocVarTypeTag start='10' end='26' kind='VAR'>
+                    <PHPDocVarTypeTag start='10' end='26' kind='var'>
                         <Variable>
                             <PHPDocNode start='15' end='21' value='$items'/>
                         </Variable>

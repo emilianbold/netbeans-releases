@@ -43,18 +43,24 @@
  */
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
-import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.api.model.CsmOffsetable;
+import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmUID;
+import org.netbeans.modules.cnd.modelimpl.csm.CsmObjectBuilder;
+import org.netbeans.modules.cnd.modelimpl.csm.NameHolder;
+import org.netbeans.modules.cnd.modelimpl.csm.SpecializationDescriptor;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
+import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDProviderIml;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
+import org.openide.util.CharSequences;
 
 /**
  * class to present object that has unique ID and is offsetable
@@ -102,6 +108,137 @@ public abstract class OffsetableIdentifiableBase<T> extends OffsetableBase imple
         // this.uid = null;
     }
 
+    public static class NameBuilder extends OffsetableBuilder {
+        
+        boolean global = false;
+        List<NamePart> nameParts = new ArrayList<NamePart>();
+        
+        public void addNamePart(CharSequence part) {
+            nameParts.add(new NamePart(part));
+        }
+
+        public void setGlobal() {
+            global = true;
+        }
+
+        public List<CharSequence> getNameParts() {
+            List<CharSequence> names = new ArrayList<CharSequence>();
+            for (NamePart namePart : nameParts) {
+                names.add(namePart.part);
+            }
+            return names;
+        }
+
+        public List<NamePart> getNames() {
+            return nameParts;
+        }
+        
+        public CharSequence getName() {
+            StringBuilder sb = new StringBuilder();
+            boolean firstScope = !global;
+            for (NamePart part : nameParts) {                
+                if(!firstScope) {
+                    sb.append("::"); // NOI18N
+                }
+                sb.append(part.part);
+                firstScope = false;
+            }
+            return NameCache.getManager().getString(sb.toString());
+        }
+        
+        public CharSequence getLastNamePart() {
+            return nameParts.get(nameParts.size() - 1).part;
+        }
+
+        public void addParameterBuilder(SpecializationDescriptor.SpecializationParameterBuilder param) {
+            if(!nameParts.isEmpty()) {
+                nameParts.get(nameParts.size() - 1).params.add(param);
+            }
+        }
+        
+        public static class NamePart {
+            CharSequence part;
+            
+            List<SpecializationDescriptor.SpecializationParameterBuilder> params = new ArrayList<SpecializationDescriptor.SpecializationParameterBuilder>();
+
+            public NamePart(CharSequence part) {
+                this.part = part;
+            }
+
+            public CharSequence getPart() {
+                return part;
+            }
+
+            public List<SpecializationDescriptor.SpecializationParameterBuilder> getParams() {
+                return params;
+            }
+            
+        }
+        
+    }
+    
+    public static abstract class OffsetableIdentifiableBuilder extends OffsetableBuilder implements CsmObjectBuilder {
+        
+        private CharSequence name;
+        private int nameStartOffset = -1;
+        private int nameEndOffset = -1;
+        private boolean isMacroExpanded = false;
+
+        public OffsetableIdentifiableBuilder() {
+        }
+
+        protected OffsetableIdentifiableBuilder(OffsetableIdentifiableBuilder builder) {
+            super(builder);
+            name = builder.name;
+            nameStartOffset = builder.nameStartOffset;
+            nameEndOffset = builder.nameEndOffset;
+            isMacroExpanded = builder.isMacroExpanded;
+        }
+        
+        public void setName(CharSequence name) {
+            this.name = name;
+        }
+
+        public void setNameStartOffset(int nameStartOffset) {
+            this.nameStartOffset = nameStartOffset;
+        }
+
+        public void setNameEndOffset(int nameEndOffset) {
+            this.nameEndOffset = nameEndOffset;
+        }
+
+        public void setMacroExpanded() {
+            this.isMacroExpanded = true;
+        }
+
+        public CharSequence getName() {
+            if(name== null) {
+                return NameCache.getManager().getString(CharSequences.empty()); //NOI18N
+            } 
+            return NameCache.getManager().getString(name);
+        }
+        
+        public CharSequence getRawName() {
+            if(name== null) {
+                return NameCache.getManager().getString(CharSequences.empty()); //NOI18N
+            } 
+            return NameCache.getManager().getString(CharSequences.create(name.toString().replace("::", "."))); //NOI18N
+        }
+        
+        public NameHolder getNameHolder() {
+            if(nameStartOffset != -1 && nameEndOffset != -1) {
+                return NameHolder.createName(name, nameStartOffset, nameEndOffset, isMacroExpanded);
+            } else {
+                return NameHolder.createName(name);
+            }
+        }
+
+        protected void addReference(CsmObject obj) {
+            getNameHolder().addReference(getFileContent(), obj);
+        }
+        
+    }    
+    
     ////////////////////////////////////////////////////////////////////////////
     // impl of SelfPersistent
     @Override

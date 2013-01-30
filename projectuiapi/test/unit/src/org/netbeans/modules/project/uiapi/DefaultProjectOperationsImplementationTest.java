@@ -300,9 +300,9 @@ public class DefaultProjectOperationsImplementationTest extends NbTestCase {
         OpenProjects.getDefault().close(OpenProjects.getDefault().getOpenProjects());
         OpenProjects.getDefault().open(new Project[] {prj}, false);
         
-        Project main = OpenProjects.getDefault().getMainProject();
-        
-        assertTrue(main == null || !prj.getProjectDirectory().equals(main.getProjectDirectory()));
+        //set the project to be copied as main.
+        OpenProjects.getDefault().setMainProject(prj);       
+        assertTrue(prj.getProjectDirectory().equals(OpenProjects.getDefault().getMainProject().getProjectDirectory()));
         
         ProgressHandle handle = ProgressHandleFactory.createHandle("test-handle");
         handle.start(DefaultProjectOperationsImplementation.MAX_WORK);
@@ -312,7 +312,9 @@ public class DefaultProjectOperationsImplementationTest extends NbTestCase {
         
         DefaultProjectOperationsImplementation.doCopyProject(handle, prj, "projCopy", newTarget);
         
-        assertTrue(main == null || OpenProjects.getDefault().getMainProject().equals(main.getProjectDirectory()));
+        //test that after copying the main project is still the original one.
+        Project main = OpenProjects.getDefault().getMainProject();
+        assertTrue(main != null && main.getProjectDirectory().equals(prj.getProjectDirectory()));
     }
     //</editor-fold>
     

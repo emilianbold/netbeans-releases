@@ -42,9 +42,9 @@
 
 package org.netbeans.modules.php.editor.api.elements;
 
-import org.netbeans.modules.php.editor.api.ElementQuery;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.csl.api.ElementHandle;
+import org.netbeans.modules.php.editor.api.ElementQuery;
 import org.netbeans.modules.php.editor.api.PhpElementKind;
 import org.netbeans.modules.php.editor.api.PhpModifiers;
 

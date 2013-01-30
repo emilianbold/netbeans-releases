@@ -41,12 +41,17 @@
  */
 package org.netbeans.api.search;
 
+import java.io.File;
+import java.net.URI;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.search.provider.SearchFilter;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Parameters;
 
 /**
@@ -57,8 +62,11 @@ public final class SearchRoot {
 
     private List<SearchFilter> filters;
     private FileObject rootFile;
+    private URI rootUri;
     private static final List<SearchFilter> EMPTY_FILTER_LIST =
             Collections.emptyList();
+    private static final Logger LOG = Logger.getLogger(
+            SearchRoot.class.getName());
 
     /**
      * Create a new search root, defined by a folder and a set of filters.
@@ -71,6 +79,22 @@ public final class SearchRoot {
 
         Parameters.notNull("rootFile", rootFile);                       //NOI18N
         this.rootFile = rootFile;
+        this.filters = filters == null ? EMPTY_FILTER_LIST : filters;
+    }
+
+    /**
+     * Create a new search root, defined by a folder and a set of filters.
+     *
+     * @param rootUri Root URI, cannot be null.
+     * @param filters List of default filters, can be null.
+     *
+     * @since org.netbeans.api.search/1.4
+     */
+    public SearchRoot(@NonNull URI rootUri,
+            @NullAllowed List<SearchFilter> filters) {
+
+        Parameters.notNull("rootFile", rootFile);                       //NOI18N
+        this.rootUri = rootUri;
         this.filters = filters == null ? EMPTY_FILTER_LIST : filters;
     }
 
@@ -89,6 +113,35 @@ public final class SearchRoot {
      * @return Root file (regular file or folder). Never null.
      */
     public @NonNull FileObject getFileObject() {
+        if (rootFile == null) {
+            try {
+                FileObject fo = FileUtil.toFileObject(new File(rootUri));
+                if (fo == null) {
+                    rootFile = createFakeFile(rootUri, null);
+                } else {
+                    rootFile = fo;
+                }
+            } catch (Exception e) {
+                rootFile = createFakeFile(rootUri, e);
+            }
+        }
         return rootFile;
+    }
+
+    /**
+     * Get URI of the search root.
+     *
+     * @since org.netbeans.api.search/1.4
+     */
+    public @NonNull URI getUri() {
+        if (rootUri == null) {
+            rootUri = rootFile.toURI();
+        }
+        return rootUri;
+    }
+
+    private FileObject createFakeFile(URI uri, Throwable t) {
+        LOG.log(Level.INFO, "Invalid URI: " + uri, t);                  //NOI18N
+        return FileUtil.createMemoryFileSystem().getRoot();
     }
 }

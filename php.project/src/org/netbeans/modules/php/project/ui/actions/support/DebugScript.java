@@ -49,6 +49,7 @@ import org.openide.util.NbBundle;
 /**
  * @author Radek Matous, Tomas Mysik
  */
+@Deprecated
 public class DebugScript  extends RunScript {
     private final Provider provider;
 

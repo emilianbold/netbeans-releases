@@ -43,6 +43,7 @@
 package org.netbeans.modules.remote.impl.fs;
 
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
@@ -77,7 +78,7 @@ public class RemoteFileUrlMapper extends URLMapper {
             }
             if (env != null) {
                 RemoteFileSystem fs = RemoteFileSystemManager.getInstance().getFileSystem(env);
-                FileObject fo = fs.findResource(url.getFile());
+                FileObject fo = fs.findResource(unescapePath(url));
                 return new FileObject[] { fo };
             }
         }
@@ -99,15 +100,45 @@ public class RemoteFileUrlMapper extends URLMapper {
     }
 
     private static URL getURL(ExecutionEnvironment env, String path, boolean folder) throws MalformedURLException {
-        String host = env.getUser() + '@' + env.getHost(); //NOI18N
+        /*
+         * Prepare URL here as a string to be used in the URL(String spec)
+         * constructor as it works with userinfo as expected (ipv6 address case).
+         * URL(String protocol, String host, int port, String file) cannot be
+         * used here, as 'host' should contain only host information, without 
+         * username/password etc... 
+         */
+        StringBuilder sb = new StringBuilder(RemoteFileURLStreamHandler.PROTOCOL);
+        sb.append("://"); // NOI18N
+        sb.append(env.getUser()).append('@').append(env.getHost());
+        sb.append(':').append(env.getSSHPort()).append(escapePath(path));
+        if (folder && !(path.endsWith("/"))) { // NOI18N
+            sb.append('/'); // NOI18N
+        }
+        return new URL(sb.toString());
+    }
+
+    private static String escapePath(String path) {
         if (path.indexOf('#') >= 0) { //NOI18N
             path = path.replace("#", "%23"); //NOI18N
         }
         if (path.indexOf('?') >= 0) { //NOI18N
             path = path.replace("?", "%3f"); //NOI18N
         }
-        URL url = new URL(RemoteFileURLStreamHandler.PROTOCOL, host, env.getSSHPort(), path);
-        String ext = url.toExternalForm() + (folder ? "/" : ""); // is there a way to set authority? // NOI18N
-        return new URL(ext);
+        if (path.indexOf(' ') >= 0) { //NOI18N
+            path = path.replace(" ", "%20"); //NOI18N
+        }
+        return path;
+    }
+
+    private static String unescapePath(URL url) {
+        String path = url.getFile();
+        if (path.contains("%23") || path.contains("%3f") || path.contains("%20")) { //NOI18N
+            try {
+                return url.toURI().getPath();
+            } catch (URISyntaxException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        return path;
     }
 }

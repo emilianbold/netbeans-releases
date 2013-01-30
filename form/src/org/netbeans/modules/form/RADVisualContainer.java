@@ -48,10 +48,12 @@ import java.awt.*;
 import javax.swing.*;
 import java.util.ArrayList;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.EnumMap;
 import java.util.Map;
 import org.netbeans.modules.form.RADVisualComponent.MenuType;
 import org.netbeans.modules.form.fakepeer.FakePeerSupport;
+import org.netbeans.modules.form.layoutdesign.support.SwingLayoutBuilder;
 
 import org.netbeans.modules.form.layoutsupport.*;
 import org.openide.ErrorManager;
@@ -59,8 +61,10 @@ import org.openide.ErrorManager;
 
 public class RADVisualContainer extends RADVisualComponent implements ComponentContainer {
     private ArrayList<RADVisualComponent> subComponents = new ArrayList<RADVisualComponent>(10);
-    private LayoutSupportManager layoutSupport; // = new LayoutSupportManager();
+    private LayoutSupportManager layoutSupport;
     private LayoutNode layoutNode; // [move to LayoutSupportManager?]
+    private LayoutSupportDelegate defaultLayoutDelegate;
+    private LayoutManager defaultLayout;
 
     private RADComponent containerMenu;
 
@@ -76,8 +80,10 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
 
         super.setBeanInstance(beanInstance);
 
-        if (layoutSupport != null) // need new layout support for new container bean
+        rememberDefaultLayout();
+        if (layoutSupport != null) { // need new layout support for new container bean
             layoutSupport = new LayoutSupportManager(this, getFormModel().getCodeStructure());
+        }
     }
 
     @Override
@@ -98,9 +104,12 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
     }
 
     public void setLayoutSupportDelegate(LayoutSupportDelegate layoutDelegate)
-        throws Exception
-    {
-        layoutSupport.setLayoutDelegate(layoutDelegate,false);
+            throws Exception {
+        if (layoutDelegate == defaultLayoutDelegate && layoutDelegate.getSupportedClass() != null) {
+            layoutSupport.setLayoutDelegate(layoutDelegate, defaultLayout, false);
+        } else {
+            layoutSupport.setLayoutDelegate(layoutDelegate, null, false);
+        }
         setLayoutNodeReference(null);
     }
 
@@ -137,7 +146,7 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
         else {
             if (layoutSupport != null) { // clean the layout delegate and related code structre objects
                 try {
-                    layoutSupport.setLayoutDelegate(null, false);
+                    layoutSupport.setLayoutDelegate(null, null, false);
                 } catch (Exception ex) {
                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
                 }
@@ -151,9 +160,7 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
     private void refillContainerInstance() {
         Container cont = getContainerDelegate(getBeanInstance());
         cont.removeAll();
-        if (!(cont instanceof ScrollPane)) { // Issue 128797
-            cont.setLayout(null); // Issue 77904
-        }
+        cont.setLayout(null); // Issue 77904
         for (RADVisualComponent sub : subComponents) {
             Component comp = (Component) sub.getBeanInstance();
             FakePeerSupport.attachFakePeer(comp);
@@ -165,6 +172,57 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
 
     public boolean hasDedicatedLayoutSupport() {
         return layoutSupport != null && layoutSupport.isDedicated();
+    }
+
+    public boolean hasDefaultLayout() {
+        if (layoutSupport == null || !layoutSupport.isDedicated()) {
+            LayoutManager layout = getContainerDelegate(getBeanInstance()).getLayout();
+            return sameLayouts(defaultLayout != null ? defaultLayout.getClass() : null,
+                               layout != null ? layout.getClass() : null);
+        }
+        return false;
+    }
+
+    public boolean isLayoutDefaultLayout(Class layoutClass) {
+        return sameLayouts(defaultLayout != null ? defaultLayout.getClass() : null, layoutClass);
+    }
+
+    public static boolean sameLayouts(Class layoutClass1, Class layoutClass2) {
+        if (layoutClass2 == layoutClass1) {
+            return true; // incl. both null
+        } else if (layoutClass1 != null && layoutClass2 != null) {
+            return layoutClass2.getName().equals(layoutClass1.getName())
+                   || (layoutClass2.isAssignableFrom(layoutClass1)
+                       && (layoutClass1.getModifiers()&Modifier.PUBLIC) == 0) // e.g. JRootPane$1 should be same as BorderLayout
+                   || (layoutClass1.isAssignableFrom(layoutClass2)
+                       && (layoutClass2.getModifiers()&Modifier.PUBLIC) == 0) // e.g. JRootPane$1 should be same as BorderLayout
+                   || (SwingLayoutBuilder.isRelevantLayoutManager(layoutClass1.getName())
+                       && SwingLayoutBuilder.isRelevantLayoutManager(layoutClass2.getName()));
+        }
+        return false;
+    }
+
+    public LayoutManager getDefaultLayout() {
+        return defaultLayout;
+    }
+
+    public boolean isDefaultLayoutDelegate(LayoutSupportDelegate layoutDelegate) {
+        return layoutDelegate == defaultLayoutDelegate;
+    }
+
+    public LayoutSupportDelegate getDefaultLayoutDelegate(boolean forceNew) throws Exception {
+        if (hasDedicatedLayoutSupport()
+                || (defaultLayout != null && SwingLayoutBuilder.isRelevantLayoutManager(defaultLayout.getClass().getName()))) {
+            return null;
+        }
+        if (defaultLayoutDelegate == null || forceNew) {
+            defaultLayoutDelegate = LayoutSupportManager.getLayoutDelegateForDefaultLayout(getFormModel(), defaultLayout);
+        }
+        return defaultLayoutDelegate;
+    }
+
+    private void rememberDefaultLayout() {
+        defaultLayout = getContainerDelegate(getBeanInstance()).getLayout();
     }
 
     /**
@@ -410,7 +468,6 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
         } else {
             visual = (RADVisualComponent) metacomp;
             if (index == -1) {
-                index = subComponents.size();
                 subComponents.add(visual);
             } else {
                 subComponents.add(index, visual);

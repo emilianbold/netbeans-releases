@@ -181,8 +181,9 @@ public class OracleJ2eePlatformImpl2 extends J2eePlatformImpl2 implements Change
         List<URL> cp = new ArrayList<URL>();
         
         for (ServerLibraryDependency dep : libraries) {
-            if (dep.getName().equals("jsf") && dep.getSpecificationVersion() != null && dep.getSpecificationVersion(). // NOI18N
-                    isAboveOrEqual(Version.fromDottedNotationWithFallback("2.0"))) { // NOI18N
+            Version spec = dep.getSpecificationVersion();
+            if (dep.getName().equals("jsf") && spec != null && // NOI18N
+                    spec.isAboveOrEqual(Version.fromDottedNotationWithFallback("2.0"))) { // NOI18N
                 Library jsf = LibraryManager.getDefault().getLibrary("jsf20"); // NOI18N
                 if (jsf != null) {
                     cp.addAll(jsf.getContent("classpath")); // NOI18N
@@ -193,8 +194,12 @@ public class OracleJ2eePlatformImpl2 extends J2eePlatformImpl2 implements Change
         if ( eclipselink != null) {
             cp.addAll(eclipselink.getContent("classpath")); // NOI18N
         }
-        
-        cp.addAll(l.getContent("classpath")); // NOI18N
+
+        if (l != null) {
+            cp.addAll(l.getContent("classpath")); // NOI18N
+        } else {
+            assert false : "Library javaee-api-5.0 must be available";
+        }
         
         library.setContent(J2eeLibraryTypeProvider.
                 VOLUME_TYPE_CLASSPATH, cp);
@@ -257,7 +262,6 @@ public class OracleJ2eePlatformImpl2 extends J2eePlatformImpl2 implements Change
 
     @Override
     public Lookup getLookup() {
-        File f = OracleInstance.findWeblogicJar(dm.getOnPremiseServiceInstanceId());
         return LookupProviderSupport.createCompositeLookup(
                 Lookups.fixed(
                     WhiteListQuerySupport.createCloud9WhiteListQueryImpl(),

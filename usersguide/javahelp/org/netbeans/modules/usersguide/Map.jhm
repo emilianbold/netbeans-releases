@@ -74,7 +74,6 @@ Other names may be trademarks of their respective owners.
 <mapID target="xml_xslabout"     url="xml/xsl/xsl_about.html" />
 <mapID target="xml_xsltransform"     url="xml/xsl/xsl_transform.html" />
 <mapID target="css_editcss"     url="xml/css/css_edit.html" />
-<mapID target="css_checkcss"     url="xml/css/css_check.html" />
 <mapID target="css_copypastecss" url="xml/css/css_addreference.html" />
 <mapID target="css_createcss"    url="xml/css/css_create.html" />
 
@@ -93,7 +92,8 @@ Other names may be trademarks of their respective owners.
 <!--linked to from web/advanced help set - file webmod/mod_browser.html:-->
 <mapID target="webbrowser.default" url="webbrowser/default.html" />
 
-
+<!-- CSH for Web Browser window -->
+    <mapID target="org.netbeans.core.HtmlBrowserComponent" url="webbrowser/csh-webkit-browser.html" />
 
 
 
@@ -143,9 +143,9 @@ Other names may be trademarks of their respective owners.
 <mapID target="text.javascript" url="javascript/js_basics.html" />
 <mapID target="js.refactoring" url="javascript/refactoring.html" />
 <mapID target="js.quickfixes" url="javascript/quickfixes.html" />
-<mapID target="js.browser.compatibility" url="javascript/browser_compat.html" />
-<mapID target="js.function.jump" url="javascript/function_jumping.html" />
-<mapID target="javascript_debugger_advanced_options" url="javascript/options.html" />
+
+<!-- Create HTML file topic -->
+<mapID target="html_create" url="web/create/html/html_create.html"/>
 
 <!-- ================================ begin CSH IDs ================================ -->
 
@@ -231,11 +231,18 @@ Other names may be trademarks of their respective owners.
 	<mapID target="org.netbeans.modules.project.libraries.ui.LibrariesCustomizer" url="project/csh/csh_library_manager.html"/>
 
 
-<!--CSH for plain text editor-->
+<!--CSH for plain text editor -->
 <mapID target="text.plain" url="editing/csh/plain_editor.html" />
 
-<!--CSH for css text editor-->
-<mapID target="text.x-css" url="xml/css/csh/about_source_editor.html" />
+<!--CSH for css text editor -->
+<mapID target="text.css" url="xml/css/csh/about_source_editor.html" />
+
+<!--CSH for CSS Styles window -->
+<mapID target="css_visual_CssStylesTC" url="xml/css/csh/css_styles_window.html" />
+<!--CSH for CSS Add Property dialog -->
+<mapID target="css_visual_AddPropertyPanel" url="xml/css/csh/css_addproperty_dialog.html" />
+<!--CSH for CSS Create Rule dialog -->
+<mapID target="css_visual_CreateRulePanel" url="xml/css/csh/css_createrule_dialog.html" />
 
 <!-- CSH for HTML and JSP text editor -->
 <mapID target="org.netbeans.modules.html.editor.api.HtmlKit" url="html/csh/about_source_editor.html" />
@@ -263,6 +270,8 @@ Other names may be trademarks of their respective owners.
 
 <mapID target="org.netbeans.core.services.Browsers" url="webbrowser/options.html" />
 <mapID target="org.netbeans.modules.extbrowser.ExtWebBrowser" url="webbrowser/options.html" />
+<!-- TODO : #222555 :  suggested id : WebBrowsersManager -->
+<mapID target="WebBrowsersManager" url="webbrowser/options.html" />
 
 
 
@@ -278,6 +287,8 @@ Other names may be trademarks of their respective owners.
   
 <!--ID for Waiting For Tasks to Finish dialog box:-->
     <mapID target="org.netbeans.core.execution.Install.pending" url="misc-general/waiting.html" />
+<!--ID for Shelved Changes dialog box:-->
+    <mapID target="org.netbeans.modules.versioning.shelve.impl.UnshelveChangesAction" url="misc-general/shelved_changes.html" />
 
     <!--ID for Find and Replace in Projects dialog. "search" module is in utilities package-->
 <mapID target="org.netbeans.modules.search.SearchPanel.false" url="files/csh/search_projects.html" />    
@@ -317,6 +328,7 @@ Other names may be trademarks of their respective owners.
    <!-- Diff: options window help ids -->
    <mapID target="org.netbeans.modules.diff.options.DiffOptionsController" url="configure/csh/misc/options_diffengine.html" />
    <mapID target="org.netbeans.modules.versioning.util.VcsAdvancedOptions" url="configure/csh/misc/options_versioning.html" />
+   <mapID target="org.netbeans.core.windows.options.WinSysOptionsPanelController" url="configure/csh/misc/options_windows.html" />
    <!-- No such target found in core.execution package -->
 <!--   <mapID target="org.netbeans.core.execution.ProcessNode" url="files/csh/files_runtime.html" /> 
    <mapID target="org.netbeans.core.execution.ProcessNodeItem" url="files/csh/files_runtime.html" /> 
@@ -392,6 +404,9 @@ Other names may be trademarks of their respective owners.
     
  <!-- Options | Misc | Terminal -->
   <mapID target="netbeans.optionsDialog.advanced.terminal" url="configure/csh/misc/options_terminal.html" />
+
+<!-- Options | Misc | Output -->
+  <mapID target="netbeans.optionsDialog.advanced.output" url="configure/csh/misc/options_output.html" />
   
   <mapID target="org.netbeans.core.ui.UINodes$TemplatesNode" url="pending.html" />
   <!--folder subnodes of Templates category; can be overridden in layer:-->
@@ -457,6 +472,9 @@ Other names may be trademarks of their respective owners.
 
 <!--CSH - Whenever F1 is clicked on property sheet and there is no help button activated:-->
 <mapID target="org.netbeans.core.windows.view.ui.NbSheet" url="files/csh/files_properties.html" />
+
+<!--CSH - Window | Documents dialog -->
+<mapID target="org.netbeans.core.windows.view.ui.DocumentsDlg" url="files/csh/documents-dialog.html" />
 
 
 <!--IDs that are used for basic menu items-->
@@ -526,8 +544,8 @@ Other names may be trademarks of their respective owners.
 <mapID target="org.netbeans.modules.bugtracking.jira.JiraUpdater" url="collab/csh/issues_jiraplugin.html" />
 <mapID target="org.netbeans.modules.bugtracking.jira.JiraUpdater$JiraProxyController" url="collab/csh/issues_jiraplugin.html" />
 
-<!-- Issue tracking csh topic for parameter dialog in vcs commit dialog -->
-<mapID target="org.netbeans.modules.bugtracking.vcs.FormatPanel" url="collab/csh/issues_vcs_parameterformat.html" />
+<!-- Issue tracking csh topic for Modify templates dialog box in vcs Commit dialog box -->
+<mapID target="org.netbeans.modules.bugtracking.vcs.FormatPanel" url="collab/csh/issues_vcs_modify_templates.html" />
 
 <!-- Issue tracking csh topic for Options window -->
 <mapID target="org.netbeans.modules.bugzilla.options.BugzillaOptionsController" url="collab/csh/issues_options.html" />

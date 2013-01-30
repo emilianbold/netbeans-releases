@@ -362,6 +362,7 @@ public class ServerFileDistributor extends ServerProgress {
         }
     }
 
+    @org.netbeans.api.annotations.common.SuppressWarnings("REC_CATCH_EXCEPTION") // justification="We rethrow with localized message"
     private AppChanges _distributeOnSave(File destDir, TargetModuleID target, Iterable<Artifact> artifacts) throws IOException {
         AppChanges mc = createModuleChangeDescriptor(target);
 
@@ -487,12 +488,18 @@ public class ServerFileDistributor extends ServerProgress {
             }
             mc.record(dest, relativePath);
 
-            if (null == destStream) {
-                FileUtil.copyFile(sourceFO, destFolder, sourceFO.getName());
-            } else {
-                // this is where we need to push the content into the file....
-                sourceStream = sourceFO.getInputStream();
-                FileUtil.copy(sourceStream, destStream);
+            try {
+                if (null == destStream) {
+                    FileUtil.copyFile(sourceFO, destFolder, sourceFO.getName());
+                } else {
+                    // this is where we need to push the content into the file....
+                    sourceStream = sourceFO.getInputStream();
+                    FileUtil.copy(sourceStream, destStream);
+                }
+            } catch (FileNotFoundException ex) {
+                // this may happen when the source file disappears
+                // perhaps when source is changing rapidly ?
+                LOGGER.log(Level.INFO, null, ex);
             }
         } finally {
             if (null != sourceStream) {

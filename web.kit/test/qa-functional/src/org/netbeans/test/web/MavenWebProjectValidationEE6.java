@@ -38,7 +38,6 @@
 package org.netbeans.test.web;
 
 import junit.framework.Test;
-import org.netbeans.junit.NbModuleSuite;
 
 /**
  *
@@ -62,10 +61,7 @@ public class MavenWebProjectValidationEE6 extends MavenWebProjectValidation {
     }
 
     public static Test suite() {
-        NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(MavenWebProjectValidationEE6.class);
-        conf = addServerTests(Server.GLASSFISH, conf, TESTS);
-        conf = conf.enableModules(".*").clusters(".*");
-        return NbModuleSuite.create(conf);
+        return createAllModulesServerSuite(Server.GLASSFISH, MavenWebProjectValidationEE6.class, TESTS);
     }
 
     @Override

@@ -146,6 +146,9 @@ public final class SnapshotResultsWindow extends ProfilerTopComponent {
 
         @Override
         protected void handleSave() {
+            LoadedSnapshot toSave = snapshot;
+            if (toSave == null) return; // #218565 snapshot already closed
+            
             ResultsManager.getDefault().saveSnapshot(snapshot);
             ic.remove(this);
         }
@@ -221,6 +224,7 @@ public final class SnapshotResultsWindow extends ProfilerTopComponent {
                 break;
             case LoadedSnapshot.SNAPSHOT_TYPE_MEMORY_ALLOCATIONS:
             case LoadedSnapshot.SNAPSHOT_TYPE_MEMORY_LIVENESS:
+            case LoadedSnapshot.SNAPSHOT_TYPE_MEMORY_SAMPLED:
                 getAccessibleContext().setAccessibleDescription(Bundle.SnapshotResultsWindow_MemorySnapshotAccessDescr());
                 displayMemoryResults(ls, sortingColumn, sortingOrder);
 
@@ -231,7 +235,7 @@ public final class SnapshotResultsWindow extends ProfilerTopComponent {
     }
 
     //~ Methods ------------------------------------------------------------------------------------------------------------------
-
+    
     public static synchronized void closeAllWindows() {
         Collection windows = windowsList.values();
 
@@ -283,6 +287,11 @@ public final class SnapshotResultsWindow extends ProfilerTopComponent {
     }
 
     public boolean canClose() {
+        // #221709, add saved snapshot to Open Recent File list
+        // Not supported for new snapshots to be saved on close
+        File file = snapshot.getFile();
+        if (file != null) putClientProperty(RECENT_FILE_KEY, file);
+            
         if (forcedClose) {
             savePerformer.remove();
             return true;
@@ -352,6 +361,17 @@ public final class SnapshotResultsWindow extends ProfilerTopComponent {
     protected String preferredID() {
         return this.getClass().getName();
     }
+    
+    
+    // --- Support for saving/restoring selected tabs, opened columns etc. -----
+    public void setState(SnapshotPanel.State state) {
+        displayedPanel.setState(state);
+    }
+    
+    public SnapshotPanel.State getState() {
+        return displayedPanel.getState();
+    }
+    // -------------------------------------------------------------------------
 
     // -- Private methods --------------------------------------------------------------------------------------------------
 

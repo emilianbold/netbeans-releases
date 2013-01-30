@@ -68,6 +68,7 @@ import org.netbeans.modules.cnd.api.model.CsmVariableDefinition;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
+import org.netbeans.modules.cnd.modelimpl.csm.deep.ExpressionBase;
 import org.netbeans.modules.cnd.modelimpl.csm.resolver.Resolver;
 import org.netbeans.modules.cnd.modelimpl.csm.resolver.ResolverFactory;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
@@ -99,6 +100,12 @@ public final class VariableDefinitionImpl extends VariableImpl<CsmVariableDefini
         classOrNspNames = getClassOrNspNames(ast);
     }
 
+    private VariableDefinitionImpl(CharSequence name, CharSequence[] classOrNspNames, CsmType type, TemplateDescriptor templateDescriptor, boolean _static, boolean _extern, ExpressionBase initExpr, CsmFile file, int startOffset, int endOffset) {
+        super(type, name, null, _static, _extern, initExpr, file, startOffset, endOffset);
+        this.templateDescriptor = templateDescriptor;
+        this.classOrNspNames = classOrNspNames;
+    }
+    
     public static VariableDefinitionImpl create(AST ast, CsmFile file, CsmType type, NameHolder name, boolean _static, boolean _extern) {
         VariableDefinitionImpl variableDefinitionImpl = new VariableDefinitionImpl(ast, file, type, name, _static, _extern);
         postObjectCreateRegistration(true, variableDefinitionImpl);
@@ -335,6 +342,20 @@ public final class VariableDefinitionImpl extends VariableImpl<CsmVariableDefini
         return (templateDescriptor != null) ? templateDescriptor.getTemplateParameters() : Collections.<CsmTemplateParameter>emptyList();
     }    
 
+    
+    public static class VariableDefinitionBuilder extends VariableBuilder implements CsmObjectBuilder {
+        
+        @Override
+        public VariableDefinitionImpl create() {
+            VariableDefinitionImpl var = new VariableDefinitionImpl(getName(), getScopeNames(), getType(), getTemplateDescriptor(), isStatic(), isExtern(), null, getFile(), getStartOffset(), getEndOffset());
+
+            postObjectCreateRegistration(isGlobal(), var);
+
+            addDeclaration(var);
+            return var;
+        }
+    }
+    
     ////////////////////////////////////////////////////////////////////////////
     // impl of SelfPersistent
     

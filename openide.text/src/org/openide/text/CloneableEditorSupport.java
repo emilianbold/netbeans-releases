@@ -266,6 +266,8 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
     
     private DocFilter docFilter;
 
+    private final Object LOCK_NOTIFY_MODIFIED = new Object();
+
     /** Classes that have been warned about overriding asynchronousOpen() */
     private static final Set<Class> warnedClasses = new WeakSet<Class>();
     
@@ -1022,16 +1024,29 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
     */
     public void saveDocument() throws IOException {
         CloneableEditorSupport redirect = CloneableEditorSupportRedirector.findRedirect(this);
+        final boolean log = ERR.isLoggable(Level.FINE);
+        if (log) {
+            ERR.fine(documentID() + ": saveDocument() started."); // NOI18N
+        }
         if (redirect != null) {
+            if (log) {
+                ERR.fine("  redirect to " + redirect.documentID()); // NOI18N
+            }
             redirect.saveDocument();
             return;
         }
         // #17714: Don't try to save unmodified doc.
         if (!cesEnv().isModified()) {
+            if (log) {
+                ERR.fine(documentID() + "  No save performed because cesEnv().isModified() == false"); // NOI18N
+            }
             return;
         }
         final StyledDocument myDoc = getDocument();
         if (myDoc == null) {
+            if (log) {
+                ERR.fine(documentID() + "  No save performed because getDocument() == null"); // NOI18N
+            }
             return;
         }
 
@@ -1039,6 +1054,10 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
         if (prevLST != -1) {
             final long externalMod = cesEnv().getTime().getTime();
             if (externalMod > prevLST) {
+                if (log) {
+                    ERR.fine(documentID() + ":  externalMod=" + externalMod + // NOI18N
+                            " > prevLST=" + prevLST + " => throw new UserQuestionException()"); // NOI18N
+                }
                 throw new UserQuestionException(mimeType) {
                     @Override
                     public String getLocalizedMessage() {
@@ -1058,91 +1077,144 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
             }
         }
 
-        // save the document as a reader
-        class SaveAsReader implements Runnable {
-            private boolean doMarkAsUnmodified;
-            private IOException ex;
+        class MemoryOutputStream extends ByteArrayOutputStream {
 
+            public MemoryOutputStream(int size) {
+                super(size);
+            }
+
+            public void writeTo(OutputStream os) throws IOException {
+                os.write(buf, 0, count);
+            }
+
+        }
+
+        // Perform the save and possibly run on-save actions first.
+        // Due to consistency of UndoRedoManager both save actions and actual save
+        // (reading doc's contents) should be done under single runAtomic().
+        final MemoryOutputStream[] memoryOutputStream = new MemoryOutputStream[1];
+        final IOException[] ioException = new IOException[1];
+        final boolean[] onSaveTasksStarted = new boolean[1];
+        Runnable saveToMemory = new Runnable() {
+            @Override
             public void run() {
                 try {
-                    OutputStream os = null;
-
-                    // write the document
-                    long oldSaveTime = lastSaveTime;
-
-                    try {
-                        setLastSaveTime(-1);
-                        os = new BufferedOutputStream(cesEnv().outputStream());
-                        saveFromKitToStream(myDoc, kit, os);
-
-                        os.close(); // performs firing
-                        os = null;
-
-                        // remember time of last save
-                        ERR.fine("Save ok, assign new time, while old was: " + oldSaveTime); // NOI18N
-                        // #149069 - Cannot use System.currentTimeMillis()
-                        // because there can be a delay between closing stream
-                        // and setting file modification time by OS.
-                        setLastSaveTime(cesEnv().getTime().getTime());
-                        doMarkAsUnmodified = true;
-                        ERR.fine("doMarkAsUnmodified"); // NOI18N
-                    } catch (BadLocationException blex) {
-                        Exceptions.printStackTrace(blex);
-                    } finally {
-                        if (lastSaveTime == -1) { // restore for unsuccessful save
-                            ERR.fine("restoring old save time"); // NOI18N
-                            setLastSaveTime(oldSaveTime);
-                        }
-
-                        if (os != null) { // try to close if not yet done
-                            os.close();
-                        }
-                    }
-
                     UndoRedo.Manager urm = getUndoRedo();
                     if (urm instanceof UndoRedoManager) {
-                        ((UndoRedoManager)urm).markSavepoint();
+                        UndoRedoManager urManager = (UndoRedoManager) urm;
+                        if (onSaveTasksStarted[0]) {
+                            urManager.endOnSaveTasks();
+                        }
+                        urManager.markSavepoint();
                     }
+
+                    // Alloc 10% for non-single byte chars
+                    int byteArrayAllocSize = myDoc.getLength() * 11 / 10;
+                    memoryOutputStream[0] = new MemoryOutputStream(byteArrayAllocSize);
+                    saveFromKitToStream(myDoc, kit, memoryOutputStream[0]);
 
                     // update cached info about lines
                     updateLineSet(true);
-                    // updateTitles(); radim #58266
-                } catch (IOException e) {
-                    this.ex = e;
+
+                    if (log) {
+                        ERR.fine(documentID() + ": Saved " + memoryOutputStream[0].size() + // NOI18N
+                                " bytes to memory output stream."); // NOI18N
+                    }
+                } catch (BadLocationException blex) {
+                    Exceptions.printStackTrace(blex);
+                } catch (IOException ex) {
+                    ioException[0] = ex;
                 }
             }
+        };
 
-            public void after() throws IOException {
-                if (doMarkAsUnmodified) {
-                    callNotifyUnmodified();
-                }
-
-                if (ex != null) {
-                    throw ex;
-                }
-            }
-        }
-
-        // Run before-save actions
         Runnable beforeSaveRunnable = (Runnable) myDoc.getProperty("beforeSaveRunnable");
         if (beforeSaveRunnable != null) {
-            UndoRedo.Manager urm = getUndoRedo();
-            if (urm instanceof UndoRedoManager) {
-                ((UndoRedoManager)undoRedo).setPerformingSaveActions(true);
-            }
-            try {
-                beforeSaveRunnable.run();
-            } finally {
-                if (urm instanceof UndoRedoManager) {
-                    ((UndoRedoManager)undoRedo).setPerformingSaveActions(false);
+            // Create runnable that marks next edit fired from document as save actions.
+            // This assumes that before save tasks will run in a single atomic edit.
+            // At the end of the edit an actual save task will be done.
+            Runnable beforeSaveStart = new Runnable() {
+                @Override
+                public void run() {
+                    UndoRedo.Manager urm = getUndoRedo();
+                    if (urm instanceof UndoRedoManager) {
+                        ((UndoRedoManager) undoRedo).startOnSaveTasks();
+                        onSaveTasksStarted[0] = true;
+                    }
                 }
+            };
+            // Property to be run by beforeSaveRunnable before actual save actions
+            myDoc.putProperty("beforeSaveStart", beforeSaveStart);
+            // Property to be run by beforeSaveRunnable after actual save actions
+            myDoc.putProperty("beforeSaveEnd", saveToMemory);
+            // Perform beforeSaveStart then before-save-tasks then beforeSaveEnd under atomic lock
+            beforeSaveRunnable.run();
+            
+            // Fallback in case the document would not process "beforeSaveStart" and "beforeSaveEnd" runnables
+            if (memoryOutputStream[0] == null) {
+                myDoc.render(saveToMemory);
+            }
+
+        } else { // No on-save tasks
+            myDoc.render(saveToMemory); // Run under doc's readlock
+        }
+        if (ioException[0] != null) {
+            if (log) {
+                ERR.log(Level.FINE, documentID() + ": Save broken due to IOException", ioException[0]); // NOI18N
+            }
+            throw ioException[0];
+        }
+
+        OutputStream os = null;
+        long oldSaveTime = lastSaveTime;
+        try {
+            setLastSaveTime(-1);
+            os = cesEnv().outputStream();
+            memoryOutputStream[0].writeTo(os);
+            os.close(); // performs firing
+            os = null;
+            myDoc.render(new Runnable() {
+                @Override
+                public void run() {
+                    UndoRedo.Manager urm = getUndoRedo();
+                    // Compare whether the savepoint edit is still the edit-to-be-undone
+                    boolean unmodify = false;
+                    if (urm instanceof UndoRedoManager) {
+                        // If not on savepoint then do not mark as unmodified
+                        if (((UndoRedoManager)urm).isAtSavepoint()) {
+                            unmodify = true;
+                        }
+                    } else {
+                        unmodify = true;
+                    }
+                    if (unmodify) {
+                        callNotifyUnmodified();
+                    }
+                }
+            });
+
+            // remember time of last save
+            if (log) {
+                ERR.fine(documentID() + ": Save to file OK, oldSaveTime: " + oldSaveTime + // NOI18N
+                        ", " + new Date(oldSaveTime)); // NOI18N
+            }
+            // #149069 - Cannot use System.currentTimeMillis()
+            // because there can be a delay between closing stream
+            // and setting file modification time by OS.
+            setLastSaveTime(cesEnv().getTime().getTime());
+        } finally {
+            if (lastSaveTime == -1) { // restore for unsuccessful save
+                if (log) {
+                    ERR.fine(documentID() + ": Save failed (lastSaveTime == -1) restoring old save time."); // NOI18N
+                }
+                setLastSaveTime(oldSaveTime);
+                callNotifyModified(); // Another save attempt needed
+            }
+
+            if (os != null) { // try to close if not yet done
+                os.close();
             }
         }
-        // undoRedo.markSavepoint() will be done in SaveAsReader runnable
-
-        SaveAsReader saveAsReader = new SaveAsReader();
-        myDoc.render(saveAsReader);
-        saveAsReader.after();
     }
 
     /**
@@ -1965,12 +2037,13 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
      * @return true if the modification was allowed, false if it should be prohibited
      */
     final boolean callNotifyModified() {
-        if (!isAlreadyModified() && !documentReloading) {
-            setAlreadyModified(true);
-            
-            if (!notifyModified()) {
-                setAlreadyModified(false);
-                return false;
+        synchronized (LOCK_NOTIFY_MODIFIED) {
+            if (!isAlreadyModified() && !documentReloading) {
+                setAlreadyModified(true);
+                if (!notifyModified()) {
+                    setAlreadyModified(false);
+                    return false;
+                }
             }
         }
 
@@ -1978,8 +2051,10 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
     }
 
     final void callNotifyUnmodified() {
-        setAlreadyModified(false);
-        notifyUnmodified();
+        synchronized (LOCK_NOTIFY_MODIFIED) {
+            setAlreadyModified(false);
+            notifyUnmodified();
+        }
     }
 
     /** Called when the document is being modified.
@@ -2642,7 +2717,9 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
      * @param lst the time in millis of last save
      */
     final void setLastSaveTime(long lst) {
-        ERR.fine("Setting new lastSaveTime to " + lst);
+        if (ERR.isLoggable(Level.FINE)) {
+            ERR.fine(documentID() + ": Setting new lastSaveTime to " + lst + ", " + new Date(lst));
+        }
         this.lastSaveTime = lst;
     }
 
@@ -2651,7 +2728,10 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
     }
 
     final void setAlreadyModified(boolean alreadyModified) {
-        ERR.log(Level.FINE, null, new Exception("Setting to modified: " + alreadyModified));
+        if (ERR.isLoggable(Level.FINE)) {
+            ERR.fine(documentID() + ": setAlreadyModified from " + isAlreadyModified() + " to " + alreadyModified); // NOI18N
+            ERR.log(Level.FINEST, null, new Exception("Setting to modified: " + alreadyModified));
+        }
 
         this.alreadyModified = alreadyModified;
         setStrong(alreadyModified, false);
@@ -2887,12 +2967,12 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                 // empty new value means to force reload all the time
                 final Date time = (Date) ev.getNewValue();
                 
-                ERR.fine("PROP_TIME new value: " + time + ", " + (time != null ? time.getTime() : -1));
-                ERR.fine("       lastSaveTime: " + new Date(lastSaveTime) + ", " + lastSaveTime);
+                ERR.fine(documentID() + ": PROP_TIME new value: " + time + ", " + (time != null ? time.getTime() : -1)); // NOI18N
+                ERR.fine("       lastSaveTime: " + new Date(lastSaveTime) + ", " + lastSaveTime); // NOI18N
                 
                 boolean reload = (lastSaveTime != -1) && ((time == null) || (time.getTime() > lastSaveTime) ||
                         time.getTime() + 10000 < lastSaveTime); // Threshold 10secs to be further discussed
-                ERR.fine("             reload: " + reload);
+                ERR.fine("             reload: " + reload); // NOI18N
 
                 if (reload) {
                     // - post in AWT event thread because of possible dialog popup
@@ -2922,15 +3002,14 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                                     return;
                                 }
 
-                                ERR.fine("checkReload starting"); // NOI18N
                                 boolean noAsk = time == null || !isModified();
-                                ERR.fine("checkReload noAsk: " + noAsk);
+                                ERR.fine(documentID() + ": checkReload noAsk: " + noAsk);
                                 checkReload(noAsk);
                             }
                         }
                     );
 
-                    ERR.fine("reload task posted"); // NOI18N
+                    ERR.fine(documentID() + ": reload task posted"); // NOI18N
                 }
             }
 

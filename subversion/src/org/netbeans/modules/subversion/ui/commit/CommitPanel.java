@@ -108,6 +108,7 @@ import org.openide.cookies.SaveCookie;
 import static java.awt.Component.LEFT_ALIGNMENT;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.prefs.Preferences;
 import static javax.swing.BorderFactory.createEmptyBorder;
 import static javax.swing.BoxLayout.X_AXIS;
 import static javax.swing.BoxLayout.Y_AXIS;
@@ -148,9 +149,11 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
     private JTabbedPane tabbedPane;
     private HashMap<File, MultiDiffPanel> displayedDiffs = new HashMap<File, MultiDiffPanel>();
     private UndoRedoSupport um;
+    private final Preferences prefs;
 
     /** Creates new form CommitPanel */
     public CommitPanel() {
+        prefs = SvnModuleConfig.getDefault().getPreferences();
         initComponents();
         initInteraction();
     }
@@ -175,17 +178,17 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
     public void addNotify() {
         super.addNotify();
 
-        SvnModuleConfig.getDefault().getPreferences().addPreferenceChangeListener(this);
+        prefs.addPreferenceChangeListener(this);
         commitTable.getTableModel().addTableModelListener(this);
         listenerSupport.fireVersioningEvent(EVENT_SETTINGS_CHANGED);
         initCollapsibleSections();
-        TemplateSelector ts = new TemplateSelector(SvnModuleConfig.getDefault().getPreferences());
+        TemplateSelector ts = new TemplateSelector(prefs);
         if (ts.isAutofill()) {
             messageTextArea.setText(ts.getTemplate());
         } else {
             String lastCommitMessage = SvnModuleConfig.getDefault().getLastCanceledCommitMessage();
-            if (lastCommitMessage.isEmpty() && new StringSelector.RecentMessageSelector(SvnModuleConfig.getDefault().getPreferences()).isAutoFill()) {
-                List<String> messages = Utils.getStringList(SvnModuleConfig.getDefault().getPreferences(), CommitAction.RECENT_COMMIT_MESSAGES);
+            if (lastCommitMessage.isEmpty() && new StringSelector.RecentMessageSelector(prefs).isAutoFill()) {
+                List<String> messages = Utils.getStringList(prefs, CommitAction.RECENT_COMMIT_MESSAGES);
                 if (messages.size() > 0) {
                     lastCommitMessage = messages.get(0);
                 }
@@ -199,7 +202,7 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
     @Override
     public void removeNotify() {
         commitTable.getTableModel().removeTableModelListener(this);
-        SvnModuleConfig.getDefault().getPreferences().removePreferenceChangeListener(this);
+        prefs.removePreferenceChangeListener(this);
         if (um != null) {
             um.unregister();
             um = null;
@@ -313,17 +316,17 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
     }
 
     private void onBrowseRecentMessages() {
-        StringSelector.RecentMessageSelector selector = new StringSelector.RecentMessageSelector(SvnModuleConfig.getDefault().getPreferences());
+        StringSelector.RecentMessageSelector selector = new StringSelector.RecentMessageSelector(prefs);
         String message = selector.getRecentMessage(getMessage("CTL_CommitForm_RecentTitle"),
                                                getMessage("CTL_CommitForm_RecentPrompt"),
-            Utils.getStringList(SvnModuleConfig.getDefault().getPreferences(), CommitAction.RECENT_COMMIT_MESSAGES));
+            Utils.getStringList(prefs, CommitAction.RECENT_COMMIT_MESSAGES));
         if (message != null) {
             messageTextArea.replaceSelection(message);
         }
     }
 
     private void onTemplate() {
-        TemplateSelector ts = new TemplateSelector(SvnModuleConfig.getDefault().getPreferences());
+        TemplateSelector ts = new TemplateSelector(prefs);
         if(ts.show("org.netbeans.modules.subversion.ui.commit.TemplatePanel")) { //NOI18N
             messageTextArea.setText(ts.getTemplate());
         }

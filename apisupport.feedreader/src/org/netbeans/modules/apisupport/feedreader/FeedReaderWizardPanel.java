@@ -52,6 +52,7 @@ import javax.swing.event.ChangeListener;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 
 /**
  * Panel just asking for basic info.
@@ -106,16 +107,15 @@ public class FeedReaderWizardPanel implements WizardDescriptor.Panel,
         
         // XXX hack, TemplateWizard in final setTemplateImpl() forces new wizard's title
         // this name is used in NewProjectWizard to modify the title
-//        Object substitute = ((JComponent)component).getClientProperty ("NewProjectWizard_Title"); // NOI18N
-//        if (substitute != null) {
-//           wizardDescriptor.putProperty ("NewProjectWizard_Title", substitute); // NOI18N
-//        }
+        wizardDescriptor.putProperty("NewProjectWizard_Title", //NOI18N
+                NbBundle.getMessage(FeedReaderWizardPanel.class,
+                "Templates/Project/Samples/ApiSupport/FeedReaderProject.zip")); //NOI18N
     }
     
     public void storeSettings(Object settings) {
         WizardDescriptor d = (WizardDescriptor)settings;
         component.store(d);
-//        ((WizardDescriptor)d).putProperty ("NewProjectWizard_Title", null); // NOI18N
+        d.putProperty("NewProjectWizard_Title", null);                  //NOI18N
     }
     
     public boolean isFinishPanel() {

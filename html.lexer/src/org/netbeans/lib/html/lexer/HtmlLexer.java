@@ -89,13 +89,15 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
         private int lexerEmbeddingState;
         private String attribute;
         private String tag;
+        private String scriptType;
 
-        public CompoundState(int lexerState, int lexerSubState, int lexerEmbeddingState, String attributeName, String tagName) {
+        public CompoundState(int lexerState, int lexerSubState, int lexerEmbeddingState, String attributeName, String tagName, String scriptType) {
             this.lexerState = lexerState;
             this.lexerSubState = lexerSubState;
             this.lexerEmbeddingState = lexerEmbeddingState;
             this.attribute = attributeName;
             this.tag = tagName;
+            this.scriptType = scriptType;
         }
 
         @Override
@@ -122,6 +124,9 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
             if (this.tag != other.tag && (this.tag == null || !this.tag.equals(other.tag))) {
                 return false;
             }
+            if (this.scriptType != other.scriptType && (this.scriptType == null || !this.scriptType.equals(other.scriptType))) {
+                return false;
+            }
             return true;
         }
 
@@ -133,14 +138,39 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
             hash = 17 * hash + this.lexerEmbeddingState;
             hash = 17 * hash + (this.attribute != null ? this.attribute.hashCode() : 0);
             hash = 17 * hash + (this.tag != null ? this.tag.hashCode() : 0);
+            hash = 17 * hash + (this.scriptType != null ? this.scriptType.hashCode() : 0);
             return hash;
         }
 
         @Override
         public String toString() {
-            return "State(hash=" + hashCode() + ",s=" + lexerState + ",ss=" +
-                    lexerSubState + ",es=" + lexerEmbeddingState + ",tag=" +
-                    tag + ",attr=" + attribute + ")"; //NOI18N
+            StringBuilder sb = new StringBuilder();
+            sb.append("HLS(hc="); //NOI18N
+            sb.append(hashCode());
+            sb.append(",s="); //NOI18N
+            sb.append(lexerState);
+            if(lexerSubState > 0) {
+                sb.append(",ss="); //NOI18N
+                sb.append(lexerSubState);
+            }
+            if(lexerEmbeddingState > 0) {
+                sb.append(",es="); //NOI18N
+                sb.append(lexerEmbeddingState);
+            }
+            if(tag != null) {
+                sb.append(",tag="); //NOI18N
+                sb.append(tag);
+            }
+            if(attribute != null) {
+                sb.append(",attribute="); //NOI18N
+                sb.append(attribute);
+            }
+            if(scriptType != null) {
+                sb.append(",scriptType="); //NOI18N
+                sb.append(scriptType);
+            }
+            sb.append(')'); //NOI18N
+            return sb.toString();
         }
         
     }
@@ -150,7 +180,7 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
     @Override
     public Object state() {
         //cache the states so lexing of large files do not eat too much memory
-        CompoundState currentState = new CompoundState(lexerState, lexerSubState, lexerEmbeddingState, attribute, tag);
+        CompoundState currentState = new CompoundState(lexerState, lexerSubState, lexerEmbeddingState, attribute, tag, scriptType);
         CompoundState cached = STATES_CACHE.get(currentState);
         if(cached == null) {
             STATES_CACHE.put(currentState, currentState);
@@ -176,6 +206,11 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
     
     private String attribute;
     private String tag; //tag name of the current context tag
+    
+    /**
+     * Value of the "type" attribute in SCRIPT tag
+     */
+    private String scriptType; 
 
     //tag name with namespace prefix to collection of attributes which should have
     //css class embedding by default
@@ -269,6 +304,8 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
         EVENT_HANDLER_NAMES.add("onreset"); // NOI18N
         EVENT_HANDLER_NAMES.add("onselect"); // NOI18N
         EVENT_HANDLER_NAMES.add("onchange"); // NOI18N
+        EVENT_HANDLER_NAMES.add("ondrag"); // NOI18N
+        EVENT_HANDLER_NAMES.add("ondrop"); // NOI18N
 
         // IMPORTANT - if you add any that DON'T start with "o" here,
         // make sure you update the optimized firstchar look in isJavaScriptArgument
@@ -380,11 +417,8 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
         return false;
     }
 
-    private boolean isJavascriptType(CharSequence attributeValue, boolean quoted) {
-        //TODO create a list of included/excluded script types
-        //now "all minus vbscript" implies javascript
-        CharSequence clean = quoted ? attributeValue.subSequence(1, attributeValue.length() - 1) : attributeValue;
-        return equals(SUPPORTED_SCRIPT_TYPE, clean, true, true);
+    private CharSequence getScriptType(CharSequence attributeValue, boolean quoted) {
+        return quoted ? attributeValue.subSequence(1, attributeValue.length() - 1) : attributeValue;
     }
 
     private boolean followsCloseTag(CharSequence closeTagName) {
@@ -692,10 +726,12 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
                             lexerEmbeddingState = INIT;
                             lexerState = INIT;
                             tag = null;
+                            String type = scriptType;
+                            scriptType = null;
                             input.backup(input.readLength() > 2 ? 2 : input.readLength()); //backup the '</', we will read it again
                             if (input.readLength() > 0) {
                                 //the script has a body
-                                return token(HTMLTokenId.SCRIPT);
+                                return token(HTMLTokenId.SCRIPT, new HtmlTokenPropertyProvider(HTMLTokenId.SCRIPT_TYPE_TOKEN_PROPERTY, type)); //NOI18N
                             } else {
                                 break;
                             }
@@ -859,9 +895,8 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
                             //reset the 'script embedding will follow state' if the value represents a
                             //type attribute value of a script tag
                             if(equals(SCRIPT, tag, true, true) && equals("type", attribute, true, true)) { //NOI18N
-                                if(!isJavascriptType(input.readText(), true)) {
-                                    lexerEmbeddingState = INIT;
-                                }
+                                //inside script tag
+                                scriptType = getScriptType(input.readText(), true).toString();
                             }
 
                             lexerState = ISP_TAG_X;
@@ -880,9 +915,8 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
                             //reset the 'script embedding will follow state' if the value represents a
                             //type attribute value of a script tag
                             if(equals(SCRIPT, tag, true, true) && equals("type", attribute, true, true)) { //NOI18N
-                                if(!isJavascriptType(input.readText(), true)) {
-                                    lexerEmbeddingState = INIT;
-                                }
+                                //inside script tag
+                                scriptType = getScriptType(input.readText(), true).toString();
                             }
 
                             lexerState = ISP_TAG_X;

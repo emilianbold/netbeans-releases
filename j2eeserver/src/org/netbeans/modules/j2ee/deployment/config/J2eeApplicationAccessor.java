@@ -57,16 +57,28 @@ import org.openide.util.Exceptions;
  */
 public abstract class J2eeApplicationAccessor {
 
-    public static J2eeApplicationAccessor DEFAULT;
+    private static volatile J2eeApplicationAccessor accessor;
 
-    // force loading of J2eeApplication class. That will set DEFAULT variable.
-    static {
+    public static void setDefault(J2eeApplicationAccessor accessor) {
+        if (J2eeApplicationAccessor.accessor != null) {
+            throw new IllegalStateException("Already initialized accessor"); // NOI18N
+        }
+        J2eeApplicationAccessor.accessor = accessor;
+    }
+
+    public static J2eeApplicationAccessor getDefault() {
+        if (accessor != null) {
+            return accessor;
+        }
+
         Class c = J2eeApplication.class;
         try {
             Class.forName(c.getName(), true, J2eeApplicationAccessor.class.getClassLoader()); // NOI18N
         } catch (ClassNotFoundException cnf) {
             Exceptions.printStackTrace(cnf);
         }
+
+        return accessor;
     }
 
     /**

@@ -57,10 +57,10 @@ import java.nio.charset.CharsetEncoder;
 import java.nio.charset.CodingErrorAction;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
 import javax.swing.text.StyledDocument;
-import javax.swing.text.BadLocationException;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.core.api.multiview.MultiViews;
 import org.openide.DialogDisplayer;
@@ -70,13 +70,13 @@ import org.openide.cookies.EditorCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.cookies.PrintCookie;
 import org.openide.cookies.SaveCookie;
-import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileLock;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node.Cookie;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.DataEditorSupport;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 import org.openide.util.UserCancelException;
 import org.openide.windows.CloneableOpenSupport;
 
@@ -85,24 +85,26 @@ import org.openide.windows.CloneableOpenSupport;
  *
  * @author Radim Kubacki
  * @author Marek Fukala
- * 
+ *
  * @see org.openide.text.DataEditorSupport
  */
-public final class HtmlEditorSupport extends DataEditorSupport implements OpenCookie, EditCookie, EditorCookie.Observable, PrintCookie {
-
-    private static final RequestProcessor SINGLE_THREAD_RP = new RequestProcessor(HtmlEditorSupport.class.getName(), 1);
+public final class HtmlEditorSupport extends DataEditorSupport implements OpenCookie,
+        EditCookie, EditorCookie.Observable, PrintCookie {
 
     private static final String DOCUMENT_SAVE_ENCODING = "Document_Save_Encoding";
     private static final String UTF_8_ENCODING = "UTF-8";
-    
-    /** SaveCookie for this support instance. The cookie is adding/removing
-     * data object's cookie set depending on if modification flag was set/unset.
-     * It also invokes beforeSave() method on the HtmlDataObject to give it
-     * a chance to eg. reflect changes in 'charset' attribute
-     * */
+    /**
+     * SaveCookie for this support instance. The cookie is adding/removing data
+     * object's cookie set depending on if modification flag was set/unset. It
+     * also invokes beforeSave() method on the HtmlDataObject to give it a
+     * chance to eg. reflect changes in 'charset' attribute
+     *
+     */
     private final SaveCookie saveCookie = new SaveCookie() {
-
-        /** Implements <code>SaveCookie</code> interface. */
+        /**
+         * Implements
+         * <code>SaveCookie</code> interface.
+         */
         @Override
         public void save() throws IOException {
             try {
@@ -111,18 +113,23 @@ public final class HtmlEditorSupport extends DataEditorSupport implements OpenCo
                 //just ignore
             }
         }
+
+        @Override
+        public String toString() {
+            return getDataObject().getPrimaryFile().getNameExt();
+        }
+        
+        
     };
 
     HtmlEditorSupport(HtmlDataObject obj) {
         super(obj, null, new Environment(obj));
-
-        //set the FileObject's mimetype - text/html or text/xhtml
-        setMIMEType(obj.getPrimaryFile().getMIMEType());
+        setMIMEType(getDataObject().getPrimaryFile().getMIMEType());
     }
-    
+
     @Override
     protected boolean asynchronousOpen() {
-	return true;
+        return true;
     }
 
     @Override
@@ -179,12 +186,12 @@ public final class HtmlEditorSupport extends DataEditorSupport implements OpenCo
         //the document is already loaded so getDocument() should normally return 
         //no null value, but if a CES redirector returns null from the redirected
         //CES.getDocument() then we are not able to set the found encoding
-        if(doc != null) {
+        if (doc != null) {
             doc.putProperty(DOCUMENT_SAVE_ENCODING, finalEncoding);
         }
     }
 
-     /**
+    /**
      * @inheritDoc
      */
     @Override
@@ -201,9 +208,11 @@ public final class HtmlEditorSupport extends DataEditorSupport implements OpenCo
     }
 
     /**
-     * Overrides superclass method. Adds adding of save cookie if the document has been marked modified.
-     * @return true if the environment accepted being marked as modified
-     *    or false if it has refused and the document should remain unmodified
+     * Overrides superclass method. Adds adding of save cookie if the document
+     * has been marked modified.
+     *
+     * @return true if the environment accepted being marked as modified or
+     * false if it has refused and the document should remain unmodified
      */
     @Override
     protected boolean notifyModified() {
@@ -216,7 +225,9 @@ public final class HtmlEditorSupport extends DataEditorSupport implements OpenCo
         return true;
     }
 
-    /** Overrides superclass method. Adds removing of save cookie. */
+    /**
+     * Overrides superclass method. Adds removing of save cookie.
+     */
     @Override
     protected void notifyUnmodified() {
         super.notifyUnmodified();
@@ -224,7 +235,9 @@ public final class HtmlEditorSupport extends DataEditorSupport implements OpenCo
         removeSaveCookie();
     }
 
-    /** Helper method. Adds save cookie to the data object. */
+    /**
+     * Helper method. Adds save cookie to the data object.
+     */
     private void addSaveCookie() {
         HtmlDataObject obj = (HtmlDataObject) getDataObject();
 
@@ -235,7 +248,9 @@ public final class HtmlEditorSupport extends DataEditorSupport implements OpenCo
         }
     }
 
-    /** Helper method. Removes save cookie from the data object. */
+    /**
+     * Helper method. Removes save cookie from the data object.
+     */
     void removeSaveCookie() {
         HtmlDataObject obj = (HtmlDataObject) getDataObject();
 
@@ -298,23 +313,32 @@ public final class HtmlEditorSupport extends DataEditorSupport implements OpenCo
         return supported;
     }
 
-    /** Nested class. Environment for this support. Extends <code>DataEditorSupport.Env</code> abstract class. */
+    /**
+     * Nested class. Environment for this support. Extends
+     * <code>DataEditorSupport.Env</code> abstract class.
+     */
     private static class Environment extends DataEditorSupport.Env {
 
         private static final long serialVersionUID = 3035543168452715818L;
 
-        /** Constructor. */
+        /**
+         * Constructor.
+         */
         public Environment(HtmlDataObject obj) {
             super(obj);
         }
 
-        /** Implements abstract superclass method. */
+        /**
+         * Implements abstract superclass method.
+         */
         @Override
         protected FileObject getFile() {
             return getDataObject().getPrimaryFile();
         }
 
-        /** Implements abstract superclass method.*/
+        /**
+         * Implements abstract superclass method.
+         */
         @Override
         protected FileLock takeLock() throws IOException {
             return ((HtmlDataObject) getDataObject()).getPrimaryEntry().takeLock();
@@ -322,6 +346,7 @@ public final class HtmlEditorSupport extends DataEditorSupport implements OpenCo
 
         /**
          * Overrides superclass method.
+         *
          * @return text editor support (instance of enclosing class)
          */
         @Override
@@ -330,4 +355,6 @@ public final class HtmlEditorSupport extends DataEditorSupport implements OpenCo
         }
     } // End of nested Environment class.
 
+
+    
 }

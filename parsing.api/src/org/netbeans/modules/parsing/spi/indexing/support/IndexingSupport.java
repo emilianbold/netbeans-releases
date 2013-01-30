@@ -44,9 +44,12 @@ package org.netbeans.modules.parsing.spi.indexing.support;
 
 import java.io.IOException;
 import java.util.logging.Logger;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.modules.parsing.impl.indexing.ClusteredIndexables;
 import org.netbeans.modules.parsing.impl.indexing.FileObjectIndexable;
 import org.netbeans.modules.parsing.impl.indexing.IndexFactoryImpl;
 import org.netbeans.modules.parsing.impl.indexing.SPIAccessor;
+import org.netbeans.modules.parsing.lucene.support.DocumentIndexCache;
 import org.netbeans.modules.parsing.lucene.support.Index;
 import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
@@ -74,7 +77,7 @@ public final class IndexingSupport {
         assert factory != null;
         this.context = ctx;
         this.spiFactory = factory;
-        this.spiIndex = this.spiFactory.createIndex(ctx);
+        this.spiIndex = this.spiFactory.createIndex(ctx);        
     }
 
     /**
@@ -84,14 +87,15 @@ public final class IndexingSupport {
      * @throws java.io.IOException when underlying storage is corrupted or cannot
      * be created
      */
-    public static IndexingSupport getInstance (final Context context) throws IOException {
+    @NonNull
+    public static IndexingSupport getInstance (@NonNull final Context context) throws IOException {
         Parameters.notNull("context", context); //NOI18N
         IndexingSupport support = SPIAccessor.getInstance().context_getAttachedIndexingSupport(context);
         if (support == null) {
             support = new IndexingSupport(context);
-            SPIAccessor.getInstance().context_attachIndexingSupport(context, support);
+            SPIAccessor.getInstance().context_attachIndexingSupport(context, support);            
         }
-
+        support.attachToCacheIfNeeded();
         return support;
     }
 
@@ -107,7 +111,7 @@ public final class IndexingSupport {
      */
     public boolean isValid() {
         try {
-            return spiIndex.getStatus() != Index.Status.INVALID;
+            return spiIndex != null && spiIndex.getStatus() != Index.Status.INVALID;
         } catch (IOException e) {
             return false;
         }
@@ -149,7 +153,9 @@ public final class IndexingSupport {
      */
     public void addDocument (final IndexDocument document) {
         Parameters.notNull("document", document.spi); //NOI18N
-        spiIndex.addDocument (document.spi);
+        if (spiIndex != null) {
+            spiIndex.addDocument (document.spi);
+        }
     }
 
     /**
@@ -158,7 +164,9 @@ public final class IndexingSupport {
      */
     public void removeDocuments (final Indexable indexable) {
         Parameters.notNull("indexable", indexable); //NOI18N
-        spiIndex.removeDocument (indexable.getRelativePath());
+        if (spiIndex != null) {
+            spiIndex.removeDocument (indexable.getRelativePath());
+        }
     }
 
     /**
@@ -172,7 +180,29 @@ public final class IndexingSupport {
      */
     public void markDirtyDocuments (final Indexable indexable) {
         Parameters.notNull("indexable", indexable); //NOI18N
-        spiIndex.markKeyDirty(indexable.getRelativePath());
+        if (spiIndex != null) {
+            spiIndex.markKeyDirty(indexable.getRelativePath());
+        }
+    }
+
+    private boolean attachToCacheIfNeeded() throws IOException {
+        final DocumentIndexCache cache = spiFactory.getCache(context);
+        if (!(cache instanceof ClusteredIndexables.AttachableDocumentIndexCache)) {
+            return false;
+        }
+        boolean res = false;
+        final ClusteredIndexables.AttachableDocumentIndexCache ciCache = (ClusteredIndexables.AttachableDocumentIndexCache) cache;
+        final ClusteredIndexables delCi = (ClusteredIndexables) SPIAccessor.getInstance().getProperty(context, ClusteredIndexables.DELETE);
+        if (delCi != null) {
+            ciCache.attach(ClusteredIndexables.DELETE, delCi);
+            res = true;
+        }
+        final ClusteredIndexables indexCi = (ClusteredIndexables) SPIAccessor.getInstance().getProperty(context, ClusteredIndexables.INDEX);
+        if (indexCi != null) {
+            ciCache.attach(ClusteredIndexables.INDEX, indexCi);
+            res = true;
+        }
+        return res;
     }
 
 }

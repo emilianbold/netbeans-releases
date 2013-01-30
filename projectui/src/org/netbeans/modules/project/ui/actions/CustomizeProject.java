@@ -99,6 +99,7 @@ public class CustomizeProject extends ProjectAction implements Presenter.Popup {
         
     }   
     
+    @Override
     public void actionPerformed( Lookup context ) {
     
         Project[] projects = ActionsUtil.getProjectsFromLookup( context, null );
@@ -153,6 +154,7 @@ public class CustomizeProject extends ProjectAction implements Presenter.Popup {
         
     }
     
+    @Override
     public Action createContextAwareInstance( Lookup actionContext ) {
         return new CustomizeProject( actionContext );
     }
@@ -160,6 +162,7 @@ public class CustomizeProject extends ProjectAction implements Presenter.Popup {
     
     // Implementation of Presenter.Popup ---------------------------------------
     
+    @Override
     public JMenuItem getPopupPresenter() {
         JMenuItem popupPresenter = new JMenuItem();
         org.openide.awt.Actions.connect(popupPresenter, this, true);

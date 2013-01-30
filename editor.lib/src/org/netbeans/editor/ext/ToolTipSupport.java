@@ -284,12 +284,53 @@ public class ToolTipSupport {
     }
 
     /**
+     * Sets the tooltip. The tooltip will be positioned at the given coordinates relative to either the scroller 
+     * (with {@link PopupManager#ScrollBarBounds} or the viewport {@link PopupManager#ViewPortBounds}. Position
+     * of caret in the editor is completely ignored.
+     * 
+     * @param toolTip the tooltip component
+     * @param horizontalBounds positioning relative to the viewport or scrollbar (scroller)
+     * @param placeAt x,y coordinates to place the tooltip
+     * @param horizontalAdjustment horizontal inset between tooltip component and the tooltip floater
+     * @param verticalAdjustment vertical inset between tooltip component and the tooltip floater
+     * @param flags various flags, see FLAG_* constants in this class.
+     * 
+     * @since 3.26
+     */
+    public void setToolTip(
+        JComponent toolTip,
+        PopupManager.HorizontalBounds horizontalBounds,
+        Point placeAt,
+        int horizontalAdjustment,
+        int verticalAdjustment,
+        int flags
+    ) {
+        setToolTip(toolTip, horizontalBounds, PopupManager.FixedPoint, 
+                placeAt, horizontalAdjustment, verticalAdjustment,
+                flags);
+    }
+    
+    /**
      * @Since 2.10
      */
     public void setToolTip(
         JComponent toolTip,
         PopupManager.HorizontalBounds horizontalBounds,
         PopupManager.Placement placement,
+        int horizontalAdjustment,
+        int verticalAdjustment,
+        int flags
+    ) {
+        setToolTip(toolTip, horizontalBounds, placement, 
+                null, horizontalAdjustment, verticalAdjustment,
+                flags);
+    }
+    
+    private void setToolTip(
+        JComponent toolTip,
+        PopupManager.HorizontalBounds horizontalBounds,
+        PopupManager.Placement placement,
+        Point placeAt,
         int horizontalAdjustment,
         int verticalAdjustment,
         int flags
@@ -315,11 +356,16 @@ public class ToolTipSupport {
         }
 
         if (status >= STATUS_VISIBILITY_ENABLED) {
-            if (oldToolTip == this.toolTip && this.toolTip.getClientProperty(LAST_TOOLTIP_POSITION) != null) {
-                ensureVisibility((Point) this.toolTip.getClientProperty(LAST_TOOLTIP_POSITION));
+            Point pt;
+            
+            if (placeAt != null) {
+                pt = placeAt;
+            } else if (oldToolTip == this.toolTip && this.toolTip.getClientProperty(LAST_TOOLTIP_POSITION) != null) {
+                pt = (Point)this.toolTip.getClientProperty(LAST_TOOLTIP_POSITION);
             } else {
-                ensureVisibility(getLastMouseEventPoint());
+                pt = getLastMouseEventPoint();
             }
+            ensureVisibility(pt);
         }
 
         firePropertyChange(PROP_TOOL_TIP, oldToolTip, this.toolTip);
@@ -488,6 +534,12 @@ public class ToolTipSupport {
         );
     }
     
+    /**
+     * True, if the tooltip changed because of mouse event + timer; false, if it has been set
+     * externally, e.g. by {@link #setToolTip}.
+     */
+    private boolean tooltipFromView = false;
+    
     /** Update the tooltip by running corresponding action
      * {@link ExtKit#buildToolTipAction}. This method gets
      * called once the enterTimer fires and it can be overriden
@@ -501,6 +553,7 @@ public class ToolTipSupport {
         if (comp == null)
             return;
         
+        JComponent oldTooltip = this.toolTip;
         if (isGlyphGutterMouseEvent(lastMouseEvent)) {
             setToolTipText(extEditorUI.getGlyphGutter().getToolTipText(lastMouseEvent));
         } else { // over the text component
@@ -511,6 +564,10 @@ public class ToolTipSupport {
                     a.actionPerformed(new ActionEvent(comp, 0, "")); // NOI18N
                 }
             }
+        }
+        // tooltip has changed, mark it as 'automatic'
+        if (this.toolTip != oldTooltip) {
+            tooltipFromView = true;
         }
     }
 
@@ -527,6 +584,26 @@ public class ToolTipSupport {
      * @since 2.3
      */
     public void setToolTipVisible(boolean visible) {
+        setToolTipVisible(visible, true);
+    }
+    
+    /** 
+     * Set the visibility of the tooltip.
+     * Behaves like {@link #setToolTipVisible(boolean)}, except that it can skip
+     * forwarding the tooltip request to the view hierarchy. This is useful when
+     * tooltips are actively displayed by the code, not initiated by user's mouse hover
+     * or gesture. This call should be then followed by a call to {@code setTooltip}
+     * to actually set the tooltip's value and position.
+     * <p/>
+     * Use {@link #setToolTipVisible(boolean)} to display a tooltip relevant to the
+     * mouse position.
+     * 
+     * @param visible whether tooltip should become visible or not.
+     * @param updateFromView if true, ask DocumentView to build a tooltip.
+     *
+     * @since 3.28
+     */
+    public final void setToolTipVisible(boolean visible, boolean updateFromView) {
         LOG.log(Level.FINE, "setToolTipVisible: visible={0}, status={1}, enabled={2}", new Object [] { //NOI18N
             visible, status, enabled
         });
@@ -536,13 +613,19 @@ public class ToolTipSupport {
             exitTimer.stop();
         }
 
-        if (visible && status < STATUS_VISIBILITY_ENABLED
-            || !visible && status >= STATUS_VISIBILITY_ENABLED
+        if (visible && 
+                (status < STATUS_VISIBILITY_ENABLED ||
+                    // see defect #219141. The mouse-hoover tooltips should override those set explicitely even if they are visible.
+                    (status >= STATUS_VISIBILITY_ENABLED && updateFromView && !tooltipFromView)
+                )
+            || !visible && status >= STATUS_VISIBILITY_ENABLED 
         ) {
             if (visible) { // try to show the tooltip
                 if (enabled) {
                     setStatus(STATUS_VISIBILITY_ENABLED);
-                    updateToolTip();
+                    if (updateFromView) {
+                        updateToolTip();
+                    }
                 }
 
             } else { // hide tip
@@ -560,6 +643,7 @@ public class ToolTipSupport {
                 }
 
                 setStatus(STATUS_HIDDEN);
+                tooltipFromView = false;
             }
         }
     }
@@ -568,7 +652,7 @@ public class ToolTipSupport {
      * {@link #getStatus() } gives the exact visibility state.
      */
     public boolean isToolTipVisible() {
-        return status > STATUS_VISIBILITY_ENABLED;
+        return status >= STATUS_VISIBILITY_ENABLED && toolTip != null;
     }
 
     private boolean isToolTipShowing() {
@@ -691,7 +775,7 @@ public class ToolTipSupport {
             int pos = component.viewToModel(toolTipPosition);
             Rectangle cursorBounds = null;
             
-            if (pos >= 0) {
+            if (placement != PopupManager.FixedPoint && pos >= 0) {
                 try {
                     cursorBounds = component.modelToView(pos);
                     extendBounds(cursorBounds);
@@ -713,10 +797,12 @@ public class ToolTipSupport {
             pm.install(toolTip, cursorBounds, placement, horizontalBounds, horizontalAdjustment, verticalAdjustment);
             if (toolTip != null) {
                 toolTip.putClientProperty(LAST_TOOLTIP_POSITION, toolTipPosition);
-                toolTip.putClientProperty(MOUSE_MOVE_IGNORED_AREA, computeMouseMoveIgnoredArea(
-                        toolTip.getBounds(),
-                        SwingUtilities.convertRectangle(component, cursorBounds, toolTip.getParent())
-                ));
+                if (toolTip.getParent() != null) {
+                    toolTip.putClientProperty(MOUSE_MOVE_IGNORED_AREA, computeMouseMoveIgnoredArea(
+                            toolTip.getBounds(),
+                            SwingUtilities.convertRectangle(component, cursorBounds, toolTip.getParent())
+                    ));
+                }
                 toolTip.setVisible(true);
             }
         }
@@ -928,7 +1014,8 @@ public class ToolTipSupport {
 
             LOG.log(Level.FINER, "Action-name: {0}", actionName); //NOI18N
             if (actionName.contains("delete") || actionName.contains("insert") || //NOI18N
-                actionName.contains("paste") || actionName.contains("default") //NOI18N
+                actionName.contains("paste") || actionName.contains("default") || //NOI18N
+                actionName.contains("cut") //NOI18N
             ) {
                 actionMap.put(key, NO_ACTION);
             }

@@ -58,18 +58,15 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.WeakHashMap;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Icon;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.xml.parsers.DocumentBuilder;
@@ -79,6 +76,8 @@ import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
+import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.project.Project;
@@ -88,12 +87,10 @@ import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.ant.AntBuildExtender;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
-import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.api.queries.FileBuiltQuery.Status;
 import org.netbeans.modules.java.api.common.Roots;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
-import org.netbeans.modules.java.api.common.ant.UpdateImplementation;
 import org.netbeans.modules.java.api.common.classpath.ClassPathModifier;
 import org.netbeans.modules.java.api.common.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
@@ -127,7 +124,6 @@ import org.netbeans.spi.project.ui.support.UILookupMergerSupport;
 import org.netbeans.spi.queries.FileBuiltQueryImplementation;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -139,7 +135,6 @@ import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -151,9 +146,10 @@ import static org.netbeans.spi.project.support.ant.GeneratedFilesHelper.FLAG_OLD
 import static org.netbeans.spi.project.support.ant.GeneratedFilesHelper.FLAG_OLD_STYLESHEET;
 import static org.netbeans.spi.project.support.ant.GeneratedFilesHelper.FLAG_UNKNOWN;
 import org.netbeans.spi.whitelist.support.WhiteListQueryMergerSupport;
-import org.openide.filesystems.FileLock;
 import org.openide.filesystems.URLMapper;
 import org.openide.modules.SpecificationVersion;
+import org.openide.util.RequestProcessor;
+import org.openide.xml.XMLUtil;
 /**
  * Represents one plain J2SE project.
  * @author Jesse Glick, et al.
@@ -189,7 +185,7 @@ public final class J2SEProject implements Project {
     };
     private static final Icon J2SE_PROJECT_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/java/j2seproject/ui/resources/j2seProject.png", false); // NOI18N
     private static final Logger LOG = Logger.getLogger(J2SEProject.class.getName());
-    private static final RequestProcessor RP = new RequestProcessor(J2SEProject.class.getName(), 1);
+    private static final RequestProcessor PROJECT_OPENED_RP = new RequestProcessor(J2SEProject.class);
 
     private final AuxiliaryConfiguration aux;
     private final AntProjectHelper helper;
@@ -220,7 +216,7 @@ public final class J2SEProject implements Project {
         };
         this.helper = helper;
         aux = helper.createAuxiliaryConfiguration();
-        UpdateImplementation updateProject = new UpdateProjectImpl(this, helper, aux);
+        UpdateProjectImpl updateProject = new UpdateProjectImpl(this, helper, aux);
         this.updateHelper = new UpdateHelper(updateProject, helper);
         eval = createEvaluator();
         for (int v = 4; v < 10; v++) {
@@ -235,7 +231,7 @@ public final class J2SEProject implements Project {
 
         this.cpProvider = new ClassPathProviderImpl(this.helper, evaluator(), getSourceRoots(),getTestSourceRoots()); //Does not use APH to get/put properties/cfgdata
         this.cpMod = new ClassPathModifier(this, this.updateHelper, evaluator(), refHelper, null, createClassPathModifierCallback(), null);
-        lookup = createLookup(aux);
+        lookup = createLookup(aux, new J2SEProjectOperations(this, updateProject));
     }
 
     private ClassPathModifier.Callback createClassPathModifierCallback() {
@@ -361,8 +357,9 @@ public final class J2SEProject implements Project {
         return helper;
     }
 
-    private Lookup createLookup(final AuxiliaryConfiguration aux) {
-        FileEncodingQueryImplementation encodingQuery = QuerySupport.createFileEncodingQuery(evaluator(), J2SEProjectProperties.SOURCE_ENCODING);
+    private Lookup createLookup(final AuxiliaryConfiguration aux, final J2SEProjectOperations ops) {
+        final FileEncodingQueryImplementation encodingQuery = QuerySupport.createFileEncodingQuery(evaluator(), J2SEProjectProperties.SOURCE_ENCODING);
+        final J2SELogicalViewProvider lvp = new J2SELogicalViewProvider(this, this.updateHelper, evaluator(), refHelper);
         final Lookup base = Lookups.fixed(
             J2SEProject.this,
             QuerySupport.createProjectInformation(updateHelper, this, J2SE_PROJECT_ICON),
@@ -370,7 +367,7 @@ public final class J2SEProject implements Project {
             helper.createCacheDirectoryProvider(),
             helper.createAuxiliaryProperties(),
             refHelper.createSubprojectProvider(),
-            new J2SELogicalViewProvider(this, this.updateHelper, evaluator(), refHelper),
+            lvp,
             // new J2SECustomizerProvider(this, this.updateHelper, evaluator(), refHelper),
             new CustomizerProviderImpl(this, this.updateHelper, evaluator(), refHelper, this.genFilesHelper),        
             LookupMergerSupport.createClassPathProviderMerger(cpProvider),
@@ -388,7 +385,7 @@ public final class J2SEProject implements Project {
             ProjectClassPathModifier.extenderForModifier(cpMod),
             buildExtender,
             cpMod,
-            new J2SEProjectOperations(this),
+            ops,
             new J2SEConfigurationProvider(this),
             new J2SEPersistenceProvider(this, cpProvider),
             UILookupMergerSupport.createPrivilegedTemplatesMerger(),
@@ -404,7 +401,10 @@ public final class J2SEProject implements Project {
             QuerySupport.createBinaryForSourceQueryImplementation(this.sourceRoots, this.testRoots, this.helper, this.evaluator()), //Does not use APH to get/put properties/cfgdata
             QuerySupport.createAnnotationProcessingQuery(this.helper, this.evaluator(), ProjectProperties.ANNOTATION_PROCESSING_ENABLED, ProjectProperties.ANNOTATION_PROCESSING_ENABLED_IN_EDITOR, ProjectProperties.ANNOTATION_PROCESSING_RUN_ALL_PROCESSORS, ProjectProperties.ANNOTATION_PROCESSING_PROCESSORS_LIST, ProjectProperties.ANNOTATION_PROCESSING_SOURCE_OUTPUT, ProjectProperties.ANNOTATION_PROCESSING_PROCESSOR_OPTIONS),
             LookupProviderSupport.createActionProviderMerger(),
-            WhiteListQueryMergerSupport.createWhiteListQueryMerger()
+            WhiteListQueryMergerSupport.createWhiteListQueryMerger(),
+            BrokenReferencesSupport.createReferenceProblemsProvider(helper, refHelper, eval, lvp.getBreakableProperties(), lvp.getPlatformProperties()),
+            BrokenReferencesSupport.createPlatformVersionProblemProvider(helper, eval, new PlatformChangedHook(), JavaPlatform.getDefault().getSpecification().getName(), J2SEProjectProperties.JAVA_PLATFORM, J2SEProjectProperties.JAVAC_SOURCE, J2SEProjectProperties.JAVAC_TARGET),
+            UILookupMergerSupport.createProjectProblemsProviderMerger()
         );
         lookup = base; // in case LookupProvider's call Project.getLookup
         return LookupProviderSupport.createCompositeLookup(base, "Projects/org-netbeans-modules-java-j2seproject/Lookup"); //NOI18N
@@ -454,7 +454,7 @@ public final class J2SEProject implements Project {
         ProjectManager.mutex().writeAccess(new Mutex.Action<Void>() {
             @Override
             public Void run() {
-                Element data = helper.getPrimaryConfigurationData(true);
+                Element data = updateHelper.getPrimaryConfigurationData(true);
                 // XXX replace by XMLUtil when that has findElement, findText, etc.
                 NodeList nl = data.getElementsByTagNameNS(J2SEProject.PROJECT_CONFIGURATION_NAMESPACE, "name");
                 Element nameEl;
@@ -469,7 +469,7 @@ public final class J2SEProject implements Project {
                     data.insertBefore(nameEl, /* OK if null */data.getChildNodes().item(0));
                 }
                 nameEl.appendChild(data.getOwnerDocument().createTextNode(name));
-                helper.putPrimaryConfigurationData(data, true);
+                updateHelper.putPrimaryConfigurationData(data, true);
                 return null;
             }
         });
@@ -568,7 +568,10 @@ public final class J2SEProject implements Project {
                         true);
                 }
             } catch (IOException e) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                LOG.log(
+                   Level.INFO,
+                   NbBundle.getMessage(J2SEProject.class, "ERR_RegenerateProjectFiles"),
+                   e);
             }
 
             // register project's classpaths to GlobalPathRegistry
@@ -652,7 +655,7 @@ public final class J2SEProject implements Project {
                                                 J2SEProject.this.getProjectDirectory().getName()));
                                         DialogDisplayer.getDefault().notify(nd);
                                     } else {
-                                        ErrorManager.getDefault().notify(e);
+                                        Exceptions.printStackTrace(e);
                                     }
                                 }
                                 return null;
@@ -676,29 +679,6 @@ public final class J2SEProject implements Project {
                     LOG.log(Level.WARNING, "Unsupported charset: {0} in project: {1}", new Object[]{prop, FileUtil.getFileDisplayName(getProjectDirectory())}); //NOI18N
                 }
             }
-            RP.post(new Runnable() {
-                @Override
-                public void run() {
-                    final Future<Project[]> projects = OpenProjects.getDefault().openProjects();
-                    try {
-                        projects.get();
-                    } catch (ExecutionException ex) {
-                        Exceptions.printStackTrace(ex);
-                    } catch (InterruptedException ie) {
-                        Exceptions.printStackTrace(ie);
-                    }
-                    J2SELogicalViewProvider physicalViewProvider = getLookup().lookup(J2SELogicalViewProvider.class);
-                    if (physicalViewProvider != null &&  physicalViewProvider.hasBrokenLinks()) {
-                        BrokenReferencesSupport.showAlert(
-                                helper,
-                                refHelper,
-                                eval,
-                                physicalViewProvider.getBreakableProperties(),
-                                physicalViewProvider.getPlatformProperties());
-                    }
-                }
-            });
-
             //Update per project CopyLibs if needed
             new UpdateCopyLibs(J2SEProject.this).run();
             
@@ -706,28 +686,37 @@ public final class J2SEProject implements Project {
 
         @Override
         protected void projectClosed() {
-            // just do if the whole project was not deleted...
-            if (getProjectDirectory().isValid()) {
-                // Probably unnecessary, but just in case:
-                try {
-                    ProjectManager.getDefault().saveProject(J2SEProject.this);
-                } catch (IOException e) {
-                    if (!J2SEProject.this.getProjectDirectory().canWrite()) {
-                        // #91398 - ignore, we already reported on project open.
-                        // not counting with someone setting the ro flag while the project is opened.
-                    } else {
-                        ErrorManager.getDefault().notify(e);
+            final Runnable r = new Runnable() {
+                @Override
+                public void run() {
+                    // just do if the whole project was not deleted...
+                    if (getProjectDirectory().isValid()) {
+                        // Probably unnecessary, but just in case:
+                        try {
+                            ProjectManager.getDefault().saveProject(J2SEProject.this);
+                        } catch (IOException e) {
+                            if (!J2SEProject.this.getProjectDirectory().canWrite()) {
+                                // #91398 - ignore, we already reported on project open.
+                                // not counting with someone setting the ro flag while the project is opened.
+                            } else {
+                                Exceptions.printStackTrace(e);
+                            }
+                        }
+                    }
+                    // unregister project's classpaths to GlobalPathRegistry
+                    GlobalPathRegistry.getDefault().unregister(ClassPath.BOOT, cpProvider.getProjectClassPaths(ClassPath.BOOT));
+                    GlobalPathRegistry.getDefault().unregister(ClassPath.SOURCE, cpProvider.getProjectClassPaths(ClassPath.SOURCE));
+                    GlobalPathRegistry.getDefault().unregister(ClassPath.COMPILE, cpProvider.getProjectClassPaths(ClassPath.COMPILE));
+                    if (mainClassUpdater != null) {
+                        mainClassUpdater.stop();
+                        mainClassUpdater = null;
                     }
                 }
-            }
-
-            // unregister project's classpaths to GlobalPathRegistry
-            GlobalPathRegistry.getDefault().unregister(ClassPath.BOOT, cpProvider.getProjectClassPaths(ClassPath.BOOT));
-            GlobalPathRegistry.getDefault().unregister(ClassPath.SOURCE, cpProvider.getProjectClassPaths(ClassPath.SOURCE));
-            GlobalPathRegistry.getDefault().unregister(ClassPath.COMPILE, cpProvider.getProjectClassPaths(ClassPath.COMPILE));
-            if (mainClassUpdater != null) {
-                mainClassUpdater.stop();
-                mainClassUpdater = null;
+            };
+            if (SwingUtilities.isEventDispatchThread()) {
+                PROJECT_OPENED_RP.execute(r);
+            } else {
+                r.run();
             }
         }
 
@@ -1025,17 +1014,19 @@ public final class J2SEProject implements Project {
                     FileObject container = null;
                     for (URL u : content) {
                         FileObject fo = toFile(u);
-                        canDelete &= fo.canWrite();
-                        if (container == null) {
-                            container = fo.getParent();
-                            canDelete &= container.canWrite();
-                            canDelete &= LIB_COPY_LIBS.equals(container.getName());
-                            canDelete &= libFolder.equals(container.getParent());
-                        } else {
-                            canDelete &= container.equals(fo.getParent());
+                        if (fo != null) {
+                            canDelete &= fo.canWrite();
+                            if (container == null) {
+                                container = fo.getParent();
+                                canDelete &= container.canWrite();
+                                canDelete &= LIB_COPY_LIBS.equals(container.getName());
+                                canDelete &= libFolder.equals(container.getParent());
+                            } else {
+                                canDelete &= container.equals(fo.getParent());
+                            }
                         }
                     }
-                    if (canDelete) {
+                    if (canDelete && container != null) {
                         container.delete();
                     }
                 }
@@ -1055,6 +1046,50 @@ public final class J2SEProject implements Project {
         private static FileObject toFile(@NonNull final URL url) {
             final URL file = FileUtil.getArchiveFile(url);
             return URLMapper.findFileObject(file != null ? file : url);
+        }
+
+    }
+
+    private final class PlatformChangedHook implements BrokenReferencesSupport.PlatformUpdatedCallBack {
+
+        @Override
+        public void platformPropertyUpdated(@NonNull final JavaPlatform platform) {
+            final boolean remove = platform.equals(JavaPlatformManager.getDefault().getDefaultPlatform());
+            final Element root = helper.getPrimaryConfigurationData(true);
+            boolean changed = false;
+            if (remove) {
+                final Element platformElement = XMLUtil.findElement(
+                    root,
+                    "explicit-platform",    //NOI18N
+                    PROJECT_CONFIGURATION_NAMESPACE);
+                if (platformElement != null) {
+                    root.removeChild(platformElement);
+                    changed = true;
+                }
+            } else {
+                Element insertBefore = null;
+                for (Element e : XMLUtil.findSubElements(root)) {
+                    final String name = e.getNodeName();
+                    if (! "name".equals(name) &&                  //NOI18N
+                        ! "minimum-ant-version".equals(name)) {   //NOI18N
+                        insertBefore = e;
+                        break;
+                    }
+                }
+                final Element platformNode = insertBefore.getOwnerDocument().createElementNS(
+                        PROJECT_CONFIGURATION_NAMESPACE,
+                        "explicit-platform"); //NOI18N
+                platformNode.setAttribute(
+                        "explicit-source-supported",                                                             //NOI18N
+                        platform.getSpecification().getVersion().compareTo(new SpecificationVersion("1.3"))>0?   //NOI18N
+                            "true":                                                                              //NOI18N
+                            "false");                                                                            //NOI18N
+                root.insertBefore(platformNode, insertBefore);
+                changed = true;
+            }
+            if (changed) {
+                helper.putPrimaryConfigurationData(root, true);
+            }
         }
 
     }

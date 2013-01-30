@@ -49,7 +49,8 @@ import java.util.List;
  *
  * @author Radek Matous
  */
-public interface BaseFunctionElement extends PhpElement{
+public interface BaseFunctionElement extends PhpElement {
+
     enum PrintAs {
         NameAndParamsDeclaration,
         NameAndParamsInvocation,
@@ -59,6 +60,7 @@ public interface BaseFunctionElement extends PhpElement{
         ReturnSemiTypes,
         ReturnTypes
     }
+
     List<ParameterElement> getParameters();
     Collection<TypeResolver> getReturnTypes();
     String asString(PrintAs as);

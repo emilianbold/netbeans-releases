@@ -413,6 +413,16 @@ public class AlwaysEnabledActionTest extends NbTestCase implements PropertyChang
         checkPreferencesAction("testNbPreferences.instance", "", NbPreferences.root());
         checkPreferencesAction("testCustomPreferences.instance", "user:", Preferences.userRoot()); // customPreferences() uses "myNode" subnode
     }
+    
+    public void testPreferencesDefaultAction() throws Exception {
+        Action a = readAction("testPreferencesDefault.instance");
+        assertNotNull(a);
+        Preferences prefsNode = Preferences.userRoot().node("myNode");
+        prefsNode.remove("myKey");
+        assertNull("Expected null as preference value", prefsNode.get("myKey", null));
+        JMenuItem item = ((Presenter.Menu) a).getMenuPresenter();
+        TestCase.assertTrue("Expected to be selected", item.isSelected());
+    }
 
     private void checkPreferencesAction(String actionFileName, String preferencesNodePrefix, Preferences prefsRoot) throws Exception {
         Action a = readAction(actionFileName);

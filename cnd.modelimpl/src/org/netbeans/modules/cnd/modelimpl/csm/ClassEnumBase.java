@@ -191,6 +191,7 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
 
     /** Initializes scope */
     protected final void initScope(CsmScope scope) {
+        assert !this.equals(scope) : "scope can not be recursive " + this + " vs. " + scope;
         if (UIDCsmConverter.isIdentifiable(scope)) {
             this.scopeUID = UIDCsmConverter.scopeToUID(scope);
             assert (this.scopeUID != null || scope == null) : "null UID for class scope " + scope;
@@ -287,7 +288,7 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
         CsmScope scope = this.scopeRef;
         if (scope == null) {
             scope = UIDCsmConverter.UIDtoScope(this.scopeUID);
-            assert (scope != null || this.scopeUID == null|| !isValid) : "null object for UID " + this.scopeUID;
+            assert (scope != null || this.scopeUID == null || !isValid()) : "null object for UID " + this.scopeUID;
         }
         return scope;
     }
@@ -404,12 +405,14 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
     @Override
     public Collection<CsmTypedef> getEnclosingTypedefs() {
         Collection<CsmTypedef> out = new ArrayList<CsmTypedef>(0);
-        for (CsmUID<? extends CsmDeclaration> uid : enclosingElements) {
-            CsmDeclaration.Kind kind = UIDUtilities.getKind(uid);
-            if (kind == CsmDeclaration.Kind.TYPEDEF) {
-                CsmDeclaration obj = UIDCsmConverter.UIDtoCsmObject(uid);
-                if (obj != null) {
-                    out.add((CsmTypedef) obj);
+        synchronized(enclosingElements) {
+            for (CsmUID<? extends CsmDeclaration> uid : enclosingElements) {
+                CsmDeclaration.Kind kind = UIDUtilities.getKind(uid);
+                if (kind == CsmDeclaration.Kind.TYPEDEF) {
+                    CsmDeclaration obj = UIDCsmConverter.UIDtoCsmObject(uid);
+                    if (obj != null) {
+                        out.add((CsmTypedef) obj);
+                    }
                 }
             }
         }
@@ -419,12 +422,14 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
     @Override
     public Collection<CsmVariable> getEnclosingVariables() {
         Collection<CsmVariable> out = new ArrayList<CsmVariable>(0);
-        for (CsmUID<? extends CsmDeclaration> uid : enclosingElements) {
-            CsmDeclaration.Kind kind = UIDUtilities.getKind(uid);
-            if (kind == CsmDeclaration.Kind.VARIABLE) {
-                CsmDeclaration obj = UIDCsmConverter.UIDtoCsmObject(uid);
-                if (obj != null) {
-                    out.add((CsmVariable) obj);
+        synchronized(enclosingElements) {
+            for (CsmUID<? extends CsmDeclaration> uid : enclosingElements) {
+                CsmDeclaration.Kind kind = UIDUtilities.getKind(uid);
+                if (kind == CsmDeclaration.Kind.VARIABLE) {
+                    CsmDeclaration obj = UIDCsmConverter.UIDtoCsmObject(uid);
+                    if (obj != null) {
+                        out.add((CsmVariable) obj);
+                    }
                 }
             }
         }

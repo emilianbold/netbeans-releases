@@ -652,14 +652,6 @@ public class OccurrencesFinderImplTest extends PHPNavTestBase {
         checkOccurrences(getTestPath(), "* @return Om^g\\AliasedClassName", true);
     }
 
-    public void testIssue209308_06() throws Exception {
-        checkOccurrences(getTestPath(), "* @throws Om^g\\AliasedClassName", true);
-    }
-
-    public void testIssue209308_07() throws Exception {
-        checkOccurrences(getTestPath(), "* @throws Cl^s", true);
-    }
-
     public void testIssue209308_08() throws Exception {
         checkOccurrences(getTestPath(), "* @param Om^g\\AliasedClassName $p", true);
     }
@@ -694,10 +686,6 @@ public class OccurrencesFinderImplTest extends PHPNavTestBase {
 
     public void testIssue209308_016() throws Exception {
         checkOccurrences(getTestPath(), "* @return Omg\\Aliased^ClassName", true);
-    }
-
-    public void testIssue209308_017() throws Exception {
-        checkOccurrences(getTestPath(), "* @throws Omg\\Aliased^ClassName", true);
     }
 
     public void testIssue209308_018() throws Exception {
@@ -1102,6 +1090,62 @@ public class OccurrencesFinderImplTest extends PHPNavTestBase {
 
     public void testIssue213584_12() throws Exception {
         checkOccurrences(getTestPath(), "D^D::bar as foo;", true);
+    }
+
+    public void testIssue217357_01() throws Exception {
+        checkOccurrences(getTestPath(), "class Str^ing {", true);
+    }
+
+    public void testIssue217357_02() throws Exception {
+        checkOccurrences(getTestPath(), "use Abc\\Str^ing;", true);
+    }
+
+    public void testIssue217357_03() throws Exception {
+        checkOccurrences(getTestPath(), "$s = new Str^ing();", true);
+    }
+
+    public void testCatchWithAlias_01() throws Exception {
+        checkOccurrences(getTestPath(), "use Blah\\Sec as B^S;", true);
+    }
+
+    public void testCatchWithAlias_02() throws Exception {
+        checkOccurrences(getTestPath(), "new B^S\\MyException();", true);
+    }
+
+    public void testCatchWithAlias_03() throws Exception {
+        checkOccurrences(getTestPath(), "} catch (B^S\\MyException $ex) {", true);
+    }
+
+    public void testIssue216876_01() throws Exception {
+        checkOccurrences(getTestPath(), "class MyNewCl^ass123 {", true);
+    }
+
+    public void testIssue216876_02() throws Exception {
+        checkOccurrences(getTestPath(), "public function MyNewCl^ass123($foo) {", true);
+    }
+
+    public void testIssue216876_03() throws Exception {
+        checkOccurrences(getTestPath(), "$c = new \\Foo\\MyNewCl^ass123();", true);
+    }
+
+    public void testIssue218487_01() throws Exception {
+        checkOccurrences(getTestPath(), "use Zend\\Stdlib2\\DispatchableInterface2 as Dispatch^able2;", true);
+    }
+
+    public void testIssue218487_02() throws Exception {
+        checkOccurrences(getTestPath(), "class AbstractController implements Dispatch^able2 {", true);
+    }
+
+    public void testIssue223076_01() throws Exception {
+        checkOccurrences(getTestPath(), "func^tion functionName($param) {", true);
+    }
+
+    public void testIssue223076_02() throws Exception {
+        checkOccurrences(getTestPath(), "retur^n 5;", true);
+    }
+
+    public void testIssue223076_03() throws Exception {
+        checkOccurrences(getTestPath(), "retur^n 10;", true);
     }
 
     @Override

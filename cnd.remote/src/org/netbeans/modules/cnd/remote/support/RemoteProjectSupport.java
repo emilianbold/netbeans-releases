@@ -157,7 +157,9 @@ public class RemoteProjectSupport {
         for(String soorceRoot : mcs.getSourceRoots()) {
             // not sure whether they are absolute and normalized, so:
             FileObject fo = FileSystemProvider.getFileObject(baseDir, soorceRoot);
-            sourceFilesAndDirs.add(FSPath.toFSPath(fo));
+            if (fo != null) {
+                sourceFilesAndDirs.add(FSPath.toFSPath(fo));
+            }
         }
         addExtraFiles(mcs, sourceFilesAndDirs);
         List<Project> subProjects = new ArrayList<Project>(conf.getSubProjects());
@@ -176,7 +178,9 @@ public class RemoteProjectSupport {
                         MakeConfigurationDescriptor.getMakeConfigurationDescriptor(subProject);
                 for(String soorceRoot : mcs.getSourceRoots()) {
                     FileObject fo = FileSystemProvider.getFileObject(subProject.getProjectDirectory(), soorceRoot);
-                    sourceFilesAndDirs.add(FSPath.toFSPath(fo));
+                    if (fo != null) {
+                        sourceFilesAndDirs.add(FSPath.toFSPath(fo));
+                    }
                 }
                 addExtraFiles(subMcs, sourceFilesAndDirs);
             }

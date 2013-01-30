@@ -279,10 +279,12 @@ public class TopSecurityManager extends SecurityManager {
                         c != System.class &&
                         c != Boolean.class) {
                     String n = c.getName();
+                    boolean log;
                     synchronized (warnedClassesNH) {
-                        if (warnedClassesNH.add(n)) {
-                            LOG.log(Level.WARNING, "use of system property {0} has been obsoleted in favor of InstalledFileLocator/Places at {1}", new Object[] {x, findCallStackLine(n)});
-                        }
+                            log = warnedClassesNH.add(n);
+                    }
+                    if (log) {
+                        LOG.log(Level.WARNING, "use of system property {0} has been obsoleted in favor of InstalledFileLocator/Places at {1}", new Object[] {x, findCallStackLine(n)});
                     }
                     break;
                 }
@@ -405,6 +407,7 @@ public class TopSecurityManager extends SecurityManager {
 
     private final Set<Class> warnedSunMisc = new WeakSet<Class>();
     private final Set<String> callerWhiteList = createCallerWhiteList();
+    private final Set<String> callerBlackList = createCallerBlackList();
     @Override
     public void checkMemberAccess(Class<?> clazz, int which) {
         final String n = clazz.getName();
@@ -421,6 +424,9 @@ public class TopSecurityManager extends SecurityManager {
                 }
             }
             final String msg = "Dangerous reflection access to " + n + " by " + caller + " detected!";
+            if (caller != null && callerBlackList.contains(caller.getName())) {
+                throw new SecurityException(msg);
+            }
             Level l;
             if (caller != null && callerWhiteList.contains(caller.getName())) {
                 l = Level.FINEST;
@@ -441,12 +447,21 @@ public class TopSecurityManager extends SecurityManager {
     /**
      * Create list of safe callers for {@link #checkMemberAccess(Class, int)}.
      */
-    private Set<String> createCallerWhiteList() {
+    private static Set<String> createCallerWhiteList() {
         Set<String> wl = new HashSet<String>();
         wl.add("org.netbeans.core.output2.FileMapStorage");             //NOI18N
         wl.add("com.sun.tools.javac.util.CloseableURLClassLoader");     //NOI18N
         wl.add("java.lang.Thread$1");                                   //NOI18N
         wl.add("org.apache.lucene.store.MMapDirectory$1");              //NOI18N
+        wl.add("org.apache.lucene.util.Constants"); //#217037
+        wl.add("org.apache.lucene.util.RamUsageEstimator");//#217037
+        wl.add("com.google.gson.internal.UnsafeAllocator"); //#219464   //NOI18N
+        wl.add("org.netbeans.modules.web.jspparser_ext.WebAppParseSupport$ParserClassLoader"); //#218690 // NOI18N
+        return wl;
+    }
+    private static Set<String> createCallerBlackList() {
+        Set<String> wl = new HashSet<String>();
+        wl.add("com.sun.istack.tools.ProtectedTask");             //NOI18N
         return wl;
     }
     

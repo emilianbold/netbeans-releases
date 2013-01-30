@@ -98,6 +98,8 @@ public abstract class Executor {
     public abstract boolean isAlive();
 
     public abstract void terminate() throws IOException;
+    
+    public abstract void interrupt() throws IOException;
 
     public abstract void interrupt(int pid) throws IOException;
 
@@ -106,6 +108,8 @@ public abstract class Executor {
     public abstract void sigqueue(int sig, int data) throws IOException;
 
     public abstract String readlink(long pid);
+    
+    public abstract String readDirLink(long pid);
 
     public abstract boolean is_64(String p);
 

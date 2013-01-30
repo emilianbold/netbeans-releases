@@ -42,13 +42,16 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
+import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
+import java.lang.ref.WeakReference;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.netbeans.modules.cnd.apt.support.APTHandlersSupport;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
+import org.netbeans.modules.cnd.debug.CndTraceFlags;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 
 /**
@@ -150,10 +153,14 @@ import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
     }
 
     private static class Value {
-        private final SoftReference<PreprocessorStatePair> value;
+        private final Reference<PreprocessorStatePair> value;
         private int count;
         private Value(PreprocessorStatePair value){
-            this.value = new SoftReference<PreprocessorStatePair>(value);
+            if (CndTraceFlags.WEAK_REFS_HOLDERS) {
+                this.value = new WeakReference<PreprocessorStatePair>(value);
+            } else {
+                this.value = new SoftReference<PreprocessorStatePair>(value);
+            }
         }
     }
 }

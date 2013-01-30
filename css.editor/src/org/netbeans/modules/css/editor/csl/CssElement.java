@@ -56,9 +56,15 @@ import org.openide.filesystems.FileObject;
  */
 public class CssElement implements ElementHandle {
 
+    private FileObject file;
     private CharSequence name;
 
     public CssElement(CharSequence name) {
+        this(null, name);
+    }
+
+    public CssElement(FileObject file, CharSequence name) {
+        this.file = file;
         this.name = name;
     }
 
@@ -69,7 +75,7 @@ public class CssElement implements ElementHandle {
 
     @Override
     public FileObject getFileObject() {
-        return null;
+        return file;
     }
 
     @Override

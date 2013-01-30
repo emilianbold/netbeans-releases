@@ -64,6 +64,12 @@ public final class UniversalStatement extends StatementBase {
             super(ast, file, scope);
             this.kind = kind;
     }
+    
+    private UniversalStatement(CsmStatement.Kind kind, CsmScope scope, CsmFile file, int start, int end) {
+        super(file, start, end, scope);        
+        this.kind = kind;
+    }        
+    
     public static UniversalStatement create(AST ast, CsmFile file, CsmStatement.Kind kind, CsmScope scope) {
         return new UniversalStatement(ast, file, kind, scope);
     }
@@ -72,5 +78,20 @@ public final class UniversalStatement extends StatementBase {
     public CsmStatement.Kind getKind() {
         return kind;
     }
+    
+    public static class UniversalStatementBuilder extends StatementBuilder {
+
+        private CsmStatement.Kind kind;
+
+        public void setKind(Kind kind) {
+            this.kind = kind;
+        }
+        
+        @Override
+        public UniversalStatement create() {
+            UniversalStatement stmt = new UniversalStatement(kind, getScope(), getFile(), getStartOffset(), getEndOffset());
+            return stmt;
+        }
+    }    
     
 }

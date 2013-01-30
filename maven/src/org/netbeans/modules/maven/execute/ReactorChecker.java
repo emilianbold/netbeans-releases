@@ -57,6 +57,8 @@ import org.netbeans.modules.maven.api.execute.RunConfig;
 import org.netbeans.modules.maven.api.execute.PrerequisitesChecker;
 import org.netbeans.modules.maven.configurations.M2ConfigProvider;
 import org.netbeans.modules.maven.configurations.M2Configuration;
+import org.netbeans.modules.maven.embedder.MavenEmbedder;
+import org.netbeans.modules.maven.embedder.MavenEmbedder.ModelDescription;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -116,27 +118,37 @@ public class ReactorChecker implements PrerequisitesChecker {
      */
     public static @NonNull NbMavenProject findReactor(@NonNull NbMavenProject module) { // #197232
         MavenProject prj = module.getMavenProject();
+        List<ModelDescription> models = MavenEmbedder.getModelDescriptors(prj);
         File moduleDir = prj.getBasedir();
-        if (moduleDir != null) {
-            MavenProject parent;
-            try {
-                parent = prj.getParent();
-            } catch (IllegalStateException x) { // #203346
-                parent = null;
-            }
-            if (parent != null) {
-                File parentDir = parent.getBasedir();
-                if (parentDir != null && listsModule(parentDir, moduleDir, parent.getModules())) {
-                    NbMavenProject loaded = load(parentDir);
-                    if (loaded != null) {
-                        return findReactor(loaded);
-                    }
+        File current = moduleDir;
+        if (current != null && models != null) { //models are null for totally broken projects..
+            boolean first = true;
+            for (ModelDescription model : models) {
+                if (first) { //ignore the first value, it's the current project
+                    first = false;
+                    continue;
+                }
+                File loc = model.getLocation();
+                if (loc == null || loc.getName().endsWith(".pom")) {
+                    break;
+                }
+                File modelDir = loc.getParentFile();
+                if (listsModule(modelDir, current, model.getModules())) {
+                    current = modelDir;
+                } else {
+                    break;
                 }
             }
-            NbMavenProject p = load(moduleDir.getParentFile());
-            if (p != null && listsModule(moduleDir.getParentFile(), moduleDir, p.getMavenProject().getModules())) {
-                return findReactor(p);
+            if (!moduleDir.equals(current)) {
+                NbMavenProject loaded = load(current);
+                if (loaded != null) {
+                    return findReactor(loaded);
+                }
             }
+        }
+        NbMavenProject p = load(prj.getBasedir().getParentFile());
+        if (p != null && listsModule(moduleDir.getParentFile(), moduleDir, p.getMavenProject().getModules())) {
+            return findReactor(p);
         }
         return module;
     }
@@ -149,6 +161,9 @@ public class ReactorChecker implements PrerequisitesChecker {
         return false;
     }
     private static @CheckForNull NbMavenProject load(File parentDir) {
+        if (parentDir == null) {
+            return null;
+        }
         FileObject d = FileUtil.toFileObject(parentDir);
         if (d != null) {
             try {

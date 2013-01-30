@@ -119,6 +119,7 @@
                 </test-type>
             </test-dependencies>
             <friend-packages>
+                <friend>org.icesoft.netbeans.icefaces.palette</friend>
                 <friend>org.netbeans.modules.maven.j2ee</friend>
                 <friend>org.netbeans.modules.web.freeform</friend>
                 <friend>org.netbeans.modules.web.jsf</friend>

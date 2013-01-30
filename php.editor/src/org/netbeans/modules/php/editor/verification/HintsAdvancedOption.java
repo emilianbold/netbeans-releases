@@ -71,17 +71,16 @@ public class HintsAdvancedOption extends AdvancedOption {
 
     @Override
     public synchronized OptionsPanelController create() {
-        if ( panelController == null ) {
+        if (panelController == null) {
             HintsManager manager = HintsProvider.HintsManager.getManagerForMimeType(FileUtils.PHP_MIME_TYPE);
             assert manager != null;
             panelController = manager.getOptionsController();
         }
-
         return panelController;
     }
 
     //TODO: temporary solution, this should be solved on GSF level
-    public static  OptionsPanelController createStatic(){
+    public static  OptionsPanelController createStatic() {
         return new HintsAdvancedOption().create();
     }
 }

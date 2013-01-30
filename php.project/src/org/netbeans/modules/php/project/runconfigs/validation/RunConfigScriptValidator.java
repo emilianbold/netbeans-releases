@@ -41,8 +41,8 @@
  */
 package org.netbeans.modules.php.project.runconfigs.validation;
 
-import org.netbeans.modules.php.api.phpmodule.PhpInterpreter;
-import org.netbeans.modules.php.api.phpmodule.PhpProgram;
+import org.netbeans.modules.php.api.executable.InvalidPhpExecutableException;
+import org.netbeans.modules.php.api.executable.PhpInterpreter;
 import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.runconfigs.RunConfigScript;
@@ -57,11 +57,7 @@ public final class RunConfigScriptValidator {
     }
 
     public static String validateNewProject(RunConfigScript config) {
-        String error;
-        error = validateInterpreter(config.getUseDefaultInterpreter(), config.getInterpreter());
-        if (error != null) {
-            return error;
-        }
+        // default interpreter will be used => no validation needed for new project (validation is done on running)
         return null;
     }
 
@@ -84,7 +80,7 @@ public final class RunConfigScriptValidator {
 
     private static String validate(RunConfigScript config, boolean validateIndex) {
         String error;
-        error = validateInterpreter(config.getUseDefaultInterpreter(), config.getInterpreter());
+        error = validateInterpreter(config.getInterpreter());
         if (error != null) {
             return error;
         }
@@ -104,13 +100,10 @@ public final class RunConfigScriptValidator {
         return null;
     }
 
-    static String validateInterpreter(boolean useDefaultInterpreter, String interpreter) {
-        if (useDefaultInterpreter) {
-            return null;
-        }
+    private static String validateInterpreter(String interpreter) {
         try {
             PhpInterpreter.getCustom(interpreter);
-        } catch (PhpProgram.InvalidPhpProgramException ex) {
+        } catch (InvalidPhpExecutableException ex) {
             return ex.getLocalizedMessage();
         }
         return null;

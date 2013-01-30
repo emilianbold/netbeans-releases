@@ -105,9 +105,13 @@ final class AnalyzeStackTopComponent extends TopComponent {
 
             @Override
             public void mouseClicked (MouseEvent e) {
-                if (e.getClickCount () != 2) return;
+                if (e.getClickCount () != 2) {
+                    return;
+                }
                 int i = list.locationToIndex (e.getPoint ());
-                if (i < 0) return;
+                if (i < 0) {
+                    return;
+                }
                 String currentLine = (String) list.getModel ().getElementAt (i);
                 open (currentLine);
             }
@@ -145,7 +149,7 @@ final class AnalyzeStackTopComponent extends TopComponent {
      * @param model
      */
     static void fillListModel(BufferedReader r, DefaultListModel model) {
-        String currentLine = null;
+        String currentLine;
         String lastLine = null;
         try {
             while ((currentLine = r.readLine()) != null) {
@@ -238,8 +242,9 @@ final class AnalyzeStackTopComponent extends TopComponent {
         try {
             Clipboard clipBoard = Toolkit.getDefaultToolkit ().getSystemClipboard ();
             Transferable transferable = clipBoard.getContents (this);
-            if (!transferable.isDataFlavorSupported (DataFlavor.stringFlavor))
+            if (!transferable.isDataFlavorSupported (DataFlavor.stringFlavor)) {
                 return;
+            }
             Reader reader = DataFlavor.stringFlavor.getReaderForText (transferable);
             BufferedReader r = new BufferedReader (reader);
             DefaultListModel model = new DefaultListModel ();
@@ -278,10 +283,14 @@ final class AnalyzeStackTopComponent extends TopComponent {
         if (win == null) {
             Logger.getLogger (AnalyzeStackTopComponent.class.getName ()).warning (
                 "Cannot find " + PREFERRED_ID + " component. It will not be located properly in the window system.");
-            return getDefault ();
+            AnalyzeStackTopComponent analyzeStackTopComponent = getDefault();
+            analyzeStackTopComponent.insertButtonActionPerformed(null);
+            return analyzeStackTopComponent;
         }
         if (win instanceof AnalyzeStackTopComponent) {
-            return (AnalyzeStackTopComponent) win;
+            AnalyzeStackTopComponent analyzeStackTopComponent = (AnalyzeStackTopComponent) win;
+            analyzeStackTopComponent.insertButtonActionPerformed(null);
+            return analyzeStackTopComponent;
         }
         Logger.getLogger (AnalyzeStackTopComponent.class.getName ()).warning (
             "There seem to be multiple components with the '" + PREFERRED_ID +
@@ -326,7 +335,9 @@ final class AnalyzeStackTopComponent extends TopComponent {
 
     private void open (String line) {
         Link link = StackLineAnalyser.analyse (line);
-        if (link != null) link.show ();
+        if (link != null) {
+            link.show ();
+        }
     }
 
     private class PasteAction extends AbstractAction {

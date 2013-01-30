@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -112,6 +112,7 @@ class HprofHeap implements Heap {
     NearestGCRoot nearestGCRoot;
     private ComputedSummary computedSummary;
     private Map gcRoots;
+    private DominatorTree domTree;
     final private Object gcRootLock = new Object();
     private TagBounds allInstanceDumpBounds;
     private TagBounds heapDumpSegment;
@@ -375,7 +376,6 @@ class HprofHeap implements Heap {
             ClassDump classDump = null;
             long start = offset[0];
             int tag = readDumpTag(offset);
-            long instanceId = 0L;
             LongMap.Entry instanceEntry = null;
 
             if (tag == INSTANCE_DUMP) {
@@ -391,7 +391,7 @@ class HprofHeap implements Heap {
             }
 
             if (instanceIdOffset != 0) {
-                instanceId = dumpBuffer.getID(start + instanceIdOffset);
+                long instanceId = dumpBuffer.getID(start + instanceIdOffset);
                 instanceEntry = idToOffsetMap.put(instanceId, start);
             }
 
@@ -571,7 +571,7 @@ class HprofHeap implements Heap {
             return;
         }
         new TreeObject(this,nearestGCRoot.getLeaves()).computeTrees();
-        DominatorTree domTree = new DominatorTree(this,nearestGCRoot.getMultipleParents());
+        domTree = new DominatorTree(this,nearestGCRoot.getMultipleParents());
         domTree.computeDominators();
         long[] offset = new long[] { allInstanceDumpBounds.startOffset };
 
@@ -604,7 +604,6 @@ class HprofHeap implements Heap {
             if (idom != 0) {
                 int size;
                 LongMap.Entry entry;
-                Object[] domPath = null;
                 
                 if (isTreeObj) {
                     size = instanceEntry.getRetainedSize();
@@ -650,8 +649,12 @@ class HprofHeap implements Heap {
             long instanceId = dumpBuffer.getID(start + instanceIdOffset);
             Instance i = getInstanceByID(instanceId);
             ClassDump javaClass = (ClassDump) i.getJavaClass();
-            javaClass.addSizeForInstance(i);
+            if (javaClass != null && !domTree.hasInstanceInChain(tag, i)) {
+                javaClass.addSizeForInstance(i);
+            }
         }
+        // all done, release domTree
+        domTree = null;
         retainedSizeByClassComputed = true;
     }
 

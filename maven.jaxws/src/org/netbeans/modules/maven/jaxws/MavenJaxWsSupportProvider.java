@@ -46,9 +46,13 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import javax.xml.namespace.QName;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.dd.api.webservices.PortComponent;
@@ -61,18 +65,41 @@ import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.websvc.jaxws.light.api.JAXWSLightSupport;
 import org.netbeans.modules.websvc.jaxws.light.api.JaxWsService;
+import org.netbeans.modules.websvc.jaxws.light.spi.JAXWSLightSupportFactory;
+import org.netbeans.modules.websvc.jaxws.light.spi.JAXWSLightSupportImpl;
 import org.netbeans.modules.websvc.jaxws.light.spi.JAXWSLightSupportProvider;
+
+import org.netbeans.modules.websvc.project.api.WebService;
+import org.netbeans.modules.websvc.project.spi.LookupMergerSupport;
+import org.netbeans.modules.websvc.project.spi.WebServiceDataProvider;
+import org.netbeans.modules.websvc.project.spi.WebServiceFactory;
+import org.netbeans.modules.websvc.project.spi.WebServiceDataProvider;
+
+import org.netbeans.spi.project.LookupMerger;
+import org.netbeans.spi.project.ProjectServiceProvider;
+import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Lookup;
+import org.openide.util.Lookup.Result;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 import org.openide.util.RequestProcessor;
 
 /**
  *
  * @author mkuchtiak
  */
-class MavenJaxWsSupportProvider implements JAXWSLightSupportProvider, PropertyChangeListener {
+@ProjectServiceProvider(projectType="org-netbeans-modules-maven", 
+        service={JAXWSLightSupportProvider.class, WebServiceDataProvider.class, ProjectOpenedHook.class})
+public class MavenJaxWsSupportProvider extends ProjectOpenedHook 
+    implements JAXWSLightSupportProvider, WebServiceDataProvider, PropertyChangeListener
+{
 
     private static final RequestProcessor MAVEN_WS_RP =
             new RequestProcessor("MavenJaxWsSupportProvider.WS_REQUEST_PROCESSOR"); //NOI18N
+    
+    private static final RequestProcessor rp = 
+            new RequestProcessor("MavenJaxWsSupportProvider-request-processor");    // NOI18N
 
     private RequestProcessor.Task pomChangesTask = MAVEN_WS_RP.create(new Runnable() {
 
@@ -81,6 +108,8 @@ class MavenJaxWsSupportProvider implements JAXWSLightSupportProvider, PropertyCh
             reactOnPomChanges();
         }
     });
+    
+    private static final Logger LOG = Logger.getLogger(MavenJaxWsSupportProvider.class.getName());
 
     private JAXWSLightSupport jaxWsSupport;
     private PropertyChangeListener pcl;
@@ -88,25 +117,53 @@ class MavenJaxWsSupportProvider implements JAXWSLightSupportProvider, PropertyCh
     private Project prj;
     private volatile String serverInstance; 
     //private MetadataModel<WebservicesMetadata> wsModel;
+    
+    private List<WebService> providers = new LinkedList<WebService>();
+    private List<WebService> consumers = new LinkedList<WebService>();
 
-    MavenJaxWsSupportProvider(final Project prj, final JAXWSLightSupport jaxWsSupport) {
+    public MavenJaxWsSupportProvider(final Project prj) {
+        JAXWSLightSupportImpl spiJAXWSSupport = new MavenJAXWSSupportImpl(prj);
         this.prj = prj;
-        this.jaxWsSupport = jaxWsSupport;
+        this.jaxWsSupport = JAXWSLightSupportFactory.createJAXWSSupport(spiJAXWSSupport);
+        
+        jaxWsSupport.addPropertyChangeListener(this);
+    }
+    
+    /* (non-Javadoc)
+     * @see org.netbeans.spi.project.ui.ProjectOpenedHook#projectClosed()
+     */
+    @Override
+    protected void projectClosed() {
+    }
 
+    /* (non-Javadoc)
+     * @see org.netbeans.spi.project.ui.ProjectOpenedHook#projectOpened()
+     */
+    @Override
+    protected void projectOpened() {
+        
         MAVEN_WS_RP.post(new Runnable() {
 
-            @Override
             public void run() {
                 registerPCL();
-                MetadataModel<WebservicesMetadata> model = 
-                        jaxWsSupport.getWebservicesMetadataModel();
+                J2eeModuleProvider provider = prj.getLookup().lookup(
+                        J2eeModuleProvider.class);
+
+                MetadataModel<WebservicesMetadata> model = jaxWsSupport
+                        .getWebservicesMetadataModel();
                 if (model != null) {
                     registerAnnotationListener(model);
                 }
-                J2eeModuleProvider provider = WSUtils.getModuleProvider(prj);
-                serverInstance = provider== null ? null : 
-                    provider.getServerInstanceID();
-                //wsModel = model;
+                serverInstance = provider == null ? null : provider
+                        .getServerInstanceID();
+                // wsModel = model;
+            }
+        });
+        rp.post(new Runnable() {
+
+            @Override
+            public void run() {
+                WSUtils.detectWsdlClients(prj, jaxWsSupport);
             }
 
         });
@@ -115,6 +172,31 @@ class MavenJaxWsSupportProvider implements JAXWSLightSupportProvider, PropertyCh
     @Override
     public JAXWSLightSupport findJAXWSSupport() {
         return jaxWsSupport;
+    }
+    
+    @Override
+    public List<WebService> getServiceProviders() {
+        return providers;
+    }
+
+    @Override
+    public List<WebService> getServiceConsumers() {
+        return consumers;
+    }
+
+    @Override
+    public void addPropertyChangeListener(PropertyChangeListener pcl) {
+        jaxWsSupport.addPropertyChangeListener(pcl);
+    }
+
+    @Override
+    public void removePropertyChangeListener(PropertyChangeListener pcl) {
+        jaxWsSupport.removePropertyChangeListener(pcl);
+    }
+    
+    @LookupMerger.Registration(projectType="org-netbeans-modules-maven")
+    public static LookupMerger<WebServiceDataProvider> getLookupMerger(){
+        return LookupMergerSupport.createWebServiceDataProviderMerger();
     }
 
     void registerPCL() {
@@ -172,6 +254,35 @@ class MavenJaxWsSupportProvider implements JAXWSLightSupportProvider, PropertyCh
     public void propertyChange(PropertyChangeEvent evt) {
         if (NbMavenProject.PROP_PROJECT.equals(evt.getPropertyName())) {
             pomChangesTask.schedule(1000);
+        }
+        else if (JAXWSLightSupport.PROPERTY_SERVICE_ADDED.equals(evt.getPropertyName())) {
+            MavenWebService mavenService = new MavenWebService((JaxWsService) evt.getNewValue(), prj);
+            WebService webService = WebServiceFactory.createWebService(mavenService);
+            if (webService.isServiceProvider()) {
+                providers.add(webService);
+            } else {
+                consumers.add(webService);
+            }
+        } 
+        else if (JAXWSLightSupport.PROPERTY_SERVICE_REMOVED.equals(evt.getPropertyName())) {
+            JaxWsService jaxWsService = (JaxWsService) evt.getOldValue();
+            if (jaxWsService.isServiceProvider()) {
+                String implClass = jaxWsService.getImplementationClass();
+                for (WebService service : providers) {
+                    if (implClass.equals(service.getIdentifier())) {
+                        providers.remove(service);
+                        break;
+                    }
+                }
+            } else {
+                String clientId = jaxWsService.getId();
+                for (WebService client : consumers) {
+                    if (clientId != null && clientId.equals(client.getIdentifier())) {
+                        consumers.remove(client);
+                        break;
+                    }
+                }
+            }
         }
     }
 
@@ -244,6 +355,9 @@ class MavenJaxWsSupportProvider implements JAXWSLightSupportProvider, PropertyCh
                     public Map<String, ServiceInfo> run(WebservicesMetadata metadata) {
                         Map<String, ServiceInfo> result = new HashMap<String, ServiceInfo>();
                         Webservices webServices = metadata.getRoot();
+                        LOG.log(Level.INFO, "Inside update JAX-WS , WS root :"+
+                                webServices+" ; number of descriptions :"+
+                                webServices.getWebserviceDescription().length);// NOI18N
                         for (WebserviceDescription wsDesc : webServices.getWebserviceDescription()) {
                             PortComponent[] ports = wsDesc.getPortComponent();
                             for (PortComponent port : ports) {
@@ -337,7 +451,7 @@ class MavenJaxWsSupportProvider implements JAXWSLightSupportProvider, PropertyCh
         
     }
 
-    private class ServiceInfo {
+    private static class ServiceInfo {
         private String serviceName;
         private String portName;
         private String implClass;

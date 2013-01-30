@@ -64,12 +64,19 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.lang.model.element.TypeElement;
 import org.netbeans.api.debugger.Breakpoint.VALIDITY;
 import org.netbeans.api.debugger.jpda.ClassLoadUnloadBreakpoint;
 
 import org.netbeans.api.debugger.jpda.JPDABreakpoint;
 import org.netbeans.api.debugger.Session;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
+import org.netbeans.modules.debugger.jpda.SourcePath;
 import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InvalidRequestStateExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper;
@@ -83,8 +90,11 @@ import org.netbeans.modules.debugger.jpda.jdi.request.ClassPrepareRequestWrapper
 import org.netbeans.modules.debugger.jpda.jdi.request.ClassUnloadRequestWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.request.EventRequestManagerWrapper;
 import org.netbeans.modules.debugger.jpda.util.JPDAUtils;
+import org.netbeans.spi.debugger.jpda.BreakpointsClassFilter;
 import org.netbeans.spi.debugger.jpda.SourcePathProvider;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.ErrorManager;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -101,6 +111,7 @@ public abstract class ClassBasedBreakpoint extends BreakpointImpl {
     private final Object SOURCE_ROOT_LOCK = new Object();
     private SourceRootsChangedListener srChListener;
     private PropertyChangeListener weakSrChListener;
+    private BreakpointsClassFilter classFilter;
     
     private static final Logger logger = Logger.getLogger("org.netbeans.modules.debugger.jpda.breakpoints"); // NOI18N
 
@@ -109,7 +120,7 @@ public abstract class ClassBasedBreakpoint extends BreakpointImpl {
         JPDADebuggerImpl debugger,
         Session session
     ) {
-        super (breakpoint, null, debugger, session);
+        this (breakpoint, null, debugger, session);
     }
     
     public ClassBasedBreakpoint (
@@ -119,6 +130,11 @@ public abstract class ClassBasedBreakpoint extends BreakpointImpl {
         Session session
     ) {
         super (breakpoint, reader, debugger, session);
+        classFilter = new CompoundClassFilter(session.lookup(null, BreakpointsClassFilter.class));
+    }
+    
+    protected final BreakpointsClassFilter getClassFilter() {
+        return classFilter;
     }
     
     protected final void setSourceRoot(String sourceRoot) {
@@ -227,7 +243,124 @@ public abstract class ClassBasedBreakpoint extends BreakpointImpl {
         return compareSourceRoots(sourceRoot, urlRoot);
     }
     
-    protected void setClassRequests (
+    /**
+     * Returns list of class names that are a sub-set of provided class names,
+     * which does not belong to disabled source roots.
+     * @param classNames List of class names
+     */
+    protected final String[] checkSourcesEnabled(String[] classNames, String[] srcRootPtr) {
+        List<String> enabledClassNames = new ArrayList<String>(classNames.length);
+        for (String className : classNames) {
+            String relPath = SourcePath.convertClassNameToRelativePath(className);
+            String globalURL = getDebugger().getEngineContext().getURL(relPath, true);
+            if (globalURL != null) {
+                if (getDebugger().getEngineContext().getURL(relPath, false) == null) {
+                    // Is disabled
+                    srcRootPtr[0] = getDebugger().getEngineContext().getSourceRoot(globalURL);
+                    continue;
+                }
+            }
+            enabledClassNames.add(className);
+        }
+        return enabledClassNames.toArray(new String[] {});
+    }
+    
+    protected static boolean classExistsInSources(final String className, String[] projectSourceRoots) {
+        /*
+        ClassIndexManager cim = ClassIndexManager.getDefault();
+        List<FileObject> sourcePaths = new ArrayList<FileObject>(projectSourceRoots.length);
+        for (String sr : projectSourceRoots) {
+            FileObject fo = getFileObject(sr);
+            if (fo != null) {
+                sourcePaths.add(fo);
+                ClassIndexImpl ci;
+                try {
+                    ci = cim.getUsagesQuery(fo.getURL());
+                    if (ci != null) {
+                        String sourceName = ci.getSourceName(className);
+                        if (sourceName != null) {
+                            return true;
+                        }
+                    }
+                } catch (FileStateInvalidException ex) {
+                    continue;
+                } catch (java.io.IOException ioex) {
+                    continue;
+                }
+            }
+        }
+        return false;
+         */
+        List<FileObject> sourcePaths = new ArrayList<FileObject>(projectSourceRoots.length);
+        for (String sr : projectSourceRoots) {
+            FileObject fo = getFileObject(sr);
+            if (fo != null) {
+                sourcePaths.add(fo);
+            }
+        }
+        ClassPath cp = ClassPathSupport.createClassPath(sourcePaths.toArray(new FileObject[0]));
+        //ClassPathSupport.createClassPath(new FileObject[] {});
+        ClasspathInfo cpInfo = ClasspathInfo.create(ClassPathSupport.createClassPath(new FileObject[] {}),
+                                                    ClassPathSupport.createClassPath(new FileObject[] {}),
+                                                    cp);
+        //ClassIndex ci = cpInfo.getClassIndex();
+        JavaSource js = JavaSource.create(cpInfo);
+        final boolean[] found = new boolean[] { false };
+        try {
+            js.runUserActionTask(new Task<CompilationController>() {
+                @Override
+                public void run(CompilationController cc) throws Exception {
+                    cc.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                    TypeElement te = cc.getElements().getTypeElement(className);
+                    if (te != null) { // found
+                        found[0] = true;
+                    }
+                }
+            }, true);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return found[0];
+        /*
+        SourceUtils.getFile(null, null);
+        ClasspathInfo.create(null, null, cp);
+
+        cp = org.netbeans.modules.java.source.classpath.SourcePath.create(cp, true);
+        try {
+            ClassLoader cl = cp.getClassLoader(true);
+            FileObject fo = cp.findResource(className.replace('.', '/').concat(".class"));
+            Class c = cl.loadClass(className);
+            System.err.println("classExistsInSources("+className+"): fo = "+fo+", class = "+c);
+            return c != null;
+        } catch (ClassNotFoundException ex) {
+            return false;
+        }
+        */
+    }
+    
+    /**
+     * Returns FileObject for given String.
+     */
+    private static FileObject getFileObject (String file) {
+        File f = new File (file);
+        FileObject fo = FileUtil.toFileObject (f);
+        String path = null;
+        if (fo == null && file.contains("!/")) {
+            int index = file.indexOf("!/");
+            f = new File(file.substring(0, index));
+            fo = FileUtil.toFileObject (f);
+            path = file.substring(index + "!/".length());
+        }
+        if (fo != null && FileUtil.isArchiveFile (fo)) {
+            fo = FileUtil.getArchiveRoot (fo);
+            if (path !=null) {
+                fo = fo.getFileObject(path);
+            }
+        }
+        return fo;
+    }
+
+    protected final void setClassRequests (
         String[] classFilters,
         String[] classExclusionFilters,
         int breakpointType
@@ -235,7 +368,7 @@ public abstract class ClassBasedBreakpoint extends BreakpointImpl {
         setClassRequests(classFilters, classExclusionFilters, breakpointType, true);
     }
     
-    protected void setClassRequests (
+    protected final void setClassRequests (
         String[] classFilters,
         String[] classExclusionFilters,
         int breakpointType,
@@ -244,39 +377,37 @@ public abstract class ClassBasedBreakpoint extends BreakpointImpl {
         try {
             if ((breakpointType & ClassLoadUnloadBreakpoint.TYPE_CLASS_LOADED) != 0
             ) {
-                ClassPrepareRequest cpr = EventRequestManagerWrapper.
-                        createClassPrepareRequest (getEventRequestManager());
                 int i, k = classFilters.length;
                 for (i = 0; i < k; i++) {
+                    ClassPrepareRequest cpr = EventRequestManagerWrapper.
+                            createClassPrepareRequest (getEventRequestManager());
                     ClassPrepareRequestWrapper.addClassFilter (cpr, classFilters [i]);
                     if (logger.isLoggable(Level.FINE))
                         logger.fine("Set class load request: " + classFilters [i]);
+                    for (String exclusionFilter : classExclusionFilters) {
+                        ClassPrepareRequestWrapper.addClassExclusionFilter (cpr, exclusionFilter);
+                        if (logger.isLoggable(Level.FINE))
+                            logger.fine("Set class load exclusion request: " + exclusionFilter);
+                    }
+                    addEventRequest (cpr, ignoreHitCountOnClassLoad);
                 }
-                k = classExclusionFilters.length;
-                for (i = 0; i < k; i++) {
-                    ClassPrepareRequestWrapper.addClassExclusionFilter (cpr, classExclusionFilters [i]);
-                    if (logger.isLoggable(Level.FINE))
-                        logger.fine("Set class load exclusion request: " + classExclusionFilters [i]);
-                }
-                addEventRequest (cpr, ignoreHitCountOnClassLoad);
             }
             if ((breakpointType & ClassLoadUnloadBreakpoint.TYPE_CLASS_UNLOADED) != 0
             ) {
-                ClassUnloadRequest cur = EventRequestManagerWrapper.
-                        createClassUnloadRequest (getEventRequestManager());
                 int i, k = classFilters.length;
                 for (i = 0; i < k; i++) {
+                    ClassUnloadRequest cur = EventRequestManagerWrapper.
+                            createClassUnloadRequest (getEventRequestManager());
                     ClassUnloadRequestWrapper.addClassFilter (cur, classFilters [i]);
                     if (logger.isLoggable(Level.FINE))
                         logger.fine("Set class unload request: " + classFilters [i]);
+                    for (String exclusionFilter : classExclusionFilters) {
+                        ClassUnloadRequestWrapper.addClassExclusionFilter (cur, exclusionFilter);
+                        if (logger.isLoggable(Level.FINE))
+                            logger.fine("Set class unload exclusion request: " + exclusionFilter);
+                    }
+                    addEventRequest (cur, false);
                 }
-                k = classExclusionFilters.length;
-                for (i = 0; i < k; i++) {
-                    ClassUnloadRequestWrapper.addClassExclusionFilter (cur, classExclusionFilters [i]);
-                    if (logger.isLoggable(Level.FINE))
-                        logger.fine("Set class unload exclusion request: " + classExclusionFilters [i]);
-                }
-                addEventRequest (cur, false);
             }
         } catch (VMDisconnectedExceptionWrapper e) {
         } catch (InternalExceptionWrapper e) {
@@ -401,6 +532,24 @@ public abstract class ClassBasedBreakpoint extends BreakpointImpl {
                     }
                 });
             }
+        }
+        
+    }
+    
+    private class CompoundClassFilter extends BreakpointsClassFilter {
+        
+        private List<? extends BreakpointsClassFilter> filters;
+        
+        public CompoundClassFilter(List<? extends BreakpointsClassFilter> filters) {
+            this.filters = filters;
+        }
+
+        @Override
+        public ClassNames filterClassNames(ClassNames classNames, JPDABreakpoint breakpoint) {
+            for (BreakpointsClassFilter f : filters) {
+                classNames = f.filterClassNames(classNames, breakpoint);
+            }
+            return classNames;
         }
         
     }

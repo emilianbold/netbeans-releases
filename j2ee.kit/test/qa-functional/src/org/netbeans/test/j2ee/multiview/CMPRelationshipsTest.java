@@ -80,11 +80,11 @@ public class CMPRelationshipsTest extends DDTestCase {
     }
 
     public static Test suite() {
-        NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(CMPRelationshipsTest.class);
-        conf = addServerTests(conf, "testOpenProject", "testAddRelationship",
-                "testModifyRelationship", "testRemoveRelationship");
-        conf = conf.enableModules(".*").clusters(".*");
-        return NbModuleSuite.create(conf);
+        return createAllModulesServerSuite(Server.ANY, CMPRelationshipsTest.class,
+                "testOpenProject",
+                "testAddRelationship",
+                "testModifyRelationship",
+                "testRemoveRelationship");
     }
 
     /*

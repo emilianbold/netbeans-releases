@@ -100,7 +100,8 @@ public class SessionEJBWizardPanel extends javax.swing.JPanel {
 
         J2eeProjectCapabilities projectCap = J2eeProjectCapabilities.forProject(project);
         if (projectCap.isEjb31LiteSupported()){
-            boolean serverSupportsEJB31 = Util.getSupportedProfiles(project).contains(Profile.JAVA_EE_6_FULL);
+            boolean serverSupportsEJB31 = Util.getSupportedProfiles(project).contains(Profile.JAVA_EE_6_FULL) ||
+                    Util.getSupportedProfiles(project).contains(Profile.JAVA_EE_7_FULL);
             if (!projectCap.isEjb31Supported() && !serverSupportsEJB31){
                 remoteCheckBox.setVisible(false);
                 remoteCheckBox.setEnabled(false);

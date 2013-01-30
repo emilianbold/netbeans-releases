@@ -1,4 +1,4 @@
-<?xml version="1.1" encoding="UTF-8" ?>
+<?xml version="1.0" encoding="UTF-8" ?>
 
 <Form version="1.4" maxVersion="1.7" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <NonVisualComponents>
@@ -16,7 +16,9 @@
         <Component class="org.netbeans.modules.form.InvalidComponent" name="contactList">
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
-              <JTabbedPaneConstraints tabName="+"/>
+              <JTabbedPaneConstraints tabName="+">
+                <Property name="tabTitle" type="java.lang.String" value="+"/>
+              </JTabbedPaneConstraints>
             </Constraint>
           </Constraints>
         </Component>
@@ -155,7 +157,7 @@
               <Group type="102" alignment="0" attributes="0">
                   <EmptySpace min="-2" pref="5" max="-2" attributes="0"/>
                   <Component id="initLabel" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace pref="263" max="32767" attributes="0"/>
+                  <EmptySpace pref="278" max="32767" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
@@ -164,7 +166,7 @@
               <Group type="102" alignment="0" attributes="0">
                   <EmptySpace min="-2" pref="5" max="-2" attributes="0"/>
                   <Component id="initLabel" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace pref="280" max="32767" attributes="0"/>
+                  <EmptySpace pref="279" max="32767" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>

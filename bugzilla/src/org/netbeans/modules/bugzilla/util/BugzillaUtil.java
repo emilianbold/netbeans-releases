@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.bugzilla.util;
 
+import org.netbeans.modules.bugtracking.util.ListValuePicker;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
@@ -54,7 +55,7 @@ import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.BugzillaConnector;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
-import org.netbeans.modules.bugzilla.commands.GetTaskDataCommand;
+import org.netbeans.modules.mylyn.util.GetTaskDataCommand;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
 import org.netbeans.modules.bugzilla.kenai.KenaiRepository;
 import org.netbeans.modules.bugzilla.query.BugzillaQuery;
@@ -108,7 +109,11 @@ public class BugzillaUtil {
      * @return
      */
     public static TaskData getTaskData(final BugzillaRepository repository, final String id, boolean handleExceptions) {
-        GetTaskDataCommand cmd = new GetTaskDataCommand(id, repository);
+        GetTaskDataCommand cmd = 
+            new GetTaskDataCommand(
+                Bugzilla.getInstance().getRepositoryConnector(), 
+                repository.getTaskRepository(), 
+                id);
         repository.getExecutor().execute(cmd, handleExceptions);
         if(cmd.hasFailed() && Bugzilla.LOG.isLoggable(Level.FINE)) {
             Bugzilla.LOG.log(Level.FINE, cmd.getErrorMessage());
@@ -116,40 +121,24 @@ public class BugzillaUtil {
         return cmd.getTaskData();
     }
 
-    public static String getKeywords(String label, String keywordsString, BugzillaRepository repository) {
-        String[] keywords = keywordsString.split(","); // NOI18N
-        if(keywords == null || keywords.length == 0) {
-            return null;
-        }
+    public static String getKeywords(String message, String keywordsString, BugzillaRepository repository) {
 
-        KeywordsPanel kp;
         try {
             BugzillaConfiguration bc = repository.getConfiguration();
             if(bc == null || !bc.isValid()) {
                 // XXX is there something else we could do at this point?
                 return keywordsString;
             }
-            List<String> knownKeywords = bc.getKeywords();
-            kp = new KeywordsPanel(label, knownKeywords, keywords);
+            return ListValuePicker.getValues(
+                    NbBundle.getMessage(BugzillaUtil.class, "CTL_KeywordsTitle"), 
+                    NbBundle.getMessage(BugzillaUtil.class, "LBL_Keywords"),
+                    message, 
+                    keywordsString, 
+                    bc.getKeywords());
         } catch (Exception ex) {
             Bugzilla.LOG.log(Level.SEVERE, null, ex);
             return keywordsString;
         }       
-
-        ResourceBundle bundle = NbBundle.getBundle(BugzillaUtil.class);
-        if (BugzillaUtil.show(kp, bundle.getString("LBL_Keywords"), bundle.getString("LBL_Ok"))) { // NOI18N
-            String[] values = kp.getSelectedKeywords();
-            StringBuilder sb = new StringBuilder();
-            for (int i = 0; i < values.length; i++) {
-                String s = values[i];
-                sb.append(s);
-                if(i < values.length - 1) {
-                    sb.append(", "); // NOI18N
-                }
-            }
-            return sb.toString();
-        }
-        return keywordsString;
     }
 
     public static boolean isAssertEnabled() {

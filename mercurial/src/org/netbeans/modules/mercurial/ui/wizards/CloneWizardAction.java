@@ -53,10 +53,12 @@ import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.CallableSystemAction;
 import java.io.File;
+import java.util.MissingResourceException;
 import org.netbeans.modules.mercurial.HgModuleConfig;
 import org.openide.DialogDisplayer;
 import org.netbeans.modules.mercurial.ui.clone.CloneAction;
 import org.netbeans.modules.mercurial.ui.repository.HgURL;
+import org.openide.util.RequestProcessor.Task;
 
 // An example action demonstrating how the wizard could be called from within
 // your code. You can copy-paste the code below wherever you need.
@@ -82,6 +84,10 @@ public final class CloneWizardAction extends CallableSystemAction implements Cha
 
     @SuppressWarnings("unchecked")
     public void performAction() {
+        performClone(false);
+    }
+
+    public File performClone (boolean waitFinished) throws MissingResourceException {
         wizardIterator = new PanelsIterator();
         wizardDescriptor = new WizardDescriptor(wizardIterator);
 
@@ -92,15 +98,20 @@ public final class CloneWizardAction extends CallableSystemAction implements Cha
         dialog.setVisible(true);
         dialog.toFront();
         boolean cancelled = wizardDescriptor.getValue() != WizardDescriptor.FINISH_OPTION;
+        File cloneFile = null;
         if (!cancelled) {
             final HgURL repository = (HgURL) wizardDescriptor.getProperty("repository"); // NOI18N
             final File directory = (File) wizardDescriptor.getProperty("directory"); // NOI18N
             final String cloneName = (String) wizardDescriptor.getProperty("cloneName"); // NOI18N
             final HgURL pullPath = (HgURL) wizardDescriptor.getProperty("defaultPullPath"); // NOI18N
             final HgURL pushPath = (HgURL) wizardDescriptor.getProperty("defaultPushPath"); // NOI18N
-            File cloneFile = new File(directory, cloneName);
-            CloneAction.performClone(repository, cloneFile, true, null, pullPath, pushPath, HgModuleConfig.getDefault().getShowCloneCompleted());
+            cloneFile = new File(directory, cloneName);
+            Task t = CloneAction.performClone(repository, cloneFile, true, null, pullPath, pushPath, HgModuleConfig.getDefault().getShowCloneCompleted());
+            if (waitFinished) {
+                t.waitFinished();
+            }
         }
+        return cloneFile;
     }
     
     public void stateChanged(ChangeEvent e) {

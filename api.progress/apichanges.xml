@@ -110,7 +110,7 @@ is the proper place.
     <change id="customDialogs">
         <api name="progress_api"/>
         <summary><code>ProgressUtils</code> class with <code>runOffEventThreadWithCustomDialogContent</code> and <code>runOffEventThreadWithProgressDialog</code> methods were added.</summary>
-        <version major="1" minor="29" subminor="1"/>
+        <version major="1" minor="30"/>
         <date day="28" month="8" year="2012"/>
         <author login="pflaska	"/>
         <compatibility binary="compatible" source="compatible" deprecation="no" deletion="no" addition="yes"/>

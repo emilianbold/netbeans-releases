@@ -43,11 +43,14 @@ package org.netbeans.modules.editor.search.actions;
 
 import java.awt.event.ActionEvent;
 import java.util.Map;
+import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
 import javax.swing.JPanel;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.editor.EditorActionRegistration;
 import org.netbeans.editor.EditorUI;
+import org.netbeans.modules.editor.NbEditorKit;
 import org.netbeans.modules.editor.search.ReplaceBar;
 import org.netbeans.modules.editor.search.SearchBar;
 import org.netbeans.modules.editor.search.SearchNbEditorKit;
@@ -55,10 +58,17 @@ import org.netbeans.spi.editor.AbstractEditorAction;
 
 public class SearchAction extends AbstractEditorAction {
 
-        public SearchAction(Map<String,?> attrs) {
-            super(attrs);
-        }
-        
+    @EditorActionRegistration(name = SearchNbEditorKit.SEARCH_ACTION,
+    menuText = "#" + SearchNbEditorKit.SEARCH_ACTION + "_menu_text") // NOI18N
+    public static Action create(Map<String, ?> attrs) {
+        return new SearchAction(attrs);
+    }
+
+    public SearchAction(Map<String, ?> attrs) {
+        super(attrs);
+        putValue(NbEditorKit.SYSTEM_ACTION_CLASS_NAME_PROPERTY, org.openide.actions.FindAction.class.getName());
+    }
+
         @Override
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
         if (target != null) {
@@ -67,8 +77,8 @@ public class SearchAction extends AbstractEditorAction {
             }
             EditorUI eui = org.netbeans.editor.Utilities.getEditorUI(target);
             if (eui != null) {
-                //need to find if it has extended editor firsfaft, otherwise getExtComponent() will create all sidebars
-                //and other parts of full editor if action is assigned to just editor pane and broke later action logic.                
+                //need to find if it has extended editor first, otherwise getExtComponent() will create all sidebars
+                //and other parts of full editor if action is assigned to just editor pane and broke later action logic.
                 JPanel jp = null;
                 Object clientProperty = target.getClientProperty(SearchNbEditorKit.PROP_SEARCH_CONTAINER);
                 if (clientProperty instanceof JPanel) {

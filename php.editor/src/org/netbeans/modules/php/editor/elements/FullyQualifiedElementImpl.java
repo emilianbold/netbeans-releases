@@ -43,9 +43,9 @@
 package org.netbeans.modules.php.editor.elements;
 
 import org.netbeans.modules.php.editor.api.ElementQuery;
+import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.api.elements.FullyQualifiedElement;
 import org.netbeans.modules.php.editor.api.elements.NamespaceElement;
-import org.netbeans.modules.php.editor.api.QualifiedName;
 
 
 /**

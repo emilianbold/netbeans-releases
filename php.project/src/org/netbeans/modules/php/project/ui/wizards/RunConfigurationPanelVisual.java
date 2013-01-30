@@ -71,7 +71,7 @@ public class RunConfigurationPanelVisual extends JPanel {
         // Step name (actually the whole list for reference).
         putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, wizardPanel.getSteps());
 
-        this.insidePanels = insidePanels;
+        this.insidePanels = insidePanels.clone();
         initComponents();
     }
     /** This method is called from within the constructor to

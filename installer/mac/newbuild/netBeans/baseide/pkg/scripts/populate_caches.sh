@@ -18,7 +18,7 @@ then
 
     #issue 209263
     #run IDE in headless mode
-    sh netbeans -J-Dnetbeans.close=true --nosplash -J-Dorg.netbeans.core.WindowSystem.show=false -J-Dorg.netbeans.core.WindowSystem.show=false --userdir /tmp/tmpnb
+    sh netbeans -J-Dnetbeans.close=true --nosplash -J-Dorg.netbeans.core.WindowSystem.show=false -J-Dorg.netbeans.core.WindowSystem.show=false --userdir /tmp/tmpnb --modules --update-all
     if [ ! -d /tmp/tmpnb/var/cache ]; then
         exit
     fi
@@ -31,7 +31,7 @@ then
     # rm -r netigso
     # rm -r lastModified
     # rm splash* # if any
-    rm -r netigso lastModified splash*
+    rm -r netigso lastModified catalogcache splash*
 
     # copy into nb/var/cache
     mkdir -p "$nb_dir"/Contents/Resources/NetBeans/nb/var/cache/

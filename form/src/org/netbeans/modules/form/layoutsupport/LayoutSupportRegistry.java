@@ -47,10 +47,11 @@ package org.netbeans.modules.form.layoutsupport;
 import java.awt.*;
 import java.util.*;
 import java.lang.ref.*;
+import java.lang.reflect.Modifier;
+import org.netbeans.modules.form.CreationFactory;
 
 import org.openide.loaders.*;
 import org.openide.filesystems.*;
-import org.openide.ErrorManager;
 
 import org.netbeans.modules.form.FormModel;
 import org.netbeans.modules.form.FormUtils;
@@ -100,88 +101,14 @@ public class LayoutSupportRegistry {
         return reg;
     }
 
-    // --------------
-    // get methods
-
-    public Class getSupportClassForContainer(Class containerClass) {
-        String className = getContainersMap().get(containerClass.getName());
-        if (className == null) {
-            className = findSuperClass(getContainersMap(), containerClass);
-//            if (className == null && needPaletteRescan) {
-//                className = scanPalette(containerClass.getName());
-//                if (className == null) // try container superclass again
-//                    className = findSuperClass(getContainersMap(),
-//                                               containerClass);
-//            }
-        }
-
-        return className != null ? loadClass(className) : null;
-    }
-
-    public String getSupportNameForContainer(String containerClassName) {
-        String className = getContainersMap().get(containerClassName);
-        if (className == null) {
-            Class containerClass = loadClass(containerClassName);
-            if (containerClass != null)
-                className = findSuperClass(getContainersMap(), containerClass);
-//            if (className == null && needPaletteRescan) {
-//                className = scanPalette(containerClassName);
-//                if (className == null) // try container superclass again
-//                    className = findSuperClass(getContainersMap(),
-//                                               containerClass);
-//            }
-        }
-
-        return className;
-    }
-
-    public Class getSupportClassForLayout(Class layoutClass) {
-        String className = getLayoutsMap().get(layoutClass.getName());
-        if (className == null && needPaletteRescan)
-            className = scanPalette(layoutClass.getName());
-        if (className == null)
-            className = findSuperClass(getLayoutsMap(), layoutClass);
-
-        return className != null ? loadClass(className) : null;
-    }
-
-    public String getSupportNameForLayout(String layoutClassName) {
-        String className = getLayoutsMap().get(layoutClassName);
-        if (className == null && needPaletteRescan)
-            className = scanPalette(layoutClassName);
-        if (className == null) {
-            Class layoutClass = loadClass(layoutClassName);
-            if (layoutClass != null)
-                className = findSuperClass(getLayoutsMap(), layoutClass);
-        }
-
-        return className;
-    }
-
     // ------------
     // registering methods
-
-    public static void registerSupportForContainer(
-                           Class containerClass,
-                           Class layoutDelegateClass)
-    {
-        getContainersMap().put(containerClass.getName(),
-                               layoutDelegateClass.getName());
-    }
 
     public static void registerSupportForContainer(
                            String containerClassName,
                            String layoutDelegateClassName)
     {
         getContainersMap().put(containerClassName, layoutDelegateClassName);
-    }
-
-    public static void registertSupportForLayout(
-                           Class layoutClass,
-                           Class layoutDelegateClass)
-    {
-        getLayoutsMap().put(layoutClass.getName(),
-                            layoutDelegateClass.getName());
     }
 
     public static void registerSupportForLayout(
@@ -199,11 +126,12 @@ public class LayoutSupportRegistry {
                InstantiationException,
                IllegalAccessException
     {
-        Class delegateClass = getSupportClassForContainer(containerClass);
-        if (delegateClass == null)
-            return null;
-
-        return (LayoutSupportDelegate) delegateClass.newInstance();
+        String delegateClassName = getContainersMap().get(containerClass.getName());
+        if (delegateClassName == null) {
+            return createLayoutSupportForSuperClass(getContainersMap(), containerClass);
+        } else {
+            return (LayoutSupportDelegate) loadClass(delegateClassName).newInstance();
+        }
     }
 
     public LayoutSupportDelegate createSupportForLayout(Class layoutClass)
@@ -211,15 +139,21 @@ public class LayoutSupportRegistry {
                InstantiationException,
                IllegalAccessException
     {
-        String delegateClassName = getSupportNameForLayout(layoutClass.getName());
-        if (delegateClassName == null)
-            return null;
-
-        if (delegateClassName == DEFAULT_SUPPORT)
+        String layoutClassName = layoutClass.getName();
+        String delegateClassName = getLayoutsMap().get(layoutClassName);
+        if (delegateClassName == null && needPaletteRescan) {
+            delegateClassName = scanPalette(layoutClassName);
+        }
+        if (delegateClassName == null && !isUsableCustomLayoutClass(layoutClass)) {
+            return createLayoutSupportForSuperClass(getLayoutsMap(), layoutClass);
+        }
+        if (DEFAULT_SUPPORT.equals(delegateClassName)) {
             return new DefaultLayoutSupport(layoutClass);
-
-        return (LayoutSupportDelegate)
-               loadClass(delegateClassName).newInstance();
+        } else if (delegateClassName != null) {
+            return (LayoutSupportDelegate) loadClass(delegateClassName).newInstance();
+        } else {
+            return null;
+        }
     }
 
     public static LayoutSupportDelegate createSupportInstance(
@@ -232,13 +166,35 @@ public class LayoutSupportRegistry {
     // -----------
     // private methods
 
-    private String findSuperClass(Map map, Class subClass) {
-        for (Iterator it=map.entrySet().iterator(); it.hasNext(); ) {
-            Map.Entry en = (Map.Entry) it.next();
-            String className = (String) en.getKey();
-            Class<?> keyClass = loadClass(className);
-            if (keyClass != null && keyClass.isAssignableFrom(subClass))
-                return (String) en.getValue();
+    private static boolean isUsableCustomLayoutClass(Class layoutClass) {
+        if ((layoutClass.getModifiers() & Modifier.PUBLIC) == 0) {
+            return false;
+        }
+        try {
+            if (layoutClass.getConstructor(new Class[0]) != null) {
+                return true; // has a public constructor without parameters
+            }
+        } catch (NoSuchMethodException ex) {
+        }
+        return CreationFactory.getDescriptor(layoutClass) != null;
+    }
+
+    private LayoutSupportDelegate createLayoutSupportForSuperClass(Map<String,String> map, Class subClass)
+            throws ClassNotFoundException, InstantiationException, IllegalAccessException {
+        // We don't ask if the loaded registered class is assignable from 'subClass'
+        // because it would not work for custom classes when the project classloader changes.
+        for (Map.Entry<String,String> en : map.entrySet()) {
+            String regName = en.getKey();
+            for (Class superClass=subClass.getSuperclass(); superClass != null; superClass=superClass.getSuperclass()) {
+                if (superClass.getName().equals(regName)) {
+                    String delegateClassName = en.getValue();
+                    if (DEFAULT_SUPPORT.equals(delegateClassName)) {
+                        return new DefaultLayoutSupport(superClass);
+                    } else {
+                        return (LayoutSupportDelegate) loadClass(delegateClassName).newInstance();
+                    }
+                }
+            }
         }
         return null;
     }
@@ -346,17 +302,8 @@ public class LayoutSupportRegistry {
         return foundSupportClassName;
     }
 
-    private Class loadClass(String className) {
-        try {
-            return FormUtils.loadClass(className, formModelRef.get());
-        }
-        catch (Exception ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-        }
-        catch (LinkageError ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-        }
-        return null;
+    private Class loadClass(String className) throws ClassNotFoundException {
+        return FormUtils.loadClass(className, formModelRef.get());
     }
 
     private static Map<String,String> getContainersMap() {
@@ -419,6 +366,9 @@ public class LayoutSupportRegistry {
             layoutToLayoutDelegate.put(
                 "org.netbeans.lib.awtextra.AbsoluteLayout", // NOI18N
                 "org.netbeans.modules.form.layoutsupport.delegates.AbsoluteLayoutSupport"); // NOI18N
+            // well known SwingX layouts
+            layoutToLayoutDelegate.put("org.jdesktop.swingx.VerticalLayout", DEFAULT_SUPPORT); // NOI18N
+            layoutToLayoutDelegate.put("org.jdesktop.swingx.HorizontalLayout", DEFAULT_SUPPORT); // NOI18N
         }
         return layoutToLayoutDelegate;
     }

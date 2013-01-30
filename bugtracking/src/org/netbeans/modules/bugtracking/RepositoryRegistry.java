@@ -44,6 +44,7 @@ package org.netbeans.modules.bugtracking;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -150,16 +151,12 @@ public class RepositoryRegistry {
             // we don't store kenai repositories - XXX  shouldn't be even called
             return;        
         }
-        Collection<RepositoryImpl> oldRepos;
-        Collection<RepositoryImpl> newRepos;
         synchronized(REPOSITORIES_LOCK) {
-            oldRepos = Collections.unmodifiableCollection(new LinkedList<RepositoryImpl>(getStoredRepositories().getRepositories()));
             getStoredRepositories().put(repository); // cache
             putRepository(repository); // persist
-            newRepos = Collections.unmodifiableCollection(getStoredRepositories().getRepositories());
 
         }
-        fireRepositoriesChanged(oldRepos, newRepos);
+        fireRepositoriesChanged(null, Arrays.asList(repository));
     }    
 
     /**
@@ -168,20 +165,15 @@ public class RepositoryRegistry {
      * @param repository 
      */
     public void removeRepository(RepositoryImpl repository) {
-        Collection<RepositoryImpl> oldRepos;
-        Collection<RepositoryImpl> newRepos;
         synchronized(REPOSITORIES_LOCK) {
-            oldRepos = Collections.unmodifiableCollection(getStoredRepositories().getRepositories());
             RepositoryInfo info = repository.getInfo();
             String connectorID = info.getConnectorId();  
             // persist remove
             getPreferences().remove(getRepositoryKey(info)); 
             // remove from cache
             getStoredRepositories().remove(connectorID, repository);
-            
-            newRepos = Collections.unmodifiableCollection(getStoredRepositories().getRepositories());
         }
-        fireRepositoriesChanged(oldRepos, newRepos);
+        fireRepositoriesChanged(Arrays.asList(repository), null);
     }
     
     /**

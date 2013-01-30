@@ -479,6 +479,10 @@ public class BeanClass extends AbstractCodeGeneratorClass implements CodeGenerat
         gen(", " + Version.MINVER);
         gen(", " + Version.PTCVER, ")");
         eol();
+        if (this.beanElement.isRoot) {
+            gen("private static final String SERIALIZATION_HELPER_CHARSET = \"UTF-8\"");
+        }
+        eolNoI18N();
     }
     
     /**
@@ -502,7 +506,9 @@ public class BeanClass extends AbstractCodeGeneratorClass implements CodeGenerat
             gen("out.defaultWriteObject()"); eol();
             gen("final int MAX_SIZE = 0XFFFF"); eol();
             gen("final ByteArrayOutputStream baos = new ByteArrayOutputStream()"); eol();
-	    gen("write(baos)"); eol();
+            gen("try");
+            begin();
+	    gen("write(baos, SERIALIZATION_HELPER_CHARSET)"); eol();
             gen("final byte [] array = baos.toByteArray()"); eol();
             gen("final int numStrings = array.length / MAX_SIZE"); eol();
             gen("final int leftover = array.length % MAX_SIZE"); eol();
@@ -511,14 +517,20 @@ public class BeanClass extends AbstractCodeGeneratorClass implements CodeGenerat
             gen("int offset = 0"); eol();
             gen("for (int i = 0; i < numStrings; i++)"); 
             begin();
-            gen("out.writeUTF(new String(array, offset, MAX_SIZE))"); eol();
+            gen("out.writeUTF(new String(array, offset, MAX_SIZE, SERIALIZATION_HELPER_CHARSET))"); eol();
             gen("offset += MAX_SIZE"); eol();
             end();
             gen("if (leftover > 0)"); 
             begin();
             gen("final int count = array.length - offset"); eol();
-            gen("out.writeUTF(new String(array, offset, count))"); eol();
+            gen("out.writeUTF(new String(array, offset, count, SERIALIZATION_HELPER_CHARSET))"); eol();
             end();
+            end();
+            gen("catch (Schema2BeansException ex)");
+            begin();
+            gen("throw new Schema2BeansRuntimeException(ex)"); eol();
+            end();
+
 	    end();
 	    
 	    comment("Special deserializer: read XML as deserialization");
@@ -532,11 +544,15 @@ public class BeanClass extends AbstractCodeGeneratorClass implements CodeGenerat
             comment("init(comparators, new GenBeans.Version(1, 0, 8))");
             gen("final int numStrings = in.readInt()");eol();
             gen("final int max_size = in.readInt()");eol();
-            gen("final StringBuffer sb = new StringBuffer(numStrings * max_size)"); eol();
+            if (config.isJava5()) {
+                gen("final StringBuilder sb = new StringBuilder(numStrings * max_size)"); eol();
+            } else {
+                gen("final StringBuffer sb = new StringBuffer(numStrings * max_size)"); eol();
+            }
             gen("for (int i = 0; i < numStrings; i++)"); begin();
             gen("sb.append(in.readUTF())"); eol();
             end();
-            gen("ByteArrayInputStream bais = new ByteArrayInputStream(sb.toString().getBytes())"); eol();
+            gen("ByteArrayInputStream bais = new ByteArrayInputStream(sb.toString().getBytes(SERIALIZATION_HELPER_CHARSET))"); eol();
             gen("Document doc = GraphManager.createXmlDocument(bais, false)"); eol();
             if (config.isSetDefaults()){
                 gen("initOptions(Common.USE_DEFAULT_VALUES)"); eol();
@@ -1173,10 +1189,15 @@ public class BeanClass extends AbstractCodeGeneratorClass implements CodeGenerat
                 if (isScalar || isCharArray) gen(")");
                 eol();
 		    
-                if (isWrapper && !isCharArray)
+                if (isWrapper && !isCharArray) {
                     gen("str.append((o==null?\"null\":o.toString()");
-                else
-                    gen("str.append((s==null?\"null\":s");
+                } else {
+                    if (isScalar && !isCharArray) {
+                        gen("str.append((s");
+                    } else {
+                        gen("str.append((s==null?\"null\":s");
+                    }
+                }
 		    
                 gen(".trim()))");
                 eolNoI18N();
@@ -1552,8 +1573,6 @@ public class BeanClass extends AbstractCodeGeneratorClass implements CodeGenerat
         // Most of these are taken from the public methods of BaseBean
         jw.addToMethodStore("addComparator", "org.netbeans.modules.schema2beans.BeanComparator c", null, "void", jw.PUBLIC | jw.STATIC);
         jw.addToMethodStore("removeComparator", "org.netbeans.modules.schema2beans.BeanComparator c", null, "void", jw.PUBLIC | jw.STATIC);
-        if (beanElement.isRoot) {
-        }
         jw.addToMethodStore("getValue", "String name", null, "Object");
         jw.addToMethodStore("getValue", "String name, int index", null, "Object");
         jw.addToMethodStore("isNull", "String name", null, "boolean");

@@ -48,6 +48,7 @@ import java.io.File;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -57,6 +58,7 @@ import java.util.Set;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.netbeans.api.annotations.common.NonNull;
 
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.ant.AntArtifact;
@@ -100,7 +102,8 @@ public final class ClassPathSupport {
     private ReferenceHelper referenceHelper;
     private AntProjectHelper antProjectHelper;
     private UpdateHelper updateHelper;
-    private static Set<String> wellKnownPaths = new HashSet<String>(Arrays.asList(ProjectProperties.WELL_KNOWN_PATHS));
+    //@GuardedBy("ClassPathSupport.class")
+    private static Set<String> wellKnownPaths;
     private static String antArtifactPrefix = ANT_ARTIFACT_PREFIX;
         
     private Callback callback;
@@ -320,7 +323,7 @@ public final class ClassPathSupport {
     // Private methods ---------------------------------------------------------
 
     private boolean isWellKnownPath( String property ) {
-        return wellKnownPaths == null ? false : wellKnownPaths.contains( property );
+        return getWellKnownPaths().contains( property );
     }
     
     private boolean isAntArtifact( String property ) {        
@@ -329,6 +332,15 @@ public final class ClassPathSupport {
     
     private static boolean isLibrary( String property ) {
         return property.startsWith(LIBRARY_PREFIX) && property.endsWith(LIBRARY_SUFFIX);
+    }
+
+    @NonNull
+    private static synchronized Set<String> getWellKnownPaths() {
+        if (wellKnownPaths == null) {
+             wellKnownPaths = Collections.unmodifiableSet(
+                     new HashSet<String>(Arrays.asList(ProjectProperties.WELL_KNOWN_PATHS)));
+        }
+        return wellKnownPaths;
     }
     
     public static boolean isVariableBasedReference(String ref) {
@@ -723,8 +735,10 @@ public final class ClassPathSupport {
             assert getType() == Item.TYPE_JAR : getType();
             EditableProperties ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
             String value = ep.getProperty(CommonProjectUtils.getAntPropertyName(getReference()));
-            RelativePath rp = (RelativePath)object;
-            rp.filePath = value;
+            if (value != null) {
+                RelativePath rp = (RelativePath)object;
+                rp.setFilePath(value);
+            }
             
             String ref = getSourceProperty();
             if (ref != null) {
@@ -841,7 +855,7 @@ public final class ClassPathSupport {
         private final File base;
         private final File resolvedFile;
 
-        private RelativePath(String filePath, File base) {
+        private RelativePath(@NonNull String filePath, @NonNull File base) {
             Parameters.notNull("filePath", filePath);
             Parameters.notNull("base", base);
             this.filePath = filePath;
@@ -855,6 +869,11 @@ public final class ClassPathSupport {
         
         public String getFilePath() {
             return filePath;
+        }
+
+        private void setFilePath(@NonNull final String filePath) {
+            Parameters.notNull("filePath", filePath);   //NOI18N
+            this.filePath = filePath;
         }
 
         public File getResolvedFile() {

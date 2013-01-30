@@ -50,7 +50,6 @@ import java.io.IOException;
 import java.text.Collator;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -73,32 +72,21 @@ import org.openide.awt.ActionRegistration;
 import org.openide.awt.Actions;
 import org.openide.execution.ExecutorTask;
 import org.openide.util.ContextAwareAction;
-import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.util.actions.SystemAction;
 import org.openide.util.actions.Presenter;
 
 /**
- * Submenu which permits the user to run various targets from the project.
+ * Submenu which permits the user to debug various targets from the project.
  * Distinction made between the main target, other documented targets, and other
  * undocumented targets.
  */
 @ActionID(id = "org.netbeans.modules.ant.debugger.RunTargetsAction", category = "Build")
-@ActionRegistration(displayName = "#LBL_run_targets_action", lazy=false)
+@ActionRegistration(displayName = "", lazy=false)
 @ActionReference(path = "Loaders/text/x-ant+xml/Actions", position = 300)
-public final class RunTargetsAction extends SystemAction implements ContextAwareAction {
-
-    @Override
-    public String getName () {
-        return NbBundle.getMessage (RunTargetsAction.class, "LBL_run_targets_action");
-    }
-
-    @Override
-    public HelpCtx getHelpCtx () {
-        return HelpCtx.DEFAULT_HELP;
-    }
+@NbBundle.Messages("LBL_run_targets_action=Debug Target")
+public final class RunTargetsAction extends AbstractAction implements ContextAwareAction {
 
     @Override
     public void actionPerformed(ActionEvent e) {
@@ -118,7 +106,7 @@ public final class RunTargetsAction extends SystemAction implements ContextAware
         private final AntProjectCookie project;
         
         public ContextAction(Lookup lkp) {
-            super(SystemAction.get(RunTargetsAction.class).getName());
+            super(Bundle.LBL_run_targets_action());
             Collection<? extends AntProjectCookie> apcs = lkp.lookupAll(AntProjectCookie.class);
             AntProjectCookie _project = null;
             if (apcs.size() == 1) {
@@ -165,7 +153,7 @@ public final class RunTargetsAction extends SystemAction implements ContextAware
         private boolean initialized = false;
         
         public LazyMenu(AntProjectCookie project) {
-            super(SystemAction.get(RunTargetsAction.class).getName());
+            super(Bundle.LBL_run_targets_action());
             this.project = project;
         }
         
@@ -173,7 +161,7 @@ public final class RunTargetsAction extends SystemAction implements ContextAware
         public JPopupMenu getPopupMenu() {
             if (!initialized) {
                 initialized = true;
-                Set/*<TargetLister.Target>*/ allTargets;
+                Set<TargetLister.Target> allTargets;
                 try {
                     allTargets = TargetLister.getTargets(project);
                 } catch (IOException e) {
@@ -182,11 +170,9 @@ public final class RunTargetsAction extends SystemAction implements ContextAware
                     allTargets = Collections.EMPTY_SET;
                 }
                 String defaultTarget = null;
-                SortedSet/*<String>*/ describedTargets = new TreeSet(Collator.getInstance());
-                SortedSet/*<String>*/ otherTargets = new TreeSet(Collator.getInstance());
-                Iterator it = allTargets.iterator();
-                while (it.hasNext()) {
-                    TargetLister.Target t = (TargetLister.Target) it.next();
+                SortedSet<String> describedTargets = new TreeSet(Collator.getInstance());
+                SortedSet<String> otherTargets = new TreeSet(Collator.getInstance());
+                for (TargetLister.Target t : allTargets) {
                     if (t.isOverridden()) {
                         // Cannot be called.
                         continue;
@@ -217,9 +203,7 @@ public final class RunTargetsAction extends SystemAction implements ContextAware
                 }
                 if (!describedTargets.isEmpty()) {
                     needsep = true;
-                    it = describedTargets.iterator();
-                    while (it.hasNext()) {
-                        String target = (String) it.next();
+                    for (String target : describedTargets) {
                         JMenuItem menuitem = new JMenuItem(target);
                         menuitem.addActionListener(new TargetMenuItemHandler(project, target));
                         add(menuitem);
@@ -232,9 +216,7 @@ public final class RunTargetsAction extends SystemAction implements ContextAware
                 if (!otherTargets.isEmpty()) {
                     needsep = true;
                     JMenu submenu = new JMenu(NbBundle.getMessage(RunTargetsAction.class, "LBL_run_other_targets"));
-                    it = otherTargets.iterator();
-                    while (it.hasNext()) {
-                        String target = (String) it.next();
+                    for (String target : otherTargets) {
                         JMenuItem menuitem = new JMenuItem(target);
                         menuitem.addActionListener(new TargetMenuItemHandler(project, target));
                         submenu.add(menuitem);

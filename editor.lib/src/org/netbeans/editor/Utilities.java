@@ -99,11 +99,13 @@ import org.netbeans.lib.editor.util.swing.DocumentListenerPriority;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.editor.indent.api.Reformat;
 import org.netbeans.modules.editor.indent.spi.CodeStylePreferences;
+import org.netbeans.modules.editor.lib.BeforeSaveTasks;
 import org.netbeans.modules.editor.lib2.EditorPreferencesDefaults;
 import org.netbeans.modules.editor.lib2.EditorPreferencesKeys;
 import org.netbeans.modules.editor.lib2.view.DocumentView;
 import org.netbeans.modules.editor.lib2.view.EditorView;
 import org.openide.util.Exceptions;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 
 /**
@@ -1606,6 +1608,14 @@ public class Utilities {
         });
 
         return new JComponent [] { sp, editorPane };
+    }
+    
+    /**Don't use unless you know what you are doing.
+     * 
+     * @since 3.33.2
+     */
+    public static <T> T runWithOnSaveTasksDisabled(Mutex.Action<T> run) {
+        return BeforeSaveTasks.runWithOnSaveTasksDisabled(run);
     }
 
     private static void adjustScrollPaneSize(JScrollPane sp, JEditorPane editorPane) {

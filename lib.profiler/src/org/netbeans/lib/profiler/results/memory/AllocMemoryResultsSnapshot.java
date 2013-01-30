@@ -43,14 +43,14 @@
 
 package org.netbeans.lib.profiler.results.memory;
 
-import org.netbeans.lib.profiler.ProfilerClient;
-import org.netbeans.lib.profiler.client.ClientUtils;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
+import org.netbeans.lib.profiler.ProfilerClient;
+import org.netbeans.lib.profiler.client.ClientUtils;
 
 
 /**
@@ -88,6 +88,8 @@ public class AllocMemoryResultsSnapshot extends MemoryResultsSnapshot {
 
     public void performInit(ProfilerClient client, MemoryCCTProvider provider)
                      throws ClientUtils.TargetAppOrVMTerminated {
+        super.performInit(client, provider);
+        
         int[] cnts = client.getAllocatedObjectsCountResults();
         objectsCounts = new int[cnts.length];
         System.arraycopy(cnts, 0, objectsCounts, 0, cnts.length);

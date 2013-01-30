@@ -74,6 +74,7 @@ import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
+import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.ParameterizedTypeTree;
 import com.sun.source.tree.ParenthesizedTree;
@@ -86,11 +87,13 @@ import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreeScanner;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -515,17 +518,20 @@ public class Utilities {
     }
     
     private static TypeMirror resolveCapturedTypeInt(CompilationInfo info, TypeMirror tm) {
+        if (tm == null) return tm;
+        
         TypeMirror orig = SourceUtils.resolveCapturedType(tm);
 
         if (orig != null) {
-            if (orig.getKind() == TypeKind.WILDCARD) {
-                TypeMirror extendsBound = ((WildcardType) orig).getExtendsBound();
-                TypeMirror rct = SourceUtils.resolveCapturedType(extendsBound != null ? extendsBound : ((WildcardType) orig).getSuperBound());
-                if (rct != null) {
-                    return rct;
-                }
+            tm = orig;
+        }
+        
+        if (tm.getKind() == TypeKind.WILDCARD) {
+            TypeMirror extendsBound = ((WildcardType) tm).getExtendsBound();
+            TypeMirror rct = resolveCapturedTypeInt(info, extendsBound != null ? extendsBound : ((WildcardType) tm).getSuperBound());
+            if (rct != null) {
+                return rct.getKind() == TypeKind.WILDCARD ? rct : info.getTypes().getWildcardType(extendsBound != null ? rct : null, extendsBound == null ? rct : null);
             }
-            return orig;
         }
         
         if (tm.getKind() == TypeKind.DECLARED) {
@@ -783,6 +789,11 @@ public class Utilities {
         }
 
         @Override
+        public String visitNewArray(NewArrayTree nct, Void p) {
+            return "...new " + simpleName(nct.getType()) + "[...]"; // NOI18N
+        }
+
+        @Override
         public String visitBinary(BinaryTree node, Void p) {
             String dn = operator2DN.get(node.getKind());
 
@@ -866,10 +877,41 @@ public class Utilities {
     }
 
     public static Pair<List<? extends TypeMirror>, List<String>> resolveArguments(CompilationInfo info, TreePath invocation, List<? extends ExpressionTree> realArguments, Element target) {
+        MethodArguments ma = resolveArguments(info, invocation, realArguments, target, null);
+        
+        if (ma == null) return null;
+        
+        return new Pair<List<? extends TypeMirror>, List<String>>(ma.parameterTypes, ma.parameterNames);
+    }
+    
+    public static MethodArguments resolveArguments(CompilationInfo info, TreePath invocation, List<? extends ExpressionTree> realArguments, Element target, TypeMirror returnType) {
         List<TypeMirror> argumentTypes = new LinkedList<TypeMirror>();
-        List<String> argumentNames = new LinkedList<String>();
+        List<String>     argumentNames = new LinkedList<String>();
+        List<Element>    usedLocalTypeVariables = new ArrayList<Element>();
         Set<String>      usedArgumentNames = new HashSet<String>();
+        
+        TreePath enclosingMethod = invocation;
+        
+        while (enclosingMethod != null && !TreeUtilities.CLASS_TREE_KINDS.contains(enclosingMethod.getLeaf().getKind()) && enclosingMethod.getLeaf().getKind() != Kind.METHOD) {
+            enclosingMethod = enclosingMethod.getParentPath();
+        }
+        
+        ExecutableElement method = null;
+        
+        if (enclosingMethod != null && enclosingMethod.getLeaf().getKind() == Kind.METHOD) {
+            Element el = info.getTrees().getElement(enclosingMethod);
+            
+            if (el != null && (el.getKind() == ElementKind.METHOD || el.getKind() == ElementKind.CONSTRUCTOR)) {
+                method = (ExecutableElement) el;
+            }
+        }
 
+        if (returnType != null) {
+            if (!verifyTypeVarAccessible(method, returnType, usedLocalTypeVariables, target)) return null;
+        } else {
+            method = null;
+        }
+        
         for (ExpressionTree arg : realArguments) {
             TreePath argPath = new TreePath(invocation, arg);
             TypeMirror tm = info.getTrees().getTypeMirror(argPath);
@@ -880,12 +922,10 @@ public class Utilities {
             if (tm == null || containsErrorsRecursively(tm)) {
                 return null;
             }
+            
+            tm = resolveCapturedType(info, tm);
 
-            Collection<TypeVariable> typeVars = Utilities.containedTypevarsRecursively(tm);
-
-            if (!allTypeVarsAccessible(typeVars, target)) {
-                return null;
-            }
+            if (!verifyTypeVarAccessible(method, tm, usedLocalTypeVariables, target)) return null;
 
             if (tm.getKind() == TypeKind.NULL) {
                 tm = info.getElements().getTypeElement("java.lang.Object").asType(); // NOI18N
@@ -922,12 +962,54 @@ public class Utilities {
                 proposedName = proposedName + num;
             }
 
-            usedArgumentNames.add(proposedName);
-
             argumentNames.add(proposedName);
+            usedArgumentNames.add(proposedName);
+        }
+        
+        List<TypeMirror> typeParamTypes = new LinkedList<TypeMirror>();
+        List<String>     typeParamNames = new LinkedList<String>();
+        
+        if (method != null) {
+            for (TypeParameterElement methodTP : method.getTypeParameters()) {
+                if (!usedLocalTypeVariables.contains(methodTP)) continue;
+
+                typeParamTypes.add(methodTP.asType());
+                typeParamNames.add(methodTP.getSimpleName().toString());
+            }
         }
 
-        return new Pair<List<? extends TypeMirror>, List<String>>(argumentTypes, argumentNames);
+        return new MethodArguments(argumentTypes, argumentNames, typeParamTypes, typeParamNames);
+    }
+    
+    public static class MethodArguments {
+        public final List<? extends TypeMirror> parameterTypes;
+        public final List<String> parameterNames;
+        public final List<? extends TypeMirror> typeParameterTypes;
+        public final List<String> typeParameterNames;
+        public MethodArguments(List<? extends TypeMirror> parameterTypes, List<String> parameterNames, List<? extends TypeMirror> typeParameterTypes, List<String> typeParameterNames) {
+            this.parameterTypes = parameterTypes;
+            this.parameterNames = parameterNames;
+            this.typeParameterTypes = typeParameterTypes;
+            this.typeParameterNames = typeParameterNames;
+        }
+    }
+
+    private static boolean verifyTypeVarAccessible(ExecutableElement method, TypeMirror forType, List<Element> usedLocalTypeVariables, Element target) {
+        Collection<TypeVariable> typeVars = Utilities.containedTypevarsRecursively(forType);
+        
+        if (method != null) {
+            for (Iterator<TypeVariable> it = typeVars.iterator(); it.hasNext(); ) {
+                TypeVariable tvar = it.next();
+                Element tvarEl = tvar.asElement();
+
+                if (method.getTypeParameters().contains(tvarEl)) {
+                    usedLocalTypeVariables.add(tvarEl);
+                    it.remove();
+                }
+            }
+        }
+        
+        return allTypeVarsAccessible(typeVars, target);
     }
 
     //XXX: currently we cannot fix:

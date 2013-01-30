@@ -43,10 +43,12 @@
 package org.netbeans.modules.maven.newproject;
 
 import java.io.IOException;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.templates.TemplateRegistration;
@@ -74,25 +76,28 @@ public class MavenWizardIterator implements WizardDescriptor.BackgroundInstantia
     private transient List<WizardDescriptor.Panel<WizardDescriptor>> panels;
     private transient WizardDescriptor wiz;
     private final Archetype archetype;
+    private final AtomicBoolean hasNextCalled = new AtomicBoolean(); //#216236
+    private final String titlename;
 
     public MavenWizardIterator() {
-        this(null);
+        this(null, null);
     }
     
-    public MavenWizardIterator(Archetype archetype) {
+    public MavenWizardIterator(Archetype archetype, String titleName) {
         this.archetype = archetype;
+        this.titlename = titleName;
     }
 
     @TemplateRegistration(folder=ArchetypeWizards.TEMPLATE_FOLDER, position=100, displayName="#LBL_Maven_Quickstart_Archetype", iconBase="org/netbeans/modules/maven/resources/jaricon.png", description="quickstart.html")
     @Messages("LBL_Maven_Quickstart_Archetype=Java Application")
     public static WizardDescriptor.InstantiatingIterator<?> quickstart() {
-        return ArchetypeWizards.definedArchetype("org.apache.maven.archetypes", "maven-archetype-quickstart", "1.1", null);
+        return ArchetypeWizards.definedArchetype("org.apache.maven.archetypes", "maven-archetype-quickstart", "1.1", null, LBL_Maven_Quickstart_Archetype());
     }
 
     @TemplateRegistration(folder=ArchetypeWizards.TEMPLATE_FOLDER, position=980, displayName="#LBL_Maven_POM_Archetype", iconBase="org/netbeans/modules/maven/resources/Maven2Icon.gif", description="pom-root.html")
     @Messages("LBL_Maven_POM_Archetype=POM Project")
     public static WizardDescriptor.InstantiatingIterator<?> pomRoot() {
-        return ArchetypeWizards.definedArchetype("org.codehaus.mojo.archetypes", "pom-root", "1.1", null);
+        return ArchetypeWizards.definedArchetype("org.codehaus.mojo.archetypes", "pom-root", "1.1", null, LBL_Maven_POM_Archetype());
     }
 
     public @Override Set<FileObject> instantiate() throws IOException {
@@ -102,6 +107,9 @@ public class MavenWizardIterator implements WizardDescriptor.BackgroundInstantia
     @Override
     public void initialize(WizardDescriptor wiz) {
         this.wiz = wiz;
+        if (titlename != null) {
+            wiz.putProperty ("NewProjectWizard_Title", titlename); // NOI18N        
+        }
         index = 0;
         ValidationGroup vg = ValidationGroup.create(new WizardDescriptorAdapter(wiz));
         panels = new ArrayList<WizardDescriptor.Panel<WizardDescriptor>>();
@@ -137,6 +145,11 @@ public class MavenWizardIterator implements WizardDescriptor.BackgroundInstantia
     
     @Override
     public boolean hasNext() {
+        hasNextCalled.set(true);
+        return hasNextImpl();        
+    }
+    
+    private boolean hasNextImpl() {
         return index < panels.size() - 1;
     }
     
@@ -147,8 +160,14 @@ public class MavenWizardIterator implements WizardDescriptor.BackgroundInstantia
     
     @Override
     public void nextPanel() {
-        if (!hasNext()) {
-            throw new NoSuchElementException();
+        final boolean hnc = hasNextCalled.getAndSet(false);
+        if (!hasNextImpl()) {
+            throw new NoSuchElementException( //#216236
+                    MessageFormat.format(
+                    "index: {0}, panels: {1}, called has next: {2}",
+                    index,
+                    panels.size(),
+                    hnc));
         }
         index++;
     }

@@ -41,15 +41,12 @@
  */
 package org.netbeans.modules.html.editor.api.gsf;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.swing.text.Document;
-import org.netbeans.modules.html.editor.lib.api.UndeclaredContentResolver;
+import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.modules.csl.api.ColoringAttributes;
 import org.netbeans.modules.csl.api.DeclarationFinder.DeclarationLocation;
 import org.netbeans.modules.csl.api.Error;
@@ -58,69 +55,111 @@ import org.netbeans.modules.csl.api.HintsProvider.HintsManager;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.html.editor.lib.api.UndeclaredContentResolver;
 import org.netbeans.modules.html.editor.lib.api.elements.Element;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.spi.editor.completion.CompletionItem;
 
 /**
+ * An extension of the html editor.
+ * 
+ * Allows to very simply build a custom html like editor on top of the default one.
+ * 
+ * Implementation of this class should be registered in the mime lookup by
+ * {@link MimeRegistration} annotation for the requested mimetype/s.
  *
- * @author marekfukala
+ * @author mfukala@netbeans.org
  */
 public class HtmlExtension {
 
-    static final Map<String, Collection<HtmlExtension>> EXTENSIONS = new HashMap<String, Collection<HtmlExtension>>();
-
-    /** register a new extension to the html support. The mimeType applies to source mimetype, not embedded mimetype!
-     * TODO use mimelookup
+    /**
+     * Gets custom highlights for the given parser result.
+     * 
+     * @param result an instance of {@link HtmlParserResult}
+     * @param event an instance of {@link SchedulerEvent}
+     * @return non null map of range to set of colorings.
      */
-    public static void register(String mimeType, HtmlExtension extension) {
-        synchronized (EXTENSIONS) {
-            Collection<HtmlExtension> existing = EXTENSIONS.get(mimeType);
-            if (existing == null) {
-                existing = new ArrayList<HtmlExtension>();
-                EXTENSIONS.put(mimeType, existing);
-            }
-            existing.add(extension);
-        }
-    }
-
-    public static Collection<HtmlExtension> getRegisteredExtensions(String mimeType) {
-        Collection<HtmlExtension> exts = EXTENSIONS.get(mimeType);
-        return exts != null ? exts : Collections.<HtmlExtension>emptyList();
-    }
-
-    //highlighting
     public Map<OffsetRange, Set<ColoringAttributes>> getHighlights(HtmlParserResult result, SchedulerEvent event) {
         return Collections.emptyMap();
     }
 
-    //completion
+    /**
+     * Gets a list of custom open tags for the given context.
+     * 
+     * @param context an instance of {@link CompletionContext}
+     * @return non null list of completion items
+     */
     public List<CompletionItem> completeOpenTags(CompletionContext context) {
         return Collections.emptyList();
     }
-
+    
+    /**
+     * Gets a list of custom tag's attributes for the given context.
+     * 
+     * @param context an instance of {@link CompletionContext}
+     * @return non null list of completion items
+     */
     public List<CompletionItem> completeAttributes(CompletionContext context) {
         return Collections.emptyList();
     }
 
+    /**
+     * Gets a list of possible values of the given tag/attribute.
+     * 
+     * @param context an instance of {@link CompletionContext}
+     * @return non null list of completion items
+     */
     public List<CompletionItem> completeAttributeValue(CompletionContext context) {
         return Collections.emptyList();
     }
 
-    //hyperlinking
+    /**
+     * Gets a reference span for the given location.
+     * 
+     * The implementation should be very quick as called in EDT, 
+     * should be plain document's text or lexer based.
+     * 
+     * @param doc instance of document where the span is searched
+     * @param caretOffset offset where the span is searched.
+     * @return non null instance of {@link OffsetRange} representing the reference span.
+     */
     public OffsetRange getReferenceSpan(Document doc, int caretOffset) {
         return OffsetRange.NONE;
     }
 
+    /**
+     * Finds a declaration location for the previously returned 
+     * and activated reference span.
+     * 
+     * @param info instance of {@link ParserResult}
+     * @param caretOffset caret offset
+     * @return instance of {@link DeclarationLocation}
+     */
     public DeclarationLocation findDeclaration(ParserResult info, int caretOffset) {
         return null;
     }
 
-    //errors, hints
+    /**
+     * Creates a list of custom errors for the given context.
+     * 
+     * @param manager instanceof {@link HintsManager}
+     * @param context instance of {@link RuleContext}
+     * @param hints list of {@link Hint}s - add the custom error hints to this list
+     * @param unhandled list of unhandled errors
+     */
     public void computeErrors(HintsManager manager, RuleContext context, List<Hint> hints, List<Error> unhandled) {
         //no-op
     }
 
+    /**
+     * Creates a list of selection hints for the given context.
+     * 
+     * @param manager instanceof {@link HintsManager}
+     * @param context instance of {@link RuleContext}
+     * @param hints list of {@link Hint}s - add the custom error hints to this list
+     * @param start selection start
+     * @param end selection end
+     */
     public void computeSelectionHints(HintsManager manager, RuleContext context, List<Hint> hints, int start, int end) {
         //no-op
     }
@@ -135,7 +174,9 @@ public class HtmlExtension {
         return null;
     }
 
-    //--------------------
+    /**
+     * Context object for code completion related stuff.
+     */
     public static class CompletionContext {
 
         private HtmlParserResult result;
@@ -168,39 +209,66 @@ public class HtmlExtension {
             this.valueQuoted = valueQuoted;
         }
 
+        /**
+         * Returns the completion prefix.
+         */
         public String getPrefix() {
             return preText;
         }
 
-        /** returns the whole word under cursor */
+        /** 
+         * Returns the whole word under cursor.
+         */
         public String getItemText() {
             return itemText;
         }
 
+        /**
+         * Returns the embedded caret offset.
+         */
         public int getAstoffset() {
             return astoffset;
         }
 
+        /**
+         * Returns the document caret offset.
+         */
         public int getOriginalOffset() {
             return originalOffset;
         }
 
+        /**
+         * Returns the completion anchor offset.
+         */
         public int getCCItemStartOffset() {
             return ccItemStartOffset;
         }
 
+        /**
+         * Returns an instance of the {@link HtmlParserResult}
+         */
         public HtmlParserResult getResult() {
             return result;
         }
 
+        /**
+         * Returns a node of the html parse tree found at the caret location.
+         */
         public Element getCurrentNode() {
             return currentNode;
         }
 
+        /**
+         * Returns an attribute name if completion invoked in an open tag.
+         */
         public String getAttributeName() {
             return attributeName;
         }
 
+        /**
+         * Returns true if completion invoked in tags' attribute value and
+         * the value is quoted.
+         */
         public boolean isValueQuoted() {
             return valueQuoted;
         }

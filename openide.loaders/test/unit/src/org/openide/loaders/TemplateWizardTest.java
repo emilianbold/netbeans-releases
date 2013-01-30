@@ -45,6 +45,8 @@
 package org.openide.loaders;
 
 import java.awt.Component;
+import java.awt.Dialog;
+import java.awt.EventQueue;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -53,8 +55,12 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 import javax.swing.JPanel;
 import javax.swing.event.ChangeListener;
+import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -189,16 +195,33 @@ public class TemplateWizardTest extends NbTestCase {
             return new DO (fo);
         }
     } // end of Loader
+    
+    public void testCanCallInstantiateFromNonEventDispatchThread() throws Exception {
+        TemplateWizard tw = new TemplateWizard();
+        MockServices.setServices(CancelDD.class);
+        Set<DataObject> ret = tw.instantiate();
+        assertNull("Selection was cancelled", ret);
+    }
 
     @RandomlyFails // NB-Core-Build #1639 (NPE in SunGraphics2D.addRenderingHints from HtmlLabelUI.calcPreferredSize);
                    // NB-Core-Build #1644 (CCE: javax.swing.KeyStroke from TreeMap.compare in JTextField.<init>)
-    public void testNextOnIterImpl () {
-        doNextOnIterImpl (false);
+    public void testNextOnIterImpl () throws Exception {
+        EventQueue.invokeAndWait(new Runnable() {
+            @Override
+            public void run() {
+                doNextOnIterImpl (false);
+            }
+        });
     }
 
     @RandomlyFails // NB-Core-Build #1429
-    public void testNextOnIterImplWithNotification () {
-        doNextOnIterImpl (true);
+    public void testNextOnIterImplWithNotification () throws Exception {
+        EventQueue.invokeAndWait(new Runnable() {
+            @Override
+            public void run() {
+                doNextOnIterImpl (true);
+            }
+        });
     }
     
     private void doNextOnIterImpl (boolean notify) {
@@ -263,6 +286,18 @@ public class TemplateWizardTest extends NbTestCase {
         
     }
 
+    public static final class CancelDD extends DialogDisplayer {
+        @Override
+        public Object notify(NotifyDescriptor descriptor) {
+            return NotifyDescriptor.CANCEL_OPTION;
+        }
+
+        @Override
+        public Dialog createDialog(DialogDescriptor descriptor) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+        
+    }
 }
 
 

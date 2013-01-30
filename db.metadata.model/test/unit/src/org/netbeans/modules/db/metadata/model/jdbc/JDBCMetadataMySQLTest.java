@@ -353,7 +353,7 @@ public class JDBCMetadataMySQLTest extends JDBCMetadataTestBase {
         Parameter param = barProc.getParameter("param1");
         assertTrue(barParams.contains(param));
         assertSame(barProc, param.getParent());
-        assertEquals("JDBCParameter[name=param1, type=INTEGER, length=0, precision=10, radix=10, scale=0, nullable=NOT_NULLABLE, direction=IN, position=1]", param.toString());
+        assertEquals("JDBCParameter[name=param1, type=INTEGER, length=0, precision=10, radix=10, scale=0, nullable=NULLABLE, direction=IN, position=1]", param.toString());
         assertEquals(SQLType.INTEGER, param.getType());
         assertEquals(0, param.getLength());
         assertEquals(Direction.IN, param.getDirection());
@@ -364,12 +364,12 @@ public class JDBCMetadataMySQLTest extends JDBCMetadataTestBase {
         param = barProc.getParameter("result");
         assertTrue(barParams.contains(param));
         assertSame(barProc, param.getParent());
-        assertEquals("JDBCParameter[name=result, type=VARCHAR, length=255, precision=0, radix=10, scale=0, nullable=NOT_NULLABLE, direction=OUT, position=2]", param.toString());
+        assertEquals("JDBCParameter[name=result, type=VARCHAR, length=255, precision=0, radix=10, scale=0, nullable=NULLABLE, direction=OUT, position=2]", param.toString());
 
         param = barProc.getParameter("param2");
         assertTrue(barParams.contains(param));
         assertSame(barProc, param.getParent());
-        assertEquals("JDBCParameter[name=param2, type=DECIMAL, length=0, precision=5, radix=10, scale=2, nullable=NOT_NULLABLE, direction=INOUT, position=3]", param.toString());
+        assertEquals("JDBCParameter[name=param2, type=DECIMAL, length=0, precision=5, radix=10, scale=2, nullable=NULLABLE, direction=INOUT, position=3]", param.toString());
     }
 
     private void checkColumns(Tuple parent) {

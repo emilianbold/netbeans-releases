@@ -74,6 +74,7 @@ import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache.IssueEntry;
 import org.openide.util.RequestProcessor.Task;
 import org.netbeans.modules.bugtracking.ui.issue.cache.StorageUtils.FileLocks.FileLock;
 import org.netbeans.modules.bugtracking.ui.issue.cache.StorageUtils.FileLocks;
+import org.openide.modules.Places;
 
 /**
  *
@@ -573,8 +574,7 @@ class IssueStorage {
     }
 
     private File getStorageRootFile() {
-        String userDir = System.getProperty("netbeans.user");                   // NOI18N
-        return new File(new File(userDir, "var"), "bugtracking");               // NOI18N
+        return new File(new File(Places.getUserDirectory(), "var"), "bugtracking");               // NOI18N
     }
 
     private void writeStorage() {

@@ -49,7 +49,8 @@ import org.netbeans.modules.php.editor.api.elements.PhpElement;
 /**
  * @author Radek Matous
  */
-public interface Occurence{
+public interface Occurence {
+
     public static enum Accuracy {
         NO,
         UNIQUE,
@@ -59,6 +60,7 @@ public interface Occurence{
         MORE_MEMBERS,
         MORE,
     }
+
     /**
      * makes sense just for type members for calls with unknown types on left side (else EXACT).
      */
@@ -69,4 +71,5 @@ public interface Occurence{
     Collection<? extends PhpElement> getAllDeclarations();
     Collection<Occurence> getAllOccurences();
     OffsetRange getOccurenceRange();
+
 }

@@ -45,6 +45,7 @@
 package org.netbeans.modules.options.advanced;
 
 import java.beans.PropertyChangeListener;
+import java.util.List;
 import javax.swing.JComponent;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
@@ -117,6 +118,11 @@ public final class AdvancedPanelController extends OptionsPanelController {
     public void removePropertyChangeListener (PropertyChangeListener l) {
         getAdvancedPanel().removePropertyChangeListener(l);
         getAdvancedPanel().removeModelPropertyChangeListener(l);
+    }
+
+    @Override
+    public void handleSuccessfulSearch(String searchText, List<String> matchedKeywords) {
+        getAdvancedPanel().handleSearch(searchText, matchedKeywords);
     }
 
     private AdvancedPanel advancedPanel;

@@ -122,7 +122,6 @@ public class PHPLexerTest extends PHPLexerTestBase {
 
     public void testPHPCommnet2() throws Exception {
         TokenSequence<?> ts = PHPLexerUtils.seqForText("<?/***\n**$a***\n****/$b?>", PHPTokenId.language());
-       // printTokenSequence(ts, "testPHPComment2"); ts.moveStart();
         PHPLexerUtils.next(ts, PHPTokenId.PHP_OPENTAG, "<?");
         PHPLexerUtils.next(ts, PHPTokenId.PHP_COMMENT_START, "/*");
         PHPLexerUtils.next(ts, PHPTokenId.PHP_COMMENT, "**\n**$a***\n***");
@@ -134,7 +133,6 @@ public class PHPLexerTest extends PHPLexerTestBase {
     public void testPHPCommnet3() throws Exception {
         // test unfinished comment at the end of file
         TokenSequence<?> ts = PHPLexerUtils.seqForText("<?/*a**\n**$a***\n***hello\nword", PHPTokenId.language());
-        //printTokenSequence(ts, "testPHPComment3"); ts.moveStart();
         PHPLexerUtils.next(ts, PHPTokenId.PHP_OPENTAG, "<?");
         PHPLexerUtils.next(ts, PHPTokenId.PHP_COMMENT_START, "/*");
         PHPLexerUtils.next(ts, PHPTokenId.PHP_COMMENT, "a**\n**$a***\n***hello\nword");
@@ -177,7 +175,6 @@ public class PHPLexerTest extends PHPLexerTestBase {
 
     public void testPHPDocumentor1() throws Exception {
         TokenSequence<?> ts = PHPLexerUtils.seqForText("<?/**\n * Enter description here...\n * @access private\n * @var string $name\n */\nvar $name = \"ahoj\"\n?>", PHPTokenId.language());
-        //PHPLexerUtils.printTokenSequence(ts, "testPHPDocumentor1"); ts.moveStart();
         PHPLexerUtils.next(ts, PHPTokenId.PHP_OPENTAG, "<?");
         PHPLexerUtils.next(ts, PHPTokenId.PHPDOC_COMMENT_START, "/**");
         PHPLexerUtils.next(ts, PHPTokenId.PHPDOC_COMMENT, "\n * Enter description here...\n * @access private\n * @var string $name\n ");
@@ -196,7 +193,6 @@ public class PHPLexerTest extends PHPLexerTestBase {
 
     public void testPHPDocumentor2() throws Exception {
         TokenSequence<?> ts = PHPLexerUtils.seqForText("<?/**\n * Enter description here...\n * @ppp private\n * @var string $name\n */\nvar $name = \"ahoj\"\n?>", PHPTokenId.language());
-        //printTokenSequence(ts, "testPHPDocumentor2"); ts.moveStart();
         PHPLexerUtils.next(ts, PHPTokenId.PHP_OPENTAG, "<?");
         PHPLexerUtils.next(ts, PHPTokenId.PHPDOC_COMMENT_START, "/**");
         PHPLexerUtils.next(ts, PHPTokenId.PHPDOC_COMMENT, "\n * Enter description here...\n * @ppp private\n * @var string $name\n ");
@@ -256,8 +252,6 @@ public class PHPLexerTest extends PHPLexerTestBase {
         PHPLexerUtils.next(ts, PHPTokenId.PHP_OPENTAG, "<?");
         PHPLexerUtils.next(ts, PHPTokenId.PHPDOC_COMMENT_START, "/**");
         PHPLexerUtils.next(ts, PHPTokenId.PHPDOC_COMMENT, "\n This File is free software; \n*   <dd> \"/^word.* /\" => REGEX(^word.*)\n ");
-        //PHPLexerUtils.next(ts, PHPTokenId.PHPDOC_COMMENT, "\n This File is free software; \n*   <dd> \"/^word.*");
-        //PHPLexerUtils.next(ts, PHPTokenId.PHPDOC_COMMENT, " /\" => REGEX(^word.*)\n");
         PHPLexerUtils.next(ts, PHPTokenId.PHPDOC_COMMENT_END, "*/");
         PHPLexerUtils.next(ts, PHPTokenId.PHP_CLOSETAG, "?>");
     }
@@ -268,10 +262,6 @@ public class PHPLexerTest extends PHPLexerTestBase {
         PHPLexerUtils.next(ts, PHPTokenId.PHP_OPENTAG, "<?");
         PHPLexerUtils.next(ts, PHPTokenId.PHPDOC_COMMENT_START, "/**");
         PHPLexerUtils.next(ts, PHPTokenId.PHPDOC_COMMENT, "\n This File is free software;");
-        //PHPLexerUtils.next(ts, PHPTokenId.PHPDOC_COMMENT, "\n This File is free software; \n*   <dd> \"/^word.*");
-        //PHPLexerUtils.next(ts, PHPTokenId.PHPDOC_COMMENT, " /\" => REGEX(^word.*)\n");
-        //PHPLexerUtils.next(ts, PHPTokenId.PHPDOC_COMMENT_END, "*/");
-        //PHPLexerUtils.next(ts, PHPTokenId.PHP_CLOSETAG, "?>");
     }
 
     public void testShortOpenTag() throws Exception {
@@ -291,8 +281,11 @@ public class PHPLexerTest extends PHPLexerTestBase {
         PHPLexerUtils.printTokenSequence(ts, "testInlineHtml"); ts.moveStart();
     }
 
-    public void testHeroDoc() throws Exception {
+    public void testHeroDoc_00() throws Exception {
         performTest("heredoc00");
+    }
+
+    public void testHeroDoc_01() throws Exception {
         performTest("heredoc01");
     }
 
@@ -306,5 +299,29 @@ public class PHPLexerTest extends PHPLexerTestBase {
 
     public void testIssue198572() throws Exception {
         performTest("issue198572");
+    }
+
+    public void testIssue221484() throws Exception {
+        performTest("issue221484");
+    }
+
+    public void testHereDoc_02() throws Exception {
+        performTest("heredoc_02");
+    }
+
+    public void testHereDoc_03() throws Exception {
+        performTest("heredoc_03");
+    }
+
+    public void testHereDoc_04() throws Exception {
+        performTest("heredoc_04");
+    }
+
+    public void testIssue222092_01() throws Exception {
+        performTest("issue222092_01");
+    }
+
+    public void testIssue222092_02() throws Exception {
+        performTest("issue222092_02");
     }
 }

@@ -57,6 +57,7 @@ final class UnixPhpEnvironment extends PhpEnvironment {
     UnixPhpEnvironment() {
     }
 
+    @org.netbeans.api.annotations.common.SuppressWarnings("DMI_HARDCODED_ABSOLUTE_FILENAME")
     @Override
     protected List<DocumentRoot> getDocumentRoots(String projectName) {
         List<DocumentRoot> roots = new ArrayList<DocumentRoot>(2);

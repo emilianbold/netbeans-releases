@@ -66,6 +66,12 @@ import org.openide.util.Utilities;
  */
 abstract class CompletionLayoutPopup {
     
+    /** Relative width of screen covered by CC */
+    static final double COMPL_COVERAGE = 0.4;
+    
+    /** Relative maximum width of screen covered by CC */
+    static final double MAX_COMPL_COVERAGE = 0.9;
+    
     private CompletionLayout layout;
     
     private Popup popup;
@@ -100,8 +106,6 @@ abstract class CompletionLayoutPopup {
             popupBounds = null;
             contentComponent = null;
             anchorOffset = -1;
-            // Reset screen bounds as well to not cache too long
-            ScreenBoundsProvider.clear();
         }
     }
     
@@ -154,10 +158,9 @@ abstract class CompletionLayoutPopup {
         if (comp == null)
             return new Dimension(0, 0);
         
-        int screenWidth = ScreenBoundsProvider.getScreenBounds(getEditorComponent()).width;
+        int screenWidth = Utilities.getUsableScreenBounds().width;
         
-        Dimension maxSize = new Dimension((int) (screenWidth *
-                ScreenBoundsProvider.MAX_COMPL_COVERAGE),
+        Dimension maxSize = new Dimension((int) (screenWidth * MAX_COMPL_COVERAGE),
                 comp.getMaximumSize().height); //set maximum part of screen covered
         setMaxSize(comp, maxSize);
         
@@ -240,7 +243,7 @@ abstract class CompletionLayoutPopup {
      * @return rectangle with absolute screen bounds of the popup.
      */
     private Rectangle findPopupBounds(Rectangle occupiedBounds, boolean aboveOccupiedBounds) {
-        Rectangle screen = ScreenBoundsProvider.getScreenBounds(getEditorComponent());
+        Rectangle screen = Utilities.getUsableScreenBounds();
         Dimension prefSize = getPreferredSize();
         Rectangle popupBounds = new Rectangle();
         
@@ -344,7 +347,7 @@ abstract class CompletionLayoutPopup {
      */
     void showAlongOrNextOccupiedBounds(Rectangle occupiedBounds, Rectangle unionBounds) {
         if (occupiedBounds != null) {
-            Rectangle screen = ScreenBoundsProvider.getScreenBounds(getEditorComponent());
+            Rectangle screen = Utilities.getUsableScreenBounds();
             Dimension prefSize = getPreferredSize();
             Rectangle bounds = new Rectangle();
             boolean aboveCaret;
@@ -393,7 +396,7 @@ abstract class CompletionLayoutPopup {
     }
     
     boolean isMoreSpaceAbove(Rectangle bounds) {
-        Rectangle screen = ScreenBoundsProvider.getScreenBounds(getEditorComponent());
+        Rectangle screen = Utilities.getUsableScreenBounds();
         int above = bounds.y - screen.y;
         int below = (screen.y + screen.height) - (bounds.y + bounds.height);
         return (above > below);
@@ -419,7 +422,7 @@ abstract class CompletionLayoutPopup {
      *  on the requested side or false if not.
      */
     boolean isEnoughSpace(Rectangle occupiedBounds, boolean aboveOccupiedBounds) {
-        Rectangle screen = ScreenBoundsProvider.getScreenBounds(getEditorComponent());
+        Rectangle screen = Utilities.getUsableScreenBounds();
         
         int freeHeight = aboveOccupiedBounds
             ? occupiedBounds.y - screen.y

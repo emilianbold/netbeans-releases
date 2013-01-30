@@ -86,6 +86,8 @@ public class BlockCompareTest extends NbTestCase {
         assertTrue(!bc.overlapEnd());
         assertTrue(bc.emptyX());
         assertTrue(bc.emptyY());
+        assertTrue(!bc.invalidX());
+        assertTrue(!bc.invalidY());
 
         bc = BlockCompare.get(1,2,3,4);
         assertTrue(bc.before());
@@ -104,6 +106,8 @@ public class BlockCompareTest extends NbTestCase {
         assertTrue(!bc.overlapEnd());
         assertTrue(!bc.emptyX());
         assertTrue(!bc.emptyY());
+        assertTrue(!bc.invalidX());
+        assertTrue(!bc.invalidY());
 
         bc = BlockCompare.get(3,4,1,2);
         assertTrue(!bc.before());
@@ -122,6 +126,8 @@ public class BlockCompareTest extends NbTestCase {
         assertTrue(!bc.overlapEnd());
         assertTrue(!bc.emptyX());
         assertTrue(!bc.emptyY());
+        assertTrue(!bc.invalidX());
+        assertTrue(!bc.invalidY());
 
         bc = BlockCompare.get(1,3,2,4);
         assertTrue(!bc.before());
@@ -140,6 +146,8 @@ public class BlockCompareTest extends NbTestCase {
         assertTrue(!bc.overlapEnd());
         assertTrue(!bc.emptyX());
         assertTrue(!bc.emptyY());
+        assertTrue(!bc.invalidX());
+        assertTrue(!bc.invalidY());
 
         bc = BlockCompare.get(2,4,1,3);
         assertTrue(!bc.before());
@@ -158,6 +166,8 @@ public class BlockCompareTest extends NbTestCase {
         assertTrue(bc.overlapEnd());
         assertTrue(!bc.emptyX());
         assertTrue(!bc.emptyY());
+        assertTrue(!bc.invalidX());
+        assertTrue(!bc.invalidY());
 
         bc = BlockCompare.get(1,4,2,3);
         assertTrue(!bc.before());
@@ -176,6 +186,8 @@ public class BlockCompareTest extends NbTestCase {
         assertTrue(!bc.overlapEnd());
         assertTrue(!bc.emptyX());
         assertTrue(!bc.emptyY());
+        assertTrue(!bc.invalidX());
+        assertTrue(!bc.invalidY());
 
         bc = BlockCompare.get(2,3,1,4);
         assertTrue(!bc.before());
@@ -194,6 +206,8 @@ public class BlockCompareTest extends NbTestCase {
         assertTrue(!bc.overlapEnd());
         assertTrue(!bc.emptyX());
         assertTrue(!bc.emptyY());
+        assertTrue(!bc.invalidX());
+        assertTrue(!bc.invalidY());
 
         bc = BlockCompare.get(2,3,2,4);
         assertTrue(!bc.before());
@@ -212,6 +226,8 @@ public class BlockCompareTest extends NbTestCase {
         assertTrue(!bc.overlapEnd());
         assertTrue(!bc.emptyX());
         assertTrue(!bc.emptyY());
+        assertTrue(!bc.invalidX());
+        assertTrue(!bc.invalidY());
 
         bc = BlockCompare.get(2,4,2,3);
         assertTrue(!bc.before());
@@ -230,6 +246,8 @@ public class BlockCompareTest extends NbTestCase {
         assertTrue(!bc.overlapEnd());
         assertTrue(!bc.emptyX());
         assertTrue(!bc.emptyY());
+        assertTrue(!bc.invalidX());
+        assertTrue(!bc.invalidY());
 
         bc = BlockCompare.get(1,4,2,4);
         assertTrue(!bc.before());
@@ -248,6 +266,8 @@ public class BlockCompareTest extends NbTestCase {
         assertTrue(!bc.overlapEnd());
         assertTrue(!bc.emptyX());
         assertTrue(!bc.emptyY());
+        assertTrue(!bc.invalidX());
+        assertTrue(!bc.invalidY());
 
         bc = BlockCompare.get(2,4,2,4);
         assertTrue(!bc.before());
@@ -266,6 +286,8 @@ public class BlockCompareTest extends NbTestCase {
         assertTrue(!bc.overlapEnd());
         assertTrue(!bc.emptyX());
         assertTrue(!bc.emptyY());
+        assertTrue(!bc.invalidX());
+        assertTrue(!bc.invalidY());
 
         bc = BlockCompare.get(2,2,4,4);
         assertTrue(bc.before());
@@ -284,6 +306,8 @@ public class BlockCompareTest extends NbTestCase {
         assertTrue(!bc.overlapEnd());
         assertTrue(bc.emptyX());
         assertTrue(bc.emptyY());
+        assertTrue(!bc.invalidX());
+        assertTrue(!bc.invalidY());
 
         bc = BlockCompare.get(5,8,6,6);
         assertTrue(!bc.before());
@@ -302,6 +326,8 @@ public class BlockCompareTest extends NbTestCase {
         assertTrue(!bc.overlapEnd());
         assertTrue(!bc.emptyX());
         assertTrue(bc.emptyY());
+        assertTrue(!bc.invalidX());
+        assertTrue(!bc.invalidY());
 
         bc = BlockCompare.get(1,2,2,3);
         assertTrue(bc.before());
@@ -320,6 +346,8 @@ public class BlockCompareTest extends NbTestCase {
         assertTrue(!bc.overlapEnd());
         assertTrue(!bc.emptyX());
         assertTrue(!bc.emptyY());
+        assertTrue(!bc.invalidX());
+        assertTrue(!bc.invalidY());
 
         bc = BlockCompare.get(2,3,1,2);
         assertTrue(!bc.before());
@@ -338,6 +366,69 @@ public class BlockCompareTest extends NbTestCase {
         assertTrue(!bc.overlapEnd());
         assertTrue(!bc.emptyX());
         assertTrue(!bc.emptyY());
+        assertTrue(!bc.invalidX());
+        assertTrue(!bc.invalidY());
+        
+        // Test invalid bounds
+        bc = BlockCompare.get(2,1,4,4);
+        assertTrue(bc.before());
+        assertTrue(!bc.after());
+        assertTrue(!bc.inside());
+        assertTrue(!bc.insideStrict());
+        assertTrue(!bc.contains());
+        assertTrue(!bc.containsStrict());
+        assertTrue(!bc.equal());
+        assertTrue(!bc.equalStart());
+        assertTrue(!bc.equalEnd());
+        assertTrue(bc.lowerStart());
+        assertTrue(bc.lowerEnd());
+        assertTrue(!bc.overlap());
+        assertTrue(!bc.overlapStart());
+        assertTrue(!bc.overlapEnd());
+        assertTrue(bc.emptyX());
+        assertTrue(bc.emptyY());
+        assertTrue(bc.invalidX());
+        assertTrue(!bc.invalidY());
+
+        bc = BlockCompare.get(2,2,4,3);
+        assertTrue(bc.before());
+        assertTrue(!bc.after());
+        assertTrue(!bc.inside());
+        assertTrue(!bc.insideStrict());
+        assertTrue(!bc.contains());
+        assertTrue(!bc.containsStrict());
+        assertTrue(!bc.equal());
+        assertTrue(!bc.equalStart());
+        assertTrue(!bc.equalEnd());
+        assertTrue(bc.lowerStart());
+        assertTrue(bc.lowerEnd());
+        assertTrue(!bc.overlap());
+        assertTrue(!bc.overlapStart());
+        assertTrue(!bc.overlapEnd());
+        assertTrue(bc.emptyX());
+        assertTrue(bc.emptyY());
+        assertTrue(!bc.invalidX());
+        assertTrue(bc.invalidY());
+
+        bc = BlockCompare.get(2,1,4,3);
+        assertTrue(bc.before());
+        assertTrue(!bc.after());
+        assertTrue(!bc.inside());
+        assertTrue(!bc.insideStrict());
+        assertTrue(!bc.contains());
+        assertTrue(!bc.containsStrict());
+        assertTrue(!bc.equal());
+        assertTrue(!bc.equalStart());
+        assertTrue(!bc.equalEnd());
+        assertTrue(bc.lowerStart());
+        assertTrue(bc.lowerEnd());
+        assertTrue(!bc.overlap());
+        assertTrue(!bc.overlapStart());
+        assertTrue(!bc.overlapEnd());
+        assertTrue(bc.emptyX());
+        assertTrue(bc.emptyY());
+        assertTrue(bc.invalidX());
+        assertTrue(bc.invalidY());
 
         bc.toString(); // just test that it does not throw an exception
     }

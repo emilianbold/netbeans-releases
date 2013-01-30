@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.css.editor.csl;
 
-import org.netbeans.modules.css.editor.api.CssCslParserResult;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.SwingUtilities;
@@ -61,12 +60,13 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.modules.csl.api.KeystrokeHandler;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.css.lib.api.CssParserResult;
 import org.netbeans.modules.css.lib.api.CssTokenId;
 import org.netbeans.modules.css.lib.api.Node;
-import org.netbeans.modules.css.lib.api.NodeType;
-import org.netbeans.modules.editor.indent.api.Indent;
 import org.netbeans.modules.css.lib.api.NodeUtil;
+import org.netbeans.modules.editor.indent.api.Indent;
 import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.web.indent.api.LexUtilities;
 
 /**
  *
@@ -107,7 +107,7 @@ public class CssBracketCompleter implements KeystrokeHandler {
             //handle curly bracket skipping
             //if there is a matching opening bracket and there is no opened unpaired bracket before
             //then just skip the typed char
-            TokenSequence<CssTokenId> ts = getCssTokenSequence(doc, dot);
+            TokenSequence<CssTokenId> ts = getCssTokenSequence(doc, dot, true);
             if (ts != null) {
                 ts.move(dot);
                 if (ts.moveNext()) {
@@ -137,7 +137,19 @@ public class CssBracketCompleter implements KeystrokeHandler {
         if (ch == '\'' || ch == '"') {
             //handle quotations
 
-            TokenSequence<CssTokenId> ts = getCssTokenSequence(doc, dot);
+            //issue 189711 workaround - if the css code is embedde in html attribute value
+            //and user types " at the end of the value additional quotation is incorrectly
+            //added: <div id="myid| + " => <div id="myid""
+            //
+            //we need to check if the actuall css code is embedded in an attribute
+            //value w/o depending on the html module. An SPI in web.common could do it as well
+            TokenHierarchy<Document> hi = TokenHierarchy.get(doc);
+            if(findHtmlValueToken(hi, dot)) {
+                //we are in a css value, do not complete the quote
+                return false;
+            }
+            
+            TokenSequence<CssTokenId> ts = getCssTokenSequence(doc, dot, true);
             if (ts != null) {
                 int diff = ts.move(dot);
                 if (ts.moveNext()) {
@@ -155,42 +167,6 @@ public class CssBracketCompleter implements KeystrokeHandler {
                         }
                     }
                 }
-
-                //issue 189711 workaround - if the css code is embedde in html attribute value
-                //and user types " at the end of the value additional quotation is incorrectly
-                //added: <div id="myid| + " => <div id="myid""
-                //
-                //we need to check if the actuall css code is embedded in an attribute
-                //value w/o depending on the html module. An SPI in web.common could do it as well
-                LanguagePath langPath = ts.languagePath();
-                LanguagePath parentPath = langPath.parent();
-                if (parentPath != null) {
-                    //we are embedded
-                    Language top = parentPath.topLanguage();
-                    if ("text/html".equals(top.mimeType())) {
-                        //in html
-                        TokenHierarchy<Document> hi = TokenHierarchy.get(doc);
-                        List<TokenSequence<?>> embedded = hi.embeddedTokenSequences(dot, true);
-                        if (embedded.size() > 1) {
-                            TokenSequence<?> htmlts = embedded.get(embedded.size() - 2);
-                            if (htmlts.languagePath().equals(parentPath)) {
-                                //it relly looks like our parent ts
-                                htmlts.move(dot);
-                                if (htmlts.moveNext() || htmlts.movePrevious()) {
-                                    TokenId id = htmlts.token().id();
-                                    //XXX !!!! DEPENDENCY to HtmlTokenId !!!!
-                                    if (id.name().equals("VALUE_CSS")) { //NOI18N
-                                        //we are in a css value, do not complete the quote
-                                        return false;
-                                    }
-                                }
-                            }
-                        }
-
-
-                    }
-                }
-
 
                 //cover "text| and user types "
                 //in such case just the quotation should be added
@@ -225,6 +201,27 @@ public class CssBracketCompleter implements KeystrokeHandler {
         caret.setDot(dot + 1);
         return true;
 
+    }
+    
+    private static boolean findHtmlValueToken(TokenHierarchy<?> hi, int offset)  {
+        boolean found = findHtmlValueToken(hi, offset, true);
+        return found ? true : findHtmlValueToken(hi, offset, false);
+    }
+    
+    private static boolean findHtmlValueToken(TokenHierarchy<?> hi, int offset, boolean backward)  {
+        List<TokenSequence<?>> embeddedTokenSequences = hi.embeddedTokenSequences(offset, backward);
+        for(TokenSequence<?> htmlts : embeddedTokenSequences) {
+            if(htmlts.language().mimeType().equals("text/html")) {
+                 //it relly looks like our parent ts
+                int ediff = htmlts.move(offset);
+                if (ediff == 0 && backward && htmlts.movePrevious() || htmlts.moveNext()) {
+                    TokenId id = htmlts.token().id();
+                    //XXX !!!! DEPENDENCY to HtmlTokenId !!!!
+                    return id.name().equals("VALUE_CSS");
+                }
+            }
+        }
+        return false;
     }
 
     @Override
@@ -289,7 +286,7 @@ public class CssBracketCompleter implements KeystrokeHandler {
     public List<OffsetRange> findLogicalRanges(ParserResult info, int caretOffset) {
         ArrayList<OffsetRange> ranges = new ArrayList<OffsetRange>(2);
 
-        Node root = ((CssCslParserResult) info).getParseTree();
+        Node root = ((CssParserResult) info).getParseTree();
         Snapshot snapshot = info.getSnapshot();
 
         if (root != null) {
@@ -372,7 +369,7 @@ public class CssBracketCompleter implements KeystrokeHandler {
         }
     }
 
-    private static TokenSequence<CssTokenId> getCssTokenSequence(Document doc, int offset) {
+    private static TokenSequence<CssTokenId> getCssTokenSequence(Document doc, int offset, boolean checkBoundaries) {
         TokenHierarchy hi = TokenHierarchy.get(doc);
 
         //if we are at the border of the tokensequence then,
@@ -392,19 +389,21 @@ public class CssBracketCompleter implements KeystrokeHandler {
         //check boundaries of the token sequence - if the skip lenghts are used the token 
         //sequence is returned even for offsets outside of the tokenSequence content
 
-        //test beginning
-        ts.moveStart();
-        if (ts.moveNext()) {
-            if (ts.offset() > offset) {
-                return null;
+        if(checkBoundaries) {
+            //test beginning
+            ts.moveStart();
+            if (ts.moveNext()) {
+                if (ts.offset() > offset) {
+                    return null;
+                }
             }
-        }
 
-        //test end
-        ts.moveEnd();
-        if (ts.movePrevious()) {
-            if (ts.offset() + ts.token().length() < offset) {
-                return null;
+            //test end
+            ts.moveEnd();
+            if (ts.movePrevious()) {
+                if (ts.offset() + ts.token().length() < offset) {
+                    return null;
+                }
             }
         }
 

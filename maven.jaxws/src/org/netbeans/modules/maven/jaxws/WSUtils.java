@@ -53,11 +53,13 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.URI;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
@@ -68,6 +70,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.modules.j2ee.common.dd.DDHelper;
 import org.netbeans.modules.j2ee.dd.api.common.NameAlreadyUsedException;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.Listener;
@@ -78,6 +81,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.javaee.specs.support.api.JaxWs;
 import org.netbeans.modules.maven.api.NbMavenProject;
+import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Endpoint;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Endpoints;
 import org.netbeans.modules.websvc.api.jaxws.project.config.EndpointsProvider;
@@ -98,11 +102,7 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileSystem.AtomicAction;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
-import org.openide.util.Lookup;
-import org.openide.util.LookupEvent;
-import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
-import org.openide.util.Lookup.Result;
 
 /**
  *
@@ -128,21 +128,22 @@ public class WSUtils {
             Retriever retriever = Retriever.getDefault();
             FileObject result = retriever.retrieveResource(targetFolder, catalog, source);
             if (result==null) {
-                Map map = retriever.getRetrievedResourceExceptionMap();
+                Map<RetrieveEntry,Exception> map = 
+                        retriever.getRetrievedResourceExceptionMap();
                 if (map!=null) {
-                    Set keys = map.keySet();
-                    Iterator it = keys.iterator();
-                    while (it.hasNext()) {
-                        RetrieveEntry key = (RetrieveEntry)it.next();
-                        Object exc = map.get(key);
+                    for(Entry<RetrieveEntry,Exception> entry : map.entrySet()){
+                        RetrieveEntry key = entry.getKey();
+                        Exception exc = entry.getValue(); 
                         if (exc instanceof IOException) {
                             throw (IOException)exc;
                         } else if (exc instanceof java.net.URISyntaxException) {
                             throw (java.net.URISyntaxException)exc;
-                        } else if (exc instanceof Exception) {
-                            IOException ex = new IOException(NbBundle.getMessage(WSUtils.class,"ERR_retrieveResource",key.getCurrentAddress()));
-                            ex.initCause((Exception)exc);
-                            throw (IOException)(ex);
+                        } else  {
+                            IOException ex = new IOException(NbBundle.getMessage(
+                                    WSUtils.class,"ERR_retrieveResource",       // NOI18N
+                                    key.getCurrentAddress()));
+                            ex.initCause(exc);
+                            throw ex;
                         }
                     }
                 }
@@ -167,7 +168,7 @@ public class WSUtils {
                 OutputStreamWriter osw = null;
                 try {
                     os = sunJaxwsFo.getOutputStream(lock);
-                    osw = new OutputStreamWriter(os);
+                    osw = new OutputStreamWriter(os, Charset.forName("UTF-8"));     // NOI18N
                     bw = new BufferedWriter(osw);
                     bw.write(sunJaxwsContent);
                 } finally {
@@ -185,39 +186,15 @@ public class WSUtils {
     }
     
     static final J2eeModuleProvider getModuleProvider(Project project){
-        Lookup lookup = project.getLookup();
-        final Result<J2eeModuleProvider> result = lookup.lookupResult(J2eeModuleProvider.class);
-        LookupListener listener = new LookupListener(){
-
-            @Override
-            public void resultChanged( LookupEvent event ) {
-                synchronized (result) {
-                    result.notifyAll();
-                }
-            }
-            
-        };
-        result.addLookupListener( listener );
-        synchronized (result) {
-            while (lookup.lookup(J2eeModuleProvider.class) == null) {
-                try {
-                    result.wait();
-                }
-                catch( InterruptedException e ){
-                    Logger.getLogger(MavenJAXWSSupportImpl.class.getName()).log(Level.INFO,
-                            "Lookup change wait is interrupted", e); //NOI18N
-                }
-            }
-        }
-        result.removeLookupListener( listener );
-        return lookup.lookup(J2eeModuleProvider.class);
+        return project.getLookup().lookup(J2eeModuleProvider.class);
     }
     
     private static String readResource(InputStream is) throws IOException {
         // read the config from resource first
         StringBuffer sb = new StringBuffer();
         String lineSep = System.getProperty("line.separator");//NOI18N
-        BufferedReader br = new BufferedReader(new InputStreamReader(is));
+        BufferedReader br = new BufferedReader(new InputStreamReader(is, 
+                Charset.forName("UTF-8")));
         String line = br.readLine();
         while (line != null) {
             sb.append(line);
@@ -535,9 +512,33 @@ public class WSUtils {
     private static FileObject getDeploymentDescriptor(Project prj) {
         J2eeModuleProvider provider = prj.getLookup().lookup(J2eeModuleProvider.class);
         if (provider != null) {
-            File dd = provider.getJ2eeModule().getDeploymentConfigurationFile("WEB-INF/web.xml");
+            File dd = provider.getJ2eeModule().getDeploymentConfigurationFile(
+                    "WEB-INF/web.xml");                                // NOI18N
             if (dd != null && dd.exists()) {
                 return FileUtil.toFileObject(dd);
+            }
+            else {
+                WebModule wm = WebModule.getWebModule(prj.getProjectDirectory());
+                if ( wm ==null ){
+                    return null;
+                }
+                FileObject webInf = wm.getWebInf();
+                try {
+                    if (webInf == null) {
+                        FileObject docBase = wm.getDocumentBase();
+                        if (docBase != null) {
+                            webInf = docBase.createFolder("WEB-INF"); // NOI18N
+                        }
+                    }
+                    if (webInf == null) {
+                        return null;
+                    }
+                    return DDHelper.createWebXml(wm.getJ2eeProfile(), webInf);
+                }
+                catch (IOException e) {
+                    Logger.getLogger(WSUtils.class.getName()).log(Level.INFO, null, e );
+                    return null;
+                }
             }
         }
         return null;
@@ -553,7 +554,6 @@ public class WSUtils {
         }
         sunjaxwsFile = ddFolder.getFileObject("sun-jaxws.xml"); //NOI18N
         Endpoints endpoints = EndpointsProvider.getDefault().getEndpoints(sunjaxwsFile);
-        String serviceName = service.getServiceName();
         Endpoint oldEndpoint = endpoints.findEndpointByName(service.getServiceName());
         if (oldEndpoint == null) {
             addService(endpoints, service);
@@ -616,7 +616,6 @@ public class WSUtils {
         FileObject sunjaxwsFile = ddFolder.getFileObject("sun-jaxws.xml"); //NOI18N
         if (sunjaxwsFile != null) {
             Endpoints endpoints = EndpointsProvider.getDefault().getEndpoints(sunjaxwsFile);
-            String serviceName = service.getServiceName();
             Endpoint endpoint = endpoints.findEndpointByName(service.getServiceName());
             if (endpoint != null) {
                 endpoints.removeEndpoint(endpoint);
@@ -677,6 +676,17 @@ public class WSUtils {
             }
         }
     }
+    
+    public static boolean needNonJsr109Artifacts(Project prj){
+        FileObject ddFolder = getDeploymentDescriptorFolder(prj);
+        if (ddFolder == null || ddFolder.getFileObject("sun-jaxws.xml") == null) {
+            // ask user if non jsr109 stuff should be generated
+            return WSUtils.generateNonJsr109Artifacts(prj);
+        } 
+        else {
+            return true;
+        }
+    }
 
     public static boolean generateNonJsr109Artifacts(Project prj) {
         Preferences prefs = ProjectUtils.getPreferences(prj, MavenWebService.class,true);
@@ -722,6 +732,12 @@ public class WSUtils {
         } else {
             return false;
         }
+    }
+    
+    public static FileObject getDeploymentDescriptorFolder(Project project) {
+        JAXWSLightSupport jaxWsSupport = JAXWSLightSupport.
+                getJAXWSLightSupport(project.getProjectDirectory());
+        return jaxWsSupport.getDeploymentDescriptorFolder();
     }
 
     public static boolean isJsr109Supported(Project project) {
@@ -958,27 +974,33 @@ public class WSUtils {
                         }
                     }
                 } else {
-                    if (ddFolder == null || ddFolder.getFileObject("sun-jaxws.xml") == null) {
-                        // generate non JSR109 artifacts
-                        if (generateNonJsr109Artifacts(prj)) {
-                            if (ddFolder != null) {
-                                try {
-                                    addJaxWsEntries(ddFolder, jaxWsSupport);
-                                } catch (IOException ex) {
-                                    Logger.getLogger(WSUtils.class.getName()).log(Level.WARNING,
-                                            "Cannot modify sun-jaxws.xml file", ex); //NOI18N
-                                }
-                                try {
-                                    addServicesToDD(prj, jaxWsSupport);
-                                } catch (IOException ex) {
-                                    Logger.getLogger(WSUtils.class.getName()).log(Level.WARNING,
-                                            "Cannot modify web.xml file", ex); //NOI18N
-                                }
-                            } else {
-                                String mes = NbBundle.getMessage(MavenJAXWSSupportImpl.class, "MSG_CannotFindWEB-INF"); // NOI18N
-                                NotifyDescriptor desc = new NotifyDescriptor.Message(mes, NotifyDescriptor.Message.ERROR_MESSAGE);
-                                DialogDisplayer.getDefault().notify(desc);
+                    // generate non JSR109 artifacts
+                    if (WSUtils.needNonJsr109Artifacts(prj)) {
+                        if (ddFolder != null) {
+                            try {
+                                addJaxWsEntries(ddFolder, jaxWsSupport);
                             }
+                            catch (IOException ex) {
+                                Logger.getLogger(WSUtils.class.getName()).log(
+                                        Level.WARNING,
+                                        "Cannot modify sun-jaxws.xml file", ex); // NOI18N
+                            }
+                            try {
+                                addServicesToDD(prj, jaxWsSupport);
+                            }
+                            catch (IOException ex) {
+                                Logger.getLogger(WSUtils.class.getName()).log(
+                                        Level.WARNING,
+                                        "Cannot modify web.xml file", ex); // NOI18N
+                            }
+                        }
+                        else {
+                            String mes = NbBundle.getMessage(
+                                    MavenJAXWSSupportImpl.class,
+                                    "MSG_CannotFindWEB-INF"); // NOI18N
+                            NotifyDescriptor desc = new NotifyDescriptor.Message(
+                                    mes, NotifyDescriptor.Message.ERROR_MESSAGE);
+                            DialogDisplayer.getDefault().notify(desc);
                         }
                     }
                 }
@@ -1004,11 +1026,16 @@ public class WSUtils {
     }
 
     static boolean isInSourceGroup(Project prj, String serviceClass) {
-
-        SourceGroup[] sourceGroups = ProjectUtils.getSources(prj).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        if ( serviceClass == null ){
+            return false;
+        }
+        String resource = serviceClass.replace('.', '/') + ".java"; //NOI18N
+        SourceGroup[] sourceGroups = ProjectUtils.getSources(prj).getSourceGroups(
+                JavaProjectConstants.SOURCES_TYPE_JAVA);
         for (SourceGroup group : sourceGroups) {
-            String resource = serviceClass.replace('.', '/') + ".java"; //NOI18N
-            if (group.getRootFolder().getFileObject(resource) != null) {
+            if (group.getRootFolder() != null && group.getRootFolder().
+                    getFileObject(resource) != null) 
+            {
                 return true;
             }
 

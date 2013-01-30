@@ -81,13 +81,13 @@ import org.openide.util.RequestProcessor.Task;
  *
  * @author Andrei Badea
  */
-public class TableGeneratorPanel extends javax.swing.JPanel {
+public final class TableGeneratorPanel extends javax.swing.JPanel {
 
     private DialogDescriptor descriptor;
-    private DatabaseConnection dbconn;
+    private DatabaseConnection databaseConnection;
     private Connection conn;
     private DatabaseMetaData dmd;
-    private String table;
+    private String newTable;
     private String lastErrorMessage;
 
     public static TableAndColumns selectTableAndColumns(String connVariable) {
@@ -101,7 +101,7 @@ public class TableGeneratorPanel extends javax.swing.JPanel {
         dialog.dispose();
         if (desc.getValue() == DialogDescriptor.OK_OPTION) {
             Quoter quoter = SQLIdentifiers.createQuoter(panel.dmd);
-            return new TableAndColumns(quoter, panel.table, panel.getAllColumns(), panel.getSelectedColumns(), panel.getConnVariable()); // NOI18N
+            return new TableAndColumns(quoter, panel.newTable, panel.getAllColumns(), panel.getSelectedColumns(), panel.getConnVariable()); // NOI18N
         }
         return null;
     }
@@ -113,12 +113,15 @@ public class TableGeneratorPanel extends javax.swing.JPanel {
         columnList.addKeyListener(checkListener);
         columnList.addMouseListener(checkListener);
         connVariableTextField.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
             public void insertUpdate(DocumentEvent e) {
                 updateErrorState();
             }
+            @Override
             public void removeUpdate(DocumentEvent e) {
                 updateErrorState();
             }
+            @Override
             public void changedUpdate(DocumentEvent e) {
                 updateErrorState();
             }
@@ -133,7 +136,7 @@ public class TableGeneratorPanel extends javax.swing.JPanel {
     }
 
     private String changeDatabaseConnection(DatabaseConnection newDBConn) {
-        dbconn = null;
+        databaseConnection = null;
         conn = null;
         dmd = null;
         tableComboBox.setModel(new DefaultComboBoxModel());
@@ -173,7 +176,7 @@ public class TableGeneratorPanel extends javax.swing.JPanel {
             return errorMessage;
         }
         Collections.<String>sort(tables);
-        dbconn = newDBConn;
+        databaseConnection = newDBConn;
         conn = newConn;
         dmd = newDmd;
         DefaultComboBoxModel tableModel = new DefaultComboBoxModel();
@@ -186,9 +189,10 @@ public class TableGeneratorPanel extends javax.swing.JPanel {
 
     private String extractTables(final List<? super String> tables, final DatabaseMetaData dmd, final String catalog, final String schema) {
         return doWithProgress(NbBundle.getMessage(TableGeneratorPanel.class, "MSG_ExtractingTables"), new Callable<String>() {
+            @Override
             public String call() throws Exception {
                 try {
-                    ResultSet rs = dmd.getTables(catalog, schema, "%", new String[] { "TABLE" }); // NOI18N
+                    ResultSet rs = dmd.getTables(catalog, schema, "%", new String[] {"TABLE"}); // NOI18N
                     try {
                         while (rs.next()) {
                             tables.add(rs.getString("TABLE_NAME")); // NOI18N
@@ -211,7 +215,7 @@ public class TableGeneratorPanel extends javax.swing.JPanel {
         if (errorMessage != null) {
             return errorMessage;
         }
-        table = newTable;
+        this.newTable = newTable;
         ColumnModel model = new ColumnModel(columns);
         columnList.setModel(model);
         int selectedIndex = model.getSize() > 0 ? 0 : -1;
@@ -221,9 +225,10 @@ public class TableGeneratorPanel extends javax.swing.JPanel {
 
     private String extractColumns(final String table, final List<? super String> columns) {
         return doWithProgress(NbBundle.getMessage(TableGeneratorPanel.class, "MSG_ExtractingColumns"), new Callable<String>() {
+            @Override
             public String call() {
                 try {
-                    ResultSet rs = dmd.getColumns(conn.getCatalog(), dbconn.getSchema(), table, "%"); // NOI18N
+                    ResultSet rs = dmd.getColumns(conn.getCatalog(), databaseConnection.getSchema(), table, "%"); // NOI18N
                     try {
                         while (rs.next()) {
                             columns.add(rs.getString("COLUMN_NAME")); // NOI18N
@@ -284,13 +289,13 @@ public class TableGeneratorPanel extends javax.swing.JPanel {
     }
 
     private void updateErrorState() {
-        tableComboBox.setEnabled(dbconn != null);
+        tableComboBox.setEnabled(databaseConnection != null);
         columnList.setEnabled(tableComboBox.getSelectedItem() != null);
         if (lastErrorMessage != null) {
             setErrorMessage(lastErrorMessage);
             return;
         }
-        if (dbconn == null) {
+        if (databaseConnection == null) {
             setErrorMessage(NbBundle.getMessage(TableGeneratorPanel.class, "ERR_SelectConnection"));
             return;
         }
@@ -320,6 +325,7 @@ public class TableGeneratorPanel extends javax.swing.JPanel {
         final List<T> result = new ArrayList<T>(1);
         try {
             Task task = RequestProcessor.getDefault().post(new Runnable() {
+                @Override
                 public void run() {
                     if (!SwingUtilities.isEventDispatchThread()) {
                         try {
@@ -462,7 +468,7 @@ private void dbconnComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GE
             dbconn = (DatabaseConnection) selected;
         }
         lastErrorMessage = changeDatabaseConnection(dbconn);
-        if (lastErrorMessage == null && this.dbconn != null) {
+        if (lastErrorMessage == null && this.databaseConnection != null) {
             tableComboBoxSelectionChanged();
         }
         updateErrorState();
@@ -498,14 +504,17 @@ private void tableComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN
             }
         }
 
+        @Override
         public int getSize() {
             return elements.size();
         }
 
+        @Override
         public Selectable getElementAt(int index) {
             return elements.get(index);
         }
 
+        @Override
         public void stateChanged(ChangeEvent e) {
             for (int i = 0; i < elements.size(); i++) {
                 if (elements.get(i) == e.getSource()) {

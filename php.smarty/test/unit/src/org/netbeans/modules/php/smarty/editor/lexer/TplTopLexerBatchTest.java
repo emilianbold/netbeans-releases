@@ -40,11 +40,11 @@
  */
 package org.netbeans.modules.php.smarty.editor.lexer;
 
-import junit.framework.TestCase;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.lib.lexer.test.LexerTestUtilities;
 import org.netbeans.modules.php.smarty.SmartyFramework.Version;
+import org.netbeans.modules.php.smarty.TplTestBase;
 import org.netbeans.modules.php.smarty.ui.options.SmartyOptions;
 
 /**
@@ -52,7 +52,7 @@ import org.netbeans.modules.php.smarty.ui.options.SmartyOptions;
  *
  * @author Martin Fousek
  */
-public class TplTopLexerBatchTest extends TestCase {
+public class TplTopLexerBatchTest extends TplTestBase {
 
     public TplTopLexerBatchTest(String testName) {
         super(testName);
@@ -106,6 +106,48 @@ public class TplTopLexerBatchTest extends TestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY, "/literal");
         LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY_CLOSE_DELIMITER, "}");
         LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY_OPEN_DELIMITER, "{");
+    }
+
+    public void testSmartyLiteralTags2() {
+        String text = "{literal} any text here { also some bracket{/literal}{";
+
+        TokenSequence ts = createTokenSequence(text);
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY_OPEN_DELIMITER, "{");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY, "literal");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY_CLOSE_DELIMITER, "}");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_HTML, " any text here { also some bracket");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY_OPEN_DELIMITER, "{");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY, "/literal");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY_CLOSE_DELIMITER, "}");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY_OPEN_DELIMITER, "{");
+    }
+
+    public void testSmartyLiteralTags3() {
+        String text = "{literal} any text here {/ also some bracket{/literal}{";
+
+        TokenSequence ts = createTokenSequence(text);
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY_OPEN_DELIMITER, "{");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY, "literal");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY_CLOSE_DELIMITER, "}");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_HTML, " any text here ");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_HTML, "{");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_HTML, "/ also some bracket");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY_OPEN_DELIMITER, "{");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY, "/literal");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY_CLOSE_DELIMITER, "}");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY_OPEN_DELIMITER, "{");
+    }
+
+    public void testSmartyLiteralTags4() {
+        String text = "{literal} any text here {/ also some bracket";
+
+        TokenSequence ts = createTokenSequence(text);
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY_OPEN_DELIMITER, "{");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY, "literal");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY_CLOSE_DELIMITER, "}");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_HTML, " any text here ");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_HTML, "{");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_HTML, "/ also some bracket");
     }
 
     public void testSmartyCommentsTags() {
@@ -243,11 +285,67 @@ public class TplTopLexerBatchTest extends TestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY_CLOSE_DELIMITER, "}");
     }
 
-    private void resetSmartyOptions() {
-        SmartyOptions.getInstance().setDefaultOpenDelimiter("{");
-        SmartyOptions.getInstance().setDefaultCloseDelimiter("}");
-        SmartyOptions.getInstance().setSmartyVersion(Version.SMARTY3);
+    public void testIssue215941() {
+        String text = "[{* text *}]";
+        setupSmartyOptions("[{", "}]", Version.SMARTY3);
+
+        TokenSequence ts = createTokenSequence(text);
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY_OPEN_DELIMITER, "[{");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_COMMENT, "*");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_COMMENT, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_COMMENT, "t");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_COMMENT, "e");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_COMMENT, "x");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_COMMENT, "t");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_COMMENT, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_COMMENT, "*");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY_CLOSE_DELIMITER, "}]");
     }
+
+    public void testIssue212121_1() {
+        String text = "{$script = \"var p = { a: 0, b: 0 } ; var s = { t: true, u: false } ;\"}";
+
+        TokenSequence ts = createTokenSequence(text);
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY_OPEN_DELIMITER, "{");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY, "$script = \"var p = ");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY, "{");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY, " a: 0, b: 0 ");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY, "}");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY, " ; var s = ");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY, "{");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY, " t: true, u: false ");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY, "}");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY, " ;\"");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY_CLOSE_DELIMITER, "}");
+    }
+
+    public void testIssue212121_2() {
+        String text = "{$script = \"var p = { a : 0 } \"} ";
+
+        TokenSequence ts = createTokenSequence(text);
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY_OPEN_DELIMITER, "{");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY, "$script = \"var p = ");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY, "{");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY, " a : 0 ");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY, "}");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY, " \"");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY_CLOSE_DELIMITER, "}");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_HTML, " ");
+    }
+
+    public void testIssue212121_3() {
+        String text = "<title>{$title}</title><style type=\"text/css\">.a { margin-left: 15px; }</style>";
+
+        TokenSequence ts = createTokenSequence(text);
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_HTML, "<title>");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY_OPEN_DELIMITER, "{");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY, "$title");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY_CLOSE_DELIMITER, "}");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_HTML, "</title><style type=\"text/css\">.a ");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_HTML, "{");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_HTML, " margin-left: 15px; }</style>");
+    }
+
 
     private TokenSequence createTokenSequence(String text) {
         TokenHierarchy<?> hi = TokenHierarchy.create(text, TplTopTokenId.language());

@@ -82,20 +82,6 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
     private WizardDescriptor wizardDescriptor;
     private File oldProjectLocation;
     
-    private final DocumentListener configAndLibrariesListener = new DocumentListener() {
-        public void changedUpdate(DocumentEvent e) {
-            dataChanged();
-        }
-        
-        public void insertUpdate(DocumentEvent e) {
-            dataChanged();
-        }
-        
-        public void removeUpdate(DocumentEvent e) {
-            dataChanged();
-        }
-    };
-
     /** Creates new form PanelSourceFolders */
     public PanelSourceFolders (Panel panel) {
         this.firer = panel;
@@ -107,7 +93,24 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
         this.sourcePanel.addPropertyChangeListener (this);
         this.testsPanel.addPropertyChangeListener(this);
         ((FolderList)this.sourcePanel).setRelatedFolderList((FolderList)this.testsPanel, FolderList.testRootsFilter());
-        ((FolderList)this.testsPanel).setRelatedFolderList((FolderList)this.sourcePanel);        
+        ((FolderList)this.testsPanel).setRelatedFolderList((FolderList)this.sourcePanel);
+
+        DocumentListener configAndLibrariesListener = new DocumentListener() {
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                dataChanged();
+            }
+
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                dataChanged();
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                dataChanged();
+            }
+        };
         this.jTextFieldConfigFiles.getDocument().addDocumentListener(configAndLibrariesListener);
         this.jTextFieldLibraries.getDocument().addDocumentListener(configAndLibrariesListener);
     }

@@ -34,9 +34,6 @@ package demo.security;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Simple Authenticator service, that checks user logins
- */
 public class Authenticator {
     private static final Map<String, String> USERS = new HashMap<String, String>();
     static {

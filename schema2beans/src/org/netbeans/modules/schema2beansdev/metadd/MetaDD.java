@@ -116,6 +116,7 @@ public class MetaDD implements org.netbeans.modules.schema2beansdev.metadd.Commo
 	private String _SchemaLocation;
 	private java.util.List _Finder = new java.util.ArrayList();	// List<String>
 	private java.lang.String schemaLocation;
+	private static final java.util.logging.Logger _logger = java.util.logging.Logger.getLogger("org.netbeans.modules.schema2beansdev.metadd.MetaDD");
 
 	/**
 	 * Normal starting point constructor.
@@ -443,7 +444,23 @@ public class MetaDD implements org.netbeans.modules.schema2beansdev.metadd.Commo
 			out.write(schemaLocation);
 			out.write("'");	// NOI18N
 		}
+		writeNodeAttributes(out, nodeName, namespace, indent, namespaceMap);
 		out.write(">\n");
+		writeNodeChildren(out, nodeName, namespace, indent, namespaceMap);
+		out.write(indent);
+		out.write("</");
+		if (namespace != null) {
+			out.write((String)namespaceMap.get(namespace));
+			out.write(":");
+		}
+		out.write(nodeName);
+		out.write(">\n");
+	}
+
+	protected void writeNodeAttributes(java.io.Writer out, String nodeName, String namespace, String indent, java.util.Map namespaceMap) throws java.io.IOException {
+	}
+
+	protected void writeNodeChildren(java.io.Writer out, String nodeName, String namespace, String indent, java.util.Map namespaceMap) throws java.io.IOException {
 		String nextIndent = indent + "	";
 		for (java.util.Iterator it = _MetaElement.iterator(); 
 			it.hasNext(); ) {
@@ -507,14 +524,6 @@ public class MetaDD implements org.netbeans.modules.schema2beansdev.metadd.Commo
 				out.write("</finder>\n");	// NOI18N
 			}
 		}
-		out.write(indent);
-		out.write("</");
-		if (namespace != null) {
-			out.write((String)namespaceMap.get(namespace));
-			out.write(":");
-		}
-		out.write(nodeName);
-		out.write(">\n");
 	}
 
 	public static MetaDD read(java.io.File f) throws javax.xml.parsers.ParserConfigurationException, org.xml.sax.SAXException, java.io.IOException {
@@ -568,6 +577,11 @@ public class MetaDD implements org.netbeans.modules.schema2beansdev.metadd.Commo
 		readNode(document.getDocumentElement());
 	}
 
+	protected static class ReadState {
+		int lastElementType;
+		int elementPosition;
+	}
+
 	public void readNode(org.w3c.dom.Node node) {
 		readNode(node, new java.util.HashMap());
 	}
@@ -592,10 +606,11 @@ public class MetaDD implements org.netbeans.modules.schema2beansdev.metadd.Commo
 				}
 			}
 			String xsiPrefix = "xsi";
-			for (java.util.Iterator it = namespacePrefixes.keySet().iterator(); 
+			for (java.util.Iterator it = namespacePrefixes.entrySet().iterator(); 
 				it.hasNext(); ) {
-				String prefix = (String) it.next();
-				String ns = (String) namespacePrefixes.get(prefix);
+				java.util.Map.Entry entry = (java.util.Map.Entry) it.next();
+				String prefix = (String) entry.getKey();
+				String ns = (String) entry.getValue();
 				if ("http://www.w3.org/2001/XMLSchema-instance".equals(ns)) {
 					xsiPrefix = prefix;
 					break;
@@ -606,57 +621,81 @@ public class MetaDD implements org.netbeans.modules.schema2beansdev.metadd.Commo
 				attrValue = attr.getValue();
 				schemaLocation = attrValue;
 			}
+			readNodeAttributes(node, namespacePrefixes, attrs);
 		}
+		readNodeChildren(node, namespacePrefixes);
+	}
+
+	protected void readNodeAttributes(org.w3c.dom.Node node, java.util.Map namespacePrefixes, org.w3c.dom.NamedNodeMap attrs) {
+		org.w3c.dom.Attr attr;
+		java.lang.String attrValue;
+	}
+
+	protected void readNodeChildren(org.w3c.dom.Node node, java.util.Map namespacePrefixes) {
 		org.w3c.dom.NodeList children = node.getChildNodes();
 		for (int i = 0, size = children.getLength(); i < size; ++i) {
 			org.w3c.dom.Node childNode = children.item(i);
+			if (!(childNode instanceof org.w3c.dom.Element)) {
+				continue;
+			}
 			String childNodeName = (childNode.getLocalName() == null ? childNode.getNodeName().intern() : childNode.getLocalName().intern());
 			String childNodeValue = "";
 			if (childNode.getFirstChild() != null) {
 				childNodeValue = childNode.getFirstChild().getNodeValue();
 			}
-			if (childNodeName == "meta-element") {
-				MetaElement aMetaElement = newMetaElement();
-				aMetaElement.readNode(childNode, namespacePrefixes);
-				_MetaElement.add(aMetaElement);
-			}
-			else if (childNodeName == "implements") {
-				_Implements = childNodeValue;
-			}
-			else if (childNodeName == "extends") {
-				_Extends = childNodeValue;
-			}
-			else if (childNodeName == "import") {
-				String aImport;
-				aImport = childNodeValue;
-				_Import.add(aImport);
-			}
-			else if (childNodeName == "vetoable") {
-				if (childNode.getFirstChild() == null)
-					_Vetoable = true;
-				else
-					_Vetoable = java.lang.Boolean.valueOf(childNodeValue).booleanValue();
-				_isSet_Vetoable = true;
-			}
-			else if (childNodeName == "throw-exceptions") {
-				if (childNode.getFirstChild() == null)
-					_ThrowExceptions = true;
-				else
-					_ThrowExceptions = java.lang.Boolean.valueOf(childNodeValue).booleanValue();
-				_isSet_ThrowExceptions = true;
-			}
-			else if (childNodeName == "schemaLocation") {
-				_SchemaLocation = childNodeValue;
-			}
-			else if (childNodeName == "finder") {
-				String aFinder;
-				aFinder = childNodeValue;
-				_Finder.add(aFinder);
-			}
-			else {
-				// Found extra unrecognized childNode
+			boolean recognized = readNodeChild(childNode, childNodeName, childNodeValue, namespacePrefixes);
+			if (!recognized) {
+				if (childNode instanceof org.w3c.dom.Element) {
+					_logger.info("Found extra unrecognized childNode '"+childNodeName+"'");
+				}
 			}
 		}
+	}
+
+	protected boolean readNodeChild(org.w3c.dom.Node childNode, String childNodeName, String childNodeValue, java.util.Map namespacePrefixes) {
+		// assert childNodeName == childNodeName.intern()
+		if ("meta-element".equals(childNodeName)) {
+			MetaElement aMetaElement = newMetaElement();
+			aMetaElement.readNode(childNode, namespacePrefixes);
+			_MetaElement.add(aMetaElement);
+		}
+		else if ("implements".equals(childNodeName)) {
+			_Implements = childNodeValue;
+		}
+		else if ("extends".equals(childNodeName)) {
+			_Extends = childNodeValue;
+		}
+		else if ("import".equals(childNodeName)) {
+			String aImport;
+			aImport = childNodeValue;
+			_Import.add(aImport);
+		}
+		else if ("vetoable".equals(childNodeName)) {
+			if (childNode.getFirstChild() == null)
+				_Vetoable = true;
+			else
+				_Vetoable = ("true".equalsIgnoreCase(childNodeValue) || "1".equals(childNodeValue));
+			_isSet_Vetoable = true;
+		}
+		else if ("throw-exceptions".equals(childNodeName)) {
+			if (childNode.getFirstChild() == null)
+				_ThrowExceptions = true;
+			else
+				_ThrowExceptions = ("true".equalsIgnoreCase(childNodeValue) || "1".equals(childNodeValue));
+			_isSet_ThrowExceptions = true;
+		}
+		else if ("schemaLocation".equals(childNodeName)) {
+			_SchemaLocation = childNodeValue;
+		}
+		else if ("finder".equals(childNodeName)) {
+			String aFinder;
+			aFinder = childNodeValue;
+			_Finder.add(aFinder);
+		}
+		else {
+			return false;
+		}
+		return true;
 	}
 
 	/**
@@ -752,48 +791,48 @@ public class MetaDD implements org.netbeans.modules.schema2beansdev.metadd.Commo
 	public void changePropertyByName(String name, Object value) {
 		if (name == null) return;
 		name = name.intern();
-		if (name == "metaElement")
+		if ("metaElement".equals(name))
 			addMetaElement((MetaElement)value);
-		else if (name == "metaElement[]")
+		else if ("metaElement[]".equals(name))
 			setMetaElement((MetaElement[]) value);
-		else if (name == "implements")
+		else if ("implements".equals(name))
 			setImplements((String)value);
-		else if (name == "extends")
+		else if ("extends".equals(name))
 			setExtends((String)value);
-		else if (name == "import")
+		else if ("import".equals(name))
 			addImport((String)value);
-		else if (name == "import[]")
+		else if ("import[]".equals(name))
 			setImport((String[]) value);
-		else if (name == "vetoable")
+		else if ("vetoable".equals(name))
 			setVetoable(((java.lang.Boolean)value).booleanValue());
-		else if (name == "throwExceptions")
+		else if ("throwExceptions".equals(name))
 			setThrowExceptions(((java.lang.Boolean)value).booleanValue());
-		else if (name == "schemaLocation")
+		else if ("schemaLocation".equals(name))
 			setSchemaLocation((String)value);
-		else if (name == "finder")
+		else if ("finder".equals(name))
 			addFinder((String)value);
-		else if (name == "finder[]")
+		else if ("finder[]".equals(name))
 			setFinder((String[]) value);
 		else
 			throw new IllegalArgumentException(name+" is not a valid property name for MetaDD");
 	}
 
 	public Object fetchPropertyByName(String name) {
-		if (name == "metaElement[]")
+		if ("metaElement[]".equals(name))
 			return getMetaElement();
-		if (name == "implements")
+		if ("implements".equals(name))
 			return getImplements();
-		if (name == "extends")
+		if ("extends".equals(name))
 			return getExtends();
-		if (name == "import[]")
+		if ("import[]".equals(name))
 			return getImport();
-		if (name == "vetoable")
+		if ("vetoable".equals(name))
 			return (isVetoable() ? java.lang.Boolean.TRUE : java.lang.Boolean.FALSE);
-		if (name == "throwExceptions")
+		if ("throwExceptions".equals(name))
 			return (isThrowExceptions() ? java.lang.Boolean.TRUE : java.lang.Boolean.FALSE);
-		if (name == "schemaLocation")
+		if ("schemaLocation".equals(name))
 			return getSchemaLocation();
-		if (name == "finder[]")
+		if ("finder[]".equals(name))
 			return getFinder();
 		throw new IllegalArgumentException(name+" is not a valid property name for MetaDD");
 	}
@@ -821,96 +860,6 @@ public class MetaDD implements org.netbeans.modules.schema2beansdev.metadd.Commo
 	 * @return null if not found
 	 */
 	public String nameChild(Object childObj, boolean returnConstName, boolean returnSchemaName, boolean returnXPathName) {
-		if (childObj instanceof java.lang.String) {
-			java.lang.String child = (java.lang.String) childObj;
-			if (child == _Implements) {
-				if (returnConstName) {
-					return IMPLEMENTS;
-				} else if (returnSchemaName) {
-					return "implements";
-				} else if (returnXPathName) {
-					return "implements";
-				} else {
-					return "Implements";
-				}
-			}
-			if (child == _Extends) {
-				if (returnConstName) {
-					return EXTENDS;
-				} else if (returnSchemaName) {
-					return "extends";
-				} else if (returnXPathName) {
-					return "extends";
-				} else {
-					return "Extends";
-				}
-			}
-			int index = 0;
-			for (java.util.Iterator it = _Import.iterator(); it.hasNext(); 
-				) {
-				String element = (String)it.next();
-				if (child == element) {
-					if (returnConstName) {
-						return IMPORT;
-					} else if (returnSchemaName) {
-						return "import";
-					} else if (returnXPathName) {
-						return "import[position()="+index+"]";
-					} else {
-						return "Import."+Integer.toHexString(index);
-					}
-				}
-				++index;
-			}
-			if (child == _SchemaLocation) {
-				if (returnConstName) {
-					return SCHEMALOCATION;
-				} else if (returnSchemaName) {
-					return "schemaLocation";
-				} else if (returnXPathName) {
-					return "schemaLocation";
-				} else {
-					return "SchemaLocation";
-				}
-			}
-			index = 0;
-			for (java.util.Iterator it = _Finder.iterator(); it.hasNext(); 
-				) {
-				String element = (String)it.next();
-				if (child == element) {
-					if (returnConstName) {
-						return FINDER;
-					} else if (returnSchemaName) {
-						return "finder";
-					} else if (returnXPathName) {
-						return "finder[position()="+index+"]";
-					} else {
-						return "Finder."+Integer.toHexString(index);
-					}
-				}
-				++index;
-			}
-		}
-		if (childObj instanceof MetaElement) {
-			MetaElement child = (MetaElement) childObj;
-			int index = 0;
-			for (java.util.Iterator it = _MetaElement.iterator(); 
-				it.hasNext(); ) {
-				org.netbeans.modules.schema2beansdev.metadd.MetaElement element = (org.netbeans.modules.schema2beansdev.metadd.MetaElement)it.next();
-				if (child == element) {
-					if (returnConstName) {
-						return META_ELEMENT;
-					} else if (returnSchemaName) {
-						return "meta-element";
-					} else if (returnXPathName) {
-						return "meta-element[position()="+index+"]";
-					} else {
-						return "MetaElement."+Integer.toHexString(index);
-					}
-				}
-				++index;
-			}
-		}
 		if (childObj instanceof java.lang.Boolean) {
 			java.lang.Boolean child = (java.lang.Boolean) childObj;
 			if (((java.lang.Boolean)child).booleanValue() == _Vetoable) {
@@ -934,6 +883,96 @@ public class MetaDD implements org.netbeans.modules.schema2beansdev.metadd.Commo
 				} else {
 					return "ThrowExceptions";
 				}
+			}
+		}
+		if (childObj instanceof MetaElement) {
+			MetaElement child = (MetaElement) childObj;
+			int index = 0;
+			for (java.util.Iterator it = _MetaElement.iterator(); 
+				it.hasNext(); ) {
+				org.netbeans.modules.schema2beansdev.metadd.MetaElement element = (org.netbeans.modules.schema2beansdev.metadd.MetaElement)it.next();
+				if (child == element) {
+					if (returnConstName) {
+						return META_ELEMENT;
+					} else if (returnSchemaName) {
+						return "meta-element";
+					} else if (returnXPathName) {
+						return "meta-element[position()="+index+"]";
+					} else {
+						return "MetaElement."+Integer.toHexString(index);
+					}
+				}
+				++index;
+			}
+		}
+		if (childObj instanceof java.lang.String) {
+			java.lang.String child = (java.lang.String) childObj;
+			if (child.equals(_Implements)) {
+				if (returnConstName) {
+					return IMPLEMENTS;
+				} else if (returnSchemaName) {
+					return "implements";
+				} else if (returnXPathName) {
+					return "implements";
+				} else {
+					return "Implements";
+				}
+			}
+			if (child.equals(_Extends)) {
+				if (returnConstName) {
+					return EXTENDS;
+				} else if (returnSchemaName) {
+					return "extends";
+				} else if (returnXPathName) {
+					return "extends";
+				} else {
+					return "Extends";
+				}
+			}
+			int index = 0;
+			for (java.util.Iterator it = _Import.iterator(); it.hasNext(); 
+				) {
+				String element = (String)it.next();
+				if (child.equals(element)) {
+					if (returnConstName) {
+						return IMPORT;
+					} else if (returnSchemaName) {
+						return "import";
+					} else if (returnXPathName) {
+						return "import[position()="+index+"]";
+					} else {
+						return "Import."+Integer.toHexString(index);
+					}
+				}
+				++index;
+			}
+			if (child.equals(_SchemaLocation)) {
+				if (returnConstName) {
+					return SCHEMALOCATION;
+				} else if (returnSchemaName) {
+					return "schemaLocation";
+				} else if (returnXPathName) {
+					return "schemaLocation";
+				} else {
+					return "SchemaLocation";
+				}
+			}
+			index = 0;
+			for (java.util.Iterator it = _Finder.iterator(); it.hasNext(); 
+				) {
+				String element = (String)it.next();
+				if (child.equals(element)) {
+					if (returnConstName) {
+						return FINDER;
+					} else if (returnSchemaName) {
+						return "finder";
+					} else if (returnXPathName) {
+						return "finder[position()="+index+"]";
+					} else {
+						return "Finder."+Integer.toHexString(index);
+					}
+				}
+				++index;
 			}
 		}
 		return null;

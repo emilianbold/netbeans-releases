@@ -109,6 +109,19 @@ public final class JavaFixImpl implements Fix {
         return null;
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof JavaFixImpl) {
+            return jf.equals(((JavaFixImpl)obj).jf);
+        }
+        return super.equals(obj);
+    }
+
+    @Override
+    public int hashCode() {
+        return jf.hashCode();
+    }
+
     public static abstract class Accessor {
 
         static {

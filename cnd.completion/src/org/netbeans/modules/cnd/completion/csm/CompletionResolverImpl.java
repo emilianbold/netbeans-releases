@@ -232,14 +232,18 @@ public class CompletionResolverImpl implements CompletionResolver {
                 result = buildResult(context, resImpl);
                 return;
             }
-            CsmDeclaration decl = null;
+            CsmDeclaration cacheDecl = null;
             if (fun != null) {
-                decl = fun;
+                cacheDecl = fun;
             } else if (CsmKindUtilities.isVariable(context.getLastObject())) {
-                decl = (CsmVariable) context.getLastObject();
+                cacheDecl = (CsmVariable) context.getLastObject();
+                if (CsmKindUtilities.isParameter(cacheDecl)) {
+                    // do not cache parameters, they are local variables as well
+                    cacheDecl = null;
+                }
             }
-            if (CsmBaseUtilities.isValid(decl) && fileReferncesContext != null) {
-                CsmUID uid = UIDs.get(decl);
+            if (CsmBaseUtilities.isValid(cacheDecl) && fileReferncesContext != null) {
+                CsmUID uid = UIDs.get(cacheDecl);
                 key = new CacheEntry(resolveTypes, hideTypes, strPrefix, uid);
                 Result res = fileReferncesContext.getSymTabCache().get(key);
                 if (res != null) {

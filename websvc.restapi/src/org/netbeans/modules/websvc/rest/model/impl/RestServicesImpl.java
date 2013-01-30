@@ -176,9 +176,10 @@ public class RestServicesImpl implements RestServices {
         public List<RestServiceDescriptionImpl> createObjects(TypeElement type) {
             //System.out.println("createObjects() type = " + type);
             //(new Exception()).printStackTrace();
-            if (type== null || Utils.checkForJsr311Bootstrap(type, project, helper)) {
+            if (type== null ) {
                 return Collections.emptyList();
             }
+            Utils.checkForJsr311Bootstrap(type, project, helper);
             if (Utils.isRest(type, helper)) {
                 //System.out.println("creating RestServiceDescImpl for " + type.getQualifiedName().toString());
                 return Collections.singletonList(new RestServiceDescriptionImpl(helper, type));
@@ -187,9 +188,10 @@ public class RestServicesImpl implements RestServices {
         }
         
         public boolean modifyObjects(TypeElement type, List<RestServiceDescriptionImpl> objects) {
-            if (type== null || Utils.checkForJsr311Bootstrap(type, project, helper)) {
+            if (type== null ) {
                 return false;
             }
+            Utils.checkForJsr311Bootstrap(type, project, helper);
             //System.out.println("modifyObject type = " + type);
             assert objects.size() == 1;
             RestServiceDescriptionImpl restService = objects.get(0);
@@ -216,9 +218,10 @@ public class RestServicesImpl implements RestServices {
             helper.getAnnotationScanner().findAnnotations(annotationType, kinds,
                     new AnnotationHandler() {
                 public void handleAnnotation(TypeElement type, Element element, AnnotationMirror annotation) {
-                    if (type== null || Utils.checkForJsr311Bootstrap(type, project, helper)) {
+                    if (type== null ) {
                         return;
                     }
+                    Utils.checkForJsr311Bootstrap(type, project, helper);
                     if (!result.containsKey(type)) {
                         result.put(type, new RestServiceDescriptionImpl(helper, type));
                     }

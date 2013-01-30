@@ -44,9 +44,7 @@ Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
 
-<!DOCTYPE library PUBLIC "-//NetBeans//DTD Library Declaration 1.0//EN" "http://www.netbeans.org/dtds/library-declaration-1_0.dtd">
-
-<library version="1.0">
+<library version="3.0" xmlns="http://www.netbeans.org/ns/library-declaration/3">
     <name>swing-layout</name>
     <type>j2se</type>
     <localizing-bundle>org.netbeans.modules.nbform.Bundle</localizing-bundle>
@@ -62,9 +60,11 @@ made subject to such option by the copyright holder.
         <type>src</type>
         <resource>jar:nbinst://org.jdesktop.layout/docs/swing-layout-1.0.4-src.zip!/swing-layout-1.0.4/src/java/</resource>
     </volume>
-    <volume>
+    <properties>
         <!-- please check with mkleint@netbeans.org before/after updating this or "classpath" section -->
-        <type>maven-pom</type>
-        <resource>http://repo1.maven.org/maven2/org/swinglabs/swing-layout/1.0.3/swing-layout-1.0.3.pom</resource>
-    </volume>
+        <property>
+            <name>maven-dependencies</name>
+            <value>org.swinglabs:swing-layout:1.0.3:jar</value>
+        </property>
+    </properties>
 </library>

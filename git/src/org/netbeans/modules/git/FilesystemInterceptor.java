@@ -43,7 +43,9 @@
 package org.netbeans.modules.git;
 
 import java.awt.EventQueue;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
@@ -55,11 +57,14 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.libs.git.GitBranch;
 import org.netbeans.libs.git.GitException;
+import org.netbeans.libs.git.GitRemoteConfig;
 import org.netbeans.modules.git.FileInformation.Status;
+import org.netbeans.modules.git.client.GitClient;
 import org.netbeans.modules.git.ui.history.SearchHistoryAction;
 import org.netbeans.modules.git.ui.repository.RepositoryInfo;
 import org.netbeans.modules.git.utils.GitUtils;
@@ -90,6 +95,7 @@ class FilesystemInterceptor extends VCSInterceptor {
 
     private static final RequestProcessor rp = new RequestProcessor("GitRefresh", 1, true);
     private final GitFolderEventsHandler gitFolderEventsHandler;
+    private final CommandUsageLogger commandLogger;
     private static boolean AUTOMATIC_REFRESH_ENABLED = !"true".equals(System.getProperty("versioning.git.autoRefreshDisabled", "false")); //NOI18N
     private static final String INDEX_FILE_NAME = "index"; //NOI18N
     private static final String HEAD_FILE_NAME = "HEAD"; //NOI18N
@@ -100,12 +106,13 @@ class FilesystemInterceptor extends VCSInterceptor {
         refreshTask = rp.create(new RefreshTask());
         lockedRepositoryRefreshTask = rp.create(new LockedRepositoryRefreshTask());
         gitFolderEventsHandler = new GitFolderEventsHandler();
+        commandLogger = new CommandUsageLogger();
     }
 
     @Override
     public long refreshRecursively (File dir, long lastTimeStamp, List<? super File> children) {
         long retval = -1;
-        if (GitUtils.DOT_GIT.equals(dir.getName())) {
+        if (GitUtils.DOT_GIT.equals(dir.getName()) || gitFolderEventsHandler.isMetadataFolder(dir)) {
             Git.STATUS_LOG.log(Level.FINER, "Interceptor.refreshRecursively: {0}", dir.getAbsolutePath()); //NOI18N
             children.clear();
             retval = gitFolderEventsHandler.refreshAdminFolder(dir);
@@ -121,10 +128,22 @@ class FilesystemInterceptor extends VCSInterceptor {
             Git git = Git.getInstance();
             final File root = git.getRepositoryRoot(file);
             if (root == null) return false;
+            GitClient client = null;
             try {
-                git.getClient(root).reset(new File[] { file }, "HEAD", true, GitUtils.NULL_PROGRESS_MONITOR);
+                client = git.getClient(root);
+                client.setIndexingBridgeDisabled(true);
+                client.reset(new File[] { file }, GitUtils.HEAD, true, GitUtils.NULL_PROGRESS_MONITOR);
+            } catch (GitException.MissingObjectException ex) {
+                if (!GitUtils.HEAD.equals(ex.getObjectName())) {
+                    // log only if we already have a commit. Just initialized repository does not allow us to reset
+                    LOG.log(Level.INFO, "beforeCreate(): File: {0} {1}", new Object[] { file.getAbsolutePath(), ex.toString()}); //NOI18N
+                }
             } catch (GitException ex) {
                 LOG.log(Level.INFO, "beforeCreate(): File: {0} {1}", new Object[] { file.getAbsolutePath(), ex.toString()}); //NOI18N
+            } finally {
+                if (client != null) {
+                    client.release();
+                }
             }
             LOG.log(Level.FINER, "beforeCreate(): finished: {0}", file); // NOI18N
         }
@@ -134,10 +153,13 @@ class FilesystemInterceptor extends VCSInterceptor {
     @Override
     public void afterCreate (final File file) {
         LOG.log(Level.FINE, "afterCreate {0}", file); //NOI18N
+        if (GitUtils.isPartOfGitMetadata(file) && GitUtils.INDEX_LOCK.equals(file.getName())) {
+            commandLogger.locked(file);
+        }
         // There is no point in refreshing the cache for ignored files.
         addToCreated(file);
         if (!cache.getStatus(file).containsStatus(Status.NOTVERSIONED_EXCLUDED)) {
-            reScheduleRefresh(800, Collections.singleton(file));
+            reScheduleRefresh(800, Collections.singleton(file), true);
         }
     }
 
@@ -157,9 +179,12 @@ class FilesystemInterceptor extends VCSInterceptor {
         if (file == null) return;
         Git git = Git.getInstance();
         File root = git.getRepositoryRoot(file);
+        GitClient client = null;
         try {
             if (GitUtils.getGitFolderForRoot(root).exists()) {
-                git.getClient(root).remove(new File[] { file }, false, GitUtils.NULL_PROGRESS_MONITOR);
+                client = git.getClient(root);
+                client.setIndexingBridgeDisabled(true);
+                client.remove(new File[] { file }, false, GitUtils.NULL_PROGRESS_MONITOR);
             } else if (file.exists()) {
                 Utils.deleteRecursively(file);
                 if (file.exists()) {
@@ -170,13 +195,17 @@ class FilesystemInterceptor extends VCSInterceptor {
             }
             if (file.equals(root)) {
                 // the whole repository was deleted -> release references to the repository folder
-                refreshMetadataTimestamp(root);
+                gitFolderEventsHandler.refreshIndexFileTimestamp(root);
             }
         } catch (GitException e) {
             IOException ex = new IOException();
             Exceptions.attachLocalizedMessage(e, NbBundle.getMessage(FilesystemInterceptor.class, "MSG_DeleteFailed", new Object[] { file, e.getLocalizedMessage() })); //NOI18N
             ex.initCause(e);
             throw ex;
+        } finally {
+            if (client != null) {
+                client.release();
+            }
         }
     }
 
@@ -184,9 +213,12 @@ class FilesystemInterceptor extends VCSInterceptor {
     public void afterDelete(final File file) {
         LOG.log(Level.FINE, "afterDelete {0}", file); //NOI18N
         if (file == null) return;
+        if (GitUtils.isPartOfGitMetadata(file) && GitUtils.INDEX_LOCK.equals(file.getName())) {
+            commandLogger.unlocked(file);
+        }
         // we don't care about ignored files
         if (!cache.getStatus(file).containsStatus(Status.NOTVERSIONED_EXCLUDED)) {
-            reScheduleRefresh(800, Collections.singleton(file));
+            reScheduleRefresh(800, Collections.singleton(file), true);
         }
     }
 
@@ -202,21 +234,24 @@ class FilesystemInterceptor extends VCSInterceptor {
     public void doMove(final File from, final File to) throws IOException {
         LOG.log(Level.FINE, "doMove {0} -> {1}", new Object[] { from, to }); //NOI18N
         if (from == null || to == null || to.exists() && !equalPathsIgnoreCase(from, to)) return;
-        
+
         Git git = Git.getInstance();
         File root = git.getRepositoryRoot(from);
         File dstRoot = git.getRepositoryRoot(to);
+        GitClient client = null;
         try {
             if (root != null && root.equals(dstRoot) && !cache.getStatus(to).containsStatus(Status.NOTVERSIONED_EXCLUDED)) {
                 // target does not lie under ignored folder and is in the same repo as src
+                client = git.getClient(root);
+                client.setIndexingBridgeDisabled(true);
                 if (equalPathsIgnoreCase(from, to)) {
                     // must do rename --after because the files/paths equal on Win or Mac
                     if (!from.renameTo(to)) {
                         throw new IOException(NbBundle.getMessage(FilesystemInterceptor.class, "MSG_MoveFailed", new Object[] { from, to, "" })); //NOI18N
                     }
-                    git.getClient(root).rename(from, to, true, GitUtils.NULL_PROGRESS_MONITOR);
+                    client.rename(from, to, true, GitUtils.NULL_PROGRESS_MONITOR);
                 } else {
-                    git.getClient(root).rename(from, to, false, GitUtils.NULL_PROGRESS_MONITOR);
+                    client.rename(from, to, false, GitUtils.NULL_PROGRESS_MONITOR);
                 }
             } else {
                 boolean result = from.renameTo(to);
@@ -224,7 +259,9 @@ class FilesystemInterceptor extends VCSInterceptor {
                     throw new IOException(NbBundle.getMessage(FilesystemInterceptor.class, "MSG_MoveFailed", new Object[] { from, to, "" })); //NOI18N
                 }
                 if (root != null) {
-                    git.getClient(root).remove(new File[] { from }, true, GitUtils.NULL_PROGRESS_MONITOR);
+                    client = git.getClient(root);
+                    client.setIndexingBridgeDisabled(true);
+                    client.remove(new File[] { from }, true, GitUtils.NULL_PROGRESS_MONITOR);
                 }
             }
         } catch (GitException e) {
@@ -232,6 +269,10 @@ class FilesystemInterceptor extends VCSInterceptor {
             Exceptions.attachLocalizedMessage(e, NbBundle.getMessage(FilesystemInterceptor.class, "MSG_MoveFailed", new Object[] { from, to, e.getLocalizedMessage() })); //NOI18N
             ex.initCause(e);
             throw ex;
+        } finally {
+            if (client != null) {
+                client.release();
+            }
         }
     }
 
@@ -246,12 +287,12 @@ class FilesystemInterceptor extends VCSInterceptor {
 
         // There is no point in refreshing the cache for ignored files.
         if (!cache.getStatus(from).containsStatus(Status.NOTVERSIONED_EXCLUDED)) {
-            reScheduleRefresh(800, Collections.singleton(from));
+            reScheduleRefresh(800, Collections.singleton(from), true);
         }
         addToCreated(to);
         // There is no point in refreshing the cache for ignored files.
         if (!cache.getStatus(to).containsStatus(Status.NOTVERSIONED_EXCLUDED)) {
-            reScheduleRefresh(800, Collections.singleton(to));
+            reScheduleRefresh(800, Collections.singleton(to), true);
         }
     }
 
@@ -282,15 +323,21 @@ class FilesystemInterceptor extends VCSInterceptor {
             // target lies under ignored folder, do not add it
             return;
         }
+        GitClient client = null;
         try {
             if (root.equals(dstRoot)) {
-                git.getClient(root).copyAfter(from, to, GitUtils.NULL_PROGRESS_MONITOR);
+                client = git.getClient(root);
+                client.copyAfter(from, to, GitUtils.NULL_PROGRESS_MONITOR);
             }
         } catch (GitException e) {
             IOException ex = new IOException();
             Exceptions.attachLocalizedMessage(e, NbBundle.getMessage(FilesystemInterceptor.class, "MSG_CopyFailed", new Object[] { from, to, e.getLocalizedMessage() })); //NOI18N
             ex.initCause(e);
             throw ex;
+        } finally {
+            if (client != null) {
+                client.release();
+            }
         }
     }
 
@@ -302,7 +349,7 @@ class FilesystemInterceptor extends VCSInterceptor {
         addToCreated(to);
         // There is no point in refreshing the cache for ignored files.
         if (!cache.getStatus(to).containsStatus(Status.NOTVERSIONED_EXCLUDED)) {
-            reScheduleRefresh(800, Collections.singleton(to));
+            reScheduleRefresh(800, Collections.singleton(to), true);
         }
     }
 
@@ -312,7 +359,7 @@ class FilesystemInterceptor extends VCSInterceptor {
         LOG.log(Level.FINE, "afterChange {0}", new Object[] { file }); //NOI18N
         // There is no point in refreshing the cache for ignored files.
         if (!cache.getStatus(file).containsStatus(Status.NOTVERSIONED_EXCLUDED)) {
-            reScheduleRefresh(800, Collections.singleton(file));
+            reScheduleRefresh(800, Collections.singleton(file), true);
         }
     }
 
@@ -325,6 +372,21 @@ class FilesystemInterceptor extends VCSInterceptor {
     public Object getAttribute(File file, String attrName) {
         if (SearchHistorySupport.PROVIDED_EXTENSIONS_SEARCH_HISTORY.equals(attrName)){
             return new GitSearchHistorySupport(file);
+        } else if("ProvidedExtensions.RemoteLocation".equals(attrName)) { //NOI18N
+            File repoRoot = Git.getInstance().getRepositoryRoot(file);
+            RepositoryInfo info = RepositoryInfo.getInstance(repoRoot);
+            Map<String, GitRemoteConfig> remotes = info.getRemotes();
+            StringBuilder sb = new StringBuilder();
+            for (GitRemoteConfig rc : remotes.values()) {
+                List<String> uris = rc.getUris();
+                for (int i = 0; i < uris.size(); i++) {
+                    sb.append(uris.get(i)).append(';');
+                }
+            }
+            if (sb.length() > 0) {
+                sb.deleteCharAt(sb.length() - 1);
+            }
+            return sb.toString();
         } else {
             return super.getAttribute(file, attrName);
         }
@@ -351,23 +413,36 @@ class FilesystemInterceptor extends VCSInterceptor {
     }
 
     /**
-     * Refreshes cached modification timestamp of the metadata for the given repository
+     * Runs a given callable and disable listening for external repository events for the time the callable is running.
+     * Refreshes cached modification timestamp of metadata for the given git repository after.
+     * @param callable code to run
      * @param repository
+     * @param commandName name of the git command if available
      */
-    void refreshMetadataTimestamp (final File repository) {
+    <T> T runWithoutExternalEvents(final File repository, String commandName, Callable<T> callable) throws Exception {
         assert repository != null;
-        if (repository == null) {
-            return;
-        }
-        if (EventQueue.isDispatchThread()) {
-            Git.getInstance().getRequestProcessor().post(new Runnable() {
-                @Override
-                public void run () {
+        try {
+            if (repository != null) {
+                gitFolderEventsHandler.enableEvents(repository, false);
+                commandLogger.lockedInternally(repository, commandName);
+            }
+            return callable.call();
+        } finally {
+            if (repository != null) {
+                LOG.log(Level.FINER, "Refreshing index timestamp after: {0} on {1}", new Object[] { commandName, repository.getAbsolutePath() }); //NOI18N
+                if (EventQueue.isDispatchThread()) {
+                    Git.getInstance().getRequestProcessor().post(new Runnable() {
+                        @Override
+                        public void run () {
+                            gitFolderEventsHandler.refreshIndexFileTimestamp(repository);
+                        }
+                    });
+                } else {
                     gitFolderEventsHandler.refreshIndexFileTimestamp(repository);
                 }
-            });
-        } else {
-            gitFolderEventsHandler.refreshIndexFileTimestamp(repository);
+                commandLogger.unlockedInternally(repository);
+                gitFolderEventsHandler.enableEvents(repository, true);
+            }
         }
     }
 
@@ -384,7 +459,7 @@ class FilesystemInterceptor extends VCSInterceptor {
             }
             return super.put(key, value);
         }
-        
+
     };
     private void addToCreated (File createdFile) {
         if (!GitModuleConfig.getDefault().getAutoIgnoreFiles() || !createdFile.isDirectory()) {
@@ -405,6 +480,124 @@ class FilesystemInterceptor extends VCSInterceptor {
     Collection<File> getCreatedFolders () {
         synchronized (createdFolders) {
             return new HashSet<File>(createdFolders.keySet());
+        }
+    }
+
+    private class CommandUsageLogger {
+
+        private final Map<File, Events> events = new HashMap<File, Events>();
+
+        private void locked (File file) {
+            File gitFolder = getGitFolderFor(file);
+            // it is a lock file, lock file still exists
+            if (gitFolder != null && file.exists()) {
+                long time = System.currentTimeMillis();
+                synchronized (events) {
+                    Events ev = events.get(gitFolder);
+                    if (ev == null || ev.isExternal() || ev.timeFinished > 0
+                            && ev.timeFinished < time - 10000) {
+                        // is new lock or is an old unfinished stale event
+                        // and is not part of any internal command that could leave
+                        // pending events to be delivered with 10s delay
+                        ev = new Events();
+                        ev.timeStarted = time;
+                        events.put(gitFolder, ev);
+                    }
+                }
+            }
+        }
+
+        /**
+         * Command run internally from the IDE
+         */
+        private void lockedInternally (File repository, String commandName) {
+            File gitFolder = GitUtils.getGitFolderForRoot(repository);
+            Events ev = new Events();
+            ev.timeStarted = System.currentTimeMillis();
+            ev.commandName = commandName;
+            synchronized (events) {
+                events.put(gitFolder, ev);
+            }
+        }
+
+        private void unlocked (File file) {
+            File gitFolder = getGitFolderFor(file);
+            if (gitFolder != null) {
+                Events ev;
+                synchronized (events) {
+                    ev = events.remove(gitFolder);
+                    if (ev != null && !ev.isExternal()) {
+                        // this does not log internal commands
+                        events.put(gitFolder, ev);
+                        return;
+                    }
+                }
+                if (ev != null) {
+                    long time = System.currentTimeMillis() - ev.timeStarted;
+                    Utils.logVCSCommandUsageEvent("GIT", time, ev.modifications, ev.commandName, ev.isExternal());
+                }
+            }
+        }
+
+        /**
+         * Internal command finish
+         */
+        private void unlockedInternally (File repository) {
+            File gitFolder = GitUtils.getGitFolderForRoot(repository);
+            Events ev;
+            synchronized (events) {
+                ev = events.get(gitFolder);
+                if (ev == null) {
+                    return;
+                } else if (ev.isExternal()) {
+                    events.remove(gitFolder);
+                }
+            }
+            ev.timeFinished = System.currentTimeMillis();
+            long time = ev.timeFinished - ev.timeStarted;
+            Utils.logVCSCommandUsageEvent("GIT", time, ev.modifications, ev.commandName, ev.isExternal());
+        }
+
+        /**
+         *
+         * @param wlockFile
+         * @return parent git folder for wlock file or null if the file is not
+         * a write lock repository file
+         */
+        private File getGitFolderFor (File wlockFile) {
+            File repository = Git.getInstance().getRepositoryRoot(wlockFile);
+            File gitFolder = GitUtils.getGitFolderForRoot(repository);
+            return gitFolder.equals(wlockFile.getParentFile())
+                    ? gitFolder
+                    : null;
+        }
+
+        private void logModification (File file) {
+            if (GitUtils.isPartOfGitMetadata(file)) {
+                return;
+            }
+            File repository = Git.getInstance().getRepositoryRoot(file);
+            File gitFolder = GitUtils.getGitFolderForRoot(repository);
+            if (gitFolder != null) {
+                synchronized (events) {
+                    Events ev = events.get(gitFolder);
+                    if (ev != null) {
+                        ++ev.modifications;
+                    }
+                }
+            }
+        }
+
+    }
+
+    private static class Events {
+        long timeStarted;
+        long timeFinished;
+        long modifications;
+        String commandName;
+
+        private boolean isExternal () {
+            return commandName == null;
         }
     }
 
@@ -444,7 +637,7 @@ class FilesystemInterceptor extends VCSInterceptor {
             }
             alreadyPlanned.addAll(e.getValue());
         }
-        // return all files that do not belong to a locked repository 
+        // return all files that do not belong to a locked repository
         for (Iterator<Map.Entry<File, Set<File>>> it = lockedRepositories.entrySet().iterator(); it.hasNext();) {
             Map.Entry<File, Set<File>> entry = it.next();
             File repository = entry.getKey();
@@ -476,7 +669,7 @@ class FilesystemInterceptor extends VCSInterceptor {
         }
     }
 
-    private void reScheduleRefresh (int delayMillis, Set<File> filesToRefresh) {
+    private void reScheduleRefresh (int delayMillis, Set<File> filesToRefresh, boolean log) {
         // refresh all at once
         Set<File> filteredFiles = new HashSet<File>(filesToRefresh);
         for (Iterator<File> it = filteredFiles.iterator(); it.hasNext(); ) {
@@ -490,6 +683,11 @@ class FilesystemInterceptor extends VCSInterceptor {
         }
         if (changed) {
             Git.STATUS_LOG.log(Level.FINE, "reScheduleRefresh: adding {0}", filteredFiles);
+            if (log) {
+                for (File file : filteredFiles) {
+                    commandLogger.logModification(file);
+                }
+            }
             refreshTask.schedule(delayMillis);
         }
     }
@@ -502,8 +700,9 @@ class FilesystemInterceptor extends VCSInterceptor {
         private final File refFile;
         private final long refFileTS;
         private final File gitFolder;
+        private File metadataFolder;
 
-        public GitFolderTimestamps (File indexFile, File headFile, File refFile, File gitFolder) {
+        public GitFolderTimestamps (File indexFile, File headFile, File refFile, File gitFolder, File metadataFolder) {
             this.indexFile = indexFile;
             this.indexFileTS = indexFile.lastModified();
             this.headFile = headFile;
@@ -511,8 +710,9 @@ class FilesystemInterceptor extends VCSInterceptor {
             this.refFile = refFile;
             this.refFileTS = refFile.lastModified();
             this.gitFolder = gitFolder;
+            this.metadataFolder = metadataFolder;
         }
-        
+
         private File getIndexFile () {
             return indexFile;
         }
@@ -527,6 +727,10 @@ class FilesystemInterceptor extends VCSInterceptor {
 
         private File getGitFolder () {
             return gitFolder;
+        }
+
+        private File getMetadataFolder () {
+            return metadataFolder;
         }
 
         private boolean repositoryExists () {
@@ -547,11 +751,24 @@ class FilesystemInterceptor extends VCSInterceptor {
             return !upToDate;
         }
     }
-    
+
+    private static class MetadataMapping {
+        private final File metadataFolder;
+        private final long ts;
+
+        public MetadataMapping (File metadataFolder, long ts) {
+            this.metadataFolder = metadataFolder;
+            this.ts = ts;
+        }
+    }
+
     private class GitFolderEventsHandler {
         private final HashMap<File, Set<File>> seenRoots = new HashMap<File, Set<File>>();
         private final HashMap<File, GitFolderTimestamps> timestamps = new HashMap<File, GitFolderTimestamps>(5);
+        private final HashMap<File, MetadataMapping> gitToMetadataFolder = new HashMap<File, MetadataMapping>(5);
+        private final HashMap<File, File> metadataToGitFolder = new HashMap<File, File>(5);
         private final HashMap<File, FileChangeListener> gitFolderRLs = new HashMap<File, FileChangeListener>(5);
+        private final HashSet<File> disabledEvents = new HashSet<File>(5);
 
         private final HashSet<File> filesToInitialize = new HashSet<File>();
         private final RequestProcessor.Task initializingTask = rp.create(new Runnable() {
@@ -641,8 +858,9 @@ class FilesystemInterceptor extends VCSInterceptor {
         }
 
         private GitFolderTimestamps scanGitFolderTimestamps (File gitFolder) {
-            File indexFile = new File(gitFolder, INDEX_FILE_NAME);
-            File headFile = new File(gitFolder, HEAD_FILE_NAME);
+            File metadataFolder = translateToMetadataFolder(gitFolder);
+            File indexFile = new File(metadataFolder, INDEX_FILE_NAME);
+            File headFile = new File(metadataFolder, HEAD_FILE_NAME);
             GitBranch activeBranch = null;
             RepositoryInfo info = RepositoryInfo.getInstance(gitFolder.getParentFile());
             if (info != null) {
@@ -651,9 +869,9 @@ class FilesystemInterceptor extends VCSInterceptor {
             }
             File refFile = headFile;
             if (activeBranch != null && !GitBranch.NO_BRANCH.equals(activeBranch.getName())) {
-                refFile = new File(gitFolder, (GitUtils.PREFIX_R_HEADS + activeBranch.getName()).replace("/", File.separator)); //NOI18N
+                refFile = new File(metadataFolder, (GitUtils.PREFIX_R_HEADS + activeBranch.getName()).replace("/", File.separator)); //NOI18N
             }
-            return new GitFolderTimestamps(indexFile, headFile, refFile, gitFolder);
+            return new GitFolderTimestamps(indexFile, headFile, refFile, gitFolder, metadataFolder);
         }
 
         public void refreshIndexFileTimestamp (File repository) {
@@ -665,7 +883,8 @@ class FilesystemInterceptor extends VCSInterceptor {
                 // skip repositories in temp folder
                 return;
             }
-            final File gitFolder = newTimestamps.getGitFolder();
+            File gitFolder = newTimestamps.getGitFolder(); // this can sadly be a link file gitrdir: PATH_TO_FOLDER
+            final File metadataFolder = newTimestamps.getMetadataFolder();
             boolean exists = newTimestamps.repositoryExists();
             synchronized (timestamps) {
                 if (exists && !newTimestamps.isNewer(timestamps.get(gitFolder))) {
@@ -686,7 +905,7 @@ class FilesystemInterceptor extends VCSInterceptor {
                         rp.post(new Runnable () {
                             @Override
                             public void run() {
-                                FileUtil.addRecursiveListener(fList, gitFolder);
+                                FileUtil.addRecursiveListener(fList, metadataFolder);
                             }
                         });
                     }
@@ -699,7 +918,7 @@ class FilesystemInterceptor extends VCSInterceptor {
                         rp.post(new Runnable () {
                             @Override
                             public void run() {
-                                FileUtil.removeRecursiveListener(fList, gitFolder);
+                                FileUtil.removeRecursiveListener(fList, metadataFolder);
                                 // repository was deleted, we should refresh versioned parents
                                 Git.getInstance().versionedFilesChanged();
                             }
@@ -710,6 +929,8 @@ class FilesystemInterceptor extends VCSInterceptor {
                 }
                 if (remove) {
                     gitRepositories.remove(gitFolder.getParentFile());
+                    gitToMetadataFolder.remove(gitFolder);
+                    metadataToGitFolder.remove(metadataFolder);
                 } else if (add) {
                     File repository = gitFolder.getParentFile();
                     if (!repository.equals(Git.getInstance().getRepositoryRoot(repository))) {
@@ -731,12 +952,13 @@ class FilesystemInterceptor extends VCSInterceptor {
                     if (addSeenRoot(repositoryRoot, file)) {
                         // this means the repository has not yet been scanned, so scan it
                         Git.STATUS_LOG.log(Level.FINE, "initializeFiles: planning a scan for {0} - {1}", new Object[]{repositoryRoot.getAbsolutePath(), file.getAbsolutePath()}); //NOI18N
-                        reScheduleRefresh(4000, Collections.singleton(file));
+                        reScheduleRefresh(4000, Collections.singleton(file), false);
                         File gitFolder = GitUtils.getGitFolderForRoot(repositoryRoot);
                         boolean refreshNeeded = false;
                         synchronized (timestamps) {
                             if (!timestamps.containsKey(gitFolder)) {
-                                if (new File(gitFolder, INDEX_FILE_NAME).canRead()) {
+                                File metadataFolder = translateToMetadataFolder(gitFolder);
+                                if (new File(metadataFolder, INDEX_FILE_NAME).canRead()) {
                                     timestamps.put(gitFolder, null);
                                     refreshNeeded = true;
                                 }
@@ -751,26 +973,29 @@ class FilesystemInterceptor extends VCSInterceptor {
             Git.STATUS_LOG.log(Level.FINEST, "GitFolderEventsHandler.initializeFiles: finished"); //NOI18N
         }
 
-        private long refreshAdminFolder (File gitFolder) {
+        private long refreshAdminFolder (File metadataFolder) {
             long lastModified = 0;
             if (AUTOMATIC_REFRESH_ENABLED && !"false".equals(System.getProperty("versioning.git.handleExternalEvents", "true"))) { //NOI18N
-                gitFolder = FileUtil.normalizeFile(gitFolder);
-                Git.STATUS_LOG.log(Level.FINER, "refreshAdminFolder: special FS event handling for {0}", gitFolder.getAbsolutePath()); //NOI18N
+                metadataFolder = FileUtil.normalizeFile(metadataFolder);
+                Git.STATUS_LOG.log(Level.FINER, "refreshAdminFolder: special FS event handling for {0}", metadataFolder.getAbsolutePath()); //NOI18N
                 boolean refreshNeeded = false;
                 GitFolderTimestamps cached;
-                synchronized (timestamps) {
-                    cached = timestamps.get(gitFolder);
-                }
-                if (cached == null || !cached.repositoryExists() || cached.isOutdated()) {
-                    refreshIndexFileTimestamp(scanGitFolderTimestamps(gitFolder));
-                    refreshNeeded = true;
-                }
-                if (refreshNeeded) {
-                    File repository = gitFolder.getParentFile();
-                    RepositoryInfo.refreshAsync(repository);
-                    Git.STATUS_LOG.log(Level.FINE, "refreshAdminFolder: planning repository scan for {0}", repository.getAbsolutePath()); //NOI18N
-                    reScheduleRefresh(3000, getSeenRoots(repository)); // scan repository root
-                    refreshOpenFiles(repository);
+                File gitFolder = translateToGitFolder(metadataFolder);
+                if (isEnabled(gitFolder)) {
+                    synchronized (timestamps) {
+                        cached = timestamps.get(gitFolder);
+                    }
+                    if (cached == null || !cached.repositoryExists() || cached.isOutdated()) {
+                        refreshIndexFileTimestamp(scanGitFolderTimestamps(gitFolder));
+                        refreshNeeded = true;
+                    }
+                    if (refreshNeeded) {
+                        File repository = gitFolder.getParentFile();
+                        RepositoryInfo.refreshAsync(repository);
+                        Git.STATUS_LOG.log(Level.FINE, "refreshAdminFolder: planning repository scan for {0}", repository.getAbsolutePath()); //NOI18N
+                        reScheduleRefresh(3000, getSeenRoots(repository), false); // scan repository root
+                        refreshOpenFiles(repository);
+                    }
                 }
             }
             return lastModified;
@@ -781,21 +1006,105 @@ class FilesystemInterceptor extends VCSInterceptor {
             synchronized (refreshedRepositories) {
                 refreshPlanned = !refreshedRepositories.add(repository);
             }
-            if (refreshPlanned) {
+            if (!refreshPlanned) {
                 refreshOpenFilesTask.schedule(3000);
             }
         }
+
+        private void enableEvents (File repository, boolean enabled) {
+            File gitFolder = FileUtil.normalizeFile(GitUtils.getGitFolderForRoot(repository));
+            synchronized (disabledEvents) {
+                if (enabled) {
+                    disabledEvents.remove(gitFolder);
+                } else {
+                    disabledEvents.add(gitFolder);
+                }
+            }
+        }
+
+        private boolean isEnabled (File gitFolder) {
+            synchronized (disabledEvents) {
+                return !disabledEvents.contains(gitFolder);
+            }
+        }
+
+        private File translateToMetadataFolder (File gitFolder) {
+            MetadataMapping mapping;
+            synchronized(timestamps) {
+                mapping = gitToMetadataFolder.get(gitFolder);
+            }
+            File metadataFolder;
+            long ts;
+            if (mapping == null) {
+                metadataFolder = gitFolder;
+                ts = System.currentTimeMillis();
+            } else {
+                metadataFolder = mapping.metadataFolder;
+                ts = mapping.ts;
+            }
+            if (gitFolder.isFile()) {
+                ts = gitFolder.lastModified();
+                if (mapping == null || mapping.ts < ts) {
+                    BufferedReader br = null;
+                    try {
+                        br = new BufferedReader(new FileReader(gitFolder));
+                        for (String line = br.readLine(); line != null; line = br.readLine()) {
+                            line = line.trim();
+                            if (line.startsWith("gitdir:")) { //NOI18N
+                                line = line.substring(7).trim();
+                                File tmp = new File(line);
+                                if (!tmp.isAbsolute()) {
+                                    tmp = new File(gitFolder, line).getCanonicalFile();
+                                }
+                                metadataFolder = tmp;
+                                break;
+                            }
+                        }
+                    } catch (IOException ex) {
+                        //
+                    } finally {
+                        if (br != null) {
+                            try {
+                                br.close();
+                            } catch (IOException ex) {
+                            }
+                        }
+                    }
+                }
+            }
+            synchronized (timestamps) {
+                gitToMetadataFolder.put(gitFolder, new MetadataMapping(metadataFolder, ts));
+                metadataToGitFolder.put(metadataFolder, gitFolder);
+            }
+            return metadataFolder;
+        }
+
+        private File translateToGitFolder (File metadataFolder) {
+            File gitFolder;
+            synchronized (timestamps) {
+                gitFolder = metadataToGitFolder.get(metadataFolder);
+            }
+            if (gitFolder == null) {
+                gitFolder = metadataFolder;
+            }
+            return gitFolder;
+        }
+
+        private boolean isMetadataFolder (File dir) {
+            synchronized (timestamps) {
+                return metadataToGitFolder.containsKey(dir);
+            }
+        }
     }
-    
+
     public class GitSearchHistorySupport extends SearchHistorySupport {
         public GitSearchHistorySupport(File file) {
             super(file);
         }
         @Override
         protected boolean searchHistoryImpl(final int line) throws IOException {
-            assert line < 0 : "Search History a for specific not supported yet!"; // NOI18N
             File file = getFile();
-            SearchHistoryAction.openSearch(Git.getInstance().getRepositoryRoot(file), new File[] {file}, file.getName());
+            SearchHistoryAction.openSearch(Git.getInstance().getRepositoryRoot(file), file, file.getName(), line);
             return true;
         }
 

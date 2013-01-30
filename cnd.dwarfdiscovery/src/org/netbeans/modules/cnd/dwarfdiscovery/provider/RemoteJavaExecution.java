@@ -1,6 +1,5 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+/**
+ * Copyright (c) 2009, 2012, Oracle and/or its affiliates. All rights reserved.
  */
 package org.netbeans.modules.cnd.dwarfdiscovery.provider;
 

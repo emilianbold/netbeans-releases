@@ -47,6 +47,7 @@ package org.netbeans.modules.options.advanced;
 import java.awt.BorderLayout;
 import java.beans.PropertyChangeListener;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
@@ -80,7 +81,7 @@ public final class AdvancedPanel extends JPanel {
     private String subpath;
     private ChangeListener changeListener = new ChangeListener () {
             public void stateChanged(ChangeEvent e) {
-                handleTabSwitched();
+                handleTabSwitched(null, null);
             }
         };
     
@@ -155,7 +156,7 @@ public final class AdvancedPanel extends JPanel {
             tabbedPanel.addTab(category, new JLabel(category));
         }
         tabbedPanel.addChangeListener(changeListener);
-        handleTabSwitched();
+        handleTabSwitched(null, null);
     }
     
     public void setCurrentSubcategory(String path) {
@@ -190,7 +191,7 @@ public final class AdvancedPanel extends JPanel {
         return categoryDisplayName;
     }
 
-    private void handleTabSwitched() {        
+    private void handleTabSwitched(String searchText, List<String> matchedKeywords) {
         final int selectedIndex = tabbedPanel.getSelectedIndex() >= 0 ? tabbedPanel.getSelectedIndex() : -1;
         if (selectedIndex != -1) {
             String category = tabbedPanel.getTitleAt(selectedIndex);
@@ -206,8 +207,20 @@ public final class AdvancedPanel extends JPanel {
                 tabbedPanel.setComponentAt(tabbedPanel.getSelectedIndex(), scroll);
             }
             model.update(category);
+            if (searchText != null && matchedKeywords != null) {
+		OptionsPanelController controller = model.getController(model.getID(category));
+		if(controller == null) {
+		    LOGGER.log(Level.WARNING, "No controller found for category: {0}", category);  //NOI18N
+		} else {
+		    controller.handleSuccessfulSearch(searchText, matchedKeywords);
+		}
+            }
             firePropertyChange (OptionsPanelController.PROP_HELP_CTX, null, null);        
         }
+    }
+
+    void handleSearch(String searchText, List<String> matchedKeywords) {
+        handleTabSwitched(searchText, matchedKeywords);
     }
     
     private class LookupListenerImpl implements LookupListener {

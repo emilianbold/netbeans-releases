@@ -1,7 +1,7 @@
 Code completion result for source line:
 /**/bar|();
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
-PACKAGE    Bar                             [PUBLIC]   null
+PACKAGE    bar                             [PUBLIC]   null
 METHOD     bar($x = -5)                    [PUBLIC]   issue200178.php
 METHOD     bar($x = -5, $y = 3)            [PUBLIC]   issue200178.php
 METHOD     bar()                           [PUBLIC]   issue200178.php

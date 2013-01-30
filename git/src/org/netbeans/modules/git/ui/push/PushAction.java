@@ -98,15 +98,20 @@ public class PushAction extends SingleRepositoryAction {
         push(repository);
     }
     
-    private void push (File repository) {
+    private void push (final File repository) {
         RepositoryInfo info = RepositoryInfo.getInstance(repository);
         info.refreshRemotes();
-        Map<String, GitRemoteConfig> remotes = info.getRemotes();
-        PushWizard wiz = new PushWizard(repository, remotes);
-        if (wiz.show()) {
-            Utils.logVCSExternalRepository("GIT", wiz.getPushUri()); //NOI18N
-            push(repository, wiz.getPushUri(), wiz.getPushMappings(), wiz.getFetchRefSpecs());
-        }
+        final Map<String, GitRemoteConfig> remotes = info.getRemotes();
+        EventQueue.invokeLater(new Runnable() {
+            @Override
+            public void run () {
+                PushWizard wiz = new PushWizard(repository, remotes);
+                if (wiz.show()) {
+                    Utils.logVCSExternalRepository("GIT", wiz.getPushUri()); //NOI18N
+                    push(repository, wiz.getPushUri(), wiz.getPushMappings(), wiz.getFetchRefSpecs());
+                }
+            }
+        });
     }
     
     public void push (File repository, final String remote, final Collection<PushMapping> pushMappins, final List<String> fetchRefSpecs) {
@@ -188,15 +193,21 @@ public class PushAction extends SingleRepositoryAction {
                 List<GitRevisionInfo> revisionList = new LinkedList<GitRevisionInfo>();
                 Set<String> visitedRevisions = new HashSet<String>();
                 GitClient client = Git.getInstance().getClient(getRepositoryRoot()); // do not use progresssupport's client, that one logs into output
-                for (PushMapping mapping : pushMappings) {
-                    if (mapping instanceof PushMapping.PushBranchMapping) {
-                        PushMapping.PushBranchMapping branchMapping = (PushMapping.PushBranchMapping) mapping;
-                        String remoteRevisionId = branchMapping.getRemoteRepositoryBranchHeadId();
-                        String localRevisionId = branchMapping.getLocalRepositoryBranchHeadId();
-                        revisionList.addAll(addRevisions(client, visitedRevisions, remoteRevisionId, localRevisionId));
+                try {
+                    for (PushMapping mapping : pushMappings) {
+                        if (mapping instanceof PushMapping.PushBranchMapping) {
+                            PushMapping.PushBranchMapping branchMapping = (PushMapping.PushBranchMapping) mapping;
+                            String remoteRevisionId = branchMapping.getRemoteRepositoryBranchHeadId();
+                            String localRevisionId = branchMapping.getLocalRepositoryBranchHeadId();
+                            revisionList.addAll(addRevisions(client, visitedRevisions, remoteRevisionId, localRevisionId));
+                        }
+                        if (isCanceled()) {
+                            break;
+                        }
                     }
-                    if (isCanceled()) {
-                        break;
+                } finally {
+                    if (client != null) {
+                        client.release();
                     }
                 }
                 return revisionList;
@@ -206,12 +217,18 @@ public class PushAction extends SingleRepositoryAction {
                 List<GitRevisionInfo> revisionList = new LinkedList<GitRevisionInfo>();
                 Set<String> visitedRevisions = new HashSet<String>();
                 GitClient client = Git.getInstance().getClient(getRepositoryRoot()); // do not use progresssupport's client, that one logs into output
-                for (Map.Entry<String, GitTransportUpdate> update : remoteRepositoryUpdates.entrySet()) {
-                    String remoteRevisionId = update.getValue().getOldObjectId();
-                    String localRevisionId = update.getValue().getNewObjectId();
-                    revisionList.addAll(addRevisions(client, visitedRevisions, remoteRevisionId, localRevisionId));
-                    if (isCanceled()) {
-                        break;
+                try {
+                    for (Map.Entry<String, GitTransportUpdate> update : remoteRepositoryUpdates.entrySet()) {
+                        String remoteRevisionId = update.getValue().getOldObjectId();
+                        String localRevisionId = update.getValue().getNewObjectId();
+                        revisionList.addAll(addRevisions(client, visitedRevisions, remoteRevisionId, localRevisionId));
+                        if (isCanceled()) {
+                            break;
+                        }
+                    }
+                } finally {
+                    if (client != null) {
+                        client.release();
                     }
                 }
                 return revisionList;

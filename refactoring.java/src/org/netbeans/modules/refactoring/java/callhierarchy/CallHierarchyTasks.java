@@ -58,7 +58,6 @@ import java.util.logging.Logger;
 import javax.lang.model.element.*;
 import javax.lang.model.type.TypeMirror;
 import javax.swing.JEditorPane;
-import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.UnitTestForSourceQuery;
@@ -68,6 +67,7 @@ import org.netbeans.modules.refactoring.java.plugins.FindUsagesVisitor;
 import org.netbeans.modules.refactoring.java.plugins.JavaWhereUsedQueryPlugin;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.text.NbDocument;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
@@ -81,36 +81,47 @@ final class CallHierarchyTasks {
     private static final RequestProcessor RP = new RequestProcessor("Call Hierarchy Processor", 1); // NOI18N
     
     private static final Object LOCK = new Object();
-    private static CancellableTask CURR_TASK;
+    private static final List<CancellableTask> CURR_TASK = new LinkedList<CancellableTask>();
+    private static CancellableTask CLEAN_TASK;
     
     public static void stop() {
         synchronized (LOCK) {
-            if (CURR_TASK != null) {
-                CURR_TASK.cancel();
+            ListIterator<CancellableTask> listIterator = CURR_TASK.listIterator();
+            while(listIterator.hasNext()) {
+                CancellableTask task = listIterator.next();
+                task.cancel();
+                listIterator.remove();
             }
         }
     }
     
     public static void findCallers(Call c, boolean includeTest, boolean searchAll, Runnable resultHandler) {
-        stop();
-        RP.post(new CallersTask(c, resultHandler, includeTest, searchAll));
+        final CallersTask callersTask = new CallersTask(c, resultHandler, includeTest, searchAll);
+        synchronized (LOCK) {
+            RequestProcessor.Task task = RP.post(callersTask);
+            updateCleaner(task);
+            CURR_TASK.add(callersTask);
+        }
     }
     
     public static void findCallees(Call c, Runnable resultHandler) {
-        stop();
-        CalleesTask t = new CalleesTask(c, resultHandler);
-        RP.post(t);
+        final CalleesTask calleesTask = new CalleesTask(c, resultHandler);
+        synchronized (LOCK) {
+            RequestProcessor.Task task = RP.post(calleesTask);
+            updateCleaner(task);
+            CURR_TASK.add(calleesTask);
+        }
     }
     
-    public static void resolveRoot(Lookup lookup, boolean isCallerGraph, Task<Call> rootCallback) {
+    public static void resolveRoot(final Lookup lookup, final boolean isCallerGraph, final Task<Call> rootCallback) {
         JavaSource js = null;
         RootResolver resolver = null;
         EditorCookie ec = lookup.lookup(EditorCookie.class);
         if (ec != null/*RefactoringActionsProvider.isFromEditor(ec)*/) {
-            JEditorPane[] openedPanes = ec.getOpenedPanes();
+            JEditorPane openedPane = NbDocument.findRecentEditorPane(ec);
             Document doc = ec.getDocument();
             js = JavaSource.forDocument(doc);
-            resolver = new RootResolver(openedPanes[0].getCaretPosition(), isCallerGraph);
+            resolver = new RootResolver(openedPane.getCaretPosition(), isCallerGraph);
         }
 //        else {
             // XXX resolve Node.class
@@ -127,86 +138,59 @@ final class CallHierarchyTasks {
         postResolveRoot(js, new RootResolver(selection, isCallerGraph), rootCallback);
     }
     
-    static void  resolveRoot(JavaSource src, int position, boolean isCallerGraph, Task<Call> rootCallback) {
-        RootResolver rr = new RootResolver(position, isCallerGraph);
-        postResolveRoot(src, rr, rootCallback);
-    }
+//    static void  resolveRoot(JavaSource src, int position, boolean isCallerGraph, Task<Call> rootCallback) {
+//        RootResolver rr = new RootResolver(position, isCallerGraph);
+//        postResolveRoot(src, rr, rootCallback);
+//    }
     
-    private static void  postResolveRoot(JavaSource src, final RootResolver rr, final Task<Call> callback) {
+    private static void  postResolveRoot(final JavaSource src, final RootResolver rr, final Task<Call> callback) {
         stop();
-        synchronized (callback) {
-            Task<CompilationController> ct = new Task<CompilationController>() {
-
-                @Override
-                public void run(CompilationController parameter) throws Exception {
-                    synchronized (callback) {
-                        rr.run(parameter);
-                        callback.run(rr.getRoot());
-                    }
-                }
-                
-            };
-            final Future<Void> rootResolve = ScanUtils.postUserActionTask(src, ct);
-            // still synchronized
-            if (!rootResolve.isDone()) {
-                CancellableTask t = new CancellableTask() {
-                    @Override
-                    public void cancel() {
-                        rootResolve.cancel(true);
-                        
-                        synchronized (LOCK) {
-                            if (CURR_TASK != this) {
-                                return;
+        RP.post(new Runnable() {
+            @Override
+            public void run() {
+                synchronized (callback) {
+                    Task<CompilationController> ct = new Task<CompilationController>() {
+                        @Override
+                        public void run(CompilationController parameter) throws Exception {
+                            synchronized (callback) {
+                                rr.run(parameter);
+                                callback.run(rr.getRoot());
                             }
                         }
-                        
-                        Call c = Call.createEmpty();
-                        c.setCanceled(true);
+                    };
+                    final Future<Void> rootResolve = ScanUtils.postUserActionTask(src, ct);
+                    // still synchronized
+                    if (!rootResolve.isDone()) {
                         try {
-                            callback.run(c);
-                            EventQueue.invokeLater(new Runnable() {
-                                @Override
-                                public void run() {
-                                    CallHierarchyTopComponent.findInstance().setRunningState(false);
-                                }
-                            });
+                            Call tempNode = Call.createEmpty();
+                            callback.run(tempNode);
+                            CallHierarchyTopComponent.findInstance().setRunningState(true);
                         } catch (Exception ex) {
                             Exceptions.printStackTrace(ex);
                         }
                     }
-
-                    @Override
-                    public void run(Object parameter) throws Exception {
-                        throw new UnsupportedOperationException("Not supported yet.");
-                    }
-                };
-                synchronized (LOCK) {
-                    CURR_TASK = t;
                 }
+            }
+        });
+    }
+
+    private static void updateCleaner(final RequestProcessor.Task task) {
+        if(CLEAN_TASK != null) {
+            CLEAN_TASK.cancel();
+        }
+        CLEAN_TASK = new CleanTask(task);
+        final CancellableTask cleanTask = CLEAN_TASK;
+        RP.post(new Runnable() {
+
+            @Override
+            public void run() {
                 try {
-                    Call tempNode = Call.createEmpty();
-                    callback.run(tempNode);
-                    CallHierarchyTopComponent.findInstance().setRunningState(true);
+                    cleanTask.run(null);
                 } catch (Exception ex) {
                     Exceptions.printStackTrace(ex);
                 }
             }
-        } 
-    }
-    
-    
-    private static Call resolveRoot(JavaSource source, RootResolver resolver) {
-        Call root = null;
-        if (source != null && resolver != null) {
-            try {
-                ScanUtils.waitUserActionTask(source, resolver);
-                root = resolver.getRoot();
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
-        
-        return root;
+        });
     }
     
     private static final class RootResolver implements Task<CompilationController> {
@@ -231,10 +215,6 @@ final class CallHierarchyTasks {
             TreePath tpath = null;
             Element method = null;
             
-            synchronized (this) {
-                CURR_TASK = null;
-            }
-            
             javac.toPhase(JavaSource.Phase.RESOLVED);
             if (tHandle == null) {
                 tpath = javac.getTreeUtilities().pathFor(offset);
@@ -244,7 +224,7 @@ final class CallHierarchyTasks {
             
             while (tpath != null) {
                 Kind kind = tpath.getLeaf().getKind();
-                if (kind == Kind.METHOD || kind == Kind.METHOD_INVOCATION || kind == Kind.MEMBER_SELECT) {
+                if (kind == Kind.METHOD || kind == Kind.METHOD_INVOCATION || kind == Kind.MEMBER_SELECT || kind == Kind.NEW_CLASS) {
                     method = ScanUtils.checkElement(javac, javac.getTrees().getElement(tpath));
                     if (method != null && (method.getKind() == ElementKind.METHOD || method.getKind() == ElementKind.CONSTRUCTOR)) {
                         break;
@@ -265,9 +245,6 @@ final class CallHierarchyTasks {
         
     }
     
-    private static void notifyRunningTask(final boolean isRunning, CancellableTask t) {
-    }
-    
     private static abstract class CallTaskBase implements Runnable, CancellableTask<CompilationController> {
         
         protected final Call elmDesc;
@@ -283,9 +260,6 @@ final class CallHierarchyTasks {
         }
         
         private void notifyRunning(final boolean isRunning) {
-            synchronized (LOCK) {
-                CURR_TASK = isRunning ? this : null;
-            }
             try {
                 EventQueue.invokeAndWait(new Runnable() {
 
@@ -319,16 +293,13 @@ final class CallHierarchyTasks {
                 notifyRunning(true);
 
                 runTask();
-                
+                elmDesc.setCanceled(isCanceled());
                 elmDesc.setReferences(result);
                 resultHandler.run();
             } catch (Exception ex) {
                 Exceptions.printStackTrace(ex);
             } finally {
                 elmDesc.setCanceled(isCanceled());
-                synchronized(LOCK) {
-                    CURR_TASK = null;
-                }
                 notifyRunning(false);
             }
         }
@@ -347,7 +318,9 @@ final class CallHierarchyTasks {
         @Override
         public void runTask() throws Exception {
             TreePathHandle sourceToQuery = elmDesc.getSourceToQuery();
-
+            if (isCanceled()) {
+                return;
+            }
             // validate source
             // TODO: what is this?
             //if (RefactoringUtils.getElementHandle(sourceToQuery) == null) {
@@ -374,27 +347,11 @@ final class CallHierarchyTasks {
             //}
         }
         
-        private void notifyRunning(final boolean isRunning) {
-            synchronized (LOCK) {
-                CURR_TASK = isRunning ? this : null;
-            }
-            try {
-                EventQueue.invokeAndWait(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        CallHierarchyTopComponent.findInstance().setRunningState(isRunning);
-                    }
-                });
-            } catch (InterruptedException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (InvocationTargetException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
-        
         @Override
         public void run(CompilationController javac) throws Exception {
+            if (isCanceled()) {
+                return;
+            }
             if (javac.toPhase(JavaSource.Phase.RESOLVED) != JavaSource.Phase.RESOLVED) {
                 return;
             }
@@ -403,13 +360,16 @@ final class CallHierarchyTasks {
                 // XXX log it
                 return;
             }
-            FindUsagesVisitor findVisitor = new FindUsagesVisitor(javac, false);
+            FindUsagesVisitor findVisitor = new FindUsagesVisitor(javac, isCanceled, false);
             findVisitor.scan(javac.getCompilationUnit(), wanted);
             Collection<TreePath> usages = findVisitor.getUsages();
             Map<Element, OccurrencesDesc> refs = new HashMap<Element, OccurrencesDesc>();
             int order = 0;
             
             for (TreePath treePath : usages) {
+                if (isCanceled()) {
+                    return;
+                }
                 TreePath declarationPath = resolveDeclarationContext(treePath);
                 if (declarationPath == null) {
                     // XXX log unknown path
@@ -450,6 +410,9 @@ final class CallHierarchyTasks {
             
             List<Call> usageDescs = new ArrayList<Call>(refs.size());
             for (OccurrencesDesc occurDesc : OccurrencesDesc.extract(refs)) {
+                if (isCanceled()) {
+                    return;
+                }
                 Call newDesc = Call.createUsage(
                         javac, occurDesc.selection, occurDesc.elm, elmDesc,
                         occurDesc.occurrences);
@@ -713,5 +676,31 @@ final class CallHierarchyTasks {
             throw new UnsupportedOperationException("Not supported yet."); // NOI18N
         }
         
+    }
+
+    private static class CleanTask implements CancellableTask {
+
+        private final RequestProcessor.Task task;
+        private AtomicBoolean isCancelled;
+
+        public CleanTask(RequestProcessor.Task task) {
+            this.task = task;
+            isCancelled = new AtomicBoolean(false);
+        }
+
+        @Override
+        public void cancel() {
+            isCancelled.set(true);
+        }
+
+        @Override
+        public void run(Object parameter) throws Exception {
+            task.waitFinished();
+            if(!isCancelled.get()) {
+                synchronized(LOCK) {
+                    CURR_TASK.clear();
+                }
+            }
+        }
     }
 }

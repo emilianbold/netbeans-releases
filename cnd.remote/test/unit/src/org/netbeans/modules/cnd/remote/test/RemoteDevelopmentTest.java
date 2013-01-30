@@ -42,24 +42,16 @@
 
 package org.netbeans.modules.cnd.remote.test;
 
-import org.netbeans.modules.cnd.remote.fs.RemoteCodeModelTestCase;
-import org.netbeans.modules.cnd.remote.pbuild.*;
 import java.util.Collection;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.netbeans.modules.cnd.remote.fs.CndFileUtilTestCase;
-import org.netbeans.modules.cnd.remote.full.FullRemoteBuildTestCase;
 import org.netbeans.modules.cnd.remote.mapper.IncludeMappingsTestCase;
 import org.netbeans.modules.cnd.remote.mapper.MappingsTestCase;
 import org.netbeans.modules.cnd.remote.support.DownloadTestCase;
 import org.netbeans.modules.cnd.remote.support.ServerListTestCase;
 import org.netbeans.modules.cnd.remote.support.TransportTestCase;
 import org.netbeans.modules.cnd.remote.support.UploadTestCase;
-import org.netbeans.modules.cnd.remote.sync.FtpSyncWorkerTestCase;
-import org.netbeans.modules.cnd.remote.sync.RfsRemoteControllerDeathTestCase;
-import org.netbeans.modules.cnd.remote.sync.ZipSyncWorkerTestCase;
-import org.netbeans.modules.cnd.remote.sync.download.RemoteBuildUpdatesDownloadTestCase;
-import org.netbeans.modules.cnd.remote.ui.wizard.HostSetupTestCase;
 import org.netbeans.modules.cnd.test.CndBaseTestSuite;
 
 /**
@@ -73,26 +65,12 @@ public class RemoteDevelopmentTest extends CndBaseTestSuite {
 
    public RemoteDevelopmentTest() {
        this("Remote Development", // NOI18N
-           HostSetupTestCase.class,
            MappingsTestCase.class,
            IncludeMappingsTestCase.class,
-           RemoteBuildMakefileTestCase.class,
-           RemoteBuildSamplesTestCase.class,
-           RfsGnuRemoteBuildTestCase.class,
-           RfsSunStudioRemoteBuildTestCase.class,
            DownloadTestCase.class,
            ServerListTestCase.class,
            TransportTestCase.class,
-           UploadTestCase.class,
-           ZipSyncWorkerTestCase.class,
-           FtpSyncWorkerTestCase.class,
-           RemoteBuildUpdatesDownloadTestCase.class,
-           RfsRemoteControllerDeathTestCase.class,
-           RemoteCodeModelTestCase.class,
-           RemoteBuildRequiredProjectsTestCase.class,
-           RemoteBuildLinksTestCase.class,
-           FullRemoteBuildTestCase.class,
-           LinuxTouchRfsBuildTestCase.class,
+           UploadTestCase.class,           
            CndFileUtilTestCase.class
        );
    }

@@ -66,7 +66,7 @@ public class APTBaseToken implements APTToken {
     public APTBaseToken() {
     }
 
-    public APTBaseToken(APTToken token) {
+    protected APTBaseToken(APTToken token) {
         this(token, token.getType());
     }
 

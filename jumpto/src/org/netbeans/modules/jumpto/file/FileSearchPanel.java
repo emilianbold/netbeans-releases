@@ -57,6 +57,7 @@ import java.util.List;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import javax.swing.Action;
+import javax.swing.ButtonModel;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.KeyStroke;
@@ -67,6 +68,8 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.jumpto.SearchHistory;
@@ -139,7 +142,10 @@ public class FileSearchPanel extends javax.swing.JPanel implements ActionListene
         hiddenFilesCheckBox.addActionListener(this);
         hiddenFilesCheckBox.setVisible(false);
         
-        resultList.setCellRenderer( contentProvider.getListCellRenderer( resultList ) );
+        resultList.setCellRenderer( contentProvider.getListCellRenderer(
+                resultList,
+                fileNameTextField.getDocument(),
+                caseSensitiveCheckBox.getModel()));
         contentProvider.setListModel( this, null );
                 
         fileNameTextField.getDocument().addDocumentListener(new DocumentListener() {
@@ -262,9 +268,14 @@ public class FileSearchPanel extends javax.swing.JPanel implements ActionListene
     
     private void update() {
         time = System.currentTimeMillis();
-        String text = getText();
+        final String text = getText();
+        if (oldText != null && FileSearchAction.isLineNumberChange(oldText, text)) {  //NOI18N
+            //Only line number separator added or removed
+            oldText = text;
+            return;
+        }
         if ( oldText == null || oldText.trim().length() == 0 || !text.startsWith(oldText) ) {
-            setListPanelContent(NbBundle.getMessage(FileSearchPanel.class, "TXT_Searching"),true); // NOI18N
+            setListPanelContent(NbBundle.getMessage(FileSearchPanel.class, "TXT_Searching"),true);
         }
         oldText = text;
         contentProvider.setListModel(this, text);
@@ -427,16 +438,12 @@ private void resultListMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST
 }//GEN-LAST:event_resultListMouseReleased
 
 private void resultListValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_resultListValueChanged
-        Object svObject = resultList.getSelectedValue();
-        if ( svObject != null && svObject instanceof FileDescriptor ) {
-            FileDescriptor selectedValue = (FileDescriptor)svObject;
-            FileObject fo = selectedValue.getFileObject();
-            if(fo != null) {
-                jTextFieldLocation.setText(FileUtil.getFileDisplayName(fo));
-            }
-            return;
+        final Object svObject = resultList.getSelectedValue();
+        if ( svObject instanceof FileDescriptor ) {
+            jTextFieldLocation.setText(((FileDescriptor)svObject).getFileDisplayPath());
+        } else {
+            jTextFieldLocation.setText(""); //NOI18N
         }
-        jTextFieldLocation.setText("");
 }//GEN-LAST:event_resultListValueChanged
 
     private void fileNameTextFieldKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_fileNameTextFieldKeyPressed
@@ -589,7 +596,10 @@ private void resultListValueChanged(javax.swing.event.ListSelectionEvent evt) {/
 
     public static interface ContentProvider {
 
-        public ListCellRenderer getListCellRenderer( JList list );
+        public ListCellRenderer getListCellRenderer(
+                @NonNull JList list,
+                @NonNull Document nameDocument,
+                @NonNull ButtonModel caseSensitive);
 
         public void setListModel( FileSearchPanel panel, String text );
 

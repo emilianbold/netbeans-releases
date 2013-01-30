@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.search.ui;
 
-import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Image;
@@ -69,6 +68,7 @@ import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeExpansionListener;
 import javax.swing.table.TableColumn;
 import org.netbeans.api.annotations.common.StaticResource;
+import org.netbeans.modules.search.BasicComposition;
 import org.netbeans.modules.search.FindDialogMemory;
 import org.netbeans.modules.search.MatchingObject;
 import org.netbeans.modules.search.ResultModel;
@@ -108,7 +108,8 @@ public class ResultsOutlineSupport {
     private ResultsNode resultsNode;
     private ResultModel resultModel;
     private FolderTreeItem rootPathItem = new FolderTreeItem();
-    private List<FileObject> rootFiles;
+    private BasicComposition basicComposition;
+    private List<FileObject> rootFiles = null;
     private Node infoNode;
     private Node invisibleRoot;
     private List<TableColumn> allColumns = new ArrayList<TableColumn>(5);
@@ -117,13 +118,13 @@ public class ResultsOutlineSupport {
     private boolean closed = false;
 
     public ResultsOutlineSupport(boolean replacing, boolean details,
-            ResultModel resultModel, List<FileObject> rootFiles,
+            ResultModel resultModel, BasicComposition basicComposition,
             Node infoNode) {
 
         this.replacing = replacing;
         this.details = details;
         this.resultModel = resultModel;
-        this.rootFiles = rootFiles;
+        this.basicComposition = basicComposition;
         this.resultsNode = new ResultsNode();
         this.infoNode = infoNode;
         this.invisibleRoot = new RootNode(resultsNode, infoNode);
@@ -137,6 +138,7 @@ public class ResultsOutlineSupport {
         outlineView.getOutline().setDefaultRenderer(Node.Property.class,
                 new ResultsOutlineCellRenderer());
         setOutlineColumns();
+        outlineView.getOutline().setAutoCreateColumnsFromModel(false);
         outlineView.addTreeExpansionListener(
                 new ExpandingTreeExpansionListener());
         outlineView.getOutline().setRootVisible(false);
@@ -146,9 +148,7 @@ public class ResultsOutlineSupport {
                 if ((e.getChangeFlags() & HierarchyEvent.DISPLAYABILITY_CHANGED)
                         != 0) {
                     if (outlineView.isDisplayable()) {
-                        onAttach();
-                    } else {
-                        checkDetached(this);
+                        outlineView.expandNode(resultsNode);
                     }
                 }
             }
@@ -164,31 +164,7 @@ public class ResultsOutlineSupport {
                 Math.max(16, fm.getHeight()) + VERTICAL_ROW_SPACE);
     }
 
-    private void onAttach() {
-        outlineView.expandNode(resultsNode);
-    }
-
-    /**
-     * Check whether the search results panel has been removed and, if so,
-     * remove hierarchy listener and call {@link #onDetach} method.
-     *
-     * Method {@link #onDetach()} is not called directly because results panel
-     * can be detached a attached to another parent container when result tabs
-     * are created and closed. (TODO: Add panelClosed API method to displayer.)
-     */
-    private void checkDetached(final HierarchyListener listenerToRemove) {
-        EventQueue.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                if (!outlineView.isDisplayable()) {
-                    outlineView.removeHierarchyListener(listenerToRemove);
-                    onDetach();
-                }
-            }
-        });
-    }
-
-    private synchronized void onDetach() {
+    public synchronized void closed() {
         clean();
         saveColumnState();
     }
@@ -277,14 +253,22 @@ public class ResultsOutlineSupport {
         if (details) {
             outlineView.addPropertyColumn(
                     "detailsCount", UiUtils.getText( //NOI18N
-                    "BasicSearchResultsPanel.outline.detailsCount"));   //NOI18N
+                    "BasicSearchResultsPanel.outline.detailsCount"), //NOI18N
+                    UiUtils.getText(
+                    "BasicSearchResultsPanel.outline.detailsCount.desc"));//NOI18N
         }
         outlineView.addPropertyColumn("path", UiUtils.getText(
-                "BasicSearchResultsPanel.outline.path"));               //NOI18N
+                "BasicSearchResultsPanel.outline.path"), //NOI18N
+                UiUtils.getText(
+                "BasicSearchResultsPanel.outline.path.desc")); //NOI18N
         outlineView.addPropertyColumn("size", UiUtils.getText(
-                "BasicSearchResultsPanel.outline.size"));               //NOI18N
+                "BasicSearchResultsPanel.outline.size"), //NOI18N
+                UiUtils.getText(
+                "BasicSearchResultsPanel.outline.size.desc"));          //NOI18N
         outlineView.addPropertyColumn("lastModified", UiUtils.getText(
-                "BasicSearchResultsPanel.outline.lastModified"));       //NOI18N
+                "BasicSearchResultsPanel.outline.lastModified"),//NOI18N
+                UiUtils.getText(
+                "BasicSearchResultsPanel.outline.lastModified.desc"));  //NOI18N
         outlineView.getOutline().setAutoResizeMode(
                 Outline.AUTO_RESIZE_SUBSEQUENT_COLUMNS);
         this.columnModel =
@@ -310,7 +294,7 @@ public class ResultsOutlineSupport {
             Object lpc = event.getPath().getLastPathComponent();
             Node node = Visualizer.findNode(lpc);
             if (node != null) {
-                expandOnlyChilds((Node) node);
+                expandOnlyChilds(node);
             }
         }
 
@@ -372,7 +356,9 @@ public class ResultsOutlineSupport {
         }
 
         public void setHtmlAndRawDisplayName(String htmlName) {
-            htmlDisplayName = htmlName;
+            htmlDisplayName = htmlName == null
+                    ? null
+                    : "<html>" + htmlName + "</html>";       // #214330 //NOI18N
             String stripped = (htmlName == null)
                     ? null
                     : htmlName.replaceAll("<b>", "").replaceAll( //NOI18N
@@ -428,7 +414,11 @@ public class ResultsOutlineSupport {
         }
         MatchingObjectNode mon =
                 new MatchingObjectNode(delegate, children, key, replacing);
-        matchingObjectNodes.add(mon);
+        synchronized (this) {
+            if (!closed) {
+                matchingObjectNodes.add(mon);
+            }
+        }
         return mon;
     }
 
@@ -436,7 +426,7 @@ public class ResultsOutlineSupport {
         if (closed) {
             return;
         }
-        for (FileObject fo : rootFiles) {
+        for (FileObject fo : getRootFiles()) {
             if (fo == mo.getFileObject()
                     || FileUtil.isParentOf(fo, mo.getFileObject())) {
                 addToTreeView(rootPathItem,
@@ -446,6 +436,13 @@ public class ResultsOutlineSupport {
         }
         addToTreeView(rootPathItem,
                 Collections.singletonList(mo.getFileObject()), mo);
+    }
+
+    private synchronized List<FileObject> getRootFiles() {
+        if (rootFiles == null) {
+            rootFiles = basicComposition.getRootFiles();
+        }
+        return rootFiles;
     }
 
     private List<FileObject> getRelativePath(FileObject parent, FileObject fo) {
@@ -515,6 +512,17 @@ public class ResultsOutlineSupport {
 
         public FolderTreeItem(MatchingObject matchingObject) {
             this.matchingObject = matchingObject;
+            matchingObject.addPropertyChangeListener(
+                    new PropertyChangeListener() {
+                @Override
+                public void propertyChange(PropertyChangeEvent evt) {
+                    String pn = evt.getPropertyName();
+                    if (pn.equals(MatchingObject.PROP_SELECTED)) {
+                        setSelected(FolderTreeItem.this.matchingObject
+                                .isSelected());
+                    }
+                }
+            });
         }
 
         public FolderTreeItem(DataObject file) {

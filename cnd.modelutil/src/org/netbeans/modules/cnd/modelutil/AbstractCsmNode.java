@@ -79,10 +79,14 @@ public abstract class AbstractCsmNode extends AbstractNode {
             CsmObject csmObj = getCsmObject();
             return (csmObj == null) ? super.getIcon(param) : CsmImageLoader.getImage(csmObj);
         } catch (AssertionError ex){
-            ex.printStackTrace();
+            ex.printStackTrace(System.err);
         } catch (Exception ex) {
-            ex.printStackTrace();
+            ex.printStackTrace(System.err);
         }
+        return super.getIcon(param);
+    }
+
+    protected Image superGetIcon(int param) {
         return super.getIcon(param);
     }
     

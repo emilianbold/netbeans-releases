@@ -49,6 +49,10 @@ import junit.framework.TestCase;
  * @author Jindrich Sedek
  */
 public class NbModuleSuiteOrderTest extends TestCase {
+    static {
+        System.setProperty("org.netbeans.junit.level", "FINER");
+        System.setProperty("org.openide.util.lookup.init.level", "FINER");
+    }
 
     private static final String TEST_ORDER_COUNTER = "order";
 

@@ -82,6 +82,13 @@ class EntrySupportDefault extends EntrySupport {
         super(ch);
     }
 
+    @Override
+    public String toString() {
+        return super.toString() + " array: " + array.get(); // NOI18N
+    }
+    
+    
+
     public boolean isInitialized() {
         ChildrenArray arr = array.get();
         return inited && arr != null && arr.isInitialized();
@@ -828,7 +835,6 @@ class EntrySupportDefault extends EntrySupport {
     }
 
     private class ChArrRef extends WeakReference<ChildrenArray> implements Runnable {
-
         private final ChildrenArray chArr;
 
         public ChArrRef(ChildrenArray referent, boolean weak) {
@@ -845,6 +851,7 @@ class EntrySupportDefault extends EntrySupport {
             return chArr == null;
         }
 
+        @Override
         public void run() {
             finalizedChildrenArray(this);
         }

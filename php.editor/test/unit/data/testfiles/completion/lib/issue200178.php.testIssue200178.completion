@@ -1,13 +1,14 @@
 Code completion result for source line:
 /**/foo|();
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
-PACKAGE    Foo                             [PUBLIC]   null
+PACKAGE    foo                             [PUBLIC]   null
 METHOD     foo($x = -5)                    [PUBLIC]   issue200178.php
 METHOD     foo()                           [PUBLIC]   issue200178.php
 ------------------------------------
 CLASS      Foo                             [PUBLIC]   issue159970.php
 CLASS      Foo                             [PUBLIC]   issue191666.php
 CLASS      Foo                             [PUBLIC]   test203294.php
+CLASS      FooUrl                          [PUBLIC]   foo\lib\url
 CLASS      Foooo                           [PUBLIC]   test204104.php
 CLASS      Foooo                           [PUBLIC]   test204104_02.php
 CLASS      foo                             [PUBLIC]   tests178955.php

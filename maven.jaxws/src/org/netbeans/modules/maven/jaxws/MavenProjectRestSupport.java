@@ -51,6 +51,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
@@ -66,18 +67,9 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.libraries.Library;
-import org.netbeans.api.project.libraries.LibraryManager;
-import org.netbeans.modules.j2ee.dd.api.common.InitParam;
-import org.netbeans.modules.j2ee.dd.api.web.Servlet;
 import org.netbeans.modules.j2ee.dd.api.web.ServletMapping;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
-import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.javaee.specs.support.api.JaxRsStackSupport;
 import org.netbeans.modules.maven.api.NbMavenProject;
@@ -89,6 +81,7 @@ import org.netbeans.modules.websvc.rest.spi.WebRestSupport;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -99,7 +92,8 @@ import org.openide.util.NbBundle;
  *
  * @author Nam Nguyen
  */
-@ProjectServiceProvider(service=RestSupport.class, projectType="org-netbeans-modules-maven")
+@ProjectServiceProvider(service={RestSupport.class, WebRestSupport.class}, 
+    projectType="org-netbeans-modules-maven/war")
 public class MavenProjectRestSupport extends WebRestSupport {
 
     private static final String DEPLOYMENT_GOAL = "package";             //NOI18N   
@@ -125,7 +119,16 @@ public class MavenProjectRestSupport extends WebRestSupport {
     public void ensureRestDevelopmentReady() throws IOException {
         String configType = getProjectProperty(PROP_REST_CONFIG_TYPE);
         WebRestSupport.RestConfig restConfig = null;
-        if (configType == null && getApplicationPathFromDD() == null) {
+        
+        /*WebModule webModule = WebModule.getWebModule(project.getProjectDirectory());
+        // Fix for BZ#217231 : don't check not Web projects
+        if ( webModule == null ){
+            return;
+        }*/
+        // Fix for BZ#217557 : do not show REST config dialog in JEE6 case
+        boolean hasJaxRs = hasJaxRsApi();
+        
+        if (!hasJaxRs && configType == null && getApplicationPathFromDD() == null) {
             restConfig = setApplicationConfigProperty(false);
             if (restConfig == WebRestSupport.RestConfig.DD) {
                 addResourceConfigToWebApp(restConfig.getResourcePath());
@@ -157,6 +160,29 @@ public class MavenProjectRestSupport extends WebRestSupport {
         }
         else {
             addSwdpLibrary( restConfig );
+        }
+    }
+    
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.websvc.rest.spi.WebRestSupport#enableRestSupport(org.netbeans.modules.websvc.rest.spi.WebRestSupport.RestConfig)
+     */
+    @Override
+    public void enableRestSupport( final RestConfig config ) {
+        if ( SwingUtilities.isEventDispatchThread() ){
+            Runnable runnable = new Runnable() {
+                
+                @Override
+                public void run() {
+                    enableRestSupport(config);
+                }
+            };
+            AtomicBoolean cancel = new AtomicBoolean();
+            ProgressUtils.runOffEventDispatchThread( runnable , 
+                    NbBundle.getMessage(MavenProjectRestSupport.class, 
+                    "TTL_ExtendProjectClasspath"), cancel, false );  // NOI18N
+        }
+        else {
+            super.enableRestSupport(config);
         }
     }
 
@@ -202,12 +228,14 @@ public class MavenProjectRestSupport extends WebRestSupport {
     public String getBaseURL() throws IOException {
         WebApp webApp = getWebApp();
         if (webApp != null) {
-            String servletNames = "";
-            String urlPatterns = "";
+            StringBuilder servletNames = new StringBuilder();
+            StringBuilder urlPatterns = new StringBuilder();
             int i=0;
             for (ServletMapping mapping : webApp.getServletMapping()) {
-                servletNames+=(i>0 ? ",":"")+mapping.getServletName();
-                urlPatterns+= (i>0 ? ",":"")+mapping.getUrlPattern();
+                servletNames.append(i>0 ? ",":"");
+                servletNames.append(mapping.getServletName());
+                urlPatterns.append(i>0 ? ",":"");
+                urlPatterns.append(mapping.getUrlPattern());
                 i++;
             }
             http://localhost:8084/mavenprojectWeb3/||ServletAdaptor||resources/*
@@ -287,7 +315,8 @@ public class MavenProjectRestSupport extends WebRestSupport {
                                 ProjectInformation.class).getDisplayName()), 
                 Collections.singletonList(DEPLOYMENT_GOAL));
         config.setProperty(ACTION_PROPERTY_DEPLOY_OPEN, Boolean.FALSE.toString() );
-        RunUtils.executeMaven(config);
+        ExecutorTask task = RunUtils.executeMaven(config);
+        task.waitFinished();
     }
     
     @Override
@@ -383,9 +412,11 @@ public class MavenProjectRestSupport extends WebRestSupport {
         try {
             lock = fo.lock();
             OutputStream os = fo.getOutputStream(lock);
-            writer = new BufferedWriter(new OutputStreamWriter(os));
+            writer = new BufferedWriter(new OutputStreamWriter(os, 
+                    Charset.forName("UTF-8")));         // NOI18N
             InputStream is = RestSupport.class.getResourceAsStream("resources/"+name);
-            reader = new BufferedReader(new InputStreamReader(is));
+            reader = new BufferedReader(new InputStreamReader(is, 
+                    Charset.forName("UTF-8")));         // NOI18N
             String line;
             String lineSep = "\n";//Unix
             if(File.separatorChar == '\\')//Windows

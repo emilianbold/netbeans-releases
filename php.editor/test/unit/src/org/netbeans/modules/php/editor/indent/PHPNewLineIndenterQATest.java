@@ -260,7 +260,7 @@ public class PHPNewLineIndenterQATest extends PHPCodeCompletionTestBase {
 
 
         Preferences prefs = CodeStylePreferences.get(doc).getPreferences();
-        prefs.putInt(FmtOptions.initialIndent, initialIndent);
+        prefs.putInt(FmtOptions.INITIAL_INDENT, initialIndent);
 
         runKitAction(ta, DefaultEditorKit.insertBreakAction, "\n");
 

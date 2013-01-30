@@ -59,15 +59,10 @@ public class MultyFileStorage implements Storage {
     private FilesAccessStrategy theFilesHelper;
     private CharSequence unitName;
     
-    public MultyFileStorage(CharSequence unitName) {
-        super();
-        theFilesHelper = FilesAccessStrategyImpl.getInstance();
-        this.unitName = unitName;
-    }
-    
     /** Creates a new instance of SimpleDiskRepository */
-    public MultyFileStorage(FilesAccessStrategy aFilesHelper) {
+    public MultyFileStorage(FilesAccessStrategy aFilesHelper, CharSequence unitName) {
         theFilesHelper = aFilesHelper;
+        this.unitName = unitName;
     }
     
     @Override
@@ -78,7 +73,7 @@ public class MultyFileStorage implements Storage {
             theFilesHelper.write(id, obj);
         } catch (Throwable ex) {
             RepositoryListenersManager.getInstance().fireAnException(
-                    id.getUnit(), new RepositoryException(ex));
+                    id.getUnitId(), id.getUnit(), new RepositoryException(ex));
         }
     }
     
@@ -95,7 +90,7 @@ public class MultyFileStorage implements Storage {
             obj = theFilesHelper.read(id);
         }  catch (Throwable ex) {
             RepositoryListenersManager.getInstance().fireAnException(
-                    id.getUnit(), new RepositoryException(ex));
+                    id.getUnitId(), id.getUnit(), new RepositoryException(ex));
         }
         return obj;
     }
@@ -107,7 +102,7 @@ public class MultyFileStorage implements Storage {
         theFilesHelper.remove(id);
         } catch (Throwable ex) {
             RepositoryListenersManager.getInstance().fireAnException(
-                    id.getUnit(), new RepositoryException(ex));
+                    id.getUnitId(), id.getUnit(), new RepositoryException(ex));
         }
     }
 
@@ -119,5 +114,11 @@ public class MultyFileStorage implements Storage {
     @Override
     public int getFragmentationPercentage() {
         return 0;
+    }
+    
+    @Override
+    public void debugDump(Key key) {
+        assert key != null;
+        theFilesHelper.debugDump(key);
     }
 }

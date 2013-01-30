@@ -413,88 +413,107 @@ public final class JFXProjectUtils {
      */
     static FileObject updateJfxImpl(final @NonNull Project proj) throws IOException {
         FileObject returnFO = null;
-        boolean isJfxCurrent = true;
-        FileObject projDir = proj.getProjectDirectory();
-        FileObject jfxBuildFile = projDir.getFileObject("nbproject/jfx-impl.xml"); // NOI18N
-        if (jfxBuildFile != null) {
-            final InputStream in = jfxBuildFile.getInputStream();
-            if(in != null) {
-                try {
-                    isJfxCurrent = isJfxImplCurrentVer(computeCrc32( in ));
-                } finally {
-                    in.close();
-                }
-            }
-        }
-        if (!isJfxCurrent) {
-            // try to close the file just in case the file is already opened in editor
-            DataObject dobj = DataObject.find(jfxBuildFile);
-            CloseCookie closeCookie = dobj.getLookup().lookup(CloseCookie.class);
-            if (closeCookie != null) {
-                closeCookie.close();
-            }
-            final FileObject nbproject = projDir.getFileObject("nbproject"); //NOI18N
-            final String backupName = FileUtil.findFreeFileName(nbproject, "jfx-impl_backup", "xml"); //NOI18N
-            FileUtil.moveFile(jfxBuildFile, nbproject, backupName);
-            LOGGER.log(Level.INFO, "Old build script file jfx-impl.xml has been renamed to: {0}.xml", backupName); // NOI18N
-            jfxBuildFile = null;
-
-            try {
-                final File readme = new File (FileUtil.toFile(nbproject), NbBundle.getMessage(JFXProjectUtils.class, "TXT_UPDATED_README_FILE_NAME")); //NOI18N
-                if (!readme.exists()) {
-                    readme.createNewFile();
-                }
-                final FileObject readmeFO = FileUtil.toFileObject(readme);
-                returnFO = readmeFO;
-                try {
-                    ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
-                        @Override
-                        public Void run() throws Exception {
-                            OutputStream os = null;
-                            FileLock lock = null;
+        Boolean isJfxCurrent = true;
+        final FileObject projDir = proj.getProjectDirectory();
+        try {
+            isJfxCurrent = ProjectManager.mutex().readAccess(new Mutex.ExceptionAction<Boolean>() {
+                @Override
+                public Boolean run() throws Exception {
+                    FileObject jfxBuildFile = projDir.getFileObject("nbproject/jfx-impl.xml"); // NOI18N
+                    Boolean isCurrent = false;
+                    if (jfxBuildFile != null) {
+                        final InputStream in = jfxBuildFile.getInputStream();
+                        if(in != null) {
                             try {
-                                lock = readmeFO.lock();
-                                os = readmeFO.getOutputStream(lock);
-                                final PrintWriter out = new PrintWriter ( os );
+                                isCurrent = isJfxImplCurrentVer(computeCrc32( in ));
+                            } finally {
+                                in.close();
+                            }
+                        }
+                    }
+                    return isCurrent;
+                }
+            });
+        } catch (MutexException mux) {
+            isJfxCurrent = false;
+            LOGGER.log(Level.INFO, "Problem reading nbproject/jfx-impl.xml.", mux.getException()); // NOI18N
+        }
+
+        if (!isJfxCurrent) {
+            try {
+                returnFO = ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<FileObject>() {
+                    @Override
+                    public FileObject run() throws Exception {
+                        FileObject returnFO = null;
+                        FileObject jfxBuildFile = projDir.getFileObject("nbproject/jfx-impl.xml"); // NOI18N
+                        if (jfxBuildFile != null) {
+                            // try to close the file just in case the file is already opened in editor
+                            DataObject dobj = DataObject.find(jfxBuildFile);
+                            CloseCookie closeCookie = dobj.getLookup().lookup(CloseCookie.class);
+                            if (closeCookie != null) {
+                                closeCookie.close();
+                            }
+                            closeCookie = null;
+                            dobj = null;
+                            
+                            final FileObject nbproject = projDir.getFileObject("nbproject"); //NOI18N
+                            final String backupName = FileUtil.findFreeFileName(nbproject, "jfx-impl_backup", "xml"); //NOI18N
+                            FileUtil.moveFile(jfxBuildFile, nbproject, backupName);
+                            LOGGER.log(Level.INFO, "Old build script file jfx-impl.xml has been renamed to: {0}.xml", backupName); // NOI18N
+                            jfxBuildFile = null;
+
+                            try {
+                                final File readme = new File (FileUtil.toFile(nbproject), NbBundle.getMessage(JFXProjectUtils.class, "TXT_UPDATED_README_FILE_NAME")); //NOI18N
+                                if (!readme.exists()) {
+                                    readme.createNewFile();
+                                }
+                                final FileObject readmeFO = FileUtil.toFileObject(readme);
+                                returnFO = readmeFO;
+                                OutputStream os = null;
+                                FileLock lock = null;
                                 try {
-                                    final String headerTemplate = NbBundle.getMessage(JFXProjectUtils.class, "TXT_UPDATED_README_FILE_CONTENT_HEADER"); //NOI18N
-                                    final String header = MessageFormat.format(headerTemplate, new Object[] {ProjectUtils.getInformation(proj).getDisplayName()});
-                                    char[] underline = new char[header.length()];
-                                    Arrays.fill(underline, '='); // NOI18N
-                                    final String content = NbBundle.getMessage(JFXProjectUtils.class, "TXT_UPDATED_README_FILE_CONTENT"); //NOI18N
-                                    out.println(underline);
-                                    out.println(header);
-                                    out.println(underline);
-                                    out.println (MessageFormat.format(content, new Object[] {backupName + ".xml"})); //NOI18N
+                                    lock = readmeFO.lock();
+                                    os = readmeFO.getOutputStream(lock);
+                                    final PrintWriter out = new PrintWriter ( os );
+                                    try {
+                                        final String headerTemplate = NbBundle.getMessage(JFXProjectUtils.class, "TXT_UPDATED_README_FILE_CONTENT_HEADER"); //NOI18N
+                                        final String header = MessageFormat.format(headerTemplate, new Object[] {ProjectUtils.getInformation(proj).getDisplayName()});
+                                        char[] underline = new char[header.length()];
+                                        Arrays.fill(underline, '='); // NOI18N
+                                        final String content = NbBundle.getMessage(JFXProjectUtils.class, "TXT_UPDATED_README_FILE_CONTENT"); //NOI18N
+                                        out.println(underline);
+                                        out.println(header);
+                                        out.println(underline);
+                                        out.println (MessageFormat.format(content, new Object[] {backupName + ".xml"})); //NOI18N
+                                    } finally {
+                                        if(out != null) {
+                                            out.close ();
+                                        }
+                                    }
                                 } finally {
-                                    if(out != null) {
-                                        out.close ();
+                                    if (lock != null) {
+                                        lock.releaseLock();
+                                    }
+                                    if (os != null) {
+                                        os.close();
                                     }
                                 }
-                            } finally {
-                                if (lock != null) {
-                                    lock.releaseLock();
-                                }
-                                if (os != null) {
-                                    os.close();
-                                }
-                            }
-                            return null;
+                            } catch (IOException ioe) {
+                                LOGGER.log(Level.INFO, "Cannot create file readme file. ", ioe); // NOI18N
+                            }        
                         }
-                    });
-                } catch (MutexException mux) {
-                    throw (IOException) mux.getException();
-                }
-                
-            } catch (IOException ioe) {
-                LOGGER.log(Level.INFO, "Cannot create file readme file. ", ioe); // NOI18N
-            }        
-        }
-        if (jfxBuildFile == null) {
-            FileObject templateFO = FileUtil.getConfigFile(JFX_BUILD_TEMPLATE);
-            if (templateFO != null) {
-                FileUtil.copyFile(templateFO, projDir.getFileObject("nbproject"), "jfx-impl"); // NOI18N
-                LOGGER.log(Level.INFO, "Build script jfx-impl.xml has been updated to the latest version supported by this NetBeans installation."); // NOI18N
+                        if (jfxBuildFile == null) {
+                            FileObject templateFO = FileUtil.getConfigFile(JFX_BUILD_TEMPLATE);
+                            if (templateFO != null) {
+                                FileUtil.copyFile(templateFO, projDir.getFileObject("nbproject"), "jfx-impl"); // NOI18N
+                                LOGGER.log(Level.INFO, "Build script jfx-impl.xml has been updated to the latest version supported by this NetBeans installation."); // NOI18N
+                            } 
+                        }
+                        return returnFO;
+                    } //run()
+                });
+            } catch(MutexException mux) {
+                throw (IOException) mux.getException();
             }
         }
         return returnFO;
@@ -565,21 +584,21 @@ public final class JFXProjectUtils {
         boolean updated = false;
         String configName = runAs.getDefaultConfig();
         String configFile = makeSafe(configName);
-        String sharedPath = JFXProjectProperties.getSharedConfigFilePath(configFile);
+        String sharedPath = JFXProjectConfigurations.getSharedConfigFilePath(configFile);
         FileObject sharedCfgFO = projDir.getFileObject(sharedPath);
         final EditableProperties sharedCfgProps = sharedCfgFO != null ?
-                JFXProjectProperties.readFromFile(sharedCfgFO) : new EditableProperties(true);
+                readFromFile(sharedCfgFO) : new EditableProperties(true);
         assert sharedCfgProps != null;
         if(sharedCfgProps.isEmpty()) {
             sharedCfgProps.setProperty("$label", configName); // NOI18N
             sharedCfgProps.setComment("$label", new String[]{"# " + NbBundle.getMessage(JFXProjectGenerator.class, "COMMENT_run_as_defaults")}, false); // NOI18N
-            JFXProjectProperties.saveToFile(projDir, sharedPath, sharedCfgProps);
+            saveToFile(projDir, sharedPath, sharedCfgProps);
             updated = true;
         }
-        String privatePath = JFXProjectProperties.getPrivateConfigFilePath(configFile);
+        String privatePath = JFXProjectConfigurations.getPrivateConfigFilePath(configFile);
         FileObject privateCfgFO = projDir.getFileObject(privatePath);
         final EditableProperties privateCfgProps = privateCfgFO != null ?
-                JFXProjectProperties.readFromFile(projDir, privatePath) : new EditableProperties(true);
+                readFromFile(projDir, privatePath) : new EditableProperties(true);
         assert privateCfgProps != null;
         if(privateCfgProps.isEmpty() || setBrowserProps) {
             privateCfgProps.setProperty("$label", configName); // NOI18N
@@ -596,7 +615,7 @@ public final class JFXProjectUtils {
                     }
                 }
             }
-            JFXProjectProperties.saveToFile(projDir, privatePath, privateCfgProps);       
+            saveToFile(projDir, privatePath, privateCfgProps);       
             updated = true;
         }
         return updated;
@@ -666,4 +685,117 @@ public final class JFXProjectUtils {
     public static String makeSafe(@NonNull String name) {
         return name.replaceAll("[^a-zA-Z0-9_.-]", "_"); // NOI18N;
     }
+
+    public static EditableProperties readFromFile(final @NonNull Project project, final @NonNull String relativePath) throws IOException {
+        final FileObject dirFO = project.getProjectDirectory();
+        return readFromFile(dirFO, relativePath);
+    }
+
+    public static EditableProperties readFromFile(final @NonNull FileObject dirFO, final @NonNull String relativePath) throws IOException {
+        assert dirFO.isFolder();
+        final FileObject propsFO = dirFO.getFileObject(relativePath);
+        return readFromFile(propsFO);
+    }
+
+    public static EditableProperties readFromFile(final @NonNull FileObject propsFO) throws IOException {
+        final EditableProperties ep = new EditableProperties(true);
+        if(propsFO != null) {
+            assert propsFO.isData();
+            try {
+                final InputStream is = propsFO.getInputStream();
+                ProjectManager.mutex().readAccess(new Mutex.ExceptionAction<Void>() {
+                    @Override
+                    public Void run() throws Exception {
+                        try {
+                            ep.load(is);
+                        } finally {
+                            if (is != null) {
+                                is.close();
+                            }
+                        }
+                        return null;
+                    }
+                });
+            } catch (MutexException mux) {
+                throw (IOException) mux.getException();
+            }
+        }
+        return ep;
+    }
+
+    public static void deleteFile(final @NonNull Project project, final @NonNull String relativePath) throws IOException {
+        final FileObject propsFO = project.getProjectDirectory().getFileObject(relativePath);
+        deleteFile(propsFO);
+    }
+    
+    public static void deleteFile(final @NonNull FileObject dirFO, final @NonNull String relativePath) throws IOException {
+        assert dirFO.isFolder();
+        final FileObject propsFO = dirFO.getFileObject(relativePath);
+        deleteFile(propsFO);
+    }
+
+    public static void deleteFile(final @NonNull FileObject propsFO) throws IOException {
+        if(propsFO != null) {
+            try {
+                ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+                    @Override
+                    public Void run() throws Exception {
+                        propsFO.delete();
+                        return null;
+                    }
+                });
+            } catch (MutexException mux) {
+                throw (IOException) mux.getException();
+            }       
+        }
+    }
+
+    public static void saveToFile(final @NonNull Project project, final @NonNull String relativePath, final @NonNull EditableProperties ep) throws IOException {
+        FileObject dirFO = project.getProjectDirectory();
+        saveToFile(dirFO, relativePath, ep);
+    }
+    
+    public static void saveToFile(final @NonNull FileObject dirFO, final @NonNull String relativePath, final @NonNull EditableProperties ep) throws IOException {
+        assert dirFO.isFolder();
+        FileObject f = dirFO.getFileObject(relativePath);
+        final FileObject propsFO;
+        if(f == null) {
+            propsFO = FileUtil.createData(dirFO, relativePath);
+            assert propsFO != null : "FU.cD must not return null; called on " + dirFO + " + " + relativePath; // #50802  // NOI18N
+        } else {
+            propsFO = f;
+        }
+        saveToFile(propsFO, ep);
+    }
+    
+    public static void saveToFile(final @NonNull FileObject propsFO, final @NonNull EditableProperties ep) throws IOException {
+        if(propsFO != null) {
+            assert propsFO.isData();
+            try {
+                ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+                    @Override
+                    public Void run() throws Exception {
+                        OutputStream os = null;
+                        FileLock lock = null;
+                        try {
+                            lock = propsFO.lock();
+                            os = propsFO.getOutputStream(lock);
+                            ep.store(os);
+                        } finally {
+                            if (lock != null) {
+                                lock.releaseLock();
+                            }
+                            if (os != null) {
+                                os.close();
+                            }
+                        }
+                        return null;
+                    }
+                });
+            } catch (MutexException mux) {
+                throw (IOException) mux.getException();
+            }
+        }
+    }
+
 }

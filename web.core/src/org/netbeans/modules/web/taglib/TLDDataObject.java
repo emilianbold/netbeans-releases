@@ -170,7 +170,11 @@ public final class TLDDataObject extends MultiDataObject implements org.openide.
     public Taglib getTaglib() throws java.io.IOException {
         java.io.InputStream is = getPrimaryFile().getInputStream();
         try {
-            return Taglib.createGraph(is);
+            try {
+                return Taglib.createGraph(is);
+            } finally {
+                is.close();
+            }
         } catch (RuntimeException ex) {
             throw new java.io.IOException(ex.getMessage());
         }

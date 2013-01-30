@@ -47,15 +47,19 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.Reader;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import javax.swing.text.EditorKit;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.BaseKit;
+import org.netbeans.modules.xml.api.EncodingUtil;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentModel;
 import org.netbeans.modules.xml.xam.dom.DocumentModelAccess;
 import org.netbeans.modules.xml.xam.spi.DocumentModelAccessProvider;
 import org.openide.loaders.DataObject;
+import org.openide.text.CloneableEditorSupport;
 
 /**
  *
@@ -73,16 +77,10 @@ public class XDMAccessProvider implements DocumentModelAccessProvider {
     }
     
     public Document loadSwingDocument(InputStream in) throws IOException, BadLocationException {
-        Document sd = new BaseDocument(true, "text/xml"); //NOI18N
-        BufferedReader br = new BufferedReader(new InputStreamReader(in));
-        try {
-            String line = null;
-            while ((line = br.readLine()) != null) {
-                sd.insertString(sd.getLength(), line+System.getProperty("line.separator"), null); // NOI18N
-            }
-        } finally {
-            br.close();
-        }
+        BaseDocument sd = new BaseDocument(true, "text/xml"); //NOI18N
+        String encoding = in.markSupported() ? EncodingUtil.detectEncoding(in) : null;
+        Reader r = encoding == null ? new InputStreamReader(in) : new InputStreamReader(in, encoding);
+        sd.read(r, 0);
         return sd;
     }
 

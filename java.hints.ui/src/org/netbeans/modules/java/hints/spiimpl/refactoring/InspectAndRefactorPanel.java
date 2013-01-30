@@ -139,6 +139,7 @@ public class InspectAndRefactorPanel extends javax.swing.JPanel implements Popup
     private FileObject fileObject;
     private final Lookup context;
     private final HintWrap hintWrap;
+    private final HintMetadata preselect;
     private final ClassPathBasedHintWrapper cpBased;
     org.netbeans.modules.refactoring.api.Scope customScope;
     
@@ -153,12 +154,16 @@ public class InspectAndRefactorPanel extends javax.swing.JPanel implements Popup
     public InspectAndRefactorPanel(Lookup context, ChangeListener parent, boolean query, ClassPathBasedHintWrapper cpBased) {
         this.context = context;
         this.hintWrap = context.lookup(HintWrap.class);
+        this.preselect = context.lookup(HintMetadata.class);
         this.cpBased = cpBased;
     }
 
     private Map<? extends HintMetadata, ? extends Iterable<? extends HintDescription>> allHints;
-
+    private boolean initialized;
+    
     public synchronized void initialize() {
+        if (initialized) return ;
+        initialized = true;
         initComponents();
         configurationCombo.setModel(new ConfigurationsComboModel(false));
         allHints = hintWrap != null ? Collections.singletonMap(hintWrap.hm, hintWrap.hints) : Utilities.getBatchSupportedHints(cpBased);
@@ -231,6 +236,9 @@ public class InspectAndRefactorPanel extends javax.swing.JPanel implements Popup
             singleRefactoringCombo.setEnabled(false);
             manageSingleRefactoring.setEnabled(false);
             configurationRadio.setEnabled(false);
+        } else if (preselect != null) {
+            singleRefactoringCombo.setSelectedItem(preselect);
+            singleRefactorRadio.setSelected(true);
         }
     }
     

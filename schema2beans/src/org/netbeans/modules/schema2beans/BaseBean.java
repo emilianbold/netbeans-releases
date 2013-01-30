@@ -50,6 +50,8 @@ import java.beans.*;
 
 import org.w3c.dom.*;
 import java.lang.reflect.Constructor;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *  This class is the base class for any generated bean. This class provides
@@ -1237,9 +1239,9 @@ public abstract class BaseBean implements Cloneable, Bean {
      */
     public Object clone() {
         BaseBean bean = null;
-        
         try {
-            //	Create a new instance of ourself
+            // FIXME this seriosly breaks the clone contract :(
+            // Create a new instance of ourself
             bean = (BaseBean)this.getClass().newInstance();
         } catch(Exception e) {
             TraceLogger.error(e);

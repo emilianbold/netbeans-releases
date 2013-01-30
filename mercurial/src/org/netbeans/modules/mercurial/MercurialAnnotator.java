@@ -422,7 +422,7 @@ public class MercurialAnnotator extends VCSAnnotator implements PropertyChangeLi
                 }
                 actions.add(null);
                 actions.add(new ShareMenu(context));
-                actions.add(new BranchMenu(context));
+                actions.add(new BranchMenu(context, ctx));
                 actions.add(new TagMenu(context));
                 actions.add(new QueuesMenu(context));
                 actions.add(null);

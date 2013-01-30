@@ -43,8 +43,8 @@
  */
 package org.openide.filesystems;
 
-import org.openide.util.*;
 import java.awt.Component;
+import java.awt.FileDialog;
 import java.awt.Frame;
 import java.awt.HeadlessException;
 import java.awt.KeyboardFocusManager;
@@ -53,9 +53,12 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.Icon;
 import javax.swing.JFileChooser;
+import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileSystemView;
 import javax.swing.filechooser.FileView;
+import org.netbeans.modules.openide.filesystems.FileFilterSupport;
+import org.openide.util.*;
 
 /**
  * Utility class for working with JFileChoosers.  In particular, remembering
@@ -120,6 +123,7 @@ public class FileChooserBuilder {
             Boolean.getBoolean("forget.recent.dirs");
     private SelectionApprover approver;
     private final List<FileFilter> filters = new ArrayList<FileFilter>(3);
+    private boolean useAcceptAllFileFilter = true;
     /**
      * Create a new FileChooserBuilder using the name of the passed class
      * as the metadata for looking up a starting directory from previous
@@ -202,6 +206,22 @@ public class FileChooserBuilder {
      */
     public FileChooserBuilder setFileFilter (FileFilter filter) {
         this.filter = filter;
+        return this;
+    }
+
+    /**
+     * Determines whether the <code>AcceptAll FileFilter</code> is used
+     * as an available choice in the choosable filter list.
+     * If false, the <code>AcceptAll</code> file filter is removed from
+     * the list of available file filters.
+     * If true, the <code>AcceptAll</code> file filter will become the
+     * the actively used file filter.
+     * @param accept whether the <code>AcceptAll FileFilter</code> is used
+     * @return this
+     * @since 8.3
+     */
+    public FileChooserBuilder setAcceptAllFileFilterUsed(boolean accept) {
+        useAcceptAllFileFilter = accept;
         return this;
     }
 
@@ -314,6 +334,12 @@ public class FileChooserBuilder {
      */
     public File showOpenDialog() {
         JFileChooser chooser = createFileChooser();
+        if( Boolean.getBoolean("nb.native.filechooser") ) { //NOI18N
+            FileDialog fileDialog = createFileDialog( chooser.getCurrentDirectory() );
+            if( null != fileDialog ) {
+                return showFileDialog(fileDialog, FileDialog.LOAD );
+            }
+        }
         chooser.setMultiSelectionEnabled(false);
         int dlgResult = chooser.showOpenDialog(findDialogParent());
         if (JFileChooser.APPROVE_OPTION == dlgResult) {
@@ -336,6 +362,12 @@ public class FileChooserBuilder {
      */
     public File showSaveDialog() {
         JFileChooser chooser = createFileChooser();
+        if( Boolean.getBoolean("nb.native.filechooser") ) { //NOI18N
+            FileDialog fileDialog = createFileDialog( chooser.getCurrentDirectory() );
+            if( null != fileDialog ) {
+                return showFileDialog( fileDialog, FileDialog.SAVE );
+            }
+        }
         int result = chooser.showSaveDialog(findDialogParent());
         if (JFileChooser.APPROVE_OPTION == result) {
             return chooser.getSelectedFile();
@@ -343,13 +375,36 @@ public class FileChooserBuilder {
             return null;
         }
     }
-
+    
+    private File showFileDialog( FileDialog fileDialog, int mode ) {
+        String oldFileDialogProp = System.getProperty("apple.awt.fileDialogForDirectories"); //NOI18N
+        if( dirsOnly ) {
+            System.setProperty("apple.awt.fileDialogForDirectories", "true"); //NOI18N
+        }
+        fileDialog.setMode( mode );
+        fileDialog.setVisible(true);
+        if( dirsOnly ) {
+            if( null != oldFileDialogProp ) {
+                System.setProperty("apple.awt.fileDialogForDirectories", oldFileDialogProp); //NOI18N
+            } else {
+                System.clearProperty("apple.awt.fileDialogForDirectories"); //NOI18N
+            }
+        }
+        if( fileDialog.getDirectory() != null && fileDialog.getFile() != null ) {
+            String selFile = fileDialog.getFile();
+            File dir = new File( fileDialog.getDirectory() );
+            return new File( dir, selFile );
+        }
+        return null;
+    }
+    
     private void prepareFileChooser(JFileChooser chooser) {
         chooser.setFileSelectionMode(dirsOnly ? JFileChooser.DIRECTORIES_ONLY
                 : filesOnly ? JFileChooser.FILES_ONLY :
                 JFileChooser.FILES_AND_DIRECTORIES);
         chooser.setFileHidingEnabled(fileHiding);
         chooser.setControlButtonsAreShown(controlButtonsShown);
+        chooser.setAcceptAllFileFilterUsed(useAcceptAllFileFilter);
         if (title != null) {
             chooser.setDialogTitle(title);
         }
@@ -377,6 +432,24 @@ public class FileChooserBuilder {
         }
     }
 
+    private FileDialog createFileDialog( File currentDirectory ) {
+        if( badger != null )
+            return null;
+        if( !Boolean.getBoolean("nb.native.filechooser") )
+            return null;
+        if( dirsOnly && !Utilities.isMac() )
+            return null;
+        Component parentComponent = findDialogParent();
+        Frame parentFrame = (Frame) SwingUtilities.getAncestorOfClass(Frame.class, parentComponent);
+        FileDialog fileDialog = new FileDialog(parentFrame);
+        if (title != null) {
+            fileDialog.setTitle(title);
+        }
+        if( null != currentDirectory )
+            fileDialog.setDirectory(currentDirectory.getAbsolutePath());
+        return fileDialog;
+    }
+    
     /**
      * Equivalent to calling <code>JFileChooser.addChoosableFileFilter(filter)</code>.
      * Adds another file filter that can be displayed in the file filters combo
@@ -388,6 +461,19 @@ public class FileChooserBuilder {
      */
     public FileChooserBuilder addFileFilter (FileFilter filter) {
         filters.add (filter);
+        return this;
+    }
+
+    /**
+     * Add all default file filters to the file chooser.
+     *
+     * @see MIMEResolver.Registration#showInFileChooser()
+     * @see MIMEResolver.ExtensionRegistration#showInFileChooser()
+     * @return this
+     * @since 8.1
+     */
+    public FileChooserBuilder addDefaultFileFilters() {
+        filters.addAll(FileFilterSupport.findRegisteredFileFilters());
         return this;
     }
 

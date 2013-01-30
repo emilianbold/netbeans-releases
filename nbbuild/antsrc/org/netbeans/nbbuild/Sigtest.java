@@ -325,6 +325,7 @@ public class Sigtest extends Task {
                 "check",
                 "strictcheck",
                 "binarycheck",
+                "versioncheck"
             };
         }
     }

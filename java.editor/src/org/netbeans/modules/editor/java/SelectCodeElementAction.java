@@ -203,6 +203,8 @@ final class SelectCodeElementAction extends BaseAction {
                 if (cancel != null && cancel.get())
                     return;
                 selectionInfos = initSelectionPath(target, cc);
+                if (selectionInfos != null && selectionInfos.length > 0)
+                    selIndex = 0;
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
@@ -210,8 +212,10 @@ final class SelectCodeElementAction extends BaseAction {
         
         private SelectionInfo[] initSelectionPath(JTextComponent target, CompilationController ci) {
             List<SelectionInfo> positions = new ArrayList<SelectionInfo>();
+            int caretPos = target.getCaretPosition();
+            positions.add(new SelectionInfo(caretPos, caretPos));
             SourcePositions sp = ci.getTrees().getSourcePositions();
-            TreePath tp = ci.getTreeUtilities().pathFor(target.getCaretPosition());
+            TreePath tp = ci.getTreeUtilities().pathFor(caretPos);
             for (Tree tree: tp) {
                 int startPos = (int)sp.getStartPosition(tp.getCompilationUnit(), tree);
                 int endPos = (int)sp.getEndPosition(tp.getCompilationUnit(), tree);

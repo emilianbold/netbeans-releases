@@ -44,6 +44,7 @@ package org.netbeans.modules.php.editor.index;
 
 import java.util.Collections;
 import java.util.Set;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.Modifier;
@@ -57,31 +58,40 @@ import org.openide.filesystems.FileObject;
  * @author Tor Norbye
  */
 public abstract class PHPElement implements Element {
+    @Override
     public abstract String getName();
 
+    @Override
     public abstract ElementKind getKind();
 
+    @NonNull
+    @Override
     public String getMimeType() {
         return FileUtils.PHP_MIME_TYPE;
     }
 
+    @Override
     public boolean signatureEquals(ElementHandle handle) {
         // XXX TODO
         return false;
     }
 
+    @Override
     public FileObject getFileObject() {
         return null;
     }
 
+    @Override
     public Set<Modifier> getModifiers() {
         return Collections.emptySet();
     }
 
+    @Override
     public String getIn() {
         return null;
     }
 
+    @Override
     public OffsetRange getOffsetRange(ParserResult result) {
         return OffsetRange.NONE;
     }

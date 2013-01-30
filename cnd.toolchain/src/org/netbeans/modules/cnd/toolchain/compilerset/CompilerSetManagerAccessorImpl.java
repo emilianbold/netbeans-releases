@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.cnd.toolchain.compilerset;
 
-import org.netbeans.modules.cnd.spi.toolchain.ToolchainScriptGenerator;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -105,10 +104,6 @@ public class CompilerSetManagerAccessorImpl {
         }
     }
 
-    public static String getRemoteScript(String path) {
-        return ToolchainScriptGenerator.generateScript(path);
-    }
-
     public static void save(CompilerSetManagerImpl csm) {
         synchronized (MASTER_LOCK) {
             CompilerSetPreferences.saveToDisk(csm);
@@ -120,7 +115,7 @@ public class CompilerSetManagerAccessorImpl {
     }
 
     private static CompilerSetManager getDefaultImpl(ExecutionEnvironment env, boolean initialize) {
-        CompilerSetManagerImpl csm = null;
+        CompilerSetManagerImpl csm;
         boolean no_compilers = false;
 
         synchronized (MASTER_LOCK) {
@@ -130,7 +125,7 @@ public class CompilerSetManagerAccessorImpl {
                 if (csm != null && csm.getDefaultCompilerSet() == null) {
                     CompilerSetPreferences.saveToDisk(csm);
                 }
-                if (csm != null && !CndUtils.isUnitTestMode()) {
+                if (csm != null && !(CndUtils.isUnitTestMode() || CndUtils.isStandalone())) {
                     ToolchainValidator.INSTANCE.validate(env, csm);
                 }
             }
@@ -150,21 +145,25 @@ public class CompilerSetManagerAccessorImpl {
         if (no_compilers && !CompilerSetManagerImpl.DISABLED) {
             // workaround to fix IZ#164028: Full IDE freeze when opening GizmoDemo project on Linux
             // we postpone dialog displayer until EDT is free to process
-            SwingUtilities.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    DialogDescriptor dialogDescriptor = new DialogDescriptor(
-                            new NoCompilersPanel(),
-                            getString("NO_COMPILERS_FOUND_TITLE"),
-                            true,
-                            new Object[]{DialogDescriptor.OK_OPTION},
-                            DialogDescriptor.OK_OPTION,
-                            DialogDescriptor.BOTTOM_ALIGN,
-                            null,
-                            null);
-                    DialogDisplayer.getDefault().notify(dialogDescriptor);
-                }
-            });
+            if (CndUtils.isStandalone()) {
+                System.err.println(getString("NO_COMPILERS_FOUND_TITLE")); //NOI18N
+            } else {
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        DialogDescriptor dialogDescriptor = new DialogDescriptor(
+                                new NoCompilersPanel(),
+                                getString("NO_COMPILERS_FOUND_TITLE"), //NOI18N
+                                true,
+                                new Object[]{DialogDescriptor.OK_OPTION},
+                                DialogDescriptor.OK_OPTION,
+                                DialogDescriptor.BOTTOM_ALIGN,
+                                null,
+                                null);
+                        DialogDisplayer.getDefault().notify(dialogDescriptor);
+                    }
+                });
+            }
         }
         return csm;
     }

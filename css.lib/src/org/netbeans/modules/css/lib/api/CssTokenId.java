@@ -47,9 +47,12 @@ import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.modules.css.lib.nblexer.CssLanguageHierarchy;
 import org.netbeans.api.lexer.Language;
+import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.css.lib.Css3Lexer;
 import static org.netbeans.modules.css.lib.api.CssTokenIdCategory.*;
+import org.netbeans.modules.css.lib.api.properties.Token;
 
 /**
  * Token ids of CSS language
@@ -88,17 +91,17 @@ public enum CssTokenId implements TokenId {
     ONLY(Css3Lexer.ONLY, KEYWORDS),
     RESOLUTION(Css3Lexer.RESOLUTION, NUMBERS),
     WS(Css3Lexer.WS, WHITESPACES),
-    CHARSET_SYM(Css3Lexer.CHARSET_SYM, KEYWORDS),
+    CHARSET_SYM(Css3Lexer.CHARSET_SYM, AT_RULE_SYMBOL),
     STRING(Css3Lexer.STRING, STRINGS),
     SEMI(Css3Lexer.SEMI, SEPARATORS),
-    IMPORT_SYM(Css3Lexer.IMPORT_SYM, KEYWORDS),
+    IMPORT_SYM(Css3Lexer.IMPORT_SYM, AT_RULE_SYMBOL),
     URI(Css3Lexer.URI, URIS),
     COMMA(Css3Lexer.COMMA, SEPARATORS),
-    MEDIA_SYM(Css3Lexer.MEDIA_SYM, KEYWORDS),
+    MEDIA_SYM(Css3Lexer.MEDIA_SYM, AT_RULE_SYMBOL),
     LBRACE(Css3Lexer.LBRACE, BRACES),
     RBRACE(Css3Lexer.RBRACE, BRACES),
     IDENT(Css3Lexer.IDENT, IDENTIFIERS),
-    PAGE_SYM(Css3Lexer.PAGE_SYM, KEYWORDS),
+    PAGE_SYM(Css3Lexer.PAGE_SYM, AT_RULE_SYMBOL),
     COLON(Css3Lexer.COLON, SEPARATORS),
     DCOLON(Css3Lexer.DCOLON, SEPARATORS),
     SOLIDUS(Css3Lexer.SOLIDUS, OTHERS),
@@ -172,40 +175,42 @@ public enum CssTokenId implements TokenId {
     PIPE(Css3Lexer.PIPE, OPERATORS),  //NOI18N
     
     GEN(Css3Lexer.GEN, OTHERS),
-    NAMESPACE_SYM(Css3Lexer.NAMESPACE_SYM, KEYWORDS),
+    NAMESPACE_SYM(Css3Lexer.NAMESPACE_SYM, AT_RULE_SYMBOL),
     
-    TOPLEFTCORNER_SYM(Css3Lexer.TOPLEFTCORNER_SYM, KEYWORDS),
-    TOPLEFT_SYM(Css3Lexer.TOPLEFT_SYM, KEYWORDS),
-    TOPCENTER_SYM(Css3Lexer.TOPCENTER_SYM, KEYWORDS),
-    TOPRIGHT_SYM(Css3Lexer.TOPRIGHT_SYM, KEYWORDS),
-    TOPRIGHTCORNER_SYM(Css3Lexer.TOPRIGHTCORNER_SYM, KEYWORDS),
-    BOTTOMLEFTCORNER_SYM(Css3Lexer.BOTTOMLEFTCORNER_SYM, KEYWORDS),
-    BOTTOMLEFT_SYM(Css3Lexer.BOTTOMLEFT_SYM, KEYWORDS),
-    BOTTOMCENTER_SYM(Css3Lexer.BOTTOMCENTER_SYM, KEYWORDS),
-    BOTTOMRIGHT_SYM(Css3Lexer.BOTTOMRIGHT_SYM, KEYWORDS),
-    BOTTOMRIGHTCORNER_SYM(Css3Lexer.BOTTOMRIGHTCORNER_SYM, KEYWORDS),
-    LEFTTOP_SYM(Css3Lexer.LEFTTOP_SYM, KEYWORDS),
-    LEFTMIDDLE_SYM(Css3Lexer.LEFTMIDDLE_SYM, KEYWORDS),
-    LEFTBOTTOM_SYM(Css3Lexer.LEFTBOTTOM_SYM, KEYWORDS),
-    RIGHTTOP_SYM(Css3Lexer.RIGHTTOP_SYM, KEYWORDS),
-    RIGHTMIDDLE_SYM(Css3Lexer.RIGHTMIDDLE_SYM, KEYWORDS),
-    RIGHTBOTTOM_SYM(Css3Lexer.RIGHTBOTTOM_SYM, KEYWORDS),
+    TOPLEFTCORNER_SYM(Css3Lexer.TOPLEFTCORNER_SYM, AT_RULE_SYMBOL),
+    TOPLEFT_SYM(Css3Lexer.TOPLEFT_SYM, AT_RULE_SYMBOL),
+    TOPCENTER_SYM(Css3Lexer.TOPCENTER_SYM, AT_RULE_SYMBOL),
+    TOPRIGHT_SYM(Css3Lexer.TOPRIGHT_SYM, AT_RULE_SYMBOL),
+    TOPRIGHTCORNER_SYM(Css3Lexer.TOPRIGHTCORNER_SYM, AT_RULE_SYMBOL),
+    BOTTOMLEFTCORNER_SYM(Css3Lexer.BOTTOMLEFTCORNER_SYM, AT_RULE_SYMBOL),
+    BOTTOMLEFT_SYM(Css3Lexer.BOTTOMLEFT_SYM, AT_RULE_SYMBOL),
+    BOTTOMCENTER_SYM(Css3Lexer.BOTTOMCENTER_SYM, AT_RULE_SYMBOL),
+    BOTTOMRIGHT_SYM(Css3Lexer.BOTTOMRIGHT_SYM, AT_RULE_SYMBOL),
+    BOTTOMRIGHTCORNER_SYM(Css3Lexer.BOTTOMRIGHTCORNER_SYM, AT_RULE_SYMBOL),
+    LEFTTOP_SYM(Css3Lexer.LEFTTOP_SYM, AT_RULE_SYMBOL),
+    LEFTMIDDLE_SYM(Css3Lexer.LEFTMIDDLE_SYM, AT_RULE_SYMBOL),
+    LEFTBOTTOM_SYM(Css3Lexer.LEFTBOTTOM_SYM, AT_RULE_SYMBOL),
+    RIGHTTOP_SYM(Css3Lexer.RIGHTTOP_SYM, AT_RULE_SYMBOL),
+    RIGHTMIDDLE_SYM(Css3Lexer.RIGHTMIDDLE_SYM, AT_RULE_SYMBOL),
+    RIGHTBOTTOM_SYM(Css3Lexer.RIGHTBOTTOM_SYM, AT_RULE_SYMBOL),
     
-    COUNTER_STYLE_SYM(Css3Lexer.COUNTER_STYLE_SYM, KEYWORDS),
+    WEBKIT_KEYFRAMES_SYM(Css3Lexer.WEBKIT_KEYFRAMES_SYM, AT_RULE_SYMBOL),
+    
+    COUNTER_STYLE_SYM(Css3Lexer.COUNTER_STYLE_SYM, AT_RULE_SYMBOL),
     
     BEGINS(Css3Lexer.BEGINS, OPERATORS),
     ENDS(Css3Lexer.ENDS, OPERATORS),
     CONTAINS(Css3Lexer.CONTAINS, OPERATORS),
     
-    FONT_FACE_SYM(Css3Lexer.FONT_FACE_SYM, KEYWORDS),
-    HASH_CHAR_ONLY(Css3Lexer.T__116, OTHERS),
+    FONT_FACE_SYM(Css3Lexer.FONT_FACE_SYM, AT_RULE_SYMBOL),
+    HASH_CHAR_ONLY(Css3Lexer.T__117, OTHERS),
     
-    MOZ_DOCUMENT_SYM(Css3Lexer.MOZ_DOCUMENT_SYM, KEYWORDS),
+    MOZ_DOCUMENT_SYM(Css3Lexer.MOZ_DOCUMENT_SYM, AT_RULE_SYMBOL),
     MOZ_DOMAIN(Css3Lexer.MOZ_DOMAIN, URIS),
     MOZ_URL_PREFIX(Css3Lexer.MOZ_URL_PREFIX, URIS),
     MOZ_REGEXP(Css3Lexer.MOZ_REGEXP, STRINGS),
     
-    GENERIC_AT_RULE(Css3Lexer.GENERIC_AT_RULE, KEYWORDS);
+    GENERIC_AT_RULE(Css3Lexer.GENERIC_AT_RULE, AT_RULE_SYMBOL);
     
     private static final Map<Integer, CssTokenId> codesMap = new HashMap<Integer, CssTokenId>();
     static {
@@ -257,5 +262,24 @@ public enum CssTokenId implements TokenId {
         return primaryCategory;
     }
 
+    /**
+     * Verifies whether the given input text is lexed as on token of this type.
+     * 
+     * If some part of the input text is not matched by the css token the method returns false.
+     * 
+     * @since 1.12
+     * @param input source code to be lexed
+     * @return true if the whole source code is lexed as a token of this type.
+     */
+    public boolean matchesInput(CharSequence input) {
+        TokenHierarchy<CharSequence> th = TokenHierarchy.create(input, CssTokenId.language());
+        TokenSequence<CssTokenId> ts = th.tokenSequence(CssTokenId.language());
+        ts.moveStart();
+        if(!ts.moveNext()) {
+            return false;
+        }
+        org.netbeans.api.lexer.Token<CssTokenId> t = ts.token();
+        return !ts.moveNext() && t.id() == this;
+    }
 
 }

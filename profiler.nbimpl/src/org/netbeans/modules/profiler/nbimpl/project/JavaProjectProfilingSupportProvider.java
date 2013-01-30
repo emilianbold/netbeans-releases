@@ -60,7 +60,7 @@ import org.openide.util.NbBundle;
 public abstract class JavaProjectProfilingSupportProvider extends ProjectProfilingSupportProvider.Basic {
     
     private final Project project;
-    private JavaPlatform projectJavaPlatform = null;
+    private JavaPlatform customProjectJavaPlatform = null;
     
     @Override
     public boolean isProfilingSupported() {
@@ -100,53 +100,53 @@ public abstract class JavaProjectProfilingSupportProvider extends ProjectProfili
         "IncorrectJavaSpecVersionDialogMsg=The specification version of project Java Platform is greater than specification version of the\nplatform that will be used for profiling. You may experience problems unless you set the compiler\nparameter to generate bytecode compatible with the platform that will be used.\n\nDo you want to continue with the current settings?"
     })
     synchronized public JavaPlatform getProjectJavaPlatform() {
-        if (projectJavaPlatform == null) {
-            // 1. check if we have a Java platform to use for profiling
-            final ProfilerIDESettings gps = ProfilerIDESettings.getInstance();
-            JavaPlatform platform = JavaPlatform.getJavaPlatformById(gps.getJavaPlatformForProfiling());
-            projectJavaPlatform = resolveProjectJavaPlatform();
+        // 1. check if we have a Java platform to use for profiling
+        final ProfilerIDESettings gps = ProfilerIDESettings.getInstance();
+        JavaPlatform platform = JavaPlatform.getJavaPlatformById(gps.getJavaPlatformForProfiling());
+        JavaPlatform projectJavaPlatform = resolveProjectJavaPlatform();
 
-            if (platform == null) { // should use the one defined in project
-                platform = projectJavaPlatform;
+        if (platform == null) { // should use the one defined in project
+            platform = projectJavaPlatform;
 
-                if ((platform == null) || !MiscUtils.isSupportedJVM(platform.getSystemProperties())) {
-                    platform = JavaPlatformSelector.getDefault().selectPlatformToUse();
+            if ((platform == null) || !MiscUtils.isSupportedJVM(platform.getSystemProperties())) {
+                if (customProjectJavaPlatform == null) {
+                    customProjectJavaPlatform = JavaPlatformSelector.getDefault().selectPlatformToUse();
 
-                    if (platform == null) {
-                        projectJavaPlatform = null;
+                    if (customProjectJavaPlatform == null) {
                         return null;
                     }
-                    projectJavaPlatform = platform;
                 }
+                platform = customProjectJavaPlatform;
             }
+        }
 
-            if (projectJavaPlatform != null) { // check that the project platform is not newer than platform to use
+        if (projectJavaPlatform != null) { // check that the project platform is not newer than platform to use
 
-                while (true) {
-                    if (projectJavaPlatform.getVersion().compareTo(platform.getVersion()) > 0) {
-                        Boolean ret = ProfilerDialogs.displayCancellableConfirmation(
-                                Bundle.IncorrectJavaSpecVersionDialogMsg(),
-                                Bundle.IncorrectJavaSpecVersionDialogCaption());
+            while (true) {
+                if (projectJavaPlatform.getVersion().compareTo(platform.getVersion()) > 0) {
+                    Boolean ret = ProfilerDialogs.displayCancellableConfirmation(
+                            Bundle.IncorrectJavaSpecVersionDialogMsg(),
+                            Bundle.IncorrectJavaSpecVersionDialogCaption());
 
-                        if (Boolean.TRUE.equals(ret)) {
-                            break;
-                        } else if (Boolean.FALSE.equals(ret)) {
-                            platform = JavaPlatformSelector.getDefault().selectPlatformToUse();
+                    if (Boolean.TRUE.equals(ret)) {
+                        break;
+                    } else if (Boolean.FALSE.equals(ret)) {
+                        customProjectJavaPlatform = JavaPlatformSelector.getDefault().selectPlatformToUse();
 
-                            if (platform == null) {
-                                return null; // cancelled by the user
-                            }
-                        } else { // cancelled
-
-                            return null;
+                        if (customProjectJavaPlatform == null) {
+                            return null; // cancelled by the user
                         }
-                    } else {
-                        break; // version comparison OK.
+                        platform = customProjectJavaPlatform;
+                    } else { // cancelled
+
+                        return null;
                     }
+                } else {
+                    break; // version comparison OK.
                 }
             }
         }
-        return projectJavaPlatform;
+        return platform;
     }
     
     abstract protected JavaPlatform resolveProjectJavaPlatform();

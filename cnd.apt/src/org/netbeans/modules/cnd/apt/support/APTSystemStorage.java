@@ -50,6 +50,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import org.netbeans.modules.cnd.apt.impl.support.APTMacroCache;
+import org.netbeans.modules.cnd.apt.impl.support.SnapshotHolderCache;
 import org.netbeans.modules.cnd.apt.impl.support.APTSystemMacroMap;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
@@ -124,6 +125,7 @@ public final class APTSystemStorage {
     public static void dispose() {
         instance.disposeImpl();
         APTMacroCache.getManager().dispose();
+        SnapshotHolderCache.getManager().dispose();
         IncludeDirEntry.disposeCache();
     }
 }

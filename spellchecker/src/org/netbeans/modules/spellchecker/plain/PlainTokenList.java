@@ -73,6 +73,16 @@ public class PlainTokenList implements TokenList {
     public void setStartOffset(int offset) {
         currentWord = null;
         currentStartOffset = (-1);
+        CharSequence content = DocumentUtilities.getText(doc);
+
+        while (offset > 0 && offset < content.length()) {
+            if (!Character.isLetter(content.charAt(offset))) {
+                break;
+            }
+            
+            offset--;
+        }
+        
         this.nextSearchOffset = offset;
         FileObject fileObject = FileUtil.getConfigFile ("Spellcheckers/Plain");
         Boolean b = (Boolean) fileObject.getAttribute ("Hidden");

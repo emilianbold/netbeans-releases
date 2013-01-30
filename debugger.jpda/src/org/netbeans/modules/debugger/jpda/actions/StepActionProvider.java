@@ -365,18 +365,10 @@ implements Executor {
         try {
         // TODO: fetch current engine from the Event
         // 1) init info about current state
-        StepRequest sr = (StepRequest) EventWrapper.request(ev);
-        JPDAThreadImpl st = getDebuggerImpl().getThread(StepRequestWrapper.thread(sr));
-        st.setInStep(false, null);
-        /*if (stepWatch != null) {
-            stepWatch.done();
-            stepWatch = null;
-        }*/
         LocatableEvent event = (LocatableEvent) ev;
-        String className = ReferenceTypeWrapper.name(LocationWrapper.declaringType(LocatableWrapper.location(event)));
         ThreadReference tr = LocatableEventWrapper.thread(event);
-        setLastOperation(tr);
-        removeStepRequests (tr);
+        StepRequest sr = (StepRequest) EventWrapper.request(ev);
+        JPDAThreadImpl st = getDebuggerImpl().getThread(tr); // StepRequestWrapper.thread(sr));
         Lock lock;
         if (getDebuggerImpl().getSuspend() == JPDADebugger.SUSPEND_EVENT_THREAD) {
             lock = st.accessLock.writeLock();
@@ -385,6 +377,23 @@ implements Executor {
         }
         lock.lock();
         try {
+            st.setInStep(false, null);
+            removeStepRequests (tr);
+            try {
+                boolean suspended = ThreadReferenceWrapper.isSuspended0(tr);
+                if (!suspended) {
+                    // The thread was already resumed in the mean time by someone else.
+                    return false;
+                }
+            } catch (IllegalThreadStateExceptionWrapper itsex) {
+                return false;
+            }
+            /*if (stepWatch != null) {
+                stepWatch.done();
+                stepWatch = null;
+            }*/
+            String className = ReferenceTypeWrapper.name(LocationWrapper.declaringType(LocatableWrapper.location(event)));
+            setLastOperation(tr);
             //S ystem.out.println("/nStepAction.exec");
 
             int suspendPolicy = getDebuggerImpl().getSuspend();
@@ -393,7 +402,7 @@ implements Executor {
             if (isSyntheticLocation) {
                 //S ystem.out.println("In synthetic method -> STEP OVER/OUT again");
 
-                int step = StepRequestWrapper.depth((StepRequest) EventWrapper.request(ev));
+                int step = StepRequestWrapper.depth(sr);
                 VirtualMachine vm = getDebuggerImpl ().getVirtualMachine ();
                 if (vm == null) {
                     removeBPListener();
@@ -527,7 +536,17 @@ implements Executor {
         try {
             loc = StackFrameWrapper.location(ThreadReferenceWrapper.frame(tr, 0));
         } catch (IncompatibleThreadStateException itsex) {
-            Exceptions.printStackTrace(itsex);
+            try {
+                int status = ThreadReferenceWrapper.status0(tr);
+                if (!(status == ThreadReference.THREAD_STATUS_UNKNOWN ||
+                    status == ThreadReference.THREAD_STATUS_ZOMBIE ||
+                    status == ThreadReference.THREAD_STATUS_NOT_STARTED)) {
+                    
+                    Exceptions.printStackTrace(Exceptions.attachMessage(itsex, "Thread's status = "+status+", suspended = "+ThreadReferenceWrapper.isSuspended0(tr)));
+                }
+            } catch (IllegalThreadStateExceptionWrapper ex) {
+                // A bad state - ignore
+            }
             logger.fine("Incompatible Thread State: "+itsex.getLocalizedMessage());
             return true;
         } catch (IllegalThreadStateExceptionWrapper itsex) {

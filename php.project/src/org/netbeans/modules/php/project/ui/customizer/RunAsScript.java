@@ -78,6 +78,7 @@ import org.openide.util.WeakListeners;
 /**
  * @author  Radek Matous, Tomas Mysik
  */
+@org.netbeans.api.annotations.common.SuppressWarnings("SE_BAD_FIELD_STORE")
 public final class RunAsScript extends RunAsPanel.InsidePanel {
 
     private static final long serialVersionUID = 5468731321321L;
@@ -229,8 +230,7 @@ public final class RunAsScript extends RunAsPanel.InsidePanel {
     }
 
     void composeHint() {
-        String hint = createRunConfig().getHint();
-        hintLabel.setText(hint != null ? "<html><body>" + hint : " "); // NOI18N
+        hintLabel.setText("<html><body>" + createRunConfig().getHint()); // NOI18N
     }
 
     private class FieldUpdater extends TextFieldUpdater {

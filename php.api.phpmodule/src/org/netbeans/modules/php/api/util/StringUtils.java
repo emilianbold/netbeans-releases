@@ -76,7 +76,6 @@ public final class StringUtils {
      * @return <code>true</code> if the String is <code>null</code>
      *         or has no characters
      * @see  #hasText(String)
-     * @since 1.57
      */
     public static boolean isEmpty(String input) {
         return input == null || input.isEmpty();
@@ -134,7 +133,6 @@ public final class StringUtils {
      * @param text the text to get {@link Pattern pattern} for
      * @return the case-insensitive {@link Pattern pattern} or <code>null</code>
      *         if the <tt>text</tt> does not contain any "?" or "*" characters
-     * @since 1.6
      * @see #getExactPattern(String)
      */
     public static Pattern getPattern(String text) {
@@ -152,13 +150,51 @@ public final class StringUtils {
      * @param text the text to get {@link Pattern pattern} for
      * @return the case-insensitive {@link Pattern pattern} or <code>null</code>
      *         if the <tt>text</tt> does not contain any "?" or "*" characters
-     * @since 1.6
      * @see #getPattern(String)
      */
     public static Pattern getExactPattern(String text) {
         Parameters.notNull("text", text); // NOI18N
 
         return getPattern0(text, "^", "$"); // NOI18N
+    }
+
+    /**
+     * Keep all digits and letters only; other characters are replaced with dash ("-"). All upper-cased letters
+     * are replaced with dash ("-") and its lower-cased variants. No more than one dash ("-") is added at once.
+     * <p>
+     * Example: "My Super_Company1" is converted to "my-super-company1".
+     * @param input text to be converted
+     * @return lower-cased input string
+     * @since 2.1
+     */
+    public static String webalize(String input) {
+        StringBuilder sb = new StringBuilder(input.length() * 2);
+        final char dash = '-'; // NOI18N
+        char lastChar = 0;
+        for (int i = 0; i < input.length(); ++i) {
+            boolean addDash = false;
+            char ch = input.charAt(i);
+            if (Character.isLetterOrDigit(ch)) {
+                if (Character.isUpperCase(ch)) {
+                    addDash = true;
+                    ch = Character.toLowerCase(ch);
+                }
+            } else {
+                ch = dash;
+            }
+            if (ch == dash && (lastChar == dash || sb.length() == 0)) {
+                continue;
+            }
+            if (addDash && lastChar != dash && sb.length() > 0) {
+                sb.append(dash);
+            }
+            sb.append(ch);
+            lastChar = ch;
+        }
+        if (lastChar == dash) {
+            sb.deleteCharAt(sb.length() - 1);
+        }
+        return sb.toString();
     }
 
     private static Pattern getPattern0(String text, String prefix, String suffix) {

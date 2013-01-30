@@ -51,7 +51,6 @@ import org.openide.filesystems.FileObject;
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
 public abstract class PHPVerificationError implements Badging {
-
     private final FileObject fileObject;
     private final int startOffset;
     private final int endOffset;

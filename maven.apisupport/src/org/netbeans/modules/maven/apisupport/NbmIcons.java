@@ -35,34 +35,37 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.maven.apisupport;
 
 import javax.swing.Icon;
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.spi.nodes.SpecialIcon;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.util.ImageUtilities;
 
-@ProjectServiceProvider(service=SpecialIcon.class, projectType={
-    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_NBM,
-    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_NBM_APPLICATION
-})
+@ProjectServiceProvider(service = SpecialIcon.class, projectType =
+"org-netbeans-modules-maven/" + NbMavenProject.TYPE_NBM)
 public class NbmIcons implements SpecialIcon {
 
-    private final Project project;
-
-    public NbmIcons(Project project) {
-        this.project = project;
+    public NbmIcons() {
     }
 
-    @Override public Icon getIcon() {
-        if (project.getLookup().lookup(NbMavenProject.class).getPackagingType().equals(NbMavenProject.TYPE_NBM)) {
-            return ImageUtilities.loadImageIcon("org/netbeans/modules/maven/apisupport/nbmicon.png", true);
-        } else {
+    @Override
+    public Icon getIcon() {
+
+        return ImageUtilities.loadImageIcon("org/netbeans/modules/maven/apisupport/nbmicon.png", true);
+    }
+
+    @ProjectServiceProvider(service = SpecialIcon.class, projectType =
+    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_NBM_APPLICATION)
+    public static class NbmAppIcons implements SpecialIcon {
+
+        public NbmAppIcons() {
+        }
+
+        @Override
+        public Icon getIcon() {
             return ImageUtilities.loadImageIcon("org/netbeans/modules/maven/apisupport/suiteicon.png", true);
         }
     }
-
 }

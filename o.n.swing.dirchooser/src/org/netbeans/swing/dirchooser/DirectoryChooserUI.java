@@ -170,11 +170,11 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
     private String homeFolderTooltipText = null;
     private String homeFolderAccessibleName = null;
     
-    private Action newFolderAction = new NewDirectoryAction();
+    private final NewDirectoryAction newFolderAction = new NewDirectoryAction();
     
     private BasicFileView fileView = new DirectoryChooserFileView();
     
-    private static JTree tree;
+    private JTree tree;
     
     private DirectoryTreeModel model;
     
@@ -184,7 +184,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
     
     private InputBlocker blocker;
     
-    private static JFileChooser fileChooser;
+    private JFileChooser fileChooser;
     
     private boolean changeDirectory = true;
     
@@ -1454,7 +1454,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
         File currentDirectory = fc.getCurrentDirectory();
         if(currentDirectory != null) {
             directoryComboBoxModel.addItem(currentDirectory);
-            newFolderAction.setEnabled(currentDirectory.canWrite());
+            newFolderAction.enable(currentDirectory);
             getChangeToParentDirectoryAction().setEnabled(!fsv.isRoot(currentDirectory));
             updateWorker.updateTree(currentDirectory);
             if (fc.isDirectorySelectionEnabled() && !fc.isFileSelectionEnabled()) {
@@ -2229,9 +2229,10 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
                 
                 if(file != null) {
                     setSelected(getSelectedNodes(tree.getSelectionPaths()));
-                    newFolderAction.setEnabled(canWrite(file) && file.isDirectory());
+                    newFolderAction.setEnabled(false);
                     
-                    if(file.isDirectory()) {
+                    if(!node.isLeaf()) {
+                        newFolderAction.enable(file);
                         setDirectorySelected(true);
                     }
                 }
@@ -2266,7 +2267,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
             if (path != null) {
                 
                 DirectoryNode node = (DirectoryNode) path.getLastPathComponent();
-                newFolderAction.setEnabled(canWrite(node.getFile()));
+                newFolderAction.enable(node.getFile());
     
                 if (SwingUtilities.isLeftMouseButton(e) && (e.getClickCount() == 2)) {
                     handleDblClick(node);
@@ -2556,6 +2557,10 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
 
     
     private class NewDirectoryAction extends AbstractAction {
+
+        private final RequestProcessor.Task enableTask = RP.create(new ActionEnabler());
+        private File file;
+
         @Override
         public void actionPerformed(ActionEvent e) {
             final TreePath path = tree.getSelectionPath();
@@ -2575,6 +2580,29 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
                     tree.expandPath(path);
                 }
             }
+        }
+
+        private void enable (File file) {
+            setEnabled(false);
+            this.file = file;
+            enableTask.schedule(0);
+        }
+
+        private class ActionEnabler implements Runnable {
+            @Override
+            public void run () {
+                final File f = file;
+                if (canWrite(f)) {
+                    EventQueue.invokeLater(new Runnable() {
+                        @Override
+                        public void run () {
+                            if (f == file) {
+                                setEnabled(true);
+                            }
+                        }
+                    });
+                }
+            };
         }
     }
     

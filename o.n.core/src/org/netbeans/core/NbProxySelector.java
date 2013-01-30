@@ -107,6 +107,7 @@ public final class NbProxySelector extends ProxySelector {
                     assert protocol != null : "Invalid scheme of uri " + uri + ". Scheme cannot be null!";
                     if (dontUseProxy (ProxySettings.SystemProxySettings.getNonProxyHosts (), uri.getHost ())) {
                         res.add (Proxy.NO_PROXY);
+                        break;
                     }
                     if (protocol.toLowerCase (Locale.US).startsWith("http")) {
                         String ports = ProxySettings.SystemProxySettings.getHttpPort ();
@@ -136,6 +137,7 @@ public final class NbProxySelector extends ProxySelector {
                 // handling nonProxyHosts first
                 if (dontUseProxy (ProxySettings.getNonProxyHosts (), uri.getHost ())) {
                     res.add (Proxy.NO_PROXY);
+                    break;
                 }
                 if (protocol.toLowerCase (Locale.US).startsWith("http")) {
                     String hosts = ProxySettings.getHttpHost ();
@@ -145,7 +147,7 @@ public final class NbProxySelector extends ProxySelector {
                         Proxy p = new Proxy (Proxy.Type.HTTP,  new InetSocketAddress (hosts, porti));
                         res.add (p);
                     } else {
-                        LOG.info ("Incomplete HTTP Proxy [" + hosts + "/" + ports + "] found in ProxySelector[Type: " + ProxySettings.getProxyType () + "] for uri " + uri + ". ");
+                        LOG.fine ("Incomplete HTTP Proxy [" + hosts + "/" + ports + "] found in ProxySelector[Type: " + ProxySettings.getProxyType () + "] for uri " + uri + ". ");
                         if (original != null) {
                             LOG.finest ("Fallback to the default ProxySelector which returns " + original.select (uri));
                             res.addAll (original.select (uri));
@@ -159,7 +161,7 @@ public final class NbProxySelector extends ProxySelector {
                         Proxy p = new Proxy (Proxy.Type.SOCKS,  new InetSocketAddress (hosts, porti));
                         res.add (p);
                     } else {
-                        LOG.info ("Incomplete SOCKS Server [" + hosts + "/" + ports + "] found in ProxySelector[Type: " + ProxySettings.getProxyType () + "] for uri " + uri + ". ");
+                        LOG.fine ("Incomplete SOCKS Server [" + hosts + "/" + ports + "] found in ProxySelector[Type: " + ProxySettings.getProxyType () + "] for uri " + uri + ". ");
                         if (original != null) {
                             LOG.finest ("Fallback to the default ProxySelector which returns " + original.select (uri));
                             res.addAll (original.select (uri));
@@ -177,6 +179,7 @@ public final class NbProxySelector extends ProxySelector {
                     // handling nonProxyHosts first
                     if (dontUseProxy (ProxySettings.getNonProxyHosts (), uri.getHost ())) {
                         res.add (Proxy.NO_PROXY);
+                        break;
                     }
                     ProxyAutoConfig pac = ProxyAutoConfig.get(getPacFile());
                     assert pac != null : "Instance of ProxyAutoConfig found for " + getPacFile();
@@ -185,12 +188,15 @@ public final class NbProxySelector extends ProxySelector {
                         res.add(Proxy.NO_PROXY);
                     }
                     if (pac.getPacURI().getHost() == null) {
-                        LOG.finest("Malformed PAC URI " + pac.getPacURI() + " for URI " + uri);
-                        res.add(Proxy.NO_PROXY);
+                        LOG.log(Level.FINEST, "Identifying proxy for URI {0}---{1}, PAC LOCAL URI: {2}", //NOI18N
+                                new Object[] { uri.toString(), uri.getHost(), pac.getPacURI().toString() });
+                        res.addAll(pac.findProxyForURL(uri));
                     } else if (pac.getPacURI().getHost().equals(uri.getHost())) {
                         // don't proxy PAC files
                         res.add(Proxy.NO_PROXY);
                     } else {
+                        LOG.log(Level.FINEST, "Identifying proxy for URI {0}---{1}, PAC URI: {2}---{3}", //NOI18N
+                                new Object[] { uri.toString(), uri.getHost(), pac.getPacURI().toString(), pac.getPacURI().getHost() });
                         res.addAll(pac.findProxyForURL(uri)); // NOI18N
                     }
                 }
@@ -200,6 +206,7 @@ public final class NbProxySelector extends ProxySelector {
                 // handling nonProxyHosts first
                 if (dontUseProxy (ProxySettings.getNonProxyHosts (), uri.getHost ())) {
                     res.add (Proxy.NO_PROXY);
+                    break;
                 }
                 ProxyAutoConfig pac = ProxyAutoConfig.get(getPacFile());
                 assert pac != null : "Instance of ProxyAutoConfig found for " + getPacFile();
@@ -208,12 +215,15 @@ public final class NbProxySelector extends ProxySelector {
                     res.add(Proxy.NO_PROXY);
                 }
                 if (pac.getPacURI().getHost() == null) {
-                    LOG.finest("Malformed PAC URI " + pac.getPacURI() + " for URI " + uri);
-                    res.add(Proxy.NO_PROXY);
+                        LOG.log(Level.FINEST, "Identifying proxy for URI {0}---{1}, PAC LOCAL URI: {2}", //NOI18N
+                                new Object[] { uri.toString(), uri.getHost(), pac.getPacURI().toString() });
+                        res.addAll(pac.findProxyForURL(uri));
                 } else if (pac.getPacURI().getHost().equals(uri.getHost())) {
                     // don't proxy PAC files
                     res.add(Proxy.NO_PROXY);
                 } else {
+                    LOG.log(Level.FINEST, "Identifying proxy for URI {0}---{1}, PAC URI: {2}---{3}", //NOI18N
+                            new Object[] { uri.toString(), uri.getHost(), pac.getPacURI().toString(), pac.getPacURI().getHost() });
                     res.addAll(pac.findProxyForURL(uri)); // NOI18N
                 }
                 res.add (Proxy.NO_PROXY);

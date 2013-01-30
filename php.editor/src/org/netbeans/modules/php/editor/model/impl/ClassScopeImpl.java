@@ -41,26 +41,37 @@
  */
 package org.netbeans.modules.php.editor.model.impl;
 
-import org.netbeans.modules.php.editor.api.QualifiedName;
-import java.util.Collection;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.php.editor.api.ElementQuery;
 import org.netbeans.modules.php.editor.api.PhpElementKind;
+import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.api.elements.ClassElement;
 import org.netbeans.modules.php.editor.api.elements.InterfaceElement;
 import org.netbeans.modules.php.editor.api.elements.MethodElement;
+import org.netbeans.modules.php.editor.api.elements.TraitElement;
 import org.netbeans.modules.php.editor.api.elements.TypeConstantElement;
 import org.netbeans.modules.php.editor.api.elements.TypeElement;
 import org.netbeans.modules.php.editor.index.Signature;
-import org.netbeans.modules.php.editor.model.*;
 import org.netbeans.modules.php.editor.model.ClassConstantElement;
+import org.netbeans.modules.php.editor.model.ClassScope;
+import org.netbeans.modules.php.editor.model.FieldElement;
 import org.netbeans.modules.php.editor.model.IndexScope;
+import org.netbeans.modules.php.editor.model.InterfaceScope;
+import org.netbeans.modules.php.editor.model.MethodScope;
+import org.netbeans.modules.php.editor.model.ModelElement;
 import org.netbeans.modules.php.editor.model.ModelUtils;
+import org.netbeans.modules.php.editor.model.NamespaceScope;
+import org.netbeans.modules.php.editor.model.Scope;
+import org.netbeans.modules.php.editor.model.TraitScope;
+import org.netbeans.modules.php.editor.model.TypeScope;
+import org.netbeans.modules.php.editor.model.VariableName;
 import org.netbeans.modules.php.editor.model.nodes.ClassDeclarationInfo;
 import org.netbeans.modules.php.editor.parser.astnodes.BodyDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
@@ -76,15 +87,18 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
     private Union2<String, List<ClassScopeImpl>> superClass;
     private Collection<QualifiedName> possibleFQSuperClassNames;
     private Collection<QualifiedName> usedTraits;
+    private Set<? super TypeScope> superRecursionDetection = new HashSet<TypeScope>();
+    private Set<? super TypeScope> subRecursionDetection = new HashSet<TypeScope>();
 
     @Override
     void addElement(ModelElementImpl element) {
-        assert  element instanceof TypeScope || element instanceof VariableName ||element instanceof MethodScope ||
-                element instanceof FieldElement || element instanceof ClassConstantElement : element.getPhpElementKind();
+        assert element instanceof TypeScope || element instanceof VariableName
+                || element instanceof MethodScope || element instanceof FieldElement
+                || element instanceof ClassConstantElement : element.getPhpElementKind();
         if (element instanceof TypeScope) {
             Scope inScope = getInScope();
             if (inScope instanceof ScopeImpl) {
-                ((ScopeImpl)inScope).addElement(element);
+                ((ScopeImpl) inScope).addElement(element);
             }
         } else {
             super.addElement(element);
@@ -95,7 +109,6 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
     ClassScopeImpl(Scope inScope, ClassDeclarationInfo nodeInfo) {
         super(inScope, nodeInfo);
         Expression superId = nodeInfo.getSuperClass();
-        String superName = null;
         if (superId != null) {
             NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(inScope);
             QualifiedName superClassName = QualifiedName.create(superId);
@@ -104,7 +117,9 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
             } else {
                 this.possibleFQSuperClassNames = VariousUtils.getPossibleFQN(superClassName, nodeInfo.getSuperClass().getStartOffset(), namespaceScope);
             }
-            this.superClass = Union2.<String, List<ClassScopeImpl>>createFirst(superClassName.toString());
+            if (superClassName != null) {
+                this.superClass = Union2.<String, List<ClassScopeImpl>>createFirst(superClassName.toString());
+            }
         } else {
             this.possibleFQSuperClassNames = Collections.emptyList();
             this.superClass = Union2.<String, List<ClassScopeImpl>>createFirst(null);
@@ -142,7 +157,7 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
 
         assert superClass.hasFirst();
         String superClasName = superClass.first();
-        if(possibleFQSuperClassNames != null && possibleFQSuperClassNames.size() > 0) {
+        if (possibleFQSuperClassNames != null && possibleFQSuperClassNames.size() > 0) {
             retval = new ArrayList<ClassScope>();
             for (QualifiedName qualifiedName : possibleFQSuperClassNames) {
                 retval.addAll(IndexScopeImpl.getClasses(qualifiedName, this));
@@ -156,51 +171,40 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
     }
 
     @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append(super.toString());
-        Collection<? extends ClassScope> extendedClasses = getSuperClasses();
-        ClassScope extClass = ModelUtils.getFirst(extendedClasses);
-        if (extClass != null) {
-            sb.append(" extends ").append(extClass.getName());//NOI18N
-        }
-        List<? extends InterfaceScope> implementedInterfaces = getSuperInterfaceScopes();
-        if (implementedInterfaces.size() > 0) {
-            sb.append(" implements ");
-            for (InterfaceScope interfaceScope : implementedInterfaces) {
-                sb.append(interfaceScope.getName()).append(" ");
-            }
-        }
-        return sb.toString();
-    }
-
-    @Override
     public String asString(PrintAs as) {
         StringBuilder retval = new StringBuilder();
         switch (as) {
             case NameAndSuperTypes:
-                retval.append(getName()); //NOI18N
-            case SuperTypes:
-                QualifiedName superClassName = getSuperClassName();
-                if (superClassName != null) {
-                    retval.append(" extends  ");//NOI18N
-                    retval.append(superClassName.getName());
-                }
-                Set<QualifiedName> superIfaces = getSuperInterfaces();
-                if (!superIfaces.isEmpty()) {
-                    retval.append(" implements ");//NOI18N
-                }
-                StringBuilder ifacesBuffer = new StringBuilder();
-                for (QualifiedName qualifiedName : superIfaces) {
-                    if (ifacesBuffer.length() > 0) {
-                        ifacesBuffer.append(", ");//NOI18N
-                    }
-                    ifacesBuffer.append(qualifiedName.getName());
-                }
-                retval.append(ifacesBuffer);
+                retval.append(getName());
+                printAsSuperTypes(retval);
                 break;
+            case SuperTypes:
+                printAsSuperTypes(retval);
+                break;
+            default:
+                assert false : as;
         }
         return retval.toString();
+    }
+
+    private void printAsSuperTypes(StringBuilder sb) {
+        QualifiedName superClassName = getSuperClassName();
+        if (superClassName != null) {
+            sb.append(" extends  "); //NOI18N
+            sb.append(superClassName.getName());
+        }
+        Set<QualifiedName> superIfaces = getSuperInterfaces();
+        if (!superIfaces.isEmpty()) {
+            sb.append(" implements "); //NOI18N
+        }
+        StringBuilder ifacesBuffer = new StringBuilder();
+        for (QualifiedName qualifiedName : superIfaces) {
+            if (ifacesBuffer.length() > 0) {
+                ifacesBuffer.append(", "); //NOI18N
+            }
+            ifacesBuffer.append(qualifiedName.getName());
+        }
+        sb.append(ifacesBuffer);
     }
 
     @Override
@@ -231,9 +235,11 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
                 MethodElement indexedFunction = classMember;
                 TypeElement type = indexedFunction.getType();
                 if (type.isInterface()) {
-                    allMethods.add(new MethodScopeImpl(new InterfaceScopeImpl(indexScope, (InterfaceElement)type), indexedFunction));
+                    allMethods.add(new MethodScopeImpl(new InterfaceScopeImpl(indexScope, (InterfaceElement) type), indexedFunction));
+                } else if (type.isTrait()) {
+                    allMethods.add(new MethodScopeImpl(new TraitScopeImpl(indexScope, (TraitElement) type), indexedFunction));
                 } else {
-                    allMethods.add(new MethodScopeImpl(new ClassScopeImpl(indexScope, (ClassElement)type), indexedFunction));
+                    allMethods.add(new MethodScopeImpl(new ClassScopeImpl(indexScope, (ClassElement) type), indexedFunction));
                 }
             }
         }
@@ -245,9 +251,22 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
                 MethodElement indexedFunction = classMember;
                 TypeElement type = indexedFunction.getType();
                 if (type.isInterface()) {
-                    allMethods.add(new MethodScopeImpl(new InterfaceScopeImpl(indexScope, (InterfaceElement)type), indexedFunction));
+                    allMethods.add(new MethodScopeImpl(new InterfaceScopeImpl(indexScope, (InterfaceElement) type), indexedFunction));
                 } else {
-                    allMethods.add(new MethodScopeImpl(new ClassScopeImpl(indexScope, (ClassElement)type), indexedFunction));
+                    allMethods.add(new MethodScopeImpl(new ClassScopeImpl(indexScope, (ClassElement) type), indexedFunction));
+                }
+            }
+        }
+        Set<TraitScope> traitScopes = new HashSet<TraitScope>(getTraits());
+        for (TraitScope traitScope : traitScopes) {
+            Set<MethodElement> indexedMethods =
+                    org.netbeans.modules.php.editor.api.elements.ElementFilter.forPrivateModifiers(false).filter(index.getAllMethods(traitScope));
+            for (MethodElement methodElement : indexedMethods) {
+                TypeElement type = methodElement.getType();
+                if (type.isTrait()) {
+                    allMethods.add(new MethodScopeImpl(new TraitScopeImpl(indexScope, (TraitElement) type), methodElement));
+                } else {
+                    allMethods.add(new MethodScopeImpl(new ClassScopeImpl(indexScope, (ClassElement) type), methodElement));
                 }
             }
         }
@@ -305,17 +324,16 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
 
     @Override
     public String getNormalizedName() {
-        return super.getNormalizedName()+(getSuperClassName() != null ? getSuperClassName() : "");//NOI18N
+        return super.getNormalizedName() + (getSuperClassName() != null ? getSuperClassName() : ""); //NOI18N
     }
 
 
 
-    @NonNull
+    @CheckForNull
     @Override
     public QualifiedName getSuperClassName() {
-        List<? extends ClassScope> retval = null;
         if (superClass != null) {
-            retval = superClass.hasSecond() ? superClass.second() : null;//this
+            List<? extends ClassScope> retval = superClass.hasSecond() ? superClass.second() : null; //this
             if (retval == null) {
                 assert superClass.hasFirst();
                 String superClasName = superClass.first();
@@ -330,7 +348,7 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
                 }
             }
         }
-        return null;//NOI18N
+        return null;
     }
 
     @Override
@@ -355,13 +373,13 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
         }
         sb.append(Signature.ITEM_DELIMITER);
         NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(this);
-        QualifiedName qualifiedName = namespaceScope.getQualifiedName();
+        QualifiedName qualifiedName = namespaceScope != null ? namespaceScope.getQualifiedName() : QualifiedName.create("");
         sb.append(qualifiedName.toString()).append(Signature.ITEM_DELIMITER);
         List<? extends String> superInterfaceNames = getSuperInterfaceNames();
         StringBuilder ifaceSb = new StringBuilder();
         for (String iface : superInterfaceNames) {
             if (ifaceSb.length() > 0) {
-                ifaceSb.append(",");//NOI18N
+                ifaceSb.append(","); //NOI18N
             }
             ifaceSb.append(iface);
         }
@@ -372,7 +390,7 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
             Collection<QualifiedName> fQSuperInterfaceNames = getFQSuperInterfaceNames();
             for (QualifiedName fQSuperInterfaceName : fQSuperInterfaceNames) {
                 if (fqIfaceSb.length() > 0) {
-                    fqIfaceSb.append(",");//NOI18N
+                    fqIfaceSb.append(","); //NOI18N
                 }
                 fqIfaceSb.append(fQSuperInterfaceName.toString());
             }
@@ -391,7 +409,6 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
             sb.append(traitSb);
         }
         sb.append(Signature.ITEM_DELIMITER);
-        //TODO: add ifaces
         return sb.toString();
     }
 
@@ -415,6 +432,7 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
         sb.append(Signature.ITEM_DELIMITER);
         sb.append(BodyDeclaration.Modifier.PUBLIC).append(Signature.ITEM_DELIMITER);
         NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(this);
+        assert namespaceScope != null;
         QualifiedName qualifiedName = namespaceScope.getQualifiedName();
         sb.append(qualifiedName.toString()).append(Signature.ITEM_DELIMITER);
 
@@ -425,7 +443,7 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
     @Override
     public QualifiedName getNamespaceName() {
         if (indexedElement instanceof ClassElement) {
-            ClassElement indexedClass = (ClassElement)indexedElement;
+            ClassElement indexedClass = (ClassElement) indexedElement;
             return indexedClass.getNamespaceName();
         }
         return super.getNamespaceName();
@@ -455,15 +473,14 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
         return filter(getElements(), new ElementFilter() {
             @Override
             public boolean isAccepted(ModelElement element) {
-                if (element instanceof MethodScopeImpl && ((MethodScopeImpl)element).isConstructor()
+                if (element instanceof MethodScope && ((MethodScope) element).isInitiator()
                         && element instanceof LazyBuild) {
-                    LazyBuild scope = (LazyBuild)element;
+                    LazyBuild scope = (LazyBuild) element;
                     if (!scope.isScanned()) {
                         scope.scan();
                     }
                 }
-                boolean value = element.getPhpElementKind().equals(PhpElementKind.VARIABLE);
-                return value;
+                return element.getPhpElementKind().equals(PhpElementKind.VARIABLE);
             }
         });
     }
@@ -491,7 +508,7 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
     }
 
     @Override
-    public Collection<? extends TraitScope> getTraits(){
+    public Collection<? extends TraitScope> getTraits() {
         Collection<TraitScope> result = new ArrayList<TraitScope>();
         for (QualifiedName qualifiedName : getUsedTraits()) {
             result.addAll(IndexScopeImpl.getTraits(qualifiedName, this));
@@ -502,21 +519,24 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
     @Override
     public boolean isSuperTypeOf(final TypeScope subType) {
         boolean result = false;
-        if (subType.isClass()) {
-            for (ClassScope classScope : ((ClassScope) subType).getSuperClasses()) {
-                if (classScope.equals(this)) {
-                    result = true;
-                } else {
-                    result = isSuperTypeOf(classScope);
+        if (superRecursionDetection.add(subType)) {
+            if (subType.isClass()) {
+                assert (subType instanceof ClassScope);
+                for (ClassScope classScope : ((ClassScope) subType).getSuperClasses()) {
+                    if (classScope.equals(this)) {
+                        result = true;
+                    } else {
+                        result = isSuperTypeOf(classScope);
+                    }
+                    if (result) {
+                        break;
+                    }
                 }
-                if (result == true) {
-                    break;
-                }
+            } else if (subType.isTrait()) {
+                result = false;
+            } else {
+                result = super.isSuperTypeOf(subType);
             }
-        } else if (subType.isTrait()) {
-            result = false;
-        } else {
-            result = super.isSuperTypeOf(subType);
         }
         return result;
     }
@@ -524,46 +544,74 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
     @Override
     public boolean isSubTypeOf(final TypeScope superType) {
         boolean result = false;
-        if (superType.isClass()) {
-            for (ClassScope classScope : getSuperClasses()) {
-                if (classScope.equals(superType)) {
-                    result = true;
-                } else {
-                    result = classScope.isSubTypeOf(superType);
+        if (subRecursionDetection.add(superType)) {
+            if (superType.isClass()) {
+                for (ClassScope classScope : getSuperClasses()) {
+                    if (classScope.equals(superType)) {
+                        result = true;
+                    } else {
+                        result = classScope.isSubTypeOf(superType);
+                    }
+                    if (result) {
+                        break;
+                    }
                 }
-                if (result == true) {
-                    break;
-                }
-            }
-        } else if (superType.isTrait()) {
-            for (ClassScope classScope : getSuperClasses()) {
-                result = classScope.isSubTypeOf(superType);
-                if (result == true) {
-                    break;
-                }
-            }
-            for (TraitScope traitScope : getTraits()) {
-                if (traitScope.equals(superType)) {
-                    result = true;
-                } else {
-                    result = traitScope.isSubTypeOf(superType);
-                }
-                if (result == true) {
-                    break;
-                }
-            }
-        } else {
-            result = super.isSubTypeOf(superType);
-            if (result == false) {
+            } else if (superType.isTrait()) {
                 for (ClassScope classScope : getSuperClasses()) {
                     result = classScope.isSubTypeOf(superType);
-                    if (result == true) {
+                    if (result) {
                         break;
+                    }
+                }
+                for (TraitScope traitScope : getTraits()) {
+                    if (traitScope.equals(superType)) {
+                        result = true;
+                    } else {
+                        result = traitScope.isSubTypeOf(superType);
+                    }
+                    if (result) {
+                        break;
+                    }
+                }
+            } else {
+                result = super.isSubTypeOf(superType);
+                if (!result) {
+                    for (ClassScope classScope : getSuperClasses()) {
+                        result = classScope.isSubTypeOf(superType);
+                        if (result) {
+                            break;
+                        }
                     }
                 }
             }
         }
         return result;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(super.toString());
+        Collection<? extends ClassScope> extendedClasses = getSuperClasses();
+        ClassScope extClass = ModelUtils.getFirst(extendedClasses);
+        if (extClass != null) {
+            sb.append(" extends ").append(extClass.getName()); //NOI18N
+        }
+        List<? extends InterfaceScope> implementedInterfaces = getSuperInterfaceScopes();
+        if (implementedInterfaces.size() > 0) {
+            sb.append(" implements "); //NOI18N
+            for (InterfaceScope interfaceScope : implementedInterfaces) {
+                sb.append(interfaceScope.getName()).append(" ");
+            }
+        }
+        Collection<? extends TraitScope> traits = getTraits();
+        if (traits.size() > 0) {
+            sb.append(" uses "); //NOI18N
+            for (TraitScope traitScope : traits) {
+                sb.append(traitScope.getName()).append(" ");
+            }
+        }
+        return sb.toString();
     }
 
 }

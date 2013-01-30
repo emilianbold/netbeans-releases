@@ -48,19 +48,22 @@ import java.io.IOException;
 import org.netbeans.modules.cnd.antlr.collections.AST;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmVisibility;
 import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
+import org.netbeans.modules.cnd.modelimpl.csm.ClassImpl.MemberBuilder;
+import org.netbeans.modules.cnd.modelimpl.csm.FunctionParameterListImpl.FunctionParameterListBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstRenderer;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
-import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
+import org.openide.util.CharSequences;
 
 /**
  * CsmFunction + CsmMember implementation
@@ -175,6 +178,67 @@ public class MethodImpl<T> extends FunctionImpl<T> implements CsmMethod {
         return super.isConst();
     }
 
+    
+    public static class MethodBuilder extends FunctionBuilder implements MemberBuilder {
+        
+        private boolean _virtual = false;
+        private boolean _explicit = false;
+        private CsmVisibility visibility = CsmVisibility.PUBLIC;
+
+        public CsmVisibility getVisibility() {
+            return visibility;
+        }
+
+        public void setVisibility(CsmVisibility visibility) {
+            this.visibility = visibility;
+        }
+
+        public boolean isVirtual() {
+            return _virtual;
+        }
+
+        public boolean isExplicit() {
+            return _explicit;
+        }
+        
+        @Override
+        public MethodImpl create() {
+            CsmClass cls = (CsmClass) getScope();
+
+
+            MethodImpl method = new MethodImpl(getName(), getRawName(), cls, getVisibility(), isVirtual(), isExplicit(), isStatic(), isConst(), getFile(), getStartOffset(), getEndOffset(), true);
+            temporaryRepositoryRegistration(true, method);
+
+            StringBuilder clsTemplateSuffix = new StringBuilder();
+            //TemplateDescriptor templateDescriptor = createTemplateDescriptor(ast, file, functionImpl, clsTemplateSuffix, global);
+            //CharSequence classTemplateSuffix = NameCache.getManager().getString(clsTemplateSuffix);
+
+            //functionImpl.setTemplateDescriptor(templateDescriptor, classTemplateSuffix);
+            if(getTemplateDescriptorBuilder() != null) {
+                method.setTemplateDescriptor(getTemplateDescriptor(), NameCache.getManager().getString(CharSequences.create(""))); // NOI18N
+            }
+
+            method.setReturnType(getType());
+            ((FunctionParameterListBuilder)getParametersListBuilder()).setScope(method);
+            method.setParameters(((FunctionParameterListBuilder)getParametersListBuilder()).create(),
+                    true);
+
+            postObjectCreateRegistration(true, method);
+            getNameHolder().addReference(getFileContent(), method);
+
+//            addMember(method);
+            return method;
+        }
+        
+//        protected void addMember(CsmMember member) {
+//            if (getParent() instanceof ClassImpl.ClassBuilder) {
+//                ((ClassImpl.ClassBuilder) getParent()).addMember(member);
+//            }
+//        }
+        
+    }          
+    
+    
 ////////////////////////////////////////////////////////////////////////////
     // iml of SelfPersistent
 

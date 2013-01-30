@@ -212,7 +212,12 @@ class FreemarkerEngine extends AbstractScriptEngine {
                     File propsFile = new File(propsName);
                     if (propsFile.exists() && propsFile.canRead()) {
                         props = new Properties();
-                        props.load(new FileInputStream(propsFile));
+                        FileInputStream fis = new FileInputStream(propsFile);
+                        try {
+                            props.load(fis);
+                        } finally {
+                            fis.close();
+                        }
                     }               
                 }
             }

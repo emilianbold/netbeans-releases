@@ -440,7 +440,9 @@ class LineTranslations {
         public void destroy() {
             detach();
             DataEditorSupport des = dataObject.getLookup().lookup(DataEditorSupport.class);
-            des.removePropertyChangeListener(this);
+            if (des != null) {
+                des.removePropertyChangeListener(this);
+            }
         }
 
         private void update(Line l) {
@@ -463,7 +465,12 @@ class LineTranslations {
             String propertyName = evt.getPropertyName();
             if (EditorCookie.Observable.PROP_OPENED_PANES.equals(propertyName)) {
                 DataEditorSupport des = dataObject.getLookup().lookup(DataEditorSupport.class);
-                JEditorPane[] openedPanes = des.getOpenedPanes();
+                JEditorPane[] openedPanes;
+                if (des != null) {
+                    openedPanes = des.getOpenedPanes();
+                } else {
+                    openedPanes = null;
+                }
                 if (openedPanes == null) {
                     synchronized (this) {
                         if (line != null) {

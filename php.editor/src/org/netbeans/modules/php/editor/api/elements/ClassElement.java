@@ -52,7 +52,7 @@ import org.netbeans.modules.php.editor.api.QualifiedName;
  * @author Radek Matous
  */
 public interface ClassElement extends TraitedElement {
-    public final static PhpElementKind KIND = PhpElementKind.CLASS;
+    PhpElementKind KIND = PhpElementKind.CLASS;
     @CheckForNull
     QualifiedName getSuperClassName();
     Collection<QualifiedName> getPossibleFQSuperClassNames();

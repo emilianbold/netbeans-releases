@@ -82,9 +82,9 @@ public class GotoLineDialogTest extends PerformanceTestCase {
 
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(J2SESetup.class)
-             .addTest(GotoLineDialogTest.class)
-             .enableModules(".*").clusters(".*")));
+        suite.addTest(NbModuleSuite.createConfiguration(J2SESetup.class)
+                .addTest(GotoLineDialogTest.class)
+                .enableModules(".*").clusters("ide|java|apisupport").suite());
         return suite;
     }
 
@@ -108,8 +108,9 @@ public class GotoLineDialogTest extends PerformanceTestCase {
     
     @Override
     public void shutdown(){
-        if(editor!=null && editor.isShowing())
+        if(editor!=null && editor.isShowing()) {
             editor.closeDiscard();
+        }
     }
     
 }

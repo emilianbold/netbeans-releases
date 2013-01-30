@@ -43,8 +43,11 @@
 package org.netbeans.modules.php.zend.commands;
 
 import java.lang.ref.WeakReference;
+import java.util.Arrays;
+import org.netbeans.modules.php.api.executable.InvalidPhpExecutableException;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
-import org.netbeans.modules.php.spi.commands.FrameworkCommand;
+import org.netbeans.modules.php.api.util.UiUtils;
+import org.netbeans.modules.php.spi.framework.commands.FrameworkCommand;
 import org.netbeans.modules.php.zend.ZendScript;
 
 /**
@@ -66,7 +69,12 @@ public class ZendCommand extends FrameworkCommand {
         if (module == null) {
             return ""; // NOI18N
         }
-        return ZendScript.getHelp(module, this);
+        try {
+            return ZendScript.getDefault().getHelp(module, Arrays.<String>asList(getCommands()));
+        } catch (InvalidPhpExecutableException ex) {
+            UiUtils.invalidScriptProvided(ex.getLocalizedMessage(), ZendScript.getOptionsSubPath());
+        }
+        return ""; // NOI18N
     }
 
     @Override

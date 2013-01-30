@@ -54,6 +54,7 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -539,6 +540,20 @@ public class MenuBar extends JMenuBar implements Externalizable {
             this.slave = new MenuFolder();
             
             setName(df.getName());
+            final FileObject pf = df.getPrimaryFile();
+            Object prefix = pf.getAttribute("property-prefix"); // NOI18N
+            if (prefix instanceof String) {
+                Enumeration<String> en = pf.getAttributes();
+                while (en.hasMoreElements()) {
+                    String attrName = en.nextElement();
+                    if (attrName.startsWith((String)prefix)) {
+                        putClientProperty(
+                            attrName.substring(((String)prefix).length()), 
+                            pf.getAttribute(attrName)
+                        );
+                    }
+                }
+            }
 
             // Listen for changes in Node's DisplayName/Icon
             Node n = master.getNodeDelegate ();
@@ -576,6 +591,19 @@ public class MenuBar extends JMenuBar implements Externalizable {
         private void conditionalInitialize() {
             if (Thread.holdsLock(getTreeLock())) {
                 return;
+            }
+            if( "Aqua".equals(UIManager.getLookAndFeel().getID()) ) { //NOI18N
+                //#211284 - don't initialize menu items when the component tree is being refreshed on main wnd (de)activation
+                for( StackTraceElement ste : Thread.currentThread().getStackTrace() ) {
+                    if( "com.apple.laf.AquaRootPaneUI".equals(ste.getClassName()) ) { //NOI18N
+                        if( "windowDeactivated".equals(ste.getMethodName()) ) { //NOI18N
+                            break;
+                        }
+                        if( "windowActivated".equals(ste.getMethodName()) ) { //NOI18N
+                            break;
+                        }
+                    }
+                }
             }
             doInitialize();
         }

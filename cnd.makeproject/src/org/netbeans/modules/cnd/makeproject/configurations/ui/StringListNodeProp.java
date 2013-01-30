@@ -45,9 +45,8 @@ package org.netbeans.modules.cnd.makeproject.configurations.ui;
 
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorSupport;
-import java.util.List;
 import java.util.ArrayList;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import java.util.List;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BooleanConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.VectorConfiguration;
 import org.netbeans.modules.cnd.makeproject.ui.utils.StringListPanel;
@@ -56,7 +55,7 @@ import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.nodes.PropertySupport;
 import org.openide.util.HelpCtx;
 
-public class StringListNodeProp extends PropertySupport<List> {
+abstract public class StringListNodeProp extends PropertySupport<List> {
 
     private VectorConfiguration<String> configuration;
     private BooleanConfiguration inheritValues;
@@ -82,11 +81,13 @@ public class StringListNodeProp extends PropertySupport<List> {
         }
     }
 
+    @Override
     public List getValue() {
         return configuration.getValue();
     }
 
     @SuppressWarnings("unchecked")
+    @Override
     public void setValue(List v) {
         configuration.setValue(v);
     }
@@ -103,7 +104,7 @@ public class StringListNodeProp extends PropertySupport<List> {
 
     @Override
     public boolean isDefaultValue() {
-        return configuration.getValue().size() == 0;
+        return configuration.getValue().isEmpty();
     }
 
     @Override
@@ -113,15 +114,11 @@ public class StringListNodeProp extends PropertySupport<List> {
         return new StringEditor(clone);
     }
 
-    @Override
-    public Object getValue(String attributeName) {
-        return super.getValue(attributeName);
-    }
+    abstract protected List<String> convertToList(String text);
+    abstract protected String convertToString(List<String> list);
 
     private class StringEditor extends PropertyEditorSupport implements ExPropertyEditor {
 
-        private final String MACROS_KEY = "-D"; // NOI18N
-        
         private List<String> value;
         private PropertyEnv env;
 
@@ -129,73 +126,14 @@ public class StringListNodeProp extends PropertySupport<List> {
             this.value = value;
         }
 
-        private String removeMacrosPrefix(String str) {
-            return str.startsWith(MACROS_KEY)? str.substring(2): str;
-        }
-        
-        // This is naive implementation of tokenizer for strings like this (without ordinal quotes):
-        // ' 111   222  333=444       555'
-        // '111 "222 333" "44 4=555" "666=777 888" 999=000 "a"'
-        // '111 "222 333"   "44 4=555"   "666=777 888"   999=000 "a" b'
-        // Should work in most real-word case, but you can easily broke it if you want.
-        // If token is started with -D, then -D is removed.
-        private List<String> tokenize(String text) {
-            final char QUOTE = '\"'; // NOI18N
-            final char SEPARATOR = ' '; // NOI18N
-            List<String> result = new ArrayList<String>();
-            boolean inQuote = false;
-            boolean innerQuote = false;
-            int start = 0;
-            int i = 0;
-            char prev = 0;            
-            while (i < text.length()) {
-                String str = text.substring(start, i).trim();
-                if (text.charAt(i) == SEPARATOR && !inQuote) {
-                    if (str.length() > 0) {
-                        result.add(removeMacrosPrefix(str));
-                        start = i + 1;
-                    }
-                } else if (text.charAt(i) == QUOTE && inQuote) {
-                    if (str.length() > 0) {
-                        result.add(removeMacrosPrefix(str + (innerQuote? QUOTE: ""))); // NOI18N
-                        start = i + 1;
-                        inQuote = false;
-                        innerQuote = false;
-                    }
-                } else if (text.charAt(i) == QUOTE) {
-                    inQuote = true;
-                    if (prev == SEPARATOR) {
-                        start = i + 1;
-                    } else {
-                        innerQuote = true;
-                    }
-                }
-                prev = text.charAt(i);
-                i++;
-            }
-            if (start != i) {
-                result.add(removeMacrosPrefix(text.substring(start).trim()));
-            }
-            return result;
-        }
-
         @Override
         public void setAsText(String text) {
-            setValue(tokenize(text.trim()));
+            setValue(StringListNodeProp.this.convertToList(text.trim()));
         }
 
         @Override
         public String getAsText() {
-            boolean addSep = false;
-            StringBuilder ret = new StringBuilder();
-            for (int i = 0; i < value.size(); i++) {
-                if (addSep) {
-                    ret.append(' ');
-                }
-                ret.append(CndPathUtilitities.quoteIfNecessary(value.get(i)));
-                addSep = true;
-            }
-            return ret.toString();
+            return StringListNodeProp.this.convertToString(value);
         }
 
         @Override
@@ -212,6 +150,7 @@ public class StringListNodeProp extends PropertySupport<List> {
             return true;
         }
 
+        @Override
         public void attachEnv(PropertyEnv env) {
             this.env = env;
         }

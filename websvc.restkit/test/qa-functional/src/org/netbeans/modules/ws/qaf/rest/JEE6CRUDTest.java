@@ -42,7 +42,6 @@
 package org.netbeans.modules.ws.qaf.rest;
 
 import junit.framework.Test;
-import org.netbeans.junit.NbModuleSuite;
 
 /**
  * Tests for New REST web services from Entity Classes wizard
@@ -71,12 +70,12 @@ public class JEE6CRUDTest extends CRUDTest {
      * Creates suite from particular test cases. You can define order of testcases here.
      */
     public static Test suite() {
-        return NbModuleSuite.create(addServerTests(Server.GLASSFISH, NbModuleSuite.createConfiguration(JEE6CRUDTest.class),
+        return createAllModulesServerSuite(Server.GLASSFISH, JEE6CRUDTest.class,
                 "testRfE", //NOI18N
                 "testPropAccess", //NOI18N
                 "testDeploy", //NOI18N
                 "testCreateRestClient", //NOI18N
                 "testUndeploy" //NOI18N
-                ).enableModules(".*").clusters(".*")); //NOI18N
+                );
     }
 }

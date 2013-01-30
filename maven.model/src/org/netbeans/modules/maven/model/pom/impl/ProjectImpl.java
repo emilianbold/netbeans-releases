@@ -159,10 +159,7 @@ public class ProjectImpl extends VersionablePOMComponentImpl implements Project 
 
     @Override
     public void removeMailingList(MailingList mailingList) {
-        ModelList<MailingList> childs = getChild(MailingListImpl.List.class);
-        if (childs != null) {
-            childs.removeListChild(mailingList);
-        }
+        remove(mailingList, getModel().getPOMQNames().MAILINGLISTS.getName(), MailingListImpl.List.class);
     }
 
     @Override
@@ -190,10 +187,7 @@ public class ProjectImpl extends VersionablePOMComponentImpl implements Project 
 
     @Override
     public void removeDeveloper(Developer dev) {
-        ModelList<Developer> childs = getChild(DeveloperImpl.List.class);
-        if (childs != null) {
-            childs.removeListChild(dev);
-        }
+        remove(dev, getModel().getPOMQNames().DEVELOPERS.getName(), DeveloperImpl.List.class);
     }
 
     @Override
@@ -221,10 +215,7 @@ public class ProjectImpl extends VersionablePOMComponentImpl implements Project 
 
     @Override
     public void removeContributor(Contributor contributor) {
-        ModelList<Contributor> childs = getChild(ContributorImpl.List.class);
-        if (childs != null) {
-            childs.removeListChild(contributor);
-        }
+        remove(contributor, getModel().getPOMQNames().CONTRIBUTORS.getName(), ContributorImpl.List.class);
     }
 
     @Override
@@ -252,10 +243,7 @@ public class ProjectImpl extends VersionablePOMComponentImpl implements Project 
 
     @Override
     public void removeLicense(License lic) {
-        ModelList<License> childs = getChild(LicenseImpl.List.class);
-        if (childs != null) {
-            childs.removeListChild(lic);
-        }
+        remove(lic, getModel().getPOMQNames().LICENSES.getName(), LicenseImpl.List.class);
     }
 
     @Override
@@ -316,10 +304,7 @@ public class ProjectImpl extends VersionablePOMComponentImpl implements Project 
 
     @Override
     public void removeProfile(Profile profile) {
-        ModelList<Profile> childs = getChild(ProfileImpl.List.class);
-        if (childs != null) {
-            childs.removeListChild(profile);
-        }
+        remove(profile, getModel().getPOMQNames().PROFILES.getName(), ProfileImpl.List.class);
     }
 
 
@@ -348,10 +333,7 @@ public class ProjectImpl extends VersionablePOMComponentImpl implements Project 
 
     @Override
     public void removeRepository(Repository repo) {
-        ModelList<Repository> childs = getChild(RepositoryImpl.RepoList.class);
-        if (childs != null) {
-            childs.removeListChild(repo);
-        }
+        remove(repo, getModel().getPOMQNames().REPOSITORIES.getName(), RepositoryImpl.RepoList.class);
     }
 
     @Override
@@ -379,11 +361,10 @@ public class ProjectImpl extends VersionablePOMComponentImpl implements Project 
 
     @Override
     public void removePluginRepository(Repository repo) {
-        ModelList<Repository> childs = getChild(RepositoryImpl.PluginRepoList.class);
-        if (childs != null) {
-            childs.removeListChild(repo);
-        }
+        remove(repo, getModel().getPOMQNames().PLUGINREPOSITORIES.getName(), RepositoryImpl.PluginRepoList.class);
     }
+    
+
 
     @Override
     public List<Dependency> getDependencies() {
@@ -410,10 +391,7 @@ public class ProjectImpl extends VersionablePOMComponentImpl implements Project 
 
     @Override
     public void removeDependency(Dependency dep) {
-        ModelList<Dependency> childs = getChild(DependencyImpl.List.class);
-        if (childs != null) {
-            childs.removeListChild(dep);
-        }
+         remove(dep, getModel().getPOMQNames().DEPENDENCIES.getName(), DependencyImpl.List.class);
     }
 
     @Override

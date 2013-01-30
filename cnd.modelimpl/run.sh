@@ -48,9 +48,11 @@ DBGPORT=${DBGPORT-5858}
 TMP_PREFIX=${TMP_PREFIX-/var/tmp}
 USERDIR="--userdir ${TMP_PREFIX}/${USER}/cnd-userdir"
 PARSERRORS="-J-Dparser.report.errors=true"
+XREF_LOG="-J-Dorg.netbeans.modules.cnd.refactoring.plugins.level=FINE"
 DEBUG="-J-Xdebug -J-Djava.compiler=NONE -J-Xrunjdwp:transport=dt_socket,server=y"
 PRG=$0
 NB_COPY="${TMP_PREFIX}/${USER}/nb-copy"
+VERBOSE=true
 
 while [ -h "$PRG" ]; do
     ls=`ls -ld "$PRG"`
@@ -102,6 +104,12 @@ do
 		    read t
 		fi
                 ;;
+        --quiet|-q)
+                echo "Disabled verbose mode"
+                PARSERRORS=""
+                VERBOSE=false
+                XREF_LOG=""
+                ;;
 	--nodebug|-nodebug)
 		echo "Debug mode OFF"
 		DEBUG=""
@@ -120,8 +128,12 @@ do
                 ;;
         --yprofile|-yprofile)
                 echo "profile using YourKit Profiler, save snapshots in ${HOME}/yjp_data/IDE"
-                PROFILE="-J-Dosgi.compatibility.bootdelegation=true -J-agentlib:yjpagent=dir=${HOME}/yjp_data/IDE,disablej2ee,noj2ee"
+                PROFILE="-J-Dosgi.compatibility.bootdelegation=true -J-agentlib:yjpagent=dir=${HOME}/yjp_data/IDE"
 		;;
+        --drd|-drd)
+                echo "DataRace check run"
+                PROFILE="-J-Dosgi.compatibility.bootdelegation=true -J-javaagent:${HOME}/devarea/drd/drd0.3/drd_agent.jar"
+                ;;
 	--ypl|-ypl)
 		echo "light profile using YourKit Profiler, save snapshots in ${HOME}/yjp_data/IDE"
                 PROFILE="-J-Dosgi.compatibility.bootdelegation=true -J-agentlib:yjpagent=dir=${HOME}/yjp_data/IDE,telemetryperiod=250,disabletracing,disablealloc,disablej2ee,noj2ee,disablej2ee,disableexceptiontelemetry"
@@ -182,16 +194,16 @@ DEFS=""
 DEFS="${DEFS} ${CONSOLE}"
 DEFS="${DEFS} ${PARSERRORS}"
 DEFS="${DEFS} -J-Dcnd.modelimpl.timing=true"
-DEFS="${DEFS} -J-Dcnd.modelimpl.timing.per.file.flat=true"
-DEFS="${DEFS} -J-Dparser.report.include.failures=true"
+DEFS="${DEFS} -J-Dcnd.modelimpl.timing.per.file.flat=${VERBOSE}"
+DEFS="${DEFS} -J-Dparser.report.include.failures=${VERBOSE}"
 DEFS="${DEFS} -J-Dsun.java2d.pmoffscreen=false"
 DEFS="${DEFS} -J-Dtest.xref.action=true"
 DEFS="${DEFS} -J-Dcnd.classview.sys-includes=true"
 DEFS="${DEFS} -J-Dcnd.callgraph.showgraph=true"
 DEFS="${DEFS} -J-Dcnd.trace.includes=true"
-DEFS="${DEFS} -J-Dcnd.standalone.trace=true"
+DEFS="${DEFS} -J-Dcnd.standalone.trace=${VERBOSE}"
 DEFS="${DEFS} -J-Dcnd.refactoring.extra=true"
-DEFS="${DEFS} -J-Dcnd.completion.trace.multiple.visible=true"
+DEFS="${DEFS} -J-Dcnd.completion.trace.multiple.visible=${VERBOSE}"
 DEFS="${DEFS} -J-Dcnd.semantic.line.limit=-1"
 ##DEFS="${DEFS} -J-Dcnd.parser.queue.trace=true"
 ##DEFS="${DEFS} -J-Dcnd.modelimpl.parser.threads=2"
@@ -211,4 +223,4 @@ else
     NBDIST="${NB_COPY}"
 fi
 
-"${NBDIST}/bin/netbeans" -J-ea -J-server -J-DSUNW_NO_UPDATE_NOTIFY=true ${USERDIR} ${DEBUG} ${PROFILE} ${DEFS} ${PARAMS}
+"${NBDIST}/bin/netbeans" -J-ea -J-server -J-DSUNW_NO_UPDATE_NOTIFY=true ${XREF_LOG} ${USERDIR} ${DEBUG} ${PROFILE} ${DEFS} ${PARAMS}

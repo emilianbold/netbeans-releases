@@ -1,5 +1,32 @@
 #Signature file v4.1
-#Version 1.25
+#Version 1.28.1
+
+CLSS public abstract interface java.io.Serializable
+
+CLSS public abstract interface java.lang.Comparable<%0 extends java.lang.Object>
+meth public abstract int compareTo({java.lang.Comparable%0})
+
+CLSS public abstract interface !annotation java.lang.Deprecated
+ anno 0 java.lang.annotation.Documented()
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
+intf java.lang.annotation.Annotation
+
+CLSS public abstract java.lang.Enum<%0 extends java.lang.Enum<{java.lang.Enum%0}>>
+cons protected init(java.lang.String,int)
+intf java.io.Serializable
+intf java.lang.Comparable<{java.lang.Enum%0}>
+meth protected final java.lang.Object clone() throws java.lang.CloneNotSupportedException
+meth protected final void finalize()
+meth public final boolean equals(java.lang.Object)
+meth public final int compareTo({java.lang.Enum%0})
+meth public final int hashCode()
+meth public final int ordinal()
+meth public final java.lang.Class<{java.lang.Enum%0}> getDeclaringClass()
+meth public final java.lang.String name()
+meth public java.lang.String toString()
+meth public static <%0 extends java.lang.Enum<{%%0}>> {%%0} valueOf(java.lang.Class<{%%0}>,java.lang.String)
+supr java.lang.Object
+hfds name,ordinal
 
 CLSS public java.lang.Object
 cons public init()
@@ -15,14 +42,44 @@ meth public final void wait(long,int) throws java.lang.InterruptedException
 meth public int hashCode()
 meth public java.lang.String toString()
 
+CLSS public abstract interface java.lang.annotation.Annotation
+meth public abstract boolean equals(java.lang.Object)
+meth public abstract int hashCode()
+meth public abstract java.lang.Class<? extends java.lang.annotation.Annotation> annotationType()
+meth public abstract java.lang.String toString()
+
+CLSS public abstract interface !annotation java.lang.annotation.Documented
+ anno 0 java.lang.annotation.Documented()
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[ANNOTATION_TYPE])
+intf java.lang.annotation.Annotation
+
+CLSS public abstract interface !annotation java.lang.annotation.Retention
+ anno 0 java.lang.annotation.Documented()
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[ANNOTATION_TYPE])
+intf java.lang.annotation.Annotation
+meth public abstract java.lang.annotation.RetentionPolicy value()
+
+CLSS public abstract interface !annotation java.lang.annotation.Target
+ anno 0 java.lang.annotation.Documented()
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[ANNOTATION_TYPE])
+intf java.lang.annotation.Annotation
+meth public abstract java.lang.annotation.ElementType[] value()
+
 CLSS public abstract interface org.netbeans.api.fileinfo.NonRecursiveFolder
 meth public abstract org.openide.filesystems.FileObject getFolder()
 
 CLSS public final org.netbeans.api.queries.CollocationQuery
 meth public static boolean areCollocated(java.io.File,java.io.File)
+ anno 0 java.lang.Deprecated()
+meth public static boolean areCollocated(java.net.URI,java.net.URI)
 meth public static java.io.File findRoot(java.io.File)
+ anno 0 java.lang.Deprecated()
+meth public static java.net.URI findRoot(java.net.URI)
 supr java.lang.Object
-hfds implementations
+hfds implementations,implementations2
 
 CLSS public final org.netbeans.api.queries.FileBuiltQuery
 innr public abstract interface static Status
@@ -46,12 +103,30 @@ hcls ProxyCharset
 
 CLSS public final org.netbeans.api.queries.SharabilityQuery
 fld public final static int MIXED = 3
+ anno 0 java.lang.Deprecated()
 fld public final static int NOT_SHARABLE = 2
+ anno 0 java.lang.Deprecated()
 fld public final static int SHARABLE = 1
+ anno 0 java.lang.Deprecated()
 fld public final static int UNKNOWN = 0
+ anno 0 java.lang.Deprecated()
+innr public final static !enum Sharability
 meth public static int getSharability(java.io.File)
+ anno 0 java.lang.Deprecated()
+meth public static org.netbeans.api.queries.SharabilityQuery$Sharability getSharability(java.net.URI)
+meth public static org.netbeans.api.queries.SharabilityQuery$Sharability getSharability(org.openide.filesystems.FileObject)
 supr java.lang.Object
-hfds implementations
+hfds LOG,implementations,implementations2
+
+CLSS public final static !enum org.netbeans.api.queries.SharabilityQuery$Sharability
+ outer org.netbeans.api.queries.SharabilityQuery
+fld public final static org.netbeans.api.queries.SharabilityQuery$Sharability MIXED
+fld public final static org.netbeans.api.queries.SharabilityQuery$Sharability NOT_SHARABLE
+fld public final static org.netbeans.api.queries.SharabilityQuery$Sharability SHARABLE
+fld public final static org.netbeans.api.queries.SharabilityQuery$Sharability UNKNOWN
+meth public static org.netbeans.api.queries.SharabilityQuery$Sharability valueOf(java.lang.String)
+meth public static org.netbeans.api.queries.SharabilityQuery$Sharability[] values()
+supr java.lang.Enum<org.netbeans.api.queries.SharabilityQuery$Sharability>
 
 CLSS public final org.netbeans.api.queries.VisibilityQuery
 meth public boolean isVisible(java.io.File)
@@ -64,8 +139,13 @@ hfds INSTANCE,cachedVqiInstances,changeSupport,resultListener,vqiListener,vqiRes
 hcls ResultListener,VqiChangedListener
 
 CLSS public abstract interface org.netbeans.spi.queries.CollocationQueryImplementation
+ anno 0 java.lang.Deprecated()
 meth public abstract boolean areCollocated(java.io.File,java.io.File)
 meth public abstract java.io.File findRoot(java.io.File)
+
+CLSS public abstract interface org.netbeans.spi.queries.CollocationQueryImplementation2
+meth public abstract boolean areCollocated(java.net.URI,java.net.URI)
+meth public abstract java.net.URI findRoot(java.net.URI)
 
 CLSS public abstract interface org.netbeans.spi.queries.FileBuiltQueryImplementation
 meth public abstract org.netbeans.api.queries.FileBuiltQuery$Status getStatus(org.openide.filesystems.FileObject)
@@ -77,7 +157,11 @@ meth public abstract java.nio.charset.Charset getEncoding(org.openide.filesystem
 supr java.lang.Object
 
 CLSS public abstract interface org.netbeans.spi.queries.SharabilityQueryImplementation
+ anno 0 java.lang.Deprecated()
 meth public abstract int getSharability(java.io.File)
+
+CLSS public abstract interface org.netbeans.spi.queries.SharabilityQueryImplementation2
+meth public abstract org.netbeans.api.queries.SharabilityQuery$Sharability getSharability(java.net.URI)
 
 CLSS public abstract interface org.netbeans.spi.queries.VisibilityQueryImplementation
 meth public abstract boolean isVisible(org.openide.filesystems.FileObject)

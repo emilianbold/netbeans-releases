@@ -252,6 +252,9 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
     }
     
     private void checkRepaint(ViewHierarchyEvent vhe) {
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.fine("ViewHierarchyEvent: " + vhe + " changeY=" + vhe.isChangeY() + "\n"); // NOI18N
+        }
         if (!vhe.isChangeY()) {
             // does not obscur sidebar graphics
             return;
@@ -380,7 +383,8 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
         highestLineNumber = getLineCount();
         
         resize();
-//        repaint();
+        // Explicit repaint necessary (revalidate() does not guarantee it)
+        repaint();
     }
     
    
@@ -513,7 +517,6 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
         final JTextComponent component = eui.getComponent();
         if (component == null) return;
         
-        BaseTextUI textUI = (BaseTextUI)component.getUI();
         View rootView = Utilities.getDocumentView(component);
         if (rootView == null) return;
       
@@ -547,12 +550,20 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
                         g.setFont(font);
                         g.setColor(foreColor);
                         FontMetrics fm = FontMetricsCache.getFontMetrics(font, g);
+                        if (LOG.isLoggable(Level.FINE)) {
+                            LOG.fine("GlyphGutter: clipY:<" + clip.y + "," + endRepaintY + ">" + // NOI18N
+                                    ", pViewIndex=" + pViewIndex + ", lineIndex=" + lineIndex + "\n"); // NOI18N
+                        }
 
                         while (true) {
                             Shape pViewAlloc = pViewDesc.getAllocation();
                             Rectangle pViewRect = pViewAlloc.getBounds();
                             pViewRect.width = repaintWidth;
                             if (pViewRect.y >= endRepaintY) {
+                                if (LOG.isLoggable(Level.FINE)) {
+                                    LOG.fine("GlyphGutter: pViewRect.y=" + pViewRect.y + " >= endRepaintY=" + // NOI18N
+                                            endRepaintY + " -> break;\n"); // NOI18N
+                                }
                                 break;
                             }
                             while (pViewStartOffset >= lineEndOffset) {
@@ -594,10 +605,13 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
                                     // Use simplified painting (non-TextLayout) since TextLayout creation
                                     // is rather expensive and with line numbers there is no RTL issue
                                     // or other complexities where TextLayout would be useful.
-                                    g.drawString(lineNumberString,
-                                            glyphGutterWidth - lineNumberWidth - rightGap,
-                                            (int) Math.round(pViewRect.y + pViewDesc.getAscent())
-                                    );
+                                    int x = glyphGutterWidth - lineNumberWidth - rightGap;
+                                    int y = (int) Math.round(pViewRect.y + pViewDesc.getAscent());
+                                    g.drawString(lineNumberString, x, y);
+                                    if (LOG.isLoggable(Level.FINER)) {
+                                        LOG.finer("GlyphGutter: drawString: \"" + lineNumberString + "\" x=" + // NOI18N
+                                                x + ", y=" + y + "\n"); // NOI18N
+                                    }
                                 }
                             }
 
@@ -786,7 +800,8 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
                 new Object[] { new Integer (annos.getNumberOfAnnotations(line)) });
         }
         else if (isMouseOverGlyph(e)) {
-            return annos.getActiveAnnotation(line).getShortDescription();
+            AnnotationDesc activeAnnotation = annos.getActiveAnnotation(line);
+            return activeAnnotation != null ? activeAnnotation.getShortDescription() : null;
         }
         else
             return null;
@@ -903,7 +918,7 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
                         if (active != null) {
                             base.add(active);
                         }
-                        AnnotationDesc[] passive = annos.getPasiveAnnotations(line);
+                        AnnotationDesc[] passive = annos.getPassiveAnnotationsForLine(line);
                         if (passive != null) {
                             base.addAll(Arrays.asList(passive));
                         }
@@ -1087,7 +1102,10 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
         }
         
         public @Override void foldHierarchyChanged(FoldHierarchyEvent evt) {
-            SwingUtilities.invokeLater(this);
+            // Do not react to fold changes since fold expanding/collapsing should trigger
+            // corresponding view hierarchy changes covered by view hierarchy listener.
+
+//            SwingUtilities.invokeLater(this);
         }
 
         @Override

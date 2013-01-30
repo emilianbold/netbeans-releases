@@ -309,6 +309,9 @@ public abstract class PsProvider {
             }
             idx++;
         }
+        if ( (idx-1) != res.processes.size()) {     // we should check if the operation has been applied to all processes
+            throw new AssertionError("Process list:" + res.processes.toString() + "\npargs output:" + pargsOutput.toString());
+        }
     }
 
     /**
@@ -514,11 +517,11 @@ public abstract class PsProvider {
     public static synchronized PsProvider getDefault(Host host) {
         PsProvider psProvider = host.getResource(PsProvider.class);
         if (psProvider == null) {
+            ExecutionEnvironment exEnv = host.executionEnvironment();
+            if (!ConnectionManager.getInstance().connect(exEnv)) {
+                return null;
+            }
             try {
-                ExecutionEnvironment exEnv = host.executionEnvironment();
-                if (!ConnectionManager.getInstance().isConnectedTo(exEnv)) {
-                    ConnectionManager.getInstance().connectTo(exEnv);
-                }
                 HostInfo hostInfo = HostInfoUtils.getHostInfo(exEnv);
                 switch (hostInfo.getOSFamily()) {
                     case LINUX:

@@ -63,7 +63,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeApplicationImplem
 public class J2eeApplication extends J2eeModule {
 
     static {
-        J2eeApplicationAccessor.DEFAULT = new J2eeApplicationAccessor() {
+        J2eeApplicationAccessor.setDefault(new J2eeApplicationAccessor() {
 
             public J2eeApplication createJ2eeApplication(J2eeApplicationImplementation impl) {
                 return new J2eeApplication(impl);
@@ -72,7 +72,7 @@ public class J2eeApplication extends J2eeModule {
             public J2eeApplication createJ2eeApplication(J2eeApplicationImplementation2 impl) {
                 return new J2eeApplication(impl);
             }
-        };
+        });
     }
 
     private final J2eeApplicationImplementation impl;

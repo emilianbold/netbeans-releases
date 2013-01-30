@@ -73,6 +73,9 @@ public class ErrorPanel extends javax.swing.JPanel {
                     Error.ErrorLocation errorLocation = error.getErrorLocation();
                     if (errorLocation!=null) {
                         SectionPanel sectPanel = ((SectionView)editor.getContentView()).findSectionPanel(errorLocation.getKey());
+                        if (sectPanel == null) {
+                            return;
+                        }
                         if (sectPanel.getInnerPanel()==null) sectPanel.open();
                         sectPanel.scroll();
                         javax.swing.JComponent errorComp = sectPanel.getErrorComponent(errorLocation.getComponentId());

@@ -59,7 +59,9 @@ import java.util.*;
 import java.beans.PropertyVetoException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.logging.Level;
+import javax.swing.table.TableColumnModel;
 import org.netbeans.modules.subversion.Subversion;
+import org.netbeans.swing.etable.ETableColumnModel;
 import org.netbeans.swing.outline.RenderDataProvider;
 import org.openide.explorer.view.OutlineView;
 
@@ -74,7 +76,9 @@ class DiffTreeTable extends OutlineView {
     private List<RepositoryRevision> results;
     private final SearchHistoryPanel master;
 
+    @NbBundle.Messages("LBL_DiffView.TreeColumnLabel=Revision")
     public DiffTreeTable(SearchHistoryPanel master) {
+        super(Bundle.LBL_DiffView_TreeColumnLabel());
         this.master = master;
         getOutline().setShowHorizontalLines(true);
         getOutline().setShowVerticalLines(false);
@@ -88,12 +92,19 @@ class DiffTreeTable extends OutlineView {
     
     private void setupColumns() {
         ResourceBundle loc = NbBundle.getBundle(DiffTreeTable.class);
-        setPropertyColumns(RevisionNode.COLUMN_NAME_DATE, loc.getString("LBL_DiffTree_Column_Time"), //NOI18N
+        setPropertyColumns(RevisionNode.COLUMN_NAME_PATH, loc.getString("LBL_DiffTree_Column_Path"), //NOI18N
+                RevisionNode.COLUMN_NAME_DATE, loc.getString("LBL_DiffTree_Column_Time"), //NOI18N
                 RevisionNode.COLUMN_NAME_USERNAME, loc.getString("LBL_DiffTree_Column_Username"), //NOI18N
                 RevisionNode.COLUMN_NAME_MESSAGE, loc.getString("LBL_DiffTree_Column_Message")); //NOI18N
+        setPropertyColumnDescription(RevisionNode.COLUMN_NAME_PATH, loc.getString("LBL_DiffTree_Column_Path_Desc"));
         setPropertyColumnDescription(RevisionNode.COLUMN_NAME_DATE, loc.getString("LBL_DiffTree_Column_Time_Desc")); //NOI18N
         setPropertyColumnDescription(RevisionNode.COLUMN_NAME_USERNAME, loc.getString("LBL_DiffTree_Column_Username_Desc")); //NOI18N
         setPropertyColumnDescription(RevisionNode.COLUMN_NAME_MESSAGE, loc.getString("LBL_DiffTree_Column_Message_Desc")); //NOI18N
+        TableColumnModel model = getOutline().getColumnModel();
+        if (model instanceof ETableColumnModel) {
+            ((ETableColumnModel) model).setColumnHidden(model.getColumn(1), true);
+        }
+        setDefaultColumnSizes();
     }
     
     private void setDefaultColumnSizes() {
@@ -175,7 +186,6 @@ class DiffTreeTable extends OutlineView {
         super.addNotify();
         ExplorerManager em = ExplorerManager.find(this);
         em.setRootContext(rootNode);
-        setDefaultColumnSizes();
     }
 
     public void setResults(List<RepositoryRevision> results) {

@@ -46,6 +46,7 @@ package org.netbeans.editor;
 
 import javax.swing.JComponent;
 import javax.swing.text.JTextComponent;
+import org.netbeans.spi.editor.mimelookup.MimeLocation;
 
 /**
  *  This interface should implement all components that need to be added
@@ -53,6 +54,7 @@ import javax.swing.text.JTextComponent;
  *
  *  @author  Martin Roskanin
  */
+@MimeLocation(subfolderName="SideBar")
 public interface SideBarFactory {
 
     public JComponent createSideBar(JTextComponent target);

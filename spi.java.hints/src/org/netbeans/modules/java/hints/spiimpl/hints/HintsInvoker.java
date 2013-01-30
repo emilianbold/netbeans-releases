@@ -79,6 +79,7 @@ import java.util.prefs.Preferences;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.java.hints.spiimpl.Hacks;
 import org.netbeans.spi.java.hints.HintContext;
@@ -143,6 +144,7 @@ public class HintsInvoker {
         this.cancel = cancel;
     }
 
+    @CheckForNull
     public List<ErrorDescription> computeHints(CompilationInfo info) {
         return computeHints(info, new TreePath(info.getCompilationUnit()));
     }
@@ -184,11 +186,13 @@ public class HintsInvoker {
         return errors;
     }
 
+    @CheckForNull
     public List<ErrorDescription> computeHints(CompilationInfo info,
                                                Iterable<? extends HintDescription> hints) {
         return computeHints(info, hints, new LinkedList<MessageImpl>());
     }
 
+    @CheckForNull
     public List<ErrorDescription> computeHints(CompilationInfo info,
                                                Iterable<? extends HintDescription> hints,
                                                Collection<? super MessageImpl> problems) {
@@ -197,6 +201,7 @@ public class HintsInvoker {
 
     private static final Iterable<? extends Class<? extends Trigger>> TRIGGER_KINDS = Arrays.asList(Kinds.class, PatternDescription.class);
     
+    @CheckForNull
     public Map<HintDescription, List<ErrorDescription>> computeHints(CompilationInfo info,
                                         TreePath startAt,
                                         Iterable<? extends HintDescription> hints,
@@ -204,6 +209,7 @@ public class HintsInvoker {
         return computeHints(info, startAt, true, hints, problems);
     }
     
+    @CheckForNull
     public Map<HintDescription, List<ErrorDescription>> computeHints(CompilationInfo info,
                                         TreePath startAt,
                                         boolean recursive,
@@ -254,6 +260,8 @@ public class HintsInvoker {
             timeLog.put("Kind Based Hints", kindEnd - kindStart);
         }
 
+        if (cancel.get()) return null;
+        
         List<HintDescription> patternBasedHints = triggerKind2Hints.get(PatternDescription.class);
 
         timeLog.put("[C] Pattern Based Hints", (long) patternBasedHints.size());
@@ -265,21 +273,29 @@ public class HintsInvoker {
 
         long bulkPatternStart = System.currentTimeMillis();
 
-        BulkPattern bulkPattern = BulkSearch.getDefault().create(info, patternTests.keySet());
+        BulkPattern bulkPattern = BulkSearch.getDefault().create(info, cancel, patternTests.keySet());
 
+        if (bulkPattern == null || cancel.get()) return null;
+        
         long bulkPatternEnd = System.currentTimeMillis();
 
         timeLog.put("Bulk Pattern preparation", bulkPatternEnd - bulkPatternStart);
 
         long bulkStart = System.currentTimeMillis();
 
-        Map<String, Collection<TreePath>> occurringPatterns = BulkSearch.getDefault().match(info, startAt, bulkPattern, timeLog);
+        Map<String, Collection<TreePath>> occurringPatterns = BulkSearch.getDefault().match(info, cancel, startAt, bulkPattern, timeLog);
+        
+        if (occurringPatterns == null || cancel.get()) return null;
 
         long bulkEnd = System.currentTimeMillis();
 
         timeLog.put("Bulk Search", bulkEnd - bulkStart);
+        
+        Map<HintDescription, List<ErrorDescription>> computedHints = doComputeHints(info, occurringPatterns, patternTests, patternHints, problems);
 
-        mergeAll(errors, doComputeHints(info, occurringPatterns, patternTests, patternHints, problems));
+        if (computedHints == null || cancel.get()) return null;
+        
+        mergeAll(errors, computedHints);
 
         long patternEnd = System.currentTimeMillis();
 
@@ -328,14 +344,21 @@ public class HintsInvoker {
 
             long bulkStart = System.currentTimeMillis();
 
-            BulkPattern bulkPattern = BulkSearch.getDefault().create(info, patternTests.keySet());
-            Map<String, Collection<TreePath>> occurringPatterns = BulkSearch.getDefault().match(info, path, bulkPattern, timeLog);
+            BulkPattern bulkPattern = BulkSearch.getDefault().create(info, cancel, patternTests.keySet());
+            
+            if (bulkPattern == null || cancel.get()) return null;
+            
+            Map<String, Collection<TreePath>> occurringPatterns = BulkSearch.getDefault().match(info, cancel, path, bulkPattern, timeLog);
 
             long bulkEnd = System.currentTimeMillis();
 
             timeLog.put("Bulk Search", bulkEnd - bulkStart);
+            
+            Map<HintDescription, List<ErrorDescription>> computedHints = doComputeHints(info, occurringPatterns, patternTests, patternHints, problems);
 
-            mergeAll(errors, doComputeHints(info, occurringPatterns, patternTests, patternHints, problems));
+            if (computedHints == null || cancel.get()) return null;
+            
+            mergeAll(errors, computedHints);
 
             long patternEnd = System.currentTimeMillis();
 
@@ -343,7 +366,11 @@ public class HintsInvoker {
         }
 
         if (path != null) {
-            mergeAll(errors, computeSuggestions(info, path, true, triggerKind2Hints, problems));
+            Map<HintDescription, List<ErrorDescription>> suggestions = computeSuggestions(info, path, true, triggerKind2Hints, problems);
+            
+            if (suggestions == null || cancel.get()) return null;
+            
+            mergeAll(errors, suggestions);
         }
 
         return errors;
@@ -373,6 +400,8 @@ public class HintsInvoker {
 
             timeLog.put("Kind Based Suggestions", kindEnd - kindStart);
         }
+        
+        if (cancel.get()) return null;
 
         List<HintDescription> patternBasedHints = triggerKind2Hints.get(PatternDescription.class);
 
@@ -427,7 +456,11 @@ public class HintsInvoker {
 //
 //            timeLog.put("Bulk Search", bulkEnd - bulkStart);
 
-            mergeAll(errors, doComputeHints(info, occurringPatterns, patternTests, patternHints, problems));
+            Map<HintDescription, List<ErrorDescription>> computed = doComputeHints(info, occurringPatterns, patternTests, patternHints, problems);
+            
+            if (computed == null || cancel.get()) return null;
+            
+            mergeAll(errors, computed);
 
             long patternEnd = System.currentTimeMillis();
 
@@ -493,6 +526,8 @@ public class HintsInvoker {
 
         for (Entry<String, Collection<TreePath>> occ : occurringPatterns.entrySet()) {
             PATTERN_LOOP: for (PatternDescription d : patterns.get(occ.getKey())) {
+                if (cancel.get()) return null;
+                
                 Map<String, TypeMirror> constraints = new HashMap<String, TypeMirror>();
 
                 for (Entry<String, String> e : d.getConstraints().entrySet()) {
@@ -509,6 +544,8 @@ public class HintsInvoker {
                 Pattern pattern = PatternCompiler.compile(info, occ.getKey(), constraints, d.getImports());
 
                 for (TreePath candidate : occ.getValue()) {
+                    if (cancel.get()) return null;
+                
                     Iterator<? extends Occurrence> verified = Matcher.create(info).setCancel(cancel).setSearchRoot(candidate).setTreeTopSearch().match(pattern).iterator();
 
                     if (!verified.hasNext()) {
@@ -782,6 +819,8 @@ public class HintsInvoker {
     }
 
     public static List<ErrorDescription> join(Map<?, ? extends List<? extends ErrorDescription>> errors) {
+        if (errors == null) return null;
+        
         List<ErrorDescription> result = new LinkedList<ErrorDescription>();
 
         for (Entry<?, ? extends Collection<? extends ErrorDescription>> e : errors.entrySet()) {

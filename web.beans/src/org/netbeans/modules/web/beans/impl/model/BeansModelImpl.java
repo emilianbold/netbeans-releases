@@ -207,7 +207,7 @@ public class BeansModelImpl implements BeansModel {
                             remove(fileObject);
                         myModels.removeAll(remove);
                     }
-                    rootsSet.remove(intersection);
+                    rootsSet.removeAll(intersection);
                     for (FileObject fileObject : rootsSet) {
                         addCompileModels( fileObject , myModels);
                     }

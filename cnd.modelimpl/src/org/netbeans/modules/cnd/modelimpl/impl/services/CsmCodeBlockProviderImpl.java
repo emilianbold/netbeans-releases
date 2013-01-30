@@ -65,6 +65,7 @@ import org.netbeans.modules.cnd.api.model.deep.CsmExpressionStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmForStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmIfStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmLoopStatement;
+import org.netbeans.modules.cnd.api.model.deep.CsmRangeForStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmReturnStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmSwitchStatement;
@@ -188,6 +189,9 @@ public class CsmCodeBlockProviderImpl extends CsmCodeBlockProvider {
             case FOR:
                 findInner(list, (CsmForStatement) stmt, offset);
                 return;
+            case RANGE_FOR:
+                findInner(list, (CsmRangeForStatement) stmt, offset);
+                return;
             case SWITCH:
                 findInner(list, (CsmSwitchStatement) stmt, offset);
                 return;
@@ -310,6 +314,38 @@ public class CsmCodeBlockProviderImpl extends CsmCodeBlockProvider {
             findInner(list, body, offset);
         }
     }
+    
+    private void findInner(List<CsmObject> list, CsmRangeForStatement stmt, int offset) {
+        List<CsmOffsetable> forList = new ArrayList<CsmOffsetable>();
+        CsmStatement declStatement = stmt.getDeclaration();
+        if (declStatement != null) {
+            forList.add(declStatement);
+        }
+        CsmExpression initializerExpression = stmt.getInitializer();
+        if (initializerExpression != null) {
+            forList.add(initializerExpression);
+        }
+        if (declStatement != null && declStatement.getStartOffset() < offset && offset < declStatement.getEndOffset()) {
+            if (forList.size() > 1) {
+                list.add(new CompoundObject(forList));
+            }
+            list.add(declStatement);
+            findInner(list, declStatement, offset);
+            return;
+        }
+        if (initializerExpression != null && initializerExpression.getStartOffset() < offset && offset < initializerExpression.getEndOffset()) {
+            if (forList.size() > 1) {
+                list.add(new CompoundObject(forList));
+            }
+            list.add(initializerExpression);
+            return;
+        }
+        CsmStatement body = stmt.getBody();
+        if (body != null && body.getStartOffset() < offset && offset < body.getEndOffset()) {
+            list.add(body);
+            findInner(list, body, offset);
+        }
+    }    
 
     private void findInner(List<CsmObject> list, CsmSwitchStatement stmt, int offset) {
         CsmCondition condition = stmt.getCondition();

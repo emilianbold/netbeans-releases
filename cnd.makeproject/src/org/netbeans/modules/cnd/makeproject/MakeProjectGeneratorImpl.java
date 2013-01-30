@@ -241,7 +241,7 @@ public class MakeProjectGeneratorImpl {
             @Override
             public void run() {
                 projectDescriptor.initLogicalFolders(sourceFolders, sourceFolders == null, testFolders,
-                        logicalFolders, logicalFolderItems, importantItems, mainFileParams.mainFilePath, false); // FIXUP: need a better check whether logical folder should be ccreated or not.
+                        logicalFolders, logicalFolderItems, importantItems, mainFileParams.mainFilePath, mainFileParams.templateDO, false); // FIXUP: need a better check whether logical folder should be ccreated or not.
                 
                 projectDescriptor.save();
                 // finish postponed activity when project metadata is ready
@@ -313,8 +313,13 @@ public class MakeProjectGeneratorImpl {
 
     private static FileObject createProjectDir(ProjectParameters prjParams) throws IOException {
         String projectFolderPath = prjParams.getProjectFolderPath();
-        MakeSampleProjectGenerator.workAroundBug203507(projectFolderPath);
-        FileObject dirFO = FileUtil.createFolder(prjParams.getSourceFileSystem().getRoot(), projectFolderPath);
+        MakeSampleProjectGenerator.FOPath fopath = new MakeSampleProjectGenerator.FOPath(projectFolderPath);
+        FileObject dirFO;
+        if (fopath.root !=  null) {
+            dirFO = FileUtil.createFolder(fopath.root, fopath.relPath);
+        } else {
+            dirFO = FileUtil.createFolder(prjParams.getSourceFileSystem().getRoot(), projectFolderPath);
+        }
         //File dir = prjParams.getProjectFolder();
         //if (!dir.exists()) {
         //    //Refresh before mkdir not to depend on window focus
@@ -333,19 +338,19 @@ public class MakeProjectGeneratorImpl {
 
     private static CreateMainParams prepareMainIfNeeded(String mainFile, FileObject srcFolder, Map<String, Object> templateParams) throws IOException {
         if (mainFile.length() == 0) {
-            return new CreateMainParams(null, null);
+            return new CreateMainParams(null, null, null);
         }
         String mainName = mainFile.substring(0, mainFile.indexOf('|'));
         String template = mainFile.substring(mainFile.indexOf('|') + 1);
 
         if (mainName.length() == 0) {
-            return new CreateMainParams(null, null);
+            return new CreateMainParams(null, null, null);
         }
 
         FileObject mainTemplate = FileUtil.getConfigFile(template);
 
         if (mainTemplate == null) {
-            return new CreateMainParams(null, null); // Don't know the template
+            return new CreateMainParams(null, null, null); // Don't know the template
         }
         final String createdMainName;
          if (mainName.indexOf('\\') > 0 || mainName.indexOf('/') > 0) {
@@ -378,15 +383,17 @@ public class MakeProjectGeneratorImpl {
             }
         };
 
-        return new CreateMainParams(mainName, runnable);
+        return new CreateMainParams(mainName, mt, runnable);
     }
 
     private static final class CreateMainParams {
         final String mainFilePath;
+        final DataObject templateDO;
         private final Runnable postProjectSaveWorker;
 
-        public CreateMainParams(String mainName, Runnable postProjectSaveWorker) {
+        public CreateMainParams(String mainName, DataObject dob, Runnable postProjectSaveWorker) {
             this.mainFilePath = mainName;
+            this.templateDO = dob;
             this.postProjectSaveWorker = postProjectSaveWorker;
         }
 

@@ -54,8 +54,8 @@ import javax.swing.JTree;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.TreeCellRenderer;
+import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreeSelectionModel;
-
 import org.netbeans.modules.maven.hints.pom.spi.POMErrorFixBase;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
@@ -159,6 +159,7 @@ final class HintsPanel extends javax.swing.JPanel implements TreeCellRenderer  {
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.ipadx = 24;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         optionsPanel.add(severityComboBox, gridBagConstraints);
         severityComboBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(HintsPanel.class, "AN_Show_As_Combo")); // NOI18N
@@ -333,6 +334,20 @@ final class HintsPanel extends javax.swing.JPanel implements TreeCellRenderer  {
     private javax.swing.JPanel treePanel;
     // End of variables declaration//GEN-END:variables
 
+    void setCurrentSubcategory(String subpath) {
+        TreeModel mdl = errorTree.getModel();
+        for (int i = 0; i < mdl.getChildCount(mdl.getRoot()); i++) {
+            Object child = mdl.getChild(mdl.getRoot(), i);
+            Object data = ((DefaultMutableTreeNode) child).getUserObject();
+            if (data instanceof POMErrorFixBase) {
+                POMErrorFixBase rule = (POMErrorFixBase) data;
+                if (rule.getConfiguration().getId().equals(subpath)) {
+                    errorTree.setSelectionRow(i);
+                    break;
+                }
+            }
+        }
+    }
 
 
 }

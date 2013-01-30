@@ -45,6 +45,7 @@ package org.netbeans.modules.java.source.indexing;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.tools.javac.api.JavacTaskImpl;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
+import com.sun.tools.javac.code.Symtab;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.TypeTags;
 import com.sun.tools.javac.code.Types;
@@ -69,6 +70,8 @@ import javax.lang.model.element.TypeElement;
 import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
 import javax.tools.StandardLocation;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ElementHandle;
@@ -93,6 +96,7 @@ final class MultiPassCompileWorker extends CompileWorker {
 
     private static final int MEMORY_LOW = 1;
     private static final int ERR = 2;
+    private boolean checkForMemLow = true;
 
     @Override
     ParsingOutput compile(
@@ -141,168 +145,192 @@ final class MultiPassCompileWorker extends CompileWorker {
                 //NOP - safe to ignore
             }
             try {
-                if (mem.isLowMemory()) {
-                    dumpSymFiles(fileManager, jt, previous.createdFiles);
-                    mem.isLowMemory();
-                    jt = null;
-                    diagnosticListener.cleanDiagnostics();
-                    if ((state & MEMORY_LOW) != 0) {
-                        break;
-                    } else {
-                        state |= MEMORY_LOW;
-                    }
-                    mem.free();
-                    continue;
-                }
-                if (active == null) {
-                    if (!toProcess.isEmpty()) {
-                        active = toProcess.removeFirst();
-                        if (active == null || previous.finishedFiles.contains(active.indexable))
-                            continue;
-                        isBigFile = false;
-                    } else {
-                        active = bigFiles.removeFirst();
-                        isBigFile = true;
-                    }
-                }
-                if (jt == null) {
-                    jt = JavacParser.createJavacTask(javaContext.getClasspathInfo(), diagnosticListener, javaContext.getSourceLevel(), cnffOraculum, javaContext.getFQNs(), new CancelService() {
-                        public @Override boolean isCanceled() {
-                            return context.isCancelled();
-                        }
-                    }, active.aptGenerated ? null : APTUtils.get(context.getRoot()));
-                    Iterable<? extends Processor> processors = jt.getProcessors();
-                    aptEnabled = processors != null && processors.iterator().hasNext();
-                    if (JavaIndex.LOG.isLoggable(Level.FINER)) {
-                        JavaIndex.LOG.finer("Created new JavacTask for: " + FileUtil.getFileDisplayName(context.getRoot()) + " " + javaContext.getClasspathInfo().toString()); //NOI18N
-                    }
-                }
-                Iterable<? extends CompilationUnitTree> trees = jt.parse(new JavaFileObject[]{active.jfo});
-                if (mem.isLowMemory()) {
-                    dumpSymFiles(fileManager, jt, previous.createdFiles);
-                    mem.isLowMemory();
-                    jt = null;
-                    diagnosticListener.cleanDiagnostics();
-                    trees = null;
-                    if ((state & MEMORY_LOW) != 0) {
-                        if (isBigFile) {
+                try {
+                    if (mem.isLowMemory()) {
+                        dumpSymFiles(fileManager, jt, previous.createdFiles);
+                        mem.isLowMemory();
+                        jt = null;
+                        diagnosticListener.cleanDiagnostics();
+                        if ((state & MEMORY_LOW) != 0) {
                             break;
                         } else {
-                            bigFiles.add(active);
-                            active = null;
-                            state &= ~MEMORY_LOW;
+                            state |= MEMORY_LOW;
                         }
-                    } else {
-                        state |= MEMORY_LOW;
-                    }
-                    mem.free();
-                    continue;
-                }
-                Iterable<? extends TypeElement> types;
-                types = jt.enterTrees(trees);
-                if (jfo2tuples.remove(active.jfo) != null) {
-                    final Types ts = Types.instance(jt.getContext());
-                    final Indexable activeIndexable = active.indexable;
-                    class ScanNested extends TreeScanner {
-                        Set<CompileTuple> dependencies = new LinkedHashSet<CompileTuple>();
-                        @Override
-                        public void visitClassDef(JCClassDecl node) {
-                            if (node.sym != null) {
-                                Type st = ts.supertype(node.sym.type);
-                                if (st.tag == TypeTags.CLASS) {
-                                    ClassSymbol c = st.tsym.outermostClass();
-                                    CompileTuple u = jfo2tuples.get(c.sourcefile);
-                                    if (u != null && !previous.finishedFiles.contains(u.indexable) && !u.indexable.equals(activeIndexable)) {
-                                        dependencies.add(u);
-                                    }
-                                }
-                            }
-                            super.visitClassDef(node);
-                        }
-                    }
-                    ScanNested scanner = new ScanNested();
-                    for (CompilationUnitTree cut : trees) {
-                        scanner.scan((JCCompilationUnit)cut);
-                    }
-                    if (!scanner.dependencies.isEmpty()) {
-                        toProcess.addFirst(active);
-                        for (CompileTuple tuple : scanner.dependencies) {
-                            toProcess.addFirst(tuple);
-                        }
-                        active = null;
+                        mem.free();
                         continue;
                     }
-                }
-                if (mem.isLowMemory()) {
-                    dumpSymFiles(fileManager, jt, previous.createdFiles);
-                    mem.isLowMemory();
-                    jt = null;
-                    diagnosticListener.cleanDiagnostics();
-                    trees = null;
-                    types = null;
-                    if ((state & MEMORY_LOW) != 0) {
-                        if (isBigFile) {
-                            break;
+                    if (active == null) {
+                        if (!toProcess.isEmpty()) {
+                            active = toProcess.removeFirst();
+                            if (active == null || previous.finishedFiles.contains(active.indexable))
+                                continue;
+                            isBigFile = false;
                         } else {
-                            bigFiles.add(active);
-                            active = null;
-                            state &= ~MEMORY_LOW;
+                            active = bigFiles.removeFirst();
+                            isBigFile = true;
                         }
-                    } else {
-                        state |= MEMORY_LOW;
                     }
-                    mem.free();
-                    continue;
-                }
-                jt.analyze(types);
-                boolean aptGenerated = aptEnabled ? JavaCustomIndexer.addAptGenerated(context, javaContext, active, previous.aptGenerated) : false;
-                if (mem.isLowMemory()) {
-                    dumpSymFiles(fileManager, jt, previous.createdFiles);
-                    mem.isLowMemory();
-                    jt = null;
-                    diagnosticListener.cleanDiagnostics();
-                    trees = null;
-                    types = null;
-                    if ((state & MEMORY_LOW) != 0) {
-                        if (isBigFile) {
-                            break;
+                    if (jt == null) {
+                        jt = JavacParser.createJavacTask(javaContext.getClasspathInfo(), diagnosticListener, javaContext.getSourceLevel(), cnffOraculum, javaContext.getFQNs(), new CancelService() {
+                            public @Override boolean isCanceled() {
+                                return context.isCancelled() || (checkForMemLow && mem.isLowMemory());
+                            }
+                        }, active.aptGenerated ? null : APTUtils.get(context.getRoot()));
+                        Iterable<? extends Processor> processors = jt.getProcessors();
+                        aptEnabled = processors != null && processors.iterator().hasNext();
+                        if (JavaIndex.LOG.isLoggable(Level.FINER)) {
+                            JavaIndex.LOG.finer("Created new JavacTask for: " + FileUtil.getFileDisplayName(context.getRoot()) + " " + javaContext.getClasspathInfo().toString()); //NOI18N
+                        }
+                    }
+                    Iterable<? extends CompilationUnitTree> trees = jt.parse(new JavaFileObject[]{active.jfo});
+                    if (mem.isLowMemory()) {
+                        dumpSymFiles(fileManager, jt, previous.createdFiles);
+                        mem.isLowMemory();
+                        jt = null;
+                        diagnosticListener.cleanDiagnostics();
+                        trees = null;
+                        if ((state & MEMORY_LOW) != 0) {
+                            if (isBigFile) {
+                                break;
+                            } else {
+                                bigFiles.add(active);
+                                active = null;
+                                state &= ~MEMORY_LOW;
+                            }
                         } else {
-                            bigFiles.add(active);
-                            active = null;
-                            state &= ~MEMORY_LOW;
+                            state |= MEMORY_LOW;
                         }
-                    } else {
-                        state |= MEMORY_LOW;
+                        mem.free();
+                        continue;
                     }
-                    mem.free();
-                    continue;
-                }
-                javaContext.getFQNs().set(types, active.indexable.getURL());
-                boolean[] main = new boolean[1];
-                if (javaContext.getCheckSums().checkAndSet(active.indexable.getURL(), types, jt.getElements()) || context.isSupplementaryFilesIndexing()) {
-                    javaContext.analyze(trees, jt, fileManager, active, previous.addedTypes, main);
-                } else {
-                    final Set<ElementHandle<TypeElement>> aTypes = new HashSet<ElementHandle<TypeElement>>();
-                    javaContext.analyze(trees, jt, fileManager, active, aTypes, main);
-                    previous.addedTypes.addAll(aTypes);
-                    previous.modifiedTypes.addAll(aTypes);
-                }
-                ExecutableFilesIndex.DEFAULT.setMainClass(context.getRoot().getURL(), active.indexable.getURL(), main[0]);
-                for (JavaFileObject generated : jt.generate(types)) {
-                    if (generated instanceof FileObjects.FileBase) {
-                        previous.createdFiles.add(((FileObjects.FileBase) generated).getFile());
-                    } else {
-                        // presumably should not happen
+                    Iterable<? extends TypeElement> types;
+                    types = jt.enterTrees(trees);
+                    if (jfo2tuples.remove(active.jfo) != null) {
+                        final Types ts = Types.instance(jt.getContext());
+                        final Indexable activeIndexable = active.indexable;
+                        class ScanNested extends TreeScanner {
+                            Set<CompileTuple> dependencies = new LinkedHashSet<CompileTuple>();
+                            @Override
+                            public void visitClassDef(JCClassDecl node) {
+                                if (node.sym != null) {
+                                    Type st = ts.supertype(node.sym.type);
+                                    if (st.tag == TypeTags.CLASS) {
+                                        ClassSymbol c = st.tsym.outermostClass();
+                                        CompileTuple u = jfo2tuples.get(c.sourcefile);
+                                        if (u != null && !previous.finishedFiles.contains(u.indexable) && !u.indexable.equals(activeIndexable)) {
+                                            dependencies.add(u);
+                                        }
+                                    }
+                                }
+                                super.visitClassDef(node);
+                            }
+                        }
+                        ScanNested scanner = new ScanNested();
+                        for (CompilationUnitTree cut : trees) {
+                            scanner.scan((JCCompilationUnit)cut);
+                        }
+                        if (!scanner.dependencies.isEmpty()) {
+                            toProcess.addFirst(active);
+                            for (CompileTuple tuple : scanner.dependencies) {
+                                toProcess.addFirst(tuple);
+                            }
+                            active = null;
+                            continue;
+                        }
                     }
-                }
-                JavaCustomIndexer.setErrors(context, active, diagnosticListener);
-                Log.instance(jt.getContext()).nerrors = 0;
-                previous.finishedFiles.add(active.indexable);
-                active = null;
-                state  = 0;
-                if (aptGenerated) {
-                    dumpSymFiles(fileManager, jt, previous.createdFiles);
-                    jt = null;
+                    if (mem.isLowMemory()) {
+                        dumpSymFiles(fileManager, jt, previous.createdFiles);
+                        mem.isLowMemory();
+                        jt = null;
+                        diagnosticListener.cleanDiagnostics();
+                        trees = null;
+                        types = null;
+                        if ((state & MEMORY_LOW) != 0) {
+                            if (isBigFile) {
+                                break;
+                            } else {
+                                bigFiles.add(active);
+                                active = null;
+                                state &= ~MEMORY_LOW;
+                            }
+                        } else {
+                            state |= MEMORY_LOW;
+                        }
+                        mem.free();
+                        continue;
+                    }
+                    jt.analyze(types);
+                    if (aptEnabled) {
+                        JavaCustomIndexer.addAptGenerated(context, javaContext, active, previous.aptGenerated);
+                    }
+                    if (mem.isLowMemory()) {
+                        dumpSymFiles(fileManager, jt, previous.createdFiles);
+                        mem.isLowMemory();
+                        jt = null;
+                        diagnosticListener.cleanDiagnostics();
+                        trees = null;
+                        types = null;
+                        if ((state & MEMORY_LOW) != 0) {
+                            if (isBigFile) {
+                                break;
+                            } else {
+                                bigFiles.add(active);
+                                active = null;
+                                state &= ~MEMORY_LOW;
+                            }
+                        } else {
+                            state |= MEMORY_LOW;
+                        }
+                        mem.free();
+                        continue;
+                    }
+                    javaContext.getFQNs().set(types, active.indexable.getURL());
+                    boolean[] main = new boolean[1];
+                    if (javaContext.getCheckSums().checkAndSet(active.indexable.getURL(), types, jt.getElements()) || context.isSupplementaryFilesIndexing()) {
+                        javaContext.analyze(trees, jt, fileManager, active, previous.addedTypes, main);
+                    } else {
+                        final Set<ElementHandle<TypeElement>> aTypes = new HashSet<ElementHandle<TypeElement>>();
+                        javaContext.analyze(trees, jt, fileManager, active, aTypes, main);
+                        previous.addedTypes.addAll(aTypes);
+                        previous.modifiedTypes.addAll(aTypes);
+                    }
+                    ExecutableFilesIndex.DEFAULT.setMainClass(context.getRoot().getURL(), active.indexable.getURL(), main[0]);
+                    Iterable<? extends JavaFileObject> generatedFiles = jt.generate(types);
+                    if (!active.virtual) {
+                        for (JavaFileObject generated : generatedFiles) {
+                            if (generated instanceof FileObjects.FileBase) {
+                                previous.createdFiles.add(((FileObjects.FileBase) generated).getFile());
+                            } else {
+                                // presumably should not happen
+                            }
+                        }
+                    }
+                    JavaCustomIndexer.setErrors(context, active, diagnosticListener);
+                    Log.instance(jt.getContext()).nerrors = 0;
+                    previous.finishedFiles.add(active.indexable);
+                    active = null;
+                    state  = 0;
+                } catch (CancelAbort ca) {
+                    if (mem.isLowMemory()) {
+                        dumpSymFiles(fileManager, jt, previous.createdFiles);
+                        mem.isLowMemory();
+                        jt = null;
+                        diagnosticListener.cleanDiagnostics();
+                        if ((state & MEMORY_LOW) != 0) {
+                            if (isBigFile) {
+                                break;
+                            } else {
+                                bigFiles.add(active);
+                                active = null;
+                                state &= ~MEMORY_LOW;
+                            }
+                        } else {
+                            state |= MEMORY_LOW;
+                        }
+                        mem.free();
+                    } else if (JavaIndex.LOG.isLoggable(Level.FINEST)) {
+                        JavaIndex.LOG.log(Level.FINEST, "OnePassCompileWorker was canceled in root: " + FileUtil.getFileDisplayName(context.getRoot()), ca);  //NOI18N
+                    }
                 }
             } catch (CouplingAbort ca) {
                 //Coupling error
@@ -352,10 +380,6 @@ final class MultiPassCompileWorker extends CompileWorker {
                 }
                 JavaCustomIndexer.brokenPlatform(context, files, mpe.getDiagnostic());
                 return ParsingOutput.failure(previous.file2FQNs, previous.addedTypes, previous.createdFiles, previous.finishedFiles, previous.modifiedTypes, previous.aptGenerated);
-            } catch (CancelAbort ca) {
-                if (JavaIndex.LOG.isLoggable(Level.FINEST)) {
-                    JavaIndex.LOG.log(Level.FINEST, "OnePassCompileWorker was canceled in root: " + FileUtil.getFileDisplayName(context.getRoot()), ca);  //NOI18N
-                }
             } catch (Throwable t) {
                 if (t instanceof ThreadDeath) {
                     throw (ThreadDeath) t;
@@ -397,47 +421,67 @@ final class MultiPassCompileWorker extends CompileWorker {
 
     private void dumpSymFiles(JavaFileManager jfm, JavacTaskImpl jti, Set<File> alreadyCreated) throws IOException {
         if (jti != null) {
-            final Types types = Types.instance(jti.getContext());
-            final Enter enter = Enter.instance(jti.getContext());
-            class ScanNested extends TreeScanner {
-                private Env<AttrContext> env;
-                private Set<Env<AttrContext>> dependencies = new LinkedHashSet<Env<AttrContext>>();
-                public ScanNested(Env<AttrContext> env) {
-                    this.env = env;
-                }
-                @Override
-                public void visitClassDef(JCClassDecl node) {
-                    if (node.sym != null) {
-                        Type st = types.supertype(node.sym.type);
-                        if (st.tag == TypeTags.CLASS) {
-                            ClassSymbol c = st.tsym.outermostClass();
-                            Env<AttrContext> stEnv = enter.getEnv(c);
-                            if (stEnv != null && env != stEnv) {
-                                if (dependencies.add(stEnv))
-                                    scan(stEnv.tree);
+            checkForMemLow = false;
+            try {
+                final Types types = Types.instance(jti.getContext());
+                final Enter enter = Enter.instance(jti.getContext());
+                final Symtab syms = Symtab.instance(jti.getContext());
+                class ScanNested extends TreeScanner {
+                    private Env<AttrContext> env;
+                    private Set<Env<AttrContext>> checked = new HashSet<Env<AttrContext>>();
+                    private List<Env<AttrContext>> dependencies = new LinkedList<Env<AttrContext>>();
+                    public ScanNested(Env<AttrContext> env) {
+                        this.env = env;
+                    }
+                    @Override
+                    public void visitClassDef(JCClassDecl node) {
+                        if (node.sym != null) {
+                            Type st = types.supertype(node.sym.type);
+                            if (st.tag == TypeTags.CLASS) {
+                                ClassSymbol c = st.tsym.outermostClass();
+                                Env<AttrContext> stEnv = enter.getEnv(c);
+                                if (stEnv != null && env != stEnv) {
+                                    if (checked.add(stEnv)) {
+                                        scan(stEnv.tree);
+                                        if (TreeLoader.pruneTree(stEnv.tree, syms))
+                                            dependencies.add(stEnv);
+                                    }
+                                }
                             }
                         }
+                        super.visitClassDef(node);
                     }
-                    super.visitClassDef(node);
                 }
-            }
-            final Set<Env<AttrContext>> processedEnvs = new HashSet<Env<AttrContext>>();
-            for (Env<AttrContext> env : jti.getTodo()) {
-                if (processedEnvs.add(env)) {
-                    ScanNested scanner = new ScanNested(env);
-                    scanner.scan(env.tree);
-                    for (Env<AttrContext> dep: scanner.dependencies) {
-                        if (processedEnvs.add(dep)) {
-                            dumpSymFile(jfm, jti, dep.enclClass.sym, alreadyCreated);
+                final Set<Env<AttrContext>> processedEnvs = new HashSet<Env<AttrContext>>();
+                for (Env<AttrContext> env : jti.getTodo()) {
+                    if (processedEnvs.add(env)) {
+                        ScanNested scanner = new ScanNested(env);
+                        scanner.scan(env.tree);
+                        for (Env<AttrContext> dep: scanner.dependencies) {
+                            if (processedEnvs.add(dep)) {
+                                dumpSymFile(jfm, jti, dep.enclClass.sym, alreadyCreated);
+                            }
                         }
+                        if (TreeLoader.pruneTree(env.tree, syms))
+                            dumpSymFile(jfm, jti, env.enclClass.sym, alreadyCreated);
                     }
-                    dumpSymFile(jfm, jti, env.enclClass.sym, alreadyCreated);
                 }
+            } finally {
+                checkForMemLow = true;
             }
         }
     }
     
-    private void dumpSymFile(JavaFileManager jfm, JavacTaskImpl jti, ClassSymbol cs, Set<File> alreadyCreated) throws IOException {
+    private void dumpSymFile(
+            @NonNull final JavaFileManager jfm,
+            @NonNull final JavacTaskImpl jti,
+            @NullAllowed final ClassSymbol cs,
+            @NonNull final Set<File> alreadyCreated) throws IOException {
+        if (cs == null) {
+            //ClassDecl has no symbol because compilation was cancelled
+            //by low memory before ENTER done.
+            return;
+        }        
         JavaFileObject file = jfm.getJavaFileForOutput(StandardLocation.CLASS_OUTPUT,
                 cs.flatname.toString(), JavaFileObject.Kind.CLASS, cs.sourcefile);
         if (file instanceof FileObjects.FileBase && !alreadyCreated.contains(((FileObjects.FileBase)file).getFile())) {

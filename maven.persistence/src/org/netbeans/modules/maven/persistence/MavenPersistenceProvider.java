@@ -81,7 +81,8 @@ public class MavenPersistenceProvider implements PersistenceLocationProvider,
      */
     public MavenPersistenceProvider(Project proj, Lookup lkp)
     {
-        locProvider    = new PersistenceLocationProviderImpl(proj);
+        NbMavenProject watcher = lkp.lookup(NbMavenProject.class);
+        locProvider    = new PersistenceLocationProviderImpl(proj, watcher);
         scopeProvider  = new PersistenceScopeProviderImpl(locProvider, proj);
         scopesProvider = new PersistenceScopesProviderImpl(scopeProvider);
         
@@ -89,7 +90,6 @@ public class MavenPersistenceProvider implements PersistenceLocationProvider,
         propChangeSupport.addPropertyChangeListener(scopesProvider);
                 
         //TODO add FileChangeListener on persistence.xml
-        NbMavenProject watcher = lkp.lookup(NbMavenProject.class);
         watcher.addWatchedPath(PersistenceLocationProviderImpl.DEF_PERSISTENCE);
         watcher.addWatchedPath(PersistenceLocationProviderImpl.ALT_PERSISTENCE);
         watcher.addPropertyChangeListener(WeakListeners.propertyChange(res, watcher));

@@ -177,6 +177,12 @@ public class Notificator {
             getEvent().addRemovedNamespace(ns);
         }
     }
+    
+    void registerChangedLibraryDependency(CsmProject project) {
+        synchronized (this) {
+            getEvent().addProjectThatChangedLibs(project);
+        }
+    }
 
     /**
      * Generally, we should rely on hashCode() and equals()

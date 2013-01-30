@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -46,6 +46,7 @@ package org.netbeans.modules.autoupdate.services;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.Set;
 import org.netbeans.api.autoupdate.OperationContainer;
 import org.netbeans.api.autoupdate.OperationContainer.OperationInfo;
 import org.netbeans.api.autoupdate.UpdateElement;
@@ -60,6 +61,7 @@ import org.netbeans.spi.autoupdate.UpdateItem;
  *
  * @author Jiri Rechtacek
  */
+@RandomlyFails
 public class RequiresDependencyTest extends NbmAdvancedTestCase {
     
     public RequiresDependencyTest (String testName) {
@@ -68,17 +70,14 @@ public class RequiresDependencyTest extends NbmAdvancedTestCase {
     
     private static String TOKEN = "org.netbeans.modules.autoupdate.test.token";
 
-    @RandomlyFails
     public void testInstallModuleWhichRequires () throws IOException {
         testInstallModuleWhichWants ("Requires");
     }
     
-    @RandomlyFails
     public void testInstallModuleWhichNeeds () throws IOException {
         testInstallModuleWhichWants ("Needs");
     }
     
-    @RandomlyFails
     public void testInstallModuleWhichRecommends () throws IOException {
         testInstallModuleWhichWants ("Recommends");
     }
@@ -87,7 +86,6 @@ public class RequiresDependencyTest extends NbmAdvancedTestCase {
         testBrokenDepsOfModuleWhichWants ("Requires", true);
     }
 
-    @RandomlyFails
     public void testBrokenDepsOfModuleWhichNeeds () throws IOException {
         testBrokenDepsOfModuleWhichWants ("Needs", true);
     }
@@ -96,13 +94,28 @@ public class RequiresDependencyTest extends NbmAdvancedTestCase {
         testBrokenDepsOfModuleWhichWants ("Recommends", false);
     }
     
-    @SuppressWarnings("unchecked")
+    public void testInstallModuleWhichRecommendsCNB () throws IOException {
+        testInstallModuleWhichWants("Recommends", "cnb.org.yourorghere.provider.testtoken");
+    }
+    
+    public void testInstallModuleWhichRequiresCNB () throws IOException {
+        testInstallModuleWhichWants("Requires", "cnb.org.yourorghere.provider.testtoken");
+    }
+    
+    public void testInstallModuleWhichNeedsCNB () throws IOException {
+        testInstallModuleWhichWants("Needs", "cnb.org.yourorghere.provider.testtoken");
+    }
+    
     private void testInstallModuleWhichWants (String type) throws IOException {
+        testInstallModuleWhichWants(type, TOKEN);
+    }
+    
+    private void testInstallModuleWhichWants (String type, String token) throws IOException {
         String providerModule = "org.yourorghere.provider.testtoken";
         String wantsModule = "org.yourorghere." + type + ".testtoken";
         String catalog = generateCatalog (
-                generateModuleElementWithProviders (providerModule, "1.0", TOKEN),
-                generateModuleElement (wantsModule, "1.0", "OpenIDE-Module-" + type, TOKEN, false, false)
+                generateModuleElementWithProviders (providerModule, "1.0", token.startsWith("cnb.") ? "" : token),
+                generateModuleElement (wantsModule, "1.0", "OpenIDE-Module-" + type, token, false, false)
                 );
 
         AutoupdateCatalogProvider p = createUpdateProvider (catalog);
@@ -151,12 +164,12 @@ public class RequiresDependencyTest extends NbmAdvancedTestCase {
 
         // check states installed units, should be both wants and provides are installed
         assertNotNull (wantsModule + " is installed.", wantsUU.getInstalled ());
-        assertNotNull (providerModule + " is installed.", providerUU.getInstalled ());
+        assertNotNull (providerModule + " is installed.", UpdateManagerImpl.getInstance ().getUpdateUnit (providerModule).getInstalled ());
     }
     
     @SuppressWarnings("unchecked")
     private void testBrokenDepsOfModuleWhichWants (String type, boolean forceThisDependency) throws IOException {
-        String wantsModule = "org.yourorghere." + type + ".testtoken";
+       String wantsModule = "org.yourorghere." + type + ".testtoken";
         String catalog = generateCatalog (
                 generateModuleElement (wantsModule, "1.0", "OpenIDE-Module-" + type, TOKEN, false, false)
                 );
@@ -203,4 +216,64 @@ public class RequiresDependencyTest extends NbmAdvancedTestCase {
                     ", but broken deps are " + wantsInfo.getBrokenDependencies (), wantsInfo.getBrokenDependencies ().isEmpty ());
         }
     }
+    
+    public void testInstallModuleWhichRecommendsBrokenModule() throws IOException {
+        installModuleWhichRecommendsBrokenModule(TOKEN);
+    }
+    
+    public void testinstallModuleWhichRecommendsCNBOfBrokenModule() throws IOException {
+        installModuleWhichRecommendsBrokenModule("cnb.org.yourorghere.provider.testtoken");
+    }
+
+    private void installModuleWhichRecommendsBrokenModule(String wantsToken) throws IOException {
+        String providerModule = "org.yourorghere.provider.testtoken";
+        String wantsModule = "org.yourorghere.recommends.testtoken";
+        String catalog = generateCatalog(
+                generateModuleElementWithProviders(providerModule, "1.0", TOKEN, "org.yourorghere.nothere"),
+                generateModuleElement(wantsModule, "1.0", "OpenIDE-Module-Recommends", wantsToken, false, false));
+
+        AutoupdateCatalogProvider p = createUpdateProvider(catalog);
+        p.refresh(true);
+        Map<String, UpdateItem> updates = p.getUpdateItems();
+
+        // initial check of updates being and its states
+        ModuleItem providerModuleItem = (ModuleItem) Trampoline.SPI.impl(updates.get(providerModule + "_1.0"));
+        assertNotNull(providerModule + " found in UpdateItems.", providerModuleItem);
+
+        ModuleItem wantsModuleItem = (ModuleItem) Trampoline.SPI.impl(updates.get(wantsModule + "_1.0"));
+        assertNotNull(wantsModule + " found in UpdateItems.", wantsModuleItem);
+        assertFalse(wantsModuleItem.getModuleInfo().getDependencies() + " are not empty.",
+                wantsModuleItem.getModuleInfo().getDependencies().isEmpty());
+
+        // acquire UpdateUnits for test modules
+        UpdateUnitProviderFactory.getDefault().create("test-update-provider", "test-update-provider", generateFile(catalog));
+        UpdateUnitProviderFactory.getDefault().refreshProviders(null, true);
+        UpdateUnit providerUU = UpdateManagerImpl.getInstance().getUpdateUnit(providerModule);
+        UpdateUnit wantsUU = UpdateManagerImpl.getInstance().getUpdateUnit(wantsModule);
+        assertNotNull("Unit " + providerModule + " found.", providerUU);
+        assertNotNull("Unit " + wantsModule + " found.", wantsUU);
+
+        // check states installed units, none of wants and provides are installed
+        assertNull(wantsModule + " is not installed.", wantsUU.getInstalled());
+        assertNull(providerModule + " is not installed.", providerUU.getInstalled());
+
+        // check content of container
+        OperationContainer ic = OperationContainer.createForInstall();
+        assertNotNull(wantsUU.getAvailableUpdates().get(0));
+        
+        OperationInfo wantsInfo = ic.add(wantsUU.getAvailableUpdates().get(0));
+        assertNotNull(wantsInfo);
+        assertEquals(wantsUU, wantsInfo.getUpdateUnit());
+        
+        Set<String> brokenDeps = wantsInfo.getBrokenDependencies();
+        assertTrue("No broken dependencies if install " + wantsUU + ", but " + brokenDeps, brokenDeps.isEmpty());
+
+        // install wants module
+        installUpdateUnit(wantsUU);
+
+        // check states of installed units, module wants is installed, but the broken provider not
+        assertNotNull(wantsModule + " is installed.", wantsUU.getInstalled());
+        assertNull(providerModule + " is not installed.", providerUU.getInstalled());
+    }
+    
 }

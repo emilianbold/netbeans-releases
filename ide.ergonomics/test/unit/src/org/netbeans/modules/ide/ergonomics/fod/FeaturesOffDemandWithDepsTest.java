@@ -64,7 +64,6 @@ import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.core.startup.Main;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.RandomlyFails;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -152,7 +151,6 @@ public class FeaturesOffDemandWithDepsTest extends NbTestCase implements Propert
         assertEquals("Empty", 0, OpenProjects.getDefault().getOpenProjects().length);
     }
 
-    @RandomlyFails
     public void testFoDModuleFilesAreAnnotatedWithAttributes() throws Exception {
         FileObject sub = FileUtil.getConfigFile("Modules/org-netbeans-modules-java-kit.xml");
         assertNotNull("Module config file found", sub);
@@ -197,7 +195,7 @@ public class FeaturesOffDemandWithDepsTest extends NbTestCase implements Propert
         assertEquals("Integer", Integer.class, cnt.getClass());
         assertEquals("Set to zero", Integer.valueOf(0), cnt);
 
-        Long modified = sub.lastModified().getTime();
+        Long modified = findLastModified(sub);
         assertEquals("enabled attribute is same as modification day", when, modified);
         final String middleState = sub.asText("UTF-8");
         if (origContent.equals(middleState)) {
@@ -247,6 +245,17 @@ public class FeaturesOffDemandWithDepsTest extends NbTestCase implements Propert
         os.close();
 
         return f;
+    }
+
+    static long findLastModified(FileObject sub) {
+        long w = 0;
+        for (FileObject sblng : sub.getParent().getChildren()) {
+            long t = sblng.lastModified().getTime();
+            if (t > w) {
+                w = t;
+            }
+        }
+        return w;
     }
 
     public static final class DD extends DialogDisplayer {

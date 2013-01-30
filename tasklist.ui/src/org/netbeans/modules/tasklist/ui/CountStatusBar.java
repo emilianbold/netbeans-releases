@@ -112,5 +112,6 @@ class CountStatusBar extends JLabel {
         super.addNotify();
         
         tasks.addListener( listener );
+        updateText();
     }
 }

@@ -222,20 +222,24 @@ public class NoProjectNew extends javax.swing.JPanel implements  ActionListener,
 
     // ActionListener implementation -------------------------------------------
     
+    @Override
     public void actionPerformed( ActionEvent e ) {
         result = COMMAND_OK.equals( e.getActionCommand() ) ? getFileName() : null;        
     }
     
     // Document listener implementation ----------------------------------------
     
+    @Override
     public void insertUpdate(javax.swing.event.DocumentEvent e) {
         changedUpdate( e );
     }    
     
+    @Override
     public void removeUpdate(javax.swing.event.DocumentEvent e) {
         changedUpdate( e );
     }    
     
+    @Override
     public void changedUpdate(javax.swing.event.DocumentEvent e) {
         
         String fileName = getFileName();

@@ -42,6 +42,7 @@
 package org.netbeans.modules.refactoring.java.test;
 
 import java.net.URL;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.refactoring.api.Problem;
 
 /**
@@ -52,6 +53,95 @@ public class MoveClassTest extends MoveBaseTest {
 
     public MoveClassTest(String name) {
         super(name);
+    }
+    
+    @RandomlyFails
+    public void test204444() throws Exception { // #204444 - Improve Move Refactoring to support nested/inner classes
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t;\n"
+                + "import u.B;\n"
+                + "public class A {\n"
+                + "    /** Something about i */\n"
+                + "    static int i(B b) { return b.i; }\n"
+                + "    public void foo() {\n"
+                + "        System.out.println(i(new B()));\n"
+                + "    }\n"
+                + "}\n"),
+                new File("u/B.java", "package u;\n"
+                + "import java.util.List;\n"
+                + "/** Class B */\n"
+                + "public class B {\n"
+                + "    public int i = 42;\n"
+                + "    private List lijst;\n"
+                + "}\n"),
+                new File("u/C.java", "package u;\n"
+                + "public class C {\n"
+                + "}\n"));
+        performMove(src.getFileObject("u/B.java"), 0, src.getFileObject("u/C.java"), 0);
+        verifyContent(src,
+                new File("t/A.java", "package t;\n"
+                + "import u.C.B;\n"
+                + "public class A {\n"
+                + "    /** Something about i */\n"
+                + "    static int i(B b) { return b.i; }\n"
+                + "    public void foo() {\n"
+                + "        System.out.println(i(new B()));\n"
+                + "    }\n"
+                + "}\n"),
+                new File("u/C.java", "package u;\n"
+                + "import java.util.List;\n"
+                + "public class C {\n"
+                + "    /** Class B */\n"
+                + "    public static class B {\n"
+                + "        public int i = 42;\n"
+                + "        private List lijst;\n"
+                + "    }\n"
+                + "}\n"));
+    }
+    
+    public void test204444c() throws Exception { // #204444 - Improve Move Refactoring to support nested/inner classes
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "    /** Something about i */\n"
+                + "    static int i(B b) { return b.i; }\n"
+                + "    public void foo() {\n"
+                + "        System.out.println(i(new B()));\n"
+                + "    }\n"
+                + "}\n"
+                + "class B {\n"
+                + "    public int i = 42;\n"
+                + "}\n"));
+        performMove(src.getFileObject("t/A.java"), 1, src.getFileObject("t/A.java"), 0);
+        verifyContent(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "    /** Something about i */\n"
+                + "    static int i(B b) { return b.i; }\n"
+                + "    public void foo() {\n"
+                + "        System.out.println(i(new B()));\n"
+                + "    }\n"
+                + "    static class B {\n"
+                + "        public int i = 42;\n"
+                + "    }\n"
+                + "}\n"));
+    }
+    
+    public void test204444a() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "    /** Something about i */\n"
+                + "    static int i(B b) { return b.i; }\n"
+                + "    public void foo() {\n"
+                + "        System.out.println(i(new B()));\n"
+                + "    }\n"
+                + "    enum B { }\n"
+                + "}\n"
+                + "class B {\n"
+                + "    public int i = 42;\n"
+                + "}\n"));
+        performMove(src.getFileObject("t/A.java"), 1, src.getFileObject("t/A.java"), 0, new Problem(true, "ERR_ClassToMoveClashesInner"));
     }
     
     public void test127535() throws Exception { // #127535 - [Move] Cannot move second class in the file
@@ -158,9 +248,7 @@ public class MoveClassTest extends MoveBaseTest {
                 + "class B {\n"
                 + "    public int i = 42;\n"
                 + "}\n"));
-        performMove(src.getFileObject("t/A.java"), 0, new URL(src.getURL(), "v/"),
-                new Problem(false, "ERR_AccessesPackagePrivateFeature2"),
-                new Problem(false, "ERR_AccessesPackagePrivateFeature2"),
+        performMove(src.getFileObject("t/A.java"), 0, new URL(src.toURL(), "v/"),
                 new Problem(false, "ERR_AccessesPackagePrivateFeature2"));
         verifyContent(src,
                 new File("v/A.java", "/* * Refactoring License */\n"

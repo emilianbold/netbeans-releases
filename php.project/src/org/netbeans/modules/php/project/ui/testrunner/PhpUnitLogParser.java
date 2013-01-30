@@ -134,6 +134,11 @@ public final class PhpUnitLogParser extends DefaultHandler {
             case ERROR:
                 buffer.append(new String(ch, start, length));
                 break;
+            case NONE:
+                // noop
+                break;
+            default:
+                assert false : "Unknown content: " + content;
         }
     }
 

@@ -43,7 +43,6 @@ package org.netbeans.modules.cnd.search.impl.spi;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.api.search.SearchRoot;
 import org.netbeans.api.search.provider.SearchListener;
@@ -80,7 +79,7 @@ import org.openide.util.RequestProcessor.Task;
  */
 public final class CNDSearchComposition extends SearchComposition<SearchResult> {
 
-    private static final RequestProcessor RP = new RequestProcessor(CNDSearchComposition.class.getName(), 1);
+    private static final RequestProcessor RP = new RequestProcessor(CNDSearchComposition.class.getName(), 2);
     private final AtomicBoolean terminated = new AtomicBoolean(false);
     private final SearchParams params;
     private DefaultSearchResultsDisplayer<SearchResult> displayer;
@@ -176,39 +175,57 @@ public final class CNDSearchComposition extends SearchComposition<SearchResult> 
                     try {
                         BufferedReader br = ProcessUtils.getReader(process.getInputStream(), env.isRemote());
                         String line;
-                        while ((line = br.readLine()) != null) {
-                            MatchingFileData data = find.processOutputLine(line);
+                        while (!isTerminated() && (line = br.readLine()) != null) {
+                            MatchingFileData data = find.processOutputLine(line.trim());
 
                             if (data != null) {
                                 displayer.addMatchingObject(new SearchResult(env, data));
                             }
                         }
                     } catch (IOException ex) {
-                        listener.generalError(ex);
+                        if (!isTerminated()) {
+                            listener.generalError(ex);
+                        }
                     }
                 }
             };
 
-            final Task task = RP.post(readOutputTask);
+            final Runnable readErrorTask = new Runnable() {
+
+                @Override
+                public void run() {
+                    try {
+                        BufferedReader br = ProcessUtils.getReader(process.getErrorStream(), env.isRemote());
+                        String line;
+                        while (!isTerminated() && (line = br.readLine()) != null) {
+                            Throwable ex = new Throwable(line);
+                            listener.generalError(ex);
+                        }
+                    } catch (IOException ex) {
+                        if (!isTerminated()) {
+                            listener.generalError(ex);
+                        }
+                    }
+                }
+            };
+
+            final Task outTask = RP.post(readOutputTask);
+            final Task errTask = RP.post(readErrorTask);
 
             cancel = new Cancellable() {
 
                 @Override
                 public boolean cancel() {
                     process.destroy();
-                    return task.cancel();
+                    outTask.cancel();
+                    errTask.cancel();
+                    outTask.waitFinished();
+                    errTask.waitFinished();
+                    return true;
                 }
             };
 
-            int status = process.waitFor();
-
-            if (status != 0) {
-                List<String> lines = ProcessUtils.readProcessError(process);
-                for (String line : lines) {
-                    Throwable ex = new Throwable(line);
-                    listener.generalError(ex);
-                }
-            }
+            process.waitFor();
         } catch (InterruptedException ex) {
             // Exceptions.printStackTrace(ex);
         } catch (IOException ex) {

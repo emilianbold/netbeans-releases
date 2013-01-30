@@ -47,10 +47,9 @@ import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.AbstractDocument;
@@ -64,6 +63,7 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable.Position;
@@ -93,7 +93,7 @@ import org.openide.util.NbBundle;
  */
 public final class MarkOccurrencesHighlighter extends HighlighterBase {
 
-    private static Map<String,AttributeSet> defaultColors = new HashMap<String, AttributeSet>();
+    private static final ConcurrentHashMap<String,AttributeSet> defaultColors = new ConcurrentHashMap<String, AttributeSet>();
 
     public static PositionsBag getHighlightsBag(Document doc) {
         if (doc == null) {
@@ -193,15 +193,15 @@ public final class MarkOccurrencesHighlighter extends HighlighterBase {
                 doc.addDocumentListener(listener);
             }
             try {
-                CsmFile file = CsmUtilities.getCsmFile(doc, false, false);
-                FileObject fo = CsmUtilities.getFileObject(doc);
+                final CsmFile file = CsmUtilities.getCsmFile(doc, false, false);
+                final FileObject fo = CsmUtilities.getFileObject(doc);
 
                 if (file == null || fo == null) {
                     // this can happen if MO was triggered right before closing project
                     clean();
                     return;
                 }
-
+                final String mimeType = DocumentUtilities.getMimeType(doc);
                 int lastPosition = CaretAwareCsmFileTaskFactory.getLastPosition(fo);
 
                 // Check existance of related document
@@ -239,7 +239,11 @@ public final class MarkOccurrencesHighlighter extends HighlighterBase {
                 } else {
                     final PositionsBag obag = new PositionsBag(doc);
                     obag.clear();
-                    final AttributeSet attrs = defaultColors.get(fo.getMIMEType());
+                    final AttributeSet attrs = defaultColors.get(mimeType);
+                    if (attrs == null) {
+                        assert false : "Color attributes set is not found for MIME "+mimeType+". Document "+doc;
+                        return;
+                    }
                     for (final CsmReference csmReference : out) {
                         if (interrupter.cancelled()) {
                             break;
@@ -409,6 +413,7 @@ public final class MarkOccurrencesHighlighter extends HighlighterBase {
             if(tokenID instanceof CppTokenId) {
                 switch ((CppTokenId)tokenID) {
                     case PREPROCESSOR_START:
+                    case PREPROCESSOR_START_ALT:
                     case WHITESPACE:
                     case BLOCK_COMMENT:
                     case ESCAPED_LINE:
@@ -466,12 +471,12 @@ public final class MarkOccurrencesHighlighter extends HighlighterBase {
     }
 
     private static Collection<CsmReference> getPreprocReferences(AbstractDocument doc, CsmFile file, int searchOffset, Interrupter interrupter) {
-        TokenSequence<?> origPreprocTS = cppTokenSequence(doc, searchOffset, false);
-        if (origPreprocTS == null || origPreprocTS.language() != CppTokenId.languagePreproc()) {
-            return Collections.<CsmReference>emptyList();
-        }
         doc.readLock();
         try {
+            TokenSequence<?> origPreprocTS = cppTokenSequence(doc, searchOffset, false);
+            if (origPreprocTS == null || origPreprocTS.language() != CppTokenId.languagePreproc()) {
+                return Collections.<CsmReference>emptyList();
+            }
             TokenHierarchy<AbstractDocument> th = TokenHierarchy.get(doc);
             List<TokenSequence<?>> ppSequences = th.tokenSequenceList(origPreprocTS.languagePath(), 0, doc.getLength());
             ConditionalBlock top = new ConditionalBlock(null);

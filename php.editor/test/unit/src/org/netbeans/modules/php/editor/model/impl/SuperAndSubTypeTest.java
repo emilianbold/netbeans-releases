@@ -334,4 +334,12 @@ public class SuperAndSubTypeTest extends ModelTestBase {
         assertTrue(possibleSubType.isSubTypeOf(possibleSuperType));
     }
 
+    public void testIssue217175() throws Exception {
+        Model model = getModel();
+        TypeScope possibleSuperType = getSuperType(model);
+        TypeScope possibleSubType = getSubType(model);
+
+        assertFalse(possibleSuperType.isSuperTypeOf(possibleSubType));
+    }
+
 }

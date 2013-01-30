@@ -55,6 +55,7 @@ import java.util.logging.Level;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.ui.issue.cache.StorageUtils.FileLocks;
 import org.netbeans.modules.bugtracking.ui.issue.cache.StorageUtils.FileLocks.FileLock;
+import org.openide.modules.Places;
 
 /**
  *
@@ -82,8 +83,7 @@ public class IssueSettingsStorage {
     }
     
     private File getStorageRootFile() {
-        String userDir = System.getProperty("netbeans.user");                   // NOI18N
-        return new File(new File(userDir, "config"), "issue-tracking");         // NOI18N
+        return new File(new File(Places.getUserDirectory(), "config"), "issue-tracking");         // NOI18N
     }
 
     public Collection<Long> loadCollapsedCommenst(String repoUrl, String id) {
@@ -113,10 +113,14 @@ public class IssueSettingsStorage {
         if(!file.exists()) {
             file.createNewFile();
         }
-        p.load(new FileInputStream(file));
-        
+        FileInputStream fis = new FileInputStream(file);
+        try {
+            p.load(fis);
+        } finally {
+            fis.close();
+        }
         return p;
-    }
+        }
     
     public void storeCollapsedComments(Collection<Long> collapsedComments, String repoUrl, String id) {
         File file = getIssuePropertiesFile(repoUrl, id);
@@ -127,7 +131,12 @@ public class IssueSettingsStorage {
             for (Long i : collapsedComments) {
                 p.put(PROP_COLLAPSED_COMMENT_PREFIX + i, "true");
             }
-            p.store(new FileOutputStream(file), "");
+            FileOutputStream fos = new FileOutputStream(file);
+            try {
+                p.store(fos, "");
+            } finally {
+                fos.close();
+            }
         } catch (IOException ex) {
             BugtrackingManager.LOG.log(Level.WARNING, repoUrl + " " + id, ex);
         } finally {

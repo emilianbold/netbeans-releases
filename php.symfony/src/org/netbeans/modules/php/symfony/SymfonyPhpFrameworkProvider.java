@@ -50,16 +50,16 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.api.queries.VisibilityQuery;
-import org.netbeans.modules.php.api.phpmodule.BadgeIcon;
+import org.netbeans.modules.php.api.framework.BadgeIcon;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.phpmodule.PhpModuleProperties;
 import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.spi.editor.EditorExtender;
-import org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider;
-import org.netbeans.modules.php.spi.phpmodule.PhpModuleActionsExtender;
-import org.netbeans.modules.php.spi.phpmodule.PhpModuleCustomizerExtender;
-import org.netbeans.modules.php.spi.phpmodule.PhpModuleExtender;
-import org.netbeans.modules.php.spi.phpmodule.PhpModuleIgnoredFilesExtender;
+import org.netbeans.modules.php.spi.framework.PhpFrameworkProvider;
+import org.netbeans.modules.php.spi.framework.PhpModuleActionsExtender;
+import org.netbeans.modules.php.spi.framework.PhpModuleCustomizerExtender;
+import org.netbeans.modules.php.spi.framework.PhpModuleExtender;
+import org.netbeans.modules.php.spi.framework.PhpModuleIgnoredFilesExtender;
 import org.netbeans.modules.php.symfony.commands.SymfonyCommandSupport;
 import org.netbeans.modules.php.symfony.editor.SymfonyEditorExtender;
 import org.openide.filesystems.FileObject;
@@ -110,6 +110,10 @@ public final class SymfonyPhpFrameworkProvider extends PhpFrameworkProvider {
      */
     public static FileObject locate(PhpModule phpModule, String relativePath, boolean subdirs) {
         FileObject sourceDirectory = phpModule.getSourceDirectory();
+        if (sourceDirectory == null) {
+            // broken project
+            return null;
+        }
 
         FileObject fileObject = sourceDirectory.getFileObject(relativePath);
         if (fileObject != null || !subdirs) {
@@ -138,8 +142,14 @@ public final class SymfonyPhpFrameworkProvider extends PhpFrameworkProvider {
 
     @Override
     public File[] getConfigurationFiles(PhpModule phpModule) {
+        FileObject sourceDirectory = phpModule.getSourceDirectory();
+        if (sourceDirectory == null) {
+            // broken project
+            return new File[0];
+        }
+
         List<File> files = new LinkedList<File>();
-        FileObject appConfig = phpModule.getSourceDirectory().getFileObject("config"); // NOI18N
+        FileObject appConfig = sourceDirectory.getFileObject("config"); // NOI18N
         if (appConfig != null) {
             List<FileObject> fileObjects = getConfigFilesRecursively(appConfig);
             Collections.sort(fileObjects, new Comparator<FileObject>() {

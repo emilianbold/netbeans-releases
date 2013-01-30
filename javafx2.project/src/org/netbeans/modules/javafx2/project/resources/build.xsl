@@ -88,6 +88,8 @@ Portions Copyrighted 2012 Sun Microsystems, Inc.
       -post-jfx-jar:             called after FX SDK specific <fx:jar> task
       -pre-jfx-deploy:           called before FX SDK specific <fx:deploy> task
       -post-jfx-deploy:          called after FX SDK specific <fx:deploy> task
+      -pre-jfx-native:           called just after -pre-jfx-deploy if <fx:deploy> runs in native packaging mode
+      -post-jfx-native:          called just after -post-jfx-deploy if <fx:deploy> runs in native packaging mode
       -post-clean:               called after cleaning build products
 
     (Targets beginning with '-' are not intended to be called on their own.)

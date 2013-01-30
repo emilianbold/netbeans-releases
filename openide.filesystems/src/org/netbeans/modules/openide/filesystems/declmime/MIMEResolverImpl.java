@@ -374,7 +374,9 @@ public final class MIMEResolverImpl {
 
     // MIMEResolver ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    private static final class Impl extends MIMEResolver {
+    private static final class Impl extends MIMEResolver
+        implements MIMEResolverProcessor.FilterInfo {
+
         // This file object describes rules that drive ths instance
         private final FileObject data;
 
@@ -520,6 +522,50 @@ public final class MIMEResolverImpl {
                 if (state == DescParser.LOAD) {
                     state = DescParser.ERROR;
                 }
+            }
+        }
+
+        @Override
+        public List<String> getExtensions() {
+            if (smell == null) {
+                return Collections.emptyList();
+            } else {
+                List<String> extensions = new LinkedList<String>();
+                for (FileElement fe : smell) {
+                    if (fe != null && fe.getExtensions() != null
+                            && (fe.getNames() == null
+                            || fe.getNames().isEmpty())) {
+                        for (String ext : fe.getExtensions()) {
+                            if (ext != null && !ext.isEmpty()) {
+                                extensions.add(ext);
+                            }
+                        }
+                    }
+                }
+                return extensions;
+            }
+        }
+
+        @Override
+        public List<String> getFileNames() {
+            if (smell == null) {
+                return Collections.emptyList();
+            } else {
+                List<String> fileNames = new LinkedList<String>();
+                for (FileElement fe : smell) {
+                    if (fe != null && fe.getNames() != null) {
+                        for (Type.FileName name : fe.getNames()) {
+                            String[] exts = fe.getExtensions();
+                            if (exts == null || exts.length == 0) {
+                                continue;
+                            }
+                            for (String ext : exts) {
+                                fileNames.add(name.toString() + ext);
+                            }
+                        }
+                    }
+                }
+                return fileNames;
             }
         }
     }

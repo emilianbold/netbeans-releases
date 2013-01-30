@@ -434,7 +434,8 @@ public class AppClientProjectGenerator {
             }
         }
         Profile j2eeProfile = createData.getJavaEEProfile();
-        if (j2eeProfile.equals(Profile.JAVA_EE_6_FULL) || j2eeProfile.equals(Profile.JAVA_EE_6_WEB)) {
+        if (j2eeProfile.equals(Profile.JAVA_EE_6_FULL) || j2eeProfile.equals(Profile.JAVA_EE_6_WEB) ||
+                j2eeProfile.equals(Profile.JAVA_EE_7_FULL) || j2eeProfile.equals(Profile.JAVA_EE_7_WEB)) {
             if (rh.getProjectLibraryManager().getLibrary(Util.ENDORSED_LIBRARY_NAME) == null) { // NOI18N
                 rh.copyLibrary(LibraryManager.getDefault().getLibrary(Util.ENDORSED_LIBRARY_NAME)); // NOI18N
             }
@@ -671,7 +672,8 @@ public class AppClientProjectGenerator {
             ep.put(AppClientProjectProperties.CLIENT_NAME, mainClassArgs);
         }
 
-        if (j2eeProfile.equals(Profile.JAVA_EE_6_FULL) || j2eeProfile.equals(Profile.JAVA_EE_6_WEB)) {
+        if (j2eeProfile.equals(Profile.JAVA_EE_6_FULL) || j2eeProfile.equals(Profile.JAVA_EE_6_WEB) ||
+                j2eeProfile.equals(Profile.JAVA_EE_7_FULL) || j2eeProfile.equals(Profile.JAVA_EE_7_WEB)) {
             ep.setProperty(ProjectProperties.ENDORSED_CLASSPATH, new String[]{Util.ENDORSED_LIBRARY_CLASSPATH});
         }
 

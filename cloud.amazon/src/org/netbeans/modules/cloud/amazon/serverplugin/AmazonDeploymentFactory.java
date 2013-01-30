@@ -60,6 +60,7 @@ public class AmazonDeploymentFactory implements DeploymentFactory {
     public static final String IP_KEY_ID = "access-key-id";  // NOI18N
     public static final String IP_KEY = "access-key";  // NOI18N
     public static final String IP_CONTAINER_TYPE = "container-type";  // NOI18N
+    public static final String IP_REGION_URL = "region-url";  // NOI18N
     
     @Override
     public boolean handlesURI(String string) {
@@ -71,14 +72,14 @@ public class AmazonDeploymentFactory implements DeploymentFactory {
             String password) throws DeploymentManagerCreationException {
         InstanceProperties props = InstanceProperties.getInstanceProperties(uri);
         return new AmazonDeploymentManager(props.getProperty(IP_APPLICATION_NAME), props.getProperty(IP_ENVIRONMENT_ID), 
-                props.getProperty(IP_KEY_ID), props.getProperty(IP_KEY), props.getProperty(IP_CONTAINER_TYPE));
+                props.getProperty(IP_KEY_ID), props.getProperty(IP_KEY), props.getProperty(IP_CONTAINER_TYPE), props.getProperty(IP_REGION_URL));
     }
 
     @Override
     public DeploymentManager getDisconnectedDeploymentManager(String uri) throws DeploymentManagerCreationException {
         InstanceProperties props = InstanceProperties.getInstanceProperties(uri);
         return new AmazonDeploymentManager(props.getProperty(IP_APPLICATION_NAME), props.getProperty(IP_ENVIRONMENT_ID), 
-                props.getProperty(IP_KEY_ID), props.getProperty(IP_KEY), props.getProperty(IP_CONTAINER_TYPE));
+                props.getProperty(IP_KEY_ID), props.getProperty(IP_KEY), props.getProperty(IP_CONTAINER_TYPE), props.getProperty(IP_REGION_URL));
     }
 
     @Override

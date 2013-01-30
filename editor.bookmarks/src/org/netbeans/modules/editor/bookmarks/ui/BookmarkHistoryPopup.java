@@ -120,9 +120,9 @@ public final class BookmarkHistoryPopup implements KeyListener {
             hide();
         }
         lastFocusedComponent = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
-        if ((gotoPreviousKeyStroke = BookmarkUtils.findKeyStroke("bookmark.history.popup.previous")) != null) {
+        if ((gotoPreviousKeyStroke = BookmarkUtils.findKeyStroke("bookmark.history.popup.previous")) != null) { //NOI18N
             keepOpenedModifiers = modifiersBits(gotoPreviousKeyStroke.getModifiers());
-            gotoNextKeyStroke = BookmarkUtils.findKeyStroke("bookmark.history.popup.next");
+            gotoNextKeyStroke = BookmarkUtils.findKeyStroke("bookmark.history.popup.next"); //NOI18N
         } else {
             keepOpenedModifiers = 0; // Keep opened until Escape pressed
         }
@@ -134,6 +134,7 @@ public final class BookmarkHistoryPopup implements KeyListener {
         descriptionLabel.setFont(font);
         selectedEntryIndex = -1;
         table = createTable();
+        table.setBorder(new LineBorder(table.getForeground()));
         Rectangle screenBounds = Utilities.getUsableScreenBounds();
         initTable(screenBounds);
         // At least one entry -> select either first or last entry
@@ -202,8 +203,7 @@ public final class BookmarkHistoryPopup implements KeyListener {
     private JTable createTable() {
         List<BookmarkInfo> historyBookmarks = BookmarkHistory.get().historyBookmarks();
         BookmarksNodeTree nodeTree = new BookmarksNodeTree();
-        nodeTree.rebuild(null);
-        Map<BookmarkInfo, BookmarkNode> bookmark2NodeMap = nodeTree.bookmark2NodeMap();
+        Map<BookmarkInfo, BookmarkNode> bookmark2NodeMap = nodeTree.createBookmark2NodeMap();
         List<BookmarkNode> entries = new ArrayList<BookmarkNode>(historyBookmarks.size() + 1);
         entries.add(bookmark2NodeMap.get(BookmarkInfo.BOOKMARKS_WINDOW));
         for (BookmarkInfo bookmark : historyBookmarks) {
@@ -211,6 +211,7 @@ public final class BookmarkHistoryPopup implements KeyListener {
         }
         Collections.reverse(entries);
         tableModel = new BookmarksTableModel(true);
+        assert !entries.contains(null);
         tableModel.setEntries(entries);
         return new JTable(tableModel);
     }

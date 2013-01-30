@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -47,6 +47,7 @@ package org.netbeans.modules.autoupdate.services;
 
 import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.api.autoupdate.UpdateManager.TYPE;
+import org.netbeans.api.autoupdate.UpdateUnit;
 
 public class KitModuleUpdateUnitImpl extends ModuleUpdateUnitImpl {
     
@@ -58,5 +59,10 @@ public class KitModuleUpdateUnitImpl extends ModuleUpdateUnitImpl {
     public TYPE getType () {
         return UpdateManager.TYPE.KIT_MODULE;
     }    
+    @Override
+    public UpdateUnit getVisibleAncestor() {
+        return this.getUpdateUnit();
+    }
+
 }
 

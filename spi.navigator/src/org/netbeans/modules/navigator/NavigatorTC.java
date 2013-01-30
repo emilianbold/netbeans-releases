@@ -46,6 +46,7 @@ package org.netbeans.modules.navigator;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.GridBagConstraints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.List;
@@ -59,6 +60,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import org.netbeans.spi.navigator.NavigatorDisplayer;
 import org.netbeans.spi.navigator.NavigatorPanel;
+import org.netbeans.spi.navigator.NavigatorPanelWithToolbar;
 import org.netbeans.spi.navigator.NavigatorPanelWithUndo;
 import org.openide.ErrorManager;
 import org.openide.awt.UndoRedo;
@@ -92,6 +94,8 @@ public final class NavigatorTC extends TopComponent implements NavigatorDisplaye
             NbBundle.getMessage(NavigatorTC.class, "MSG_NotAvailable")); //NOI18N
     /** Listener for the panel selector combobox */
     private ActionListener panelSelectionListener;
+    /** Testing purposes - component representing selected panel toolbar */
+    private JComponent toolbarComponent;
 
     /** Creates new NavigatorTC, singleton */
     private NavigatorTC() {
@@ -214,6 +218,20 @@ public final class NavigatorTC extends TopComponent implements NavigatorDisplaye
         } else {
             contentArea.removeAll();
             contentArea.add(panel.getComponent(), BorderLayout.CENTER);
+
+            pnlToolbar.removeAll();
+            if (panel instanceof NavigatorPanelWithToolbar && ((NavigatorPanelWithToolbar)panel).getToolbarComponent() != null) {
+                toolbarComponent = ((NavigatorPanelWithToolbar)panel).getToolbarComponent();
+                GridBagConstraints gbc = new GridBagConstraints();
+                gbc.anchor = GridBagConstraints.WEST;
+                gbc.fill = GridBagConstraints.HORIZONTAL;
+                gbc.weightx = 1.0;
+                pnlToolbar.add(toolbarComponent, gbc);
+                pnlToolbar.setVisible(true);
+            } else {
+                toolbarComponent = null;
+                pnlToolbar.setVisible(false);
+            }
             revalidate();
             repaint();
         }
@@ -256,7 +274,7 @@ public final class NavigatorTC extends TopComponent implements NavigatorDisplaye
             contentArea.removeAll();
             panelSelector.removeAllItems();
             // #63777: hide panel selector when only one panel available
-            holderPanel.setVisible(panelsCount != 1);
+            holderPanel.setVisible(panelsCount != 1 || (select instanceof NavigatorPanelWithToolbar && ((NavigatorPanelWithToolbar)select).getToolbarComponent() != null));
             boolean selectFound = false;
             for (NavigatorPanel curPanel : panels) {
                 panelSelector.addItem(curPanel.getDisplayName());
@@ -336,6 +354,13 @@ public final class NavigatorTC extends TopComponent implements NavigatorDisplaye
         return controller;
     }
 
+    /**
+     * For testing
+     */
+    JComponent getToolbar() {
+        return toolbarComponent;
+    }
+
     /*************** private stuff ************/
     
     /** Removes regular UI content and sets UI to empty state */
@@ -364,7 +389,7 @@ public final class NavigatorTC extends TopComponent implements NavigatorDisplaye
         repaint();
     }
     
-    
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -372,15 +397,37 @@ public final class NavigatorTC extends TopComponent implements NavigatorDisplaye
      */
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
+        java.awt.GridBagConstraints gridBagConstraints;
 
         holderPanel = new javax.swing.JPanel();
         panelSelector = new javax.swing.JComboBox();
+        pnlToolbar = new javax.swing.JPanel();
         contentArea = new javax.swing.JPanel();
 
         setLayout(new java.awt.BorderLayout());
 
-        holderPanel.setLayout(new java.awt.BorderLayout());
-        holderPanel.add(panelSelector, java.awt.BorderLayout.CENTER);
+        holderPanel.setLayout(new java.awt.GridBagLayout());
+
+        panelSelector.setMinimumSize(new java.awt.Dimension(100, 20));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.RELATIVE;
+        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        holderPanel.add(panelSelector, gridBagConstraints);
+
+        pnlToolbar.setOpaque(false);
+        pnlToolbar.setLayout(new java.awt.GridBagLayout());
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.RELATIVE;
+        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 3, 0, 0);
+        holderPanel.add(pnlToolbar, gridBagConstraints);
 
         add(holderPanel, java.awt.BorderLayout.NORTH);
 
@@ -393,6 +440,7 @@ public final class NavigatorTC extends TopComponent implements NavigatorDisplaye
     private javax.swing.JPanel contentArea;
     private javax.swing.JPanel holderPanel;
     private javax.swing.JComboBox panelSelector;
+    private javax.swing.JPanel pnlToolbar;
     // End of variables declaration//GEN-END:variables
 
     

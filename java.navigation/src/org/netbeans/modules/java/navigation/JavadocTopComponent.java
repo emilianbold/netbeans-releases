@@ -48,7 +48,9 @@ import java.awt.BorderLayout;
 import java.io.Serializable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.java.source.ui.ElementJavadoc;
+import org.openide.filesystems.FileObject;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
@@ -82,12 +84,20 @@ public final class JavadocTopComponent extends TopComponent {
         add( documentationPane, BorderLayout.CENTER );
     }
     
-    void setJavadoc( ElementJavadoc doc ){    
-        documentationPane.setData( doc );
+    public void setJavadoc(
+            final FileObject owner,
+            final ElementJavadoc doc){
+        LOGGER.log(Level.FINE, "Setting javadoc: {0}", doc);   //NOI18N
+        documentationPane.setData(owner,  doc );
+    }
+
+    public void clearContent(
+            final FileObject owner) {
+        documentationPane.clearContent(owner);
     }
     
     public static boolean shouldUpdate() {
-        if ( instance == null ) {
+        if (!exists()) {
             LOGGER.fine("shouldUpdate -> false (no instance)"); //NOI18N
             return false;
         }
@@ -96,6 +106,10 @@ public final class JavadocTopComponent extends TopComponent {
             LOGGER.log(Level.FINE, "shouldUpdate -> {0}", isShowing);   //NOI18N
             return isShowing;
         }
+    }
+
+    public static boolean exists() {
+        return instance != null;
     }
     
     /** This method is called from within the constructor to

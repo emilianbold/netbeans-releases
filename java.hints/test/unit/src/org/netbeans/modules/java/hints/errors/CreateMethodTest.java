@@ -106,14 +106,14 @@ public class CreateMethodTest extends ErrorHintsTestBase {
         performFixTest("test/Test.java",
                        "package test; public class Test {public void test() {test2(null);}}", 82 - 25,
                        "CreateMethodFix:test2(java.lang.Object object)void:test.Test",
-                       "package test; public class Test {public void test() {test2(null);} private void test2(Object object) { throw new UnsupportedOperationException(\"Not yet implemented\"); } }");
+                       "package test; public class Test {public void test() {test2(null);} private void test2(Object object) { throw new UnsupportedOperationException(\"Not supported yet.\"); //To change body of generated methods, choose Tools | Templates. } }");
     }
     
     public void testCreateMethod77038() throws Exception {
         performFixTest("test/Test.java",
                        "package test; public class Test {public void test() {b(test2() ? true : false);} void t(boolean b){}}", 82 - 25,
                        "CreateMethodFix:test2()boolean:test.Test",
-                       "package test; public class Test {public void test() {b(test2() ? true : false);} void t(boolean b){} private boolean test2() { throw new UnsupportedOperationException(\"Not yet implemented\"); } }");
+                       "package test; public class Test {public void test() {b(test2() ? true : false);} void t(boolean b){} private boolean test2() { throw new UnsupportedOperationException(\"Not supported yet.\"); //To change body of generated methods, choose Tools | Templates. } }");
     }
     
     public void testCreateMethod82923() throws Exception {
@@ -125,14 +125,14 @@ public class CreateMethodTest extends ErrorHintsTestBase {
                        "package test; import java.util.Collection; public class Test {public static void test() {fff(getStrings());} private static Collection<String> getStrings() {return null;}}",
                        116 - 25,
                        "CreateMethodFix:fff(java.util.Collection<java.lang.String> strings)void:test.Test",
-                       "package test; import java.util.Collection; public class Test {public static void test() {fff(getStrings());} private static Collection<String> getStrings() {return null;} private static void fff(Collection<String> strings) { throw new UnsupportedOperationException(\"Not yet implemented\"); } }");
+                       "package test; import java.util.Collection; public class Test {public static void test() {fff(getStrings());} private static Collection<String> getStrings() {return null;} private static void fff(Collection<String> strings) { throw new UnsupportedOperationException(\"Not supported yet.\"); //To change body of generated methods, choose Tools | Templates. } }");
     }
     
     public void testCreateMethod74129() throws Exception {
         performFixTest("test/Test.java",
                        "package test; public class Test {public void test() {TopLevel.f|ff();}} class TopLevel {}",
                        "CreateMethodFix:fff()void:test.TopLevel",
-                       "package test; public class Test {public void test() {TopLevel.fff();}} class TopLevel { static void fff() { throw new UnsupportedOperationException(\"Not yet implemented\"); } }");
+                       "package test; public class Test {public void test() {TopLevel.fff();}} class TopLevel { static void fff() { throw new UnsupportedOperationException(\"Not supported yet.\"); //To change body of generated methods, choose Tools | Templates. } }");
     }
     
     public void testCreateMethod76498() throws Exception {
@@ -140,7 +140,7 @@ public class CreateMethodTest extends ErrorHintsTestBase {
                        "package test; public class Test {public static class T extends Test {public void test() {super.fff();}}}",
                        122 - 25,
                        "CreateMethodFix:fff()void:test.Test",
-                       "package test; public class Test { private void fff() { throw new UnsupportedOperationException(\"Not yet implemented\"); } public static class T extends Test {public void test() {super.fff();}}}");
+                       "package test; public class Test { private void fff() { throw new UnsupportedOperationException(\"Not supported yet.\"); //To change body of generated methods, choose Tools | Templates. } public static class T extends Test {public void test() {super.fff();}}}");
     }
     
     public void testCreateMethod75069() throws Exception {
@@ -148,35 +148,125 @@ public class CreateMethodTest extends ErrorHintsTestBase {
                        "package test; public class Test<T> {public void test() {this.fff();}}",
                        88 - 25,
                        "CreateMethodFix:fff()void:test.Test",
-                       "package test; public class Test<T> {public void test() {this.fff();} private void fff() { throw new UnsupportedOperationException(\"Not yet implemented\"); } }");
+                       "package test; public class Test<T> {public void test() {this.fff();} private void fff() { throw new UnsupportedOperationException(\"Not supported yet.\"); //To change body of generated methods, choose Tools | Templates. } }");
     }
     
     public void testCreateMethod119037() throws Exception {
         performFixTest("test/Test.java",
                        "package test; public class Test {static {f|ff();}}",
                        "CreateMethodFix:fff()void:test.Test",
-                       "package test; public class Test {static {fff();} private static void fff() { throw new UnsupportedOperationException(\"Not yet implemented\"); } }");
+                       "package test; public class Test {static {fff();} private static void fff() { throw new UnsupportedOperationException(\"Not supported yet.\"); //To change body of generated methods, choose Tools | Templates. } }");
     }
 
     public void testCreateMethodWithAnonymousParameter104820() throws Exception {
         performFixTest("test/Test.java",
                        "package test;public class Test {public static void method() {final Test ac = new Test();new Runnable() {public void run() {ac.a|ction(this);}};}}",
                        "CreateMethodFix:action(java.lang.Runnable aThis)void:test.Test",
-                       "package test;public class Test {public static void method() {final Test ac = new Test();new Runnable() {public void run() {ac.action(this);}};} private void action(Runnable aThis) { throw new UnsupportedOperationException(\"Not yet implemented\"); } }");
+                       "package test;public class Test {public static void method() {final Test ac = new Test();new Runnable() {public void run() {ac.action(this);}};} private void action(Runnable aThis) { throw new UnsupportedOperationException(\"Not supported yet.\"); //To change body of generated methods, choose Tools | Templates. } }");
     }
 
     public void testCreateMethodWithEnumParam() throws Exception {
         performFixTest("test/Test.java",
                        "package test; public class Test { enum Paddle{UP, DOWN} public void foo() {f|ff(Paddle.UP);}}",
                        "CreateMethodFix:fff(test.Test.Paddle paddle)void:test.Test",
-                       "package test; public class Test { private void fff(Paddle paddle) { throw new UnsupportedOperationException(\"Not yet implemented\"); } enum Paddle{UP, DOWN} public void foo() {fff(Paddle.UP);}}");
+                       "package test; public class Test { private void fff(Paddle paddle) { throw new UnsupportedOperationException(\"Not supported yet.\"); //To change body of generated methods, choose Tools | Templates. } enum Paddle{UP, DOWN} public void foo() {fff(Paddle.UP);}}");
     }
 
     public void testCreateMethodWithParamOfEnumType199793() throws Exception {
         performFixTest("test/Test.java",
                        "package test; public class Test { enum Paddle{UP, DOWN} public void foo(Paddle test) {f|ff(test);}}",
                        "CreateMethodFix:fff(test.Test.Paddle test)void:test.Test",
-                       "package test; public class Test { private void fff(Paddle test) { throw new UnsupportedOperationException(\"Not yet implemented\"); } enum Paddle{UP, DOWN} public void foo(Paddle test) {fff(test);}}");
+                       "package test; public class Test { private void fff(Paddle test) { throw new UnsupportedOperationException(\"Not supported yet.\"); //To change body of generated methods, choose Tools | Templates. } enum Paddle{UP, DOWN} public void foo(Paddle test) {fff(test);}}");
+    }
+    
+    public void test220582() throws Exception {
+        performFixTest("test/Test.java",
+                       "package test;\n" +
+                       "public class Test {\n" +
+                       "    public void foo() {\n" +
+                       "        String name = null, description = null;\n" +
+                       "        if(!is|New(name) && isNew(description)){ // 1\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}\n",
+                       "CreateMethodFix:isNew(java.lang.String name)boolean:test.Test",
+                       ("package test;\n" +
+                        "public class Test {\n" +
+                        "    public void foo() {\n" +
+                        "        String name = null, description = null;\n" +
+                        "        if(!isNew(name) && isNew(description)){ // 1\n" +
+                        "        }\n" +
+                        "    }\n" +
+                        "    private boolean isNew(String name) {\n" +
+                        "        throw new UnsupportedOperationException(\"Not supported yet.\"); //To change body of generated methods, choose Tools | Templates.\n" +
+                        "    }\n" +
+                        "}\n").replaceAll("[ \n\t\r]+", " "));
+    }
+    
+    public void test223011a() throws Exception {
+        performFixTest("test/Test.java",
+                       "package test;\n" +
+                       "import java.lang.reflect.*;\n" +
+                       "public class Test {\n" +
+                       "    public void foo(Class<?> c) throws Exception {\n" +
+                       "        Field f = m|ethod(c);\n" +
+                       "    }\n" +
+                       "}\n",
+                       "CreateMethodFix:method(java.lang.Class<?> c)java.lang.reflect.Field:test.Test",
+                       ("package test;\n" +
+                        "import java.lang.reflect.*;\n" +
+                        "public class Test {\n" +
+                        "    public void foo(Class<?> c) throws Exception {\n" +
+                        "        Field f = method(c);\n" +
+                        "    }\n" +
+                        "    private Field method(Class<?> c) {\n" +
+                        "        throw new UnsupportedOperationException(\"Not supported yet.\"); //To change body of generated methods, choose Tools | Templates.\n" +
+                        "    }\n" +
+                        "}\n").replaceAll("[ \n\t\r]+", " "));
+    }
+    
+    public void test223011b() throws Exception {
+        performFixTest("test/Test.java",
+                       "package test;\n" +
+                       "import java.lang.reflect.*;\n" +
+                       "public class Test {\n" +
+                       "    public <T extends Number&CharSequence, E extends Integer> void foo(Class<E> c1, Class<T> c2) throws Exception {\n" +
+                       "        Field f = m|ethod(c1, c2);\n" +
+                       "    }\n" +
+                       "}\n",
+                       "CreateMethodFix:method(java.lang.Class<E> c1,java.lang.Class<T> c2)java.lang.reflect.Field:test.Test",
+                       ("package test;\n" +
+                        "import java.lang.reflect.*;\n" +
+                        "public class Test {\n" +
+                        "    public <T extends Number&CharSequence, E extends Integer> void foo(Class<E> c1, Class<T> c2) throws Exception {\n" +
+                        "        Field f = method(c1, c2);\n" +
+                        "    }\n" +
+                        "    private <T extends Number & CharSequence, E extends Integer> Field method(Class<E> c1, Class<T> c2) {\n" +
+                        "        throw new UnsupportedOperationException(\"Not supported yet.\"); //To change body of generated methods, choose Tools | Templates.\n" +
+                        "    }\n" +
+                        "}\n").replaceAll("[ \n\t\r]+", " "));
+    }
+    
+    public void test223011c() throws Exception {
+        performFixTest("test/Test.java",
+                       "package test;\n" +
+                       "import java.lang.reflect.*;\n" +
+                       "public class Test {\n" +
+                       "    public <T extends Number&CharSequence, E> void foo(Class<T> c) throws Exception {\n" +
+                       "        Class<E> cr = m|ethod(c);\n" +
+                       "    }\n" +
+                       "}\n",
+                       "CreateMethodFix:method(java.lang.Class<T> c)java.lang.Class<E>:test.Test",
+                       ("package test;\n" +
+                        "import java.lang.reflect.*;\n" +
+                        "public class Test {\n" +
+                        "    public <T extends Number&CharSequence, E> void foo(Class<T> c) throws Exception {\n" +
+                        "        Class<E> cr = method(c);\n" +
+                        "    }\n" +
+                        "    private <T extends Number & CharSequence, E> Class<E> method(Class<T> c) {\n" +
+                        "        throw new UnsupportedOperationException(\"Not supported yet.\"); //To change body of generated methods, choose Tools | Templates.\n" +
+                        "    }\n" +
+                        "}\n").replaceAll("[ \n\t\r]+", " "));
     }
     
     protected List<Fix> computeFixes(CompilationInfo info, int pos, TreePath path) throws IOException {

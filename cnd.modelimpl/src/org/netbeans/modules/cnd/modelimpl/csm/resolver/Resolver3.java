@@ -123,6 +123,7 @@ public final class Resolver3 implements Resolver {
     private int currNamIdx;
     private int interestedKind;
     private boolean resolveInBaseClass;
+    private final boolean SUPRESS_RECURSION_EXCEPTION = Boolean.getBoolean("cnd.modelimpl.resolver3.hide.exception"); // NOI18N
 
     private CharSequence currName() {
         return (names != null && currNamIdx < names.length) ? names[currNamIdx] : CharSequences.empty();
@@ -342,6 +343,9 @@ public final class Resolver3 implements Resolver {
         CsmObject result = null;
         for (CsmUsingDirective udir : CsmUsingResolver.getDefault().findUsingDirectives(containingNS)) {
             String fqn = udir.getName() + "::" + nameToken; // NOI18N
+            if(fqn.startsWith("::")) { // NOI18N
+                fqn = fqn.substring(2);
+            }
             result = findClassifierUsedInFile(fqn);
             if (result != null) {
                 break;
@@ -992,7 +996,12 @@ public final class Resolver3 implements Resolver {
 
     private CsmObject _resolveInBaseClasses(CsmClass cls, CharSequence name, Set<CharSequence> antiLoop, int depth) {
         if (depth == 50) {
-            new Exception("Too many loops in resolver!!!").printStackTrace(System.err); // NOI18N
+            String msg = "Recursion in resolver3:resolveInBaseClasses[" + name + "]" + this.file.getAbsolutePath() + ":" + this.origOffset; // NOI18N
+            if (SUPRESS_RECURSION_EXCEPTION) {
+                Utils.LOG.warning(msg);
+            } else {
+                new Exception(msg).printStackTrace(System.err);
+            }
             return null;
         }
         if(isNotNullNotUnresolved(cls)) {

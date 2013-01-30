@@ -188,6 +188,8 @@ public class TestsuiteNode extends AbstractNode {
                         return ImageUtilities.loadImage("org/netbeans/modules/gsf/testrunner/resources/warning_16.png"); //NOI18N
                     case ERROR:
                         return ImageUtilities.loadImage("org/netbeans/modules/gsf/testrunner/resources/error_16.png"); //NOI18N
+		    case SKIPPED:
+			return ImageUtilities.loadImage("org/netbeans/modules/gsf/testrunner/resources/skipped_16.png"); //NOI18N
                     default:
                         return ImageUtilities.loadImage("org/netbeans/modules/gsf/testrunner/resources/warning2_16.png"); //NOI18N
                 }
@@ -249,7 +251,7 @@ public class TestsuiteNode extends AbstractNode {
                                           TestsuiteNode.class,
                                           "MSG_TestsuiteAborted",        //NOI18N
                                           suiteName);
-        } else if (report.isSkipped()){
+        } else if (report.getSkipped() > 0){
             displayName = NbBundle.getMessage(
                                           TestsuiteNode.class,
                                           "MSG_TestsuiteSkipped",        //NOI18N

@@ -102,6 +102,7 @@ import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 import org.openide.util.actions.SystemAction;
@@ -129,7 +130,10 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
     private final Lookup.Result<BrokenIncludes> brokenIncludesResult;
     private final MakeLogicalViewProvider provider;
     private final InstanceContent ic;
-
+    private final static RequestProcessor LOAD_NODES_RP = new RequestProcessor("MakeLogicalViewRootNode.LoadingNodes", 10); // NOI18N
+    private final RequestProcessor.Task stateChangedTask;
+    private static final int WAIT_DELAY = 500;
+    
     public MakeLogicalViewRootNode(Folder folder, MakeLogicalViewProvider provider, InstanceContent ic) {
         this(new ProjectRootChildren(folder, provider),folder, provider, ic);
     }
@@ -139,7 +143,7 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
         children.setMakeLogicalViewRootNode(MakeLogicalViewRootNode.this);
         this.ic = ic;
         this.folder = folder;
-        this.provider = provider;
+        this.provider = provider;        
 //        setChildren(new ProjectRootChildren(folder, provider));
         setIconBaseWithExtension(MakeConfigurationDescriptor.ICON);
         setName(ProjectUtils.getInformation(provider.getProject()).getDisplayName());
@@ -189,6 +193,7 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
             
         }
 
+        stateChangedTask = LOAD_NODES_RP.create(new StateChangeRunnableImpl(), true);
     }
 
     @Override
@@ -199,7 +204,7 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
             if (ret == null) {
                 ret = getName();
             }
-            ret = ret + " <font color=''!controlShadow''>[" + env.getDisplayName() + "]"; // NOI18N
+            ret = ret + " <font color=\"!controlShadow\">[" + env.getDisplayName() + "]"; // NOI18N
         }
         return ret;
     }
@@ -246,11 +251,18 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
     }
     
     void reInitWithRemovedPrivate() {
-        try {
-            provider.getMakeConfigurationDescriptor().getNbPrivateProjectFileObject().delete();
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }        
+        final MakeConfigurationDescriptor mcd = provider.getMakeConfigurationDescriptor();
+        Configuration[] confs = mcd.getConfs().toArray();
+        for (int i = 0; i < confs.length; i++) {
+            MakeConfiguration conf = (MakeConfiguration) confs[i];
+            if (conf.getDevelopmentHost().isLocalhost()) {
+                final int platform1 = CompilerSetManager.get(conf.getDevelopmentHost().getExecutionEnvironment()).getPlatform();
+                final int platform2 = conf.getDevelopmentHost().getBuildPlatformConfiguration().getValue();
+                if (platform1 != platform2) {
+                    conf.getDevelopmentHost().getBuildPlatformConfiguration().setValue(platform1);
+                }
+            }
+        }
         reInit(provider.getMakeConfigurationDescriptor());
     }
     
@@ -409,22 +421,9 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
      **/
     @Override
     public void stateChanged(ChangeEvent e) {
-        brokenLinks = provider.hasBrokenLinks();
-        brokenIncludes = hasBrokenIncludes(getProject());
-        MakeConfigurationDescriptor makeConfigurationDescriptor = provider.getMakeConfigurationDescriptor();
-        if (makeConfigurationDescriptor != null) {
-            brokenProject =  makeConfigurationDescriptor.getState() == State.BROKEN;
-            incorrectPlatform = isIncorrectPlatform();
-            incorrectVersion = !isCorectVersion(makeConfigurationDescriptor.getVersion());
-            if (gotMakeConfigurationDescriptor() && provider.getMakeConfigurationDescriptor().getConfs().size() == 0 ) {
-                brokenProject = true;
-            }
+        if (stateChangedTask != null) {
+            stateChangedTask.schedule(WAIT_DELAY);
         }
-        updateAnnotationFiles();
-        EventQueue.invokeLater(new VisualUpdater()); // IZ 151257
-//            fireIconChange(); // MakeLogicalViewRootNode
-//            fireOpenedIconChange();
-//            fireDisplayNameChange(null, null);
     }
 
     private boolean isCorectVersion(int version) {
@@ -565,9 +564,28 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
 
     // Private methods -------------------------------------------------
     private Action[] getAdditionalLogicalFolderActions() {
-
+        
         ResourceBundle bundle = NbBundle.getBundle(MakeLogicalViewProvider.class);
 
+        MoreBuildActionsAction mba = null;        
+        ArrayList<Action> actions = new ArrayList<Action>();
+        if (gotMakeConfigurationDescriptor() && getMakeConfigurationDescriptor().getActiveConfiguration() != null && getMakeConfigurationDescriptor().getActiveConfiguration().getConfigurationType().getValue() == MakeConfiguration.TYPE_MAKEFILE) {
+            actions.addAll(Arrays.asList(new Action[]{
+                ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_CLEAN, bundle.getString("LBL_CleanAction_Name"), null), // NOI18N
+                ProjectSensitiveActions.projectCommandAction(MakeActionProvider.COMMAND_BATCH_BUILD, bundle.getString("LBL_BatchBuildAction_Name"), null), // NOI18N
+            }));
+            actions.addAll(Utilities.actionsForPath("CND/Actions/MoreBuildCommands/LogicalFolder")); //NOI18N
+            mba = new MoreBuildActionsAction(actions.toArray(new Action[0]));
+        } else {
+            actions.addAll(Arrays.asList(new Action[]{
+                ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_CLEAN, bundle.getString("LBL_CleanAction_Name"), null), // NOI18N
+                ProjectSensitiveActions.projectCommandAction(MakeActionProvider.COMMAND_BATCH_BUILD, bundle.getString("LBL_BatchBuildAction_Name"), null), // NOI18N
+                ProjectSensitiveActions.projectCommandAction(MakeActionProvider.COMMAND_BUILD_PACKAGE, bundle.getString("LBL_BuildPackagesAction_Name"), null), // NOI18N
+            }));
+            actions.addAll(Utilities.actionsForPath("CND/Actions/MoreBuildCommands/LogicalFolder")); //NOI18N
+            mba = new MoreBuildActionsAction(actions.toArray(new Action[0]));
+        }
+        
         Action[] result = new Action[]{
             CommonProjectActions.newFileAction(),
             null,
@@ -577,12 +595,8 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
             //new AddExternalItemAction(project),
             null,
             ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_BUILD, bundle.getString("LBL_BuildAction_Name"), null), // NOI18N
-            ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_REBUILD, bundle.getString("LBL_RebuildAction_Name"), null), // NOI18N
-            new MoreBuildActionsAction(new Action[]{
-                ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_CLEAN, bundle.getString("LBL_CleanAction_Name"), null), // NOI18N
-                ProjectSensitiveActions.projectCommandAction(MakeActionProvider.COMMAND_BATCH_BUILD, bundle.getString("LBL_BatchBuildAction_Name"), null), // NOI18N
-                ProjectSensitiveActions.projectCommandAction(MakeActionProvider.COMMAND_BUILD_PACKAGE, bundle.getString("LBL_BuildPackagesAction_Name"), null), // NOI18N
-            }),
+            ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_REBUILD, bundle.getString("LBL_RebuildAction_Name"), null), // NOI18N            
+            mba,
             new SetConfigurationAction(getProject()),
             new RemoteDevelopmentAction(getProject()),
             null,
@@ -612,6 +626,25 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
 
         ResourceBundle bundle = NbBundle.getBundle(MakeLogicalViewProvider.class);
 
+        MoreBuildActionsAction mba = null; 
+        ArrayList<Action> actions = new ArrayList<Action>();
+        if (gotMakeConfigurationDescriptor() && getMakeConfigurationDescriptor().getActiveConfiguration() != null && getMakeConfigurationDescriptor().getActiveConfiguration().getConfigurationType().getValue() == MakeConfiguration.TYPE_MAKEFILE) {
+            actions.addAll(Arrays.asList(new Action[]{
+                ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_CLEAN, bundle.getString("LBL_CleanAction_Name"), null), // NOI18N
+                ProjectSensitiveActions.projectCommandAction(MakeActionProvider.COMMAND_BATCH_BUILD, bundle.getString("LBL_BatchBuildAction_Name"), null), // NOI18N
+            }));
+            actions.addAll(Utilities.actionsForPath("CND/Actions/MoreBuildCommands/DiskFolder")); //NOI18N
+            mba = new MoreBuildActionsAction(actions.toArray(new Action[0]));
+        } else {
+            actions.addAll(Arrays.asList(new Action[]{
+                ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_CLEAN, bundle.getString("LBL_CleanAction_Name"), null), // NOI18N
+                ProjectSensitiveActions.projectCommandAction(MakeActionProvider.COMMAND_BATCH_BUILD, bundle.getString("LBL_BatchBuildAction_Name"), null), // NOI18N
+                ProjectSensitiveActions.projectCommandAction(MakeActionProvider.COMMAND_BUILD_PACKAGE, bundle.getString("LBL_BuildPackagesAction_Name"), null), // NOI18N
+            }));
+            actions.addAll(Utilities.actionsForPath("CND/Actions/MoreBuildCommands/DiskFolder")); //NOI18N            
+            mba = new MoreBuildActionsAction(actions.toArray(new Action[0]));
+        }
+        
         Action[] result = new Action[]{
             CommonProjectActions.newFileAction(),
             //null,
@@ -619,11 +652,7 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
             null,
             ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_BUILD, bundle.getString("LBL_BuildAction_Name"), null), // NOI18N
             ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_REBUILD, bundle.getString("LBL_RebuildAction_Name"), null), // NOI18N
-            new MoreBuildActionsAction(new Action[]{
-                ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_CLEAN, bundle.getString("LBL_CleanAction_Name"), null), // NOI18N
-                ProjectSensitiveActions.projectCommandAction(MakeActionProvider.COMMAND_BATCH_BUILD, bundle.getString("LBL_BatchBuildAction_Name"), null), // NOI18N
-                ProjectSensitiveActions.projectCommandAction(MakeActionProvider.COMMAND_BUILD_PACKAGE, bundle.getString("LBL_BuildPackagesAction_Name"), null), // NOI18N
-            }),
+            mba,
             new SetConfigurationAction(getProject()),
             new RemoteDevelopmentAction(getProject()),
             null,
@@ -685,6 +714,29 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
         @Override
         protected boolean isRoot() {
             return true;
+        }
+    }
+
+    private final class StateChangeRunnableImpl implements Runnable {
+
+        @Override
+        public void run() {
+//            System.err.println("StateChangeRunnableImpl on " + getFolder());
+            brokenLinks = provider.hasBrokenLinks();
+            brokenIncludes = hasBrokenIncludes(getProject());
+            if (provider.gotMakeConfigurationDescriptor()) {
+                MakeConfigurationDescriptor makeConfigurationDescriptor = provider.getMakeConfigurationDescriptor();
+                if (makeConfigurationDescriptor != null) {
+                    brokenProject = makeConfigurationDescriptor.getState() == State.BROKEN;
+                    incorrectPlatform = isIncorrectPlatform();
+                    incorrectVersion = !isCorectVersion(makeConfigurationDescriptor.getVersion());
+                    if (makeConfigurationDescriptor.getConfs().size() == 0) {
+                        brokenProject = true;
+                    }
+                }
+            }
+            updateAnnotationFiles();
+            EventQueue.invokeLater(new VisualUpdater()); // IZ 151257
         }
     }
 }

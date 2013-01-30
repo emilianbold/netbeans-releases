@@ -96,10 +96,8 @@ public class JavaRefactoringsFactory implements RefactoringPluginFactory {
                 return new SafeDeleteRefactoringPlugin((SafeDeleteRefactoring)refactoring);
             }
         } else if (refactoring instanceof MoveRefactoring) {
-            if (checkMoveFile(refactoring.getRefactoringSource())) {
+            if (checkMove(refactoring.getRefactoringSource())) {
                 return new MoveFileRefactoringPlugin((MoveRefactoring) refactoring);
-            } else if (checkMoveSecondClass(refactoring.getRefactoringSource())) {
-                return new MoveClassRefactoringPlugin((MoveRefactoring) refactoring);
             } else if (checkMoveMembers(refactoring.getContext())) {
                 return new MoveMembersRefactoringPlugin((MoveRefactoring) refactoring);
             }
@@ -147,7 +145,7 @@ public class JavaRefactoringsFactory implements RefactoringPluginFactory {
         return null;
     }
 
-    private boolean checkMoveFile(Lookup refactoringSource) {
+    private boolean checkMove(Lookup refactoringSource) {
         for (FileObject f:refactoringSource.lookupAll(FileObject.class)) {
             if (RefactoringUtils.isJavaFile(f)) {
                 return true;
@@ -156,10 +154,6 @@ public class JavaRefactoringsFactory implements RefactoringPluginFactory {
                 return true;
             }
         }
-        return false;
-    }
-    
-    private boolean checkMoveSecondClass(Lookup refactoringSource) {
         Collection<? extends TreePathHandle> tphs = refactoringSource.lookupAll(TreePathHandle.class);
         if(tphs.size() == 1) {
             ElementHandle elementHandle = tphs.iterator().next().getElementHandle();

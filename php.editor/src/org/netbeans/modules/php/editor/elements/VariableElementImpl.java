@@ -45,23 +45,24 @@ package org.netbeans.modules.php.editor.elements;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
-import org.netbeans.modules.php.editor.api.FileElementQuery;
-import org.openide.filesystems.FileObject;
 import org.netbeans.modules.csl.api.OffsetRange;
-import  org.netbeans.modules.php.editor.parser.astnodes.Variable;
-import  org.netbeans.modules.php.editor.parser.astnodes.ArrayAccess;
-import  org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
+import org.netbeans.modules.php.api.editor.PhpClass;
 import org.netbeans.modules.php.api.editor.PhpVariable;
 import org.netbeans.modules.php.editor.CodeUtils;
-import org.netbeans.modules.php.editor.api.PhpElementKind;
 import org.netbeans.modules.php.editor.api.ElementQuery;
+import org.netbeans.modules.php.editor.api.FileElementQuery;
 import org.netbeans.modules.php.editor.api.NameKind;
+import org.netbeans.modules.php.editor.api.PhpElementKind;
 import org.netbeans.modules.php.editor.api.elements.TypeResolver;
 import org.netbeans.modules.php.editor.api.elements.VariableElement;
 import org.netbeans.modules.php.editor.index.PHPIndexer;
 import org.netbeans.modules.php.editor.index.Signature;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo;
+import org.netbeans.modules.php.editor.parser.astnodes.ArrayAccess;
+import org.netbeans.modules.php.editor.parser.astnodes.Expression;
+import org.netbeans.modules.php.editor.parser.astnodes.Variable;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Parameters;
 
 
@@ -69,8 +70,8 @@ import org.openide.util.Parameters;
  * @author Radek Matous
  */
 public class VariableElementImpl extends PhpElementImpl implements VariableElement {
-    public static final String DOLLAR_PREFIX = "$";//NOI18N
-    public static final String REFERENCE_PREFIX = "&";//NOI18N
+    public static final String DOLLAR_PREFIX = "$"; //NOI18N
+    public static final String REFERENCE_PREFIX = "&"; //NOI18N
     public static final String IDX_FIELD = PHPIndexer.FIELD_VAR;
 
     private final Set<TypeResolver> instanceTypes;
@@ -102,7 +103,7 @@ public class VariableElementImpl extends PhpElementImpl implements VariableEleme
             final FileObject fo,
             final ElementQuery elementQuery,
             final Set<TypeResolver> instanceTypes) {
-        return new VariableElementImpl(variableName, offset, (String)null, elementQuery, instanceTypes, instanceTypes) {
+        return new VariableElementImpl(variableName, offset, null, elementQuery, instanceTypes, instanceTypes) {
             @Override
             public synchronized FileObject getFileObject() {
                 return fo;
@@ -150,17 +151,18 @@ public class VariableElementImpl extends PhpElementImpl implements VariableEleme
 
     public static VariableElement fromFrameworks(final PhpVariable variable, final ElementQuery elementQuery) {
         Parameters.notNull("variable", variable);
-        Set<TypeResolver> typeResolvers = variable.getType() == null
+        PhpClass variableType = variable.getType();
+        Set<TypeResolver> typeResolvers = variableType == null
                     ? Collections.<TypeResolver>emptySet()
-                    : Collections.<TypeResolver>singleton(new TypeResolverImpl(variable.getType().getFullyQualifiedName()));
+                    : Collections.<TypeResolver>singleton(new TypeResolverImpl(variableType.getFullyQualifiedName()));
         VariableElementImpl retval = new VariableElementImpl(variable.getName(), variable.getOffset(), null, elementQuery,
                 typeResolvers, typeResolvers);
-        retval.fileObject = variable.getFile();
+        retval.setFileObject(variable.getFile());
         return retval;
     }
 
     private static boolean matchesQuery(final NameKind query, VariableSignatureParser signParser) {
-        Parameters.notNull("query", query);//NOI18N
+        Parameters.notNull("query", query); //NOI18N
         return (query instanceof NameKind.Empty)
                 || query.matchesName(VariableElement.KIND, signParser.getVariableName());
     }
@@ -173,17 +175,17 @@ public class VariableElementImpl extends PhpElementImpl implements VariableEleme
         if (startsWithDollar == dollared) {
             return name;
         }
-        return dollared ? String.format("%s%s", DOLLAR_PREFIX, name) : name.substring(1);//NOI18N
+        return dollared ? String.format("%s%s", DOLLAR_PREFIX, name) : name.substring(1); //NOI18N
     }
 
     @Override
     public String getSignature() {
         StringBuilder sb = new StringBuilder();
         final String varName = getName();
-        sb.append(varName.toLowerCase()).append(SEPARATOR.SEMICOLON);//NOI18N
-        sb.append(varName).append(SEPARATOR.SEMICOLON);//NOI18N
-        sb.append(SEPARATOR.SEMICOLON);//NOI18N
-        sb.append(getOffset()).append(SEPARATOR.SEMICOLON);//NOI18N
+        sb.append(varName.toLowerCase()).append(Separator.SEMICOLON); //NOI18N
+        sb.append(varName).append(Separator.SEMICOLON); //NOI18N
+        sb.append(Separator.SEMICOLON); //NOI18N
+        sb.append(getOffset()).append(Separator.SEMICOLON); //NOI18N
         checkSignature(sb);
         return sb.toString();
     }

@@ -59,6 +59,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
@@ -94,6 +95,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
 import org.openide.util.test.MockLookup;
 
@@ -334,7 +336,7 @@ public class RepositoryUpdater2Test extends NbTestCase {
         MockLookup.setInstances(new testRootsWorkCancelling_PathRecognizer());
 
         final testRootsWorkCancelling_CustomIndexer indexer = new testRootsWorkCancelling_CustomIndexer();
-        MockMimeLookup.setInstances(MimePath.parse("text/plain"), new FixedCustomIndexerFactory(indexer));
+        MockMimeLookup.setInstances(MimePath.parse("text/plain"), new testRootsWorkCancelling_CustomIndexerFactory(indexer));
         RepositoryUpdaterTest.setMimeTypes("text/plain");
 
         assertEquals("No roots should be indexed yet", 0, indexer.indexedRoots.size());
@@ -495,6 +497,51 @@ public class RepositoryUpdater2Test extends NbTestCase {
         }
 
     } // End of testRootsWorkCancelling_CustomIndexer class
+
+    private static final class testRootsWorkCancelling_CustomIndexerFactory extends CustomIndexerFactory {
+
+        private final testRootsWorkCancelling_CustomIndexer indexer;
+
+        public testRootsWorkCancelling_CustomIndexerFactory(@NonNull final testRootsWorkCancelling_CustomIndexer indexer) {
+            Parameters.notNull("indexer", indexer); //NOI18N
+            this.indexer = indexer;
+        }
+
+        @Override
+        public CustomIndexer createIndexer() {
+            return indexer;
+        }
+
+        @Override
+        public void scanFinished(Context context) {
+            if (context.isCancelled()) {
+                indexer.indexedRoots.remove(context.getRootURI());
+            }
+        }
+
+        @Override
+        public boolean supportsEmbeddedIndexers() {
+            return true;
+        }
+
+        @Override
+        public void filesDeleted(Iterable<? extends Indexable> deleted, Context context) {
+        }
+
+        @Override
+        public void filesDirty(Iterable<? extends Indexable> dirty, Context context) {
+        }
+
+        @Override
+        public String getIndexerName() {
+            return indexer.toString();
+        }
+
+        @Override
+        public int getIndexVersion() {
+            return 1;
+        }
+    }
 
     private static final class TimeoutCustomIndexer extends CustomIndexer {
 
@@ -920,7 +967,11 @@ public class RepositoryUpdater2Test extends NbTestCase {
 
         boolean successfullyStopped = RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
-                RepositoryUpdater.getDefault().stop();
+                try {
+                    RepositoryUpdater.getDefault().stop(null);
+                } catch (TimeoutException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
             }
         }).waitFinished(5000);
 
@@ -947,14 +998,14 @@ public class RepositoryUpdater2Test extends NbTestCase {
 
         protected @Override boolean getDone() {
             getDoneCalled = true;
-            while(!isCancelled()) {
+            while(!getCancelRequest().isRaised()) {
                 try {
                     Thread.sleep(100);
                 } catch (InterruptedException ex) {
                     //ignore
                 }
             }
-            workCancelled = isCancelled();
+            workCancelled = getCancelRequest().isRaised();
             return true;
         }
     } // End of testShuttdown_TimedWork class

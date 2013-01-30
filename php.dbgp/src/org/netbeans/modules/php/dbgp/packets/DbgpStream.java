@@ -44,6 +44,7 @@
 package org.netbeans.modules.php.dbgp.packets;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.php.dbgp.DebugSession;
@@ -59,11 +60,11 @@ import sun.misc.BASE64Decoder;
  *
  */
 public class DbgpStream extends DbgpMessage {
-    
+
     enum StreamType{
         STDOUT,
         STDERR;
-        
+
         @Override
         public String toString()
         {
@@ -90,8 +91,8 @@ public class DbgpStream extends DbgpMessage {
             buffer = new byte[0];
         }
         InputOutput io = IOProvider.getDefault().getIO(Bundle.LBL_PhpDebuggerConsole(), false);
-        io.getOut().println(new String(buffer));
+        io.getOut().println(new String(buffer, Charset.defaultCharset()));
         io.getOut().close();
     }
-    
+
 }

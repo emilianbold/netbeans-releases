@@ -59,6 +59,10 @@ public class ElementsFactory {
         this.source = source;
     }
 
+    Text createText(int startOffset, int endOffset) {
+        return new Text(startOffset, endOffset, source);
+    }
+    
     ModifiableCloseTag createCloseTag(int startOffset, int endOffset, byte nameLen) {
         return new CommonCloseTag(source, startOffset, endOffset, nameLen);
     }
@@ -121,10 +125,102 @@ public class ElementsFactory {
         public void setAttribute(Attribute attribute);
     }
 
+    static class Text implements ModifiableElement {
+
+        private int from, to;
+        private CharSequence source;
+        private Node parent;
+
+        public Text(int from, int to, CharSequence source) {
+            this.from = from;
+            this.to = to;
+            this.source = source;
+        }
+        
+        @Override
+        public int from() {
+            return from;
+        }
+
+        @Override
+        public int to() {
+            return to;
+        }
+
+        @Override
+        public ElementType type() {
+            return ElementType.TEXT;
+        }
+
+        @Override
+        public CharSequence image() {
+            return source.subSequence(from, to);
+        }
+
+        @Override
+        public CharSequence id() {
+            return null;
+        }
+
+        @Override
+        public Collection<ProblemDescription> problems() {
+            return Collections.emptyList();
+        }
+
+        @Override
+        public Node parent() {
+            return parent;
+        }
+
+        @Override
+        public void detachFromParent() {
+        }
+
+        @Override
+        public void setEndOffset(int endOffset) {
+            to = endOffset;
+        }
+
+        @Override
+        public void setParent(Node parent) {
+            this.parent = parent;
+        }
+
+        @Override
+        public String toString() {
+            return new StringBuilder()
+                    .append(type().name())
+                    .append(';')
+                    .append(' ')
+                    .append(from())
+                    .append("-")
+                    .append(to())
+                    .append(' ')
+                    .append('"')
+                    .append(escapeEOLs(image()))
+                    .append('"')
+                    .toString();
+        }
+        
+        private String escapeEOLs(CharSequence text) {
+            StringBuilder sb = new StringBuilder();
+            for(int i = 0; i < text.length(); i++) {
+                char c = text.charAt(i);
+                if(c == '\n') {
+                    sb.append("\\n");
+                } else {
+                    sb.append(c);
+                }
+            }
+            return sb.toString();
+        }
+        
+    }
+    
     static abstract class TagElement implements Named, ModifiableElement {
 
         //32-64
-        private CharSequence source;
+        protected CharSequence source;
         //32
         //element start
         private int startOffset;
@@ -801,6 +897,7 @@ public class ElementsFactory {
 
         public Root(CharSequence source, String namespace) {
             super(source, 0, source.length(), (byte) 0);
+            
             this.namespace = namespace;
         }
 
@@ -809,6 +906,12 @@ public class ElementsFactory {
             return ROOT;
         }
 
+        //must be overridden since the TagElement class uses 'from' - 'to' diff in short value,
+        @Override
+        public int to() {
+            return source.length();
+        }
+        
         @Override
         public ElementType type() {
             return ElementType.ROOT;
@@ -869,7 +972,23 @@ public class ElementsFactory {
 
         @Override
         public CharSequence value() {
-            return valueLen == -1 ? null : source.subSequence(valueOffset(), valueOffset() + valueLen);
+            if(valueLen == -1) {
+                return null;
+            }
+            //Bug 221821 - StringIndexOutOfBoundsException: String index out of range: 234
+            int diff = source.length() - valueOffset();
+            if(diff < 0) {
+                assert false : String.format("valueOffset:%s > source.length:%s", 
+                        valueOffset(), source.length()); //report in dev builds
+                return null;
+            }
+            if(diff < valueLen) {
+                assert false : String.format("valueOffset:%s + valueLen:%s > source.length:%s", 
+                        valueOffset(), valueLen, source.length()); //report in dev builds
+                return null;
+            }
+            
+            return source.subSequence(valueOffset(), valueOffset() + valueLen);
         }
 
         @Override

@@ -47,6 +47,7 @@ package org.netbeans.modules.websvc.api.jaxws.project;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -54,12 +55,15 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
@@ -102,6 +106,7 @@ import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.xml.sax.SAXException;
 
 
@@ -119,7 +124,25 @@ public class WSUtils {
     
     private static final String JAX_WS_XML_PATH = "nbproject/jax-ws.xml"; // NOI18N
 
-    private static final String JAX_WS_ENDORSED="JAX-WS-ENDORSED"; //NOI18N
+    public static final String JAX_WS_ENDORSED="JAX-WS-ENDORSED"; //NOI18N
+    
+    /**
+     * XXX: This is "workaround" as a temporary fix for 
+     * BZ#187145 - [69cat] Projects with a WS client created on one machine 
+     * will not load on another.
+     * This static method invocation is introduced in the 7.3 release and 
+     * should be removed in 
+     * future ( post 7.3+ ) release because of the reasons:
+     * - real issue with library is fixed in {@link#getJaxWsApiJars()} method 
+     *   ( jar:nbinst URLs are used instead of absolute file path ).
+     * - migration from 7.3 to any future release will not be issued   
+     *    
+     * @author ads
+     *
+     */
+    static {
+        checkEndorsedLib();
+    }
     
     /** downloads XML resources from source URI to target folder
      * (USAGE : this method can download a wsdl file and all wsdl/XML schemas,
@@ -134,20 +157,20 @@ public class WSUtils {
             Retriever retriever = Retriever.getDefault();
             FileObject result = retriever.retrieveResource(targetFolder, source);
             if (result==null) {
-                Map map = retriever.getRetrievedResourceExceptionMap();
+                Map<RetrieveEntry,Exception> map = retriever.getRetrievedResourceExceptionMap();
                 if (map!=null) {
-                    Set keys = map.keySet();
-                    Iterator it = keys.iterator();
-                    while (it.hasNext()) {
-                        RetrieveEntry key = (RetrieveEntry)it.next();
-                        Object exc = map.get(key);
+                    for(Entry<RetrieveEntry,Exception> entry: map.entrySet()){
+                        RetrieveEntry key = entry.getKey();
+                        Exception exc = entry.getValue();
                         if (exc instanceof IOException) {
                             throw (IOException)exc;
                         } else if (exc instanceof java.net.URISyntaxException) {
                             throw (java.net.URISyntaxException)exc;
-                        } else if (exc instanceof Exception) {
-                            IOException ex = new IOException(NbBundle.getMessage(WSUtils.class,"ERR_retrieveResource",key.getCurrentAddress()));
-                            ex.initCause((Exception)exc);
+                        } else  {
+                            IOException ex = new IOException(NbBundle.getMessage(
+                                    WSUtils.class,"ERR_retrieveResource",
+                                    key.getCurrentAddress()));
+                            ex.initCause(exc);
                             throw (IOException)(ex);
                         }
                     }
@@ -178,12 +201,16 @@ public class WSUtils {
             public void run() throws IOException {
                 FileObject jaxWsFo = FileUtil.createData(nbprojFo, "jax-ws.xml");//NOI18N
                 FileLock lock = jaxWsFo.lock();
+                BufferedWriter bw = null;
                 try {
-                    BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(jaxWsFo.getOutputStream(lock)));
+                    bw = new BufferedWriter(new OutputStreamWriter(
+                            jaxWsFo.getOutputStream(lock), Charset.forName("UTF-8")));  // NOI18N
                     bw.write(jaxWsContent);
-                    bw.close();
                 } finally {
                     lock.releaseLock();
+                    if( bw!= null ){
+                        bw.close();
+                    }
                 }
             }
         });
@@ -201,7 +228,8 @@ public class WSUtils {
                 OutputStream os = null;
                 try {
                     os = handlerFo.getOutputStream(lock);
-                    bw = new BufferedWriter(new OutputStreamWriter(os));
+                    bw = new BufferedWriter(new OutputStreamWriter(os, 
+                            Charset.forName("UTF-8")));             // NOI18N
                     bw.write(handlerContent);
                     bw.close();
                 } finally {
@@ -243,7 +271,7 @@ public class WSUtils {
                 OutputStreamWriter osw = null;
                 try {
                     os = sunJaxwsFo.getOutputStream(lock);
-                    osw = new OutputStreamWriter(os);
+                    osw = new OutputStreamWriter(os, Charset.forName("UTF-8"));     // NOI18N
                     bw = new BufferedWriter(osw);
                     bw.write(sunJaxwsContent);
                 } finally {
@@ -400,7 +428,7 @@ public class WSUtils {
         }
     }
 
-    private static Library createJaxWsApiLibrary() throws IOException {
+    public static Library createJaxWsApiLibrary() throws IOException {
         List<URL> apiJars = getJaxWsApiJars();
         if (apiJars.size() > 0) {
             Map<String, List<URL>> map = Collections.<String, List<URL>>singletonMap("classpath", apiJars); //NOI18N
@@ -413,17 +441,21 @@ public class WSUtils {
         List<URL> urls = new ArrayList<URL>();
         File apiJar = InstalledFileLocator.getDefault().locate("modules/ext/jaxws22/api/jaxws-api.jar", null, false); // NOI18N
         if (apiJar != null) {
-            URL url = apiJar.toURI().toURL();
+            URL url = new URL("jar:nbinst://org.netbeans.modules.websvc.jaxws21api/modules/ext/jaxws22/api/jaxws-api.jar!/");
+            /*URL url = apiJar.toURI().toURL();
             if (FileUtil.isArchiveFile(url)) {
                 urls.add(FileUtil.getArchiveRoot(url));
-            }
+            }*/
+            urls.add(url);
         }
         apiJar = InstalledFileLocator.getDefault().locate("modules/ext/jaxb/api/jaxb-api.jar", null, false); // NOI18N
         if (apiJar != null) {
-            URL url = apiJar.toURI().toURL();
+            URL url = new URL("jar:nbinst://org.netbeans.libs.jaxb/modules/ext/jaxb/jaxb-impl.jar!/");
+            /*URL url = apiJar.toURI().toURL();
             if (FileUtil.isArchiveFile(url)) {
                 urls.add(FileUtil.getArchiveRoot(url));
-            }
+            }*/
+            urls.add(url);
         }
         return urls;
     }
@@ -585,18 +617,23 @@ public class WSUtils {
     public static FileObject retrieveJaxWsCatalogFromResource(final FileObject webInf) throws IOException {
         assert  webInf != null : "WEB-INF (META-INF) directory"; //NOI18N
         final String jaxWsContent =
-                readResource(WSUtils.class.getResourceAsStream("/org/netbeans/modules/websvc/jaxwsmodel/resources/jax-ws-catalog.xml")); //NOI18N
+                readResource(WSUtils.class.getResourceAsStream(
+                        "/org/netbeans/modules/websvc/jaxwsmodel/resources/jax-ws-catalog.xml")); //NOI18N
         FileSystem fs = webInf.getFileSystem();
         fs.runAtomicAction(new FileSystem.AtomicAction() {
             public void run() throws IOException {
                 FileObject jaxWsCatalog = FileUtil.createData(webInf, "jax-ws-catalog.xml");//NOI18N
                 FileLock lock = jaxWsCatalog.lock();
+                BufferedWriter bw =null;
                 try {
-                    BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(jaxWsCatalog.getOutputStream(lock)));
+                    bw = new BufferedWriter(new OutputStreamWriter(
+                            jaxWsCatalog.getOutputStream(lock), Charset.forName("UTF-8"))); // NOI18N
                     bw.write(jaxWsContent);
-                    bw.close();
                 } finally {
                     lock.releaseLock();
+                    if ( bw!= null) {
+                        bw.close();
+                    }
                 }
             }
         });
@@ -608,7 +645,9 @@ public class WSUtils {
         BufferedReader br = null;
         boolean found = false;
         try {
-            br = new BufferedReader(new FileReader(FileUtil.toFile(jaxWsFo)));
+            br = new BufferedReader(new InputStreamReader( 
+                    new FileInputStream( FileUtil.toFile(jaxWsFo)), 
+                        Charset.forName("UTF-8")));                 // NOI18N
             String line = null;
             while ((line = br.readLine()) != null) {
                 if (line.contains("<client ")) { //NOI18N
@@ -628,7 +667,9 @@ public class WSUtils {
         BufferedReader br = null;
         boolean found = false;
         try {
-            br = new BufferedReader(new FileReader(FileUtil.toFile(jaxWsFo)));
+            br = new BufferedReader(new InputStreamReader( 
+                    new FileInputStream( FileUtil.toFile(jaxWsFo)), 
+                        Charset.forName("UTF-8")));                 // NOI18N
             String line = null;
             while ((line = br.readLine()) != null) {
                 if (line.contains("<client ") || line.contains("<service ")) { //NOI18N
@@ -736,12 +777,13 @@ public class WSUtils {
     }
 
     private static void setProjectProperty( final AntProjectHelper helper,
-            final String propertyName, final String value ) throws MutexException
+            final String propertyName, final String value ) throws MutexException, IOException
     {
-        ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
+        ProjectManager.mutex().postWriteRequest(new Runnable() {
+            
             @Override
-            public Object run() throws IOException {
-                // and save the project
+            public void run() {
+             // and save the project
                 try {
                     EditableProperties ep = helper.getProperties(
                             AntProjectHelper.PROJECT_PROPERTIES_PATH);
@@ -756,11 +798,55 @@ public class WSUtils {
                     ProjectManager.getDefault().saveProject(project);  
                 } 
                 catch(IOException ioe) {
-                    Logger.getLogger(this.getClass().getName()).log(Level.INFO, ioe.getLocalizedMessage(), ioe);
-                }
-                return null;
+                    Logger.getLogger(this.getClass().getName()).log(Level.INFO, 
+                            ioe.getLocalizedMessage(), ioe);
+                }                
             }
         });
+    }
+    
+    private static void checkEndorsedLib(){
+        Library jaxWsApiLib = LibraryManager.getDefault().getLibrary(
+                WSUtils.JAX_WS_ENDORSED);
+        if ( jaxWsApiLib == null ){
+            return;
+        }
+        List<URL> urls = jaxWsApiLib.getContent("classpath");       // NOI18N
+        boolean isBroken = false;
+        try {
+            for (URL url : urls) {
+                url = FileUtil.getArchiveFile(url);
+                if ( url == null ){
+                    isBroken = true;
+                    break;
+                }
+                File file = new File(url.toURI());
+                file = FileUtil.normalizeFile(file);
+                if ( file == null ){
+                    isBroken = true;
+                    break;
+                }
+                if ( FileUtil.toFileObject(file) == null){
+                    isBroken = true;
+                    break;
+                }
+            }
+            if ( isBroken ){
+                LibraryManager.getDefault().removeLibrary(jaxWsApiLib);
+            }
+        }
+        catch(URISyntaxException e ){
+            Logger.getLogger(WSUtils.class.getName()).log(
+                    Level.INFO, null , e);
+        }
+        catch (IllegalArgumentException e) {
+            Logger.getLogger(WSUtils.class.getName()).log(
+                    Level.INFO, null , e);
+        }
+        catch (IOException e) {
+            Logger.getLogger(WSUtils.class.getName()).log(
+                    Level.INFO, null , e);
+        } 
     }
 
 }

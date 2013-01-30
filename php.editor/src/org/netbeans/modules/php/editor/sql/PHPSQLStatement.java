@@ -42,7 +42,6 @@
 package org.netbeans.modules.php.editor.sql;
 
 import java.util.ArrayList;
-import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.db.sql.editor.api.completion.SQLCompletion;
@@ -57,7 +56,7 @@ final class PHPSQLStatement {
 
     /**
      * Given a caret offset into a PHP document, compute the SQL statement for that
-     * location, if any
+     * location, if any.
      *
      * @param document the PHP source document
      * @param caretOffset the caret location in the document
@@ -67,6 +66,7 @@ final class PHPSQLStatement {
         final PHPSQLStatement[] result = {null};
         document.render(new Runnable() {
 
+            @Override
             public void run() {
                 TokenSequence<PHPTokenId> seq = LexUtilities.getPHPTokenSequence(document, caretOffset);
                 if (seq == null) {
@@ -84,7 +84,7 @@ final class PHPSQLStatement {
     }
 
     /**
-     * Return true if this string could potentially be SQL
+     * Return true if this string could potentially be SQL.
      */
     public static boolean couldBeSQL(TokenSequence seq) {
         String potentialStatement = seq.token().text().toString();
@@ -92,11 +92,9 @@ final class PHPSQLStatement {
             potentialStatement = potentialStatement.substring(1);
         }
         potentialStatement = potentialStatement.toLowerCase().trim();
-        return potentialStatement.startsWith("select") ||
-                potentialStatement.startsWith("insert") ||
-                potentialStatement.startsWith("update") ||
-                potentialStatement.startsWith("delete") ||
-                potentialStatement.startsWith("drop");
+        return potentialStatement.startsWith("select") || potentialStatement.startsWith("insert")
+                || potentialStatement.startsWith("update") || potentialStatement.startsWith("delete")
+                || potentialStatement.startsWith("drop");
     }
 
     private PHPSQLStatement(TokenSequence seq, int caretOffset) {
@@ -130,7 +128,7 @@ final class PHPSQLStatement {
         if (codeBlock == null) {
             return -1;
         }
-        int generatedPos = -1;
+        int generatedPos;
         int offsetWithinBlock = sourceOffset - codeBlock.sourceStart;
         int generatedOffset = codeBlock.generatedStart + offsetWithinBlock;
         if (generatedOffset <= codeBlock.generatedEnd) {
@@ -152,6 +150,7 @@ final class PHPSQLStatement {
      * @param rawStatement
      * @return
      */
+    @org.netbeans.api.annotations.common.SuppressWarnings({"SF_SWITCH_FALLTHROUGH"})
     private String generateSQLStatement(TokenSequence<PHPTokenId> seq, int caretOffset) {
         statementOffset = StringFinder.findStringBegin(seq, caretOffset);
         if (statementOffset < 0) {
@@ -181,7 +180,7 @@ final class PHPSQLStatement {
         seq.move(statementOffset);
         seq.moveNext();
 
-        if (! couldBeSQL(seq)) {
+        if (!couldBeSQL(seq)) {
             return null;
         }
 
@@ -261,6 +260,8 @@ final class PHPSQLStatement {
                             concatenating = false;
                             inVariable = false;
                             break;
+                        default:
+                            // no-op
                     }
                     addUnknownCodeBlock(seq, buf);
                     break;
@@ -334,7 +335,7 @@ final class PHPSQLStatement {
         return null;
     }
 
-    private class CodeBlockData {
+    private static class CodeBlockData {
         /** Start of section in PHP file */
         private int sourceStart;
         /** End of section in PHP file */
@@ -358,8 +359,8 @@ final class PHPSQLStatement {
         public String toString() {
             StringBuilder sb = new StringBuilder();
             sb.append("CodeBlockData[");
-            sb.append("\n  SOURCE(" + sourceStart + "," + sourceEnd + ")");
-            sb.append(",\n  SQL(" + generatedStart + "," + generatedEnd + ")");
+            sb.append("\n  SOURCE(").append(sourceStart).append(",").append(sourceEnd).append(")");
+            sb.append(",\n  SQL(").append(generatedStart).append(",").append(generatedEnd).append(")");
             sb.append("]");
             return sb.toString();
         }
@@ -476,6 +477,8 @@ final class PHPSQLStatement {
                                     substringTermOffset = getOffset(seq, direction);
                                 }
                                 break;
+                            default:
+                                //no-op
                         }
                         break;
                     case PHP_ENCAPSED_AND_WHITESPACE:
@@ -501,8 +504,7 @@ final class PHPSQLStatement {
                     case PHP_NOWDOC_TAG:
                         switch (state) {
                             case STARTING:
-                                // Not inside a string, done
-                                break outer;
+                                // Not inside a string, but possible concatination xDOCs with outer common strings
                             case VARSUB_STRING:
                                 // Not done yet, you can concatenate heredocs too, you know...
                                 state = StringState.SUBSTRING_TERM;
@@ -518,6 +520,8 @@ final class PHPSQLStatement {
                                 break;
                             case CONCATENATING:
                                 break;
+                            default:
+                                //no-op
                         }
                         break;
                     case PHP_SEMICOLON:
@@ -549,6 +553,8 @@ final class PHPSQLStatement {
                             case CONCATENATING:
                                 // Keep going...
                                 break;
+                            default:
+                                //no-op
                         }
                         break;
                     case PHP_CURLY_OPEN:
@@ -569,6 +575,8 @@ final class PHPSQLStatement {
                             case MAYBE_SUBSTRING_TERM:
                                 // Keep going, looking for that potential concatenation token...
                                 break;
+                            default:
+                                //no-op
                         }
                         break;
                     case UNKNOWN_TOKEN:
@@ -590,6 +598,8 @@ final class PHPSQLStatement {
                             case STARTING:
                                 // Not in a string
                                 break outer;
+                            default:
+                                //no-op
                         }
                         break;
                 }
@@ -613,7 +623,7 @@ final class PHPSQLStatement {
         }
 
         private static int getOffset(TokenSequence seq, StringDirection direction) {
-            if (direction == direction.BACKWARD) {
+            if (direction == StringDirection.BACKWARD) {
                 return seq.offset();
             } else {
                 return seq.offset() + seq.token().length();

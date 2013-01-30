@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.42
+#Version 1.46.1
 
 CLSS public abstract interface !annotation java.lang.Deprecated
  anno 0 java.lang.annotation.Documented()
@@ -87,10 +87,13 @@ fld public final static java.lang.String PROP_WORK_DIR = "work.dir"
 fld public final static java.lang.String QUICK_CLEAN = "clean"
 fld public final static java.lang.String QUICK_DEBUG = "debug"
 fld public final static java.lang.String QUICK_DEBUG_APPLET = "debug-applet"
+fld public final static java.lang.String QUICK_PROFILE = "profile"
+fld public final static java.lang.String QUICK_PROFILE_APPLET = "profile-applet"
 fld public final static java.lang.String QUICK_RUN = "run"
 fld public final static java.lang.String QUICK_RUN_APPLET = "run-applet"
 fld public final static java.lang.String QUICK_TEST = "junit"
 fld public final static java.lang.String QUICK_TEST_DEBUG = "junit-debug"
+fld public final static java.lang.String QUICK_TEST_PROFILE = "junit-profile"
 meth public static boolean isSupported(java.lang.String,java.util.Map<java.lang.String,?>)
 meth public static org.openide.execution.ExecutorTask execute(java.lang.String,java.util.Map<java.lang.String,?>) throws java.io.IOException
 supr java.lang.Object
@@ -156,6 +159,15 @@ meth public static org.netbeans.spi.project.LookupMerger<org.netbeans.spi.java.q
 supr java.lang.Object
 hcls JFBIMerged,JFBLookupMerger,SFBIMerged,SFBLookupMerger
 
+CLSS public final org.netbeans.spi.java.project.support.PreferredProjectPlatform
+meth public static org.netbeans.api.java.platform.JavaPlatform getPreferredPlatform(java.lang.String)
+ anno 0 org.netbeans.api.annotations.common.CheckForNull()
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+meth public static void setPreferredPlatform(org.netbeans.api.java.platform.JavaPlatform)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+supr java.lang.Object
+hfds PLATFORM_ANT_NAME,PREFERRED_PLATFORM
+
 CLSS public org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport
 innr public abstract interface static LibraryDefiner
 meth public static boolean isBroken(org.netbeans.spi.project.support.ant.AntProjectHelper,org.netbeans.spi.project.support.ant.ReferenceHelper,java.lang.String[],java.lang.String[])
@@ -216,6 +228,7 @@ meth public static javax.swing.ListCellRenderer listRenderer()
 meth public static org.openide.nodes.Node createPackageView(org.netbeans.api.project.SourceGroup)
 meth public static org.openide.nodes.Node findPath(org.openide.nodes.Node,java.lang.Object)
 supr java.lang.Object
+hfds LOG
 hcls PackageItem,PackageListCellRenderer,RootNode
 
 CLSS public final org.netbeans.spi.java.project.support.ui.SharableLibrariesUtils

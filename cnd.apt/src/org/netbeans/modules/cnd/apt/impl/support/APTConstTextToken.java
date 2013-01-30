@@ -44,17 +44,24 @@
 
 package org.netbeans.modules.cnd.apt.impl.support;
 
+import java.lang.reflect.Field;
+import java.util.Map;
+import org.netbeans.modules.cnd.antlr.ANTLRHashString;
+import org.netbeans.modules.cnd.apt.impl.support.generated.APTLexer;
 import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
 import org.netbeans.modules.cnd.apt.support.APTTokenAbstact;
 import org.openide.util.CharSequences;
+import org.openide.util.Exceptions;
 
 /**
  *
- * @author gorrus
+ * @author Egor Ushakov
  */
 public final class APTConstTextToken extends APTTokenAbstact implements APTTokenTypes {
-    final static String[] constText = new String[APTTokenTypes.LAST_CONST_TEXT_TOKEN];
-    final static CharSequence[] constTextID = new CharSequence[APTTokenTypes.LAST_CONST_TEXT_TOKEN];
+    private static final int MAX_TEXT_ID = APTTokenTypes.LAST_LEXER_FAKE_RULE;
+    final static String[] constText = new String[MAX_TEXT_ID];
+    final static CharSequence[] constTextID = new CharSequence[MAX_TEXT_ID];
+    
     private int type = INVALID_TYPE;
     private int column;
     private int offset;
@@ -134,13 +141,32 @@ public final class APTConstTextToken extends APTTokenAbstact implements APTToken
         
         // more
         constText[DEFINED]              ="defined"; // NOI18N
+        
+        // add literals
+        try {
+            Field literalsField = APTLexer.class.getDeclaredField("LITERALS_TABLE"); //NOI18N
+            literalsField.setAccessible(true);
+            @SuppressWarnings("unchecked")
+            Map<ANTLRHashString, Integer> map = (Map<ANTLRHashString, Integer>)literalsField.get(null);
+            for (Map.Entry<ANTLRHashString, Integer> entry : map.entrySet()) {
+                int idx = entry.getValue();
+                String current = constText[idx];
+                assert current == null;
+                // get string value
+                Field stringField = entry.getKey().getClass().getDeclaredField("s"); //NOI18N
+                stringField.setAccessible(true);
+                constText[idx] = (String)stringField.get(entry.getKey()); //NOI18N
+            }
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
+        }
 
         for (int i = 0; i < constText.length; i++) {
             String str = constText[i];
             constTextID[i] = CharSequences.create(str);
             if (str != null) {
-                if (i > LAST_CONST_TEXT_TOKEN) {
-                    System.err.printf("APTConstTextToken: token %s [%d] is higher than LAST_CONST_TEXT_TOKEN [%d]\n", str, i, LAST_CONST_TEXT_TOKEN);
+                if (i > MAX_TEXT_ID) {
+                    System.err.printf("APTConstTextToken: token %s [%d] is higher than MAX_TEXT_ID [%d]\n", str, i, MAX_TEXT_ID);
                 }
             } else {
                // System.err.printf("APTConstTextToken: index [%d] does not have text \n", i);
@@ -148,6 +174,11 @@ public final class APTConstTextToken extends APTTokenAbstact implements APTToken
         }
 //        assert TYPE_MASK >= LAST_CONST_TEXT_TOKEN;
 //        System.err.printf("APTConstTextToken: %d\n", LAST_CONST_TEXT_TOKEN);
+    }
+    
+    private static void addConstText(String text, int id) {
+        assert constText[id] == null || constText[id].equals(text) : "Trying to redefine value " + text + " for already defined token type " + id + ", current value is " + constText[id];
+        constText[id] = text;
     }
     
     @Override

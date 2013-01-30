@@ -1,0 +1,9 @@
+Display text: <font color=#000000>const </font><b>CON</b><font color=#000000> = 1;</font>
+File name: index.php
+Name: CON
+Position: BEGIN: 43 END: 46
+
+Display text: <font color=#000000>Foo::</font><b>CON</b><font color=#000000>;</font>
+File name: index.php
+Name: CON
+Position: BEGIN: 216 END: 219

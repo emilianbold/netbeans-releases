@@ -70,7 +70,6 @@ import org.netbeans.modules.php.editor.parser.astnodes.NamespaceDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocMethodTag;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
 import org.netbeans.modules.php.editor.parser.astnodes.TraitDeclaration;
-import org.netbeans.modules.php.editor.parser.astnodes.TraitConflictResolutionDeclaration;
 
 /**
  *
@@ -89,14 +88,15 @@ class ModelBuilder {
         this.currentScope = new Stack<ScopeImpl>();
         this.vars = new HashMap<VariableNameFactory, Map<String, VariableNameImpl>>();
         setCurrentScope(fileScope);
-        setCurrentScope(namespaceScope = defaultNamespaceScope = new NamespaceScopeImpl(fileScope));
+        defaultNamespaceScope = new NamespaceScopeImpl(fileScope);
+        namespaceScope = defaultNamespaceScope;
+        setCurrentScope(namespaceScope);
     }
 
     NamespaceScope build(NamespaceDeclaration node, OccurenceBuilder occurencesBuilder) {
         final NamespaceDeclarationInfo info = NamespaceDeclarationInfo.create(node);
 
-        NamespaceScopeImpl nScope = (info.isDefaultNamespace())? defaultNamespaceScope://NOI18N
-            ModelElementFactory.create( info, this);
+        NamespaceScopeImpl nScope = (info.isDefaultNamespace()) ? defaultNamespaceScope : ModelElementFactory.create(info, this);
         if (!nScope.isDefaultNamespace()) {
             setCurrentScope(nScope);
         }
@@ -107,7 +107,7 @@ class ModelBuilder {
     ClassScope build(ClassDeclaration node, OccurenceBuilder occurencesBuilder) {
         ClassScopeImpl classScope = ModelElementFactory.create(ClassDeclarationInfo.create(node), this);
         setCurrentScope(classScope);
-        occurencesBuilder.prepare(node,classScope);
+        occurencesBuilder.prepare(node, classScope);
         return classScope;
     }
 
@@ -122,21 +122,21 @@ class ModelBuilder {
         List<? extends SingleFieldDeclarationInfo> infos = SingleFieldDeclarationInfo.create(node);
         for (SingleFieldDeclarationInfo sfdi : infos) {
             FieldElementImpl fei = ModelElementFactory.create(sfdi, this);
-            occurencesBuilder.prepare(sfdi,fei);
+            occurencesBuilder.prepare(sfdi, fei);
         }
     }
 
     void build(Include node, OccurenceBuilder occurencesBuilder) {
         IncludeElementImpl inclImpl = ModelElementFactory.create(IncludeInfo.create(node), this);
         if (inclImpl != null) {
-            occurencesBuilder.prepare(node,inclImpl);
+            occurencesBuilder.prepare(node, inclImpl);
         }
     }
 
     InterfaceScope build(InterfaceDeclaration node, OccurenceBuilder occurencesBuilder) {
         InterfaceScopeImpl classScope = ModelElementFactory.create(InterfaceDeclarationInfo.create(node), this);
         setCurrentScope(classScope);
-        occurencesBuilder.prepare(node,classScope);
+        occurencesBuilder.prepare(node, classScope);
         return classScope;
     }
 
@@ -151,7 +151,7 @@ class ModelBuilder {
 
      MethodScope build(MethodDeclaration node, OccurenceBuilder occurencesBuilder, ModelVisitor visitor) {
         final ScopeImpl scope = getCurrentScope();
-        MethodScopeImpl methodScope = ModelElementFactory.create(MethodDeclarationInfo.create(getProgram(),node, (TypeScope)scope), this, visitor);
+        MethodScopeImpl methodScope = ModelElementFactory.create(MethodDeclarationInfo.create(getProgram(), node, (TypeScope) scope), this, visitor);
         setCurrentScope(methodScope);
         occurencesBuilder.prepare(node, methodScope);
         return methodScope;
@@ -162,7 +162,7 @@ class ModelBuilder {
             ScopeImpl createdScope = currentScope.peek();
             if (createdScope instanceof NamespaceScopeImpl) {
                 namespaceScope = defaultNamespaceScope;
-                if (!((NamespaceScopeImpl)createdScope).isDefaultNamespace()) {
+                if (!((NamespaceScopeImpl) createdScope).isDefaultNamespace()) {
                     // don't remove default namespace, it's included in constructor
                     currentScope.pop();
                 }
@@ -174,7 +174,7 @@ class ModelBuilder {
 
     /**
      * This method basically restore stack of scopes for scanning a node
-     * that was not scanned during lazy scanning
+     * that was not scanned during lazy scanning.
      * @param scope
      */
     void prepareForScope(Scope scope) {
@@ -183,7 +183,7 @@ class ModelBuilder {
             if (scope instanceof NamespaceScopeImpl) {
                 namespaceScope = (NamespaceScopeImpl) scope;
             }
-            currentScope.add(0, (ScopeImpl)scope);
+            currentScope.add(0, (ScopeImpl) scope);
             scope = scope.getInScope();
         }
     }
@@ -209,7 +209,7 @@ class ModelBuilder {
     /**
      * @param currentScope the currentScope to set
      */
-    void setCurrentScope(ScopeImpl scope) {
+    final void setCurrentScope(ScopeImpl scope) {
         if (scope instanceof NamespaceScopeImpl) {
             namespaceScope = (NamespaceScopeImpl) scope;
         }

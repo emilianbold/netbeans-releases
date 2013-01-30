@@ -130,7 +130,7 @@ public class RemoteRepositoryPanel extends javax.swing.JPanel {
                 .addComponent(connectionSettings, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
                 .addComponent(proxySettingsButton)
-                .addContainerGap(287, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         proxySettingsButton.getAccessibleContext().setAccessibleParent(this);

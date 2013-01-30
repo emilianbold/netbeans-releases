@@ -77,6 +77,7 @@ import java.util.ResourceBundle;
 import java.util.logging.Level;
 import javax.accessibility.Accessible;
 import javax.swing.JComponent;
+import javax.swing.JEditorPane;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JSeparator;
@@ -106,6 +107,7 @@ import org.netbeans.modules.mercurial.HgException;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.OutputLogger;
+import org.netbeans.modules.mercurial.WorkingCopyInfo;
 import org.netbeans.modules.mercurial.kenai.HgKenaiAccessor;
 import org.netbeans.modules.mercurial.ui.diff.DiffAction;
 import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
@@ -122,6 +124,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.text.NbDocument;
 import org.openide.util.Lookup;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.xml.XMLUtil;
@@ -247,6 +250,9 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
      */
     private FileObject referencedFileObject;
     private String annotatedRevision;
+    private WorkingCopyInfo wcInfo;
+    private RequestProcessor.Task refreshAnnotationsTask;
+    private boolean refreshing;
 
     /**
      * Creates new instance initializing final fields.
@@ -297,6 +303,11 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
     public void annotationLines(File file, List<AnnotateLine> annotateLines) {
         // set repository root for popup menu, now should be the right time
         repositoryRoot = Mercurial.getInstance().getRepositoryRoot(getCurrentFile());
+        if (referencedFile == null) {
+            wcInfo = WorkingCopyInfo.getInstance(repositoryRoot);
+            wcInfo.removePropertyChangeListener(this);
+            wcInfo.addPropertyChangeListener(this);
+        }
         final List<AnnotateLine> lines = new LinkedList<AnnotateLine>(annotateLines);
         int lineCount = lines.size();
         /** 0 based line numbers => 1 based line numbers*/
@@ -594,7 +605,13 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
                     @Override
                     public void run() {
                         try {
-                            HgUtils.openInRevision(pri.getOriginalFile(), -1, pri.getPreviousRevision(), !"-1".equals(pri.getPreviousRevision().getRevisionNumber())); //NOI18N
+                            if (lineNumber > 0 && !"-1".equals(pri.getPreviousRevision().getRevisionNumber())) {
+                                HgUtils.openInRevision(originalFile, new HgRevision(changesetIdPerLine, revisionPerLine), lineNumber - 1,
+                                        pri.getOriginalFile(), pri.getPreviousRevision(), true); //NOI18N
+                            } else {
+                                HgUtils.openInRevision(pri.getOriginalFile(), -1,
+                                    pri.getPreviousRevision(), !"-1".equals(pri.getPreviousRevision().getRevisionNumber())); //NOI18N
+                            }
                         } catch (IOException ex) {
                             //
                         }
@@ -670,6 +687,26 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
 
     void setAnnotatedRevision (String revision) {
         this.annotatedRevision = revision;
+    }
+
+    private RequestProcessor.Task getRefreshAnnotationsTask () {
+        assert EventQueue.isDispatchThread();
+        if (refreshAnnotationsTask == null) {
+            refreshAnnotationsTask = getRequestProcessor().create(new Runnable() {
+                @Override
+                public void run () {
+                    EventQueue.invokeLater(new Runnable() {
+                        @Override
+                        public void run () {
+                            if (textComponent instanceof JEditorPane && refreshing) {
+                                AnnotateAction.showAnnotations((JEditorPane) textComponent, getCurrentFile(), null, false);
+                            }
+                        }
+                    });
+                }
+            });
+        }
+        return refreshAnnotationsTask;
     }
 
     /**
@@ -957,6 +994,13 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
      * all resources.
      */
     private void release() {
+        refreshing = false;
+        if (refreshAnnotationsTask != null) {
+            refreshAnnotationsTask.cancel();
+        }
+        if (wcInfo != null) {
+            wcInfo.removePropertyChangeListener(this);
+        }
         editorUI.removePropertyChangeListener(this);
         textComponent.removeComponentListener(this);
         doc.removeDocumentListener(this);
@@ -1212,6 +1256,17 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
                 // component deinstalled, lets uninstall all isteners
                 release();
             }
+        } else if (WorkingCopyInfo.PROPERTY_WORKING_COPY_PARENT.equals(id)) {
+            Mutex.EVENT.readAccess(new Runnable() {
+                @Override
+                public void run () {
+                    if (annotated) {
+                        hideBar();
+                        refreshing = true;
+                        getRefreshAnnotationsTask().schedule(1000);
+                    }
+                }
+            });
         }
 
     }
@@ -1263,9 +1318,13 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
 
     /** Implementation */
     @Override
-    public void removeUpdate(DocumentEvent e) {
+    public void removeUpdate(final DocumentEvent e) {
         if (e.getDocument().getLength() == 0) { // external reload
             hideBar();
+            if (referencedFile == null) {
+                refreshing = true;
+                getRefreshAnnotationsTask().schedule(4000);
+            }
         }
         repaint();
     }

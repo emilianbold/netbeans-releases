@@ -50,6 +50,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 import org.netbeans.modules.cnd.api.project.NativeFileItem.LanguageFlavor;
+import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
@@ -124,17 +125,14 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
     private RequiredProjectsConfiguration currentRequiredProjectsConfiguration = null;
     private QmakeConfiguration currentQmakeConfiguration = null;
     private List<String> currentList = null;
-    private int defaultConf = 0;
+    private int defaultConf = -1;
     private Stack<Folder> currentFolderStack = new Stack<Folder>();
     private Folder currentFolder = null;
     private String relativeOffset;
     private Map<String, String> cache = new HashMap<String, String>();
     private List<XMLDecoder> decoders = new ArrayList<XMLDecoder>();
 
-    public ConfigurationXMLCodec(String tag,
-            FileObject projectDirectory,
-            MakeConfigurationDescriptor projectDescriptor,
-            String relativeOffset) {
+    public ConfigurationXMLCodec(String tag, FileObject projectDirectory, MakeConfigurationDescriptor projectDescriptor, String relativeOffset) {
         super(projectDescriptor, true);
         this.tag = tag;
         this.projectDirectory = projectDirectory;
@@ -167,6 +165,14 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
     public void end() {
         Configuration[] confsA = new Configuration[confs.size()];
         confsA = confs.toArray(confsA);
+        if (defaultConf < 0) {
+            defaultConf = 0;
+            for(int i = 0; i < confsA.length; i++) {
+                if (confsA[i].isDefault()) {
+                    defaultConf = i;
+                }
+            }
+        }
         projectDescriptor.init(confsA, defaultConf);
     }
 
@@ -255,7 +261,22 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             } else {
                 String name = getString(atts.getValue(NAME_ATTR));
                 String root = getString(atts.getValue(ROOT_ATTR));
-                currentFolder = currentFolder.addNewFolder(name, name, true, Folder.Kind.SOURCE_DISK_FOLDER);
+                // physical folders have own name as display name
+                String displayName = name;
+                if (root != null) { 
+                    // except source root which has name as ID and we'd like to display physical
+                    String absRootPath = CndPathUtilitities.toAbsolutePath(projectDescriptor.getBaseDirFileObject(), root);
+                    absRootPath = RemoteFileUtil.normalizeAbsolutePath(absRootPath, projectDescriptor.getProject());
+                    displayName = CndPathUtilitities.getBaseName(absRootPath);
+                    if (name == null) {
+                        // due to fix of bug #216604 name can be null => if we lucky we can try to deserialize with folder physical name
+                        name = displayName;
+                    }                    
+                    if (descriptorVersion < VERSION_WITH_INVERTED_SERIALIZATION) {
+                        // TODO: at the end of decoding source root physical folders will be assigned with unique IDs
+                    }
+                }
+                currentFolder = currentFolder.addNewFolder(name, displayName, true, Folder.Kind.SOURCE_DISK_FOLDER);
                 if (root != null) {
                     currentFolder.setRoot(root);
                 }
@@ -306,6 +327,14 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
         } else if (element.equals(CODE_ASSISTANCE_ELEMENT)) {
             if (currentConf != null) {
                 currentCodeAssistanceConfiguration = ((MakeConfiguration) currentConf).getCodeAssistanceConfiguration();
+            }
+        } else if (element.equals(CODE_ASSISTANCE_ENVIRONMENT_ELEMENT)) {
+            if (currentCodeAssistanceConfiguration != null) {
+                currentList = currentCodeAssistanceConfiguration.getEnvironmentVariables().getValue();
+            }
+        } else if (element.equals(CODE_ASSISTANCE_TRANSIENT_MACROS_ELEMENT)) {
+            if (currentCodeAssistanceConfiguration != null) {
+                currentList = currentCodeAssistanceConfiguration.getTransientMacros().getValue();
             }
         } else if (element.equals(COMPILERTOOL_ELEMENT)) {
         } else if (element.equals(CCOMPILERTOOL_ELEMENT2) || element.equals(CCOMPILERTOOL_ELEMENT) || element.equals(SUN_CCOMPILERTOOL_OLD_ELEMENT)) { // FIXUP: <= 23
@@ -635,6 +664,10 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             if (currentCodeAssistanceConfiguration != null) {
                 currentCodeAssistanceConfiguration.getTools().setValue(getString(currentText));
             }
+        } else if (element.equals(CODE_ASSISTANCE_ENVIRONMENT_ELEMENT)) {
+            currentList = null;
+        } else if (element.equals(CODE_ASSISTANCE_TRANSIENT_MACROS_ELEMENT)) {
+            currentList = null;
         } else if (element.equals(COMPILERTOOL_ELEMENT)) { // FIXUP: < 10
         } else if (element.equals(CCOMPILERTOOL_ELEMENT2) || element.equals(CCOMPILERTOOL_ELEMENT) || element.equals(SUN_CCOMPILERTOOL_OLD_ELEMENT)) { // FIXUP: <=23
             currentCCompilerConfiguration = null;

@@ -163,7 +163,7 @@ public class InvalidFileObjectSupport {
 
         public InvalidFileObject(FileSystem fileSystem, CharSequence path) {
             this.fileSystem = (fileSystem == null) ? dummyFileSystem : fileSystem;
-            this.path = path.toString();
+            this.path = path.toString().replace('\\', '/'); // NOI18N;
         }
 
         @Override

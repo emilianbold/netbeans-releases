@@ -62,6 +62,12 @@
             <exclude name="nbproject/private/"/>
         </zip>
         
+        <zip basedir="Fireworks" destfile="${examples}/Fireworks.zip">
+            <exclude name="build/"/>
+            <exclude name="dist/"/>
+            <exclude name="nbproject/private/"/>
+        </zip>
+
         <zip basedir="FXML-LoginDemo" destfile="${examples}/FXML-LoginDemo.zip">
             <exclude name="build/"/>
             <exclude name="dist/"/>
@@ -134,6 +140,12 @@
             <exclude name="nbproject/private/"/>
         </zip>
         
+        <zip basedir="ColorPicker" destfile="${examples}/ColorPicker.zip">
+            <exclude name="build/"/>
+            <exclude name="dist/"/>
+            <exclude name="nbproject/private/"/>
+        </zip>
+        
         <zip basedir="KeyStrokeMotion" destfile="${examples}/KeyStrokeMotion.zip">
             <exclude name="build/"/>
             <exclude name="dist/"/>
@@ -141,6 +153,12 @@
         </zip>
         
         <zip basedir="MouseEvents" destfile="${examples}/MouseEvents.zip">
+            <exclude name="build/"/>
+            <exclude name="dist/"/>
+            <exclude name="nbproject/private/"/>
+        </zip>
+        
+        <zip basedir="PaginationDemo" destfile="${examples}/PaginationDemo.zip">
             <exclude name="build/"/>
             <exclude name="dist/"/>
             <exclude name="nbproject/private/"/>

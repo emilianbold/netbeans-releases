@@ -49,7 +49,6 @@ import java.util.Set;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import org.netbeans.api.lexer.PartType;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
@@ -421,19 +420,47 @@ public class CndTokenUtilities {
         }
     }
 
-    private static final class TokenItemImpl<T extends TokenId> extends TokenItem.AbstractItem<T> {
+    private static final class TokenItemImpl<T extends TokenId> extends TokenItem.AbstractItem<T> implements Comparable<TokenItem.AbstractItem<T>> {
+        private final Token<T> token;
 
-        public TokenItemImpl(T tokenID, PartType pt, int offset, CharSequence text) {
-            super(tokenID, pt, offset, text);
+        private TokenItemImpl(Token<T> token, int offset) {
+            super(token.id(), token.partType(), offset, token.text());
+            this.token = token;
         }
 
         private static <T extends TokenId> TokenItem<T> create(TokenSequence<T> ts) {
-            Token<T> token = ts.token();
-            return new TokenItemImpl<T>(token.id(), token.partType(), ts.offset(), token.text());
+            return new TokenItemImpl<T>(ts.token(), ts.offset());
         }
 
         private static <T extends TokenId> TokenItem<T> create(Token<T> token, int offset) {
-            return new TokenItemImpl<T>(token.id(), token.partType(), offset, token.text());
+            return new TokenItemImpl<T>(token, offset);
+        }
+
+        @Override
+        public int hashCode() {
+            return this.token.hashCode();
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final TokenItemImpl<T> other = (TokenItemImpl<T>) obj;
+            return this.token == other.token;
+        }
+
+        @Override
+        public String toString() {
+            return "TokenItemImpl{" + "token=" + token + '}' + super.toString(); // NOI18N
+        }
+
+        @Override
+        public int compareTo(AbstractItem<T> o) {
+            return this.offset() - o.offset();
         }
     }
     private static final Set<String> skipWSCategories = new HashSet<String>(1);

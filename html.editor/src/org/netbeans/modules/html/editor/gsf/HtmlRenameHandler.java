@@ -78,9 +78,10 @@ class HtmlRenameHandler implements InstantRenamer {
 
         switch (node.type()) {
             case OPEN_TAG:
+                OpenTag ot = (OpenTag)node;
                 //enable only if the caret is in the tag name
                 int from = node.from();
-                int to = node.to(); //"<" + "body" length
+                int to = from + 1 + ot.name().length() ; //"<" + "body" length
                 return astCaretOffset >= from && astCaretOffset <= to;
             case CLOSE_TAG:
                 return true;

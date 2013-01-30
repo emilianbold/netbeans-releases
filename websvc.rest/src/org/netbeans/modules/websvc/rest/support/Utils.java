@@ -55,12 +55,14 @@ import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.swing.SwingUtilities;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -85,6 +87,7 @@ import org.openide.text.Line.ShowVisibilityType;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -196,12 +199,12 @@ public class Utils {
                 GeneratedFilesHelper.BUILD_XML_PATH);
     }
     
-    public static void testRestWebService(Project project) {
+    public static void testRestWebService(final Project project) {
         if ( project == null ){
             return;
         }
         
-        TestRestTargetPanel panel = new TestRestTargetPanel(project);
+        final TestRestTargetPanel panel = new TestRestTargetPanel(project);
         DialogDescriptor descriptor = new DialogDescriptor(panel,
                 NbBundle.getMessage(Utils.class, 
                         "TTL_SelectTarget"));
@@ -219,23 +222,68 @@ public class Utils {
             generateLocalTester(project);
         }
     }
-    
+
     private static void generateRemoteTester( Project restProject, Project remoteProject ) {
-        RestSupport rs = remoteProject.getLookup().lookup(RestSupport.class);
-        RestSupport localSupport = restProject.getLookup().lookup(RestSupport.class);
+        final RestSupport rs = remoteProject.getLookup().lookup(RestSupport.class);
+        final RestSupport localSupport = restProject.getLookup().lookup(RestSupport.class);
         SourceGroup[] sourceGroups = ProjectUtils.getSources(remoteProject).
             getSourceGroups(WebProjectConstants.TYPE_DOC_ROOT);
         SourceGroup sourceGroup = sourceGroups[0];
-        FileObject rootFolder = sourceGroup.getRootFolder();
+        final FileObject rootFolder = sourceGroup.getRootFolder();
         try {
-            FileObject testFO = rs.generateTestClient(FileUtil.toFile( rootFolder ),
-                   localSupport.getBaseURL() );
-            localSupport.deploy();
-            rs.deploy();
-            URL url = new URL( rs.getContextRootURL()+testFO.getNameExt());
-            if (url != null) {
-                HtmlBrowser.URLDisplayer.getDefault().showURL(
-                        url);
+            if ( SwingUtilities.isEventDispatchThread() ){
+                final FileObject[] testFO = new FileObject[1];
+                AtomicBoolean cancel = new AtomicBoolean(false);
+                ProgressUtils.runOffEventDispatchThread(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        try {
+                            testFO[0] = rs.generateTestClient(
+                                    FileUtil.toFile(rootFolder), 
+                                    localSupport.getBaseURL());
+                        }
+                        catch (IOException e) {
+                            Logger.getLogger(Utils.class.getName())
+                                    .log(Level.WARNING, null, e);
+                        }
+                    }
+                },NbBundle.getMessage(Utils.class, "TTL_GenTestClient") , // NOI18N
+                    cancel, false);
+                if ( cancel.get() ||testFO[0]==null){
+                    return;
+                }
+                getTestClientRequestProcessor().post( new Runnable() {
+                    
+                    @Override
+                    public void run() {
+                        try {
+                            localSupport.deploy();
+                            rs.deploy();
+                            URL url = new URL(rs.getContextRootURL() + 
+                                    testFO[0].getNameExt());
+                            if (url != null) {
+                                HtmlBrowser.URLDisplayer.getDefault().showURL(url);
+                            }
+                        }
+                        catch(IOException e){
+                            Logger.getLogger(Utils.class.getName()).log(
+                                    Level.WARNING, null, e);
+                        }
+                    }
+                });
+            }
+            else {
+                FileObject testFO = rs.generateTestClient(
+                        FileUtil.toFile(rootFolder), localSupport.getBaseURL());
+                localSupport.deploy();
+                if ( localSupport!= rs ){
+                    rs.deploy();
+                }
+                URL url = new URL(rs.getContextRootURL() + testFO.getNameExt());
+                if (url != null) {
+                    HtmlBrowser.URLDisplayer.getDefault().showURL(url);
+                }
             }
         }
         catch(IOException e ){
@@ -244,14 +292,52 @@ public class Utils {
         }
     }
 
-    private static void generateLocalTester( Project prj ) {
-        FileObject buildFo = findBuildXml(prj);
+    private static void generateLocalTester(final  Project prj ) {
+        final FileObject buildFo = findBuildXml(prj);
         if (buildFo != null) {
             try {
-                Properties p = setupTestRestBeans(prj);
-                ActionUtils.runTarget(buildFo,
-                                new String[] { RestSupport.COMMAND_TEST_RESTBEANS },
-                                p);
+                if ( SwingUtilities.isEventDispatchThread() ){
+                    final Properties props[] = new Properties[1];
+                    AtomicBoolean cancel = new AtomicBoolean(false);
+                    ProgressUtils.runOffEventDispatchThread(new Runnable() {
+
+                        @Override
+                        public void run() {
+                            try {
+                                props[0] = setupTestRestBeans(prj);
+                            }
+                            catch(IOException e){
+                                Logger.getLogger(Utils.class.getName()).log(
+                                        Level.WARNING, null, e);
+                            }
+                        }
+                    },NbBundle.getMessage(Utils.class, "TTL_GenTestClient") , // NOI18N
+                        cancel, false);
+                    if ( cancel.get() ||props[0]==null){
+                        return;
+                    }
+                    getTestClientRequestProcessor().post( new Runnable() {
+                        
+                        @Override
+                        public void run() {
+                            try {
+                                ActionUtils.runTarget(buildFo,
+                                    new String[] { RestSupport.COMMAND_TEST_RESTBEANS },
+                                    props[0]);                            
+                            }
+                            catch(IOException e){
+                                Logger.getLogger(Utils.class.getName()).log(
+                                        Level.WARNING, null, e);
+                            }
+                        }
+                    });
+                }
+                else {
+                    Properties props = setupTestRestBeans(prj); 
+                    ActionUtils.runTarget(buildFo,
+                            new String[] { RestSupport.COMMAND_TEST_RESTBEANS },
+                            props);
+                }
             }
             catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
@@ -259,17 +345,62 @@ public class Utils {
         }
         else {
             // if there is a rest support (e.g. in Maven projects)
-            RestSupport rs = prj.getLookup().lookup(RestSupport.class);
+            final RestSupport rs = prj.getLookup().lookup(RestSupport.class);
             if (rs != null) {
                 try {
-                    FileObject testFO = rs.generateTestClient(
-                            rs.getLocalTargetTestRest(), rs.getBaseURL());
-                    rs.deploy();
-                    if (testFO != null) {
-                        URL url = testFO.getURL();
-                        if (url != null) {
-                            HtmlBrowser.URLDisplayer.getDefault().showURL(
-                                    url);
+                    if ( SwingUtilities.isEventDispatchThread() ){
+                        final FileObject[] testFO = new FileObject[1];
+                        AtomicBoolean cancel = new AtomicBoolean(false);
+                        ProgressUtils.runOffEventDispatchThread(new Runnable() {
+
+                            @Override
+                            public void run() {
+                                try {
+                                    testFO[0] = rs.generateTestClient(
+                                            rs.getLocalTargetTestRest(),
+                                            rs.getBaseURL());
+                                }
+                                catch (IOException e) {
+                                    Logger.getLogger(Utils.class.getName())
+                                            .log(Level.WARNING, null, e);
+                                }
+                            }
+                        },NbBundle.getMessage(Utils.class, "TTL_GenTestClient") , // NOI18N
+                            cancel, false);
+                        if ( cancel.get() || testFO[0]==null){
+                            return;
+                        }
+                        RequestProcessor.getDefault().post( new Runnable() {
+                            
+                            @Override
+                            public void run() {
+                                try {
+                                    rs.deploy();
+                                    if (testFO != null) {
+                                        URL url = testFO[0].getURL();
+                                        if (url != null) {
+                                            HtmlBrowser.URLDisplayer
+                                                    .getDefault().showURL(url);
+                                        }
+                                    }
+                                }
+                                catch(IOException e){
+                                    Logger.getLogger(Utils.class.getName()).log(
+                                            Level.WARNING, null, e);
+                                }
+                            }
+                        });
+                    }
+                    else {
+                        FileObject testFO = rs.generateTestClient(
+                                rs.getLocalTargetTestRest(), rs.getBaseURL());
+                        rs.deploy();
+                        if (testFO != null) {
+                            URL url = testFO.getURL();
+                            if (url != null) {
+                                HtmlBrowser.URLDisplayer.getDefault().showURL(
+                                        url);
+                            }
                         }
                     }
                 }
@@ -312,6 +443,19 @@ public class Utils {
         }
         return p;
     }
+    
+    private static RequestProcessor getTestClientRequestProcessor(){
+        assert SwingUtilities.isEventDispatchThread();
+        if ( TEST_CLIENT_RQ == null ){
+            TEST_CLIENT_RQ = new RequestProcessor("REST-Test-Client-RQ");
+        }
+        return TEST_CLIENT_RQ;
+    }
+    
+    /**
+     * This request processor is used ONLY in EQ so it doesn't have to be synchronized
+     */
+    private static RequestProcessor TEST_CLIENT_RQ;
     
 }
 

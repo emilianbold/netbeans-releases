@@ -48,6 +48,7 @@ import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.test.CslTestBase;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.css.editor.csl.CssLanguage;
+import org.netbeans.modules.css.lib.api.CssParserResult;
 import org.netbeans.modules.css.refactoring.api.Entry;
 import org.netbeans.modules.html.editor.gsf.HtmlLanguage;
 import org.netbeans.modules.parsing.api.Source;
@@ -65,6 +66,14 @@ public class CssFileModelTest extends CslTestBase {
         super(name);
     }
 
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        CssParserResult.IN_UNIT_TESTS = true;
+    }
+    
+    
+
     public void testBasic() throws ParseException {
         String code = ".myclass { color: red }  #myid { color: blue }";
         //             01234567890123456789012345678901234567890123456789
@@ -75,7 +84,7 @@ public class CssFileModelTest extends CslTestBase {
         Source source = Source.create(doc);
         assertNotNull(source);
 
-        assertEquals("text/x-css", source.getMimeType());
+        assertEquals("text/css", source.getMimeType());
 
         CssFileModel model = CssFileModel.create(source);
         assertNotNull(model);

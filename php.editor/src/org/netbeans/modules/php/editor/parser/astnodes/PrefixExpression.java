@@ -49,8 +49,19 @@ package org.netbeans.modules.php.editor.parser.astnodes;
 public class PrefixExpression extends Expression {
 
     public enum Operator {
-        INC, // '++'
-        DEC // '--'
+        INC("++"), //NOI18N
+        DEC("--"); //NOI18N
+
+        private final String operatorSign;
+
+        private Operator(final String operatorSign) {
+            this.operatorSign = operatorSign;
+        }
+
+        @Override
+        public String toString() {
+            return operatorSign;
+        }
     }
 
     private VariableBase variable;

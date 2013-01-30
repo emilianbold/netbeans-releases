@@ -108,7 +108,12 @@ public class ServiceTableModel extends DefaultTableModel {
         File propFile = new File(STRIKE_IRON_HOME, SEARCH_PROPERTIES);
         if (propFile.isFile()) {
             try {
-                p.load(new FileInputStream(propFile));
+                FileInputStream fis = new FileInputStream(propFile);
+                try {
+                    p.load(fis);
+                } finally {
+                    fis.close();
+                }
             } catch(IOException ioe) {
                 // OK
             }

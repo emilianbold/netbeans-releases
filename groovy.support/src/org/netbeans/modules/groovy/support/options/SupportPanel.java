@@ -56,8 +56,10 @@ import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.groovy.support.api.GroovySettings;
 import org.netbeans.modules.groovy.support.spi.GroovyOptionsSubpanel;
+import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser;
@@ -69,6 +71,10 @@ import org.openide.util.NbBundle;
  *
  * @author Martin Adamek
  */
+@OptionsPanelController.Keywords(
+        location = OptionsDisplayer.ADVANCED, 
+        tabTitle = "Groovy",
+        keywords = {"groovy", "grails", "gsp"})
 final class SupportPanel extends javax.swing.JPanel {
 
     private final Collection<GroovyOptionsSubpanel> subpanels;
@@ -147,19 +153,16 @@ final class SupportPanel extends javax.swing.JPanel {
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
+                .addComponent(groovyDocTextField)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(chooseDocButton))
+            .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(groovyDocTextField)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(chooseDocButton))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel2)
-                            .addComponent(jLabel1)
-                            .addComponent(docLabel))
-                        .addGap(0, 0, Short.MAX_VALUE))
-                    .addComponent(subpanelWrapper, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addContainerGap())
+                    .addComponent(jLabel2)
+                    .addComponent(jLabel1)
+                    .addComponent(docLabel))
+                .addGap(0, 0, Short.MAX_VALUE))
+            .addComponent(subpanelWrapper, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)

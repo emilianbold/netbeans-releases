@@ -1,4 +1,45 @@
 #!/bin/bash
+
+ # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ #
+ # Copyright 2012-2013 Oracle and/or its affiliates. All rights reserved.
+ #
+ # Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ # Other names may be trademarks of their respective owners.
+ #
+ # The contents of this file are subject to the terms of either the GNU
+ # General Public License Version 2 only ("GPL") or the Common
+ # Development and Distribution License("CDDL") (collectively, the
+ # "License"). You may not use this file except in compliance with the
+ # License. You can obtain a copy of the License at
+ # http://www.netbeans.org/cddl-gplv2.html
+ # or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ # specific language governing permissions and limitations under the
+ # License.  When distributing the software, include this License Header
+ # Notice in each file and include the License file at
+ # nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
+ # particular file as subject to the "Classpath" exception as provided
+ # by Oracle in the GPL Version 2 section of the License file that
+ # accompanied this code. If applicable, add the following below the
+ # License Header, with the fields enclosed by brackets [] replaced by
+ # your own identifying information:
+ # "Portions Copyrighted [year] [name of copyright owner]"
+ #
+ # If you wish your version of this file to be governed by only the CDDL
+ # or only the GPL Version 2, indicate your decision by adding
+ # "[Contributor] elects to include this software in this distribution
+ # under the [CDDL or GPL Version 2] license." If you do not indicate a
+ # single choice of license, a recipient has the option to distribute
+ # your version of this file under either the CDDL, the GPL Version 2 or
+ # to extend the choice of license to its licensees as provided above.
+ # However, if you add GPL Version 2 code and therefore, elected the GPL
+ # Version 2 license, then the option applies only if the new code is
+ # made subject to such option by the copyright holder.
+ #
+ # Contributor(s):
+ #
+ # Portions Copyrighted 2012 Sun Microsystems, Inc.
+
 set -x
 
 #Initialize all the environment
@@ -46,9 +87,13 @@ if [ -z ${RUNJAVAFX} ]; then
     export RUNJAVAFX=0
 fi
 
-#ML BUILD yes/no 1/0
+#ML_BUILD yes/no 1/0
 if [ -z ${ML_BUILD} ]; then
-    export ML_BUILD=1
+    export ML_BUILD=0
+fi
+#EN_BUILD yes/no 1/0
+if [ -z ${EN_BUILD} ]; then
+    export EN_BUILD=1
 fi
 if [ -z ${LOCALES} ]; then
     export LOCALES=ja,zh_CN,pt_BR,ru
@@ -58,7 +103,24 @@ if [ -z ${UPLOAD_ML} ]; then
     export UPLOAD_ML=0
 fi
 
-export ANT_OPTS="-Xmx1500m -XX:MaxPermSize=256m"
+#GLASSFISH_BUILDS_HOST=http://jre.us.oracle.com
+if [ -z ${GLASSFISH_BUILDS_HOST} ]; then
+    GLASSFISH_BUILDS_HOST=http://jre.us.oracle.com
+    export GLASSFISH_BUILDS_HOST
+fi
+
+#JDK_BUILDS_HOST=http://jre.us.oracle.com
+if [ -z ${JDK_BUILDS_HOST} ]; then
+    JDK_BUILDS_HOST=http://jre.us.oracle.com
+    export JDK_BUILDS_HOST
+fi
+
+if [ -z ${DEBUGLEVEL} ]; then
+    DEBUGLEVEL=source,lines,vars
+    export DEBUGLEVEL
+fi
+
+export ANT_OPTS="-Xmx2G -XX:MaxPermSize=500m"
 
 if [ -n ${JDK_HOME} ] && [ -z ${JAVA_HOME} ] ; then
     export JAVA_HOME=$JDK_HOME
@@ -84,15 +146,6 @@ if [ -z $BASE_DIR ]; then
     echo to define a BASE_DIR variable in your environment
     
     export BASE_DIR=/space/NB-IDE
-fi
-
-if [ -z $DIST_SERVER ]; then
-    echo DIST_SERVER not defined: Upload will no work
-fi
-
-if [ -z $DIST_SERVER_PATH ]; then
-    echo DIST_SERVER_PATH not defined using default
-    DIST_SERVER_PATH=/releng/www/netbeans/6.0/nightly
 fi
 
 if [ -z $NB_ALL ]; then

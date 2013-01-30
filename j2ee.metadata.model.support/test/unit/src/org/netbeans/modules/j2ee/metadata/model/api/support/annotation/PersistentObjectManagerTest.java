@@ -67,6 +67,7 @@ import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser.An
 import org.netbeans.modules.j2ee.metadata.model.support.TestUtilities;
 import org.netbeans.modules.j2ee.metadata.model.support.PersistenceTestCase;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
+import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
@@ -78,7 +79,7 @@ import org.openide.util.test.MockChangeListener;
  */
 public class PersistentObjectManagerTest extends PersistenceTestCase {
     
-    private static final int EVENT_TIMEOUT = 15; // seconds
+    private static final int EVENT_TIMEOUT = 30; // seconds
 
     private PersistentObjectManager<EntityImpl> manager;
 
@@ -89,6 +90,7 @@ public class PersistentObjectManagerTest extends PersistenceTestCase {
     @Override
     protected void tearDown() {
         manager = null;
+        awaitRepositoryUpdaterSilence(EVENT_TIMEOUT);
     }
 
     public void testBasic() throws Exception {
@@ -230,7 +232,7 @@ public class PersistentObjectManagerTest extends PersistenceTestCase {
         rootAddedLatch.await(EVENT_TIMEOUT, TimeUnit.SECONDS);
         assertTrue("Should have got a rootsAdded event", rootAdded.get());
         cpi.getClassIndex().removeClassIndexListener(listener);
-        changeListener.assertEvent();
+        changeListener.expectEvent(EVENT_TIMEOUT * 1000);
         helper.runJavaSourceTask(new Runnable() {
             public void run() {
                 Collection<EntityImpl> entities = manager.getObjects();
@@ -289,10 +291,10 @@ public class PersistentObjectManagerTest extends PersistenceTestCase {
 
     public void testChangedFiles() throws Exception {
         GlobalPathRegistry.getDefault().register(ClassPath.SOURCE, new ClassPath[] { ClassPath.getClassPath(srcFO, ClassPath.SOURCE) });
-        IndexingManager.getDefault().refreshIndexAndWait(srcFO.getURL(), null);
+        assertTrue(awaitRepositoryUpdaterSilence(EVENT_TIMEOUT));
         ClasspathInfo cpi = ClasspathInfo.create(srcFO);
         final AnnotationModelHelper helper = AnnotationModelHelper.create(cpi);
-        final MockChangeListener changeListener = new MockChangeListener();
+        final MockChangeListenerExt changeListener = new MockChangeListenerExt();
         helper.runJavaSourceTask(new Runnable() {
             public void run() {
                 manager = helper.createPersistentObjectManager(new EntityProvider(helper));
@@ -351,7 +353,7 @@ public class PersistentObjectManagerTest extends PersistenceTestCase {
         changedLatch.await(EVENT_TIMEOUT, TimeUnit.SECONDS);
         assertTrue("Should have got a typesChanged event for Department", departmentChanged.get());
         cpi.getClassIndex().removeClassIndexListener(listener);
-        changeListener.assertEvent();
+        changeListener.expectEvents(EVENT_TIMEOUT * 1000);
         helper.runJavaSourceTask(new Runnable() {
             public void run() {
                 assertEquals(1, manager.getObjects().size());
@@ -379,12 +381,41 @@ public class PersistentObjectManagerTest extends PersistenceTestCase {
         changedLatch2.await(EVENT_TIMEOUT, TimeUnit.SECONDS);
         assertTrue("Should have got a typesChanged event for Department", departmentChanged2.get());
         cpi.getClassIndex().removeClassIndexListener(listener);
-        changeListener.assertEvent();
+        changeListener.expectEvents(EVENT_TIMEOUT * 1000);
         helper.runJavaSourceTask(new Runnable() {
             public void run() {
                 assertEquals(0, manager.getObjects().size());
             }
         });
+    }
+
+    private static boolean awaitRepositoryUpdaterSilence(long seconds) {
+        try {
+            long st = System.currentTimeMillis();
+            while (!RepositoryUpdater.getDefault().getIndexingState().isEmpty()) {
+                RepositoryUpdater.getDefault().waitUntilFinished(seconds*1000);
+                if ((System.currentTimeMillis() - st) > seconds * 1000) {
+                    return false;
+                }
+            }
+            return true;
+        } catch (InterruptedException ex) {
+            return false;
+        }
+    }
+
+    private static class MockChangeListenerExt extends MockChangeListener {
+        /**
+         * The MockListener has no equivalent for
+         * assertEvent (1 or more events) with waiting.
+         */
+        public synchronized void expectEvents (long millis) throws InterruptedException {
+            if (!allEvents().isEmpty()) {
+                return;
+            }
+            wait(millis);
+            assertEvent();
+        }
     }
 
     private static final class EntityProvider implements ObjectProvider<EntityImpl> {

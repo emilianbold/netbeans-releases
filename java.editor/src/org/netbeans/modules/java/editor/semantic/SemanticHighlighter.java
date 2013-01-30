@@ -1062,7 +1062,11 @@ public class SemanticHighlighter extends JavaParserResultTask {
                 }
             }
             
-            super.visitNewClass(tree, null);
+            scan(tree.getEnclosingExpression(), null);
+            scan(tree.getIdentifier(), null);
+            scan(tree.getTypeArguments(), null);
+            scan(tree.getArguments(), EnumSet.of(UseTypes.READ));
+            scan(tree.getClassBody(), null);
             
             return null;
         }
@@ -1179,7 +1183,20 @@ public class SemanticHighlighter extends JavaParserResultTask {
         @Override
         public Void visitUnary(UnaryTree tree, EnumSet<UseTypes> d) {
             if (tree.getExpression() instanceof IdentifierTree) {
-                handlePossibleIdentifier(new TreePath(getCurrentPath(), tree.getExpression()), EnumSet.of(UseTypes.READ));
+                switch (tree.getKind()) {
+                    case PREFIX_INCREMENT:
+                    case PREFIX_DECREMENT:
+                    case POSTFIX_INCREMENT:
+                    case POSTFIX_DECREMENT:
+                        Set<UseTypes> useTypes = EnumSet.of(UseTypes.WRITE);
+                        if (d != null) {
+                            useTypes.addAll(d);
+                        }
+                        handlePossibleIdentifier(new TreePath(getCurrentPath(), tree.getExpression()), useTypes);
+                        break;
+                    default:
+                        handlePossibleIdentifier(new TreePath(getCurrentPath(), tree.getExpression()), EnumSet.of(UseTypes.READ));
+                }
             }
             super.visitUnary(tree, d);
             return null;
@@ -1187,15 +1204,9 @@ public class SemanticHighlighter extends JavaParserResultTask {
 
         @Override
         public Void visitArrayAccess(ArrayAccessTree tree, EnumSet<UseTypes> d) {
-            if (tree.getExpression() != null && tree.getExpression().getKind() == Kind.IDENTIFIER) {
-                handlePossibleIdentifier(new TreePath(getCurrentPath(), tree.getExpression()), EnumSet.of(UseTypes.READ));
-            }
+            scan(tree.getExpression(), EnumSet.of(UseTypes.READ));
+            scan(tree.getIndex(), EnumSet.of(UseTypes.READ));
             
-            if (tree.getIndex() instanceof IdentifierTree) {
-                handlePossibleIdentifier(new TreePath(getCurrentPath(), tree.getIndex()), EnumSet.of(UseTypes.READ));
-            }
-            
-            super.visitArrayAccess(tree, null);
             return null;
         }
 

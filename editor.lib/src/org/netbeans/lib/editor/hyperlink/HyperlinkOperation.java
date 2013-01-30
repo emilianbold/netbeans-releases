@@ -242,22 +242,22 @@ public class HyperlinkOperation implements MouseListener, MouseMotionListener, P
     }
     
     private void performHyperlinking(int position, HyperlinkType type) {
-        HyperlinkProviderExt provider = findProvider(position, type);
-        
-        if (provider != null) {
-            final BaseDocument doc = (BaseDocument)component.getDocument();
-            doc.readLock();
-            try {
+        final BaseDocument doc = (BaseDocument) component.getDocument();
+        doc.readLock();
+        try {
+            HyperlinkProviderExt provider = findProvider(position, type);
+            if (provider != null) {
                 int[] offsets = provider.getHyperlinkSpan(doc, position, type);
                 if (offsets != null) {
                     makeHyperlink(type, provider, offsets[0], offsets[1]);
                 }
-            } finally {
-                doc.readUnlock();
+            } else {
+                unHyperlink(true);
             }
-        } else {
-            unHyperlink(true);
+        } finally {
+            doc.readUnlock();
         }
+
     }
     
     private void performAction(int position, HyperlinkType type) {

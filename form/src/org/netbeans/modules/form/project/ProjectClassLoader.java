@@ -49,6 +49,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.*;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.form.FormServices;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -71,6 +72,7 @@ class ProjectClassLoader extends ClassLoader {
     private ClassLoader projectClassLoaderDelegate;
     private ClassPath sources;
     private ClassLoader systemClassLoader;
+    private ClassLoader orgJDesktopLayoutClassLoader;
 
     private ProjectClassLoader(ClassLoader projectClassLoaderDelegate, ClassPath sources) {
         this.projectClassLoaderDelegate = projectClassLoaderDelegate;
@@ -111,15 +113,18 @@ class ProjectClassLoader extends ClassLoader {
             // possible to load such a class from project. If we find a case
             // when the project class needs to be preferred over the system,
             // we'll need an additional category to SYSTEM_CLASS.]
-            try {
-                // See issue 135745, the classes that form module classloader
-                // is able to load should be the same as the one loaded
-                // by systemClassLoader, but there shouldn't be clash
+
+            if (name.startsWith("org.jdesktop.layout")) { // NOI18N
+                // See issues 135745 and 221685: the classes that this
+                // classloader is able to load should be the same as the ones
+                // loaded by systemClassLoader, but there shouldn't be the clash
                 // with a copy of GroupLayout hacked by libs.ppawtlayout module.
-                // The classes that cannot be loaded by form module classloader
-                // will be handled by systemClassLoader as before.
-                c = getClass().getClassLoader().loadClass(name);
-            } catch (ClassNotFoundException cnfe) {
+                if (orgJDesktopLayoutClassLoader == null) {
+                    FormServices services = Lookup.getDefault().lookup(FormServices.class);
+                    orgJDesktopLayoutClassLoader = services.getClass().getClassLoader();
+                }
+                c = orgJDesktopLayoutClassLoader.loadClass(name);
+            } else {
                 c = systemClassLoader.loadClass(name);
             }
         } else {

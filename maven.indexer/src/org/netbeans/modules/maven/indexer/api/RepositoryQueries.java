@@ -77,8 +77,9 @@ public final class RepositoryQueries {
     public final static class Result<T> {
         private final List<RepositoryInfo> skipped = new ArrayList<RepositoryInfo>();
         private List<T> results = new ArrayList<T>();
-        private ChangeListener listener;
         private final Redo<T> redoAction;
+        int totalResults = 0;
+        int returnedResults = 0;
         
         /**
          * used internally by the repository indexing/searching engine(s)
@@ -91,14 +92,14 @@ public final class RepositoryQueries {
          * returns true is one or more indexes were skipped, eg because the indexing was taking place.
          * @return 
          */
-        public boolean isPartial() {
+        public synchronized boolean isPartial() {
             return !skipped.isEmpty();
         }
         
         /**
          * used internally by the repository indexing/searching engine(s) to mark the result as partially skipped
          */
-        void addSkipped(RepositoryInfo info) {
+        synchronized void addSkipped(RepositoryInfo info) {
             skipped.add(info);
         }
         
@@ -108,7 +109,9 @@ public final class RepositoryQueries {
         public void waitForSkipped() {
             assert !SwingUtilities.isEventDispatchThread();
             redoAction.run(this);
-            skipped.clear();
+            synchronized (this) {
+                skipped.clear();
+            }
         }
         
         synchronized void setResults(Collection<T> newResults) {
@@ -124,16 +127,42 @@ public final class RepositoryQueries {
         /**
          * used internally by the repository indexing/searching engine(s) to mark the result as partially skipped
          */
-        void addSkipped(Collection<RepositoryInfo> infos) {
+        synchronized void addSkipped(Collection<RepositoryInfo> infos) {
             skipped.addAll(infos);
         }
         
         /**
          * used internally by the repository indexing/searching engine(s) to mark the result as partially skipped
          */
-        List<RepositoryInfo> getSkipped() {
-            return skipped;
+        synchronized List<RepositoryInfo> getSkipped() {
+            return Collections.unmodifiableList(skipped);
         }
+        /**
+         * total number of hits
+         * @return
+         * @since 2.20
+         */
+        public int getTotalResultCount() {
+            return totalResults;
+        }
+
+        void addTotalResultCount(int moreTotalResults) {
+            totalResults = totalResults + moreTotalResults;
+        }
+        /**
+         * in some cases not entirely accurate number of processed and returned hits, typically should be less or equals to totalResultCount
+         * @return 
+         * @since 2.20
+         */
+        public int getReturnedResultCount() {
+            return returnedResults;
+        }
+
+        void addReturnedResultCount(int moreReturnedResults) {
+            returnedResults = returnedResults + moreReturnedResults;
+        }
+        
+        
         
     } 
     
@@ -206,6 +235,16 @@ public final class RepositoryQueries {
         @Override
         public void setClassResults(Result<ClassUsage> result, Collection<ClassUsage> newResults) {
             result.setResults(newResults);
+        }
+
+        @Override
+        public void addTotalResults(Result<?> result, int moreResults) {
+            result.addTotalResultCount(moreResults);
+        }
+
+        @Override
+        public void addReturnedResults(Result<?> result, int moreResults) {
+            result.addReturnedResultCount(moreResults);
         }
     }
     

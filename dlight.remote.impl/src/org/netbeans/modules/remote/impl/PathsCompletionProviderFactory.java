@@ -68,6 +68,8 @@ import org.openide.util.lookup.ServiceProvider;
  */
 @ServiceProvider(service = AutocompletionProviderFactory.class)
 public class PathsCompletionProviderFactory implements AutocompletionProviderFactory {
+    
+    private static final RequestProcessor RP = new RequestProcessor("PathsCompletionProviderFactory", 1); // NOI18N
 
     @Override
     public AutocompletionProvider newInstance(ExecutionEnvironment env) {
@@ -96,7 +98,7 @@ public class PathsCompletionProviderFactory implements AutocompletionProviderFac
 
         public Provider(final ExecutionEnvironment env) throws IOException {
             this.env = env;
-            cleanUpTask = RequestProcessor.getDefault().post(new Runnable() {
+            cleanUpTask = RP.post(new Runnable() {
 
                 @Override
                 public void run() {

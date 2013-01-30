@@ -119,16 +119,17 @@ public final class SpringXMLConfigNamespacesVisual extends JPanel {
 
         includesTable.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, "aop - http://www.springframework.org/schema/aop/spring-aop-2.5.xsd"},
-                {null, "context - http://www.springframework.org/schema/context/spring-context-2.5.xsd"},
-                {null, "flow - http://www.springframework.org/schema/webflow-config/spring-webflow-config-1.0.xsd"},
-                {null, "jms - http://www.springframework.org/schema/jms/spring-jms-2.5.xsd"},
-                {null, "jee - http://www.springframework.org/schema/jee/spring-jee-2.5.xsd"},
-                {null, "lang - http://www.springframework.org/schema/lang/spring-lang-2.5.xsd"},
-                {null, "osgi - http://www.springframework.org/schema/osgi/spring-osgi.xsd"},
-                {null, "tx - http://www.springframework.org/schema/tx/spring-tx-2.5.xsd"},
-                {null, "util - http://www.springframework.org/schema/util/spring-util-2.5.xsd"},
-                {null, "p - http://www.springframework.org/schema/p"}
+                {null, "aop - http://www.springframework.org/schema/aop"},
+                {null, "c - http://www.springframework.org/schema/c"},
+                {null, "context - http://www.springframework.org/schema/context"},
+                {null, "flow - http://www.springframework.org/schema/webflow-config"},
+                {null, "jee - http://www.springframework.org/schema/jee"},
+                {null, "jms - http://www.springframework.org/schema/jms"},
+                {null, "lang - http://www.springframework.org/schema/lang"},
+                {null, "osgi - http://www.springframework.org/schema/osgi"},
+                {null, "p - http://www.springframework.org/schema/p"},
+                {null, "tx - http://www.springframework.org/schema/tx"},
+                {null, "util - http://www.springframework.org/schema/util"}
             },
             new String [] {
                 "", ""
@@ -179,12 +180,12 @@ public final class SpringXMLConfigNamespacesVisual extends JPanel {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(includesScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 513, Short.MAX_VALUE)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(addSpringButton)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(cbSpringVersion, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(159, 159, 159))
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(springNotOnClassPathLabel)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(addSpringButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(cbSpringVersion, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(springNotOnClassPathLabel))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -262,7 +263,7 @@ private void cbSpringVersionActionPerformed(java.awt.event.ActionEvent evt) {//G
             Vector<String> items = new Vector<String>();
             springLibs.clear();
 
-            for (Library library : LibraryManager.getDefault().getLibraries()) {
+            for (Library library : SpringUtilities.getJavaLibraries()) {
                 if (SpringUtilities.isSpringLibrary(library)) {
                     items.add(library.getDisplayName());
                     springLibs.add(library);

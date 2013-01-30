@@ -43,6 +43,7 @@ package org.netbeans.modules.search;
 
 import java.awt.Component;
 import java.awt.Dialog;
+import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -50,12 +51,12 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.lang.ref.WeakReference;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.MissingResourceException;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
@@ -70,7 +71,6 @@ import org.openide.awt.Mnemonics;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-
 
 /**
  *
@@ -91,6 +91,10 @@ public class SearchPanel extends JPanel implements FocusListener,
      * Cancel button.
      */
     private JButton cancelButton;
+    /**
+     * Open in new Tab checkbox
+     */
+    private JCheckBox newTabCheckBox;
     /**
      * Tabbed pane if there are extra providers.
      */
@@ -151,6 +155,11 @@ public class SearchPanel extends JPanel implements FocusListener,
         if (selectedPresenter == null) {
             chooseLastUsedPresenter();
         }
+        newTabCheckBox = new JCheckBox(NbBundle.getMessage(SearchPanel.class,
+                "TEXT_BUTTON_NEW_TAB"));                                //NOI18N
+        newTabCheckBox.setMaximumSize(new Dimension(1000, 200));
+        newTabCheckBox.setSelected(
+                FindDialogMemory.getDefault().isOpenInNewTab());
         initLocalStrings();
         initAccessibility();
     }
@@ -197,6 +206,7 @@ public class SearchPanel extends JPanel implements FocusListener,
         }
         okButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SearchPanel.class, "ACS_TEXT_BUTTON_SEARCH")); // NOI18N
         cancelButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SearchPanel.class, "ACS_TEXT_BUTTON_CANCEL")); // NOI18N
+        newTabCheckBox.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SearchPanel.class, "ACS_TEXT_BUTTON_NEW_TAB")); //NOI18N
     }
 
     /**
@@ -244,6 +254,7 @@ public class SearchPanel extends JPanel implements FocusListener,
 
         dialogDescriptor.setTitle(NbBundle.getMessage(getClass(), titleMsgKey));
         dialogDescriptor.createNotificationLineSupport();
+        dialogDescriptor.setAdditionalOptions(new Object[] {newTabCheckBox});
 
         dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);
         dialog.addWindowListener(new DialogCloseListener());
@@ -320,6 +331,11 @@ public class SearchPanel extends JPanel implements FocusListener,
             SearchComposition<?> sc = selectedPresenter.composeSearch();
             if (sc != null) {
                 SearchTask st = new SearchTask(sc, replacing);
+                boolean openInNewTab = newTabCheckBox.isSelected();
+                if (!openInNewTab) {
+                    ResultView.getInstance().markCurrentTabAsReusable();
+                }
+                FindDialogMemory.getDefault().setOpenInNewTab(openInNewTab);
                 Manager.getInstance().scheduleSearchTask(st);
                 close();
             }
@@ -358,6 +374,7 @@ public class SearchPanel extends JPanel implements FocusListener,
         if (dialog != null) {
             dialog.requestFocus();
         }
+        this.requestFocusInWindow();
     }
 
     /**

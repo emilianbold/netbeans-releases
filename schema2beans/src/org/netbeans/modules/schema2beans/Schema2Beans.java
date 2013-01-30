@@ -137,6 +137,13 @@ public @interface Schema2Beans {
     boolean standalone() default false;
 
     /**
+     *
+     * @return
+     * @since 1.36
+     */
+    boolean java5() default false;
+
+    /**
      * Type of schema being processed.
      * @see #schemaType
      */

@@ -48,7 +48,6 @@ import javax.swing.Action;
 import org.openide.nodes.*;
 import org.openide.util.HelpCtx;
 import org.netbeans.modules.j2ee.deployment.impl.*;
-import org.netbeans.modules.j2ee.deployment.impl.ui.actions.*;
 
 
 /**
@@ -60,8 +59,6 @@ import org.netbeans.modules.j2ee.deployment.impl.ui.actions.*;
 public class InstanceNode extends AbstractNode implements ServerInstance.StateListener {
     
     protected ServerInstance instance;
-    
-    private boolean running;
     
     public InstanceNode(ServerInstance instance, boolean addStateListener) {
         super(new InstanceChildren(instance));

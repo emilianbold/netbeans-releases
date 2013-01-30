@@ -60,6 +60,8 @@ import org.netbeans.modules.cnd.dwarfdump.section.DwarfMacroInfoSection;
 import org.netbeans.modules.cnd.dwarfdump.section.DwarfNameLookupTableSection;
 import org.netbeans.modules.cnd.dwarfdump.section.DwarfRelaDebugInfoSection;
 import org.netbeans.modules.cnd.dwarfdump.section.ElfSection;
+import org.netbeans.modules.cnd.dwarfdump.section.StabIndexSection;
+import org.netbeans.modules.cnd.dwarfdump.section.StabIndexStrSection;
 import org.netbeans.modules.cnd.dwarfdump.section.StringTableSection;
 
 /**
@@ -162,6 +164,14 @@ public class DwarfReader extends ElfReader {
         
         if (sectionName.equals(SECTIONS.DEBUG_INFO)) {
             return new DwarfDebugInfoSection(this, sectionIdx);
+        }
+
+        if (sectionName.equals(SECTIONS.STAB_INDEXSTR)) {
+            return new StabIndexStrSection(this, sectionIdx);
+        }
+
+        if (sectionName.equals(SECTIONS.STAB_INDEX)) {
+            return new StabIndexSection(this, sectionIdx);
         }
 
         if (sectionName.equals(SECTIONS.RELA_DEBUG_INFO)) {

@@ -137,20 +137,25 @@ public abstract class APTAbstractWalker extends APTWalker {
     }
 
     private void includeImpl(ResolvedPath resolvedPath, APTInclude aptInclude) {
-        if (cacheEntry != null) {
-            if (!startPath.equals(cacheEntry.getFilePath())) {
-                System.err.println("using not expected entry " + cacheEntry + " when work with file " + startPath);
-            }
-            if (cacheEntry.isSerial()) {
-                serialIncludeImpl(aptInclude, resolvedPath);
-            } else {
-                Object lock = cacheEntry.getIncludeLock(aptInclude);
-                synchronized (lock) {
-                    serialIncludeImpl(aptInclude, resolvedPath);
+        try {
+            beforeInclude(aptInclude, resolvedPath);
+            if (cacheEntry != null) {
+                if (!startPath.equals(cacheEntry.getFilePath())) {
+                    System.err.println("using not expected entry " + cacheEntry + " when work with file " + startPath);
                 }
+                if (cacheEntry.isSerial()) {
+                    serialIncludeImpl(aptInclude, resolvedPath);
+                } else {
+                    Object lock = cacheEntry.getIncludeLock(aptInclude);
+                    synchronized (lock) {
+                        serialIncludeImpl(aptInclude, resolvedPath);
+                    }
+                }
+            } else {
+                include(resolvedPath, aptInclude, null);
             }
-        } else {
-            include(resolvedPath, aptInclude, null);
+        } finally {
+            afterInclude(aptInclude, resolvedPath);
         }
     }
 
@@ -197,7 +202,7 @@ public abstract class APTAbstractWalker extends APTWalker {
         }
     }
     
-    protected final String getFileOnceMacroName() {
+    protected final CharSequence getFileOnceMacroName() {
         return APTUtils.getFileOnceMacroName(getRootFile());
     }
 

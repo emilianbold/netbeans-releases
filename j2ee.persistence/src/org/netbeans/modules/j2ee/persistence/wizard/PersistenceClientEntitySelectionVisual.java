@@ -444,7 +444,7 @@ public class PersistenceClientEntitySelectionVisual extends JPanel {
         SourceGroup[] groups = SourceGroups.getJavaSourceGroups(project);
         if (groups.length > 0) {
             ClassPath compileCP = ClassPath.getClassPath(groups[0].getRootFolder(), ClassPath.COMPILE);
-            if (compileCP.findResource("javax/persistence/Entity.class") == null) { // NOI18N
+            if (compileCP==null || compileCP.findResource("javax/persistence/Entity.class") == null) { // NOI18N
                 wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "ERR_NoPersistenceProvider"));
                 return false;
             }
@@ -463,6 +463,13 @@ public class PersistenceClientEntitySelectionVisual extends JPanel {
             wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "MSG_NoEntityClassesSelected"));
             return false;
         }
+
+        if (entityClosure.isEjbModuleInvolved()) {
+            wizard.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE, NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "WARN_DetectedEntitiesFromEjbModule"));
+            return true;
+        }
+
+        wizard.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE, " "); //NOI18N
         wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, " "); //NOI18N
         return true;
     }

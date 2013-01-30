@@ -2,7 +2,9 @@ package org.netbeans.test.java.editor.actions.JavaEditActionsTest;
 
 public class testEditActions {
 
-    /** test  mode */
+    /**
+     * test mode
+     */
     public void testEditActions() {
     }
 
@@ -10,11 +12,8 @@ public class testEditActions {
         return "Str insdxrtStringg";
     }
 
-    /**INSDXRTSTRiNG
-     * 1
-     * 2
-     * 4
-     * 5
+    /**
+     * INSDXRTSTRiNG 1 2 4 5
      */
     public static void ahoj() {
     }

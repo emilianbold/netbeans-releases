@@ -123,6 +123,13 @@ class FilesystemHandler extends VCSInterceptor {
         if (!SvnUtils.isPartOfSubversionMetadata(file)) {
             try {
                 SvnClient client = Subversion.getInstance().getClient(false);
+                client.setIndexingBridgeDisabled(true);
+                try {
+                    client.remove(new File [] { file }, true); // delete all files recursively
+                    return;
+                } catch (SVNClientException ex) {
+                    // not interested, will continue and ask isVersioned()
+                }
                 /**
                  * Copy a folder, it becames svn added/copied.
                  * Revert its parent and check 'Delete new files', the folder becomes unversioned.
@@ -251,18 +258,20 @@ class FilesystemHandler extends VCSInterceptor {
      */
     private boolean shallRemove(SvnClient client, File file) throws SVNClientException {
         boolean retval = true;
-        ISVNStatus status = getStatus(client, file);
-        if (!SVNStatusKind.MISSING.equals(status.getTextStatus())) {
-            Subversion.LOG.fine(" shallRemove: skipping delete due to correct metadata");
-            retval = false;
-        } else if ("false".equals(System.getProperty("org.netbeans.modules.subversion.deleteMissingFiles", "true"))) { //NOI18N
+        if (!"true".equals(System.getProperty("org.netbeans.modules.subversion.deleteMissingFiles", "false"))) { //NOI18N
             // prevents automatic svn remove for those who dislike such behavior
-            Subversion.LOG.log(Level.FINE, "File {0} deleted externally, metadata not repaired (org.netbeans.modules.subversion.deleteMissingFiles=false)", new String[] {file.getAbsolutePath()}); //NOI18N
+            Subversion.LOG.log(Level.FINE, "File {0} deleted externally, metadata not repaired (org.netbeans.modules.subversion.deleteMissingFiles=false by default)", new String[] {file.getAbsolutePath()}); //NOI18N
             retval = false;
-        } else if (Utilities.isMac() || Utilities.isWindows()) {
-            String existingFilename = FileUtils.getExistingFilenameInParent(file);
-            if (existingFilename != null) {
+        } else {
+            ISVNStatus status = getStatus(client, file);
+            if (!SVNStatusKind.MISSING.equals(status.getTextStatus())) {
+                Subversion.LOG.fine(" shallRemove: skipping delete due to correct metadata");
                 retval = false;
+            } else if (Utilities.isMac() || Utilities.isWindows()) {
+                String existingFilename = FileUtils.getExistingFilenameInParent(file);
+                if (existingFilename != null) {
+                    retval = false;
+                }
             }
         }
         return retval;
@@ -279,7 +288,7 @@ class FilesystemHandler extends VCSInterceptor {
         if (from != null && destDir != null) {
             // a direct cache call could, because of the synchrone beforeMove handling,
             // trigger an reentrant call on FS => we have to check manually
-            if (isVersioned(from)) {
+            if (isVersioned(from) || isVersioned(to)) {
                 return SvnUtils.isManaged(to);
             }
             // else XXX handle file with saved administative
@@ -325,7 +334,7 @@ class FilesystemHandler extends VCSInterceptor {
         if (from != null && destDir != null) {
             // a direct cache call could, because of the synchrone beforeCopy handling,
             // trigger an reentrant call on FS => we have to check manually
-            if (isVersioned(from)) {
+            if (isVersioned(from) || isVersioned(to)) {
                 
                 if(from.isDirectory()) {
                     // always handle copy of versioned folders.
@@ -372,6 +381,7 @@ class FilesystemHandler extends VCSInterceptor {
     private void svnCopyImplementation(final File from, final File to) throws IOException {
         try {
             SvnClient client = Subversion.getInstance().getClient(false);
+            client.setIndexingBridgeDisabled(true);
 
             // prepare destination, it must be under Subversion control
             removeInvalidMetadata();
@@ -508,6 +518,7 @@ class FilesystemHandler extends VCSInterceptor {
             if (!file.exists()) {
                 try {
                     SvnClient client = Subversion.getInstance().getClient(false);
+                    client.setIndexingBridgeDisabled(true);
                     // check if the file wasn't just deleted in this session
                     revertDeleted(client, file, true);
                 } catch (SVNClientException ex) {
@@ -528,6 +539,10 @@ class FilesystemHandler extends VCSInterceptor {
     @Override
     public void afterCreate(final File file) {
         Subversion.LOG.log(Level.FINE, "afterCreate {0}", file);
+        if (SvnUtils.isPartOfSubversionMetadata(file)) {
+            // not interested in .svn events
+            return;
+        }
         Utils.post(new Runnable() {
             @Override
             public void run() {
@@ -545,6 +560,7 @@ class FilesystemHandler extends VCSInterceptor {
                     File temporary = FileUtils.generateTemporaryFile(file.getParentFile(), file.getName());
                     try {
                         SvnClient client = Subversion.getInstance().getClient(false);
+                        client.setIndexingBridgeDisabled(true);
                         if (file.renameTo(temporary)) {
                             client.revert(file, false);
                             file.delete();
@@ -627,7 +643,9 @@ class FilesystemHandler extends VCSInterceptor {
 
     @Override
     public void beforeEdit (final File file) {
-        NotificationsManager.getInstance().scheduleFor(file);
+        if (cache.ready()) {
+            NotificationsManager.getInstance().scheduleFor(file);
+        }
         ensureLocked(file);
     }
 
@@ -762,6 +780,7 @@ class FilesystemHandler extends VCSInterceptor {
         try {
             boolean force = true; // file with local changes must be forced
             SvnClient client = Subversion.getInstance().getClient(false);
+            client.setIndexingBridgeDisabled(true);
 
             // prepare destination, it must be under Subversion control
             removeInvalidMetadata();
@@ -800,18 +819,32 @@ class FilesystemHandler extends VCSInterceptor {
                     try {
                         srcChildren = SvnUtils.listRecursively(from);
                         boolean moved = true;
-                        if (status != null && status.getTextStatus().equals(SVNStatusKind.ADDED) &&
-                                (!status.isCopied() || (url != null && url.equals(toUrl)))) {
+                        if (status != null 
+                                && (status.getTextStatus().equals(SVNStatusKind.ADDED) || status.getTextStatus().equals(SVNStatusKind.REPLACED)) 
+                                && (!status.isCopied() || (url != null && url.equals(toUrl)))) {
                             // 1. file is ADDED (new or added) AND is not COPIED (by invoking svn copy)
                             // 2. file is ADDED and COPIED (by invoking svn copy) and target equals the original from the first copy
                             // otherwise svn move should be invoked
 
+                            File temp = from;
+                            if (Utilities.isWindows() && from.equals(to) || Utilities.isMac() && from.getPath().equalsIgnoreCase(to.getPath())) {
+                                Subversion.LOG.log(Level.FINE, "svnMoveImplementation: magic workaround for filename case change {0} -> {1}", new Object[] { from, to }); //NOI18N
+                                temp = FileUtils.generateTemporaryFile(from.getParentFile(), from.getName());
+                                Subversion.LOG.log(Level.FINE, "svnMoveImplementation: magic workaround, step 1: {0} -> {1}", new Object[] { from, temp }); //NOI18N
+                                client.move(from, temp, force);
+                            }
+                            
                             // check if the file wasn't just deleted in this session
                             revertDeleted(client, toStatus, to, true);
 
-                            moved = from.renameTo(to);
+                            moved = temp.renameTo(to);
                             if (moved) {
-                                client.revert(from, true);
+                                // indeed just ADDED, not REPLACED
+                                if (status.getTextStatus().equals(SVNStatusKind.ADDED)) {
+                                    client.revert(temp, true);
+                                } else {
+                                    client.remove(new File[] { temp }, true);
+                                }
                             }
                         } else if (status != null && (status.getTextStatus().equals(SVNStatusKind.UNVERSIONED)
                                 || status.getTextStatus().equals(SVNStatusKind.IGNORED))) { // ignored file CAN'T be moved via svn

@@ -43,7 +43,7 @@
 package org.netbeans.modules.php.zend.ui.actions;
 
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
-import org.netbeans.modules.php.spi.actions.RunCommandAction;
+import org.netbeans.modules.php.spi.framework.actions.RunCommandAction;
 import org.netbeans.modules.php.zend.ZendPhpFrameworkProvider;
 import org.openide.util.NbBundle;
 
@@ -66,7 +66,7 @@ public final class ZendRunCommandAction extends RunCommandAction {
         if (!ZendPhpFrameworkProvider.getInstance().isInPhpModule(phpModule)) {
             return;
         }
-        ZendPhpFrameworkProvider.getInstance().getFrameworkCommandSupport(phpModule).runCommand();
+        ZendPhpFrameworkProvider.getInstance().getFrameworkCommandSupport(phpModule).openPanel();
     }
 
     @Override

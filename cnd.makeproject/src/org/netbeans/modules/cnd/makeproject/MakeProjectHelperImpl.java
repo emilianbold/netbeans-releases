@@ -70,6 +70,7 @@ import org.netbeans.modules.cnd.api.project.NativeProjectType;
 import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.api.xml.LineSeparatorDetector;
 import org.netbeans.modules.cnd.makeproject.api.ProjectGenerator;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectEvent;
 import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectHelper;
 import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectListener;
@@ -78,7 +79,6 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
-import org.netbeans.spi.project.CacheDirectoryProvider;
 import org.netbeans.spi.project.ProjectState;
 import org.netbeans.spi.queries.SharabilityQueryImplementation2;
 import org.openide.ErrorManager;
@@ -229,24 +229,40 @@ public final class MakeProjectHelperImpl implements MakeProjectHelper {
         projectXmlValid = true;
         assert projectXml != null;
         fileListener = new FileListener();
+    }
+
+    private void attachProjectFilesListener() {
         FileObject resolveFileObject = resolveFileObject(PROJECT_XML_PATH);
         if (resolveFileObject != null) {
+            resolveFileObject.removeFileChangeListener(fileListener);
             resolveFileObject.addFileChangeListener(fileListener);
         } else {
             FileSystemProvider.addFileChangeListener(fileListener, fileSystem, PROJECT_XML_PATH);
         }
         resolveFileObject = resolveFileObject(PRIVATE_XML_PATH);
         if (resolveFileObject != null) {
+            resolveFileObject.removeFileChangeListener(fileListener);
             resolveFileObject.addFileChangeListener(fileListener);
         } else {
             FileSystemProvider.addFileChangeListener(fileListener, fileSystem, PRIVATE_XML_PATH);
+        }        
+    }
+
+    private void detachProjectFilesListener() {
+        FileObject resolveFileObject = resolveFileObject(PROJECT_XML_PATH);
+        if (resolveFileObject != null) {
+            resolveFileObject.removeFileChangeListener(fileListener);
         }
+        resolveFileObject = resolveFileObject(PRIVATE_XML_PATH);
+        if (resolveFileObject != null) {
+            resolveFileObject.removeFileChangeListener(fileListener);
+        }        
     }
     
     public FileSystem getFileSystem() {
         return fileSystem;
     }
-
+    
     @Override
     public FileObject resolveFileObject(String filename) throws IllegalArgumentException {
         if (filename == null) {
@@ -486,6 +502,9 @@ public final class MakeProjectHelperImpl implements MakeProjectHelper {
     @Override
     public void addMakeProjectListener(MakeProjectListener listener) {
         synchronized (listeners) {
+            if (listeners.isEmpty()) {
+                attachProjectFilesListener();
+            }
             listeners.add(listener);
         }
     }
@@ -499,6 +518,9 @@ public final class MakeProjectHelperImpl implements MakeProjectHelper {
     public void removeMakeProjectListener(MakeProjectListener listener) {
         synchronized (listeners) {
             listeners.remove(listener);
+            if (listeners.isEmpty()) {
+                detachProjectFilesListener();
+            }
         }
     }
 
@@ -604,6 +626,9 @@ public final class MakeProjectHelperImpl implements MakeProjectHelper {
     @Override
     public void notifyDeleted() {
         state.notifyDeleted();
+        synchronized (listeners) {
+            detachProjectFilesListener();
+        }
     }
 
     /**
@@ -945,16 +970,6 @@ public final class MakeProjectHelperImpl implements MakeProjectHelper {
     }
 
     /**
-     * Create an object permitting this project to expose a cache directory.
-     * Would be placed into the project's lookup.
-     * @return a cache directory provider object suitable for the project lookup
-     */
-    @Override
-    public CacheDirectoryProvider createCacheDirectoryProvider() {
-        return new ExtensibleMetadataProviderImpl(this);
-    }
-
-    /**
      * Create an implementation of the file sharability query.
      * You may specify a list of source roots to include that should be considered sharable,
      * as well as a list of build directories that should not be considered sharable.
@@ -1030,7 +1045,7 @@ public final class MakeProjectHelperImpl implements MakeProjectHelper {
         includes[sourceRoots.length] = ""; // NOI18N
         String[] excludes = new String[buildDirectories.length + 1];
         System.arraycopy(buildDirectories, 0, excludes, 0, buildDirectories.length);
-        excludes[buildDirectories.length] = "nbproject/private"; // NOI18N
+        excludes[buildDirectories.length] = MakeConfiguration.NBPROJECT_PRIVATE_FOLDER;
         return new SharabilityQueryImpl(this, includes, excludes);
     }
 
@@ -1071,21 +1086,15 @@ public final class MakeProjectHelperImpl implements MakeProjectHelper {
         }
     }
 
-    private static final class ExtensibleMetadataProviderImpl implements AuxiliaryConfiguration, CacheDirectoryProvider {
+    private static final class ExtensibleMetadataProviderImpl implements AuxiliaryConfiguration {
 
         /**
          * Relative path from project directory to the required private cache directory.
          */
-        private static final String CACHE_PATH = "nbproject/private"; // NOI18N
         private final MakeProjectHelperImpl helper;
 
         ExtensibleMetadataProviderImpl(MakeProjectHelperImpl helper) {
             this.helper = helper;
-        }
-
-        @Override
-        public FileObject getCacheDirectory() throws IOException {
-            return FileUtil.createFolder(helper.getProjectDirectory(), CACHE_PATH);
         }
 
         @Override

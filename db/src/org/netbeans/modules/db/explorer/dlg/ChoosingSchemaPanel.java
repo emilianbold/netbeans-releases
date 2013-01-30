@@ -46,7 +46,7 @@ import javax.swing.event.ChangeListener;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 
-public class ChoosingSchemaPanel implements AddConnectionWizard.Panel {
+public class ChoosingSchemaPanel implements AddConnectionWizard.Panel, WizardDescriptor.FinishablePanel<AddConnectionWizard> {
 
     /**
      * The visual component that displays this panel. If you need to access the
@@ -138,5 +138,10 @@ public class ChoosingSchemaPanel implements AddConnectionWizard.Panel {
     @Override
     public void storeSettings(AddConnectionWizard settings) {
         pw.setCurrentSchema(component.getSchema());
+    }
+
+    @Override
+    public boolean isFinishPanel() {
+        return true;
     }
 }

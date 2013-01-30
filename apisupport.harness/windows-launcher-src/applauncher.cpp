@@ -56,7 +56,6 @@ const char *AppLauncher::OPT_DEFAULT_OPTIONS = "default_options=";
 const char *AppLauncher::OPT_EXTRA_CLUSTERS = "extra_clusters=";
 const char *AppLauncher::OPT_JDK_HOME = "jdkhome=";
 const char *AppLauncher::APPNAME_TOKEN = "${APPNAME}";
-const char *AppLauncher::REG_APPDATA_NAME = "AppData";
 
 AppLauncher::AppLauncher() {
 }
@@ -102,9 +101,11 @@ bool AppLauncher::findUserDir(const char *str) {
     logMsg("AppLauncher::findUserDir()");
     if (strncmp(str, HOME_TOKEN, strlen(HOME_TOKEN)) == 0) {
         if (userHome.empty()) {
-            if (!getStringFromRegistry(HKEY_CURRENT_USER, REG_SHELL_FOLDERS_KEY, REG_APPDATA_NAME, userHome)) {
+            TCHAR userHomeChar[MAX_PATH];
+            if (FAILED(SHGetFolderPath(NULL, CSIDL_APPDATA, NULL, 0, userHomeChar))) {
                 return false;
             }
+            userHome = userHomeChar;           
             logMsg("User home: %s", userHome.c_str());
         }
         str += strlen(HOME_TOKEN);
@@ -125,9 +126,11 @@ bool AppLauncher::findCacheDir(const char *str) {
     logMsg("AppLauncher::findCacheDir");
     if (strncmp(str, HOME_TOKEN, strlen(HOME_TOKEN)) == 0) {
         if (userHome.empty()) {
-            if (!getStringFromRegistry(HKEY_CURRENT_USER, REG_SHELL_FOLDERS_KEY, REG_APPDATA_NAME, userHome)) {
+            TCHAR userHomeChar[MAX_PATH];
+            if (FAILED(SHGetFolderPath(NULL, CSIDL_LOCAL_APPDATA, NULL, 0, userHomeChar))) {
                 return false;
             }
+            userHome = userHomeChar;
             logMsg("User home: %s", userHome.c_str());
         }
         str += strlen(HOME_TOKEN);

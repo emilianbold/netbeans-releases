@@ -56,7 +56,6 @@ import org.netbeans.api.java.queries.JavadocForBinaryQuery;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.spi.java.queries.JavadocForBinaryQueryImplementation;
-import org.netbeans.spi.project.libraries.support.LibrariesSupport;
 import org.openide.ErrorManager;
 import org.openide.util.WeakListeners;
 import org.openide.filesystems.URLMapper;
@@ -68,6 +67,7 @@ import org.openide.util.ChangeSupport;
 /**
  * Implementation of Javadoc query for the library.
  */
+@org.netbeans.api.annotations.common.SuppressWarnings("DMI_COLLECTION_OF_URLS") // justification="File URLs only"
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.java.queries.JavadocForBinaryQueryImplementation.class)
 public class JavadocForBinaryQueryImpl implements JavadocForBinaryQueryImplementation {
 
@@ -83,6 +83,7 @@ public class JavadocForBinaryQueryImpl implements JavadocForBinaryQueryImplement
     public JavadocForBinaryQueryImpl() {
     }
 
+    @org.netbeans.api.annotations.common.SuppressWarnings("DMI_BLOCKING_METHODS_ON_URL") // justification="File URLs only"
     public JavadocForBinaryQuery.Result findJavadoc(final URL b) {
         class R implements JavadocForBinaryQuery.Result, PropertyChangeListener {
 

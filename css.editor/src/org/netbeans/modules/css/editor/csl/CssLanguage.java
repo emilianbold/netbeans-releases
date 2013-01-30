@@ -56,6 +56,7 @@ import org.netbeans.modules.csl.api.StructureScanner;
 import org.netbeans.modules.csl.spi.CommentHandler;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.csl.spi.LanguageRegistration;
+import org.netbeans.modules.css.lib.api.CssParserFactory;
 import org.netbeans.modules.css.lib.api.CssTokenId;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.indexing.PathRecognizerRegistration;
@@ -65,18 +66,18 @@ import org.openide.windows.TopComponent;
 /**
  * Configuration for CSS
  */
-@LanguageRegistration(mimeType = "text/x-css", useMultiview = true) //NOI18N
+@LanguageRegistration(mimeType = "text/css", useMultiview = true) //NOI18N
 //index all source roots only
-@PathRecognizerRegistration(mimeTypes = "text/x-css", libraryPathIds = {}, binaryLibraryPathIds = {}) //NOI18N
+@PathRecognizerRegistration(mimeTypes = "text/css", libraryPathIds = {}, binaryLibraryPathIds = {}) //NOI18N
 public class CssLanguage extends DefaultLanguageConfig {
 
-    public static final String CSS_MIME_TYPE = "text/x-css";//NOI18N
+    public static final String CSS_MIME_TYPE = "text/css";//NOI18N
 
     @MultiViewElement.Registration(displayName = "#LBL_CSSEditorTab",
         iconBase = "org/netbeans/modules/css/resources/style_sheet_16.png",
         persistenceType = TopComponent.PERSISTENCE_ONLY_OPENED,
         preferredID = "css.source",
-        mimeType = "text/x-css",
+        mimeType = "text/css",
         position = 1)
     public static MultiViewEditorElement createMultiViewEditorElement(Lookup context) {
         return new MultiViewEditorElement(context);
@@ -95,8 +96,7 @@ public class CssLanguage extends DefaultLanguageConfig {
         /** Includes things you'd want selected as a unit when double clicking in the editor */
         return Character.isJavaIdentifierPart(c)
                 || (c == '-') || (c == '@')
-                || (c == '&') || (c == '_')
-                || (c == '#') || (c == '.');
+                || (c == '&') || (c == '_');
     }
 
     @Override
@@ -127,7 +127,7 @@ public class CssLanguage extends DefaultLanguageConfig {
 
     @Override
     public Parser getParser() {
-        return new CssCslParser();
+        return CssParserFactory.getDefault().createParser(null);
     }
 
     @Override

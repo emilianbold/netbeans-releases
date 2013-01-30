@@ -42,7 +42,7 @@
 package org.netbeans.modules.php.api.util;
 
 /**
- * @since 1.3
+ * Class representing a pair of values.
  */
 public final class Pair<P, K> {
 

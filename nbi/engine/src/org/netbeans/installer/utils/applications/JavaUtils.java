@@ -45,21 +45,20 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.netbeans.installer.utils.ErrorManager;
+import org.netbeans.installer.utils.FileProxy;
 import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.ResourceUtils;
-import org.netbeans.installer.utils.helper.ExecutionResults;
-import org.netbeans.installer.utils.FileProxy;
-import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.exceptions.DownloadException;
 import org.netbeans.installer.utils.exceptions.NativeException;
+import org.netbeans.installer.utils.helper.ExecutionResults;
 import org.netbeans.installer.utils.helper.Version;
 import org.netbeans.installer.utils.system.WindowsNativeUtils;
-import static org.netbeans.installer.utils.system.windows.WindowsRegistry.HKLM;
-import static org.netbeans.installer.utils.system.windows.WindowsRegistry.HKCU;
-import static org.netbeans.installer.utils.system.windows.WindowsRegistry.SEPARATOR;
 import org.netbeans.installer.utils.system.windows.WindowsRegistry;
+import static org.netbeans.installer.utils.system.windows.WindowsRegistry.HKCU;
+import static org.netbeans.installer.utils.system.windows.WindowsRegistry.HKLM;
 
 /**
  *
@@ -131,16 +130,24 @@ public class JavaUtils {
         
         return true;
     }
+    
+    public static boolean isRecommended(Version version) {
+        /*to and from versions - not recommended - all JDK 7 versions older than 7u10 */        
+        return version.olderThan(criticalLowVersion) || version.newerThan(criticalHighVersion);
+    }
+    
     public static void addJavaInfo(final File location, final JavaInfo info) {
         if(knownJdks.get(location)==null) {
             knownJdks.put(location, info);
         }
     }
+    
     public static void removeJavaInfo(final File location) {
         if(knownJdks.get(location)!=null) {
             knownJdks.remove(location);
         }
     }
+    
     public static Version getVersion(File javaHome) {
         final JavaInfo info = getInfo(javaHome);
         
@@ -270,7 +277,7 @@ public class JavaUtils {
                 LogManager.log("... checking if JDK " + version + " is already installed");
                 WindowsRegistry winreg = ((WindowsNativeUtils) SystemUtils.getNativeUtils()).getWindowsRegistry();
                 if(winreg.keyExists(HKLM, javaKey, version)) {
-                    final String versKey = javaKey + winreg.SEPARATOR + version;
+                    final String versKey = javaKey + WindowsRegistry.SEPARATOR + version;
                     if(winreg.valueExists(HKLM, versKey, JAVAHOME_VALUE)) {
                         final String javaHome = winreg.getStringValue(HKLM, versKey,JAVAHOME_VALUE);
                         if(JavaUtils.getInfo(new File(javaHome))!=null) {
@@ -290,6 +297,7 @@ public class JavaUtils {
         }
         return result;
     }
+    
     // private //////////////////////////////////////////////////////////////////////
     private static int getJDKRegistrySection(WindowsRegistry registry) throws NativeException {
         return (registry.canModifyKey(HKLM,JDK_KEY) ? HKLM : HKCU);
@@ -370,9 +378,9 @@ public class JavaUtils {
             final String[] lines = StringUtils.splitByLines(string);
             
             Version version = null;
-            String vendor = null;
-            String osName = null;
-            String osArch = null;
+            String vendor;
+            String osName;
+            String osArch;
             
             boolean nonFinal = false;
             
@@ -463,11 +471,16 @@ public class JavaUtils {
         private String arch;
         
         public JavaInfo(Version version, String vendor) {
+            if (version.toString().endsWith("64")) {
+                this.arch = "x64";
+            } else {
+                this.arch = "";
+            }
+            
             this.version = version;
             this.vendor = vendor;
             
-            this.nonFinal = false;
-            this.arch = "";
+            this.nonFinal = false;            
         }
         
         public JavaInfo(Version version, String vendor, boolean nonFinal) {
@@ -501,6 +514,9 @@ public class JavaUtils {
     
     /////////////////////////////////////////////////////////////////////////////////
     // Constants
+    public static Version criticalLowVersion = Version.getVersion("1.7.0_00");
+    public static Version criticalHighVersion = Version.getVersion("1.7.0_09");            
+    
     public static final String JDK_KEY =
             "SOFTWARE\\JavaSoft\\Java Development Kit"; // NOI18N
     public static final String JRE_KEY =

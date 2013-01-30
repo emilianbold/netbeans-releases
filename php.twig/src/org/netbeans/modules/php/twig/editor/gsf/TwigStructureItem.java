@@ -39,7 +39,6 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.php.twig.editor.gsf;
 
 import java.util.ArrayList;
@@ -64,50 +63,41 @@ import org.openide.filesystems.FileObject;
  * @author sebastian
  */
 public class TwigStructureItem implements StructureItem {
-
+    private static final String BLOCK = "Block";  //NOI18N
     List<TwigStructureItem> blocks;
     TwigParserResult.Block item;
     Snapshot snapshot;
 
-    public TwigStructureItem( Snapshot snapshot, TwigParserResult.Block item, List<TwigParserResult.Block> blocks ) {
-
+    public TwigStructureItem(Snapshot snapshot, TwigParserResult.Block item, List<TwigParserResult.Block> blocks) {
         this.item = item;
         this.blocks = new ArrayList<TwigStructureItem>();
         this.snapshot = snapshot;
-
-        for ( TwigParserResult.Block current : blocks ) {
-
-            if (
-                item.getOffset() < current.getOffset() &&
-                current.getOffset() + current.getLength() < item.getOffset() + item.getLength()
-            ) {
-
-                this.blocks.add( new TwigStructureItem( snapshot, current, blocks ) );
-
+        for (TwigParserResult.Block current : blocks) {
+            if (item.getOffset() < current.getOffset()
+                    && current.getOffset() + current.getLength() < item.getOffset() + item.getLength()) {
+                this.blocks.add(new TwigStructureItem(snapshot, current, blocks));
             }
-
         }
-
     }
 
     @Override
     public String getName() {
-        return "Block " + item.getExtra();
+        return BLOCK + " " + item.getExtra();
     }
 
     @Override
     public String getSortText() {
-        return "Block " + item.getDescription();
+        return BLOCK + " " + item.getDescription();
     }
 
     @Override
     public String getHtml(HtmlFormatter hf) {
-        return "Block " + item.getExtra();
+        return BLOCK + " " + item.getExtra(); //NOI18N
     }
 
     @Override
     public ElementHandle getElementHandle() {
-        return new TwigElementHandle( item, snapshot );
+        return new TwigElementHandle(item, snapshot);
     }
 
     @Override
@@ -117,8 +107,9 @@ public class TwigStructureItem implements StructureItem {
 
     @Override
     public Set<Modifier> getModifiers() {
-        if ( CharSequenceUtilities.startsWith( item.getDescription(), "*" ) )
-            return Collections.singleton( Modifier.STATIC );
+        if (CharSequenceUtilities.startsWith(item.getDescription(), "*")) {
+            return Collections.singleton(Modifier.STATIC);
+        }
         return Collections.emptySet();
     }
 
@@ -147,12 +138,12 @@ public class TwigStructureItem implements StructureItem {
         return null;
     }
 
-    class TwigElementHandle implements ElementHandle {
+    static class TwigElementHandle implements ElementHandle {
 
         TwigParserResult.Block item;
         Snapshot snapshot;
 
-        public TwigElementHandle( TwigParserResult.Block item, Snapshot snapshot ) {
+        public TwigElementHandle(TwigParserResult.Block item, Snapshot snapshot) {
             this.item = item;
             this.snapshot = snapshot;
         }
@@ -169,12 +160,12 @@ public class TwigStructureItem implements StructureItem {
 
         @Override
         public String getName() {
-            return "Block " + item.getExtra();
+            return BLOCK + " " + item.getExtra();
         }
 
         @Override
         public String getIn() {
-            return "Block " + item.getExtra();
+            return BLOCK + " " + item.getExtra();
         }
 
         @Override
@@ -184,24 +175,26 @@ public class TwigStructureItem implements StructureItem {
 
         @Override
         public Set<Modifier> getModifiers() {
-            if ( CharSequenceUtilities.startsWith( item.getDescription(), "*" ) )
-                return Collections.singleton( Modifier.STATIC );
+            if (CharSequenceUtilities.startsWith(item.getDescription(), "*")) {
+                return Collections.singleton(Modifier.STATIC);
+            }
             return Collections.emptySet();
         }
 
         @Override
         public boolean signatureEquals(ElementHandle eh) {
-            if ( !(eh instanceof TwigElementHandle) ) return false;
-            if ( eh.getName().equals(this.getName()) ) return true;
+            if (!(eh instanceof TwigElementHandle)) {
+                return false;
+            }
+            if (eh.getName().equals(this.getName())) {
+                return true;
+            }
             return false;
         }
 
         @Override
-        public OffsetRange getOffsetRange( ParserResult pr ) {
-            return new OffsetRange( item.getOffset(), item.getOffset() + item.getLength() );
+        public OffsetRange getOffsetRange(ParserResult pr) {
+            return new OffsetRange(item.getOffset(), item.getOffset() + item.getLength());
         }
-
-
     }
-
 }

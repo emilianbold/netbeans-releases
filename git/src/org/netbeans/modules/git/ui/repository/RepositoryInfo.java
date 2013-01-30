@@ -133,10 +133,19 @@ public class RepositoryInfo {
         // this should return alwaus the same instance, so the cache can be implemented as a weak map.
         File repositoryRootSingleInstance = Git.getInstance().getRepositoryRoot(repositoryRoot);
         if (repositoryRoot.equals(repositoryRootSingleInstance)) {
+            boolean refresh = false;
             synchronized (cache) {
                 info = cache.get(repositoryRootSingleInstance);
                 if (info == null) {
                     cache.put(repositoryRootSingleInstance, info = new RepositoryInfo(repositoryRootSingleInstance));
+                    refresh = true;
+                }
+            }
+            if (refresh) {
+                if (java.awt.EventQueue.isDispatchThread()) {
+                    LOG.log(Level.FINE, "getInstance (): had to schedule an async refresh for {0}", repositoryRoot); //NOI18N
+                    refreshAsync(repositoryRoot);
+                } else {
                     info.refresh();
                 }
             }
@@ -151,12 +160,13 @@ public class RepositoryInfo {
     public void refresh () {
         assert !java.awt.EventQueue.isDispatchThread();
         File root = rootRef.get();
+        GitClient client = null;
         try {
             if (root == null) {
                 LOG.log(Level.WARNING, "refresh (): root is null, it has been collected in the meantime"); //NOI18N
             } else {
                 LOG.log(Level.FINE, "refresh (): starting for {0}", root); //NOI18N
-                GitClient client = Git.getInstance().getClient(root);
+                client = Git.getInstance().getClient(root);
                 // get all needed information at once before firing events. Thus we supress repeated annotations' refreshing
                 Map<String, GitBranch> newBranches = client.getBranches(true, GitUtils.NULL_PROGRESS_MONITOR);
                 setBranches(newBranches);
@@ -171,6 +181,10 @@ public class RepositoryInfo {
         } catch (GitException ex) {
             Level level = root.exists() ? Level.INFO : Level.FINE; // do not polute the message log with messages concerning temporary or deleted repositories
             LOG.log(level, null, ex);
+        } finally {
+            if (client != null) {
+                client.release();
+            }
         }
     }
 
@@ -180,17 +194,22 @@ public class RepositoryInfo {
      */
     public void refreshRemotes () {
         assert !java.awt.EventQueue.isDispatchThread();
+        GitClient client = null;
         try {
             File root = rootRef.get();
             if (root == null) {
                 LOG.log(Level.WARNING, "refreshRemotes (): root is null, it has been collected in the meantime"); //NOI18N
             } else {
                 LOG.log(Level.FINE, "refreshRemotes (): starting for {0}", root); //NOI18N
-                GitClient client = Git.getInstance().getClient(root);
+                client = Git.getInstance().getClient(root);
                 refreshRemotes(client);
             }
         } catch (GitException ex) {
             LOG.log(Level.INFO, null, ex);
+        } finally {
+            if (client != null) {
+                client.release();
+            }
         }
     }
     

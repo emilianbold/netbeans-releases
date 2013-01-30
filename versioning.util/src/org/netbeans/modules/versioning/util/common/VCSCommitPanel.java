@@ -416,8 +416,8 @@ public abstract class VCSCommitPanel<F extends VCSFileNode> extends AutoResizing
             } 
             
             commitable &= commitTable.containsCommitable();
+            errroMsg = commitTable.getErrorMessage();
             if(!commitable) {
-                errroMsg = commitTable.getErrorMessage();
                 return;
             }             
             

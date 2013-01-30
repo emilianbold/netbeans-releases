@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.editor.filecreation;
 
 import java.io.File;
 import java.io.IOException;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
@@ -174,10 +175,21 @@ public abstract class CndPanel implements WizardDescriptor.Panel<WizardDescripto
     protected abstract void doStoreSettings(WizardDescriptor settings);
 
     @Override
-    public void stateChanged(ChangeEvent e) {        
-        changeSupport.fireChange();
+    public void stateChanged(ChangeEvent e) {
+        // Firing change event in EDT - IZ 218103
+        if (SwingUtilities.isEventDispatchThread()) {
+            changeSupport.fireChange();
+        } else {
+            SwingUtilities.invokeLater(new Runnable() {
+
+                @Override
+                public void run() {
+                    changeSupport.fireChange();
+                }
+            });
+        }
     }
-    
+
     private FileObject getTargetFolderFromGUI () {
         FileObject rootFolder = gui.getTargetGroup().getRootFolder();
         String folderName = gui.getTargetFolder();

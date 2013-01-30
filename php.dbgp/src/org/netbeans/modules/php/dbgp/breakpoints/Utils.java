@@ -43,11 +43,8 @@
  */
 package org.netbeans.modules.php.dbgp.breakpoints;
 
-import java.lang.reflect.InvocationTargetException;
-
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.options.OptionsDisplayer;
@@ -74,10 +71,14 @@ public class Utils {
     //keep synchronized with PHPOptionsCategory.PATH_IN_LAYER
     public static final String PATH_IN_LAYER = "org-netbeans-modules-php-project-ui-options-PHPOptionsCategory/Debugger"; //NOI18N
     final static String  MIME_TYPE = "text/x-php5"; //NOI18N
-    public static LineFactory lineFactory = new LineFactory();
+    private static LineFactory lineFactory = new LineFactory();
 
     private Utils(){
         // avoid inst-ion
+    }
+
+    public static void setLineFactory(LineFactory lineFactory) {
+        Utils.lineFactory = lineFactory;
     }
 
     public static Line getCurrentLine() {
@@ -151,14 +152,6 @@ public class Utils {
         session.sendCommandLater( removeCommand );
     }
 
-    public static void log( Throwable exception ){
-        exception.printStackTrace();
-    }
-
-    public static void log( InvocationTargetException exception ){
-        log( exception.getCause() );
-    }
-
     public static boolean isPhpFile(FileObject fileObject) {
         if (fileObject == null) {
             return false;
@@ -188,7 +181,7 @@ public class Utils {
                 return null;
             }
 
-            LineCookie lineCookie = (LineCookie) dataObject.getCookie(LineCookie.class);
+            LineCookie lineCookie = (LineCookie) dataObject.getLookup().lookup(LineCookie.class);
             if (lineCookie == null) {
                 return null;
             }

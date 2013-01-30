@@ -53,16 +53,16 @@ import javax.swing.text.Document;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
-import org.netbeans.modules.html.editor.lib.api.HtmlSource;
-import org.netbeans.modules.html.editor.lib.api.HtmlVersion;
-import org.netbeans.modules.html.editor.lib.api.UndeclaredContentResolver;
 import org.netbeans.junit.MockServices;
+import org.netbeans.modules.html.editor.HtmlExtensions;
 import org.netbeans.modules.html.editor.HtmlPreferences;
 import org.netbeans.modules.html.editor.api.completion.HtmlCompletionItem;
 import org.netbeans.modules.html.editor.api.gsf.HtmlExtension;
 import org.netbeans.modules.html.editor.api.gsf.HtmlExtension.CompletionContext;
-import org.netbeans.modules.html.editor.api.gsf.HtmlExtensionTestSupport;
 import org.netbeans.modules.html.editor.completion.HtmlCompletionTestSupport.Match;
+import org.netbeans.modules.html.editor.lib.api.HtmlSource;
+import org.netbeans.modules.html.editor.lib.api.HtmlVersion;
+import org.netbeans.modules.html.editor.lib.api.UndeclaredContentResolver;
 import org.netbeans.modules.html.parser.HtmlDocumentation;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.spi.editor.completion.CompletionItem;
@@ -415,7 +415,7 @@ public class HtmlCompletionQueryTest extends HtmlCompletionTestBase {
     }
 
     public void testHtmlExtensionCompletionOfTagAttribute() throws BadLocationException, ParseException {
-        HtmlExtension.register("text/html", new HtmlExtension() {
+        HtmlExtensions.TEST_EXTENSION = new HtmlExtension() {
 
             @Override
             public List<CompletionItem> completeAttributes(CompletionContext context) {
@@ -435,15 +435,15 @@ public class HtmlCompletionQueryTest extends HtmlCompletionTestBase {
                 };
             }
 
-        });
+        };
         
         assertItems("<my:tag att|", arr("fake"), Match.CONTAINS);
         
-        HtmlExtensionTestSupport.EXTENSIONS.clear();
+        HtmlExtensions.TEST_EXTENSION = null;
     }
     
     public void testHtmlExtensionCompletionOfTagAttributeValue() throws BadLocationException, ParseException {
-        HtmlExtension.register("text/html", new HtmlExtension() {
+        HtmlExtensions.TEST_EXTENSION = new HtmlExtension() {
 
             @Override
             public List<CompletionItem> completeAttributeValue(CompletionContext context) {
@@ -463,14 +463,14 @@ public class HtmlCompletionQueryTest extends HtmlCompletionTestBase {
                 };
             }
 
-        });
+        };
         
         assertItems("<my:tag attr=|", arr("fake"), Match.CONTAINS);
         assertItems("<my:tag attr=\"|", arr("fake"), Match.CONTAINS);
         assertItems("<my:tag attr=\"|\"", arr("fake"), Match.CONTAINS);
         assertItems("<my:tag attr=\"fa|\"", arr("fake"), Match.CONTAINS);
         
-        HtmlExtensionTestSupport.EXTENSIONS.clear();
+        HtmlExtensions.TEST_EXTENSION = null;
     }
     
     public void testInputTagTypeAttributeCompletion() throws BadLocationException, ParseException {

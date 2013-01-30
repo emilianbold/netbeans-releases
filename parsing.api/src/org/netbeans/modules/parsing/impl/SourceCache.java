@@ -45,6 +45,7 @@ package org.netbeans.modules.parsing.impl;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -62,6 +63,7 @@ import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.Task;
+import org.netbeans.modules.parsing.impl.indexing.Pair;
 import org.netbeans.modules.parsing.spi.EmbeddingProvider;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
@@ -88,6 +90,15 @@ import org.openide.util.Lookup;
 public final class SourceCache {
 
     private static final Logger LOG = Logger.getLogger(SourceCache.class.getName());
+
+    private static final Comparator<SchedulerTask> PRIORITY_ORDER = new Comparator<SchedulerTask>() {
+        @Override
+        public int compare(final SchedulerTask o1, final SchedulerTask o2) {
+            final int p1 = o1.getPriority();
+            final int p2 = o2.getPriority();
+            return p1 < p2 ? -1 : p1 == p2 ? 0 : 1;
+        }
+    };
     
     private final Source    source;
     //@GuardedBy(this)
@@ -454,11 +465,8 @@ retry:  while (true) {
             pendingTasks1 = new HashSet<SchedulerTask> ();
             Lookup lookup = MimeLookup.getLookup (mimeType);
             Collection<? extends TaskFactory> factories = lookup.lookupAll (TaskFactory.class);
-            //Issue #162990 workaround >>>
-            Collection<? extends TaskFactory> resortedFactories = resortTaskFactories(factories);
-            //<<< End of workaround
             Snapshot fakeSnapshot = null;
-            for (TaskFactory factory : resortedFactories) {
+            for (TaskFactory factory : factories) {
                 // #185586 - this is here in order not to create snapshots (a copy of file/doc text)
                 // if there is no task that would really need it (eg. in C/C++ projects there is no parser
                 // registered and no tasks will ever run on these files, even though there may be tasks
@@ -478,10 +486,9 @@ retry:  while (true) {
                 if (newTasks != null) {
                     tasks1.addAll (newTasks);
                     pendingTasks1.addAll (newTasks);
-//                    for (SchedulerTask task : newTasks)
-//                        System.out.println("  createTask " + task);
                 }
             }
+            Collections.sort(tasks1, PRIORITY_ORDER);
         }
         synchronized (TaskProcessor.INTERNAL_LOCK) {
             if ((tasks == null) && (tasks1 != null)) {
@@ -496,48 +503,30 @@ retry:  while (true) {
         // recurse and hope
         return createTasks();
     }
-
-    //Issue #162990 workaround >>>
-    //Move the JsEmbeddingProvider$Factory to the beginning of the factories list
-    private Collection<? extends TaskFactory> resortTaskFactories(Collection<? extends TaskFactory> factories) {
-        List<TaskFactory> resorted = new ArrayList<TaskFactory>(factories);
-        for(TaskFactory tf : resorted) {
-            if(tf.getClass().getName().equals("org.netbeans.modules.javascript.editing.embedding.JsEmbeddingProvider$Factory")) { //NOI18N
-                resorted.remove(tf); 
-                resorted.add(0, tf);
-                break;
-            }
-        }
-        return resorted;
-    }
-    //<<< End of workaround
-
+    
     //tzezula: probably has race condition
     public void scheduleTasks (Class<? extends Scheduler> schedulerType) {
         //S ystem.out.println("scheduleTasks " + schedulerType);
         final List<SchedulerTask> remove = new ArrayList<SchedulerTask> ();
-        final List<SchedulerTask> add = new ArrayList<SchedulerTask> ();
+        final List<Pair<SchedulerTask,Class<? extends Scheduler>>> add = new ArrayList<Pair<SchedulerTask,Class<? extends Scheduler>>> ();
         Collection<SchedulerTask> tsks = createTasks();
         synchronized (TaskProcessor.INTERNAL_LOCK) {
             for (SchedulerTask task : tsks) {
-                if (schedulerType == null ||
-                    task.getSchedulerClass () == schedulerType ||
-                    task instanceof EmbeddingProvider
-                ) {
-                    if (pendingTasks.remove (task)) {
-                        add.add (task);
-                    }
-                    else {
+                if (schedulerType == null || task instanceof EmbeddingProvider) {
+                    if (!pendingTasks.remove (task)) {
                         remove.add (task);
-                        //S ystem.out.println ("  remove: " + task);
-                        add.add (task);
+                    }                   
+                    add.add (Pair.<SchedulerTask,Class<? extends Scheduler>>of(task,null));
+                } else if (task.getSchedulerClass () == schedulerType) {
+                    if (!pendingTasks.remove (task)) {
+                        remove.add (task);
                     }
-                    //S ystem.out.println ("  add: " + task);
+                    add.add (Pair.<SchedulerTask,Class<? extends Scheduler>>of(task,schedulerType));
                 }
             }
-        }
+        }        
         if (!add.isEmpty ()) {
-            TaskProcessor.updatePhaseCompletionTask(add, remove, source, this, schedulerType);
+            TaskProcessor.updatePhaseCompletionTask(add, remove, source, this);
         }
     }
 
@@ -566,17 +555,13 @@ retry:  while (true) {
         SourceModificationEvent sourceModificationEvent = SourceAccessor.getINSTANCE ().getSourceModificationEvent (source);
         if (sourceModificationEvent == null)
             return;
-        Map<Class<? extends Scheduler>,SchedulerEvent> schedulerEvents = new HashMap<Class<? extends Scheduler>, SchedulerEvent> ();
-        for (Scheduler scheduler : Schedulers.getSchedulers ()) {
-            SchedulerEvent schedulerEvent = SchedulerAccessor.get ().createSchedulerEvent (scheduler, sourceModificationEvent);
-            if (schedulerEvent != null)
-                schedulerEvents.put (scheduler.getClass (), schedulerEvent);
-        }
-        SourceAccessor.getINSTANCE ().setSchedulerEvents (source, schedulerEvents);
-        if (schedulerEvents.isEmpty ())
+        final Map<Class<? extends Scheduler>,? extends SchedulerEvent> schedulerEvents =
+                SourceAccessor.getINSTANCE ().createSchedulerEvents (source, Schedulers.getSchedulers (), sourceModificationEvent);
+        if (schedulerEvents.isEmpty ()) {
             return;
+        }
         final List<SchedulerTask> remove = new ArrayList<SchedulerTask> ();
-        final List<SchedulerTask> add = new ArrayList<SchedulerTask> ();
+        final List<Pair<SchedulerTask,Class<? extends Scheduler>>> add = new ArrayList<Pair<SchedulerTask,Class<? extends Scheduler>>>();
         Collection<SchedulerTask> tsks = createTasks();
         synchronized (TaskProcessor.INTERNAL_LOCK) {
             for (SchedulerTask task : tsks) {
@@ -585,19 +570,14 @@ retry:  while (true) {
                     !schedulerEvents.containsKey (schedulerClass)
                 )
                     continue;
-                if (pendingTasks.remove (task)) {
-                    add.add (task);
-                }
-                else {
+                if (!pendingTasks.remove (task)) {
                     remove.add (task);
-                    //S ystem.out.println ("  remove: " + task);
-                    add.add (task);
                 }
-                //S ystem.out.println ("  add: " + task);
+                add.add (Pair.<SchedulerTask,Class<? extends Scheduler>>of(task,null));
             }
         }
         if (!add.isEmpty ()) {
-            TaskProcessor.updatePhaseCompletionTask (add, remove, source, this, null);
+            TaskProcessor.updatePhaseCompletionTask (add, remove, source, this);
         }
     }
     

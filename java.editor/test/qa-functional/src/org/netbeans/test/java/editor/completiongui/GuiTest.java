@@ -195,8 +195,8 @@ public class GuiTest extends EditorTestCase {
     }
     
     public void testAddSuperClass() {
-        String pattern  = ".*extends Byte.*";
-        performCodeCompletion("ContextAware","extends B", 11, 2, pattern, false);
+        String pattern  = ".*extends Number.*";
+        performCodeCompletion("ContextAware","extends Nu", 11, 2, pattern, false);
     }
     
     public void testAddInterface() {

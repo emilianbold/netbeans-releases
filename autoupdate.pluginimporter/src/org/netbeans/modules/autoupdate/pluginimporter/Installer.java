@@ -74,7 +74,7 @@ public class Installer extends ModuleInstall {
     private static final List<String> VERSION_TO_CHECK =
             Arrays.asList (".netbeans/7.1.2", ".netbeans/7.1.1", ".netbeans/7.1", ".netbeans/7.0", ".netbeans/6.9"); //NOI18N
     private static final List<String> NEWER_VERSION_TO_CHECK =
-            Arrays.asList (/*"7.2, ..."*/); //NOI18N
+            Arrays.asList ("7.2.1", "7.2"); //NOI18N
     private static final String IMPORTED = "imported"; // NOI18N
 
     @Override
@@ -199,7 +199,7 @@ public class Installer extends ModuleInstall {
     // XXX: copy from o.n.upgrader
     private static File checkPrevious (final List<String> versionsToCheck) {
         String userHome = System.getProperty ("user.home"); // NOI18N
-        File sourceFolder = null;
+        File sourceFolder;
         if (userHome != null) {
             File userHomeFile = new File (userHome);
             for (String ver : versionsToCheck) {
@@ -215,7 +215,7 @@ public class Installer extends ModuleInstall {
     private static File checkPreviousOnOsSpecificPlace (final List<String> versionsToCheck) {
         String defaultUserdirRoot = System.getProperty ("netbeans.default_userdir_root"); // NOI18N
         LOG.log (Level.FINER, "netbeans.default_userdir_root: " + defaultUserdirRoot);
-        File sourceFolder = null;
+        File sourceFolder;
         if (defaultUserdirRoot != null) {
             File userHomeFile = new File (defaultUserdirRoot);
             for (String ver : versionsToCheck) {

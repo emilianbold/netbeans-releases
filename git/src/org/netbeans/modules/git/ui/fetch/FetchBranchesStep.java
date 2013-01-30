@@ -167,9 +167,11 @@ public class FetchBranchesStep extends AbstractWizardPanel implements WizardDesc
         List<BranchMapping> l = new ArrayList<BranchMapping>(branches.size());
         for (GitBranch branch : branches.values()) {
             GitBranch localBranch = localBranches.get(remote.getRemoteName() + "/" + branch.getName());
-            l.add(new BranchMapping(branch.getName(), localBranch == null ? null : localBranch.getName(), remote, false));
+            boolean preselected = localBranch != null && !localBranch.getId().equals(branch.getId());
+            l.add(new BranchMapping(branch.getName(), branch.getId(), localBranch, remote, preselected));
         }
-        this.branches.setBranches(l);        
+        this.branches.setBranches(l);
+        validateBeforeNext();
     }
     
     @Override

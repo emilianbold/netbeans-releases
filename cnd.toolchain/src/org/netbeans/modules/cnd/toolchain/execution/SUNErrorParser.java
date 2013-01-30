@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.cnd.toolchain.execution;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -52,6 +51,7 @@ import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
 import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.ScannerDescriptor;
 import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.ScannerPattern;
 import org.netbeans.modules.cnd.spi.toolchain.ErrorParserProvider;
+import org.netbeans.modules.cnd.spi.toolchain.ErrorParserProvider.OutputListenerRegistry;
 import org.netbeans.modules.cnd.spi.toolchain.ErrorParserProvider.Result;
 import org.netbeans.modules.cnd.spi.toolchain.ErrorParserProvider.Results;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -64,7 +64,7 @@ public final class SUNErrorParser extends ErrorParser {
     private final List<String> severity = new ArrayList<String>();
     private final List<Pattern> SunStudioOutputFilters = new ArrayList<Pattern>();
     private Pattern SUN_DIRECTORY_ENTER;
-    private final OutputListenerFactory listenerFactory = new OutputListenerFactory();
+    private OutputListenerRegistry listenerRegistry;
 
     public SUNErrorParser(Project project, CompilerFlavor flavor, ExecutionEnvironment execEnv, FileObject relativeTo) {
         super(project, execEnv, relativeTo);
@@ -89,7 +89,12 @@ public final class SUNErrorParser extends ErrorParser {
     }
 
     @Override
-    public Result handleLine(String line) throws IOException {
+    public void setOutputListenerRegistry(OutputListenerRegistry regestry) {
+        listenerRegistry = regestry;
+    }
+
+    @Override
+    public Result handleLine(String line) {
         Result res = handleLineImpl(line);
         if (res == null || res == ErrorParserProvider.NO_RESULT) {
             // Remove lines extra lines from Sun Compiler output
@@ -104,7 +109,7 @@ public final class SUNErrorParser extends ErrorParser {
         return res;
     }
 
-    private Result handleLineImpl(String line) throws IOException {
+    private Result handleLineImpl(String line) {
         for (Pattern p : patterns) {
             Matcher m = p.matcher(line);
             boolean found = m.find();
@@ -115,7 +120,7 @@ public final class SUNErrorParser extends ErrorParser {
         return null;
     }
 
-    private Result handleLine(String line, Matcher m) throws IOException {
+    private Result handleLine(String line, Matcher m) {
         if (m.pattern() == SUN_DIRECTORY_ENTER) {
             FileObject myObj = resolveFile(m.group(1));
             if (myObj != null) {
@@ -146,7 +151,7 @@ public final class SUNErrorParser extends ErrorParser {
                 FileObject fo = resolveRelativePath(relativeTo, file);
                 boolean important = severity.get(i).equals("error"); // NOI18N
                 if (fo != null && fo.isValid()) {
-                    return new Results(line, listenerFactory.register(fo, lineNumber.intValue() - 1, important, description));
+                    return new Results(line, listenerRegistry.register(fo, lineNumber.intValue() - 1, important, description));
                 }
             } catch (NumberFormatException e) {
             }

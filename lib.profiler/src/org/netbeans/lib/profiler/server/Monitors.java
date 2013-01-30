@@ -43,7 +43,6 @@
 
 package org.netbeans.lib.profiler.server;
 
-import java.util.Stack;
 import org.netbeans.lib.profiler.global.CommonConstants;
 import org.netbeans.lib.profiler.global.Platform;
 import org.netbeans.lib.profiler.server.system.Classes;
@@ -750,35 +749,25 @@ public class Monitors implements CommonConstants {
 
     protected static long time; // Used just for estimating the overhead
 
-    private static ActiveServerState activeServerState = new ActiveServerState(CommonConstants.SERVER_RUNNING);
+    private static ActiveServerState activeServerState;
     private static final Object activeServerStateLock = new Object();
     //~ Methods ------------------------------------------------------------------------------------------------------------------
 
     public static MonitoredNumbersResponse getMonitoredNumbers() {
         //time = ProfilerRuntime.getCurrentTimeInCounts();
-        int nUserThreads;
         int nTotalThreads = Threads.getTotalNumberOfThreads();
-        nTotalThreads--; // ProfilerServer.executeInSeparateThread()
-                         // This number includes our Server communication thread, memory monitor thread, and separate command execution thread
+        int nUserThreads = nTotalThreads - ThreadInfo.getLiveServerThreads(); // This number includes our Server communication thread, memory monitor thread, and separate command execution thread
 
         int nSystemThreads = ProfilerInterface.getNPrerecordedSystemThreads();
 
         if (nSystemThreads != -1) { // "Start from tool" mode, so we have recorded system threads
-            nUserThreads = nTotalThreads - nSystemThreads;
-            nSystemThreads -= 2; // To hide our own Server and Memory monitor threads
+            nUserThreads -= nSystemThreads;
 
             if (ProfilerServer.isTargetAppMainThreadComplete()) { // It's not really complete, but executes JFluid code, so logically it's done.
                 nUserThreads--;
             }
-        } else { // Attachment mode, no exact knowledge of the number of system threads
-            nUserThreads = nTotalThreads - 3; // At least we know that two threads are JFluid-owned
-        }
-
-        // Now compensate for an additonal Java thread used in the following two instrumentation modes
-        int instrType = ProfilerInterface.getCurrentInstrType();
-
-        if ((instrType == INSTR_RECURSIVE_SAMPLED) || (instrType == INSTR_OBJECT_LIVENESS)) {
-            nUserThreads--;
+        } else { // Attach mode, no exact knowledge of the number of system threads
+            nSystemThreads = 0;
         }
 
         // Get the relative GC time metrics
@@ -819,6 +808,7 @@ public class Monitors implements CommonConstants {
         ThreadInfo.addProfilerServerThread(stMonitor);
         startTimeMilis = System.currentTimeMillis();
         startTimeCounts = Timers.getCurrentTimeInCounts();
+        activeServerState = new ActiveServerState(CommonConstants.SERVER_RUNNING);
         stMonitor.start();
     }
 
@@ -841,7 +831,6 @@ public class Monitors implements CommonConstants {
 
     static void exitServerState() {
         synchronized(activeServerStateLock) {
-            assert activeServerState != null;
             activeServerState = activeServerState.parent;
         }
     }

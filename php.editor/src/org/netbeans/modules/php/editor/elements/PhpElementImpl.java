@@ -53,9 +53,10 @@ import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.php.api.util.FileUtils;
+import org.netbeans.modules.php.api.util.StringUtils;
+import org.netbeans.modules.php.editor.api.ElementQuery;
 import org.netbeans.modules.php.editor.api.PhpElementKind;
 import org.netbeans.modules.php.editor.api.PhpModifiers;
-import org.netbeans.modules.php.editor.api.ElementQuery;
 import org.netbeans.modules.php.editor.api.elements.FullyQualifiedElement;
 import org.netbeans.modules.php.editor.api.elements.PhpElement;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
@@ -64,39 +65,35 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
+import org.openide.util.Utilities;
 
 /**
  * @author Radek Matous
  */
 public abstract class PhpElementImpl implements PhpElement {
 
-    static enum SEPARATOR {
-        SEMICOLON,
-        COMMA,
-        COLON,
-        PIPE;
+    static enum Separator {
+        SEMICOLON(";"), //NOI18N
+        COMMA(","), //NOI18N
+        COLON(":"), //NOI18N
+        PIPE("|"); //NOI18N
 
-        public static EnumSet<SEPARATOR> toEnumSet() {
-            return EnumSet.allOf(SEPARATOR.class);
+        public static EnumSet<Separator> toEnumSet() {
+            return EnumSet.allOf(Separator.class);
+        }
+
+        private final String value;
+
+        private Separator(final String value) {
+            this.value = value;
         }
 
         @Override
         public String toString() {
-            switch (this) {
-                case SEMICOLON:
-                    return ";";//NOI18N
-                case COMMA:
-                    return ",";//NOI18N
-                case COLON:
-                    return ":";//NOI18N
-                case PIPE:
-                    return "|";//NOI18N
-                default:
-                    assert false;
-            }
-            return super.toString();
+            return value;
         }
     }
+
     private static final String CLUSTER_URL = "cluster:"; // NOI18N
     private static String clusterUrl = null;
     private final String name;
@@ -104,14 +101,15 @@ public abstract class PhpElementImpl implements PhpElement {
     private final String fileUrl;
     private final int offset;
     private final ElementQuery elementQuery;
-    protected FileObject fileObject;
+    //@GuardedBy("this")
+    private FileObject fileObject;
 
     public static PhpElementImpl create(final String variableName, final String in, final int offset, final FileObject fo, final PhpElementKind kind) {
         return new PhpElementImpl(variableName, in, null, offset, null) {
 
             @Override
             public String getSignature() {
-                return "";//NOI18N
+                return ""; //NOI18N
             }
 
             @Override
@@ -131,10 +129,10 @@ public abstract class PhpElementImpl implements PhpElement {
             final int offset, final ElementQuery elementQuery) {
         this.name = name;
         this.in = in;
-        this.fileUrl = fileUrl;
+        this.fileUrl = fileUrl == null ? "" : fileUrl;
         this.offset = offset;
-        if (fileUrl != null && fileUrl.contains(" ")) {//NOI18N
-            throw new IllegalArgumentException("fileURL may not contain spaces!");//NOI18N
+        if (fileUrl != null && fileUrl.contains(" ")) { //NOI18N
+            throw new IllegalArgumentException("fileURL may not contain spaces!"); //NOI18N
         }
         this.elementQuery = elementQuery;
     }
@@ -172,10 +170,14 @@ public abstract class PhpElementImpl implements PhpElement {
     @Override
     public synchronized FileObject getFileObject() {
         String urlStr = fileUrl;
-        if ((fileObject == null) && (fileUrl != null)) {
+        if ((fileObject == null) && StringUtils.hasText(fileUrl)) {
             fileObject = resolveFileObject(urlStr);
         }
         return fileObject;
+    }
+
+    public synchronized void setFileObject(FileObject fileObject) {
+        this.fileObject = fileObject;
     }
 
     public static FileObject resolveFileObject(final String urlStr) {
@@ -187,7 +189,7 @@ public abstract class PhpElementImpl implements PhpElement {
         return toFileObject(url);
     }
 
-    /** Get the FileObject corresponding to a URL returned from the index */
+    /** Get the FileObject corresponding to a URL returned from the index. */
     public static FileObject toFileObject(String urlStr) {
         try {
             URL url = new URL(urlStr);
@@ -213,7 +215,7 @@ public abstract class PhpElementImpl implements PhpElement {
 
             try {
                 f = f.getCanonicalFile();
-                retval = f.toURI().toURL().toExternalForm();
+                retval = Utilities.toURI(f).toURL().toExternalForm();
             } catch (IOException ioe) {
                 Exceptions.printStackTrace(ioe);
             }
@@ -304,9 +306,9 @@ public abstract class PhpElementImpl implements PhpElement {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append(getPhpElementKind().toString()).append(" ");//NOI18N
+        sb.append(getPhpElementKind().toString()).append(" "); //NOI18N
         if (this instanceof FullyQualifiedElement) {
-            sb.append(((FullyQualifiedElement)this).getFullyQualifiedName().toString());
+            sb.append(((FullyQualifiedElement) this).getFullyQualifiedName().toString());
         } else {
             sb.append(getName());
         }

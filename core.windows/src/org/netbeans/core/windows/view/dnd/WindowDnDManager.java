@@ -695,11 +695,26 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
         return false;
     }
     
+    /** Indicates whether document and non-document top components are about to be mixed
+     *  when transfer drops into droppable.
+     */
+    static boolean isMixedTCDragDrop(TopComponentDraggable transfer, TopComponentDroppable droppable) {
+        if (transfer != null && droppable != null) {
+            if ((droppable.getKind() == Constants.MODE_KIND_EDITOR
+                    && transfer.getKind() != Constants.MODE_KIND_EDITOR)
+                    || (droppable.getKind() != Constants.MODE_KIND_EDITOR
+                    && transfer.getKind() == Constants.MODE_KIND_EDITOR)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
     /** Indicates whether the cursor is around the editor area of the main window.
      * In that case is needed also to provide a drop. */
     static boolean isNearEditorEdge(Point location, ViewAccessor viewAccessor, int kind) {
         Component editor = WindowManagerImpl.getInstance().getEditorAreaComponent();
-        if(editor == null) {
+        if(editor == null || editor.getParent() == null) {
             return false;
         }
         Point p = new Point(location);
@@ -1018,7 +1033,8 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
                     && windowDnDManager.startingTransfer.isUndockingEnabled();
             boolean isAroundCenterPanel
                     = isAroundCenterPanel(location);
-
+            boolean isMixedTCDragDrop = isMixedTCDragDrop(windowDnDManager.startingTransfer, windowDnDManager.findDroppableFromScreen(windowDnDManager.getFloatingFrames(), location, windowDnDManager.startingTransfer));
+            
             if(isInMainDroppable || isInFrameDroppable || isAroundCenterPanel) {
                 TopComponentDroppable droppable 
                         = windowDnDManager.findDroppableFromScreen(windowDnDManager.getFloatingFrames(), location, windowDnDManager.startingTransfer);
@@ -1027,9 +1043,9 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
                 if (droppable instanceof FreeAreaDroppable) {
                     if(WindowManagerImpl.getInstance().getEditorAreaState() == Constants.EDITOR_AREA_SEPARATED
                         && droppable.canDrop(windowDnDManager.startingTransfer, location)) {
-                        topComponentDragSupport.setSuccessCursor(true);
+                        topComponentDragSupport.setSuccessCursor(true, isMixedTCDragDrop);
                     } else {
-                        topComponentDragSupport.setUnsuccessCursor();
+                        topComponentDragSupport.setUnsuccessCursor(isMixedTCDragDrop);
                     }                    
                     // for the status bar it's null somehow, workarounding by checking for null.. should go away..
                 } else if (droppable != null) {
@@ -1043,22 +1059,22 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
                     Point p = new Point(location);
                     SwingUtilities.convertPointFromScreen(p, droppable.getDropComponent());
                     if(droppable.canDrop(windowDnDManager.startingTransfer, p)) {
-                        topComponentDragSupport.setSuccessCursor(false);
+                        topComponentDragSupport.setSuccessCursor(false, isMixedTCDragDrop);
                     } else {
-                        topComponentDragSupport.setUnsuccessCursor();
+                        topComponentDragSupport.setUnsuccessCursor(isMixedTCDragDrop);
                     }
                     dragOverDropTarget(location, droppable);
                 }
             } else if(!isInMainWindow(location) 
                         && windowDnDManager.isInFloatingFrame(location)) {
                 // Simulates success drop in free area.
-                topComponentDragSupport.setSuccessCursor(false);
+                topComponentDragSupport.setSuccessCursor(false, isMixedTCDragDrop);
             } else if(isInFreeArea(location, fakeWindow)
                         && getFreeAreaDroppable(location).canDrop(windowDnDManager.startingTransfer, location)
                         && windowDnDManager.startingTransfer.isUndockingEnabled()) {
-                topComponentDragSupport.setSuccessCursor(true);
+                topComponentDragSupport.setSuccessCursor(true, isMixedTCDragDrop);
             } else {
-                topComponentDragSupport.setUnsuccessCursor();
+                topComponentDragSupport.setUnsuccessCursor(isMixedTCDragDrop);
             }
             
             if(!isInMainDroppable && !isInFrameDroppable && !isAroundCenterPanel) {
@@ -1193,6 +1209,10 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
             return transfer.getKind() == Constants.MODE_KIND_VIEW || transfer.getKind() == Constants.MODE_KIND_SLIDING;
         }
 
+        @Override
+        public int getKind() {
+            return Constants.MODE_KIND_VIEW;
+        }
 
     } // End of class CenterPanelDroppable.
     
@@ -1276,6 +1296,12 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
             return transfer.getKind() == Constants.MODE_KIND_EDITOR;
         }
 
+        @Override
+        public int getKind() {
+            if( null == getStartingDroppable() )
+                return Constants.MODE_KIND_EDITOR;
+            return getStartingDroppable().getKind();
+        }
 
     } // End of class EditorAreaDroppable.
 
@@ -1335,6 +1361,11 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
         @Override
         public boolean supportsKind(TopComponentDraggable transfer) {
             return true;
+        }
+
+        @Override
+        public int getKind() {
+            return Constants.MODE_KIND_VIEW;
         }
 
     } // End of class FreeAreaDroppable.
@@ -1532,6 +1563,11 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
                 rect.width = glassPane.getBounds().width;
             }
             return rect;
+        }
+
+        @Override
+        public int getKind() {
+            return Constants.MODE_KIND_SLIDING;
         }
     }
 

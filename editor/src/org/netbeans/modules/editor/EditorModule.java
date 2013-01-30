@@ -50,11 +50,9 @@ import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
@@ -69,19 +67,16 @@ import javax.swing.text.html.HTMLEditorKit;
 import javax.swing.text.rtf.RTFEditorKit;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
-import org.netbeans.api.search.SearchHistory;
-import org.netbeans.api.search.SearchPattern;
 import org.netbeans.editor.AnnotationType;
 import org.netbeans.editor.AnnotationTypes;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.BaseKit;
-import org.netbeans.editor.FindSupport;
-import org.netbeans.editor.FindSupport.SearchPatternWrapper;
 import org.netbeans.editor.LocaleSupport;
+import org.netbeans.modules.editor.impl.actions.clipboardhistory.ClipboardHistory;
 import org.netbeans.modules.editor.indent.api.Reformat;
 import org.netbeans.modules.editor.lib.EditorPackageAccessor;
+import org.netbeans.modules.editor.lib2.actions.EditorRegistryWatcher;
 import org.netbeans.modules.editor.lib2.document.ReadWriteUtils;
-import org.netbeans.modules.editor.lib2.search.EditorFindSupport;
 import org.netbeans.modules.editor.options.AnnotationTypesFolder;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
@@ -98,6 +93,7 @@ import org.openide.text.CloneableEditor;
 import org.openide.text.NbDocument;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.datatransfer.ExClipboard;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
@@ -112,20 +108,7 @@ public class EditorModule extends ModuleInstall {
     
     private static final boolean debug = Boolean.getBoolean("netbeans.debug.editor.kits");
 
-    private static class SearchHistoryUtility {
-        public static List convertFromSearchHistoryToEditorFindSupport(List<SearchPattern> searchPatterns) {
-            List history = new ArrayList<EditorFindSupport.SPW>();
-            for (int i = 0; i < searchPatterns.size(); i++) {
-                SearchPattern sptr = searchPatterns.get(i);
-                EditorFindSupport.SPW spwrap = new EditorFindSupport.SPW(sptr.getSearchExpression(),
-                        sptr.isWholeWords(), sptr.isMatchCase(), sptr.isRegExp());
-                history.add(spwrap);
-            }
-            return history;
-        }
-    }
-    private PropertyChangeListener searchSelectedPatternListener;
-    private PropertyChangeListener editorHistoryChangeListener;
+    private PropertyChangeListener topComponentRegistryListener;
 
     /** Module installed again. */
     public @Override void restored () {
@@ -133,9 +116,11 @@ public class EditorModule extends ModuleInstall {
 
         // register loader for annotation types
         AnnotationTypes.getTypes().registerLoader( new AnnotationTypes.Loader() {
+                @Override
                 public void loadTypes() {
                     AnnotationTypesFolder.getAnnotationTypesFolder();
                 }
+                @Override
                 public void loadSettings() {
                     // AnnotationType properties are stored in BaseOption, so let's read them now
                     Preferences prefs = MimeLookup.getLookup(MimePath.EMPTY).lookup(Preferences.class);
@@ -157,9 +142,11 @@ public class EditorModule extends ModuleInstall {
                     b = prefs.getBoolean(AnnotationTypes.PROP_SHOW_GLYPH_GUTTER, true);
                     AnnotationTypes.getTypes().setShowGlyphGutter(b);
                 }
+                @Override
                 public void saveType(AnnotationType type) {
                     AnnotationTypesFolder.getAnnotationTypesFolder().saveAnnotationType(type);
                 }
+                @Override
                 public void saveSetting(String settingName, Object value) {
                     // AnnotationType properties are stored to BaseOption
                     Preferences prefs = MimeLookup.getLookup(MimePath.EMPTY).lookup(Preferences.class);
@@ -222,51 +209,31 @@ public class EditorModule extends ModuleInstall {
 
         // ------------------------------------------------------------
         
-         searchSelectedPatternListener = new PropertyChangeListener(){
-             
-            @Override
-             public void propertyChange(PropertyChangeEvent evt){
-                 if (evt == null)
-                     return;             
-                 if (SearchHistory.ADD_TO_HISTORY.equals(evt.getPropertyName())){
-                     EditorFindSupport.getInstance().setHistory(
-                             SearchHistoryUtility.convertFromSearchHistoryToEditorFindSupport(SearchHistory.getDefault().getSearchPatterns()));
-                 }
-             }
-         };
 
-        editorHistoryChangeListener = new PropertyChangeListener() {
-
-            @Override
-            public void propertyChange(PropertyChangeEvent evt) {
-                if (evt == null) {
-                    return;
-                }
-                if (EditorFindSupport.FIND_HISTORY_PROP.equals(evt.getPropertyName())) {
-                    EditorFindSupport.SPW spw = (EditorFindSupport.SPW) evt.getNewValue();
-                    if (spw == null || spw.getSearchExpression() == null || "".equals(spw.getSearchExpression())) { //NOI18N
-                        return;
+        if (topComponentRegistryListener == null) {
+            topComponentRegistryListener = new PropertyChangeListener() {
+                @Override
+                public void propertyChange(PropertyChangeEvent evt) {
+                    if (TopComponent.Registry.PROP_ACTIVATED.equals(evt.getPropertyName())) {
+                        EditorRegistryWatcher.get().notifyActiveTopComponentChanged(TopComponent.getRegistry().getActivated());
                     }
-                    SearchPattern sp = SearchPattern.create(spw.getSearchExpression(),
-                            spw.isWholeWords(), spw.isMatchCase(), spw.isRegExp());
-                    SearchHistory.getDefault().add(sp);
-                } else if (EditorFindSupport.FIND_HISTORY_CHANGED_PROP.equals(evt.getPropertyName())) {
-                    EditorFindSupport.getInstance().setHistory(
-                             SearchHistoryUtility.convertFromSearchHistoryToEditorFindSupport(SearchHistory.getDefault().getSearchPatterns()));
-                }                       
-            }
-        };
-
-        SearchHistory.getDefault().addPropertyChangeListener(searchSelectedPatternListener);
-        EditorFindSupport.getInstance().addPropertyChangeListener(editorHistoryChangeListener);
-      
-
+                }
+            };
+            TopComponent.getRegistry().addPropertyChangeListener(topComponentRegistryListener);
+        }
+            
          if (GraphicsEnvironment.isHeadless()) {
              return;
          }
+         
+        final ExClipboard clipboard = (ExClipboard) Lookup.getDefault().lookup(ExClipboard.class);
+        if (clipboard != null) {
+            clipboard.addClipboardListener(ClipboardHistory.getInstance());
+        }
 
          if (LOG.isLoggable(Level.FINE)) {
              WindowManager.getDefault().invokeWhenUIReady(new Runnable() {
+                @Override
                 public void run() {
                     try {
                         Field kitsField = BaseKit.class.getDeclaredField("kits");
@@ -295,7 +262,7 @@ public class EditorModule extends ModuleInstall {
             }
         });
     }
-
+    
     /** Called when module is uninstalled. Overrides superclass method. */
     public @Override void uninstalled() {
 
@@ -305,6 +272,10 @@ public class EditorModule extends ModuleInstall {
         }
         */
          
+        if (topComponentRegistryListener != null) {
+            TopComponent.getRegistry().removePropertyChangeListener(topComponentRegistryListener);
+        }
+
         // unregister our registry
         try {
             Field keyField = JEditorPane.class.getDeclaredField("kitRegistryKey");  // NOI18N
@@ -345,6 +316,7 @@ public class EditorModule extends ModuleInstall {
 
         // #42970 - Possible closing of opened editor top components must happen in AWT thread
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
 
                 // issue #16110

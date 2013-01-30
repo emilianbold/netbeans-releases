@@ -42,6 +42,7 @@
 package org.netbeans.core.windows.view.ui;
 
 import javax.swing.JTabbedPane;
+import javax.swing.UIManager;
 import org.netbeans.core.windows.Switches;
 import org.netbeans.core.windows.options.WinSysPrefs;
 import org.netbeans.core.windows.view.ui.tabcontrol.JTabbedPaneAdapter;
@@ -62,6 +63,8 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider(service=TabbedComponentFactory.class,position=1000)
 public class DefaultTabbedComponentFactory implements TabbedComponentFactory {
 
+    private final boolean isAquaLaF = "Aqua".equals(UIManager.getLookAndFeel().getID()); //NOI18N
+
     @Override
     public Tabbed createTabbedComponent( TabbedType type, WinsysInfoForTabbedContainer info ) {
         if( Switches.isUseSimpleTabs() ) {
@@ -75,6 +78,12 @@ public class DefaultTabbedComponentFactory implements TabbedComponentFactory {
         else if( type == TabbedType.EDITOR ) {
             boolean multiRow = WinSysPrefs.HANDLER.getBoolean( WinSysPrefs.DOCUMENT_TABS_MULTIROW, false );
             int placement = WinSysPrefs.HANDLER.getInt( WinSysPrefs.DOCUMENT_TABS_PLACEMENT, JTabbedPane.TOP );
+            if( isAquaLaF ) {
+                multiRow = false;
+                if( placement == JTabbedPane.LEFT || placement == JTabbedPane.RIGHT ) {
+                    placement = JTabbedPane.TOP;
+                }
+            }
             if( multiRow || placement != JTabbedPane.TOP ) {
                 JTabbedPaneAdapter tabPane = new JTabbedPaneAdapter( type, info );
                 tabPane.setTabPlacement( placement );

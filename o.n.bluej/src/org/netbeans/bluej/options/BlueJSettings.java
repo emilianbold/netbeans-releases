@@ -132,6 +132,7 @@ public class BlueJSettings {
                 str = new FileInputStream(prop);
                 Properties properties = new Properties();
                 properties.load(str);
+                str.close();
                 int index = 1;
                 while (true) {
                     String propKey = "bluej.userlibrary." + index + ".location"; // NOI18N

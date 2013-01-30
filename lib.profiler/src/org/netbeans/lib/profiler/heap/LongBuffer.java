@@ -65,6 +65,7 @@ class LongBuffer {
     //~ Instance fields ----------------------------------------------------------------------------------------------------------
 
     private DataInputStream readStream;
+    private boolean readStreamClosed;
     private DataOutputStream writeStream;
     private File backingFile;
     private long[] buffer;
@@ -99,18 +100,29 @@ class LongBuffer {
                 return 0;
             }
         }
-
+        if (readStreamClosed) {
+            return 0;
+        }
         try {
             return readStream.readLong();
         } catch (EOFException ex) {
+            readStreamClosed = true;
+            readStream.close();
             return 0L;
         }
     }
 
-    void reset() {
+    void reset() throws IOException {
         bufferSize = 0;
+        if (writeStream != null) {
+            writeStream.close();
+        }
+        if (readStream != null) {
+            readStream.close();
+        }
         writeStream = null;
         readStream = null;
+        readStreamClosed = false;
         longs = 0;
         useBackingFile = false;
         readOffset = 0;
@@ -138,6 +150,7 @@ class LongBuffer {
                     readStream.close();
                 }
                 readStream = new DataInputStream(new BufferedInputStream(new FileInputStream(backingFile), buffer.length * 8));
+                readStreamClosed = false;
             } catch (IOException ex) {
                 ex.printStackTrace();
             }

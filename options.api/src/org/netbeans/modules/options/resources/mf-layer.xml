@@ -53,6 +53,9 @@ made subject to such option by the copyright holder.
         <folder name="Advanced">
             <attr name="position" intvalue="0"/>
         </folder>
+        <folder name="Keywords">
+            <attr name="position" intvalue="0"/>
+        </folder>
     </folder>
 
     <folder name="OptionsExport">

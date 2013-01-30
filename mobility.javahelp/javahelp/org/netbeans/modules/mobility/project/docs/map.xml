@@ -217,4 +217,8 @@
 	<mapID target="org.netbeans.modules.mobility.project.ui.security.SecurityManagerAction" url="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/pending.html"/>
 	<mapID target="org.netbeans.modules.mobility.project.deployment.MobilityDeploymentManagerAction" url="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/pending.html"/>
 	<mapID target="org.netbeans.modules.mobility.project.deployment.MobilityDeploymentManagerPanel" url="deploy/deploy_deploying.html"/>
+	<!-- embedded application wizard -->
+	<mapID target="org.netbeans.modules.mobility.project.ui.wizard.ProjectPanelEmbedded" url="ui/wizard_newembedded_name.html"/>
+	<mapID target="org.netbeans.modules.mobility.project.ui.wizard.ConfigurationsSelectionPanelEmbedded" url="ui/wizard_newembedded_moreconfigurations.html"/>
+	<mapID target="org.netbeans.modules.mobility.project.ui.wizard.PlatformSelectionPanelEmbedded" url="ui/wizard_newembedded_platformselection.html"/>
 </map>

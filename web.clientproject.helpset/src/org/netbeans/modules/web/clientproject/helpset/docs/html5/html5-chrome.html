@@ -1,0 +1,85 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--       
+*     Copyright © 1997, 2011, Oracle and/or its affiliates. All rights reserved. 
+*     Use is subject to license terms.
+-->
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>Integrating an HTML5 Project with a Browser</title>
+<link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+
+<h2>Integrating an HTML5 Project with a Browser</h2>
+<p> <small><a href="#seealso">See Also</a>&nbsp; </small>
+
+
+<p>A NetBeans extension is available for the Chrome browser that enables the IDE and the 
+    browser to communicate.
+    To integrate the IDE with the Chrome browser you need to install the NetBeans Connector 
+    extension from the Chrome Web Store or install the extension manually.
+    After you install the extension you can perform the following tasks
+    in the Chrome browser.</p>
+<ul>
+    <li>Use Inspect mode to select and locate elements in your code</li>
+    <li>Debug JavaScript files</li>
+    <li>Select various browser sizes from the NetBeans actions menu</li>
+</ul>
+    
+    <p>After you install the extension, select Chrome with NetBeans Integration as the target browser
+    and run the application. </p>
+
+<ul class="note">
+    <li>Do not close the infobar in the tab in the Chrome browser that informs you that
+    "NetBeans Connector is debugging this tab".
+    Closing the infobar will disconnect the IDE from the Chrome browser.
+    To reconnect the IDE, close the tab where the application was running and re-run 
+    the application from the IDE.</li>
+</ul>
+
+<p class="note"><strong>Note.</strong> You only need to install the extension one time.</p>
+
+<h3>Installing the extension from the Chrome Web Store</h3>
+<p>Perform the following steps to install the NetBeans extension for the Chrome browser.</p>
+<ol>
+    <li>Right-click an HTML5 project node in the Project Projects window and choose Properties in the popup menu. 
+        <p>Alternatively, you can select a target browser for the project from the dropdown list in the toolbar.</p></li>
+    <li>In the Run panel of the Properties window, select Chrome with NetBeans Integration in the server dropdown list. Click OK.</li>
+    <li>Right-click the HTML5 project node in the Projects window and choose Run.
+        <p>When you click Run the IDE opens a dialog that prompts you to install the extension from the Chrome Web Store.</p></li>
+
+    <li>After the extension is installed in the Chrome browser, click the "Re-run Project" button 
+        in the dialog box to open the HTML5 application in the Chrome browser.
+        <p>You will see an infobar in the tab in the Chrome browser that informs you that
+        "NetBeans Connector is debugging this tab".</p></li>
+</ol>
+
+<h3>Installing the extension manually</h3>
+<p>If you are unable to connect to the Chrome Web Store you can install the NetBeans Connector extension manually
+by performing the following steps.</p>
+<ol>
+    <li>Open your Chrome browser to <tt>chrome://chrome/extensions/</tt>.</li>
+    <li>On your local system, navigate to the <tt><em>NETBEANS_INSTALL</em>/ide/modules/lib</tt>
+        directory, where <tt><em>NETBEANS_INSTALL</em></tt> is the installation of the IDE.</li>
+    <li>Drag the NetBeans Connector extension (<tt>netbeans-chrome-connector.crx</tt>) 
+        from the <tt>lib</tt> directory into the Extensions tab in the Chrome browser window 
+        and approve the addition of the extension.</li>
+    <li>Right-click the HTML5 project node in the Projects window and choose Run to open the 
+        application in the browser.
+    <p>You will see an infobar in the tab in the Chrome browser that informs you that
+        "NetBeans Connector is debugging this tab".</p></li>
+</ol>
+
+<dl>
+<dt><a name="seealso">See Also</a></dt>
+<dd><a href="../javascript/js-debug.html">Debugging an HTML5 Application Project</a></dd>
+<dd><a href="html5-runproject.html">Running an HTML5 Application</a></dd>
+</dl>
+
+<hr><small><a href="../credits.html">Legal Notices</a></small>
+
+<table border="0" cellpadding="50">
+<tr><td>&nbsp;</td></tr>
+</table></body>
+</html>

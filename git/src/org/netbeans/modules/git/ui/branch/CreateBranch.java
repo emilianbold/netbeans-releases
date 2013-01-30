@@ -168,8 +168,9 @@ public class CreateBranch implements DocumentListener {
         @Override
         public void run () {
             final String branchName = CreateBranch.this.branchName;
+            GitClient client = null;
             try {
-                GitClient client = Git.getInstance().getClient(repository);
+                client = Git.getInstance().getClient(repository);
                 final Map<String, GitBranch> branches = client.getBranches(false, GitUtils.NULL_PROGRESS_MONITOR);
                 EventQueue.invokeLater(new Runnable () {
                     @Override
@@ -182,6 +183,10 @@ public class CreateBranch implements DocumentListener {
                 });
             } catch (GitException ex) {
                 GitClientExceptionHandler.notifyException(ex, true);
+            } finally {
+                if (client != null) {
+                    client.release();
+                }
             }
         }
     }

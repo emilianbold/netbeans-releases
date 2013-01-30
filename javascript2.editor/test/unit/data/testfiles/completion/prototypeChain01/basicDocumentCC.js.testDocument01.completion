@@ -1,0 +1,9 @@
+Code completion result for source line:
+document.getE|lementById("dd").getElementsByTagName("*").item(2).getFeature("pero").toLocaleString().charCodeAt(10).toExponential();
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
+------------------------------------
+METHOD     getElementById(): Element       [PUBLIC]   stub_DOM_Document.js
+METHOD     getElementsByClassName(): Node  [PUBLIC]   stub_DOM_document.js
+METHOD     getElementsByName(): NodeList   [PUBLIC]   stub_DOM_HTMLDocument.js
+METHOD     getElementsByTagName(): NodeLi  [PUBLIC]   stub_DOM_Document.js
+METHOD     getElementsByTagNameNS(): Node  [PUBLIC]   stub_DOM_Document.js

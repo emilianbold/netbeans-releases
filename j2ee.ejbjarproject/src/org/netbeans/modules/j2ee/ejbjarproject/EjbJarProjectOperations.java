@@ -47,8 +47,13 @@ package org.netbeans.modules.j2ee.ejbjarproject;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -163,20 +168,10 @@ public class EjbJarProjectOperations implements DeleteOperationImplementation, C
         return files;
     }
     
+    @Override
     public void notifyDeleting() throws IOException {
-        EjbJarActionProvider ap = project.getLookup().lookup(EjbJarActionProvider.class);
-        
-        assert ap != null;
-        
-        Lookup context = Lookups.fixed(new Object[0]);
-        Properties p = new Properties();
-        String[] targetNames = ap.getTargetNames(ActionProvider.COMMAND_CLEAN, context, p);
         FileObject buildXML = project.getProjectDirectory().getFileObject(GeneratedFilesHelper.BUILD_XML_PATH);
-        
-        assert targetNames != null;
-        assert targetNames.length > 0;
-        
-        ActionUtils.runTarget(buildXML, targetNames, p).waitFinished();
+        ActionUtils.runTarget(buildXML, new String[]{ActionProvider.COMMAND_CLEAN}, new Properties()).waitFinished();
     }
     
     public void notifyDeleted() throws IOException {
@@ -252,9 +247,11 @@ public class EjbJarProjectOperations implements DeleteOperationImplementation, C
 
                 if (path.startsWith(originalPath.getAbsolutePath())) {
                     String relative = PropertyUtils.relativizeFile(originalPath, new File(path));
-                    String fixedPath = new File(projectDir, relative).getAbsolutePath();
-                    props.setProperty(property, fixedPath);
-                    project.getAntProjectHelper().putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
+                    if (relative != null) {
+                        String fixedPath = new File(projectDir, relative).getAbsolutePath();
+                        props.setProperty(property, fixedPath);
+                        project.getAntProjectHelper().putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
+                    }
                 }
             }
         });

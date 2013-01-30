@@ -50,8 +50,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+import java.util.logging.Level;
 import javax.swing.SwingUtilities;
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.InvalidArtifactRTException;
 import org.apache.maven.artifact.resolver.ArtifactNotFoundException;
 import org.apache.maven.artifact.resolver.ArtifactResolutionException;
 import org.apache.maven.execution.MavenExecutionRequest;
@@ -80,6 +82,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import static org.netbeans.modules.maven.api.Bundle.*;
+import org.netbeans.modules.maven.modelcache.MavenProjectCache;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.Utilities;
 
@@ -113,8 +116,7 @@ public final class NbMavenProject {
     private final RequestProcessor.Task task;
     private static RequestProcessor BINARYRP = new RequestProcessor("Maven projects Binary Downloads", 1);
     private static RequestProcessor NONBINARYRP = new RequestProcessor("Maven projects Source/Javadoc Downloads", 1);
-    
-    
+
     static class AccessorImpl extends NbMavenProjectImpl.WatcherAccessor {
         
         
@@ -180,6 +182,16 @@ public final class NbMavenProject {
         support = new PropertyChangeSupport(proj);
         task = createBinaryDownloadTask(BINARYRP);
     }
+    
+    /**
+     * 
+     * @return 
+     * @since 
+     */
+    public boolean isUnloadable() {
+        return MavenProjectCache.isFallbackproject(getMavenProject());
+    }
+    
 
     @Messages({"Progress_Download=Downloading Maven dependencies", "MSG_Failed=Failed to download - {0}", "MSG_Done=Finished retrieving dependencies from remote repositories."})
     private RequestProcessor.Task createBinaryDownloadTask(RequestProcessor rp) {
@@ -226,6 +238,10 @@ public final class NbMavenProject {
                         } else {
                             throw x;
                         }
+                    } catch (RuntimeException exc) {
+                        //guard against exceptions that are not processed by the embedder
+                        //#136184 NumberFormatException, #214152 InvalidArtifactRTException
+                        StatusDisplayer.getDefault().setStatusText(MSG_Failed(exc.getLocalizedMessage()));
                     } finally {
                         hndl.finish();
                         ProgressTransferListener.clearAggregateHandle();
@@ -286,11 +302,14 @@ public final class NbMavenProject {
     public File getOutputDirectory(boolean test) {
         Build build = getMavenProject().getBuild();
         String path = build != null ? (test ? build.getTestOutputDirectory() : build.getOutputDirectory()) : null;
+        File toRet;
         if (path != null) {
-            return new File(path);
+            toRet = FileUtil.normalizeFile(new File(path));
         } else { // #189092
-            return new File(new File(getMavenProject().getBasedir(), "target"), test ? "test-classes" : "classes"); // NOI18N
+            //getMavenProject().getBasedir() is normalized.
+            toRet =  new File(new File(getMavenProject().getBasedir(), "target"), test ? "test-classes" : "classes"); // NOI18N
         }
+        return toRet;
     }
 
     /**
@@ -461,9 +480,16 @@ public final class NbMavenProject {
                 progress.progress(MSG_Checking_Sources(art.getId()), 1);
                 online.resolve(sources, project.getOriginalMavenProject().getRemoteArtifactRepositories(), project.getEmbedder().getLocalRepository());
             }
+        } catch (ThreadDeath td) {
+        } catch (IllegalStateException ise) { //download interrupted in dependent thread. #213812
+            if (!(ise.getCause() instanceof ThreadDeath)) {
+                throw ise;
+            }   
         } catch (ArtifactNotFoundException ex) {
             // just ignore..ex.printStackTrace();
         } catch (ArtifactResolutionException ex) {
+            // just ignore..ex.printStackTrace();
+        } catch (InvalidArtifactRTException ex) { //214152 InvalidArtifactRTException
             // just ignore..ex.printStackTrace();
         } finally {
             progress.finish();

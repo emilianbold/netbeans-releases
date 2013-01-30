@@ -513,7 +513,7 @@ public final class PropertyPanelTest extends NbTestCase {
         public void vetoableChange(java.beans.PropertyChangeEvent propertyChangeEvent) throws java.beans.PropertyVetoException {
             if (shallVeto) {
                 shallVeto = false;
-                PropertyVetoException e = new PropertyVetoException ("Veto", propertyChangeEvent);
+                PropertyVetoException e = new PropertyVetoException(null, propertyChangeEvent); // null message to avoid showing an error dialog
                 
                 // marks this exception as one that we do not want to notify
                 PropertyDialogManager.doNotNotify (e);

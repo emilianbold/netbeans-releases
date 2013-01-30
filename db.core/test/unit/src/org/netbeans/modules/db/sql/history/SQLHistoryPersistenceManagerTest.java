@@ -41,12 +41,16 @@
  */
 package org.netbeans.modules.db.sql.history;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -61,12 +65,6 @@ public class SQLHistoryPersistenceManagerTest extends NbTestCase {
      */
     public SQLHistoryPersistenceManagerTest(String testName) {
         super(testName);
-    }
-
-    /** Called before every test case. */
-    @Override
-    public void setUp() {
-        System.out.println("########  " + getName() + "  #######");
     }
 
     /** Called after every test case. */
@@ -94,9 +92,34 @@ public class SQLHistoryPersistenceManagerTest extends NbTestCase {
             }
             
         };
+        // History does not yet exists as file
+        assertNull(testableManager.getHistoryRoot(false));
         testableManager.getSQLHistory().add(new SQLHistoryEntry("jdbc:// mysql", "select * from TRAVEL.PERSON", Calendar.getInstance().getTime()));
-        testableManager.getSQLHistory().add(new SQLHistoryEntry("jdbc:// oracle", "select * from PERSON", Calendar.getInstance().getTime()));
+        // History does not yet exists as file
         testableManager.save();
+        assertNull(testableManager.getHistoryRoot(false));
+        testableManager.getSQLHistory().add(new SQLHistoryEntry("jdbc:// oracle", "select * from PERSON", Calendar.getInstance().getTime()));
+        final Semaphore s = new Semaphore(0);
+        PropertyChangeListener releasingListener =
+                new PropertyChangeListener() {
+                    @Override
+                    public void propertyChange(PropertyChangeEvent evt) {
+                        if (SQLHistoryManager.PROP_SAVED.equals(
+                                evt.getPropertyName())) {
+                            s.release(); //release semaphore when data are saved
+                        }
+                    }
+                };
+        testableManager.addPropertyChangeListener(releasingListener);
+        testableManager.save();
+        // History does not yet exists as file
+        assertNull(testableManager.getHistoryRoot(false));
+        // Enforce writing of history
+        s.tryAcquire(6, TimeUnit.SECONDS);
+        testableManager.removePropertyChangeListener(releasingListener);
+        // History file need to exist now!
+        assertNotNull(testableManager.getHistoryRoot(false));
+        assertTrue(testableManager.getHistoryRoot(false).isData());
     }
 
     /** Tests parsing of date format. */

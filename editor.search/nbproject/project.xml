@@ -6,12 +6,20 @@
             <code-name-base>org.netbeans.modules.editor.search</code-name-base>
             <module-dependencies>
                 <dependency>
+                    <code-name-base>org.netbeans.api.search</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.8</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.editor</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>3</release-version>
-                        <specification-version>1.60</specification-version>
+                        <specification-version>1.68</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -29,7 +37,7 @@
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>3</release-version>
-                        <specification-version>3.20.1</specification-version>
+                        <specification-version>3.30.0</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>

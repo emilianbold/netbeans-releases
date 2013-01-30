@@ -103,7 +103,7 @@ public class NetBeansRCPUtils {
         File conf = null;
         if(confFiles.length == 1) {
             conf = confFiles[0];
-        } else if(confFiles.length >2) {
+        } else {
             for(File f : confFiles) {
                 String prefix = f.getName().substring(0, f.getName().indexOf(".conf"));                
                 if((SystemUtils.isUnix() && new File(appLocation, "bin/" + prefix).exists()) ||
@@ -145,7 +145,7 @@ public class NetBeansRCPUtils {
         if(confFiles.length == 1) {
             String name = confFiles[0].getName();
             return name.substring(0, name.indexOf(".conf"));
-        } else if(confFiles.length >2) {
+        } else {
             for(File f : confFiles) {
                 String name = f.getName();
                 String prefix = name.substring(0, name.indexOf(".conf"));

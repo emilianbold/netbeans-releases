@@ -57,7 +57,6 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.RandomlyFails;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.openide.DialogDescriptor;
@@ -148,7 +147,6 @@ public class FeaturesOffDemandTest extends NbTestCase implements PropertyChangeL
         assertEquals("Empty", 0, OpenProjects.getDefault().getOpenProjects().length);
     }
 
-    @RandomlyFails
     public void testFoDModuleFilesAreAnnotatedWithAttributes() throws Exception {
         FileObject sub = FileUtil.getConfigFile("Modules/org-netbeans-modules-java-kit.xml");
         assertNotNull("Module config file found", sub);
@@ -192,9 +190,6 @@ public class FeaturesOffDemandTest extends NbTestCase implements PropertyChangeL
         assertNotNull("Not enabled manually", when);
         assertEquals("Integer", Integer.class, cnt.getClass());
         assertEquals("Set to zero", Integer.valueOf(0), cnt);
-
-        Long modified = sub.lastModified().getTime();
-        assertEquals("enabled attribute is same as modification day", when, modified);
 
         if (origContent.equals(sub.asText("UTF-8"))) {
             fail("The module shall be enabled right now:\n" + sub.asText("UTF-8"));

@@ -107,6 +107,24 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="LookupProviderSupport.multi">
+            <api name="general"/>
+            <summary>New method createCompositeLookup(Lookup, Lookup) in LookupProviderSupport</summary>
+            <version major="1" minor="49"/>
+            <date day="26" month="9" year="2012"/>
+            <author login="mkleint"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Introducing method <code>LookupProviderSupport.createCompositeLookup(Lookup, Lookup)</code> which is a more freeform variant of 
+                    already existing method. The first parameter is expected to be the base lookup containing instances to be found in project lookup,
+                    the second parameter is a lookup containing just <code>LookupProvider</code>s.
+                </p>
+            </description>
+            <class package="org.netbeans.spi.project.support" name="LookupProviderSupport"/>
+            <issue number="200711"/>
+        </change>
+        
         <change id="FOQ.UNOWNED">
             <api name="general"/>
             <summary>New constant UNOWNED in FileOwnerQuery to mark a folder as definitely not owned by any project.</summary>

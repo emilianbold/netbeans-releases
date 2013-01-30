@@ -49,6 +49,28 @@ made subject to such option by the copyright holder.
         <apidef name="JavaRefactoringAPI">Java Refactoring API</apidef>
     </apidefs>
     <changes>
+        <change id="JavaWhereUsedFilters">
+            <api name="JavaRefactoringAPI"/>
+            <summary>Added refactoring filter keys for find usages results.</summary>
+            <version major="1" minor="39"/>
+            <date day="8" month="8" year="2012"/>
+            <author login="ralphbenjamin"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>Added an enumeration with keys to identify different filters used by Java Refactoring's Find Usages.</p>
+                <ul>
+                    <li>IMPORT("filter-import")</li>
+                    <li>COMMENT("filter-comment")</li>
+                    <li>TESTFILE("filter-testfile")</li>
+                    <li>READ("filter-read")</li>
+                    <li>WRITE("filter-write")</li>
+                    <li>READ_WRITE("filter-readwrite")</li>
+                </ul>
+            </description>
+            <class package="org.netbeans.modules.refactoring.java.spi"
+                   name="JavaWhereUsedFilters"/>
+            <issue number="215361"/>
+        </change>
         <change id="ReplaceConstructorWithBuilder-ReplaceConstructorWithFactory-InvertBoolean">
             <api name="JavaRefactoringAPI"/>
             <summary>New refactorings on board: ReplaceConstructorWithFactory,

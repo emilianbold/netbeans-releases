@@ -608,7 +608,7 @@ public final class ServerRegistry implements java.io.Serializable {
     }
 
     /* GuardedBy("this") */
-    private Map<J2eeModule.Type, Set<String>> configNamesByType = null;
+    private transient Map<J2eeModule.Type, Set<String>> configNamesByType = null;
     private static final J2eeModule.Type[] ALL_TYPES = new J2eeModule.Type[] {
         J2eeModule.Type.EAR, J2eeModule.Type.RAR, J2eeModule.Type.CAR, J2eeModule.Type.EJB, J2eeModule.Type.WAR };
 

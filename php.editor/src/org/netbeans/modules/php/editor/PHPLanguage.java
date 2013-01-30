@@ -63,6 +63,8 @@ import org.netbeans.modules.csl.spi.LanguageRegistration;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory;
 import org.netbeans.modules.parsing.spi.indexing.PathRecognizerRegistration;
+import static org.netbeans.modules.php.api.util.FileUtils.PHP_MIME_TYPE;
+import static org.netbeans.modules.php.editor.PHPLanguage.ACTIONS;
 import org.netbeans.modules.php.editor.indent.PHPBracketCompleter;
 import org.netbeans.modules.php.editor.indent.PHPFormatter;
 import org.netbeans.modules.php.editor.index.PHPIndexer;
@@ -72,20 +74,38 @@ import org.netbeans.modules.php.editor.nav.InstantRenamerImpl;
 import org.netbeans.modules.php.editor.nav.OccurrencesFinderImpl;
 import org.netbeans.modules.php.editor.nav.OverridingMethodsImpl;
 import org.netbeans.modules.php.editor.nav.PHPTypeSearcher;
+import org.netbeans.modules.php.editor.nav.PhpStructureScanner;
 import org.netbeans.modules.php.editor.parser.GSFPHPParser;
-import org.netbeans.modules.php.editor.parser.PhpStructureScanner;
 import org.netbeans.modules.php.editor.parser.SemanticAnalysis;
 import org.netbeans.modules.php.editor.verification.PHPHintsProvider;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionReferences;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 
 /**
  *
  * @author Petr Pisl
  */
-@LanguageRegistration(mimeType="text/x-php5", useMultiview=true) //NOI18N
-@PathRecognizerRegistration(mimeTypes="text/x-php5", sourcePathIds=PhpSourcePath.SOURCE_CP, libraryPathIds=PhpSourcePath.BOOT_CP, binaryLibraryPathIds={}) //NOI18N
+@LanguageRegistration(mimeType=PHP_MIME_TYPE, useMultiview=true)
+@PathRecognizerRegistration(mimeTypes=PHP_MIME_TYPE, sourcePathIds=PhpSourcePath.SOURCE_CP, libraryPathIds=PhpSourcePath.BOOT_CP, binaryLibraryPathIds={})
+@ActionReferences({
+    @ActionReference(id = @ActionID(category = "System", id = "org.openide.actions.OpenAction"), path = ACTIONS, position = 100),
+    @ActionReference(id = @ActionID(category = "Edit", id = "org.openide.actions.CutAction"), path = ACTIONS, position = 300, separatorBefore = 200),
+    @ActionReference(id = @ActionID(category = "Edit", id = "org.openide.actions.CopyAction"), path = ACTIONS, position = 400),
+    @ActionReference(id = @ActionID(category = "Edit", id = "org.openide.actions.PasteAction"), path = ACTIONS, position = 500, separatorAfter = 600),
+    @ActionReference(id = @ActionID(category = "System", id = "org.openide.actions.NewAction"), path = ACTIONS, position = 700),
+    @ActionReference(id = @ActionID(category = "Edit", id = "org.openide.actions.DeleteAction"), path = ACTIONS, position = 800),
+    @ActionReference(id = @ActionID(category = "System", id = "org.openide.actions.RenameAction"), path = ACTIONS, position = 900, separatorAfter = 1000),
+    @ActionReference(id = @ActionID(category = "System", id = "org.openide.actions.SaveAsTemplateAction"), path = ACTIONS, position = 1100, separatorAfter = 1200),
+    @ActionReference(id = @ActionID(category = "System", id = "org.openide.actions.FileSystemAction"), path = ACTIONS, position = 1300, separatorAfter = 1400),
+    @ActionReference(id = @ActionID(category = "System", id = "org.openide.actions.ToolsAction"), path = ACTIONS, position = 1500),
+    @ActionReference(id = @ActionID(category = "System", id = "org.openide.actions.PropertiesAction"), path = ACTIONS, position = 1600)
+})
+
 public class PHPLanguage extends DefaultLanguageConfig {
 
     @MultiViewElement.Registration(
@@ -93,14 +113,15 @@ public class PHPLanguage extends DefaultLanguageConfig {
         iconBase="org/netbeans/modules/php/editor/resources/php16.png",
         persistenceType=TopComponent.PERSISTENCE_ONLY_OPENED,
         preferredID="php.source",
-        mimeType="text/x-php5",
+        mimeType=PHP_MIME_TYPE,
         position=1
     )
+    @NbBundle.Messages("LBL_PHPEditorTab=&Source")
     public static MultiViewEditorElement createMultiViewEditorElement(Lookup context) {
         return new MultiViewEditorElement(context);
     }
-
-    public static String LINE_COMMENT_PREFIX = "//"; // NOI18N
+    public static final String ACTIONS = "Loaders/" + PHP_MIME_TYPE + "/Actions";
+    public static final String LINE_COMMENT_PREFIX = "//"; // NOI18N
 
     @Override
     public String getLineCommentPrefix() {
@@ -109,7 +130,7 @@ public class PHPLanguage extends DefaultLanguageConfig {
 
     @Override
     public boolean isIdentifierChar(char c) {
-        return Character.isJavaIdentifierPart(c) || (c == '$') || (c == '@') || (c == '\\');//NOI18N
+        return Character.isJavaIdentifierPart(c) || (c == '$') || (c == '@') || (c == '\\'); //NOI18N
     }
 
     @Override

@@ -113,6 +113,10 @@ public class PHPCCDocumentationTest extends PHPCodeCompletionTestBase {
         checkCompletionDocumentation("testfiles/completion/documentation/issue207952_nonNs.php", "$my->nonMagic^Method($paramName);", false, "");
     }
 
+    public void testIssue215408() throws Exception {
+        checkCompletionDocumentation("testfiles/completion/documentation/issue215408.php", "ClassName::F^OO;", false, "");
+    }
+
     @Override
     protected String alterDocumentationForTest(String documentation) {
         int start = documentation.indexOf("file:");

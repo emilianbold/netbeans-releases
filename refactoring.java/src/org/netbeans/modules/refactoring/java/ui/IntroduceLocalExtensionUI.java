@@ -173,7 +173,7 @@ public final class IntroduceLocalExtensionUI implements RefactoringUI {
             assert handles.length == 1;
             Element selected = handles[0].resolveElement(info);
             TreePathHandle s = handles[0];
-            if (selected == null || !(selected.getKind().isClass())) {
+            if (selected == null || !(selected.getKind().isClass() || (selected.getKind().isInterface()))) {
                 TreePath classTreePath = JavaRefactoringUtils.findEnclosingClass(info, handles[0].resolve(info), true, true, true, true, true);
 
                 if (classTreePath == null) {

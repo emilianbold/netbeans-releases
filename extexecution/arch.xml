@@ -76,6 +76,12 @@ Microsystems, Inc. All Rights Reserved.
    <api group="java" name="ExternalExecutionDestroySPI" type="export" category="stable" url="@TOP@org/netbeans/spi/extexecution/destroy/package-summary.html"/>.
   </p>
   <p>
+   The <api group="java" name="ExternalExecutionOpenSPI" type="export" category="stable" url="@TOP@org/netbeans/spi/extexecution/open/package-summary.html"/>
+   allows implementation module to determine particular way of file or HTTP
+   URL opening in predefined covertors. It also makes options dialog opening
+   pluggable.
+  </p>
+  <p>
    There is also API to provide additional startup arguments to interested
    clients such as projects and servers
    <api group="java" name="ExternalExecutionStartupAPI" type="export" category="stable" url="@TOP@org/netbeans/api/extexecution/startup/package-summary.html"/>.
@@ -260,6 +266,28 @@ Microsystems, Inc. All Rights Reserved.
     API class
     <a href="@TOP@org/netbeans/api/extexecution/startup/StartupExtender.html">StartupExtender</a>
     and use the additional arguments for the process.
+   </p>
+  </usecase>
+  <usecase id="pluggable-open" name="Making certain open actions pluggable">
+   <p>
+    Some default
+    <a href="@TOP@org/netbeans/api/extexecution/print/LineConvertor.html">LineConvertor</a>s
+    returned by
+    <a href="@TOP@org/netbeans/api/extexecution/print/LineConvertors.html">LineConvertor</a>
+    needs to open file or URL. A bit special case is also options dialog opening
+    required by
+    <a href="@TOP@org/netbeans/api/extexecution/ExecutionService.html">ExecutionService</a>
+    to open options dialog specified by
+    <a href="@TOP@org/netbeans/api/extexecution/ExecutionDescriptor.html">ExecutionDescriptor</a>.
+    To cover this three usecases in a pluggable way while keeping dependencies
+    minimal there are three corresponding SPI classes one may implement.
+    So there is
+    <a href="@TOP@org/netbeans/spi/extexecution/open/FileOpenHandler.html">FileOpenHandler</a>
+    to handle file opening,
+    <a href="@TOP@org/netbeans/spi/extexecution/open/HttpOpenHandler.html">HttpOpenHandler</a>
+    to deal with HTTP URLs and
+    <a href="@TOP@org/netbeans/spi/extexecution/open/OptionOpenHandler.html">OptionOpenHandler</a>
+    to open proper options dialog.
    </p>
   </usecase>
  </answer>

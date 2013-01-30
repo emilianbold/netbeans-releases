@@ -125,12 +125,7 @@ public final class MacrosKeymapManager extends KeymapManager {
             
             MacrosModel.Macro macro = (MacrosModel.Macro) shortcutAction;
             Set<String> shortcuts = actionToShortcuts.get(shortcutAction);
-            Set<String> newShortcuts = new HashSet<String>(shortcuts.size());
-            // layers and macro storage subsystem use $ as the delimiter
-            for (String s : shortcuts) {
-                newShortcuts.add(s.replace(" ", "$"));
-            }
-            macro.setShortcuts(newShortcuts);
+            macro.setShortcuts(shortcuts);
         }
         
         getModel().save();

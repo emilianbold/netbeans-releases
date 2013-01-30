@@ -116,6 +116,7 @@ public class BrowseFolders extends javax.swing.JPanel implements ExplorerManager
         
     // ExplorerManager.Provider implementation ---------------------------------
     
+    @Override
     public ExplorerManager getExplorerManager() {
         return manager;
     }
@@ -332,6 +333,7 @@ public class BrowseFolders extends javax.swing.JPanel implements ExplorerManager
             }
             Collections.sort(l, new Comparator<FileObject>() { // #116545
                 Collator COLL = Collator.getInstance();
+                @Override
                 public int compare(FileObject f1, FileObject f2) {
                     return COLL.compare(f1.getNameExt(), f2.getNameExt());
                 }
@@ -369,6 +371,7 @@ public class BrowseFolders extends javax.swing.JPanel implements ExplorerManager
             this.browsePanel = browsePanel;
         }
         
+        @Override
         public void actionPerformed( ActionEvent e ) {
             String command = e.getActionCommand();
 

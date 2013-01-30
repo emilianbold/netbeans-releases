@@ -46,7 +46,6 @@ import java.util.Map;
 import javax.swing.text.BadLocationException;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.StructureScanner;
-import org.netbeans.modules.css.editor.api.CssCslParserResult;
 import org.netbeans.modules.css.editor.module.main.CssModuleTestBase;
 import org.netbeans.modules.css.lib.TestUtil;
 import org.netbeans.modules.css.lib.api.CssParserResult;
@@ -80,9 +79,8 @@ public class CssStructureScannerTest extends CssModuleTestBase {
         CssParserResult result = TestUtil.parse(code);
 //        TestUtil.dumpResult(result);
         
-        CssCslParserResult cslresult = new CssCslParserResult(result);
         StructureScanner scanner = new CssStructureScanner();
-        Map<String, List<OffsetRange>> folds = scanner.folds(cslresult);
+        Map<String, List<OffsetRange>> folds = scanner.folds(result);
         
         List<OffsetRange> ranges = folds.get(FOLD_TYPE_NAME);
         assertNotNull("No folds found but some were expected!", ranges);

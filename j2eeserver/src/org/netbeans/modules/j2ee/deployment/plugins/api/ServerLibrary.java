@@ -45,6 +45,7 @@ package org.netbeans.modules.j2ee.deployment.plugins.api;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.j2ee.deployment.common.api.Version;
+import org.netbeans.modules.j2ee.deployment.impl.ServerLibraryAccessor;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.ServerLibraryFactory;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.ServerLibraryImplementation;
 
@@ -58,13 +59,13 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.ServerLibraryImplementat
 public final class ServerLibrary {
 
     static {
-        ServerLibraryFactory.Accessor.DEFAULT = new ServerLibraryFactory.Accessor() {
+        ServerLibraryAccessor.setDefault(new ServerLibraryAccessor() {
 
             @Override
             public ServerLibrary createServerLibrary(ServerLibraryImplementation impl) {
                 return new ServerLibrary(impl);
             }
-        };
+        });
     }
 
     private final ServerLibraryImplementation impl;

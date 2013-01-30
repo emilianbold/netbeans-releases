@@ -52,12 +52,16 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.search.ReplacePattern;
 import org.netbeans.api.search.SearchHistory;
 import org.netbeans.api.search.SearchPattern;
 import org.netbeans.api.search.provider.SearchInfo;
@@ -70,12 +74,14 @@ import org.netbeans.api.search.ui.SearchPatternController.Option;
 import org.netbeans.modules.search.ui.CheckBoxWithButtonPanel;
 import org.netbeans.modules.search.ui.FormLayoutHelper;
 import org.netbeans.modules.search.ui.PatternChangeListener;
+import org.netbeans.modules.search.ui.ShorteningCellRenderer;
 import org.netbeans.modules.search.ui.TextFieldFocusListener;
 import org.netbeans.modules.search.ui.UiUtils;
 import org.netbeans.spi.search.SearchScopeDefinition;
 import org.openide.cookies.EditorCookie;
 import org.openide.nodes.Node;
 import org.openide.text.NbDocument;
+import org.openide.util.WeakListeners;
 import org.openide.windows.TopComponent;
 
 /**
@@ -89,6 +95,8 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
     private ChangeListener usabilityChangeListener;
     private BasicSearchCriteria searchCriteria = new BasicSearchCriteria();
     private SearchScopeDefinition[] extraSearchScopes;
+    private boolean searchInGeneratedSetAutomatically = false;
+    private PropertyChangeListener topComponentRegistryListener;
 
     /** Creates new form BasicSearchForm */
     BasicSearchForm(String preferredSearchScopeType,
@@ -109,6 +117,7 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
         }
         initInteraction(searchAndReplace);
         setValuesOfComponents(initialCriteria, searchAndReplace);
+        setContextAwareOptions(searchAndReplace);
     }
 
     /**
@@ -157,6 +166,48 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
                 cboxTextToFind.getSearchPattern().getSearchExpression());
     }
     
+    /**
+     * Set options that depend on current context, and listeners that ensure
+     * they stay valid when the context changes.
+     */
+    private void setContextAwareOptions(boolean searchAndReplace) {
+        if (!searchAndReplace) {
+            updateSearchInGeneratedForActiveTopComponent();
+            topComponentRegistryListener = new PropertyChangeListener() {
+                @Override
+                public void propertyChange(PropertyChangeEvent evt) {
+                    if (evt.getPropertyName().equals(
+                            TopComponent.Registry.PROP_ACTIVATED)) {
+                        updateSearchInGeneratedForActiveTopComponent();
+                    }
+                }
+            };
+            TopComponent.getRegistry().addPropertyChangeListener(
+                    WeakListeners.propertyChange(topComponentRegistryListener,
+                    TopComponent.getRegistry()));
+        }
+    }
+
+    /**
+     * Update searching in generated sources. If Files window is selected,
+     * Search In Generated Sources option should be checked automatically.
+     */
+    private void updateSearchInGeneratedForActiveTopComponent() {
+        assert searchCriteria != null && !searchCriteria.isSearchAndReplace();
+        TopComponent tc = TopComponent.getRegistry().getActivated();
+        if (tc != null && tc.getHelpCtx() != null
+                && "ProjectTab_Files".equals( //NOI18N
+                tc.getHelpCtx().getHelpID())) {
+            if (!scopeSettingsPanel.isSearchInGenerated()) {
+                scopeSettingsPanel.setSearchInGenerated(true);
+                searchInGeneratedSetAutomatically = true;
+            }
+        } else if (searchInGeneratedSetAutomatically) {
+            scopeSettingsPanel.setSearchInGenerated(false);
+            searchInGeneratedSetAutomatically = false;
+        }
+    }
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -177,6 +228,7 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
             lblReplacement = new JLabel();
             cboxReplacement = new JComboBox();
             cboxReplacement.setEditable(true);
+            cboxReplacement.setRenderer(new ShorteningCellRenderer());
             lblReplacement.setLabelFor(cboxReplacement);
             chkPreserveCase = new JCheckBox();
         }
@@ -297,7 +349,9 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
             boolean searchAndReplace) {
         cboxTextToFind.setSearchPattern(initialCriteria.getSearchPattern());
         if (cboxReplacement != null) {
-            cboxReplacement.setSelectedItem(initialCriteria.getReplaceExpr());
+            cboxReplacement.setSelectedItem(new ReplaceModelItem(
+                    ReplacePattern.create(initialCriteria.getReplaceExpr(),
+                    initialCriteria.isPreserveCase())));
         }
 
         selectChk(chkPreserveCase, initialCriteria.isPreserveCase());
@@ -421,11 +475,12 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
      */
     private void initHistory() {
 
-        FindDialogMemory memory = FindDialogMemory.getDefault();
-        List<String> entries;
-
+        List<ReplaceModelItem> entries = new ArrayList<ReplaceModelItem>(10);
         if (cboxReplacement != null) {
-            entries = memory.getReplacementExpressions();
+            for (ReplacePattern replacePattern
+                    : SearchHistory.getDefault().getReplacePatterns()) {
+                entries.add(0, new ReplaceModelItem(replacePattern));
+            }
             if (!entries.isEmpty()) {
                 cboxReplacement.setModel(new ListComboBoxModel(entries, true));
             }
@@ -596,8 +651,9 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
             memory.setFileNamePatternSpecified(false);
         }
         if (replacementPatternEditor != null) {
-            memory.storeReplacementExpression(
-                    replacementPatternEditor.getText());
+            SearchHistory.getDefault().addReplace(
+                    ReplacePattern.create(replacementPatternEditor.getText(),
+                    chkPreserveCase.isSelected()));
         }
         memory.setWholeWords(chkWholeWords.isSelected());
         memory.setCaseSensitive(chkCaseSensitive.isSelected());
@@ -606,8 +662,10 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
             memory.setPreserveCase(chkPreserveCase.isSelected());
         } else {
             memory.setSearchInArchives(scopeSettingsPanel.isSearchInArchives());
-            memory.setSearchInGenerated(
-                    scopeSettingsPanel.isSearchInGenerated());
+            if (!searchInGeneratedSetAutomatically) {
+                memory.setSearchInGenerated(
+                        scopeSettingsPanel.isSearchInGenerated());
+            }
         }
         memory.setFilePathRegex(scopeSettingsPanel.isFileNameRegExp());
         memory.setUseIgnoreList(scopeSettingsPanel.isUseIgnoreList());
@@ -828,6 +886,24 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
             if (cboxReplacement != null) {
                 updateReplacePatternColor();
             }
+        }
+    }
+
+    private static class ReplaceModelItem {
+
+        private ReplacePattern replacePattern;
+
+        public ReplaceModelItem(ReplacePattern replacePattern) {
+            this.replacePattern = replacePattern;
+        }
+
+        public ReplacePattern getReplacePattern() {
+            return replacePattern;
+        }
+
+        @Override
+        public String toString() {
+            return replacePattern.getReplaceExpression();
         }
     }
 }

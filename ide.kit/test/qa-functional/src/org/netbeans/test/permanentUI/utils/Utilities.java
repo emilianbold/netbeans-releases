@@ -222,7 +222,7 @@ public class Utilities {
             boolean read = true;
             while (read && line.hasNext()) {
                 String partOfText = line.next();
-                if (partOfText.length() == 1) {
+                if (partOfText.length() == 1 && partOfText.charAt(0) != '/') {
                     if (partOfText.charAt(0) == '>') {
                         menuitem.setSubmenu(new ArrayList<NbMenuItem>());
                     } else { //it must be the mnemonic

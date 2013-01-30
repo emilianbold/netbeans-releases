@@ -137,12 +137,12 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
         return true;
     }
 
-    public CsmProject findProject(Object id) {
+    /*package*/ ProjectBase findProject(Object id) {
         ProjectBase prj = null;
         if (id != null) {
-            synchronized (lock) {
+//            synchronized (lock) {
                 prj = obj2Project(id);
-            }
+//            }
         }
         return prj;
     }
@@ -155,7 +155,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
     }
 
     @Override
-    public CsmProject getProject(Object id) {
+    public ProjectBase getProject(Object id) {
         if (id instanceof Project) {
             NativeProject prj = ((Project) id).getLookup().lookup(NativeProject.class);
             if (prj != null) {
@@ -190,8 +190,14 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
                         new IllegalStateException("CsmProject does not exist: " + id).printStackTrace(System.err); // NOI18N
                         name = "<unnamed>"; // NOI18N
                     }
-                    prj = ProjectImpl.createInstance(this, (NativeProject) id, name);
-                    putProject2Map(id, prj);
+                    NativeProject nativeProject = (NativeProject) id;
+                    try {
+                        projectsBeingCreated.add(nativeProject);
+                        prj = ProjectImpl.createInstance(this, nativeProject, name);
+                        putProject2Map(id, prj);
+                    } finally {
+                        projectsBeingCreated.remove(nativeProject);
+                    }
                 }
             }
         }
@@ -212,9 +218,14 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
                 }
                 prj = obj2Project(id);
                 if (prj == null) {
-                    prj = ProjectImpl.createInstance(this, id, name);
-                    putProject2Map(id, prj);
-                    fireOpened = true;
+                    try {                        
+                        projectsBeingCreated.add(id);
+                        prj = ProjectImpl.createInstance(this, id, name);
+                        putProject2Map(id, prj);
+                        fireOpened = true;
+                    } finally {
+                        projectsBeingCreated.remove(id);
+                    }
                 } else {
                     String expectedUniqueName = ProjectBase.getUniqueName(id).toString();
                     String defactoUniqueName = prj.getUniqueName().toString();
@@ -227,15 +238,18 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
                 ListenersImpl.getImpl().fireProjectOpened(prj);
             }
         } else {
-            disabledProjects.add(id);
+            synchronized (lock) {
+                disabledProjects.add(id);
+            }
         }
         return prj;
     }
 
     // for testing purposes only
-    public ProjectBase addProject(ProjectBase prj) {
+    public ProjectBase testAddProject(ProjectBase prj) {
         synchronized (lock) {
             Object id = prj.getPlatformProject();
+            assert id != null : "It is expected that prj.getPlatformProject() is not NULL here"; // NOI18N
             if (obj2Project(id) != null) {
                 new IllegalStateException("CsmProject already exists: " + id).printStackTrace(System.err); // NOI18N
                 return null;
@@ -278,14 +292,14 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
                     _closeProject2(csmProject, platformProjectKey, cleanRepository);
                 }
             };
-            this.enqueueModelTask(task, "Closing Project "); // NOI18N
+            this.enqueueModelTask(task, "Closing Project " + csmProject.getDisplayName()); // NOI18N
         } else {
             _closeProject2(csmProject, platformProjectKey, cleanRepository);
         }
     }
 
     private void _closeProject2_pre(ProjectBase csmProject, Object platformProjectKey) {
-        ProjectBase prj = (csmProject == null) ? (ProjectBase) getProject(platformProjectKey) : csmProject;
+        ProjectBase prj = (csmProject == null) ? getProject(platformProjectKey) : csmProject;
         if (prj != null) {
             prj.setDisposed();
         }
@@ -295,10 +309,13 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
         ProjectBase prj = csmProject;
         boolean cleanModel;
         synchronized (lock) {
-            CsmUID<CsmProject> uid = platf2csm.remove(platformProjectKey);
-            if (uid != null) {
-                prj = (prj == null) ? (ProjectBase) UIDCsmConverter.UIDtoProject(uid) : prj;
-                assert prj != null : "null object for UID " + uid;
+            if (platformProjectKey != null) {
+                CsmUID<CsmProject> uid = platf2csm.remove(platformProjectKey);
+                if (uid != null) {
+                    prj = (prj == null) ? (ProjectBase) UIDCsmConverter.UIDtoProject(uid) : prj;
+                    assert prj != null : "null object for UID " + uid;
+                }
+                disabledProjects.remove(platformProjectKey);
             }
             cleanModel = (platf2csm.isEmpty());
         }
@@ -306,7 +323,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
         if (prj != null) {
             disposeProject(prj, cleanRepository);
             if (!prj.isArtificial()) {
-                LibraryManager.getInstance().onProjectClose(prj.getUID());
+                LibraryManager.getInstance(prj).onProjectClose(prj.getUID());
             }
         }
 
@@ -365,6 +382,10 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
 
     public RequestProcessor.Task enqueueModelTask(Runnable task, String name) {
         return enqueue(modelProcessor, task, modelTaskPrefix + ": " + name); // NOI18N
+    }
+    
+    public static boolean isModelRequestProcessorThread() {
+        return ModelImpl.instance().modelProcessor.isRequestProcessorThread();
     }
     
     public void waitModelTasks() {
@@ -491,6 +512,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
 
         ParserThreadManager.instance().startup(CndUtils.isStandalone());
         RepositoryUtils.startup();
+        ReferencesIndex.startup();
     //if( ! isStandalone() ) {
     //    for( NativeProject nativeProject : ModelSupport.instance().getNativeProjects() ) {
     //    	addProject(nativeProject, nativeProject.getProjectDisplayName());
@@ -532,7 +554,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
         for (Iterator<CsmProject> projIter = libs.iterator(); projIter.hasNext();) {
             disposeProject((ProjectBase) projIter.next());
         }
-        LibraryManager.getInstance().shutdown();
+        LibraryManager.shutdown();
 
         cleanCaches();
 
@@ -617,7 +639,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
         synchronized (lock) {
             disabledProjects.add(nativeProject);
         }
-        ProjectBase csmProject = (ProjectBase) findProject(nativeProject);
+        ProjectBase csmProject = findProject(nativeProject);
         if (csmProject != null) {
             disableProject2(csmProject);
         }
@@ -629,7 +651,9 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
         }
         if (csmProject != null) {
             synchronized (lock) {
-                disabledProjects.add(csmProject.getPlatformProject());
+                final Object id = csmProject.getPlatformProject();
+                assert id != null : "It is expected that csmProject.getPlatformProject() is not NULL here"; // NOI18N
+                disabledProjects.add(id);
             }
             disableProject2(csmProject);
         }
@@ -727,8 +751,17 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
         return null;
     }
 
-    public boolean isProjectEnabled(NativeProject nativeProject) {
-        ProjectBase project = (ProjectBase) findProject(nativeProject);
+    /**
+     * @return 
+     * Boolean.TRUE if the project is enabled
+     * Boolean.FALSE if the project is disabled
+     * null if the project is being created
+     */
+    public Boolean isProjectEnabled(NativeProject nativeProject) {
+        if (projectsBeingCreated.contains(nativeProject)) {
+            return null;
+        }
+        ProjectBase project = getProject/*getProjectFast*/(nativeProject); // no sync here: just get what we have
         return (project != null) && (!project.isDisposing());
     }
 
@@ -805,7 +838,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
                 closeProject(platformProject, true);
             }
         }
-        LibraryManager.getInstance().cleanLibrariesData(libs);
+        LibraryManager.cleanLibrariesData(libs);
         for (Object platformProject : platformProjects) {
             ProjectBase newPrj = (ProjectBase) _getProject(platformProject);
             if (newPrj != null) { // VK: at least once I've got NPE here: might be already closed? 
@@ -822,12 +855,13 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
     private CsmModelState state;
     private double warningThreshold = 0.98;
     //private double fatalThreshold = 0.99;
-    private final Set<Object> disabledProjects = new HashSet<Object>();
+    private final Set<Object> disabledProjects = Collections.synchronizedSet(new HashSet<Object>());
+    private final Set<NativeProject> projectsBeingCreated = Collections.synchronizedSet(new HashSet<NativeProject>());
     private final RequestProcessor modelProcessor = new RequestProcessor("Code model request processor", 1); // NOI18N
     private final Set<Runnable> modelProcessorTasks = new HashSet<Runnable>();
     private final RequestProcessor userTasksProcessor = new RequestProcessor("User model tasks processor", 4); // NOI18N
     private final Set<Runnable> userProcessorTasks = new HashSet<Runnable>();
-    
+        
     /////////// 
     // tracing
     public void dumpInfo(PrintWriter printOut, boolean withContainers) {

@@ -51,6 +51,8 @@ import javax.activation.DataContentHandlerFactory;
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.event.PopupMenuEvent;
+import javax.swing.event.PopupMenuListener;
 import org.netbeans.api.annotations.common.StaticResource;
 import org.openide.util.ImageUtilities;
 import org.openide.util.RequestProcessor;
@@ -84,6 +86,7 @@ public class QuickSearch {
     private final RequestProcessor rp;
     private static enum QS_FIRE { UPDATE, NEXT, MAX }
     private AnimationTimer animationTimer;
+    private boolean alwaysShown = false;
     
     private QuickSearch(JComponent component, Object constraints,
                         Callback callback, boolean asynchronous, JMenu popupMenu) {
@@ -200,6 +203,32 @@ public class QuickSearch {
         setEnabled(false);
         component.putClientProperty(CLIENT_PROPERTY_KEY, null);
     }
+
+    /**
+     * Test whether the quick search field is always shown. 
+     * This is <code>false</code> by default.
+     * @return <code>true</code> when the search field is always shown,
+     *                           <code>false</code> otherwise.
+     * @since 7.49
+     */
+    public boolean isAlwaysShown() {
+        return alwaysShown;
+    }
+
+    /**
+     * Set whether the quick search field should always be shown.
+     * @param alwaysShown <code>true</code> to always show the search field,
+     *                           <code>false</code> otherwise.
+     * @since 7.49
+     */
+    public void setAlwaysShown(boolean alwaysShown) {
+        this.alwaysShown = alwaysShown;
+        if(alwaysShown) {
+            displaySearchField();
+        } else {
+            removeSearchField();
+        }
+    }
     
     /**
      * Test whether the quick search is enabled. This is <code>true</code>
@@ -236,6 +265,9 @@ public class QuickSearch {
      * @param ke a key event to process.
      */
     public void processKeyEvent(KeyEvent ke) {
+        if (!isEnabled()) {
+            return ;
+        }
         if (searchPanel != null) {
             searchTextField.setCaretPosition(searchTextField.getText().length());
             searchTextField.processKeyEvent(ke);
@@ -322,7 +354,9 @@ public class QuickSearch {
         searchTextField.addKeyListener(searchFieldListener);
         searchTextField.addFocusListener(searchFieldListener);
         searchTextField.getDocument().addDocumentListener(searchFieldListener);
-        
+        if(isAlwaysShown()) {
+            displaySearchField();
+        }
     }
     
     private void displaySearchField() {
@@ -331,18 +365,14 @@ public class QuickSearch {
         }
         searchTextField.setOriginalFocusOwner();
         searchTextField.setFont(component.getFont());
-        searchPanel = new SearchPanel();
+        searchPanel = new SearchPanel(component, isAlwaysShown());
         final JLabel lbl;
         if (popupMenu != null) {
             lbl = new JLabel(org.openide.util.ImageUtilities.loadImageIcon(ICON_FIND_WITH_MENU, false));
             lbl.addMouseListener(new MouseAdapter() {
                 @Override
                 public void mousePressed(MouseEvent e) {
-                    if (e != null && !SwingUtilities.isLeftMouseButton(e)) {
-                        return;
-                    }
-                    JPopupMenu pm = popupMenu.getPopupMenu();
-                    pm.show(lbl, 0, lbl.getHeight() - 1);
+                    maybeShowPopup(e, lbl);
                 }
             });
         } else {
@@ -354,8 +384,42 @@ public class QuickSearch {
             animationTimer = null;
         }
         searchPanel.setLayout(new BoxLayout(searchPanel, BoxLayout.X_AXIS));
-        searchPanel.add(lbl);
+        if ("Aqua".equals(UIManager.getLookAndFeel().getID())) { //NOI18N
+            if (popupMenu != null) {
+                final JPopupMenu dummy = new JPopupMenu();
+                dummy.addPopupMenuListener(new PopupMenuListener() {
+                    @Override
+                    public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
+                        SwingUtilities.invokeLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                dummy.setVisible(false);
+                            }
+                        });
+                    }
+
+                    @Override
+                    public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
+                    }
+
+                    @Override
+                    public void popupMenuCanceled(PopupMenuEvent e) {
+                    }
+                });
+
+                searchTextField.putClientProperty("JTextField.Search.FindPopup", dummy); //NOI18N
+                searchTextField.putClientProperty("JTextField.Search.FindAction", new ActionListener() { //NOI18N
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        maybeShowPopup(null, searchTextField);
+                    }
+                });
+            }
+        } else {
+            searchPanel.add(lbl);
+        }
         searchPanel.add(searchTextField);
+        searchPanel.setBackground(component.getBackground());
         lbl.setLabelFor(searchTextField);
         searchTextField.setColumns(10);
         searchTextField.setMaximumSize(searchTextField.getPreferredSize());
@@ -372,7 +436,20 @@ public class QuickSearch {
         searchTextField.requestFocus();
     }
     
+    protected void maybeShowPopup(MouseEvent evt, Component comp) {
+        if (evt != null && !SwingUtilities.isLeftMouseButton(evt)) {
+            return;
+        }
+        JPopupMenu pm = popupMenu.getPopupMenu();
+        pm.show(comp, 0, comp.getHeight() - 1);
+        searchTextField.setText("");
+        searchTextField.requestOriginalFocusOwner();
+    }
+    
     private void removeSearchField() {
+        if (isAlwaysShown()) {
+            return;
+        }
         if (searchPanel == null) {
             return;
         }
@@ -530,8 +607,12 @@ public class QuickSearch {
         
         public static final boolean isAquaLaF =
                 "Aqua".equals(UIManager.getLookAndFeel().getID()); //NOI18N
+        private JComponent component;
+        private boolean alwaysShown = false;
     
-        public SearchPanel() {
+        public SearchPanel(JComponent component, boolean alwaysShown) {
+            this.component = component;
+            this.alwaysShown = alwaysShown;
             if (isAquaLaF) {
                 setBorder(BorderFactory.createEmptyBorder(9,6,8,2));
             } else {
@@ -544,11 +625,16 @@ public class QuickSearch {
         protected void paintComponent(Graphics g) {
             if (isAquaLaF && g instanceof Graphics2D) {
                 Graphics2D g2d = (Graphics2D) g;
-                g2d.setPaint(new GradientPaint(0, 0, UIManager.getColor("NbExplorerView.quicksearch.background.top"), //NOI18N
-                        0, getHeight(), UIManager.getColor("NbExplorerView.quicksearch.background.bottom")));//NOI18N
-                g2d.fillRect(0, 0, getWidth(), getHeight());
-                g2d.setColor(UIManager.getColor("NbExplorerView.quicksearch.border")); //NOI18N
-                g2d.drawLine(0, 0, getWidth(), 0);
+                if (alwaysShown) {
+                    g2d.setColor(component.getBackground());
+                    g2d.fillRect(0, 0, getWidth(), getHeight());
+                } else {
+                    g2d.setPaint(new GradientPaint(0, 0, UIManager.getColor("NbExplorerView.quicksearch.background.top"), //NOI18N
+                            0, getHeight(), UIManager.getColor("NbExplorerView.quicksearch.background.bottom")));//NOI18N
+                    g2d.fillRect(0, 0, getWidth(), getHeight());
+                    g2d.setColor(UIManager.getColor("NbExplorerView.quicksearch.border")); //NOI18N
+                    g2d.drawLine(0, 0, getWidth(), 0);
+                }
             } else {
                 super.paintComponent(g);
             }
@@ -710,7 +796,9 @@ public class QuickSearch {
 
         @Override
         public void focusLost(FocusEvent e) {
-            if (e.isTemporary()) return ;
+            if (e.isTemporary() || isAlwaysShown()) {
+                return ;
+            }
             Component oppositeComponent = e.getOppositeComponent();
             if (e.getSource() != searchTextField) {
                 ((Component) e.getSource()).removeFocusListener(this);
@@ -725,7 +813,7 @@ public class QuickSearch {
             if (searchPanel != null) {
                 removeSearchField();
                 //fireQuickSearchConfirmed();
-                callback.quickSearchConfirmed();
+                callback.quickSearchCanceled();
             }
         }
     }

@@ -106,7 +106,7 @@ public class StructureAnalyzer implements StructureScanner {
 
     @Override
     public List<? extends StructureItem> scan(ParserResult info) {
-        GroovyParserResult result = AstUtilities.getParseResult(info);
+        GroovyParserResult result = ASTUtils.getParseResult(info);
 
         AnalysisResult ar = result.getStructure();
         List<? extends ASTElement> elements = ar.getElements();
@@ -124,7 +124,7 @@ public class StructureAnalyzer implements StructureScanner {
     private AnalysisResult scan(GroovyParserResult result) {
         AnalysisResult analysisResult = new AnalysisResult();
 
-        ASTNode root = AstUtilities.getRoot(result);
+        ASTNode root = ASTUtils.getRoot(result);
 
         if (root == null) {
             return analysisResult;
@@ -242,7 +242,7 @@ public class StructureAnalyzer implements StructureScanner {
         }
 
         @SuppressWarnings("unchecked")
-        List<ASTNode> list = AstUtilities.children(node);
+        List<ASTNode> list = ASTUtils.children(node);
 
         for (ASTNode child : list) {
             path.descend(child);
@@ -253,13 +253,13 @@ public class StructureAnalyzer implements StructureScanner {
 
     @Override
     public Map<String, List<OffsetRange>> folds(ParserResult info) {
-        ASTNode root = AstUtilities.getRoot(info);
+        ASTNode root = ASTUtils.getRoot(info);
 
         if (root == null) {
             return Collections.emptyMap();
         }
 
-        GroovyParserResult rpr = AstUtilities.getParseResult(info);
+        GroovyParserResult rpr = ASTUtils.getParseResult(info);
         AnalysisResult analysisResult = rpr.getStructure();
 
         Map<String, List<OffsetRange>> folds = new HashMap<String, List<OffsetRange>>();
@@ -277,7 +277,7 @@ public class StructureAnalyzer implements StructureScanner {
         doc.render(new Runnable() {
             @Override
             public void run() {
-                TokenSequence<?> ts = LexUtilities.getGroovyTokenSequence(doc, 1);
+                TokenSequence<GroovyTokenId> ts = LexUtilities.getGroovyTokenSequence(doc, 1);
 
                 int importStart = 0;
                 int importEnd = 0;
@@ -340,7 +340,7 @@ public class StructureAnalyzer implements StructureScanner {
             case CLASS:
             case MODULE:
                 ASTNode node = element.getNode();
-                OffsetRange range = AstUtilities.getRangeFull(node, doc);
+                OffsetRange range = ASTUtils.getRangeFull(node, doc);
 
                 // beware of synthetic elements
                 if ((kind == ElementKind.METHOD && !((MethodNode) node).isSynthetic())
@@ -530,7 +530,7 @@ public class StructureAnalyzer implements StructureScanner {
         @Override
         public long getPosition() {
             if (doc != null) {
-                OffsetRange range = AstUtilities.getRangeFull(node.getNode(), doc);
+                OffsetRange range = ASTUtils.getRangeFull(node.getNode(), doc);
                 LOG.log(Level.FINEST, "getPosition(), start: {0}", range.getStart());
                 return (long) range.getStart();
             }
@@ -540,7 +540,7 @@ public class StructureAnalyzer implements StructureScanner {
         @Override
         public long getEndPosition() {
             if (doc != null) {
-                OffsetRange range = AstUtilities.getRangeFull(node.getNode(), doc);
+                OffsetRange range = ASTUtils.getRangeFull(node.getNode(), doc);
                 LOG.log(Level.FINEST, "getEndPosition(), end: {0}", range.getEnd());
                 return (long) range.getEnd();
             }

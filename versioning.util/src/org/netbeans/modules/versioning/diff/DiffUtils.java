@@ -42,10 +42,15 @@
 
 package org.netbeans.modules.versioning.diff;
 
+import java.io.File;
 import java.io.IOException;
+import java.io.Reader;
 import javax.swing.text.Document;
+import org.netbeans.api.diff.Difference;
 import org.netbeans.api.diff.StreamSource;
 import org.netbeans.modules.versioning.util.CollectionUtils;
+import org.netbeans.modules.versioning.util.Utils;
+import org.netbeans.spi.diff.DiffProvider;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -388,6 +393,81 @@ public final class DiffUtils {
                 editorCookies[i] = null;
             }
         }
+    }
+    
+    /**
+     * 
+     * @param originalLineNumber 0-based
+     * @return 0-based line number in the previous file
+     * @throws IOException 
+     */
+    public static int getMatchingLine (File currentFile, File previousFile, int originalLineNumber) throws IOException {
+        DiffProvider diffProvider = Lookup.getDefault().lookup(DiffProvider.class);
+        if (diffProvider == null) {
+            return -1;
+        }
+        Reader r1 = null, r2 = null;
+        Difference[] differences;
+        try {
+            r1 = Utils.createReader(currentFile);
+            r2 = Utils.createReader(previousFile);
+            differences = diffProvider.computeDiff(r1, r2);
+        } finally {
+            if (r1 != null) {
+                try {
+                    r1.close();
+                } catch (IOException ex) {}
+            }
+            if (r2 != null) {
+                try {
+                    r2.close();
+                } catch (IOException ex) {}
+            }
+        }
+        return getMatchingLine(differences, originalLineNumber);
+    }
+
+    private static int getMatchingLine (Difference[] differences, int originalLineNumber) {
+        int line = ++originalLineNumber;
+        for (Difference diff : differences) {
+            boolean end = false;
+            switch (diff.getType()) {
+                case Difference.ADD:
+                    if (diff.getFirstStart() >= originalLineNumber) {
+                        end = true;
+                        break;
+                    }
+                    line += diff.getSecondEnd() - diff.getSecondStart() + 1;
+                    break;
+                case Difference.DELETE:
+                    if (diff.getFirstStart() <= originalLineNumber && diff.getFirstEnd() >= originalLineNumber) {
+                        line = diff.getSecondStart();
+                        end = true;
+                        break;
+                    } else if (diff.getFirstEnd() >= originalLineNumber) {
+                        end = true;
+                        break;
+                    }
+                    line -= diff.getFirstEnd() - diff.getFirstStart() + 1;
+                    break;
+                case Difference.CHANGE:
+                    if (diff.getFirstStart() <= originalLineNumber && diff.getFirstEnd() >= originalLineNumber) {
+                        line = diff.getSecondStart();
+                        end = true;
+                        break;
+                    } else if (diff.getFirstEnd() >= originalLineNumber) {
+                        end = true;
+                        break;
+                    }
+                    line -= diff.getFirstEnd() - diff.getFirstStart();
+                    line += diff.getSecondEnd() - diff.getSecondStart();
+                    break;
+            }
+            if (end) {
+                break;
+            }
+        }
+        return line - 1;
     }
 
 }

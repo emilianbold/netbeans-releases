@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.html;
 
+import org.netbeans.modules.html.api.HtmlDataNode;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -60,6 +61,7 @@ import java.nio.charset.UnsupportedCharsetException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -76,7 +78,6 @@ import org.openide.cookies.ViewCookie;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.MIMEResolver;
 import org.openide.loaders.DataNode;
@@ -101,7 +102,8 @@ import org.xml.sax.InputSource;
 @MIMEResolver.Registration(
     displayName="#HTMLResolver",
     position=300,
-    resource="resolver.xml"
+    resource="resolver.xml",
+    showInFileChooser="#ResourceFiles"
 )
 public class HtmlDataObject extends MultiDataObject implements CookieSet.Factory {
     public static final String PROP_ENCODING = "Content-Encoding"; // NOI18N
@@ -178,7 +180,7 @@ public class HtmlDataObject extends MultiDataObject implements CookieSet.Factory
             support.removeSaveCookie();
         }
     }
-        
+    
     /** Creates new Cookie */
     public Node.Cookie createCookie(Class klass) {
         if (klass.isAssignableFrom(HtmlEditorSupport.class)) {
@@ -192,7 +194,7 @@ public class HtmlDataObject extends MultiDataObject implements CookieSet.Factory
     
     private synchronized HtmlEditorSupport getHtmlEditorSupport() {
         if (htmlEditorSupport == null) {
-            htmlEditorSupport = new HtmlEditorSupport(this);
+            htmlEditorSupport = new HtmlEditorSupport(this); 
         }
         return htmlEditorSupport;
     }
@@ -312,15 +314,14 @@ public class HtmlDataObject extends MultiDataObject implements CookieSet.Factory
         private MultiDataObject.Entry primary;
         
         /** Constructs new ViewSupport */
-        public ViewSupport(MultiDataObject.Entry primary) {
+        public ViewSupport(MultiDataObject.Entry primary) 
+        {
             this.primary = primary;
         }
         
+        @Override
         public void view() {
-            try {
-                HtmlBrowser.URLDisplayer.getDefault().showURL(primary.getFile().getURL());
-            } catch (FileStateInvalidException e) {
-            }
+            HtmlBrowser.URLDisplayer.getDefault().showURL(primary.getFile().toURL());
         }
     }
     

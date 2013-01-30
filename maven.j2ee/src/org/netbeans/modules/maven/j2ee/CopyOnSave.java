@@ -50,11 +50,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.StringTokenizer;
 import org.netbeans.api.annotations.common.CheckForNull;
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener;
-import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.spi.cos.AdditionalDestination;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.filesystems.FileLock;
@@ -74,17 +74,17 @@ import org.openide.util.Exceptions;
 public class CopyOnSave implements AdditionalDestination, J2eeModuleProvider.DeployOnSaveSupport {
 
     private final List<ArtifactListener> listeners = new ArrayList<ArtifactListener>();
-    private Project project;
+    private final Project project;
 
 
     public CopyOnSave(Project project) {
         this.project = project;
     }
 
-    public void initialize() throws FileStateInvalidException {
+    public void initialize() {
     }
 
-    public void cleanup() throws FileStateInvalidException {
+    public void cleanup() {
     }
 
     protected void copySrcToDest( FileObject srcFile, FileObject destFile) throws IOException {
@@ -156,8 +156,13 @@ public class CopyOnSave implements AdditionalDestination, J2eeModuleProvider.Dep
      */
     @Override
     public void copy(FileObject fo, String path) {
+        final J2eeModule j2eeModule = getJ2eeModule();
+        if (j2eeModule == null) {
+            return;
+        }
+
         try {
-            FileObject contentDir = getJ2eeModule().getContentDirectory();
+            final FileObject contentDir = j2eeModule.getContentDirectory();
             if (contentDir != null) {
                 // project was built
                 FileObject destFile = ensureDestinationFileExists(contentDir,
@@ -180,8 +185,13 @@ public class CopyOnSave implements AdditionalDestination, J2eeModuleProvider.Dep
      */
     @Override
     public void delete(FileObject fo, String path) {
+        final J2eeModule j2eeModule = getJ2eeModule();
+        if (j2eeModule == null) {
+            return;
+        }
+
         try {
-            FileObject contentDir = getJ2eeModule().getContentDirectory();
+            FileObject contentDir = j2eeModule.getContentDirectory();
             if (contentDir != null) {
                 // project was built
                 FileObject classes = getDestinationSubFolderName().length() > 0 ?

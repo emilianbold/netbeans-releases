@@ -361,7 +361,17 @@ No.
 -->
 <answer id="exec-component">
   <api name="fallback" group="property" type="export" category="stable">
-      See documentation of <code>FileSystem</code>.
+    <p>
+        See documentation of <code>FileSystem</code>.
+    </p>
+  </api>
+  <api name="revealEntries" group="property" type="export" category="devel"
+    url="@TOP@/org/openide/filesystems/MultiFileSystem.html">
+    <p>
+        The MultiFileSystem defines some pseudo attributes on files and folders,
+        which provide rollback features. Please see MultiFileSystem class javadoc 
+        for more information.
+    </p>
  </api>
 </answer>
 
@@ -379,8 +389,10 @@ No.
         </question>
 -->
 <answer id="exec-privateaccess">
-Yes, AutomountSupport stores content of Repository as settings files. Then setting infrastructure registers its 
-own PropertyChangeListener. So method addPropertyChangeListener is invoked by reflection.
+    <api category="friend" group="java" name="FileObjectMoveLookup" type="export">
+    <code>masterfs</code> module is using
+    a reflection to re-associate the lookup after a move operation.
+    </api>
 </answer>
 
 

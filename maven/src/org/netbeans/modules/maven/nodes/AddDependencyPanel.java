@@ -51,6 +51,7 @@ import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -79,12 +80,15 @@ import org.apache.lucene.search.BooleanQuery;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.DependencyManagement;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.project.ProjectBuildingException;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.TextValueCompleter;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.customizer.support.DelayedDocumentChangeListener;
+import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
 import org.netbeans.modules.maven.indexer.api.QueryField;
 import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
@@ -103,6 +107,7 @@ import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.ContextAwareAction;
+import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -125,7 +130,7 @@ public class AddDependencyPanel extends javax.swing.JPanel {
      * @param selectedScope an initial scope selection (such as {@code compile})
      * @return groupId + artifactId + version + scope + type + classifier, or null if canceled
      */
-    @Messages("TIT_Add_Library=Add Library")
+    @Messages("TIT_Add_Library=Add Dependency")
     public static @CheckForNull String[] show(Project prj, boolean showDepMan, String selectedScope) {
         NbMavenProject nbproj = prj.getLookup().lookup(NbMavenProject.class);
         AddDependencyPanel pnl = new AddDependencyPanel(nbproj.getMavenProject(), showDepMan, prj);
@@ -156,6 +161,7 @@ public class AddDependencyPanel extends javax.swing.JPanel {
     }
 
     private MavenProject project;
+    private Project nbProject;
 
     private final TextValueCompleter groupCompleter;
     private final TextValueCompleter artifactCompleter;
@@ -176,6 +182,7 @@ public class AddDependencyPanel extends javax.swing.JPanel {
     @Messages("BTN_OK=Add")
     private AddDependencyPanel(MavenProject mavenProject, boolean showDepMan, Project prj) {
         this.project = mavenProject;
+        this.nbProject = prj;
         initComponents();
         groupCompleter = new TextValueCompleter(Collections.<String>emptyList(), txtGroupId);
         artifactCompleter = new TextValueCompleter(Collections.<String>emptyList(), txtArtifactId);
@@ -240,7 +247,33 @@ public class AddDependencyPanel extends javax.swing.JPanel {
         RP.post(new Runnable() {
             @Override
             public void run() {
-                populateGroupId();
+                Result<String> res = populateGroupId();
+                if (res.isPartial()) {
+                    //we will ignore any rare occurances of repository being added after the groupId result is 
+                    // processed.. this is the only way of ensuring that the completion gets refreshed.
+                    res.waitForSkipped();
+                    populateGroupId();
+                    final String[] vals = new String[2];
+                    try {
+                        SwingUtilities.invokeAndWait(new Runnable() {
+                            @Override
+                            public void run() {
+                                vals[0] = txtGroupId.getText().trim();
+                                vals[1] = txtArtifactId.getText().trim();
+                            }
+                        });
+                        if (vals[0] != null && vals[0].length() > 0) {
+                            populateArtifact(vals[0]);
+                            if (vals[1] != null && vals[1].length() > 0) {
+                                populateVersion(vals[0], vals[1]);
+                            }
+                        }
+                    } catch (InterruptedException ex) {
+                        Exceptions.printStackTrace(ex);
+                    } catch (InvocationTargetException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
             }
         });
 
@@ -707,7 +740,7 @@ public class AddDependencyPanel extends javax.swing.JPanel {
     // End of variables declaration//GEN-END:variables
     // End of variables declaration
 
-    private void populateGroupId() {
+    private Result<String> populateGroupId() {
         assert !SwingUtilities.isEventDispatchThread();
         final Result<String> result = RepositoryQueries.getGroupsResult(RepositoryPreferences.getInstance().getRepositoryInfos());
         final List<String> lst = new ArrayList<String>(result.getResults());
@@ -717,10 +750,10 @@ public class AddDependencyPanel extends javax.swing.JPanel {
                 groupCompleter.setValueList(lst, result.isPartial());
             }
         });
-
+        return result;
     }
 
-    private void populateArtifact(String groupId) {
+    private Result<String> populateArtifact(String groupId) {
         assert !SwingUtilities.isEventDispatchThread();
         final Result<String> result = RepositoryQueries.getArtifactsResult(groupId, RepositoryPreferences.getInstance().getRepositoryInfos());
         final List<String> lst = new ArrayList<String>(result.getResults());
@@ -730,10 +763,10 @@ public class AddDependencyPanel extends javax.swing.JPanel {
                 artifactCompleter.setValueList(lst, result.isPartial());
             }
         });
-
+        return result;
     }
 
-    private void populateVersion(String groupId, String artifactId) {
+    private Result<NBVersionInfo> populateVersion(String groupId, String artifactId) {
         assert !SwingUtilities.isEventDispatchThread();
         final Result<NBVersionInfo> result = RepositoryQueries.getVersionsResult(groupId, artifactId, RepositoryPreferences.getInstance().getRepositoryInfos());
         List<NBVersionInfo> lst = result.getResults();
@@ -761,10 +794,11 @@ public class AddDependencyPanel extends javax.swing.JPanel {
                 versionCompleter.setValueList(vers, result.isPartial());
             }
         });
-
+        return result;
     }
 
-    private static List<Dependency> getDependenciesFromDM(MavenProject project) {
+    private static List<Dependency> getDependenciesFromDM(MavenProject project, Project nbprj) {
+        NbMavenProjectImpl p = nbprj.getLookup().lookup(NbMavenProjectImpl.class);
         MavenProject localProj = project;
         DependencyManagement curDM;
         List<Dependency> result = new ArrayList<Dependency>();
@@ -787,8 +821,8 @@ public class AddDependencyPanel extends javax.swing.JPanel {
                 }
             }
             try {
-                localProj = localProj.getParent();
-            } catch (IllegalStateException x) { // #197994 variant
+                localProj = p.loadParentOf(EmbedderFactory.getProjectEmbedder(), localProj);
+            } catch (ProjectBuildingException x) {
                 break;
             }
         }
@@ -1034,7 +1068,9 @@ public class AddDependencyPanel extends javax.swing.JPanel {
                 }
         
 
-        @Messages("MSG_ClassesExcluded=Too general query. Class names excluded from the search.")
+        @Messages({"MSG_ClassesExcluded=Too general query. Class names excluded from the search.",
+                   "MSG_Narrow=Only {0} of {1} results shown. Consider narrowing your search."
+                  })
         void find(String queryText) {
             synchronized (LOCK) {
                 if (inProgressText != null) {
@@ -1091,7 +1127,13 @@ public class AddDependencyPanel extends javax.swing.JPanel {
                     if (cancel()) return;//we no longer care
                     //first try with classes search included,
                     try {
-                        Result<NBVersionInfo> result = RepositoryQueries.findResult(fields, RepositoryPreferences.getInstance().getRepositoryInfos());
+                        SwingUtilities.invokeLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                AddDependencyPanel.this.nls.setInformationMessage(null); //NOI18N
+                            }
+                        });
+                        final Result<NBVersionInfo> result = RepositoryQueries.findResult(fields, RepositoryPreferences.getInstance().getRepositoryInfos());
                         if (cancel()) return;//we no longer care
                         updateResults(result.getResults(), result.isPartial());
                         if (result.isPartial()) {
@@ -1100,6 +1142,14 @@ public class AddDependencyPanel extends javax.swing.JPanel {
                             if (cancel()) return;//we no longer care
                             updateResults(result.getResults(), false);
                         }
+                        SwingUtilities.invokeLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                if (result.getReturnedResultCount() < result.getTotalResultCount()) {
+                                    AddDependencyPanel.this.nls.setInformationMessage(MSG_Narrow(result.getReturnedResultCount(), result.getTotalResultCount()));
+                                }
+                            }
+                        });
                         
                     } catch (BooleanQuery.TooManyClauses exc) {
                         if (cancel()) return;//we no longer care
@@ -1108,7 +1158,7 @@ public class AddDependencyPanel extends javax.swing.JPanel {
                             SwingUtilities.invokeLater(new Runnable() {
                                 @Override
                                 public void run() {
-                                    AddDependencyPanel.this.nls.setInformationMessage(MSG_ClassesExcluded()); //NOI18N
+                                    AddDependencyPanel.this.nls.setInformationMessage(MSG_ClassesExcluded());
                                 }
                             });
                             Result<NBVersionInfo> result = RepositoryQueries.findResult(fieldsNonClasses, RepositoryPreferences.getInstance().getRepositoryInfos());
@@ -1402,7 +1452,7 @@ public class AddDependencyPanel extends javax.swing.JPanel {
         @Override
         public void run() {
             synchronized (DM_DEPS_LOCK) {
-                dmDeps = getDependenciesFromDM(project);
+                dmDeps = getDependenciesFromDM(project, AddDependencyPanel.this.nbProject);
             }
             SwingUtilities.invokeLater(new Runnable() {
                 @Override

@@ -77,6 +77,9 @@ public class DefaultDBProvider implements DBProvider {
     }
     
     public void dropTable(Connection conn, String schemaName, String tableName) throws Exception {
+        if (!tableExists(conn, schemaName, tableName)) {
+            return;
+        }
         try {
             conn.createStatement().executeUpdate("DROP TABLE " + schemaName + "." + tableName);
         } catch (SQLException sqle) {

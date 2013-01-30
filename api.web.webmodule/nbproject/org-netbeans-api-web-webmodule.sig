@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.26
+#Version 1.28.1
 
 CLSS public abstract interface !annotation java.lang.Deprecated
  anno 0 java.lang.annotation.Documented()
@@ -340,12 +340,15 @@ meth public abstract void removeChangeListener(javax.swing.event.ChangeListener)
 meth public abstract void storeSettings({org.openide.WizardDescriptor$Panel%0})
 
 CLSS public final org.openide.util.HelpCtx
-cons public init(java.lang.Class)
+cons public init(java.lang.Class<?>)
+ anno 0 java.lang.Deprecated()
 cons public init(java.lang.String)
 cons public init(java.net.URL)
  anno 0 java.lang.Deprecated()
 fld public final static org.openide.util.HelpCtx DEFAULT_HELP
+innr public abstract interface static Displayer
 innr public abstract interface static Provider
+meth public boolean display()
 meth public boolean equals(java.lang.Object)
 meth public int hashCode()
 meth public java.lang.String getHelpID()

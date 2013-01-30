@@ -70,6 +70,7 @@ import org.openide.modules.ModuleInfo;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
+import org.openide.util.Mutex;
 
 /**
  * @author Tomas Musil
@@ -119,12 +120,11 @@ public class UnitTestLibrariesNodeTest extends TestBase {
 //        assertEquals("nc nodes now", nc, libs.getChildren().getNodes().length);
 //    }
     
-    @RandomlyFails // NB-Core-Build #7354: "have a node with dependency"
     public void testActions() throws Exception{
         assertNotNull("have the Libraries node", libsNode);
         //test removedep action
         addTestDependency(p);
-        String depName = p.getModuleList().getEntry(DEP_CNB).getLocalizedName();
+        String depName = p.getModuleList().getEntry(DEP_CNB).getCodeNameBase();
         forceChildrenUpdate(libsNode);
         Node depNode = libsNode.getChildren().findChild(depName);
         assertNotNull("have a node with dependency", depNode);
@@ -284,6 +284,7 @@ public class UnitTestLibrariesNodeTest extends TestBase {
 
     private void forceChildrenUpdate(Node node) {
         node.getChildren().getNodesCount(); // so that refreshKeys() gets called
+        waitForNodesUpdate();
         waitForNodesUpdate();
     }
     

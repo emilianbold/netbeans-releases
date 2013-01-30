@@ -42,10 +42,10 @@
 
 package org.netbeans.modules.keyring.fallback;
 
+import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -74,6 +74,7 @@ public class FallbackProvider implements KeyringProvider, Callable<Void> {
 
     private EncryptionProvider encryption;
  
+    @Override
     public boolean enabled() {
         for (EncryptionProvider p : Lookup.getDefault().lookupAll(EncryptionProvider.class)) {
             if (p.enabled()) {
@@ -96,7 +97,9 @@ public class FallbackProvider implements KeyringProvider, Callable<Void> {
         byte[] ciphertext = prefs.getByteArray(SAMPLE_KEY, null);
         if (ciphertext == null) {
             encryption.freshKeyring(true);
-            if (_save(SAMPLE_KEY, (SAMPLE_KEY + UUID.randomUUID()).toCharArray(),
+            byte[] randomArray = new byte[36];
+            new SecureRandom().nextBytes(randomArray);
+            if (_save(SAMPLE_KEY, (SAMPLE_KEY + new String(randomArray)).toCharArray(),
                     NbBundle.getMessage(FallbackProvider.class, "FallbackProvider.sample_key.description"))) {
                 LOG.fine("saved sample key");
                 return true;

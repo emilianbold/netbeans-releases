@@ -55,6 +55,8 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
+import java.awt.Container;
+import java.awt.FlowLayout;
 import java.awt.GradientPaint;
 import java.awt.Graphics2D;
 import java.awt.Insets;
@@ -62,6 +64,9 @@ import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -70,15 +75,26 @@ import java.awt.geom.Area;
 import java.awt.geom.RoundRectangle2D;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.InputMap;
 import javax.swing.JComponent;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JTabbedPane;
+import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
@@ -86,20 +102,46 @@ import javax.swing.border.Border;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
+import javax.swing.text.JTextComponent;
+import org.netbeans.modules.options.CategoryModel.Category;
+import org.netbeans.modules.options.advanced.AdvancedPanel;
 import org.netbeans.modules.options.ui.VariableBorder;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.awt.Mnemonics;
+import org.openide.awt.QuickSearch;
+import org.openide.awt.StatusDisplayer;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
+import org.openide.windows.WindowManager;
 
 public class OptionsPanel extends JPanel {
     private JPanel pCategories;
     private JPanel pCategories2;
     private JPanel pOptions;
+    private JPanel quickSearch;
+    private Color origForeground;
+    private String hintText;
+    private JTextComponent searchTC;
+    private String text2search = "";
+    private boolean clearSearch = false;
     private CardLayout cLayout;
+    
+    private int selectedTabIndex = -1;
+    private HashMap<String, JTabbedPane> categoryid2tabbedpane = new HashMap<String, JTabbedPane>();
+    private HashMap<String, ArrayList<String>> categoryid2words = new HashMap<String, ArrayList<String>>();
+    private HashMap<String, HashMap<Integer, TabInfo>> categoryid2tabs = new HashMap<String, HashMap<Integer, TabInfo>>();
+    private ArrayList<String> disabledCategories = new ArrayList<String>();
+
+    private ArrayList<FileObject> advancedFOs = new ArrayList<FileObject>();
+    private HashMap<String, Integer> dublicateKeywordsFOs = new HashMap<String, Integer>();
+    private HashMap<FileObject, Integer> fo2index = new HashMap<FileObject, Integer>();
 
     private Map<String, CategoryButton> buttons = new LinkedHashMap<String, CategoryButton>();    
     private final boolean isMac = UIManager.getLookAndFeel ().getID ().equals ("Aqua");
@@ -127,6 +169,19 @@ public class OptionsPanel extends JPanel {
     public OptionsPanel (String categoryID) {        
         // init UI components, layout and actions, and add some default values
         initUI(categoryID);        
+        if (getActionMap().get("SEARCH_OPTIONS") == null) {//NOI18N
+            InputMap inputMap = getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+
+            if(Utilities.isMac()) {
+                inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_F, InputEvent.META_MASK), "SEARCH_OPTIONS");//NOI18N
+                // Mac cloverleaf symbol
+                hintText = Bundle.Filter_Textfield_Hint("\u2318+F");
+            } else {
+                inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_F, InputEvent.CTRL_MASK), "SEARCH_OPTIONS");//NOI18N
+                hintText = Bundle.Filter_Textfield_Hint("Ctrl+F");
+            }
+            getActionMap().put("SEARCH_OPTIONS", new SearchAction());//NOI18N
+        }
     }
     
     private String getCategoryID(String categoryID) {
@@ -169,29 +224,46 @@ public class OptionsPanel extends JPanel {
     private void setCurrentCategory (final CategoryModel.Category category, String subpath) {
         setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         try {
-            CategoryModel.Category oldCategory = CategoryModel.getInstance().getCurrent();
-            if (oldCategory != null) {
-                (buttons.get(oldCategory.getID())).setNormal ();
-            }
-            if (category != null) {
-                (buttons.get(category.getID())).setSelected ();
-            }
+            if(category == null) {
+                JComponent component = new JPanel(new BorderLayout());
+                JLabel label = new JLabel(loc("CTL_Options_Search_Nothing_Found"));//NOI18N
+                label.setHorizontalAlignment(JLabel.CENTER);
+                label.setHorizontalTextPosition(JLabel.CENTER);
+                component.add(label, BorderLayout.CENTER);
+                component.setSize(pOptions.getSize());
+                component.setPreferredSize(pOptions.getPreferredSize());
+                final Dimension size = component.getSize();
+                if (component.getParent() == null || !pOptions.equals(component.getParent())) {
+                    pOptions.add(component, label.getText());
+                }
+                cLayout.show(pOptions, label.getText());
+                checkSize(size);
+                firePropertyChange("buran" + OptionsPanelController.PROP_HELP_CTX, null, null);
+            } else {
+                CategoryModel.Category oldCategory = CategoryModel.getInstance().getCurrent();
+                if (oldCategory != null) {
+                    (buttons.get(oldCategory.getID())).setNormal();
+                }
+                if (category != null) {
+                    (buttons.get(category.getID())).setSelected();
+                }
 
-            CategoryModel.getInstance().setCurrent(category);
-            JComponent component = category.getComponent();
-            category.update(controllerListener, false);
-            final Dimension size = component.getSize();
-            if( component.getParent() == null || !pOptions.equals(component.getParent()) ) {
-                pOptions.add(component, category.getCategoryName());
-            }
-            cLayout.show(pOptions, category.getCategoryName());
-            checkSize (size);
-            /*if (CategoryModel.getInstance().getCurrent() != null) {
-                ((CategoryButton) buttons.get (CategoryModel.getInstance().getCurrentCategoryID())).requestFocus();
-            } */
-            firePropertyChange ("buran" + OptionsPanelController.PROP_HELP_CTX, null, null);
-            if(subpath != null) {
-                category.setCurrentSubcategory(subpath);
+                CategoryModel.getInstance().setCurrent(category);
+                JComponent component = category.getComponent();                
+                category.update(controllerListener, false);
+                final Dimension size = component.getSize();
+                if (component.getParent() == null || !pOptions.equals(component.getParent())) {
+                    pOptions.add(component, category.getCategoryName());
+                }
+                cLayout.show(pOptions, category.getCategoryName());
+                checkSize(size);
+                /*if (CategoryModel.getInstance().getCurrent() != null) {
+                 ((CategoryButton) buttons.get (CategoryModel.getInstance().getCurrentCategoryID())).requestFocus();
+                 } */
+                firePropertyChange("buran" + OptionsPanelController.PROP_HELP_CTX, null, null);
+                if (subpath != null) {
+                    category.setCurrentSubcategory(subpath);
+                }
             }
         } finally {
             setCursor(null);
@@ -207,10 +279,12 @@ public class OptionsPanel extends JPanel {
     }
     
     void save () {
+        clearSearchField();
         CategoryModel.getInstance().save();
     }
     
     void cancel () {
+        clearSearchField();
         CategoryModel.getInstance().cancel();    
     }
     
@@ -228,6 +302,9 @@ public class OptionsPanel extends JPanel {
     
     // private methods .........................................................
 
+    @NbBundle.Messages({"Filter_Textfield_Tooltip=Press Esc or Enter with empty text to clear the filter",
+        "# {0} - shortcut to access the search text field",
+        "Filter_Textfield_Hint=Filter ({0})"})
     private void initUI(String categoryName) {
         this.getAccessibleContext().setAccessibleDescription(loc("ACS_OptionsPanel"));//NOI18N
         // central panel
@@ -245,10 +322,46 @@ public class OptionsPanel extends JPanel {
         pCategories2.setBorder (null);
         addCategoryButtons();        
 
+        quickSearch = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
+        quickSearch.setBackground(Color.white);
+        QuickSearch qs = QuickSearch.attach(quickSearch, null, new OptionsQSCallback());
+        qs.setAlwaysShown(true);
+        
+        JComponent searchPanel = (JComponent) quickSearch.getComponent(0);
+        searchPanel.setToolTipText(Bundle.Filter_Textfield_Tooltip());
+        searchTC = (JTextComponent) searchPanel.getComponent(searchPanel.getComponentCount() - 1);
+        searchTC.setToolTipText(Bundle.Filter_Textfield_Tooltip());
+        searchTC.addFocusListener(new FocusListener() {
+
+            @Override
+            public void focusGained(FocusEvent e) {
+                showHint(false);
+            }
+
+            @Override
+            public void focusLost(FocusEvent e) {
+                if (text2search.trim().isEmpty()) {
+                    showHint(true);
+                } else {
+                    showHint(false);
+                }
+                if(e.getOppositeComponent() != null && e.getOppositeComponent().equals(quickSearch) && !clearSearch) {
+                    searchTC.requestFocusInWindow();
+                } else {
+                    clearSearch = false;
+		    if(e.getOppositeComponent() != null && e.getOppositeComponent().equals(quickSearch)) {
+			pOptions.requestFocusInWindow();
+		    }
+                }
+            }
+        });
+        showHint(true);
+        
         pCategories = new JPanel (new BorderLayout ());
         pCategories.setBorder (BorderFactory.createMatteBorder(0,0,1,0,Color.lightGray));        
         pCategories.setBackground (Color.white);
         pCategories.add ("Center", pCategories2);
+        pCategories.add ("East", quickSearch);
         
         // layout
         setLayout (new BorderLayout (10, 10));
@@ -270,7 +383,381 @@ public class OptionsPanel extends JPanel {
             }
         }
     }
+    
+    private void clearSearchField() {
+        searchTC.setText("");
+	clearAllinQS();
+    }
+    
+    private void showHint (boolean showHint) {
+        // remember orig color on first invocation
+        if (origForeground == null) {
+            origForeground = searchTC.getForeground();
+        }
+        if (showHint) {
+            searchTC.setForeground(searchTC.getDisabledTextColor());
+            searchTC.setText(hintText);
+        } else {
+            searchTC.setForeground(origForeground);
+            searchTC.setText(text2search);
+        }
+    }
         
+    private void computeOptionsWords() {
+        Set<Map.Entry<String, CategoryModel.Category>> categories = CategoryModel.getInstance().getCategories();
+        categoryid2tabs = new HashMap<String, HashMap<Integer, TabInfo>>();
+        for (Map.Entry<String, CategoryModel.Category> set : categories) {
+            JComponent jcomp = set.getValue().getComponent();
+            String id = set.getValue().getID();
+            if(jcomp instanceof JTabbedPane) {
+                categoryid2tabbedpane.put(id, (JTabbedPane)jcomp);
+            } else if(jcomp instanceof AdvancedPanel) {
+                categoryid2tabbedpane.put(id, (JTabbedPane)jcomp.getComponent(0));
+            } else if (jcomp instanceof Container) {
+                handleAllComponents((Container) jcomp, id, null, -1);
+            }
+        }
+
+        FileObject keywordsFOs = FileUtil.getConfigRoot().getFileObject(CategoryModel.OD_LAYER_KEYWORDS_FOLDER_NAME);
+
+        for(FileObject keywordsFO : keywordsFOs.getChildren()) {
+            handlePanel(keywordsFO);
+        }
+    }
+
+    private void handlePanel(FileObject keywordsFO) {
+        String location = keywordsFO.getAttribute("location").toString(); //NOI18N
+        String tabTitle = keywordsFO.getAttribute("tabTitle").toString(); //NOI18N
+        JTabbedPane pane = categoryid2tabbedpane.get(location);
+        int tabIndex = pane == null ? -1 : pane.indexOfTab(tabTitle);
+
+        Set<String> keywords = new HashSet<String>();
+	Enumeration<String> attributes = keywordsFO.getAttributes();
+	while(attributes.hasMoreElements()) {
+	    String attribute = attributes.nextElement();
+	    if(attribute.startsWith("keywords")) {
+		String word = keywordsFO.getAttribute(attribute).toString();
+		keywords.add(word.toUpperCase());
+	    }
+	}
+
+        ArrayList<String> words = categoryid2words.get(location);
+        if (words == null) {
+            words = new ArrayList<String>();
+        }
+
+        Set<String> newWords = new HashSet<String>();
+        for (String keyword : keywords) {
+            if (!words.contains(keyword)) {
+                newWords.add(keyword);
+             }
+         }
+
+        words.addAll(newWords);
+        categoryid2words.put(location, words);
+
+        if (!categoryid2tabs.containsKey(location)) {
+            categoryid2tabs.put(location, new HashMap<Integer, TabInfo>());
+        }
+        HashMap<Integer, TabInfo> categoryTabs = categoryid2tabs.get(location);
+        TabInfo tabInfo;
+        if (!categoryTabs.containsKey(tabIndex)) {
+            tabInfo = new TabInfo();
+        } else {
+            tabInfo = categoryTabs.get(tabIndex);
+        }
+        tabInfo.addWords(keywords);
+        categoryTabs.put(tabIndex, tabInfo);
+        categoryid2tabs.put(location, categoryTabs);
+     }
+
+    private void handleAllComponents(Container container, String categoryID, JTabbedPane tabbedPane, int index) {
+        Component[] components = container.getComponents();
+        Component component;
+        for (int i = 0; i < components.length; i++) {
+            component = components[i];
+            String text;
+            
+            if(component instanceof JTabbedPane) {
+                if(categoryid2tabbedpane.get(categoryID) == null) {
+                    categoryid2tabbedpane.put(categoryID, (JTabbedPane)component);
+                }
+            } else {
+                handleAllComponents((Container)component, categoryID, tabbedPane, index);
+            }
+        }
+        
+    }
+    
+    private class TabInfo {
+
+        private ArrayList<String> words;
+
+        public TabInfo() {
+            this.words = new ArrayList<String>();
+        }
+
+        public ArrayList<String> getWords() {
+            return words;
+        }
+
+        public void addWord(String word) {
+            words.add(word.toUpperCase());
+        }
+
+        public void addWords(Set<String> words) {
+            for (String word : words) {
+                addWord(word);
+            }
+        }
+    }
+
+    final class OptionsQSCallback implements QuickSearch.Callback {
+
+        private boolean initialized = false;
+
+        @Override
+        public void quickSearchUpdate(String searchText) {
+            if (!searchText.equalsIgnoreCase(hintText)) {
+                text2search = searchText.trim();
+            }
+        }
+        
+        private void showWaitCursor() {
+            Mutex.EVENT.readAccess(new Runnable() {
+                public void run() {
+                    JFrame mainWindow = (JFrame) WindowManager.getDefault().getMainWindow();
+                    mainWindow.getGlassPane().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                    mainWindow.getGlassPane().setVisible(true);
+                    StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(OptionsDisplayerImpl.class, "CTL_Searching_Options"));
+                }
+            });
+        }
+
+        private void hideWaitCursor() {
+            Mutex.EVENT.readAccess(new Runnable() {
+                public void run() {
+                    StatusDisplayer.getDefault().setStatusText("");  //NOI18N
+                    JFrame mainWindow = (JFrame) WindowManager.getDefault().getMainWindow();
+                    mainWindow.getGlassPane().setVisible(false);
+                    mainWindow.getGlassPane().setCursor(null);
+                }
+            });
+        }
+
+        private int getNextEnabledTabIndex(JTabbedPane pane, int currentIndex) {
+            for (int i = currentIndex + 1; i < pane.getTabCount(); i++) {
+                if(pane.isEnabledAt(i)) {
+                    return i;
+                }
+            }
+            for (int i = 0; i < currentIndex; i++) {
+                if(pane.isEnabledAt(i)) {
+                    return i;
+                }
+            }
+            return -1;
+        }
+
+        private boolean containsAllSearchWords(ArrayList<String> keywords, Collection<String> stWords) {
+            Iterator<String> e = stWords.iterator();
+            while (e.hasNext()) {
+                if (!containsSearchWord(keywords, e.next())) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        private boolean containsSearchWord(ArrayList<String> keywords, String stWord) {
+            Iterator<String> e = keywords.iterator();
+            while (e.hasNext()) {
+                if (e.next().contains(stWord)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+	private ArrayList<String> getAllMatchedKeywords(ArrayList<String> keywords, Collection<String> stWords) {
+	    ArrayList<String> allMatched = new ArrayList<String>();
+	    Iterator<String> e = stWords.iterator();
+            while (e.hasNext()) {
+		allMatched.addAll(getMatchedKeywords(keywords, e.next(), allMatched));
+            }
+	    return allMatched;
+	}
+
+	private ArrayList<String> getMatchedKeywords(ArrayList<String> keywords, String stWord, ArrayList<String> allMatched) {
+	    ArrayList<String> matched = new ArrayList<String>();
+	    Iterator<String> e = keywords.iterator();
+            while (e.hasNext()) {
+		String next = e.next();
+		for (String s : next.split(",")) {
+		    s = s.trim();
+		    if (s.contains(stWord) && !allMatched.contains(s) && !matched.contains(s)) {
+			matched.add(s);
+		    }
+		}
+            }
+	    return matched;
+	}
+        
+        private void handleSearch(String searchText) {
+            List<String> stWords = Arrays.asList(searchText.toUpperCase().split(" "));
+            String exactCategory = null;
+            int exactTabIndex = -1;
+            for (String id : CategoryModel.getInstance().getCategoryIDs()) {
+                ArrayList<String> entry = categoryid2words.get(id);
+		List<String> matchedKeywords;
+                if (entry != null) {
+                    boolean found = containsAllSearchWords(entry, stWords);
+                    for (String stWord : stWords) {
+                        if (id.toUpperCase().contains(stWord)) {
+                            exactCategory = id;
+                        }
+                    }
+
+                    if (found) {
+                        disabledCategories.remove(id);
+                        buttons.get(id).setEnabled(true);
+                        JTabbedPane pane = categoryid2tabbedpane.get(id);
+                        if (categoryid2tabs.get(id) != null) {
+                            HashMap<Integer, TabInfo> tabsInfo = categoryid2tabs.get(id);
+                            boolean foundInNoTab = true;
+                            for (Integer tabIndex : tabsInfo.keySet()) {
+                                if (tabIndex != -1) {
+                                    ArrayList<String> tabWords = tabsInfo.get(tabIndex).getWords();
+                                    boolean foundInTab = false;
+                                    if (containsAllSearchWords(tabWords, stWords)) {
+                                        foundInTab = true;
+                                        foundInNoTab = false;
+                                        exactTabIndex = tabIndex;
+                                        setCurrentCategory(CategoryModel.getInstance().getCategory(id), null);
+                                    }
+                                    if (foundInTab) {
+                                        pane.setEnabledAt(tabIndex, true);
+                                        if (exactTabIndex == tabIndex) {
+                                            pane.setSelectedIndex(tabIndex);
+                                        }
+					matchedKeywords = getAllMatchedKeywords(tabWords, stWords);
+					CategoryModel.getInstance().getCurrent().handleSuccessfulSearchInController(searchText, matchedKeywords);
+                                    } else {
+                                        pane.setEnabledAt(tabIndex, false);
+                                        if(exactTabIndex == -1) {
+                                            pane.setSelectedIndex(getNextEnabledTabIndex(pane, tabIndex));
+                                        }
+                                    }
+                                } else {
+                                    setCurrentCategory(CategoryModel.getInstance().getCategory(id), null);
+                                    if(tabsInfo.size() == 1) {
+                                        foundInNoTab = false;
+					matchedKeywords = getAllMatchedKeywords(entry, stWords);
+					CategoryModel.getInstance().getCurrent().handleSuccessfulSearchInController(searchText, matchedKeywords);
+                                    }
+                                }
+                            }
+                            if(foundInNoTab) {
+                                handleNotFound(id, exactCategory);
+                            }
+                        } else {
+                            setCurrentCategory(CategoryModel.getInstance().getCategory(id), null);
+			    matchedKeywords = getAllMatchedKeywords(entry, stWords);
+			    CategoryModel.getInstance().getCurrent().handleSuccessfulSearchInController(searchText, matchedKeywords);
+                        }
+                    } else {
+                        handleNotFound(id, exactCategory);
+                    }
+                } else {
+                    handleNotFound(id, exactCategory);
+                }
+            }
+        }
+
+        private void handleNotFound(String id, String exactCategory) {
+            if (!disabledCategories.contains(id)) {
+                disabledCategories.add(id);
+            }
+            JTabbedPane pane = categoryid2tabbedpane.get(id);
+            if (categoryid2tabs.get(id) != null && pane != null) {
+                for (int i = 0; i < pane.getTabCount(); i++) {
+                    pane.setEnabledAt(i, false);
+                }
+            }
+            buttons.get(id).setEnabled(false);
+            if (disabledCategories.size() == buttons.size()) {
+                setCurrentCategory(null, null);
+            } else {
+                for (String id3 : CategoryModel.getInstance().getCategoryIDs()) {
+                    if (buttons.get(id3).isEnabled() && exactCategory == null) {
+                        setCurrentCategory(CategoryModel.getInstance().getCategory(id3), null);
+                        break;
+                    }
+                }
+            }
+        }
+
+        @Override
+        public void showNextSelection(boolean forward) {
+        }
+
+        @Override
+        public String findMaxPrefix(String prefix) {
+            return prefix;
+        }
+
+        @Override
+        public void quickSearchConfirmed() {
+            if (text2search.length() == 0) {
+                clearAllinQS();
+                showHint(true);
+                return;
+            }
+            showWaitCursor();
+            try {
+                if (!initialized) {
+                    final String sText = text2search;
+                    SwingUtilities.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            computeOptionsWords();
+                            initialized = true;
+                            handleSearch(sText);
+                            showHint(false);
+                        }
+                    });
+                } else {
+                    handleSearch(text2search);
+                    showHint(false);
+                }
+            } finally {
+                hideWaitCursor();
+            }
+        }
+
+        @Override
+        public void quickSearchCanceled() {
+            clearAllinQS();
+            showHint(true);
+        }
+    }
+
+    private void clearAllinQS() {
+	clearSearch = true;
+	for (String id : CategoryModel.getInstance().getCategoryIDs()) {
+	    JTabbedPane pane = categoryid2tabbedpane.get(id);
+	    if (categoryid2tabs.get(id) != null && pane != null) {
+		for (int i = 0; i < pane.getTabCount(); i++) {
+		    pane.setEnabledAt(i, true);
+		}
+	    }
+	    buttons.get(id).setEnabled(true);
+	}
+	setCurrentCategory(CategoryModel.getInstance().getCurrent(), null);
+	disabledCategories.clear();
+	CategoryModel.getInstance().getCurrent().handleSuccessfulSearchInController(null, null);
+    }
+    
     private void initActions () {
         if (getActionMap ().get("PREVIOUS") == null) {//NOI18N
             InputMap inputMap = getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
@@ -320,10 +807,11 @@ public class OptionsPanel extends JPanel {
                 : new CategoryButton(category);
 
         // add shortcut
-        KeyStroke keyStroke = KeyStroke.getKeyStroke 
-            (button.getDisplayedMnemonic (), KeyEvent.ALT_MASK);
-        getInputMap (JComponent.WHEN_IN_FOCUSED_WINDOW).put (keyStroke, button);
-        getActionMap ().put (button, new SelectAction (category));
+	if (!isMac) {
+	    KeyStroke keyStroke = KeyStroke.getKeyStroke(button.getDisplayedMnemonic(), KeyEvent.ALT_MASK);
+	    getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(keyStroke, button);
+	    getActionMap().put(button, new SelectAction(category));
+	}
 
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.anchor = GridBagConstraints.NORTHWEST;
@@ -422,16 +910,73 @@ public class OptionsPanel extends JPanel {
         }
     }
     
+    private class SearchAction extends AbstractAction {
+        @Override
+        public void actionPerformed (ActionEvent e) {
+            showHint(false);
+            searchTC.requestFocusInWindow();
+        }
+    }
+    
     private class PreviousAction extends AbstractAction {
         public void actionPerformed (ActionEvent e) {
-            setCurrentCategory (CategoryModel.getInstance().getPreviousCategory(), null);
+            Category previous = CategoryModel.getInstance().getPreviousCategory();
+            if(buttons.get(previous.getID()).isEnabled()) {
+                setCurrentCategory (previous, null);
+            } else {
+                String currentID = CategoryModel.getInstance().getCurrentCategoryID();
+                String[] ids = CategoryModel.getInstance().getCategoryIDs();
+                int idx = Arrays.asList(ids).indexOf(currentID);
+                if(idx - 1 > -1) {
+                    if (doPreviousNextAction(ids, idx - 1, -1, false)) {
+                        doPreviousNextAction(ids, ids.length - 1, idx, false);
+                    }
+                } else {
+                    doPreviousNextAction(ids, ids.length - 1, idx, false);
+                }
+            }
         }
     }
     
     private class NextAction extends AbstractAction {
         public void actionPerformed (ActionEvent e) {            
-            setCurrentCategory (CategoryModel.getInstance().getNextCategory(), null);
+            Category next = CategoryModel.getInstance().getNextCategory();
+            if(buttons.get(next.getID()).isEnabled()) {
+                setCurrentCategory (next, null);
+            } else {
+                String currentID = CategoryModel.getInstance().getCurrentCategoryID();
+                String[] ids = CategoryModel.getInstance().getCategoryIDs();
+                int idx = Arrays.asList(ids).indexOf(currentID);
+                if(idx + 1 < ids.length) {
+                    if(doPreviousNextAction(ids, idx + 1, ids.length, true)) {
+                        doPreviousNextAction(ids, 0, idx, true);
+                    }
+                } else {
+                    doPreviousNextAction(ids, 0, idx, true);
+                }
+            }
         }
+    }
+
+    private boolean doPreviousNextAction(String[] ids, int start, int end, boolean nextAction) {
+        if (nextAction) {
+            for (int i = start; i < end; i++) {
+                String id = ids[i];
+                if (buttons.get(id).isEnabled()) {
+                    setCurrentCategory(CategoryModel.getInstance().getCategory(id), null);
+                    return false;
+                }
+            }
+        } else {
+            for (int i = start; i > end; i--) {
+                String id = ids[i];
+                if (buttons.get(id).isEnabled()) {
+                    setCurrentCategory(CategoryModel.getInstance().getCategory(id), null);
+                    return false;
+                }
+            }
+        }
+        return true;
     }
     
     class ControllerListener implements PropertyChangeListener {
@@ -518,19 +1063,19 @@ public class OptionsPanel extends JPanel {
         }
 
         public void mousePressed (MouseEvent e) {
-            if (!isMac && CategoryModel.getInstance().getCurrent() != null) {
+            if (buttons.get(category.getID()).isEnabled() && !isMac && CategoryModel.getInstance().getCurrent() != null) {
                 setSelected ();
             }
         }
 
         public void mouseReleased (MouseEvent e) {
-            if (!category.isCurrent() && category.isHighlited() && CategoryModel.getInstance().getCurrent() != null) {
+            if (buttons.get(category.getID()).isEnabled() && !category.isCurrent() && category.isHighlited() && CategoryModel.getInstance().getCurrent() != null) {
                 setCurrentCategory(category, null);
             }
         }
 
         public void mouseEntered (MouseEvent e) {
-            if (!category.isCurrent() && CategoryModel.getInstance().getCurrent() != null) {
+            if (buttons.get(category.getID()).isEnabled() && !category.isCurrent() && CategoryModel.getInstance().getCurrent() != null) {
                 setHighlighted ();
             } else {
                 CategoryModel.getInstance().setHighlited(CategoryModel.getInstance().getCategory(CategoryModel.getInstance().getHighlitedCategoryID()),false);

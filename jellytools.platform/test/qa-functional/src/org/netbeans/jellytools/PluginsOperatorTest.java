@@ -87,12 +87,13 @@ public class PluginsOperatorTest extends JellyTestCase {
     /** Print out test name. */
     @Override
     public void setUp() throws Exception {
-        System.out.println("### " + getName() + " ###");
+        System.out.println("### " + getClass().getSimpleName() + "." + getName() + " ###");
     }
 
     /** Sets proxy for network connection. */
     public void testSetProxy() {
         OptionsOperator optionsOper = OptionsOperator.invoke();
+        optionsOper.selectGeneral();
         // "Manual Proxy Setting"
         String hTTPProxyLabel = Bundle.getStringTrimmed(
                 "org.netbeans.core.ui.options.general.Bundle", "CTL_Use_HTTP_Proxy");

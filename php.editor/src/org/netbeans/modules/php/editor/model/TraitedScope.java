@@ -48,5 +48,7 @@ import java.util.Collection;
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
 public interface TraitedScope {
-    public Collection<? extends TraitScope> getTraits();
+
+    Collection<? extends TraitScope> getTraits();
+
 }

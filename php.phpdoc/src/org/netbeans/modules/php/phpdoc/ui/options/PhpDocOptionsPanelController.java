@@ -59,7 +59,7 @@ import org.openide.util.Lookup;
 @OptionsPanelController.SubRegistration(
     location=UiUtils.OPTIONS_PATH,
     id=PhpDocScript.OPTIONS_SUB_PATH,
-    displayName="#LBL_OptionsName",
+    displayName="#LBL_PHPDocOptionsName",
 //    toolTip="#LBL_OptionsTooltip"
     position=170
 )
@@ -71,6 +71,7 @@ public class PhpDocOptionsPanelController extends OptionsPanelController impleme
 
     @Override
     public void update() {
+        getComponent(null);
         phpDocOptionsPanel.setPhpDoc(getOptions().getPhpDoc());
 
         changed = false;
@@ -78,6 +79,7 @@ public class PhpDocOptionsPanelController extends OptionsPanelController impleme
 
     @Override
     public void applyChanges() {
+        getComponent(null);
         getOptions().setPhpDoc(phpDocOptionsPanel.getPhpDoc());
 
         changed = false;
@@ -89,6 +91,7 @@ public class PhpDocOptionsPanelController extends OptionsPanelController impleme
 
     @Override
     public boolean isValid() {
+        getComponent(null);
         // warnings
         String warning = PhpDocScript.validate(phpDocOptionsPanel.getPhpDoc());
         if (warning != null) {
@@ -117,7 +120,7 @@ public class PhpDocOptionsPanelController extends OptionsPanelController impleme
 
     @Override
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(PhpDocOptions.class);
+        return new HelpCtx("org.netbeans.modules.php.phpdoc.ui.options.PhpDocOptions"); // NOI18N
     }
 
     @Override

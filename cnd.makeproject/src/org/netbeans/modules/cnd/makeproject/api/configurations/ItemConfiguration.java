@@ -56,6 +56,8 @@ import org.netbeans.modules.cnd.api.xml.XMLEncoder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.BooleanNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ItemXMLCodec;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.filesystems.FileObject;
@@ -66,6 +68,9 @@ import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle;
 
 public class ItemConfiguration implements ConfigurationAuxObject {
+    
+    // enabled by default for now, see #217779
+    private static final boolean SHOW_HEADER_EXCLUDE = CndUtils.getBoolean("cnd.makeproject.showHeaderExclude", true); // NOI18N
 
     private boolean needSave = false;
     private Configuration configuration;
@@ -85,7 +90,8 @@ public class ItemConfiguration implements ConfigurationAuxObject {
         // General
         this.configuration = configuration;
         setItem(item);
-        excluded = new BooleanConfiguration(false);
+        // we want non-default (bold) title to be only for excluded items => use false
+        this.excluded = new BooleanConfiguration(false);
 
         // This is side effect of lazy configuration. We should init folder configuration
         // TODO: remove folder initialization. Folder should be responsible for it
@@ -106,10 +112,8 @@ public class ItemConfiguration implements ConfigurationAuxObject {
     }
 
     public boolean isDefaultConfiguration() {
-        if (excluded.getValue()) {
-            return false;
-        }
-        if (getTool() != item.getDefaultTool()) {
+        // was included => not default state to allow serialization
+        if (!excluded.getValue()) {
             return false;
         }
         if (lastConfiguration != null && lastConfiguration.getModified()) {
@@ -120,6 +124,13 @@ public class ItemConfiguration implements ConfigurationAuxObject {
         }
         if (getLanguageFlavor() != null && getLanguageFlavor() != LanguageFlavor.UNKNOWN) {
             return false;
+        }
+        // we do not check tools for excluded items in unmanaged projects
+        // but check for all logical as before
+        if (!isItemFromDiskFolder()) {
+            if (getTool() != item.getDefaultTool()) {
+                return false;
+            }
         }
         return true;
     }
@@ -340,7 +351,14 @@ public class ItemConfiguration implements ConfigurationAuxObject {
     public boolean shared() {
         return true;
     }
-
+    
+    public boolean isVCSVisible() {
+        if (item != null && getExcluded() != null && isItemFromDiskFolder()) {
+            return !getExcluded().getValue();
+        }
+        return shared();
+    }
+    
     // interface ConfigurationAuxObject
     @Override
     public boolean hasChanged() {
@@ -425,6 +443,7 @@ public class ItemConfiguration implements ConfigurationAuxObject {
         ItemConfiguration i = (ItemConfiguration) profileAuxObject;
         getExcluded().assign(i.getExcluded());
         setTool(i.getTool());
+        setLanguageFlavor(i.getLanguageFlavor());
         switch (getTool()) {
             case Assembler:
                 getAssemblerConfiguration().assign(i.getAssemblerConfiguration());
@@ -550,11 +569,14 @@ public class ItemConfiguration implements ConfigurationAuxObject {
         set.setName("ItemConfiguration"); // NOI18N
         set.setDisplayName(getString("ItemConfigurationTxt"));
         set.setShortDescription(getString("ItemConfigurationHint"));
-        if ((getConfiguration() instanceof MakeConfiguration) &&
-                ((MakeConfiguration) getConfiguration()).isMakefileConfiguration()) {
-            set.put(new BooleanNodeProp(getExcluded(), true, "ExcludedFromBuild", getString("ExcludedFromCodeAssistanceTxt"), getString("ExcludedFromCodeAssistanceHint"))); // NOI18N
-        } else {
-            set.put(new BooleanNodeProp(getExcluded(), true, "ExcludedFromBuild", getString("ExcludedFromBuildTxt"), getString("ExcludedFromBuildHint"))); // NOI18N
+        
+        if (SHOW_HEADER_EXCLUDE || !MIMENames.isHeader(item.getMIMEType())) {
+            if ((getConfiguration() instanceof MakeConfiguration) &&
+                    ((MakeConfiguration) getConfiguration()).isMakefileConfiguration()) {
+                set.put(new BooleanNodeProp(getExcluded(), true, "ExcludedFromBuild", getString("ExcludedFromCodeAssistanceTxt"), getString("ExcludedFromCodeAssistanceHint"))); // NOI18N
+            } else {
+                set.put(new BooleanNodeProp(getExcluded(), true, "ExcludedFromBuild", getString("ExcludedFromBuildTxt"), getString("ExcludedFromBuildHint"))); // NOI18N
+            }
         }
         set.put(new ToolNodeProp());
         sheet.put(set);
@@ -570,12 +592,19 @@ public class ItemConfiguration implements ConfigurationAuxObject {
         if (tool == PredefinedToolKind.CCompiler
                 || tool == PredefinedToolKind.CCCompiler) {
             if (item != null) {
-                FileObject fileObject = item.getFileObject();
-                if (fileObject != null) {
-                    if ("pc".equalsIgnoreCase(fileObject.getExt())) { // NOI18N
-                        return true;
-                    }
+                if (item.getName().toLowerCase().endsWith(".pc")) { //NOI18N
+                    return true;
                 }
+            }
+        }
+        return false;
+    }
+
+    private boolean isItemFromDiskFolder() {
+        if (item != null) {
+            Folder folder = item.getFolder();
+            if (folder != null && folder.isDiskFolder()) {
+                return true;
             }
         }
         return false;
@@ -666,7 +695,11 @@ public class ItemConfiguration implements ConfigurationAuxObject {
 
     @Override
     public String toString() {
-        return getItem().getPath();
+        String pref = "";
+        if (this.excluded != null && excluded.getValue()) {
+            pref = "[excluded]"; // NOI18N
+        }
+        return pref + getItem().getPath();
     }
     private static ResourceBundle bundle = null;
 

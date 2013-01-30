@@ -58,16 +58,16 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 
 /*package*/ final class ProjectKey extends ProjectNameBasedKey {    
     
-    ProjectKey(CharSequence projectUniqueName) {
-	super(projectUniqueName);
+    ProjectKey(int unitId) {
+	super(unitId);
     }
     
     /*package*/ ProjectKey(RepositoryDataInput aStream) throws IOException {
-	super(aStream);
+	this(aStream.readUnitId()); 
     }
 
     ProjectKey(KeyDataPresentation presentation) {
-        super(presentation);
+        this(presentation.getUnitPresentation()); 
     }
     
     @Override

@@ -54,6 +54,7 @@ import org.netbeans.modules.extexecution.ProcessBuilderAccessor;
 import org.netbeans.spi.extexecution.ProcessBuilderImplementation;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
+import org.openide.util.UserQuestionException;
 
 /**
  * Abstraction of process builders. You can freely configure the parameters
@@ -228,6 +229,12 @@ public final class ProcessBuilder implements Callable<Process> {
      * <p>
      * Actual behavior depends on the builder implementation, but it should
      * respect all the properties configured on this builder.
+     * <p>
+     * Since version 1.35 implementors of this method are advised to throw
+     * a {@link UserQuestionException} in case the execution cannot be
+     * performed and requires additional user confirmation, or configuration. 
+     * Callers of this method may check for this exception and handle it
+     * appropriately.
      *
      * @see ProcessBuilderImplementation
      * @return the new {@link Process} based on the properties configured
@@ -235,6 +242,8 @@ public final class ProcessBuilder implements Callable<Process> {
      * @throws IOException if the process could not be created
      * @throws IllegalStateException if there is no executable configured
      *             by {@link #setExecutable(java.lang.String)}
+     * @throws UserQuestionException if the execution cannot be performed
+     *     without permission from the user
      */
     @NonNull
     @Override

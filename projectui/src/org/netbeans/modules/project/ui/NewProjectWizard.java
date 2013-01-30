@@ -66,6 +66,7 @@ public final class NewProjectWizard extends TemplateWizard {
         //setTitleFormat( new MessageFormat( "{0}") );
     }
         
+    @Override
     public void updateState () {
         super.updateState ();
         String substitute = (String)getProperty ("NewProjectWizard_Title"); // NOI18N
@@ -81,8 +82,10 @@ public final class NewProjectWizard extends TemplateWizard {
         super.setTitle (title);
     }
     
+    @Override
     public void setTitle (String ignore) {}
     
+    @Override
     protected WizardDescriptor.Panel<WizardDescriptor> createTemplateChooser() {
         WizardDescriptor.Panel<WizardDescriptor> panel = new ProjectTemplatePanel();
         JComponent jc = (JComponent)panel.getComponent ();

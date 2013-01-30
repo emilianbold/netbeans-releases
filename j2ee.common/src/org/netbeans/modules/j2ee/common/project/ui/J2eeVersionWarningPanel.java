@@ -73,6 +73,8 @@ final class J2eeVersionWarningPanel extends javax.swing.JPanel {
 
     public final static String WARN_SET_JDK_6 = "warnSetJdk6"; // NOI18N
     
+    public final static String WARN_SET_JDK_7 = "warnSetJdk7"; // NOI18N
+    
     /**
      * Display a warning that the source level will be downgraded to 1.4
      */
@@ -84,6 +86,8 @@ final class J2eeVersionWarningPanel extends javax.swing.JPanel {
     public final static String WARN_SET_SOURCE_LEVEL_15 = "warnSetSourceLevel15"; // NOI18N
 
     public final static String WARN_SET_SOURCE_LEVEL_6 = "warnSetSourceLevel6"; // NOI18N
+    
+    public final static String WARN_SET_SOURCE_LEVEL_7 = "warnSetSourceLevel7"; // NOI18N
     
     private String warningType;
     
@@ -121,9 +125,17 @@ final class J2eeVersionWarningPanel extends javax.swing.JPanel {
             labelText = NbBundle.getMessage(J2eeVersionWarningPanel.class, "MSG_RecommendationSetJdk6");
             checkboxText = NbBundle.getMessage(J2eeVersionWarningPanel.class, "CTL_AgreeSetJdk6");
             select = true;
+        } else if (WARN_SET_JDK_7.equals(warningType)) {
+            labelText = NbBundle.getMessage(J2eeVersionWarningPanel.class, "MSG_RecommendationSetJdk7");
+            checkboxText = NbBundle.getMessage(J2eeVersionWarningPanel.class, "CTL_AgreeSetJdk7");
+            select = true;
         } else if (WARN_SET_SOURCE_LEVEL_6.equals(warningType)) {
             labelText = NbBundle.getMessage(J2eeVersionWarningPanel.class, "MSG_RecommendationSetSourceLevel6");
             checkboxText = NbBundle.getMessage(J2eeVersionWarningPanel.class, "CTL_AgreeSetSourceLevel6");
+            select = true;
+        } else if (WARN_SET_SOURCE_LEVEL_7.equals(warningType)) {
+            labelText = NbBundle.getMessage(J2eeVersionWarningPanel.class, "MSG_RecommendationSetSourceLevel7");
+            checkboxText = NbBundle.getMessage(J2eeVersionWarningPanel.class, "CTL_AgreeSetSourceLevel7");
             select = true;
         }
         jLabel.setText(labelText);
@@ -146,6 +158,10 @@ final class J2eeVersionWarningPanel extends javax.swing.JPanel {
         }
         if (WARN_SET_JDK_6.equals(warningType) ) {
             JavaPlatform[] javaPlatforms = getJavaPlatforms("1.6");
+            return getPreferredPlatform(javaPlatforms).getDisplayName();
+        }
+        if (WARN_SET_JDK_7.equals(warningType) ) {
+            JavaPlatform[] javaPlatforms = getJavaPlatforms("1.7");
             return getPreferredPlatform(javaPlatforms).getDisplayName();
         }
         return getPreferredPlatform(null).getDisplayName();
@@ -182,6 +198,10 @@ final class J2eeVersionWarningPanel extends javax.swing.JPanel {
         if ("1.6".equals(sourceLevel) && (j2eeProfile == Profile.JAVA_EE_6_FULL || j2eeProfile == Profile.JAVA_EE_6_WEB)) // NOI18N
             return null;
         
+        // no warning if 1.7 is the default for j2ee7
+        if ("1.7".equals(sourceLevel) && (j2eeProfile == Profile.JAVA_EE_7_FULL || j2eeProfile == Profile.JAVA_EE_7_WEB)) // NOI18N
+            return null;
+        
         if (j2eeProfile == Profile.J2EE_14) {
             JavaPlatform[] java14Platforms = getJavaPlatforms("1.4"); //NOI18N
             if (java14Platforms.length > 0) {
@@ -204,6 +224,13 @@ final class J2eeVersionWarningPanel extends javax.swing.JPanel {
                 return WARN_SET_JDK_6;
             } else {
                 return WARN_SET_SOURCE_LEVEL_6;
+            }
+        } else if (j2eeProfile == Profile.JAVA_EE_7_FULL || j2eeProfile == Profile.JAVA_EE_7_WEB) {
+            JavaPlatform[] java17Platforms = getJavaPlatforms("1.7"); //NOI18N
+            if (java17Platforms.length > 0) {
+                return WARN_SET_JDK_7;
+            } else {
+                return WARN_SET_SOURCE_LEVEL_7;
             }
         } else {
             //e.g. 1.3 - better ignore then assert

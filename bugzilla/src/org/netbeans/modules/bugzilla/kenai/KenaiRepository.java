@@ -97,7 +97,10 @@ public class KenaiRepository extends BugzillaRepository implements PropertyChang
         this.host = host;
         assert kenaiProject != null;
         this.kenaiProject = kenaiProject;
-        KenaiUtil.getKenaiAccessor().addPropertyChangeListener(this, kenaiProject.getWebLocation().toString());
+        KenaiAccessor kenaiAccessor = KenaiUtil.getKenaiAccessor(url);
+        if (kenaiAccessor != null) {
+            kenaiAccessor.addPropertyChangeListener(this, kenaiProject.getWebLocation().toString());
+        }
     }
 
     public KenaiRepository(KenaiProject kenaiProject, String repoName, String url, String host, String urlParam, String product) {
@@ -222,7 +225,7 @@ public class KenaiRepository extends BugzillaRepository implements PropertyChang
         String user = pa.getUserName();
         char[] password = pa.getPassword();
 
-        setCredentials(user, password, null, null);
+        setTaskRepository(user, password);
 
         return true;
     }
@@ -310,7 +313,7 @@ public class KenaiRepository extends BugzillaRepository implements PropertyChang
                 psswd = new char[0];                                            // NOI18N
             }
 
-            setCredentials(user, psswd, null, null);
+            setTaskRepository(user, psswd);
 
             synchronized(KenaiRepository.this) {
                 if(evt.getNewValue() != null) {

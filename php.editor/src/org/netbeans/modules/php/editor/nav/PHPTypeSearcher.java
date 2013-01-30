@@ -62,16 +62,17 @@ import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport.Kind;
 import org.netbeans.modules.php.editor.PHPCompletionItem;
 import org.netbeans.modules.php.editor.api.ElementQuery.Index;
-import org.netbeans.modules.php.editor.api.NameKind.Prefix;
-import org.netbeans.modules.php.editor.api.QuerySupportFactory;
 import org.netbeans.modules.php.editor.api.ElementQueryFactory;
 import org.netbeans.modules.php.editor.api.NameKind;
+import org.netbeans.modules.php.editor.api.NameKind.Prefix;
 import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.api.QualifiedNameKind;
+import org.netbeans.modules.php.editor.api.QuerySupportFactory;
 import org.netbeans.modules.php.editor.api.elements.FullyQualifiedElement;
 import org.netbeans.modules.php.editor.api.elements.InterfaceElement;
 import org.netbeans.modules.php.editor.api.elements.PhpElement;
 import org.netbeans.modules.php.editor.api.elements.TypeElement;
+import org.netbeans.modules.php.project.api.PhpProjectUtils;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -82,6 +83,7 @@ import org.openide.filesystems.FileUtil;
  */
 public class PHPTypeSearcher implements IndexSearcher {
     //TODO: no supported: came cases, regular expressions in queries (needs improve PHPIndex methods)
+    @Override
     public Set<? extends Descriptor> getSymbols(Project project, String textForQuery, Kind originalkind, Helper helper) {
         // XXX: use PHP specific path ids
         EnumSet<Kind> regexpKinds = EnumSet.of(Kind.CAMEL_CASE, Kind.CASE_INSENSITIVE_CAMEL_CASE,  Kind.CASE_INSENSITIVE_REGEXP);
@@ -99,13 +101,12 @@ public class PHPTypeSearcher implements IndexSearcher {
                 Collections.<String>emptySet());
         final Index index = ElementQueryFactory.createIndexQuery(QuerySupportFactory.get(findRoots));
 
-
         Set<PHPTypeDescriptor> result = new HashSet<PHPTypeDescriptor>();
         if (index != null && textForQuery.trim().length() > 0) {
-            final boolean isVariable = textForQuery.startsWith("$");//NOI18N
+            final boolean isVariable = textForQuery.startsWith("$"); //NOI18N
             String query = prepareIdxQuery(textForQuery, regexpKinds, kind);
-            final Kind useKind = kind.equals(Kind.EXACT) ? Kind.EXACT : Kind.CASE_INSENSITIVE_PREFIX;//NOI18N
-            if (!kind.equals(Kind.EXACT)) {//NOI18N
+            final Kind useKind = kind.equals(Kind.EXACT) ? Kind.EXACT : Kind.CASE_INSENSITIVE_PREFIX;
+            if (!kind.equals(Kind.EXACT)) {
                 query = query.toLowerCase();
             }
             final NameKind prefix = NameKind.create(query, useKind);
@@ -139,10 +140,10 @@ public class PHPTypeSearcher implements IndexSearcher {
                 }
             }
         }
-
         return result;
     }
 
+    @Override
     public Set<? extends Descriptor> getTypes(Project project, String textForQuery, Kind originalkind, Helper helper) {
         // XXX: use PHP specific path ids
         EnumSet<Kind> regexpKinds = EnumSet.of(Kind.CAMEL_CASE, Kind.CASE_INSENSITIVE_CAMEL_CASE,  Kind.CASE_INSENSITIVE_REGEXP);
@@ -195,6 +196,7 @@ public class PHPTypeSearcher implements IndexSearcher {
         private String projectName;
         private Icon projectIcon;
         private final Helper helper;
+        private FileObject projectDirectory;
 
         public PHPTypeDescriptor(PhpElement element, Helper helper) {
             this(element, null, helper);
@@ -206,6 +208,7 @@ public class PHPTypeSearcher implements IndexSearcher {
             this.helper = helper;
         }
 
+        @Override
         public Icon getIcon() {
             if (projectName == null) {
                 initProjectInfo();
@@ -216,10 +219,12 @@ public class PHPTypeSearcher implements IndexSearcher {
             return helper.getIcon(element);
         }
 
+        @Override
         public String getTypeName() {
             return element.getName();
         }
 
+        @Override
         public String getProjectName() {
             if (projectName == null) {
                 initProjectInfo();
@@ -232,6 +237,9 @@ public class PHPTypeSearcher implements IndexSearcher {
             if (fo != null) {
                 Project p = FileOwnerQuery.getOwner(fo);
                 if (p != null) {
+                    if (PhpProjectUtils.isPhpProject(p)) {
+                        projectDirectory = p.getProjectDirectory();
+                    }
                     ProjectInformation pi = ProjectUtils.getInformation(p);
                     projectName = pi.getDisplayName();
                     projectIcon = pi.getIcon();
@@ -243,6 +251,7 @@ public class PHPTypeSearcher implements IndexSearcher {
             }
         }
 
+        @Override
         public Icon getProjectIcon() {
             if (projectName == null) {
                 initProjectInfo();
@@ -250,22 +259,27 @@ public class PHPTypeSearcher implements IndexSearcher {
             return projectIcon;
         }
 
+        @Override
         public FileObject getFileObject() {
             return element.getFileObject();
         }
 
+        @Override
         public void open() {
             FileObject fileObject = element.getFileObject();
             if (fileObject != null) {
                 GsfUtilities.open(fileObject, element.getOffset(), element.getName());
             } else {
                 Logger logger = Logger.getLogger(PHPTypeSearcher.class.getName());
-                logger.log(Level.INFO,String.format("%s: cannot find %s", //NOI18N
-                        PHPTypeSearcher.class.getName(), element.getFilenameUrl()));
+                logger.log(Level.INFO, String.format("%s: cannot find %s", PHPTypeSearcher.class.getName(), element.getFilenameUrl())); //NOI18N
             }
         }
 
+        @Override
         public String getContextName() {
+            if (projectName == null) {
+                initProjectInfo();
+            }
             StringBuilder sb = new StringBuilder();
             boolean s = false;
             if (element instanceof FullyQualifiedElement) {
@@ -280,8 +294,7 @@ public class PHPTypeSearcher implements IndexSearcher {
                 }
             } else {
                 if (enclosingClass != null) {
-                    if ((enclosingClass instanceof FullyQualifiedElement) &&
-                            (!((FullyQualifiedElement)enclosingClass).getNamespaceName().isDefaultNamespace())) {
+                    if ((enclosingClass instanceof FullyQualifiedElement) && (!((FullyQualifiedElement) enclosingClass).getNamespaceName().isDefaultNamespace())) {
                         sb.append(((FullyQualifiedElement) enclosingClass).getFullyQualifiedName().toString());
                     } else {
                         sb.append(enclosingClass.getName());
@@ -294,7 +307,16 @@ public class PHPTypeSearcher implements IndexSearcher {
                 if (s) {
                     sb.append(" in ");
                 }
-                sb.append(FileUtil.getFileDisplayName(file));
+                String pathToDisplay;
+                String filePath = FileUtil.getFileDisplayName(file);
+                if (projectDirectory != null) {
+                    String projectPath = FileUtil.getFileDisplayName(projectDirectory);
+                    assert projectPath.length() < filePath.length();
+                    pathToDisplay = getProjectName() + " ." + filePath.substring(projectPath.length()); //NOI18N
+                } else {
+                    pathToDisplay = filePath;
+                }
+                sb.append(pathToDisplay); //NOI18N
             }
             if (sb.length() > 0) {
                 return sb.toString();
@@ -302,18 +324,22 @@ public class PHPTypeSearcher implements IndexSearcher {
             return null;
         }
 
+        @Override
         public ElementHandle getElement() {
             return element;
         }
 
+        @Override
         public int getOffset() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
+        @Override
         public String getSimpleName() {
             return element.getName();
         }
 
+        @Override
         public String getOuterName() {
             return null;
         }
@@ -346,35 +372,33 @@ public class PHPTypeSearcher implements IndexSearcher {
         char[] chars = query.toCharArray();
         boolean incamel = false;
         if (!query.startsWith("$")) {
-            sb.append("[$]*");//NOI18N
+            sb.append("[$]*"); //NOI18N
         }
         for (int i = 0; i < chars.length; i++) {
-            if (i+1 < chars.length && chars[i] == '.' && chars[i+1] == '*') {//NOI18N
-                sb.append(".*");//NOI18N
+            if (i + 1 < chars.length && chars[i] == '.' && chars[i + 1] == '*') { //NOI18N
+                sb.append(".*"); //NOI18N
                 i++;
-            } else if (chars[i] == '?') {//NOI18N
-                sb.append('.');//NOI18N
+            } else if (chars[i] == '?') { //NOI18N
+                sb.append('.'); //NOI18N
             } else if (chars[i] == '*') {
-                sb.append(".*");//NOI18N
+                sb.append(".*"); //NOI18N
             } else if (chars[i] == '.') {
-                sb.append(".");//NOI18N
+                sb.append("."); //NOI18N
             } else if (Character.isUpperCase(chars[i])) {
                 if (incamel) {
-                    sb.append("[a-z0-9_]*");//NOI18N
+                    sb.append("[a-z0-9_]*"); //NOI18N
                 }
                 sb.append(chars[i]);
                 incamel = true;
             } else if (i == 0 && chars[i] == '$') {
-                sb.append('\\').append(chars[i]);//NOI18N
-            }else {
+                sb.append('\\').append(chars[i]); //NOI18N
+            } else {
                 sb.append(Pattern.quote(String.valueOf(chars[i])));
             }
         }
-        sb.append(".*");//NOI18N
+        sb.append(".*"); //NOI18N
         String patternString = sb.toString();
-        return caseInsensitive ?
-            Pattern.compile(patternString, Pattern.CASE_INSENSITIVE) :
-            Pattern.compile(patternString);
+        return caseInsensitive ? Pattern.compile(patternString, Pattern.CASE_INSENSITIVE) : Pattern.compile(patternString);
     }
 
     private String prepareIdxQuery(String textForQuery, EnumSet<Kind> regexpKinds, Kind kind) {
@@ -383,11 +407,11 @@ public class PHPTypeSearcher implements IndexSearcher {
             final char charAt = textForQuery.charAt(0);
             final int length = textForQuery.length();
             if (Character.isLetter(charAt) && length > 0) {
-                query = query.substring(0, 1);//NOI18N
+                query = query.substring(0, 1); //NOI18N
             } else if (charAt == '$' && length > 1) {
-                query = query.substring(0, 1);//NOI18N
-            }else {
-                query = "";//NOI18N
+                query = query.substring(0, 1); //NOI18N
+            } else {
+                query = ""; //NOI18N
             }
         }
         return query;

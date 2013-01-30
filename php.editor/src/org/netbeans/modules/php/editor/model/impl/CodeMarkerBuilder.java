@@ -41,13 +41,15 @@
  */
 package org.netbeans.modules.php.editor.model.impl;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.php.editor.model.MethodScope;
 import org.netbeans.modules.php.editor.model.ModelElement;
 import org.netbeans.modules.php.editor.model.Scope;
-import org.netbeans.modules.php.editor.model.MethodScope;
 import org.netbeans.modules.php.editor.model.TypeScope;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo;
 import org.netbeans.modules.php.editor.model.nodes.FunctionDeclarationInfo;
@@ -84,15 +86,12 @@ class CodeMarkerBuilder {
 
     void prepare(MethodDeclaration node, Scope scope) {
         if (scope instanceof MethodScope && scope.getInScope() instanceof TypeScope) {
-            MethodDeclarationInfo nodeInfo = MethodDeclarationInfo.create(node, (TypeScope)scope.getInScope());
+            MethodDeclarationInfo nodeInfo = MethodDeclarationInfo.create(node, (TypeScope) scope.getInScope());
             if (canBePrepared(node, scope)) {
                 methodDeclarations.put(nodeInfo, scope);
             }
-
         }
     }
-
-
 
     void prepare(ReturnStatement returnStatement, Scope scope) {
         ASTNodeInfo<ReturnStatement> nodeInfo = ASTNodeInfo.create(returnStatement);
@@ -102,14 +101,22 @@ class CodeMarkerBuilder {
     }
 
     void setCurrentContextInfo(final int offset) {
+        final Collection<LazyBuild> scopesToScan = new ArrayList<LazyBuild>();
+        for (Entry<MethodDeclarationInfo, Scope> entry : methodDeclarations.entrySet()) {
+            if (entry.getValue() instanceof LazyBuild) {
+                LazyBuild scope = (LazyBuild) entry.getValue();
+                scopesToScan.add(scope);
+            }
+            setOccurenceAsCurrent(entry.getKey(), entry.getValue(), offset);
+        }
+        for (LazyBuild lazyBuild : scopesToScan) {
+            if (!lazyBuild.isScanned()) {
+                lazyBuild.scan();
+            }
+        }
         for (Entry<FunctionDeclarationInfo, Scope> entry : fncDeclarations.entrySet()) {
             setOccurenceAsCurrent(entry.getKey(), entry.getValue(), offset);
         }
-
-        for (Entry<MethodDeclarationInfo, Scope> entry : methodDeclarations.entrySet()) {
-            setOccurenceAsCurrent(entry.getKey(), entry.getValue(), offset);
-        }
-
         for (Entry<ASTNodeInfo<ReturnStatement>, Scope> entry : returnStatements.entrySet()) {
             setOccurenceAsCurrent(entry.getKey(), entry.getValue(), offset);
         }
@@ -124,7 +131,7 @@ class CodeMarkerBuilder {
                 FunctionDeclaration function = nodInfo.getOriginalNode();
                 Identifier functionName = function.getFunctionName();
                 OffsetRange range = new OffsetRange(function.getStartOffset(), functionName.getStartOffset());
-                fileScope.addCodeMarker(new CodeMarkerImpl(scope, range, fileScope));
+                fileScope.addCodeMarker(new CodeMarkerImpl.InvisibleCodeMarker(range, fileScope));
             }
         }
     }
@@ -138,17 +145,15 @@ class CodeMarkerBuilder {
 
             MethodDeclarationInfo nodInfo = entry.getKey();
             if (scopeName.equalsIgnoreCase(scope.getName())) {
-                if (parentCurrentScope != null && parentScope != null &&
-                        parentCurrentScope.getName().equalsIgnoreCase(parentScope.getName())) {
+                if (parentCurrentScope != null && parentScope != null && parentCurrentScope.getName().equalsIgnoreCase(parentScope.getName())) {
                     FunctionDeclaration function = nodInfo.getOriginalNode().getFunction();
                     Identifier functionName = function.getFunctionName();
                     OffsetRange range = new OffsetRange(function.getStartOffset(), functionName.getStartOffset());
-                    fileScope.addCodeMarker(new CodeMarkerImpl(scope, range, fileScope));
+                    fileScope.addCodeMarker(new CodeMarkerImpl.InvisibleCodeMarker(range, fileScope));
                 }
             }
         }
     }
-
 
     private void buildReturnStatement(FileScopeImpl fileScope) {
         String scopeName = currentScope.getName();
@@ -159,20 +164,17 @@ class CodeMarkerBuilder {
 
             ASTNodeInfo<ReturnStatement> nodInfo = entry.getKey();
             if (scopeName.equalsIgnoreCase(scope.getName())) {
-                if (parentCurrentScope != null && parentScope != null &&
-                        parentCurrentScope.getName().equalsIgnoreCase(parentScope.getName())) {
-                    fileScope.addCodeMarker(new CodeMarkerImpl(scope, nodInfo, fileScope));
+                if (parentCurrentScope != null && parentScope != null && parentCurrentScope.getName().equalsIgnoreCase(parentScope.getName())) {
+                    fileScope.addCodeMarker(new CodeMarkerImpl(nodInfo, fileScope));
                 }
             }
         }
     }
 
-
     void build(FileScopeImpl fileScope, final int offset) {
         if (currentNodeInfo == null && offset >= 0) {
             setCurrentContextInfo(offset);
         }
-
         if (currentNodeInfo != null && currentScope != null) {
             ASTNodeInfo.Kind kind = currentNodeInfo.getKind();
             currentNodeInfo = null;
@@ -194,8 +196,6 @@ class CodeMarkerBuilder {
                 default:
                     throw new IllegalStateException(kind.toString());
             }
-
-
         }
     }
 
@@ -213,22 +213,18 @@ class CodeMarkerBuilder {
                 range = new OffsetRange(returnStatement.getStartOffset(), expression.getStartOffset());
             }
         } else if (originalNode instanceof MethodDeclaration) {
-                FunctionDeclaration function = ((MethodDeclaration)originalNode).getFunction();
-                Identifier functionName = function.getFunctionName();
-                range = new OffsetRange(function.getStartOffset(), functionName.getStartOffset());
-
+            FunctionDeclaration function = ((MethodDeclaration) originalNode).getFunction();
+            Identifier functionName = function.getFunctionName();
+            range = new OffsetRange(function.getStartOffset(), functionName.getStartOffset());
         } else if (originalNode instanceof FunctionDeclaration) {
-                FunctionDeclaration function = (FunctionDeclaration) originalNode;
-                Identifier functionName = function.getFunctionName();
-                range = new OffsetRange(function.getStartOffset(), functionName.getStartOffset());
-
+            FunctionDeclaration function = (FunctionDeclaration) originalNode;
+            Identifier functionName = function.getFunctionName();
+            range = new OffsetRange(function.getStartOffset(), functionName.getStartOffset());
         }
         if (range.containsInclusive(offset)) {
             currentNodeInfo = nodeInfo;
             currentScope = scope;
-
         }
-
     }
 
 }

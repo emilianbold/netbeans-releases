@@ -55,6 +55,8 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.table.TableModel;
@@ -67,6 +69,7 @@ import org.netbeans.modules.db.dataview.util.DBReadWriteHelper;
 import org.netbeans.modules.db.dataview.util.DataViewUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -89,60 +92,144 @@ class SQLExecutionHelper {
     }
 
     void initialDataLoad() throws SQLException {
-        Statement stmt = null;
+
+        /**
+         * Wrap initializing the SQL result into a runnable. This makes it
+         * possible to wait for the result in the main thread and cancel the
+         * running statement from the main thread.
+         *
+         * If no statement is run - Thread.isInterrupted is checked at critical
+         * points and allows us to do an early exit.
+         *
+         * See #159929.
+         */
+        class Loader implements Runnable, Cancellable {
+            // Indicate whether the execution is finished
+            public boolean finished = false;
+            // Hold an exception if it is thrown in the body of the runnable
+            public SQLException ex = null;
+            Statement stmt = null;
+
+            @Override
+            public void run() {
+                try {
+                    Connection conn = DBConnectionFactory.getInstance()
+                            .getConnection(dataView.getDatabaseConnection());
+                    String msg;
+                    if (conn == null) {
+                        Throwable t = DBConnectionFactory.getInstance()
+                                .getLastException();
+                        if (t != null) {
+                            msg = t.getMessage();
+                        } else {
+                            msg = NbBundle.getMessage(SQLExecutionHelper.class,
+                                    "MSG_connection_failure", //NOI18N
+                                    dataView.getDatabaseConnection());
+                        }
+                        NotifyDescriptor nd = new NotifyDescriptor.Message(msg,
+                                NotifyDescriptor.ERROR_MESSAGE);
+                        DialogDisplayer.getDefault().notifyLater(nd);
+                        LOGGER.log(Level.INFO, msg, t);
+                        throw new SQLException(msg, t);
+                    }
+                    DBMetaDataFactory dbMeta = new DBMetaDataFactory(conn);
+                    dataView.setLimitSupported(dbMeta.supportsLimit());
+                    String sql = dataView.getSQLString();
+                    boolean isSelect = isSelectStatement(sql);
+
+                    if (Thread.interrupted()) {
+                        return;
+                    }
+                    stmt = prepareSQLStatement(conn, sql);
+
+                    if (Thread.interrupted()) {
+                        return;
+                    }
+                    executeSQLStatement(stmt, sql);
+
+                    if (dataView.getUpdateCount() != -1) {
+                        if (!conn.getAutoCommit()) {
+                            conn.commit();
+                        }
+                        return;
+                    }
+
+                    ResultSet rs = null;
+
+                    if (Thread.interrupted()) {
+                        return;
+                    }
+                    if (dataView.hasResultSet()) {
+                        rs = stmt.getResultSet();
+                    }
+
+                    if (rs == null) {
+                        if (!conn.getAutoCommit()) {
+                            conn.commit();
+                        }
+                        return;
+                    }
+                    Collection<DBTable> tables = dbMeta.generateDBTables(
+                            rs, sql, isSelect);
+                    DataViewDBTable dvTable = new DataViewDBTable(tables);
+                    dataView.setDataViewDBTable(dvTable);
+                    if (resultSetNeedsReloading()) {
+                        executeSQLStatement(stmt, sql);
+                        rs = stmt.getResultSet();
+                    }
+                    loadDataFrom(rs);
+                    DataViewUtils.closeResources(rs);
+                    if (Thread.interrupted()) {
+                        return;
+                    }
+                    getTotalCount(isSelect, sql, stmt);
+                } catch (SQLException sqlEx) {
+                    this.ex = sqlEx;
+                } finally {
+                    DataViewUtils.closeResources(stmt);
+                    synchronized (Loader.this) {
+                        finished = true;
+                        this.notifyAll();
+                    }
+                }
+            }
+
+            @Override
+            public boolean cancel() {
+                if (stmt != null) {
+                    try {
+                        stmt.cancel();
+                    } catch (SQLException sqlEx) {
+                        LOGGER.log(Level.FINE, null, sqlEx);
+                        // Ok! The DBMS might not support Statement-Canceling
+                    }
+                }
+                return true;
+            }
+        }
+        Loader l = new Loader();
+        Future<?> f = rp.submit(l);
         try {
-            Connection conn = DBConnectionFactory.getInstance().getConnection(dataView.getDatabaseConnection());
-            String msg = "";
-            if (conn == null) {
-                Throwable ex = DBConnectionFactory.getInstance().getLastException();
-                if (ex != null) {
-                    msg = ex.getMessage();
+            f.get();
+        } catch (InterruptedException ex) {
+            f.cancel(true);
+        } catch (ExecutionException ex) {
+            throw new RuntimeException(ex.getCause());
+        }
+        synchronized (l) {
+            while (true) {
+                if (!l.finished) {
+                    try {
+                        l.wait();
+                    } catch (InterruptedException ex) {
+                    }
                 } else {
-                    msg = NbBundle.getMessage(SQLExecutionHelper.class, "MSG_connection_failure", dataView.getDatabaseConnection());
+                    break;
                 }
-                NotifyDescriptor nd = new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE);
-                DialogDisplayer.getDefault().notifyLater(nd);
-                throw new IllegalStateException(msg);
             }
-
-            DBMetaDataFactory dbMeta = new DBMetaDataFactory(conn);
-            dataView.setLimitSupported(dbMeta.supportsLimit());
-            String sql = dataView.getSQLString();
-            boolean isSelect = isSelectStatement(sql);
-
-            stmt = prepareSQLStatement(conn, sql);
-            executeSQLStatement(stmt, sql);
-
-            if (dataView.getUpdateCount() != -1) {
-                if (!conn.getAutoCommit()) {
-                    conn.commit();
-                }
-                return;
-            }
-
-            ResultSet rs = null;
-            if(dataView.hasResultSet()) {
-                rs = stmt.getResultSet();
-            }
-
-            if (rs == null) {
-                if (!conn.getAutoCommit()) {
-                    conn.commit();
-                }
-                return;
-            }
-            Collection<DBTable> tables = dbMeta.generateDBTables(rs, sql, isSelect);
-            DataViewDBTable dvTable = new DataViewDBTable(tables);
-            dataView.setDataViewDBTable(dvTable);
-            if (resultSetNeedsReloading()) {
-                executeSQLStatement(stmt, sql);
-                rs = stmt.getResultSet();
-            }
-            loadDataFrom(rs);
-            DataViewUtils.closeResources(rs);
-            getTotalCount(isSelect, sql, stmt);
-        } finally {
-            DataViewUtils.closeResources(stmt);
+        }
+        if (l.ex != null) {
+            throw l.ex;
         }
     }
 
@@ -323,11 +410,6 @@ class SQLExecutionHelper {
                 pstmt = conn.prepareStatement(updateStmt);
                 int pos = 1;
                 for (Object val : values) {
-                    // Check for Constant e.g <NULL>, <DEFAULT>, <CURRENT_TIMESTAMP> etc
-                    if (DataViewUtils.isSQLConstantString(val)) {
-                        continue;
-                    }
-
                     DBReadWriteHelper.setAttributeValue(pstmt, pos, types.get(pos - 1), val);
                     pos++;
                 }
@@ -427,10 +509,16 @@ class SQLExecutionHelper {
             public void execute() throws SQLException, DBException {
                 dataView.setEditable(false);
                 String sql = dataView.getSQLString();
+                if (Thread.interrupted()) {
+                    return;
+                }
                 stmt = prepareSQLStatement(conn, sql);
 
                 // Execute the query
                 try {
+                    if (Thread.interrupted()) {
+                        return;
+                    }
                     executeSQLStatement(stmt, sql);
                     if (dataView.hasResultSet()) {
                         ResultSet rs = stmt.getResultSet();
@@ -470,6 +558,20 @@ class SQLExecutionHelper {
                     dataView.setRowsInTableModel();
                 }
             }
+
+            @Override
+            public boolean cancel() {
+                boolean superResult = super.cancel();
+                if (stmt != null) {
+                    try {
+                        stmt.cancel();
+                    } catch (SQLException sqlEx) {
+                        LOGGER.log(Level.FINEST, null, sqlEx);
+                        // Ok! The DBMS might not support Statement-Canceling
+                    }
+                }
+                return superResult;
+            }
         };
         RequestProcessor.Task task = rp.create(executor);
         executor.setTask(task);
@@ -492,23 +594,19 @@ class SQLExecutionHelper {
         int colCnt = tblMeta.getColumnCount();
         try {
             // Skip till current position
-            boolean lastRowPicked = rs.next();
+            boolean hasNext = rs.next();
             int curRowPos = 1;
-            while (lastRowPicked && curRowPos < (startFrom + 1)) {
+            while (hasNext && curRowPos < (startFrom + 1)) {
                 if (Thread.currentThread().isInterrupted()) {
                     return;
                 }
-                lastRowPicked = rs.next();
+                hasNext = rs.next();
                 curRowPos++;
             }
 
             // Get next page
             int rowCnt = 0;
-            boolean hasNext = false;
-            if (! lastRowPicked) {
-                hasNext = rs.next();
-            }
-            while (((pageSize == -1) || (pageSize > rowCnt)) && (lastRowPicked || hasNext)) {
+            while (((pageSize == -1) || (pageSize > rowCnt)) && (hasNext)) {
                 if (Thread.currentThread().isInterrupted()) {
                     return;
                 }
@@ -519,9 +617,6 @@ class SQLExecutionHelper {
                 }
                 rows.add(row);
                 rowCnt++;
-                if (lastRowPicked) {
-                    lastRowPicked = false;
-                }
                 try {
                     hasNext = rs.next();
                 } catch (SQLException x) {
@@ -548,7 +643,7 @@ class SQLExecutionHelper {
                 }
             }
         } catch (SQLException ex) {
-            LOGGER.log(Level.SEVERE, "Could not get total row count " + ex); // NOI18N
+            LOGGER.log(Level.SEVERE, "Could not get total row count ", ex); // NOI18N
         }
     }
 
@@ -576,7 +671,7 @@ class SQLExecutionHelper {
                 stmt.setFetchSize(pageSize);
             } catch (SQLException e) {
                 // ignore -  used only as a hint to the driver to optimize
-                LOGGER.log(Level.WARNING, "Unable to set Fetch size" + e); // NOI18N
+                LOGGER.log(Level.WARNING, "Unable to set Fetch size", e); // NOI18N
             }
 
             try {
@@ -586,7 +681,7 @@ class SQLExecutionHelper {
                     stmt.setMaxRows(dataView.getDataViewPageContext().getCurrentPos() + pageSize);
                 }
             } catch (SQLException exc) {
-                LOGGER.log(Level.WARNING, "Unable to set Max row size" + exc); // NOI18N
+                LOGGER.log(Level.WARNING, "Unable to set Max row size", exc); // NOI18N
             }
         } else {
             stmt = conn.createStatement();
@@ -595,7 +690,7 @@ class SQLExecutionHelper {
     }
 
     private void executeSQLStatement(Statement stmt, String sql) throws SQLException {
-        LOGGER.log(Level.FINE, "Statement: " + sql); // NOI18N
+        LOGGER.log(Level.FINE, "Statement: {0}", sql); // NOI18N
         dataView.setInfoStatusText(NbBundle.getMessage(SQLExecutionHelper.class, "LBL_sql_executestmt") + sql);
 
         long startTime = System.currentTimeMillis();
@@ -606,13 +701,13 @@ class SQLExecutionHelper {
             try {
                 isResultSet = stmt.execute(appendLimitIfRequired(sql));
             } catch (NullPointerException ex) {
-                LOGGER.log(Level.SEVERE, "Failed to execute SQL Statement [" + sql + "], cause: " + ex);
+                LOGGER.log(Level.SEVERE, "Failed to execute SQL Statement [{0}], cause: {1}", new Object[] {sql, ex});
                 throw new SQLException(ex);
             } catch (SQLException sqlExc) {
                 if (sqlExc.getErrorCode() == 1064 && sqlExc.getSQLState().equals("37000")) {
                     isResultSet = stmt.execute(sql);
                 } else {
-                    LOGGER.log(Level.SEVERE, "Failed to execute SQL Statement [" + sql + "], cause: " + sqlExc);
+                    LOGGER.log(Level.SEVERE, "Failed to execute SQL Statement [{0}], cause: {1}", new Object[] {sql, sqlExc});
                     throw sqlExc;
                 }
             }

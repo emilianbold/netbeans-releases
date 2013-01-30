@@ -54,10 +54,6 @@ public class DebuggerOptions {
     int maxChildren = -1;
     int maxStructureDepth = -1;
     Boolean debugForFirstPageOnly;
-    Boolean debuggerStoppedAtTheFirstLine;
-    Boolean requestedUrls;
-    Boolean debuggerConsole;
-    String phpInterpreter;
     String projectEncoding;
     List<Pair<String, String>> pathMapping;
     Pair<String, Integer> debugProxy;
@@ -96,20 +92,18 @@ public class DebuggerOptions {
     }
 
     public boolean showRequestedUrls() {
-        return (requestedUrls != null) ? requestedUrls : getGlobalInstance().showRequestedUrls();
+        return getGlobalInstance().showRequestedUrls();
     }
 
     public boolean showDebuggerConsole() {
-        return (debuggerConsole != null) ? debuggerConsole : getGlobalInstance().showDebuggerConsole();
+        return getGlobalInstance().showDebuggerConsole();
     }
     public boolean isDebuggerStoppedAtTheFirstLine() {
-        return (debuggerStoppedAtTheFirstLine != null) ? debuggerStoppedAtTheFirstLine :
-            getGlobalInstance().isDebuggerStoppedAtTheFirstLine();
+        return getGlobalInstance().isDebuggerStoppedAtTheFirstLine();
     }
 
     public String getPhpInterpreter() {
-        return (phpInterpreter != null) ? phpInterpreter :
-            getGlobalInstance().getPhpInterpreter();
+        return getGlobalInstance().getPhpInterpreter();
     }
 
     public String getProjectEncoding() {

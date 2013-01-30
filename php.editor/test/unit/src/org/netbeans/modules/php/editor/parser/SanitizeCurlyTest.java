@@ -42,6 +42,8 @@
 
 package org.netbeans.modules.php.editor.parser;
 
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.php.editor.PHPTestBase;
 import org.netbeans.modules.php.editor.parser.GSFPHPParser.Context;
 
@@ -256,7 +258,9 @@ public class SanitizeCurlyTest extends PHPTestBase {
     private void execute(String original, String expected, int expectedDelta) throws Exception {
         int originalLength = original.length();
         GSFPHPParser parser = new GSFPHPParser();
-        Context context = new GSFPHPParser.Context(null , original, -1);
+        BaseDocument doc = new BaseDocument(true, "text/x-php5");
+        doc.insertString(0, original, null);
+        Context context = new GSFPHPParser.Context(Source.create(doc).createSnapshot() , -1);
         parser.sanitizeCurly(context);
         assertEquals(expected, context.getSanitizedSource());
         assertEquals(originalLength+expectedDelta, context.getSanitizedSource().length());

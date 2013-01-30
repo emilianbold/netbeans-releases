@@ -328,6 +328,7 @@ public class DatabaseTablesPanel extends javax.swing.JPanel implements AncestorL
         try {
             puExists = ProviderUtil.persistenceExists(project);
         } catch (InvalidPersistenceXmlException ex) {
+        } catch (RuntimeException ex) {
         }
 
         if(puExists){
@@ -422,7 +423,7 @@ public class DatabaseTablesPanel extends javax.swing.JPanel implements AncestorL
         }
 
         List<DatabaseConnection> dbconns = findDatabaseConnections(datasource);
-        if (dbconns.size() == 0) {
+        if (dbconns.isEmpty()) {
             return false;
         }
         if(!skipChecks){
@@ -434,7 +435,7 @@ public class DatabaseTablesPanel extends javax.swing.JPanel implements AncestorL
         boolean selected = false;
         for(int i=0; i<datasourceComboBox.getItemCount(); i++){
             Object item = datasourceComboBox.getItemAt(i);
-            JPADataSource jpaDS = dsProvider != null ? dsProvider.toJPADataSource(item) : null;
+            JPADataSource jpaDS = dsProvider.toJPADataSource(item);
             if(jpaDS!=null){
                 if(datasource.getJndiName().equals(jpaDS.getJndiName()) && datasource.getUrl().equals(jpaDS.getUrl()) && datasource.getUsername().equals(jpaDS.getUsername())){
                     datasourceComboBox.setSelectedIndex(i);
@@ -1222,7 +1223,7 @@ public class DatabaseTablesPanel extends javax.swing.JPanel implements AncestorL
             wizardDescriptor.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE, warningMessage);
         }
     }
-    private class ItemListCellRenderer extends DefaultListCellRenderer {
+    private static class ItemListCellRenderer extends DefaultListCellRenderer {
 
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
 

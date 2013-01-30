@@ -39,7 +39,6 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.php.twig.editor.gsf;
 
 import org.netbeans.api.lexer.Language;
@@ -55,43 +54,64 @@ import org.netbeans.modules.php.twig.editor.format.TwigFormatter;
 import org.netbeans.modules.php.twig.editor.lexer.TwigTopTokenId;
 import org.netbeans.modules.php.twig.editor.parsing.TwigParser;
 
-@LanguageRegistration(mimeType=TwigLanguage.TWIG_MIME_TYPE, useCustomEditorKit=true)
+@LanguageRegistration(mimeType = TwigLanguage.TWIG_MIME_TYPE, useCustomEditorKit = true)
 public class TwigLanguage extends DefaultLanguageConfig {
 
     public static final String TWIG_MIME_TYPE = "text/x-twig"; // NOI18N
 
-    public TwigLanguage() {}
+    public TwigLanguage() {
+    }
 
     @Override
-    public CommentHandler getCommentHandler() { return null; }
+    public CommentHandler getCommentHandler() {
+        return null;
+    }
 
     @Override
-    public Language getLexerLanguage() { return TwigTopTokenId.language(); }
+    public Language getLexerLanguage() {
+        return TwigTopTokenId.language();
+    }
 
     @Override
-    public boolean isIdentifierChar(char c) { return Character.isLetter(c); }
+    public boolean isIdentifierChar(char c) {
+        return Character.isLetter(c);
+    }
 
     @Override
-    public String getDisplayName() { return "Twig"; }
+    public String getDisplayName() {
+        return "Twig"; //NOI18N
+    }
 
     @Override
-    public String getPreferredExtension() { return "twig"; }
+    public String getPreferredExtension() {
+        return "twig"; //NOI18N
+    }
 
     // Service registrations
     @Override
-    public boolean isUsingCustomEditorKit() { return true; }
+    public boolean isUsingCustomEditorKit() {
+        return true;
+    }
 
     @Override
-    public Parser getParser() { return new TwigParser(); }
+    public Parser getParser() {
+        return new TwigParser();
+    }
 
     @Override
-    public boolean hasStructureScanner() { return true; }
+    public boolean hasStructureScanner() {
+        return true;
+    }
 
     @Override
-    public StructureScanner getStructureScanner() { return new TwigStructureScanner(); }
+    public StructureScanner getStructureScanner() {
+        return new TwigStructureScanner();
+    }
 
     @Override
-    public boolean hasHintsProvider() { return false; }
+    public boolean hasHintsProvider() {
+        return false;
+    }
 
     @Override
     public CodeCompletionHandler getCompletionHandler() {
@@ -107,5 +127,4 @@ public class TwigLanguage extends DefaultLanguageConfig {
     public Formatter getFormatter() {
         return new TwigFormatter();
     }
-
 }

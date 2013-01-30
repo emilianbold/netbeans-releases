@@ -41,7 +41,11 @@
  */
 package org.netbeans.modules.php.editor.elements;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.StringTokenizer;
 import org.netbeans.modules.php.editor.api.AliasedName;
 import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.api.elements.TypeNameResolver;
@@ -108,7 +112,7 @@ public abstract class TypeNameResolverImpl implements TypeNameResolver {
 
 
 
-    private static abstract class BaseTypeNameResolver extends TypeNameResolverImpl {
+    private abstract static class BaseTypeNameResolver extends TypeNameResolverImpl {
         private final Scope scope;
         private final int offset;
 
@@ -207,7 +211,8 @@ public abstract class TypeNameResolverImpl implements TypeNameResolver {
                             continue;
                         }
                     } else {
-                        if (lastOffset < useElement.getOffset() && useElement.getName().endsWith(firstSegmentName)) {
+                        if (lastOffset < useElement.getOffset() && (useElement.getName().equals(firstSegmentName)
+                                || useElement.getName().endsWith(NamespaceDeclarationInfo.NAMESPACE_SEPARATOR + firstSegmentName))) {
                             matchedUseScope = useElement;
                             lastOffset = useElement.getOffset();
                         }
@@ -247,9 +252,9 @@ public abstract class TypeNameResolverImpl implements TypeNameResolver {
 
 
 
-    private static interface QualifiedTypeNameResolver {
+    private interface QualifiedTypeNameResolver {
 
-        public QualifiedName resolveForUseScope(final QualifiedName fullyQualifiedName, final UseScope matchedUseScope);
+        QualifiedName resolveForUseScope(final QualifiedName fullyQualifiedName, final UseScope matchedUseScope);
 
     }
 
@@ -388,7 +393,9 @@ public abstract class TypeNameResolverImpl implements TypeNameResolver {
         }
 
         private static boolean isFromCurrentNamespace(final QualifiedName fullyQualifiedName, final QualifiedName namespaceName) {
-            return fullyQualifiedName.toString().substring(NamespaceDeclarationInfo.NAMESPACE_SEPARATOR.length()).startsWith(namespaceName.toString() + NamespaceDeclarationInfo.NAMESPACE_SEPARATOR);
+            return fullyQualifiedName.toString()
+                    .substring(NamespaceDeclarationInfo.NAMESPACE_SEPARATOR.length())
+                    .startsWith(namespaceName.toString() + NamespaceDeclarationInfo.NAMESPACE_SEPARATOR);
         }
 
         public FullyQualifiedNameProcessor(final QualifiedTypeNameResolver qualifiedTypeNameResolver, final int offset) {
@@ -412,8 +419,11 @@ public abstract class TypeNameResolverImpl implements TypeNameResolver {
         private QualifiedName resolveFromCurrentNamespace(final QualifiedName fullyQualifiedName, final QualifiedName namespaceName) {
             int namespaceNameSegmentsSize = namespaceName.getSegments().size();
             int qualifiedNameSegmentsSize = fullyQualifiedName.getSegments().size();
-            assert namespaceNameSegmentsSize < qualifiedNameSegmentsSize : namespaceName.toString() + ":" + namespaceNameSegmentsSize + " < " + fullyQualifiedName.toString() + ":" + qualifiedNameSegmentsSize; //NOI18N
-            return QualifiedName.create(fullyQualifiedName.toString().substring(NamespaceDeclarationInfo.NAMESPACE_SEPARATOR.length() + namespaceName.toString().length() + NamespaceDeclarationInfo.NAMESPACE_SEPARATOR.length()));
+            assert namespaceNameSegmentsSize < qualifiedNameSegmentsSize
+                    : namespaceName.toString() + ":" + namespaceNameSegmentsSize + " < " + fullyQualifiedName.toString() + ":" + qualifiedNameSegmentsSize; //NOI18N
+            String resultName = fullyQualifiedName.toString().substring(
+                    NamespaceDeclarationInfo.NAMESPACE_SEPARATOR.length() + namespaceName.toString().length() + NamespaceDeclarationInfo.NAMESPACE_SEPARATOR.length());
+            return QualifiedName.create(resultName);
         }
 
         private QualifiedName resolveFromAnotherNamespace(final QualifiedName fullyQualifiedName, final Collection<? extends UseScope> declaredUses) {
@@ -436,7 +446,9 @@ public abstract class TypeNameResolverImpl implements TypeNameResolver {
                     } else {
                         if (lastOffset < useScope.getOffset()) {
                             String useElementName = useScope.getName();
-                            String modifiedUseElementName = useElementName.startsWith(NamespaceDeclarationInfo.NAMESPACE_SEPARATOR) ? useElementName : NamespaceDeclarationInfo.NAMESPACE_SEPARATOR + useElementName;
+                            String modifiedUseElementName = useElementName.startsWith(NamespaceDeclarationInfo.NAMESPACE_SEPARATOR)
+                                    ? useElementName
+                                    : NamespaceDeclarationInfo.NAMESPACE_SEPARATOR + useElementName;
                             if (fullyQualifiedName.toString().startsWith(modifiedUseElementName)) {
                                 lastOffset = useScope.getOffset();
                                 result = useScope;

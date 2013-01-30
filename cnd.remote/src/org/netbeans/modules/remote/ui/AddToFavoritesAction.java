@@ -39,14 +39,17 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.remote.ui;
 
 import java.awt.Frame;
+import java.io.File;
 import java.io.IOException;
+import javax.swing.JFileChooser;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
+import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
 import org.netbeans.modules.favorites.api.Favorites;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -54,6 +57,7 @@ import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.netbeans.modules.remote.api.ui.FileChooserBuilder.JFileChooserEx;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -63,6 +67,7 @@ import org.openide.awt.ActionReference;
 import org.openide.awt.ActionRegistration;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
@@ -80,8 +85,9 @@ import org.openide.windows.WindowManager;
 @ActionRegistration(displayName = "AddToFavoritesMenuItem")
 @ActionReference(path = "Remote/Host/Actions", name = "AddToFavoritesAction", position = 600)
 public class AddToFavoritesAction extends SingleHostAction {
+
     private JMenu popupMenu;
-    
+
     @Override
     public String getName() {
         return NbBundle.getMessage(HostListRootNode.class, "AddToFavoritesMenuItem"); // NOI18N
@@ -97,7 +103,7 @@ public class AddToFavoritesAction extends SingleHostAction {
             } catch (NullPointerException ex) {
             } catch (DataObjectNotFoundException ex) {
             }
-        }        
+        }
     }
 
     @Override
@@ -116,7 +122,7 @@ public class AddToFavoritesAction extends SingleHostAction {
         createSubMenu();
         return popupMenu;
     }
-        
+
     private void createSubMenu() {
         if (popupMenu == null) {
             popupMenu = new JMenu(getName());
@@ -126,59 +132,54 @@ public class AddToFavoritesAction extends SingleHostAction {
             popupMenu.add(SystemAction.get(AddRoot.class).getPopupPresenter());
             popupMenu.add(SystemAction.get(AddOther.class).getPopupPresenter());
         }
-    }    
-    
+    }
+
     private enum PLACE {
+
         ROOT("AddRoot"),// NOI18N
         HOME("AddHome"),// NOI18N
         PROJECTS("AddProjects"),// NOI18N
         OTHER("AddOtherFolder"), // NOI18N
         MIRROR("AddMirror");// NOI18N
-        
         private final String name;
+
         PLACE(String nameKey) {
             this.name = NbBundle.getMessage(AddToFavoritesAction.class, nameKey);
         }
-        
+
         private String getName() {
             return name;
         }
     }
-    
+
     private static abstract class AddPlace extends SingleHostAction {
-        private static final RequestProcessor RP = new RequestProcessor("AddToFavoritesAction", 1); // NOI18N
+
+        protected static final RequestProcessor RP = new RequestProcessor("AddToFavoritesAction", 1); // NOI18N
         private final PLACE place;
+
         private AddPlace(PLACE place) {
             this.place = place;
             putProperty("noIconInMenu", Boolean.TRUE);// NOI18N
         }
 
         protected abstract FileObject getRoot(ExecutionEnvironment env, FileSystem fs);
+
         protected abstract String getPath(ExecutionEnvironment env);
-        
+
         @Override
         protected void performAction(final ExecutionEnvironment env, Node node) {
             final TopComponent favorites = getFavorites();
             if (favorites != null) {
                 Runnable runnable = new Runnable() {
-
                     @Override
                     public void run() {
-                        try {
-                            ConnectionManager.getInstance().connectTo(env);
-                        } catch (IOException ex) {
-                            DialogDisplayer.getDefault().notify(new DialogDescriptor.Message(
-                                    ex.getLocalizedMessage(), DialogDescriptor.ERROR_MESSAGE));
-                            return;
-                        } catch (CancellationException ex) {
-                            // don't report CancellationException
+                        if (!ConnectionManager.getInstance().connect(env)) {
                             return;
                         }
                         FileSystem fs = FileSystemProvider.getFileSystem(env);
                         final FileObject fo = getRoot(env, fs);
                         if (fo != null) {
                             Runnable openFavorites = new Runnable() {
-
                                 @Override
                                 public void run() {
                                     try {
@@ -212,8 +213,9 @@ public class AddToFavoritesAction extends SingleHostAction {
             return place.getName();
         }
     }
-    
+
     private static final class AddRoot extends AddPlace {
+
         public AddRoot() {
             super(PLACE.ROOT);
         }
@@ -228,6 +230,7 @@ public class AddToFavoritesAction extends SingleHostAction {
             return "/"; // NOI18N
         }
     }
+
     private static final class AddHome extends AddPlace {
 
         public AddHome() {
@@ -239,7 +242,7 @@ public class AddToFavoritesAction extends SingleHostAction {
             String path = getPath(env);
             return path == null ? null : fs.findResource(path);
         }
-        
+
         @Override
         protected String getPath(ExecutionEnvironment env) {
             try {
@@ -256,6 +259,7 @@ public class AddToFavoritesAction extends SingleHostAction {
             return null;
         }
     }
+
     private static final class AddProjects extends AddPlace {
 
         public AddProjects() {
@@ -266,12 +270,13 @@ public class AddToFavoritesAction extends SingleHostAction {
         protected FileObject getRoot(ExecutionEnvironment env, FileSystem fs) {
             return fs.getRoot();
         }
-        
+
         @Override
         protected String getPath(ExecutionEnvironment env) {
             return "/"; // NOI18N
         }
     }
+
     private static final class AddMirror extends AddPlace {
 
         public AddMirror() {
@@ -283,14 +288,14 @@ public class AddToFavoritesAction extends SingleHostAction {
             String path = getPath(env);
             return path == null ? null : fs.findResource(path);
         }
-        
+
         @Override
         protected String getPath(ExecutionEnvironment env) {
             String remoteSyncRoot = RemotePathMap.getRemoteSyncRoot(env);
             return remoteSyncRoot;
         }
     }
-    
+
     private static final class AddOther extends AddPlace {
 
         private final Frame mainWindow;
@@ -302,15 +307,139 @@ public class AddToFavoritesAction extends SingleHostAction {
 
         @Override
         protected FileObject getRoot(ExecutionEnvironment env, FileSystem fs) {
-            String title = NbBundle.getMessage(AddToFavoritesAction.class, "SelectFolder");
-            String btn = NbBundle.getMessage(AddToFavoritesAction.class, "AddText");
-            FileObject fo = OpenTerminalAction.getRemoteFileObject(env, title, btn, mainWindow);
-            return fo;
+            throw new IllegalArgumentException(NbBundle.getMessage(AddToFavoritesAction.class, "AddToFavoritesAction.AddOther.DoNotInvoke.getRoot.directly"));//NOI18N
         }
 
         @Override
         protected String getPath(ExecutionEnvironment env) {
             return null;
         }
-    }    
+
+        @Override
+        protected void performAction(final ExecutionEnvironment env, Node node) {
+            final TopComponent favorites = getFavorites();
+            if (favorites != null) {
+                Runnable runnable = new Runnable() {
+                    @Override
+                    public void run() {
+                        if (!ConnectionManager.getInstance().connect(env)) {
+                            return;
+                        }
+//Non UI Thread:
+                        final String curDir;
+                        String dir = RemoteFileUtil.getCurrentChooserFile(env);
+                        if (dir == null) {
+                            dir = getHomeDir(env);
+                        }
+                        curDir = dir;
+                        Runnable openFavorites = new Runnable() {
+                            @Override
+                            public void run() {
+                                try {
+                                    FileObject rootFO = null;
+                                    //UI thread:
+                                    String title = NbBundle.getMessage(AddToFavoritesAction.class, "SelectFolder");
+                                    String btn = NbBundle.getMessage(AddToFavoritesAction.class, "AddText");
+                                    JFileChooser fileChooser = RemoteFileUtil.createFileChooser(
+                                            env,
+                                            title,
+                                            btn,
+                                            JFileChooser.DIRECTORIES_ONLY, null, curDir, true);
+                                    int ret = fileChooser.showOpenDialog(mainWindow);
+                                    if (ret == JFileChooser.CANCEL_OPTION) {
+                                        rootFO = null;
+                                    } else {
+                                        if (fileChooser instanceof JFileChooserEx) {
+                                            rootFO = ((JFileChooserEx) fileChooser).getSelectedFileObject();
+                                        } else {
+                                            File selectedFile = fileChooser.getSelectedFile();
+                                            if (selectedFile != null) {
+                                                rootFO = FileUtil.toFileObject(selectedFile);
+                                            }
+                                        }
+                                        if (rootFO == null || !rootFO.isFolder()) {
+                                            String msg = fileChooser.getSelectedFile() != null ? fileChooser.getSelectedFile().getPath() : null;
+                                            if (msg != null) {
+                                                JOptionPane.showMessageDialog(WindowManager.getDefault().getMainWindow(),
+                                                        NbBundle.getMessage(OpenRemoteProjectAction.class, "InvalidFolder", msg));
+                                            }
+                                        } else {
+                                            String lastPath = rootFO.getParent() == null ? rootFO.getPath() : rootFO.getParent().getPath();
+                                            RemoteFileUtil.setCurrentChooserFile(lastPath, env);
+                                        }
+                                    }
+                                    if (rootFO != null) {
+                                        Favorites.getDefault().selectWithAddition(rootFO);
+                                    }
+                                } catch (DataObjectNotFoundException ex) {
+                                    Exceptions.printStackTrace(ex);
+                                }
+                            }
+                        };
+                        SwingUtilities.invokeLater(openFavorites);
+
+                    }
+                };
+                RP.post(runnable);
+            }
+        }
+    }
+
+    static FileObject getRemoteFileObject(ExecutionEnvironment env, String title, String btn, Frame mainWindow) {
+        //Non UI Thread:
+        String curDir = RemoteFileUtil.getCurrentChooserFile(env);
+        if (curDir == null) {
+            curDir = getHomeDir(env);
+        }
+        //UI thread:
+        JFileChooser fileChooser = RemoteFileUtil.createFileChooser(
+                env,
+                title,
+                btn,
+                JFileChooser.DIRECTORIES_ONLY, null, curDir, true);
+        int ret = fileChooser.showOpenDialog(mainWindow);
+        if (ret == JFileChooser.CANCEL_OPTION) {
+            return null;
+        }
+        FileObject fo = null;
+        if (fileChooser instanceof JFileChooserEx) {
+            fo = ((JFileChooserEx) fileChooser).getSelectedFileObject();
+        } else {
+            File selectedFile = fileChooser.getSelectedFile();
+            if (selectedFile != null) {
+                fo = FileUtil.toFileObject(selectedFile);
+            }
+        }
+        if (fo == null || !fo.isFolder()) {
+            String msg = fileChooser.getSelectedFile() != null ? fileChooser.getSelectedFile().getPath() : null;
+            if (msg != null) {
+                JOptionPane.showMessageDialog(WindowManager.getDefault().getMainWindow(),
+                        NbBundle.getMessage(OpenRemoteProjectAction.class, "InvalidFolder", msg));
+            }
+            return null;
+        }
+        String lastPath = fo.getParent() == null ? fo.getPath() : fo.getParent().getPath();
+        RemoteFileUtil.setCurrentChooserFile(lastPath, env);
+        return fo;
+    }
+
+    private static String getHomeDir(ExecutionEnvironment env) {
+        try {
+            HostInfo hostInfo = HostInfoUtils.getHostInfo(env);
+            if (hostInfo != null) {
+                String userDir;
+                if (env.isLocal()) {
+                    userDir = hostInfo.getUserDirFile().getAbsolutePath();
+                } else {
+                    userDir = hostInfo.getUserDir();
+                }
+                return userDir;
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (CancellationException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return null;
+    }
 }

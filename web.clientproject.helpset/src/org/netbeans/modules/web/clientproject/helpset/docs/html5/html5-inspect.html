@@ -1,0 +1,67 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--       
+*     Copyright © 1997, 2011, Oracle and/or its affiliates. All rights reserved. 
+*     Use is subject to license terms.
+-->
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>Inspecting HTML5 Code with the Browser</title>
+<link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+
+<h2>Inspecting HTML5 Code with the Browser</h2>
+<p> <small><a href="#seealso">See Also</a>&nbsp; </small>
+
+<p>You can use the Inspect mode to help you locate and edit the source code in an HTML5 application. 
+    When Inspect mode is enabled, information about some of the actions that you perform 
+    in the browser such as selecting and highlighting elements is communicated to the IDE.
+    When you run the application you can use your browser to help you locate HTML elements in your source code.
+    When you select or place your cursor over elements in the browser window the element is simultaneously highlighted 
+    or selected in the Navigator window of the IDE.
+    When you select an element the style rules for the element are automatically displayed in the Selection tab of the CSS Styles window.</p>
+    
+    
+<p>To inspect your application with a browser, perform the following steps.</p>
+<ol>
+    <li>Set the target browser for the application to one of the following browsers.
+        <ul>
+            <li>Chrome with NetBeans Integration</li>
+            <li>Embedded WebKit Browser</li>
+        </ul>
+    </li>
+    <li>Run the application or file.
+        <p>When you run the application the target browser opens and displays the index page or file in the window.</p></li>
+    <li>Enable Inspect mode (Ctrl-Shift-S) in the browser.
+        <p>In the Chrome browser you can enable Inspect mode in the NetBeans Actions menu.
+        In the Embedded WebKit Browser you can click the Inspect button in the toolbar.</p>
+    </li>
+    <li>Select an HTML element in the page in the browser window.</li>
+</ol>
+    <p>When you select an element in the browser the contents of the following windows in the IDE are updated to synchronize with the selected element.</p>
+    <ul>
+        <li><strong>Navigator window.</strong> The Navigator window displays a DOM tree of the page and
+        the selected element is highlighted. 
+        You can double-click the highlighted element to open the source file in the editor.</li>
+        <li><strong>CSS Styles window.</strong> The Selection tab of the CSS Styles window displays the style rules for the selected element.
+        You can edit the rules for the element in the CSS Styles window.</li>
+    </ul>
+
+    <ul class="note">
+        <li>To enable Inspect mode in the Chrome browser you need to install the NetBeans extension to <a href="html5-chrome.html">integrate the IDE with the browser</a>.</li>
+    </ul>
+    
+<dl>
+<dt><a name="seealso">See Also</a></dt>
+<dd><a href="html5-chrome.html">Integrating an HTML5 Project with the Browser</a></dd>
+<dd><a href="html5-runproject.html">Running an HTML5 Application</a></dd>
+<dd><a href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/xml/css/css_edit.html">Editing a Cascading Style Sheet</a></dd>
+</dl>
+
+<hr><small><a href="../credits.html">Legal Notices</a></small>
+
+<table border="0" cellpadding="50">
+<tr><td>&nbsp;</td></tr>
+</table></body>
+</html>

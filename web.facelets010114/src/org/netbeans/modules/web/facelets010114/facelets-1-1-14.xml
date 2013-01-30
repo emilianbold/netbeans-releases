@@ -19,8 +19,7 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
-<!DOCTYPE library PUBLIC "-//NetBeans//DTD Library Declaration 1.0//EN" "http://www.netbeans.org/dtds/library-declaration-1_0.dtd">
-<library version="1.0">
+<library version="3.0" xmlns="http://www.netbeans.org/ns/library-declaration/3">
     <name>facelets-1-1-14</name>
     <type>j2se</type>
     <localizing-bundle>org/netbeans/modules/web/facelets010114/Bundle</localizing-bundle>
@@ -38,14 +37,17 @@ Microsystems, Inc. All Rights Reserved.
     <volume>
         <type>javadoc</type>
     </volume>
-    <volume>
+    <properties>
         <!-- please check with mkleint@netbeans.org before/after updating this or "classpath" section -->
-        <type>maven-pom</type>
-        <resource>http://repo1.maven.org/maven2/com/sun/facelets/jsf-facelets/1.1.14/jsf-facelets-1.1.14.pom</resource>
-        <resource>http://repo1.maven.org/maven2/com/sun/el/el-ri/1.0/el-ri-1.0.pom</resource>
-        <resource>http://repo1.maven.org/maven2/javax/faces/jsf-api/1.2_04-p01/jsf-api-1.2_04-p01.pom</resource>
-        <resource>http://repo1.maven.org/maven2/javax/faces/jsf-impl/1.2_04-p01/jsf-impl-1.2_04-p01.pom</resource>
-        <resource>http://repo1.maven.org/maven2/commons-digester/commons-digester/1.5/commons-digester-1.5.pom</resource>
-    </volume>
-
+        <property>
+            <name>maven-dependencies</name>
+            <value>
+                com.sun.facelets:jsf-facelets:1.1.14:jar
+                com.sun.el:el-ri:1.0:jar
+                javax.faces:jsf-api:1.2_04-p01:jar
+                javax.faces:jsf-impl:1.2_04-p01:jar
+                commons-digester:commons-digester:1.5:jar
+            </value>
+        </property>
+    </properties>    
 </library>

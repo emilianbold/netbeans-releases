@@ -119,6 +119,7 @@
                 </dependency>
             </module-dependencies>
             <friend-packages>
+                <friend>org.netbeans.core.browser.webview.jfxplatformbridge</friend>
                 <friend>org.netbeans.modules.javafx2.project</friend>
                 <friend>org.netbeans.modules.javafx2.samples</friend>
                 <package>org.netbeans.modules.javafx2.platform.api</package>

@@ -49,6 +49,7 @@ import org.netbeans.modules.schema2beansdev.gen.XMLWriter;
 
 import java.io.*;
 import java.util.*;
+import java.util.regex.Matcher;
 
 import org.w3c.dom.*;
 import org.xml.sax.*;
@@ -1634,14 +1635,32 @@ public class SchemaRep implements PrefixGuesser {
 
         public void genRestriction(Writer out, String var, String type, String failVar, boolean passCheck) throws IOException {
             if (!passCheck) {
-                out.write("if (!("+JavaUtil.typeToString(type, var)+").matches("+JavaUtil.instanceFrom("java.lang.String", value)+")) {\n");
+                out.write("if (!("+JavaUtil.typeToString(type, var)+").matches("+xsdRegExpToJava(JavaUtil.instanceFrom("java.lang.String", value))+")) {\n");
                 out.write(failVar+" = true;\n");
                 out.write("}\n");
             } else {
-                out.write("if (("+JavaUtil.typeToString(type, var)+").matches("+JavaUtil.instanceFrom("java.lang.String", value)+")) {\n");
+                out.write("if (("+JavaUtil.typeToString(type, var)+").matches("+xsdRegExpToJava(JavaUtil.instanceFrom("java.lang.String", value))+")) {\n");
                 out.write(failVar+" = true;\n");
                 out.write("}\n");
             }
+        }
+
+        // this is imperfect xsd regexp to java regexp translation for common cases
+        private String xsdRegExpToJava(String xsd) {
+            String fixed = xsd;
+            fixed =fixed.replaceAll(java.util.regex.Pattern.quote("\\\\i-[:]"), // NOI18N
+                    Matcher.quoteReplacement("[_A-Za-z]")); // NOI18N
+            fixed =fixed.replaceAll(java.util.regex.Pattern.quote("\\\\i"), // NOI18N
+                    Matcher.quoteReplacement("[_:A-Za-z]")); // NOI18N
+            fixed = fixed.replaceAll(java.util.regex.Pattern.quote("\\\\c-[:]"), // NOI18N
+                    Matcher.quoteReplacement("[-._A-Za-z0-9]")); // NOI18N
+            fixed = fixed.replaceAll(java.util.regex.Pattern.quote("\\\\c"), // NOI18N
+                    Matcher.quoteReplacement("[-._:A-Za-z0-9]")); // NOI18N
+            fixed =fixed.replaceAll(java.util.regex.Pattern.quote("\\\\I"), // NOI18N
+                    Matcher.quoteReplacement("[^_:A-Za-z]")); // NOI18N
+            fixed = fixed.replaceAll(java.util.regex.Pattern.quote("\\\\C"), // NOI18N
+                    Matcher.quoteReplacement("[^-._:A-Za-z0-9]")); // NOI18N
+            return fixed;
         }
     }
 

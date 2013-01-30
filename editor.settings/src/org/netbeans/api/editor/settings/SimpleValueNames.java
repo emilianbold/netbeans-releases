@@ -438,6 +438,26 @@ public final class SimpleValueNames {
     public static final String ON_SAVE_REMOVE_TRAILING_WHITESPACE = "on-save-remove-trailing-whitespace"; //NOI18N
 
     /**
+     * Determines whether and how a document being saved should be reformatted.
+     * Values: java.lang.String instances
+     * <ul>
+     * <li>never
+     * <li>always
+     * <li>modified-lines
+     * </ul>
+     * @since 1.44
+     */
+    public static final String ON_SAVE_REFORMAT = "on-save-reformat"; //NOI18N
+
+    /**
+     * Determines whether use on-save settings for all languages (global mime-type "")
+     * or specific settings for a mime-type.
+     * Values: java.lang.Boolean instances
+     * @since 1.44
+     */
+    public static final String ON_SAVE_USE_GLOBAL_SETTINGS = "on-save-use-global-settings"; //NOI18N
+
+    /**
      * Determines editor search type.
      * Values: java.lang.String instances
      * <ul>
@@ -446,6 +466,20 @@ public final class SimpleValueNames {
      * </ul>
      */
     public static final String EDITOR_SEARCH_TYPE = "editor-search-type"; //NOI18N
+    
+    /**
+     * Show brace matching outline in the sidebar of the editor.
+     * Values: Boolean instances.
+     * Default: true
+     */
+    public static final String BRACE_SHOW_OUTLINE = "editor-brace-outline"; // NOI18N
+
+    /**
+     * Show tooltips if the brace start line is hidden (outside the screen).
+     * Values: Boolean instances.
+     * Default: true
+     */
+    public static final String BRACE_FIRST_TOOLTIP = "editor-brace-first-tooltip"; // NOI18N
 
     @PatchedPublic
     private SimpleValueNames() {

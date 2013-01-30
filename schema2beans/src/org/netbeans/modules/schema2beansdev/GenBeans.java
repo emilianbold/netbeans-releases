@@ -289,7 +289,7 @@ public class GenBeans {
         }
 
         protected int unknownArgument(String[] args, String arg, int argNum) {
-            if (arg == "-t") {
+            if ("-t".equals(arg)) {
                 arg = args[++argNum];
                 if (arg.equalsIgnoreCase("parse"))
                     setTraceParse(true);
@@ -305,24 +305,24 @@ public class GenBeans {
                     setTraceMisc(true);
                     setTraceDot(true);
                 }
-            } else if (arg == "-version") {
+            } else if ("-version".equals(arg)) {
                 messageOut.println("schema2beans - " + Version.getVersion());
                 System.exit(0);
-            } else if (arg == "-xmlschema")
+            } else if ("-xmlschema".equals(arg))
                 setSchemaTypeNum(XML_SCHEMA);
-            else if (arg == "-dtd")
+            else if ("-dtd".equals(arg))
                 setSchemaTypeNum(DTD);
-            else if (arg == "-premium")
+            else if ("-premium".equals(arg))
                 buyPremium();
-            else if (arg == "-strict")
+            else if ("-strict".equals(arg))
                 useStrict();
-            else if (arg == "-basebean") {
+            else if ("-basebean".equals(arg)) {
                 setOutputType(OUTPUT_TRADITIONAL_BASEBEAN);
-            } else if (arg == "-javabeans")
+            } else if ("-javabeans".equals(arg))
                 setOutputType(OUTPUT_JAVABEANS);
-            else if (arg == "-commoninterface")
+            else if ("-commoninterface".equals(arg))
                 setGenerateCommonInterface(COMMON_BEAN);
-            else if (arg == "-nocommoninterface")
+            else if ("-nocommoninterface".equals(arg))
                 setGenerateCommonInterface(null);
             else {
                 messageOut.println("Unknown argument: "+arg);
@@ -869,8 +869,11 @@ public class GenBeans {
             try {
                 config.messageOut.println("Writing metaDD XML file");	// NOI18N
                 FileOutputStream mddOut = new FileOutputStream(config.getMddFile());
-                config.getMetaDD().write(mddOut);
-                mddOut.close();
+                try {
+                    config.getMetaDD().write(mddOut);
+                } finally {
+                    mddOut.close();
+                }
             } catch (IOException e) {
                 config.messageOut.println("Failed to write the mdd file: " +
                                           e.getMessage()); // NOI18N
@@ -940,7 +943,12 @@ public class GenBeans {
 
         config.readConfigs();
         if (config.getWriteConfig() != null) {
-            config.write(new FileOutputStream(config.getWriteConfig()));
+            FileOutputStream fos = new FileOutputStream(config.getWriteConfig());
+            try {
+               config.write(fos);
+            } finally {
+                fos.close();
+            }
         }
     }
 

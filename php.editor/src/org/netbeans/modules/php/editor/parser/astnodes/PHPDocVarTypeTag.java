@@ -42,6 +42,7 @@
 package org.netbeans.modules.php.editor.parser.astnodes;
 
 import java.util.List;
+import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
 
 /**
  * Represents tags like param, where is defined type of a variable.
@@ -51,7 +52,7 @@ public class PHPDocVarTypeTag extends PHPDocTypeTag {
 
     private final PHPDocNode variable;
 
-    public PHPDocVarTypeTag(int start, int end, PHPDocTag.Type kind, String value,
+    public PHPDocVarTypeTag(int start, int end, AnnotationParsedLine kind, String value,
             List<PHPDocTypeNode> types, PHPDocNode variable) {
         super(start, end, kind, value, types);
         this.variable = variable;

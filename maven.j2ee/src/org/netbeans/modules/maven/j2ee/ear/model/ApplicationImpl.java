@@ -46,6 +46,7 @@ import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.api.project.Project;
@@ -75,7 +76,6 @@ import org.xml.sax.SAXParseException;
 public class ApplicationImpl implements Application {
     
     private final Project earProject;
-    private List<Module> modules;
     private volatile boolean runReadActionRunning = false;
     
     
@@ -93,19 +93,8 @@ public class ApplicationImpl implements Application {
 
     protected void leaveRunReadAction() {
         runReadActionRunning = false;
-        clearModules();
     }
 
-    /**
-     * Clear all modules.
-     * <p>
-     * This method ensures that all callers will always have up to date modules.
-     * @see ApplicationMetadataModelImpl#runReadAction(MetadataModelAction<ApplicationMetadata, R>)
-     */
-    private void clearModules() {
-        modules = null;
-    }
-    
     /**
      * @see EarProjectProperties#addItemToAppDD(Application, VisualClassPathItem)
      */
@@ -114,190 +103,8 @@ public class ApplicationImpl implements Application {
                 || !runReadActionRunning) {
              throw new IllegalStateException("Cannot read modules outside runReadAction()");
         }
-        if (modules != null) {
-            return modules;
-        }
-        
-//TODO
-//        EarProjectProperties epp = earProject.getProjectProperties();
-//        List<VisualClassPathItem> vcpis = epp.getJarContentAdditional();
-//        modules = new ArrayList<Module>(vcpis.size());
-//        for (VisualClassPathItem vcpi : vcpis) {
-//            addModuleFromVcpi(vcpi);
-//        }
-        
-        return modules;
+        return new ArrayList<Module>();
     }
-    
-//    private void addModuleFromVcpi(VisualClassPathItem vcpi) {
-//        Object obj = vcpi.getObject();
-//        String path = vcpi.getCompletePathInArchive();
-//        Module mod = null;
-//        if (obj instanceof AntArtifact) {
-//            mod = getModFromAntArtifact((AntArtifact) obj, path);
-//        } else if (obj instanceof File) {
-//           mod = getModFromFile((File) obj, path);
-//        }
-//        if (mod != null && mod.getWeb() != null) {
-//            replaceEmptyClientModuleUri(path);
-//        }
-//        Module prevMod = searchForModule(path);
-//        if (prevMod == null && mod != null) {
-//            modules.add(mod);
-//        }
-//    }
-    
-//    private Module getModFromAntArtifact(AntArtifact aa, String path) {
-//        Project p = aa.getProject();
-//        Module mod = null;
-//        J2eeModuleProvider jmp = p.getLookup().lookup(J2eeModuleProvider.class);
-//        if (jmp != null) {
-//            String connector = null;
-//            String ejb = null;
-//            String car = null;
-//            Web web = null;
-//            
-//            jmp.setServerInstanceID(earProject.getServerInstanceID());
-//            J2eeModule jm = jmp.getJ2eeModule();
-//            if (jm != null) {
-//                earProject.getAppModule().addModuleProvider(jmp, path);
-//            } else {
-//                return null;
-//            }
-//            
-//            if (jm.getModuleType() == J2eeModule.EJB) {
-//                ejb = path;
-//            } else if (jm.getModuleType() == J2eeModule.WAR) {
-//                FileObject tmp = aa.getScriptFile();
-//                if (tmp != null) {
-//                    tmp = tmp.getParent().getFileObject("web/WEB-INF/web.xml"); // NOI18N
-//                }
-//                WebModule wm = null;
-//                if (tmp != null) {
-//                    wm = WebModule.getWebModule(tmp);
-//                }
-//                String contextPath = null;
-//                if (wm != null) {
-//                    contextPath = wm.getContextPath();
-//                } 
-//                if (contextPath == null) {
-//                    int endex = path.length() - 4;
-//                    if (endex < 1) {
-//                        endex = path.length();
-//                    }
-//                    contextPath = path.substring(0, endex);
-//                }
-//                web = new WebImpl(path, contextPath);
-//            } else if (jm.getModuleType() == J2eeModule.CONN) {
-//                connector = path;
-//            } else if (jm.getModuleType() == J2eeModule.CLIENT) {
-//                car = path;
-//            }
-//            mod = new ModuleImpl(connector, ejb, car, web);
-//        }
-//        return mod;
-//    }
-    
-//    private Module getModFromFile(File f, String path) {
-//        JarFile jar = null;
-//        Module mod = null;
-//        try {
-//            String connector = null;
-//            String ejb = null;
-//            String car = null;
-//            Web web = null;
-//            boolean found = false;
-//            
-//            jar = new JarFile(f);
-//            JarEntry ddf = jar.getJarEntry("META-INF/ejb-jar.xml"); // NOI18N
-//            if (ddf != null) {
-//                ejb = path;
-//                found = true;
-//            }
-//            ddf = jar.getJarEntry("META-INF/ra.xml"); // NOI18N
-//            if (ddf != null && !found) {
-//                connector = path;
-//                found = true;
-//            } else if (ddf != null && found) {
-//                return null; // two timing jar file.
-//            }
-//            ddf = jar.getJarEntry("META-INF/application-client.xml"); // NOI18N
-//            if (ddf != null && !found) {
-//                car = path;
-//                found = true;
-//            } else if (ddf != null && found) {
-//                return null; // two timing jar file.
-//            }
-//            ddf = jar.getJarEntry("WEB-INF/web.xml"); // NOI18N
-//            if (ddf != null && !found) {
-//                int endex = path.length() - 4;
-//                if (endex < 1) {
-//                    endex = path.length();
-//                }
-//                String contextPath = "/" + path.substring(0, endex); // NOI18N
-//                web = new WebImpl(path, contextPath);
-//                found = true;
-//            } else if (ddf != null && found) {
-//                return null; // two timing jar file.
-//            }
-//            
-//            ddf = jar.getJarEntry("META-INF/application.xml"); // NOI18N
-//            if (ddf != null) {
-//                return null;
-//            }
-//            mod = new ModuleImpl(connector, ejb, car, web);
-//            
-//        } catch (IOException ioe) {
-//            Exceptions.printStackTrace(ioe);
-//        } finally {
-//            try {
-//                if (jar != null) {
-//                    jar.close();
-//                }
-//            } catch (IOException ioe) {
-//                // there is little that we can do about this.
-//            }
-//        }
-//        return mod;
-//    }
-//    
-//    private void replaceEmptyClientModuleUri(String path) {
-//        // set the context path if it is not set...
-//        EarProjectProperties epp = earProject.getProjectProperties();
-//        Object current = epp.get(EarProjectProperties.CLIENT_MODULE_URI);
-//        if (current == null
-//                || (current instanceof String && ((String) current).length() == 0)) {
-//            epp.put(EarProjectProperties.CLIENT_MODULE_URI, path);
-//        }
-//    }
-
-//    private Module searchForModule(String path) {
-//        assert path != null;
-//        
-//        for (Module m : getModules()) {
-//            String val = m.getEjb();
-//            if (path.equals(val)) {
-//                return m;
-//            }
-//            val = m.getConnector();
-//            if (path.equals(val)) {
-//                return m;
-//            }
-//            val = m.getJava();
-//            if (path.equals(val)) {
-//                return m;
-//            }
-//            Web w = m.getWeb();
-//            val = null;
-//            if (null != w) {
-//                val = w.getWebUri();
-//            }
-//            if (path.equals(val)) {
-//                return m;
-//            }
-//        }
-//        return null;
-//    }
     
     @Override
     public String getDefaultDisplayName() {

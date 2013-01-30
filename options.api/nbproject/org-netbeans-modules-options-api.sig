@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.24
+#Version 1.26.1
 
 CLSS public java.lang.Object
 cons public init()
@@ -47,7 +47,7 @@ meth public boolean open()
 meth public boolean open(java.lang.String)
 meth public static org.netbeans.api.options.OptionsDisplayer getDefault()
 supr java.lang.Object
-hfds INSTANCE,impl,log
+hfds INSTANCE,currentCategoryID,impl,log,operationCancelled
 
 CLSS public abstract org.netbeans.spi.options.AdvancedOption
 cons protected init()

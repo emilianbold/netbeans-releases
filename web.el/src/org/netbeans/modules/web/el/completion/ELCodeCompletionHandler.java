@@ -70,6 +70,7 @@ import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.el.lexer.api.ELTokenId;
 import org.netbeans.modules.web.el.*;
 import org.netbeans.modules.web.el.refactoring.RefactoringUtil;
+import org.netbeans.modules.web.el.spi.ELPlugin;
 import org.netbeans.modules.web.el.spi.ELVariableResolver.VariableInfo;
 import org.netbeans.modules.web.el.spi.Function;
 import org.netbeans.modules.web.el.spi.ResourceBundle;
@@ -251,11 +252,12 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
                     continue;
                 }
                 
-                if (!enclosed.getModifiers().contains(Modifier.PUBLIC)) {
+                if (!enclosed.getModifiers().contains(Modifier.PUBLIC) ||
+                        enclosed.getModifiers().contains(Modifier.STATIC)) {
                     continue;
                 }
                 String methodName = enclosed.getSimpleName().toString();
-                String propertyName = RefactoringUtil.getPropertyName(methodName, true);
+                String propertyName = RefactoringUtil.getPropertyName(methodName, enclosed.getReturnType(), true);
                 if (!prefix.matches(propertyName)) {
                     continue;
                 }
@@ -265,13 +267,42 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
                         getKeywordFixedTexts().contains(methodName) ) {
                     continue;
                 }
-                
-                ELJavaCompletionItem item = new ELJavaCompletionItem(info, enclosed, elElement);
-                item.setSmart(true);
-                item.setAnchorOffset(context.getCaretOffset() - prefix.length());
-                proposals.add(item);
+                if (ELPlugin.Query.isValidProperty(enclosed, context.getParserResult().getSnapshot().getSource(), info, context)) {
+                    ELVariableCompletionItem completionItem = new ELVariableCompletionItem(propertyName, ELTypeUtilities.getTypeNameFor(info, enclosed));
+                    completionItem.setSmart(true);
+                    completionItem.setAnchorOffset(context.getCaretOffset() - prefix.length());
+
+                    proposals.add(completionItem);
+                } else {
+                    ELJavaCompletionItem completionItem;
+
+                    if (!contains(proposals, propertyName)) {
+                        if (enclosed.getParameters().isEmpty()) {
+                            completionItem = new ELJavaCompletionItem(info, enclosed, elElement); //
+                        } else {
+                            completionItem = new ELJavaCompletionItem(info, enclosed, methodName, elElement);
+                        }
+
+                        completionItem.setSmart(false);
+                        completionItem.setAnchorOffset(context.getCaretOffset() - prefix.length());
+
+                        proposals.add(completionItem);
+                    }
+                }
             }
         }
+    }
+    
+    private boolean contains(List<CompletionProposal> completionProposals, String proposalName) {
+        if (proposalName == null || proposalName.isEmpty()) {
+            return true;
+        }
+        for (CompletionProposal completionProposal : completionProposals) {
+            if (proposalName.equals(completionProposal.getName())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void proposeImpicitObjects(CompilationContext info, CodeCompletionContext context,
@@ -320,7 +351,9 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
             ELJavaCompletionItem item = new ELJavaCompletionItem(info, element, bean.name, elElement);
             item.setAnchorOffset(context.getCaretOffset() - prefix.length());
             item.setSmart(true);
-            proposals.add(item);
+            if (!contains(proposals, bean.name)) {
+                proposals.add(item);
+            }
         }
     }
 

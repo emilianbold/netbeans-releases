@@ -320,6 +320,27 @@ public class NamespacesHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("bug199689.cpp", 2, 18, "bug199689.cpp", 5, 1);
     }
     
+    public void testUsingNS2_2() throws Exception {
+        performTest("main.cc", 54, 10, "file.cc", 46, 9); //clsS2pubFun in c2.clsS2pubFun();
+    }
+        
+    public void testBug219546() throws Exception {
+        // Bug 219546 - using directive with leading :: not working
+        performTest("bug219546.cpp", 19, 8, "bug219546.cpp", 8, 5);
+    }
+
+    public void testBug220614() throws Exception {
+        // Bug 220614 - Wrong unable to resolve identifier indication - unnamed namespaces
+        performTest("bug220614.cpp", 15, 21, "bug220614.cpp", 9, 5);
+        performTest("bug220614.cpp", 16, 21, "bug220614.cpp", 3, 5);
+        performTest("bug220614.cpp", 22, 34, "bug220614.cpp", 13, 5);
+    }
+    
+    public void testBug219398() throws Exception {
+        // Bug 219398 - "Unable to resolve identifier name" mark happened and source code format is wrong in c++ project
+        performTest("typeid.cpp", 39, 61, "typeinfo.h", 21, 5);
+    }            
+    
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override
@@ -334,9 +355,6 @@ public class NamespacesHyperlinkTestCase extends HyperlinkBaseTestCase {
         public void testClassS2FunInFunS1() throws Exception {
             performTest("file.cc", 56, 20, "file.h", 14, 13); // clsS2pubFun in s2.clsS2pubFun();
         }
-
-        public void testUsingNS2() throws Exception {
-            performTest("main.cc", 54, 10, "file.cc", 46, 9); //clsS2pubFun in c2.clsS2pubFun();
-        }
+        
     }
 }

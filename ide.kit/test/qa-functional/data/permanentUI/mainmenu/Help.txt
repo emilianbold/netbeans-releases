@@ -3,11 +3,11 @@
 Help Contents              C
 Online Docs and Support    D
 Keyboard Shortcuts Card    K
+Report Issue...
 ========================
 Javadoc Index Search       S
 Javadoc References     >   J
 ========================
-Register                   R
 Check for Updates          U
 Start Page                 P
 About                      A

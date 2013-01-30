@@ -64,6 +64,7 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.Project;
@@ -82,6 +83,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.NbPreferences;
+import org.openide.util.RequestProcessor;
 
 /**
  * Represents a project group.
@@ -169,12 +171,14 @@ public abstract class Group {
             NODE.remove(KEY_ACTIVE);
         }
         if (projectsLoaded) {
-        // OK if g == old; still want to fix open projects.
+            // OK if g == old; still want to fix open projects.
             switchingGroup.set(true);
+            OpenProjectList.getDefault().fireProjectGroupChanging(old, getActiveGroup());
             try {
-        open(nue);
+                open(nue);
             } finally {
                 switchingGroup.set(false);
+                OpenProjectList.getDefault().fireProjectGroupChanged(old, getActiveGroup());
             }
         } else {
             OpenProjectListSettings settings = OpenProjectListSettings.getInstance();
@@ -199,25 +203,34 @@ public abstract class Group {
         projectsLoaded = true;
     }
     private static final ThreadLocal<Boolean> switchingGroup = new ThreadLocal<Boolean>() {
-        @Override protected Boolean initialValue() {
+        @Override 
+        protected Boolean initialValue() {
             return false;
         }
     };
     static {
         LOG.fine("initializing open projects listener");
-        OpenProjects.getDefault().addPropertyChangeListener(new PropertyChangeListener() {
-            @Override public void propertyChange(PropertyChangeEvent evt) {
-                if (!projectsLoaded || switchingGroup.get()) {
-                    return;
-                }
-                String propertyName = evt.getPropertyName();
-                if (propertyName != null) {
-                    Group g = getActiveGroup();
-                    if (g != null) {
-                        LOG.log(Level.FINE, "received {0} on {1}", new Object[] {propertyName, g.id});
-                        g.openProjectsEvent(propertyName);
+        //cannot call OpenProjects.getDefault() here as we appear in the constuctor of the 
+        //OpenProjects class
+        RequestProcessor.getDefault().post(new Runnable() {
+            @Override
+            public void run() {
+                OpenProjects.getDefault().addPropertyChangeListener(new PropertyChangeListener() {
+                    @Override 
+                    public void propertyChange(PropertyChangeEvent evt) {
+                        if (!projectsLoaded || switchingGroup.get()) {
+                            return;
+                        }
+                        String propertyName = evt.getPropertyName();
+                        if (propertyName != null) {
+                            Group g = getActiveGroup();
+                            if (g != null) {
+                                LOG.log(Level.FINE, "received {0} on {1}", new Object[] {propertyName, g.id});
+                                g.openProjectsEvent(propertyName);
+                            }
+                        }
                     }
-                }
+                });
             }
         });
     }
@@ -250,7 +263,7 @@ public abstract class Group {
         assert id.indexOf('/') == -1;
     }
 
-    protected Preferences prefs() {
+    public Preferences prefs() {
         return NODE.node(id);
     }
 
@@ -347,6 +360,8 @@ public abstract class Group {
      * @throws IllegalArgumentException unless the main project is among {@link #getProjects}
      */
     public void setMainProject(Project mainProject) throws IllegalArgumentException {
+        assert !SwingUtilities.isEventDispatchThread(); //getProjects() can be expensive
+                
         LOG.log(Level.FINE, "updating main project for {0} to {1}", new Object[] {id, mainProject});
         URL f = null;
         if (mainProject != null && getProjects().contains(mainProject)) {
@@ -385,30 +400,30 @@ public abstract class Group {
         }
         final ProgressHandle h = ProgressHandleFactory.createHandle(handleLabel);
         try {
-        h.start(200);
-        ProjectUtilities.WaitCursor.show();
-        final OpenProjectList opl = OpenProjectList.getDefault();
-        Set<Project> oldOpen = new HashSet<Project>(Arrays.asList(opl.getOpenProjects()));
-        Set<Project> newOpen = g != null ? g.getProjects(h, 10, 100) : Collections.<Project>emptySet();
-        final Set<Project> toClose = new HashSet<Project>(oldOpen);
-        toClose.removeAll(newOpen);
-        final Set<Project> toOpen = new HashSet<Project>(newOpen);
-        toOpen.removeAll(oldOpen);
-        assert !toClose.contains(null) : toClose;
-        assert !toOpen.contains(null) : toOpen;
-        IndexingBridge.Lock lock = IndexingBridge.getDefault().protectedMode();
-        try {
-        h.progress(Group_progress_closing(toClose.size()), 110);
-        opl.close(toClose.toArray(new Project[toClose.size()]), false);
-        h.switchToIndeterminate();
-        h.progress(Group_progress_opening(toOpen.size()));
-        opl.open(toOpen.toArray(new Project[toOpen.size()]), false, h, null);
-        if (g != null) {
-            opl.setMainProject(g.getMainProject());
-        }
-        } finally {
+            h.start(200);
+            ProjectUtilities.WaitCursor.show();
+            final OpenProjectList opl = OpenProjectList.getDefault();
+            Set<Project> oldOpen = new HashSet<Project>(Arrays.asList(opl.getOpenProjects()));
+            Set<Project> newOpen = g != null ? g.getProjects(h, 10, 100) : Collections.<Project>emptySet();
+            final Set<Project> toClose = new HashSet<Project>(oldOpen);
+            toClose.removeAll(newOpen);
+            final Set<Project> toOpen = new HashSet<Project>(newOpen);
+            toOpen.removeAll(oldOpen);
+            assert !toClose.contains(null) : toClose;
+            assert !toOpen.contains(null) : toOpen;
+            IndexingBridge.Lock lock = IndexingBridge.getDefault().protectedMode();
+            try {
+                h.progress(Group_progress_closing(toClose.size()), 110);
+                opl.close(toClose.toArray(new Project[toClose.size()]), false);
+                h.switchToIndeterminate();
+                h.progress(Group_progress_opening(toOpen.size()));
+                opl.open(toOpen.toArray(new Project[toOpen.size()]), false, h, null);
+                if (g != null) {
+                    opl.setMainProject(g.getMainProject());
+                }
+            } finally {
                 lock.release();
-        }
+            }
         } finally {
             ProjectUtilities.WaitCursor.hide();
             h.finish();
@@ -418,8 +433,8 @@ public abstract class Group {
 
     protected void openProjectsEvent(String propertyName) {
         if (propertyName.equals(OpenProjects.PROPERTY_MAIN_PROJECT)) {
-        setMainProject(OpenProjects.getDefault().getMainProject());
-    }
+            setMainProject(OpenProjects.getDefault().getMainProject());
+        }
     }
 
     /**
@@ -447,7 +462,8 @@ public abstract class Group {
     public static Comparator<Group> displayNameComparator() {
         return new Comparator<Group>() {
             Collator COLLATOR = Collator.getInstance();
-            @Override public int compare(Group g1, Group g2) {
+            @Override 
+            public int compare(Group g1, Group g2) {
                 return COLLATOR.compare(g1.getName(), g2.getName());
             }
         };

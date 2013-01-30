@@ -65,9 +65,11 @@ import org.netbeans.modules.turbo.CacheIndex;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.spi.VersioningSupport;
 import org.netbeans.modules.git.FileInformation.Status;
+import org.netbeans.modules.git.client.GitClient;
 import org.netbeans.modules.git.utils.GitUtils;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -89,7 +91,7 @@ public class FileStatusCache {
      */
     private final Map<File, FileInformation> cachedFiles;
     private final LinkedHashSet<File> upToDateFiles = new LinkedHashSet<File>(MAX_COUNT_UPTODATE_FILES);
-    private final RequestProcessor rp = new RequestProcessor("Git.cache", 1, true);
+    private final RequestProcessor rp = new RequestProcessor("Git.cache", 1, true, false);
     private final HashSet<File> nestedRepositories = new HashSet<File>(2); // mainly for logging
     private PropertyChangeSupport listenerSupport = new PropertyChangeSupport(this);
 
@@ -100,12 +102,16 @@ public class FileStatusCache {
     private static final FileInformation FILE_INFORMATION_UNKNOWN = new FileInformation(EnumSet.of(Status.UNKNOWN), false);
 
     private static final Map<File, File> SYNC_REPOSITORIES = new WeakHashMap<File, File>(5);
+    private final IgnoredFilesHandler ignoredFilesHandler;
+    private final RequestProcessor.Task ignoredFilesHandlerTask;
 
     public FileStatusCache() {
         cachedFiles = new HashMap<File, FileInformation>();
         conflictedFiles = createCacheIndex();
         modifiedFiles = createCacheIndex();
         ignoredFiles = createCacheIndex();
+        ignoredFilesHandler = new IgnoredFilesHandler();
+        ignoredFilesHandlerTask = rp.create(ignoredFilesHandler);
     }
 
     /**
@@ -204,9 +210,11 @@ public class FileStatusCache {
                     LOG.log(Level.FINE, "refreshAllRoots() roots: {0}, repositoryRoot: {1} ", new Object[] {refreshEntry.getValue(), repository.getAbsolutePath()}); // NOI18N
                 }
                 Map<File, GitStatus> interestingFiles;
+                GitClient client = null;
                 try {
                     // find all files with not up-to-date or ignored status
-                    interestingFiles = Git.getInstance().getClient(repository).getStatus(refreshEntry.getValue().toArray(new File[refreshEntry.getValue().size()]), pm);
+                    client = Git.getInstance().getClient(repository);
+                    interestingFiles = client.getStatus(refreshEntry.getValue().toArray(new File[refreshEntry.getValue().size()]), pm);
                     if (pm.isCanceled()) {
                         return;
                     }
@@ -257,6 +265,9 @@ public class FileStatusCache {
                 } catch (GitException ex) {
                     LOG.log(Level.INFO, "refreshAllRoots() file: {0} {1} {2} ", new Object[] {repository.getAbsolutePath(), refreshEntry.getValue(), ex.toString()}); //NOI18N
                 } finally {
+                    if (client != null) {
+                        client.release();
+                    }
                     if (LOG.isLoggable(Level.FINE)) {
                         LOG.log(Level.FINE, "refreshAllRoots() roots: finished repositoryRoot: {0} ", new Object[] { repository.getAbsolutePath() } ); // NOI18N
                     }
@@ -526,6 +537,7 @@ public class FileStatusCache {
     private void refreshFileStatus(File file, FileInformation fi) {
         if(file == null || fi == null) return;
         FileInformation current;
+        boolean fireEvent = true;
         synchronized (this) {
             file = FileUtil.normalizeFile(file);
             current = getInfo(file);
@@ -539,7 +551,12 @@ public class FileStatusCache {
             }
             if (equivalent(fi, current)) {
                 // no need to fire an event
-                return;
+                if (Utilities.isWindows() || Utilities.isMac()) {
+                    // but for these we need to update keys in cache because of renames AAA.java -> aaa.java
+                    fireEvent = false;
+                } else {
+                    return;
+                }
             }
             boolean addToIndex = false;
             if (fi.getStatus().equals(EnumSet.of(Status.UNKNOWN))) {
@@ -553,7 +570,9 @@ public class FileStatusCache {
             }
             updateIndex(file, fi, addToIndex);
         }
-        fireFileStatusChanged(file, current, fi);
+        if (fireEvent) {
+            fireFileStatusChanged(file, current, fi);
+        }
     }
 
     /**
@@ -688,26 +707,50 @@ public class FileStatusCache {
      * @param files set of files to be ignore-tested.
      */
     private void handleIgnoredFiles(final Set<File> files) {
-        Runnable async = new Runnable() {
-            @Override
-            public void run() {
-                for (File f : files) {
-                    if (GitUtils.isIgnored(f, true)) {
-                        // refresh status for this file
-                        boolean isDirectory = f.isDirectory();
-                        boolean exists = f.exists();
-                        if (!exists) {
-                            // remove from cache
-                            refreshFileStatus(f, FILE_INFORMATION_UNKNOWN);
-                        } else {
-                            // add to cache as ignored
-                            refreshFileStatus(f, isDirectory ? new FileInformation(EnumSet.of(Status.NOTVERSIONED_EXCLUDED), true) : FILE_INFORMATION_EXCLUDED);
-                        }
+        boolean changed;
+        synchronized (ignoredFilesHandler.toHandle) {
+            changed = ignoredFilesHandler.toHandle.addAll(files);
+        }
+        if (changed) {
+            ignoredFilesHandlerTask.schedule(0);
+        }
+    }
+    
+    private class IgnoredFilesHandler implements Runnable {
+        
+        private final Set<File> toHandle = new LinkedHashSet<File>();
+        
+        @Override
+        public void run() {
+            File f;
+            while ((f = getNextFile()) != null) {
+                if (GitUtils.isIgnored(f, true)) {
+                    // refresh status for this file
+                    boolean isDirectory = f.isDirectory();
+                    boolean exists = f.exists();
+                    if (!exists) {
+                        // remove from cache
+                        refreshFileStatus(f, FILE_INFORMATION_UNKNOWN);
+                    } else {
+                        // add to cache as ignored
+                        refreshFileStatus(f, isDirectory ? new FileInformation(EnumSet.of(Status.NOTVERSIONED_EXCLUDED), true) : FILE_INFORMATION_EXCLUDED);
                     }
                 }
             }
-        };
-        rp.post(async);
+        }
+
+        private File getNextFile() {
+            File nextFile = null;
+            synchronized (toHandle) {
+                Iterator<File> it = toHandle.iterator();
+                if (it.hasNext()) {
+                    nextFile = it.next();
+                    it.remove();
+                }
+            }
+            return nextFile;
+        }
+        
     }
 
     private static File getSyncRepository (File repository) {

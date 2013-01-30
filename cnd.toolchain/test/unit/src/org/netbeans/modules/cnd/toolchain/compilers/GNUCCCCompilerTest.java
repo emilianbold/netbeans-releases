@@ -55,10 +55,10 @@ import org.junit.Test;
 import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
 import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
-import org.netbeans.modules.cnd.toolchain.compilers.CCCCompiler.Pair;
 import org.netbeans.modules.cnd.api.toolchain.ToolKind;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.cnd.toolchain.compilers.CCCCompiler.Pair;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 
 /**
  *
@@ -406,6 +406,370 @@ public class GNUCCCCompilerTest {
         assert (golden.equals(out));
     }
 
+    @Test
+    public void testParseCompilerOutputIcc() {
+        //System.setProperty("os.name", "SunOS");
+        String s =
+                "$ icc -x c -E -dM -v /tmp/c.c\n" +
+                "Version 12.0.5\n" +
+                "/usr/local/remote/packages/icc_remote/12.0.5.225_fixbug13889838/composerxe-2011.5.225/bin/intel64/mcpcom    -_g -mP3OPT_inline_alloca -D__HONOR_STD -D__ICC=1200 -D__INTEL_COMPILER=1200 -D_MT \"-_Asystem(unix)\" -D__ELF__ \"-_Acpu(x86_64)\" \"-_Amachine(x86_64)\" -D__INTEL_COMPILER_BUILD_DATE=20120716 -D__PTRDIFF_TYPE__=long \"-D__SIZE_TYPE__=unsigned long\" -D__WCHAR_TYPE__=int \"-D__WINT_TYPE__=unsigned int\" \"-D__INTMAX_TYPE__=long int\" \"-D__UINTMAX_TYPE__=long unsigned int\" -D__LONG_MAX__=9223372036854775807L -D__QMSPP_ -D__OPTIMIZE__ -D__NO_MATH_INLINES -D__NO_STRING_INLINES -D__GNUC__=4 -D__GNUC_MINOR__=1 -D__GNUC_PATCHLEVEL__=2 -D__NO_INLINE__ -D__i686 -D__i686__ -D__pentiumpro -D__pentiumpro__ -D__pentium4 -D__pentium4__ -D__tune_pentium4__ -D__MMX__ -D__LP64__ -D_LP64 -D__GXX_ABI_VERSION=1002 \"-D__USER_LABEL_PREFIX__= \" -D__REGISTER_PREFIX__= -D__INTEL_RTTI__ -D__SSE2__ -D__SSE__ -D__unix__ -D__unix -D__linux__ -D__linux -D__gnu_linux__ -B -Dunix -Dlinux -D__x86_64 -D__x86_64__ -_k -_8 -_l -_a -_b -E --gnu_version=412 -_W5 --gcc-extern-inline --dM --multibyte_chars --array_section --simd --simd_func -mP1OPT_print_version=FALSE -mP1OPT_version=12.0-intel64 /tmp/c.c\n" +
+                "#include \"...\" search starts here:\n" +
+                "#include <...> search starts here:\n" +
+                " /usr/local/remote/packages/icc_remote/12.0.5.225_fixbug13889838/composerxe-2011.5.225/compiler/include/intel64\n" +
+                " /usr/local/remote/packages/icc_remote/12.0.5.225_fixbug13889838/composerxe-2011.5.225/compiler/include\n" +
+                " /usr/local/include\n" +
+                " /usr/include\n" +
+                " /usr/lib/gcc/x86_64-redhat-linux/4.1.2/include\n" +
+                "End of search list.\n" +
+                "#define __SIGNED_CHARS__ 1\n" +
+                "#define __PRAGMA_REDEFINE_EXTNAME 1\n" +
+                "#define __DATE__ \"Jul 16 2012\"\n" +
+                "#define __TIME__ \"01:14:06\"\n" +
+                "#define __STDC__ 1\n" +
+                "#define __STDC_DEC_FP__ 200704L\n" +
+                "#define __DEC_EVAL_METHOD__ 2\n" +
+                "#define __cilk 200\n" +
+                "#define __LONG_DOUBLE_SIZE__ 80\n" +
+                "#define __EDG__ 1\n" +
+                "#define __EDG_VERSION__ 401\n" +
+                "#define __EDG_SIZE_TYPE__ unsigned long\n" +
+                "#define __EDG_PTRDIFF_TYPE__ long\n" +
+                "#define __DBL_DIG__ 15\n" +
+                "#define __DBL_MAX_10_EXP__ 308\n" +
+                "#define __DBL_MIN_10_EXP__ -307\n" +
+                "#define __DBL_HAS_DENORM__ 1\n" +
+                "#define __FLT_DIG__ 6\n" +
+                "#define __FLT_MAX_10_EXP__ 38\n" +
+                "#define __FLT_MIN_10_EXP__ -37\n" +
+                "#define __FLT_RADIX__ 2\n" +
+                "#define __FLT_HAS_DENORM__ 1\n" +
+                "#define __INT_MAX__ 2147483647\n" +
+                "#define __LDBL_DIG__ 18\n" +
+                "#define __LDBL_HAS_INFINITY__ 1\n" +
+                "#define __LDBL_HAS_QUIET_NAN__ 1\n" +
+                "#define __LDBL_MAX_10_EXP__ 4932\n" +
+                "#define __LDBL_MIN_10_EXP__ -4931\n" +
+                "#define __LDBL_HAS_DENORM__ 1\n" +
+                "#define __DBL_HAS_INFINITY__ 1\n" +
+                "#define __DBL_HAS_QUIET_NAN__ 1\n" +
+                "#define __DECIMAL_DIG__ 21\n" +
+                "#define __FINITE_MATH_ONLY__ 0\n" +
+                "#define __FLT_HAS_INFINITY__ 1\n" +
+                "#define __FLT_HAS_QUIET_NAN__ 1\n" +
+                "#define __SCHAR_MAX__ 127\n" +
+                "#define __SHRT_MAX__ 32767\n" +
+                "#define __WCHAR_MAX__ 2147483647\n" +
+                "#define __CHAR_BIT__ 8\n" +
+                "#define __DBL_MANT_DIG__ 53\n" +
+                "#define __DBL_MAX_EXP__ 1024\n" +
+                "#define __TARG_DBL_MAX_EXP__ 1024\n" +
+                "#define __DBL_MIN_EXP__ -1021\n" +
+                "#define __FLT_MANT_DIG__ 24\n" +
+                "#define __FLT_MAX_EXP__ 128\n" +
+                "#define __FLT_MIN_EXP__ -125\n" +
+                "#define __LDBL_MANT_DIG__ 64\n" +
+                "#define __LDBL_MAX_EXP__ 16384\n" +
+                "#define __LDBL_MIN_EXP__ -16381\n" +
+                "#define __DBL_DENORM_MIN__ 4.9406564584124654e-324\n" +
+                "#define __DBL_EPSILON__ 2.2204460492503131e-16\n" +
+                "#define __DBL_MAX__ 1.7976931348623157e+308\n" +
+                "#define __DBL_MIN__ 2.2250738585072014e-308\n" +
+                "#define __FLT_DENORM_MIN__ 1.40129846e-45F\n" +
+                "#define __FLT_EPSILON__ 1.19209290e-7F\n" +
+                "#define __FLT_MAX__ 3.40282347e+38F\n" +
+                "#define __FLT_MIN__ 1.17549435e-38F\n" +
+                "#define __LDBL_DENORM_MIN__ 3.64519953188247460253e-4951L\n" +
+                "#define __LDBL_EPSILON__ 1.08420217248550443401e-19L\n" +
+                "#define __LDBL_MAX__ 1.18973149535723176502e+4932L\n" +
+                "#define __LDBL_MIN__ 3.36210314311209350626e-4932L\n" +
+                "#define __LONG_LONG_MAX__ 0x7fffffffffffffff\n" +
+                "#define __DEC32_MAX__ 9.999999E96DF\n" +
+                "#define __DEC64_MAX__ 9.999999999999999E384DD\n" +
+                "#define __DEC128_MAX__ 9.999999999999999999999999999999999E6144DL\n" +
+                "#define __DEC32_MANT_DIG__ 7\n" +
+                "#define __DEC64_MANT_DIG__ 16\n" +
+                "#define __DEC128_MANT_DIG__ 34\n" +
+                "#define __DEC32_MIN_EXP__ -95\n" +
+                "#define __DEC64_MIN_EXP__ -383\n" +
+                "#define __DEC128_MIN_EXP__ -6143\n" +
+                "#define __DEC32_MAX_EXP__ 96\n" +
+                "#define __DEC64_MAX_EXP__ 384\n" +
+                "#define __DEC128_MAX_EXP__ 6144\n" +
+                "#define __DEC32_EPSILON__ 1E-6DF\n" +
+                "#define __DEC64_EPSILON__ 1E-15DD\n" +
+                "#define __DEC128_EPSILON__ 1E-33DL\n" +
+                "#define __DEC32_MIN__ 1E-95DF\n" +
+                "#define __DEC64_MIN__ 1E-383DD\n" +
+                "#define __DEC128_MIN__ 1E-6143DL\n" +
+                "#define __DEC32_SUBNORMAL_MIN__ 0.000001E-95DF\n" +
+                "#define __DEC64_SUBNORMAL_MIN__ 0.000000000000001E-383DD\n" +
+                "#define __DEC128_SUBNORMAL_MIN__ 0.000000000000000000000000000000001E-6143DL\n" +
+                "#define __VERSION__ \"Intel(R) C++ gcc 4.1 mode\"\n" +
+                "#define __HONOR_STD 1\n" +
+                "#define __ICC 1200\n" +
+                "#define __INTEL_COMPILER 1200\n" +
+                "#define _MT 1\n" +
+                "#define __ELF__ 1\n" +
+                "#define __INTEL_COMPILER_BUILD_DATE 20120716\n" +
+                "#define __PTRDIFF_TYPE__ long\n" +
+                "#define __SIZE_TYPE__ unsigned long\n" +
+                "#define __WCHAR_TYPE__ int\n" +
+                "#define __WINT_TYPE__ unsigned int\n" +
+                "#define __INTMAX_TYPE__ long int\n" +
+                "#define __UINTMAX_TYPE__ long unsigned int\n" +
+                "#define __LONG_MAX__ 9223372036854775807L\n" +
+                "#define __QMSPP_ 1\n" +
+                "#define __OPTIMIZE__ 1\n" +
+                "#define __NO_MATH_INLINES 1\n" +
+                "#define __NO_STRING_INLINES 1\n" +
+                "#define __GNUC__ 4\n" +
+                "#define __GNUC_MINOR__ 1\n" +
+                "#define __GNUC_PATCHLEVEL__ 2\n" +
+                "#define __NO_INLINE__ 1\n" +
+                "#define __i686 1\n" +
+                "#define __i686__ 1\n" +
+                "#define __pentiumpro 1\n" +
+                "#define __pentiumpro__ 1\n" +
+                "#define __pentium4 1\n" +
+                "#define __pentium4__ 1\n" +
+                "#define __tune_pentium4__ 1\n" +
+                "#define __MMX__ 1\n" +
+                "#define __LP64__ 1\n" +
+                "#define _LP64 1\n" +
+                "#define __GXX_ABI_VERSION 1002\n" +
+                "#define __USER_LABEL_PREFIX__\n" +
+                "#define __REGISTER_PREFIX__\n" +
+                "#define __INTEL_RTTI__ 1\n" +
+                "#define __SSE2__ 1\n" +
+                "#define __SSE__ 1\n" +
+                "#define __unix__ 1\n" +
+                "#define __unix 1\n" +
+                "#define __linux__ 1\n" +
+                "#define __linux 1\n" +
+                "#define __gnu_linux__ 1\n" +
+                "#define unix 1\n" +
+                "#define linux 1\n" +
+                "#define __x86_64 1\n" +
+                "#define __x86_64__ 1\n" +
+                "rm /tmp/iccCQQENwlibgcc\n" +
+                "\n" +
+                "rm /tmp/iccQQaIIqgnudirs\n" +
+                "\n" +
+                "rm /tmp/iccYdmYFkarg\n";
+        BufferedReader buf = new BufferedReader(new StringReader(s));
+        if (TRACE) {
+            System.out.println("Parse Compiler Output of icc on Linux");
+        }
+        CompilerFlavor flavor = CompilerFlavor.toFlavor("Intel", PlatformTypes.PLATFORM_LINUX);
+        MyGNUCCCompiler instance = new MyGNUCCCompiler(ExecutionEnvironmentFactory.getLocal(), flavor, PredefinedToolKind.CCCompiler, "ICC", "ICC", "/usr/sfw/bin");
+        instance.parseCompilerOutput(buf, instance.pair);
+        List<String> out = instance.pair.systemIncludeDirectoriesList;
+        List<String> golden = new ArrayList<String>();
+        golden.add("/usr/local/remote/packages/icc_remote/12.0.5.225_fixbug13889838/composerxe-2011.5.225/compiler/include/intel64");
+        golden.add("/usr/local/remote/packages/icc_remote/12.0.5.225_fixbug13889838/composerxe-2011.5.225/compiler/include");
+        golden.add("/usr/local/include");
+        golden.add("/usr/include");
+        golden.add("/usr/lib/gcc/x86_64-redhat-linux/4.1.2/include");
+        StringBuilder result = new StringBuilder();
+        for (String i : out) {
+            result.append(i);
+            result.append("\n");
+        }
+        if (TRACE) {
+            System.out.println(result);
+        }
+        assert (golden.equals(out));
+        
+        out = instance.pair.systemPreprocessorSymbolsList;
+        Collections.<String>sort(out);
+        golden = new ArrayList<String>();
+        golden.add("__SIGNED_CHARS__=1");
+        golden.add("__PRAGMA_REDEFINE_EXTNAME=1");
+        golden.add("__DATE__=\"Jul 16 2012\"");
+        golden.add("__TIME__=\"01:14:06\"");
+        golden.add("__STDC__=1");
+        golden.add("__STDC_DEC_FP__=200704L");
+        golden.add("__DEC_EVAL_METHOD__=2");
+        golden.add("__cilk=200");
+        golden.add("__LONG_DOUBLE_SIZE__=80");
+        golden.add("__EDG__=1");
+        golden.add("__EDG_VERSION__=401");
+        golden.add("__EDG_SIZE_TYPE__=unsigned long");
+        golden.add("__EDG_PTRDIFF_TYPE__=long");
+        golden.add("__DBL_DIG__=15");
+        golden.add("__DBL_MAX_10_EXP__=308");
+        golden.add("__DBL_MIN_10_EXP__=-307");
+        golden.add("__DBL_HAS_DENORM__=1");
+        golden.add("__FLT_DIG__=6");
+        golden.add("__FLT_MAX_10_EXP__=38");
+        golden.add("__FLT_MIN_10_EXP__=-37");
+        golden.add("__FLT_RADIX__=2");
+        golden.add("__FLT_HAS_DENORM__=1");
+        golden.add("__INT_MAX__=2147483647");
+        golden.add("__LDBL_DIG__=18");
+        golden.add("__LDBL_HAS_INFINITY__=1");
+        golden.add("__LDBL_HAS_QUIET_NAN__=1");
+        golden.add("__LDBL_MAX_10_EXP__=4932");
+        golden.add("__LDBL_MIN_10_EXP__=-4931");
+        golden.add("__LDBL_HAS_DENORM__=1");
+        golden.add("__DBL_HAS_INFINITY__=1");
+        golden.add("__DBL_HAS_QUIET_NAN__=1");
+        golden.add("__DECIMAL_DIG__=21");
+        golden.add("__FINITE_MATH_ONLY__=0");
+        golden.add("__FLT_HAS_INFINITY__=1");
+        golden.add("__FLT_HAS_QUIET_NAN__=1");
+        golden.add("__SCHAR_MAX__=127");
+        golden.add("__SHRT_MAX__=32767");
+        golden.add("__WCHAR_MAX__=2147483647");
+        golden.add("__CHAR_BIT__=8");
+        golden.add("__DBL_MANT_DIG__=53");
+        golden.add("__DBL_MAX_EXP__=1024");
+        golden.add("__TARG_DBL_MAX_EXP__=1024");
+        golden.add("__DBL_MIN_EXP__=-1021");
+        golden.add("__FLT_MANT_DIG__=24");
+        golden.add("__FLT_MAX_EXP__=128");
+        golden.add("__FLT_MIN_EXP__=-125");
+        golden.add("__LDBL_MANT_DIG__=64");
+        golden.add("__LDBL_MAX_EXP__=16384");
+        golden.add("__LDBL_MIN_EXP__=-16381");
+        golden.add("__DBL_DENORM_MIN__=4.9406564584124654e-324");
+        golden.add("__DBL_EPSILON__=2.2204460492503131e-16");
+        golden.add("__DBL_MAX__=1.7976931348623157e+308");
+        golden.add("__DBL_MIN__=2.2250738585072014e-308");
+        golden.add("__FLT_DENORM_MIN__=1.40129846e-45F");
+        golden.add("__FLT_EPSILON__=1.19209290e-7F");
+        golden.add("__FLT_MAX__=3.40282347e+38F");
+        golden.add("__FLT_MIN__=1.17549435e-38F");
+        golden.add("__LDBL_DENORM_MIN__=3.64519953188247460253e-4951L");
+        golden.add("__LDBL_EPSILON__=1.08420217248550443401e-19L");
+        golden.add("__LDBL_MAX__=1.18973149535723176502e+4932L");
+        golden.add("__LDBL_MIN__=3.36210314311209350626e-4932L");
+        golden.add("__LONG_LONG_MAX__=0x7fffffffffffffff");
+        golden.add("__DEC32_MAX__=9.999999E96DF");
+        golden.add("__DEC64_MAX__=9.999999999999999E384DD");
+        golden.add("__DEC128_MAX__=9.999999999999999999999999999999999E6144DL");
+        golden.add("__DEC32_MANT_DIG__=7");
+        golden.add("__DEC64_MANT_DIG__=16");
+        golden.add("__DEC128_MANT_DIG__=34");
+        golden.add("__DEC32_MIN_EXP__=-95");
+        golden.add("__DEC64_MIN_EXP__=-383");
+        golden.add("__DEC128_MIN_EXP__=-6143");
+        golden.add("__DEC32_MAX_EXP__=96");
+        golden.add("__DEC64_MAX_EXP__=384");
+        golden.add("__DEC128_MAX_EXP__=6144");
+        golden.add("__DEC32_EPSILON__=1E-6DF");
+        golden.add("__DEC64_EPSILON__=1E-15DD");
+        golden.add("__DEC128_EPSILON__=1E-33DL");
+        golden.add("__DEC32_MIN__=1E-95DF");
+        golden.add("__DEC64_MIN__=1E-383DD");
+        golden.add("__DEC128_MIN__=1E-6143DL");
+        golden.add("__DEC32_SUBNORMAL_MIN__=0.000001E-95DF");
+        golden.add("__DEC64_SUBNORMAL_MIN__=0.000000000000001E-383DD");
+        golden.add("__DEC128_SUBNORMAL_MIN__=0.000000000000000000000000000000001E-6143DL");
+        golden.add("__VERSION__=\"Intel(R) C++ gcc 4.1 mode\"");
+        golden.add("__HONOR_STD=1");
+        golden.add("__ICC=1200");
+        golden.add("__INTEL_COMPILER=1200");
+        golden.add("_MT=1");
+        golden.add("__ELF__=1");
+        golden.add("__INTEL_COMPILER_BUILD_DATE=20120716");
+        golden.add("__PTRDIFF_TYPE__=long");
+        golden.add("__SIZE_TYPE__=unsigned long");
+        golden.add("__WCHAR_TYPE__=int");
+        golden.add("__WINT_TYPE__=unsigned int");
+        golden.add("__INTMAX_TYPE__=long int");
+        golden.add("__UINTMAX_TYPE__=long unsigned int");
+        golden.add("__LONG_MAX__=9223372036854775807L");
+        golden.add("__QMSPP_=1");
+        golden.add("__OPTIMIZE__=1");
+        golden.add("__NO_MATH_INLINES=1");
+        golden.add("__NO_STRING_INLINES=1");
+        golden.add("__GNUC__=4");
+        golden.add("__GNUC_MINOR__=1");
+        golden.add("__GNUC_PATCHLEVEL__=2");
+        golden.add("__NO_INLINE__=1");
+        golden.add("__i686=1");
+        golden.add("__i686__=1");
+        golden.add("__pentiumpro=1");
+        golden.add("__pentiumpro__=1");
+        golden.add("__pentium4=1");
+        golden.add("__pentium4__=1");
+        golden.add("__tune_pentium4__=1");
+        golden.add("__MMX__=1");
+        golden.add("__LP64__=1");
+        golden.add("_LP64=1");
+        golden.add("__GXX_ABI_VERSION=1002");
+        golden.add("__USER_LABEL_PREFIX__=");
+        golden.add("__REGISTER_PREFIX__=");
+        golden.add("__INTEL_RTTI__=1");
+        golden.add("__SSE2__=1");
+        golden.add("__SSE__=1");
+        golden.add("__unix__=1");
+        golden.add("__unix=1");
+        golden.add("__linux__=1");
+        golden.add("__linux=1");
+        golden.add("__gnu_linux__=1");
+        golden.add("unix=1");
+        golden.add("linux=1");
+        golden.add("__x86_64=1");
+        golden.add("__x86_64__=1");
+        Collections.<String>sort(golden);
+        
+        result = new StringBuilder();
+        for (String i : out) {
+            result.append(i);
+            result.append("\n");
+        }
+        if (TRACE) {
+            System.out.println(result);
+        }
+        for(int i = 0; i < Math.min(golden.size(), out.size()); i++) {
+            String s1 = golden.get(i);
+            String s2 = out.get(i);
+            int k = s1.indexOf('=');
+            String key1;
+            String val1;
+            if (k > 0) {
+                key1 = s1.substring(0,k);
+                val1= s1.substring(k+1);
+            } else {
+                key1 = s1;
+                val1= null;
+            }
+            k = s2.indexOf('=');
+            String key2;
+            String val2;
+            if (k > 0) {
+                key2 = s2.substring(0,k);
+                val2= s2.substring(k+1);
+            } else {
+                key2 = s2;
+                val2= null;
+            }
+            if (!key1.equals(key2)) {
+                System.out.println("Macros diff "+golden.get(i)+" != "+out.get(i));
+                assert false;
+            } else {
+                if (val1 == null && val2 == null) {
+                    // equals
+                    continue;
+                }
+                if (val1 == null && "1".equals(val2) ||
+                    "1".equals(val1) && val2 == null) {
+                    // equals
+                    continue;
+                }
+                if (val1 != null && val2 != null && val1.equals(val2)) {
+                    // equals
+                    continue;
+                }
+                System.out.println("Macros diff "+golden.get(i)+" != "+out.get(i));
+                assert false;
+            }
+        }
+        assert golden.size() == out.size();
+    }
+    
     private static final class MyGNUCCCompiler  extends GNUCCCompiler {
         Pair pair = new Pair();
         protected MyGNUCCCompiler(ExecutionEnvironment env, CompilerFlavor flavor, ToolKind kind, String name, String displayName, String path) {

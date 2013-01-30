@@ -209,6 +209,7 @@ public class TestSession {
         Project prj = project.get();
         if (prj == null) {
             prj = FileOwnerQuery.getOwner(projectURI);
+	    assert prj != null : "Project was null for projectURI: " + projectURI; //NOI18N
             project = new WeakReference<Project>(prj);
         }
         return prj;
@@ -292,27 +293,37 @@ public class TestSession {
             prj = FileOwnerQuery.getOwner(projectURI);
             project = new WeakReference<Project>(prj);
         }
+	assert prj != null : "Project was null for projectURI: " + projectURI; //NOI18N
         Report report = new Report(getCurrentSuite().getName(), prj);
         report.setElapsedTimeMillis(timeInMillis);
+	boolean isTestNG = Manager.getInstance().getTestingFramework().equals(Manager.TESTNG_TF);
         for (Testcase testcase : getCurrentSuite().getTestcases()) {
-            report.reportTest(testcase);
-            report.setTotalTests(report.getTotalTests() + 1);
-            if (testcase.getStatus() == Status.PASSED) {
-                report.setPassed(report.getPassed() + 1);
-            } else if (testcase.getStatus() == Status.PASSEDWITHERRORS) {
-                report.setPassedWithErrors(report.getPassedWithErrors() + 1);
-            } else if (testcase.getStatus() == Status.ERROR) {
-                report.setErrors(report.getErrors() + 1);
-            } else if (testcase.getStatus() == Status.FAILED) {
-                report.setFailures(report.getFailures() + 1);
-            } else if (testcase.getStatus() == Status.PENDING) {
-                report.setPending(report.getPending() + 1);
-            } else if (testcase.getStatus() == Status.SKIPPED) {
-                report.setSkipped(true);
-            }
+	    report.reportTest(testcase);
+	    if (!isTestNGConfigMethod(testcase, isTestNG)) {
+		report.setTotalTests(report.getTotalTests() + 1);
+		if (testcase.getStatus() == Status.PASSED) {
+		    report.setPassed(report.getPassed() + 1);
+		} else if (testcase.getStatus() == Status.PASSEDWITHERRORS) {
+		    report.setPassedWithErrors(report.getPassedWithErrors() + 1);
+		} else if (testcase.getStatus() == Status.ERROR) {
+		    report.setErrors(report.getErrors() + 1);
+		} else if (testcase.getStatus() == Status.FAILED) {
+		    report.setFailures(report.getFailures() + 1);
+		} else if (testcase.getStatus() == Status.PENDING) {
+		    report.setPending(report.getPending() + 1);
+		} else if (testcase.getStatus() == Status.SKIPPED) {
+		    report.setSkipped(report.getSkipped() + 1);
+		    report.setSkipped(true);
+		}
+	    }
         }
         addReportToSessionResult(report);
         return report;
+    }
+
+    private boolean isTestNGConfigMethod(Testcase testcase, boolean isTestNG) {
+	return (isTestNG && (testcase.getName().startsWith("@AfterMethod ") || testcase.getName().startsWith("@BeforeMethod ") //NOI18N
+		    || testcase.getName().startsWith("@AfterClass ") || testcase.getName().startsWith("@BeforeClass "))); //NOI18N
     }
 
     private void addReportToSessionResult(Report report) {
@@ -322,6 +333,7 @@ public class TestSession {
         result.passedWithErrors(report.getPassedWithErrors());
         result.pending(report.getPending());
         result.errors(report.getErrors());
+        result.skipped(report.getSkipped());
     }
 
     /**
@@ -370,6 +382,7 @@ public class TestSession {
         private int failed;
         private int errors;
         private int pending;
+        private int skipped;
         private long elapsedTime;
         
         private int failed(int failedCount) {
@@ -390,6 +403,10 @@ public class TestSession {
 
         private int pending(int pendingCount) {
             return pending += pendingCount;
+        }
+
+        private int skipped(int skippedCount) {
+            return skipped += skippedCount;
         }
 
         private long elapsedTime(long time) {

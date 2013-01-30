@@ -105,6 +105,7 @@ public class HighlightingManagerTest extends NbTestCase {
         assertNotNull("Can't get instance of HighlightingManager", hm);
         HighlightsContainer hc = hm.getHighlights(HighlightsLayerFilter.IDENTITY);
         assertNotNull("Can't get fixed HighlightsContainer", hc);
+        assertEquals(0, pane.getDocument().getLength());
         assertFalse("There should be no fixed highlights", hc.getHighlights(0, Integer.MAX_VALUE).moveNext());
     }
     
@@ -254,6 +255,11 @@ public class HighlightingManagerTest extends NbTestCase {
         assertAttribContains("Can't find attribute", variable.getAttributes(), "set-B", "commonAttribute");
         assertAttribNotContains("The attribute should not be there", variable.getAttributes(), "set-C", "set-D", "set-A");
         assertEquals("Wrong commonAttribute value", "set-B-value", variable.getAttributes().getAttribute("commonAttribute"));
+
+        bagA.clear();
+        bagB.clear();
+        bagC.clear();
+        bagD.clear();
     }
     
     // test events fired from HCs when changing highlights on a layer

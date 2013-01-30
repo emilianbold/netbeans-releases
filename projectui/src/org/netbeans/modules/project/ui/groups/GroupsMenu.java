@@ -44,16 +44,26 @@
 
 package org.netbeans.modules.project.ui.groups;
 
+import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import javax.swing.AbstractAction;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JComponent;
+import javax.swing.JList;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
+import javax.swing.JPanel;
 import javax.swing.JRadioButtonMenuItem;
+import javax.swing.JScrollPane;
+import org.netbeans.modules.project.ui.OpenProjectList;
 import org.netbeans.modules.project.ui.ProjectsRootNode;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -82,6 +92,7 @@ import static org.netbeans.modules.project.ui.groups.Bundle.*;
 })
 @Messages("GroupsMenu.label=Project Gro&up")
 public class GroupsMenu extends AbstractAction implements Presenter.Menu, Presenter.Popup {
+    private static int MAX_COUNT = 20;
 
     private static final RequestProcessor RP = new RequestProcessor(GroupsMenu.class.getName());
 
@@ -89,14 +100,17 @@ public class GroupsMenu extends AbstractAction implements Presenter.Menu, Presen
         super(GroupsMenu_label());
     }
 
+    @Override
     public void actionPerformed(ActionEvent e) {
         assert false;
     }
 
+    @Override
     public JMenuItem getMenuPresenter() {
         return new Menu();
     }
 
+    @Override
     public JMenuItem getPopupPresenter() {
         return new Menu();
     }
@@ -115,12 +129,22 @@ public class GroupsMenu extends AbstractAction implements Presenter.Menu, Presen
             "GroupsMenu.new_group=&New Group...",
             "# {0} - group display name", "GroupsMenu.properties=&Properties of \"{0}\"",
             "# {0} - group display name", "GroupsMenu.remove=&Remove \"{0}\"",
-            "# {0} - group display name", "Delete_Confirm=Do you want to delete group \"{0}\"?"
+            "# {0} - group display name", "Delete_Confirm=Do you want to delete group \"{0}\"?",
+            "GroupsMenu_more=&More groups...",
+            "GroupsMenu_select=Select",
+            "GroupsMenu_moreTitle=Select Project Group"
         })
         @Override public JComponent[] getMenuPresenters() {
             // XXX can it wait to add menu items until it is posted?
             removeAll();
+            if (!OpenProjectList.getDefault().openProjectsAPI().isDone()) {
+                //#214891 only show the groups when we have finishes opening the initial set of projects upon startup
+                this.setEnabled(false);
+                return new JComponent[] {this};
+            }
+            this.setEnabled(true);
             final Group active = Group.getActiveGroup();
+            int counter = 0;
             // Create one menu item per group.
             for (final Group g : Group.allGroups()) {
                 JRadioButtonMenuItem mi = new JRadioButtonMenuItem(g.getName());
@@ -133,9 +157,11 @@ public class GroupsMenu extends AbstractAction implements Presenter.Menu, Presen
                      */
                 }
                 mi.addActionListener(new ActionListener() {
+                    @Override
                     public void actionPerformed(ActionEvent e) {
                         // Could be slow (if needs to load projects); don't block EQ.
                         RP.post(new Runnable() {
+                            @Override
                             public void run() {
                                 Group.setActiveGroup(g);
                             }
@@ -143,6 +169,52 @@ public class GroupsMenu extends AbstractAction implements Presenter.Menu, Presen
                     }
                 });
                 add(mi);
+                counter = counter + 1;
+                if (counter > MAX_COUNT) {
+                    //#216121
+                    JMenuItem more = new JMenuItem();
+                    Mnemonics.setLocalizedText(more, GroupsMenu_more());
+                    more.addActionListener(new ActionListener() {
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            JList lst = new JList();
+                            DefaultListModel model = new DefaultListModel();
+                            for (final Group g : Group.allGroups()) {
+                                model.addElement(g);
+                            }
+                            lst.setModel(model);
+                            lst.setCellRenderer(new DefaultListCellRenderer() {
+
+                                @Override
+                                public Component getListCellRendererComponent(JList arg0, Object arg1, int arg2, boolean arg3, boolean arg4) {
+                                    String text = ((Group)arg1).getName();
+                                    return super.getListCellRendererComponent(arg0, text, arg2, arg3, arg4); //To change body of generated methods, choose Tools | Templates.
+                                }
+                            });
+                            JScrollPane pane = new JScrollPane(lst);
+                            JPanel pnl = new JPanel();
+                            pnl.setLayout(new BorderLayout(12, 12));
+                            pnl.add(pane);
+                            pnl.setPreferredSize(new Dimension(300, 300));
+                            String select = GroupsMenu_select();
+                            NotifyDescriptor nd = new NotifyDescriptor(pnl, GroupsMenu_moreTitle(), NotifyDescriptor.OK_CANCEL_OPTION, NotifyDescriptor.PLAIN_MESSAGE, new Object[] {select, NotifyDescriptor.CANCEL_OPTION} , select);
+                            if (select == DialogDisplayer.getDefault().notify(nd)) {
+                                final Object o = lst.getSelectedValue();
+                                if (o != null) {
+                                    // Could be slow (if needs to load projects); don't block EQ.
+                                    RP.post(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            Group.setActiveGroup((Group)o);
+                                        }
+                                    });
+                                }
+                            }
+                        }
+                    });
+                    add(more);
+                    break;
+                }
             }
             JMenuItem mi = new JRadioButtonMenuItem();
             Mnemonics.setLocalizedText(mi, GroupsMenu_no_group());
@@ -155,9 +227,11 @@ public class GroupsMenu extends AbstractAction implements Presenter.Menu, Presen
                  */
             }
             mi.addActionListener(new ActionListener() {
+                @Override
                 public void actionPerformed(ActionEvent e) {
                     // Could be slow (if needs to load projects); don't block EQ.
                     RP.post(new Runnable() {
+                        @Override
                         public void run() {
                             Group.setActiveGroup(null);
                         }
@@ -170,6 +244,7 @@ public class GroupsMenu extends AbstractAction implements Presenter.Menu, Presen
             mi = new JMenuItem();
             Mnemonics.setLocalizedText(mi, GroupsMenu_new_group());
             mi.addActionListener(new ActionListener() {
+                @Override
                 public void actionPerformed(ActionEvent e) {
                     newGroup();
                 }
@@ -179,6 +254,7 @@ public class GroupsMenu extends AbstractAction implements Presenter.Menu, Presen
                 mi = new JMenuItem();
                 Mnemonics.setLocalizedText(mi, GroupsMenu_properties(active.getName()));
                 mi.addActionListener(new ActionListener() {
+                    @Override
                     public void actionPerformed(ActionEvent e) {
                         openProperties(active);
                     }
@@ -187,6 +263,7 @@ public class GroupsMenu extends AbstractAction implements Presenter.Menu, Presen
                 mi = new JMenuItem();
                 Mnemonics.setLocalizedText(mi, GroupsMenu_remove(active.getName()));
                 mi.addActionListener(new ActionListener() {
+                    @Override
                     public void actionPerformed(ActionEvent e) {
                         NotifyDescriptor.Confirmation ask = new NotifyDescriptor.Confirmation(Delete_Confirm(active.getName()), NotifyDescriptor.YES_NO_OPTION);
                         if (DialogDisplayer.getDefault().notify(ask) == NotifyDescriptor.YES_OPTION) {
@@ -199,6 +276,7 @@ public class GroupsMenu extends AbstractAction implements Presenter.Menu, Presen
             return new JComponent[] {this};
         }
 
+        @Override
         public JComponent[] synchMenuPresenters(JComponent[] items) {
             return getMenuPresenters();
         }
@@ -224,6 +302,7 @@ public class GroupsMenu extends AbstractAction implements Presenter.Menu, Presen
         create.setDefaultCapable(true);
         create.setEnabled(panel.isReady());
         panel.addPropertyChangeListener(new PropertyChangeListener() {
+            @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 if (NewGroupPanel.PROP_READY.equals(evt.getPropertyName())) {
                     create.setEnabled(panel.isReady());
@@ -234,9 +313,17 @@ public class GroupsMenu extends AbstractAction implements Presenter.Menu, Presen
         dd.setOptions(new Object[] {create, cancel});
         Object result = DialogDisplayer.getDefault().notify(dd);
         if (result.equals(create)) {
-            final Group g = panel.create();
+            assert panel.isReady();
+            final NewGroupPanel.Type type = panel.getSelectedType();
+            final boolean autoSync = panel.isAutoSyncField();
+            final boolean useOpen = panel.isUseOpenedField();
+            final String name = panel.getNameField();
+            final String masterProject = panel.getMasterProjectField();
+            final String directory = panel.getDirectoryField();
             RP.post(new Runnable() {
+                @Override
                 public void run() {
+                    Group g = NewGroupPanel.create(type, name, autoSync, useOpen, masterProject, directory);
                     Group.setActiveGroup(g);
                 }
             });

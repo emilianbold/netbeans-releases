@@ -551,7 +551,12 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
                         public void run() {
                             try {
                                 String previousRevision = pri.getPreviousRevision();
-                                GitUtils.openInRevision(originalFile, -1, previousRevision, true, pri.getProgressMonitor());
+                                if (sourceLine > 0) {
+                                    GitUtils.openInRevision(originalFile, revisionPerLine.getRevision(), sourceLine,
+                                            previousRevision, true, pri.getProgressMonitor());
+                                } else {
+                                    GitUtils.openInRevision(originalFile, -1, previousRevision, true, pri.getProgressMonitor());
+                                }
                             } catch (IOException ex) {
                                 //
                             }

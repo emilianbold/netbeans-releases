@@ -1,9 +1,16 @@
-[[84,89]-Syntax error:
-expected: exit, if, identifier, variable, echo, do, while, for, foreach, declare, switch, break, continue, function, const, return, try, throw, use, global, unset, isset, empty, class, interface, array, {, include, include_once, eval, require, require_once, print, ';', +, -, !, ~, ++, --, @, [, new, static, abstract, final, (, $] 84-89:Syntax error:
-expected: exit, if, identifier, variable, echo, do, while, for, foreach, declare, switch, break, continue, function, const, return, try, throw, use, global, unset, isset, empty, class, interface, array, {, include, include_once, eval, require, require_once, print, ';', +, -, !, ~, ++, --, @, [, new, static, abstract, final, (, $
-[[84,89]-Syntax error:
-expected: variable, ::] 84-89:Syntax error:
-expected: variable, ::
-[[84,89]-Syntax error:
-expected: variable, function, static, abstract, final] 84-89:Syntax error:
-expected: variable, function, static, abstract, final
+[[51,58]-Syntax error
+ unexpected:	private
+ after:	protected
+ expected:	variable, function, static, abstract, final] 51-58:Syntax error
+ unexpected:	private
+ after:	protected
+ expected:	variable, function, static, abstract, final
+[[75,78]-POSSIBLE Syntax Error (check preceding valid syntax error)
+ unexpected:	identifier 'fnc'] 75-78:POSSIBLE Syntax Error (check preceding valid syntax error)
+ unexpected:	identifier 'fnc'
+[[81,82]-POSSIBLE Syntax Error (check preceding valid syntax error)
+ unexpected:	{] 81-82:POSSIBLE Syntax Error (check preceding valid syntax error)
+ unexpected:	{
+[[91,92]-POSSIBLE Syntax Error (check preceding valid syntax error)
+ unexpected:	}] 91-92:POSSIBLE Syntax Error (check preceding valid syntax error)
+ unexpected:	}

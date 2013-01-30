@@ -263,7 +263,7 @@ public final class PersistentClassIndex extends ClassIndexImpl {
             @NonNull final ClassIndex.NameKind kind,
             @NonNull final Set<? extends ClassIndex.SearchScopeType> scope,
             @NonNull final Convertor<? super Document, T> convertor,
-            @NonNull final Set<? super T> result) throws InterruptedException, IOException {
+            @NonNull final Collection<? super T> result) throws InterruptedException, IOException {
         final Pair<Convertor<? super Document, T>,Index> ctu = indexPath.getPatch(convertor);
         try {
             IndexManager.priorityAccess(new IndexManager.Action<Void> () {

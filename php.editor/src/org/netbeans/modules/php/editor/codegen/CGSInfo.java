@@ -62,13 +62,28 @@ import org.netbeans.modules.php.editor.api.elements.ClassElement;
 import org.netbeans.modules.php.editor.api.elements.ElementFilter;
 import org.netbeans.modules.php.editor.api.elements.ElementTransformation;
 import org.netbeans.modules.php.editor.api.elements.MethodElement;
-import org.netbeans.modules.php.editor.api.elements.TypeElement;
 import org.netbeans.modules.php.editor.api.elements.TreeElement;
+import org.netbeans.modules.php.editor.api.elements.TypeElement;
 import org.netbeans.modules.php.editor.codegen.CGSGenerator.GenWay;
 import org.netbeans.modules.php.editor.model.impl.VariousUtils;
 import org.netbeans.modules.php.editor.nav.NavUtils;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
-import org.netbeans.modules.php.editor.parser.astnodes.*;
+import org.netbeans.modules.php.editor.parser.api.Utils;
+import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
+import org.netbeans.modules.php.editor.parser.astnodes.Block;
+import org.netbeans.modules.php.editor.parser.astnodes.BodyDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.Comment;
+import org.netbeans.modules.php.editor.parser.astnodes.FieldsDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
+import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocBlock;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTag;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTypeNode;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTypeTag;
+import org.netbeans.modules.php.editor.parser.astnodes.Program;
+import org.netbeans.modules.php.editor.parser.astnodes.SingleFieldDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -77,22 +92,23 @@ import org.openide.util.Exceptions;
  *
  * @author Petr Pisl
  */
-public class CGSInfo {
+public final class CGSInfo {
 
     private String className;
     // cotain the class consructor?
     private boolean hasConstructor;
-    final private List<Property> properties;
-    final private List<Property> possibleGetters;
-    final private List<Property> possibleSetters;
-    final private List<Property> possibleGettersSetters;
-    final private List<MethodProperty> possibleMethods;
-    final private JTextComponent textComp;
+    private final List<Property> properties;
+    private final List<Property> possibleGetters;
+    private final List<Property> possibleSetters;
+    private final List<Property> possibleGettersSetters;
+    private final List<MethodProperty> possibleMethods;
+    private final JTextComponent textComp;
     /**
      * how to generate  getters and setters method name
      */
     private CGSGenerator.GenWay howToGenerate;
     private boolean generateDoc;
+    private boolean fluentSetter;
 
     private CGSInfo(JTextComponent textComp) {
         properties = new ArrayList<Property>();
@@ -104,6 +120,7 @@ public class CGSInfo {
         this.textComp = textComp;
         hasConstructor = false;
         this.generateDoc = true;
+        fluentSetter = false;
         this.howToGenerate = CGSGenerator.GenWay.AS_JAVA;
     }
 
@@ -157,6 +174,13 @@ public class CGSInfo {
         this.generateDoc = generateDoc;
     }
 
+    public boolean isFluentSetter() {
+        return fluentSetter;
+    }
+
+    public void setFluentSetter(final boolean fluentSetter) {
+        this.fluentSetter = fluentSetter;
+    }
 
     /**
      * Extract attributes and methods from caret enclosing class and initialize list of properties.
@@ -177,36 +201,41 @@ public class CGSInfo {
                         ClassDeclaration classDecl = findEnclosingClass(info, caretOffset);
                         if (classDecl != null) {
                             className = classDecl.getName().getName();
-                            if (info != null && className != null) {
+                            if (className != null) {
                                 FileObject fileObject = info.getSnapshot().getSource().getFileObject();
                                 Index index = ElementQueryFactory.getIndexQuery(info);
                                 final ElementFilter forFilesFilter = ElementFilter.forFiles(fileObject);
-                                QualifiedName fullyQualifiedName = VariousUtils.getFullyQualifiedName(QualifiedName.create(className), caretOffset, info.getModel().getVariableScope(caretOffset));
+                                QualifiedName fullyQualifiedName = VariousUtils.getFullyQualifiedName(
+                                        QualifiedName.create(className),
+                                        caretOffset,
+                                        info.getModel().getVariableScope(caretOffset));
                                 Set<ClassElement> classes = forFilesFilter.filter(index.getClasses(NameKind.exact(fullyQualifiedName)));
                                 for (ClassElement classElement : classes) {
                                     ElementFilter forNotDeclared = ElementFilter.forExcludedElements(index.getDeclaredMethods(classElement));
                                     final Set<MethodElement> accessibleMethods = new HashSet<MethodElement>();
                                     accessibleMethods.addAll(forNotDeclared.filter(index.getAccessibleMethods(classElement, classElement)));
-                                    accessibleMethods.addAll(ElementFilter.forExcludedElements(accessibleMethods).filter(forNotDeclared.filter(index.getConstructors(classElement))));
-                                    accessibleMethods.addAll(ElementFilter.forExcludedElements(accessibleMethods).filter(forNotDeclared.filter(index.getAccessibleMagicMethods(classElement))));
+                                    accessibleMethods.addAll(
+                                            ElementFilter.forExcludedElements(accessibleMethods).filter(forNotDeclared.filter(index.getConstructors(classElement))));
+                                    accessibleMethods.addAll(
+                                            ElementFilter.forExcludedElements(accessibleMethods).filter(forNotDeclared.filter(index.getAccessibleMagicMethods(classElement))));
                                     final Set<TypeElement> preferedTypes = forFilesFilter.prefer(ElementTransformation.toMemberTypes().transform(accessibleMethods));
                                     final TreeElement<TypeElement> enclosingType = index.getInheritedTypesAsTree(classElement, preferedTypes);
-                                    final List<MethodProperty> properties = new ArrayList<MethodProperty>();
+                                    final List<MethodProperty> methodProperties = new ArrayList<MethodProperty>();
                                     final Set<MethodElement> methods = ElementFilter.forMembersOfTypes(preferedTypes).filter(accessibleMethods);
                                     for (final MethodElement methodElement : methods) {
                                         if (!methodElement.isFinal()) {
-                                            properties.add(new MethodProperty(methodElement, enclosingType));
+                                            methodProperties.add(new MethodProperty(methodElement, enclosingType));
                                         }
                                     }
-                                    Collections.<MethodProperty>sort(properties, MethodProperty.getComparator());
-                                    getPossibleMethods().addAll(properties);
+                                    Collections.<MethodProperty>sort(methodProperties, MethodProperty.getComparator());
+                                    getPossibleMethods().addAll(methodProperties);
                                 }
                             }
 
                             List<String> existingGetters = new ArrayList<String>();
                             List<String> existingSetters = new ArrayList<String>();
 
-                            PropertiesVisitor visitor = new PropertiesVisitor(getProperties(), existingGetters, existingSetters);
+                            PropertiesVisitor visitor = new PropertiesVisitor(existingGetters, existingSetters, Utils.getRoot(info));
                             visitor.scan(classDecl);
                             String propertyName;
                             boolean existGetter, existSetter;
@@ -256,12 +285,12 @@ public class CGSInfo {
 
         private final List<String> existingGetters;
         private final List<String> existingSetters;
-        private final List<Property> properties;
+        private final Program program;
 
-        public PropertiesVisitor(List<Property> properties, List<String> existingGetters, List<String> existingSetters) {
+        public PropertiesVisitor(List<String> existingGetters, List<String> existingSetters, Program program) {
             this.existingGetters = existingGetters;
             this.existingSetters = existingSetters;
-            this.properties = properties;
+            this.program = program;
         }
 
         @Override
@@ -272,10 +301,44 @@ public class CGSInfo {
                     Variable variable = singleFieldDeclaration.getName();
                     if (variable != null && variable.getName() instanceof Identifier) {
                         String name = ((Identifier) variable.getName()).getName();
-                        getProperties().add(new Property(name, node.getModifier()));
+                        getProperties().add(new Property(name, node.getModifier(), getPropertyType(singleFieldDeclaration)));
                     }
                 }
             }
+        }
+
+        private String getPropertyType(final ASTNode node) {
+            String result = ""; //NOI18N
+            Comment comment = Utils.getCommentForNode(program, node);
+            if (comment instanceof PHPDocBlock) {
+                result = getFirstTypeFromBlock((PHPDocBlock) comment);
+            }
+            return result;
+        }
+
+        private String getFirstTypeFromBlock(final PHPDocBlock phpDoc) {
+            String result = ""; //NOI18N
+            for (PHPDocTag pHPDocTag : phpDoc.getTags()) {
+                if (pHPDocTag instanceof PHPDocTypeTag && pHPDocTag.getKind().equals(PHPDocTag.Type.VAR)) {
+                    result = getFirstTypeFromTag((PHPDocTypeTag) pHPDocTag);
+                    if (!result.isEmpty()) {
+                        break;
+                    }
+                }
+            }
+            return result;
+        }
+
+        private String getFirstTypeFromTag(final PHPDocTypeTag typeTag) {
+            String result = ""; //NOI18N
+            for (PHPDocTypeNode typeNode : typeTag.getTypes()) {
+                String type = typeNode.getValue();
+                if (!VariousUtils.isPrimitiveType(type) && !VariousUtils.isSpecialClassName(type)) {
+                    result = type;
+                    break;
+                }
+            }
+            return result;
         }
 
         @Override
@@ -289,8 +352,7 @@ public class CGSInfo {
                 } else if (name.startsWith(CGSGenerator.START_OF_SETTER)) {
                     possibleProperty = name.substring(CGSGenerator.START_OF_GETTER.length());
                     existingSetters.addAll(getAllPossibleProperties(possibleProperty));
-                }
-                else if (className!= null && (className.equals(name) || "__construct".equals(name))) { //NOI18N
+                } else if (className != null && (className.equals(name) || "__construct".equals(name))) { //NOI18N
                     hasConstructor = true;
                 }
             }

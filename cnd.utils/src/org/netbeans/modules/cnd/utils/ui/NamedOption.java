@@ -43,6 +43,7 @@ package org.netbeans.modules.cnd.utils.ui;
 
 import java.util.Arrays;
 import java.util.prefs.Preferences;
+import org.openide.util.Lookup;
 import org.openide.util.NbPreferences;
 import org.openide.util.lookup.Lookups;
 
@@ -55,6 +56,7 @@ public abstract class NamedOption {
     public static final String MAKE_PROJECT_CATEGORY = "CND/options/makeProject"; //NOI18N
     public static final String HINTS_CATEGORY = "CND/options/hints"; //NOI18N
     public static final String OTHER_CATEGORY = "CND/options/other"; //NOI18N
+    public static final String EXTRA_OPTIONS_FLAG = "cnd.options.project.extra"; //NOI18N
     
     private static final Accessor accessor = new Accessor();
     
@@ -73,6 +75,10 @@ public abstract class NamedOption {
     public abstract OptionKind getKind();
 
     public abstract Object getDefaultValue();
+    
+    public boolean isVisible() {
+        return true;
+    }
     
     public static Accessor getAccessor() {
         return accessor;
@@ -139,6 +145,11 @@ public abstract class NamedOption {
                     if (name.equals(option.getName())) {
                         return option;
                     }
+                }
+            }
+            for (NamedOption option : Lookup.getDefault().lookupAll(NamedOption.class)) {
+                if (name.equals(option.getName())) {
+                    return option;
                 }
             }
             throw new IllegalArgumentException("Not found option " + name); //NOI18N

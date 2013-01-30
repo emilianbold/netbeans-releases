@@ -42,13 +42,13 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.Future;
 import java.util.logging.Logger;
-import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionDescriptor.InputProcessorFactory;
 import org.netbeans.api.extexecution.ExternalProcessBuilder;
 import org.netbeans.api.extexecution.input.InputProcessor;
 import org.netbeans.api.extexecution.input.InputProcessors;
-import org.netbeans.modules.php.api.phpmodule.PhpProgram;
+import org.netbeans.api.queries.FileEncodingQuery;
+import org.netbeans.modules.php.project.deprecated.PhpProgram;
 import org.netbeans.modules.php.project.ui.options.PhpOptions;
 import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.openide.awt.HtmlBrowser;
@@ -56,10 +56,12 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Cancellable;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 
 /**
  * @author Radek Matous, Tomas Mysik
  */
+@Deprecated
 public class RunScript {
     protected static final Logger LOGGER = Logger.getLogger(RunScript.class.getName());
     protected static final RequestProcessor RP = new RequestProcessor(RunScript.class);
@@ -173,7 +175,7 @@ public class RunScript {
             try {
                 PhpOptions options = PhpOptions.getInstance();
                 if (options.isOpenResultInBrowser()) {
-                    HtmlBrowser.URLDisplayer.getDefault().showURL(tmpFile.toURI().toURL());
+                    HtmlBrowser.URLDisplayer.getDefault().showURL(Utilities.toURI(tmpFile).toURL());
                 }
                 if (options.isOpenResultInEditor()) {
                     PhpProjectUtils.openFile(tmpFile);

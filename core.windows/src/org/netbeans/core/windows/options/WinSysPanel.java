@@ -44,24 +44,32 @@
 
 package org.netbeans.core.windows.options;
 
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.util.prefs.Preferences;
 import javax.swing.JTabbedPane;
+import javax.swing.UIManager;
+import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.core.windows.FloatingWindowTransparencyManager;
 import org.netbeans.core.windows.nativeaccess.NativeWindowSystem;
+import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.Utilities;
 
+@OptionsPanelController.Keywords(keywords={"#KW_WindowOptions"}, location=OptionsDisplayer.ADVANCED, tabTitle="#AdvancedOption_DisplayName_WinSys")
 final class WinSysPanel extends javax.swing.JPanel {
 
     private final WinSysOptionsPanelController controller;
     
     private final Preferences prefs = NbPreferences.forModule(WinSysPanel.class);
+    
+    private final boolean isAquaLaF = "Aqua".equals(UIManager.getLookAndFeel().getID()); //NOI18N
 
     private boolean defMultiRow;
     private int defTabPlacement;
     
-    WinSysPanel(WinSysOptionsPanelController controller) {
+    WinSysPanel(final WinSysOptionsPanelController controller) {
         this.controller = controller;
         initComponents();
         // TODO listen to changes in form fields and call controller.changed()
@@ -69,6 +77,13 @@ final class WinSysPanel extends javax.swing.JPanel {
         this.isDragImage.setEnabled(!isMacJDK17);
         this.isDragImageAlpha.setEnabled(!isMacJDK17);
         this.isAlphaFloating.setEnabled(!isMacJDK17);
+        checkMaximizeNativeLaF.addItemListener(new ItemListener() {
+
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                controller.changed();
+            }
+        });
     }
 
     /** This method is called from within the constructor to
@@ -98,6 +113,11 @@ final class WinSysPanel extends javax.swing.JPanel {
         panelSeparator = new javax.swing.JPanel();
         jSeparator1 = new javax.swing.JSeparator();
         jLabel2 = new javax.swing.JLabel();
+        panelSeparator1 = new javax.swing.JPanel();
+        jSeparator2 = new javax.swing.JSeparator();
+        jLabel3 = new javax.swing.JLabel();
+        panelLaF = new javax.swing.JPanel();
+        checkMaximizeNativeLaF = new javax.swing.JCheckBox();
 
         setBorder(javax.swing.BorderFactory.createEmptyBorder(10, 10, 10, 10));
         setLayout(new java.awt.GridBagLayout());
@@ -238,7 +258,6 @@ final class WinSysPanel extends javax.swing.JPanel {
         gridBagConstraints.gridy = 4;
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.FIRST_LINE_START;
-        gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
         add(panelDocTabs, gridBagConstraints);
 
@@ -268,6 +287,48 @@ final class WinSysPanel extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(20, 0, 0, 0);
         add(panelSeparator, gridBagConstraints);
+
+        panelSeparator1.setLayout(new java.awt.GridBagLayout());
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.PAGE_END;
+        gridBagConstraints.weightx = 1.0;
+        panelSeparator1.add(jSeparator2, gridBagConstraints);
+
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, NbBundle.getMessage(WinSysPanel.class, "WinSysPanel.jLabel3.text")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 3);
+        panelSeparator1.add(jLabel3, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(20, 0, 0, 0);
+        add(panelSeparator1, gridBagConstraints);
+
+        panelLaF.setLayout(new java.awt.BorderLayout());
+
+        org.openide.awt.Mnemonics.setLocalizedText(checkMaximizeNativeLaF, org.openide.util.NbBundle.getMessage(WinSysPanel.class, "WinSysPanel.checkMaximizeNativeLaF.text")); // NOI18N
+        checkMaximizeNativeLaF.setToolTipText(org.openide.util.NbBundle.getMessage(WinSysPanel.class, "WinSysPanel.checkMaximizeNativeLaF.toolTipText")); // NOI18N
+        panelLaF.add(checkMaximizeNativeLaF, java.awt.BorderLayout.WEST);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
+        add(panelLaF, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
     private void isDragImageActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_isDragImageActionPerformed
@@ -318,6 +379,18 @@ private void isSnappingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
             default:
                 radioTop.setSelected( true );
         }
+        
+        checkMaximizeNativeLaF.setSelected(prefs.getBoolean(WinSysPrefs.MAXIMIZE_NATIVE_LAF, false));
+        
+        if( isAquaLaF ) {
+            checkMultiRow.setSelected(false);
+            checkMultiRow.setEnabled(false);
+            radioLeft.setEnabled(false);
+            radioRight.setEnabled(false);
+            if( radioLeft.isSelected() || radioRight.isSelected() ) {
+                radioTop.setSelected(true);
+            }
+        }
     }
 
     boolean store() {
@@ -332,6 +405,9 @@ private void isSnappingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         
         prefs.putBoolean(WinSysPrefs.EDITOR_CLOSE_ACTIVATES_RECENT, isCloseActivatesMostRecentDocument.isSelected());
         prefs.putBoolean(WinSysPrefs.OPEN_DOCUMENTS_NEXT_TO_ACTIVE_TAB, isNewDocumentOpensNextToActiveTab.isSelected());
+        
+        prefs.putBoolean(WinSysPrefs.MAXIMIZE_NATIVE_LAF, checkMaximizeNativeLaF.isSelected());
+        System.setProperty("nb.native.filechooser", checkMaximizeNativeLaF.isSelected() ? "true" : "false"); //NOI18N
 
         boolean needsWinsysRefresh = false;
         needsWinsysRefresh = checkMultiRow.isSelected() != defMultiRow;
@@ -400,6 +476,7 @@ private void isSnappingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.ButtonGroup buttonGroup1;
+    private javax.swing.JCheckBox checkMaximizeNativeLaF;
     private javax.swing.JCheckBox checkMultiRow;
     private javax.swing.JCheckBox isAlphaFloating;
     private javax.swing.JCheckBox isCloseActivatesMostRecentDocument;
@@ -410,9 +487,13 @@ private void isSnappingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     private javax.swing.JCheckBox isSnapping;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
     private javax.swing.JSeparator jSeparator1;
+    private javax.swing.JSeparator jSeparator2;
     private javax.swing.JPanel panelDocTabs;
+    private javax.swing.JPanel panelLaF;
     private javax.swing.JPanel panelSeparator;
+    private javax.swing.JPanel panelSeparator1;
     private javax.swing.JRadioButton radioBottom;
     private javax.swing.JRadioButton radioLeft;
     private javax.swing.JRadioButton radioRight;

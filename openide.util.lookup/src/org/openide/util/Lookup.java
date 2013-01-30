@@ -50,6 +50,8 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 import org.openide.util.lookup.ServiceProvider;
@@ -82,6 +84,8 @@ import org.openide.util.lookup.ServiceProvider;
  * @author  Jaroslav Tulach
  */
 public abstract class Lookup {
+    private static final Logger LOG = Logger.getLogger("org.openide.util.lookup.init"); // NOI18N
+    
     /** A dummy lookup that never returns any results.
      */
     public static final Lookup EMPTY = new Empty();
@@ -109,29 +113,29 @@ public abstract class Lookup {
         if (defaultLookup != null) {
             return defaultLookup;
         }
-
+        LOG.log(Level.FINER, "About to initialize Lookup@{0}.getDefault() by {1}", 
+            new Object[] { Lookup.class.getClassLoader(), Thread.currentThread() }
+        );
         // You can specify a Lookup impl using a system property if you like.
-        String className = System.getProperty("org.openide.util.Lookup" // NOI18N
-            );
+        String className = System.getProperty("org.openide.util.Lookup"); // NOI18N
+
+        LOG.log(Level.FINER, "Specified by property? Value: {0}", className);
 
         if ("-".equals(className)) { // NOI18N
-
             // Suppress even MetaInfServicesLookup.
             return EMPTY;
         }
 
         ClassLoader l = Thread.currentThread().getContextClassLoader();
-
+        LOG.log(Level.FINER, "Searching in classloader {0}", l);
         try {
             if (className != null) {
                 defaultLookup = (Lookup) Class.forName(className, true, l).newInstance();
-
+                LOG.log(Level.FINE, "Default lookup initialized {0}", defaultLookup);
                 return defaultLookup;
             }
         } catch (Exception e) {
-            // do not use ErrorManager because we are in the startup code
-            // and ErrorManager might not be ready
-            e.printStackTrace();
+            LOG.log(Level.WARNING, "Constuction of " + className + " via " + l + " failed", e);
         }
 
         // OK, none specified (successfully) in a system property.
@@ -139,17 +143,18 @@ public abstract class Lookup {
         // have a org.openide.util.Lookup line specifying the lookup.
         Lookup misl = Lookups.metaInfServices(l);
         defaultLookup = misl.lookup(Lookup.class);
-
+        LOG.log(Level.FINER, "Searching for {0} in {1} yields {2}", new Object[]{Lookup.class, misl, defaultLookup});
         if (defaultLookup != null) {
+            LOG.log(Level.FINE, "Default lookup initialized {0}", defaultLookup);
             return defaultLookup;
         }
 
         // You may also specify a Lookup.Provider.
         Lookup.Provider prov = misl.lookup(Lookup.Provider.class);
-
+        LOG.log(Level.FINER, "Searching for {0} in {1} yields {2}", new Object[]{Lookup.Provider.class, misl, defaultLookup});
         if (prov != null) {
             defaultLookup = Lookups.proxy(prov);
-
+            LOG.log(Level.FINE, "Default lookup initialized {0}", defaultLookup);
             return defaultLookup;
         }
 
@@ -157,6 +162,7 @@ public abstract class Lookup {
         def.init(l, misl, false);
         defaultLookup = def;
         def.init(l, misl, true);
+        LOG.log(Level.FINE, "Default lookup initialized {0}", defaultLookup);
         return defaultLookup;
     }
     
@@ -175,10 +181,12 @@ public abstract class Lookup {
             arr.add(clLookup);
             String paths = System.getProperty("org.openide.util.Lookup.paths"); // NOI18N
             if (addPath && paths != null) {
+                LOG.log(Level.FINE, "Adding search paths {0}", paths);
                 for (String p : paths.split(":")) { // NOI18N
                     arr.add(Lookups.forPath(p));
                 }
             }
+            LOG.log(Level.FINER, "Setting DefLookup delegates {0}", arr);
             setLookups(arr.toArray(new Lookup[0]));
         }
     }
@@ -500,7 +508,7 @@ public abstract class Lookup {
 
         // XXX can it be null??
 
-        /** Get a persistent indentifier for the item.
+        /** Get a persistent identifier for the item.
          * This identifier should uniquely represent the item
          * within its containing lookup (and if possible within the
          * global lookup as a whole). For example, it might represent

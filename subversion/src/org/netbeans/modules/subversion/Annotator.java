@@ -426,7 +426,13 @@ public class Annotator {
     public static Action [] getActions(VCSContext ctx, VCSAnnotator.ActionDestination destination) {
         List<Action> actions = new ArrayList<Action>(20);
         File[] files = ctx.getRootFiles().toArray(new File[ctx.getRootFiles().size()]);
-        boolean noneVersioned = isNothingVersioned(files);
+        boolean noneVersioned;
+        if (!Subversion.getInstance().getStatusCache().ready()) {
+            noneVersioned = true;
+            Subversion.LOG.log(Level.INFO, "Cache not yet initialized, showing default actions"); //NOI18N
+        } else {
+            noneVersioned = isNothingVersioned(files);
+        }
         if (destination == VCSAnnotator.ActionDestination.MainMenu) {
             // XXX use Actions.forID
             Action a = Utils.getAcceleratedAction("Actions/Subversion/org-netbeans-modules-subversion-ui-checkout-CheckoutAction.instance");

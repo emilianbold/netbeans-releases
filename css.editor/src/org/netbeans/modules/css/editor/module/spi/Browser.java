@@ -42,6 +42,7 @@
 package org.netbeans.modules.css.editor.module.spi;
 
 import java.net.URL;
+import org.netbeans.modules.css.lib.api.properties.PropertyCategory;
 
 /**
  * Represents a browser 
@@ -50,6 +51,12 @@ import java.net.URL;
  */
 public abstract class Browser {
 
+    /**
+     * Returns a {@link PropertyCategory} of the vendor specific properties.
+     * @return 
+     */
+    public abstract PropertyCategory getPropertyCategory();
+        
     /**
      * 
      * @return name of the browsers vendor (Mozilla, Microsoft, ...)

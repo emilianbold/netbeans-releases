@@ -49,14 +49,15 @@ import java.util.Set;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.editor.api.PhpElementKind;
-import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.api.PhpModifiers;
+import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.api.elements.ParameterElement;
 import org.netbeans.modules.php.editor.api.elements.TypeResolver;
 import org.netbeans.modules.php.editor.elements.ParameterElementImpl;
 import org.netbeans.modules.php.editor.elements.TypeResolverImpl;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo.Kind;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocMethodTag;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTag;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTypeNode;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocVarTypeTag;
 
@@ -69,25 +70,25 @@ public class MagicMethodDeclarationInfo extends ASTNodeInfo<PHPDocMethodTag> {
     private int offset;
     private int typeOffset;
     private List<ParameterElement> parameters = new LinkedList<ParameterElement>();
+
     MagicMethodDeclarationInfo(PHPDocMethodTag node) {
         super(node);
-        String parts[] = node.getValue().trim().split("\\s+", 3); //NOI18N
-        if (parts.length == 1
-                || (parts.length > 0 && parts[0].trim().indexOf("(") > 0 )) {
+        String[] parts = node.getValue().trim().split("\\s+", 3); //NOI18N
+        if (parts.length == 1 || (parts.length > 0 && parts[0].trim().indexOf("(") > 0)) {
             // expect that the type is void
             returnType = "void";
             String[] methodNames = parts[0].split("[(, ]", 2);
             if (methodNames.length > 0) {
                 methodName = methodNames[0];
-                offset = getOriginalNode().getStartOffset()+PHPDocMethodTag.Type.METHOD.toString().length() + 1 +node.getValue().indexOf(methodName);
+                offset = getOriginalNode().getStartOffset() + PHPDocTag.Type.METHOD.toString().length() + 1 + node.getValue().indexOf(methodName);
             }
         } else if (parts.length >= 2) {
             String[] methodNames = parts[1].split("[(, ]", 2);
             if (parts[0].length() > 0 && methodNames.length > 0) {
                 returnType = parts[0];
                 methodName = methodNames[0];
-                offset = getOriginalNode().getStartOffset()+PHPDocMethodTag.Type.METHOD.toString().length() + 1 +node.getValue().indexOf(methodName);
-                typeOffset = getOriginalNode().getStartOffset()+PHPDocMethodTag.Type.METHOD.toString().length() + 1 +node.getValue().indexOf(returnType);
+                offset = getOriginalNode().getStartOffset() + PHPDocTag.Type.METHOD.toString().length() + 1 + node.getValue().indexOf(methodName);
+                typeOffset = getOriginalNode().getStartOffset() + PHPDocTag.Type.METHOD.toString().length() + 1 + node.getValue().indexOf(returnType);
             }
         }
 
@@ -168,13 +169,11 @@ public class MagicMethodDeclarationInfo extends ASTNodeInfo<PHPDocMethodTag> {
 
     @Override
     public OffsetRange getRange() {
-        return new OffsetRange(offset,
-                offset+getName().length());
+        return new OffsetRange(offset, offset + getName().length());
     }
 
     public OffsetRange getTypeRange() {
-        return new OffsetRange(typeOffset,
-                typeOffset+getReturnType().length());
+        return new OffsetRange(typeOffset, typeOffset + getReturnType().length());
     }
 
     public List<? extends ParameterElement> getParameters() {

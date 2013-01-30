@@ -189,8 +189,16 @@ public class IsOverriddenAnnotationCreatorTest extends NbTestCase {
     public void test179540() throws Exception {
         doTest("T179540");
     }
+    
+    public void testTestOverriddenClassWithAnnotation() throws Exception {
+        doTest("TestOverriddenClassWithAnnotation", true);
+    }
 
     private void doTest(String name) throws Exception {
+        doTest(name, false);
+    }
+    
+    private void doTest(String name, boolean includePosition) throws Exception {
         prepareTest(name);
 
         DataObject testDO = DataObject.find(testSource);
@@ -204,7 +212,7 @@ public class IsOverriddenAnnotationCreatorTest extends NbTestCase {
         List<String> result = new ArrayList<String>();
 
         for (IsOverriddenAnnotation annotation : annotations) {
-            result.add(annotation.debugDump());
+            result.add(annotation.debugDump(includePosition));
         }
 
         Collections.sort(result);

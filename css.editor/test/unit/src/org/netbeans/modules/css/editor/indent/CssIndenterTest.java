@@ -81,7 +81,7 @@ public class CssIndenterTest extends TestBase {
         CssBracketCompleter.unitTestingSupport = true;
 
         CssIndentTaskFactory cssFactory = new CssIndentTaskFactory();
-        MockMimeLookup.setInstances(MimePath.parse("text/x-css"), cssFactory, CssTokenId.language());
+        MockMimeLookup.setInstances(MimePath.parse("text/css"), cssFactory, CssTokenId.language());
         HtmlIndentTaskFactory htmlReformatFactory = new HtmlIndentTaskFactory();
         MockMimeLookup.setInstances(MimePath.parse("text/html"), htmlReformatFactory, new HtmlKit("text/x-jsp"), HTMLTokenId.language());
     }
@@ -148,6 +148,10 @@ public class CssIndenterTest extends TestBase {
                "/* unfinished comment\n* /\n\n/* another comment\n*/", null);
         format("a{\n    /*\n    comment\n    */\n    color: green;\n}",
                "a{\n    /*\n    comment\n    */\n    color: green;\n}", null);
+        
+        // #218884
+        format("/**\n    *\n  */",
+               "/**\n    *\n  */", null);
     }
 
     public void testNativeEmbeddingFormattingCase1() throws Exception {

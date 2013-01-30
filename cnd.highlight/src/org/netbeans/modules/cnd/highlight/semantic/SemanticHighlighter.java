@@ -57,6 +57,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
+import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.services.CsmFileReferences;
@@ -73,7 +74,6 @@ import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.ui.NamedOption;
 import org.netbeans.spi.editor.highlighting.HighlightsSequence;
 import org.netbeans.spi.editor.highlighting.support.PositionsBag;
-import org.openide.filesystems.FileObject;
 
 /**
  * Semantic C/C++ code highlighter responsible for "graying out"
@@ -263,21 +263,22 @@ public final class SemanticHighlighter extends HighlighterBase {
     private void addHighlightsToBag(PositionsBag bag, List<? extends CsmOffsetable> blocks, SemanticEntity entity) {
         Document doc = getDocument();
         if (doc != null) {
-            String mimeType = null;
-            FileObject fileObject = CsmUtilities.getFileObject(doc);
-            if (fileObject != null) {
-                mimeType = fileObject.getMIMEType();
-            }
+            String mimeType = DocumentUtilities.getMimeType(doc);
             if (mimeType == null) {
                 mimeType = MIMENames.CPLUSPLUS_MIME_TYPE;
             }
-            for (CsmOffsetable block : blocks) {
+           for (CsmOffsetable block : blocks) {
                 int startOffset = getDocumentOffset(doc, block.getStartOffset());
                 int endOffset = block.getEndOffset();
 
                 endOffset = getDocumentOffset(doc, endOffset == Integer.MAX_VALUE ? doc.getLength() + 1 : endOffset);
                 if (startOffset < doc.getLength() && endOffset > 0) {
-                    addHighlightsToBag(bag, startOffset, endOffset, entity.getAttributes(block, mimeType), entity.getName());
+                    final AttributeSet attributes = entity.getAttributes(block, mimeType);
+                    if (attributes == null) {
+                        assert false : "Color attributes set is not found for MIME "+mimeType+". Document "+doc;
+                        return;
+                    }
+                    addHighlightsToBag(bag, startOffset, endOffset, attributes, entity.getName());
                 }
             }
         }

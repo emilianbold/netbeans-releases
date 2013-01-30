@@ -53,7 +53,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.*;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 
 import org.netbeans.modules.cnd.antlr.collections.AST;
-import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
+import org.netbeans.modules.cnd.modelimpl.csm.ParameterImpl.ParameterBuilder;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 
 /**
@@ -63,12 +63,14 @@ import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 public final class ExceptionHandlerImpl extends CompoundStatementImpl implements CsmExceptionHandler {
     
     private ParameterImpl parameter;
-    private final boolean globalHandler;
     
     public ExceptionHandlerImpl(AST ast,  CsmFile file, CsmScope scope, boolean global) {
         super(ast, file, scope);
-        this.globalHandler = global;
     }
+    
+    protected ExceptionHandlerImpl(CsmScope scope, CsmFile file, int start, int end) {
+        super(scope, file, start, end);        
+    }    
 
     public static ExceptionHandlerImpl create(AST ast,  CsmFile file, CsmScope scope, boolean global) {
         ExceptionHandlerImpl stmt = new ExceptionHandlerImpl(ast, file, scope, global);
@@ -118,4 +120,28 @@ public final class ExceptionHandlerImpl extends CompoundStatementImpl implements
         return DeepUtil.merge(getParameter(), getStatements());
     }
     
+    public static class ExceptionHandlerBuilder extends CompoundStatementBuilder {
+
+        ParameterBuilder parameter;
+        
+        @Override
+        public ExceptionHandlerImpl create() {
+            ExceptionHandlerImpl stmt = new ExceptionHandlerImpl(getScope(), getFile(), getStartOffset(), getEndOffset());
+            List<CsmStatement> stmts = new ArrayList<CsmStatement>();
+            for (StatementBuilder statementBuilder : getStatements()) {
+                statementBuilder.setScope(stmt);
+                stmts.add(statementBuilder.create());
+            }
+            if(stmts.isEmpty()) {
+                stmt.setStatements(Collections.<CsmStatement>emptyList());
+            } else {
+                stmt.setStatements(stmts);
+            }
+            if(parameter != null) {
+                parameter.setScope(stmt);
+                stmt.parameter = parameter.create();
+            }
+            return stmt;
+        }
+    }       
 }

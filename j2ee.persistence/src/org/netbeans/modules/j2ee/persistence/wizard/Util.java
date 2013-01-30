@@ -50,7 +50,6 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import java.awt.Container;
 import java.io.IOException;
-import java.net.URL;
 import java.util.ArrayList;
 import javax.swing.JComponent;
 import java.util.Vector;
@@ -103,7 +102,6 @@ import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.URLMapper;
 import org.openide.util.NbBundle;
 
 /**
@@ -185,33 +183,14 @@ public class Util {
         return null;
     }
 
-    private static List/*<FileObject>*/ getFileObjects(URL[] urls) {
-        List result = new ArrayList();
-        for (int i = 0; i < urls.length; i++) {
-            FileObject sourceRoot = URLMapper.findFileObject(urls[i]);
-            if (sourceRoot != null) {
-                result.add(sourceRoot);
-            } else if (Logger.getLogger("global").isLoggable(Level.FINE)) {
-                Logger.getLogger("global").log(Level.FINE, null, new IllegalStateException("No FileObject found for the following URL: " + urls[i]));
-            }
-        }
-        return result;
-    }
-
     public static ClassPath getFullClasspath(FileObject fo) {
         FileObject[] sourceRoots = ClassPath.getClassPath(fo, ClassPath.SOURCE).getRoots();
         FileObject[] bootRoots = ClassPath.getClassPath(fo, ClassPath.BOOT).getRoots();
         FileObject[] compileRoots = ClassPath.getClassPath(fo, ClassPath.COMPILE).getRoots();
         FileObject[] roots = new FileObject[sourceRoots.length + bootRoots.length + compileRoots.length];
-        for (int i = 0; i < sourceRoots.length; i++) {
-            roots[i] = sourceRoots[i];
-        }
-        for (int i = 0; i < bootRoots.length; i++) {
-            roots[sourceRoots.length + i] = bootRoots[i];
-        }
-        for (int i = 0; i < compileRoots.length; i++) {
-            roots[sourceRoots.length + bootRoots.length + i] = compileRoots[i];
-        }
+        System.arraycopy(sourceRoots, 0, roots, 0, sourceRoots.length);
+        System.arraycopy(bootRoots, 0, roots, sourceRoots.length, bootRoots.length);
+        System.arraycopy(compileRoots, 0, roots, sourceRoots.length + bootRoots.length, compileRoots.length);
         return ClassPathSupport.createClassPath(roots);
     }
 
@@ -244,7 +223,7 @@ public class Util {
             if (providers.size() > 0) {
                 return providers.get(0);
             }
-            Logger.getLogger(RelatedCMPWizard.class.getName()).log(Level.WARNING, "Default provider support is reported without any supported providers. See: " + providerSupplier);
+            Logger.getLogger(RelatedCMPWizard.class.getName()).log(Level.WARNING, "Default provider support is reported without any supported providers. See: {0}", providerSupplier);
         }
         return null;
     }
@@ -258,7 +237,7 @@ public class Util {
         }
 
         ArrayList<Provider> providers = new ArrayList<Provider>(aProviderSupplier.getSupportedProviders());
-        if (providers.size() == 0 && aProviderSupplier.supportsDefaultProvider()) {
+        if (providers.isEmpty() && aProviderSupplier.supportsDefaultProvider()) {
             providers.add(ProviderUtil.DEFAULT_PROVIDER);
         }
 
@@ -349,7 +328,7 @@ public class Util {
 
         final DialogDescriptor nd = new DialogDescriptor(
                 new WrapperPanel(panel),
-                NbBundle.getMessage(Util.class, "LBL_CreatePersistenceUnit"),
+                NbBundle.getMessage(Util.class, "LBL_CreatePersistenceUnit").replace("&", ""),//NOI18N
                 true,
                 buttons,
                 DialogDescriptor.OK_OPTION,
@@ -642,11 +621,15 @@ public class Util {
         //need to add ap registration lib if exist
         if (libAdded && lib != null) {
             String projVersion = PersistenceUtils.getJPAVersion(project);
-            if( projVersion == null )projVersion = "1.0";//NOI18N minimum version, will not affect
+            if( projVersion == null ) {
+                projVersion = "1.0";
+            }//NOI18N minimum version, will not affect
             double version = Math.max(Double.parseDouble(PersistenceUtils.getJPAVersion(lib)), Double.parseDouble(projVersion));
             if (version > 1.0 && Util.isJPAVersionSupported(project, Double.toString(version))) {
                 Library mLib = LibraryManager.getDefault().getLibrary(lib.getName()+"modelgen");//NOI18N
-                if(mLib!=null) Util.addLibraryToProject(project, mLib, JavaClassPathConstants.PROCESSOR_PATH);//no real need to add modelgen to compile classpath
+                if(mLib!=null) {
+                    Util.addLibraryToProject(project, mLib, JavaClassPathConstants.PROCESSOR_PATH);
+                }//no real need to add modelgen to compile classpath
             }
         }
     }
@@ -770,7 +753,7 @@ public class Util {
      *@return an initial name for a persistence unit, i.e. a name that
      * is unique.
      */
-    static private final String getCandidateName(Project project) {
+    public static String getCandidateName(Project project) {
         String candidateNameBase = ProjectUtils.getInformation(project).getName() + "PU"; //NOI18N
         try {
             if (!ProviderUtil.persistenceExists(project)) {

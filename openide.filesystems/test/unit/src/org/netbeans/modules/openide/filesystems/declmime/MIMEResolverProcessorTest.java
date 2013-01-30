@@ -58,17 +58,26 @@ import org.openide.util.lookup.Lookups;
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-@MIMEResolver.Registration(resource="mime-resolver-rule.xml", displayName="#MYNAME", position=91)
+@MIMEResolver.Registration(
+        resource="mime-resolver-rule.xml",
+        displayName="#MYNAME",
+        position=91,
+        showInFileChooser="#XML_BNM_FILES"
+)
 @NbBundle.Messages({
     "MYNAME=My Name",
     "EXTNAME=XYZ extension",
-    "SPACENAME=Cosmic space"
+    "SPACENAME=Cosmic space",
+    "ABCXYX_FILES=ABC and XYZ Files",
+    "TEST_FILES=Test Files",
+    "XML_BNM_FILES=XML and BNM Files"
 })
 @MIMEResolver.ExtensionRegistration(
     displayName="#EXTNAME", 
     extension={"abc", "xyz"}, 
     mimeType="text/x-yz",
-    position=92
+    position=92,
+    showInFileChooser={"#ABCXYX_FILES", "#TEST_FILES"}
 )
 @MIMEResolver.NamespaceRegistration(
     displayName="#SPACENAME",
@@ -147,6 +156,30 @@ public class MIMEResolverProcessorTest extends NbTestCase {
         assertTrue("contains xyz", arr.contains("xyz"));
     }
     
+    public void testExtensionFileFilterRegistration() {
+        final String PATH = "Services/MIMEResolver/"
+                + "org-netbeans-modules-openide-filesystems-declmime-MIMEResolverProcessorTest-Registration.xml";
+        FileObject fo = FileUtil.getConfigFile(PATH);
+        assertNotNull(fo);
+        assertEquals("xml", fo.getAttribute("ext.0"));
+        assertEquals("[importantName, true, false]bnm", fo.getAttribute("fileName.0"));
+        assertEquals("text/x-ant+xml", fo.getAttribute("mimeType.0"));
+        assertEquals("text/x-bnm", fo.getAttribute("mimeType.1"));
+        assertEquals("XML and BNM Files", fo.getAttribute("fileChooser.0"));
+    }
+
+    public void testResourceFileFilterRegistration() {
+        final String PATH = "Services/MIMEResolver/"
+                + "org-netbeans-modules-openide-filesystems-declmime-MIMEResolverProcessorTest-Extension.xml";
+        FileObject fo = FileUtil.getConfigFile(PATH);
+        assertNotNull(fo);
+        assertEquals("abc", fo.getAttribute("ext.0"));
+        assertEquals("xyz", fo.getAttribute("ext.1"));
+        assertEquals("text/x-yz", fo.getAttribute("mimeType"));
+        assertEquals("ABC and XYZ Files", fo.getAttribute("fileChooser.0"));
+        assertEquals("Test Files", fo.getAttribute("fileChooser.1"));
+    }
+
     public void testNameElement() throws Exception {
         MIMEResolver resolver = findResolver("Cosmic space");
         assertMimeType(resolver, "text/x-my+xml", "namespace.axml", "namespace.bxml");

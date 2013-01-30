@@ -91,7 +91,7 @@ public abstract class MetadataAccessor {
         if (accessor != null) {
             return accessor;
         }
-        Class c = Metadata.class;
+        Class<Metadata> c = Metadata.class;
         try {
             Class.forName(c.getName(), true, c.getClassLoader());
         } catch (Exception e) {

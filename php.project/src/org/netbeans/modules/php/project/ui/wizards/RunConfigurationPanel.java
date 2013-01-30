@@ -140,7 +140,7 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
 
     public RunConfigurationPanel(String[] steps, SourcesFolderProvider sourcesFolderProvider, NewPhpProjectWizardIterator.WizardType wizardType) {
         this.sourcesFolderProvider = sourcesFolderProvider;
-        this.steps = steps;
+        this.steps = steps.clone();
         this.wizardType = wizardType;
     }
 
@@ -174,6 +174,11 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
                     runAsRemoteWeb.hideIndexFile();
                     runAsRemoteWeb.hideUploadFiles();
                     break;
+                case EXISTING:
+                    // noop
+                    break;
+                default:
+                    assert false : "Unknown wizard type: " + wizardType;
             }
 
             RunAsPanel.InsidePanel[] insidePanels = null;
@@ -193,7 +198,7 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
                     };
                     break;
                 default:
-                    throw new IllegalArgumentException("Unknown wizard type: " + wizardType);
+                    assert false : "Unknown wizard type: " + wizardType;
             }
 
             runConfigurationPanelVisual = new RunConfigurationPanelVisual(this, sourcesFolderProvider, configManager, insidePanels);
@@ -233,6 +238,11 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
             case REMOTE:
                 setUrl();
                 break;
+            case NEW:
+                // noop
+                break;
+            default:
+                assert false : "Unknown wizard type: " + wizardType;
         }
 
         MutableComboBoxModel localServerModel = getLocalServerModel();
@@ -741,6 +751,12 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
             case REMOTE:
                 adjustUploadDirectoryAndCopyFiles();
                 break;
+            case INTERNAL:
+            case SCRIPT:
+                // noop
+                break;
+            default:
+                assert false : "Unknown run type: " + getRunAsType();
         }
         fireChangeEvent();
     }
@@ -757,7 +773,7 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
         }
     }
 
-    private class WizardConfigProvider implements ConfigManager.ConfigProvider {
+    private static final class WizardConfigProvider implements ConfigManager.ConfigProvider {
         final Map<String, Map<String, String>> configs;
 
         public WizardConfigProvider() {

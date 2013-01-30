@@ -44,22 +44,18 @@
 
 package org.netbeans.performance.j2se.dialogs;
 
-import org.netbeans.modules.performance.utilities.PerformanceTestCase;
-import org.netbeans.performance.j2se.setup.J2SESetup;
-
 import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.jemmy.operators.JDialogOperator;
-import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.junit.NbTestSuite;
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
+import org.netbeans.performance.j2se.setup.J2SEBaseSetup;
 
 /**
  *
  * @author mkhramov@netbeans.org
  */
 public class CompareMemorySnapshotsDialogTest  extends PerformanceTestCase {
-
-    private JDialogOperator comparerDlg;
 
     /**
      * 
@@ -82,9 +78,9 @@ public class CompareMemorySnapshotsDialogTest  extends PerformanceTestCase {
 
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(J2SESetup.class)
-             .addTest(CompareMemorySnapshotsDialogTest.class)
-             .enableModules(".*").clusters(".*")));
+        suite.addTest(NbModuleSuite.createConfiguration(J2SEBaseSetup.class)
+                .addTest(CompareMemorySnapshotsDialogTest.class)
+                .enableModules(".*").clusters("ide|profiler").suite());
         return suite;
     }
 
@@ -101,13 +97,12 @@ public class CompareMemorySnapshotsDialogTest  extends PerformanceTestCase {
 
     public ComponentOperator open() {
         new ActionNoBlock("Profile|Compare Memory Snapshots",null).performMenu(); // NOI18N
-        comparerDlg = new JDialogOperator("Select Snapshot to Compare");  // NOI18N              
-        return comparerDlg;
+        return null;
     }
 
     @Override
     public void close() {
-        comparerDlg.close();
+        closeAllModal();
     }
 
     @Override

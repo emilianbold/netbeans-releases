@@ -175,19 +175,16 @@ public class EncodingUtil {
             in.mark(EXPECTED_PROLOG_LENGTH);
 
             byte[] bytes = new byte[EXPECTED_PROLOG_LENGTH];
-            for (int i = 0; i<bytes.length; i++) {
-                try {
-                    int datum = in.read();
-                    if (datum == -1) break;
-                    bytes[i] = (byte) datum;
-                } catch (EOFException ex) {
-                }
+            int size = 0;
+            try {
+                size = in.read(bytes);
+            } catch (EOFException ex) {
             }
 
-            String enc = autoDetectEncoding(bytes);
+            String enc = autoDetectEncoding(bytes, size);
             if (enc == null) return null;
             
-            enc = detectDeclaredEncoding(bytes, enc);
+            enc = detectDeclaredEncoding(bytes, enc, size);
             if (enc == null) return null;
             
             return getIANA2JavaMapping(enc);
@@ -201,9 +198,11 @@ public class EncodingUtil {
      * @return Java encoding family identifier or <tt>null</tt> for unrecognized
      */
     static String autoDetectEncoding(byte[] buf) throws IOException {
-        
-
-        if (buf.length >= 4) {
+        return autoDetectEncoding(buf, buf.length);
+    }
+    
+    private static String autoDetectEncoding(byte[] buf, int len) throws IOException {
+        if (len >= 4) {
             switch (buf[0]) {
                 case 0:  
                     // byte order mark of (1234-big endian) or (2143) USC-4
@@ -275,22 +274,13 @@ public class EncodingUtil {
      * @return found encoding or null if none declared
      */
     static String detectDeclaredEncoding(byte[] data, String baseEncoding) throws IOException {
-
-        StringBuffer buf = new StringBuffer();
-        Reader r;
+        return detectDeclaredEncoding(data, baseEncoding, data.length);
+    }
+    
+    private static String detectDeclaredEncoding(byte[] data, String baseEncoding, int size) throws IOException {
         char delimiter = '"';
 
-        r = new InputStreamReader(new ByteArrayInputStream(data), baseEncoding);
-        try {
-            for (int c = r.read(); c != -1; c = r.read()) {
-                buf.append((char)c);
-            }
-        } catch (IOException ex) {
-            // EOF of data out of boundary
-            // dont care try to guess from given data
-        }
-        
-        String s = buf.toString();
+        String s = new String(data, 0, size, baseEncoding);
         
         int iend = s.indexOf("?>");
         iend = iend == -1 ? s.length() : iend;
@@ -379,21 +369,30 @@ public class EncodingUtil {
     * the document prolog is an encoding attribute.
     * @return java encoding names ("UTF8", "ASCII", etc.) or null if no guess
     */
-    private static String doDetectEncoding(Document doc) throws IOException {
+    private static String doDetectEncoding(final Document doc) throws IOException {
         if (doc == null) return null;
 
-        try {
-            String text = doc.getText(0,
-                                      doc.getLength() > EXPECTED_PROLOG_LENGTH ?
-                                      EXPECTED_PROLOG_LENGTH : doc.getLength()
-                                     );
-            InputStream in = new ByteArrayInputStream(text.getBytes());
-            return detectEncoding(in);
-
-        } catch (BadLocationException ex) {
-            throw new RuntimeException(ex.toString());
+        final String[] text = new String[1];
+        final BadLocationException[] exc = new BadLocationException[1];
+        doc.render(new Runnable() {
+            public void run() {
+                try {
+                    text[0] = doc.getText(0,
+                        doc.getLength() > EXPECTED_PROLOG_LENGTH ?
+                        EXPECTED_PROLOG_LENGTH : doc.getLength()
+                    );
+                } catch (BadLocationException e) {
+                    exc[0] = e;
+                }
+            }
+        });
+        if (exc[0] != null) {
+            IOException e = new IOException("Cannot read contents");
+            e.initCause(exc[0]);
+            throw e;
         }
-
+        InputStream in = new ByteArrayInputStream(text[0].getBytes());
+        return detectEncoding(in);
     }
     
 

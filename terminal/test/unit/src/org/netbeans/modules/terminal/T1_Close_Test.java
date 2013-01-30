@@ -46,11 +46,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import javax.swing.SwingUtilities;
-import org.netbeans.modules.terminal.api.IONotifier;
-import org.netbeans.modules.terminal.api.IOResizable;
-import org.netbeans.modules.terminal.api.IOTerm;
-import org.netbeans.modules.terminal.api.IOConnect;
-import org.netbeans.modules.terminal.api.IOVisibility;
+import org.netbeans.modules.terminal.api.*;
 import org.netbeans.modules.terminal.test.IOTest;
 import org.openide.util.Exceptions;
 import org.openide.windows.InputOutput;
@@ -188,23 +184,22 @@ public class T1_Close_Test extends TestSupport {
 	InputOutput io3;
 
 	// until we open any streams reusing getIO should find it
-	io2 = ioProvider.getIO("io1", false);
+	io2 = ioProvider.getIO("io1", false, null , ioContainer);
 	assertTrue("reusing getIO() didn't find unopened IO", io2 == io1);
 
 	// after opening an io stream reusing getIO should create a new one.
 	io1.select();		// so we can check the output
 	io1.getOut().println("Hello to io1\r");
 	sleep(4);
-	io2 = ioProvider.getIO("io1", false);
+	io2 = ioProvider.getIO("io1", false, null, ioContainer);
 	if (defaultProvider) {
 	    // doesn't work as advertised
 	    // the following will appear in "io1".
 	    io2.getOut().println("Hello to io2\r");
 	} else {
 	    assertFalse("reusing getIO() found opened IO", io2 == io1);
-	    // This will appear in a separate window, IOContainer.default().
-	    // See BZ #182538().
-	    // See BZ #
+	    // This used to appear in a separate window, IOContainer.default(),
+	    // per BZ #182538, but it's fixed now.
 	    io2.select();
 	    io2.getOut().println("Hello to io2\r");
 	}

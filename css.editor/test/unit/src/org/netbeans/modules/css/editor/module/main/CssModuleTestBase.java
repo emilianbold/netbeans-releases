@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.css.editor.module.main;
 
+import java.io.PrintWriter;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.text.BadLocationException;
@@ -57,13 +58,19 @@ import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.api.test.CslTestBase;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.css.editor.api.CssCslParserResult;
 import org.netbeans.modules.css.editor.csl.CssLanguage;
 import org.netbeans.modules.css.editor.module.CssModuleSupport;
 import org.netbeans.modules.css.editor.module.spi.CssEditorModule;
-import org.netbeans.modules.css.editor.properties.parser.*;
 import org.netbeans.modules.css.lib.api.CssParserResult;
 import org.netbeans.modules.css.lib.api.NodeUtil;
+import org.netbeans.modules.css.lib.api.properties.GroupGrammarElement;
+import org.netbeans.modules.css.lib.api.properties.Node;
+import org.netbeans.modules.css.lib.api.properties.Properties;
+import org.netbeans.modules.css.lib.api.properties.PropertyDefinition;
+import org.netbeans.modules.css.lib.api.properties.ResolvedProperty;
+import org.netbeans.modules.css.lib.api.properties.Token;
+import org.netbeans.modules.css.lib.api.properties.ValueGrammarElement;
+import org.netbeans.modules.css.lib.properties.GrammarParser;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
@@ -88,8 +95,8 @@ public class CssModuleTestBase extends CslTestBase {
             public void run(ResultIterator resultIterator) throws Exception {
                 Result result = resultIterator.getParserResult();
                 assertNotNull(result);
-                assertTrue(result instanceof CssCslParserResult);
-                CssCslParserResult cssresult = (CssCslParserResult) result;
+                assertTrue(result instanceof CssParserResult);
+                CssParserResult cssresult = (CssParserResult) result;
                 Collection<? extends Error> errors = cssresult.getDiagnostics();
                 if(errors.size() > 0) {
                     StringBuilder sb = new StringBuilder();
@@ -112,35 +119,37 @@ public class CssModuleTestBase extends CslTestBase {
         });
     }
 
-    protected PropertyValue assertResolve(String grammar, String inputText) {
+    protected ResolvedProperty assertResolve(String grammar, String inputText) {
         return assertResolve(grammar, inputText, true);
     }
 
-    protected PropertyValue assertNotResolve(String grammar, String inputText) {
+    protected ResolvedProperty assertNotResolve(String grammar, String inputText) {
         return assertResolve(grammar, inputText, false);
     }
 
-    protected PropertyValue assertResolve(String grammar, String inputText, boolean expectedSuccess) {
+    protected ResolvedProperty assertResolve(String grammar, String inputText, boolean expectedSuccess) {
         long a = System.currentTimeMillis();
         GroupGrammarElement tree = GrammarParser.parse(grammar);
         long b = System.currentTimeMillis();
         return assertResolve(tree, inputText, expectedSuccess);
     }
 
-    protected PropertyValue assertResolve(GroupGrammarElement tree, String inputText) {
+    protected ResolvedProperty assertResolve(GroupGrammarElement tree, String inputText) {
         return assertResolve(tree, inputText, true);
     }
 
-    protected PropertyValue assertResolve(GroupGrammarElement tree, String inputText, boolean expectedSuccess) {
+    protected ResolvedProperty assertResolve(GroupGrammarElement tree, String inputText, boolean expectedSuccess) {
+
+        long a = System.currentTimeMillis();
+        ResolvedProperty pv = new ResolvedProperty(tree, inputText);
+        long c = System.currentTimeMillis();
+
         if (PRINT_INFO_IN_ASSERT_RESOLVE) {
+            System.out.println("Tokens:");
+            System.out.println(dumpList(pv.getTokens()));
             System.out.println("Grammar:");
             System.out.println(tree.toString2(0));
         }
-
-        long a = System.currentTimeMillis();
-        PropertyValue pv = new PropertyValue(tree, inputText);
-        long c = System.currentTimeMillis();
-
         if (PRINT_GRAMMAR_RESOLVE_TIMES) {
             System.out.println(String.format("Input '%s' resolved in %s ms.", inputText, c - a));
         }
@@ -150,9 +159,9 @@ public class CssModuleTestBase extends CslTestBase {
             if(expectedSuccess) {
                 msg.append(" success expected but was failure.");
                 msg.append(" Uresolved token(s): ");
-                List<String> unresolved = pv.getUnresolvedTokens();
+                List<Token> unresolved = pv.getUnresolvedTokens();
                 for(int i = unresolved.size() - 1; i >= 0; i--) {
-                    String token = unresolved.get(i);
+                    String token = unresolved.get(i).image().toString();
                     msg.append(token);
                     if(i > 0) {
                         msg.append(",");
@@ -173,7 +182,7 @@ public class CssModuleTestBase extends CslTestBase {
         assertResolve(grammar, inputText, false);
     }
 
-    protected void assertAlternatives(PropertyValue propertyValue, String... expected) {
+    protected void assertAlternatives(ResolvedProperty propertyValue, String... expected) {
         Set<ValueGrammarElement> alternatives = propertyValue.getAlternatives();
         Collection<String> alts = convert(alternatives);
         Collection<String> expc = new ArrayList<String>(Arrays.asList(expected));
@@ -195,15 +204,16 @@ public class CssModuleTestBase extends CslTestBase {
         }
     }
 
-    protected void assertAlternatives(String grammar, String input, String... expected) {
-        PropertyValue pv = new PropertyValue(grammar, input);
+    
+    protected void assertAlternatives(GroupGrammarElement grammar, String input, String... expected) {
+        ResolvedProperty pv = new ResolvedProperty(grammar, input);
         assertAlternatives(pv, expected);
     }
 
     private Collection<String> convert(Set<ValueGrammarElement> toto) {
         Collection<String> x = new HashSet<String>();
         for (ValueGrammarElement e : toto) {
-            x.add(e.toString());
+            x.add(e.getValue().toString());
         }
         return x;
     }
@@ -221,9 +231,23 @@ public class CssModuleTestBase extends CslTestBase {
         return sb.toString();
     }
 
+    protected String dumpList(Collection<?> col) {
+        StringBuilder sb = new StringBuilder();
+        for (Iterator<?> itr = col.iterator(); itr.hasNext();) {
+            sb.append('"');
+            sb.append(itr.next());
+            sb.append('"');
+            if (itr.hasNext()) {
+                sb.append(',');
+                sb.append(' ');
+            }
+        }
+        return sb.toString();
+    }
+
     public static enum Match {
 
-        EXACT, CONTAINS, EMPTY, NOT_EMPTY, DOES_NOT_CONTAIN;
+        EXACT, CONTAINS, EMPTY, NOT_EMPTY, DOES_NOT_CONTAIN, CONTAINS_ONCE;
     }
 
     public CssModuleTestBase(String name) {
@@ -271,11 +295,11 @@ public class CssModuleTestBase extends CslTestBase {
 
     protected void assertPropertyValues(String propertyName, String... values) {
 
-        PropertyModel model = CssModuleSupport.getPropertyModel(propertyName);
+        PropertyDefinition model = Properties.getPropertyDefinition( propertyName);
         assertNotNull(String.format("Cannot find property %s", propertyName), model);
 
         for (String val : values) {
-            assertNotNull(assertResolve(model.getGrammarElement(), val));
+            assertNotNull(assertResolve(model.getGrammarElement(null), val));
         }
 
     }
@@ -304,9 +328,9 @@ public class CssModuleTestBase extends CslTestBase {
             public void run(ResultIterator resultIterator) throws Exception {
                 Result result = resultIterator.getParserResult();
                 assertNotNull(result);
-                assertTrue(result instanceof CssCslParserResult);
+                assertTrue(result instanceof CssParserResult);
 
-                CssCslParserResult cssresult = (CssCslParserResult) result;
+                CssParserResult cssresult = (CssParserResult) result;
 
 
                 CodeCompletionHandler cc = getPreferredLanguage().getCompletionHandler();
@@ -352,9 +376,9 @@ public class CssModuleTestBase extends CslTestBase {
             public void run(ResultIterator resultIterator) throws Exception {
                 Result result = resultIterator.getParserResult();
                 assertNotNull(result);
-                assertTrue(result instanceof CssCslParserResult);
+                assertTrue(result instanceof CssParserResult);
 
-                CssCslParserResult cssresult = (CssCslParserResult) result;
+                CssParserResult cssresult = (CssParserResult) result;
 
                 CodeCompletionHandler cc = getPreferredLanguage().getCompletionHandler();
                 String prefix = cc.getPrefix(cssresult, pipeOffset, false);
@@ -417,6 +441,23 @@ public class CssModuleTestBase extends CslTestBase {
         assertEquals(expectedContent.toString(), doc.getText(0, doc.getLength()));
 
     }
+    
+    protected void dumpTree(Node node) {
+        PrintWriter pw = new PrintWriter(System.out);
+        dump(node, 0, pw);
+        pw.flush();
+    }
+
+    private void dump(Node tree, int level, PrintWriter pw) {
+        for (int i = 0; i < level; i++) {
+            pw.print("    ");
+        }
+        pw.print(tree.toString());
+        pw.println();
+        for (Node c : tree.children()) {
+            dump(c, level + 1, pw);
+        }
+    }
 
     //--- utility methods ---
     protected String[] arr(String... args) {
@@ -436,13 +477,19 @@ public class CssModuleTestBase extends CslTestBase {
             exp.removeAll(real);
             assertEquals(exp, Collections.emptyList());
         } else if (type == Match.EMPTY) {
-            assertEquals(0, real.size());
+            assertEquals("The unexpected element(s) '" + arrayToString(real.toArray(new String[]{})) + "' are present in the completion items list", 0, real.size());
         } else if (type == Match.NOT_EMPTY) {
             assertTrue(real.size() > 0);
         } else if (type == Match.DOES_NOT_CONTAIN) {
             int originalRealSize = real.size();
             real.removeAll(exp);
             assertEquals("The unexpected element(s) '" + arrayToString(expected) + "' are present in the completion items list", originalRealSize, real.size());
+        } else if (type == Match.CONTAINS_ONCE) {
+            for(String e : expected) {
+                assertTrue(String.format("Expected item '%s' not found!", e), real.contains(e));
+                real.remove(e);
+                assertTrue(String.format("Expected item '%s' is contained multiple times!", e), !real.contains(e));
+            }
         }
 
     }

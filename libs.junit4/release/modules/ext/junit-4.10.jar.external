@@ -1,4 +1,5 @@
 CRC:3480621823
 SIZE:253160
-URL:m2:/junit:junit:4.10:jar
 URL:http://repo1.maven.org/maven2/junit/junit/4.10/junit-4.10.jar
+URL:m2:/junit:junit:4.10:jar
+

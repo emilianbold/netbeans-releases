@@ -469,6 +469,11 @@ public final class SlideBar extends JPanel implements ComplexListDataListener,
 
     void makeBusy( TopComponent tc, boolean busy ) {
         BusyTabsSupport.getDefault().makeTabBusy( tabbed, 0, busy );
+        if( !busy ) {
+            Component slide = getSlidedComp();
+            if( null != slide )
+                slide.repaint();
+        }
         syncWithModel();
     }
 
@@ -482,6 +487,10 @@ public final class SlideBar extends JPanel implements ComplexListDataListener,
     public void removeNotify() {
         super.removeNotify();
         BusyTabsSupport.getDefault().uninstall( getTabbed(), dataModel );
+    }
+
+    boolean isHorizontal() {
+        return tabbed.isHorizontal();
     }
 
     private class SlidedWinsysInfoForTabbedContainer extends WinsysInfoForTabbedContainer {

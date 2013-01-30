@@ -68,10 +68,12 @@ import org.netbeans.api.queries.VisibilityQuery;
 import static org.netbeans.modules.project.ui.Bundle.*;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.ChangeableDataFilter;
 import org.openide.loaders.DataFilter;
 import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataNode;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.FilterNode;
@@ -388,20 +390,29 @@ public class PhysicalView {
         }
         
         public @Override Image getIcon(int type) {
-            return swap(super.getIcon(type));
+            return swap(super.getIcon(type), type);
         }
         public @Override Image getOpenedIcon(int type) {
-            return swap(super.getOpenedIcon(type));
+            return swap(super.getOpenedIcon(type), type);
         }
-        private Image swap(Image base) {
+        private Image swap(Image base, int type) {
             if (!root) { // do not use icon on root node in Files tab
-                DataFolder folder = getOriginal().getLookup().lookup(DataFolder.class);
-                if (folder != null) {
-                    ProjectManager.Result r = ProjectManager.getDefault().isProject2(folder.getPrimaryFile());
+                FileObject folder = getOriginal().getLookup().lookup(FileObject.class);
+                if (folder != null && folder.isFolder()) {
+                    ProjectManager.Result r = ProjectManager.getDefault().isProject2(folder);
                     if (r != null) {
                         Icon icon = r.getIcon();
+                        
                         if (icon != null) {
-                            return ImageUtilities.icon2Image(icon);
+                            Image img = ImageUtilities.icon2Image(icon);
+                            try {
+                                //#217008
+                                DataFolder df = getOriginal().getLookup().lookup(DataFolder.class);
+                                img = folder.getFileSystem().getStatus().annotateIcon(img, type, df.files());
+                            } catch (FileStateInvalidException e) {
+                                // no fs, do nothing
+                            }
+                            return img;
                         }
                     }
                 }
@@ -409,10 +420,10 @@ public class PhysicalView {
             return base;
         }
         public @Override String getShortDescription() {
-            DataFolder folder = getOriginal().getLookup().lookup(DataFolder.class);
-            if (folder != null) {
+            FileObject folder = getOriginal().getLookup().lookup(FileObject.class);
+            if (folder != null && folder.isFolder()) {
                 try {
-                    Project p = ProjectManager.getDefault().findProject(folder.getPrimaryFile());
+                    Project p = ProjectManager.getDefault().findProject(folder);
                     if (p != null) {
                         return ProjectUtils.getInformation(p).getDisplayName();
                     }
@@ -491,8 +502,8 @@ public class PhysicalView {
                         //not nice but there isn't a findNodes(name) method.
                         Node[] nds = parent.getChildren().getNodes(true);
                         for (int i = 0; i < nds.length; i++) {
-                            DataObject dobj = nds[i].getLookup().lookup(DataObject.class);
-                            if (dobj != null && fo.equals(dobj.getPrimaryFile())) {
+                            FileObject dobj = nds[i].getLookup().lookup(FileObject.class);
+                            if (dobj != null && fo.equals(dobj)) {
                                 return nds[i];
                             }
                         }

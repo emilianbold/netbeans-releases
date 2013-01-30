@@ -56,7 +56,7 @@ import org.openide.util.Lookup;
 import org.openide.util.actions.NodeAction;
 
 /**
- * Base class for actions return via {@link HistoryEntry#getActions()}.
+ * Base class for actions returned via {@link HistoryEntry#getActions()}.
  * 
  * @author Tomas Stupka
  */
@@ -104,8 +104,14 @@ public abstract class HistoryAction extends NodeAction {
         return name;
     }
     
-    protected HistoryEntry getHistoryEntry() {
-        Collection<? extends Node> nodes = getContext().lookupAll(Node.class);
+    protected String getRevisionShort() {
+        Lookup ctx = getContext();
+        if(ctx == null) {
+            // this is strange, but there seem to be cases when the context wasn't set yet.
+            // see also issue #220820
+            return null;
+        }
+        Collection<? extends Node> nodes = ctx.lookupAll(Node.class);
         HistoryEntry he = null;
         for(Node node : nodes) {
             he = node.getLookup().lookup(VCSHistoryProvider.HistoryEntry.class);
@@ -114,7 +120,7 @@ public abstract class HistoryAction extends NodeAction {
             }
         }
         assert he != null;
-        return he;
+        return he.getRevisionShort();
     }
 
     @Override

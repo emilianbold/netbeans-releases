@@ -142,11 +142,11 @@ public class ParseErrorAnnotation extends Annotation implements PropertyChangeLi
         return severity;
     }
 
-    private boolean attached;
+    private StyledDocument attachedTo;
 
     synchronized void attachAnnotation(StyledDocument doc, Position lineStart) {
-        if (!attached) {
-            attached = true;
+        if (attachedTo == null) {
+            attachedTo = doc;
             NbDocument.addAnnotation((StyledDocument) doc, lineStart, -1, this);
         } else {
             Level toLog = Level.FINE;
@@ -156,9 +156,10 @@ public class ParseErrorAnnotation extends Annotation implements PropertyChangeLi
     }
 
     synchronized void detachAnnotation(StyledDocument doc) {
-        if (attached) {
-            attached = false;
-            NbDocument.removeAnnotation(doc, this);
+        if (attachedTo != null) {
+            assert attachedTo == doc : doc.toString() + " is not " + attachedTo.toString();
+            NbDocument.removeAnnotation(attachedTo, this);
+            attachedTo = null;
         } else {
             Level toLog = Level.FINE;
             assert (toLog = Level.INFO) != null;

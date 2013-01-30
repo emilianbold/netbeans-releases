@@ -234,6 +234,7 @@ public class ToolbarTabDisplayerUI extends AbstractTabDisplayerUI {
         }
         if (result) {
             displayer.revalidate();
+            displayer.doLayout();
             displayer.repaint();
         }
         return result;
@@ -416,6 +417,8 @@ public class ToolbarTabDisplayerUI extends AbstractTabDisplayerUI {
         public Dimension preferredLayoutSize(Container parent) {
             synchronized (parent.getTreeLock()) {
                 int containerWidth = parent.getWidth();
+                if( containerWidth <= 0 && parent.getParent() != null )
+                    containerWidth = parent.getParent().getWidth();
                 int count = parent.getComponentCount();
 
                 if (containerWidth <= 0 || count == 0) {

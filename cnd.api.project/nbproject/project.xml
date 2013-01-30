@@ -65,6 +65,7 @@
             <friend-packages>
                 <friend>com.microchip.mplab.debugger.mdb</friend>
                 <friend>com.microchip.mplab.nbide.embedded.makeproject</friend>
+                <friend>com.oracle.tools.ide.projectless.impl</friend>
                 <friend>com.sun.tools.analytics.codemodel.bridge</friend>
                 <friend>com.sun.tools.analytics.indicators</friend>
                 <friend>com.sun.tools.cnd.accessor</friend>
@@ -79,6 +80,7 @@
                 <friend>com.sun.tools.ide.analysis.analytics</friend>
                 <friend>com.sun.tools.ide.analysis.common</friend>
                 <friend>com.sun.tools.ide.analysis.discover</friend>
+                <friend>com.sun.tools.ide.analysis.parfait</friend>
                 <friend>com.sun.tools.ide.analysis.previse</friend>
                 <friend>com.sun.tools.ide.analysis.tha</friend>
                 <friend>com.sun.tools.ide.remote.projectui</friend>
@@ -89,6 +91,7 @@
                 <friend>org.netbeans.embedded.project</friend>
                 <friend>org.netbeans.modules.cnd</friend>
                 <friend>org.netbeans.modules.cnd.audit</friend>
+                <friend>org.netbeans.modules.cnd.classview</friend>
                 <friend>org.netbeans.modules.cnd.completion</friend>
                 <friend>org.netbeans.modules.cnd.debugger.gdb2</friend>
                 <friend>org.netbeans.modules.cnd.discovery</friend>

@@ -92,16 +92,19 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
 import java.util.Vector;
+import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.SourceVersion;
 import javax.swing.Action;
 import javax.swing.Icon;
+import javax.swing.JFrame;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JSeparator;
@@ -231,6 +234,19 @@ public final class Utilities {
 
     /** regular expression to with all changes */
     private static RE transExp;
+    
+    private static final Map<GraphicsConfiguration, Map<Rectangle, Long>> screenBoundsCache;
+
+    static {
+        final boolean cacheEnabled = !GraphicsEnvironment.isHeadless() && isUnix()
+                && !isMac() && (System.getProperty( "netbeans.screen.insetsCache", "true" ).equalsIgnoreCase( "true" )); //NOI18N
+
+        if( cacheEnabled ) {
+            screenBoundsCache = new WeakHashMap<GraphicsConfiguration, Map<Rectangle, Long>>();
+        } else {
+            screenBoundsCache = null;
+        }
+    }
 
     //
     // Support for work with actions
@@ -1779,7 +1795,7 @@ widthcheck:  {
                                 if (!usableKeyOnMac(i, macAlt ? needed | KeyEvent.CTRL_MASK : needed)) {
                                     needed &= ~getMenuShortcutKeyMask();
                                     if (macAlt) {
-                                        // CTRL will be added by the "if (macAlt) .." branch bellow
+                                        // CTRL will be added by the "if (macAlt) .." branch below
                                         needed |= KeyEvent.ALT_MASK;
                                     } else {
                                         needed |= KeyEvent.CTRL_MASK;
@@ -1933,6 +1949,11 @@ widthcheck:  {
             buf.append('A');
             b = true;
         }
+        // META fallback, see issue #224362
+        if (!Utilities.isMac() && ((modifiers & KeyEvent.META_MASK) != 0)) {
+            buf.append('M');
+            b = true;
+        }
 
         return b;
     }
@@ -1999,6 +2020,13 @@ widthcheck:  {
             Window w = SwingUtilities.getWindowAncestor(focusOwner);
             if (w != null) {
                 return w.getGraphicsConfiguration();
+            } else {
+                //#217737 - try to find the main window which could be placed in secondary screen
+                for( Frame f : Frame.getFrames() ) {
+                    if( "NbMainWindow".equals(f.getName())) { //NOI18N
+                        return f.getGraphicsConfiguration();
+                    }
+                }
             }
         }
 
@@ -2022,6 +2050,48 @@ widthcheck:  {
 
     /**
      * Returns the usable area of the screen where applications can place its
+     * windows. The method subtracts from the screen the area of taskbars,
+     * system menus and the like.
+     * On certain platforms this methods uses a cache to avoid performance degradation due to repeated calls.
+     * This can be disabled by setting the property "-Dnetbeans.screen.insetsCache=false"
+     * See issue http://netbeans.org/bugzilla/show_bug.cgi?id=219507
+     *
+     * @param gconf the GraphicsConfiguration of the monitor
+     * @return the rectangle of the screen where one can place windows
+     *
+     * @since 2.5
+     */
+    public static Rectangle getUsableScreenBounds(GraphicsConfiguration gconf) {
+        if( gconf == null ) {
+            gconf = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDefaultConfiguration();
+        }
+        if( screenBoundsCache == null ) {
+            return calculateUsableScreenBounds( gconf );
+        }
+
+        synchronized( screenBoundsCache ) {
+            Map<Rectangle, Long> cacheEntry = screenBoundsCache.get( gconf );
+            if( cacheEntry != null ) {
+                final long now = System.currentTimeMillis();
+                Entry<Rectangle, Long> entry = cacheEntry.entrySet().iterator().next();
+                if( entry.getValue() < now + 10000 ) { // cache hit, 10 seconds lifetime
+                    return new Rectangle( entry.getKey() ); // return copy
+                }
+            }
+
+            final Rectangle screenBounds = calculateUsableScreenBounds( gconf );
+            cacheEntry = new HashMap<Rectangle, Long>( 1 );
+            cacheEntry.put( screenBounds, System.currentTimeMillis() );
+            if( screenBoundsCache.size() > 20 ) { //maximum entries
+                screenBoundsCache.clear();
+            }
+            screenBoundsCache.put( gconf, cacheEntry );
+            return new Rectangle( screenBounds );
+        }
+    }
+    
+    /**
+     * Returns the usable area of the screen where applications can place its
      * windows.  The method subtracts from the screen the area of taskbars,
      * system menus and the like.
      *
@@ -2030,10 +2100,7 @@ widthcheck:  {
      *
      * @since 2.5
      */
-    public static Rectangle getUsableScreenBounds(GraphicsConfiguration gconf) {
-        if (gconf == null) {
-            gconf = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDefaultConfiguration();
-        }
+    private static Rectangle calculateUsableScreenBounds(GraphicsConfiguration gconf) {
 
         Rectangle bounds = new Rectangle(gconf.getBounds());
 
@@ -2069,12 +2136,21 @@ widthcheck:  {
         try {
             Toolkit toolkit = Toolkit.getDefaultToolkit();
             Insets insets = toolkit.getScreenInsets(gconf);
+            //#218895 - invalid screen insets in dual screen setup on Linux
+            if( insets.left > bounds.x && bounds.x > 0 )
+                insets.left -= bounds.x;
+            if( insets.top > bounds.y && bounds.y > 0 )
+                insets.top -= bounds.y;
             bounds.y += insets.top;
             bounds.x += insets.left;
             bounds.height -= (insets.top + insets.bottom);
             bounds.width -= (insets.left + insets.right);
+
         } catch (Exception ex) {
             LOG.log(Level.WARNING, null, ex);
+        }
+        if( bounds.width <= 0 || bounds.height <= 0 ) {
+            bounds = new Rectangle(gconf.getBounds());
         }
 
         return bounds;

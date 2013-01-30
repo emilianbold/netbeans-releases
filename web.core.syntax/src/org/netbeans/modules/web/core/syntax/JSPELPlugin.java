@@ -82,7 +82,7 @@ import org.openide.util.lookup.ServiceProvider;
  * @author petr, mfukala@netbeans.org
  */
 @ServiceProvider(service = ELPlugin.class)
-public class JSPELPlugin implements ELPlugin {
+public class JSPELPlugin extends ELPlugin {
 
     private static final Logger LOGGER = Logger.getLogger(JSPELPlugin.class.getName());
     private static final String PLUGIN_NAME = "JSP EL Plugin"; //NOI18N

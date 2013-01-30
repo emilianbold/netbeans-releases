@@ -55,10 +55,10 @@ import org.openide.util.ImageUtilities;
  */
 public abstract class CheckNode extends DefaultMutableTreeNode {
 
-    private static String ICON_BASE = "org/netbeans/modules/php/editor/resources/";     //NOI18N
-    private static String ICON_EXTENSION = ".png";  //NOI18N
-    public final static int SINGLE_SELECTION = 0;
-    public final static int DIG_IN_SELECTION = 4;
+    private static final String ICON_BASE = "org/netbeans/modules/php/editor/resources/"; //NOI18N
+    private static final String ICON_EXTENSION = ".png"; //NOI18N
+    public static final int SINGLE_SELECTION = 0;
+    public static final int DIG_IN_SELECTION = 4;
     protected int selectionMode;
     protected boolean isSelected;
 
@@ -76,7 +76,7 @@ public abstract class CheckNode extends DefaultMutableTreeNode {
         setSelectionMode(DIG_IN_SELECTION);
     }
 
-    public void setSelectionMode(int mode) {
+    private void setSelectionMode(int mode) {
         selectionMode = mode;
     }
 

@@ -51,6 +51,7 @@ import java.util.Set;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import org.openide.modules.Dependency;
+import org.openide.util.Task;
 
 /** Responsible for actually installing the contents of module JARs into the IDE.
  * While the manager tracks which modules are enabled and their dependencies,
@@ -124,6 +125,20 @@ public abstract class ModuleInstaller {
      * Will begin with dependent and end with basic modules.
      */
     public abstract void close(List<Module> modules);
+    
+    /** Initializes closing sequence on given modules. Certain
+     * operations may remain unfinished and can be carried out in 
+     * parallel. A {@link Task} is returned for callers to wait
+     * till closing sequence is successfully finished.
+     * 
+     * @since 2.56
+     * @param modules list of modules to close
+     * @return 
+     */
+    public Task closeAsync(List<Module> modules) {
+        close(modules);
+        return Task.EMPTY;
+    }
     
     /** Optionally refine the dependencies for a module.
      * For example, an installer might decide to automatically add a dependency

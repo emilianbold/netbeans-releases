@@ -1,0 +1,103 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--       
+*     Copyright © 1997, 2012, Oracle and/or its affiliates. All rights reserved. 
+*     Use is subject to license terms.
+-->
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>Changing Browser Screen Sizes</title>
+<link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+<h2>Changing Browser Screen Sizes</h2>
+<p> <small><a href="#seealso">See Also</a>&nbsp; </small> 
+
+<p>A single HTML5 application might be viewed on various devices with different screen sizes.
+    The IDE can help you develop projects that can respond and adapt to different
+    display devices by enabling you to view pages at different screen sizes.
+    When you run the HTML5 application from the IDE you can choose to view the pages 
+    in one of the default screen sizes or create a custom screen size.</p>
+
+<p>You can view your application in any browser, but if you want to 
+   be able to quickly switch between screen sizes 
+   you need to specify one of the following integrated browsers as the target browser.</p>
+
+<ul>
+    <li><strong>Chrome with NetBeans Integration</strong></li>
+    <li><strong>Embedded WebKit Browser</strong></li>
+</ul>
+
+<p>When you view the application in one of the integrated browsers you can choose 
+    the display size in a menu in the browser.</p>
+
+<ul class="note">
+    <li>You can specify the target browser for the application in the Project Properties window
+    or in the Set Project Configuration dropdown list in the toolbar of the IDE.</li>
+</ul>
+
+
+<h3>Switching Between Screen Sizes</h3>
+<p>The integrated browsers provide menus that enable you to switch between
+    common screen sizes that are pre-configured in the menu.
+    When you select a new screen size the display area of the browser resizes to 
+    the selected size. 
+    By changing the screen size you can view how the layout of the application
+    responds to different sizes, for example, as a result of media queries that
+    are specified in the style sheet.</p>
+
+<p>After you launch the application you can select a screen size from the menu in the browser.
+    The location of the menu for selecting the screen size options depends upon the target browser.</p>
+        <ul>
+            <li><strong>Chrome with NetBeans Integration.</strong>
+            Click the NetBeans icon in the URL location bar to open the menu and select a screen size.</li>
+            <li><strong>Embedded WebKit Browser.</strong>
+            Select a screen size in the Other Options menu or click an icon in the toolbar.
+            The toolbar in the Web Browser window contains the following elements.
+            <ul>
+                <li><strong>Display device icons.</strong> Click a display device icon to resize 
+                the display area to the selected size.
+                You can place your cursor over an icon to display the dimensions of the display device.
+                You can modify which icons are displayed in the toolbar by
+                choosing Customize in the Other Options dropdown list.
+                </li>
+                <li><strong>Other Options menu.</strong> Select a window size in the dropdown list
+                to view the page contents in the selected window size. 
+                The dropdown list displays all the available window sizes.
+                Choose Customize to open a dialog that enables you to modify,
+                create or remove window sizes.
+                </li>
+                <li><strong>Magnification selector.</strong> Type a value in the text field
+                or select a value in the dropdown list to change the magnification 
+                of the contents of the page.</li>
+                <li><strong>Inspect icon.</strong> Select to enable Inspect mode in the page.</li>
+            </ul>
+            <ul class="note">
+                <li>When you run an HTML5 application the location of the current page
+                is displayed in the Location bar.
+                Pages are rendered using the WebKit browser engine running on the
+                embedded lightweight server (<tt>localhost:8383</tt>).
+                You can modify the server details in the Project Properties window.</li>
+            </ul>
+        </li>
+        </ul>
+
+<h3>Creating a Custom Screen Size</h3>
+<p>You can create custom sizes for windows by selecting Customize in the screen size menu.
+    When you select Customize the browser displays a window that enables you to
+    create a new size and to modify the default screen size options.
+    You can also edit the contents of the menu.</p>
+
+<dl>
+    <dt><a name="seealso">See Also</a></dt>
+    <dd><a href="html5-runproject.html">Running an HTML5 Application</a></dd>
+    <dd><a href="html5-chrome.html">Integrating an HTML5 Project with the Browser</a></dd>
+    <dd><a href="html5-inspect.html">Inspecting HTML5 Code with the Browser</a></dd>
+    <dd><a href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/webbrowser/default.html">Changing the Default Web Browser</a></dd>
+</dl>
+<hr><small><a href="../credits.html">Legal Notices</a></small>
+
+<table border="0" cellpadding="50">
+<tr><td>&nbsp;</td></tr>
+</table></body>
+</html>

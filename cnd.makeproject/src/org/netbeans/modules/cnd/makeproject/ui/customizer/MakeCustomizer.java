@@ -52,6 +52,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -60,6 +61,8 @@ import javax.swing.JPanel;
 import javax.swing.tree.TreeSelectionModel;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.makeproject.api.MakeProjectCustomizer;
+import org.netbeans.modules.cnd.makeproject.api.configurations.CCCompilerConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.CCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationSupport;
@@ -68,6 +71,10 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerNode;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
+import org.netbeans.modules.cnd.makeproject.api.configurations.FolderConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.LibrariesConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem;
+import org.netbeans.modules.cnd.makeproject.api.configurations.LinkerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.CompileOptionsProvider;
 import org.netbeans.modules.cnd.makeproject.ui.utils.ConfSelectorPanel;
@@ -666,7 +673,7 @@ public final class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.
         }
         return execEnv;
     }
-
+    
     private static final class DummyNode extends AbstractNode {
 
         public DummyNode(Sheet sheet, String name) {
@@ -677,13 +684,42 @@ public final class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.
             setName(name);
         }
     }
-
+    
     private static final class MyListEditorPanel extends ListEditorPanel<Configuration> {
         final ConfigurationDescriptor projectDescriptor;
         public MyListEditorPanel(ConfigurationDescriptor descriptor) {
             super(descriptor.getConfs().getConfigurations());
             projectDescriptor = descriptor;
             setAllowedToRemoveAll(false);
+        }
+
+        private Folder getTestsRootFolder(MakeConfigurationDescriptor projectDescriptor) {
+            Folder root = projectDescriptor.getLogicalFolders();
+            for (Folder folder : root.getFolders()) {
+                if (folder.isTestRootFolder()) {
+                    return folder;
+                }
+            }
+            return null;
+        }
+
+        // This initializations are required for test folders.
+        // See org.netbeans.modules.cnd.simpleunit.editor.filecreation.TestSimpleIterator,
+        // org.netbeans.modules.cnd.cncppunit.editor.filecreation.TestCppUnitIterator
+        private void setCppUnitOptions(Configuration cfg, Folder rootFolder) {
+            for (Folder testFolder : rootFolder.getAllTests()) {
+                FolderConfiguration folderConfiguration = testFolder.getFolderConfiguration(cfg);
+                LinkerConfiguration linkerConfiguration = folderConfiguration.getLinkerConfiguration();
+                LibrariesConfiguration librariesConfiguration = linkerConfiguration.getLibrariesConfiguration();
+                librariesConfiguration.add(new LibraryItem.OptionItem("`cppunit-config --libs`")); // NOI18N
+                linkerConfiguration.getOutput().setValue("${TESTDIR}/" + testFolder.getPath()); // NOI18N
+                CCompilerConfiguration cCompilerConfiguration = folderConfiguration.getCCompilerConfiguration();
+                CCCompilerConfiguration ccCompilerConfiguration = folderConfiguration.getCCCompilerConfiguration();
+                cCompilerConfiguration.getCommandLineConfiguration().setValue("`cppunit-config --cflags`"); // NOI18N;
+                ccCompilerConfiguration.getCommandLineConfiguration().setValue("`cppunit-config --cflags`"); // NOI18N;
+                cCompilerConfiguration.getIncludeDirectories().add("."); // NOI18N
+                ccCompilerConfiguration.getIncludeDirectories().add("."); // NOI18N
+            }
         }
 
         @Override
@@ -700,7 +736,12 @@ public final class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.
                 ((MakeConfiguration) newconf).getMakefileConfiguration().getBuildCommandWorkingDir().setValue(buildDir);
             }
             ((MakeConfiguration) newconf).reCountLanguages((MakeConfigurationDescriptor) projectDescriptor);
-            return editActionImpl(newconf) ? newconf : null;
+            Configuration result = editActionImpl(newconf) ? newconf : null;
+            Folder testFolder = getTestsRootFolder((MakeConfigurationDescriptor) projectDescriptor);
+            if (testFolder != null) {
+                setCppUnitOptions(result, testFolder);
+            }
+            return result;
         }
 
         @Override

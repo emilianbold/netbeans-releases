@@ -97,6 +97,7 @@ import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.Utilities;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
@@ -131,7 +132,7 @@ public class EarImpl implements EarImplementation, EarImplementation2,
         }
         if (isApplicationXmlGenerated()) {
             version = PluginPropertyUtils.getPluginProperty(project, Constants.GROUP_APACHE_PLUGINS,
-                    Constants.PLUGIN_EAR, "version", "generate-application-xml"); //NOI18N
+                    Constants.PLUGIN_EAR, "version", "generate-application-xml", null); //NOI18N
             // the default version in maven plugin is also 1.3
             //TODO what if the default changes?
             if (version != null) {
@@ -176,17 +177,19 @@ public class EarImpl implements EarImplementation, EarImplementation2,
     @Override
     public FileObject getMetaInf() {
         String appsrcloc =  PluginPropertyUtils.getPluginProperty(project, Constants.GROUP_APACHE_PLUGINS,
-                Constants.PLUGIN_EAR, "earSourceDirectory", "ear");//NOI18N
+                Constants.PLUGIN_EAR, "earSourceDirectory", "ear", null);//NOI18N
         if (appsrcloc == null) {
             appsrcloc = "src/main/application";//NOI18N
         }
         URI dir = FileUtilities.getDirURI(project.getProjectDirectory(), appsrcloc);
         FileObject root = FileUtilities.convertURItoFileObject(dir);
         if (root == null) {
-            File fil = new File(dir);
-            fil.mkdirs();
-            project.getProjectDirectory().refresh();
-            root = FileUtil.toFileObject(fil);
+            final File fil = new File(dir);
+            final boolean rootCreated = fil.mkdirs();
+            if (rootCreated) {
+                project.getProjectDirectory().refresh();
+                root = FileUtil.toFileObject(fil);
+            }
         }
         if (root != null) {
             FileObject metainf = root.getFileObject("META-INF");//NOI18N
@@ -208,7 +211,7 @@ public class EarImpl implements EarImplementation, EarImplementation2,
     public FileObject getDeploymentDescriptor() {
         if (isApplicationXmlGenerated()) {
             String generatedLoc = PluginPropertyUtils.getPluginProperty(project, Constants.GROUP_APACHE_PLUGINS,
-                    Constants.PLUGIN_EAR, "generatedDescriptorLocation", "generate-application-xml");//NOI18N
+                    Constants.PLUGIN_EAR, "generatedDescriptorLocation", "generate-application-xml", null);//NOI18N
             if (generatedLoc == null) {
                 generatedLoc = mavenproject().getMavenProject().getBuild().getDirectory();
             }
@@ -221,7 +224,7 @@ public class EarImpl implements EarImplementation, EarImplementation2,
             }
         }
         String customLoc =  PluginPropertyUtils.getPluginProperty(project, Constants.GROUP_APACHE_PLUGINS,
-                Constants.PLUGIN_EAR, "applicationXml", "ear");//NOI18N
+                Constants.PLUGIN_EAR, "applicationXml", "ear", null);//NOI18N
         if (customLoc != null) {
             FileObject fo = FileUtilities.convertURItoFileObject(FileUtilities.getDirURI(project.getProjectDirectory(), customLoc));
             if (fo != null) {
@@ -258,7 +261,7 @@ public class EarImpl implements EarImplementation, EarImplementation2,
         String str = PluginPropertyUtils.getPluginProperty(project, Constants.GROUP_APACHE_PLUGINS,
                 Constants.PLUGIN_EAR,
                 "generateApplicationXml", //NOI18N
-                "generate-application-xml");//NOI18N
+                "generate-application-xml", null);//NOI18N
         //either the default or explicitly set generation of application.xml file
         return (str == null || Boolean.valueOf(str).booleanValue());
     }
@@ -315,7 +318,7 @@ public class EarImpl implements EarImplementation, EarImplementation2,
      *  Currently uses its own {@link RootedEntry} interface.
      *  If the J2eeModule instance describes a
      *  j2ee application, the result should not contain module archives.
-     * 
+     *
      * @return Iterator through {@link RootedEntry}s
      */
     @Override
@@ -338,16 +341,23 @@ public class EarImpl implements EarImplementation, EarImplementation2,
      */
     @Override
     public FileObject getContentDirectory() throws IOException {
-        MavenProject proj = mavenproject().getMavenProject();
-        String finalName = proj.getBuild().getFinalName();
-        String loc = proj.getBuild().getDirectory();
-        File fil = FileUtil.normalizeFile(new File(loc, finalName));
-//        System.out.println("earimpl. get content=" + fil);
-        FileObject fo = FileUtil.toFileObject(fil);
+        final MavenProject proj = mavenproject().getMavenProject();
+        final String finalName = proj.getBuild().getFinalName();
+        final String buildDir = proj.getBuild().getDirectory();
+
+        final File file;
+        if (finalName != null) {
+            file = FileUtil.normalizeFile(new File(buildDir, finalName));
+        } else {
+            // Not sure how, but it might happen - see issue #222839
+            file = FileUtil.normalizeFile(new File(buildDir));
+        }
+
+        final FileObject fo = FileUtil.toFileObject(file);
         if (fo != null) {
             fo.refresh();
         }
-        return FileUtil.toFileObject(fil);
+        return FileUtil.toFileObject(file);
     }
 
     /**
@@ -400,7 +410,7 @@ public class EarImpl implements EarImplementation, EarImplementation2,
         Set<Artifact> artifactSet = mp.getArtifacts();
         @SuppressWarnings("unchecked")
         List<Dependency> deps = mp.getRuntimeDependencies();
-        String fileNameMapping = PluginPropertyUtils.getPluginProperty(project, Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_EAR, "fileNameMapping", "ear"); //NOI18N
+        String fileNameMapping = PluginPropertyUtils.getPluginProperty(project, Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_EAR, "fileNameMapping", "ear", null); //NOI18N
         if (fileNameMapping == null) {
             fileNameMapping = "standard"; //NOI18N
         }
@@ -415,8 +425,7 @@ public class EarImpl implements EarImplementation, EarImplementation2,
                     if (a.getGroupId().equals(d.getGroupId()) &&
                             a.getArtifactId().equals(d.getArtifactId()) &&
                             StringUtils.equals(a.getClassifier(), d.getClassifier())) {
-                        File fil = a.getFile();
-                        URI uri = FileUtilities.convertStringToUri(FileUtil.normalizeFile(fil).getAbsolutePath());
+                        URI uri = Utilities.toURI(FileUtil.normalizeFile(a.getFile()));
                         //#174744 - it's of essence we use the URI based method. items in local repo might not be available yet.
                         Project owner = FileOwnerQuery.getOwner(uri);
                         boolean found = false;
@@ -472,8 +481,7 @@ public class EarImpl implements EarImplementation, EarImplementation2,
                     if (a.getGroupId().equals(d.getGroupId()) &&
                             a.getArtifactId().equals(d.getArtifactId()) &&
                             StringUtils.equals(a.getClassifier(), d.getClassifier())) {
-                        File fil = a.getFile();
-                        URI uri = FileUtilities.convertStringToUri(FileUtil.normalizeFile(fil).getAbsolutePath());
+                        URI uri = Utilities.toURI(FileUtil.normalizeFile(a.getFile()));
                         //#174744 - it's of essence we use the URI based method. items in local repo might not be available yet.
                         Project owner = FileOwnerQuery.getOwner(uri);
                         if (owner != null) {
@@ -495,7 +503,6 @@ public class EarImpl implements EarImplementation, EarImplementation2,
 
 
     File getDDFile(String path) {
-//        System.out.println("getDD file=" + path);
         //TODO what is the actual path.. sometimes don't have any sources for deployment descriptors..
         URI dir = mavenproject().getEarAppDirectory();
         File fil = new File(new File(dir), path);
@@ -531,62 +538,62 @@ public class EarImpl implements EarImplementation, EarImplementation2,
     }
 
 
-
-    // inspired by netbeans' webmodule codebase, not really sure what is the point
-    // of the iterator..
     private static final class ContentIterator implements Iterator {
-        private ArrayList<FileObject> ch;
+
+        private List<FileObject> filesUnderRoot;
         private FileObject root;
 
-        private ContentIterator(FileObject f) {
-            this.ch = new ArrayList<FileObject>();
-            ch.add(f);
-            this.root = f;
+
+        private ContentIterator(FileObject root) {
+            this.root = root;
+
+            filesUnderRoot = new ArrayList<FileObject>();
+            filesUnderRoot.add(root);
         }
 
         @Override
         public boolean hasNext() {
-            return ! ch.isEmpty();
+            return !filesUnderRoot.isEmpty();
         }
 
         @Override
         public Object next() {
-            FileObject f = ch.get(0);
-            ch.remove(0);
-            if (f.isFolder()) {
-                f.refresh();
-                FileObject[] chArr = f.getChildren();
-                for (int i = 0; i < chArr.length; i++) {
-                    ch.add(chArr [i]);
+            FileObject nextFile = filesUnderRoot.get(0);
+            filesUnderRoot.remove(0);
+            if (nextFile.isFolder()) {
+                nextFile.refresh();
+                for (FileObject child : nextFile.getChildren()) {
+                    filesUnderRoot.add(child);
                 }
             }
-            return new FSRootRE(root, f);
+            return new RootedFileObject(root, nextFile);
         }
 
         @Override
         public void remove() {
             throw new UnsupportedOperationException();
         }
-
     }
 
-    private static final class FSRootRE implements J2eeModule.RootedEntry {
-        private FileObject f;
+    private static final class RootedFileObject implements J2eeModule.RootedEntry {
+
+        private FileObject file;
         private FileObject root;
 
-        FSRootRE(FileObject rt, FileObject fo) {
-            f = fo;
-            root = rt;
+
+        private RootedFileObject(FileObject root, FileObject file) {
+            this.file = file;
+            this.root = root;
         }
 
         @Override
         public FileObject getFileObject() {
-            return f;
+            return file;
         }
 
         @Override
         public String getRelativePath() {
-            return FileUtil.getRelativePath(root, f);
+            return FileUtil.getRelativePath(root, file);
         }
     }
 
@@ -819,7 +826,8 @@ public class EarImpl implements EarImplementation, EarImplementation2,
                 return dashedGroupId + "-" + artifact.getFile().getName(); //NOI18N
             }
             if ("no-version".equals(fileNameMapping)) {
-                return artifact.getArtifactId();
+                final String version = "-" + artifact.getBaseVersion();      //NOI18N
+                return artifact.getFile().getName().replaceAll(version, ""); //NOI18N
             }
             //TODO it seems the fileNameMapping can also be a class (from ear-maven-plugin's classpath
             // of type FileNameMapping that resolves the name.. we ignore it for now.. not common usecase anyway..

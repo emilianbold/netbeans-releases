@@ -45,6 +45,7 @@ package org.netbeans.modules.php.project.connections.ftp;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+import org.netbeans.modules.php.api.validation.ValidationResult;
 import org.netbeans.modules.php.project.connections.ConfigManager;
 import org.netbeans.modules.php.project.connections.spi.RemoteClient;
 import org.netbeans.modules.php.project.connections.spi.RemoteConfiguration;
@@ -88,10 +89,10 @@ public final class FtpConnectionProvider implements RemoteConnectionProvider {
         PASSIVE_MODE,
         IGNORE_DISCONNECT_ERRORS
     ));
-    private static final int DEFAULT_PORT = 21;
+    static final int DEFAULT_PORT = 21;
     static final FtpConfiguration.Encryption DEFAULT_ENCRYPTION = FtpConfiguration.Encryption.NONE;
     static final boolean DEFAULT_ONLY_LOGIN_ENCRYPTED = false;
-    private static final int DEFAULT_TIMEOUT = 30;
+    static final int DEFAULT_TIMEOUT = 30;
     static final int DEFAULT_KEEP_ALIVE_INTERVAL = 30;
     private static final String DEFAULT_INITIAL_DIRECTORY = "/"; // NOI18N
 
@@ -161,4 +162,13 @@ public final class FtpConnectionProvider implements RemoteConnectionProvider {
         String type = configuration.getValue(TYPE);
         return FTP_CONNECTION_TYPE.equals(type);
     }
+
+    @Override
+    public ValidationResult validate(RemoteConfiguration remoteConfiguration) {
+        if (remoteConfiguration instanceof FtpConfiguration) {
+            return new FtpConfigurationValidator().validate((FtpConfiguration) remoteConfiguration).getResult();
+        }
+        return null;
+    }
+
 }

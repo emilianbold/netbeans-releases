@@ -73,7 +73,7 @@ public class DefaultSearchResultsPanel<T> extends AbstractSearchResultsPanel {
 
     public DefaultSearchResultsPanel(
             SearchResultsDisplayer.NodeDisplayer<T> nodeDisplayer,
-            SearchComposition searchComposition,
+            SearchComposition<T> searchComposition,
             Presenter searchProviderPresenter) {
 
         super(searchComposition, searchProviderPresenter);
@@ -157,6 +157,7 @@ public class DefaultSearchResultsPanel<T> extends AbstractSearchResultsPanel {
     /**
      * Get {@link OutlineView} used for displaying result nodes.
      */
+    @Override
     public OutlineView getOutlineView() {
         return outlineView;
     }
@@ -188,6 +189,7 @@ public class DefaultSearchResultsPanel<T> extends AbstractSearchResultsPanel {
     /**
      * Add a custom button to the toolbar.
      */
+    @Override
     public void addButton(AbstractButton button) {
         super.addButton(button);
     }

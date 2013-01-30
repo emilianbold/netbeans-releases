@@ -43,7 +43,6 @@ package org.netbeans.modules.ws.qaf.rest;
 
 import junit.framework.Test;
 import org.netbeans.jellytools.modules.j2ee.J2eeTestCase.Server;
-import org.netbeans.junit.NbModuleSuite;
 
 /**
  * Tests for New REST from Patterns wizard
@@ -75,24 +74,21 @@ public class MvnPatternsTest extends PatternsTest {
      * Creates suite from particular test cases. You can define order of testcases here.
      */
     public static Test suite() {
-        return addServerTests(Server.GLASSFISH, NbModuleSuite.createConfiguration(MvnPatternsTest.class),
+        return createAllModulesServerSuite(Server.GLASSFISH, MvnPatternsTest.class,
                 "testSingletonDef", //NOI18N
                 "testContainerIDef", //NOI18N
                 "testCcContainerIDef", //NOI18N
-                // jersey library not in Maven dependencies
-                //"testSingleton1", //NOI18N
-                //"testCcContainerI1", //NOI18N
+                "testSingleton1", //NOI18N
+                "testCcContainerI1", //NOI18N
                 "testSingleton2", //NOI18N
-                // jersey library not in Maven dependencies
-                //"testContainerI1", //NOI18N
+                "testContainerI1", //NOI18N
                 "testContainerI2", //NOI18N
                 "testSingleton3", //NOI18N
                 "testContainerI3", //NOI18N
                 "testCcContainerI2", //NOI18N
                 "testCcContainerI3", //NOI18N
-                "testNodes", //NOI18N
                 "testRun", //NOI18N
                 "testUndeploy" //NOI18N
-                ).enableModules(".*").clusters(".*").suite(); //NOI18N
+                );
     }
 }

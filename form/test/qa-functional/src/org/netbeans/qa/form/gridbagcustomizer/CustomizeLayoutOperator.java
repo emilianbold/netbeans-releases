@@ -395,7 +395,7 @@ public class CustomizeLayoutOperator extends JDialogOperator {
     }
     
 
-    public JButtonOperator btCancel() {
+    public JButtonOperator btClose() {
         if (_btClose == null) {
             _btClose = new JButtonOperator(this, "Close");  // NOI18N
         }

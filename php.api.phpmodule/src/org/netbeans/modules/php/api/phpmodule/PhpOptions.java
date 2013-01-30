@@ -48,7 +48,6 @@ package org.netbeans.modules.php.api.phpmodule;
  * Clients probably want to use {@link PhpInterpreter#getDefault()}.
  * @author Tomas Mysik
  * @see PhpInterpreter
- * @since 1.1
  */
 public interface PhpOptions {
 

@@ -65,6 +65,7 @@ import org.openide.loaders.DataObject;
  * @author Tomas Stupka, Tomas Pavek
  */
 public final class FormJavaSource {
+    private boolean validJavaSource;
     private DataObject formDataObject;
     private FileObject javaFile;
     private String className;
@@ -80,16 +81,15 @@ public final class FormJavaSource {
         this.formDataObject = dob;
         this.javaFile = dob.getPrimaryFile();
         this.javaContext = javaContext;
+        this.validJavaSource = ClassPath.getClassPath(javaFile, ClassPath.SOURCE) != null;
     }
 
     public <T> T query(Function<Queries,T> queryFnc) {
         try {
             setTransientContext(true);
-            return Queries.query(getJavaFile().getURL(), queryFnc);
+            return Queries.query(getJavaFile().toURL(), queryFnc);
         } catch(QueryException ex) {
-            Logger.getLogger(getClass().getName()).log(Level.SEVERE, null, ex);
-        } catch (FileStateInvalidException ex) {
-            Logger.getLogger(getClass().getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(getClass().getName()).log(Level.WARNING, null, ex);
         } finally {
             setTransientContext(false);
         }
@@ -99,11 +99,9 @@ public final class FormJavaSource {
     public Boolean update(Function<Updates,Boolean> updateFnc) {
         try {
             setTransientContext(true);
-            return Updates.update(getJavaFile().getURL(), updateFnc);
+            return Updates.update(getJavaFile().toURL(), updateFnc);
         } catch(QueryException ex) {
-            Logger.getLogger(getClass().getName()).log(Level.SEVERE, null, ex);
-        } catch (FileStateInvalidException ex) {
-            Logger.getLogger(getClass().getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(getClass().getName()).log(Level.WARNING, null, ex);
         } finally {
             setTransientContext(false);
         }
@@ -141,7 +139,10 @@ public final class FormJavaSource {
         }
     }
 
-    public String getFormClassName() {
+    private String getFormClassName() {
+        if (!validJavaSource) {
+            return null;
+        }
         FileObject file = getJavaFile();
         if (className != null && file.getPath().equals(filePath)) {
             return className;
@@ -163,10 +164,6 @@ public final class FormJavaSource {
                 }
             }
         }
-        if (className == null) { // fallback
-            className = ClassPath.getClassPath(file, ClassPath.SOURCE)
-                        .getResourceName(file, '.', false);
-        }
         filePath = file.getPath();
         return className;
     }
@@ -180,43 +177,51 @@ public final class FormJavaSource {
 
     private void refresh() {
         final String cls = getFormClassName();
-        fields = query(new Function<Queries, Collection<? extends String>> () {
-            @Override
-            public Collection< ? extends String> apply(Queries queries) throws QueryException {
-                return queries.getFieldNames(cls, true, null);
-            }
-        });
+        if (cls != null) {
+            fields = query(new Function<Queries, Collection<? extends String>> () {
+                @Override
+                public Collection< ? extends String> apply(Queries queries) throws QueryException {
+                    return queries.getFieldNames(cls, true, null);
+                }
+            });
+        }
     }
 
     public String getSuperClassName() {
         final String cls = getFormClassName();
-        return query(new Function<Queries, String>() {
+        return cls != null ? query(new Function<Queries, String>() {
             @Override
             public String apply(Queries queries) throws QueryException {
                 return queries.getSuperClass(cls);
             }
-        });
+        }) : null;
     }
 
     public String getClassBinaryName() {
         final String cls = getFormClassName();
-        return query(new Function<Queries, String>() {
+        return cls != null ? query(new Function<Queries, String>() {
             @Override
             public String apply(Queries queries) throws QueryException {
                 return queries.getClassBinaryName(cls);
             }
-        });
+        }) : null;
     }
 
-    public void modifyInterfaces(final Collection<String> toAdd, final Collection<String> toRemove) {
+    public boolean modifyInterfaces(final Collection<String> toAdd, final Collection<String> toRemove) {
         final String cls = getFormClassName();
-        update(new Function<Updates, Boolean>() {
-            @Override
-            public Boolean apply(final Updates updates) throws QueryException {
-                updates.modifyInterfaces(cls, toAdd, toRemove);
-                return true;
-            }
-        });
+        Boolean ret;
+        if (cls != null) {
+            ret = update(new Function<Updates, Boolean>() {
+                @Override
+                public Boolean apply(final Updates updates) throws QueryException {
+                    updates.modifyInterfaces(cls, toAdd, toRemove);
+                    return true;
+                }
+            });
+        } else {
+            ret = null;
+        }
+        return Boolean.TRUE.equals(ret);
     }
 
     public void renameField(final String oldName, final String newName) {
@@ -234,25 +239,25 @@ public final class FormJavaSource {
 
     public int[] getEventHandlerMethodSpan(final String evenHandlerName, final String eventType) {
         final String cls = getFormClassName();
-        return query(new Function<Queries, int[]>() {
+        return cls != null ? query(new Function<Queries, int[]>() {
             @Override
             public int[] apply(Queries queries) throws QueryException {
                 String[] paramTypes = eventType != null ? new String[] { eventType } : new String[0];
                 return queries.getMethodSpan(cls, evenHandlerName, true, "void", paramTypes); // NOI18N
             }
-        });
+        }) : null;
     }
 
     /** Assuming the method is either initComponents or an event handler method,
       * i.e. void return type. */
     public int[] getMethodSpan(final String methodName, final String... paramTypes) {
         final String cls = getFormClassName();
-        return query(new Function<Queries, int[]>() {
+        return cls != null ? query(new Function<Queries, int[]>() {
             @Override
             public int[] apply(Queries queries) throws QueryException {
                 return queries.getMethodSpan(cls, methodName, true, "void", paramTypes); // NOI18N
             }
-        });
+        }) : null;
     }
 
     /**
@@ -263,13 +268,13 @@ public final class FormJavaSource {
      */
     public String[] getMethodNames(final Class returnType) {
         final String cls = getFormClassName();
-        Collection<? extends String> result = query(
+        Collection<? extends String> result = cls != null ? query(
                 new Function<Queries, Collection<? extends String>>() {
             @Override
             public Collection< ? extends String> apply(Queries queries) throws QueryException {
                 return queries.getMethodNames(cls, true, returnType.getCanonicalName(), new String[0]);
             }
-        });
+        }) : null;
         return result != null ? result.toArray(new String[result.size()]) : new String[0];
     }
 
@@ -304,20 +309,22 @@ public final class FormJavaSource {
     }    
 
     public void importFQNs(final int[][] ranges) {
-        update(new Function<Updates, Boolean>() {
-            @Override
-            public Boolean apply(Updates updates) throws QueryException {
-                updates.fixImports(ranges);
-                return true;
-            }
-        });
+        if (validJavaSource) {
+            update(new Function<Updates, Boolean>() {
+                @Override
+                public Boolean apply(Updates updates) throws QueryException {
+                    updates.fixImports(ranges);
+                    return true;
+                }
+            });
+        }
     }
 
     public static boolean isInDefaultPackage(FormModel formModel) {
         FileObject fdo = FormEditor.getFormDataObject(formModel).getPrimaryFile();
         ClassPath cp = ClassPath.getClassPath(fdo, ClassPath.SOURCE);
-        String name = cp.getResourceName(fdo);
-        return name.indexOf('/') < 0;
+        String name = cp != null ? cp.getResourceName(fdo) : null;
+        return name == null || name.indexOf('/') < 0;
     }
 
     private synchronized FileObject getJavaFile() {

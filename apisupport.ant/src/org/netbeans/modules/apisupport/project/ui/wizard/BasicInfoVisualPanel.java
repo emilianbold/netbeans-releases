@@ -52,6 +52,7 @@ import java.io.File;
 import java.text.MessageFormat;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.event.DocumentEvent;
@@ -69,6 +70,8 @@ import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
+import static org.netbeans.modules.apisupport.project.ui.wizard.Bundle.*;
+import org.openide.util.NbBundle.Messages;
 
 /**
  * First panel of <code>NewNbModuleWizardIterator</code>. Allow user to enter
@@ -135,6 +138,7 @@ public class BasicInfoVisualPanel extends NewTemplateVisualPanel
         }
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (ModuleTypePanel.isPanelUpdated(evt) && !internalUpdate && validityCounter == validityId) {
             try {
@@ -220,13 +224,19 @@ public class BasicInfoVisualPanel extends NewTemplateVisualPanel
     private int validityId;
     // this guards against property changes fired from inside our code
     private boolean internalUpdate = false;
+    //#218964 it's unclear to me what patterns are allowed in project name.
+    //the pattern applied comes from maven support
+    private static Pattern nameValid = Pattern.compile("[a-zA-Z0-9_\\-.]+");
 
+    @Messages("MSG_NameCannotBeInvalid={0} is not a valid project name.")
     void updateAndCheck() {
         updateGUI();
 
         if ("".equals(getNameValue())) {
             setInfo(NbBundle.getMessage(
                     BasicInfoVisualPanel.class, "MSG_NameCannotBeEmpty"), false);//NOI18N
+        } else if (!nameValid.matcher(getNameValue()).matches()) {
+            setError(MSG_NameCannotBeInvalid(getNameValue()));
         } else if ("".equals(getLocationValue())) {
             setInfo(NbBundle.getMessage(
                     BasicInfoVisualPanel.class, "MSG_LocationCannotBeEmpty"), false);//NOI18N
@@ -255,11 +265,12 @@ public class BasicInfoVisualPanel extends NewTemplateVisualPanel
     }
 
     private void updateGUI() {
-        if (internalUpdate) return;
+        if (internalUpdate) {
+            return;
+        }
         // update project folder
         folderValue.setText(getFolder().getPath());
-        Logger.getLogger(BasicInfoVisualPanel.class.getName()).log(Level.FINE,
-                "(" + validityId + ") Setting project folder to '" + getFolder().getPath() + "'");
+        Logger.getLogger(BasicInfoVisualPanel.class.getName()).log(Level.FINE, "({0}) Setting project folder to ''{1}''", new Object[]{validityId, getFolder().getPath()});
         ModuleTypePanel.setProjectFolder(getSettings(), getFolder());
     }
 
@@ -307,10 +318,14 @@ public class BasicInfoVisualPanel extends NewTemplateVisualPanel
         int counter = 0;
         switch (getData().getWizardType()) {
             case SUITE:
-            case APPLICATION:
                 counter = ModuleUISettings.getDefault().getNewSuiteCounter() + 1;
                 bundlekey = "TXT_Suite"; //NOI18N
                 getData().setSuiteCounter(counter);
+                break;
+            case APPLICATION:
+                counter = ModuleUISettings.getDefault().getNewApplicationCounter() + 1;
+                bundlekey = "TXT_Application"; //NOI18N
+                getData().setApplicationCounter(counter);
                 break;
             case MODULE:
             case SUITE_COMPONENT:
@@ -333,17 +348,21 @@ public class BasicInfoVisualPanel extends NewTemplateVisualPanel
     
     private void attachDocumentListeners() {
         DocumentListener fieldsDL = new UIUtil.DocumentAdapter() {
+            @Override
             public void insertUpdate(DocumentEvent e) { updateAndCheck(); }
         };
         nameValue.getDocument().addDocumentListener(fieldsDL);
         nameValue.getDocument().addDocumentListener(new UIUtil.DocumentAdapter() {
+            @Override
             public void insertUpdate(DocumentEvent e) { nameUpdated = true; }
         });
         locationValue.getDocument().addDocumentListener(fieldsDL);
         locationValue.getDocument().addDocumentListener(new UIUtil.DocumentAdapter() {
+            @Override
             public void insertUpdate(DocumentEvent e) { locationUpdated = true; }
         });
         ActionListener plafAL = new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 updateAndCheck();
             }

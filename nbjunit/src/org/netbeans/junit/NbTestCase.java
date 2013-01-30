@@ -56,6 +56,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.lang.management.ManagementFactory;
+import java.lang.management.RuntimeMXBean;
 import java.lang.ref.Reference;
 import java.lang.reflect.Field;
 import java.net.URISyntaxException;
@@ -181,13 +183,23 @@ public abstract class NbTestCase extends TestCase implements NbTest {
     
     private static final long vmDeadline;
     static {
+        boolean debugMode = false;
+
+        // check if we are debugged
+        RuntimeMXBean runtime = ManagementFactory.getRuntimeMXBean();
+        List<String> args = runtime.getInputArguments();
+        if (args.contains("-Xdebug")) {
+            debugMode = true;
+        }
         Integer vmTimeRemaining = Integer.getInteger("nbjunit.hard.timeout");
-        if (vmTimeRemaining != null) {
+        if (vmTimeRemaining != null && !debugMode) {
             vmDeadline = System.currentTimeMillis() + vmTimeRemaining;
         } else {
-            vmDeadline = 0L;
+            vmDeadline = -1L;
         }
     }
+    
+    private static ThreadLocal<Boolean> DEFAULT_TIME_OUT_CALLED = new ThreadLocal<Boolean>();
     /** Provides support for tests that can have problems with terminating.
      * Runs the test in a "watchdog" that measures the time the test shall
      * take and if it does not terminate it reports a failure including a thread dump.
@@ -204,13 +216,29 @@ public abstract class NbTestCase extends TestCase implements NbTest {
      * @since 1.20
      */
     protected int timeOut() {
-        if (vmDeadline != 0L) {
-            int remaining = (int) (vmDeadline - System.currentTimeMillis());
-            if (remaining > 1500) {
-                return (remaining - 1000) / 2;
-            }
-        }
+        DEFAULT_TIME_OUT_CALLED.set(true);
         return 0;
+    }
+    private int computeTimeOut() {
+        if (vmDeadline == -1L) {
+            return 0;
+        }
+        Boolean prev = DEFAULT_TIME_OUT_CALLED.get();
+        try {
+            DEFAULT_TIME_OUT_CALLED.set(null);
+            int tm = timeOut();
+            if (!Boolean.TRUE.equals(DEFAULT_TIME_OUT_CALLED.get())) {
+                return tm;
+            }
+        } finally {
+            DEFAULT_TIME_OUT_CALLED.set(prev);
+        }
+        
+        int remaining = (int) (vmDeadline - System.currentTimeMillis());
+        if (remaining > 1500) {
+            return (remaining - 1000) / 2;
+        }
+        return 1500;
     }
 
     /**
@@ -390,7 +418,7 @@ public abstract class NbTestCase extends TestCase implements NbTest {
             };
             EventQueue.invokeLater(setUp);
             // need to have timeout because previous test case can block AWT thread
-            setUp.waitFinished(timeOut());
+            setUp.waitFinished(computeTimeOut());
         } else {
             setUp();
         }
@@ -415,9 +443,9 @@ public abstract class NbTestCase extends TestCase implements NbTest {
             };
             if (runInEQ()) {
                 EventQueue.invokeLater(runTest);
-                runTest.waitFinished(timeOut());
+                runTest.waitFinished(computeTimeOut());
             } else {
-                if (timeOut() == 0) {
+                if (computeTimeOut() == 0) {
                     // Regular test.
                     runTest.run();
                     runTest.waitFinished();
@@ -425,7 +453,7 @@ public abstract class NbTestCase extends TestCase implements NbTest {
                     // Regular test with time out
                     Thread watchDog = new Thread(runTest, "Test Watch Dog: " + getName());
                     watchDog.start();
-                    runTest.waitFinished(timeOut());
+                    runTest.waitFinished(computeTimeOut());
                 }
             }
         } finally {
@@ -438,7 +466,7 @@ public abstract class NbTestCase extends TestCase implements NbTest {
                 };
                 EventQueue.invokeLater(tearDown);
                 // need to have timeout because test can block AWT thread
-                tearDown.waitFinished(timeOut());
+                tearDown.waitFinished(computeTimeOut());
             } else {
                 tearDown();
             }
@@ -983,7 +1011,7 @@ public abstract class NbTestCase extends TestCase implements NbTest {
         }
         logStreamTable.clear();
     }
-    
+
     private static class WFOS extends FilterOutputStream {
         private File f;
         private int bytes;

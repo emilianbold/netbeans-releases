@@ -58,9 +58,9 @@ import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.util.UIDs;
 import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
+import org.netbeans.modules.cnd.modelimpl.csm.ClassImpl.MemberBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstRenderer;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
-import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
@@ -150,6 +150,35 @@ public final class FriendFunctionImpl extends FunctionImpl<CsmFriendFunction> im
     public Kind getKind() {
         return Kind.FUNCTION_FRIEND;
     }
+    
+    public static class FriendFunctionBuilder extends FunctionBuilder {
+    
+        @Override
+        public CsmScope getScope() {
+            CsmScope scope = super.getScope();
+            while (CsmKindUtilities.isClass(scope)) {
+               CsmScope newScope = ((CsmClass)scope).getScope(); 
+               if (newScope != null) {
+                   scope = newScope;
+               } else {
+                   break;
+               }
+            }
+            return AstRenderer.FunctionRenderer.getScope(scope, getFile(), isStatic(), false);
+        } 
+        
+        public CsmClass getCls() {
+            return (CsmClass) super.getScope();
+        } 
+        
+        @Override
+        public FunctionImpl create() {
+            FriendFunctionImpl fun = new FriendFunctionImpl(getName(), getRawName(), getScope(), getCls(), isStatic(), isConst(), getFile(), getStartOffset(), getEndOffset(), true);
+            init(fun);
+            return fun;
+        }
+        
+    }          
 
     @Override
     public void write(RepositoryDataOutput output) throws IOException {

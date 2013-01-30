@@ -44,8 +44,6 @@
 
 package org.openide.loaders;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import org.openide.cookies.OpenCookie;
 
 import org.openide.filesystems.*;

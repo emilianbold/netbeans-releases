@@ -63,7 +63,7 @@ import org.openide.filesystems.URLMapper;
  */
 public class SourceForBinaryQueryImpl implements SourceForBinaryQueryImplementation {
 
-    private final Map<URL, SourceForBinaryQuery.Result> cache = new HashMap<URL, SourceForBinaryQuery.Result>();
+    private final Map<String, SourceForBinaryQuery.Result> cache = new HashMap<String, SourceForBinaryQuery.Result>();
 
     private EarProject p;
 
@@ -76,7 +76,7 @@ public class SourceForBinaryQueryImpl implements SourceForBinaryQueryImplementat
         if (FileUtil.getArchiveFile(binaryRoot) != null) {
             binaryRoot = FileUtil.getArchiveFile(binaryRoot);
         }
-        SourceForBinaryQuery.Result res = cache.get(binaryRoot);
+        SourceForBinaryQuery.Result res = cache.get(binaryRoot.toExternalForm());
         if (res != null) {
             return res;
         }
@@ -114,7 +114,7 @@ public class SourceForBinaryQueryImpl implements SourceForBinaryQueryImplementat
                     u = FileUtil.getArchiveFile(u);
                 }
                 // #213372:
-                if (u.equals(binaryRoot)) {
+                if (u.toExternalForm().equals(binaryRoot.toExternalForm())) {
                     continue;
                 }
                 FileObject cpItem = URLMapper.findFileObject(u);
@@ -124,7 +124,7 @@ public class SourceForBinaryQueryImpl implements SourceForBinaryQueryImplementat
                 if (cpItem.getNameExt().equals(libFile)) {
                     res = SourceForBinaryQuery.findSourceRoots(entry.getURL());
                     if (res != null) {
-                        cache.put(binaryRoot, res);
+                        cache.put(binaryRoot.toExternalForm(), res);
                         return res;
                     }
                 }

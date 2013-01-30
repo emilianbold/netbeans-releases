@@ -43,26 +43,16 @@
 
 package org.netbeans.modules.profiler.heapwalk;
 
-import java.awt.BorderLayout;
-import java.awt.Dialog;
-import java.awt.Dimension;
-import java.awt.EventQueue;
-import java.awt.event.HierarchyEvent;
-import java.awt.event.HierarchyListener;
 import org.netbeans.lib.profiler.heap.*;
 import org.netbeans.modules.profiler.heapwalk.ui.HeapFragmentWalkerUI;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JProgressBar;
 import javax.swing.SwingUtilities;
-import javax.swing.border.EmptyBorder;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.profiler.api.ProfilerDialogs;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -124,12 +114,12 @@ public class HeapFragmentWalker {
 
     //~ Methods ------------------------------------------------------------------------------------------------------------------
 
-    public synchronized final int computeRetainedSizes(boolean masterAction) {
+    public synchronized final int computeRetainedSizes(boolean masterAction, boolean interactive) {
 
         if (retainedSizesStatus != RETAINED_SIZES_UNSUPPORTED &&
             retainedSizesStatus != RETAINED_SIZES_COMPUTED) {
 
-            if (!ProfilerDialogs.displayConfirmationDNSA(
+            if (interactive && !ProfilerDialogs.displayConfirmationDNSA(
                     Bundle.HeapFragmentWalker_ComputeRetainedMsg(), 
                     Bundle.HeapFragmentWalker_ComputeRetainedCaption(),
                     null, "HeapFragmentWalker.computeRetainedSizes", false)) { //NOI18N
@@ -140,14 +130,12 @@ public class HeapFragmentWalker {
                 for (JavaClass jclass : classes) {
                     List<Instance> instances = jclass.getInstances();
                     if (instances.size() > 0) {
-                        Dialog progress = showProgress(
-                            Bundle.HeapFragmentWalker_ComputingRetainedCaption(),
-                            Bundle.HeapFragmentWalker_ComputingRetainedMsg());
-                        instances.get(0).getRetainedSize();
-                        if (progress != null) {
-                            progress.setVisible(false);
-                            progress.dispose();
+                        ProgressHandle pd = interactive ? ProgressHandleFactory.createHandle(Bundle.HeapFragmentWalker_ComputingRetainedMsg()) : null;
+                        if (pd != null) {
+                            pd.start();
                         }
+                        instances.get(0).getRetainedSize();
+                        if (pd != null) pd.finish();
                         break;
                     }
                 }
@@ -156,54 +144,6 @@ public class HeapFragmentWalker {
         }
 
         return retainedSizesStatus;
-    }
-    
-    private static Dialog showProgress(String caption, String message) {
-        final CountDownLatch latch = new CountDownLatch(1); // create a latch to prevent race condition while displaying the progress
-
-        final Dialog progress = createProgressPanel(caption, message);
-        progress.addHierarchyListener(new HierarchyListener() {
-            public void hierarchyChanged(HierarchyEvent e) {
-                if ((e.getChangeFlags() & HierarchyEvent.SHOWING_CHANGED) != 0) {
-                    latch.countDown(); // window has changed the state to "SHOWING" - can leave the "nonResponding()" method"
-                }
-            }
-        });
-        EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                progress.setVisible(true);
-            }
-        });
-
-        try {
-            latch.await(); // wait till the progress dialog has been displayed
-        } catch (InterruptedException e) {
-            // TODO move to SwingWorker
-        }
-            
-        return progress;
-    }
-
-    private static Dialog createProgressPanel(String caption, String message) {
-        Dialog dialog;
-        JPanel panel = new JPanel();
-        panel.setLayout(new BorderLayout(10, 10));
-        panel.setBorder(new EmptyBorder(15, 15, 15, 15));
-        panel.add(new JLabel(message), BorderLayout.NORTH);
-
-        JProgressBar progress = new JProgressBar();
-        progress.setIndeterminate(true);
-        panel.add(progress, BorderLayout.SOUTH);
-
-        Dimension ps = panel.getPreferredSize();
-        ps.setSize(Math.max(ps.getWidth(), 350), Math.max(ps.getHeight(), 50));
-        panel.setPreferredSize(ps);
-
-        dialog = DialogDisplayer.getDefault().createDialog(new DialogDescriptor(panel, caption, true, new Object[] {  },
-                                                           DialogDescriptor.CANCEL_OPTION, DialogDescriptor.RIGHT_ALIGN,
-                                                           null, null));
-
-        return dialog;
     }
 
     public synchronized final int getRetainedSizesStatus() {

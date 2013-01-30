@@ -70,7 +70,7 @@ public class DefaultFaceletLibrariesTest extends TestBaseForTestProject {
     }
 
     //test indexing and obtaining librarty descriptors for facelet libraries found
-    //in the bundled jsf-impl.jar
+    //in the bundled javax.faces.jar
     public void testFoundLibraries() {
         DefaultFaceletLibraries instance = DefaultFaceletLibraries.getInstance();
         assertNotNull(instance);

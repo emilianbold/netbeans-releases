@@ -70,6 +70,8 @@ import com.sun.tools.javac.util.Pair;
 import javax.lang.model.element.Element;
 import javax.tools.JavaFileObject;
 
+import com.sun.tools.javac.code.Symtab;
+
 /**
  *
  * @author Dusan Balek
@@ -80,6 +82,7 @@ public class PostFlowAnalysis extends TreeScanner {
     private Types types;
     private Enter enter;
     private Names names;
+    private Symtab syms;
 
     private List<Pair<TypeSymbol, Symbol>> outerThisStack;
     private TypeSymbol currentClass;
@@ -90,6 +93,7 @@ public class PostFlowAnalysis extends TreeScanner {
         types = Types.instance(ctx);
         enter = Enter.instance(ctx);
         names = Names.instance(ctx);
+        syms = Symtab.instance(ctx);
         outerThisStack = List.nil();
     }
     
@@ -161,7 +165,7 @@ public class PostFlowAnalysis extends TreeScanner {
         } else {
             super.visitMethodDef(tree);
         }
-        if (tree.sym == null || tree.type == null)
+        if (tree.sym == null || tree.sym.owner == null || tree.type == null || tree.type == syms.unknownType)
             return;
         Type type = types.erasure(tree.type);
         for (Scope.Entry e = tree.sym.owner.members().lookup(tree.name);

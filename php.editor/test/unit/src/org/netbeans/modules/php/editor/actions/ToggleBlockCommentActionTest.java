@@ -37,99 +37,76 @@
  */
 package org.netbeans.modules.php.editor.actions;
 
-import javax.swing.JEditorPane;
-import javax.swing.text.Caret;
-import org.netbeans.api.html.lexer.HTMLTokenId;
-import org.netbeans.editor.BaseDocument;
-import org.netbeans.lib.lexer.test.TestLanguageProvider;
 import org.netbeans.modules.csl.core.CslEditorKit;
-import org.netbeans.modules.php.editor.PHPCodeCompletionTestBase;
-import org.netbeans.modules.php.editor.lexer.PHPTokenId;
-import org.openide.filesystems.FileObject;
 
 /**
  *
  * @author Petr Pisl
  */
-public class ToggleBlockCommentActionTest extends PHPCodeCompletionTestBase {
+public class ToggleBlockCommentActionTest extends PHPActionTestBase {
 
     public ToggleBlockCommentActionTest(String testName) {
         super(testName);
     }
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-	//System.setProperty("org.netbeans.editor.linewrap.disable", "true");
-        try {
-            TestLanguageProvider.register(HTMLTokenId.language());
-        } catch (IllegalStateException ise) {
-            // Ignore -- we've already registered this either via layers or other means
-        }
-        try {
-            TestLanguageProvider.register(PHPTokenId.language());
-        } catch (IllegalStateException ise) {
-            // Ignore -- we've already registered this either via layers or other means
-        }
-    }
-
-    @Override
-    protected boolean runInEQ() {
-        return true;
-    }
-
     public void testIssue198269_01()throws Exception {
-        testInFile("testfiles/actions/issue198269_01.php");
+        testInFile("testfiles/actions/toggleComment/issue198269_01.php");
     }
 
     public void testIssue198269_02()throws Exception {
-        testInFile("testfiles/actions/issue198269_02.php");
+        testInFile("testfiles/actions/toggleComment/issue198269_02.php");
     }
 
     public void testIssue198269_03()throws Exception {
-        testInFile("testfiles/actions/issue198269_03.php");
+        testInFile("testfiles/actions/toggleComment/issue198269_03.php");
     }
 
     public void testIssue198269_04()throws Exception {
-        testInFile("testfiles/actions/issue198269_04.php");
+        testInFile("testfiles/actions/toggleComment/issue198269_04.php");
     }
 
     public void testIsue207153()throws Exception {
-        testInFile("testfiles/actions/issue207153.php");
+        testInFile("testfiles/actions/toggleComment/issue207153.php");
     }
 
     public void testIssue213706_01()throws Exception {
-        testInFile("testfiles/actions/issue213706_01.php");
+        testInFile("testfiles/actions/toggleComment/issue213706_01.php");
     }
 
     public void testIssue213706_02()throws Exception {
-        testInFile("testfiles/actions/issue213706_02.php");
+        testInFile("testfiles/actions/toggleComment/issue213706_02.php");
     }
 
     public void testIssue213706_03()throws Exception {
-        testInFile("testfiles/actions/issue213706_03.php");
+        testInFile("testfiles/actions/toggleComment/issue213706_03.php");
+    }
+
+    public void testIssue218830_01()throws Exception {
+        testInFile("testfiles/actions/toggleComment/issue218830_01.php");
+    }
+
+    public void testIssue218830_02()throws Exception {
+        testInFile("testfiles/actions/toggleComment/issue218830_02.php");
+    }
+
+    public void testIssue218830_03()throws Exception {
+        testInFile("testfiles/actions/toggleComment/issue218830_03.php");
+    }
+
+    public void testIssue218830_04()throws Exception {
+        testInFile("testfiles/actions/toggleComment/issue218830_04.php");
+    }
+
+    public void testIssue218830_05()throws Exception {
+        testInFile("testfiles/actions/toggleComment/issue218830_05.php");
     }
 
     protected void testInFile(String file) throws Exception {
-        FileObject fo = getTestFile(file);
-        assertNotNull(fo);
-        String source = readFile(fo);
+        testInFile(file, CslEditorKit.toggleCommentAction);
+    }
 
-        int sourcePos = source.indexOf('^');
-        assertNotNull(sourcePos);
-        String sourceWithoutMarker = source.substring(0, sourcePos) + source.substring(sourcePos+1);
-
-        JEditorPane ta = getPane(sourceWithoutMarker);
-        Caret caret = ta.getCaret();
-        caret.setDot(sourcePos);
-        BaseDocument doc = (BaseDocument) ta.getDocument();
-
-        runKitAction(ta, CslEditorKit.toggleCommentAction, null);
-
-        doc.getText(0, doc.getLength());
-        doc.insertString(caret.getDot(), "^", null);
-
-        String target = doc.getText(0, doc.getLength());
-        assertDescriptionMatches(file, target, false, ".toggleComment");
+    @Override
+    protected String goldenFileExtension() {
+        return ".toggleComment";
     }
 }

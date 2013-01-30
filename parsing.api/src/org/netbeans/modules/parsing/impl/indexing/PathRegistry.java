@@ -58,6 +58,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -88,12 +89,14 @@ public final class PathRegistry implements Runnable {
 
     private static PathRegistry instance;
     private static final RequestProcessor firer = new RequestProcessor ("Path Registry Request Processor"); //NOI18N
+    private static final RequestProcessor openProjectChange = new RequestProcessor("Waiting for project loading");  //NOI18N
 
     // -J-Dorg.netbeans.modules.parsing.impl.indexing.PathRegistry.level=FINE
     private static final Logger LOGGER = Logger.getLogger(PathRegistry.class.getName());
     private static final Set<String> FAST_HOST_PROTOCOLS = new HashSet<String>(Arrays.asList("file", "nbfs", "rfs"));   //NOI18N
 
     private final RequestProcessor.Task firerTask;
+    private final RequestProcessor.Task openProjectChangeTask;
     private final GlobalPathRegistry regs;
     private final List<PathRegistryEvent.Change> changes = new LinkedList<PathRegistryEvent.Change>();
 
@@ -131,12 +134,15 @@ public final class PathRegistry implements Runnable {
     // @GuardedBy(this);
     private LogContext logCtx;
 
+    private volatile boolean firstProjectOpened;
+
     @SuppressWarnings("LeakingThisInConstructor")
-    private  PathRegistry () {
-        firerTask = firer.create(this, true);
+    private  PathRegistry () {        
         regs = GlobalPathRegistry.getDefault();
         assert regs != null;
         this.listener = new Listener ();
+        this.firerTask = firer.create(this, true);
+        this.openProjectChangeTask = openProjectChange.create(listener);
         this.timeStamp = -1;
         this.activeCps = Collections.emptySet();
         this.sourceResults = Collections.emptyMap();
@@ -144,6 +150,8 @@ public final class PathRegistry implements Runnable {
         this.translatedRoots = new HashMap<URL, URL[]> ();
         this.listeners = new CopyOnWriteArrayList<PathRegistryListener>();
         this.regs.addGlobalPathRegistryListener (WeakListeners.create(GlobalPathRegistryListener.class,this.listener,this.regs));
+        final OpenProjects openProjects = OpenProjects.getDefault();
+        openProjects.addPropertyChangeListener(WeakListeners.propertyChange(listener, openProjects));
     }
 
     public static synchronized PathRegistry getDefault () {
@@ -815,21 +823,34 @@ public final class PathRegistry implements Runnable {
     }
 
     private void scheduleFirer(Collection<? extends ClassPath> paths) {
+        final LogContext _logCtx;
         synchronized (this) {
             if (logCtx == null) {
                 logCtx = LogContext.create(LogContext.EventType.PATH, null);
             }
-            logCtx.addPaths(paths);
+            _logCtx = logCtx;
         }
-        firerTask.schedule(0);
+        assert _logCtx != null;
+        _logCtx.addPaths(paths);
+        scheduleImpl();
     }
 
     private void scheduleFirer(Iterable<? extends URL> roots) {
+        final LogContext _logCtx;
         synchronized (this) {
             if (logCtx == null) {
                 logCtx = LogContext.create(LogContext.EventType.PATH, null);
             }
-            logCtx.addRoots(roots);
+            _logCtx = logCtx;
+        }
+        assert _logCtx != null;
+        _logCtx.addRoots(roots);
+        scheduleImpl();
+    }
+
+    private void scheduleImpl() {
+        if (!firstProjectOpened) {
+            firstProjectOpened = true;
         }
         firerTask.schedule(0);
     }
@@ -1051,7 +1072,7 @@ public final class PathRegistry implements Runnable {
         }
     }
 
-    private class Listener implements GlobalPathRegistryListener, PropertyChangeListener, ChangeListener {
+    private class Listener implements GlobalPathRegistryListener, PropertyChangeListener, ChangeListener, Runnable {
 
             private WeakReference<Object> lastPropagationId;
 
@@ -1092,8 +1113,7 @@ public final class PathRegistry implements Runnable {
                 String propName = evt.getPropertyName();
                 if (ClassPath.PROP_ENTRIES.equals(propName)) {
                     resetCacheAndFire (EventKind.PATHS_CHANGED, null, null, Collections.singleton((ClassPath)evt.getSource()));
-                }
-                else if (ClassPath.PROP_INCLUDES.equals(propName)) {
+                } else if (ClassPath.PROP_INCLUDES.equals(propName)) {
                     final Object newPropagationId = evt.getPropagationId();
                     boolean fire;
                     synchronized (this) {
@@ -1103,6 +1123,10 @@ public final class PathRegistry implements Runnable {
                     if (fire) {
                         resetCacheAndFire (EventKind.INCLUDES_CHANGED, PathKind.SOURCE, null, Collections.singleton((ClassPath)evt.getSource()));
                     }
+                } else if (OpenProjects.PROPERTY_OPEN_PROJECTS.equals(propName)) {
+                    if (!firstProjectOpened) {
+                        openProjectChangeTask.schedule(0);
+                    }
                 }
             }
 
@@ -1111,6 +1135,31 @@ public final class PathRegistry implements Runnable {
                     LOGGER.log(Level.FINE, "stateChanged: {0}", event); //NOI18N
                 }
                 resetCacheAndFire(EventKind.PATHS_CHANGED, PathKind.BINARY_LIBRARY, null, null);
+            }
+
+            @Override
+            public void run() {
+                try {
+                    final int len = OpenProjects.getDefault().openProjects().get().length;
+                    if (!firstProjectOpened && len > 0) {
+                        firstProjectOpened = true;
+                        fire(
+                          Collections.singleton(
+                                new PathRegistryEvent.Change(
+                                    EventKind.PATHS_CHANGED,
+                                    PathKind.SOURCE,
+                                    null,
+                                    Collections.<ClassPath>emptySet())),
+                                LogContext.create(
+                                    LogContext.EventType.PATH,
+                                    "Unsupported project(s) opened.")); //NOI18N
+                    }
+                } catch (InterruptedException ex) {
+                    //Pass - not important
+                    LOGGER.fine("Interrupted while waiting for projects to be loaded.");  //NOI18N
+                } catch (ExecutionException ex) {
+                    Exceptions.printStackTrace(ex);
+                }                
             }
     }
 

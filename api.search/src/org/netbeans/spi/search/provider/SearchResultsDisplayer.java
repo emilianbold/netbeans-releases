@@ -101,7 +101,7 @@ public abstract class SearchResultsDisplayer<T> {
             @NullAllowed SearchProvider.Presenter presenter,
             @NonNull String title) {
 
-        return new DefaultSearchResultsDisplayer(helper, searchComposition,
+        return new DefaultSearchResultsDisplayer<U>(helper, searchComposition,
                 presenter, title);
     }
 
@@ -127,11 +127,18 @@ public abstract class SearchResultsDisplayer<T> {
      * Set node that display information from the search listener.
      *
      * This method is called right after a new displayer is created, before
-     * method {@link #getVisualComponent().
+     * method {@link #getVisualComponent()}.
      *
      * The default implementation does nothing. Override it if you want to add
      * the info node to your UI.
      */
     public void setInfoNode(Node infoNode) {
+    }
+
+    /**
+     * Called right after the displayer is closed. It should be overriden to
+     * release all held resources. The default implementation does nothing.
+     */
+    public void closed() {
     }
 }

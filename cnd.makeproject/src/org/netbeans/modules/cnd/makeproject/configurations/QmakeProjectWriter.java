@@ -48,11 +48,13 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.makeproject.SmartOutputStream;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CCCCompilerConfiguration.OptionToString;
+import org.netbeans.modules.cnd.makeproject.api.configurations.CCCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ItemConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem;
@@ -105,7 +107,8 @@ public class QmakeProjectWriter {
         MOC_DIR,
         RCC_DIR,
         UI_DIR,
-        OBJECTS_DIR
+        OBJECTS_DIR,
+        QMAKE_CXXFLAGS
     }
 
     /**
@@ -187,7 +190,7 @@ public class QmakeProjectWriter {
         write(bw, Variable.PKGCONFIG, Operation.ADD, getPkgConfig());
         write(bw, Variable.QT, Operation.SET, configuration.getQmakeConfiguration().getEnabledModules());
 
-        Item[] items = projectDescriptor.getProjectItems();
+        Item[] items = ConfigurationMakefileWriter.getSortedProjectItems(projectDescriptor);
         write(bw, Variable.SOURCES, Operation.ADD, getItems(items, MIMENames.C_MIME_TYPE, MIMENames.CPLUSPLUS_MIME_TYPE));
         write(bw, Variable.HEADERS, Operation.ADD, getItems(items, MIMENames.HEADER_MIME_TYPE));
         write(bw, Variable.FORMS, Operation.ADD, getItems(items, MIMENames.QT_UI_MIME_TYPE));
@@ -207,7 +210,7 @@ public class QmakeProjectWriter {
                 ConfigurationMakefileWriter.getCompilerName(configuration, PredefinedToolKind.CCompiler));
         write(bw, Variable.QMAKE_CXX, Operation.SET,
                 ConfigurationMakefileWriter.getCompilerName(configuration, PredefinedToolKind.CCCompiler));
-
+       
         CompilerSet compilerSet = configuration.getCompilerSet().getCompilerSet();
         OptionToString defineVisitor = new OptionToString(compilerSet, null);
         write(bw, Variable.DEFINES, Operation.ADD,
@@ -216,6 +219,13 @@ public class QmakeProjectWriter {
         write(bw, Variable.INCLUDEPATH, Operation.ADD,
                 configuration.getCCCompilerConfiguration().getIncludeDirectories().toString(includeVisitor));
         write(bw, Variable.LIBS, Operation.ADD, getLibs());
+        if (configuration.getCCCompilerConfiguration().getCppStandard().getValue() != CCCompilerConfiguration.STANDARD_DEFAULT) {
+            AbstractCompiler ccCompiler = compilerSet == null ? null : (AbstractCompiler)compilerSet.getTool(PredefinedToolKind.CCCompiler);
+            if (ccCompiler != null) {
+                write(bw, Variable.QMAKE_CXXFLAGS, Operation.ADD,
+                        ccCompiler.getCppStandardOptions(configuration.getCCCompilerConfiguration().getCppStandard().getValue()));
+            }
+        }
 
         for (String line : configuration.getQmakeConfiguration().getCustomDefs().getValue()) {
             bw.write(line);

@@ -96,12 +96,14 @@ public class NewProject extends AbstractAction {
     public NewProject() {
         putValue(SHORT_DESCRIPTION, LBL_NewProjectAction_Tooltip()); // is this actually useful?
         bodyTask = new RequestProcessor( "NewProjectBody" ).create( new Runnable () { // NOI18N
+            @Override
             public void run () {
                 doPerform ();
             }
         });
     }
 
+    @Override
     public void actionPerformed( ActionEvent evt ) {
         bodyTask.schedule( 0 );
         

@@ -47,6 +47,6 @@ made subject to such option by the copyright holder.
 <!-- for some information on what you could do (e.g. targets to override). -->
 <!-- If you delete this file and reopen the project it will be recreated. -->
 <project name="libs.antlr3.runtime" default="netbeans" basedir=".">
-    <description>Builds, tests, and runs the lib antlr33 runtime.</description>
+    <description>Builds, tests, and runs the lib antlr34 runtime.</description>
     <import file="../nbbuild/templates/projectized.xml"/>
 </project>

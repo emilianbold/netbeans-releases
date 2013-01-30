@@ -53,17 +53,17 @@ import java.net.URLDecoder;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.lang.model.element.Element;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
+import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
-import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 /**
@@ -157,25 +157,23 @@ public class JSFRefactoringUtils {
         return JAVA_MIME_TYPE.equals(f.getMIMEType()); 
     }
     
-    public static CompilationInfo getCompilationInfo(final AbstractRefactoring refactoring, final FileObject fileObject) {
-        CompilationInfo compilationInfo = refactoring.getContext().lookup(CompilationInfo.class);
-        
-        if (compilationInfo == null && fileObject != null) {
-            final ClasspathInfo cpInfo = refactoring.getContext().lookup(ClasspathInfo.class);
-            JavaSource source = JavaSource.create(cpInfo, new FileObject[]{fileObject});
-            try {
-                source.runUserActionTask(new Task<CompilationController>() {
+    public static Element resolveElement(final AbstractRefactoring refactoring, final TreePathHandle treePathHandle) {
+        final ClasspathInfo cpInfo = refactoring.getContext().lookup(ClasspathInfo.class);
+        final Element[] element = new Element[1];
+        JavaSource source = JavaSource.create(cpInfo, new FileObject[]{treePathHandle.getFileObject()});
+        try {
+            source.runUserActionTask(new Task<CompilationController>() {
 
-                    public void run(CompilationController compilationController) throws Exception {
-                        compilationController.toPhase(JavaSource.Phase.RESOLVED);
-                        refactoring.getContext().add(compilationController);
-                    }
-                }, false);
-            } catch (IOException exception) {
-                LOGGER.log(Level.WARNING, "Exception in JSFSafeDeletePlugin", exception); //NOI18NN
-            }
-            compilationInfo = refactoring.getContext().lookup(CompilationInfo.class);
+                @Override
+                public void run(CompilationController info) throws Exception {
+                    info.toPhase(JavaSource.Phase.RESOLVED);
+                    element[0] = treePathHandle.resolveElement(info);
+                }
+            }, true);
+        } catch (IOException exception) {
+            LOGGER.log(Level.WARNING, "Exception by refactoring:", exception); //NOI18NN
         }
-        return compilationInfo;
+
+        return element[0];
     }
 }

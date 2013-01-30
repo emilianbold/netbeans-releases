@@ -70,8 +70,6 @@ import javax.swing.SwingUtilities;
 import org.jdesktop.swingx.JXButton;
 import org.jdesktop.swingx.JXLabel;
 import org.jdesktop.swingx.JXPanel;
-import org.jdesktop.swingx.decorator.Filter;
-import org.jdesktop.swingx.decorator.FilterPipeline;
 import org.netbeans.modules.db.dataview.table.MultiColPatternFilter;
 import org.netbeans.modules.db.dataview.table.ResultSetJXTable;
 import static org.netbeans.modules.db.dataview.table.SuperPatternFilter.MODE.LITERAL_FIND;
@@ -519,7 +517,7 @@ class DataViewUI extends JXPanel {
         {
             MultiColPatternFilter filterP = new MultiColPatternFilter(rows);
             filterP.setFilterStr(matchBoxField.getText(), LITERAL_FIND);
-            table.setFilters(new FilterPipeline(new Filter[]{filterP}));
+            table.setRowFilter(filterP);
         }
     }
 
@@ -601,5 +599,4 @@ class DataViewUI extends JXPanel {
     public void enableDeleteBtn(boolean value) {
         deleteRow.setEnabled(value);
     }
-
 }

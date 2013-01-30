@@ -45,7 +45,10 @@
 package org.netbeans.modules.cnd.modelimpl.csm;
 
 import java.io.IOException;
+import java.util.AbstractList;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -111,7 +114,8 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
     private CharSequence classifierText;
     private volatile CachePair lastCache = EMPTY_CACHE_PAIR;
 
-    final ArrayList<CsmSpecializationParameter> instantiationParams = new ArrayList<CsmSpecializationParameter>();
+    // lazy initialization here, add new params only with addInstantiationParam method
+    private ArrayList<CsmSpecializationParameter> instantiationParams = null;
 
     // FIX for lazy resolver calls
     private CharSequence[] qname = null;
@@ -143,8 +147,21 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
             CndUtils.assertTrueInConsole(false, "why null classifierText?"+classifier);
             this.classifierText = NON_INITIALIZED_CLASSIFIER_TEXT;
         }
-        instantiationParams.trimToSize();
+        trimInstantiationParams();
     }
+    
+    // package-local - for facory only
+    TypeImpl(CsmClassifier classifier, int pointerDepth, boolean reference, int arrayDepth, boolean _const, CsmFile file, int startOffset, int endOffset) {
+        super(file, startOffset, endOffset);
+        this.initClassifier(classifier);
+        this.pointerDepth = (byte) pointerDepth;
+        setFlags(FLAGS_REFERENCE, reference);
+        this.arrayDepth = (byte) arrayDepth;
+        setFlags(FLAGS_CONST, _const);
+        setFlags(FLAGS_TYPE_WITH_CLASSIFIER, true);
+        this.classifierText = classifier.getName();
+        trimInstantiationParams();
+    }    
 
     // package-local - for facory only
     TypeImpl(CsmFile file, int pointerDepth, boolean reference, int arrayDepth, boolean _const, int startOffset, int endOffset) {
@@ -154,7 +171,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
         setFlags(FLAGS_REFERENCE, reference);
         this.arrayDepth = (byte) arrayDepth;
         setFlags(FLAGS_CONST, _const);
-        instantiationParams.trimToSize();
+        trimInstantiationParams();
     }
 
     // package-local - for factory only
@@ -170,10 +187,8 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
         this.classifierUID = type.classifierUID;
         this.qname = type.qname;
         this.classifierText = type.classifierText;
-        if (!type.instantiationParams.isEmpty()) {
-            this.instantiationParams.addAll(type.instantiationParams);
-        }
-        instantiationParams.trimToSize();
+        addAllInstantiationParams(type.instantiationParams);
+        trimInstantiationParams();
     }
 
     public void setTypeOfTypedef() {
@@ -216,10 +231,8 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
         this.classifierUID = type.classifierUID;
         this.qname = type.qname;
         this.classifierText = type.classifierText;
-        if (!instantiationParams.isEmpty()) {
-            this.instantiationParams.addAll(instantiationParams);
-        }
-        this.instantiationParams.trimToSize();
+        addAllInstantiationParams(instantiationParams);
+        trimInstantiationParams();
     }
 
 
@@ -239,11 +252,9 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
             this.classifierUID = ti.classifierUID;
             this.qname = ti.qname;
             this.classifierText = ti.classifierText;
-            if (!ti.instantiationParams.isEmpty()) {
-                this.instantiationParams.addAll(ti.instantiationParams);
-            }
+            addAllInstantiationParams(ti.instantiationParams);
         }
-        instantiationParams.trimToSize();
+        trimInstantiationParams();
     }
 
      /*TypeImpl(AST ast, CsmFile file, int pointerDepth, boolean reference, int arrayDepth) {
@@ -267,17 +278,19 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
 
     private static AST getLastNode(AST first) {
         AST last = first;
-        for( AST token = last; token != null; token = token.getNextSibling() ) {
-            switch( token.getType() ) {
-                case CPPTokenTypes.CSM_VARIABLE_DECLARATION:
-                case CPPTokenTypes.CSM_VARIABLE_LIKE_FUNCTION_DECLARATION:
-                case CPPTokenTypes.CSM_QUALIFIED_ID:
-                case CPPTokenTypes.CSM_ARRAY_DECLARATION:
-                    return AstUtil.getLastChildRecursively(last);
-                default:
-                    last = token;
+        if(last != null) {
+            for( AST token = last.getNextSibling(); token != null; token = token.getNextSibling() ) {
+                switch( token.getType() ) {
+                    case CPPTokenTypes.CSM_VARIABLE_DECLARATION:
+                    case CPPTokenTypes.CSM_VARIABLE_LIKE_FUNCTION_DECLARATION:
+                    case CPPTokenTypes.CSM_QUALIFIED_ID:
+                    case CPPTokenTypes.CSM_ARRAY_DECLARATION:
+                        return AstUtil.getLastChildRecursively(last);
+                    default:
+                        last = token;
+                }
             }
-        }        
+        }
         return null;
     }
 
@@ -301,17 +314,40 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
 
     @Override
     public List<CsmSpecializationParameter> getInstantiationParams() {
-        return instantiationParams;
+        return instantiationParams == null ? Collections.<CsmSpecializationParameter>emptyList() : instantiationParams;
     }
 
     @Override
     public boolean isInstantiation() {
-        return !instantiationParams.isEmpty();
+        return instantiationParams != null;
     }
 
     /** Though it returns the same for now, it's better if its name differs */
     protected boolean isInstantiationOrSpecialization() {
-        return !instantiationParams.isEmpty();
+        return instantiationParams != null;
+    }
+    
+    final void trimInstantiationParams() {
+        if (instantiationParams != null) {
+            instantiationParams.trimToSize();
+        }
+    }
+    
+    final void addAllInstantiationParams(Collection<CsmSpecializationParameter> params) {
+        if (params == null || params.isEmpty()) {
+            return;
+        }
+        if (instantiationParams == null) {
+            instantiationParams = new ArrayList<CsmSpecializationParameter>(params.size());
+        }
+        instantiationParams.addAll(params);
+    }
+    
+    final void addInstantiationParam(CsmSpecializationParameter param) {
+        if (instantiationParams == null) {
+            instantiationParams = new ArrayList<CsmSpecializationParameter>();
+        }
+        instantiationParams.add(param);
     }
 
     @Override
@@ -427,12 +463,22 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
             if( decorator.isReference() ) {
                 sb.append('&');
             }
-            for( int i = 0; i < decorator.getArrayDepth(); i++ ) {
-                sb.append(canonical ? "*" : "[]"); // NOI18N
-            }
-            if( variableNameToInsert != null ) {
-                sb.append(' ');
-                sb.append(variableNameToInsert);
+            if(canonical) {
+                for( int i = 0; i < decorator.getArrayDepth(); i++ ) {
+                    sb.append("*"); // NOI18N
+                }
+                if (variableNameToInsert != null && !(variableNameToInsert.length() == 0)) {
+                    sb.append(' ');
+                    sb.append(variableNameToInsert);
+                }
+            } else {
+                if (variableNameToInsert != null && !(variableNameToInsert.length() == 0)) {
+                    sb.append(' ');
+                    sb.append(variableNameToInsert);
+                }              
+                for( int i = 0; i < decorator.getArrayDepth(); i++ ) {
+                    sb.append("[]"); // NOI18N
+                }
             }
             return sb;
         }
@@ -660,7 +706,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
             ResolverFactory.releaseResolver(resolver);
         }
         if( result == null ) {
-            result = ((ProjectBase) getContainingFile().getProject()).getDummyForUnresolved(qname, getContainingFile(), getStartOffset());
+            result = ProjectBase.getDummyForUnresolved(qname, this);
         }
         return result;
     }
@@ -721,10 +767,10 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
                                     || namePart.getType() == CPPTokenTypes.CSM_TYPE_COMPOUND
                                     || namePart.getType() == CPPTokenTypes.LITERAL_struct) {
                                 CsmType type = AstRenderer.renderType(namePart, getContainingFile(), true);
-                                instantiationParams.add(new TypeBasedSpecializationParameterImpl(type));
+                                addInstantiationParam(new TypeBasedSpecializationParameterImpl(type));
                             }
                             if (namePart.getType() == CPPTokenTypes.CSM_EXPRESSION) {
-                                instantiationParams.add(ExpressionBasedSpecializationParameterImpl.create(ExpressionStatementImpl.create(namePart, getContainingFile(), null),
+                                addInstantiationParam(ExpressionBasedSpecializationParameterImpl.create(ExpressionStatementImpl.create(namePart, getContainingFile(), null),
                                         getContainingFile(), OffsetableBase.getStartOffset(namePart), OffsetableBase.getEndOffset(namePart)));
                             }
                         }
@@ -788,17 +834,20 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
 
     final void _setClassifier(final CsmClassifier classifier) {
         // remove old cached value
-        FileImpl file = (FileImpl) getContainingFile();
-        file.removeResolvedReference(new CsmTypeReferenceImpl(this));
-        CsmUID<CsmClassifier> cUID = UIDCsmConverter.declarationToUID(classifier);
-        this.classifierUID = cUID;
-        // register new cached value
-        if (cUID != null && classifier != null && !CsmKindUtilities.isBuiltIn(classifier) && CsmBaseUtilities.isValid(classifier) && !CsmKindUtilities.isTypedef(classifier)
-            //&& !CsmKindUtilities.isTemplate(classifier) && !isInstantiation()
-           ) {
-           file.addResolvedReference(new CsmTypeReferenceImpl(this), classifier);
+        CsmFile csmFile = getContainingFile();
+        if(csmFile instanceof FileImpl) {
+            FileImpl fileImpl = (FileImpl) csmFile;
+            fileImpl.removeResolvedReference(new CsmTypeReferenceImpl(this));
+            CsmUID<CsmClassifier> cUID = UIDCsmConverter.declarationToUID(classifier);
+            this.classifierUID = cUID;
+            // register new cached value
+            if (cUID != null && classifier != null && !CsmKindUtilities.isBuiltIn(classifier) && CsmBaseUtilities.isValid(classifier) && !CsmKindUtilities.isTypedef(classifier)
+                //&& !CsmKindUtilities.isTemplate(classifier) && !isInstantiation()
+               ) {
+               fileImpl.addResolvedReference(new CsmTypeReferenceImpl(this), classifier);
+            }
+            assert (cUID != null || classifier == null);
         }
-        assert (cUID != null || classifier == null);
     }
 
     @Override
@@ -842,6 +891,33 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
         }
         UIDObjectFactory.getDefaultFactory().writeUID(uid, output);
     }
+    
+    // Proxy list to be able to work with null instantiationParams collection
+    private class ProxyParamsList extends AbstractList<CsmSpecializationParameter> {
+        @Override
+        public boolean add(CsmSpecializationParameter e) {
+            if (instantiationParams == null) {
+                instantiationParams = new ArrayList<CsmSpecializationParameter>();
+            }
+            return instantiationParams.add(e);
+        }
+        
+        @Override
+        public CsmSpecializationParameter get(int index) {
+            if (instantiationParams != null) {
+                return instantiationParams.get(index);
+            }
+            throw new IndexOutOfBoundsException("Index: "+index+", Size: 0"); //NOI18N
+        }
+
+        @Override
+        public int size() {
+            if (instantiationParams != null) {
+                return instantiationParams.size();
+            }
+            return 0;
+        }
+    }
 
     public TypeImpl(RepositoryDataInput input) throws IOException {
         super(input);
@@ -852,8 +928,8 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
         assert this.classifierText != null;
 
         this.qname = PersistentUtils.readStrings(input, NameCache.getManager());
-        PersistentUtils.readSpecializationParameters(this.instantiationParams, input);
-        instantiationParams.trimToSize();
+        PersistentUtils.readSpecializationParameters(new ProxyParamsList(), input);
+        trimInstantiationParams();
         this.classifierUID = UIDObjectFactory.getDefaultFactory().readUID(input);
     }
     

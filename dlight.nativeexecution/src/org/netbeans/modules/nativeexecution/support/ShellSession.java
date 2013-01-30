@@ -43,111 +43,252 @@ package org.netbeans.modules.nativeexecution.support;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
+import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
+import org.netbeans.modules.nativeexecution.api.NativeProcess.State;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
-import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
-import org.openide.util.Exceptions;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
 import org.openide.util.RequestProcessor;
 
 /**
- * This class holds a single shell session per environment
- * to run *quick* tasks.
- * It is synchronized. Use with care!
- * Failed/closed session will be restored automatically on first request.
+ * This class holds a single shell session per environment to run small and
+ * quick tasks.
+ *
+ * It is synchronized. Use with care! Failed/closed session will be restored
+ * automatically when needed.
+ *
+ * UTF-8 charset is used for I/O.
  *
  * @author ak119685
  */
 public final class ShellSession {
 
-    private final static HashMap<ExecutionEnvironment, NativeProcess> sessions =
-            new HashMap<ExecutionEnvironment, NativeProcess>();
+    private static final java.util.logging.Logger log = Logger.getInstance();
+    private static final RequestProcessor RP = new RequestProcessor("ShellSession I/O", 10); // NOI18N
+    private static final HashMap<ExecutionEnvironment, ShellProcess> processes =
+            new HashMap<ExecutionEnvironment, ShellProcess>();
+    private static final String csName = "UTF-8"; // NOI18N
     private static final String eop = "ShellSession.CMDDONE"; // NOI18N
 
     private ShellSession() {
     }
 
-    public static synchronized void shutdown(final ExecutionEnvironment env) {
-        if (sessions.containsKey(env)) {
-            NativeProcess process = sessions.get(env);
-            ProcessUtils.destroy(process);
-            sessions.remove(env);
+    public static void shutdown(final ExecutionEnvironment env) {
+        ShellProcess process;
+
+        synchronized (processes) {
+            process = processes.put(env, null);
+        }
+
+        if (process != null) {
+            log.log(Level.FINE, "{0} - shutdown", process); // NOI18N
+            ProcessUtils.destroy(process.process);
         }
     }
 
-    private static synchronized NativeProcess startProcess(ExecutionEnvironment env) throws IOException, CancellationException {
-        NativeProcess result;
-        NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(env);
-        HostInfo info = HostInfoUtils.getHostInfo(env);
-        npb.setExecutable(info.getShell()).setArguments("-s"); // NOI18N
-        npb.getEnvironment().put("LC_ALL", "C"); // NOI18N
-        result = npb.call();
-        sessions.put(env, result);
-        return result;
-    }
+    private static ShellProcess startProcessIfNeeded(final ExecutionEnvironment env) throws IOException, CancellationException {
+        ShellProcess process;
 
-    public static synchronized String[] execute(final ExecutionEnvironment env, final String command) throws IOException, CancellationException {
-        NativeProcess process = sessions.get(env);
+        synchronized (processes) {
+            process = processes.get(env);
+            if (process != null && ProcessUtils.isAlive(process.process)) {
+                return process;
+            } else {
+                process = null;
+                processes.put(env, null);
+            }
+            try {
+                String shell;
 
-        if (process == null || process.getState() != NativeProcess.State.RUNNING) {
-            process = startProcess(env);
+                HostInfo hostInfo = HostInfoUtils.getHostInfo(env);
+                if (HostInfo.OSFamily.WINDOWS.equals(hostInfo.getOSFamily())) {
+                    shell = hostInfo.getShell();
+                } else {
+                    shell = "/bin/sh"; // NOI18N
+                }
+
+                NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(env);
+                npb.setExecutable(shell).setArguments("-s"); // NOI18N
+                npb.getEnvironment().put("LC_ALL", "C"); // NOI18N
+                NativeProcess sh = npb.call();
+
+                if (sh.getState() == State.RUNNING) {
+                    process = new ShellProcess(sh);
+                    processes.put(env, process);
+                } else {
+                    process = null;
+                }
+            } catch (ConnectionManager.CancellationException ex) {
+                throw new CancellationException(ex.getMessage());
+            }
         }
 
-        String cmd = command + "; echo " + eop + " \n"; // NOI18N
-        process.getOutputStream().write(cmd.getBytes());
-        process.getOutputStream().flush();
+        if (process == null) {
+            throw new IOException("Failed to start shell session on " + env.getDisplayName()); // NOI18N
+        }
 
-        final InputStream errorStream = process.getErrorStream();
-        final AtomicBoolean isReady = new AtomicBoolean(false);
+        log.log(Level.FINE, "{0} - started", process); // NOI18N
 
-        RequestProcessor.getDefault().submit(new Runnable() {
+        return process;
+    }
+
+    public static ExitStatus execute(final ExecutionEnvironment env, final String command) throws IOException, CancellationException {
+        while (true) {
+            final ShellProcess process = startProcessIfNeeded(env);
+            if (process == null) {
+                continue;
+            }
+            synchronized (process) {
+                if (ProcessUtils.isAlive(process.process)) {
+                    try {
+                        ExitStatus result = executeSync(process, env, command);
+                        if (result != null) {
+                            return result;
+                        }
+                    } catch (InterruptedException ex) {
+                        Thread.currentThread().interrupt();
+                        return new ExitStatus(-1, "", ex.getMessage()); // NOI18N
+                    }
+                }
+            }
+        }
+    }
+
+    private static ExitStatus executeSync(final ShellProcess process, final ExecutionEnvironment env, final String command) throws IOException, CancellationException, InterruptedException {
+        StringBuilder sb = new StringBuilder();
+        sb.append('(').append(command).append(')'); // NOI18N
+        sb.append("; echo ").append(eop).append("$?; echo ").append(eop).append(" 1>&2\n"); // NOI18N
+        log.log(Level.FINE, "{0} - \"{1}\"", new Object[]{process, sb.toString()}); // NOI18N
+        OutputStream os = process.process.getOutputStream();
+
+        if (!ProcessUtils.isAlive(process.process)) {
+            return null;
+        }
+
+        try {
+            os.write(sb.toString().getBytes(csName));
+            os.flush();
+        } catch (IOException ex) {
+            log.log(Level.FINE, "{0} - FAILED TO WRITE TO OUTPUT - {1}", new Object[]{process, ex.getMessage()}); // NOI18N
+            return null;
+        }
+
+        final AtomicInteger rc = new AtomicInteger(-1);
+        Future<String> out = RP.submit(new Callable<String>() {
 
             @Override
-            public void run() {
-                try {
-                    while (!isReady.get() && errorStream.available() > 0) {
-                        errorStream.read();
+            public String call() throws Exception {
+                StringBuilder result = new StringBuilder();
+                String line;
+                while ((line = process.out.readLine()) != null) {
+                    if (line.startsWith(eop)) {
+                        rc.set(Integer.parseInt(line.substring(eop.length())));
+                        break;
+                    } else {
+                        result.append(line).append('\n');
                     }
-                } catch (IOException ex) {
                 }
+                return result.toString();
             }
         });
 
-        String[] result = getResult(process.getInputStream());
-        isReady.set(true);
+        Future<String> err = RP.submit(new Callable<String>() {
+
+            @Override
+            public String call() throws Exception {
+                StringBuilder result = new StringBuilder();
+                String line;
+                while ((line = process.err.readLine()) != null) {
+                    if (line.startsWith(eop)) {
+                        break;
+                    } else {
+                        result.append(line).append('\n');
+                    }
+                }
+                return result.toString();
+            }
+        });
+
+        String output, error;
+
+        try {
+            output = out.get();
+        } catch (ExecutionException ex) {
+            return null;
+        }
+
+        try {
+            error = err.get();
+        } catch (ExecutionException ex) {
+            return null;
+        }
+
+        ExitStatus result = new ExitStatus(rc.get(), output, error);
+        log.log(Level.FINE, "{0} - \"{1}\" result is {2}", new Object[]{process, sb.toString(), result}); // NOI18N
         return result;
     }
 
-    private static String[] getResult(InputStream inputStream) throws IOException {
-        ArrayList<String> resultBuffer = new ArrayList<String>();
-        StringBuilder lineBuffer = new StringBuilder();
-        int c;
+    private static class ShellProcess {
 
-        while (true) {
-            if ((c = inputStream.read()) < 0) {
-                break;
+        private final NativeProcess process;
+        private final BufferedReader out;
+        private final BufferedReader err;
+        private final String displayName;
+
+        public ShellProcess(NativeProcess process) {
+            String _displayName;
+            try {
+                _displayName = "ShellProcess@" + process.getExecutionEnvironment().getDisplayName() + " [" + process.getPID() + "]"; // NOI18N
+            } catch (IOException ex) {
+                _displayName = "ShellProcess@" + process.getExecutionEnvironment().getDisplayName() + " [broken]"; // NOI18N
+            }
+            this.displayName = _displayName;
+            this.process = process;
+            // On Ubuntu when tried to use ReadableByteChannel got unexpected
+            // behavior - error was not read from process's error stream...
+            // Is it a 'dup2' call side-effect? ...
+            //
+            // ReadableByteChannel ochannel = Channels.newChannel(process.getInputStream());
+            // out = new BufferedReader(Channels.newReader(ochannel, csName));
+            // ReadableByteChannel echannel = Channels.newChannel(process.getErrorStream());
+            // err = new BufferedReader(Channels.newReader(echannel, csName));
+
+            BufferedReader bout = null;
+            try {
+                bout = new BufferedReader(new InputStreamReader(process.getInputStream(), csName));
+            } catch (UnsupportedEncodingException ex) {
+                bout = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            } finally {
+                out = bout;
             }
 
-            if (c == '\n') {
-                String line = lineBuffer.toString();
-                lineBuffer.setLength(0);
-                if (line.startsWith(eop)) {
-                    break;
-                }
-                resultBuffer.add(line);
-            } else {
-                lineBuffer.append((char) c);
+            BufferedReader berr = null;
+            try {
+                berr = new BufferedReader(new InputStreamReader(process.getErrorStream(), csName));
+            } catch (UnsupportedEncodingException ex) {
+                berr = new BufferedReader(new InputStreamReader(process.getErrorStream()));
+            } finally {
+                err = berr;
             }
         }
 
-        return resultBuffer.toArray(new String[resultBuffer.size()]);
+        @Override
+        public String toString() {
+            return displayName;
+        }
     }
 }

@@ -53,8 +53,6 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.AbstractAction;
-import javax.swing.Action;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.IOUtil;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
@@ -66,6 +64,7 @@ import org.jdom.input.SAXBuilder;
 import org.jdom.output.Format;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.ui.ProjectProblems;
 import org.netbeans.modules.maven.MavenProjectPropsImpl;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.NbMavenProject;
@@ -90,17 +89,13 @@ import org.netbeans.spi.project.ui.CustomizerProvider;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.cookies.EditCookie;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
 import static org.netbeans.modules.maven.customizer.Bundle.*;
 import org.openide.util.NbBundle.Messages;
@@ -135,8 +130,19 @@ public class CustomizerProviderImpl implements CustomizerProvider {
     
     @Messages({
                "TIT_Project_Properties=Project Properties - {0}", 
-               "ERR_MissingPOM=Project's pom.xml file contains invalid xml content. Please fix the file before proceeding."})
+               "ERR_MissingPOM=Project's pom.xml file contains invalid xml content. Please fix the file before proceeding.",
+               "TXT_Unloadable=Project is unloadable, you have to fix the problems before accessing the project properties dialog. Show Problem Resolution dialog?",
+               "TIT_Unloadable=Project unlodable"
+    })
     public void showCustomizer( String preselectedCategory, String preselectedSubCategory ) {
+        if (project.getLookup().lookup(NbMavenProject.class).isUnloadable()) {
+            NotifyDescriptor.Confirmation nd = new NotifyDescriptor.Confirmation(TXT_Unloadable(), TIT_Unloadable());
+            nd.setOptionType(NotifyDescriptor.YES_NO_OPTION);
+            if (DialogDisplayer.getDefault().notify(nd) == NotifyDescriptor.YES_OPTION) {
+                ProjectProblems.showCustomizer(project);
+            }
+            return;
+        }
         try {
             POMModel mdl = init();
             //#171958 start
@@ -389,6 +395,13 @@ public class CustomizerProviderImpl implements CustomizerProvider {
                 OutputStreamWriter outStr = null;
                 try {
                     Document doc;
+                    if (mapping.getActions().isEmpty()) { //#224450 don't write emtpy nbactions.xml files
+                        FileObject fo = pomDir.getFileObject(path);
+                        if (fo != null) {
+                            fo.delete();
+                        }
+                        return;
+                    }
                     FileObject fo = pomDir.getFileObject(path);
                     if (fo == null) {
                         fo = pomDir.createData(path);
@@ -415,12 +428,14 @@ public class CustomizerProviderImpl implements CustomizerProvider {
                     writer.write(mapping, doc, outStr, form);
                 } catch (JDOMException exc){
                     //throw (IOException) new IOException("Cannot parse the nbactions.xml by JDOM.").initCause(exc); //NOI18N
-                    ProblemReporterImpl impl = project != null ? project.getLookup().lookup(ProblemReporterImpl.class) : null;
+                    //TODO this would need it's own problem provider, but how to access it in project lookup if all are merged into one?
+                    NbMavenProjectImpl prj = project != null ? project.getLookup().lookup(NbMavenProjectImpl.class) : null;
+                    ProblemReporterImpl impl = prj != null ? prj.getProblemReporter() : null;
                     if (impl != null && !impl.hasReportWithId(BROKEN_NBACTIONS)) {
                         ProblemReport rep = new ProblemReport(ProblemReport.SEVERITY_MEDIUM,
                                 TXT_Problem_Broken_Actions(),
                                 DESC_Problem_Broken_Actions(exc.getMessage()),
-                                new OpenActions(pomDir.getFileObject(path)));
+                                ProblemReporterImpl.createOpenFileAction(pomDir.getFileObject(path)));
                         rep.setId(BROKEN_NBACTIONS);
                         impl.addReport(rep);
                     }
@@ -435,30 +450,6 @@ public class CustomizerProviderImpl implements CustomizerProvider {
                 }
             }
         });
-    }
-
-    private static class OpenActions extends AbstractAction {
-
-        private FileObject fo;
-
-        OpenActions(FileObject file) {
-            putValue(Action.NAME, NbBundle.getMessage(CustomizerProviderImpl.class, "TXT_OPEN_FILE"));
-            fo = file;
-        }
-
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            if (fo != null) {
-                try {
-                    DataObject dobj = DataObject.find(fo);
-                    EditCookie edit = dobj.getLookup().lookup(EditCookie.class);
-                    edit.edit();
-                } catch (DataObjectNotFoundException ex) {
-                    ex.printStackTrace();
-                }
-            }
-        }
     }
     
 }

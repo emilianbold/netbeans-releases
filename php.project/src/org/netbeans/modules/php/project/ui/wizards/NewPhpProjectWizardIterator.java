@@ -56,6 +56,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.Project;
@@ -80,9 +82,9 @@ import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.Uploa
 import org.netbeans.modules.php.project.ui.options.PhpOptions;
 import org.netbeans.modules.php.project.util.PhpProjectGenerator;
 import org.netbeans.modules.php.project.util.PhpProjectGenerator.ProjectProperties;
-import org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider;
-import org.netbeans.modules.php.spi.phpmodule.PhpModuleExtender;
-import org.netbeans.modules.php.spi.phpmodule.PhpModuleExtender.ExtendingException;
+import org.netbeans.modules.php.spi.framework.PhpFrameworkProvider;
+import org.netbeans.modules.php.spi.framework.PhpModuleExtender;
+import org.netbeans.modules.php.spi.framework.PhpModuleExtender.ExtendingException;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
@@ -110,6 +112,8 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         EXISTING,
         REMOTE,
     }
+
+    private static final Logger LOGGER = Logger.getLogger(NewPhpProjectWizardIterator.class.getName());
 
     private final WizardType wizardType;
     private WizardDescriptor descriptor;
@@ -158,6 +162,7 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         return null;
     }
 
+    @NbBundle.Messages("NewPhpProjectWizardIterator.project.alreadyExists=Project was not created because it already exists (maybe only in memory).")
     @Override
     public Set<FileObject> instantiate(ProgressHandle handle) throws IOException {
         final Set<FileObject> resultSet = new HashSet<FileObject>();
@@ -200,10 +205,26 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
                 monitor = new RemoteProgressMonitor(handle);
                 break;
             default:
-                throw new IllegalArgumentException("Unknown wizard type: " + wizardType);
+                assert false : "Unknown wizard type: " + wizardType;
         }
 
-        final AntProjectHelper helper = PhpProjectGenerator.createProject(createProperties, monitor);
+        AntProjectHelper projectHelper;
+        try {
+            projectHelper = PhpProjectGenerator.createProject(createProperties, monitor);
+        } catch (IllegalArgumentException ex) {
+            LOGGER.log(Level.WARNING, null, ex);
+            warnUser(Bundle.NewPhpProjectWizardIterator_project_alreadyExists());
+            File projectDirectory = createProperties.getProjectDirectory();
+            if (projectDirectory == null) {
+                projectDirectory = createProperties.getSourcesDirectory();
+            }
+            FileObject projDir = FileUtil.toFileObject(projectDirectory);
+            if (projDir != null && projDir.isValid()) {
+                resultSet.add(projDir);
+            }
+            return resultSet;
+        }
+        final AntProjectHelper helper = projectHelper;
         resultSet.add(helper.getProjectDirectory());
 
         final Project project = ProjectManager.getDefault().findProject(helper.getProjectDirectory());
@@ -221,6 +242,11 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
             case REMOTE:
                 downloadRemoteFiles(createProperties, monitor);
                 break;
+            case EXISTING:
+                // noop
+                break;
+            default:
+                assert false : "Unknown wizard type: " + wizardType;
         }
 
         try {
@@ -448,6 +474,7 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         return indexName;
     }
 
+    @org.netbeans.api.annotations.common.SuppressWarnings("NP_BOOLEAN_RETURN_NULL")
     private Boolean isCopyFiles() {
         PhpProjectProperties.RunAsType runAs = getRunAsType();
         if (runAs == null) {
@@ -583,7 +610,7 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
                         FileObject frameworkIndex = properties.getIndexFile();
                         if (frameworkIndex != null) {
                             indexFile = PropertyUtils.relativizeFile(createProperties.getSourcesDirectory(), FileUtil.toFile(frameworkIndex));
-                            assert !indexFile.startsWith("../");
+                            assert indexFile != null && !indexFile.startsWith("../") : "Unexpected index file: " + indexFile;
                             break; // 1st wins
                         }
                     }
@@ -593,6 +620,11 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
                 // try to find index file for downloaded files
                 indexFile = getIndexFile(null);
                 break;
+            case EXISTING:
+                // noop
+                break;
+            default:
+                assert false : "Unknown wizard type: " + wizardType;
         }
 
         if (indexFile == null) {

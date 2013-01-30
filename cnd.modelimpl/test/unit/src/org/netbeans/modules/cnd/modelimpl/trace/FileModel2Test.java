@@ -74,6 +74,32 @@ public class FileModel2Test extends TraceModelTestBase {
         getTraceModel().setDumpPPState(true);
     }
 
+    public void testPreprocDirectives() throws Exception {
+        // #218190 - NPE in APTPredefinedMacroMap
+        performTest("preproc_directives.cc"); // NOI18N
+    }
+
+    public void testPreprocDirectives2() throws Exception {
+        // #218344 - any #warning breaks parser
+        // #218308 - Empty preprocessor directives not supported
+        performTest("sharp_pp_directives.cc"); // NOI18N
+    }
+
+    public void test222800() throws Exception {
+        // #222800 - Unexpected token "{" in declaration with __attribute__ ((packed)) 
+        performTest("iz222800.cc");
+    }
+    
+    public void test217089() throws Exception {
+        // #217089: "#define AAA 1 ## 0" line breaks parser
+        performTest("iz217089.c");
+    }
+    
+    public void test217711() throws Exception {
+        // #217711: complain about recursive include while #pragma once guarding the file
+        performTest("iz217711.h");
+    }
+
     public void test205270() throws Exception {
         // #205270 - R-value references breaks code model parser
         performTest("iz205270.cc");
@@ -427,5 +453,10 @@ public class FileModel2Test extends TraceModelTestBase {
     public void testBug215605() throws Exception {
         // Bug 215605 - Parsing project never finishes
         performTest("bug215605.cpp");
+    }
+
+    public void testBug217390() throws Exception {
+        // Bug 217390 - Code model is unstable on unknown specifiers
+        performTest("bug217390.cpp");
     }
 }

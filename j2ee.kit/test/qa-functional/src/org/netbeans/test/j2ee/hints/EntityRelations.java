@@ -92,10 +92,10 @@ public class EntityRelations extends J2eeTestCase {
     }
 
     public static Test suite() {
-        NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(EntityRelations.class);
+        NbModuleSuite.Configuration conf = emptyConfiguration();
+        conf = conf.addTest(EntityRelations.class);
         conf = addServerTests(Server.GLASSFISH, conf);//register server
-        conf = conf.enableModules(".*").clusters(".*");
-        return NbModuleSuite.create(conf);
+        return conf.suite();
     }
 
     @Override

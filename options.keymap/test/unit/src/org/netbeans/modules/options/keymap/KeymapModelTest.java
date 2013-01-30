@@ -220,8 +220,7 @@ public class KeymapModelTest extends TestCase {
         Collection<ShortcutAction> adding = new ArrayList<ShortcutAction>();
         adding.add(GlobalLookup.km2.sa2);
         String name = "Two";
-        KeymapModel instance = new KeymapModel();
-        Set result = instance.mergeActions(res, adding, name);
+        Set result = KeymapModel.mergeActions(res, adding, name, new HashMap<ShortcutAction, CompoundAction>());
         assertEquals(1, result.size());
         Iterator<ShortcutAction> it = result.iterator();
         ShortcutAction sa = it.next();

@@ -49,30 +49,22 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import org.netbeans.modules.cnd.repository.api.CacheLocation;
 import org.netbeans.modules.cnd.repository.testbench.Stats;
-import org.openide.modules.Places;
+import org.netbeans.modules.cnd.utils.CndUtils;
 
 /**
  *
  * @author Sergey Grinev
  */
 public class StorageAllocator {
-    private final static StorageAllocator instance = new StorageAllocator();
+
     private final File diskRepository;
     
-    private StorageAllocator() {
-        String diskRepositoryPath = System.getProperty("cnd.repository.cache.path");
-        if (diskRepositoryPath != null) {
-            diskRepository = new File(diskRepositoryPath);
-        } else {
-            diskRepository = Places.getCacheSubdirectory("cnd/model"); // NOI18N
-        }
+    public StorageAllocator(CacheLocation cacheLocation) {
+        diskRepository = cacheLocation.getLocation();
     };
-    
-    public static StorageAllocator getInstance() {
-        return instance;
-    }
-    
+
     private Map<CharSequence, String> unit2path = new ConcurrentHashMap<CharSequence, String>();
     
     public String reduceString (String name) {
@@ -91,12 +83,12 @@ public class StorageAllocator {
             try {
                 prefix = URLEncoder.encode(prefix, Stats.ENCODING);
             } catch (UnsupportedEncodingException ex) {
-                ex.printStackTrace();
+                ex.printStackTrace(System.err);
             } 
             
             prefix = reduceString(prefix);
             
-            File pathFile = new File(diskRepository, prefix);
+            File pathFile = new File(getUnitCacheBaseDirectory(unit), prefix);
 
             path = pathFile + File.separator;
             
@@ -113,8 +105,15 @@ public class StorageAllocator {
         unit2path.remove(unitName);
     }
     
+    public boolean renameUnitDirectory (CharSequence oldUnitName, CharSequence newUnitName) {
+        deleteUnitFiles(newUnitName, true);
+        File newUnitStorage = new File(getUnitStorageName(newUnitName));
+        File oldUnitStorage = new File(getUnitStorageName(oldUnitName));
+        return oldUnitStorage.renameTo(newUnitStorage);
+    }
+
     public void deleteUnitFiles (CharSequence unitName, boolean removeUnitFolder) {
-	if( Stats.TRACE_UNIT_DELETION ) System.err.printf("Deleting unit files for %s\n", unitName);
+	if( Stats.TRACE_UNIT_DELETION ) { System.err.printf("Deleting unit files for %s\n", unitName); }
         String path = getUnitStorageName(unitName);
         File pathFile = new File (path);
         deleteDirectory(pathFile, removeUnitFolder);
@@ -129,7 +128,12 @@ public class StorageAllocator {
                         deleteDirectory(files[i], true);
                     } else {
                         if (!files[i].delete()) {
-                            System.err.println("Cannot delete repository file "+files[i].getAbsolutePath());
+                            if (!CndUtils.isUnitTestMode() || Stats.TRACE_IZ_224249) {
+                                System.err.println("Cannot delete repository file "+files[i].getAbsolutePath());
+                                if (Stats.TRACE_IZ_224249) {
+                                    CndUtils.threadsDump();
+                                }
+                            }
                         }
                     }
                 }
@@ -160,6 +164,21 @@ public class StorageAllocator {
                 }
             }
         }
+    }
+
+    public File getCacheBaseDirectory() {
+        return diskRepository;
+    }
+
+    private File getUnitCacheBaseDirectory(CharSequence unit) {
+//        RepositoryCacheDirectoryProvider provider = Lookup.getDefault().lookup(RepositoryCacheDirectoryProvider.class);
+//        if (provider != null) {
+//            File dir = provider.getUnitCacheBaseDirectory(unit);
+//            if (dir != null) {
+//                return dir;
+//            }
+//        }
+        return diskRepository;
     }
 
     private static final long PURGE_TIMEOUT = 14 * 24 * 3600 * 1000l; // 14 days

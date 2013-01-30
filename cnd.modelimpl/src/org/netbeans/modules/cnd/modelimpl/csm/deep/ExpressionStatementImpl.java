@@ -45,12 +45,13 @@
 package org.netbeans.modules.cnd.modelimpl.csm.deep;
 
 
-import java.util.List;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.deep.*;
 
 
 import org.netbeans.modules.cnd.antlr.collections.AST;
+import org.netbeans.modules.cnd.modelimpl.csm.deep.ExpressionBase.ExpressionBuilder;
+import org.netbeans.modules.cnd.modelimpl.csm.deep.ExpressionBase.ExpressionBuilderContainer;
 
 /**
  * Implements CsmExpressionStatement
@@ -65,6 +66,11 @@ public final class ExpressionStatementImpl extends StatementBase implements CsmE
         expr = ExpressionBase.create(ast.getFirstChild(), file, scope);
     }
 
+    private ExpressionStatementImpl(CsmExpression expression, CsmScope scope, CsmFile file, int start, int end) {
+        super(file, start, end, scope);
+        this.expr = expression;
+    }
+    
     public static ExpressionStatementImpl create(AST ast, CsmFile file, CsmScope scope) {
         return new ExpressionStatementImpl(ast, file, scope);
     }
@@ -79,4 +85,25 @@ public final class ExpressionStatementImpl extends StatementBase implements CsmE
         return expr;
     }
 
+    public static class ExpressionStatementBuilder extends StatementBuilder implements ExpressionBuilderContainer {
+
+        private ExpressionBuilder expressionBuilder;
+
+        @Override
+        public void addExpressionBuilder(ExpressionBuilder expression) {
+            this.expressionBuilder = expression;
+        }
+        
+        @Override
+        public ExpressionStatementImpl create() {
+            ExpressionBase expression = null;
+            if(expressionBuilder != null) {
+                expressionBuilder.setScope(getScope());
+                expression = expressionBuilder.create();
+            }
+            ExpressionStatementImpl stmt = new ExpressionStatementImpl(expression, getScope(), getFile(), getStartOffset(), getEndOffset());
+            return stmt;
+        }
+    }
+    
 }

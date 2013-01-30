@@ -43,11 +43,13 @@ package org.netbeans.modules.editor.bookmarks.ui;
 
 import java.awt.Point;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import javax.swing.JTable;
 import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
+import javax.swing.SwingUtilities;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
@@ -79,7 +81,7 @@ public class BookmarksTable extends ETable {
         col.setHeaderValue(NbBundle.getMessage(BookmarksTable.class, "LBL_BookmarkName"));
 
         col = colModel.getColumn(BookmarksTableModel.KEY_COLUMN);
-        col.setHeaderValue(NbBundle.getMessage(BookmarksTable.class, "LBL_BookmarkKeySingleLetter"));
+        col.setHeaderValue(NbBundle.getMessage(BookmarksTable.class, "LBL_BookmarkKey"));
 
         col = colModel.getColumn(BookmarksTableModel.LOCATION_COLUMN);
         col.setHeaderValue(NbBundle.getMessage(BookmarksTable.class, "LBL_BookmarkLocation"));
@@ -92,6 +94,26 @@ public class BookmarksTable extends ETable {
                 int columnIndex = header.columnAtPoint(e.getPoint());
                 if (columnIndex != -1) {
                     header.setToolTipText(getHeaderToolTipText(columnIndex));
+                }
+            }
+        });
+
+        // doubleclick jumps to source in editor
+        addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() == 2 || SwingUtilities.isRightMouseButton(e)) {
+                    if (getModel() instanceof BookmarksTableModel) {
+                        BookmarksTableModel model = (BookmarksTableModel) getModel();
+                        int row = ((JTable) e.getSource()).getSelectedRow();
+
+                        final BookmarkNode node = model.getEntry(row);
+                        if (e.getClickCount() == 2) {
+                            node.openInEditor();
+                        } else if (SwingUtilities.isRightMouseButton(e)) {
+                            node.getContextMenu().show(BookmarksTable.this, e.getPoint().x, e.getPoint().y);
+                        }
+                    }
                 }
             }
         });

@@ -43,10 +43,7 @@ package org.netbeans.modules.options.keymap;
 
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Container;
 import java.awt.Window;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.Arrays;
@@ -73,27 +70,12 @@ import org.openide.util.NbBundle;
  * Cell Editor for shortcuts column
  * @author Max Sauer
  */
-public class ButtonCellEditor extends DefaultCellEditor {
+class ButtonCellEditor extends DefaultCellEditor {
 
     private Object              action;
     private KeymapViewModel     model;
     private String              orig;
-    private FocusListener       focusListener = new FocusListener () {
-
-        @Override
-        public void focusGained (FocusEvent e) {
-            System.err.println("Bu");
-        }
-
-        @Override
-        public void focusLost (FocusEvent e) {
-            Component oppositeComponent = e.getOppositeComponent();
-            if (oppositeComponent == null || !SwingUtilities.isDescendingFrom(oppositeComponent, cell)) {
-                cancelCellEditing();
-            }
-        }
-    };
-
+    
     private KeyAdapter escapeAdapter = new KeyAdapter() {
 
         @Override
@@ -101,7 +83,7 @@ public class ButtonCellEditor extends DefaultCellEditor {
             if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
                 JTable table = (JTable) cell.getParent();
                 table.getCellEditor().cancelCellEditing();
-                ((KeymapPanel)table.getParent().getParent().getParent()).getModel().update();
+                model.update();
             }
         }
     };
@@ -123,22 +105,21 @@ public class ButtonCellEditor extends DefaultCellEditor {
         if (shortcutPrefix.contains(" ")) {//multi-key shortcuts conflict
             shortcutPrefix = shortcutPrefix.substring(0, shortcutPrefix.indexOf(' '));
         }
-        String[] shortcuts = model.getShortcuts(action);
+        String[] shortcuts = model.getMutableModel().getShortcuts(action);
         for (int i = 0; i < shortcuts.length; i++) {
             if (shortcuts[i].startsWith(shortcutPrefix)) {
-                model.removeShortcut(action, shortcuts[i]);
+                model.getMutableModel().removeShortcut(action, shortcuts[i]);
             }
         }
     }
     
-    private void refocusTableCell(JTable parent) {
-        
-    }
-
     @Override
     public boolean stopCellEditing() {
         String s = cell.toString();
-        Window ancestorWindow = SwingUtilities.getWindowAncestor(cell);
+        Window ancestorWindow = (Window)SwingUtilities.getRoot(cell);
+        if (ancestorWindow == null) {
+            return true;
+        }
         // HACK: if this Editor creates a dialog, it will lose the focus and Swing
         // will remove the editor, calling JTable.cancelEditing. Any re-selections performed
         // by the JTable will occur BEFORE the dialog is finished, so we need to
@@ -147,10 +128,10 @@ public class ButtonCellEditor extends DefaultCellEditor {
         JTable parent = (JTable)cell.getParent();
         
         ShortcutAction sca = (ShortcutAction) action;
-        Set<ShortcutAction> conflictingAction = model.findActionForShortcutPrefix(s);
+        Set<ShortcutAction> conflictingAction = model.getMutableModel().findActionForShortcutPrefix(s);
         conflictingAction.remove(sca); //remove the original action
         
-        Collection<ShortcutAction> sameScopeActions = model.filterSameScope(conflictingAction, sca);
+        Collection<ShortcutAction> sameScopeActions = model.getMutableModel().filterSameScope(conflictingAction, sca);
         
         if (!conflictingAction.isEmpty()) {
             //there is a conflicting action, show err dialog
@@ -174,11 +155,9 @@ public class ButtonCellEditor extends DefaultCellEditor {
         }
         cell.getTextField().removeActionListener(delegate);
         cell.getTextField().removeKeyListener(escapeAdapter);
-        cell.getTextField().removeFocusListener (focusListener);
-        cell.getButton ().removeFocusListener (focusListener);
-        model.removeShortcut((ShortcutAction) action, orig);
+        model.getMutableModel().removeShortcut((ShortcutAction) action, orig);
         if (!(s.length() == 0)) // do not add empty shortcuts
-            model.addShortcut((ShortcutAction) action, s);
+            model.getMutableModel().addShortcut((ShortcutAction) action, s);
         fireEditingStopped();
         setBorderEmpty();
         model.update();
@@ -202,8 +181,6 @@ public class ButtonCellEditor extends DefaultCellEditor {
         final JTextField textField = cell.getTextField();
         textField.addActionListener(delegate);
         textField.setBorder(new LineBorder(Color.BLACK));
-        textField.addFocusListener (focusListener);
-        cell.getButton ().addFocusListener (focusListener);
         if(!Arrays.asList(textField.getKeyListeners()).contains(escapeAdapter)) {
             textField.addKeyListener(escapeAdapter);
         }

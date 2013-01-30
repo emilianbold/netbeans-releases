@@ -56,7 +56,7 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 public final class FileMacrosKey extends ProjectFileNameBasedKey {
 
     public FileMacrosKey(FileImpl file) {
-	super(ProjectFileNameBasedKey.getProjectName(file), file.getAbsolutePath());
+	super(file);
     }
 
     public FileMacrosKey(RepositoryDataInput aStream) throws IOException {

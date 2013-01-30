@@ -1,18 +1,55 @@
 /*
- * AnnotationsPanel1.java
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Created on January 17, 2006, 4:27 PM
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Oracle in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
  */
 
 package org.netbeans.modules.options.colors;
 
-import org.netbeans.modules.options.colors.spi.FontsColorsController;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -34,6 +71,10 @@ import javax.swing.text.AttributeSet;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import org.netbeans.api.editor.settings.EditorStyleConstants;
+import org.netbeans.api.options.OptionsDisplayer;
+import org.netbeans.modules.options.colors.spi.FontsColorsController;
+import org.netbeans.spi.options.OptionsPanelController;
+import org.openide.awt.ColorComboBox;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 
@@ -41,8 +82,9 @@ import org.openide.util.NbBundle;
  *
  * @author  Jan Jancura
  */
+@OptionsPanelController.Keywords(keywords = {"#KW_AnnotationPanel"}, location = OptionsDisplayer.FONTSANDCOLORS, tabTitle="#Annotations_tab.displayName")
 public class AnnotationsPanel extends JPanel implements ActionListener, 
-    PropertyChangeListener, FontsColorsController {
+    ItemListener, FontsColorsController {
     
     private ColorModel          colorModel;
     private boolean		listen = false;
@@ -67,9 +109,6 @@ public class AnnotationsPanel extends JPanel implements ActionListener,
         cbWaveUnderlined.getAccessibleContext ().setAccessibleDescription (loc ("AD_Wave_Underlined"));
         lCategories.getAccessibleContext ().setAccessibleName (loc ("AN_Categories"));
         lCategories.getAccessibleContext ().setAccessibleDescription (loc ("AD_Categories"));
-        ColorComboBox.init (cbForeground);
-        ColorComboBox.init (cbBackground);
-        ColorComboBox.init (cbWaveUnderlined);
         lCategories.setSelectionMode (ListSelectionModel.SINGLE_SELECTION);
         lCategories.setVisibleRowCount (3);
         lCategories.addListSelectionListener (new ListSelectionListener () {
@@ -79,12 +118,9 @@ public class AnnotationsPanel extends JPanel implements ActionListener,
             }
         });
 	lCategories.setCellRenderer (new CategoryRenderer ());
-        cbForeground.addPropertyChangeListener (this);
-        ((JComponent)cbForeground.getEditor()).addPropertyChangeListener (this);
-        cbBackground.addPropertyChangeListener (this);
-        ((JComponent)cbBackground.getEditor()).addPropertyChangeListener (this);
-        cbWaveUnderlined.addPropertyChangeListener (this);
-        ((JComponent)cbWaveUnderlined.getEditor()).addPropertyChangeListener (this);
+        cbForeground.addItemListener(this);
+        cbBackground.addItemListener(this);
+        cbWaveUnderlined.addItemListener(this);
         
         lCategory.setLabelFor (lCategories);
         loc(lCategory, "CTL_Category");
@@ -107,9 +143,9 @@ public class AnnotationsPanel extends JPanel implements ActionListener,
         lForeground = new javax.swing.JLabel();
         lbackground = new javax.swing.JLabel();
         lWaveUnderlined = new javax.swing.JLabel();
-        cbForeground = new javax.swing.JComboBox();
-        cbBackground = new javax.swing.JComboBox();
-        cbWaveUnderlined = new javax.swing.JComboBox();
+        cbForeground = new ColorComboBox();
+        cbBackground = new ColorComboBox();
+        cbWaveUnderlined = new ColorComboBox();
 
         lCategory.setText(org.openide.util.NbBundle.getMessage(AnnotationsPanel.class, "CTL_Category")); // NOI18N
 
@@ -187,9 +223,11 @@ public class AnnotationsPanel extends JPanel implements ActionListener,
         changed = true;
     }
     
-    public void propertyChange (PropertyChangeEvent evt) {
+    @Override
+    public void itemStateChanged( ItemEvent e ) {
+        if( e.getStateChange() == ItemEvent.DESELECTED )
+            return;
         if (!listen) return;
-        if (evt.getPropertyName () != ColorComboBox.PROP_COLOR) return;
         updateData ();
     }
     
@@ -271,21 +309,21 @@ public class AnnotationsPanel extends JPanel implements ActionListener,
         Vector<AttributeSet> annotations = getAnnotations(currentScheme);
         SimpleAttributeSet c = (SimpleAttributeSet) annotations.get(lCategories.getSelectedIndex());
         
-        Color color = ColorComboBox.getColor(cbBackground);
+        Color color = ColorComboBoxSupport.getSelectedColor( (ColorComboBox)cbBackground );
         if (color != null) {
             c.addAttribute(StyleConstants.Background, color);
         } else {
             c.removeAttribute(StyleConstants.Background);
         }
         
-        color = ColorComboBox.getColor(cbForeground);
+        color = ColorComboBoxSupport.getSelectedColor( (ColorComboBox)cbForeground );
         if (color != null) {
             c.addAttribute(StyleConstants.Foreground, color);
         } else {
             c.removeAttribute(StyleConstants.Foreground);
         }
         
-        color = ColorComboBox.getColor(cbWaveUnderlined);
+        color = ColorComboBoxSupport.getSelectedColor( (ColorComboBox)cbWaveUnderlined );
         if (color != null) {
             c.addAttribute(EditorStyleConstants.WaveUnderlineColor, color);
         } else {
@@ -317,30 +355,21 @@ public class AnnotationsPanel extends JPanel implements ActionListener,
             if (inheritedForeground == null) {
                 inheritedForeground = Color.black;
             }
-            ColorComboBox.setInheritedColor(cbForeground, inheritedForeground);
+            ColorComboBoxSupport.setInheritedColor((ColorComboBox)cbForeground, inheritedForeground);
             
             Color inheritedBackground = (Color) defAs.getAttribute(StyleConstants.Background);
             if (inheritedBackground == null) {
                 inheritedBackground = Color.white;
             }
-            ColorComboBox.setInheritedColor(cbBackground, inheritedBackground);
+            ColorComboBoxSupport.setInheritedColor((ColorComboBox)cbBackground, inheritedBackground);
         }
 
         // set values
         Vector<AttributeSet> annotations = getAnnotations (currentScheme);
         AttributeSet c = annotations.get (index);
-        ColorComboBox.setColor (
-            cbForeground,
-            (Color) c.getAttribute (StyleConstants.Foreground)
-        );
-        ColorComboBox.setColor (
-            cbBackground,
-            (Color) c.getAttribute (StyleConstants.Background)
-        );
-        ColorComboBox.setColor (
-            cbWaveUnderlined,
-            (Color) c.getAttribute (EditorStyleConstants.WaveUnderlineColor)
-        );
+        ColorComboBoxSupport.setSelectedColor( (ColorComboBox)cbForeground, (Color) c.getAttribute (StyleConstants.Foreground));
+        ColorComboBoxSupport.setSelectedColor( (ColorComboBox)cbBackground, (Color) c.getAttribute (StyleConstants.Background));
+        ((ColorComboBox)cbWaveUnderlined).setSelectedColor((Color) c.getAttribute (EditorStyleConstants.WaveUnderlineColor));
         listen = true;
     }
     

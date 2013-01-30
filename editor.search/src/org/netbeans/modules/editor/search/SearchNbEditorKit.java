@@ -58,15 +58,12 @@ import org.netbeans.editor.ext.ExtKit;
 import org.netbeans.modules.editor.NbEditorKit;
 
 @MimeRegistration(mimeType = SearchNbEditorKit.SEARCHBAR_MIMETYPE, service = EditorKit.class)
-public class SearchNbEditorKit extends NbEditorKit {
+public final class SearchNbEditorKit extends NbEditorKit {
 
-    public static final String INCREMENTAL_SEARCH_FORWARD = "incremental-search-forward";
-    public static final String INCREMENTAL_SEARCH_BACKWARD = "incremental-search-backward";
     public static final String REPLACE_ACTION = "replace"; // NOI18N
-    public static final ExtKit.FindAction DIALOG_FIND_ACTION = new FindAction();
-    public static final ExtKit.ReplaceAction DIALOG_REPLACE_ACTION = new ReplaceAction();
-    public static final String SEARCHBAR_MIMETYPE = "text/x-editor-search";
-    public static final String PROP_SEARCH_CONTAINER = "diff.search.container";
+    public static final String SEARCH_ACTION = "find"; // NOI18N
+    public static final String SEARCHBAR_MIMETYPE = "text/x-editor-search"; // NOI18N
+    public static final String PROP_SEARCH_CONTAINER = "diff.search.container"; // NOI18N
 
     public static <T> T findComponent(Container container, Class<T> componentClass, int depth) {
         if (depth > 0) {
@@ -133,11 +130,12 @@ public class SearchNbEditorKit extends NbEditorKit {
                                     if (searchBarInstance.hadFocusOnTextField()) {
                                         replaceBarInstance.gainFocus();
                                     }
-                                    if (!target.isEditable())
+                                    if (!target.isEditable()) {
                                         replaceBarInstance.looseFocus();
+                                    }
                                 }
-                                
-                                
+
+
                                 jp.revalidate();
 
                                 if (searchBarInstance.hadFocusOnTextField()) {

@@ -51,8 +51,9 @@ import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable.Position;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstRenderer;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
-import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableBase;
+import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableIdentifiableBase.NameBuilder;
+import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableIdentifiableBase.OffsetableIdentifiableBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.ExpressionStatementImpl;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
@@ -300,10 +301,10 @@ public class TypeFactory {
                                             || namePart.getType() == CPPTokenTypes.LITERAL_class
                                             || namePart.getType() == CPPTokenTypes.LITERAL_union) {
                                         CsmType t = AstRenderer.renderType(namePart, file, true);
-                                        type.instantiationParams.add(new TypeBasedSpecializationParameterImpl(t));
+                                        type.addInstantiationParam(new TypeBasedSpecializationParameterImpl(t));
                                     }
                                     if (namePart.getType() == CPPTokenTypes.CSM_EXPRESSION) {
-                                        type.instantiationParams.add(ExpressionBasedSpecializationParameterImpl.create(ExpressionStatementImpl.create(namePart, type.getContainingFile(), scope),
+                                        type.addInstantiationParam(ExpressionBasedSpecializationParameterImpl.create(ExpressionStatementImpl.create(namePart, type.getContainingFile(), scope),
                                                 type.getContainingFile(), OffsetableBase.getStartOffset(namePart), OffsetableBase.getEndOffset(namePart)));
                                     }
                                 }
@@ -322,11 +323,10 @@ public class TypeFactory {
         return type;
     }
 
-    public static class TypeBuilder implements CsmObjectBuilder {
+    public static class TypeBuilder extends OffsetableIdentifiableBuilder {
         
-        private CharSequence name;// = CharSequences.empty();
-        private int nameStartOffset;
-        private int nameEndOffset;
+        private NameBuilder nameBuilder;
+        private StringBuilder specifierBuilder;
         
         private int pointerDepth = 0;
         private int arrayDepth = 0;
@@ -334,62 +334,75 @@ public class TypeFactory {
         private boolean reference;
         private boolean _const;
         
+        private boolean typedef = false;
+        
         private CsmClassifier cls;
         
-        private CsmFile file;
-        private int startOffset;
-        private int endOffset;
         
-        private TypeBuilder child;
+        private CsmScope scope;
 
         final ArrayList<CsmSpecializationParameter> instantiationParams = new ArrayList<CsmSpecializationParameter>();
         
-        public void setName(CharSequence name, int startOffset, int endOffset) {
-            if(this.name == null) {
-                this.name = name;
-                this.nameStartOffset = startOffset;
-                this.nameEndOffset = endOffset;
-            }
+        public void setNameBuilder(NameBuilder nameBuilder) {
+            this.nameBuilder = nameBuilder;
         }
 
-        public void setFile(CsmFile file) {
-            this.file = file;
-        }
-        
-        public void setEndOffset(int endOffset) {
-            this.endOffset = endOffset;
-        }
-
-        public void setStartOffset(int startOffset) {
-            this.startOffset = startOffset;
-        }
-
-        public void setChild(TypeBuilder child) {
-            this.child = child;
-        }
-        
         public void setClassifier(CsmClassifier cls) {
             this.cls = cls;
         }
+
+        public void setTypedef() {
+            this.typedef = true;
+        }
         
-        public CsmType create(CsmType parent) {
-            TypeImpl type;
-            if(parent != null) {
-                type = NestedType.create(parent, file, parent.getPointerDepth(), parent.isReference(), parent.getArrayDepth(), parent.isConst(), parent.getStartOffset(), parent.getEndOffset());
+        public void setSimpleTypeSpecifier(CharSequence specifier) {
+            if(specifierBuilder == null) {
+                specifierBuilder = new StringBuilder(specifier);
             } else {
-                type = new TypeImpl(file, pointerDepth, reference, arrayDepth, _const, startOffset, endOffset);
+                specifierBuilder.append(" "); // NOI18N
+                specifierBuilder.append(specifier);
             }
-            type.setClassifierText(name);
-            List<CharSequence> l = new ArrayList<CharSequence>();
-            l.add(name);
-            type.setQName(l.toArray(new CharSequence[l.size()]));
-            type.initClassifier(cls);
-            type.instantiationParams.addAll(instantiationParams);
+        }
+        
+        public CsmScope getScope() {
+            return scope;
+        }
+
+        public void setScope(CsmScope scope) {
+            assert scope != null;
+            this.scope = scope;
+        }        
+        public CsmType create() {
+            assert scope != null;
             
-            if(child != null) {
-                return child.create(type);
+            TypeImpl type = null;
+            boolean first = true;
+            if(nameBuilder != null) {
+                for (NameBuilder.NamePart namePart : nameBuilder.getNames()) {
+                    if(first) {
+                        first = false;
+                        List<CharSequence> nameList = new ArrayList<CharSequence>();
+                        type = new TypeImpl(getFile(), pointerDepth, reference, arrayDepth, _const, getStartOffset(), getEndOffset());
+                        nameList.add(namePart.getPart());
+                        type.setClassifierText(namePart.getPart());
+                        type.setQName(nameList.toArray(new CharSequence[nameList.size()]));
+                    } else {
+                        List<CharSequence> nameList = new ArrayList<CharSequence>();
+                        type = NestedType.create(TemplateUtils.checkTemplateType(type, scope), getFile(), type.getPointerDepth(), type.isReference(), type.getArrayDepth(), type.isConst(), type.getStartOffset(), type.getEndOffset());
+                        nameList.add(namePart.getPart());
+                        type.setClassifierText(namePart.getPart());
+                        type.setQName(nameList.toArray(new CharSequence[nameList.size()]));                    
+                    }
+                    for (SpecializationDescriptor.SpecializationParameterBuilder param : namePart.getParams()) {
+                        param.setScope(getScope());
+                        type.addInstantiationParam(param.create());
+                    }
+                }
+            } else if (specifierBuilder != null) {
+                CsmClassifier classifier = BuiltinTypes.getBuiltIn(specifierBuilder.toString());
+                type = new TypeImpl(classifier, pointerDepth, reference, arrayDepth, _const, getFile(), getStartOffset(), getEndOffset());
             }
-            return type;
+            return TemplateUtils.checkTemplateType(type, scope);
         }
     }
    

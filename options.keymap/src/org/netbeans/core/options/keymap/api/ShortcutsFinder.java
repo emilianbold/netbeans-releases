@@ -50,7 +50,7 @@ import java.util.Set;
  * Objects implementing this interface serve as providers for storing
  * the shortcuts definitions.
  * 
- * @author David Strupl
+ * @author David Strupl, Svata Dedic
  */
 public interface ShortcutsFinder {
     /**
@@ -73,8 +73,8 @@ public interface ShortcutsFinder {
      * @return The shortcut that the user has selected on <code>null</code>
      *      if the user has cancelled the dialog
      */
-    
     String showShortcutsDialog();
+    
     /**
      * Retrieve all the shortcuts assigned to a given action.
      * @param action 
@@ -91,11 +91,39 @@ public interface ShortcutsFinder {
      * Assigns the given shortcuts to the given action.
      * @param action 
      * @param shortcuts 
+     * @deprecated use {@link copy} to get a Writer. Method will be removed in NB 7.4
      */
+    @Deprecated
     void setShortcuts(ShortcutAction action, Set<String> shortcuts);
     
     /**
      * Applies the changes by storing them to the storage.
+     * @deprecated use {@link copy} to get a Writer. Method will be removed in NB 7.4
      */
+    @Deprecated
     void apply();
+    
+    /**
+     * Creates a local copy of the global shared Finder. Finders cannot be chained
+     * using localCopy, each copy starts from the persistent data state. The local copy
+     * is not thread-safe. The finder will come preinitialized, if called on background,
+     * can save AWT thread from freezing during action loading and construction.
+     * 
+     * @return local writable copy of the shortcuts
+     */
+    Writer localCopy();
+    
+    public interface Writer extends ShortcutsFinder {
+        /**
+         * Assigns the given shortcuts to the given action.
+         * @param action 
+         * @param shortcuts 
+         */
+        void setShortcuts(ShortcutAction action, Set<String> shortcuts);
+
+        /**
+         * Applies the changes by storing them to the storage.
+         */
+        void apply();
+    }
 }

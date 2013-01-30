@@ -70,21 +70,30 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
 import org.openide.LifecycleManager;
 import org.openide.modules.Dependency;
 import org.openide.modules.ModuleInfo;
 import org.openide.modules.Modules;
+import org.openide.modules.OnStop;
 import org.openide.modules.Places;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.Enumerations;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
+import org.openide.util.NbBundle;
+import org.openide.util.Task;
 import org.openide.util.TopologicalSortException;
 import org.openide.util.Union2;
 import org.openide.util.Utilities;
@@ -1911,6 +1920,31 @@ public final class ModuleManager extends Modules {
      * @since org.netbeans.core/1 1.11
      */
     public boolean shutDown(Runnable midHook) {
+        try {
+            return shutDownAsync(midHook).get();
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (ExecutionException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return false;
+    }
+    /** Partially asynchronous support for shutdown of the system. 
+    * First all modules are asked if they wish to close, in the proper order.
+     * Assuming they say yes, a hook is run, then they are informed of the close.
+     * If they did not agree to close, the hook is not run.
+     * All {@link OnStop} runnables are executed in asynchronously and
+     * one can wait for the result of such execution by observing the 
+     * returned {@link Future}.
+     * 
+     * @param midHook a hook to run before closing modules if they agree to close
+     * @return a future with final result. true if modules agreed the shutdown.
+     *   <code>false</code> when they didn't.
+     *   As soon as the <code>get()</code> method returns <code>true</code> 
+     *   the module system is properly shut down.
+     * @since 2.56
+     */
+    public Future<Boolean> shutDownAsync(Runnable midHook) {
         assertWritable();
         Set<Module> unorderedModules = getEnabledModules();
         Map<String, Set<Module>> providersMap = new HashMap<String, Set<Module>>();
@@ -1927,10 +1961,10 @@ public final class ModuleManager extends Modules {
                 Util.err.log(Level.WARNING, null, ex);
             }
             Util.err.warning("Cyclic module dependencies, will not shut down cleanly: " + deps); // NOI18N
-            return true;
+            return new TaskFuture(true, Task.EMPTY);
         }
         if (!TopSecurityManager.officialExit && !installer.closing(sortedModules)) {
-            return false;
+            return new TaskFuture(false, Task.EMPTY);
         }
         if (midHook != null) {
             try {
@@ -1942,18 +1976,8 @@ public final class ModuleManager extends Modules {
             }
         }
         netigso.shutdownFramework();
-        installer.close(sortedModules);
-        return true;
-    }
-    static {
-        Runtime.getRuntime().addShutdownHook(new Thread("close modules") { // NOI18N
-            public @Override void run() {
-                if (System.getSecurityManager() instanceof TopSecurityManager) {
-                    TopSecurityManager.officialExit = true;
-                    LifecycleManager.getDefault().exit();
-                }
-            }
-        });
+        Task task = installer.closeAsync(sortedModules);
+        return new TaskFuture(true, task);
     }
     private class ModuleDataCache implements Stamps.Updater {
         private static final String CACHE = "all-manifests.dat";
@@ -1975,6 +1999,17 @@ public final class ModuleManager extends Modules {
             char otherChar = File.separatorChar == '/' ? '\\' : '/';
             if (is != null) try {
                 DataInputStream dis = new DataInputStream(is);
+                
+                String locale = dis.readUTF();
+                String branding = dis.readUTF();
+                
+                if (!Locale.getDefault().toString().equals(locale)) {
+                    throw new IOException();
+                }
+                if (!branding.equals(nonNullBranding())) {
+                    throw new IOException();
+                }
+                
                 map = new HashMap<String, byte[]>();
                 osgi = new HashMap<String, Boolean>();
                 cnbs = new HashMap<String, String>();
@@ -2037,6 +2072,9 @@ public final class ModuleManager extends Modules {
         
         @Override
         public void flushCaches(DataOutputStream os) throws IOException {
+            os.writeUTF(Locale.getDefault().toString());
+            os.writeUTF(nonNullBranding());
+            
             Set<Module> store = getModules();
             os.writeInt(store.size());
             for (Module m : store) {
@@ -2127,6 +2165,11 @@ public final class ModuleManager extends Modules {
             for (String s : cnbs) {
                 os.writeUTF(s);
             }
+        }
+
+        private String nonNullBranding() {
+            String s = NbBundle.getBranding();
+            return s == null ? "" : s;
         }
     }
 }

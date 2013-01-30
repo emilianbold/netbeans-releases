@@ -97,13 +97,13 @@ public abstract class AbstractOutputHandler {
                 exitProtectedMode();
             }
         });
-        enterProtectedMode(false);
+        enterProtectedMode(true);
     }
 
     private void enterProtectedMode(boolean wait) {
         synchronized (protectedModeLock) {
             if (protectedMode == null) {
-                protectedMode = IndexingBridge.getDefault().protectedMode();
+                protectedMode = IndexingBridge.getDefault().protectedMode(wait);
             }
         }
     }

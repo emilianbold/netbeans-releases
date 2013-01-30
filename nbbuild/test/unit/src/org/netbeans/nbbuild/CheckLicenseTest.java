@@ -226,24 +226,32 @@ public class CheckLicenseTest extends TestBase {
     
     public void testReplaceJavaLicense() throws Exception {
         java.io.File tmp = extractString(
-"/*\n" + 
-" *                 Sun Public License Notice\n" +
+"/*\n" +
+" * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.\n" +
 " *\n" +
-" * The contents of this file are subject to the Sun Public License\n" +
-" * Version 1.0 (the \"License\"). You may not use this file except in\n" +
-" * compliance with the License. A copy of the License is available at\n" +
-" * http://www.sun.com/\n" +
+" * Copyright 2012 Oracle and/or its affiliates. All rights reserved.\n" +
 " *\n" +
-" * The Original Code is NetBeans. The Initial Developer of the Original\n" +
-" * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun\n" +
-" * Microsystems, Inc. All Rights Reserved.\n" +
-" */\n" +
-"\n" +            
-"package test;\n" +
-"public class MyTest {\n" +
-"  public static int FIELD = 1;\n" +
-"}\n" +
-"\n"
+" * Oracle and Java are registered trademarks of Oracle and/or its affiliates.\n" +
+" * Other names may be trademarks of their respective owners.\n" +
+" *\n" +
+" * The contents of this file are subject to the terms of either the GNU\n" +
+" * General Public License Version 2 only (\"GPL\") or the Common\n" +
+" * Development and Distribution License(\"CDDL\") (collectively, the\n" +
+" * \"License\"). You may not use this file except in compliance with the\n" +
+" * License. You can obtain a copy of the License at\n" +
+" * http://www.netbeans.org/cddl-gplv2.html\n" +
+" * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the\n" +
+" * specific language governing permissions and limitations under the\n" +
+" * License.  When distributing the software, include this License Header\n" +
+" * Notice in each file and include the License file at\n" +
+" * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this\n" +
+" * particular file as subject to the \"Classpath\" exception as provided\n" +
+" * by Oracle in the GPL Version 2 section of the License file that\n" +
+" * accompanied this code. If applicable, add the following below the\n" +
+" * License Header, with the fields enclosed by brackets [] replaced by\n" +
+" * your own identifying information:\n" +
+" * \"Portions Copyrighted [year] [name of copyright owner]\"\n" +
+" */"
         );
         File java = new File(tmp.getParentFile(), "MyTest.java");
         tmp.renameTo(java);
@@ -642,7 +650,7 @@ public class CheckLicenseTest extends TestBase {
                 if (lines[i].length() == 0) {
                     fail("There is an empty line: " + content);
                 }
-                if (lines[i].indexOf("All Rights") >= 0) {
+                if (lines[i].indexOf("Portions Copyrighted 2012 Sun Microsystems") >= 0) {
                     break;
                 }
             }

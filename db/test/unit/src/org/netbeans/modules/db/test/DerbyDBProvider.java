@@ -39,20 +39,25 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.db.test;
 
-import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.ResultSet;
-import java.util.Iterator;
-import java.util.Vector;
+import java.sql.*;
 
 /**
  *
  * @author David
  */
 public class DerbyDBProvider extends DefaultDBProvider {
+
+    private String quote(String name, boolean identifier) {
+        String quote = identifier ? "\"" : "'";
+        return quote + name.replace(quote, quote + quote) + quote;
+    }
+
+    private String qualifiedName(String schema, String object) {
+        return quote(schema, true) + "." + quote(object, true);
+    }
+
     @Override
     public void dropSchema(Connection conn, String schemaName) throws Exception {
         if (!schemaExists(conn, schemaName)) {
@@ -64,45 +69,76 @@ public class DerbyDBProvider extends DefaultDBProvider {
         
         // drop views first, as they depend on tables
         DatabaseMetaData md = conn.getMetaData();
-        
-        ResultSet rs = md.getTables(null, schemaName, null,
-                new String[] { "VIEW" } );
-        Vector views = new Vector();
-        while ( rs.next() ) {
-            String view = rs.getString(3);
-            views.add(view);
+        ResultSet rs;
+        Statement s = conn.createStatement();
+
+        rs = md.getFunctions(null, schemaName, "%");
+        while (rs.next()) {
+            s.execute("DROP FUNCTION " + qualifiedName(schemaName, rs.getString("FUNCTION_NAME")));
         }
         rs.close();
-        
-        setSchema(conn, schemaName);
 
-        Iterator it = views.iterator();        
-        while (it.hasNext()) {
-            String view = (String)it.next();
-            dropView(conn, schemaName, view);
-        }
-        
-        // drop all tables
-        md = conn.getMetaData();
-        
-        rs = md.getTables(null, schemaName, null, null);
-        Vector tables = new Vector();
-        while ( rs.next() ) {
-            String table = rs.getString(3);
-            tables.add(table);
+        rs = md.getProcedures(null, schemaName, "%");
+        while (rs.next()) {
+            s.execute("DROP PROCEDURE " + qualifiedName(schemaName, rs.getString("PROCEDURE_NAME")));
         }
         rs.close();
-        
-        setSchema(conn, schemaName);
 
-        it = tables.iterator();        
-        while (it.hasNext()) {
-            String table = (String)it.next();
-            dropTable(conn, schemaName, table);
+        rs = md.getExportedKeys(null, schemaName, "%");
+        while (rs.next()) {
+            String referencingTable = qualifiedName(rs.getString("FKTABLE_SCHEMA"),
+                    rs.getString("FKTABLE_NAME"));
+            s.execute("ALTER TABLE " + referencingTable
+                    + " DROP FOREIGN KEY " + rs.getString("FK_NAME"));
         }
-        
-        // drop schema
-        conn.createStatement().executeUpdate("DROP SCHEMA " + schemaName + " RESTRICT");
-        
+        rs.close();
+
+        rs = md.getTables(null, schemaName, "%", new String[]{"VIEW"});
+        while (rs.next()) {
+            s.execute("DROP VIEW " + qualifiedName(schemaName, rs.getString("TABLE_NAME")));
+        }
+        rs.close();
+
+        rs = md.getTables(null, schemaName, "%", new String[]{"SYNONYM"});
+        while (rs.next()) {
+            s.execute("DROP SYNONYM " + qualifiedName(schemaName, rs.getString("TABLE_NAME")));
+        }
+        rs.close();
+
+        rs = md.getTables(null, schemaName, "%", new String[]{"TABLE"});
+        while (rs.next()) {
+            s.execute("DROP TABLE " + qualifiedName(schemaName, rs.getString("TABLE_NAME")));
+        }
+        rs.close();
+
+        rs = md.getUDTs(null, schemaName, "%", null);
+        while (rs.next()) {
+            s.execute("DROP TYPE " + qualifiedName(schemaName, rs.getString("TYPE_NAME"))
+                    + " RESTRICT ");
+        }
+        rs.close();
+
+        try {
+            PreparedStatement psf = conn.prepareStatement(
+                    "SELECT SEQUENCENAME FROM SYS.SYSSEQUENCES A, SYS.SYSSCHEMAS S"
+                    + " WHERE A.SCHEMAID = S.SCHEMAID "
+                    + " AND S.SCHEMANAME = ?");
+            psf.setString(1, schemaName);
+            rs = psf.executeQuery();
+            while (rs.next()) {
+                s.execute("DROP SEQUENCE " + qualifiedName(schemaName, rs.getString(1)) + " RESTRICT");
+            }
+            psf.close();
+        } catch (SQLException ex) {
+            // SQLState 42X05 => Table does not exists => OK, no sequences to drop
+            if (!ex.getSQLState().equals("42X05")) {
+                throw ex;
+            }
+        }
+
+        if (!schemaName.equals("APP")) {
+            s.executeUpdate("DROP SCHEMA " + quote(schemaName, true) + " RESTRICT");
+        }
+        s.close();
     }
 }

@@ -166,6 +166,8 @@ public class InstanceNodeDecorator extends FilterNode
             case ServerInstance.STATE_PROFILER_STARTING : 
                 badge = ImageUtilities.loadImage(WAITING_ICON);
                 break;
+            default:
+                break;
         }
         return badge != null ? ImageUtilities.mergeImages(origImg, badge, 15, 8) : origImg;
     }

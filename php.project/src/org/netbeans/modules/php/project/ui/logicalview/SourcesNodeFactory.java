@@ -43,7 +43,6 @@
  */
 package org.netbeans.modules.php.project.ui.logicalview;
 
-import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -84,7 +83,6 @@ public class SourcesNodeFactory implements NodeFactory {
 
     private static class SourceChildrenList implements NodeList<SourceGroup>, ChangeListener {
 
-        private java.util.Map<SourceGroup, PropertyChangeListener> groupsListeners;
         private final PhpProject project;
         private final ChangeSupport changeSupport = new ChangeSupport(this);
 

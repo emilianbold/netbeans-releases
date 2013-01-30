@@ -44,17 +44,16 @@ package org.netbeans.modules.php.zend;
 
 import java.io.File;
 import java.util.Collections;
-import java.util.Enumeration;
 import java.util.LinkedList;
 import java.util.List;
-import org.netbeans.modules.php.api.phpmodule.BadgeIcon;
+import org.netbeans.modules.php.api.framework.BadgeIcon;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.phpmodule.PhpModuleProperties;
 import org.netbeans.modules.php.spi.editor.EditorExtender;
-import org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider;
-import org.netbeans.modules.php.spi.phpmodule.PhpModuleActionsExtender;
-import org.netbeans.modules.php.spi.phpmodule.PhpModuleExtender;
-import org.netbeans.modules.php.spi.phpmodule.PhpModuleIgnoredFilesExtender;
+import org.netbeans.modules.php.spi.framework.PhpFrameworkProvider;
+import org.netbeans.modules.php.spi.framework.PhpModuleActionsExtender;
+import org.netbeans.modules.php.spi.framework.PhpModuleExtender;
+import org.netbeans.modules.php.spi.framework.PhpModuleIgnoredFilesExtender;
 import org.netbeans.modules.php.zend.commands.ZendCommandSupport;
 import org.netbeans.modules.php.zend.editor.ZendEditorExtender;
 import org.openide.filesystems.FileObject;
@@ -92,14 +91,24 @@ public final class ZendPhpFrameworkProvider extends PhpFrameworkProvider {
 
     @Override
     public boolean isInPhpModule(PhpModule phpModule) {
-        FileObject zfProject = phpModule.getSourceDirectory().getFileObject(".zfproject.xml"); // NOI18N
+        FileObject sourceDirectory = phpModule.getSourceDirectory();
+        if (sourceDirectory == null) {
+            // broken project
+            return false;
+        }
+        FileObject zfProject = sourceDirectory.getFileObject(".zfproject.xml"); // NOI18N
         return zfProject != null && zfProject.isData() && zfProject.isValid();
     }
 
     @Override
     public File[] getConfigurationFiles(PhpModule phpModule) {
+        FileObject sourceDirectory = phpModule.getSourceDirectory();
+        if (sourceDirectory == null) {
+            // broken project
+            return new File[0];
+        }
         List<File> files = new LinkedList<File>();
-        FileObject appConfig = phpModule.getSourceDirectory().getFileObject("application/configs"); // NOI18N
+        FileObject appConfig = sourceDirectory.getFileObject("application/configs"); // NOI18N
         if (appConfig != null) {
             for (FileObject child : appConfig.getChildren()) {
                 if (child.isData()) {
@@ -108,7 +117,7 @@ public final class ZendPhpFrameworkProvider extends PhpFrameworkProvider {
             }
             Collections.sort(files);
         }
-        FileObject bootstrap = phpModule.getSourceDirectory().getFileObject("application/Bootstrap.php"); // NOI18N
+        FileObject bootstrap = sourceDirectory.getFileObject("application/Bootstrap.php"); // NOI18N
         if (bootstrap != null) {
             files.add(FileUtil.toFile(bootstrap));
         }
@@ -122,8 +131,12 @@ public final class ZendPhpFrameworkProvider extends PhpFrameworkProvider {
 
     @Override
     public PhpModuleProperties getPhpModuleProperties(PhpModule phpModule) {
-        FileObject sourceDirectory = phpModule.getSourceDirectory();
         PhpModuleProperties properties = new PhpModuleProperties();
+        FileObject sourceDirectory = phpModule.getSourceDirectory();
+        if (sourceDirectory == null) {
+            // broken project
+            return properties;
+        }
         FileObject web = sourceDirectory.getFileObject("public"); // NOI18N
         if (web != null) {
             properties = properties.setWebRoot(web);

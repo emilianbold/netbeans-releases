@@ -335,7 +335,7 @@ public abstract class PositionEstimator {
         @Override()
         public int[] getPositions(int index) {
             if (!initialized) initialize();
-            return data.get(index);
+            return data.get(index).clone();
         }
         
         @Override
@@ -571,7 +571,7 @@ public abstract class PositionEstimator {
         @Override()
         public int[] getPositions(int index) {
             if (!initialized) initialize();
-            return data.get(index);
+            return data.get(index).clone();
         }
         
         public int prepare(int startPos, StringBuilder aHead,
@@ -1144,7 +1144,7 @@ public abstract class PositionEstimator {
         @Override()
         public int[] getPositions(int index) {
             if (!initialized) initialize();
-            return data.get(index);
+            return data.get(index).clone();
         }
         
         @Override
@@ -1189,13 +1189,16 @@ public abstract class PositionEstimator {
      */
     static class CatchesEstimator extends PositionEstimator {
         
+        private final boolean hasFinally;
         private List<int[]> data;
         
         public CatchesEstimator(final List<? extends Tree> oldL, 
                                 final List<? extends Tree> newL, 
+                                final boolean hasFinally,
                                 final DiffContext diffContext)
         {
             super(oldL, newL, diffContext);
+            this.hasFinally = hasFinally;
         }
         
         @Override()
@@ -1283,12 +1286,14 @@ public abstract class PositionEstimator {
                 }
             }
             seq.move(sectionEnd);
+            int wideEnd = sectionEnd;
+            token = null;
             seq.movePrevious();
             while (seq.moveNext() && nonRelevant.contains((token = seq.token()).id())) {
                 if (JavaTokenId.LINE_COMMENT == token.id()) {
-                    sectionEnd = seq.offset();
+                    wideEnd = seq.offset();
                     if (seq.moveNext()) {
-                        sectionEnd = seq.offset();
+                        wideEnd = seq.offset();
                     }
                     break;
                 } else if (JavaTokenId.BLOCK_COMMENT == token.id() || JavaTokenId.JAVADOC_COMMENT == token.id()) {
@@ -1296,13 +1301,13 @@ public abstract class PositionEstimator {
                 } else if (JavaTokenId.WHITESPACE == token.id()) {
                     int indexOf = token.text().toString().lastIndexOf('\n');
                     if (indexOf > -1) {
-                        sectionEnd = seq.offset() + indexOf + 1;
+                        wideEnd = seq.offset() + indexOf + 1;
                     } else {
-                        sectionEnd += seq.offset() + token.text().length();
+                        wideEnd = seq.offset() + token.text().length();
                     }
                 }
             }
-            return new int[] { sectionStart, sectionEnd };
+            return new int[] { sectionStart, token != null && token.id() != JavaTokenId.FINALLY ? wideEnd : sectionEnd};
         }
         
         public String head() { return ""; }
@@ -1314,11 +1319,12 @@ public abstract class PositionEstimator {
         @Override()
         public int[] getPositions(int index) {
             if (!initialized) initialize();
-            return data.get(index);
+            return data.get(index).clone();
         }
         
         public int prepare(int startPos, StringBuilder aHead,
                            StringBuilder aTail) {
+            if (!hasFinally) return startPos;
             seq.move(startPos);
             seq.moveNext();
             moveToSrcRelevant(seq, Direction.BACKWARD);
@@ -1532,7 +1538,7 @@ public abstract class PositionEstimator {
         @Override()
         public int[] getPositions(int index) {
             if (!initialized) initialize();
-            return data.get(index);
+            return data.get(index).clone();
         }
         
         @Override

@@ -50,12 +50,12 @@ made subject to such option by the copyright holder.
         <folder name="text">
             <folder name="x-java">
                 <folder name="Actions">
-                    <file name="org-netbeans-modules-java-navigation-actions-InspectMembersAction.shadow">
-                        <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-java-navigation-actions-InspectMembersAction.instance"/>
+                    <file name="org-netbeans-modules-java-navigation-actions-ShowMembersAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-java-navigation-actions-ShowMembersAction.instance"/>
                         <attr name="position" intvalue="2400"/>
                     </file>
-                    <file name="org-netbeans-modules-java-navigation-actions-InspectHierarchyAction.shadow">
-                        <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-java-navigation-actions-InspectHierarchyAction.instance"/>
+                    <file name="org-netbeans-modules-java-navigation-actions-ShowHierarchyAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-java-navigation-actions-ShowHierarchyAction.instance"/>
                         <attr name="position" intvalue="2500"/>
                     </file>
                     <file name="SeparatorJavaTools.instance">
@@ -76,29 +76,30 @@ made subject to such option by the copyright holder.
                             <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                             <attr name="position" intvalue="1000"/>
                         </file>
-                        <file name="org-netbeans-modules-java-navigation-actions-InspectMembersAtCaretAction.shadow">
-                            <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-java-navigation-actions-InspectMembersAtCaretAction.instance"/>
+                        <file name="org-netbeans-modules-java-navigation-actions-ShowMembersAtCaretAction.shadow">
+                            <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-java-navigation-actions-ShowMembersAtCaretAction.instance"/>
                             <attr name="position" intvalue="1100"/>
                         </file>
-                        <file name="org-netbeans-modules-java-navigation-actions-InspectHierarchyAtCaretAction.shadow">
-                            <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-java-navigation-actions-InspectHierarchyAtCaretAction.instance"/>
+                        <file name="org-netbeans-modules-java-navigation-actions-ShowHierarchyAtCaretAction.shadow">
+                            <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-java-navigation-actions-ShowHierarchyAtCaretAction.instance"/>
                             <attr name="position" intvalue="1200"/>
                         </file>
                     </folder>
+                </folder>
+                <folder name="SideBar">
+                    <file name="breadcrumbs.instance">
+                        <attr name="location" stringvalue="South"/>
+                        <attr name="position" intvalue="5237"/>
+                        <attr name="scrollable" boolvalue="false"/>
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.editor.breadcrumbs.spi.BreadcrumbsController.createSideBarFactory" />
+                    </file>
                 </folder>
             </folder>
         </folder>
     </folder>
 
-    <folder name="Actions">
-        <folder name="Edit">
-            <file name="org-netbeans-modules-java-navigation-actions-InspectMembersAction.instance"/>
-            <file name="org-netbeans-modules-java-navigation-actions-InspectMembersAtCaretAction.instance"/>
-            <file name="org-netbeans-modules-java-navigation-actions-InspectHierarchyAction.instance"/>
-            <file name="org-netbeans-modules-java-navigation-actions-InspectHierarchyAtCaretAction.instance"/>
-        </folder>
+    <folder name="Actions">        
         <folder name="Window">
-            <file name="org-netbeans-modules-java-navigation-actions-DeclarationAction.instance"/>
             <file name="org-netbeans-modules-java-navigation-actions-JavadocAction.instance"/>
             <file name="org-netbeans-modules-java-stackanalyzer-AnalyzeStackAction.instance"/>
         </folder>
@@ -108,42 +109,19 @@ made subject to such option by the copyright holder.
         <folder name="GoTo">
             <folder name="Inspect">
                 <attr name="position" intvalue="1050"/>
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.navigation.Bundle"/>
-                       
-                <file name="org-netbeans-modules-java-navigation-actions-InspectMembersAtCaretAction.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-java-navigation-actions-InspectMembersAtCaretAction.instance"/>
-                    <attr name="position" intvalue="1000"/>
-                </file>
-                
-                <file name="org-netbeans-modules-java-navigation-actions-InspectMembersAction.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-java-navigation-actions-InspectMembersAction.instance"/>
-                    <attr name="position" intvalue="1100"/>
-                </file>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.navigation.Bundle"/>                       
                 
                 <file name="SeparatorInspectHierarchy.instance">
                     <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                     <attr name="position" intvalue="2000"/>
-                </file>
+                </file>                
                 
-                <file name="org-netbeans-modules-java-navigation-actions-InspectHierarchyAtCaretAction.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-java-navigation-actions-InspectHierarchyAtCaretAction.instance"/>
-                    <attr name="position" intvalue="2100"/>
-                </file>
-                
-                <file name="org-netbeans-modules-java-navigation-actions-InspectHierarchyAction.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-java-navigation-actions-InspectHierarchyAction.instance"/>
-                    <attr name="position" intvalue="2200"/>
-                </file>
             </folder>
         </folder>
         <folder name="Window">
             <folder name="Other">
             <attr name="position" intvalue="1700"/>
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.navigation.Bundle"/>
-                <file name="DeclarationAction.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-java-navigation-actions-DeclarationAction.instance"/>
-                    <attr name="position" intvalue="400"/>
-                </file>
                 <file name="JavadocAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-java-navigation-actions-JavadocAction.instance"/>
                     <attr name="position" intvalue="500"/>
@@ -158,15 +136,11 @@ made subject to such option by the copyright holder.
     
     <folder name="Windows2">
         <folder name="Components">
-            <file name="DeclarationTopComponent.settings" url="DeclarationTopComponentSettings.xml"/>
             <file name="JavadocTopComponent.settings" url="JavadocTopComponentSettings.xml"/>
             <file name="AnalyzeStackTopComponent.settings" url="AnalyzeStackTopComponentSettings.xml"/>
         </folder>
         <folder name="Modes">
-            <folder name="output">
-                <file name="DeclarationTopComponent.wstcref" url="DeclarationTopComponentWstcref.xml">
-                    <attr name="position" intvalue="2400"/>
-                </file>
+            <folder name="output">                
                 <file name="JavadocTopComponent.wstcref" url="JavadocTopComponentWstcref.xml">
                     <attr name="position" intvalue="2500"/>
                 </file>
@@ -181,19 +155,19 @@ made subject to such option by the copyright holder.
     <folder name="Shortcuts">
 
         <file name="D-F12.shadow">
-           <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-java-navigation-actions-InspectMembersAction.instance"/>
+           <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-java-navigation-actions-ShowMembersAction.instance"/>
         </file>      
 
         <file name="SD-F12.shadow">
-           <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-java-navigation-actions-InspectMembersAtCaretAction.instance"/>
+           <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-java-navigation-actions-ShowMembersAtCaretAction.instance"/>
         </file>
 
         <file name="O-F12.shadow">
-           <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-java-navigation-actions-InspectHierarchyAction.instance"/>
+           <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-java-navigation-actions-ShowHierarchyAction.instance"/>
         </file>
 
         <file name="SO-F12.shadow">
-           <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-java-navigation-actions-InspectHierarchyAtCaretAction.instance"/>
+           <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-java-navigation-actions-ShowHierarchyAtCaretAction.instance"/>
         </file>
      
     </folder>  

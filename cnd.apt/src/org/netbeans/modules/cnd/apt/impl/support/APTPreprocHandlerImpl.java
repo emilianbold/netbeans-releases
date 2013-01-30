@@ -292,15 +292,15 @@ public class APTPreprocHandlerImpl implements APTPreprocHandler {
         ////////////////////////////////////////////////////////////////////////
         // persistence support
 
-        public void write(RepositoryDataOutput output) throws IOException {
+        public void write(RepositoryDataOutput output, int unitIndex) throws IOException {
             output.writeByte(this.attributes);
-            APTSerializeUtils.writeIncludeState(this.inclState, output);
+            APTSerializeUtils.writeIncludeState(this.inclState, output, unitIndex);
             APTSerializeUtils.writeMacroMapState(this.macroState, output);
         }
 
-        public StateImpl(FileSystem fs, RepositoryDataInput input) throws IOException {
+        public StateImpl(FileSystem fs, RepositoryDataInput input, int unitIndex) throws IOException {
             this.attributes = input.readByte();
-            this.inclState = APTSerializeUtils.readIncludeState(fs, input);
+            this.inclState = APTSerializeUtils.readIncludeState(fs, input, unitIndex);
             this.macroState = APTSerializeUtils.readMacroMapState(input);
         }
     }    

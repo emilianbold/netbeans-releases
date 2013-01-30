@@ -55,7 +55,7 @@ import org.netbeans.spi.queries.VisibilityQueryImplementation;
 import org.netbeans.spi.queries.VisibilityQueryImplementation2;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.ChangeSupport;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -76,7 +76,7 @@ public final class VisibilityQuery {
     private final ResultListener resultListener = new ResultListener();
     private final VqiChangedListener vqiListener = new VqiChangedListener ();
 
-    private final ChangeSupport changeSupport = new ChangeSupport(this);
+    private final List<ChangeListener> listeners = new ArrayList<ChangeListener>();
     private Lookup.Result<VisibilityQueryImplementation> vqiResult = null;
     private List<VisibilityQueryImplementation> cachedVqiInstances = null;
 
@@ -141,7 +141,9 @@ public final class VisibilityQuery {
      * @param l a listener to add
      */
     public void addChangeListener(ChangeListener l) {
-        changeSupport.addChangeListener(l);
+        synchronized (listeners) {
+            listeners.add(l);
+        }
     }
 
     /**
@@ -149,7 +151,24 @@ public final class VisibilityQuery {
      * @param l a listener to remove
      */
     public void removeChangeListener(ChangeListener l) {
-        changeSupport.removeChangeListener(l);
+        synchronized (listeners) {
+            listeners.remove(l);
+        }
+    }
+    
+    private void fireChange(ChangeEvent event) {
+        assert event != null;
+        ArrayList<ChangeListener> lists;
+        synchronized (listeners) {
+            lists = new ArrayList<ChangeListener>(listeners);
+        }
+        for (ChangeListener listener : lists) {
+            try {
+                listener.stateChanged(event);
+            } catch (RuntimeException x) {
+                Exceptions.printStackTrace(x);
+            }
+        }
     }
 
     private synchronized List<VisibilityQueryImplementation> getVqiInstances() {
@@ -182,15 +201,17 @@ public final class VisibilityQuery {
     }
 
     private class ResultListener implements LookupListener {
+        @Override
         public void resultChanged(LookupEvent ev) {
             setupChangeListeners(cachedVqiInstances, new ArrayList<VisibilityQueryImplementation>(vqiResult.allInstances()));
-            changeSupport.fireChange();
+            fireChange(new ChangeEvent(this));
         }
     }
 
     private class VqiChangedListener implements ChangeListener {
+        @Override
         public void stateChanged(ChangeEvent e) {
-            changeSupport.fireChange();
+            fireChange(e);
         }
     }
 

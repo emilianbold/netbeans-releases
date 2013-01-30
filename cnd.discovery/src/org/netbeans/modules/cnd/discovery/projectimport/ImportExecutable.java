@@ -66,16 +66,17 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmProgressAdapter;
 import org.netbeans.modules.cnd.api.model.CsmProgressListener;
 import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryExtensionInterface.Applicable;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryExtensionInterface.Position;
-import org.netbeans.modules.cnd.discovery.services.DiscoveryManagerImpl;
 import org.netbeans.modules.cnd.discovery.wizard.DiscoveryExtension;
 import org.netbeans.modules.cnd.discovery.wizard.DiscoveryWizardDescriptor;
 import org.netbeans.modules.cnd.discovery.wizard.api.ConsolidationStrategy;
+import org.netbeans.modules.cnd.discovery.wizard.api.support.DiscoveryProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
 import org.netbeans.modules.cnd.makeproject.api.ProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.ProjectSupport;
@@ -121,6 +122,8 @@ public class ImportExecutable implements PropertyChangeListener {
     private String sourcesPath;
     private boolean addSourceRoot;
     private List<String> dependencies;
+    private CsmModel model;
+    private IteratorExtension extension;
 
     public ImportExecutable(Map<String, Object> map, Project lastSelectedProject, ProjectKind projectKind) {
         this.map = map;
@@ -227,9 +230,15 @@ public class ImportExecutable implements PropertyChangeListener {
         try {
             lastSelectedProject = ProjectGenerator.createProject(prjParams);
             OpenProjects.getDefault().addPropertyChangeListener(this);
-            map.put("DW:buildResult", binaryPath); // NOI18N
-            map.put("DW:consolidationLevel", ConsolidationStrategy.FILE_LEVEL); // NOI18N
-            map.put("DW:rootFolder", lastSelectedProject.getProjectDirectory().getPath()); // NOI18N
+            map.put(DiscoveryWizardDescriptor.BUILD_RESULT, binaryPath);
+            map.put(DiscoveryWizardDescriptor.CONSOLIDATION_STRATEGY, ConsolidationStrategy.FILE_LEVEL);
+            if (sourcesPath != null && sourcesPath.length()>1) {
+                 map.put(DiscoveryWizardDescriptor.ROOT_FOLDER, sourcesPath);
+            } else {
+                map.put(DiscoveryWizardDescriptor.ROOT_FOLDER, lastSelectedProject.getProjectDirectory().getPath()); // NOI18N
+            }
+            model = CsmModelAccessor.getModel();
+            extension = Lookup.getDefault().lookup(IteratorExtension.class);
             OpenProjects.getDefault().open(new Project[]{lastSelectedProject}, false);
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
@@ -248,7 +257,6 @@ public class ImportExecutable implements PropertyChangeListener {
                 if (lastSelectedProject == null) {
                     return;
                 }
-                IteratorExtension extension = Lookup.getDefault().lookup(IteratorExtension.class);
                 if (extension != null) {
                     process((DiscoveryExtension)extension);
                 }
@@ -257,7 +265,7 @@ public class ImportExecutable implements PropertyChangeListener {
     }
 
     public void process(final DiscoveryExtension extension){
-        switchModel(false, lastSelectedProject);
+        switchModel(model, false, lastSelectedProject);
         Runnable run = new Runnable() {
 
             @Override
@@ -276,6 +284,7 @@ public class ImportExecutable implements PropertyChangeListener {
                             }
                             if (addSourceRoot && sourcesPath != null && sourcesPath.length()>1) {
                                 configurationDescriptor.addSourceRoot(sourcesPath);
+                                map.put(DiscoveryWizardDescriptor.ROOT_FOLDER, sourcesPath);
                             }
                             if (!createProjectMode) {
                                 resetCompilerSet(configurationDescriptor.getActiveConfiguration(), applicable);
@@ -285,14 +294,14 @@ public class ImportExecutable implements PropertyChangeListener {
                                 additionalDependencies = additionalDependencies(applicable, configurationDescriptor.getActiveConfiguration(),
                                         DiscoveryWizardDescriptor.adaptee(map).getBuildResult());
                                 if (additionalDependencies != null && !additionalDependencies.isEmpty()) {
-                                    map.put("DW:libraries", additionalDependencies); // NOI18N
+                                    map.put(DiscoveryWizardDescriptor.ADDITIONAL_LIBRARIES, additionalDependencies);
                                 }
                             }
                             if (extension.canApply(map, lastSelectedProject)) {
                                 try {
                                     extension.apply(map, lastSelectedProject);
                                     discoverScripts(lastSelectedProject, DiscoveryWizardDescriptor.adaptee(map).getBuildResult());
-                                    DiscoveryManagerImpl.saveMakeConfigurationDescriptor(lastSelectedProject);
+                                    DiscoveryProjectGenerator.saveMakeConfigurationDescriptor(lastSelectedProject, null);
                                     if (projectKind == ProjectKind.CreateDependencies && (additionalDependencies == null || additionalDependencies.isEmpty())) {
                                         cd = new CreateDependencies(lastSelectedProject, DiscoveryWizardDescriptor.adaptee(map).getDependencies(), dependencies,
                                                 DiscoveryWizardDescriptor.adaptee(map).getSearchPaths(), DiscoveryWizardDescriptor.adaptee(map).getBuildResult());
@@ -308,7 +317,37 @@ public class ImportExecutable implements PropertyChangeListener {
                     Position mainFunction = applicable.getMainFunction();
                     boolean open = true;
                     if (mainFunction != null) {
-                        FileObject toFileObject = CndFileUtils.toFileObject(mainFunction.getFilePath()); // should it be normalized?
+                        String mainFilePath = mainFunction.getFilePath();
+                        if (sourcesPath != null) {
+                            if (!mainFilePath.startsWith(sourcesPath)) {
+                                String mainFileName = CndPathUtilitities.getBaseName(mainFilePath);
+                                NativeProject np = lastSelectedProject.getLookup().lookup(NativeProject.class);
+                                List<NativeFileItem> items = new ArrayList<NativeFileItem>();
+                                if (np != null) {
+                                    for(NativeFileItem item : np.getAllFiles()) {
+                                        String itemPath = item.getAbsolutePath();
+                                        String name = CndPathUtilitities.getBaseName(itemPath);
+                                        if (name.equals(mainFileName)) {
+                                            items.add(item);
+                                        }
+                                    }
+                                }
+                                if (items.size() > 0) {
+                                    String bestCandidate = null;
+                                    int min = Integer.MAX_VALUE;
+                                    for(NativeFileItem item : items) {
+                                        String candidate = item.getAbsolutePath();
+                                        int end = commonEnd(mainFilePath, candidate);
+                                        if (end < min) {
+                                            bestCandidate = candidate;
+                                            min = end;
+                                        }
+                                    }
+                                    mainFilePath = bestCandidate;
+                                }
+                            }
+                        }
+                        FileObject toFileObject = CndFileUtils.toFileObject(mainFilePath); // should it be normalized?
                         if (toFileObject != null && toFileObject.isValid()) {
                             if (CsmUtilities.openSource(toFileObject, mainFunction.getLine(), 0)) {
                                 open = false;
@@ -316,7 +355,7 @@ public class ImportExecutable implements PropertyChangeListener {
                         }
 
                     }
-                    switchModel(true, lastSelectedProject);
+                    switchModel(model, true, lastSelectedProject);
                     String main = open ? "main": null;  // NOI18N
                     onProjectParsingFinished(main, lastSelectedProject);
                 } catch (Throwable ex) {
@@ -325,6 +364,26 @@ public class ImportExecutable implements PropertyChangeListener {
             }
         };
         RP.post(run);
+    }
+    
+    private int commonEnd(String mainFilePath, String candidate) {
+        int len = mainFilePath.length() - 1;
+        for(int i = candidate.length()-1; i >= 0; i--) {
+            char c1 = candidate.charAt(i);
+            char c2 = mainFilePath.charAt(len);
+            if (c1 != c2) {
+                if ((c1 == '\\' || c1 == '/') && (c2 == '\\' || c2 == '/')) {
+                    // skip
+                } else {
+                    break;
+                }
+            }
+            len--;
+            if (len < 0) {
+                break;
+            }
+        }
+        return len;
     }
 
     private static void discoverScripts(Project project, String binary) {
@@ -468,7 +527,6 @@ public class ImportExecutable implements PropertyChangeListener {
                     if (entry.getValue() != null) {
                         if (!checkedDll.contains(entry.getValue())) {
                             checkedDll.add(entry.getValue());
-                            final IteratorExtension extension = Lookup.getDefault().lookup(IteratorExtension.class);
                             final Map<String, Object> extMap = new HashMap<String, Object>();
                             extMap.put("DW:buildResult", entry.getValue()); // NOI18N
                             if (extension != null) {
@@ -545,7 +603,8 @@ public class ImportExecutable implements PropertyChangeListener {
 
                 @Override
                 public void projectParsingFinished(CsmProject project) {
-                    if (project.getPlatformProject().equals(np)) {
+                    final Object id = project.getPlatformProject();
+                    if (id != null && id.equals(np)) {
                         CsmListeners.getDefault().removeProgressListener(this);
                         listeners.remove(this);
                         if (project instanceof ProjectBase && functionName != null) {
@@ -556,7 +615,7 @@ public class ImportExecutable implements PropertyChangeListener {
                                 break;
                             }
                         }
-                        DiscoveryManagerImpl.fixExcludedHeaderFiles(makeProject, ImportProject.logger);
+                        DiscoveryProjectGenerator.fixExcludedHeaderFiles(makeProject, ImportProject.logger);
                         if (cd != null) {
                             cd.create();
                         }
@@ -568,8 +627,7 @@ public class ImportExecutable implements PropertyChangeListener {
         }
     }
 
-    static void switchModel(boolean state, Project makeProject) {
-        CsmModel model = CsmModelAccessor.getModel();
+    static void switchModel(CsmModel model, boolean state, Project makeProject) {
         if (model instanceof ModelImpl && makeProject != null) {
             NativeProject np = makeProject.getLookup().lookup(NativeProject.class);
             if (state) {
@@ -715,7 +773,7 @@ public class ImportExecutable implements PropertyChangeListener {
             return null;
         }
         if (root.isDiskFolder()) {
-            String AbsRootPath = CndPathUtilitities.toAbsolutePath(configurationDescriptor.getBaseDir(), root.getRoot());
+            String AbsRootPath = CndPathUtilitities.toAbsolutePath(configurationDescriptor.getBaseDirFileObject(), root.getRoot());
             return RemoteFileUtil.normalizeAbsolutePath(AbsRootPath, configurationDescriptor.getProject());
         }
         List<String> candidates = new ArrayList<String>();

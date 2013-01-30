@@ -50,7 +50,6 @@ import java.util.Set;
 import javax.swing.Action;
 import javax.swing.JButton;
 import org.netbeans.modules.kenai.api.Kenai;
-import org.netbeans.modules.kenai.api.KenaiManager;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.ui.NewKenaiProjectWizardIterator.CreatedProjectInfo;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
@@ -58,12 +57,17 @@ import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionRegistration;
 import org.openide.awt.HtmlBrowser.URLDisplayer;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 
+@ActionID(id = NewKenaiProjectAction.ID, category = "Team")
+@ActionRegistration(displayName = "#Actions/Versioning/org-netbeans-modules-kenai-ui-NewKenaiProjectAction.instance")
 public final class NewKenaiProjectAction implements ActionListener {
 
+    static final String ID = "org.netbeans.modules.kenai.ui.NewKenaiProjectAction"; //NOI18N
     private Kenai kenai;
 
     public NewKenaiProjectAction(Kenai kenai) {

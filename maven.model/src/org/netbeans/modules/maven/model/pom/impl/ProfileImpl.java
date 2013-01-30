@@ -126,11 +126,8 @@ public class ProfileImpl extends IdPOMComponentImpl implements Profile {
 
     @Override
     public void removeRepository(Repository repo) {
-        ModelList<Repository> childs = getChild(RepositoryImpl.RepoList.class);
-        if (childs != null) {
-            childs.removeListChild(repo);
-        }
-    }
+        remove(repo, getModel().getPOMQNames().REPOSITORIES.getName(), RepositoryImpl.RepoList.class);
+     }
 
     @Override
     public java.util.List<Repository> getPluginRepositories() {
@@ -157,10 +154,7 @@ public class ProfileImpl extends IdPOMComponentImpl implements Profile {
 
     @Override
     public void removePluginRepository(Repository repo) {
-        ModelList<Repository> childs = getChild(RepositoryImpl.PluginRepoList.class);
-        if (childs != null) {
-            childs.removeListChild(repo);
-        }
+       remove(repo, getModel().getPOMQNames().PLUGINREPOSITORIES.getName(), RepositoryImpl.PluginRepoList.class);
     }
 
     @Override
@@ -188,10 +182,7 @@ public class ProfileImpl extends IdPOMComponentImpl implements Profile {
 
     @Override
     public void removeDependency(Dependency dep) {
-        ModelList<Dependency> childs = getChild(DependencyImpl.List.class);
-        if (childs != null) {
-            childs.removeListChild(dep);
-        }
+        remove(dep, getModel().getPOMQNames().DEPENDENCIES.getName(), DependencyImpl.List.class);
     }
 
     @Override

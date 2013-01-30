@@ -34,11 +34,14 @@ import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodTree;
-import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.Scope;
 import com.sun.source.tree.StatementTree;
+import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
+import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
+import com.sun.source.util.Trees;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -47,14 +50,13 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
-import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.TypeVariable;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationInfo;
@@ -64,6 +66,7 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.TreeMaker;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.TypeMirrorHandle;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.java.hints.infrastructure.ErrorHintsProvider;
@@ -83,6 +86,8 @@ public final class CreateMethodFix implements Fix {
     private TypeMirrorHandle returnType;
     private List<TypeMirrorHandle> argumentTypes;
     private List<String> argumentNames;
+    private final List<TypeMirrorHandle> typeParameterTypes;
+    private final List<String> typeParameterNames;
     private ClasspathInfo cpInfo;
     private Set<Modifier> modifiers;
     
@@ -90,7 +95,7 @@ public final class CreateMethodFix implements Fix {
     private String inFQN;
     private String methodDisplayName;
     
-    public CreateMethodFix(CompilationInfo info, String name, Set<Modifier> modifiers, TypeElement target, TypeMirror returnType, List<? extends TypeMirror> argumentTypes, List<String> argumentNames, FileObject targetFile) {
+    public CreateMethodFix(CompilationInfo info, String name, Set<Modifier> modifiers, TypeElement target, TypeMirror returnType, List<? extends TypeMirror> argumentTypes, List<String> argumentNames, List<? extends TypeMirror> typeParameterTypes, List<String> typeParameterNames, FileObject targetFile) {
         this.name = name;
         this.inFQN = Utilities.target2String(target);
         this.cpInfo = info.getClasspathInfo();
@@ -108,6 +113,14 @@ public final class CreateMethodFix implements Fix {
         }
         
         this.argumentNames = argumentNames;
+        
+        this.typeParameterTypes = new ArrayList<TypeMirrorHandle>();
+        
+        for (TypeMirror tm : typeParameterTypes) {
+            this.typeParameterTypes.add(TypeMirrorHandle.create(tm));
+        }
+        
+        this.typeParameterNames = typeParameterNames;
         
         StringBuilder methodDisplayName = new StringBuilder();
         
@@ -192,13 +205,41 @@ public final class CreateMethodFix implements Fix {
                     argTypes.add(make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), nameIt.next(), make.Type(tm), null));
                 }
                 
-                BlockTree body = targetType.getKind().isClass() ? createDefaultMethodBody(working, returnType) : null;
+                List<TypeParameterTree> typeParameters = new ArrayList<TypeParameterTree>();
+                Iterator<TypeMirrorHandle> tpTypeIt   = CreateMethodFix.this.typeParameterTypes.iterator();
+                Iterator<String>           tpNameIt   = CreateMethodFix.this.typeParameterNames.iterator();
+                
+                while (tpTypeIt.hasNext() && tpNameIt.hasNext()) {
+                    TypeMirrorHandle tmh = tpTypeIt.next();
+                    TypeMirror tm = tmh.resolve(working);
+                    
+                    if (tm == null) {
+                        ErrorHintsProvider.LOG.log(Level.INFO, "Cannot resolve type argument type."); // NOI18N
+                        return;
+                    }
+
+                    List<ExpressionTree> bounds = new ArrayList<ExpressionTree>();
+                    List<? extends TypeMirror> boundTypes = new ArrayList<TypeMirror>(working.getTypes().directSupertypes(tm));
+                    TypeElement jlObject = working.getElements().getTypeElement("java.lang.Object");
+                    
+                    if (boundTypes.size() == 1 && jlObject != null && boundTypes.get(0).equals(jlObject.asType())) {
+                        boundTypes.remove(0);
+                    }
+                    
+                    for (TypeMirror bound : boundTypes) {
+                        bounds.add((ExpressionTree) make.Type(bound));
+                    }
+
+                    typeParameters.add(make.TypeParameter(((TypeVariable) tm).asElement().getSimpleName(), bounds));
+                }
+                
+                BlockTree body = targetType.getKind().isClass() ? createDefaultMethodBody(working, targetTree, returnType, name) : null;
                 
                 if(body != null && !body.getStatements().isEmpty()) {
                     working.tag(body.getStatements().get(0), methodBodyTag);
                 }
                 
-                MethodTree mt = make.Method(make.Modifiers(modifiers), name, returnType != null ? make.Type(returnType) : null, Collections.<TypeParameterTree>emptyList(), argTypes, Collections.<ExpressionTree>emptyList(), body, null);
+                MethodTree mt = make.Method(make.Modifiers(modifiers), name, returnType != null ? make.Type(returnType) : null, typeParameters, argTypes, Collections.<ExpressionTree>emptyList(), body, null);
                 ClassTree decl = GeneratorUtilities.get(working).insertClassMember((ClassTree)targetTree.getLeaf(), mt);
                 working.rewrite(targetTree.getLeaf(), decl);
             }
@@ -251,16 +292,22 @@ public final class CreateMethodFix implements Fix {
     }
     
     //XXX should be moved into the GeneratorUtils:
-    private static BlockTree createDefaultMethodBody(WorkingCopy wc, TypeMirror returnType) {
-        TreeMaker make = wc.getTreeMaker();
-        List<StatementTree> blockStatements = new ArrayList<StatementTree>();
-        TypeElement uoe = wc.getElements().getTypeElement("java.lang.UnsupportedOperationException"); // NOI18N
-        if (uoe != null) {
-            NewClassTree nue = make.NewClass(null, Collections.<ExpressionTree>emptyList(), make.QualIdent(uoe), Collections.singletonList(make.Literal("Not yet implemented")), null);
-            blockStatements.add(make.Throw(nue));
+    private static BlockTree createDefaultMethodBody(WorkingCopy wc, TreePath targetTree, TypeMirror returnType, String name) {
+        TreeUtilities tu = wc.getTreeUtilities();
+        TypeElement targetClazz = (TypeElement)wc.getTrees().getElement(targetTree);
+        StatementTree st = tu.parseStatement("{class ${abstract " + (returnType != null ? returnType.toString() : "void") + " " + ("<init>".equals(name) ? targetClazz.getSimpleName() : name) + "();}}", new SourcePositions[1]); //NOI18N
+        Trees trees = wc.getTrees();
+        List<? extends Tree> members = ((ClassTree) targetTree.getLeaf()).getMembers();
+        Scope scope = members.isEmpty() ? trees.getScope(targetTree) : trees.getScope(new TreePath(targetTree, members.get(0)));
+        tu.attributeTree(st, scope);
+        Tree first = null;
+        for(Tree t : ((ClassTree)((BlockTree)st).getStatements().get(0)).getMembers()) {
+            if (t.getKind() == Tree.Kind.METHOD && !"<init>".contentEquals(((MethodTree)t).getName())) { //NOI19N
+                first = t;
+                break;
+            }
         }
-        return make.Block(blockStatements, false);
+        ExecutableElement ee = (ExecutableElement) wc.getTrees().getElement(new TreePath(targetTree, first));
+        return GeneratorUtilities.get(wc).createAbstractMethodImplementation(targetClazz, ee).getBody();
     }
-
 }
-

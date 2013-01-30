@@ -74,7 +74,7 @@ public class RESTSampleWizardPanel implements WizardDescriptor.Panel,
 
     @Override
     public HelpCtx getHelp() {
-        return new HelpCtx(RESTSampleWizardPanel.class);
+        return null;
     }
 
     @Override
@@ -113,12 +113,16 @@ public class RESTSampleWizardPanel implements WizardDescriptor.Panel,
     public void readSettings(Object settings) {
         wizardDescriptor = (WizardDescriptor) settings;
         component.read(wizardDescriptor);
+        wizardDescriptor.putProperty("NewProjectWizard_Title", //NOI18N
+                NbBundle.getMessage(RESTSampleWizardPanel.class,
+                "Templates/Project/Samples/ApiSupport/RESTSampleProject.zip")); //NOI18N
     }
 
     @Override
     public void storeSettings(Object settings) {
         WizardDescriptor d = (WizardDescriptor) settings;
         component.store(d);
+        d.putProperty("NewProjectWizard_Title", null);                  //NOI18N
     }
 
     @Override

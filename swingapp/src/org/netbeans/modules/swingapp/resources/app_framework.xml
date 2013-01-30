@@ -44,9 +44,7 @@ Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
 
-<!DOCTYPE library PUBLIC "-//NetBeans//DTD Library Declaration 1.0//EN" "http://www.netbeans.org/dtds/library-declaration-1_0.dtd">
-
-<library version="1.0">
+<library version="3.0" xmlns="http://www.netbeans.org/ns/library-declaration/3">
     <name>swing-app-framework</name>
     <type>j2se</type>
     <localizing-bundle>org.netbeans.modules.swingapp.resources.Bundle</localizing-bundle>
@@ -59,8 +57,11 @@ made subject to such option by the copyright holder.
         <type>javadoc</type>
         <resource>jar:nbinst://org.netbeans.modules.swingapp/docs/appframework-1.0.3-doc.zip!/</resource>
     </volume>
-    <volume>
-        <type>maven-pom</type>
-        <resource>http://repo2.maven.org/maven2/net/java/dev/appframework/appframework/1.03/appframework-1.03.pom</resource>
-    </volume>
+    <properties>
+        <!-- please check with mkleint@netbeans.org before/after updating this or "classpath" section -->
+        <property>
+            <name>maven-dependencies</name>
+            <value>net.java.dev.appframework:appframework:1.03:jar</value>
+        </property>
+    </properties>    
 </library>

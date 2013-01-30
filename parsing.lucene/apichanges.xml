@@ -110,6 +110,51 @@ is the proper place.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
   <changes>
+  <change id="TransactionalDocumentIndex-clear">
+    <api name="LuceneSupport"/>
+    <summary>Added <code>DocumentIndex.Transactional.clear</code> to allow complete index clean up.</summary>
+    <version major="2" minor="20"/>
+    <date day="17" month="12" year="2012"/>
+    <author login="tzezula"/>
+    <compatibility source="incompatible" binary="incompatible" addition="yes"/>
+    <description>
+        <p>
+            Added <code>DocumentIndex.Transactional.clear</code> to allow complete index clean up.
+        </p>
+    </description>
+    <class package="org.netbeans.modules.parsing.lucene.support" name="DocumentIndex"/>
+  </change>
+  <change id="TransactionalDocumentIndex">
+    <api name="LuceneSupport"/>
+    <summary>Added <code>DocumentIndex.Transactional</code> to allow transaction operations on <code>DocumentIndex</code>.</summary>
+    <version major="2" minor="19"/>
+    <date day="27" month="11" year="2012"/>
+    <author login="tzezula"/>
+    <compatibility source="compatible" binary="compatible" addition="yes"/>
+    <description>
+        <p>
+            Added <code>DocumentIndex.Transactional</code> to allow commit and rollback on <code>DocumentIndex</code>.
+        </p>
+    </description>
+    <class package="org.netbeans.modules.parsing.lucene.support" name="IndexManager"/>
+    <class package="org.netbeans.modules.parsing.lucene.support" name="DocumentIndex"/>
+  </change>
+  <change id="DocumentIndexCache">
+    <api name="LuceneSupport"/>
+    <summary>Added <code>DocumentIndexCache</code> class to allow custom caching strategy in DocumentIndex.</summary>
+    <version major="2" minor="18"/>
+    <date day="14" month="11" year="2012"/>
+    <author login="tzezula"/>
+    <compatibility source="compatible" binary="compatible" addition="yes"/>
+    <description>
+        <p>
+            Added <code>DocumentIndexCache</code> class to allow custom caching strategy for added removed
+            documents in DocumentIndex. The default strategy uses <code>SoftReference</code> to detect flush point.
+        </p>
+    </description>
+    <class package="org.netbeans.modules.parsing.lucene.support" name="IndexManager"/>
+    <class package="org.netbeans.modules.parsing.lucene.support" name="DocumentIndexCache"/>
+  </change>
   <change id="WithTermFrequencies">
     <api name="LuceneSupport"/>
     <summary>Added <code>Index</code> with <code>Term</code> frequencies.</summary>

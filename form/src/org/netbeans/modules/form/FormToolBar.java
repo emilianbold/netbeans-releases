@@ -86,14 +86,28 @@ final class FormToolBar {
         this.formDesigner = designer;
         if (toolbar == null) {
             toolbar = new ToolBar();
+        } else {
+            Object tb = toolbar.getClientProperty(FormToolBar.class);
+            if (tb instanceof FormToolBar) { // clean everything added by the previous FormToolBar
+                FormToolBar prevFormToolBar = (FormToolBar) tb;
+                toolbar.removeMouseListener(prevFormToolBar.listener);
+                // remove all relevant components - the first one is a horizontal strut before the selection button
+                int i = toolbar.getComponentIndex(prevFormToolBar.selectionButton) - 1;
+                if (i >= 0) {
+                    while (i < toolbar.getComponentCount()) {
+                        toolbar.remove(i);
+                    }
+                }
+            }
         }
         this.toolbar = toolbar;
+        toolbar.putClientProperty(FormToolBar.class, this);
         toolbar.putClientProperty("isPrimary", Boolean.TRUE); // for JDev // NOI18N
 
         listener = new Listener();
 
         // selection button
-        selectionButton = new JToggleButton(new ImageIcon(ImageUtilities.loadImage("/org/netbeans/modules/form/resources/selection_mode.png", true)), // NOI18N
+        selectionButton = new JToggleButton(new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/form/resources/selection_mode.png", true)), // NOI18N
                                             false);
         selectionButton.addActionListener(listener);
         selectionButton.addMouseListener(listener);
@@ -104,7 +118,7 @@ final class FormToolBar {
         initButton(selectionButton);
 
         // connection button
-        connectionButton = new JToggleButton(new ImageIcon(ImageUtilities.loadImage("/org/netbeans/modules/form/resources/connection_mode.png", true)), // NOI18N
+        connectionButton = new JToggleButton(new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/form/resources/connection_mode.png", true)), // NOI18N
                                              false);
         connectionButton.addActionListener(listener);
         connectionButton.addMouseListener(listener);

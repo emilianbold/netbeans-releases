@@ -95,9 +95,7 @@ public class BrkpntAnnotation extends BreakpointAnnotation {
             if (document != null) {
                 boolean isValid = false;
                 try {
-                    int offset = NbDocument.findLineOffset(document, line.getLineNumber());
                     int l = line.getLineNumber();
-                    int col = NbDocument.findLineColumn(document, offset);
                     Element lineElem = NbDocument.findLineRootElement(document).getElement(l);
                     int startOffset = lineElem.getStartOffset();
                     int endOffset = lineElem.getEndOffset();
@@ -146,7 +144,7 @@ public class BrkpntAnnotation extends BreakpointAnnotation {
     @Override
     public String getShortDescription()
     {
-        return NbBundle.getBundle(DebuggerAnnotation.class).getString(BREAKPOINT);
+        return NbBundle.getMessage(DebuggerAnnotation.class, BREAKPOINT);
     }
 
     @Override

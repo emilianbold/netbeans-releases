@@ -42,7 +42,7 @@
 package org.netbeans.modules.kenai.collab.chat;
 
 import javax.swing.Icon;
-import org.netbeans.modules.kenai.ui.spi.KenaiUserUI;
+import org.netbeans.modules.kenai.ui.api.KenaiUserUI;
 
 /**
  *

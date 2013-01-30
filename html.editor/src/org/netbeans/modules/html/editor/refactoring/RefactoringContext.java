@@ -48,6 +48,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.html.lexer.HTMLTokenId;
@@ -75,7 +76,7 @@ import org.openide.util.Exceptions;
  */
 public class RefactoringContext {
 
-    private static final String CSS_MIME_TYPE = "text/x-css";//NOI18N
+    private static final String CSS_MIME_TYPE = "text/css";//NOI18N
     private FileObject file;
     private Document document;
     private int from, to;
@@ -188,92 +189,101 @@ public class RefactoringContext {
         return classSelectorsToResolve;
     }
 
-    static List<InlinedStyleInfo> findInlinedStyles(Document doc, int from, int to) {
-        List<InlinedStyleInfo> found = new LinkedList<InlinedStyleInfo>();
-        TokenHierarchy th = TokenHierarchy.get(doc);
-        TokenSequence<HTMLTokenId> ts = Utils.getJoinedHtmlSequence(th, from);
-        if (ts == null) {
-            //XXX - try to search backward and forward to find some html code???
-            return Collections.emptyList();
-        }
-        //the joined ts is moved to the from offset and a token already selected (moveNext/Previous() == true)
-        //seek for all tag's attributes with css embedding representing an inlined style
-        String tag = null;
-        String attr = null;
-        String styleAttr = null;
-        int styleAttrOffset = -1;
-        int classValueAppendOffset = -1;
-        int attrOffset = -1;
-        String tagsClass = null;
-        String tagsId = null;
-        String value = null;
-        OffsetRange range = null;
-        do {
-            Token<HTMLTokenId> t = ts.token();
-            if (t.id() == HTMLTokenId.TAG_OPEN) {
-                tag = t.text().toString();
-                attr = styleAttr = tagsClass = tagsId = null;
-                attrOffset = classValueAppendOffset = styleAttrOffset = -1;
-                range = null;
-                value = null;
-            } else if (t.id() == HTMLTokenId.TAG_CLOSE_SYMBOL) {
-                //closing tag, produce the info
-                if (tag != null && range != null) {
-                    //some inlined code found
-                    found.add(new InlinedStyleInfo(tag, tagsClass, tagsId, styleAttr, styleAttrOffset, classValueAppendOffset, range, value));
-                    tag = attr = styleAttr = tagsClass = tagsId = null;
-                    attrOffset = styleAttrOffset = classValueAppendOffset = -1;
+    static List<InlinedStyleInfo> findInlinedStyles(final Document doc, final int from, final int to) {
+        final AtomicReference<List<InlinedStyleInfo>> result = new AtomicReference<List<InlinedStyleInfo>>();
+        doc.render(new Runnable() {
+            @Override
+            public void run() {
+                List<InlinedStyleInfo> found = new LinkedList<InlinedStyleInfo>();
+                result.set(found);
+                
+                TokenHierarchy th = TokenHierarchy.get(doc);
+                TokenSequence<HTMLTokenId> ts = Utils.getJoinedHtmlSequence(th, from);
+                if (ts == null) {
+                    //XXX - try to search backward and forward to find some html code???
+                    return ;
                 }
-            } else if (t.id() == HTMLTokenId.ARGUMENT) {
-                attr = t.text().toString();
-                attrOffset = ts.offset();
-            } else if (t.id() == HTMLTokenId.VALUE_CSS) {
-                //check if this is an inlined code, not class or id representation
-                String csstype = (String) t.getProperty(HTMLTokenId.VALUE_CSS_TOKEN_TYPE_PROPERTY);
-                if (csstype == null) {
-                    //inlined code
-
-                    CharSequence text = t.text();
-                    int start = ts.offset();
-                    int end = ts.offset() + t.length();
-                    
-                    //templating language support - there might be a templating language inside the
-                    //attribute value, in such case, the CSS token is joined and we need to get the
-                    //token image and range from the parts.
-                    List<? extends Token<HTMLTokenId>> parts = t.joinedParts();
-                    if(parts != null) {
-                        Token<HTMLTokenId> first = parts.get(0);
-                        Token<HTMLTokenId> last = parts.get(parts.size() - 1);
-                        start = first.offset(th);
-                        end = last.offset(th) + last.length();
-                        try {
-                            text = doc.getText(start, end - start);
-                        } catch (BadLocationException ex) {
-                            Exceptions.printStackTrace(ex);
+                //the joined ts is moved to the from offset and a token already selected (moveNext/Previous() == true)
+                //seek for all tag's attributes with css embedding representing an inlined style
+                String tag = null;
+                String attr = null;
+                String styleAttr = null;
+                int styleAttrOffset = -1;
+                int classValueAppendOffset = -1;
+                int attrOffset = -1;
+                String tagsClass = null;
+                String tagsId = null;
+                String value = null;
+                OffsetRange range = null;
+                do {
+                    Token<HTMLTokenId> t = ts.token();
+                    if (t.id() == HTMLTokenId.TAG_OPEN) {
+                        tag = t.text().toString();
+                        attr = styleAttr = tagsClass = tagsId = null;
+                        attrOffset = classValueAppendOffset = styleAttrOffset = -1;
+                        range = null;
+                        value = null;
+                    } else if (t.id() == HTMLTokenId.TAG_CLOSE_SYMBOL) {
+                        //closing tag, produce the info
+                        if (tag != null && range != null) {
+                            //some inlined code found
+                            found.add(new InlinedStyleInfo(tag, tagsClass, tagsId, styleAttr, styleAttrOffset, classValueAppendOffset, range, value));
+                            tag = attr = styleAttr = tagsClass = tagsId = null;
+                            attrOffset = styleAttrOffset = classValueAppendOffset = -1;
                         }
+                    } else if (t.id() == HTMLTokenId.ARGUMENT) {
+                        attr = t.text().toString();
+                        attrOffset = ts.offset();
+                    } else if (t.id() == HTMLTokenId.VALUE_CSS) {
+                        //check if this is an inlined code, not class or id representation
+                        String csstype = (String) t.getProperty(HTMLTokenId.VALUE_CSS_TOKEN_TYPE_PROPERTY);
+                        if (csstype == null) {
+                            //inlined code
+
+                            CharSequence text = t.text();
+                            int start = ts.offset();
+                            int end = ts.offset() + t.length();
+
+                            //templating language support - there might be a templating language inside the
+                            //attribute value, in such case, the CSS token is joined and we need to get the
+                            //token image and range from the parts.
+                            List<? extends Token<HTMLTokenId>> parts = t.joinedParts();
+                            if (parts != null) {
+                                Token<HTMLTokenId> first = parts.get(0);
+                                Token<HTMLTokenId> last = parts.get(parts.size() - 1);
+                                start = first.offset(th);
+                                end = last.offset(th) + last.length();
+                                try {
+                                    text = doc.getText(start, end - start);
+                                } catch (BadLocationException ex) {
+                                    Exceptions.printStackTrace(ex);
+                                }
+                            }
+
+                            int diff = WebUtils.isValueQuoted(text) ? 1 : 0;
+                            range = new OffsetRange(start + diff, end - diff);
+                            value = WebUtils.unquotedValue(text.toString());
+                            styleAttrOffset = attrOffset;
+                            styleAttr = attr;
+                        } else {
+                            //class or id attribute value
+                            if ("class".equalsIgnoreCase(attr)) { //NOI18N
+                                classValueAppendOffset = ts.offset() + t.length() - (WebUtils.isValueQuoted(t.text()) ? 1 : 0);
+                                tagsClass = WebUtils.unquotedValue(t.text());
+                            } else if ("id".equalsIgnoreCase(attr)) { //NOI18N
+                                tagsId = WebUtils.unquotedValue(t.text());
+                            }
+                        }
+                    } else if (t.id() == HTMLTokenId.VALUE_CSS) {
+                        //TODO use TagMetadata for getting the info a the attribute represents a css or not
                     }
 
-                    int diff = WebUtils.isValueQuoted(text) ? 1 : 0;
-                    range = new OffsetRange(start + diff, end - diff);
-                    value = WebUtils.unquotedValue(text.toString());
-                    styleAttrOffset = attrOffset;
-                    styleAttr = attr;
-                } else {
-                    //class or id attribute value
-                    if ("class".equalsIgnoreCase(attr)) { //NOI18N
-                        classValueAppendOffset = ts.offset() + t.length() - (WebUtils.isValueQuoted(t.text()) ? 1 : 0);
-                        tagsClass = WebUtils.unquotedValue(t.text());
-                    } else if ("id".equalsIgnoreCase(attr)) { //NOI18N
-                        tagsId = WebUtils.unquotedValue(t.text());
-                    }
-                }
-            } else if (t.id() == HTMLTokenId.VALUE_CSS) {
-                //TODO use TagMetadata for getting the info a the attribute represents a css or not
+                } while (ts.moveNext() && ts.offset() <= to);
+
             }
-
-        } while (ts.moveNext() && ts.offset() <= to);
-
-        return found;
+        });
+        
+        return result.get();
     }
 
     //note: only the inlined infos from tags with an id selector are present in the map

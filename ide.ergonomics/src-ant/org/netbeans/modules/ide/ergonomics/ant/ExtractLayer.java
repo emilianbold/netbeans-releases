@@ -51,12 +51,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import javax.imageio.ImageIO;
 import javax.xml.parsers.DocumentBuilder;
@@ -78,13 +77,10 @@ import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
 import org.apache.tools.ant.filters.BaseFilterReader;
 import org.apache.tools.ant.filters.ChainableReader;
-import org.apache.tools.ant.filters.LineContainsRegExp;
 import org.apache.tools.ant.taskdefs.Concat;
-import org.apache.tools.ant.taskdefs.Concat.TextElement;
 import org.apache.tools.ant.taskdefs.Copy;
 import org.apache.tools.ant.types.FileSet;
 import org.apache.tools.ant.types.FilterChain;
-import org.apache.tools.ant.types.RegularExpression;
 import org.apache.tools.ant.types.Resource;
 import org.apache.tools.ant.types.ResourceCollection;
 import org.apache.tools.ant.types.resources.StringResource;
@@ -256,9 +252,9 @@ implements FileNameMapper, URIResolver, EntityResolver {
 
         Pattern concatPattern;
         Pattern copyPattern;
-        RegularExpression linePattern = new RegularExpression();
         String uberText = null;
         byte[] uberArr = null;
+        DuplKeys duplKeys = null;
         try {
             uberLayer.write("</filesystem>\n".getBytes("UTF-8"));
             uberText = uberLayer.toString("UTF-8");
@@ -267,7 +263,7 @@ implements FileNameMapper, URIResolver, EntityResolver {
             
             Set<String> concatregs = new TreeSet<String>();
             Set<String> copyregs = new TreeSet<String>();
-            Set<String> keys = new TreeSet<String>();
+            Map<String,String> keys = new TreeMap<String,String>();
             parse(new ByteArrayInputStream(uberArr), concatregs, copyregs, keys);
 
             log("Concats: " + concatregs, Project.MSG_VERBOSE);
@@ -291,14 +287,7 @@ implements FileNameMapper, URIResolver, EntityResolver {
             }
             copyPattern = Pattern.compile(sb.toString());
 
-            sb = new StringBuilder();
-            sep = "";
-            for (String s : keys) {
-                sb.append(sep);
-                sb.append(s);
-                sep = "|";
-            }
-            linePattern.setPattern("(" + sb + ") *=");
+            duplKeys = new DuplKeys(keys.keySet());
         } catch (Exception ex) {
             throw new BuildException("Cannot parse layers: " + ex.getMessage(), ex);
         }
@@ -359,10 +348,7 @@ implements FileNameMapper, URIResolver, EntityResolver {
             concat.setDestfile(localeVariant(bundle, entry.getKey()));
             {
                 FilterChain ch = new FilterChain();
-                LineContainsRegExp filter = new LineContainsRegExp();
-                filter.addConfiguredRegexp(linePattern);
-                ch.addLineContainsRegExp(filter);
-                ch.add(new DuplKeys());
+                ch.add(duplKeys);
                 concat.addFilterChain(ch);
                 concat.addFilterChain(bundleFilter);
             }
@@ -428,7 +414,7 @@ implements FileNameMapper, URIResolver, EntityResolver {
     private void parse(
         final InputStream is,
         final Set<String> concat, final Set<String> copy,
-        final Set<String> additionalKeys
+        final Map<String,String> additionalKeys
     ) throws Exception {
         SAXParserFactory f = SAXParserFactory.newInstance();
         f.setValidating(false);
@@ -449,11 +435,13 @@ implements FileNameMapper, URIResolver, EntityResolver {
                     if (name.equals("SystemFileSystem.localizingBundle")) {
                         String bundlepath = attributes.getValue("stringvalue").replace('.', '/') + ".*properties";
                         concat.add(bundlepath);
+			String key;
                         if (prefix.endsWith("/")) {
-                            additionalKeys.add(prefix.substring(0, prefix.length() - 1));
+			    key = prefix.substring(0, prefix.length() - 1);
                         } else {
-                            additionalKeys.add(prefix);
+                            key = prefix;
                         }
+			additionalKeys.put(key, bundlepath);
                     } else if (name.equals("iconResource") || name.equals("iconBase")) {
                         String s = attributes.getValue("stringvalue");
                         if (s == null) {
@@ -466,8 +454,11 @@ implements FileNameMapper, URIResolver, EntityResolver {
                         String bundle = bundlevalue.substring(0, idx);
                         String key = bundlevalue.substring(idx + 1);
                         String bundlepath = bundle.replace('.', '/') + ".*properties";
-                        if (!additionalKeys.add(key)) {
-                            throw new IllegalStateException("key " + key + " from " + bundlepath + " was already defined among " + concat);
+
+			String prev = additionalKeys.put(key, bundle);
+
+                        if (prev != null && !bundle.equals(prev)) {
+                            throw new IllegalStateException("key " + key + " from " + bundlepath + " was already defined among " + prev);
                         }
                         concat.add(bundlepath);
                     } else {
@@ -568,20 +559,23 @@ implements FileNameMapper, URIResolver, EntityResolver {
 
     private class DuplKeys extends BaseFilterReader
     implements ChainableReader {
+        private final Set<String> acceptKeys;
         private Map<String,String> map;
         private String line;
         private int lineIdx;
         
-        public DuplKeys() {
+        public DuplKeys(Set<String> acceptKeys) {
+            this.acceptKeys = acceptKeys;
         }
 
-        public DuplKeys(Reader in) {
+        public DuplKeys(Reader in, Set<String> acceptKeys) {
             super(new BufferedReader(in));
+            this.acceptKeys = acceptKeys;
         }
 
         @Override
         public Reader chain(Reader rdr) {
-            return new DuplKeys(rdr);
+            return new DuplKeys(rdr, acceptKeys);
         }
         
         private BufferedReader in() {
@@ -590,48 +584,61 @@ implements FileNameMapper, URIResolver, EntityResolver {
 
         @Override
         public int read() throws IOException {
-            if (line != null) {
-                if (lineIdx < line.length()) {
-                    return line.charAt(lineIdx++);
-                } else {
-                    line = null;
-                    return '\n';
+            int equals;
+            String key;
+            
+            for (;;) {
+                if (line != null) {
+                    final int len = line.length();
+                    if (lineIdx < len) {
+                        return line.charAt(lineIdx++);
+                    } else {
+                        if (len > 0 && line.charAt(len - 1)  == '\\') {
+                            line = in().readLine();
+                            lineIdx = 0;
+                        } else {
+                            line = null;
+                        }
+                        return '\n';
+                    }
                 }
-            }
-            do { 
-                line = in().readLine();
-                if (line == null) {
-                    return -1;
-                }
-            } while (line.startsWith("#"));
-            lineIdx = 0;
-            if (line.startsWith(" ")) {
-                return read();
-            }
+                do { 
+                    line = in().readLine();
+                    if (line == null) {
+                        return -1;
+                    }
+                } while (line.startsWith("#"));
+                lineIdx = 0;
 
-            int equals = line.indexOf('=');
-            if (equals == -1) {
-                return read();
-            }
-            String key = line.substring(0, equals).trim();
-            final String value = line.substring(equals + 1);
-            if (map == null) {
-                map = new HashMap<String, String>();
-            }
-            if (map.containsKey(key)) {
-                final String oldValue = map.get(key);
-                if (!value.equals(oldValue)) {
-                    final String msg = "The key " + key + 
-                        " is duplicated and values are not identical: '" + 
-                        value + "' and '" + oldValue + "'!";
-                    throw new BuildException(msg);
+                equals = line.indexOf('=');
+                if (equals == -1) {
+                    line = null;
+                    continue;
                 }
-                // ignore the line
-                line = null;
-                return read();
+                key = line.substring(0, equals).trim();
+                if (!acceptKeys.contains(key)) {
+                    line = null;
+                    continue;
+                }
+                final String value = line.substring(equals + 1);
+                if (map == null) {
+                    map = new HashMap<String, String>();
+                }
+                if (map.containsKey(key)) {
+                    final String oldValue = map.get(key);
+                    if (!value.equals(oldValue)) {
+                        final String msg = "The key " + key + 
+                            " is duplicated and values are not identical: '" + 
+                            value + "' and '" + oldValue + "'!";
+                        throw new BuildException(msg);
+                    }
+                    // ignore the line
+                    line = null;
+                    continue;
+                }
+                map.put(key, value);
+                continue;
             }
-            map.put(key, value);
-            return read();
         }
         
         

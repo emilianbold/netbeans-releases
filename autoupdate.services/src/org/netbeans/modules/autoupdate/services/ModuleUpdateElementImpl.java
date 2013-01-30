@@ -44,16 +44,20 @@
 
 package org.netbeans.modules.autoupdate.services;
 
+import java.io.File;
 import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.Module;
 import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.api.autoupdate.UpdateManager.TYPE;
 import org.netbeans.modules.autoupdate.updateprovider.InstallInfo;
 import org.netbeans.modules.autoupdate.updateprovider.InstalledModuleItem;
 import org.netbeans.modules.autoupdate.updateprovider.ModuleItem;
+import org.netbeans.updater.UpdateTracking;
+import org.openide.filesystems.FileUtil;
 import org.openide.modules.ModuleInfo;
 import org.openide.modules.SpecificationVersion;
 
@@ -71,6 +75,7 @@ public class ModuleUpdateElementImpl extends UpdateElementImpl {
     private String homepage;
     private int downloadSize;
     private String category;
+    private String rawCategory;
     private InstallInfo installInfo;
     private static final Logger log = Logger.getLogger (ModuleUpdateElementImpl.class.getName ());
     private ModuleInfo moduleInfo;
@@ -80,6 +85,7 @@ public class ModuleUpdateElementImpl extends UpdateElementImpl {
     private boolean isEager;
     private boolean isAutoload;
     private boolean isPreferredUpdate;
+    private String installationCluster;
     
     public ModuleUpdateElementImpl (ModuleItem item, String providerName) {
         super (item, providerName);
@@ -132,8 +138,9 @@ public class ModuleUpdateElementImpl extends UpdateElementImpl {
     @Override
     public String getNotification() {
         String notification = item.getModuleNotification ();
-        if (notification != null)
+        if (notification != null) {
             notification = notification.trim();
+        }
         return notification;
     }
     
@@ -168,13 +175,23 @@ public class ModuleUpdateElementImpl extends UpdateElementImpl {
         return date;
     }
     
+    public String getRawCategory() {
+        if (rawCategory == null) {
+            rawCategory = item.getCategory ();
+            if (rawCategory == null) {
+                rawCategory = (String) moduleInfo.getLocalizedAttribute ("OpenIDE-Module-Display-Category");
+            }
+            if (rawCategory == null) {
+                rawCategory = "";
+            }
+        }
+        return rawCategory;
+    }
+    
     @Override
     public String getCategory () {
         if (category == null) {
-            category = item.getCategory ();
-            if (category == null) {
-                category = (String) moduleInfo.getLocalizedAttribute ("OpenIDE-Module-Display-Category");
-            }
+            category = getRawCategory();
             if (isAutoload () || isFixed ()) {
                 category = UpdateUnitFactory.LIBRARIES_CATEGORY;
             } else if (isEager ()) {
@@ -253,6 +270,7 @@ public class ModuleUpdateElementImpl extends UpdateElementImpl {
         return isEager;
     }
     
+    @Override
     public boolean isPreferredUpdate() {
         return isPreferredUpdate;
     }
@@ -262,21 +280,67 @@ public class ModuleUpdateElementImpl extends UpdateElementImpl {
         return Utilities.toModule(getCodeName (), null) == null ? false : Utilities.toModule(getCodeName (), null).isFixed ();
     }
     
+    public String getInstallationCluster() {
+        assert item instanceof InstalledModuleItem : item + " is InstalledModuleItem in " + this;
+        if (! (item instanceof InstalledModuleItem)) {
+            return null;
+        }
+        if (installationCluster == null) {
+            installationCluster = findInstallationCluster();
+        }
+        return installationCluster;
+    }
+    
+    private String findInstallationCluster() {
+        Module m = Utilities.toModule(this.moduleInfo);
+        if (m == null) {
+            return null;
+        }
+
+        File jarFile = m.getJarFile();
+        String res = null;
+
+        if (jarFile != null) {
+            for (File cluster : UpdateTracking.clusters(true)) {
+                cluster = FileUtil.normalizeFile(cluster);
+                if (isParentOf(cluster, jarFile)) {
+                    res = cluster.getName();
+                    break;
+                }
+            }
+        } else {
+            return UpdateTracking.getPlatformDir().getName();
+        }
+        return res;
+    }
+
+    private static boolean isParentOf(File parent, File child) {
+        File tmp = child.getParentFile();
+        while (tmp != null && !parent.equals(tmp)) {
+            tmp = tmp.getParentFile();
+        }
+        return tmp != null;
+    }
+    
     @Override
     public boolean equals(Object obj) {
-        if (obj == null)
+        if (obj == null) {
             return false;
-        if (getClass() != obj.getClass())
+        }
+        if (getClass() != obj.getClass()) {
             return false;
+        }
         final ModuleUpdateElementImpl other = (ModuleUpdateElementImpl) obj;
 
         if (this.specVersion != other.specVersion &&
             (this.specVersion == null ||
-             !this.specVersion.equals(other.specVersion)))
+             !this.specVersion.equals(other.specVersion))) {
             return false;
+        }
         if (this.codeName != other.codeName &&
-            (this.codeName == null || !this.codeName.equals(other.codeName)))
+            (this.codeName == null || !this.codeName.equals(other.codeName))) {
             return false;
+        }
         return true;
     }
 

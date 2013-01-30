@@ -56,7 +56,7 @@ import org.netbeans.modules.cnd.apt.utils.APTUtils;
  * @author Vladimir Voskresensky
  */
 public final class APTEndifNode extends APTTokenBasedNode 
-                                implements APTEndif, Serializable {
+                                implements APTNodeBuilder, APTEndif, Serializable {
     private static final long serialVersionUID = 6797353042752788870L;
     
     private int endOffset = 0;
@@ -107,5 +107,10 @@ public final class APTEndifNode extends APTTokenBasedNode
     public void setFirstChild(APT child) {
         // do nothing
         assert (false) : "endif doesn't support children"; // NOI18N
-    }    
+    }
+    
+    @Override
+    public APTBaseNode getNode() {
+        return this;
+    }
 }

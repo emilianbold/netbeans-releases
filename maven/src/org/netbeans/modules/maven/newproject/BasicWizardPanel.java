@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.maven.newproject;
 
+import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.maven.api.archetype.Archetype;
@@ -105,6 +106,12 @@ public class BasicWizardPanel implements WizardDescriptor.FinishablePanel<Wizard
     public @Override void readSettings(WizardDescriptor settings) {
         wizardDescriptor = settings;
         getComponent().read(wizardDescriptor);
+        // XXX hack, TemplateWizard in final setTemplateImpl() forces new wizard's title
+        // this name is used in NewProjectWizard to modify the title
+//        Object substitute = getComponent().getClientProperty ("NewProjectWizard_Title"); // NOI18N
+//        if (substitute != null) {
+//            wizardDescriptor.putProperty ("NewProjectWizard_Title", "XXX"); // NOI18N
+//        }        
     }
     
     public @Override void storeSettings(WizardDescriptor settings) {

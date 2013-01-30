@@ -59,7 +59,7 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerManager;
  * Now in tab in Tools->Options->C/C++. See IZ 91044
  */
 @OptionsPanelController.SubRegistration(
-	id = "DebuggerAdvancedOption",			// NOI18N
+	id = CndUIConstants.TOOLS_OPTIONS_CND_DEBUGGER_ID,
 	location = CndUIConstants.TOOLS_OPTIONS_CND_CATEGORY_ID,
 	displayName = "#TAB_DebuggerOptionsPanelTitle", // NOI18N
 	position = 550)

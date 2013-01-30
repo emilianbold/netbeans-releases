@@ -46,12 +46,16 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Image;
 import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
-import javax.swing.border.LineBorder;
+import org.netbeans.modules.tasks.ui.LinkButton;
 import org.openide.util.Cancellable;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -70,6 +74,7 @@ public abstract class AsynchronousNode<T> extends TreeListNode {
     private JLabel lblTitle;
     private ProgressLabel lblLoading;
     private JLabel lblError;
+    private LinkButton btnRetry;
     private boolean loaded = false;
     private Loader loader;
     private final Object LOCK = new Object();
@@ -95,11 +100,18 @@ public abstract class AsynchronousNode<T> extends TreeListNode {
         Image img = ImageUtilities.loadImage("org/netbeans/modules/tasks/ui/resources/error.png"); //NOI18N
         lblError.setIcon(new ImageIcon(img));
         lblFill = new JLabel();
+        btnRetry = new LinkButton(NbBundle.getMessage(AsynchronousNode.class, "LBL_Retry"), new AbstractAction() { //NOI18N
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                refresh();
+            }
+        });
 
         panel.add(lblTitle, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
         panel.add(lblFill, new GridBagConstraints(1, 0, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
         panel.add(lblLoading, new GridBagConstraints(2, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 4, 0, 0), 0, 0));
         panel.add(lblError, new GridBagConstraints(3, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 4, 0, 0), 0, 0));
+        panel.add(btnRetry, new GridBagConstraints(4, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 8, 0, 0), 0, 0));
     }
 
     @Override
@@ -116,6 +128,7 @@ public abstract class AsynchronousNode<T> extends TreeListNode {
                 if (isSelected) {
                     lblLoading.setForeground(foreground);
                     lblError.setForeground(foreground);
+                    btnRetry.setForeground(foreground);
                 } else {
                     lblLoading.setForeground(ColorManager.getDefault().getDisabledColor());
                     lblError.setForeground(ColorManager.getDefault().getErrorColor());
@@ -183,6 +196,7 @@ public abstract class AsynchronousNode<T> extends TreeListNode {
             loaded = false;
             lblLoading.setVisible(true);
             lblError.setVisible(false);
+            btnRetry.setVisible(false);
         }
         if (null != loader) {
             loader.cancel();
@@ -196,6 +210,7 @@ public abstract class AsynchronousNode<T> extends TreeListNode {
             public void run() {
                 synchronized (LOCK) {
                     lblError.setVisible(true);
+                    btnRetry.setVisible(true);
                     lblLoading.setVisible(false);
                     loaded = true;
                     loader = null;
@@ -214,9 +229,11 @@ public abstract class AsynchronousNode<T> extends TreeListNode {
                     if (null == c) {
                         lblLoading.setVisible(false);
                         lblError.setVisible(true);
+                        btnRetry.setVisible(true);
                     } else {
                         lblLoading.setVisible(false);
                         lblError.setVisible(false);
+                        btnRetry.setVisible(false);
                         if (null != inner) {
                             panel.remove(inner);
                         }

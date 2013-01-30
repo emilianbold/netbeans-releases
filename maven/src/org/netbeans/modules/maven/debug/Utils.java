@@ -65,6 +65,7 @@ import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.AuxiliaryProperties;
@@ -97,12 +98,8 @@ public class Utils {
     public static File[] convertStringsToNormalizedFiles(Collection<String> strings) {
         File[] fos = new File[strings.size()];
         int index = 0;
-        Iterator it = strings.iterator();
-        while (it.hasNext()) {
-            String str = (String)it.next();
-            File fil = new File(str);
-            fil = FileUtil.normalizeFile(fil);
-            fos[index] = fil;
+        for (String str : strings) {
+            fos[index] = FileUtilities.convertStringToFile(str);
             index++;
         }
         return fos;
@@ -125,7 +122,7 @@ public class Utils {
         }
         return toRet;
     }
-    static Set<String> collectSourceRoots(Project prj) {
+    private static Set<String> collectSourceRoots(Project prj) {
         Set<String> toRet = new HashSet<String>();
         NbMavenProject watcher = prj.getLookup().lookup(NbMavenProject.class);
         MavenProject mproject = watcher.getMavenProject();
@@ -134,6 +131,7 @@ public class Utils {
         //for poms also include all module projects recursively..
         boolean isPom = NbMavenProject.TYPE_POM.equals(watcher.getPackagingType());
         if (isPom) {
+            //only for pom is correct use of subprojectprovider
             SubprojectProvider subs = prj.getLookup().lookup(SubprojectProvider.class);
             Set<? extends Project> subProjects = subs.getSubprojects();
             for (Project pr : subProjects) {
@@ -144,7 +142,7 @@ public class Utils {
     }
     
     static ClassPath createSourcePath(Project project) {
-        File[] roots = new File[0];
+        File[] roots;
         ClassPath cp;
         try {
             Set<String> col = collectClasspaths(project);

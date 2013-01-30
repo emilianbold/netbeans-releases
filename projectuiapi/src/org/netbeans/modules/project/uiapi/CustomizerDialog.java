@@ -101,6 +101,9 @@ public class CustomizerDialog {
     private static final String COMMAND_OK = "OK";          // NOI18N
     private static final String COMMAND_CANCEL = "CANCEL";  // NOI18N
 
+    // Close action
+    private static final int ACTION_CLOSE = OPTION_CANCEL + 1;
+
     private static final String CUSTOMIZER_DIALOG_X = "CustomizerDialog.dialog.x";
     private static final String CUSTOMIZER_DIALOG_Y = "CustomizerDialog.dialog.y";
     private static final String CUSTOMIZER_DIALOG_WIDTH = "CustomizerDialog.dialog.width";
@@ -214,6 +217,11 @@ public class CustomizerDialog {
 
                     Utilities.removeCategoryChangeSupport(category);
 
+                    ActionListener listener = category.getCloseListener();
+                    if (listener != null) {
+                        listener.actionPerformed(new ActionEvent(this, ACTION_CLOSE, e.paramString()));
+                    }
+                    
                     if (category.getSubcategories() != null) {
                         queue.addAll(Arrays.asList(category.getSubcategories()));
                     }

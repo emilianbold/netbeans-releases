@@ -151,7 +151,7 @@ public class WizardDescriptorOrderTest extends NbTestCase {
         
     }
     
-    private final class TestPanel implements WizardDescriptor.Panel<WizardDescriptor> {
+    private final class TestPanel implements WizardDescriptor.ValidatingPanel<WizardDescriptor> {
         
         private final int x;
         
@@ -166,6 +166,11 @@ public class WizardDescriptorOrderTest extends NbTestCase {
         }
         
         public void addChangeListener(ChangeListener l) {}
+
+        @Override
+        public void validate() throws WizardValidationException {
+            assertEquals( "validate() must be called before storeSettings()", 0, storeSettingsCalls[x] );
+        }
         
         public void storeSettings(WizardDescriptor settings) {
             if (checkStoreOldeBeforeReadNew && (x > 0)) {

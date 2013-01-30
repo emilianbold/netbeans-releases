@@ -244,10 +244,9 @@ public class TextValueCompleter implements DocumentListener {
                 completionListModel.removeElement(completion);
             }
         }
+        completionListModel.removeElement(Bundle.PARTIAL_RESULT());
         if (partial) {
             completionListModel.addElement(Bundle.PARTIAL_RESULT());
-        } else {
-            completionListModel.removeElement(Bundle.PARTIAL_RESULT());
         }
     }
     

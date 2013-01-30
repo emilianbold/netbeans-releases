@@ -49,9 +49,13 @@ import java.util.List;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
+import static junit.framework.Assert.assertFalse;
+import static junit.framework.Assert.assertTrue;
+import org.netbeans.junit.MockServices;
 import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
 import org.netbeans.modules.mercurial.ui.repository.HgURL;
 import org.netbeans.modules.mercurial.util.HgCommand;
+import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -64,6 +68,13 @@ public class HgCommandTest extends AbstractHgTestCase {
     public HgCommandTest(String arg0) throws IOException {
         super(arg0);
         System.setProperty("netbeans.user", new File(getWorkDir().getParentFile(), "userdir").getAbsolutePath());
+    }
+
+    @Override
+    protected void setUp () throws Exception {
+        super.setUp();
+        MockServices.setServices(new Class[] {
+            MercurialVCS.class});
     }
     
     public void testNumericTagname () throws Exception {
@@ -263,6 +274,37 @@ public class HgCommandTest extends AbstractHgTestCase {
         HgCommand.doPull(newRepo, NULL_LOGGER);
         refreshProbe.checkRefresh(true);
         handler.assertResults(1);
+    }
+
+    public void testDisableIBInFSEvents () throws Exception {
+        CommandHandler handler = new CommandHandler();
+        Mercurial.LOG.addHandler(handler);
+        Mercurial.LOG.setLevel(Level.ALL);
+        File file = createFile(getWorkTreeDir(), "aaa");
+        commit(file);
+
+        FileObject fo = FileUtil.toFileObject(file);
+
+        fo.delete();
+        assertEquals(FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY, HgCommand.getStatus(getWorkTreeDir(), Collections.<File>singletonList(file), null, null).get(file).getStatus());
+        assertFalse(handler.commandInvoked);
+
+        fo.getParent().createData(file.getName());
+        assertNull(HgCommand.getStatus(getWorkTreeDir(), Collections.<File>singletonList(file), null, null).get(file));
+        assertFalse(handler.commandInvoked);
+
+        File copy = new File(file.getParentFile(), "copy");
+        fo.copy(fo.getParent(), copy.getName(), "");
+        assertEquals(FileInformation.STATUS_VERSIONED_ADDEDLOCALLY, HgCommand.getStatus(getWorkTreeDir(), Collections.<File>singletonList(copy), null, null).get(copy).getStatus());
+        assertFalse(handler.commandInvoked);
+
+        File renamed = new File(file.getParentFile(), "renamed");
+        FileLock lock = fo.lock();
+        fo.move(lock, fo.getParent(), renamed.getName(), "");
+        lock.releaseLock();
+        assertEquals(FileInformation.STATUS_VERSIONED_ADDEDLOCALLY, HgCommand.getStatus(getWorkTreeDir(), Collections.<File>singletonList(renamed), null, null).get(renamed).getStatus());
+        assertEquals(FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY, HgCommand.getStatus(getWorkTreeDir(), Collections.<File>singletonList(file), null, null).get(file).getStatus());
+        assertFalse(handler.commandInvoked);
     }
 
     private class CommandHandler extends Handler {

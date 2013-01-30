@@ -299,6 +299,11 @@ public class SafeDeleteUI implements RefactoringUI, RefactoringUIBypass, JavaRef
         if (b && files!=null && files.length == 1) {
             return new SafeDeleteUI(files, Arrays.asList(handles), b);
         }
+        
+        if (info == null) {
+            return new SafeDeleteUI(handles);
+        }
+        
         TreePathHandle selectedElement = handles[0];
         Element selected = selectedElement.resolveElement(info);
         if (selected == null) {

@@ -1,5 +1,5 @@
 <!--       
-*     Copyright © 1997, 2011, Oracle and/or its affiliates. All rights reserved.
+*     Copyright © 1997, 2012, Oracle and/or its affiliates. All rights reserved.
 *     Use is subject to license terms.
 -->
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
@@ -14,23 +14,32 @@
     <body>
         
         <h2>Editor Options: General</h2>
-        <p> <small><a href="#seealso">See Also</a>&nbsp; </small> 
-        <p>This tab enables you to customize global code folding and camel case settings.</p>
+        <p> <small><a href="#seealso">See Also</a>&nbsp; </small> </p>
+        <p>This tab enables you to customize the global settings for code folding, braces matching, camel case, and editor search.</p>
         <ul>
             <li><b>Use Code Folding.</b> If selected, you have the option of collapsing the display of code blocks.
                 You can select which types of code blocks are collapsed by default. 
                 Code folding is applied only to editor types that support code folding, such as the Java editor.</li>
+			<li><b>Braces Matching.</b> Matching braces in a source code. Options are:
+			  <ul>
+			  <li><b>Show outline.</b> When selected, the bracket that matches the bracket selected  in the source code is highlighted in the editor.</li>
+			  <li><b>Show tooltips.</b> If you select a brace in the editor and the opening brace of the selected brace is  outside of the viewable area of the editor, the opening brace is displayed above the editor area as a tooltip. </li>
+			</ul></li>
             <li><b>Collapse by Default.</b> Select the types of code blocks that are collapsed by default.</li>
-            <li><b>Camel Case Behavior.</b> Enable Camel Case Navigation in Java. For
-                example, the caret stops at "J", "T", and "N", in "JavaTypeName", when
-                you use the next/previous word actions.</li>
-            <li><strong>Remove Trailing Whitespace When Saving Files.</strong> You can have trailing whitespaces never removed, always removed, or only removed from modified files. Default is "never."</li>
-        </ul>
+            <li><b>Camel Case Behavior.</b> Enable Camel Case navigation in Java. For
+                example, the caret stops at &quot;J&quot;, &quot;T&quot;, and &quot;N&quot;, in &quot;JavaTypeName&quot;, when
+                you use the next/previous word commands.</li>
+			<li><b>Editor Search Behavior.</b> Lets you modify the editor search bar behavior. Options are:
+			  <ul>
+			<li><b>Enter to find next.</b> Select to switch the editor search bar behavior to Firefox style: after Enter is pressed, the next occurrence of the searched text is found and the caret is moved. Pressing the Esc button closes the search bar. </li>
+			<li><b>Enter to finish search.</b> Select to switch the editor search bar behavior to vi style:  after Enter is pressed, the next occurrence of the searched text is found, the cursor is moved, and the search bar is closed. Pressing the Esc button closes  the search bar immediately. The search is also closed if the search bar goes out of focus (for example, the focus is moved to the editor). </li>
+			</ul></li>
+    </ul>
 
-<dl>
+        <dl>
             <dt><a name="seealso">See Also</a></dt>
             <dd>      <a href="../../configure_options.html">Using the Options Window</a></dd>
-        </dl>
+    </dl>
         
 
         <hr><small><a href="../../../credits.html">Legal Notices</a></small>

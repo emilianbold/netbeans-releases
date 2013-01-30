@@ -47,24 +47,12 @@ import java.awt.Color;
 import java.awt.Image;
 import java.io.CharConversionException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
-import org.netbeans.api.autoupdate.InstallSupport;
-import org.netbeans.api.autoupdate.OperationContainer;
-import org.netbeans.api.autoupdate.OperationContainer.OperationInfo;
 import org.netbeans.api.autoupdate.UpdateElement;
-import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.api.autoupdate.UpdateUnit;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.xml.XMLUtil;
@@ -227,134 +215,16 @@ public class UnitDetails extends DetailsPanel {
         }
 
         Unit u = uu;
-        Set<UpdateElement> internalUpdates = new HashSet<UpdateElement>();
-        if (!(u instanceof Unit.InternalUpdate)) {
-            OperationContainer<InstallSupport> container = OperationContainer.createForUpdate();
-            if (! container.canBeAdded(u.updateUnit, uu.getRelevantElement())) {
-                return null;
+        if (u instanceof Unit.CompoundUpdate) {
+            Unit.CompoundUpdate cu = (Unit.CompoundUpdate) u;
+            StringBuilder desc = new StringBuilder();
+            for (UpdateUnit internalUnits : cu.getUpdateUnits()) {
+                appendInternalUpdates(desc, internalUnits.getAvailableUpdates().get(0));
             }
-
-            try {
-                container.add(u.updateUnit, uu.getRelevantElement());
-            } catch (IllegalArgumentException ex) {
-                Exceptions.attachMessage(ex, "Unit: " + u);
-                Exceptions.attachMessage(ex, "Unit.updateUnit: " + u.updateUnit);
-                Exceptions.attachMessage(ex, "Unit.updateUnit.getInstalled(): " + u.updateUnit.getInstalled());
-                Exceptions.attachMessage(ex, "Unit.getRelevantElement(): " + uu.getRelevantElement());
-                throw ex;
-            }
-            Set<UpdateElement> required = new LinkedHashSet<UpdateElement>();
-            List <OperationInfo<InstallSupport>> infos = container.listAll();
-
-            for (OperationInfo<InstallSupport> info : infos) {
-                Set<UpdateElement> reqs  = info.getRequiredElements();
-                
-                for (UpdateElement req : reqs) {
-                    if (req.getUpdateUnit().getInstalled() != null && !req.getUpdateUnit().isPending()) {
-                        required.add(req);                        
-                    } else {
-                        //OperationContainer.createForInstall().
-                    }
-                }                
-            }
-            for (OperationInfo<InstallSupport> i : infos) {
-                if (!i.getUpdateUnit().equals(u.updateUnit) && !i.getUpdateUnit().isPending()) {
-                    required.add(i.getUpdateElement());
-                }
-            }
-
-            if (!required.isEmpty()) {
-                List<UpdateElement> visibleRequirements = new ArrayList<UpdateElement>();
-                for (UpdateElement ue : required) {
-                    if (ue.getUpdateUnit().getType().equals(UpdateManager.TYPE.KIT_MODULE)) {
-                        visibleRequirements.add(ue);
-                    }
-                }
-                OperationContainer<InstallSupport> containerForVisibleUpdate = OperationContainer.createForUpdate();
-                OperationContainer<InstallSupport> containerForVisibleInstall = OperationContainer.createForInstall();
-                List<OperationInfo<InstallSupport>> infoList = new ArrayList<OperationInfo<InstallSupport>>();
-                for (UpdateElement ue : visibleRequirements) {
-                    if (containerForVisibleUpdate.canBeAdded(ue.getUpdateUnit(), ue)) {
-                        infoList.add(containerForVisibleUpdate.add(ue));
-                    } else if (containerForVisibleInstall.canBeAdded(ue.getUpdateUnit(), ue)) {
-                        infoList.add(containerForVisibleInstall.add(ue));
-                    }
-                }
-                List<UpdateElement> requiredElementsCoveredByVisible = new ArrayList<UpdateElement>();
-                for (OperationInfo<InstallSupport> i : infoList) {
-                    Set<UpdateElement> visibleRequired = i.getRequiredElements();
-                    for (UpdateElement r : visibleRequired) {
-                        if (!requiredElementsCoveredByVisible.contains(r)) {
-                            requiredElementsCoveredByVisible.add(r);
-                        }
-                    }
-                }
-
-
-                for (UpdateElement ue : required) {
-                    if (!requiredElementsCoveredByVisible.contains(ue) &&
-                            !ue.getUpdateUnit().getType().equals(UpdateManager.TYPE.KIT_MODULE)) {
-                        internalUpdates.add(ue);
-                    }
-                }
-            }
+            return desc.toString();
         } else {
-            Unit.InternalUpdate iu = (Unit.InternalUpdate) u;
-            
-            OperationContainer<InstallSupport> updContainer = OperationContainer.createForUpdate();
-            for (UpdateUnit inv : iu.getUpdateUnits()) {
-                UpdateElement ue = inv.getAvailableUpdates().get(0);
-                if (updContainer.canBeAdded(inv, ue)) {
-                    updContainer.add(inv, ue);
-                }
-            }
-            for (OperationInfo<InstallSupport> info : updContainer.listAll()) {
-                internalUpdates.add(info.getUpdateElement());
-                for (UpdateElement r : info.getRequiredElements()) {
-                    if (r.getUpdateUnit().getInstalled() != null && !r.getUpdateUnit().isPending()) {
-                        internalUpdates.add(r);
-                    }
-
-                }
-            }
-            /*
-             *
-            OperationContainer<InstallSupport> reiContainer = OperationContainer.createForInternalUpdate();
-            reiContainer.add(iu.getRelevantElement());
-
-            for (OperationInfo<InstallSupport> info : reiContainer.listAll()) {
-                if (!info.getUpdateElement().equals(iu.updateUnit.getInstalled())) {
-                    internalUpdates.add(info.getUpdateElement());
-                }
-                for (UpdateElement r : info.getRequiredElements()) {
-                    if (r.getUpdateUnit().getInstalled() != null && !r.getUpdateUnit().isPending()) {
-                        internalUpdates.add(r);
-                    }
-                }
-            }
-             * 
-             */
+            return "";
         }
-        StringBuilder desc = new StringBuilder();
-        try {
-        
-            Set <UpdateElement> sorted = new TreeSet <UpdateElement> (new Comparator<UpdateElement> () {
-
-                @Override
-                    public int compare(UpdateElement o1, UpdateElement o2) {
-                        return o1.getDisplayName().compareTo(o2.getDisplayName());
-                    }
-
-            });
-            sorted.addAll(internalUpdates);
-
-            for (UpdateElement ue : sorted) {
-                appendInternalUpdates(desc, ue);
-            }
-        } catch (Exception e) {
-            err.log(Level.INFO, "Exception", e);
-        }
-        return desc.toString();
     }
 
     private void appendInternalUpdates(StringBuilder desc, UpdateElement ue) {

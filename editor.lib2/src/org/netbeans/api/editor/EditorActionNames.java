@@ -124,4 +124,16 @@ public final class EditorActionNames {
      * @since 1.57
      */
     public static final String removeSurroundingCode = "remove-surrounding-code"; // NOI18N
+
+    /**
+     * Organize import statements to correspond to the specified code style rules
+     * @since 1.64
+     */
+    public static final String organizeImports = "organize-imports"; // NOI18N
+
+    /**
+     * Organize class members order to correspond to the specified code style rules
+     * @since 1.64
+     */
+    public static final String organizeMembers = "organize-members"; // NOI18N
 }

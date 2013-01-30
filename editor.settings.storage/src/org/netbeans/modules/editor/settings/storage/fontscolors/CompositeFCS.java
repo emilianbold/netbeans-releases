@@ -308,11 +308,15 @@ public final class CompositeFCS extends FontColorSettings {
         Map<?, ?> desktopHints = (Map<?, ?>) Toolkit.getDefaultToolkit().getDesktopProperty("awt.font.desktophints"); //NOI18N
         if (LOG.isLoggable(Level.FINE)) {
             LOG.fine("System provided desktop hints:"); //NOI18N
-            for (Object key : desktopHints.keySet()) {
-                Object value = desktopHints.get(key);
-                String humanReadableKey = translateRenderingHintsConstant(key);
-                String humanReadableValue = translateRenderingHintsConstant(value);
-                LOG.fine("  " + humanReadableKey + " = " + humanReadableValue); //NOI18N
+            if (desktopHints != null) {
+                for (Object key : desktopHints.keySet()) {
+                    Object value = desktopHints.get(key);
+                    String humanReadableKey = translateRenderingHintsConstant(key);
+                    String humanReadableValue = translateRenderingHintsConstant(value);
+                    LOG.fine("  " + humanReadableKey + " = " + humanReadableValue); //NOI18N
+                }
+            } else {
+                LOG.fine("There are no desktop hints");
             }
             LOG.fine("----------------"); //NOI18N
         }

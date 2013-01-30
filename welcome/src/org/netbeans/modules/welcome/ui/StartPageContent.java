@@ -50,14 +50,12 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.Image;
 import java.awt.Insets;
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import org.netbeans.modules.welcome.content.Constants;
-import org.openide.util.ImageUtilities;
 
 /**
  *
@@ -65,22 +63,13 @@ import org.openide.util.ImageUtilities;
  */
 public class StartPageContent extends JPanel implements Constants {
 
-    private final static Color COLOR_TOP = new Color(198, 211, 223);
-    private final static Color COLOR_BOTTOM = new Color(235, 235, 235);
-
-    private Image imgCenter;
-    private Image imgLeft;
-    private Image imgRight;
-
+    private final static Color COLOR_TOP_START = new Color(46, 110, 172);
+    private final static Color COLOR_TOP_END = new Color(255, 255, 255);
+    private final static Color COLOR_BOTTOM_START = new Color(255, 255, 255);
+    private final static Color COLOR_BOTTOM_END = new Color(241, 246, 252);
 
     public StartPageContent() {
         super( new GridBagLayout() );
-
-        imgCenter = ImageUtilities.loadImage(IMAGE_TOPBAR_CENTER, true);
-        imgLeft = ImageUtilities.loadImage(IMAGE_TOPBAR_LEFT, true);
-        imgRight = ImageUtilities.loadImage(IMAGE_TOPBAR_RIGHT, true);
-
-//        setPreferredSize( new Dimension( imgCenter.getWidth(null), imgCenter.getHeight(null)) );
 
         JComponent tabs = new TabbedPane( new LearnAndDiscoverTab(),
                 new MyNetBeansTab(),
@@ -88,9 +77,7 @@ public class StartPageContent extends JPanel implements Constants {
         tabs.setBorder(BorderFactory.createEmptyBorder(10,15,15,15));
         tabs.setOpaque(false);
 
-        add( new TopBar(), new GridBagConstraints(0, 0, 1, 1, 1.0, 0.0, GridBagConstraints.NORTH, GridBagConstraints.BOTH, new Insets(7,0,0,0), 0, 0) );
-        
-        add( tabs, new GridBagConstraints(0, 1, 1, 1, 0.0, 0.0, GridBagConstraints.NORTH, GridBagConstraints.NONE, new Insets(0,0,0,0), 0, 0) );
+        add( tabs, new GridBagConstraints(0, 1, 1, 1, 0.0, 0.0, GridBagConstraints.NORTH, GridBagConstraints.NONE, new Insets(27,0,0,0), 0, 0) );
 
         add( new JLabel(), new GridBagConstraints(0, 2, 1, 1, 0.0, 1.0, GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(0,0,0,0), 0, 0) );
     }
@@ -100,22 +87,15 @@ public class StartPageContent extends JPanel implements Constants {
         Graphics2D g2d = (Graphics2D) g;
         int width = getWidth();
         int height = getHeight();
+        int gradientStop = height / 2;
+        int bottomStart = gradientStop + gradientStop/2;
 
-        int centerImageWidth = imgCenter.getWidth(null);
-        int centerImageHeight = imgCenter.getHeight(null);
+        g2d.setPaint(new GradientPaint(0, 0, COLOR_TOP_START, 0, gradientStop, COLOR_TOP_END));
+        g2d.fillRect(0, 0, width, gradientStop);
+        g2d.setPaint( COLOR_TOP_END );
+        g2d.fillRect( 0, gradientStop, width, bottomStart );
 
-        int x = (width - centerImageWidth) / 2;
-        int y = 0;
-
-        g.drawImage(imgCenter, x, y, null);
-        if( x > 0 ) {
-            for( int i=0; i<=x; i++ ) {
-                g.drawImage(imgLeft, i, y, null);
-                g.drawImage(imgRight, width-i-1, y, null);
-            }
-        }
-        
-        g2d.setPaint(new GradientPaint(0, centerImageHeight, COLOR_TOP, 0, height, COLOR_BOTTOM));
-        g2d.fillRect(0, centerImageHeight, width, height);
+        g2d.setPaint(new GradientPaint(0, bottomStart, COLOR_BOTTOM_START, 0, height, COLOR_BOTTOM_END));
+        g2d.fillRect(0, bottomStart, width, height);
     }
 }

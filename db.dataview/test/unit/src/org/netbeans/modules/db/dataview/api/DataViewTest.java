@@ -47,6 +47,7 @@ import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.db.dataview.spi.DBConnectionProviderImpl;
+import org.netbeans.modules.db.dataview.util.DBTestUtil;
 import org.netbeans.modules.db.dataview.util.DbUtil;
 import org.netbeans.modules.db.dataview.util.TestCaseContext;
 
@@ -71,6 +72,7 @@ public class DataViewTest extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
+        DBTestUtil.suppressSuperfluousLogging();
         MockServices.setServices(new DBConnectionProviderImpl().getClass());
         context = DbUtil.getContext();
         dbconn = DbUtil.getDBConnection();

@@ -42,11 +42,13 @@
 package org.netbeans.modules.bugtracking;
 
 import java.awt.Image;
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.util.*;
-import org.netbeans.modules.bugtracking.api.Issue;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.bugtracking.api.Query;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiRepositoryProvider;
@@ -62,8 +64,10 @@ import org.openide.util.Lookup;
  * 
  * @author Tomas Stupka
  */
-public class RepositoryImpl<R, Q, I> {
+public final class RepositoryImpl<R, Q, I> {
 
+    private final static Logger LOG = Logger.getLogger("org.netbeans.modules.bugtracking.Repository"); // NOI18N
+    
     private final PropertyChangeSupport support;
     private RepositoryNode node;
         
@@ -76,15 +80,29 @@ public class RepositoryImpl<R, Q, I> {
     private Map<Q, QueryImpl> queryMap = new HashMap<Q, QueryImpl>();
     private Repository repository;
     
-    public RepositoryImpl(R r, RepositoryProvider<R, Q, I> repositoryProvider, QueryProvider<Q, I> queryProvider, IssueProvider<I> issueProvider) {
+    public RepositoryImpl(final R r, RepositoryProvider<R, Q, I> repositoryProvider, QueryProvider<Q, I> queryProvider, IssueProvider<I> issueProvider) {
         this.repositoryProvider = repositoryProvider;
         this.issueProvider = issueProvider;
         this.queryProvider = queryProvider;
         this.r = r;
         support = new PropertyChangeSupport(this);
+        repositoryProvider.addPropertyChangeListener(r, new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                if(RepositoryProvider.EVENT_QUERY_LIST_CHANGED.equals(evt.getPropertyName())) {
+                    if(LOG.isLoggable(Level.FINE)) {
+                        LOG.log(Level.FINE, "firing query list change {0} - rImpl: {1} - r: {2}", new Object[]{getDisplayName(), this, r}); // NOI18N
+                    }
+                    fireQueryListChanged();
+                }
+            }
+        });
+        if(LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "created repository {0} - rImpl: {1} - r: {2}", new Object[]{getDisplayName(), this, r}); // NOI18N
+        }
     }
     
-    public Repository getRepository() {
+    public synchronized Repository getRepository() {
         if(repository == null) {
             repository = APIAccessor.IMPL.createRepository(this);
         }
@@ -314,6 +332,12 @@ public class RepositoryImpl<R, Q, I> {
         return queryImpl != null ? queryImpl.getQuery() : null;
     }
 
+    public boolean isMutable() {
+        DelegatingConnector dc = BugtrackingManager.getInstance().getConnector(getConnectorId());
+        assert dc != null;
+        return dc.providesRepositoryManagement();
+    }
+    
     public void remove() {
         repositoryProvider.remove(r);
         RepositoryRegistry.getInstance().removeRepository(this);

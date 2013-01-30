@@ -70,7 +70,6 @@ public class FileSnapshot implements CsmFile {
     private final boolean isSource;
     private final boolean isHeader;
     private final FileImpl delegate;
-    private final FileObject fileObject;
     
     FileSnapshot(FileImpl impl) {
         absPath = impl.getAbsolutePath();
@@ -84,7 +83,6 @@ public class FileSnapshot implements CsmFile {
         isSource = impl.isSourceFile();
         isHeader = impl.isHeaderFile();
         fileType = impl.getFileType();
-        fileObject = impl.getFileObject();
         delegate = impl;
     }
 
@@ -95,7 +93,7 @@ public class FileSnapshot implements CsmFile {
 
     @Override
     public FileObject getFileObject() {
-        return fileObject;
+        return delegate.getFileObject();
     }
     
     @Override

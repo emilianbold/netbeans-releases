@@ -55,6 +55,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Set;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -77,6 +78,9 @@ import org.netbeans.modules.cnd.apt.support.APTTokenStreamBuilder;
 import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
 import org.netbeans.modules.cnd.apt.utils.APTCommentsFilter;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
+import org.netbeans.modules.cnd.debug.CndTraceFlags;
+import org.netbeans.modules.cnd.indexing.api.CndTextIndex;
+import org.netbeans.modules.cnd.indexing.api.CndTextIndexKey;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileBuffer;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
@@ -84,7 +88,9 @@ import org.netbeans.modules.cnd.modelimpl.content.file.ReferencesIndex;
 import org.netbeans.modules.cnd.modelimpl.content.project.FileContainer;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
+import org.netbeans.modules.cnd.modelimpl.repository.KeyUtilities;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
+import org.netbeans.modules.cnd.repository.api.CacheLocation;
 import org.openide.util.CharSequences;
 
 /**
@@ -234,7 +240,7 @@ public final class ReferenceRepositoryImpl extends CsmReferenceRepository {
         //if (TraceFlags.TRACE_XREF_REPOSITORY) {
         //    time = System.currentTimeMillis();
         //}
-        if (!fastDetect(targetDecl, targetDef, file, name)){
+        if (!CndTraceFlags.TEXT_INDEX && !fastDetect(targetDecl, targetDef, file, name)) {
             return Collections.<CsmReference>emptyList();
         }
         Collection<APTToken> tokens = getTokensToResolve(file, name, startOffset, endOffset);
@@ -446,5 +452,36 @@ public final class ReferenceRepositoryImpl extends CsmReferenceRepository {
             }
         }
         return null;        
+    }
+
+    @Override
+    public Collection<CsmFile> findRelevantFiles(Collection<CsmProject> projects, CharSequence id) {
+        Set<CacheLocation> locations = new HashSet<CacheLocation>();
+        for (CsmProject project : projects) {
+            if (project instanceof ProjectBase) {
+                locations.add(((ProjectBase)project).getCacheLocation());
+            }
+        }
+        Collection<CsmFile> res = new HashSet<CsmFile>();
+        for (CacheLocation cacheLocation : locations) {
+            for (CndTextIndexKey key : CndTextIndex.query(cacheLocation, id)) {
+                for (CsmProject prj : projects) {
+                    if (prj instanceof ProjectBase) {
+                        ProjectBase prjBase = (ProjectBase)prj;
+                        if (key.getUnitId() == prjBase.getUnitId()) {
+                            CharSequence path = KeyUtilities.getFileNameById(key.getUnitId(), key.getFileNameIndex());
+                            FileImpl file = prjBase.getFile(path, false);
+                            if (file != null) {
+                                res.add(file);
+                                break;
+                            } else {
+                                APTUtils.LOG.log(Level.INFO, "File {0} was not fould in project {1}", new Object[] {path, prjBase}); //NOI18N
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return res;
     }
 }

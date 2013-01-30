@@ -94,6 +94,7 @@ import org.netbeans.modules.debugger.jpda.jdi.request.EventRequestWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.request.MethodEntryRequestWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.request.MethodExitRequestWrapper;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
+import org.netbeans.spi.debugger.jpda.BreakpointsClassFilter.ClassNames;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -110,18 +111,40 @@ public class MethodBreakpointImpl extends ClassBasedBreakpoint {
     public MethodBreakpointImpl (MethodBreakpoint breakpoint, JPDADebuggerImpl debugger, Session session) {
         super (breakpoint, debugger, session);
         this.breakpoint = breakpoint;
+        setSourceRoot(""); // Just to setup source change listener
         set ();
     }
     
     @Override
+    protected boolean isEnabled() {
+        return true; // Check is in setRequests()
+    }
+    
+    @Override
     protected void setRequests () {
+        ClassNames classNames = getClassFilter().filterClassNames(
+                new ClassNames(
+                    breakpoint.getClassFilters(),
+                    breakpoint.getClassExclusionFilters()),
+                breakpoint);
+        String[] names = classNames.getClassNames();
+        String[] disabledRootPtr = new String[] { null };
+        names = checkSourcesEnabled(names, disabledRootPtr);
+        if (names.length == 0) {
+            setValidity(VALIDITY.INVALID,
+                        NbBundle.getMessage(ClassBasedBreakpoint.class,
+                                    "MSG_DisabledSourceRoot",
+                                    disabledRootPtr[0]));
+            return ;
+        }
+        String[] excludedNames = classNames.getExcludedClassNames();
         setClassRequests (
-            breakpoint.getClassFilters (), 
-            breakpoint.getClassExclusionFilters (), 
+            names,
+            excludedNames,
             ClassLoadUnloadBreakpoint.TYPE_CLASS_LOADED
         );
-        for(String filter : breakpoint.getClassFilters()) {
-            checkLoadedClasses (filter, breakpoint.getClassExclusionFilters());
+        for(String filter : names) {
+            checkLoadedClasses (filter, excludedNames);
         }
     }
     
@@ -275,6 +298,14 @@ public class MethodBreakpointImpl extends ClassBasedBreakpoint {
     protected void classLoaded (List<ReferenceType> referenceTypes) {
         boolean submitted = false;
         String invalidMessage = null;
+        int type = breakpoint.getBreakpointType();
+        boolean methodEntryType = (type & MethodBreakpoint.TYPE_METHOD_ENTRY) != 0;
+        boolean methodExitType = (type & MethodBreakpoint.TYPE_METHOD_EXIT) != 0;
+        int customHitCountFilter = breakpoint.getHitCountFilter();
+        if (!(methodEntryType && methodExitType)) {
+            customHitCountFilter = 0; // Use the JDI's HC filtering
+        }
+        setCustomHitCountFilter(customHitCountFilter);
         for (ReferenceType referenceType : referenceTypes) {
             Iterator methods;
             try {
@@ -306,7 +337,7 @@ public class MethodBreakpointImpl extends ClassBasedBreakpoint {
                                                  (signature == null ||
                                                   egualMethodSignatures(signature, TypeComponentWrapper.signature(method)))) {
 
-                        if ((breakpoint.getBreakpointType() & MethodBreakpoint.TYPE_METHOD_ENTRY) != 0) {
+                        if (methodEntryType) {
                             if (MethodWrapper.location(method) != null && !MethodWrapper.isNative(method)) {
                                 Location location = MethodWrapper.location(method);
                                 BreakpointRequest br = EventRequestManagerWrapper.
@@ -349,7 +380,7 @@ public class MethodBreakpointImpl extends ClassBasedBreakpoint {
                                 entryMethodNames.add(TypeComponentWrapper.name (method));
                             }
                         }
-                        if ((breakpoint.getBreakpointType() & MethodBreakpoint.TYPE_METHOD_EXIT) != 0) {
+                        if (methodExitType) {
                             if (exitReq == null) {
                                 exitReq = EventRequestManagerWrapper.
                                         createMethodExitRequest(getEventRequestManager());

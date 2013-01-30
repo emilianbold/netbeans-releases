@@ -45,6 +45,7 @@ import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.parsing.api.Snapshot;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -54,12 +55,12 @@ public class CssNodeElement extends CssElement {
 
     private int from, to;
 
-    public static CssNodeElement createElement(Node node) {
-        return new CssNodeElement(node);
+    public static CssNodeElement createElement(FileObject file, Node node) {
+        return new CssNodeElement(file, node);
     }
     
-    CssNodeElement(Node node) {
-        super(node.image());
+    CssNodeElement(FileObject file, Node node) {
+        super(file, node.image());
         this.from = node.from();
         this.to = node.to();
     }

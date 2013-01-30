@@ -60,6 +60,7 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
@@ -196,9 +197,15 @@ public class RecentProjects extends AbstractAction implements Presenter.Menu, Pr
     @Override public void propertyChange(PropertyChangeEvent e) {
         
         if ( OpenProjectList.PROPERTY_RECENT_PROJECTS.equals( e.getPropertyName() ) ) {
-            createMainSubMenu();
-            subMenu.setEnabled( !OpenProjectList.getDefault().isRecentProjectsEmpty() );
-            recreate = true;
+            final boolean en = !OpenProjectList.getDefault().isRecentProjectsEmpty();
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    createMainSubMenu();
+                    subMenu.setEnabled( en );
+                    recreate = true;
+                }
+            });
         }
         
     }

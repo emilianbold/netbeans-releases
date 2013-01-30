@@ -45,9 +45,8 @@ import java.util.EnumSet;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
-import org.netbeans.modules.php.api.phpmodule.PhpModule.Change;
 import org.netbeans.modules.php.api.util.StringUtils;
-import org.netbeans.modules.php.spi.phpmodule.PhpModuleCustomizerExtender;
+import org.netbeans.modules.php.spi.framework.PhpModuleCustomizerExtender;
 import org.netbeans.modules.php.symfony2.commands.Symfony2Script;
 import org.netbeans.modules.php.symfony2.preferences.Symfony2Preferences;
 import org.netbeans.modules.php.symfony2.ui.customizer.Symfony2CustomizerPanel;
@@ -167,6 +166,7 @@ public class Symfony2PhpModuleCustomizerExtender extends PhpModuleCustomizerExte
     }
 
     @Messages({
+        "Symfony2PhpModuleCustomizerExtender.error.sources.invalid=Source Files are invalid.",
         "Symfony2PhpModuleCustomizerExtender.error.appDir.empty=App directory must be set.",
         "Symfony2PhpModuleCustomizerExtender.error.appDir.notChild=App directory must be underneath Source Files.",
         "Symfony2PhpModuleCustomizerExtender.error.appDir.consoleNotFound=Console script not found underneath App directory."
@@ -187,6 +187,13 @@ public class Symfony2PhpModuleCustomizerExtender extends PhpModuleCustomizerExte
             return;
         }
         FileObject sources = phpModule.getSourceDirectory();
+        if (sources == null) {
+            // broken project
+            assert false : "Customizer extender for no sources of: " + phpModule.getName();
+            valid = false;
+            errorMessage = Bundle.Symfony2PhpModuleCustomizerExtender_error_sources_invalid();
+            return;
+        }
         FileObject fo = sources.getFileObject(appDir);
         if (fo == null
                 || !FileUtil.isParentOf(sources, fo)) {

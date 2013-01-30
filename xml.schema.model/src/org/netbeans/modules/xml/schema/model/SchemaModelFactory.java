@@ -94,11 +94,15 @@ public class SchemaModelFactory extends AbstractModelFactory<SchemaModel> {
         SchemaModel m;
         try {
             InputStream in = getClass().getResourceAsStream("primitiveTypesSchema.xsd"); //NOI18N
-            d = AbstractDocumentModel.getAccessProvider().loadSwingDocument(in);
-	    ModelSource ms = 
-		new ModelSource(Lookups.singleton(d), false);
-            m = new SchemaModelImpl(ms);
-            m.sync();
+            try {
+                d = AbstractDocumentModel.getAccessProvider().loadSwingDocument(in);
+                ModelSource ms = 
+                    new ModelSource(Lookups.singleton(d), false);
+                m = new SchemaModelImpl(ms);
+                m.sync();
+            } finally {
+                in.close();
+            }
         } catch (BadLocationException ex) {
             throw new RuntimeException("writing into empty document failed",ex); //NOI18N
         } catch (IOException ex) {

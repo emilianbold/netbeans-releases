@@ -89,7 +89,7 @@ public class PersistenceUnitWizardPanelJdbc extends PersistenceUnitWizardPanel{
         PersistenceProviderComboboxHelper comboHelper = new PersistenceProviderComboboxHelper(project);
         comboHelper.connect(libraryCombo);
         
-        unitNameTextField.setText(getCandidateName());
+        unitNameTextField.setText(Util.getCandidateName(project));
         unitNameTextField.selectAll();
         // unit name editing is not available when adding first PU
         unitNameTextField.setVisible(editName);

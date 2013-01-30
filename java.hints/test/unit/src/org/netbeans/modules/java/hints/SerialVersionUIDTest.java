@@ -86,13 +86,13 @@ public class SerialVersionUIDTest extends ErrorHintsTestBase {
     }
 
     public void testSerialVersionUIDSuppress1() throws Exception {
-        String test = "package test; import java.io.Serializable; public class Te|st implements Serializable { }";
+        String test = "package test;\nimport java.io.Serializable;\npublic class Te|st implements Serializable { }";
         String golden = "package test; import java.io.Serializable; @SuppressWarnings(\"serial\") public class Test implements Serializable { }";
         performFixTest(test, golden, HINT_SUPPRESS);
     }
 
     public void testSerialVersionUIDSuppress2() throws Exception {
-        String test = "package test; import java.io.Serializable; abstract public class T|est implements Serializable { }";
+        String test = "package test;\nimport java.io.Serializable;\nabstract public class T|est implements Serializable { }";
         String golden = "package test; import java.io.Serializable; @SuppressWarnings(\"serial\") abstract public class Test implements Serializable { }";
         performFixTest(test, golden, HINT_SUPPRESS);
     }

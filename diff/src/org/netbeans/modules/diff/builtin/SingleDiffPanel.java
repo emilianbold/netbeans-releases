@@ -72,6 +72,8 @@ import org.netbeans.modules.diff.options.DiffOptionsController;
 import org.openide.awt.UndoRedo;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -140,6 +142,12 @@ public class SingleDiffPanel extends javax.swing.JPanel implements PropertyChang
             addPropertyChangeListener(this);
         }
         
+        // whatever the reason is that the fileobject isn't refreshed (!?),
+        // this is an explicit user refresh so
+        // refresh the FO explicitly as well
+        base.refresh();
+        modified.refresh();
+        
         StreamSource ss1 = new DiffStreamSource(base, type, false);
         StreamSource ss2 = new DiffStreamSource(modified, type, true);
         controller = DiffController.createEnhanced(ss1, ss2);
@@ -161,7 +169,13 @@ public class SingleDiffPanel extends javax.swing.JPanel implements PropertyChang
     public void activateNodes () {
         TopComponent tc = (TopComponent) getClientProperty(TopComponent.class);
         if (tc != null) {
-            Node node = new AbstractNode(Children.LEAF, Lookups.singleton(modified));
+            Node node;
+            try {
+                DataObject dobj = DataObject.find(modified);
+                node = dobj.getNodeDelegate();
+            } catch (DataObjectNotFoundException e) {
+                node = new AbstractNode(Children.LEAF, Lookups.singleton(modified));
+            }
             tc.setActivatedNodes(new Node[] {node});
         }
     }

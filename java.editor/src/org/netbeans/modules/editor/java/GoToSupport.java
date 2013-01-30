@@ -65,6 +65,7 @@ import java.awt.Toolkit;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Iterator;
@@ -103,6 +104,7 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkType;
+import org.netbeans.lib.editor.util.StringEscapeUtils;
 import org.netbeans.modules.java.editor.javadoc.JavadocImports;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
@@ -318,10 +320,10 @@ public class GoToSupport {
                     el = controller.getTrees().getElement(path);
 
                     if (parentLeaf.getKind() == Kind.METHOD_INVOCATION && isError(el)) {
-                        ExecutableElement ee = Utilities.fuzzyResolveMethodInvocation(controller, path.getParentPath(), new TypeMirror[1], new int[1]);
+                        List<ExecutableElement> ee = Utilities.fuzzyResolveMethodInvocation(controller, path.getParentPath(), new ArrayList<TypeMirror>(), new int[1]);
 
-                        if (ee != null) {
-                            el = ee;
+                        if (!ee.isEmpty()) {
+                            el = ee.iterator().next();
                         } else {
                             ExpressionTree select = ((MethodInvocationTree)parentLeaf).getMethodSelect();
                             Name methodName = null;
@@ -760,7 +762,7 @@ public class GoToSupport {
             if (highlightName) {
                 if (e.getConstantValue() != null) {
                     result.append(" = ");
-                    result.append(e.getConstantValue().toString());
+                    result.append(StringEscapeUtils.escapeHtml(e.getConstantValue().toString()));
                 }
                 
                 Element enclosing = e.getEnclosingElement();

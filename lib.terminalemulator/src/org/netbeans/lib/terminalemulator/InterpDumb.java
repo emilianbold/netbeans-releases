@@ -83,6 +83,7 @@ public class InterpDumb extends AbstractInterp {
 
         static final class ACT_NOP implements Actor {
 
+            @Override
             public String action(AbstractInterp ai, char c) {
                 return null;
             }
@@ -90,6 +91,7 @@ public class InterpDumb extends AbstractInterp {
 
         static final class ACT_PAUSE implements Actor {
 
+            @Override
             public String action(AbstractInterp ai, char c) {
                 ai.ops.op_pause();
                 return null;
@@ -98,6 +100,7 @@ public class InterpDumb extends AbstractInterp {
 
         static final class ACT_ERR implements Actor {
 
+            @Override
             public String action(AbstractInterp ai, char c) {
                 return "ACT ERROR";	// NOI18N
             }
@@ -105,6 +108,7 @@ public class InterpDumb extends AbstractInterp {
 
         static final class ACT_REGULAR implements Actor {
 
+            @Override
             public String action(AbstractInterp ai, char c) {
                 ai.ops.op_char(c);
                 return null;
@@ -113,6 +117,7 @@ public class InterpDumb extends AbstractInterp {
 
         static final class ACT_CR implements Actor {
 
+            @Override
             public String action(AbstractInterp ai, char c) {
                 ai.ops.op_carriage_return();
                 return null;
@@ -121,6 +126,7 @@ public class InterpDumb extends AbstractInterp {
 
         static final class ACT_LF implements Actor {
 
+            @Override
             public String action(AbstractInterp ai, char c) {
                 ai.ops.op_line_feed();
                 return null;
@@ -129,6 +135,7 @@ public class InterpDumb extends AbstractInterp {
 
         static final class ACT_BS implements Actor {
 
+            @Override
             public String action(AbstractInterp ai, char c) {
                 ai.ops.op_back_space();
                 return null;
@@ -137,6 +144,7 @@ public class InterpDumb extends AbstractInterp {
 
         static final class ACT_TAB implements Actor {
 
+            @Override
             public String action(AbstractInterp ai, char c) {
                 ai.ops.op_tab();
                 return null;
@@ -145,6 +153,7 @@ public class InterpDumb extends AbstractInterp {
 
         static final class ACT_BEL implements Actor {
 
+            @Override
             public String action(AbstractInterp ai, char c) {
                 ai.ops.op_bel();
                 return null;
@@ -170,24 +179,26 @@ public class InterpDumb extends AbstractInterp {
             stack.pop();
         }
     }
-    protected String ctl_sequence = null;
+    private StringBuilder ctlSequence;
+
     private InterpTypeDumb type;
-    public static final InterpTypeDumb type_singleton = new InterpTypeDumb();
+    private static final InterpTypeDumb type_singleton = new InterpTypeDumb();
 
     public InterpDumb(Ops ops) {
         super(ops);
         this.type = type_singleton;
         setup();
-        ctl_sequence = null;
+        ctlSequence = new StringBuilder();
     }
 
     protected InterpDumb(Ops ops, InterpTypeDumb type) {
         super(ops);
         this.type = type;
         setup();
-        ctl_sequence = null;
+        ctlSequence = new StringBuilder();
     }
 
+    @Override
     public String name() {
         return "dumb";	// NOI18N
     }
@@ -197,7 +208,7 @@ public class InterpDumb extends AbstractInterp {
         super.reset();
         pop_all_states();
         state = type.st_base;
-        ctl_sequence = null;
+        ctlSequence = new StringBuilder();
     }
 
     private void setup() {
@@ -205,29 +216,13 @@ public class InterpDumb extends AbstractInterp {
     }
 
     private void reset_state_bad() {
-        /*
-        DEBUG
-        System.out.println("Unrecognized sequence in state " + state.name());	// NOI18N
-        if (ctl_sequence != null) {
-        for (int sx = 0; sx < ctl_sequence.length(); sx++)
-        System.out.print(String.valueOf((int)ctl_sequence.charAt(sx)) +
-        " ");	// NOI18N
-        System.out.print("\n\t");	// NOI18N
-        for (int sx = 0; sx < ctl_sequence.length(); sx++)
-        System.out.print(ctl_sequence.charAt(sx) + "  ");	// NOI18N
-
-        System.out.println();	// NOI18N
-        }
-         */
         reset();
     }
 
+    @Override
     public void processChar(char c) {
 
-        // If we're collecting stuff into a control sequence remember the char
-        if (ctl_sequence != null) {
-            ctl_sequence += c;
-        }
+        ctlSequence.append(c);
 
         try {
             State.Action a = state.getAction(c);
@@ -243,9 +238,7 @@ public class InterpDumb extends AbstractInterp {
              */
             String err_str = a.actor.action(this, c);
             if (err_str != null) {
-                /* DEBUG
-                System.out.println("action error: " + err_str);	// NOI18N
-                 */
+                ops.logUnrecognizedSequence(ctlSequence.toString());
                 reset_state_bad();
                 return;
             }
@@ -258,12 +251,9 @@ public class InterpDumb extends AbstractInterp {
 
         } finally {
             if (state == type.st_base) {
-                ctl_sequence = null;
+                ops.logCompletedSequence(ctlSequence.toString());
+                ctlSequence = new StringBuilder();
             }
         }
     }
-
-    /*
-     * Actions ..............................................................
-     */
 }

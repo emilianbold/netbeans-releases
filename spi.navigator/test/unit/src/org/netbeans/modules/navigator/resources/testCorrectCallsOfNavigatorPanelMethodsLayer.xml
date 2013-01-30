@@ -101,6 +101,28 @@ made subject to such option by the copyright holder.
             </folder>
         </folder>
     </folder>
+
+    <!-- provider for testing Toolbar component -->
+    <folder name="Navigator">
+        <folder name="Panels">
+            <folder name="toolbar">
+                <folder name="tester">
+                    <file name="org-netbeans-modules-navigator-NavigatorTCTest$ToolbarProvider.instance"/>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
+
+    <!-- provider for testing Toolbar component -->
+    <folder name="Navigator">
+        <folder name="Panels">
+            <folder name="toolbar">
+                <folder name="tester">
+                    <file name="org-netbeans-modules-navigator-NavigatorTCTest$ToolbarProvider.instance"/>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
     
     <!-- provider for testing Explorer View integration -->
     <folder name="Navigator">

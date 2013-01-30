@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ ** Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  * 
  * Contributor(s):
  * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ ** Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.test.refactoring.suites;
 
@@ -50,7 +50,7 @@ import org.netbeans.modules.test.refactoring.RenameTest;
 
 /**
  *
- * @author Jiri Prox Jiri.Prox@SUN.Com
+ * @author Jiri Prox Jiri.Prox@oracle.com
  */
 public class JavaRefactoringSuite {
 

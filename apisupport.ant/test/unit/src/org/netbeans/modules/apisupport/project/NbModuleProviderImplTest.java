@@ -42,6 +42,7 @@
 package org.netbeans.modules.apisupport.project;
 
 import java.io.File;
+import java.util.Collections;
 import java.util.logging.Level;
 import static org.junit.Assert.*;
 import org.netbeans.api.project.Project;
@@ -92,14 +93,14 @@ public class NbModuleProviderImplTest extends TestBase {
         assertNotNull("initially reports version from platform", possibleVersion);
         assertTrue(possibleVersion.toString(), possibleVersion.compareTo(new SpecificationVersion("8.19")) >= 0);
 
-        nbModuleProvider.addDependency("org.openide.util", null, new SpecificationVersion("6.0"), true);
+        nbModuleProvider.addDependencies(new NbModuleProvider.ModuleDependency[] {new NbModuleProvider.ModuleDependency("org.openide.util", null, new SpecificationVersion("6.0"), true)});
 
         assertTrue(nbModuleProvider.hasDependency("org.openide.util"));
         SpecificationVersion v = nbModuleProvider.getDependencyVersion("org.openide.util");
         assertNotNull(v);
         assertTrue(v.compareTo(new SpecificationVersion("8.22")) >= 0);
 
-        nbModuleProvider.addDependency("org.openide.util", null, new SpecificationVersion("7.0"), true);
+        nbModuleProvider.addDependencies(new NbModuleProvider.ModuleDependency[] {new NbModuleProvider.ModuleDependency("org.openide.util", null, new SpecificationVersion("7.0"), true)});
 
         assertTrue(nbModuleProvider.hasDependency("org.openide.util"));
         v = nbModuleProvider.getDependencyVersion("org.openide.util");

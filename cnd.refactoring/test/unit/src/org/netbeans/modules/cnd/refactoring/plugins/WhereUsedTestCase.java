@@ -68,4 +68,16 @@ public class WhereUsedTestCase extends CsmWhereUsedQueryPluginTestCaseBase {
         performWhereUsed("iz211703_2.c", 3, 30);
         performWhereUsed("iz211703_2.c", 8, 30);
     }
+    
+    public void test219526_1() throws Exception {
+        // IZ#219526 - incorrect Find Usages for the same qualified classifiers
+        performWhereUsed("iz219526_1.cpp", 1, 20);
+        performWhereUsed("iz219526_1.cpp", 3, 10);
+    }
+    
+    public void test219526_2() throws Exception {
+        // IZ#219526 - incorrect Find Usages for the same qualified classifiers
+        performWhereUsed("iz219526_2.cpp", 1, 20);
+        performWhereUsed("iz219526_2.cpp", 3, 10);
+    }    
 }

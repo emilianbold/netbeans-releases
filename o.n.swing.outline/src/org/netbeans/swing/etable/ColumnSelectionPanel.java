@@ -64,6 +64,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.ResourceBundle;
 import javax.swing.JCheckBox;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
@@ -153,7 +154,7 @@ class ColumnSelectionPanel extends JPanel {
             Object transformed = table.transformValue (etc);
             String dName;
             if (transformed == etc || transformed == null) {
-                dName = etc.getHeaderValue ().toString ();
+                dName = table.getColumnDisplayName(etc.getHeaderValue ().toString ());
             } else {
                 dName = transformed.toString ();
             }
@@ -197,6 +198,9 @@ class ColumnSelectionPanel extends JPanel {
         int index = 0;
         int rows = columns.size() / width;
         Object hint = table.transformValue (COLUMNS_SELECTOR_HINT);
+        if (hint == COLUMNS_SELECTOR_HINT) {
+            hint = ResourceBundle.getBundle("org/netbeans/swing/etable/Bundle").getString(COLUMNS_SELECTOR_HINT);
+        }
         if (hint != null) {
             GridBagConstraints gridBagConstraints = new GridBagConstraints();
             gridBagConstraints.gridx = 0;
@@ -304,7 +308,7 @@ class ColumnSelectionPanel extends JPanel {
                 Object transformed = table.transformValue (etc);
                 String dName;
                 if (transformed == etc || transformed == null) {
-                    dName = etc.getHeaderValue ().toString ();
+                    dName = table.getColumnDisplayName(etc.getHeaderValue ().toString ());
                 } else {
                     dName = transformed.toString ();
                 }
@@ -395,7 +399,7 @@ class ColumnSelectionPanel extends JPanel {
         }
         // The default behaviour:
         ColumnSelectionPanel panel = new ColumnSelectionPanel(table);
-        int res = JOptionPane.showConfirmDialog(null, panel, table.getSelectVisibleColumnsLabel(), JOptionPane.OK_CANCEL_OPTION);
+        int res = JOptionPane.showConfirmDialog(table, panel, table.getSelectVisibleColumnsLabel(), JOptionPane.OK_CANCEL_OPTION);
         if (res == JOptionPane.OK_OPTION) {
             panel.changeColumnVisibility();
             table.updateColumnSelectionMouseListener();

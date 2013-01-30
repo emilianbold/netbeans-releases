@@ -43,38 +43,22 @@
 package org.netbeans.modules.php.editor.model;
 
 import java.util.Collection;
-import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.api.elements.FullyQualifiedElement;
 import org.netbeans.modules.php.editor.api.elements.TypeElement;
 
 /**
  * @author Radek Matous
  */
-/*
- * TODO:
- * Namespaces must be involved in:
- * TypeScope: Collection<? extends InterfaceScope> getSuperInterfaces();
- * ClassScope, TypeScope: Collection<? extends String> getSuperInterfaceNames();
- * ClassScope: Collection<? extends ClassScope> getSuperClasses();
- */
 public interface TypeScope extends Scope, FullyQualifiedElement, TypeElement {
-    /**
-     * @return declared methods only
-     */
-    Collection<? extends MethodScope> getDeclaredMethods();
-    /**
-     * @return inherited methods only
-     */
-    Collection<? extends MethodScope> getInheritedMethods();
-    /**
-     * @return declared+inherited methods
-     */
-    Collection<? extends MethodScope> getMethods();
 
+    Collection<? extends MethodScope> getDeclaredMethods();
+    Collection<? extends MethodScope> getInheritedMethods();
+    Collection<? extends MethodScope> getMethods();
     Collection<? extends ClassConstantElement> getDeclaredConstants();
     Collection<? extends ClassConstantElement> getInheritedConstants();
     Collection<? extends InterfaceScope> getSuperInterfaceScopes();
     Collection<? extends String> getSuperInterfaceNames();
     boolean isSuperTypeOf(TypeScope subType);
     boolean isSubTypeOf(TypeScope subType);
+
 }

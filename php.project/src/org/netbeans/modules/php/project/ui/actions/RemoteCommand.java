@@ -112,7 +112,7 @@ public abstract class RemoteCommand extends Command {
     }
 
     @Override
-    public final void invokeAction(Lookup context) {
+    public final void invokeActionInternal(Lookup context) {
         assert getConfigAction().getClass().getSimpleName().equals("ConfigActionRemote") : "Remote config action expected but found: " + getConfigAction().getClass().getSimpleName();
         if (RunConfigRemoteValidator.validateRemoteTransfer(RunConfigRemote.forProject(getProject())) != null) {
             PhpProjectUtils.openCustomizerRun(getProject());
@@ -123,7 +123,7 @@ public abstract class RemoteCommand extends Command {
     }
 
     @Override
-    public final boolean isActionEnabled(Lookup context) {
+    public final boolean isActionEnabledInternal(Lookup context) {
         // WARNING context can be null, see RunCommand.invokeAction()
         return isRemoteConfigSelected() && TASK.isFinished();
     }

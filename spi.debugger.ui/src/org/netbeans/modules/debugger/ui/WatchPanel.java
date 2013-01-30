@@ -113,7 +113,7 @@ public class WatchPanel {
         if (doBind) {
             line = adjustLine(file, line);
             if (file != null && line >= 0) {
-                DialogBinding.bindComponentToFile(file, line, 0, 0, editorPane);
+                DialogBinding.bindComponentToFile(file, line - 1, 0, 0, editorPane);
             }
             final int theLine = line;
             RequestProcessor.getDefault().post(new Runnable() {
@@ -124,7 +124,7 @@ public class WatchPanel {
                         SwingUtilities.invokeLater(new Runnable() {
                             @Override
                             public void run() {
-                                DialogBinding.bindComponentToFile(file, adjustedLine, 0, 0, editorPane);
+                                DialogBinding.bindComponentToFile(file, adjustedLine - 1, 0, 0, editorPane);
                             }
                         });
                     }

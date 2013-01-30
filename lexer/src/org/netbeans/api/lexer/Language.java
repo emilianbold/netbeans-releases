@@ -147,10 +147,10 @@ public final class Language<T extends TokenId> {
      * 
      * @param mimeType The mime type of a language that you want to find.
      * @return The <code>Language</code> registered
-     *         for the given <code>mimeType</code>.
+     *         for the given <code>mimeType</code>. Null is returned for null mimeType.
      */
     public static Language<? extends TokenId> find(String mimeType) {
-        return LanguageManager.getInstance().findLanguage(mimeType);
+        return (mimeType != null) ? LanguageManager.getInstance().findLanguage(mimeType) : null;
     }
     
     /**

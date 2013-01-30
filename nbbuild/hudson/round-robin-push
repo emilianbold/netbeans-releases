@@ -42,30 +42,6 @@ testmodule() {
         exit 5
     fi
 }
-dobuild() {
-    RESULT=`pwd`/nbbuild/build/test-results.txt
-    export RESULT
-    rm -f $RESULT
-
-    ant build-nozip $ANT_PARAM || exit 2
-    ant commit-validation $ANT_PARAM || exit 3
-    ant check-sigtests-release $ANT_PARAM || exit 35
-#    ant build-test-dist $ANT_PARAM || exit 4
-    # At least check that there are no cycles in the dep list, as e.g. in 2ca8e9e6fb71:
-    ant init-test-dist $ANT_PARAM || exit 4
-
-    testmodule openide.awt || exit 5
-
-    FAILED=`cat $RESULT | wc -l`
-    if [ "$FAILED" -gt 0 ]; then
-        echo "No push. Failed tests in following modules:"
-        cat $RESULT
-        exit 5
-    fi
-
-    # Clean up some to save on disk space:
-    rm -rf */build/classes */build/javahelp nbbuild/netbeans nbbuild/build/public-package-jars
-}
 
 rollback() {
   EXIT="$?"
@@ -97,11 +73,11 @@ mkdir -p $TESTDIR
 
 mkdir -p "nbbuild/build"
 STATUS="nbbuild/build/build-info"
-curl $pop_job/buildStatus -D "$STATUS"
+curl -H "Cache-Control: no-cache" $pop_job/buildStatus -D "$STATUS"
 cat "$STATUS"
 
 echo Getting Build Info
-HGINFO=`curl $pop_job/lastStableBuild/artifact/$pop_build_info`
+HGINFO=`curl -vvvv -H "Cache-Control: no-cache" $pop_job/lastStableBuild/artifact/$pop_build_info`
 echo Build info: $HGINFO
 testresult "$TESTDIR" "build.info" "$HGINFO"
 [ -n "$HGINFO" ] || exit 1
@@ -145,6 +121,7 @@ else
     exit 0
 fi
 
+. `dirname $0`/round-robin-build
 
 if dobuild; then
     for i in 1 2 3 4 5 6 7 8 9 10; do

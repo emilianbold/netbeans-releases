@@ -76,6 +76,7 @@ import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.Token;
+import org.netbeans.core.startup.Main;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.editor.java.JavaKit;
 import org.netbeans.modules.java.JavaDataLoader;
@@ -128,7 +129,7 @@ public class HintsTestBase extends NbTestCase {
     
     protected void doSetUp(String resource) throws Exception {
         SourceUtilsTestUtil.prepareTest(new String[0], new Object[0]);
-        SourceUtilsTestUtil.prepareTest(new String[] {"org/netbeans/modules/java/editor/resources/layer.xml", resource}, new Object[] {
+        SourceUtilsTestUtil.prepareTest(new String[] {"META-INF/generated-layer.xml", "org/netbeans/modules/java/editor/resources/layer.xml", resource}, new Object[] {
             JavaDataLoader.class,
             new MimeDataProvider() {
                 public Lookup getLookup(MimePath mimePath) {
@@ -163,6 +164,8 @@ public class HintsTestBase extends NbTestCase {
                 TestUtilities.analyzeBinaries(SourceUtilsTestUtil.getBootClassPath());
             }
         }
+        
+        Main.initializeURLFactory();
     }
     
     protected boolean createCaches() {

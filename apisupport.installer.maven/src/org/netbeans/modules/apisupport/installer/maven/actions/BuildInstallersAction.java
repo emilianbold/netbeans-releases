@@ -119,14 +119,18 @@ public final class BuildInstallersAction extends AbstractAction implements Conte
             putValue(NAME, NbBundle.getMessage(BuildInstallersAction.class, "CTL_BuildInstallers"));
             putValue(DynamicMenuContent.HIDE_WHEN_DISABLED, true);
             Project project = actionContext.lookup(Project.class);
-            NbMavenProject watcher = project.getLookup().lookup(NbMavenProject.class);
-            if (watcher == null
-                    || !NbMavenProject.TYPE_NBM_APPLICATION.equalsIgnoreCase(watcher.getPackagingType())) {
-                setEnabled(false);
+            if (project == null) {
+                setEnabled(false); //#224115
             } else {
-                String version = PluginPropertyUtils.getPluginVersion(watcher.getMavenProject(), "org.codehaus.mojo", "nbm-maven-plugin");
-                if (version == null || new ComparableVersion(version).compareTo(new ComparableVersion("3.7-SNAPSHOT")) >= 0) {
-                    setEnabled(false); // now handled by maven.apisupport
+                NbMavenProject watcher = project.getLookup().lookup(NbMavenProject.class);
+                if (watcher == null
+                        || !NbMavenProject.TYPE_NBM_APPLICATION.equalsIgnoreCase(watcher.getPackagingType())) {
+                    setEnabled(false);
+                } else {
+                    String version = PluginPropertyUtils.getPluginVersion(watcher.getMavenProject(), "org.codehaus.mojo", "nbm-maven-plugin");
+                    if (version == null || new ComparableVersion(version).compareTo(new ComparableVersion("3.7-SNAPSHOT")) >= 0) {
+                        setEnabled(false); // now handled by maven.apisupport
+                    }
                 }
             }
         }

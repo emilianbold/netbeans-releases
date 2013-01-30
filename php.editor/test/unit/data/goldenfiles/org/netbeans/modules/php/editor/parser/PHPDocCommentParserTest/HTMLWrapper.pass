@@ -1,9 +1,5 @@
 <PHPDocBlock start='3' end='105'>
     <Tags>
-        <PHPDocTypeTag start='7' end='108' kind='THROWS'>
-            <Types>
-                <PHPDocTypeNode start='18' end='43' value='sfInitializationException' isArray='false'/>
-            </Types>
-        </PHPDocTypeTag>
+        <PHPDocTag start='7' end='108' kind='throws'/>
     </Tags>
 </PHPDocBlock>

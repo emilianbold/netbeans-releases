@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.36
+#Version 1.40.1
 
 CLSS public abstract interface java.io.Serializable
 
@@ -92,6 +92,7 @@ fld public final static java.lang.String SOURCE = "classpath/source"
 fld public final static org.netbeans.api.java.classpath.ClassPath EMPTY
 innr public final Entry
 innr public final static !enum PathConversionMode
+meth public boolean equals(java.lang.Object)
 meth public final boolean contains(org.openide.filesystems.FileObject)
 meth public final boolean isResourceVisible(org.openide.filesystems.FileObject)
 meth public final java.lang.ClassLoader getClassLoader(boolean)
@@ -103,6 +104,7 @@ meth public final org.openide.filesystems.FileObject findOwnerRoot(org.openide.f
 meth public final org.openide.filesystems.FileObject findResource(java.lang.String)
 meth public final void addPropertyChangeListener(java.beans.PropertyChangeListener)
 meth public final void removePropertyChangeListener(java.beans.PropertyChangeListener)
+meth public int hashCode()
 meth public java.lang.String toString()
 meth public java.lang.String toString(org.netbeans.api.java.classpath.ClassPath$PathConversionMode)
 meth public java.util.List<org.netbeans.api.java.classpath.ClassPath$Entry> entries()
@@ -168,6 +170,7 @@ meth public abstract void pathsRemoved(org.netbeans.api.java.classpath.GlobalPat
 
 CLSS public org.netbeans.api.java.classpath.JavaClassPathConstants
 cons public init()
+fld public final static java.lang.String COMPILE_ONLY = "classpath/compile_only"
 fld public final static java.lang.String PROCESSOR_PATH = "classpath/processor"
 supr java.lang.Object
 
@@ -214,6 +217,7 @@ CLSS public final org.netbeans.api.java.queries.BinaryForSourceQuery
 innr public abstract interface static Result
 meth public static org.netbeans.api.java.queries.BinaryForSourceQuery$Result findBinaryRoots(java.net.URL)
 supr java.lang.Object
+hfds LOG
 hcls DefaultResult
 
 CLSS public abstract interface static org.netbeans.api.java.queries.BinaryForSourceQuery$Result
@@ -269,6 +273,7 @@ meth public static void attachSources(java.net.URL,org.netbeans.api.java.queries
  anno 1 org.netbeans.api.annotations.common.NonNull()
  anno 2 org.netbeans.api.annotations.common.NullAllowed()
 supr java.lang.Object
+hfds LOG
 
 CLSS public abstract interface static org.netbeans.api.java.queries.SourceJavadocAttacher$AttachmentListener
  outer org.netbeans.api.java.queries.SourceJavadocAttacher
@@ -282,7 +287,7 @@ meth public static org.netbeans.api.java.queries.SourceLevelQuery$Result getSour
  anno 0 org.netbeans.api.annotations.common.NonNull()
  anno 1 org.netbeans.api.annotations.common.NonNull()
 supr java.lang.Object
-hfds LOGGER,SOURCE_LEVEL,implementations,implementations2
+hfds LOGGER,SOURCE_LEVEL,SYNONYM,implementations,implementations2
 
 CLSS public final static org.netbeans.api.java.queries.SourceLevelQuery$Result
  outer org.netbeans.api.java.queries.SourceLevelQuery

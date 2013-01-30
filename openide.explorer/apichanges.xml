@@ -50,6 +50,21 @@ made subject to such option by the copyright holder.
 <apidef name="explorer">Explorer API</apidef>
 </apidefs>
 <changes>
+    <change id="PropertySheetExtensions">
+        <api name="explorer"/>
+        <summary>PropertySheet extensions</summary>
+        <version major="6" minor="47"/>
+        <date day="6" month="9" year="2012"/>
+        <author login="saubrecht"/>
+        <compatibility binary="compatible" source="compatible" deprecation="no" deletion="no" addition="yes"/>
+        <description>
+            PropertySheet class has new methods which allow subclasses to provide custom
+            popup menu, check expansion state, expand/collapse property categories,
+            retrieve the selected property.
+        </description>
+        <class package="org.openide.explorer.propertysheet" name="PropertySheet"/>
+        <issue number="217624"/>
+    </change>
     <change id="OutlineView_setPropertyColumnAttribute">
         <api name="explorer"/>
         <summary>setPropertyColumnAttribute() method added to OutlineView</summary>

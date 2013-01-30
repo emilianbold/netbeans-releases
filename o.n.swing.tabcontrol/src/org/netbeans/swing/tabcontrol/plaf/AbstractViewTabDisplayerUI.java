@@ -238,12 +238,12 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
                 height = icon.getIconHeight();
             }
 
-            if( null == displayer.getContainerWinsysInfo()
+            if( null == displayer.getContainerWinsysInfo() 
                     || displayer.getContainerWinsysInfo().isTopComponentClosingEnabled() ) {
                 //create close button
                 btnClose = TabControlButtonFactory.createCloseButton( displayer );
                 buttonsPanel.add( btnClose );
-
+                
                 Icon icon = btnClose.getIcon();
                 height = Math.max( height, icon.getIconHeight() );
             }
@@ -262,13 +262,13 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
                 width += icon.getIconWidth();
                 width += ICON_X_PAD;
             }
-
+                
             Dimension size = new Dimension( width, height );
             buttonsPanel.setMinimumSize( size );
             buttonsPanel.setSize( size );
             buttonsPanel.setPreferredSize( size );
             buttonsPanel.setMaximumSize( size );
-
+            
             controlButtons = buttonsPanel;
         }
         return controlButtons;
@@ -665,7 +665,20 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
     protected boolean isAttention (int tab) {
         if( tab < 0 )
             return false;
-        return (tabState.getState(tab) & TabState.ATTENTION) != 0;
+        return (tabState.getState(tab) & TabState.ATTENTION) != 0
+                || (tabState.getState(tab) & TabState.HIGHLIGHT) != 0;
+    }
+
+    /**
+     * 
+     * @param tab
+     * @return True to highlight the given tab, false otherwise.
+     * @since 1.38
+     */
+    protected boolean isHighlight (int tab) {
+        if( tab < 0 )
+            return false;
+        return (tabState.getState(tab) & TabState.HIGHLIGHT) != 0;
     }
     
 
@@ -673,10 +686,19 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
     protected void requestAttention (int tab) {
         tabState.addAlarmTab(tab);
     }    
-    
+
     @Override
     protected void cancelRequestAttention (int tab) {
         tabState.removeAlarmTab(tab);
+    }
+
+    @Override
+    protected void setAttentionHighlight (int tab, boolean highlight) {
+        if( highlight ) {
+            tabState.addHighlightTab(tab);
+        } else {
+            tabState.removeHighlightTab(tab);
+        }
     }
     
     final boolean isUseStretchingTabs() {

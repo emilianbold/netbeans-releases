@@ -67,8 +67,6 @@ import org.openide.util.actions.CookieAction;
  */
 public class ConnectAction extends CookieAction {
     private static final Logger LOGGER = Logger.getLogger(ConnectAction.class.getName());
-    private static final String DFLT_CONFIG_OPTIONS =
-            "?zeroDateTimeBehavior=convertToNull";                      //NOI18N
     private static final Class[] COOKIE_CLASSES = new Class[] {
         Database.class
     };
@@ -121,14 +119,18 @@ public class ConnectAction extends CookieAction {
             if ( conns.size() == 0 )
             {
                 final DatabaseConnection dbconn = DatabaseConnection.create(DatabaseUtils.getJDBCDriver(),
-                        server.getURL(dbname) + DFLT_CONFIG_OPTIONS, // #183440
-                        server.getUser(), null, server.isSavePassword() ? server.getPassword() : null,
+                        server.getURL(dbname), server.getUser(), null,
+                        server.isSavePassword() ? server.getPassword() : null,
                         server.isSavePassword());
 
                 // Can't display the dialog until the connection has been succesfully added
                 // to the database explorer.
                 ConnectionManager.getDefault().addConnectionListener(new ConnectionListener() {
                     public void connectionsChanged() {
+                        if (ConnectionManager.getDefault().getConnection(
+                                dbconn.getName()) == null) {
+                            return; // this is not the right event, see #217880
+                        }
                         ConnectionManager.getDefault().showConnectionDialog(dbconn);
                         ConnectionManager.getDefault().removeConnectionListener(this);
                     }

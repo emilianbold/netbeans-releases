@@ -2,7 +2,7 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
+Copyright 1997-2013 Oracle and/or its affiliates. All rights reserved.
 
 Oracle and Java are registered trademarks of Oracle and/or its affiliates.
 Other names may be trademarks of their respective owners.
@@ -87,6 +87,7 @@ made subject to such option by the copyright holder.
     <taskdef name="deregisterexternalhook" classname="org.netbeans.nbbuild.extlibs.DeregisterExternalHook" classpath="${build.ant.classes.dir}"/>
     <deregisterexternalhook root=".."/>
     <taskdef name="downloadbinaries" classname="org.netbeans.nbbuild.extlibs.DownloadBinaries" classpath="${build.ant.classes.dir}"/>
+    <property name="have-downloadbinaries-task" value="true" />
     <downloadbinaries cache="${binaries.cache}" server="${binaries.server}">
         <manifest dir="${nb_all}">
             <include name="libs.junit4/external/binaries-list"/>
@@ -1654,26 +1655,64 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     </junitreport>
     <echo message="Report generated to ${sigtest.output.dir}/html/index.html"/>
   </target>
-  
+
+  <target name="check-sigtests-version">
+    <echo message="Checking version of signature files for ${cluster.config} modules"/>
+    
+    <property name="sigtest.previous.url" value="http://deadlock.netbeans.org/hudson/job/nbms-and-javadoc/lastStableBuild/artifact/nbbuild/build/sigtest/snapshot/*zip*/snapshot.zip"/>
+    <property name="sigtest.prev.dir" location="${nb.build.dir}/sigtest/prev-snapshot"/>
+    <property name="sigtest.output.dir" location="${nb.build.dir}/sigtest/versioncheck"/>
+
+    <mkdir dir="${sigtest.prev.dir}"/>    
+    <get src="${sigtest.previous.url}" dest="${sigtest.prev.dir}/snapshot.zip"/>
+    <unzip src="${sigtest.prev.dir}/snapshot.zip" dest="${sigtest.prev.dir}">
+        <mapper type="flatten"/>
+    </unzip>
+    
+    <antcall target="-do-check-sigtests">
+        <param name="sigtest.check.type" value="versioncheck"/>
+        <param name="sigtest.basedir" location="${sigtest.prev.dir}"/>
+        <param name="sigtest.output.dir" value="${sigtest.output.dir}"/>
+    </antcall>
+    <junitreport todir="${sigtest.output.dir}">
+        <fileset dir="${sigtest.output.dir}">
+            <include name="*.xml"/>
+        </fileset>
+        <report todir="${sigtest.output.dir}/html" format="frames"/>
+    </junitreport>
+    <echo message="Report generated to ${sigtest.output.dir}/html/index.html"/>
+  </target>
+    
   <target name="-do-check-sigtests" depends="init-module-list">
     <fail unless="sigtest.check.type"/>
     <fail unless="sigtest.output.dir"/>
 
     <property name="sigtest.basedir" location="${nb.build.dir}/sigtest/snapshot"/>
+    <property name="sigtest.fail.on.error" value="false"/>
     
     <mkdir dir="${sigtest.basedir}"/>
     <delete dir="${sigtest.output.dir}"/>
     <mkdir dir="${sigtest.output.dir}"/>
-    <subant target="check-sigtest" buildpath="${modules.fullpath}" failonerror="false">
+    <subant target="check-sigtest" buildpath="${modules.fullpath}" failonerror="${sigtest.fail.on.error}">
         <property name="sigtest.output.dir" value="${sigtest.output.dir}"/>
         <property name="sigtest.basedir" value="${sigtest.basedir}"/>
     </subant>
   </target>
 
-  <target name="findbugs" depends="init">
+  <target name="findbugs-cluster" depends="init">
     <echo message="Running findbugs for ${cluster.config} modules"/>
-    <subant target="findbugs" buildpath="${modules.fullpath}"/>
+    <subant target="findbugs" buildpath="${modules.fullpath}">
+        <property name="findbugs.continue.after.error" value="true"/>
+    </subant>
   </target>
+
+  <target name="findbugs" depends="init" description="Runs findbugs target in modules specified by ${findbugs.modules}.">
+    <subant target="findbugs">
+       <property name="findbugs.continue.after.error" value="true"/>
+       <dirset dir=".." includes="${findbugs.modules}"/>
+    </subant>
+  </target>
+
   
   <target name="generate-uc-catalog" depends="bootstrap">
     <taskdef name="makeupdatedesc"
@@ -1686,9 +1725,11 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
       <property name="use.license.url.in.catalog" value="true"/>
       <property name="catalog.notification.message" value=""/>
       <property name="catalog.notification.url"     value=""/>
+      <property name="catalog.content.description"  value=""/>
+      <property name="catalog.content.description.url" value=""/>
 
 <!--      <genau config="ausrc/modules.setup" nbmLocation="${nbms.location}" catalog="${catalog.file}" catalogDeploymentLocation="${catalog.base.url}"/>-->
-      <makeupdatedesc desc="${catalog.file}" distbase="${catalog.base.url}" automaticgrouping="true" uselicenseurl="${use.license.url.in.catalog}" notificationmessage="${catalog.notification.message}" notificationurl="${catalog.notification.url}">
+      <makeupdatedesc desc="${catalog.file}" distbase="${catalog.base.url}" automaticgrouping="true" uselicenseurl="${use.license.url.in.catalog}" notificationmessage="${catalog.notification.message}" notificationurl="${catalog.notification.url}" contentdescription="${catalog.content.description}" contentdescriptionurl="${catalog.content.description.url}">
           <fileset dir="${nbms.location}">
               <include name="**/*.nbm"/>
               <include name="**/*.jar"/>

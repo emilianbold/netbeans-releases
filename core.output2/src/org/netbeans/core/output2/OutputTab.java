@@ -44,16 +44,19 @@
 
 package org.netbeans.core.output2;
 
+import java.awt.Color;
 import java.awt.Dialog;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Cursor;
+import java.awt.EventQueue;
 import java.awt.FileDialog;
 import java.awt.Font;
 import java.awt.Frame;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorManager;
@@ -82,6 +85,8 @@ import javax.swing.UIManager;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import javax.swing.text.Document;
+import org.netbeans.api.options.OptionsDisplayer;
+import org.netbeans.core.options.keymap.api.KeyStrokeUtils;
 import org.netbeans.core.output2.Controller.ControllerOutputEvent;
 import org.netbeans.core.output2.ui.AbstractOutputPane;
 import org.netbeans.core.output2.ui.AbstractOutputTab;
@@ -99,29 +104,53 @@ import org.openide.windows.WindowManager;
 import org.openide.xml.XMLUtil;
 
 import static org.netbeans.core.output2.OutputTab.ACTION.*;
-import org.openide.windows.IOProvider;
+import org.netbeans.core.output2.options.OutputOptions;
+import org.netbeans.core.output2.ui.OutputKeymapManager;
+import org.openide.util.RequestProcessor;
+import org.openide.util.WeakListeners;
+import org.openide.windows.IOColors;
+import org.openide.windows.OutputEvent;
 
 
 /**
  * A component representing one tab in the output window.
  */
 final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks {
+    private static final RequestProcessor RP =
+            new RequestProcessor("OutputTab");                          //NOI18N
     private final NbIO io;
     private OutWriter outWriter;
+    private PropertyChangeListener optionsListener;
+    private volatile boolean actionsLoaded = false;
 
     OutputTab(NbIO io) {
         this.io = io;
         if (Controller.LOG) Controller.log ("Created an output component for " + io);
         outWriter = ((NbWriter) io.getOut()).out();
-        createActions();
         OutputDocument doc = new OutputDocument(outWriter);
         setDocument(doc);
+        applyOptions();
+        initOptionsListener();
+        loadAndInitActions();
+    }
 
-        installKBActions();
-        getActionMap().put("jumpPrev", action(PREV_ERROR)); // NOI18N
-        getActionMap().put("jumpNext", action(NEXT_ERROR)); // NOI18N
-        getActionMap().put(FindAction.class.getName(), action(FIND));
-        getActionMap().put(javax.swing.text.DefaultEditorKit.copyAction, action(COPY));
+    private void applyOptions() {
+        Lines lines = getDocumentLines();
+        if (lines != null) {
+            OutputOptions opts = io.getOptions();
+            lines.setDefColor(IOColors.OutputType.OUTPUT,
+                    opts.getColorStandard());
+            lines.setDefColor(IOColors.OutputType.ERROR,
+                    opts.getColorError());
+            lines.setDefColor(IOColors.OutputType.HYPERLINK,
+                    opts.getColorLink());
+            lines.setDefColor(IOColors.OutputType.HYPERLINK_IMPORTANT,
+                    opts.getColorLinkImportant());
+            Color bg = io.getOptions().getColorBackground();
+            getOutputPane().getTextView().setBackground(bg);
+            getOutputPane().setViewFont(
+                    io.getOptions().getFont(getOutputPane().isWrapped()));
+        }
     }
 
     private final TabAction action(ACTION a) {
@@ -144,6 +173,7 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
         if (old != null && old instanceof OutputDocument) {
             ((OutputDocument) old).dispose();
         }
+        applyOptions();
     }
 
     public void reset() {
@@ -153,6 +183,7 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
         // get new OutWriter
         outWriter = io.out();
         setDocument(new OutputDocument(outWriter));
+        applyOptions();
     }
 
     public OutputDocument getDocument() {
@@ -187,7 +218,7 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
     }
 
     public void hasSelectionChanged(boolean val) {
-        if (isShowing()) {
+        if (isShowing() && actionsLoaded) {
             actions.get(ACTION.COPY).setEnabled(val);
             actions.get(ACTION.SELECT_ALL).setEnabled(!getOutputPane().isAllSelected());
         }
@@ -213,6 +244,27 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
             //Select the text on click if it is still visible
             if (getOutputPane().getLength() >= range[1]) { // #179768
                 getOutputPane().sendCaretToPos(range[0], range[1], true);
+            }
+        }
+    }
+
+    void enterPressed(int caretMark, int caretDot) {
+        int start, end;
+        if (caretMark < caretDot) {
+            start = caretMark;
+            end = caretDot;
+        } else {
+            start = caretDot;
+            end = caretMark;
+        }
+        if (getOut().getLines().isListener(start, end)) {
+            int[] range = new int[2];
+            OutputListener listener = getOut().getLines().nearestListener(
+                    start, false, range);
+            if (listener != null && range[0] <= start && range[1] >= end) {
+                int line = getOut().getLines().getLineAt(start);
+                OutputEvent oe = new ControllerOutputEvent(io, line);
+                listener.outputLineAction(oe);
             }
         }
     }
@@ -558,7 +610,13 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
      * @param p The point clicked
      * @param src The source of the click event
      */
+    @NbBundle.Messages({"STATUS_Initializing=Output Window is Initializing"})
     void postPopupMenu(Point p, Component src) {
+        if (!actionsLoaded) {
+            StatusDisplayer.getDefault().setStatusText(
+                    Bundle.STATUS_Initializing());
+            return;
+        }
         JPopupMenu popup = new JPopupMenu();
         Action[] a = getToolbarActions();
         if (a.length > 0) {
@@ -592,8 +650,8 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
                     activeActions.add(ta);
                     popup.add(item);
                 } else {
-                    if ((popupItems[i] == ACTION.CLOSE && !io.getIOContainer().isCloseable(this))
-                            || (popupItems[i] == ACTION.FONT_TYPE && getOutputPane().isWrapped())) {
+                    if ((popupItems[i] == ACTION.CLOSE
+                            && !io.getIOContainer().isCloseable(this))) {
                         continue;
                     }
                     JMenuItem item = popup.add(ta);
@@ -617,6 +675,9 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
     }
 
     void updateActions() {
+        if (!actionsLoaded) {
+            return;
+        }
         OutputPane pane = (OutputPane) getOutputPane();
         int len = pane.getLength();
         boolean enable = len > 0;
@@ -627,23 +688,6 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
         boolean hasErrors = out == null ? false : out.getLines().hasListeners();
         action(NEXT_ERROR).setEnabled(hasErrors);
         action(PREV_ERROR).setEnabled(hasErrors);
-    }
-
-    private void showFontChooser() {
-        PropertyEditor pe = PropertyEditorManager.findEditor(Font.class);
-        if (pe != null) {
-            pe.setValue(getOutputPane().getViewFont());
-            DialogDescriptor dd = new DialogDescriptor(pe.getCustomEditor(), NbBundle.getMessage(OutputTab.class, "LBL_Font_Chooser_Title"));  // NOI18N
-            String defaultFont = NbBundle.getMessage(OutputTab.class, "BTN_Defaul_Font");
-            dd.setOptions(new Object[]{DialogDescriptor.OK_OPTION, defaultFont, DialogDescriptor.CANCEL_OPTION});  // NOI18N
-            DialogDisplayer.getDefault().createDialog(dd).setVisible(true);
-            if (dd.getValue() == DialogDescriptor.OK_OPTION) {
-                Font f = (Font) pe.getValue();
-                Controller.getDefault().changeFont(f);
-            } else if (dd.getValue() == defaultFont) {
-                Controller.getDefault().changeFont(null);
-            }
-        }
     }
 
     FilteredOutput filtOut;
@@ -697,14 +741,87 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
         io.getIOContainer().setTitle(this, escaped.replace("&apos;", "'"));
     }
 
+    private void initOptionsListener() {
+        optionsListener = new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                Lines lines = getDocumentLines();
+                if (lines != null) {
+                    String pn = evt.getPropertyName();
+                    OutputOptions opts = io.getOptions();
+                    updateOptionsProperty(pn, lines, opts);
+                    OutputTab.this.repaint();
+                }
+            }
+        };
+        this.io.getOptions().addPropertyChangeListener(
+                WeakListeners.propertyChange(optionsListener, io.getOptions()));
+    }
+
+    private void updateOptionsProperty(String pn, Lines lines,
+            OutputOptions opts) {
+
+        if (OutputOptions.PROP_COLOR_STANDARD.equals(pn)) {
+            lines.setDefColor(IOColors.OutputType.OUTPUT,
+                    opts.getColorStandard());
+        } else if (OutputOptions.PROP_COLOR_ERROR.equals(pn)) {
+            lines.setDefColor(IOColors.OutputType.ERROR,
+                    opts.getColorError());
+        } else if (OutputOptions.PROP_COLOR_LINK.equals(pn)) {
+            lines.setDefColor(IOColors.OutputType.HYPERLINK,
+                    opts.getColorLink());
+        } else if (OutputOptions.PROP_COLOR_LINK_IMPORTANT.equals(pn)) {
+            lines.setDefColor(IOColors.OutputType.HYPERLINK_IMPORTANT,
+                    opts.getColorLinkImportant());
+        } else if (OutputOptions.PROP_COLOR_BACKGROUND.equals(pn)) {
+            Color bg = opts.getColorBackground();
+            getOutputPane().getTextView().setBackground(bg);
+        } else if (OutputOptions.PROP_FONT.equals(pn)) {
+            if (!getOutputPane().isWrapped()) {
+                getOutputPane().setViewFont(opts.getFont());
+            }
+        } else if (OutputOptions.PROP_FONT_SIZE_WRAP.equals(pn)) {
+            if (getOutputPane().isWrapped()) {
+                getOutputPane().setViewFont(opts.getFontForWrappedMode());
+            }
+        }
+    }
+
+    private void loadAndInitActions() {
+        RP.post(new Runnable() {
+            @Override
+            public void run() {
+                createActions();
+                EventQueue.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        installKBActions();
+                        getActionMap().put("jumpPrev", //NOI18N
+                                action(PREV_ERROR));
+                        getActionMap().put("jumpNext", //NOI18N
+                                action(NEXT_ERROR));
+                        getActionMap().put(FindAction.class.getName(),
+                                action(FIND));
+                        getActionMap().put(
+                                javax.swing.text.DefaultEditorKit.copyAction,
+                                action(COPY));
+                        actionsLoaded = true;
+                        updateActions();
+                        setInputVisible(isInputVisible()); // update action
+                    }
+                });
+            }
+        });
+    }
+
     static enum ACTION { COPY, WRAP, SAVEAS, CLOSE, NEXT_ERROR, PREV_ERROR,
                          SELECT_ALL, FIND, FIND_NEXT, NAVTOLINE, POSTMENU,
                          FIND_PREVIOUS, CLEAR, NEXTTAB, PREVTAB, LARGER_FONT,
-                         SMALLER_FONT, FONT_TYPE, FILTER, PASTE }
+                         SMALLER_FONT, SETTINGS, FILTER, PASTE }
 
     private static final ACTION[] popupItems = new ACTION[] {
         COPY, PASTE, null, FIND, FIND_NEXT, FIND_PREVIOUS, FILTER, null,
-        WRAP, LARGER_FONT, SMALLER_FONT, FONT_TYPE, null,
+        WRAP, LARGER_FONT, SMALLER_FONT, SETTINGS, null,
         SAVEAS, CLEAR, CLOSE,
     };
 
@@ -716,6 +833,7 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
     private final Map<ACTION, TabAction> actions = new EnumMap<ACTION, TabAction>(ACTION.class);;
 
     private void createActions() {
+        KeyStrokeUtils.refreshActionCache();
         for (ACTION a : ACTION.values()) {
             TabAction action;
             switch(a) {
@@ -733,7 +851,7 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
                 case FILTER:
                 case LARGER_FONT:
                 case SMALLER_FONT:
-                case FONT_TYPE:
+                case SETTINGS:
                 case CLEAR:
                     action = new TabAction(a, "ACTION_"+a.name());
                     break;
@@ -782,10 +900,22 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
         TabAction(ACTION action, String bundleKey) {
             if (bundleKey != null) {
                 String name = NbBundle.getMessage(OutputTab.class, bundleKey);
-                KeyStroke accelerator = getAcceleratorFor(bundleKey);
+                List<KeyStroke[]> accels = getAcceleratorsFor(action);
                 this.action = action;
                 putValue(NAME, name);
-                putValue(ACCELERATOR_KEY, accelerator);
+                if (accels != null && accels.size() > 0) {
+                    List<KeyStroke> l = new ArrayList<KeyStroke>(accels.size());
+                    for (KeyStroke[] ks : accels) {
+                        if (ks.length == 1) { // ignore multi-key accelerators
+                            l.add(ks[0]);
+                        }
+                    }
+                    if (l.size() > 0) {
+                        putValue(ACCELERATORS_KEY,
+                                l.toArray(new KeyStroke[l.size()]));
+                        putValue(ACCELERATOR_KEY, l.get(0));
+                    }
+                }
             }
         }
 
@@ -814,15 +944,62 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
          * Get a keyboard accelerator from the resource bundle, with special handling
          * for the mac keyboard layout.
          *
-         * @param name The bundle key prefix
+         * @param action Action to get accelerator for.
          * @return A keystroke
          */
-        private KeyStroke getAcceleratorFor(String name) {
-            String key = name + ".accel"; //NOI18N
-            if (Utilities.isMac()) {
-                key += ".mac"; //NOI18N
+        private List<KeyStroke[]> getAcceleratorsFor(ACTION action) {
+            switch (action) {
+                case COPY:
+                    return KeyStrokeUtils.getKeyStrokesForAction(
+                            "copy-to-clipboard", null);                 //NOI18N
+                case PASTE:
+                    return KeyStrokeUtils.getKeyStrokesForAction(
+                            "paste-from-clipboard", null);              //NOI18N
+                case SAVEAS:
+                    return KeyStrokeUtils.getKeyStrokesForAction(
+                            OutputKeymapManager.SAVE_AS_ACTION_ID, null);
+                case CLOSE:
+                    return KeyStrokeUtils.getKeyStrokesForAction(
+                            OutputKeymapManager.CLOSE_ACTION_ID, null);
+                case NEXT_ERROR:
+                    return KeyStrokeUtils.getKeyStrokesForAction(
+                            "next-error", null);                        //NOI18N
+                case PREV_ERROR:
+                    return KeyStrokeUtils.getKeyStrokesForAction(
+                            "previous-error", null);                    //NOI18N
+                case SELECT_ALL:
+                    return KeyStrokeUtils.getKeyStrokesForAction(
+                            "select-all", null);                        //NOI18N
+                case FIND:
+                    return KeyStrokeUtils.getKeyStrokesForAction(
+                            "org.openide.actions.FindAction", null);    //NOI18N
+                case FIND_NEXT:
+                    return KeyStrokeUtils.getKeyStrokesForAction(
+                            "find-next", null);                         //NOI18N
+                case FIND_PREVIOUS:
+                    return KeyStrokeUtils.getKeyStrokesForAction(
+                            "find-previous", null);                     //NOI18N
+                case FILTER:
+                    return KeyStrokeUtils.getKeyStrokesForAction(
+                            OutputKeymapManager.FILTER_ACTION_ID, null);
+                case LARGER_FONT:
+                    return KeyStrokeUtils.getKeyStrokesForAction(
+                            OutputKeymapManager.LARGER_FONT_ACTION_ID, null);
+                case SMALLER_FONT:
+                    return KeyStrokeUtils.getKeyStrokesForAction(
+                            OutputKeymapManager.SMALLER_FONT_ACTION_ID, null);
+                case SETTINGS:
+                    return KeyStrokeUtils.getKeyStrokesForAction(
+                            OutputKeymapManager.OUTPUT_SETTINGS_ACTION_ID, null);
+                case CLEAR:
+                    return KeyStrokeUtils.getKeyStrokesForAction(
+                            OutputKeymapManager.CLEAR_ACTION_ID, null);
+                case WRAP:
+                    return KeyStrokeUtils.getKeyStrokesForAction(
+                            OutputKeymapManager.WRAP_ACTION_ID, null);
+                default:
+                    return null;
             }
-            return Utilities.stringToKey(NbBundle.getMessage(OutputTab.class, key));
         }
 
         public ACTION getAction() {
@@ -837,7 +1014,10 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
                 JComponent selected = getIO().getIOContainer().getSelected();
                 if (OutputTab.this != selected && selected instanceof OutputTab) {
                     OutputTab tab = (OutputTab) selected;
-                    return tab.action(action).isEnabled();
+                    Action a = tab.action(action);
+                    if (a != null) {
+                        return a.isEnabled();
+                    }
                 }
                 return false;
             }
@@ -851,7 +1031,10 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
                 JComponent selected = getIO().getIOContainer().getSelected();
                 if (OutputTab.this != selected && selected instanceof OutputTab) {
                     OutputTab tab = (OutputTab) selected;
-                    tab.action(action).actionPerformed(e);
+                    Action a = tab.action(action);
+                    if (a != null) {
+                        a.actionPerformed(e);
+                    }
                 }
                 return ;
             }
@@ -885,8 +1068,14 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
                      {
                         String pattern = getFindDlgResult(getOutputPane().getSelectedText(), "LBL_Find_Title", "LBL_Find_What", "BTN_Find"); //NOI18N
                         if (pattern != null && find(false)) {
-                            action(FIND_NEXT).setEnabled(true);
-                            action(FIND_PREVIOUS).setEnabled(true);
+                            Action findNext = action(FIND_NEXT);
+                            Action findPrev = action(FIND_PREVIOUS);
+                            if (findNext != null) {
+                                findNext.setEnabled(true);
+                            }
+                            if (findPrev != null) {
+                                findPrev.setEnabled(true);
+                            }
                             requestFocus();
                         }
                     }
@@ -923,8 +1112,9 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
                 case LARGER_FONT:
                     Controller.getDefault().changeFontSizeBy(1, getOutputPane().isWrapped());
                     break;
-                case FONT_TYPE:
-                    showFontChooser();
+                case SETTINGS:
+                    OptionsDisplayer.getDefault().open(
+                            "Advanced/OutputSettings");                 //NOI18N
                     break;
                 case FILTER:
                     if (origPane != null) {
@@ -946,7 +1136,10 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
     @Override
     public void setInputVisible(boolean val) {
         super.setInputVisible(val);
-        action(PASTE).setEnabled(val);
+        Action pasteAction = action(PASTE);
+        if (pasteAction != null) {
+            pasteAction.setEnabled(val);
+        }
     }
 
     private boolean validRegExp(String pattern) {
@@ -1093,7 +1286,9 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
 
         synchronized void readFrom(OutWriter orig) {
             AbstractLines lines = (AbstractLines) orig.getLines();
-            while (readCount < lines.getLineCount()) {
+            // Last line is not guaranteed to be finished, see #219839.
+            int lineCount = lines.getLineCount() - (orig.isClosed() ? 0 : 1);
+            while (readCount < lineCount) {
                 try {
                     int line = readCount++;
                     String str = lines.getLine(line);
@@ -1111,5 +1306,10 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
         void dispose() {
             out.dispose();
         }
+    }
+
+    private Lines getDocumentLines() {
+        OutputDocument doc = getDocument();
+        return doc == null ? null : doc.getLines();
     }
 }

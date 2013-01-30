@@ -373,7 +373,6 @@ final class DefaultSettingsConfigurator implements SelectProfilingTask.SettingsC
                     }
                 });
             basicSettingsPanel.setProfilingType(settings.getProfilingType());
-            basicSettingsPanel.setTrackEvery(settings.getAllocTrackEvery());
             basicSettingsPanel.setRecordStackTrace(settings.getAllocStackTraceLimit() != 0);
             basicSettingsPanel.setUseProfilingPoints(settings.useProfilingPoints() && (project != null));
 
@@ -381,6 +380,9 @@ final class DefaultSettingsConfigurator implements SelectProfilingTask.SettingsC
             if (!settings.isPreset()) {
                 advancedSettingsPanel.enableAll();
             }
+            
+            advancedSettingsPanel.setProfilingType(settings.getProfilingType());
+            advancedSettingsPanel.setTrackEvery(settings.getAllocTrackEvery());
 
             advancedSettingsPanel.setAllocStackTraceLimit(settings.getAllocStackTraceLimit());
             advancedSettingsPanel.setRunGC(settings.getRunGCOnGetResultsInMemoryProfiling());
@@ -409,10 +411,10 @@ final class DefaultSettingsConfigurator implements SelectProfilingTask.SettingsC
 
             // basicSettingsPanel
             finalSettings.setProfilingType(basicSettingsPanel.getProfilingType());
-            finalSettings.setAllocTrackEvery(basicSettingsPanel.getTrackEvery());
             finalSettings.setUseProfilingPoints(basicSettingsPanel.getUseProfilingPoints());
 
             // advancedSettingsPanel
+            finalSettings.setAllocTrackEvery(advancedSettingsPanel.getTrackEvery());
             finalSettings.setAllocStackTraceLimit(basicSettingsPanel.getRecordStackTrace()
                                                   ? advancedSettingsPanel.getAllocStackTraceLimit() : 0);
             finalSettings.setRunGCOnGetResultsInMemoryProfiling(advancedSettingsPanel.getRunGC());
@@ -444,6 +446,7 @@ final class DefaultSettingsConfigurator implements SelectProfilingTask.SettingsC
 
         public void synchronizeBasicAdvancedPanels() {
             boolean recordStackTrace = basicSettingsPanel.getRecordStackTrace();
+            advancedSettingsPanel.setProfilingType(basicSettingsPanel.getProfilingType());
             advancedSettingsPanel.setRecordStackTrace(recordStackTrace);
             advancedSettingsPanel.updateRunGC(basicSettingsPanel.getProfilingType() ==
                                               ProfilingSettings.PROFILE_MEMORY_ALLOCATIONS);
@@ -454,10 +457,10 @@ final class DefaultSettingsConfigurator implements SelectProfilingTask.SettingsC
 
             // basicSettingsPanel
             settings.setProfilingType(basicSettingsPanel.getProfilingType());
-            settings.setAllocTrackEvery(basicSettingsPanel.getTrackEvery());
             settings.setUseProfilingPoints(basicSettingsPanel.getUseProfilingPoints());
 
             // advancedSettingsPanel
+            settings.setAllocTrackEvery(advancedSettingsPanel.getTrackEvery());
             settings.setAllocStackTraceLimit(basicSettingsPanel.getRecordStackTrace()
                                              ? advancedSettingsPanel.getAllocStackTraceLimit() : 0);
             settings.setRunGCOnGetResultsInMemoryProfiling(advancedSettingsPanel.getRunGC());

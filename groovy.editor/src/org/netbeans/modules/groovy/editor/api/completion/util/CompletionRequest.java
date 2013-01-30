@@ -55,8 +55,7 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.groovy.editor.api.AstPath;
-import org.netbeans.modules.groovy.editor.api.AstUtilities;
-import org.netbeans.modules.groovy.editor.api.GroovyTypeAnalyzer;
+import org.netbeans.modules.groovy.editor.api.ASTUtils;
 import org.netbeans.modules.groovy.editor.api.completion.CaretLocation;
 import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
 import org.netbeans.modules.groovy.editor.api.lexer.LexUtilities;
@@ -146,7 +145,7 @@ public class CompletionRequest {
      */
     private AstPath getPathFromRequest() {
         // figure out which class we are dealing with:
-        ASTNode root = AstUtilities.getRoot(info);
+        ASTNode root = ASTUtils.getRoot(info);
 
         // in some cases we can not repair the code, therefore root == null
         // therefore we can not complete. See # 131317
@@ -168,14 +167,14 @@ public class CompletionRequest {
      */
     private CaretLocation getCaretLocationFromRequest() {
         int position = lexOffset;
-        TokenSequence<?> ts = LexUtilities.getGroovyTokenSequence(doc, position);
+        TokenSequence<GroovyTokenId> ts = LexUtilities.getGroovyTokenSequence(doc, position);
 
         // are we living inside a comment?
 
         ts.move(position);
 
         if (ts.isValid() && ts.moveNext() && ts.offset() < doc.getLength()) {
-            Token<? extends GroovyTokenId> t = (Token<? extends GroovyTokenId>) ts.token();
+            Token<GroovyTokenId> t = ts.token();
 
             if (t.id() == GroovyTokenId.LINE_COMMENT || t.id() == GroovyTokenId.BLOCK_COMMENT) {
                 return CaretLocation.INSIDE_COMMENT;
@@ -189,7 +188,7 @@ public class CompletionRequest {
 
             if (t.id() == GroovyTokenId.NLS) {
                 if ((ts.isValid() && ts.movePrevious() && ts.offset() >= 0)) {
-                    Token<? extends GroovyTokenId> tparent = (Token<? extends GroovyTokenId>) ts.token();
+                    Token<GroovyTokenId> tparent = ts.token();
                     if (tparent.id() == GroovyTokenId.LINE_COMMENT) {
                         return CaretLocation.INSIDE_COMMENT;
                     }
@@ -204,7 +203,7 @@ public class CompletionRequest {
         ts.move(position);
 
         while (ts.isValid() && ts.moveNext() && ts.offset() < doc.getLength()) {
-            Token<? extends GroovyTokenId> t = (Token<? extends GroovyTokenId>) ts.token();
+            Token<GroovyTokenId> t = ts.token();
 
             if (t.id() == GroovyTokenId.LITERAL_package) {
                 return CaretLocation.ABOVE_PACKAGE;
@@ -219,7 +218,7 @@ public class CompletionRequest {
         ts.move(position);
 
         while (ts.isValid() && ts.movePrevious() && ts.offset() >= 0) {
-            Token<? extends GroovyTokenId> t = (Token<? extends GroovyTokenId>) ts.token();
+            Token<GroovyTokenId> t = ts.token();
             if (t.id() == GroovyTokenId.LITERAL_class || t.id() == GroovyTokenId.LITERAL_interface) {
                 classDefBeforePosition = true;
                 break;
@@ -232,7 +231,7 @@ public class CompletionRequest {
         ts.move(position);
 
         while (ts.isValid() && ts.moveNext() && ts.offset() < doc.getLength()) {
-            Token<? extends GroovyTokenId> t = (Token<? extends GroovyTokenId>) ts.token();
+            Token<GroovyTokenId> t = ts.token();
             if (t.id() == GroovyTokenId.LITERAL_class || t.id() == GroovyTokenId.LITERAL_interface) {
                 classDefAfterPosition = true;
                 break;
@@ -348,22 +347,22 @@ public class CompletionRequest {
     private CompletionContext getCompletionContext() {
         int position = lexOffset;
 
-        Token<? extends GroovyTokenId> beforeLiteral = null;
-        Token<? extends GroovyTokenId> before2 = null;
-        Token<? extends GroovyTokenId> before1 = null;
-        Token<? extends GroovyTokenId> active = null;
-        Token<? extends GroovyTokenId> after1 = null;
-        Token<? extends GroovyTokenId> after2 = null;
-        Token<? extends GroovyTokenId> afterLiteral = null;
+        Token<GroovyTokenId> beforeLiteral = null;
+        Token<GroovyTokenId> before2 = null;
+        Token<GroovyTokenId> before1 = null;
+        Token<GroovyTokenId> active = null;
+        Token<GroovyTokenId> after1 = null;
+        Token<GroovyTokenId> after2 = null;
+        Token<GroovyTokenId> afterLiteral = null;
 
-        TokenSequence<?> ts = LexUtilities.getGroovyTokenSequence(doc, position);
+        TokenSequence<GroovyTokenId> ts = LexUtilities.getGroovyTokenSequence(doc, position);
 
         int difference = ts.move(position);
 
         // get the active token:
 
         if (ts.isValid() && ts.moveNext() && ts.offset() >= 0) {
-            active = (Token<? extends GroovyTokenId>) ts.token();
+            active = ts.token();
         }
 
         // if we are right at the end of a line, a separator or a whitespace we gotta rewind.
@@ -383,7 +382,7 @@ public class CompletionRequest {
                 ts.movePrevious();
             } else if (active.id() == GroovyTokenId.NLS ) {
                 ts.movePrevious();
-                if(((Token<? extends GroovyTokenId>) ts.token()).id() == GroovyTokenId.DOT) {
+                if(((Token<GroovyTokenId>) ts.token()).id() == GroovyTokenId.DOT) {
                     ts.moveNext();
                 } else {
                     LOG.log(Level.FINEST, "ts.movePrevious() - 2");
@@ -397,7 +396,7 @@ public class CompletionRequest {
         int stopAt = 0;
 
         while (ts.isValid() && ts.movePrevious() && ts.offset() >= 0) {
-            Token<? extends GroovyTokenId> t = (Token<? extends GroovyTokenId>) ts.token();
+            Token<GroovyTokenId> t = ts.token();
             if (t.id() == GroovyTokenId.NLS) {
                 break;
             } else if (t.id() != GroovyTokenId.WHITESPACE) {
@@ -418,7 +417,7 @@ public class CompletionRequest {
         ts.move(position);
 
         while (ts.isValid() && ts.movePrevious() && ts.offset() >= 0) {
-            Token<? extends GroovyTokenId> t = (Token<? extends GroovyTokenId>) ts.token();
+            Token<GroovyTokenId> t = ts.token();
             if (t.id() == GroovyTokenId.NLS ||
                 t.id() == GroovyTokenId.LBRACE) {
                 break;
@@ -433,7 +432,7 @@ public class CompletionRequest {
         ts.move(position);
 
         while (ts.isValid() && ts.moveNext() && ts.offset() < doc.getLength()) {
-            Token<? extends GroovyTokenId> t = (Token<? extends GroovyTokenId>) ts.token();
+            Token<GroovyTokenId> t = ts.token();
             if (t.id() == GroovyTokenId.NLS ||
                 t.id() == GroovyTokenId.RBRACE) {
                 break;
@@ -450,7 +449,7 @@ public class CompletionRequest {
         stopAt = 0;
 
         while (ts.isValid() && ts.moveNext() && ts.offset() < doc.getLength()) {
-            Token<? extends GroovyTokenId> t = (Token<? extends GroovyTokenId>) ts.token();
+            Token<GroovyTokenId> t = ts.token();
 
             if (t.id() == GroovyTokenId.NLS) {
                 break;
@@ -521,14 +520,14 @@ public class CompletionRequest {
 
         int position = lexOffset;
 
-        TokenSequence<? extends GroovyTokenId> ts = LexUtilities.getGroovyTokenSequence(doc, position);
+        TokenSequence<GroovyTokenId> ts = LexUtilities.getGroovyTokenSequence(doc, position);
 
         int difference = ts.move(position);
 
         // get the active token:
-        Token<? extends GroovyTokenId> active = null;
+        Token<GroovyTokenId> active = null;
         if (ts.isValid() && ts.moveNext() && ts.offset() >= 0) {
-            active = (Token<? extends GroovyTokenId>) ts.token();
+            active = ts.token();
         }
 
         if (LOG.isLoggable(Level.FINE)) {
@@ -565,7 +564,7 @@ public class CompletionRequest {
             // travel back on the token string till the token is neither a
             // WHITESPACE nor NLS
             while (ts.isValid() && (remainingTokens = ts.movePrevious()) && ts.offset() >= 0) {
-                Token<? extends GroovyTokenId> t = (Token<? extends GroovyTokenId>) ts.token();
+                Token<GroovyTokenId> t = ts.token();
                 if (t.id() != GroovyTokenId.WHITESPACE && t.id() != GroovyTokenId.NLS) {
                     break;
                 }
@@ -588,14 +587,14 @@ public class CompletionRequest {
         // travel back on the token string till the token is neither a
         // WHITESPACE nor NLS
         while (ts.isValid() && ts.movePrevious() && ts.offset() >= 0) {
-            Token<? extends GroovyTokenId> t = (Token<? extends GroovyTokenId>) ts.token();
+            Token<GroovyTokenId> t = ts.token();
             if (t.id() != GroovyTokenId.WHITESPACE && t.id() != GroovyTokenId.NLS) {
                 break;
             }
         }
 
         int lexOffset = ts.offset();
-        int astOffset = AstUtilities.getAstOffset(info, lexOffset);
+        int astOffset = ASTUtils.getAstOffset(info, lexOffset);
         AstPath realPath = getPath(info, doc, astOffset);
 
         return new DotCompletionContext(lexOffset, astOffset, realPath, methodsOnly);
@@ -603,7 +602,7 @@ public class CompletionRequest {
 
     private AstPath getPath(ParserResult info, BaseDocument doc, int astOffset) {
         // figure out which class we are dealing with:
-        ASTNode root = AstUtilities.getRoot(info);
+        ASTNode root = ASTUtils.getRoot(info);
 
         // in some cases we can not repair the code, therefore root == null
         // therefore we can not complete. See # 131317
@@ -753,7 +752,7 @@ public class CompletionRequest {
             LOG.log(Level.FINEST, "Trouble doing getRowStart() or getFirstNonWhiteFwd(): {0}", ex.getMessage());
         }
 
-        Token<? extends GroovyTokenId> importToken = LexUtilities.getToken(doc, nonWhite);
+        Token<GroovyTokenId> importToken = LexUtilities.getToken(doc, nonWhite);
 
         if (importToken != null && importToken.id() == GroovyTokenId.LITERAL_import) {
             LOG.log(Level.FINEST, "Right behind an import statement");

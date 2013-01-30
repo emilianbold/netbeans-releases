@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -45,10 +45,12 @@ package org.netbeans.modules.autoupdate.pluginimporter;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -231,6 +233,9 @@ public class PluginImporter {
 
             // 1. find all plugin's resources
             Collection<String> toCopy = getPluginFiles (src, cnb, locateUpdateTracking (cnb, src));
+            if (toCopy.isEmpty()) {
+                continue;
+            }
 
             // 2. copy them
             for (String path : toCopy) {
@@ -281,7 +286,11 @@ public class PluginImporter {
     private static Collection<String> getPluginFiles (File cluster, String cnb, File updateTracking) {
         Collection<String> res = new HashSet<String> ();
         LOG.log(Level.FINE, "Read update_tracking " + updateTracking + " file.");
-        Set<String> moduleFiles = readModuleFiles (getUpdateTrackingConf (updateTracking));
+        Node updateTrackingConf = getUpdateTrackingConf(updateTracking);
+        if (updateTrackingConf == null) {
+            return Collections.emptySet();
+        }
+        Set<String> moduleFiles = readModuleFiles(updateTrackingConf);
         String configFile = "config/Modules/" + cnb.replace ('.', '-') + ".xml"; // NOI18N
 
         moduleFiles.remove (configFile);
@@ -324,7 +333,28 @@ public class PluginImporter {
                 is.close ();
             }
         } catch (SAXException saxe) {
-            LOG.log(Level.WARNING, null, saxe);
+            LOG.log(Level.WARNING, "SAXException when reading " + moduleUpdateTracking + ", cause: " + saxe);
+            //for issue #217118 investigation what is corrupted and how
+            FileReader reader = null;
+            try {
+                reader = new FileReader(moduleUpdateTracking);
+                char[] text = new char[1024];
+                String fileContent = "";
+                while (reader.read(text) > 0) {
+                    fileContent += String.copyValueOf(text);
+                }
+                LOG.log(Level.WARNING, "SAXException in file:\n------FILE START------\n " + fileContent + "\n------FILE END-----\n");
+            } catch (Exception ex) {
+                //don't need to fail in logging
+            } finally {
+                if (reader != null) {
+                    try {
+                        reader.close();
+                    } catch (IOException ex) {
+                        //don't need any info from logging fail
+                    }
+                }
+            }
             return null;
         } catch (IOException ioe) {
             LOG.log(Level.WARNING, null, ioe);

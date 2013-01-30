@@ -188,6 +188,10 @@ public class ModeView extends ViewElement {
         container.cancelRequestAttention(tc);
     }
 
+    public void setAttentionHighlight (TopComponent tc, boolean highlight) {
+        container.setAttentionHighlight(tc, highlight);
+    }
+
     public void makeBusy(TopComponent tc, boolean busy) {
         container.makeBusy(tc, busy);
     }

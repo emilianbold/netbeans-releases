@@ -187,6 +187,7 @@ implements UpdatingContext {
         gridBagConstraints.insets = new java.awt.Insets(8, 14, 8, 14);
         add(textLabel, gridBagConstraints);
 
+        progressBar.setMinimumSize(stringToDimension("UpdaterFrame.ProgressBar.PreferredSize", new Dimension (300, 20)));
         progressBar.setPreferredSize(stringToDimension("UpdaterFrame.ProgressBar.PreferredSize", new Dimension (300, 20)));
         progressBar.setRequestFocusEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();

@@ -41,9 +41,18 @@
  */
 package org.netbeans.modules.php.editor.actions;
 
-import java.util.*;
-import javax.swing.Icon;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import org.netbeans.modules.php.editor.actions.FixUsesAction.Options;
+import org.netbeans.modules.php.editor.actions.ImportData.DataItem;
+import org.netbeans.modules.php.editor.actions.ImportData.ItemVariant;
 import org.netbeans.modules.php.editor.api.ElementQuery.Index;
 import org.netbeans.modules.php.editor.api.NameKind;
 import org.netbeans.modules.php.editor.api.QualifiedName;
@@ -62,9 +71,9 @@ public class ImportDataCreator {
     private final Map<String, List<UsedNamespaceName>> usedNames;
     private final Index phpIndex;
     private final QualifiedName currentNamespace;
-    private ImportData data;
     private boolean shouldShowUsesPanel = false;
     private final Options options;
+    private final List<PossibleItem> possibleItems = new ArrayList<PossibleItem>();
 
     private static Collection<TypeElement> sortTypeElements(final Collection<TypeElement> filteredTypeElements) {
         final List<TypeElement> sortedTypeElements = new ArrayList<TypeElement>(filteredTypeElements);
@@ -80,25 +89,28 @@ public class ImportDataCreator {
     }
 
     public ImportData create() {
-        data = new ImportData(usedNames.size());
-        int index = 0;
         for (String typeName : usedNames.keySet()) {
-            processTypeName(index, typeName);
-            index++;
+            processTypeName(typeName);
+        }
+        ImportData data = new ImportData();
+        for (PossibleItem possibleItem : possibleItems) {
+            possibleItem.insertData(data);
         }
         data.shouldShowUsesPanel = shouldShowUsesPanel;
         return data;
     }
 
-    private void processTypeName(final int index, final String typeName) {
-        data.names[index] = typeName;
+    private void processTypeName(final String typeName) {
         Collection<TypeElement> possibleTypes = fetchPossibleTypes(typeName);
         Collection<TypeElement> filteredDuplicates = filterDuplicates(possibleTypes);
-        Collection<TypeElement> filteredTypeElements = filterExactUnqualifiedName(filteredDuplicates, typeName);
-        if (filteredTypeElements.isEmpty()) {
-            insertEmptyData(index);
+        Collection<TypeElement> filteredExactUnqualifiedNames = filterExactUnqualifiedName(filteredDuplicates, typeName);
+        if (filteredExactUnqualifiedNames.isEmpty()) {
+            possibleItems.add(new EmptyItem(typeName));
         } else {
-            insertPossibleData(index, filteredTypeElements, typeName);
+            Collection<TypeElement> filteredTypeElements = filterTypesFromCurrentNamespace(filteredExactUnqualifiedNames);
+            if (!filteredTypeElements.isEmpty()) {
+                possibleItems.add(new ValidItem(typeName, filteredTypeElements));
+            }
         }
     }
 
@@ -109,45 +121,6 @@ public class ImportDataCreator {
         possibleTypes.addAll(possibleClasses);
         possibleTypes.addAll(possibleIfaces);
         return possibleTypes;
-    }
-
-    @NbBundle.Messages("CanNotBeResolved=<html><font color='#FF0000'>&lt;cannot be resolved&gt;")
-    private void insertEmptyData(final int index) {
-        data.variants[index] = new String[1];
-        data.variants[index][0] = Bundle.CanNotBeResolved();
-        data.defaults[index] = data.variants[index][0];
-        data.icons[index] = new Icon[1];
-        data.icons[index][0] = IconsUtils.getErrorGlyphIcon();
-    }
-
-    private void insertPossibleData(final int index, final Collection<TypeElement> filteredTypeElements, final String typeName) {
-        Collection<TypeElement> sortedTypeElements = sortTypeElements(filteredTypeElements);
-        data.variants[index] = new String[sortedTypeElements.size() + 1];
-        data.icons[index] = new Icon[data.variants[index].length];
-        data.usedNamespaceNames.put(index, usedNames.get(typeName));
-        int i = -1;
-        for (TypeElement typeElement : sortedTypeElements) {
-            data.variants[index][++i] = typeElement.getFullyQualifiedName().toString();
-            data.icons[index][i] = IconsUtils.getElementIcon(typeElement.getPhpElementKind());
-            if (i == 0) {
-                data.defaults[index] = data.variants[index][i];
-            }
-            shouldShowUsesPanel = true;
-        }
-        data.variants[index][++i] = Bundle.DoNotUseType();
-        data.icons[index][i] = null;
-        QualifiedName qualifiedTypeName = QualifiedName.create(typeName);
-        if (qualifiedTypeName.getKind().isFullyQualified()) {
-            if (options.preferFullyQualifiedNames()) {
-                data.defaults[index] = data.variants[index][i];
-            }
-        } else {
-            QualifiedName exactMatchName = createExactMatchName(qualifiedTypeName);
-            if ((currentNamespace.isDefaultNamespace() && hasDefaultNamespaceName(sortedTypeElements)) || hasExactName(sortedTypeElements, exactMatchName)) {
-                data.defaults[index] = data.variants[index][i];
-            }
-        }
-        Arrays.sort(data.variants[index], new VariantsComparator());
     }
 
     private Collection<TypeElement> filterDuplicates(final Collection<TypeElement> possibleTypes) {
@@ -167,6 +140,16 @@ public class ImportDataCreator {
         Collection<TypeElement> result = new HashSet<TypeElement>();
         for (TypeElement typeElement : possibleTypes) {
             if (typeElement.getFullyQualifiedName().toString().endsWith(typeName)) {
+                result.add(typeElement);
+            }
+        }
+        return result;
+    }
+
+    private Collection<TypeElement> filterTypesFromCurrentNamespace(final Collection<TypeElement> possibleTypes) {
+        Collection<TypeElement> result = new HashSet<TypeElement>();
+        for (TypeElement typeElement : possibleTypes) {
+            if (!typeElement.getNamespaceName().equals(currentNamespace)) {
                 result.add(typeElement);
             }
         }
@@ -215,15 +198,83 @@ public class ImportDataCreator {
         return result;
     }
 
-    private class VariantsComparator implements Comparator<String> {
+    private interface PossibleItem {
+
+        void insertData(ImportData data);
+
+    }
+
+    private static class EmptyItem implements PossibleItem {
+        private final String typeName;
+
+        public EmptyItem(String typeName) {
+            this.typeName = typeName;
+        }
 
         @Override
-        public int compare(String o1, String o2) {
-            return o1.compareToIgnoreCase(o2);
+        @NbBundle.Messages("CanNotBeResolved=<html><font color='#FF0000'>&lt;cannot be resolved&gt;")
+        public void insertData(ImportData data) {
+            ItemVariant itemVariant = new ItemVariant(Bundle.CanNotBeResolved(), ItemVariant.UsagePolicy.CAN_NOT_BE_USED, IconsUtils.getErrorGlyphIcon());
+            data.add(new DataItem(typeName, Arrays.asList(new ItemVariant[] {itemVariant}), itemVariant));
+        }
+
+    }
+
+    private final class ValidItem implements PossibleItem {
+        private final Collection<TypeElement> filteredTypeElements;
+        private final String typeName;
+
+        private ValidItem(String typeName, Collection<TypeElement> filteredTypeElements) {
+            this.typeName = typeName;
+            this.filteredTypeElements = filteredTypeElements;
+        }
+
+        @Override
+        public void insertData(ImportData data) {
+            Collection<TypeElement> sortedTypeElements = sortTypeElements(filteredTypeElements);
+            List<ItemVariant> variants = new ArrayList<ItemVariant>();
+            ItemVariant defaultValue = null;
+            boolean isFirst = true;
+            for (TypeElement typeElement : sortedTypeElements) {
+                ItemVariant itemVariant = new ItemVariant(
+                        typeElement.getFullyQualifiedName().toString(),
+                        ItemVariant.UsagePolicy.CAN_BE_USED,
+                        IconsUtils.getElementIcon(typeElement.getPhpElementKind()));
+                variants.add(itemVariant);
+                if (isFirst) {
+                    defaultValue = itemVariant;
+                    isFirst = false;
+                }
+                shouldShowUsesPanel = true;
+            }
+            ItemVariant dontUseItemVariant = new ItemVariant(Bundle.DoNotUseType(), ItemVariant.UsagePolicy.CAN_NOT_BE_USED);
+            variants.add(dontUseItemVariant);
+            QualifiedName qualifiedTypeName = QualifiedName.create(typeName);
+            if (qualifiedTypeName.getKind().isFullyQualified()) {
+                if (options.preferFullyQualifiedNames()) {
+                    defaultValue = dontUseItemVariant;
+                }
+            } else {
+                QualifiedName exactMatchName = createExactMatchName(qualifiedTypeName);
+                if ((currentNamespace.isDefaultNamespace() && hasDefaultNamespaceName(sortedTypeElements)) || hasExactName(sortedTypeElements, exactMatchName)) {
+                    defaultValue = dontUseItemVariant;
+                }
+            }
+            Collections.sort(variants, new VariantsComparator());
+            data.add(new DataItem(typeName, variants, defaultValue, usedNames.get(typeName)));
+        }
+
+    }
+
+    private static class VariantsComparator implements Comparator<ItemVariant>, Serializable {
+
+        @Override
+        public int compare(ItemVariant o1, ItemVariant o2) {
+            return o1.getName().compareToIgnoreCase(o2.getName());
         }
     }
 
-    private static class TypeElementsComparator implements Comparator<TypeElement> {
+    private static class TypeElementsComparator implements Comparator<TypeElement>, Serializable {
 
         @Override
         public int compare(TypeElement o1, TypeElement o2) {

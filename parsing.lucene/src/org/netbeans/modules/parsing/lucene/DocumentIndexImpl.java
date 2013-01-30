@@ -43,21 +43,22 @@
 package org.netbeans.modules.parsing.lucene;
 
 import java.io.IOException;
-import java.lang.ref.Reference;
-import java.lang.ref.SoftReference;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.FieldSelector;
 import org.apache.lucene.search.Query;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.parsing.lucene.support.Convertor;
 import org.netbeans.modules.parsing.lucene.support.DocumentIndex;
+import org.netbeans.modules.parsing.lucene.support.DocumentIndexCache;
 import org.netbeans.modules.parsing.lucene.support.Index;
 import org.netbeans.modules.parsing.lucene.support.IndexDocument;
 import org.netbeans.modules.parsing.lucene.support.Queries;
@@ -67,74 +68,58 @@ import org.netbeans.modules.parsing.lucene.support.Queries.QueryKind;
  *
  * @author Tomas Zezula
  */
-public final class DocumentIndexImpl implements DocumentIndex, Runnable {
+public class DocumentIndexImpl implements DocumentIndex, Runnable {
     
     private final Index luceneIndex;
-    
+    //@GuardedBy (this)
+    private final DocumentIndexCache cache;
     /**
      * Transactional extension to the index
      */
-    private final Index.Transactional txLuceneIndex;
-    
-    /**
-     * This flag is used in tests, in particular in java.source IndexerTranscationTest. System property must be set before
-     * the indexing starts and will disable caching of document changes, all changes will be flushed (but not committed) immediately.
-     */
-    private boolean disableCache = Boolean.getBoolean("test." + DocumentIndexImpl.class.getName() + ".cacheDisable");
-    
-    private static final Convertor<IndexDocumentImpl,Document> ADD_CONVERTOR = new AddConvertor();
-    private static final Convertor<String,Query> REMOVE_CONVERTOR = new RemoveConvertor();
-    private static final Convertor<Document,IndexDocumentImpl> QUERY_CONVERTOR = new QueryConvertor();
+    final Index.Transactional txLuceneIndex;
+            
+    private static final Convertor<IndexDocument,Document> ADD_CONVERTOR = Convertors.newIndexDocumentToDocumentConvertor();
+    private static final Convertor<String,Query> REMOVE_CONVERTOR = Convertors.newSourceNameToQueryConvertor();
+    private static final Convertor<Document,IndexDocumentImpl> QUERY_CONVERTOR = Convertors.newDocumentToIndexDocumentConvertor();
     private static final Logger LOGGER = Logger.getLogger(DocumentIndexImpl.class.getName());
     
-    //@GuardedBy (this)
-    private final List<IndexDocumentImpl> toAdd = new LinkedList<IndexDocumentImpl>();
-    private final List<String> toRemove = new LinkedList<String>();
-    private final Set<String> dirtyKeys = new HashSet<String>();
-    private Reference<List[]> dataRef;
+    private final Set</*@GuardedBy("this")*/String> dirtyKeys = new HashSet<String>();
+    final AtomicBoolean requiresRollBack = new AtomicBoolean();
 
-    public DocumentIndexImpl (final Index index) {
+    private DocumentIndexImpl (
+            @NonNull final Index index,
+            @NonNull final DocumentIndexCache cache) {
         assert index != null;
+        assert cache != null;
         this.luceneIndex = index;
+        this.cache = cache;
         if (index instanceof Index.Transactional) {
             this.txLuceneIndex = (Index.Transactional)index;
         } else {
             this.txLuceneIndex = null;
         }
     }
-
-    /**
-     * Use in tests only ! Clears data ref, causing the next addDocument
-     * or removeDocument to flush the buffered contents
-     */
-    void testClarDataRef() {
-        dataRef.clear();
-    }
-
+    
     /**
      * Adds document
      * @param document
      */
     @Override
     public void addDocument(IndexDocument document) {
-        boolean forceFlush;
-
+        assert document instanceof IndexDocumentImpl;
+        final boolean forceFlush;
         synchronized (this) {
-            assert document instanceof IndexDocumentImpl;
-            final Reference<List[]> ref = getDataRef();
-            assert ref != null;
-            forceFlush = disableCache || ref.get() == null;
-            toAdd.add((IndexDocumentImpl)document);
-            toRemove.add(document.getPrimaryKey());
+            forceFlush = cache.addDocument(document);
         }
-        
         if (forceFlush) {
             try {
                 LOGGER.fine("Extra flush forced"); //NOI18N
                 store(false, true);
                 System.gc();
             } catch (IOException ioe) {
-                LOGGER.log(Level.WARNING, null, ioe);
+                //Reindexed in RU.storeChanges
+                LOGGER.log(Level.WARNING, ioe.getMessage());
+                requiresRollBack.set(true);
             }
         }
     }
@@ -146,20 +131,17 @@ public final class DocumentIndexImpl implements DocumentIndex, Runnable {
     @Override
     public void removeDocument(String primaryKey) {
         final boolean forceFlush;
-
         synchronized (this) {
-            final Reference<List[]> ref = getDataRef();
-            assert ref != null;
-            forceFlush = ref.get() == null;
-            toRemove.add(primaryKey);
+            forceFlush = cache.removeDocument(primaryKey);
         }
-
         if (forceFlush) {
             try {
                 LOGGER.fine("Extra flush forced"); //NOI18N
                 store(false, true);
             } catch (IOException ioe) {
-                LOGGER.log(Level.WARNING, null, ioe);
+                //Reindexed in RU.storeChanges
+                LOGGER.log(Level.WARNING, ioe.getMessage());
+                requiresRollBack.set(true);
             }
         }
     }
@@ -183,6 +165,7 @@ public final class DocumentIndexImpl implements DocumentIndex, Runnable {
     
     @Override
     public void store(boolean optimize) throws IOException {
+        checkRollBackNeeded();
         store(optimize, false);
     }
 
@@ -194,32 +177,35 @@ public final class DocumentIndexImpl implements DocumentIndex, Runnable {
     }
     
     private void store(boolean optimize, boolean flushOnly) throws IOException {
-        final List<IndexDocumentImpl> _toAdd;
-        final List<String> _toRemove;
+        final  boolean change = storeImpl(optimize, flushOnly);
+        if (!change && !flushOnly && txLuceneIndex != null) {
+            commitImpl();
+        }
+    }
 
+    private boolean storeImpl(
+            final boolean optimize,
+            final boolean flushOnly) throws IOException {
+        final Collection<? extends IndexDocument> _toAdd;
+        final Collection<? extends String> _toRemove;
         synchronized (this) {
-            _toAdd = new ArrayList<IndexDocumentImpl>(this.toAdd);
-            _toRemove = new ArrayList<String>(this.toRemove);
-
-            this.toAdd.clear();
-            this.toRemove.clear();
-            this.dataRef = null;
-
-            if (!dirtyKeys.isEmpty()) {                
+            _toAdd = cache.getAddedDocuments();
+            _toRemove = cache.getRemovedKeys();
+            cache.clear();
+            if (!dirtyKeys.isEmpty()) {
                 for(IndexDocument ldoc : _toAdd) {
                     this.dirtyKeys.remove(ldoc.getPrimaryKey());
                 }
-                this.dirtyKeys.removeAll(_toRemove);                
+                this.dirtyKeys.removeAll(_toRemove);
             }
         }
-
-        if (_toAdd.size() > 0 || _toRemove.size() > 0) {                                        
+        if (!_toAdd.isEmpty() || !_toRemove.isEmpty()) {
             LOGGER.log(Level.FINE, "Flushing: {0}", luceneIndex.toString()); //NOI18N
             if (flushOnly && txLuceneIndex != null) {
                 txLuceneIndex.txStore(
-                        _toAdd, 
-                        _toRemove, 
-                        ADD_CONVERTOR, 
+                        _toAdd,
+                        _toRemove,
+                        ADD_CONVERTOR,
                         REMOVE_CONVERTOR
                 );
             } else {
@@ -228,10 +214,21 @@ public final class DocumentIndexImpl implements DocumentIndex, Runnable {
                         _toRemove,
                         ADD_CONVERTOR,
                         REMOVE_CONVERTOR,
-                        optimize);                    
+                        optimize);
             }
-        } else if (!flushOnly && txLuceneIndex != null) {
-            txLuceneIndex.commit();
+            return true;
+        }
+        return false;
+    }
+
+    private void commitImpl() throws IOException {
+        checkRollBackNeeded();
+        txLuceneIndex.commit();
+    }
+
+    private void checkRollBackNeeded() throws IOException {
+        if (requiresRollBack.get()) {
+            throw new IOException("Index requires rollback.");   //NOI18N
         }
     }
 
@@ -295,35 +292,57 @@ public final class DocumentIndexImpl implements DocumentIndex, Runnable {
     @Override
     public String toString () {
         return "DocumentIndex["+luceneIndex.toString()+"]";  //NOI18N
-    }    
-    
-    private static final class AddConvertor implements Convertor<IndexDocumentImpl, Document> {
-        @Override
-        public Document convert(IndexDocumentImpl p) {
-            return p.doc;
-        }
     }
-    
-    private Reference<List[]> getDataRef() {
-        assert Thread.holdsLock(this);
-        if (toAdd.isEmpty() && toRemove.isEmpty()) {
-            assert dataRef == null;
-            dataRef = new SoftReference<List[]>(new List[] {toAdd, toRemove});
-        }
-        return dataRef;
+
+    @NonNull
+    public static DocumentIndex create(
+            @NonNull final Index index,
+            @NonNull final DocumentIndexCache cache) {
+        return new DocumentIndexImpl(index, cache);
     }
-    
-    private static final class RemoveConvertor implements Convertor<String,Query> {
-        @Override
-        public Query convert(String p) {
-            return IndexDocumentImpl.sourceNameQuery(p);
-        }        
+
+    @NonNull
+    public static DocumentIndex.Transactional createTransactional(
+            @NonNull final Index.Transactional index,
+            @NonNull final DocumentIndexCache cache) {
+        return new DocumentIndexImpl.Transactional(index, cache);
     }
-    
-    private static final class QueryConvertor implements Convertor<Document,IndexDocumentImpl> {
-        @Override
-        public IndexDocumentImpl convert(Document p) {
-            return new IndexDocumentImpl(p);
+
+    private final static class Transactional extends DocumentIndexImpl implements DocumentIndex.Transactional {
+
+        private Transactional(
+            @NonNull final Index.Transactional index,
+            @NonNull final DocumentIndexCache cache) {
+            super(index, cache);
         }
-    }    
+
+        @Override
+        public void txStore() throws IOException {
+            super.storeImpl(false, true);
+        }
+
+        @Override
+        public void commit() throws IOException {
+            super.commitImpl();
+        }
+
+        @Override
+        public void rollback() throws IOException {
+            this.requiresRollBack.set(false);
+            this.txLuceneIndex.rollback();
+        }
+
+        @Override
+        public void clear() throws IOException {
+            this.requiresRollBack.set(false);
+            this.txLuceneIndex.clear();
+        }
+
+        @Override
+        public String toString () {
+            return "DocumentIndex.Transactional ["+super.luceneIndex.toString()+"]";  //NOI18N
+        }
+
+    }
+                    
 }

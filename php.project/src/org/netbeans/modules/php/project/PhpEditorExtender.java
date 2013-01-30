@@ -47,7 +47,7 @@ import java.util.List;
 import org.netbeans.modules.php.api.editor.PhpBaseElement;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.spi.editor.EditorExtender;
-import org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider;
+import org.netbeans.modules.php.spi.framework.PhpFrameworkProvider;
 import org.openide.filesystems.FileObject;
 
 /**

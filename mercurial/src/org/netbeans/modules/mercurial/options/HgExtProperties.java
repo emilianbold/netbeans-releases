@@ -156,7 +156,7 @@ public class HgExtProperties implements ActionListener, DocumentListener {
             support = new HgProgressSupport() {
                 protected void perform() {
                     Properties props = HgModuleConfig.getDefault().getProperties(root, "extensions"); // NOI18N
-                    HgPropertiesNode[] hgProps = new HgPropertiesNode[props.size()];
+                    final HgPropertiesNode[] hgProps = new HgPropertiesNode[props.size()];
                     int i = 0;
 
                     for (Enumeration e = props.propertyNames(); e.hasMoreElements() ; ) {
@@ -165,10 +165,15 @@ public class HgExtProperties implements ActionListener, DocumentListener {
                         String value = tmp != null ? tmp : ""; // NOI18N
                         hgProps[i] = new HgPropertiesNode(name, value);
                         i++;
-                     }
-                     propTable.setNodes(hgProps);
-                     setSelected(0);
-                     propTable.getTable().getSelectionModel().setSelectionInterval(0,0);
+                    }
+                    EventQueue.invokeLater(new Runnable() {
+                        @Override
+                        public void run () {
+                            propTable.setNodes(hgProps);
+                            setSelected(0);
+                            propTable.getTable().getSelectionModel().setSelectionInterval(0,0);
+                        }
+                    });
                 }
             };
             support.start(rp, (HgURL) null, org.openide.util.NbBundle.getMessage(HgExtProperties.class, "LBL_Properties_Progress")); // NOI18N

@@ -84,6 +84,9 @@ public class InstallManager extends InstalledFileLocator{
     
     static File findTargetDirectory (UpdateElement installed, UpdateElementImpl update, Boolean globalOrLocal, boolean useUserdirAsFallback) throws OperationException {
         File res;
+        if (globalOrLocal == null) {
+            globalOrLocal = isGlobalInstallation();
+        }
         boolean isGlobal = globalOrLocal == null ? false : globalOrLocal;
         
         if (Boolean.FALSE.equals(globalOrLocal)) {
@@ -94,7 +97,9 @@ public class InstallManager extends InstalledFileLocator{
         // if an update, overwrite the existing location, wherever that is.
         if (installed != null) {
             
-                res = getInstallDir (installed, update);
+                // adjust isGlobal to forced global if present
+                isGlobal |= update.getInstallInfo ().isGlobal () != null && update.getInstallInfo ().isGlobal ().booleanValue ();
+                res = getInstallDir (installed, update, isGlobal, useUserdirAsFallback);
             
         } else {
 
@@ -122,13 +127,9 @@ public class InstallManager extends InstalledFileLocator{
                 if (res == null) {
                     
                     // create UpdateTracking.EXTRA_CLUSTER_NAME
-                    res = createNonExistingCluster (UpdateTracking.EXTRA_CLUSTER_NAME);
-                    if (res != null) {
-                        res = checkTargetCluster(update, UpdateTracking.EXTRA_CLUSTER_NAME, isGlobal, useUserdirAsFallback);
-                    } else {
-                        // check writable installation
-                        res = checkTargetCluster(update, UpdateTracking.EXTRA_CLUSTER_NAME, isGlobal, useUserdirAsFallback);
-                    }
+                    createNonExistingCluster (UpdateTracking.EXTRA_CLUSTER_NAME);
+                    // check writable installation
+                    res = checkTargetCluster(update, UpdateTracking.EXTRA_CLUSTER_NAME, isGlobal, useUserdirAsFallback);
                     
                     // no new cluster was created => use userdir
                     res = res == null? getUserDir () : res;
@@ -170,7 +171,7 @@ public class InstallManager extends InstalledFileLocator{
                 } else {
                     ERR.log (Level.WARNING, "There is no write permission to write in target cluster " + targetCluster + " for " + update.getUpdateElement ());
                     if (! useUserdirAsFallback && isGlobal) {
-                        throw new OperationException(OperationException.ERROR_TYPE.WRITE_PERMISSION);
+                        throw new OperationException(OperationException.ERROR_TYPE.WRITE_PERMISSION, update.getCodeName());
                     }
                 }
                 break;
@@ -242,7 +243,7 @@ public class InstallManager extends InstalledFileLocator{
     }
     
     // can be null for fixed modules
-    private static File getInstallDir (UpdateElement installed, UpdateElementImpl update) {
+    private static File getInstallDir (UpdateElement installed, UpdateElementImpl update, boolean isGlobal, boolean useUserdirAsFallback) throws OperationException {
         File res = null;
         UpdateElementImpl i = Trampoline.API.impl (installed);
         assert i instanceof ModuleUpdateElementImpl : "Impl of " + installed + " instanceof ModuleUpdateElementImpl";
@@ -290,6 +291,9 @@ public class InstallManager extends InstalledFileLocator{
             // go to userdir if no writable cluster is known
             ERR.log (Level.WARNING, "There is no write permission to write in target cluster " + res + 
                     " for " + update.getUpdateElement ());
+            if (! useUserdirAsFallback && isGlobal) {
+                throw new OperationException(OperationException.ERROR_TYPE.WRITE_PERMISSION, update.getCodeName());
+            }
             res = UpdateTracking.getUserDir ();
         }
         ERR.log (Level.FINEST, "Install dir of " + installed + " is " + res);
@@ -417,4 +421,17 @@ public class InstallManager extends InstalledFileLocator{
     private static File makeFile(File dir, String prefix, String name) {        
         return FileUtil.normalizeFile(new File(dir, prefix.replace('/', File.separatorChar) + name));
     }
+    
+    private static Boolean isGlobalInstallation() {
+        String s = System.getProperty("plugin.manager.install.global"); // NOI18N
+        
+        if (Boolean.parseBoolean(s)) {
+            return Boolean.TRUE;
+        } else if (Boolean.FALSE.toString().equalsIgnoreCase(s)) {
+            return Boolean.FALSE;
+        } else {
+            return null;
+        }
+    }
+
 }

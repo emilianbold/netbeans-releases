@@ -166,7 +166,11 @@ public final class NavigatorController implements LookupListener, PropertyChange
     private boolean updateWhenNotShown = false;
 
     /** boolean flag to indicate that the tc.open is in progress*/
-    private boolean tcOpening = false;
+    private boolean tcActivating = false;
+    
+    /** boolean flag to indicate first update*/
+    private boolean uiready;
+
 
     /** Creates a new instance of NavigatorController */
     public NavigatorController(NavigatorDisplayer navigatorTC) {
@@ -186,7 +190,6 @@ public final class NavigatorController implements LookupListener, PropertyChange
 
     /** Starts listening to selected nodes and active component */
     private void navigatorTCOpened() {
-        tcOpening = true;
         if (panelLookupNodesResult != null) {
             return;
         }
@@ -248,19 +251,46 @@ public final class NavigatorController implements LookupListener, PropertyChange
      * not available for activation.
      */
     public void activatePanel (NavigatorPanel panel) {
-        if (currentPanels == null || !currentPanels.contains(panel)) {
-            throw new IllegalArgumentException("Panel is not available for activation: " + panel); //NOI18N
+        String iaeText = "Panel is not available for activation: "; //NOI18N
+        if (currentPanels == null) {
+            if (inUpdate) {
+                cacheLastSelPanel(panel);
+                return;
+            } else {
+                throw new IllegalArgumentException(iaeText + panel);
+            }
+        }
+        NavigatorPanel toActivate = null;
+        boolean contains = false;
+        for (NavigatorPanel navigatorPanel : currentPanels) {
+            if (navigatorPanel instanceof LazyPanel) {
+                contains = ((LazyPanel) navigatorPanel).panelMatch(panel);
+            } else {
+                contains = navigatorPanel.equals(panel);
+            }
+            if (contains) {
+                toActivate = navigatorPanel;
+                break;
+            }
+        }
+        if (!contains) {
+            if (inUpdate) {
+                cacheLastSelPanel(panel);
+                return;
+            } else {
+                throw new IllegalArgumentException(iaeText + panel);
+            }
         }
         NavigatorPanel oldPanel = navigatorTC.getSelectedPanel();
-        if (!panel.equals(oldPanel)) {
+        if (!toActivate.equals(oldPanel)) {
             if (oldPanel != null) {
                 oldPanel.panelDeactivated();
             }
-            panel.panelActivated(clientsLookup);
-            navigatorTC.setSelectedPanel(panel);
+            toActivate.panelActivated(clientsLookup);
+            navigatorTC.setSelectedPanel(toActivate);
             // selected panel changed, update selPanelLookup to listen correctly
             panelLookup.lookup(Object.class);
-            cacheLastSelPanel(panel);
+            cacheLastSelPanel(toActivate);
         }
     }
 
@@ -375,7 +405,7 @@ public final class NavigatorController implements LookupListener, PropertyChange
                 @Override
                 public void run() {
                     final List<NavigatorPanel> providers = obtainProviders(nodes, panelsPolicy, lkpHints);
-                    SwingUtilities.invokeLater(new Runnable() {
+                    runWhenUIReady(new Runnable() {
                         @Override
                         public void run() {
                             showProviders(providers, force);
@@ -394,6 +424,20 @@ public final class NavigatorController implements LookupListener, PropertyChange
         }
     }
 
+    private void runWhenUIReady (final Runnable runnable) {
+        if (uiready) {
+            SwingUtilities.invokeLater(runnable);
+        } else {
+            //first start, w8 for UI to be ready
+            WindowManager.getDefault().invokeWhenUIReady(new Runnable() {
+                @Override
+                public void run() {
+                    uiready = true;
+                    runnable.run();
+                }
+            });
+        }
+    }
     
     /** Shows obtained navigator providers
      * @param providers obtained providers
@@ -435,7 +479,7 @@ public final class NavigatorController implements LookupListener, PropertyChange
 
             if (selPanel != null) {
                 // #61334: don't deactivate previous providers if there are no new ones
-                if (!areNewProviders && !force && null != providers) {
+                if (!areNewProviders && !force) {
                     LOG.fine("Exit because no new providers, force: " + force);
                     return;
                 }
@@ -464,10 +508,10 @@ public final class NavigatorController implements LookupListener, PropertyChange
         } finally {
             inUpdate = false;
             navigatorTC.getTopComponent().makeBusy(false);
-            //in case of asynch obtain providers it is needed to request focus while opening TC
-            if (tcOpening && navigatorTC.allowAsyncUpdate()) {
+            //in case of asynch obtain providers it is needed to request focus while TC is activated
+            if (tcActivating && navigatorTC.allowAsyncUpdate()) {
                 navigatorTC.getTopComponent().requestFocus();
-                tcOpening = false;
+                tcActivating = false;
             }
         }
     }
@@ -605,9 +649,9 @@ public final class NavigatorController implements LookupListener, PropertyChange
     /** Installs user actions handling for NavigatorTC top component */
     public void installActions () {
         // ESC key handling - return focus to previous focus owner
-        KeyStroke returnKey = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0, true);
+        KeyStroke returnKey = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0, false);
         //JComponent contentArea = navigatorTC.getContentArea();
-        navigatorTC.getTopComponent().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(returnKey, "return"); //NOI18N
+        navigatorTC.getTopComponent().getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(returnKey, "return"); //NOI18N
         navigatorTC.getTopComponent().getActionMap().put("return", new ESCHandler()); //NOI18N
     }
 
@@ -748,6 +792,7 @@ public final class NavigatorController implements LookupListener, PropertyChange
         this.tcShown = tcShown;
         if (tcShown && tcShown != oldValue && updateWhenActivated) {
             updateWhenActivated = false;
+            tcActivating = true;
             Lookup globalContext = Utilities.actionsGlobalContext();
             updateContext(globalContext.lookup(NavigatorLookupPanelsPolicy.class), globalContext.lookupAll(NavigatorLookupHint.class));
         }

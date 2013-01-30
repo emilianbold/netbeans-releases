@@ -77,6 +77,7 @@ public class ProjectSupport {
             }
             // posting the to AWT event thread
             Mutex.EVENT.writeAccess(new Runnable() {
+                @Override
                 public void run() {
                     OpenProjectList.getDefault().addPropertyChangeListener(listener);
                     OpenProjectList.getDefault().open(project);
@@ -87,6 +88,7 @@ public class ProjectSupport {
             // wait when scanning finishes. If we don't wait, scanning is started
             // too early and finishes immediatelly.
             Thread waitThread = new Thread(new Runnable() {
+                @Override
                 public void run() {
                     while (!listener.projectListChanged) {
                         try {
@@ -142,6 +144,7 @@ public class ProjectSupport {
                 final ProjectListListener listener = new ProjectListListener();
                 // posting the to AWT event thread
                 Mutex.EVENT.writeAccess(new Runnable() {
+                    @Override
                     public void run() {
                         discardChanges(project);
                         OpenProjectList.getDefault().addPropertyChangeListener(listener);
@@ -150,6 +153,7 @@ public class ProjectSupport {
                 });
                 // WAIT PROJECT CLOSED - start
                 Thread waitThread = new Thread(new Runnable() {
+                    @Override
                     public void run() {
                         while (!listener.projectListChanged) {
                             try {
@@ -210,6 +214,7 @@ public class ProjectSupport {
         public boolean projectListChanged = false;
         
         /** Listen for property which changes when project is hopefully opened. */
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             if(OpenProjectList.PROPERTY_OPEN_PROJECTS.equals(evt.getPropertyName())) {
                 projectListChanged = true;

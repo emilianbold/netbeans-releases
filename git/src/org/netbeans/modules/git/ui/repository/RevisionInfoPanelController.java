@@ -159,18 +159,23 @@ public class RevisionInfoPanelController {
         public void run () {
             final String revision = currentCommit;
             GitRevisionInfo revisionInfo;
+            GitClient client = null;
             try {
                 monitor = new ProgressMonitor.DefaultProgressMonitor();
                 if (Thread.interrupted()) {
                     return;
                 }
-                GitClient client = Git.getInstance().getClient(repository);
+                client = Git.getInstance().getClient(repository);
                 revisionInfo = client.log(revision, monitor);
             } catch (GitException ex) {
                 if (!(ex instanceof GitException.MissingObjectException)) {
                     GitClientExceptionHandler.notifyException(ex, true);
                 }
                 revisionInfo = null;
+            } finally {
+                if (client != null) {
+                    client.release();
+                }
             }
             final GitRevisionInfo info = revisionInfo;
             final ProgressMonitor.DefaultProgressMonitor m = monitor;

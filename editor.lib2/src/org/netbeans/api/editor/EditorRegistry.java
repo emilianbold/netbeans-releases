@@ -358,6 +358,12 @@ public final class EditorRegistry {
             LOG.log(Level.FINE, FOCUS_GAINED_PROPERTY + ": " + dumpComponent(c) + '\n'); //NOI18N
             logItemListFinest();
         }
+        if (c == origFocused) {
+            origFocused = null;
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.fine("has equal components, using origFocused = "+origFocused);
+            }
+        }
         events.add(new PropertyChangeEvent(EditorRegistry.class, FOCUS_GAINED_PROPERTY, origFocused, c));
     }
     

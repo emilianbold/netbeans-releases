@@ -102,6 +102,20 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
         nsImpl.addNamespaceDefinition(NamespaceDefinitionImpl.this);
     }
 
+    private NamespaceDefinitionImpl(CharSequence name, NamespaceImpl parent, NamespaceImpl ns, CsmFile file, int startOffset, int endOffset, int leftBracketPos) {
+        super(file, startOffset, endOffset);
+        declarations = new ArrayList<CsmUID<CsmOffsetableDeclaration>>();
+        this.name = name;
+        // set parent ns, do it in constructor to have final fields
+        namespaceUID = UIDCsmConverter.namespaceToUID(ns);
+        assert namespaceUID != null;
+        this.namespaceRef = null;
+        
+        this.leftBracketPos = leftBracketPos != -1 ? leftBracketPos : startOffset;
+        
+        ns.addNamespaceDefinition(NamespaceDefinitionImpl.this);
+    }
+    
     public static NamespaceDefinitionImpl findOrCreateNamespaceDefionition(MutableDeclarationsContainer container, AST ast, NamespaceImpl parentNamespace, FileImpl containerfile) {
         int start = getStartOffset(ast);
         int end = getEndOffset(ast);
@@ -118,7 +132,7 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
         if (CsmKindUtilities.isNamespaceDefinition(candidate)) {
             return (NamespaceDefinitionImpl) candidate;
         } else {
-            assert !TraceFlags.CPP_PARSER_ACTION : candidate + " " + name + " " + AstUtil.getFirstCsmAST(ast).getLine() + " " + containerfile.getAbsolutePath() + " " + container ;
+//            assert !TraceFlags.CPP_PARSER_ACTION : candidate + " " + name + " " + AstUtil.getFirstCsmAST(ast).getLine() + " " + containerfile.getAbsolutePath() + " " + container ;
             NamespaceDefinitionImpl ns = new NamespaceDefinitionImpl(ast, containerfile, parentNamespace);
             container.addDeclaration(ns);
             return ns;
@@ -206,7 +220,8 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
 
     @Override
     public CharSequence getQualifiedName() {
-        return getNamespace().getQualifiedName();
+        CsmNamespace ns = getNamespace();
+        return ns != null ? ns.getQualifiedName() : getName();
     }
 
     @Override
@@ -301,6 +316,7 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
         private CsmFile file;
         private FileContent fileContent;
         private int startOffset;
+        private int bodyStartOffset;
         private int endOffset;
         private NamespaceBuilder parent;
 
@@ -314,8 +330,13 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
             qName = name.toString();
         }
 
+        public CharSequence getName() {
+            return name;
+        }
+        
         public void setFile(CsmFile file) {
             this.file = file;
+            this.fileContent = ((FileImpl)file).getParsingFileContent();
         }
         
         public void setEndOffset(int endOffset) {
@@ -326,6 +347,10 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
             this.startOffset = startOffset;
         }
 
+        public void setBodyStartOffset(int bodyStartOffset) {
+            this.bodyStartOffset = bodyStartOffset;
+        }
+        
         public void setParentNamespace(NamespaceBuilder parent) {
             this.parent = parent;
         }
@@ -369,7 +394,7 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
             NamespaceDefinitionImpl ns = getNamespaceDefinitionInstance();
             if (ns == null) {
                 NamespaceImpl parentNamespace = parent != null ? parent.getNamespace() : (NamespaceImpl)((ProjectBase) file.getProject()).getGlobalNamespace();
-                ns = new NamespaceDefinitionImpl(name, parentNamespace, file, startOffset, endOffset, startOffset);
+                ns = new NamespaceDefinitionImpl(name, parentNamespace, getNamespace(), file, startOffset, endOffset, bodyStartOffset);
                 if(parent != null) {
                     parent.addDeclaration(ns);
                 } else {

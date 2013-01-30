@@ -41,7 +41,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.glassfish.common;
 
 import java.awt.Dialog;
@@ -51,31 +50,26 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
+import org.glassfish.tools.ide.admin.ResultProcess;
+import org.glassfish.tools.ide.admin.TaskState;
+import org.glassfish.tools.ide.data.StartupArgs;
+import org.glassfish.tools.ide.data.StartupArgsEntity;
+import org.glassfish.tools.ide.server.FetchLogSimple;
+import org.glassfish.tools.ide.server.ServerTasks;
+import org.glassfish.tools.ide.utils.ServerUtils;
 import org.netbeans.api.extexecution.startup.StartupExtender;
-import org.netbeans.modules.glassfish.spi.RegisteredDerbyServer;
-import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.glassfish.spi.GlassfishModule.OperationState;
 import org.netbeans.modules.glassfish.spi.GlassfishModule.ServerState;
-import org.netbeans.modules.glassfish.spi.OperationStateListener;
-import org.netbeans.modules.glassfish.spi.Recognizer;
-import org.netbeans.modules.glassfish.spi.ServerUtilities;
-import org.netbeans.modules.glassfish.spi.TreeParser;
-import org.netbeans.modules.glassfish.spi.Utils;
-import org.netbeans.modules.glassfish.spi.VMIntrospector;
+import org.netbeans.modules.glassfish.spi.*;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.execution.NbProcessDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -85,7 +79,6 @@ import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 
-
 /**
  * @author Ludovic Chamenois
  * @author Peter Williams
@@ -93,7 +86,6 @@ import org.openide.util.lookup.Lookups;
 public class StartTask extends BasicTask<OperationState> {
 
     private static final String MAIN_CLASS = "com.sun.enterprise.glassfish.bootstrap.ASMain"; // NOI18N
-
     private final CommonServerSupport support;
     private List<Recognizer> recognizers;
     private FileObject jdkHome = null;
@@ -102,9 +94,35 @@ public class StartTask extends BasicTask<OperationState> {
     private final VMIntrospector vmi;
     private static RequestProcessor NODE_REFRESHER = new RequestProcessor("nodes to refresh");
 
+    ////////////////////////////////////////////////////////////////////////////
+    // Static methods                                                         //
+    ////////////////////////////////////////////////////////////////////////////
+
+    private static String[] removeEscapes(String[] args) {
+        for (int i = 0; i < args.length; i++) {
+            args[i] = args[i].replace("\\\"", ""); // NOI18N
+        }
+        return args;
+    }
+
+    private static StartupExtender.StartMode getMode(String gfMode) {
+        if (GlassfishModule.PROFILE_MODE.equals(gfMode)) {
+            return StartupExtender.StartMode.PROFILE;
+        } else if (GlassfishModule.DEBUG_MODE.equals(gfMode)) {
+            return StartupExtender.StartMode.DEBUG;
+        } else {
+            return StartupExtender.StartMode.NORMAL;
+        }
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Constructors                                                           //
+    ////////////////////////////////////////////////////////////////////////////
+
     /**
      *
-     * @param support common support object for the server instance being started
+     * @param support common support object for the server instance being
+     * started
      * @param recognizers output recognizers to pass to log processors, if any
      * @param stateListener state monitor to track start progress
      */
@@ -116,7 +134,8 @@ public class StartTask extends BasicTask<OperationState> {
 
     /**
      *
-     * @param support common support object for the server instance being started
+     * @param support common support object for the server instance being
+     * started
      * @param recognizers output recognizers to pass to log processors, if any
      * @param jdkRoot used for starting in profile mode
      * @param jvmArgs used for starting in profile mode
@@ -125,10 +144,11 @@ public class StartTask extends BasicTask<OperationState> {
     public StartTask(final CommonServerSupport support, List<Recognizer> recognizers,
             VMIntrospector vmi,
             FileObject jdkRoot, String[] jvmArgs, OperationStateListener... stateListener) {
-        super(support.getInstanceProperties(), stateListener);
+        super(support.getInstance(), stateListener);
         List<OperationStateListener> listeners = new ArrayList<OperationStateListener>();
         listeners.addAll(Arrays.asList(stateListener));
         listeners.add(new OperationStateListener() {
+
             @Override
             public void operationStateChanged(OperationState newState, String message) {
                 if (OperationState.COMPLETED.equals(newState)) {
@@ -136,7 +156,6 @@ public class StartTask extends BasicTask<OperationState> {
                     RequestProcessor.getDefault().post(new EnableComet(support));
                 }
             }
-
         });
         this.stateListener = listeners.toArray(new OperationStateListener[listeners.size()]);
         this.support = support;
@@ -144,15 +163,12 @@ public class StartTask extends BasicTask<OperationState> {
         this.jdkHome = jdkRoot;
         this.jvmArgs = (jvmArgs != null) ? Arrays.asList(removeEscapes(jvmArgs)) : null;
         this.vmi = vmi;
-        Logger.getLogger("glassfish").log(Level.FINE, "VMI == {0}",vmi);
+        Logger.getLogger("glassfish").log(Level.FINE, "VMI == {0}", vmi);
     }
 
-    private static String [] removeEscapes(String [] args) {
-        for(int i = 0; i < args.length; i++) {
-            args[i] = args[i].replace("\\\"", ""); // NOI18N
-        }
-        return args;
-    }
+    ////////////////////////////////////////////////////////////////////////////
+    // ExecutorService call() Method                                          //
+    ////////////////////////////////////////////////////////////////////////////
 
     /**
      *
@@ -167,43 +183,51 @@ public class StartTask extends BasicTask<OperationState> {
         final String adminHost;
         final int adminPort;
 
-        adminHost = ip.get(GlassfishModule.HOSTNAME_ATTR);
-        if(adminHost == null || adminHost.length() == 0) {
+        adminHost = instance.getProperty(GlassfishModule.HOSTNAME_ATTR);
+        if (adminHost == null || adminHost.length() == 0) {
             return fireOperationStateChanged(OperationState.FAILED,
                     "MSG_START_SERVER_FAILED_NOHOST", instanceName); //NOI18N
         }
 
-        adminPort = Integer.valueOf(ip.get(GlassfishModule.ADMINPORT_ATTR));
-        if(adminPort < 0 || adminPort > 65535) {
+        adminPort = Integer.valueOf(instance.getProperty(
+                GlassfishModule.ADMINPORT_ATTR));
+        if (adminPort < 0 || adminPort > 65535) {
             return fireOperationStateChanged(OperationState.FAILED,
                     "MSG_START_SERVER_FAILED_BADPORT", instanceName); //NOI18N
         }
 
         if (support.isRemote()) {
-            if (support.isReallyRunning()) {
-                if (Util.isDefaultOrServerTarget(ip)) {
-                    return restartDAS(adminHost,adminPort,start);
+            if (GlassFishStatus.isReady(instance, false)) {
+                if (Util.isDefaultOrServerTarget(instance.getProperties())) {
+                    return restartDAS(adminHost, adminPort, start);
                 } else {
-                    return startClusterOrInstance(adminHost,adminPort);
+                    return startClusterOrInstance(adminHost, adminPort);
                 }
             } else {
                 return fireOperationStateChanged(OperationState.FAILED,
                         "MSG_START_SERVER_FAILED_DASDOWN", instanceName); //NOI18N
             }
-        } else if (!support.isReallyRunning()) {
-            return startDASAndClusterOrInstance(adminHost,adminPort);
+        } else if (!GlassFishStatus.isReady(instance, false)) {
+            return startDASAndClusterOrInstance(adminHost, adminPort);
         } else {
-            return startClusterOrInstance(adminHost,adminPort);
+            return startClusterOrInstance(adminHost, adminPort);
         }
     }
 
+    ////////////////////////////////////////////////////////////////////////////
+    // Methods                                                                //
+    ////////////////////////////////////////////////////////////////////////////
+
     private OperationState restartDAS(String adminHost, int adminPort, final long start) {
-                // deal with the remote case here...
-                CommandRunner mgr = new CommandRunner(true, support.getCommandFactory(), ip, new OperationStateListener() {
+        // deal with the remote case here...
+        CommandRunner mgr = new CommandRunner(true,
+                support.getCommandFactory(),
+                instance,
+                new OperationStateListener() {
                     // if the http command is successful, we are not done yet...
                     // The server still has to stop. If we signal success to the 'stateListener'
                     // for the task, it may be premature.
-
+                    @SuppressWarnings("SleepWhileInLoop")
                     @Override
                     public void operationStateChanged(OperationState newState, String message) {
                         if (newState == OperationState.RUNNING) {
@@ -226,7 +250,7 @@ public class StartTask extends BasicTask<OperationState> {
                             }
                             while (OperationState.RUNNING == state && System.currentTimeMillis() - start < START_TIMEOUT) {
                                 // Send the 'completed' event and return when the server is running
-                                boolean httpLive = support.isReady(false, 2000, TIMEUNIT); //CommonServerSupport.isRunning(host, port,ip.get(GlassfishModule.DISPLAY_NAME_ATTR));
+                                boolean httpLive = GlassFishStatus.isReady(instance, false); //CommonServerSupport.isRunning(host, port,instance.getProperty(GlassfishModule.DISPLAY_NAME_ATTR));
 
                                 // Sleep for a little so that we do not make our checks too often
                                 //
@@ -256,32 +280,33 @@ public class StartTask extends BasicTask<OperationState> {
                         }
                     }
                 });
-                int debugPort = -1;
-                if (GlassfishModule.DEBUG_MODE.equals(ip.get(GlassfishModule.JVM_MODE))) {
-                    try {
-                        debugPort = Integer.parseInt(ip.get(GlassfishModule.DEBUG_PORT));
-                        if (debugPort < LOWEST_USER_PORT || debugPort > 65535) {
-                            support.setEnvironmentProperty(GlassfishModule.DEBUG_PORT, "9009", true);
-                            debugPort = 9009;
-                            Logger.getLogger("glassfish").log(Level.INFO, "converted debug port to 9009 for {0}", instanceName);
-                        }
-                    } catch (NumberFormatException nfe) {
-                        support.setEnvironmentProperty(GlassfishModule.DEBUG_PORT, "9009", true);
-                        support.setEnvironmentProperty(GlassfishModule.USE_SHARED_MEM_ATTR, "false", true);
-                        debugPort = 9009;
-                        Logger.getLogger("glassfish").log(Level.INFO, "converted debug type to socket and port to 9009 for {0}", instanceName);
-                    }
+        int debugPort = -1;
+        if (GlassfishModule.DEBUG_MODE.equals(instance.getProperty(GlassfishModule.JVM_MODE))) {
+            try {
+                debugPort = Integer.parseInt(instance.getProperty(GlassfishModule.DEBUG_PORT));
+                if (debugPort < LOWEST_USER_PORT || debugPort > 65535) {
+                    support.setEnvironmentProperty(GlassfishModule.DEBUG_PORT, "9009", true);
+                    debugPort = 9009;
+                    Logger.getLogger("glassfish").log(Level.INFO, "converted debug port to 9009 for {0}", instanceName);
                 }
-                String restartQ = "";
-                if (support.supportsRestartInDebug()) {
-                    restartQ = -1 == debugPort ? "debug=false" : "debug=true";
-                }
-                mgr.restartServer(debugPort,restartQ);
-                return fireOperationStateChanged(OperationState.RUNNING,
-                        "MSG_START_SERVER_IN_PROGRESS", instanceName); // NOI18N
-
+            } catch (NumberFormatException nfe) {
+                support.setEnvironmentProperty(GlassfishModule.DEBUG_PORT, "9009", true);
+                support.setEnvironmentProperty(GlassfishModule.USE_SHARED_MEM_ATTR, "false", true);
+                debugPort = 9009;
+                Logger.getLogger("glassfish").log(Level.INFO, "converted debug type to socket and port to 9009 for {0}", instanceName);
             }
+        }
+        String restartQ = "";
+        if (support.supportsRestartInDebug()) {
+            restartQ = -1 == debugPort ? "debug=false" : "debug=true";
+        }
+        mgr.restartServer(debugPort, restartQ);
+        return fireOperationStateChanged(OperationState.RUNNING,
+                "MSG_START_SERVER_IN_PROGRESS", instanceName); // NOI18N
 
+    }
+
+    @SuppressWarnings("SleepWhileInLoop")
     private OperationState startDASAndClusterOrInstance(String adminHost, int adminPort) {
         long start = System.currentTimeMillis();
         Process serverProcess;
@@ -291,7 +316,7 @@ public class StartTask extends BasicTask<OperationState> {
             }
             // lookup the javadb start service and use it here.
             RegisteredDerbyServer db = Lookup.getDefault().lookup(RegisteredDerbyServer.class);
-            if (null != db && "true".equals(ip.get(GlassfishModule.START_DERBY_FLAG))) { // NOI18N
+            if (null != db && "true".equals(instance.getProperty(GlassfishModule.START_DERBY_FLAG))) { // NOI18N
                 db.start();
             }
             int testPort = 0;
@@ -299,14 +324,18 @@ public class StartTask extends BasicTask<OperationState> {
             try {
                 testPort = Integer.parseInt(portCandidate);
             } catch (NumberFormatException nfe) {
-                Logger.getLogger("glassfish").log(Level.INFO, "could not parse {0} as an Inetger", portCandidate); // NOI18N
+                Logger.getLogger("glassfish").log(Level.INFO,
+                        "could not parse {0} as an Inetger", portCandidate); // NOI18N
             }
             // this may be an autheticated server... so we will say it is started.
             // other operations will fail if the process on the port is not a
             // GF v3 server.
-            if (support.isReady(false, 20000, TIMEUNIT)) {
+            Logger.getLogger("glassfish").log(Level.FINEST,
+                    "Checking if GlassFish {0} is running. Timeout set to 20000 ms",
+                    instance.getName());
+            if (GlassFishStatus.isReady(instance, false)) {
                 OperationState result = OperationState.COMPLETED;
-                if (GlassfishModule.PROFILE_MODE.equals(ip.get(GlassfishModule.JVM_MODE))) {
+                if (GlassfishModule.PROFILE_MODE.equals(instance.getProperty(GlassfishModule.JVM_MODE))) {
                     result = OperationState.FAILED;
                 }
                 return fireOperationStateChanged(result,
@@ -321,7 +350,7 @@ public class StartTask extends BasicTask<OperationState> {
             }
             serverProcess = createProcess();
         } catch (NumberFormatException nfe) {
-            Logger.getLogger("glassfish").log(Level.INFO, ip.get(GlassfishModule.HTTPPORT_ATTR), nfe); // NOI18N
+            Logger.getLogger("glassfish").log(Level.INFO, instance.getProperty(GlassfishModule.HTTPPORT_ATTR), nfe); // NOI18N
             return fireOperationStateChanged(OperationState.FAILED,
                     "MSG_START_SERVER_FAILED_BADPORT", instanceName); //NOI18N
         } catch (IOException ex) {
@@ -339,15 +368,21 @@ public class StartTask extends BasicTask<OperationState> {
 
         // create a logger to the server's output stream so that a user
         // can observe the progress
-        LogViewMgr logger = LogViewMgr.getInstance(ip.get(GlassfishModule.URL_ATTR));
-        String debugPort = ip.get(GlassfishModule.DEBUG_PORT);
-        logger.readInputStreams(recognizers, false, null, serverProcess.getInputStream(), serverProcess.getErrorStream());
+        LogViewMgr logger = LogViewMgr.getInstance(instance.getProperty(
+                GlassfishModule.URL_ATTR));
+        String debugPort = instance.getProperty(GlassfishModule.DEBUG_PORT);
+        logger.readInputStreams(recognizers, false, null,
+                new FetchLogSimple(serverProcess.getInputStream()),
+                new FetchLogSimple(serverProcess.getErrorStream()));
 
         // Waiting for server to start
-        while(System.currentTimeMillis() - start < START_TIMEOUT) {
+        Logger.getLogger("glassfish").log(Level.FINER, "Waiting for server to start for {0} ms",
+                new Object[] {Integer.toString(START_TIMEOUT)});
+        while (System.currentTimeMillis() - start < START_TIMEOUT) {
             // Send the 'completed' event and return when the server is running
             boolean httpLive = CommonServerSupport.isRunning("localhost", adminPort, "localhost"); // Utils.isLocalPortOccupied(adminPort);
-
+            Logger.getLogger("glassfish").log(Level.FINEST, "{0} DAS port {1} {2} alive",
+                    new Object[] {instance.getName(), Integer.toString(adminPort), httpLive ? "is" : "is not"}); 
             // Sleep for a little so that we do not make our checks too often
             //
             // Doing this before we check httpAlive also prevents us from
@@ -359,30 +394,35 @@ public class StartTask extends BasicTask<OperationState> {
                 // no op
             }
 
-            if(httpLive) {
-                Logger.getLogger("glassfish").log(Level.FINE, "Server HTTP is live."); // NOI18N
-                OperationState state = OperationState.COMPLETED;
-                String messageKey = "MSG_SERVER_STARTED"; // NOI18N
-                if (!support.isReady(true,3,TimeUnit.HOURS)) {
-                    state = OperationState.FAILED;
-                    messageKey = "MSG_START_SERVER_FAILED"; // NOI18N
+            if (httpLive) {
+                if (!GlassFishStatus.isReady(
+                        instance, true, GlassFishStatus.Mode.STARTUP)) {
+                    OperationState  state = OperationState.FAILED;
+                    String messageKey = "MSG_START_SERVER_FAILED"; // NOI18N
+                    Logger.getLogger("glassfish").log(Level.INFO,
+                            "{0} is not responding, killing the process.",
+                            new Object[] {instance.getName()});
+                    LogViewMgr.removeServerLogStream(instance);
                     serverProcess.destroy();
                     logger.stopReaders();
                     return fireOperationStateChanged(state, messageKey, instanceName);
                 }
-                return startClusterOrInstance(adminHost,adminPort);
+                return startClusterOrInstance(adminHost, adminPort);
             }
 
             // if we are profiling, we need to lie about the status?
             if (null != jvmArgs) {
+                Logger.getLogger("glassfish").log(Level.FINE,
+                        "Profiling mode status hack for {0}",
+                        new Object[] {instance.getName()});
                 // save process to be able to stop process waiting for profiler to attach
                 support.setLocalStartProcess(serverProcess);
                 // try to sync the states after the profiler attaches
-                NODE_REFRESHER.post(new Runnable () {
+                NODE_REFRESHER.post(new Runnable() {
 
                     @Override
                     public void run() {
-                        while (!support.isReady(false, 2000, TIMEUNIT)) { // !CommonServerSupport.isRunning(support.getHostName(), support.getAdminPortNumber(),                                ip.get(GlassfishModule.DISPLAY_NAME_ATTR))) {
+                        while (!GlassFishStatus.isReady(instance, false)) { // !CommonServerSupport.isRunning(support.getHostName(), support.getAdminPortNumber(),                                instance.getProperty(GlassfishModule.DISPLAY_NAME_ATTR))) {
                             try {
                                 Thread.sleep(200);
                             } catch (InterruptedException ex) {
@@ -392,10 +432,9 @@ public class StartTask extends BasicTask<OperationState> {
 
                             @Override
                             public void run() {
-                                    support.refresh();
+                                support.refresh();
 
                             }
-
                         });
                     }
                 });
@@ -411,109 +450,76 @@ public class StartTask extends BasicTask<OperationState> {
 
         // If the server did not start in the designated time limits
         // We consider the startup as failed and warn the user
-        Logger.getLogger("glassfish").log(Level.INFO, "V3 Failed to start, killing process: {0} after {1}", new Object[]{serverProcess, System.currentTimeMillis() - start});
+        Logger.getLogger("glassfish").log(Level.INFO,
+                "{0} Failed to start, killing process {1} after {2} ms",
+                new Object[]{instance.getName(), serverProcess,
+                System.currentTimeMillis() - start});
+        LogViewMgr.removeServerLogStream(instance);
         serverProcess.destroy();
         logger.stopReaders();
         return fireOperationStateChanged(OperationState.FAILED,
-                "MSG_START_SERVER_FAILED2", instanceName,adminHost,adminPort+""); // NOI18N
+                "MSG_START_SERVER_FAILED2", instanceName, adminHost, adminPort + ""); // NOI18N
     }
 
-        private OperationState startClusterOrInstance(String adminHost, int adminPort) {
-            String target = Util.computeTarget(ip);
-            if (Util.isDefaultOrServerTarget(ip)) {
-                return fireOperationStateChanged(OperationState.COMPLETED,
-                        "MSG_SERVER_STARTED", instanceName); // NOI18N
-            } else {
-                OperationState retVal = null;
-                // try start-cluster
-                CommandRunner inner = new CommandRunner(true, 
-                        support.getCommandFactory(), ip, new OperationStateListener() {
-                    @Override
-                    public void operationStateChanged(OperationState newState, String message) {
+    private OperationState startClusterOrInstance(String adminHost, int adminPort) {
+        String target = Util.computeTarget(instance.getProperties());
+        if (Util.isDefaultOrServerTarget(instance.getProperties())) {
+            return fireOperationStateChanged(OperationState.COMPLETED,
+                    "MSG_SERVER_STARTED", instanceName); // NOI18N
+        } else {
+            OperationState retVal = null;
+            // try start-cluster
+            CommandRunner inner = new CommandRunner(true,
+                    support.getCommandFactory(), instance,
+                    new OperationStateListener() {
 
-                    }
-                }
-                );
-                Future<OperationState> result = inner.execute(new Commands.StartCluster(target));
-                OperationState state = null;
+                        @Override
+                        public void operationStateChanged(OperationState newState, String message) {
+                        }
+                    });
+            Future<OperationState> result = inner.execute(new Commands.StartCluster(target));
+            OperationState state = null;
+            try {
+                state = result.get();
+            } catch (InterruptedException ie) {
+                Logger.getLogger("glassfish").log(Level.INFO, "start-cluster", ie); // NOI18N
+            } catch (ExecutionException ie) {
+                Logger.getLogger("glassfish").log(Level.INFO, "start-cluster", ie); // NOI18N
+            }
+            if (state == OperationState.FAILED) {
+                // if start-cluster not successful, try start-instance
+                inner = new CommandRunner(true,
+                        support.getCommandFactory(), instance,
+                        new OperationStateListener() {
+
+                            @Override
+                            public void operationStateChanged(OperationState newState, String message) {
+                            }
+                        });
+                result = inner.execute(new Commands.StartInstance(target));
                 try {
                     state = result.get();
                 } catch (InterruptedException ie) {
-                    Logger.getLogger("glassfish").log(Level.INFO, "start-cluster",ie); // NOI18N
+                    Logger.getLogger("glassfish").log(Level.INFO, "start-instance", ie);  // NOI18N
                 } catch (ExecutionException ie) {
-                    Logger.getLogger("glassfish").log(Level.INFO, "start-cluster",ie); // NOI18N
+                    Logger.getLogger("glassfish").log(Level.INFO, "start-instance", ie);  // NOI18N
                 }
                 if (state == OperationState.FAILED) {
-                    // if start-cluster not successful, try start-instance
-                    inner =  new CommandRunner(true, support.getCommandFactory(), ip, new OperationStateListener() {
-                        @Override
-                        public void operationStateChanged(OperationState newState, String message) {
-
-                        }
-                    });
-                    result = inner.execute(new Commands.StartInstance(target));
-                    try {
-                        state = result.get();
-                    } catch (InterruptedException ie) {
-                        Logger.getLogger("glassfish").log(Level.INFO, "start-instance",ie);  // NOI18N
-                    } catch (ExecutionException ie) {
-                        Logger.getLogger("glassfish").log(Level.INFO, "start-instance",ie);  // NOI18N
-                    }
-                    if (state == OperationState.FAILED) {
-                        // if start instance not suscessful fail
-                        return fireOperationStateChanged(OperationState.FAILED,
-                                "MSG_START_TARGET_FAILED", instanceName,target); // NOI18N
-                    }
+                    // if start instance not suscessful fail
+                    return fireOperationStateChanged(OperationState.FAILED,
+                            "MSG_START_TARGET_FAILED", instanceName, target); // NOI18N
                 }
-
-                // update http port
-                support.updateHttpPort();
-
-                // ping the http port
-
-                return fireOperationStateChanged(OperationState.COMPLETED,
-                        "MSG_SERVER_STARTED", instanceName); // NOI18N
             }
 
-        }
-    private String[] createEnvironment() {
-        List<String> envp = new ArrayList<String>();
-        String localJdkHome = getJdkHome();
-        if(localJdkHome != null) {
-            String javaEnv = "JAVA_HOME=" + localJdkHome; // NOI18N
-            envp.add(javaEnv); // NOI18N
-        } else {
-            Logger.getLogger("glassfish").log(Level.WARNING, "Unable to set JAVA_HOME for GlassFish V3 enviroment."); // NOI18N
-        }
-        Locale currentLocale = Locale.getDefault();
-        if (currentLocale.equals(new Locale("tr","TR"))) { // NOI18N
-            // the server is just plain broken when run in a Turkish locale, so
-            // we need to start it in en_US
-            envp.add("LANG=en_US");  // NOI18N
-            envp.add("LC_ALL=en_US");  // NOI18N
-            String message = NbBundle.getMessage(StartTask.class, "MSG_LocaleSwitched");  // NOI18N
-            NotifyDescriptor nd = new NotifyDescriptor.Message(message);
-            DialogDisplayer.getDefault().notifyLater(nd);
-        }
-        appendSystemEnvVar(envp, GlassfishModule.GEM_HOME);
-        appendSystemEnvVar(envp, GlassfishModule.GEM_PATH);
-        Logger logger = Logger.getLogger("glassfish"); // NOI18N
-        if(logger.isLoggable(Level.FINE)) {
-            String logmsg = "V3 Environment: "; // NOI18N
-            for(String var: envp) {
-                logmsg += var;
-                logmsg += " "; // NOI18N
-            }
-            logger.log(Level.FINE, logmsg);
-        }
-        return envp.toArray(new String[envp.size()]);
-    }
+            // update http port
+            support.updateHttpPort();
 
-    private void appendSystemEnvVar(List<String> envp, String key) {
-        String value = ip.get(key);
-        if(value != null && value.length() > 0) {
-            envp.add(key + "=" + value); // NOI18N
+            // ping the http port
+
+            return fireOperationStateChanged(OperationState.COMPLETED,
+                    "MSG_SERVER_STARTED", instanceName); // NOI18N
         }
+
     }
 
     private FileObject getJavaPlatformRoot(CommonServerSupport support) throws IOException {
@@ -542,181 +548,105 @@ public class StartTask extends BasicTask<OperationState> {
         } else {
             result = System.getProperty("java.home");      // NOI18N
             if (result.endsWith(File.separatorChar + "jre")) {    // NOI18N
-                result = result.substring(0,result.length() - 4);
+                result = result.substring(0, result.length() - 4);
             }
         }
         return result;
     }
 
-    private NbProcessDescriptor createProcessDescriptor() throws ProcessCreationException {
-        String startScript = FileUtil.toFile(jdkHome).getAbsolutePath() +
-                File.separatorChar + "bin" + File.separatorChar + "java"; // NOI18N
-        if (Utilities.isWindows()) {
-            startScript += ".exe"; // NOI18N
-        }
-        File ss = new File(startScript);
-        if (!ss.exists()) {
-            throw new ProcessCreationException(null, "MSG_INVALID_JAVA", instanceName, startScript); // NOI18N
-        }
-        if (support.getInstanceProvider().requiresJdk6OrHigher() && !Util.appearsToBeJdk6OrBetter(ss)) {
-            throw new ProcessCreationException(null, "MSG_START_SERVER_FAILED_JDK_ERROR", instanceName); // NOI18N
-        }
-        String serverHome = ip.get(GlassfishModule.GLASSFISH_FOLDER_ATTR);
-        File bootstrapJar = ServerUtilities.getJarName(serverHome, ServerUtilities.GFV3_JAR_MATCHER);
-        if(bootstrapJar == null) {
-            throw new ProcessCreationException(null, "MSG_START_SERVER_FAILED_FNF"); // NOI18N
-        }
+    private StartupArgs createProcessDescriptor() throws ProcessCreationException {
+        List<String> glassfishArgs = new ArrayList<String>(2);
+        String domainDir = Util.quote(getDomainFolder().getAbsolutePath());
+        glassfishArgs.add(ServerUtils.cmdLineArgument(
+                ServerUtils.GF_DOMAIN_ARG, getDomainName()));
+        glassfishArgs.add(ServerUtils.cmdLineArgument(
+                ServerUtils.GF_DOMAIN_DIR_ARG, domainDir));
 
-        File domainDir = getDomainFolder();
-        List<String> optList = new ArrayList<String>(10);
-        Map<String, String> argMap = new HashMap<String, String>();
-        Map<String, String> propMap = new HashMap<String, String>();
-        if (!readJvmArgs(domainDir, optList, argMap, propMap)) {
-            throw new ProcessCreationException(null, "MSG_START_SERVER_FAILED_DOMAIN_FNF"); // NOI18N
+        ArrayList<String> optList = new ArrayList<String>();
+        // append debug options
+        if (GlassfishModule.DEBUG_MODE.equals(instance.getProperty(GlassfishModule.JVM_MODE))) {
+            appendDebugOptions(optList);
         }
+        
+        // append other options from startup extenders, e.g. for profiling
+        appendStartupExtenderParams(optList);
 
-        if (null != jvmArgs) {
-            optList.addAll(jvmArgs);
-        }
-
-        StringBuilder argumentBuf = new StringBuilder(1024);
-        String classpath = computeClassPath(propMap, domainDir, bootstrapJar);
-        if(classpath != null) {
-            argumentBuf.append("-cp "); // NOI18N
-            argumentBuf.append(classpath);
-        }
-        appendSystemVars(argMap, argumentBuf);
-        appendJavaOpts(optList, argumentBuf);
-
-        if(classpath != null) {
-            argumentBuf.append(" ");
-            argumentBuf.append(MAIN_CLASS);
-        } else {
-            argumentBuf.append(" -jar "); // NOI18N
-            argumentBuf.append(Util.quote(bootstrapJar.getAbsolutePath()));
-        }
-        argumentBuf.append(" --domain ").append(getDomainName()); // NOI18N
-        argumentBuf.append(" --domaindir ").append(Util.quote(domainDir.getAbsolutePath())); // NOI18N
-
-        String arguments = argumentBuf.toString();
-        Logger.getLogger("glassfish").log(Level.FINE, "V3 JVM Command: {0} {1}", new Object[]{startScript, arguments}); // NOI18N
-        return new NbProcessDescriptor(startScript, arguments);
+        return new StartupArgsEntity(
+                glassfishArgs,
+                optList,
+                (Map<String, String>) null,
+                FileUtil.toFile(jdkHome).getAbsolutePath());
     }
 
-    private String computeClassPath(Map<String, String> propMap, File domainDir, File bootstrapJar) {
-        String result = null;
-        List<File> prefixCP = Util.classPathToFileList(propMap.get("classpath-prefix"), domainDir); // NOI18N
-        List<File> suffixCP = Util.classPathToFileList(propMap.get("classpath-suffix"), domainDir); // NOI18N
-        boolean useEnvCP = "false".equals(propMap.get("env-classpath-ignored")); // NOI18N
-        List<File> envCP = Util.classPathToFileList(useEnvCP ? System.getenv("CLASSPATH") : null, domainDir); // NOI18N
-        List<File> systemCP = Util.classPathToFileList(propMap.get("system-classpath"), domainDir); // NOI18N
-
-        if(prefixCP.size() > 0 || suffixCP.size() > 0 || envCP.size() > 0 || systemCP.size() > 0) {
-            List<File> mainCP = Util.classPathToFileList(bootstrapJar.getAbsolutePath(), null);
-
-            if(mainCP.size() > 0) {
-                List<File> completeCP = new ArrayList<File>(32);
-                completeCP.addAll(prefixCP);
-                completeCP.addAll(mainCP);
-                completeCP.addAll(systemCP);
-                completeCP.addAll(envCP);
-                completeCP.addAll(suffixCP);
-
-                // Build classpath in proper order - prefix / main / system / environment / suffix
-                // Note that completeCP should always have at least 2 elements at
-                // this point (1 from mainCP and 1 from some other CP modifier)
-                StringBuilder classPath = new StringBuilder(1024);
-                Iterator<File> iter = completeCP.iterator();
-                classPath.append(Util.quote(iter.next().getPath()));
-                while(iter.hasNext()) {
-                    classPath.append(File.pathSeparatorChar);
-                    classPath.append(Util.quote(iter.next().getPath()));
+    /**
+     * Appends debug options for server start.
+     * If the port read from instance properties is not valid (null or out of the range),
+     * it offers to the user a different free port.
+     * 
+     * @param optList
+     * @throws ProcessCreationException 
+     */
+    private void appendDebugOptions(List<String> optList) throws ProcessCreationException {
+        String debugPortString = instance.getProperty(GlassfishModule.DEBUG_PORT);
+        String debugTransport = "dt_socket"; // NOI18N
+        if ("true".equals(instance.getProperty(GlassfishModule.USE_SHARED_MEM_ATTR))) { // NOI18N
+            debugTransport = "dt_shmem";  // NOI18N
+        } else {
+            if (null != debugPortString && debugPortString.trim().length() > 0) {
+                int t = Integer.parseInt(debugPortString);
+                if (t != 0 && (t < LOWEST_USER_PORT || t > 65535)) {
+                    throw new NumberFormatException();
                 }
-                result = classPath.toString();
+            }
+        }
+        //try {
+        if (null == debugPortString
+                || "0".equals(debugPortString) || "".equals(debugPortString)) {
+            if ("true".equals(instance.getProperty(GlassfishModule.USE_SHARED_MEM_ATTR))) { // NOI18N
+                debugPortString = Integer.toString(
+                        Math.abs((instance.getProperty(GlassfishModule.GLASSFISH_FOLDER_ATTR)
+                        + instance.getDomainsRoot()
+                        + instance.getProperty(GlassfishModule.DOMAIN_NAME_ATTR)).hashCode() + 1));
             } else {
-                Logger.getLogger("glassfish").log(Level.WARNING, // NOI18N
-                        "Unable to read main classpath from glassfish main jar when building launch classpath."); // NOI18N
+                try {
+                    debugPortString = selectDebugPort();
+                } catch (IOException ioe) {
+                    throw new ProcessCreationException(ioe,
+                            "MSG_START_SERVER_FAILED_INVALIDPORT", instanceName, debugPortString); //NOI18N
+                }
             }
+            DialogDescriptor note =
+                    new DialogDescriptor(
+                    NbBundle.getMessage(StartTask.class, "MSG_SELECTED_PORT", debugPortString),
+                    NbBundle.getMessage(StartTask.class, "TITLE_MESSAGE"),
+                    false,
+                    new Object[]{DialogDescriptor.OK_OPTION},
+                    DialogDescriptor.OK_OPTION,
+                    DialogDescriptor.DEFAULT_ALIGN,
+                    null,
+                    null);
+            Dialog d = DialogDisplayer.getDefault().createDialog(note);
+            d.setVisible(true);
         }
-        return result;
+        support.setEnvironmentProperty(GlassfishModule.DEBUG_PORT, debugPortString, true);
+        optList.add("-Xdebug");
+        StringBuilder opt = new StringBuilder();
+        opt.append("-Xrunjdwp:transport="); // NOI18N
+        opt.append(debugTransport);
+        opt.append(",address="); // NOI18N
+        opt.append(debugPortString);
+        opt.append(",server=y,suspend=n"); // NOI18N
+        optList.add(opt.toString());
     }
-
-    private StringBuilder appendJavaOpts(List<String> optList, StringBuilder argumentBuf)
-            throws ProcessCreationException {
-        String debugPortString = ""; // NOI18N
-        try {
-            for (String option : optList) {
-                argumentBuf.append(' ');
-                argumentBuf.append(option);
-            }
-
-            if (GlassfishModule.DEBUG_MODE.equals(ip.get(GlassfishModule.JVM_MODE))) {
-//            javaOpts.append(" -classic -Xdebug -Xnoagent -Djava.compiler=NONE
-//                -Xrunjdwp:transport=dt_socket,address="). // NOI18N
-                debugPortString = ip.get(GlassfishModule.DEBUG_PORT);
-                String debugTransport = "dt_socket"; // NOI18N
-                if ("true".equals(ip.get(GlassfishModule.USE_SHARED_MEM_ATTR))) { // NOI18N
-                    debugTransport = "dt_shmem";  // NOI18N
-                } else {
-                    int t = 0;
-                    if (null != debugPortString && debugPortString.trim().length() > 0) {
-                        t = Integer.parseInt(debugPortString);
-                        if(t < LOWEST_USER_PORT || t > 65535) {
-                            throw new NumberFormatException();
-                        }
-                    }
-                }
-                //try {
-                if (null == debugPortString || "".equals(debugPortString)) {
-                    if ("true".equals(ip.get(GlassfishModule.USE_SHARED_MEM_ATTR))) { // NOI18N
-                        debugPortString = Integer.toString(
-                                Math.abs((ip.get(GlassfishModule.GLASSFISH_FOLDER_ATTR) +
-                                support.getDomainsRoot() +
-                                ip.get(GlassfishModule.DOMAIN_NAME_ATTR)).hashCode() + 1));
-                    } else {
-                        debugPortString = selectDebugPort();
-                    }
-                    DialogDescriptor note =
-                            new DialogDescriptor(
-                            NbBundle.getMessage(StartTask.class,"MSG_SELECTED_PORT", debugPortString),
-                            NbBundle.getMessage(StartTask.class,"TITLE_MESSAGE"),
-                            false,
-                            new Object[] { DialogDescriptor.OK_OPTION },
-                            DialogDescriptor.OK_OPTION,
-                            DialogDescriptor.DEFAULT_ALIGN,
-                            null,
-                            null);
-                    Dialog d = DialogDisplayer.getDefault().createDialog(note);
-                    d.setVisible(true);
-                }
-                support.setEnvironmentProperty(GlassfishModule.DEBUG_PORT, debugPortString, true);
-                argumentBuf.append(" -Xdebug -Xrunjdwp:transport="); // NOI18N
-                argumentBuf.append(debugTransport);
-                argumentBuf.append(",address="); // NOI18N
-                argumentBuf.append(debugPortString);
-                argumentBuf.append(",server=y,suspend=n"); // NOI18N
-            }
-        } catch (IOException ioe) {
-            throw new ProcessCreationException(ioe,
-                    "MSG_START_SERVER_FAILED_INVALIDPORT", instanceName, debugPortString); //NOI18N
-        }
-
+    
+    private void appendStartupExtenderParams(List<String> optList) {
         for (StartupExtender args : StartupExtender.getExtenders(
-                Lookups.singleton(support.getInstanceProvider().getInstance(ip.get("url"))), getMode(ip.get(GlassfishModule.JVM_MODE)))) {
-            for (String singleArg : args.getArguments()) {
-                argumentBuf.append(' ').append(singleArg);
+                Lookups.singleton(support.getInstanceProvider().getInstance(instance.getProperty("url"))), 
+                getMode(instance.getProperty(GlassfishModule.JVM_MODE)))) {
+            for (String arg : args.getArguments()) {
+                String[] argSplitted = arg.trim().split("\\s+(?=-)");
+                optList.addAll(Arrays.asList(argSplitted));
             }
-        }
-        return argumentBuf;
-    }
-
-    private static StartupExtender.StartMode getMode(String gfMode) {
-        if (GlassfishModule.PROFILE_MODE.equals(gfMode)) {
-            return StartupExtender.StartMode.PROFILE;
-        } else if (GlassfishModule.DEBUG_MODE.equals(gfMode)) {
-            return StartupExtender.StartMode.DEBUG;
-        } else {
-            return StartupExtender.StartMode.NORMAL;
         }
     }
 
@@ -731,7 +661,12 @@ public class StartTask extends BasicTask<OperationState> {
             // log this... but don't panic
             Logger.getLogger("glassfish").fine("9009 is in use... going random");
         } finally {
-            if (null != t) try { t.close(); } catch (IOException ioe) {}
+            if (null != t) {
+                try {
+                    t.close();
+                } catch (IOException ioe) {
+                }
+            }
         }
         try {
             // try to find a different port... if this fails,
@@ -740,130 +675,31 @@ public class StartTask extends BasicTask<OperationState> {
             debugPort = t.getLocalPort();
             return Integer.toString(debugPort);
         } finally {
-            if (null != t) try { t.close(); } catch (IOException ioe) {}
-        }
-    }
-
-    private StringBuilder appendSystemVars(Map<String, String> argMap, StringBuilder argumentBuf) {
-        appendSystemVar(argumentBuf, GlassfishModule.JRUBY_HOME, ip.get(GlassfishModule.JRUBY_HOME));
-        appendSystemVar(argumentBuf, GlassfishModule.COMET_FLAG, ip.get(GlassfishModule.COMET_FLAG));
-
-        // override the values that are found in the domain.xml file.
-        // this is totally a copy/paste from StartTomcat...
-        if ("true".equals(ip.get(GlassfishModule.USE_IDE_PROXY_FLAG))) { // NOI18N
-            final String[] PROXY_PROPS = {
-                "http.proxyHost",       // NOI18N
-                "http.proxyPort",       // NOI18N
-                "http.nonProxyHosts",   // NOI18N
-                "https.proxyHost",      // NOI18N
-                "https.proxyPort",      // NOI18N
-            };
-            boolean isWindows = Utilities.isWindows();
-            for (String prop : PROXY_PROPS) {
-                String value = System.getProperty(prop);
-                if (value != null && value.trim().length() > 0) {
-                    if (isWindows && "http.nonProxyHosts".equals(prop)) { // NOI18N
-                        // enclose in double quotes to escape the pipes separating the hosts on windows
-                        value = "\"" + value + "\""; // NOI18N
-                    }
-                    argMap.put(prop, value);
+            if (null != t) {
+                try {
+                    t.close();
+                } catch (IOException ioe) {
                 }
             }
         }
-
-        argMap.remove(GlassfishModule.JRUBY_HOME);
-        argMap.remove(GlassfishModule.COMET_FLAG);
-
-        for(Map.Entry<String, String> entry: argMap.entrySet()) {
-            appendSystemVar(argumentBuf, entry.getKey(), entry.getValue());
-        }
-
-        return argumentBuf;
-    }
-
-    private StringBuilder appendSystemVar(StringBuilder argumentBuf, String key, String value) {
-        if(value != null && value.length() > 0) {
-            argumentBuf.append(" -D"); // NOI18N
-            argumentBuf.append(key);
-            argumentBuf.append("="); // NOI18N
-            argumentBuf.append(Util.quote(value));
-        }
-        return argumentBuf;
     }
 
     private Process createProcess() throws ProcessCreationException {
-        Process process = null;
-        NbProcessDescriptor pd = createProcessDescriptor();
-        if(pd != null) {
-            try {
-                process = pd.exec(null, createEnvironment(), true, getDomainFolder());
-            } catch (java.io.IOException ex) {
-                throw new ProcessCreationException(ex, "MSG_START_SERVER_FAILED_PD", instanceName); // NOI18N
-            }
+        StartupArgs args = createProcessDescriptor();
+        // JDK checks and Java VM process startup were moved to GF Tooling SDK.
+        ResultProcess process = ServerTasks.startServer(instance, args);
+        if (process.getState() != TaskState.COMPLETED) {
+            throw new ProcessCreationException(null, "MSG_START_SERVER_FAILED_PD", instanceName);
         }
-        return process;
+        return process.getValue().getProcess();
     }
 
     private File getDomainFolder() {
-        return new File(support.getDomainsRoot()+ File.separatorChar + getDomainName());
+        return new File(support.getDomainsRoot() + File.separatorChar + getDomainName());
     }
 
     private String getDomainName() {
-        return ip.get(GlassfishModule.DOMAIN_NAME_ATTR);
-    }
-
-    private boolean readJvmArgs(File domainRoot, List<String> optList,
-            Map<String, String> argMap, Map<String, String> propMap) {
-        Map<String, String> varMap = new HashMap<String, String>();
-
-        varMap.put("com.sun.aas.installRoot", Utils.escapePath(ip.get(GlassfishModule.GLASSFISH_FOLDER_ATTR))); // NOI18N
-        varMap.put("com.sun.aas.instanceRoot", Utils.escapePath(domainRoot.getAbsolutePath())); // NOI18N
-        varMap.put("com.sun.aas.javaRoot", Utils.escapePath(jdkHome.getPath())); // NOI18N
-        varMap.put("com.sun.aas.derbyRoot", getJavaDBLocation()); // NOI18N
-
-        File domainXml = new File(domainRoot, "config/domain.xml"); // NOI18N
-        if (domainXml.exists()) {
-            JvmConfigReader reader = new JvmConfigReader(optList, argMap, varMap, propMap);
-            List<TreeParser.Path> pathList = new ArrayList<TreeParser.Path>();
-            pathList.add(new TreeParser.Path("/domain/servers/server", reader.getServerFinder())); // NOI18N
-            pathList.add(new TreeParser.Path("/domain/configs/config", reader.getConfigFinder())); // NOI18N
-            pathList.add(new TreeParser.Path("/domain/configs/config/java-config", reader));  // NOI18N
-
-            // this option does not apply to installs that do not have the btrace-agent.jar
-            // so check for that first.
-            File irf = new File(ip.get(GlassfishModule.GLASSFISH_FOLDER_ATTR));
-            File btrace = new File(irf, "lib/monitor/btrace-agent.jar"); // NOI18N
-            if (btrace.exists()) {
-                pathList.add(new TreeParser.Path("/domain/configs/config/monitoring-service", reader.getMonitoringFinder(btrace)));  // NOI18N
-            }
-            try {
-                TreeParser.readXml(domainXml, pathList);
-                if (Utilities.isMac() &&
-                    System.getProperty("java.vm.vendor").equals("Apple Inc.")) {
-                    // on Mac OS, unless the property is specified in the domain.xml, we add
-                    // the -d32 flag to start the JVM in 32 bits mode
-                    if (!optList.contains("-d64") && !optList.contains("-d32")) {
-                        optList.add("-d32");
-                    }
-                }
-                return true;
-            } catch(IllegalStateException ex) {
-                Logger.getLogger("glassfish").log(Level.INFO, ex.getLocalizedMessage(), ex); // NOI18N
-            }
-        }
-        return false;
-    }
-
-    private String getJavaDBLocation() {
-        String javadb = ip.get(GlassfishModule.INSTALL_FOLDER_ATTR) + File.separatorChar + "javadb"; // NOI18N
-        if (new File(javadb).exists()) {
-            // V3 Prelude includes javadb as it can run on JDK 5
-            javadb = Utils.escapePath(javadb);
-        } else {
-            // V3 uses javadb from JDK 6
-            javadb = Utils.escapePath(jdkHome.getPath() + File.separatorChar + "javadb"); // NOI18N
-        }
-        return javadb;
+        return instance.getProperty(GlassfishModule.DOMAIN_NAME_ATTR);
     }
 
     private boolean upgradeFailed() {
@@ -871,15 +707,17 @@ public class StartTask extends BasicTask<OperationState> {
         File glassfishDir = new File(support.getGlassfishRoot());
         int installVersion = ServerDetails.getVersionFromInstallDirectory(glassfishDir);
 
-        if (installVersion < 0) return false;  // no upgrade attempted, so it DID NOT fail.
-
+        if (installVersion < 0) {
+            return false;  // no upgrade attempted, so it DID NOT fail.
+        }
         // get domain.xml 'version'
         File domainXmlFile = new File(getDomainFolder(), "config" + File.separator + "domain.xml"); // NOI18N
         int domainVersion = ServerDetails.getVersionFromDomainXml(domainXmlFile);
 
-        if (domainVersion < 0) return false;  // no upgrade attempted, so it DID NOT fail.
-
-        if (domainVersion/10 < installVersion/10 && domainVersion < 310) {
+        if (domainVersion < 0) {
+            return false;  // no upgrade attempted, so it DID NOT fail.
+        }
+        if (domainVersion / 10 < installVersion / 10 && domainVersion < 310) {
             return executeUpgradeProcess() != 0;
         }
         return false;
@@ -888,11 +726,12 @@ public class StartTask extends BasicTask<OperationState> {
     private int executeUpgradeProcess() {
         int retVal = -1;
         File asadmin = findFirstExecutableFile(new File(support.getGlassfishRoot()), "asadmin", "bin");
-        if (null == asadmin)
+        if (null == asadmin) {
             return retVal;
+        }
         NbProcessDescriptor upgrader = new NbProcessDescriptor(asadmin.getAbsolutePath(),
-                    "start-domain --upgrade --domaindir "+Util.quote(support.getDomainsRoot())+" "+  // NOI18N
-                    support.getDomainName());
+                "start-domain --upgrade --domaindir " + Util.quote(support.getDomainsRoot()) + " " + // NOI18N
+                support.getDomainName());
         try {
             Process p = upgrader.exec();
             p.waitFor();
@@ -932,4 +771,5 @@ public class StartTask extends BasicTask<OperationState> {
         }
         return result;
     }
+    
 }

@@ -51,6 +51,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -60,11 +61,11 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.cnd.repository.api.CacheLocation;
 import org.netbeans.modules.cnd.repository.api.DatabaseTable;
-import org.netbeans.modules.cnd.repository.api.Repository;
 import org.netbeans.modules.cnd.repository.api.RepositoryAccessor;
 import org.netbeans.modules.cnd.repository.api.RepositoryException;
-import org.netbeans.modules.cnd.repository.api.RepositoryTranslation;
+import org.netbeans.modules.cnd.repository.impl.BaseRepository;
 import org.netbeans.modules.cnd.repository.queue.KeyValueQueue;
 import org.netbeans.modules.cnd.repository.queue.RepositoryQueue;
 import org.netbeans.modules.cnd.repository.queue.RepositoryThreadManager;
@@ -72,16 +73,14 @@ import org.netbeans.modules.cnd.repository.queue.RepositoryWriter;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.spi.RepositoryListener;
-import org.netbeans.modules.cnd.repository.translator.RepositoryTranslatorImpl;
 import org.netbeans.modules.cnd.repository.util.RepositoryListenersManager;
 import org.netbeans.modules.cnd.utils.CndUtils;
-import org.openide.util.CharSequences;
 
 /**
  *
  * @author Sergey Grinev
  */
-public class DiskRepositoryManager implements Repository, RepositoryWriter {
+public class DiskRepositoryManager extends BaseRepository implements RepositoryWriter {
     
     private static final Logger LOG = Logger.getLogger(DiskRepositoryManager.class.getName());
     private final Map<Integer, Unit> units;
@@ -89,17 +88,13 @@ public class DiskRepositoryManager implements Repository, RepositoryWriter {
     private final RepositoryThreadManager threadManager;
     private final Persistent removedObject;
     private final ReadWriteLock queueLock;
-    private final Map<Integer, Object> unitLocks = new HashMap<Integer, Object>();
 
-    private static final class UnitLock {}
-    private final Object mainUnitLock = new UnitLock();
-    private final RepositoryTranslation translator = RepositoryAccessor.getTranslator();
-
-    public DiskRepositoryManager() {
+    public DiskRepositoryManager(int id, CacheLocation cacheLocation) {
+        super(id, cacheLocation);
         removedObject = new RemovedPersistent();
         queueLock = new ReentrantReadWriteLock(true);
         threadManager = new RepositoryThreadManager(this, queueLock);
-        queue = threadManager.startup();
+        queue = threadManager.getQueue();
         units = new ConcurrentHashMap<Integer, Unit>();
     }
 
@@ -110,20 +105,9 @@ public class DiskRepositoryManager implements Repository, RepositoryWriter {
             return impl.getDatabaseTable(tableID);
         } catch (Throwable ex) {
             RepositoryListenersManager.getInstance().fireAnException(
-                    getUnitNameSafe(unitKey), new RepositoryException(ex));
+                    unitKey.getUnitId(), getUnitNameSafe(unitKey), new RepositoryException(ex));
         }
         return null;
-    }
-
-    private Object getUnitLock(int unitId) {
-        synchronized (mainUnitLock) {
-            Object lock = unitLocks.get(unitId);
-            if (lock == null) {
-                lock = new NamedLock("unitId=" + unitId); // NOI18N
-                unitLocks.put(unitId, lock);
-            }
-            return lock;
-        }
     }
 
     /** Never returns null - throws exceptions */
@@ -147,9 +131,9 @@ public class DiskRepositoryManager implements Repository, RepositoryWriter {
             synchronized (getUnitLock(unitId)) {
                 unit = units.get(unitId);
                 if (unit == null) {
-                    if (RepositoryListenersManager.getInstance().fireUnitOpenedEvent(unitName)) {
-                        ((RepositoryTranslatorImpl)translator).loadUnitIndex(unitName);
-                        unit = new UnitImpl(unitId, unitName);
+                    if (RepositoryListenersManager.getInstance().fireUnitOpenedEvent(unitId, unitName)) {
+                        getTranslation().loadUnitIndex(unitId, unitName);
+                        unit = new UnitImpl(unitId, unitName, this);
                         units.put(unitId, unit);
                     }
                 }
@@ -168,7 +152,7 @@ public class DiskRepositoryManager implements Repository, RepositoryWriter {
             queue.addLast(key, obj);
         } catch (Throwable ex) {
             RepositoryListenersManager.getInstance().fireAnException(
-                    getUnitNameSafe(key), new RepositoryException(ex));
+                    key.getUnitId(), getUnitNameSafe(key), new RepositoryException(ex));
         }
     }
 
@@ -178,7 +162,7 @@ public class DiskRepositoryManager implements Repository, RepositoryWriter {
             getCreateUnit(key).hang(key, obj);
         } catch (Throwable ex) {
             RepositoryListenersManager.getInstance().fireAnException(
-                    getUnitNameSafe(key), new RepositoryException(ex));
+                    key.getUnitId(), getUnitNameSafe(key), new RepositoryException(ex));
         }
     }
 
@@ -193,7 +177,7 @@ public class DiskRepositoryManager implements Repository, RepositoryWriter {
             }
         } catch (Throwable ex) {
             RepositoryListenersManager.getInstance().fireAnException(
-                    getUnitNameSafe(key), new RepositoryException(ex));
+                    key.getUnitId(), getUnitNameSafe(key), new RepositoryException(ex));
         }
     }
 
@@ -203,7 +187,7 @@ public class DiskRepositoryManager implements Repository, RepositoryWriter {
             return getCreateUnit(key).get(key);
         } catch (Throwable ex) {
             RepositoryListenersManager.getInstance().fireAnException(
-                    getUnitNameSafe(key), new RepositoryException(ex));
+                    key.getUnitId(), getUnitNameSafe(key), new RepositoryException(ex));
         }
         return null;
     }
@@ -214,7 +198,7 @@ public class DiskRepositoryManager implements Repository, RepositoryWriter {
             return getCreateUnit(key).tryGet(key);
         } catch (Throwable ex) {
             RepositoryListenersManager.getInstance().fireAnException(
-                    getUnitNameSafe(key), new RepositoryException(ex));
+                    key.getUnitId(), getUnitNameSafe(key), new RepositoryException(ex));
         }
         return null;
     }
@@ -226,7 +210,7 @@ public class DiskRepositoryManager implements Repository, RepositoryWriter {
             queue.addLast(key, removedObject);
         } catch (Throwable ex) {
             RepositoryListenersManager.getInstance().fireAnException(
-                    getUnitNameSafe(key), new RepositoryException(ex));
+                    key.getUnitId(), getUnitNameSafe(key), new RepositoryException(ex));
         }
     }
 
@@ -239,7 +223,7 @@ public class DiskRepositoryManager implements Repository, RepositoryWriter {
         for (Entry<Integer, Unit> entry : entries) {
             // iz #146241 IllegalStateException in the case revious session terminated with ^C in console
             // if there are projects that aren't yet closed => the data might be corrupted! => clean untit
-            closeUnit(translator.getUnitName(entry.getKey()), true, null);
+            closeUnit(entry.getKey(), true, null);
             if (LOG.isLoggable(Level.FINE)) {
                 LOG.log(Level.INFO, "Closing unit{0} done.", entry.getValue().getName());
             }
@@ -257,7 +241,7 @@ public class DiskRepositoryManager implements Repository, RepositoryWriter {
         } finally {
             queueLock.writeLock().unlock();
         }
-        ((RepositoryTranslatorImpl)translator).shutdown();
+        getTranslation().shutdown();
         if (LOG.isLoggable(Level.FINE)) {
             LOG.log(Level.INFO, "Repository shutdown done.");
         }
@@ -286,7 +270,7 @@ public class DiskRepositoryManager implements Repository, RepositoryWriter {
                 }
             } catch (IOException ex) {
                 RepositoryListenersManager.getInstance().fireAnException(
-                        unitList[i].getName(), new RepositoryException(ex));
+                        unitList[i].getId(), unitList[i].getName(), new RepositoryException(ex));
             }
             timeout -= (System.currentTimeMillis() - start);
         }
@@ -300,38 +284,44 @@ public class DiskRepositoryManager implements Repository, RepositoryWriter {
                 getCreateUnit(unitId, unitName);
             }
         } catch (Throwable exc) {
-            RepositoryListenersManager.getInstance().fireAnException(unitName,
+            RepositoryListenersManager.getInstance().fireAnException(unitId, unitName,
                     new RepositoryException(exc));
         }
     }
 
     @Override
-    public void closeUnit(CharSequence unitName, boolean cleanRepository, Set<CharSequence> requiredUnits) {
-        int unitId = translator.getUnitId(unitName);
+    public void closeUnit(int unitId, boolean cleanRepository, Set<Integer> requiredUnits) {
+        CharSequence unitName = RepositoryAccessor.getTranslator().getUnitName(unitId);
+        Set<CharSequence> requiredUnitNames = null;
+        if (requiredUnits != null) {
+            requiredUnitNames = new LinkedHashSet<CharSequence>(requiredUnits.size());
+            for (Integer integer : requiredUnits) {
+                requiredUnitNames.add(getTranslation().getUnitName(unitId));
+            }
+        }
         synchronized (getUnitLock(unitId)) {
-            closeUnit2(unitName, cleanRepository, requiredUnits);
+            closeUnit2(unitId, unitName, cleanRepository, requiredUnitNames);
         }
     }
 
-    private void closeUnit2(final CharSequence unitName, final boolean cleanRepository, Set<CharSequence> requiredUnits) {
-
+    private void closeUnit2(final int unitId, final CharSequence unitName, final boolean cleanRepository, Set<CharSequence> requiredUnits) {
+        assert Thread.holdsLock(getUnitLock(unitId));
         try {
             queueLock.writeLock().lock();
-            Collection<RepositoryQueue.Entry<Key, Persistent>> removedEntries = queue.clearQueue(new UnitFilter(unitName));
+            Collection<RepositoryQueue.Entry<Key, Persistent>> removedEntries = queue.clearQueue(new UnitFilter(unitId));
             if (!cleanRepository) {
                 for (RepositoryQueue.Entry<Key, Persistent> entry : removedEntries) {
                     write(entry.getKey(), entry.getValue());
                 }
             }
-
-            int unitId = translator.getUnitId(CharSequences.create(unitName));
+            
             Unit unit = units.remove(unitId);
 
             if (unit != null) {
                 try {
                     unit.close();
                 } catch (Throwable exc) {
-                    RepositoryListenersManager.getInstance().fireAnException(unitName,
+                    RepositoryListenersManager.getInstance().fireAnException(unitId, unitName,
                             new RepositoryException(exc));
                 }
             }
@@ -340,7 +330,7 @@ public class DiskRepositoryManager implements Repository, RepositoryWriter {
             queueLock.writeLock().unlock();
         }
         if (CndUtils.isDebugMode()) {
-            Collection<KeyValueQueue.Entry<Key, Persistent>> clearQueue = queue.clearQueue(new UnitFilter(unitName));
+            Collection<KeyValueQueue.Entry<Key, Persistent>> clearQueue = queue.clearQueue(new UnitFilter(unitId));
             if (!clearQueue.isEmpty()) {
                 if (LOG.isLoggable(Level.INFO)) {
                     LOG.log(Level.INFO, "UNSAVED ENTRIES FOR {0}", unitName);
@@ -353,22 +343,22 @@ public class DiskRepositoryManager implements Repository, RepositoryWriter {
 
         //clean the repository cach files here if it is necessary
         //
-        StorageAllocator allocator = StorageAllocator.getInstance();
+        StorageAllocator allocator = getStorageAllocator();
         if (cleanRepository) {
             allocator.deleteUnitFiles(unitName, true);
         }
         allocator.closeUnit(unitName);
 
-        ((RepositoryTranslatorImpl)translator).closeUnit(unitName, requiredUnits);
-        RepositoryListenersManager.getInstance().fireUnitClosedEvent(unitName);
+        getTranslation().closeUnit(unitName, requiredUnits);
+        RepositoryListenersManager.getInstance().fireUnitClosedEvent(unitId, unitName);
     }
 
     @Override
-    public void removeUnit(CharSequence unitName) {
-        int unitId = translator.getUnitId(CharSequences.create(unitName));
+    public void removeUnit(int unitId) {
+        CharSequence unitName = RepositoryAccessor.getTranslator().getUnitName(unitId);
         synchronized (getUnitLock(unitId)) {
-            closeUnit(unitName, true, Collections.<CharSequence>emptySet());
-            ((RepositoryTranslatorImpl)translator).removeUnit(unitName);
+            closeUnit2(unitId, unitName, true, Collections.<CharSequence>emptySet());
+            getTranslation().removeUnit(unitName);
         }
     }
 
@@ -395,7 +385,7 @@ public class DiskRepositoryManager implements Repository, RepositoryWriter {
 
     @Override
     public void cleanCaches() {
-        StorageAllocator.getInstance().cleanRepositoryCaches();
+        getStorageAllocator().cleanRepositoryCaches();
     }
 
     @Override
@@ -408,6 +398,7 @@ public class DiskRepositoryManager implements Repository, RepositoryWriter {
 
     @Override
     public void startup(int persistMechanismVersion) {
+        threadManager.startup();
     }
 
     @Override
@@ -418,20 +409,31 @@ public class DiskRepositoryManager implements Repository, RepositoryWriter {
         }
     }
 
+    @Override
+    public void debugDump(Key key) {
+        assert key != null;
+        Unit unit = units.get(key.getUnitId());
+        if (unit == null) {
+            System.err.printf("=== Repository debug dump for key=%s. Unit not found.", key); //NOI18N
+        } else {
+            unit.debugDump(key);
+        }
+    }
+
     static private class RemovedPersistent implements Persistent {
     }
 
     private static class UnitFilter implements RepositoryQueue.Filter {
 
-        private CharSequence unitName;
+        private int unitId;
 
-        public UnitFilter(CharSequence unitName) {
-            this.unitName = unitName;
+        public UnitFilter(int unitId) {
+            this.unitId = unitId;
         }
 
         @Override
         public boolean accept(Key key, Persistent value) {
-            return key.getUnit().equals(unitName);
+            return key.getUnitId() == unitId;
         }
     }
 
@@ -458,47 +460,13 @@ public class DiskRepositoryManager implements Repository, RepositoryWriter {
             return unit.getMaintenanceWeight();
         } catch (IOException ex) {
             RepositoryListenersManager.getInstance().fireAnException(
-                    unit.getName(), new RepositoryException(ex));
+                    unit.getId(), unit.getName(), new RepositoryException(ex));
         }
         return 0;
     }
 
     private CharSequence getUnitNameSafe(Key key) {
-        return translator.getUnitNameSafe(key.getUnitId());
+        return getTranslation().getUnitNameSafe(key.getUnitId());
     }
 
-    private static final class NamedLock {
-        private final String name;
-
-        public NamedLock(String name) {
-            this.name = name;
-        }
-
-        @Override
-        public String toString() {
-            return this.name;
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (obj == null) {
-                return false;
-            }
-            if (getClass() != obj.getClass()) {
-                return false;
-            }
-            final NamedLock other = (NamedLock) obj;
-            if ((this.name == null) ? (other.name != null) : !this.name.equals(other.name)) {
-                return false;
-            }
-            return true;
-        }
-
-        @Override
-        public int hashCode() {
-            int hash = 5;
-            hash = 97 * hash + (this.name != null ? this.name.hashCode() : 0);
-            return hash;
-        }
-    }
 }

@@ -23,13 +23,13 @@
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-EvaluateAction.instance"/>
             </file>
             <file name="C-F12.shadow">
-                <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-java-navigation-actions-InspectMembersAction.instance"/>
+                <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-java-navigation-actions-ShowMembersAction.instance"/>
             </file>
             <file name="C-F6.shadow">
                 <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-java-api-ui-ChangeParametersAction.instance"/>
             </file>
             <file name="C-H.shadow">
-                <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-java-navigation-actions-InspectHierarchyAction.instance"/>
+                <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-java-navigation-actions-ShowHierarchyAction.instance"/>
             </file>
             <file name="CA-F8.shadow">
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-jpda-ui-actions-ToggleMethodFieldBreakpointAction.instance"/>
@@ -38,10 +38,10 @@
                 <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-spring-beans-jumpto-type-GoToBean.instance"/>
             </file>
             <file name="CS-H.shadow">
-                <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-java-navigation-actions-InspectHierarchyAtCaretAction.instance"/>
+                <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-java-navigation-actions-ShowHierarchyAtCaretAction.instance"/>
             </file>
             <file name="D-8.shadow">
-                <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-jpda-ui-debugging-ThreadsHistoryAction.instance"/>
+                <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-jpda-ui-actions-SetCurrentThreadFromHistoryAction.instance"/>
             </file>
             <file name="S-F1.shadow">
                 <attr name="originalFile" stringvalue="Actions/Tools/org-netbeans-modules-javadoc-search-SearchDocAction.instance"/>
@@ -52,10 +52,10 @@
         </folder>
         <folder name="Eclipse">
             <file name="D-O.shadow">
-                <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-java-navigation-actions-InspectMembersAction.instance"/>
+                <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-java-navigation-actions-ShowMembersAction.instance"/>
             </file>
             <file name="D-T.shadow">
-                <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-java-navigation-actions-InspectHierarchyAtCaretAction.instance"/>
+                <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-java-navigation-actions-ShowHierarchyAtCaretAction.instance"/>
             </file>
         </folder>
         <folder name="Emacs">

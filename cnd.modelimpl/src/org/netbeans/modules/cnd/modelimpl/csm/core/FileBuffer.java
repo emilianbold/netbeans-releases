@@ -72,6 +72,8 @@ public interface FileBuffer extends APTFileBuffer {
     
     public long lastModified();
 
+    public long getCRC();
+
     int[] getLineColumnByOffset(int offset) throws IOException;
 
     int getOffsetByLineColumn(int line, int column) throws IOException;

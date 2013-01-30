@@ -229,7 +229,7 @@ public class ServletsMultiViewElement extends ToolBarMultiViewElement implements
         }
     }
     
-    private class ServletNode extends org.openide.nodes.AbstractNode {
+    private static class ServletNode extends org.openide.nodes.AbstractNode {
         ServletNode(SectionView view, WebApp webApp, Servlet servlet) {
             super(org.openide.nodes.Children.LEAF);
             setDisplayName(servlet.getServletName());

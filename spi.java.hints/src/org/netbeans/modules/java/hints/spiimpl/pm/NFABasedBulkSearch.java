@@ -42,11 +42,14 @@
 
 package org.netbeans.modules.java.hints.spiimpl.pm;
 
+import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
@@ -72,8 +75,10 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Stack;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.Name;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.support.CancellableTreeScanner;
 import org.netbeans.modules.java.hints.spiimpl.Utilities;
 import org.netbeans.modules.java.hints.providers.spi.HintDescription.AdditionalQueryConstraints;
 import org.openide.util.Exceptions;
@@ -89,14 +94,14 @@ public class NFABasedBulkSearch extends BulkSearch {
     }
 
     @Override
-    public Map<String, Collection<TreePath>> match(CompilationInfo info, TreePath tree, BulkPattern patternIn, Map<String, Long> timeLog) {
+    public Map<String, Collection<TreePath>> match(CompilationInfo info, final AtomicBoolean cancel, TreePath tree, BulkPattern patternIn, Map<String, Long> timeLog) {
         BulkPatternImpl pattern = (BulkPatternImpl) patternIn;
         
         final Map<Res, Collection<TreePath>> occurringPatterns = new HashMap<Res, Collection<TreePath>>();
         final NFA<Input, Res> nfa = pattern.toNFA();
         final Set<String> identifiers = new HashSet<String>();
 
-        new CollectIdentifiers<Void, TreePath>(identifiers) {
+        new CollectIdentifiers<Void, TreePath>(identifiers, cancel) {
             private NFA.State active = nfa.getStartingState();
             @Override
             public Void scan(Tree node, TreePath p) {
@@ -121,8 +126,10 @@ public class NFABasedBulkSearch extends BulkSearch {
                 if (goDeeper[0]) {
                     super.scan(node, currentPath);
                 } else {
-                    new CollectIdentifiers<Void, Void>(identifiers).scan(node, null);
+                    new CollectIdentifiers<Void, Void>(identifiers, cancel).scan(node, null);
                 }
+                
+                if (cancel.get()) return null;
 
                 NFA.State newActiveAfter = nfa.transition(active, UP);
 
@@ -135,6 +142,16 @@ public class NFABasedBulkSearch extends BulkSearch {
                 return null;
             }
 
+            @Override
+            public Void scan(Iterable<? extends Tree> nodes, TreePath p) {
+                active = nfa.transition(active, new Input(Kind.IDENTIFIER, "(", false));
+                try {
+                    return super.scan(nodes, p);
+                } finally {
+                    active = nfa.transition(active, UP);
+                }
+            }
+            
             private void addOccurrence(Res r, TreePath currentPath) {
                 Collection<TreePath> occurrences = occurringPatterns.get(r);
                 if (occurrences == null) {
@@ -144,9 +161,12 @@ public class NFABasedBulkSearch extends BulkSearch {
             }
         }.scan(tree, tree.getParentPath());
 
+        if (cancel.get()) return null;
+        
         Map<String, Collection<TreePath>> result = new HashMap<String, Collection<TreePath>>();
 
         for (Entry<Res, Collection<TreePath>> e : occurringPatterns.entrySet()) {
+            if (cancel.get()) return null;
             if (!identifiers.containsAll(pattern.getIdentifiers().get(e.getKey().patternIndex))) {
                 continue;
             }
@@ -158,7 +178,7 @@ public class NFABasedBulkSearch extends BulkSearch {
     }
 
     @Override
-    public BulkPattern create(Collection<? extends String> code, Collection<? extends Tree> patterns, Collection<? extends AdditionalQueryConstraints> additionalConstraints) {
+    public BulkPattern create(Collection<? extends String> code, Collection<? extends Tree> patterns, Collection<? extends AdditionalQueryConstraints> additionalConstraints, final AtomicBoolean cancel) {
         int startState = 0;
         final int[] nextState = new int[] {1};
         final Map<NFA.Key<Input>, NFA.State> transitionTable = new LinkedHashMap<NFA.Key<Input>, NFA.State>();
@@ -178,7 +198,7 @@ public class NFABasedBulkSearch extends BulkSearch {
 
             class Scanner extends CollectIdentifiers<Void, Void> {
                 public Scanner() {
-                    super(patternIdentifiers);
+                    super(patternIdentifiers, cancel);
                 }
                 private boolean auxPath;
                 private List<String> currentContent;
@@ -191,7 +211,7 @@ public class NFABasedBulkSearch extends BulkSearch {
                         return null;
                     }
 
-                    if (Utilities.isMultistatementWildcardTree(t)) {
+                    if (Utilities.isMultistatementWildcardTree(t) || multiModifiers(t)) {
                         int target = nextState[0]++;
 
                         setBit(transitionTable, NFA.Key.create(currentState[0], new Input(Kind.IDENTIFIER, "$", false)), target);
@@ -242,11 +262,13 @@ public class NFABasedBulkSearch extends BulkSearch {
                             int target = currentState[0];
 
                             setBit(transitionTable, NFA.Key.create(backup, new Input(Kind.BLOCK, null, false)), currentState[0] = nextState[0]++);
+                            setBit(transitionTable, NFA.Key.create(currentState[0], new Input(Kind.IDENTIFIER, "(", false)), currentState[0] = nextState[0]++);
 
                             for (StatementTree st : bt.getStatements()) {
                                 scan(st, null);
                             }
 
+                            setBit(transitionTable, NFA.Key.create(currentState[0], UP), currentState[0] = nextState[0]++);
                             setBit(transitionTable, NFA.Key.create(currentState[0], UP), target);
                             currentState[0] = target;
 
@@ -287,7 +309,9 @@ public class NFABasedBulkSearch extends BulkSearch {
                         int target = currentState[0];
 
                         setBit(transitionTable, NFA.Key.create(backup, new Input(Kind.BLOCK, null, false)), currentState[0] = nextState[0]++);
+                        setBit(transitionTable, NFA.Key.create(currentState[0], new Input(Kind.IDENTIFIER, "(", false)), currentState[0] = nextState[0]++);
                         handleTree(i, goDeeper, t, bypass);
+                        setBit(transitionTable, NFA.Key.create(currentState[0], UP), currentState[0] = nextState[0]++);
                         setBit(transitionTable, NFA.Key.create(currentState[0], UP), target);
                         currentState[0] = target;
                     }
@@ -295,6 +319,16 @@ public class NFABasedBulkSearch extends BulkSearch {
                     auxPath = oldAuxPath;
 
                     return null;
+                }
+
+                @Override
+                public Void scan(Iterable<? extends Tree> nodes, Void p) {
+                    setBit(transitionTable, NFA.Key.create(currentState[0], new Input(Kind.IDENTIFIER, "(", false)), currentState[0] = nextState[0]++);
+                    try {
+                        return super.scan(nodes, p);
+                    } finally {
+                        setBit(transitionTable, NFA.Key.create(currentState[0], UP), currentState[0] = nextState[0]++);
+                    }
                 }
 
                 private void handleTree(Input i, boolean[] goDeeper, Tree t, Input[] bypass) {
@@ -306,7 +340,7 @@ public class NFABasedBulkSearch extends BulkSearch {
                     if (goDeeper[0]) {
                         super.scan(t, null);
                     } else {
-                        new CollectIdentifiers<Void, Void>(patternIdentifiers).scan(t, null);
+                        new CollectIdentifiers<Void, Void>(patternIdentifiers, cancel).scan(t, null);
                         int aux = nextState[0]++;
                         setBit(transitionTable, NFA.Key.create(backup, new Input(Kind.MEMBER_SELECT, i.name, false)), aux);
                         setBit(transitionTable, NFA.Key.create(aux, new Input(Kind.IDENTIFIER, "$", false)), aux = nextState[0]++);
@@ -334,6 +368,8 @@ public class NFABasedBulkSearch extends BulkSearch {
             finalStates.put(currentState[0], new Res(codeIt.next(), patternIndex++));
         }
 
+        if (cancel.get()) return null;
+        
         NFA<Input, Res> nfa = NFA.<Input, Res>create(startState, nextState[0], null, transitionTable, finalStates);
 
         return new BulkPatternImpl(new LinkedList<String>(code), identifiers, requiredContent, new LinkedList<AdditionalQueryConstraints>(additionalConstraints), nfa);
@@ -387,6 +423,7 @@ public class NFABasedBulkSearch extends BulkSearch {
             case CLASS: name = ((ClassTree)t).getSimpleName().toString(); break;
             case VARIABLE: name = ((VariableTree)t).getName().toString(); break;
             case METHOD: name = ((MethodTree)t).getName().toString(); break;
+            case BOOLEAN_LITERAL: name = ((LiteralTree) t).getValue().toString(); break;
             default: name = null;
         }
 
@@ -397,21 +434,29 @@ public class NFABasedBulkSearch extends BulkSearch {
         }
         return new Input(t.getKind(), name, false);
     }
+    
+    private boolean multiModifiers(Tree t) {
+        if (t.getKind() != Kind.MODIFIERS) return false;
+        
+        List<AnnotationTree> annotations = new ArrayList<AnnotationTree>(((ModifiersTree) t).getAnnotations());
+
+        return !annotations.isEmpty() && annotations.get(0).getAnnotationType().getKind() == Kind.IDENTIFIER;
+    }
 
     @Override
-    public boolean matches(CompilationInfo info, TreePath tree, BulkPattern pattern) {
+    public boolean matches(CompilationInfo info, AtomicBoolean cancel, TreePath tree, BulkPattern pattern) {
         //XXX: performance
-        return !match(info, tree, pattern).isEmpty();
+        return !match(info, cancel, tree, pattern).isEmpty();
     }
 
     private static final Set<Kind> TO_IGNORE = EnumSet.of(Kind.BLOCK, Kind.IDENTIFIER, Kind.MEMBER_SELECT);
 
     @Override
-    public void encode(Tree tree, final EncodingContext ctx) {
+    public void encode(Tree tree, final EncodingContext ctx, AtomicBoolean cancel) {
         final Set<String> identifiers = new HashSet<String>();
         final List<String> content = new ArrayList<String>();
         if (!ctx.isForDuplicates()) {
-            new CollectIdentifiers<Void, Void>(identifiers).scan(tree, null);
+            new CollectIdentifiers<Void, Void>(identifiers, cancel).scan(tree, null);
             try {
                 int size = identifiers.size();
                 ctx.getOut().write((size >> 24) & 0xFF);
@@ -426,7 +471,8 @@ public class NFABasedBulkSearch extends BulkSearch {
                 throw new IllegalStateException(ex);
             }
         }
-        new CollectIdentifiers<Void, Void>(new HashSet<String>()) {
+        if (cancel.get());
+        new CollectIdentifiers<Void, Void>(new HashSet<String>(), cancel) {
             private boolean encode = true;
             @Override
             public Void scan(Tree t, Void v) {
@@ -468,32 +514,50 @@ public class NFABasedBulkSearch extends BulkSearch {
 
                 return null;
             }
+            @Override
+            public Void scan(Iterable<? extends Tree> nodes, Void p) {
+                try {
+                    ctx.getOut().write('(');
+                    ctx.getOut().write(kind2Encoded.get(Kind.IDENTIFIER));
+                    ctx.getOut().write('$');
+                    ctx.getOut().write('(');
+                    ctx.getOut().write(';');
+                    super.scan(nodes, p);
+                    ctx.getOut().write(')');
+                } catch (IOException ex) {
+                    //XXX
+                    Exceptions.printStackTrace(ex);
+                }
+                return null;
+            }
         }.scan(tree, null);
 
         ctx.setIdentifiers(identifiers);
         ctx.setContent(content);
+        if (cancel.get());
     }
 
     @Override
-    public boolean matches(InputStream encoded, BulkPattern patternIn) {
+    public boolean matches(InputStream encoded, AtomicBoolean cancel, BulkPattern patternIn) {
         try {
-            return !matchesImpl(encoded, patternIn, false).isEmpty();
+            return !matchesImpl(encoded, cancel, patternIn, false).isEmpty();
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
             return false;
         }
     }
 
-    public Map<String, Integer> matchesWithFrequencies(InputStream encoded, BulkPattern patternIn) {
+    @Override
+    public Map<String, Integer> matchesWithFrequencies(InputStream encoded, BulkPattern patternIn, AtomicBoolean cancel) {
         try {
-            return matchesImpl(encoded, patternIn, true);
+            return matchesImpl(encoded, cancel, patternIn, true);
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
             return Collections.emptyMap();
         }
     }
 
-    public Map<String, Integer> matchesImpl(InputStream encoded, BulkPattern patternIn, boolean withFrequencies) throws IOException {
+    public Map<String, Integer> matchesImpl(InputStream encoded, AtomicBoolean cancel, BulkPattern patternIn, boolean withFrequencies) throws IOException {
         BulkPatternImpl pattern = (BulkPatternImpl) patternIn;
         final NFA<Input, Res> nfa = pattern.toNFA();
         Stack<NFA.State> skips = new Stack<NFA.State>();
@@ -508,6 +572,7 @@ public class NFABasedBulkSearch extends BulkSearch {
         Set<String> identifiers = new HashSet<String>(2 * identSize);
 
         while (identSize-- > 0) {
+            if (cancel.get()) return null;
             int read = encoded.read();
 
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -525,6 +590,7 @@ public class NFABasedBulkSearch extends BulkSearch {
         int read = encoded.read();
         
         while (read != (-1)) {
+            if (cancel.get()) return null;
             if (read == '(') {
                 read = encoded.read(); //kind
 
@@ -709,11 +775,12 @@ public class NFABasedBulkSearch extends BulkSearch {
         return true;
     }
 
-    private static class CollectIdentifiers<R, P> extends TreeScanner<R, P> {
+    private static class CollectIdentifiers<R, P> extends CancellableTreeScanner<R, P> {
 
         private final Set<String> identifiers;
 
-        public CollectIdentifiers(Set<String> identifiers) {
+        public CollectIdentifiers(Set<String> identifiers, AtomicBoolean cancel) {
+            super(cancel);
             this.identifiers = identifiers;
         }
 

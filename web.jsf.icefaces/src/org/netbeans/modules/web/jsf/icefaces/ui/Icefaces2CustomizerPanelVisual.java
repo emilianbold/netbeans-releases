@@ -60,6 +60,7 @@ import java.util.prefs.Preferences;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
 import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.libraries.LibrariesCustomizer;
 import org.netbeans.api.project.libraries.Library;
@@ -79,7 +80,7 @@ public class Icefaces2CustomizerPanelVisual extends javax.swing.JPanel {
     private static final Logger LOGGER = Logger.getLogger(Icefaces2CustomizerPanelVisual.class.getName());
 
     private volatile Set<Library> icefacesLibraries = new HashSet<Library>();
-
+    private final Icefaces2Customizer customizer;
     private ChangeSupport changeSupport = new ChangeSupport(this);
 
     /**
@@ -87,16 +88,21 @@ public class Icefaces2CustomizerPanelVisual extends javax.swing.JPanel {
      *
      * @param listener {@code ChangeListener} which should be notified about changes.
      */
-    public Icefaces2CustomizerPanelVisual(ChangeListener listener) {
+    public Icefaces2CustomizerPanelVisual(Icefaces2Customizer customizer) {
+        this.customizer = customizer;
         initComponents();
         noteLabel.setPreferredSize(new Dimension(1, 1));
 
-        changeSupport.addChangeListener(listener);
+        changeSupport.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                Icefaces2CustomizerPanelVisual.this.customizer.fireChange();
+            }
+        });
 
         initLibraries(true);
 
         icefacesLibraryComboBox.addActionListener(new ActionListener() {
-
             @Override
             public void actionPerformed(ActionEvent e) {
                 changeSupport.fireChange();
@@ -132,6 +138,7 @@ public class Icefaces2CustomizerPanelVisual extends javax.swing.JPanel {
                         if (setStoredValue && !icefacesLibraries.isEmpty()) {
                             setDefaultComboBoxValues();
                         } else {
+                            customizer.setFixedLibrary(!icefacesLibraries.isEmpty());
                             changeSupport.fireChange();
                         }
                     }

@@ -50,10 +50,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.*;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.libraries.LibrariesCustomizer;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.modules.web.primefaces.PrimefacesCustomizer;
 import org.netbeans.modules.web.primefaces.PrimefacesImplementation;
 import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
@@ -70,18 +72,24 @@ public class PrimefacesCustomizerPanel extends javax.swing.JPanel implements Hel
 
     private static final Logger LOGGER = Logger.getLogger(PrimefacesCustomizerPanel.class.getName());
     private final ChangeSupport changeSupport = new ChangeSupport(this);
+    private final PrimefacesCustomizer customizer;
 
     /**
      * Creates new form PrimefacesCustomizerPanel.
      * @param changeListener {@code ChangeListener} which should be notified about changes.
      */
-    public PrimefacesCustomizerPanel(ChangeListener changeListener) {
+    public PrimefacesCustomizerPanel(PrimefacesCustomizer customizer) {
+        this.customizer = customizer;
         initComponents();
-        changeSupport.addChangeListener(changeListener);
+        changeSupport.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                PrimefacesCustomizerPanel.this.customizer.fireChange();
+            }
+        });
         initLibraries(true);
 
         primefacesLibrariesComboBox.addActionListener(new ActionListener() {
-
             @Override
             public void actionPerformed(ActionEvent e) {
                 changeSupport.fireChange();
@@ -111,8 +119,10 @@ public class PrimefacesCustomizerPanel extends javax.swing.JPanel implements Hel
                         setPrimefacesLibrariesComboBox(primefacesLibraries);
                         if (setStoredValue && !primefacesLibraries.isEmpty()) {
                             setDefaultPrimefacesComboBoxValue(primefacesLibraries);
+                        } else {
+                            customizer.setFixedLibrary(!primefacesLibraries.isEmpty());
+                            changeSupport.fireChange();
                         }
-                        changeSupport.fireChange();
                     }
                 });
             }

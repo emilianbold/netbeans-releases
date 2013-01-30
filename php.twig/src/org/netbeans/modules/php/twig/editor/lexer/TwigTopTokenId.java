@@ -39,7 +39,6 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.php.twig.editor.lexer;
 
 import java.util.Collection;
@@ -60,11 +59,11 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 
 public enum TwigTopTokenId implements TokenId {
 
-    T_HTML( null, "twig_html" ),
-    T_ERROR( null, "twig_error" ),
-    T_TWIG( null, "twig" ),
-    T_TWIG_RAW( null, "twig_raw" );
-
+    T_HTML(null, "twig_html"), //NOI18N
+    T_ERROR(null, "twig_error"), //NOI18N
+    T_TWIG(null, "twig"), //NOI18N
+    T_TWIG_RAW(null, "twig_raw"); //NOI18N
+    
     private String fixedText;
     private String primaryCategory;
 
@@ -83,10 +82,9 @@ public enum TwigTopTokenId implements TokenId {
     }
     private static final Language<TwigTopTokenId> language =
             new LanguageHierarchy<TwigTopTokenId>() {
-
                 @Override
                 protected Collection<TwigTopTokenId> createTokenIds() {
-                    return EnumSet.allOf( TwigTopTokenId.class );
+                    return EnumSet.allOf(TwigTopTokenId.class);
                 }
 
                 @Override
@@ -96,8 +94,8 @@ public enum TwigTopTokenId implements TokenId {
                 }
 
                 @Override
-                protected Lexer<TwigTopTokenId> createLexer( LexerRestartInfo<TwigTopTokenId> info ) {
-                    return TwigTopLexer.create( info );
+                protected Lexer<TwigTopTokenId> createLexer(LexerRestartInfo<TwigTopTokenId> info) {
+                    return TwigTopLexer.create(info);
                 }
 
                 @Override
@@ -106,14 +104,14 @@ public enum TwigTopTokenId implements TokenId {
                 }
 
                 @Override
-                protected LanguageEmbedding<?> embedding( Token<TwigTopTokenId> token,
-                        LanguagePath languagePath, InputAttributes inputAttributes ) {
+                protected LanguageEmbedding<?> embedding(Token<TwigTopTokenId> token,
+                        LanguagePath languagePath, InputAttributes inputAttributes) {
 
                     TwigTopTokenId id = token.id();
-                    if ( id == T_HTML || id == T_TWIG_RAW ) {
-                        return LanguageEmbedding.create( HTMLTokenId.language(), 0, 0, true );
-                    } else if ( id == T_TWIG ) {
-                        return LanguageEmbedding.create( TwigTokenId.language(), 0, 0 );
+                    if (id == T_HTML || id == T_TWIG_RAW) {
+                        return LanguageEmbedding.create(HTMLTokenId.language(), 0, 0, true);
+                    } else if (id == T_TWIG) {
+                        return LanguageEmbedding.create(TwigTokenId.language(), 0, 0);
                     }
 
                     return null;

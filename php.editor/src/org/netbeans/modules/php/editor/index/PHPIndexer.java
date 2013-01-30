@@ -66,6 +66,7 @@ import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexDocument;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexingSupport;
 import org.netbeans.modules.php.api.util.FileUtils;
+import static org.netbeans.modules.php.api.util.FileUtils.PHP_MIME_TYPE;
 import org.netbeans.modules.php.editor.PredefinedSymbols;
 import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.elements.IndexQueryImpl;
@@ -78,6 +79,7 @@ import org.netbeans.modules.php.editor.model.FunctionScope;
 import org.netbeans.modules.php.editor.model.InterfaceScope;
 import org.netbeans.modules.php.editor.model.MethodScope;
 import org.netbeans.modules.php.editor.model.Model;
+import org.netbeans.modules.php.editor.model.Model.Type;
 import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.modules.php.editor.model.NamespaceScope;
 import org.netbeans.modules.php.editor.model.TraitScope;
@@ -85,14 +87,17 @@ import org.netbeans.modules.php.editor.model.VariableName;
 import org.netbeans.modules.php.editor.model.impl.LazyBuild;
 import org.netbeans.modules.php.editor.model.impl.VariousUtils;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
-import org.netbeans.modules.php.editor.parser.astnodes.*;
+import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTypeNode;
+import org.netbeans.modules.php.editor.parser.astnodes.Program;
+import org.netbeans.modules.php.editor.parser.astnodes.Visitor;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.MIMEResolver;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  * Index Ruby structure into the persistent store for retrieval by
@@ -116,12 +121,12 @@ public final class PHPIndexer extends EmbeddingIndexer {
     @MIMEResolver.ExtensionRegistration(
         extension={ "php", "php3", "php4", "php5", "phtml", "inc", "phpt" },
         displayName="#PHPResolver",
-        mimeType="text/x-php5",
+        mimeType=PHP_MIME_TYPE,
         position=282
     )
     @NbBundle.Messages("PHPResolver=PHP Files")
     // a workaround for issue #132388
-    private static final Collection<String>INDEXABLE_EXTENSIONS = Arrays.asList(
+    private static final Collection<String> INDEXABLE_EXTENSIONS = Arrays.asList(
         "php", "php3", "php4", "php5", "phtml", "inc", "phpt"
     );
 
@@ -164,34 +169,42 @@ public final class PHPIndexer extends EmbeddingIndexer {
     public static final String FIELD_TRAIT_METHOD_ALIAS = "traitmeth"; //NOI18N
 
     public static final String FIELD_VAR = "var"; //NOI18N
-    /** This field is for fast access top level elemnts */
+    /** This field is for fast access top level elemnts. */
     public static final String FIELD_TOP_LEVEL = "top"; //NOI18N
 
-    public static final String [] ALL_FIELDS = new String [] {
-        FIELD_BASE,
-        FIELD_EXTEND,
-        FIELD_CLASS,
-        FIELD_IFACE,
-        FIELD_CONST,
-        FIELD_CLASS_CONST,
-        FIELD_FIELD,
-        FIELD_METHOD,
-        FIELD_CONSTRUCTOR,
-        FIELD_INCLUDE,
-        FIELD_IDENTIFIER,
-        FIELD_VAR,
-        FIELD_TOP_LEVEL,
-        FIELD_NAMESPACE,
-        FIELD_TRAIT,
-        FIELD_USED_TRAIT,
-        FIELD_TRAIT_CONFLICT_RESOLUTION,
-        FIELD_TRAIT_METHOD_ALIAS
-    };
+    private static final List<String> ALL_FIELDS = new LinkedList<String>(
+            Arrays.asList(
+                new String[] {
+                    FIELD_BASE,
+                    FIELD_EXTEND,
+                    FIELD_CLASS,
+                    FIELD_IFACE,
+                    FIELD_CONST,
+                    FIELD_CLASS_CONST,
+                    FIELD_FIELD,
+                    FIELD_METHOD,
+                    FIELD_CONSTRUCTOR,
+                    FIELD_INCLUDE,
+                    FIELD_IDENTIFIER,
+                    FIELD_VAR,
+                    FIELD_TOP_LEVEL,
+                    FIELD_NAMESPACE,
+                    FIELD_TRAIT,
+                    FIELD_USED_TRAIT,
+                    FIELD_TRAIT_CONFLICT_RESOLUTION,
+                    FIELD_TRAIT_METHOD_ALIAS
+                }
+            )
+    );
+
+    public static List<String> getAllFields() {
+        return new LinkedList<String>(ALL_FIELDS);
+    }
 
     public String getPersistentUrl(File file) {
         String url;
         try {
-            url = file.toURI().toURL().toExternalForm();
+            url = Utilities.toURI(file).toURL().toExternalForm();
             // Make relative URLs for urls in the libraries
             return PHPIndex.getPreindexUrl(url);
         } catch (MalformedURLException ex) {
@@ -209,11 +222,6 @@ public final class PHPIndexer extends EmbeddingIndexer {
             }
             final FileObject fileObject = r.getSnapshot().getSource().getFileObject();
             assert r.getDiagnostics().isEmpty() || !PhpSourcePath.FileType.INTERNAL.equals(PhpSourcePath.getFileType(fileObject)) : fileObject.getPath();
-            String processedFileURL = fileObject.toURL().toExternalForm();
-
-            if (processedFileURL == null) {
-                return;
-            }
 
             boolean isFileEdited = false;
             if (!context.isAllFilesIndexing() && context.checkForEditorModifications()) {
@@ -231,7 +239,7 @@ public final class PHPIndexer extends EmbeddingIndexer {
             IndexQueryImpl.clearNamespaceCache();
             List<IndexDocument> documents = new LinkedList<IndexDocument>();
             IndexingSupport support = IndexingSupport.getInstance(context);
-            Model model = r.getModel(false);
+            Model model = r.getModel(Type.COMMON);
             final FileScope fileScope = model.getFileScope();
             IndexDocument reverseIdxDocument = support.createDocument(indexable);
             documents.add(reverseIdxDocument);
@@ -242,18 +250,27 @@ public final class PHPIndexer extends EmbeddingIndexer {
                 QualifiedName superClassName = classScope.getSuperClassName();
                 if (superClassName != null) {
                     final String name = superClassName.getName();
-                    final String namespaceName = VariousUtils.getFullyQualifiedName(superClassName, classScope.getOffset(), (NamespaceScope)classScope.getInScope()).getNamespaceName();
-                    classDocument.addPair(FIELD_SUPER_CLASS, String.format("%s;%s;%s", name.toLowerCase(), name, namespaceName), true, true);//NOI18N
+                    final String namespaceName = VariousUtils.getFullyQualifiedName(
+                            superClassName,
+                            classScope.getOffset(),
+                            (NamespaceScope) classScope.getInScope()).getNamespaceName();
+                    classDocument.addPair(FIELD_SUPER_CLASS, String.format("%s;%s;%s", name.toLowerCase(), name, namespaceName), true, true); //NOI18N
                 }
                 Set<QualifiedName> superInterfaces = classScope.getSuperInterfaces();
                 for (QualifiedName superIfaceName : superInterfaces) {
                     final String name = superIfaceName.getName();
-                    final String namespaceName = VariousUtils.getFullyQualifiedName(superIfaceName, classScope.getOffset(), (NamespaceScope)classScope.getInScope()).getNamespaceName();
-                    classDocument.addPair(FIELD_SUPER_IFACE, String.format("%s;%s;%s", name.toLowerCase(), name, namespaceName), true, true);//NOI18N
+                    final String namespaceName = VariousUtils.getFullyQualifiedName(
+                            superIfaceName,
+                            classScope.getOffset(),
+                            (NamespaceScope) classScope.getInScope()).getNamespaceName();
+                    classDocument.addPair(FIELD_SUPER_IFACE, String.format("%s;%s;%s", name.toLowerCase(), name, namespaceName), true, true); //NOI18N
                 }
                 for (QualifiedName qualifiedName : classScope.getUsedTraits()) {
                     final String name = qualifiedName.getName();
-                    final String namespaceName = VariousUtils.getFullyQualifiedName(qualifiedName, classScope.getOffset(), (NamespaceScope) classScope.getInScope()).getNamespaceName();
+                    final String namespaceName = VariousUtils.getFullyQualifiedName(
+                            qualifiedName,
+                            classScope.getOffset(),
+                            (NamespaceScope) classScope.getInScope()).getNamespaceName();
                     classDocument.addPair(FIELD_USED_TRAIT, String.format("%s;%s;%s", name.toLowerCase(), name, namespaceName), true, true); //NOI18N
                 }
                 classDocument.addPair(FIELD_TOP_LEVEL, classScope.getName().toLowerCase(), true, true);
@@ -267,7 +284,7 @@ public final class PHPIndexer extends EmbeddingIndexer {
                     }
                     classDocument.addPair(FIELD_METHOD, methodScope.getIndexSignature(), true, true);
                     if (methodScope.isConstructor()) {
-                        classDocument.addPair(FIELD_CONSTRUCTOR,methodScope.getConstructorIndexSignature(), false, true);
+                        classDocument.addPair(FIELD_CONSTRUCTOR, methodScope.getConstructorIndexSignature(), false, true);
                     }
                 }
                 for (FieldElement fieldElement : classScope.getDeclaredFields()) {
@@ -285,7 +302,7 @@ public final class PHPIndexer extends EmbeddingIndexer {
                 for (QualifiedName superIfaceName : superInterfaces) {
                     final String name = superIfaceName.getName();
                     final String namespaceName = superIfaceName.toNamespaceName().toString();
-                    classDocument.addPair(FIELD_SUPER_IFACE, String.format("%s;%s;%s", name.toLowerCase(), name, namespaceName), true, true);//NOI18N
+                    classDocument.addPair(FIELD_SUPER_IFACE, String.format("%s;%s;%s", name.toLowerCase(), name, namespaceName), true, true); //NOI18N
                 }
 
                 classDocument.addPair(FIELD_TOP_LEVEL, ifaceSCope.getName().toLowerCase(), true, true);
@@ -303,7 +320,10 @@ public final class PHPIndexer extends EmbeddingIndexer {
                 traitDocument.addPair(FIELD_TOP_LEVEL, traitScope.getName().toLowerCase(), true, true);
                 for (QualifiedName qualifiedName : traitScope.getUsedTraits()) {
                     final String name = qualifiedName.getName();
-                    final String namespaceName = VariousUtils.getFullyQualifiedName(qualifiedName, traitScope.getOffset(), (NamespaceScope) traitScope.getInScope()).getNamespaceName();
+                    final String namespaceName = VariousUtils.getFullyQualifiedName(
+                            qualifiedName,
+                            traitScope.getOffset(),
+                            (NamespaceScope) traitScope.getInScope()).getNamespaceName();
                     traitDocument.addPair(FIELD_USED_TRAIT, String.format("%s;%s;%s", name.toLowerCase(), name, namespaceName), true, true); //NOI18N
                 }
                 for (MethodScope methodScope : traitScope.getDeclaredMethods()) {
@@ -324,7 +344,7 @@ public final class PHPIndexer extends EmbeddingIndexer {
                 defaultDocument.addPair(FIELD_CONST, constantElement.getIndexSignature(), true, true);
                 defaultDocument.addPair(FIELD_TOP_LEVEL, constantElement.getName().toLowerCase(), true, true);
             }
-            for (NamespaceScope nsElement : fileScope.getDeclaredNamespaces()){
+            for (NamespaceScope nsElement : fileScope.getDeclaredNamespaces()) {
                 Collection<? extends VariableName> declaredVariables = nsElement.getDeclaredVariables();
                 for (VariableName variableName : declaredVariables) {
                     String varName = variableName.getName();
@@ -335,7 +355,7 @@ public final class PHPIndexer extends EmbeddingIndexer {
                         defaultDocument.addPair(FIELD_TOP_LEVEL, variableName.getName().toLowerCase(), true, true);
                     }
                 }
-                if (nsElement.isDefaultNamespace()){
+                if (nsElement.isDefaultNamespace()) {
                     continue; // do not index default ns
                 }
 
@@ -354,18 +374,18 @@ public final class PHPIndexer extends EmbeddingIndexer {
 
                 @Override
                 public void visit(Identifier identifier) {
-                    addSignature(IdentifierSignature.createIdentifier(identifier));
+                    addSignature(IdentifierSignatureFactory.createIdentifier(identifier));
                     super.visit(identifier);
                 }
 
                 @Override
                 public void visit(PHPDocTypeNode node) {
-                    addSignature(IdentifierSignature.create(node));
+                    addSignature(IdentifierSignatureFactory.create(node));
                     super.visit(node);
                 }
 
                 private void addSignature(final IdentifierSignature signature) {
-                    identifierDocument.addPair(FIELD_IDENTIFIER, signature.getSignature(), true, true);
+                    signature.save(identifierDocument, FIELD_IDENTIFIER);
                 }
             };
             program.accept(identifierVisitor);
@@ -446,7 +466,7 @@ public final class PHPIndexer extends EmbeddingIndexer {
         public void filesDeleted(Iterable<? extends Indexable> deleted, Context context) {
             try {
                 IndexingSupport is = IndexingSupport.getInstance(context);
-                for(Indexable i : deleted) {
+                for (Indexable i : deleted) {
                     is.removeDocuments(i);
                 }
             } catch (IOException ioe) {
@@ -463,7 +483,7 @@ public final class PHPIndexer extends EmbeddingIndexer {
         public void filesDirty(Iterable<? extends Indexable> dirty, Context context) {
             try {
                 IndexingSupport is = IndexingSupport.getInstance(context);
-                for(Indexable i : dirty) {
+                for (Indexable i : dirty) {
                     is.markDirtyDocuments(i);
                 }
             } catch (IOException ioe) {

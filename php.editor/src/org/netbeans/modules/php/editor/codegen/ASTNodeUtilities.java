@@ -62,9 +62,10 @@ import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
  *
  * @author Andrei Badea
  */
-public class ASTNodeUtilities {
+public final class ASTNodeUtilities {
 
-    private ASTNodeUtilities() {}
+    private ASTNodeUtilities() {
+    }
 
     public static Set<String> getVariablesInScope(ParserResult info, int offset, final VariableAcceptor acceptor) {
         List<ASTNode> path = NavUtils.underCaret(info, offset);

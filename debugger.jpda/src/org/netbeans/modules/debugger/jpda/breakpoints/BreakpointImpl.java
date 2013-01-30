@@ -119,6 +119,8 @@ abstract class BreakpointImpl implements ConditionedExecutor, PropertyChangeList
     private EvaluatorExpression compiledCondition;
     private List<EventRequest>  requests = new ArrayList<EventRequest>();
     private int                 hitCountFilter = 0;
+    private int                 customHitCount;
+    private int                 customHitCountFilter = 0;
 
     protected BreakpointImpl (JPDABreakpoint p, BreakpointsReader reader, JPDADebuggerImpl debugger, Session session) {
         this.debugger = debugger;
@@ -243,7 +245,11 @@ abstract class BreakpointImpl implements ConditionedExecutor, PropertyChangeList
     }
 
     protected void addEventRequest (EventRequest r) throws InternalExceptionWrapper, VMDisconnectedExceptionWrapper, ObjectCollectedExceptionWrapper, InvalidRequestStateExceptionWrapper {
-        addEventRequest(r, false);
+        addEventRequest(r, customHitCountFilter != 0);
+    }
+    
+    protected final void setCustomHitCountFilter(int customHitCountFilter) {
+        this.customHitCountFilter = customHitCountFilter;
     }
     
     synchronized protected void addEventRequest (EventRequest r, boolean ignoreHitCount) throws InternalExceptionWrapper, VMDisconnectedExceptionWrapper, ObjectCollectedExceptionWrapper, InvalidRequestStateExceptionWrapper {
@@ -341,6 +347,34 @@ abstract class BreakpointImpl implements ConditionedExecutor, PropertyChangeList
 
     private final Map<Event, Variable> processedReturnVariable = new HashMap<Event, Variable>();
     private final Map<Event, Throwable> conditionException = new HashMap<Event, Throwable>();
+    
+    private Boolean processCustomHitCount() {
+        if (customHitCountFilter > 0) {
+            customHitCount++;
+            switch (breakpoint.getHitCountFilteringStyle()) {
+                case MULTIPLE:
+                    if ((customHitCount % customHitCountFilter) != 0) {
+                        return false;
+                    }
+                    break;
+                case EQUAL:
+                    if (customHitCountFilter != customHitCount) {
+                        return false;
+                    }
+                    customHitCountFilter = 0;
+                    removeAllEventRequests();
+                    break;
+                case GREATER:
+                    if (customHitCount <= customHitCountFilter) {
+                        return false;
+                    }
+                    break;
+                default:
+                    throw new IllegalStateException(getBreakpoint().getHitCountFilteringStyle().name());
+            }
+        }
+        return null;
+    }
 
     public boolean processCondition(
             Event event,
@@ -358,18 +392,24 @@ abstract class BreakpointImpl implements ConditionedExecutor, PropertyChangeList
             Value returnValue,
             ObjectReference contextValue) {
 
+        Boolean CHCprocessed = processCustomHitCount();
+        if (CHCprocessed != null) {
+            return CHCprocessed.booleanValue();
+        }
         try {
             EventRequest request = EventWrapper.request(event);
-            if (hitCountFilter > 0) {
-                EventRequestWrapper.disable(request);
-                //event.request().addCountFilter(hitCountFilter);
-                // This submits the event with the filter again
-                EventRequestWrapper.enable(request);
-            }
-            if (hitCountFilter == -1) {
-                EventRequestWrapper.disable(request);
-                removeEventRequest(request);
-                addEventRequest(createEventRequest(request), true);
+            if (customHitCountFilter == 0) {
+                if (hitCountFilter > 0) {
+                    EventRequestWrapper.disable(request);
+                    //event.request().addCountFilter(hitCountFilter);
+                    // This submits the event with the filter again
+                    EventRequestWrapper.enable(request);
+                }
+                if (hitCountFilter == -1) {
+                    EventRequestWrapper.disable(request);
+                    removeEventRequest(request);
+                    addEventRequest(createEventRequest(request), true);
+                }
             }
 
             Variable variable = null;
@@ -478,17 +518,19 @@ abstract class BreakpointImpl implements ConditionedExecutor, PropertyChangeList
         }
         resume = brkpSuspend.intValue() == JPDABreakpoint.SUSPEND_NONE || e.getResume ();
         logger.fine("BreakpointImpl: perform breakpoint: " + this + " resume: " + resume);
-        if (!resume) {
-            try {
-                resume = checkWhetherResumeToFinishStep(threadReference);
-            } catch (InternalExceptionWrapper ex) {
-                return false;
-            } catch (VMDisconnectedExceptionWrapper ex) {
-                return false;
+        if (threadReference != null) {
+            if (!resume) {
+                try {
+                    resume = checkWhetherResumeToFinishStep(threadReference);
+                } catch (InternalExceptionWrapper ex) {
+                    return false;
+                } catch (VMDisconnectedExceptionWrapper ex) {
+                    return false;
+                }
             }
-        }
-        if (!resume) {
-            getDebugger().getThread(threadReference).setCurrentBreakpoint(breakpoint);
+            if (!resume) {
+                getDebugger().getThread(threadReference).setCurrentBreakpoint(breakpoint);
+            }
         }
         //S ystem.out.println("BreakpointImpl.perform end");
         return resume; 

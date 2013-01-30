@@ -88,17 +88,25 @@ public class CCParser {
             int state = INIT;
             TokenSequence<JavaTokenId> ts = controller.getTokenHierarchy().tokenSequence(JavaTokenId.language());
             ts.moveStart();
-            if (ts.move(offset) == 0)if(!ts.moveNext())ts.movePrevious();
+            if (ts.move(offset) == 0) {
+                if(!ts.moveNext()) {
+                        ts.movePrevious();
+                    }
+            }
             Token<JavaTokenId> titk = ts.token();
             JavaTokenId id = titk.id();
             
             assert id == JavaTokenId.AT;
             
             int nnstart = ts.offset();
-            int nnend = -1;
+            int nnend;
             String nnName = null;
             String currAttrName = null;
             String currAttrValue = null;
+            int currAttrStartOffset = -1;
+            boolean currAttrQuated = false;
+            int lparopened = 0;
+            
             List<NNAttr> attrs = new ArrayList<NNAttr>(5);
             //helper var
             int eqOffset = -1;
@@ -107,7 +115,9 @@ public class CCParser {
                 id = titk.id();
                 //ignore whitespaces
                 if(id == JavaTokenId.WHITESPACE || id==JavaTokenId.LINE_COMMENT || id==JavaTokenId.BLOCK_COMMENT || id==JavaTokenId.JAVADOC_COMMENT) {
-                    if(!ts.moveNext())break;
+                    if(!ts.moveNext()) {
+                        break;
+                    }
                     titk = ts.token();
                     continue;
                 }
@@ -170,6 +180,9 @@ public class CCParser {
                         switch(id) {
                             case EQ:
                                 state = EQ;
+                                currAttrValue = "";
+                                currAttrStartOffset = -1;
+                                currAttrQuated = false;
                                 eqOffset = ts.offset();
                                 break;
                             default:
@@ -179,14 +192,25 @@ public class CCParser {
                     case EQ:
                         switch(id) {
                             case STRING_LITERAL:
-                                state = INNN;
-                                currAttrValue = Utils.unquote(titk.text().toString());
-                                attrs.add(new NNAttr(currAttrName, currAttrValue, ts.offset(), true));
+                                currAttrStartOffset = currAttrStartOffset<0 ? ts.offset() : currAttrStartOffset;
+                                currAttrQuated = true;//currently is used in cc and we support qq for one literal only, may need to be revieved later for "combined" cases
+                                currAttrValue += Utils.unquote(titk.text().toString());
                                 break;
+                            case DOT:
                             case IDENTIFIER:
-                                state = INNN;
-                                currAttrValue = titk.text().toString();
-                                attrs.add(new NNAttr(currAttrName, currAttrValue, ts.offset(), false));
+                                //need to collect data, do not switch to INNN here
+                                //multidot identifier can be expected, and it may be summ with literals and with parensis
+                                currAttrStartOffset = currAttrStartOffset<0 ? ts.offset() : currAttrStartOffset;
+                                currAttrValue += titk.text().toString();
+                                break;
+                            case PLUS:
+                                currAttrStartOffset = currAttrStartOffset<0 ? ts.offset() : currAttrStartOffset;
+                                currAttrValue += titk.text().toString();
+                                break;
+                            case LPAREN:
+                                lparopened++;
+                                currAttrStartOffset = currAttrStartOffset<0 ? ts.offset() : currAttrStartOffset;
+                                currAttrValue += titk.text().toString();
                                 break;
                             case AT:
                                 //nested annotation
@@ -194,9 +218,25 @@ public class CCParser {
                                 attrs.add(new NNAttr(currAttrName, nestedNN, ts.offset(), false));
                                 state = INNN;
                                 //I need to skip what was parsed in the nested annotation in this parser
-                                if (ts.move(nestedNN.getEndOffset()) == 0)if(!ts.moveNext())ts.movePrevious();
+                                if (ts.move(nestedNN.getEndOffset()) == 0) {
+                                    if(!ts.moveNext()) {
+                                                        ts.movePrevious();
+                                                    }
+                                }
                                 titk = ts.token();
                                 continue; //next loop
+                            case RPAREN:
+                                lparopened--;
+                                if(lparopened<0){
+                                    state = INNN;
+                                    attrs.add(new NNAttr(currAttrName, currAttrValue, currAttrStartOffset, currAttrQuated));
+                                    ts.movePrevious();
+                                    break;
+                                }
+                            case COMMA:
+                                    state = INNN;
+                                    attrs.add(new NNAttr(currAttrName, currAttrValue, currAttrStartOffset, currAttrQuated));
+                                    break;
                             default:
                                 //ERROR => recover
                                 //set the start offset of the value to the offset of the equator + 1
@@ -212,7 +252,9 @@ public class CCParser {
                     CC newNN = new CC(nnName, attrs, nnstart, nnend);
                     return newNN;
                 }
-                if(!ts.moveNext()) break;
+                if(!ts.moveNext()) {
+                    break;
+                }
                 titk = ts.token();//get next token
                 
             } while(titk != null);
@@ -230,26 +272,29 @@ public class CCParser {
             int parentCount = -100;
 
             TokenSequence<JavaTokenId> ts = controller.getTokenHierarchy().tokenSequence(JavaTokenId.language());
-            if (ts.move(offset) == 0 || !ts.moveNext())
+            if (ts.move(offset) == 0 || !ts.moveNext()) {
                 ts.movePrevious();
+            }
             int len = offset - ts.offset();
             if (len > 0 && (ts.token().id() == JavaTokenId.IDENTIFIER ||
                     ts.token().id().primaryCategory().startsWith("keyword") || //NOI18N
                     ts.token().id().primaryCategory().startsWith("string") || //NOI18N
                     ts.token().id().primaryCategory().equals("literal")) //NOI18N
                     && ts.token().length() >= len) { //TODO: Use isKeyword(...) when available
-                String prefix = ts.token().toString().substring(0, len);
-                offset = ts.offset();
             }
             Token<JavaTokenId> titk = ts.token();
             while(titk != null) {
                     JavaTokenId id = titk.id();
 
                 if(id == JavaTokenId.RPAREN) {
-                    if(parentCount == -100) parentCount = 0;
+                    if(parentCount == -100) {
+                        parentCount = 0;
+                    }
                     parentCount++;
                 } else if(id == JavaTokenId.LPAREN) {
-                    if(parentCount == -100) parentCount = 0;
+                    if(parentCount == -100) {
+                        parentCount = 0;
+                    }
                     parentCount--;
                 } else if(id == JavaTokenId.AT) {
                     if(parentCount == -1 || parentCount == -100) { //needed if offset is not within annotation content
@@ -266,7 +311,7 @@ public class CCParser {
         return -1;
     }
     
-    public class NNAttr {
+    public static class NNAttr {
         private String name;
         private Object value;
         private int valueOffset;
@@ -297,7 +342,7 @@ public class CCParser {
         
     }
     
-    public class CC {
+    public static class CC {
         
         private String name;
         private List<NNAttr> attributes;
@@ -330,13 +375,14 @@ public class CCParser {
             NNAttr prevnn = null;
             for(NNAttr nnattr : getAttributesList()) {
                 if(nnattr.getValueOffset() >= offset) {
-                    prevnn = nnattr;
                     break;
                 }
                 prevnn = nnattr;
             }
             
-            if(prevnn == null) return null;
+            if(prevnn == null) {
+                return null;
+            }
             
             int nnEndOffset = prevnn.getValueOffset() + prevnn.getValue().toString().length() + (prevnn.isValueQuoted() ? 2 : 0);
             if(nnEndOffset >= offset && prevnn.getValueOffset() <= offset) {
@@ -369,7 +415,7 @@ public class CCParser {
         }
     }
     
-    public class MD{
+    public static class MD{
         private final String methodName;
         private final boolean withQ;
         private final boolean insideParam;

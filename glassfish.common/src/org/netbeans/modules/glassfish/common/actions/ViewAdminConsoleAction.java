@@ -48,8 +48,8 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.glassfish.common.CommonServerSupport;
+import org.netbeans.modules.glassfish.common.GlassFishStatus;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
-import org.netbeans.modules.glassfish.spi.GlassfishModule.ServerState;
 import org.netbeans.modules.glassfish.spi.Utils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -67,9 +67,11 @@ public class ViewAdminConsoleAction extends NodeAction {
 
     @Override
     protected void performAction(Node[] activatedNodes) {
-        GlassfishModule commonSupport = activatedNodes[0].getLookup().lookup(GlassfishModule.class);
+        CommonServerSupport commonSupport
+                = (CommonServerSupport)activatedNodes[0]
+                .getLookup().lookup(GlassfishModule.class);
         if(commonSupport != null) {
-            if (((CommonServerSupport) commonSupport).isReallyRunning()) { //getServerState() == ServerState.RUNNING) {
+            if (GlassFishStatus.isReady(commonSupport.getInstance(), false)) { //getServerState() == ServerState.RUNNING) {
                 try {
                     Map<String, String> ip = commonSupport.getInstanceProperties();
                     StringBuilder urlBuilder = new StringBuilder(128);

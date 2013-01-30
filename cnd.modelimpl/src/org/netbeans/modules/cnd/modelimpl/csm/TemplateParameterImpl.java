@@ -53,13 +53,13 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
 import org.netbeans.modules.cnd.modelimpl.csm.core.CsmIdentifiable;
-import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmSpecializationParameter;
 import org.netbeans.modules.cnd.api.model.CsmTemplate;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.modelimpl.csm.TypeBasedSpecializationParameterImpl.TypeBasedSpecializationParameterBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
@@ -100,6 +100,16 @@ public final class TemplateParameterImpl<T> extends OffsetableDeclarationBase<T>
             this.defaultValue = new TypeBasedSpecializationParameterImpl(type);
         }
     }
+    
+    private TemplateParameterImpl(CharSequence name, TemplateDescriptor templateDescriptor, TypeBasedSpecializationParameterImpl defaultValue,  boolean variadic, CsmScope scope, CsmFile file, int startOffset, int endOffset) {
+        super(file, startOffset, endOffset);
+        this.name = NameCache.getManager().getString(name);
+        this.templateDescriptor = templateDescriptor;
+        if ((scope instanceof CsmIdentifiable)) {
+            this.scope = UIDCsmConverter.scopeToUID(scope);
+        }
+        this.defaultValue = variadic ? VARIADIC : defaultValue;
+    }    
     
     @Override
     public CharSequence getName() {
@@ -160,6 +170,37 @@ public final class TemplateParameterImpl<T> extends OffsetableDeclarationBase<T>
     public CharSequence getDisplayName() {
         return (templateDescriptor != null) ? CharSequences.create((getName().toString() + templateDescriptor.getTemplateSuffix())) : getName();
     }
+    
+    
+    public static class TemplateParameterBuilder extends SimpleDeclarationBuilder {
+
+        private boolean variadic = false;
+        private TypeBasedSpecializationParameterBuilder defaultValue;
+
+        public void setDefaultValue(TypeBasedSpecializationParameterBuilder defaultValue) {
+            this.defaultValue = defaultValue;
+        }
+
+        public void setVariadic() {
+            this.variadic = true;
+        }
+        
+        @Override
+        public TemplateParameterImpl create() {
+            TemplateDescriptor td = null;
+            if(getTemplateDescriptorBuilder() != null) {
+                getTemplateDescriptorBuilder().setScope(getScope());
+                td = getTemplateDescriptorBuilder().create();
+            }
+            TypeBasedSpecializationParameterImpl value = null;
+            if(defaultValue != null) {
+                defaultValue.setScope(getScope());
+                value = defaultValue.create();
+            }
+            TemplateParameterImpl param = new TemplateParameterImpl(getName(), td, value, variadic, getScope(), getFile(), getStartOffset(), getEndOffset());
+            return param;
+        }
+    }      
     
     ////////////////////////////////////////////////////////////////////////////
     // impl of SelfPersistent

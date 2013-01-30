@@ -44,8 +44,6 @@
 
 package org.netbeans.api.java.source;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -73,6 +71,7 @@ import com.sun.tools.javac.code.Scope.ImportScope;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.*;
 import com.sun.tools.javac.code.Type;
+import com.sun.tools.javac.code.Type.TypeVar;
 import com.sun.tools.javac.code.Types;
 import com.sun.tools.javac.comp.Check;
 import com.sun.tools.javac.model.JavacElements;
@@ -97,6 +96,10 @@ import org.netbeans.api.java.queries.JavadocForBinaryQuery;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.java.source.ClasspathInfo.PathKind;
 import org.netbeans.api.java.source.JavaSource.Phase;
+import static org.netbeans.api.java.source.SourceUtils.getDependentRootsImpl;
+import org.netbeans.api.java.source.matching.Matcher;
+import org.netbeans.api.java.source.matching.Occurrence;
+import org.netbeans.api.java.source.matching.Pattern;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.java.JavaDataLoader;
@@ -118,7 +121,6 @@ import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.modules.parsing.impl.indexing.friendapi.IndexingController;
-import org.netbeans.modules.parsing.lucene.support.IndexManager;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 
 import org.openide.filesystems.FileObject;
@@ -167,34 +169,23 @@ public class SourceUtils {
      * @since 0.85
      */
     public static Set<TreePath> computeDuplicates(CompilationInfo info, TreePath searchingFor, TreePath scope, AtomicBoolean cancel) {
-        try {
-            ClassLoader loader = Lookup.getDefault().lookup(ClassLoader.class);
-            Class copyFinderClass = loader.loadClass("org.netbeans.modules.java.hints.introduce.CopyFinderService");
-            Object copyFinderInstance = Lookup.getDefault().lookup(copyFinderClass);
-            if (copyFinderInstance != null) {
-                Method method = copyFinderClass.getMethod("computeDuplicates", CompilationInfo.class, TreePath.class, TreePath.class, AtomicBoolean.class);
-                if (method != null) {
-                    return (Set<TreePath>) method.invoke(copyFinderInstance, info, searchingFor, scope, cancel);
-                }
-            }
-        } catch (IllegalAccessException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (IllegalArgumentException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (InvocationTargetException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (NoSuchMethodException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (SecurityException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (ClassNotFoundException ex) {
-            Exceptions.printStackTrace(ex);
+        Set<TreePath> result = new HashSet<TreePath>();
+        
+        for (Occurrence od : Matcher.create(info).setCancel(cancel).setSearchRoot(scope).match(Pattern.createSimplePattern(searchingFor))) {
+            result.add(od.getOccurrenceRoot());
         }
-        return Collections.emptySet();
+
+        return result;
     }    
     
     public static boolean checkTypesAssignable(CompilationInfo info, TypeMirror from, TypeMirror to) {
         Context c = ((JavacTaskImpl) info.impl.getJavacTask()).getContext();
+        if (from.getKind() == TypeKind.TYPEVAR) {
+            Types types = Types.instance(c);
+            TypeVar t = types.substBound((TypeVar)from, com.sun.tools.javac.util.List.of((Type)from), com.sun.tools.javac.util.List.of(types.boxedTypeOrType((Type)to)));
+            return info.getTypes().isAssignable(t.getUpperBound(), to)
+                    || info.getTypes().isAssignable(to, t.getUpperBound());
+        }
         if (from.getKind() == TypeKind.WILDCARD) {
             from = Types.instance(c).upperBound((Type)from);
         }
@@ -400,9 +391,8 @@ public class SourceUtils {
         if ("text/x-java".equals(topLevelLanguageMIMEType)){ //NOI18N
             final Set<Element> elementsToImport = Collections.singleton(toImport);
             if (info instanceof WorkingCopy) {
-                CompilationUnitTree nue = (CompilationUnitTree) ((WorkingCopy)info).getChangeSet().get(cut);
-                cut = nue != null ? nue : cut;
-                ((WorkingCopy)info).rewrite(info.getCompilationUnit(), GeneratorUtilities.get((WorkingCopy)info).addImports(cut, elementsToImport));
+                CompilationUnitTree nue = (CompilationUnitTree) ((WorkingCopy)info).resolveRewriteTarget(cut);
+                ((WorkingCopy)info).rewrite(info.getCompilationUnit(), GeneratorUtilities.get((WorkingCopy)info).addImports(nue, elementsToImport));
             } else {
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
@@ -686,12 +676,30 @@ public class SourceUtils {
     public static Set<URL> getDependentRoots (final URL root) {
         final Map<URL, List<URL>> sourceDeps = IndexingController.getDefault().getRootDependencies();
         final Map<URL, List<URL>> binaryDeps = IndexingController.getDefault().getBinaryRootDependencies();
-        return getDependentRootsImpl (root, sourceDeps, binaryDeps);
+        return getDependentRootsImpl (root, sourceDeps, binaryDeps, true);
     }
     
+    /**
+     * Returns the dependent source path roots for given source root. It returns
+     * all the source roots which have either direct or transitive dependency on
+     * the given source root.
+     *
+     * @param root to find the dependent roots for
+     * @param filterNonOpenedProjects true if the results should only contain roots for
+     * opened projects
+     * @return {@link Set} of {@link URL}s containing at least the incoming
+     * root, never returns null.
+     * @since 0.110
+     */
+    @org.netbeans.api.annotations.common.SuppressWarnings(value = {"DMI_COLLECTION_OF_URLS"}/*,justification="URLs have never host part"*/)    //NOI18N
+    public static Set<URL> getDependentRoots(final URL root, boolean filterNonOpenedProjects) {
+        final Map<URL, List<URL>> sourceDeps = IndexingController.getDefault().getRootDependencies();
+        final Map<URL, List<URL>> binaryDeps = IndexingController.getDefault().getBinaryRootDependencies();
+        return getDependentRootsImpl(root, sourceDeps, binaryDeps, filterNonOpenedProjects);
+    }
 
     @org.netbeans.api.annotations.common.SuppressWarnings(value={"DMI_COLLECTION_OF_URLS"}/*,justification="URLs have never host part"*/)    //NOI18N
-    static Set<URL> getDependentRootsImpl (final URL root, final Map<URL, List<URL>> sourceDeps, Map<URL, List<URL>> binaryDeps) {
+    static Set<URL> getDependentRootsImpl (final URL root, final Map<URL, List<URL>> sourceDeps, Map<URL, List<URL>> binaryDeps, boolean filterNonOpenedProjects) {
         Set<URL> urls;
 
         if (sourceDeps.containsKey(root)) {
@@ -714,15 +722,16 @@ public class SourceUtils {
             }
         }
 
-        //Filter non opened projects
-        Set<ClassPath> cps = GlobalPathRegistry.getDefault().getPaths(ClassPath.SOURCE);
-        Set<URL> toRetain = new HashSet<URL>();
-        for (ClassPath cp : cps) {
-            for (ClassPath.Entry e : cp.entries()) {
-                toRetain.add(e.getURL());
+        if(filterNonOpenedProjects) {
+            Set<ClassPath> cps = GlobalPathRegistry.getDefault().getPaths(ClassPath.SOURCE);
+            Set<URL> toRetain = new HashSet<URL>();
+            for (ClassPath cp : cps) {
+                for (ClassPath.Entry e : cp.entries()) {
+                    toRetain.add(e.getURL());
+                }
             }
+            urls.retainAll(toRetain);
         }
-        urls.retainAll(toRetain);
         return urls;
     }    
     

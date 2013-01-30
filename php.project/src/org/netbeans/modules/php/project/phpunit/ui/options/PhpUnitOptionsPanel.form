@@ -24,18 +24,6 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Component id="errorLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-          <Component id="noteLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-          <Group type="102" attributes="0">
-              <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="phpUnitInfoLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="phpUnitPhp53InfoLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="installationInfoLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="phpUnitLearnMoreLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="skelGenLearnMoreLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-              </Group>
-          </Group>
           <Group type="102" alignment="0" attributes="0">
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="phpUnitLabel" min="-2" max="-2" attributes="0"/>
@@ -76,6 +64,24 @@
                   </Group>
               </Group>
           </Group>
+          <Group type="102" attributes="0">
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Component id="errorLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="noteLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Group type="102" attributes="0">
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="phpUnitInfoLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="phpUnitPhp53InfoLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="installationInfoLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="phpUnitLearnMoreLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="skelGenLearnMoreLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="phpUnit370InfoLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                  </Group>
+              </Group>
+              <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+          </Group>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">
@@ -104,6 +110,8 @@
               <Component id="phpUnitInfoLabel" min="-2" max="-2" attributes="0"/>
               <EmptySpace type="separate" max="-2" attributes="0"/>
               <Component id="phpUnitPhp53InfoLabel" min="-2" max="-2" attributes="0"/>
+              <EmptySpace type="separate" max="-2" attributes="0"/>
+              <Component id="phpUnit370InfoLabel" min="-2" max="-2" attributes="0"/>
               <EmptySpace type="separate" max="-2" attributes="0"/>
               <Component id="installationInfoLabel" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
@@ -276,6 +284,13 @@
           <ResourceString bundle="org/netbeans/modules/php/project/phpunit/Bundle.properties" key="PhpUnitOptionsPanel.phpUnitPhp53InfoLabel.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </AccessibilityProperties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="phpUnit370InfoLabel">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/php/project/phpunit/ui/options/Bundle.properties" key="PhpUnitOptionsPanel.phpUnit370InfoLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
     </Component>
     <Component class="javax.swing.JLabel" name="installationInfoLabel">
       <Properties>

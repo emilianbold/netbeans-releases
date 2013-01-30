@@ -60,12 +60,14 @@ import javax.swing.JPanel;
 import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.beaninfo.editors.HtmlBrowser;
 import org.netbeans.core.ProxySettings;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.awt.Mnemonics;
+import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -75,6 +77,7 @@ import org.openide.util.NbBundle;
  *
  * @author Jan Jancura
  */
+@OptionsPanelController.Keywords(keywords={"#KW_General"}, location=OptionsDisplayer.GENERAL)
 public class GeneralOptionsPanel extends JPanel implements ActionListener {
     
     private boolean                 changed = false;
@@ -187,6 +190,7 @@ public class GeneralOptionsPanel extends JPanel implements ActionListener {
      */
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
+        java.awt.GridBagConstraints gridBagConstraints;
 
         lWebBrowser = new javax.swing.JLabel();
         cbWebBrowser = new javax.swing.JComboBox();
@@ -202,11 +206,12 @@ public class GeneralOptionsPanel extends JPanel implements ActionListener {
         bMoreProxy = new javax.swing.JButton();
         editBrowserButton = new javax.swing.JButton();
         jSeparator3 = new javax.swing.JSeparator();
-        lUsage = new javax.swing.JLabel();
-        jUsageCheck = new javax.swing.JCheckBox();
-        lblUsageInfo = new javax.swing.JLabel();
-        lblLearnMore = new javax.swing.JLabel();
         errorLabel = new javax.swing.JLabel();
+        jPanel1 = new javax.swing.JPanel();
+        lblLearnMore = new javax.swing.JLabel();
+        lblUsageInfo = new javax.swing.JLabel();
+        jUsageCheck = new javax.swing.JCheckBox();
+        lUsage = new javax.swing.JLabel();
 
         lWebBrowser.setLabelFor(cbWebBrowser);
         org.openide.awt.Mnemonics.setLocalizedText(lWebBrowser, org.openide.util.NbBundle.getMessage(GeneralOptionsPanel.class, "GeneralOptionsPanel.lWebBrowser.text")); // NOI18N
@@ -261,12 +266,9 @@ public class GeneralOptionsPanel extends JPanel implements ActionListener {
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(lUsage, "Usage Statistics:"); // NOI18N
+        errorLabel.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
 
-        org.openide.awt.Mnemonics.setLocalizedText(jUsageCheck, "Help us improve the NetBeans IDE by providing anonymous usage data"); // NOI18N
-
-        org.openide.awt.Mnemonics.setLocalizedText(lblUsageInfo, "<html>The usage statistics help us better understand user\nrequirements and prioritize improvements in future releases. We will never\nreverse-engineer the collected data to find specific details about your projects.</html>"); // NOI18N
-        lblUsageInfo.setFocusable(false);
+        jPanel1.setLayout(new java.awt.GridBagLayout());
 
         org.openide.awt.Mnemonics.setLocalizedText(lblLearnMore, "<html><font color=\"#0000FF\" <u>Learn more</u></font></html>"); // NOI18N
         lblLearnMore.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -277,8 +279,40 @@ public class GeneralOptionsPanel extends JPanel implements ActionListener {
                 lblLearnMoreMousePressed(evt);
             }
         });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 15, 0, 0);
+        jPanel1.add(lblLearnMore, gridBagConstraints);
 
-        errorLabel.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
+        org.openide.awt.Mnemonics.setLocalizedText(lblUsageInfo, "<html>The usage statistics help us better understand user\nrequirements and prioritize improvements in future releases. We will never\nreverse-engineer the collected data to find specific details about your projects.</html>"); // NOI18N
+        lblUsageInfo.setFocusable(false);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 15, 5, 0);
+        jPanel1.add(lblUsageInfo, gridBagConstraints);
+
+        org.openide.awt.Mnemonics.setLocalizedText(jUsageCheck, "Help us improve the NetBeans IDE by providing anonymous usage data"); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 15, 5, 0);
+        jPanel1.add(jUsageCheck, gridBagConstraints);
+
+        org.openide.awt.Mnemonics.setLocalizedText(lUsage, "Usage Statistics:"); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
+        jPanel1.add(lUsage, gridBagConstraints);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -290,10 +324,10 @@ public class GeneralOptionsPanel extends JPanel implements ActionListener {
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addComponent(lWebBrowser)
                         .addGap(18, 18, 18)
-                        .addComponent(cbWebBrowser, 0, 1294, Short.MAX_VALUE)
+                        .addComponent(cbWebBrowser, 0, 1317, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(editBrowserButton))
-                    .addComponent(jSeparator2, javax.swing.GroupLayout.DEFAULT_SIZE, 1494, Short.MAX_VALUE)
+                    .addComponent(jSeparator2, javax.swing.GroupLayout.DEFAULT_SIZE, 1495, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(lWebProxy)
                         .addGap(18, 18, 18)
@@ -307,7 +341,7 @@ public class GeneralOptionsPanel extends JPanel implements ActionListener {
                                     .addGroup(layout.createSequentialGroup()
                                         .addComponent(bMoreProxy)
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(errorLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 1254, Short.MAX_VALUE))
+                                        .addComponent(errorLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 1279, Short.MAX_VALUE))
                                     .addGroup(layout.createSequentialGroup()
                                         .addComponent(lProxyHost)
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
@@ -316,17 +350,10 @@ public class GeneralOptionsPanel extends JPanel implements ActionListener {
                                         .addComponent(lProxyPort)
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                                         .addComponent(tfProxyPort, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))))
-                    .addComponent(jSeparator3, javax.swing.GroupLayout.DEFAULT_SIZE, 1494, Short.MAX_VALUE)
+                    .addComponent(jSeparator3, javax.swing.GroupLayout.DEFAULT_SIZE, 1495, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(lUsage)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(lblUsageInfo, javax.swing.GroupLayout.DEFAULT_SIZE, 1365, Short.MAX_VALUE)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(jUsageCheck)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 838, Short.MAX_VALUE))
-                            .addComponent(lblLearnMore, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                .addGap(0, 0, 0))
+                        .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                        .addContainerGap())))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -360,14 +387,8 @@ public class GeneralOptionsPanel extends JPanel implements ActionListener {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jSeparator3, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(lUsage)
-                    .addComponent(jUsageCheck))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(lblUsageInfo, javax.swing.GroupLayout.PREFERRED_SIZE, 52, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(lblLearnMore, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(24, Short.MAX_VALUE))
+                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
         );
 
         bMoreProxy.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(GeneralOptionsPanel.class, "LBL_GeneralOptionsPanel_bMoreProxy.AN")); // NOI18N
@@ -389,6 +410,7 @@ private void editBrowserButtonActionPerformed(java.awt.event.ActionEvent evt) {/
                 }
             }
         });
+    dialogDesc.setHelpCtx( new HelpCtx("WebBrowsersManager") ); //NOI18N
     DialogDisplayer.getDefault().createDialog(dialogDesc).setVisible(true);
     if (dialogDesc.getValue().equals(DialogDescriptor.OK_OPTION)) {
         updateWebBrowsers();
@@ -460,6 +482,7 @@ private void bMoreProxyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     private javax.swing.JComboBox cbWebBrowser;
     private javax.swing.JButton editBrowserButton;
     private javax.swing.JLabel errorLabel;
+    private javax.swing.JPanel jPanel1;
     private javax.swing.JSeparator jSeparator2;
     private javax.swing.JSeparator jSeparator3;
     private javax.swing.JCheckBox jUsageCheck;

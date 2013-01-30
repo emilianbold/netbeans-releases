@@ -165,7 +165,7 @@ public class PropertiesTablePanel extends DefaultTablePanel {
         }
     }
     
-    private class PropertyPanelListner implements ActionListener {
+    private static class PropertyPanelListner implements ActionListener {
         
         private EditDialog dialog;
         

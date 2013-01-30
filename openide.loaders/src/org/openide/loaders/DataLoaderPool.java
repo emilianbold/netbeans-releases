@@ -1024,7 +1024,7 @@ private static final class ShadowLoader extends UniFileLoader {
      */
     @Override
     protected FileObject findPrimaryFile(FileObject fo) {
-        if (fo.hasExt (DataShadow.SHADOW_EXTENSION)) {
+        if (fo.isData() && fo.hasExt (DataShadow.SHADOW_EXTENSION)) {
             return fo;
         }
         return null;

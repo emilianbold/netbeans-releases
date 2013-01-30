@@ -41,37 +41,45 @@
  */
 package org.netbeans.modules.css.editor.csl;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.api.Severity;
-import java.util.ArrayList;
-import java.util.List;
 import org.netbeans.modules.css.editor.Css3Utils;
-import org.netbeans.modules.css.editor.module.CssModuleSupport;
-import org.netbeans.modules.css.editor.properties.CustomErrorMessageProvider;
-import org.netbeans.modules.css.editor.properties.parser.PropertyModel;
-import org.netbeans.modules.css.editor.properties.parser.PropertyValue;
+import org.netbeans.modules.css.editor.CssDeclarationContext;
+import org.netbeans.modules.css.lib.api.CssParserResult;
+import org.netbeans.modules.css.lib.api.ErrorsProvider;
 import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.lib.api.NodeType;
-import org.netbeans.modules.css.lib.api.NodeUtil;
 import org.netbeans.modules.css.lib.api.NodeVisitor;
+import org.netbeans.modules.css.lib.api.properties.Properties;
+import org.netbeans.modules.css.lib.api.properties.PropertyDefinition;
+import org.netbeans.modules.css.lib.api.properties.ResolvedProperty;
+import org.netbeans.modules.css.lib.api.properties.Token;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
+ * Provides extended errors from semantic css analysis.
+ * 
  * @author mfukala@netbeans.org
  */
-public class CssAnalyser {
+@ServiceProvider(service=ErrorsProvider.class)
+public class CssAnalyser implements ErrorsProvider {
 
     private static final String UNKNOWN_PROPERTY_BUNDLE_KEY = "unknown_property";//NOI18N
     private static final String UNKNOWN_PROPERTY_ERROR_KEY_DELIMITER = "/";//NOI18N
     private static final String UNKNOWN_PROPERTY_ERROR_KEY = "unknown_property" + UNKNOWN_PROPERTY_ERROR_KEY_DELIMITER;//NOI18N
     private static final String INVALID_PROPERTY_VALUE = "invalid_property_value";//NOI18N
 
-    //returned error offsets are AST offsets
-    public static List<Error> checkForErrors(final Snapshot snapshot, final Node node) {
+    @Override
+    public List<? extends Error> getExtendedDiagnostics(CssParserResult parserResult) {
+        final Node node = parserResult.getParseTree();
+        final Snapshot snapshot = parserResult.getSnapshot();
         final FileObject file = snapshot.getSource().getFileObject();
         
         List<Error> errors = new ArrayList<Error>();
@@ -90,12 +98,13 @@ public class CssAnalyser {
                                 return false; 
                         }
                     }
+                    CssDeclarationContext ctx = new CssDeclarationContext(node);
                     
-                    Node propertyNode = NodeUtil.getChildByType(node, NodeType.property);
-                    Node valueNode = NodeUtil.getChildByType(node, NodeType.expr);
-
+                    Node propertyNode = ctx.getProperty();
+                    Node valueNode = ctx.getPropertyValue();
+                    
                     if (propertyNode != null) {
-                        String propertyName = propertyNode.image().toString().trim();
+                        String propertyName = ctx.getPropertyNameImage();
 
                         //check non css 2.1 compatible properties and ignore them
                         //values are not checked as well
@@ -104,7 +113,7 @@ public class CssAnalyser {
                         }
 
                         //check for vendor specific properies - ignore them
-                        PropertyModel property = CssModuleSupport.getPropertyModel(propertyName, file);
+                        PropertyDefinition property = Properties.getPropertyDefinition(propertyName);
                         if (!Css3Utils.containsGeneratedCode(propertyName) && !Css3Utils.isVendorSpecificProperty(propertyName) && property == null) {
                             //unknown property - report
                             String msg = NbBundle.getMessage(CssAnalyser.class, UNKNOWN_PROPERTY_BUNDLE_KEY, propertyName);
@@ -123,39 +132,50 @@ public class CssAnalyser {
 
                         //check value
                         if (valueNode != null && property != null) {
-                            String valueImage = valueNode.image().toString().trim();
+                            String valueImage = ctx.getPropertyValueImage();
                             
                             //do not check values which contains generated code
                             //we are no able to identify the templating semantic
-                            if (!Css3Utils.containsGeneratedCode(valueImage)) {
-                                PropertyValue pv = new PropertyValue(property, valueImage);
+                            if (!Css3Utils.containsGeneratedCode(valueImage) 
+                                    //TODO add support for checking value of vendor specific properties, not it is disabled.
+                                    && !Css3Utils.isVendorSpecificPropertyValue(file, valueImage)) {
+                                ResolvedProperty pv = new ResolvedProperty(file, property, valueImage);
                                 if (!pv.isResolved()) {
-                                    String errorMsg = null;
-                                    if (pv instanceof CustomErrorMessageProvider) {
-                                        errorMsg = ((CustomErrorMessageProvider) pv).customErrorMessage();
-                                    }
+                                    if(!ctx.containsIEBS9Hack() && !ctx.containsIEStarHack()) {
+                                        String errorMsg = null;
 
-                                    //error in property 
-                                    String unexpectedToken = pv.getUnresolvedTokens().get(pv.getUnresolvedTokens().size() - 1);
+                                        //error in property 
+                                        List<Token> unresolved = pv.getUnresolvedTokens();
+                                        if(unresolved.isEmpty()) {
+                                            return false;
+                                        }
+                                        Token unexpectedToken = unresolved.iterator().next();
 
-                                    if(isNonCss21CompatiblePropertyValue(unexpectedToken)) {
-                                        return false;
-                                    }
+                                        if(isNonCss21CompatiblePropertyValue(unexpectedToken.toString())) {
+                                            return false;
+                                        }
+                                        
+                                        CharSequence unexpectedTokenImg = unexpectedToken.image();
+                                        if(Css3Utils.isVendorSpecificPropertyValue(file, unexpectedTokenImg)) {
+                                            //the unexpected token is a vendor property value, ignore
+                                            return false;
+                                        }
 
-                                    if (errorMsg == null) {
-                                        errorMsg = NbBundle.getMessage(CssAnalyser.class, INVALID_PROPERTY_VALUE, unexpectedToken);
-                                    }
+                                        if (errorMsg == null) {
+                                            errorMsg = NbBundle.getMessage(CssAnalyser.class, INVALID_PROPERTY_VALUE, unexpectedToken.image().toString());
+                                        }
 
-                                    Error error = makeError(valueNode.from(),
-                                            valueNode.to(),
-                                            snapshot,
-                                            INVALID_PROPERTY_VALUE,
-                                            errorMsg,
-                                            errorMsg,
-                                            false /* not line error */,
-                                            Severity.WARNING);
-                                    if(error != null) {
-                                        getResult().add(error);
+                                        Error error = makeError(valueNode.from(),
+                                                valueNode.to(),
+                                                snapshot,
+                                                INVALID_PROPERTY_VALUE,
+                                                errorMsg,
+                                                errorMsg,
+                                                false /* not line error */,
+                                                Severity.WARNING);
+                                        if(error != null) {
+                                            getResult().add(error);
+                                        }
                                     }
                                 }
                             }

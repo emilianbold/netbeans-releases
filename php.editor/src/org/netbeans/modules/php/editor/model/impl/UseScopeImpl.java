@@ -59,13 +59,14 @@ import org.openide.util.Union2;
 
 class UseScopeImpl extends ScopeImpl implements UseScope {
     private AliasedName aliasName;
+
     UseScopeImpl(NamespaceScopeImpl inScope, ASTNodeInfo<UseStatementPart> node) {
-        this(inScope,node.getName(),inScope.getFile(),node.getRange());
+        this(inScope, node.getName(), inScope.getFile(), node.getRange());
         final Identifier alias = node.getOriginalNode().getAlias();
-        this.aliasName = alias != null ? new AliasedName(alias.getName(),QualifiedName.create(getName())) : null;
+        this.aliasName = alias != null ? new AliasedName(alias.getName(), QualifiedName.create(getName())) : null;
         AliasedName aliasedName = null;
         if (alias != null) {
-            aliasedName = new AliasedName(alias.getName(),QualifiedName.create(getName()));
+            aliasedName = new AliasedName(alias.getName(), QualifiedName.create(getName()));
             ASTNodeInfo<Expression> nodeInfo = ASTNodeInfo.create(ASTNodeInfo.Kind.USE_ALIAS, alias);
             new UseAliasElementImpl(this, nodeInfo);
         }

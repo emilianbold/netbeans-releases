@@ -44,6 +44,7 @@
 package org.openide;
 
 import java.awt.Component;
+import java.io.IOException;
 import java.util.*;
 import javax.swing.*;
 import javax.swing.JLabel;
@@ -217,7 +218,124 @@ public class AsynchronousValidatingPanelTest extends LoggingTestCaseHid {
         assertNull ("Finish was clicked, no initialization either", panels[2].component);
         assertEquals ("The state is finish", WizardDescriptor.FINISH_OPTION, wd.getValue ());
     }
-    
+
+    public void testCancelDuringValidation() throws InterruptedException {
+        final Panel panels[] = new Panel[2];
+
+        class ValidatingPanel extends Panel implements WizardDescriptor.AsynchronousValidatingPanel<WizardDescriptor> {
+            public String validateMsg;
+            public String failedMsg;
+            public boolean running;
+            public boolean wasEnabled;
+
+            public ValidatingPanel () {
+                super ("enhanced panel");
+            }
+
+            public void prepareValidation () {
+                running = true;
+            }
+
+            public synchronized void validate () throws WizardValidationException {
+                err.log ("validate() entry.");
+                try {
+                    Thread.sleep( 5000 );
+                } catch( InterruptedException ex ) {
+//                    Exceptions.printStackTrace( ex );
+                }
+                running = false;
+                notifyAll();
+                return;
+            }
+        }
+
+        panels[0] = new ValidatingPanel();
+        panels[1] = new Panel( "finish");
+
+        final boolean[] currentInvokedOnUninitializedIterator = new boolean[1];
+        currentInvokedOnUninitializedIterator[0] = false;
+
+        WizardDescriptor.AsynchronousInstantiatingIterator<WizardDescriptor> iterator = new WizardDescriptor.AsynchronousInstantiatingIterator<WizardDescriptor>() {
+
+            private int index;
+            private boolean uninitialized = false;
+
+            @Override
+            public Set instantiate() throws IOException {
+                return null;
+            }
+
+            @Override
+            public void initialize( WizardDescriptor wizard ) {
+                index = 0;
+            }
+
+            @Override
+            public void uninitialize( WizardDescriptor wizard ) {
+                index = -1;
+                uninitialized = true;
+            }
+
+            @Override
+            public WizardDescriptor.Panel<WizardDescriptor> current() {
+                if( uninitialized ) {
+                    currentInvokedOnUninitializedIterator[0] = uninitialized;
+                }
+                return panels[index];
+            }
+
+            @Override
+            public String name() {
+                return null;
+            }
+
+            @Override
+            public boolean hasNext() {
+                return index < panels.length;
+            }
+
+            @Override
+            public boolean hasPrevious() {
+                return index > 0;
+            }
+
+            @Override
+            public void nextPanel() {
+                index++;
+            }
+
+            @Override
+            public void previousPanel() {
+                index--;
+            }
+
+            @Override
+            public void addChangeListener( ChangeListener l ) {
+            }
+
+            @Override
+            public void removeChangeListener( ChangeListener l ) {
+            }
+        };
+
+        final WizardDescriptor descriptor = new WizardDescriptor( iterator );
+        SwingUtilities.invokeLater( new Runnable() {
+            @Override
+            public void run() {
+                descriptor.doNextClick();
+            }
+        });
+        SwingUtilities.invokeLater( new Runnable() {
+            @Override
+            public void run() {
+                descriptor.doCancelClick();
+            }
+        });
+
+        Thread.sleep (3000);
+        assertFalse( "Do not updateState() if the wizard has been canceled during validation.", currentInvokedOnUninitializedIterator[0] );
+    }
+
     public class Panel implements WizardDescriptor.Panel<WizardDescriptor>, WizardDescriptor.FinishablePanel<WizardDescriptor> {
         private JLabel component;
         private String text;

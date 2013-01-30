@@ -46,6 +46,10 @@ import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.Tree;
 import com.sun.tools.javac.api.JavacTaskImpl;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
+import com.sun.tools.javac.code.Symbol.TypeSymbol;
+import com.sun.tools.javac.comp.AttrContext;
+import com.sun.tools.javac.comp.Enter;
+import com.sun.tools.javac.comp.Env;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import org.netbeans.lib.nbjavac.services.CancelAbort;
@@ -55,7 +59,9 @@ import com.sun.tools.javac.util.FatalError;
 import com.sun.tools.javac.util.Log;
 import com.sun.tools.javac.util.MissingPlatformError;
 import java.io.File;
+import java.io.IOException;
 import java.util.*;
+import java.util.Map.Entry;
 import java.util.logging.Level;
 import javax.annotation.processing.Processor;
 import javax.lang.model.element.TypeElement;
@@ -72,12 +78,12 @@ import org.netbeans.modules.java.source.parsing.OutputFileManager;
 import org.netbeans.modules.java.source.usages.ClassNamesForFileOraculumImpl;
 import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
 import org.netbeans.modules.java.source.usages.ExecutableFilesIndex;
-import org.netbeans.modules.java.source.usages.Pair;
 import org.netbeans.modules.parsing.lucene.support.LowMemoryWatcher;
 import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.netbeans.modules.parsing.spi.indexing.SuspendStatus;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -103,74 +109,81 @@ final class SuperOnePassCompileWorker extends CompileWorker {
         final LowMemoryWatcher mem = LowMemoryWatcher.getInstance();
         final DiagnosticListenerImpl dc = new DiagnosticListenerImpl();
         final LinkedList<CompilationUnitTree> trees = new LinkedList<CompilationUnitTree>();
-        LinkedList<Pair<CompilationUnitTree, CompileTuple>> units = new LinkedList<Pair<CompilationUnitTree, CompileTuple>>();
+        Map<CompilationUnitTree, CompileTuple> units = new IdentityHashMap<CompilationUnitTree, CompileTuple>();
         JavacTaskImpl jt = null;
 
         boolean nop = true;
         final SuspendStatus suspendStatus = context.getSuspendStatus();
         final SourcePrefetcher sourcePrefetcher = SourcePrefetcher.create(files, suspendStatus);
-        while (sourcePrefetcher.hasNext())  {
-            final CompileTuple tuple = sourcePrefetcher.next();
-            try {
-                if (tuple != null) {
-                    nop = false;
-                    if (context.isCancelled()) {
-                        return null;
-                    }
-                    try {
-                        if (mem.isLowMemory()) {
-                            jt = null;
-                            units = null;
-                            dc.cleanDiagnostics();
-                            mem.free();
+        try {
+            while (sourcePrefetcher.hasNext())  {
+                final CompileTuple tuple = sourcePrefetcher.next();
+                try {
+                    if (tuple != null) {
+                        nop = false;
+                        if (context.isCancelled()) {
+                            return null;
                         }
-                        if (jt == null) {
-                            jt = JavacParser.createJavacTask(javaContext.getClasspathInfo(), dc, javaContext.getSourceLevel(), cnffOraculum, javaContext.getFQNs(), new CancelService() {
-                                public @Override boolean isCanceled() {
-                                    return context.isCancelled();
-                                }
-                            }, tuple.aptGenerated ? null : APTUtils.get(context.getRoot()));
-                        }
-                        for (CompilationUnitTree cut : jt.parse(tuple.jfo)) { //TODO: should be exactly one
-                            trees.add(cut);
-                            if (units != null) {
-                                Pair<CompilationUnitTree, CompileTuple> unit = Pair.<CompilationUnitTree, CompileTuple>of(cut, tuple);
-                                units.add(unit);
+                        try {
+                            if (mem.isLowMemory()) {
+                                jt = null;
+                                units = null;
+                                dc.cleanDiagnostics();
+                                mem.free();
                             }
-                            computeFQNs(file2FQNs, cut, tuple);
-                        }
-                        Log.instance(jt.getContext()).nerrors = 0;
-                    } catch (CancelAbort ca) {
-                        if (JavaIndex.LOG.isLoggable(Level.FINEST)) {
-                            JavaIndex.LOG.log(Level.FINEST, "SuperOnePassCompileWorker was canceled in root: " + FileUtil.getFileDisplayName(context.getRoot()), ca);  //NOI18N
-                        }
-                    } catch (Throwable t) {
-                        if (JavaIndex.LOG.isLoggable(Level.WARNING)) {
-                            final ClassPath bootPath   = javaContext.getClasspathInfo().getClassPath(ClasspathInfo.PathKind.BOOT);
-                            final ClassPath classPath  = javaContext.getClasspathInfo().getClassPath(ClasspathInfo.PathKind.COMPILE);
-                            final ClassPath sourcePath = javaContext.getClasspathInfo().getClassPath(ClasspathInfo.PathKind.SOURCE);
-                            final String message = String.format("SuperOnePassCompileWorker caused an exception\nFile: %s\nRoot: %s\nBootpath: %s\nClasspath: %s\nSourcepath: %s", //NOI18N
-                                        tuple.indexable.getURL().toString(),
-                                        FileUtil.getFileDisplayName(context.getRoot()),
-                                        bootPath == null   ? null : bootPath.toString(),
-                                        classPath == null  ? null : classPath.toString(),
-                                        sourcePath == null ? null : sourcePath.toString()
-                                        );
-                            JavaIndex.LOG.log(Level.WARNING, message, t);  //NOI18N
-                        }
-                        if (t instanceof ThreadDeath) {
-                            throw (ThreadDeath) t;
-                        }
-                        else {
-                            jt = null;
-                            units = null;
-                            dc.cleanDiagnostics();
-                            mem.free();
+                            if (jt == null) {
+                                jt = JavacParser.createJavacTask(javaContext.getClasspathInfo(), dc, javaContext.getSourceLevel(), cnffOraculum, javaContext.getFQNs(), new CancelService() {
+                                    public @Override boolean isCanceled() {
+                                        return context.isCancelled() || mem.isLowMemory();
+                                    }
+                                }, tuple.aptGenerated ? null : APTUtils.get(context.getRoot()));
+                            }
+                            for (CompilationUnitTree cut : jt.parse(tuple.jfo)) { //TODO: should be exactly one
+                                trees.add(cut);
+                                if (units != null) {
+                                    units.put(cut, tuple);
+                                }
+                                computeFQNs(file2FQNs, cut, tuple);
+                            }
+                            Log.instance(jt.getContext()).nerrors = 0;
+                        } catch (CancelAbort ca) {
+                            if (context.isCancelled() && JavaIndex.LOG.isLoggable(Level.FINEST)) {
+                                JavaIndex.LOG.log(Level.FINEST, "SuperOnePassCompileWorker was canceled in root: " + FileUtil.getFileDisplayName(context.getRoot()), ca);  //NOI18N
+                            }
+                        } catch (Throwable t) {
+                            if (JavaIndex.LOG.isLoggable(Level.WARNING)) {
+                                final ClassPath bootPath   = javaContext.getClasspathInfo().getClassPath(ClasspathInfo.PathKind.BOOT);
+                                final ClassPath classPath  = javaContext.getClasspathInfo().getClassPath(ClasspathInfo.PathKind.COMPILE);
+                                final ClassPath sourcePath = javaContext.getClasspathInfo().getClassPath(ClasspathInfo.PathKind.SOURCE);
+                                final String message = String.format("SuperOnePassCompileWorker caused an exception\nFile: %s\nRoot: %s\nBootpath: %s\nClasspath: %s\nSourcepath: %s", //NOI18N
+                                            tuple.indexable.getURL().toString(),
+                                            FileUtil.getFileDisplayName(context.getRoot()),
+                                            bootPath == null   ? null : bootPath.toString(),
+                                            classPath == null  ? null : classPath.toString(),
+                                            sourcePath == null ? null : sourcePath.toString()
+                                            );
+                                JavaIndex.LOG.log(Level.WARNING, message, t);  //NOI18N
+                            }
+                            if (t instanceof ThreadDeath) {
+                                throw (ThreadDeath) t;
+                            }
+                            else {
+                                jt = null;
+                                units = null;
+                                dc.cleanDiagnostics();
+                                mem.free();
+                            }
                         }
                     }
+                }  finally {
+                    sourcePrefetcher.remove();
                 }
-            }  finally {
-                sourcePrefetcher.remove();
+            }
+        } finally {
+            try {
+                sourcePrefetcher.close();
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
             }
         }
         if (nop) {
@@ -199,6 +212,16 @@ final class SuperOnePassCompileWorker extends CompileWorker {
                 mem.free();
                 return ParsingOutput.lowMemory(file2FQNs, addedTypes, createdFiles, finished, modifiedTypes, aptGenerated);
             }
+            Map<TypeElement, CompileTuple> clazz2Tuple = new IdentityHashMap<TypeElement, CompileTuple>();
+            Enter enter = Enter.instance(jt.getContext());
+            for (TypeElement type : types) {
+                Env<AttrContext> typeEnv = enter.getEnv((TypeSymbol) type);
+                if (typeEnv == null) {
+                    JavaIndex.LOG.log(Level.FINE, "No Env for: {0}", type.getQualifiedName());
+                    continue;
+                }
+                clazz2Tuple.put(type, units.get(typeEnv.toplevel));
+            }
             jt.analyze(types);
             if (context.isCancelled()) {
                 return null;
@@ -208,13 +231,13 @@ final class SuperOnePassCompileWorker extends CompileWorker {
                 mem.free();
                 return ParsingOutput.lowMemory(file2FQNs, addedTypes, createdFiles, finished, modifiedTypes, aptGenerated);
             }
-            for (Pair<CompilationUnitTree, CompileTuple> unit : units) {
-                CompileTuple active = unit.second;
+            for (Entry<CompilationUnitTree, CompileTuple> unit : units.entrySet()) {
+                CompileTuple active = unit.getValue();
                 if (aptEnabled) {
                     JavaCustomIndexer.addAptGenerated(context, javaContext, active, aptGenerated);
                 }
                 List<TypeElement> activeTypes = new ArrayList<TypeElement>();
-                for (Tree tree : unit.first.getTypeDecls()) {
+                for (Tree tree : unit.getKey().getTypeDecls()) {
                     if (tree instanceof JCTree && ((JCTree)tree).getTag() == JCTree.CLASSDEF) {
                         ClassSymbol sym = ((JCClassDecl)tree).sym;
                         if (sym != null)
@@ -224,10 +247,10 @@ final class SuperOnePassCompileWorker extends CompileWorker {
                 javaContext.getFQNs().set(activeTypes, active.indexable.getURL());
                 boolean[] main = new boolean[1];
                 if (javaContext.getCheckSums().checkAndSet(active.indexable.getURL(), activeTypes, jt.getElements()) || context.isSupplementaryFilesIndexing()) {
-                    javaContext.analyze(Collections.singleton(unit.first), jt, fileManager, unit.second, addedTypes, main);
+                    javaContext.analyze(Collections.singleton(unit.getKey()), jt, fileManager, unit.getValue(), addedTypes, main);
                 } else {
                     final Set<ElementHandle<TypeElement>> aTypes = new HashSet<ElementHandle<TypeElement>>();
-                    javaContext.analyze(Collections.singleton(unit.first), jt, fileManager, unit.second, aTypes, main);
+                    javaContext.analyze(Collections.singleton(unit.getKey()), jt, fileManager, unit.getValue(), aTypes, main);
                     addedTypes.addAll(aTypes);
                     modifiedTypes.addAll(aTypes);
                 }
@@ -241,15 +264,21 @@ final class SuperOnePassCompileWorker extends CompileWorker {
                 mem.free();
                 return ParsingOutput.lowMemory(file2FQNs, addedTypes, createdFiles, finished, modifiedTypes, aptGenerated);
             }
-            for (JavaFileObject generated : jt.generate(types)) {
-                if (generated instanceof FileObjects.FileBase) {
-                    createdFiles.add(((FileObjects.FileBase) generated).getFile());
-                } else {
-                    // presumably should not happen
+            for (TypeElement type : types) {
+                Iterable<? extends JavaFileObject> generatedFiles = jt.generate(Collections.singletonList(type));
+                CompileTuple unit = clazz2Tuple.get(type);
+                if (unit == null || !unit.virtual) {
+                    for (JavaFileObject generated : generatedFiles) {
+                        if (generated instanceof FileObjects.FileBase) {
+                            createdFiles.add(((FileObjects.FileBase) generated).getFile());
+                        } else {
+                            // presumably should not happen
+                        }
+                    }
                 }
             }
-            for (Pair<CompilationUnitTree, CompileTuple> unit : units) {
-                CompileTuple active = unit.second;
+            for (Entry<CompilationUnitTree, CompileTuple> unit : units.entrySet()) {
+                CompileTuple active = unit.getValue();
                 JavaCustomIndexer.setErrors(context, active, dc);
                 finished.add(active.indexable);
             }
@@ -287,7 +316,11 @@ final class SuperOnePassCompileWorker extends CompileWorker {
             }
             JavaCustomIndexer.brokenPlatform(context, files, mpe.getDiagnostic());
         } catch (CancelAbort ca) {
-            if (JavaIndex.LOG.isLoggable(Level.FINEST)) {
+            if (mem.isLowMemory()) {
+                units = null;
+                mem.free();
+                return ParsingOutput.lowMemory(file2FQNs, addedTypes, createdFiles, finished, modifiedTypes, aptGenerated);
+            } else if (JavaIndex.LOG.isLoggable(Level.FINEST)) {
                 JavaIndex.LOG.log(Level.FINEST, "SuperOnePassCompileWorker was canceled in root: " + FileUtil.getFileDisplayName(context.getRoot()), ca);  //NOI18N
             }
         } catch (Throwable t) {

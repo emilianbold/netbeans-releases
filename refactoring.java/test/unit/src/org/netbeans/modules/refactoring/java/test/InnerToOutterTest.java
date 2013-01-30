@@ -57,6 +57,27 @@ public class InnerToOutterTest extends RefactoringTestBase {
     public InnerToOutterTest(String name) {
         super(name);
     }
+    
+    public void test100305() throws Exception {
+        writeFilesAndWaitForScan(src,
+                                 new File("t/A.java", "package t; public class A { class B { } class F { F(int outer) { System.out.println(outer); } } }"));
+        performInnerToOuterTest("outer", new Problem(true, "ERR_InnerToOuter_OuterNameClash"));
+    }
+    
+    public void test100305a() throws Exception {
+        writeFilesAndWaitForScan(src,
+                                 new File("t/A.java", "package t; public class A { class B extends F { B(int buiten) { } } class F { F(int outer) { System.out.println(outer); } } }"));
+        performInnerToOuterTest("buiten", new Problem(true, "ERR_InnerToOuter_OuterNameClashSubtype"));
+    }
+    
+    public void test218080() throws Exception { // #218080 - Move inner to outer fails if inner class code refers to statically imported methods
+        writeFilesAndWaitForScan(src,
+                                 new File("t/A.java", "package t;\n import static java.lang.Math.*;\n public class A {\n class B {\n }\n\n/** * Klazz F */\nclass F {\n B b; \n void method() {\n max(2, 3); }\n }\n }"));
+        performInnerToOuterTest("outer");
+        verifyContent(src,
+                      new File("t/F.java", "/* * Refactoring License */ package t; /** * Klazz F */ class F { A.B b; private final A outer; F(final A outer) { this.outer = outer; } void method() { Math.max(2, 3); } } "),
+                      new File("t/A.java", "package t; import static java.lang.Math.*; public class A { class B { } }"));
+    }
 
     public void test208438() throws Exception { // #208438 - [Move Inner To Outer Level] Class javadoc is lost
         writeFilesAndWaitForScan(src,

@@ -109,6 +109,7 @@ import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
 import org.openide.windows.TopComponent;
 
 /**
@@ -297,12 +298,12 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
     private static final HashMap<String, Image> cachedIcons = new HashMap<String, Image>(2);
     private abstract class RepositoryBrowserNode extends AbstractNode {
         
-        protected RepositoryBrowserNode (Children children) {
-            this(children, null);
+        protected RepositoryBrowserNode (Children children, File repository) {
+            this(children, repository, null);
         }
 
-        protected RepositoryBrowserNode (Children children, Lookup lookup) {
-            super(children, lookup);
+        protected RepositoryBrowserNode (Children children, File repository, Lookup lookup) {
+            super(children, lookup == null ? Lookups.singleton(repository) : new ProxyLookup(Lookups.singleton(repository), lookup));
         }
 
         @Override
@@ -433,7 +434,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
         private final File repository;
 
         public RepositoryNode (final File repository, RepositoryInfo info) {
-            super(new RepositoryChildren(), Lookups.fixed(repository));
+            super(new RepositoryChildren(), repository);
             this.repository = repository;
             setIconBaseWithExtension("org/netbeans/modules/git/resources/icons/repository.png"); //NOI18N
             if (info == null) {
@@ -560,7 +561,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
     private class BranchesTopNode extends RepositoryBrowserNode {
 
         public BranchesTopNode (File repository) {
-            super(new BranchesTopChildren(repository));
+            super(new BranchesTopChildren(repository), repository);
             setIconBaseWithExtension("org/netbeans/modules/git/resources/icons/branches.png"); //NOI18N
         }
 
@@ -642,10 +643,10 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
             BranchesNode node;
             switch (key) {
                 case LOCAL:
-                    node = local = new BranchesNode(key, branches);
+                    node = local = new BranchesNode(repository, key, branches);
                     break;
                 case REMOTE:
-                    node = remote = new BranchesNode(key, branches);
+                    node = remote = new BranchesNode(repository, key, branches);
                     break;
                 default:
                     throw new IllegalStateException();
@@ -657,14 +658,11 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
             new GitProgressSupport.NoOutputLogging() {
                 @Override
                 protected void perform () {
-                    try {
-                        GitClient client = getClient();
-                        final java.util.Map<String, GitBranch> branches = client.getBranches(true, getProgressMonitor());
-                        if (!isCanceled()) {
-                            refreshBranches(branches);
-                        }
-                    } catch (GitException ex) {
-                        LOG.log(Level.INFO, "refreshBranches()", ex); //NOI18N
+                    RepositoryInfo info = RepositoryInfo.getInstance(repository);
+                    info.refresh();
+                    java.util.Map<String, GitBranch> branches = info.getBranches();
+                    if (!isCanceled()) {
+                        refreshBranches(branches);
                     }
                 }
             }.start(RP, repository, NbBundle.getMessage(BranchesTopChildren.class, "MSG_RepositoryPanel.refreshingBranches")); //NOI18N
@@ -679,7 +677,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                 for (java.util.Map.Entry<String, GitBranch> e : BranchesTopChildren.this.branches.entrySet()) {
                     GitBranch newBranchInfo = branches.get(e.getKey());
                     // do not refresh branches that don't change their active state or head id
-                    if (newBranchInfo != null && (newBranchInfo.getId().equals(e.getValue().getId()) || newBranchInfo.isActive() == e.getValue().isActive())) {
+                    if (newBranchInfo != null && (newBranchInfo.getId().equals(e.getValue().getId()) && newBranchInfo.isActive() == e.getValue().isActive())) {
                         branches.remove(e.getKey());
                     }
                 }
@@ -710,8 +708,8 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
     private class BranchesNode extends RepositoryBrowserNode {
         private final BranchNodeType type;
 
-        private BranchesNode (BranchNodeType type, Map<String, GitBranch> branches) {
-            super(new BranchesChildren(type, branches));
+        private BranchesNode (File repository, BranchNodeType type, Map<String, GitBranch> branches) {
+            super(new BranchesChildren(type, branches), repository);
             this.type = type;
         }
 
@@ -792,7 +790,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
         private String lastTrackingOtherId;
 
         public BranchNode (File repository, GitBranch branch) {
-            super(Children.LEAF, Lookups.fixed(new Revision(branch.getId(), branch.getName())));
+            super(Children.LEAF, repository, Lookups.singleton(new Revision(branch.getId(), branch.getName())));
             branchName = branch.getName();
             branchId = branch.getId();
             trackedBranch = branch.getTrackedBranch();
@@ -947,8 +945,9 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                         @Override
                         public void run () {
                             String tt = null;
+                            GitClient client = null;
                             try {
-                                GitClient client = Git.getInstance().getClient(repository);
+                                client = Git.getInstance().getClient(repository);
                                 GitRevisionInfo info = client.getCommonAncestor(new String[] { id, trackedBranch.getId() }, GitUtils.NULL_PROGRESS_MONITOR);
                                 if (info == null || !(info.getRevision().equals(id) || info.getRevision().equals(trackedBranch.getId()))) {
                                     tt = NbBundle.getMessage(RepositoryBrowserPanel.class, "MSG_BranchNode.tracking.mergeNeeded", trackedBranch.getName()); //NOI18N
@@ -975,6 +974,10 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                                 }
                             } catch (GitException ex) {
                                 LOG.log(Level.INFO, null, ex);
+                            } finally {
+                                if (client != null) {
+                                    client.release();
+                                }
                             }
                             final String toolTip = tt;
                             EventQueue.invokeLater(new Runnable() {
@@ -996,7 +999,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
     private class TagsNode extends RepositoryBrowserNode {
 
         public TagsNode (File repository) {
-            super(new TagChildren(repository));
+            super(new TagChildren(repository), repository);
             assert repository != null;
             setIconBaseWithExtension("org/netbeans/modules/git/resources/icons/tags.png"); //NOI18N
         }
@@ -1060,14 +1063,11 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
             new GitProgressSupport.NoOutputLogging() {
                 @Override
                 protected void perform () {
-                    try {
-                        GitClient client = getClient();
-                        final java.util.Map<String, GitTag> tags = client.getTags(GitUtils.NULL_PROGRESS_MONITOR, false);
-                        if (!isCanceled()) {
-                            refreshTags(tags);
-                        }
-                    } catch (GitException ex) {
-                        LOG.log(Level.INFO, "refreshTags()", ex); //NOI18N
+                    RepositoryInfo info = RepositoryInfo.getInstance(repository);
+                    info.refresh();
+                    java.util.Map<String, GitTag> tags = info.getTags();
+                    if (!isCanceled()) {
+                        refreshTags(tags);
                     }
                 }
             }.start(RP, repository, NbBundle.getMessage(BranchesTopChildren.class, "MSG_RepositoryPanel.refreshingTags")); //NOI18N
@@ -1083,7 +1083,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                     GitTag newTagInfo = tags.get(e.getKey());
                     // do not refresh tags they keep the same
                     if (newTagInfo != null && (newTagInfo.getTaggedObjectId().equals(e.getValue().getTaggedObjectId()) 
-                            || newTagInfo.getMessage().equals(e.getValue().getMessage()))) {
+                            && newTagInfo.getMessage().equals(e.getValue().getMessage()))) {
                         tags.remove(e.getKey());
                     }
                 }
@@ -1114,7 +1114,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
         private final PropertyChangeListener list;
 
         public TagNode (File repository, GitTag tag) {
-            super(Children.LEAF, Lookups.fixed(new Revision(tag.getTaggedObjectId(), tag.getTagName())));
+            super(Children.LEAF, repository, Lookups.singleton(new Revision(tag.getTaggedObjectId(), tag.getTagName())));
             tagName = tag.getTagName();
             message = tag.getMessage();
             revisionId = tag.getTaggedObjectId();
@@ -1252,7 +1252,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
     private class RemotesNode extends RepositoryBrowserNode {
 
         public RemotesNode (File repository) {
-            super(new AllRemotesChildren(repository), Lookups.fixed(repository));
+            super(new AllRemotesChildren(repository), repository);
             setIconBaseWithExtension("org/netbeans/modules/git/resources/icons/repository.png"); //NOI18N
         }
 
@@ -1334,7 +1334,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
         private final File repository;
 
         public RemoteNode (File repository, GitRemoteConfig remote) {
-            super(new RemoteChildren(remote), Lookups.fixed(remote, repository));
+            super(new RemoteChildren(remote), repository, Lookups.fixed(remote));
             this.repository = repository;
             this.remoteName = remote.getRemoteName();
             setIconBaseWithExtension("org/netbeans/modules/git/resources/icons/remote.png"); //NOI18N
@@ -1407,7 +1407,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
         
         @Override
         protected Node[] createNodes (RemoteUri key) {
-            return new Node[] { new RemoteUriNode(key, remote) };
+            return new Node[] { new RemoteUriNode(lookupRepository(getNode()), key, remote) };
         }
     }
     
@@ -1415,8 +1415,8 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
         private final RemoteUri uri;
         private final GitRemoteConfig remote;
 
-        public RemoteUriNode (RemoteUri uri, GitRemoteConfig remote) {
-            super(Children.LEAF);
+        public RemoteUriNode (File repository, RemoteUri uri, GitRemoteConfig remote) {
+            super(Children.LEAF, repository);
             this.uri = uri;
             this.remote = remote;
             setIconBaseWithExtension("org/netbeans/modules/git/resources/icons/" + (uri.push ? "push" : "fetch") + ".png"); //NOI18N
@@ -1437,7 +1437,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                     @Override
                     public void actionPerformed (ActionEvent e) {
                         FetchAction action = SystemAction.get(FetchAction.class);
-                        action.fetch(currRepository, uri.uri, remote.getFetchRefSpecs());
+                        action.fetch(currRepository, uri.uri, remote.getFetchRefSpecs(), null);
                     }
                 });
             }

@@ -46,24 +46,20 @@ package org.netbeans.modules.cnd.test;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileFilter;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.List;
 import java.util.Collections;
-import java.util.TreeSet;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.EditorKit;
-import junit.framework.Assert;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.junit.Manager;
 import org.netbeans.junit.MockServices;
-import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.cnd.editor.cplusplus.CCKit;
 import org.netbeans.modules.cnd.editor.cplusplus.CKit;
 import org.netbeans.modules.cnd.editor.cplusplus.HKit;
@@ -108,73 +104,11 @@ public abstract class CndBaseTestCase extends NativeExecutionBaseTestCase {
 
     private static final boolean TRACE_START_STOP = false;
 
-    static {
-        // Setting netbeans.dirs makes installedFileLocator work properly
-        File[] clusters = findClusters();
-        StringBuilder sb = new StringBuilder();
-        for (File cluster : clusters) {
-            if (sb.length() > 0) {
-                sb.append(File.pathSeparator);
-            }
-            sb.append(cluster.getPath());
-        }
-        System.setProperty("netbeans.dirs", sb.toString());
-    }
-
     private MimePath mimePath1;
     private MimePath mimePath2;
     private MimePath mimePath3;
     private MimePath mimePath4;
     private MimePath mimePath5;
-
-    // it's like what org.netbeans.junit.NbModuleSuite does,
-    // but reusing NbModuleSuite will cause too massive changes in existing CND tests
-    private static File[] findClusters() {
-        File netbeans = findNetbeans();
-        assert netbeans != null;
-        File[] clusters = netbeans.listFiles(new FileFilter() {
-            @Override
-            public boolean accept(File dir) {
-                if (dir.isDirectory()) {
-                    File m = new File(new File(dir, "config"), "Modules");
-                    return m.exists();
-                }
-                return false;
-            }
-        });
-        return clusters;
-    }
-
-    // it's like what org.netbeans.junit.NbModuleSuite does,
-    // but reusing NbModuleSuite will cause too massive changes in existing CND tests
-    private static File findNetbeans() {
-        try {
-            Class<?> lookup = Class.forName("org.openide.util.Lookup"); // NOI18N
-            File util = new File(lookup.getProtectionDomain().getCodeSource().getLocation().toURI());
-            Assert.assertTrue("Util exists: " + util, util.exists());
-            return util.getParentFile().getParentFile().getParentFile();
-        } catch (Exception ex) {
-            try {
-                File nbjunit = new File(NbModuleSuite.class.getProtectionDomain().getCodeSource().getLocation().toURI());
-                File harness = nbjunit.getParentFile().getParentFile();
-                Assert.assertEquals("NbJUnit is in harness", "harness", harness.getName());
-                TreeSet<File> sorted = new TreeSet<File>();
-                File[] listFiles = harness.getParentFile().listFiles();
-                if (listFiles != null) {
-                    for (File p : listFiles) {
-                        if (p.getName().startsWith("platform")) {
-                            sorted.add(p);
-                        }
-                    }
-                }
-                Assert.assertFalse("Platform shall be found in " + harness.getParent(), sorted.isEmpty());
-                return sorted.last();
-            } catch (Exception ex2) {
-                Assert.fail("Cannot find utilities JAR: " + ex + " and: " + ex2);
-            }
-            return null;
-        }
-    }
     
     /** Creates a new instance of BaseTestCase */
     public CndBaseTestCase(String testName) {
@@ -195,9 +129,11 @@ public abstract class CndBaseTestCase extends NativeExecutionBaseTestCase {
     
     @Override
     protected void setUp() throws Exception {
+        String name = getName()+" at "+Calendar.getInstance().getTime();
+        Thread.currentThread().setName("Test "+name);
         super.setUp();
         if (TRACE_START_STOP) {
-            System.err.println("Start "+getName()+" at "+Calendar.getInstance().getTime());
+            System.err.println("Start " + name);
         }
         
         Logger.getLogger("org.netbeans.modules.editor.settings.storage.Utils").setLevel(Level.SEVERE);
@@ -339,17 +275,25 @@ public abstract class CndBaseTestCase extends NativeExecutionBaseTestCase {
             File goldenFile = getGoldenFile(goldenFilename);
             File testFile = new File(getWorkDir(),testFilename);
             
-            if (CndCoreTestUtils.diff(testFile, goldenFile, null)) {
-                // copy golden
-                File goldenDataFileCopy = new File(getWorkDir(), goldenFilename + ".golden"); // NOI18N
-                CndCoreTestUtils.copyToWorkDir(goldenFile, goldenDataFileCopy); 
+            if(goldenFile.exists()) {
+                if (CndCoreTestUtils.diff(testFile, goldenFile, null)) {
+                    // copy golden
+                    File goldenDataFileCopy = new File(getWorkDir(), goldenFilename + ".golden"); // NOI18N
+                    CndCoreTestUtils.copyToWorkDir(goldenFile, goldenDataFileCopy); 
 
-                StringBuilder buf = new StringBuilder("Files differ; diff " +testFile.getAbsolutePath()+ " "+ goldenDataFileCopy);
-                File diffErrorFile = new File(testFile.getAbsolutePath() + ".diff");
-                CndCoreTestUtils.diff(testFile, goldenFile, diffErrorFile);
-                showDiff(diffErrorFile, buf);
-                fail(buf.toString());
-            }             
+                    StringBuilder buf = new StringBuilder("Files differ; diff " +testFile.getAbsolutePath()+ " "+ goldenDataFileCopy);
+                    File diffErrorFile = new File(testFile.getAbsolutePath() + ".diff");
+                    CndCoreTestUtils.diff(testFile, goldenFile, diffErrorFile);
+                    showDiff(diffErrorFile, buf);
+                    fail(buf.toString());
+                }            
+            } else {
+                if (testFile.length() != 0) {
+                    StringBuilder buf = new StringBuilder("Files differ; " +testFile.getAbsolutePath()+ " and no golden file");
+                    showDiff(testFile, buf);
+                    fail(buf.toString());
+                }                
+            }
         } catch (IOException ioe) {
             fail("Error comparing files: " + ioe); // NOI18N
         }

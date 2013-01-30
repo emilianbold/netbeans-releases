@@ -54,11 +54,9 @@ import org.netbeans.modules.web.core.syntax.deprecated.Jsp11Syntax;
 import java.awt.event.ActionEvent;
 import java.beans.*;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
 import javax.swing.text.*;
-import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
@@ -71,16 +69,13 @@ import org.openide.util.WeakListeners;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.netbeans.modules.web.core.syntax.deprecated.HtmlSyntax;
-import org.netbeans.modules.editor.java.JavaKit;
 import org.netbeans.modules.web.core.api.JspColoringData;
 import org.netbeans.api.jsp.lexer.JspTokenId;
 import org.netbeans.api.lexer.InputAttributes;
-import org.netbeans.editor.BaseAction;
 import org.netbeans.editor.BaseKit.InsertBreakAction;
 import org.netbeans.editor.ext.ExtKit.ExtDefaultKeyTypedAction;
 import org.netbeans.editor.ext.ExtKit.ExtDeleteCharAction;
 import org.netbeans.modules.csl.api.*;
-import org.netbeans.modules.web.core.syntax.gsf.JspCommentHandler;
 import org.netbeans.spi.lexer.MutableTextInput;
 
 /**
@@ -93,6 +88,16 @@ import org.netbeans.spi.lexer.MutableTextInput;
 //@MimeRegistration(mimeType="text/x-jsp", service=EditorKit.class, position=1)
 public class JspKit extends NbEditorKit implements org.openide.util.HelpCtx.Provider{
 
+    //hack for Bug 212105 - JspKit.createSyntax slow - LowPerformance took 9988 ms. 
+    public static final ThreadLocal<Boolean> ATTACH_COLORING_LISTENER_TO_SYNTAX = new ThreadLocal<Boolean>() {
+
+        @Override
+        protected Boolean initialValue() {
+            return true;
+        }
+        
+    };
+    
     public static final String JSP_MIME_TYPE = "text/x-jsp"; // NOI18N
     public static final String TAG_MIME_TYPE = "text/x-tag"; // NOI18N
 
@@ -136,20 +141,21 @@ public class JspKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
     public Syntax createSyntax(Document doc) {
         final Jsp11Syntax newSyntax = new Jsp11Syntax(new HtmlSyntax(), new JavaSyntax(null, true));
 
-        DataObject dobj = NbEditorUtilities.getDataObject(doc);
-        FileObject fobj = (dobj != null) ? dobj.getPrimaryFile() : null;
+        if(ATTACH_COLORING_LISTENER_TO_SYNTAX.get()) {
+            DataObject dobj = NbEditorUtilities.getDataObject(doc);
+            FileObject fobj = (dobj != null) ? dobj.getPrimaryFile() : null;
 
-        // tag library coloring data stuff
-        JspColoringData data = JspUtils.getJSPColoringData(fobj);
-        // construct the listener
-        PropertyChangeListener pList = new ColoringListener(doc, data, newSyntax);
-        // attach the listener 
-        // PENDING - listen on the language
-        //jspdo.addPropertyChangeListener(WeakListeners.propertyChange(pList, jspdo));
-        if (data != null) {
-            data.addPropertyChangeListener(WeakListeners.propertyChange(pList, data));
+            // tag library coloring data stuff
+            JspColoringData data = JspUtils.getJSPColoringData(fobj);
+            // construct the listener
+            PropertyChangeListener pList = new ColoringListener(doc, data, newSyntax);
+            // attach the listener
+            // PENDING - listen on the language
+            //jspdo.addPropertyChangeListener(WeakListeners.propertyChange(pList, jspdo));
+            if (data != null) {
+                data.addPropertyChangeListener(WeakListeners.propertyChange(pList, data));
+            }
         }
-
         return newSyntax;
     }
 
@@ -435,27 +441,6 @@ public class JspKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
 
         @Override
         public void actionPerformed(ActionEvent e, JTextComponent target) {
-            if (target != null) {
-                TokenSequence javaTokenSequence;
-                AbstractDocument adoc = (AbstractDocument)target.getDocument();
-                adoc.readLock();
-                try {
-                    javaTokenSequence = JspSyntaxSupport.tokenSequence(TokenHierarchy.get(target.getDocument()), JavaTokenId.language(), target.getCaret().getDot() - 1);
-                } finally {
-                    adoc.readUnlock();
-                }
-
-                if (javaTokenSequence != null) {
-                    JavaKit jkit = (JavaKit) getKit(JavaKit.class);
-                    if (jkit != null) {
-                        Action action = jkit.getActionByName(DefaultEditorKit.insertBreakAction);
-                        if (action != null && action instanceof JavaKit.JavaInsertBreakAction) {
-                            ((JavaKit.JavaInsertBreakAction) action).actionPerformed(e, target);
-                            return;
-                        }
-                    }
-                }
-            }
             super.actionPerformed(e, target);
         }
 
@@ -528,35 +513,10 @@ public class JspKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
 
             currentTarget = target;
             try {
-                if (!triggerJavaDefaultKeyTypedAction(e, target)) {
-                    super.actionPerformed(e, target);
-                } else {
-                    return; //java triggered this already
-                }
+                super.actionPerformed(e, target);
             } finally {
                 currentTarget = null;
             }
-        }
-
-        private boolean triggerJavaDefaultKeyTypedAction(final ActionEvent e, final JTextComponent target) {
-            BaseDocument bdoc = (BaseDocument) target.getDocument();
-            final boolean[] retcode = new boolean[1];
-            bdoc.runAtomic(new Runnable() {
-                public void run() {
-                    TokenSequence javaTokenSequence = JspSyntaxSupport.tokenSequence(TokenHierarchy.get(target.getDocument()), JavaTokenId.language(), target.getCaret().getDot() - 1);
-                    if (javaTokenSequence != null) {
-                        JavaKit jkit = (JavaKit) getKit(JavaKit.class);
-                        if (jkit != null) {
-                            Action action = jkit.getActionByName(DefaultEditorKit.defaultKeyTypedAction);
-                            if (action != null && action instanceof JavaKit.JavaDefaultKeyTypedAction) {
-                                ((JavaKit.JavaDefaultKeyTypedAction) action).actionPerformed(e, target);
-                                retcode[0] = true;
-                            }
-                        }
-                    }
-                }
-            });
-            return retcode[0];
         }
 
         /** called under document atomic lock */
@@ -594,14 +554,14 @@ public class JspKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
         @Override
         protected void replaceSelection(JTextComponent target, int dotPos, Caret caret,
                 String str, boolean overwrite) throws BadLocationException {
-            //workaround for #209019 - regression of issue 
+            //workaround for #209019 - regression of issue
             //#204450 - Rewrite actions to use TypingHooks SPI
             if(str.length() == 0) {
                 //called from BaseKit.actionPerformed():1160 with empty str argument
                 //==> ignore this call since we are going to be called a bit later
                 //from HtmlKit.performTextInsertion() properly with the text typed
                 return ;
-            }            
+            }
             char insertedChar = str.charAt(0);
             Document document = target.getDocument();
 
@@ -659,30 +619,6 @@ public class JspKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
         @Override
         public void actionPerformed(ActionEvent e, JTextComponent target) {
             currentTarget = target;
-            if (target!=null){
-                TokenSequence javaTokenSequence;
-                AbstractDocument adoc = (AbstractDocument)target.getDocument();
-                adoc.readLock();
-                try {
-                    javaTokenSequence = JspSyntaxSupport.tokenSequence(
-                        TokenHierarchy.get(target.getDocument()),
-                        JavaTokenId.language(),
-                        target.getCaret().getDot() - 1);
-                } finally {
-                    adoc.readUnlock();
-                }
-
-                if (javaTokenSequence != null){
-                    JavaKit jkit = (JavaKit)getKit(JavaKit.class);
-                    if (jkit!=null){
-                        Action action = jkit.getActionByName(nextChar ? DefaultEditorKit.deleteNextCharAction : DefaultEditorKit.deletePrevCharAction);
-                        if (action != null && action instanceof JavaKit.JavaDeleteCharAction){
-                            ((JavaKit.JavaDeleteCharAction)action).actionPerformed(e, target);
-                            return;
-                        }
-                    }
-                }
-            }
             super.actionPerformed(e, target);
             currentTarget = null;
         }

@@ -105,6 +105,7 @@ public class JTabbedPaneAdapter extends NBTabbedPane implements Tabbed.Accessor,
         public void setTitleAt( int index, String title ) {
             CloseableTabComponent ctc = ( CloseableTabComponent ) getTabComponentAt( index );
             ctc.setTitle( title );
+            getTabModel().setText( index, title );
         }
 
         @Override
@@ -116,7 +117,7 @@ public class JTabbedPaneAdapter extends NBTabbedPane implements Tabbed.Accessor,
         @Override
         public void setToolTipTextAt( int index, String toolTip ) {
             CloseableTabComponent ctc = ( CloseableTabComponent ) getTabComponentAt( index );
-            ctc.setToolTipText( toolTip );
+            ctc.setTooltip( toolTip );
         }
 
         @Override
@@ -186,6 +187,11 @@ public class JTabbedPaneAdapter extends NBTabbedPane implements Tabbed.Accessor,
         @Override
         protected void cancelRequestAttention( int tabIndex ) {
             JTabbedPaneAdapter.this.cancelRequestAttention( tabIndex );
+        }
+
+        @Override
+        protected void setAttentionHighlight( int tabIndex, boolean highlight ) {
+            JTabbedPaneAdapter.this.setAttentionHighlight( tabIndex, highlight );
         }
 
         @Override

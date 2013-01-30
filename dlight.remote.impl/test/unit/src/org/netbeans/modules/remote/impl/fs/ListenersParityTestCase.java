@@ -74,7 +74,7 @@ public class ListenersParityTestCase extends RemoteFileTestBase {
         PrintStream out = new PrintStream(log);
         try {
             String prefix = baseDirFO.getPath();
-            FCL fcl = new FCL("baseDir", prefix, out, true);
+            DumpingFileChangeListener fcl = new DumpingFileChangeListener("baseDir", prefix, out, true);
             if (recursive) {
                 FileSystemProvider.addRecursiveListener(fcl, baseDirFO.getFileSystem(), baseDirFO.getPath());
             } else {
@@ -83,7 +83,7 @@ public class ListenersParityTestCase extends RemoteFileTestBase {
             FileObject childFO = baseDirFO.createData("child_file_1");
             FileObject subdirFO = baseDirFO.createFolder("child_folder");
             if (!recursive) {
-                subdirFO.addFileChangeListener(new FCL(subdirFO.getNameExt(), prefix, out, true));
+                subdirFO.addFileChangeListener(new DumpingFileChangeListener(subdirFO.getNameExt(), prefix, out, true));
             }
             FileObject grandChildFO = subdirFO.createData("grand_child_file");
             FileObject grandChildDirFO = subdirFO.createFolder("grand_child_dir");
@@ -114,7 +114,7 @@ public class ListenersParityTestCase extends RemoteFileTestBase {
         PrintStream out = new PrintStream(log);
         try {
             String prefix = baseDirFO.getPath();
-            FCL fcl = new FCL("baseDir", prefix, out, true);
+            DumpingFileChangeListener fcl = new DumpingFileChangeListener("baseDir", prefix, out, true);
             if (recursive) {
                 FileSystemProvider.addRecursiveListener(fcl, baseDirFO.getFileSystem(), baseDirFO.getPath());
             } else {
@@ -123,7 +123,7 @@ public class ListenersParityTestCase extends RemoteFileTestBase {
             FileObject childFO = baseDirFO.createData("child_file_1");
             FileObject subdirFO = baseDirFO.createFolder("child_folder");
             if (!recursive) {
-                subdirFO.addFileChangeListener(new FCL(subdirFO.getNameExt(), prefix, out, true));
+                subdirFO.addFileChangeListener(new DumpingFileChangeListener(subdirFO.getNameExt(), prefix, out, true));
             }
             FileObject grandChildFO = subdirFO.createData("grand_child_file");
             FileObject grandChildDirFO = subdirFO.createFolder("grand_child_dir");

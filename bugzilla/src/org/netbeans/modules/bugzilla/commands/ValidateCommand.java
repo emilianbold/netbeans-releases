@@ -52,12 +52,13 @@ import org.eclipse.mylyn.internal.bugzilla.core.BugzillaClient;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugzilla.Bugzilla;
+import org.netbeans.modules.mylyn.util.BugtrackingCommand;
 
 /**
  *
  * @author Tomas Stupka
  */
-public class ValidateCommand extends BugzillaCommand {
+public class ValidateCommand extends BugtrackingCommand {
 
     private final TaskRepository taskRepository;
 

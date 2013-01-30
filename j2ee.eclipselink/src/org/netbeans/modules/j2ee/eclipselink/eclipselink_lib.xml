@@ -43,8 +43,7 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-<!DOCTYPE library PUBLIC "-//NetBeans//DTD Library Declaration 1.0//EN" "http://www.netbeans.org/dtds/library-declaration-1_0.dtd">
-<library version="1.0">
+<library version="3.0" xmlns="http://www.netbeans.org/ns/library-declaration/3">
     <name>eclipselink</name>
     <type>j2se</type>
     <localizing-bundle>org.netbeans.modules.j2ee.eclipselink.Bundle</localizing-bundle>
@@ -60,10 +59,18 @@ made subject to such option by the copyright holder.
         <resource>jar:nbinst://org.netbeans.modules.j2ee.platform/docs/javaee6-doc-api.zip!/</resource>
         -->
     </volume>
-    <volume>
+    <properties>
         <!-- please check with mkleint@netbeans.org before/after updating this or "classpath" section -->
-        <type>maven-pom</type>
-        <resource>http://download.eclipse.org/rt/eclipselink/maven.repo/org/eclipse/persistence/eclipselink/2.3.2/eclipselink-2.3.2.pom</resource>
-        <resource>http://download.eclipse.org/rt/eclipselink/maven.repo/org/eclipse/persistence/javax.persistence/2.0.3/javax.persistence-2.0.3.pom</resource>
-    </volume>
+        <property>
+            <name>maven-dependencies</name>
+            <value>
+                org.eclipse.persistence:eclipselink:2.3.2:jar
+                org.eclipse.persistence:javax.persistence:2.0.3:jar
+            </value>
+        </property>
+        <property>
+            <name>maven-repositories</name>
+            <value>default:http://download.eclipse.org/rt/eclipselink/maven.repo/</value>
+        </property>
+    </properties>
 </library>

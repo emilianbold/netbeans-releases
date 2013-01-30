@@ -78,6 +78,11 @@ public class DownloadCommand extends RemoteCommand implements Displayable {
     }
 
     @Override
+    public boolean saveRequired() {
+        return false;
+    }
+
+    @Override
     public String getCommandId() {
         return ID;
     }

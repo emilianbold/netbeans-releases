@@ -50,6 +50,87 @@ made subject to such option by the copyright holder.
 <apidef name="awt">AWT API</apidef>
 </apidefs>
 <changes>
+    <change id="Actions.checkbox.default">
+        <api name="awt"/>
+        <summary>The value in Preferences for Actions.checkbox can have a default</summary>
+        <version major="7" minor="53"/>
+        <date day="18" month="9" year="2012"/>
+        <author login="jlahoda"/>
+        <compatibility addition="yes" binary="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+        <description>
+            A default value can be specified for a preference value for Actions.checkbox.
+        </description>
+        <class package="org.openide.awt" name="Actions"/>
+        <issue number="217978"/>
+    </change>
+    <change id="BrowserExtensions">
+      <api name="awt"/>
+      <summary>Minor API extensions to allow better integration of embedded browsers.</summary>
+      <version major="7" minor="52"/>
+      <date day="31" month="8" year="2012"/>
+      <author login="saubrecht"/>
+      <compatibility addition="yes" binary="compatible" source="compatible" deprecation="no" semantic="compatible" modification="no" deletion="no"/>
+      <description>
+          Internal web browser can now contain an additional toolbar component: HtmlBrowser(Factory, boolean, boolean, Component)
+          Browser implementation can pass arbitrary data to Web browser window's Lookup: HtmlBrowser.Impl.getLookup()
+      </description>
+      <class package="org.openide.awt" name="HtmlBrowser"/>
+      <issue number="217171"/>
+    </change>
+    <change id="ToolbarWithOverflow">
+      <api name="awt"/>
+      <summary>ToolbarWithOverflow class that adds an overflow button when the toolbar becomes too small to show all the available actions.</summary>
+      <version major="7" minor="51"/>
+      <date day="8" month="8" year="2012"/>
+      <author login="theofanis"/>
+      <compatibility addition="yes" binary="compatible" source="compatible" deprecation="no" semantic="compatible" modification="no" deletion="no"/>
+      <description>
+          ToolbarWithOverflow class is added. It can be used to add an overflow button 
+          when the toolbar becomes too small to show all the available actions.
+      </description>
+      <class package="org.openide.awt" name="ToolbarWithOverflow"/>
+      <issue number="216175"/>
+    </change>
+    <change id="ColorComboBox">
+      <api name="awt"/>
+      <summary>ColorComboBox for color selection.</summary>
+      <version major="7" minor="50"/>
+      <date day="3" month="8" year="2012"/>
+      <author login="saubrecht"/>
+      <compatibility addition="yes" binary="compatible" source="compatible" deprecation="no" semantic="compatible" modification="no" deletion="no"/>
+      <description>
+          There's a new class ColorComboBox that can be used as color picker.
+      </description>
+      <class package="org.openide.awt" name="ColorComboBox"/>
+      <issue number="216013"/>
+    </change>
+    <change id="QuickSearch.alwaysShown">
+      <api name="awt"/>
+      <summary>QuickSearch allows to customize of whether the quick search field should always be shown, or not.</summary>
+      <version major="7" minor="49"/>
+      <date day="2" month="8" year="2012"/>
+      <author login="theofanis"/>
+      <compatibility addition="yes" binary="compatible" source="compatible" deprecation="no" semantic="compatible" modification="no" deletion="no"/>
+      <description>
+          QuickSearch.isAlwaysShown() and QuickSearch.setAlwaysShown(boolean) methods are added.
+          They can be used to change the default behavior of not showing the quick search field until something is typed.
+      </description>
+      <class package="org.openide.awt" name="QuickSearch"/>
+        <issue number="215833"/>
+    </change>
+    <change id="TabbedPaneFactorySubClass">
+      <api name="awt"/>
+      <summary>TabbedPaneFactory can be subclassed.</summary>
+      <date day="17" month="7" year="2012"/>
+      <author login="saubrecht"/>
+      <compatibility addition="yes" binary="compatible" source="compatible" deprecation="no" semantic="compatible" modification="no" deletion="no"/>
+      <description>
+          It is possible to subclass TabbedPaneFactory to provide custom
+          implementations of close button tabbed pane.
+      </description>
+      <class package="org.openide.awt" name="TabbedPaneFactory"/>
+      <issue number="215265"/>
+    </change>
     <change id="CheckForUpdatesProvider">
         <api name="awt"/>
         <summary>Support for Check for Updates feature</summary>

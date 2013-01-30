@@ -46,38 +46,42 @@ package org.netbeans.modules.php.editor.indent.ui;
 
 import java.awt.Dimension;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.options.editor.spi.PreferencesCustomizer;
-import static org.netbeans.modules.php.editor.indent.FmtOptions.CategorySupport.OPTION_ID;
 import static org.netbeans.modules.php.editor.indent.FmtOptions.*;
+import org.netbeans.modules.php.editor.indent.FmtOptions.CategorySupport;
+import static org.netbeans.modules.php.editor.indent.FmtOptions.CategorySupport.OPTION_ID;
 /**
  *
  * @author  Petr Hrebejk, Petr Pisl
  */
 public class FmtBlankLines extends javax.swing.JPanel {
 
-    /** Creates new form FmtBlankLines */
+    private static final Logger LOGGER = Logger.getLogger(FmtBlankLines.class.getName());
+
     public FmtBlankLines() {
         initComponents();
 
-        bNamespaceField.putClientProperty(OPTION_ID, blankLinesBeforeNamespace);
-        aNamespaceField.putClientProperty(OPTION_ID, blankLinesAfterNamespace);
-        bUseField.putClientProperty(OPTION_ID, blankLinesBeforeUse);
-        aUseField.putClientProperty(OPTION_ID, blankLinesAfterUse);
-        bUseTraitField.putClientProperty(OPTION_ID, blankLinesBeforeUseTrait);
-        bClassField.putClientProperty(OPTION_ID, blankLinesBeforeClass);
-        aClassField.putClientProperty(OPTION_ID, blankLinesAfterClass);
-        aClassHeaderField.putClientProperty(OPTION_ID, blankLinesAfterClassHeader);
-        bFieldsField.putClientProperty(OPTION_ID, blankLinesBeforeFields);
-	betweenFields.putClientProperty(OPTION_ID, blankLinesBetweenFields);
-	cbGroupFields.putClientProperty(OPTION_ID, blankLinesGroupFieldsWithoutDoc);
-        aFieldsField.putClientProperty(OPTION_ID, blankLinesAfterFields);
-        bMethodsField.putClientProperty(OPTION_ID, blankLinesBeforeFunction );
-        aMethodsField.putClientProperty(OPTION_ID, blankLinesAfterFunction);
-        bFunctionEndField.putClientProperty(OPTION_ID, blankLinesBeforeFunctionEnd);
-        bClassEndField.putClientProperty(OPTION_ID, blankLinesBeforeClassEnd);
-	aOpenPHPTagField.putClientProperty(OPTION_ID, blankLinesAfterOpenPHPTag);
-	aOpenPHPTagHTMLField.putClientProperty(OPTION_ID, blankLinesAfterOpenPHPTagInHTML);
-	bClosePHPTagField.putClientProperty(OPTION_ID, blankLinesBeforeClosePHPTag);
+        bNamespaceField.putClientProperty(OPTION_ID, BLANK_LINES_BEFORE_NAMESPACE);
+        aNamespaceField.putClientProperty(OPTION_ID, BLANK_LINES_AFTER_NAMESPACE);
+        bUseField.putClientProperty(OPTION_ID, BLANK_LINES_BEFORE_USE);
+        aUseField.putClientProperty(OPTION_ID, BLANK_LINES_AFTER_USE);
+        bUseTraitField.putClientProperty(OPTION_ID, BLANK_LINES_BEFORE_USE_TRAIT);
+        bClassField.putClientProperty(OPTION_ID, BLANK_LINES_BEFORE_CLASS);
+        aClassField.putClientProperty(OPTION_ID, BLANK_LINES_AFTER_CLASS);
+        aClassHeaderField.putClientProperty(OPTION_ID, BLANK_LINES_AFTER_CLASS_HEADER);
+        bFieldsField.putClientProperty(OPTION_ID, BLANK_LINES_BEFORE_FIELDS);
+        betweenFields.putClientProperty(OPTION_ID, BLANK_LINES_BETWEEN_FIELDS);
+        cbGroupFields.putClientProperty(OPTION_ID, BLANK_LINES_GROUP_FIELDS_WITHOUT_DOC);
+        aFieldsField.putClientProperty(OPTION_ID, BLANK_LINES_AFTER_FIELDS);
+        bMethodsField.putClientProperty(OPTION_ID, BLANK_LINES_BEFORE_FUNCTION);
+        aMethodsField.putClientProperty(OPTION_ID, BLANK_LINES_AFTER_FUNCTION);
+        bFunctionEndField.putClientProperty(OPTION_ID, BLANK_LINES_BEFORE_FUNCTION_END);
+        bClassEndField.putClientProperty(OPTION_ID, BLANK_LINES_BEFORE_CLASS_END);
+        aOpenPHPTagField.putClientProperty(OPTION_ID, BLANK_LINES_AFTER_OPEN_PHP_TAG);
+        aOpenPHPTagHTMLField.putClientProperty(OPTION_ID, BLANK_LINES_AFTER_OPEN_PHP_TAG_IN_HTML);
+        bClosePHPTagField.putClientProperty(OPTION_ID, BLANK_LINES_BEFORE_CLOSE_PHP_TAG);
 
         bNamespaceField.addKeyListener(new NumericKeyListener());
         aNamespaceField.addKeyListener(new NumericKeyListener());
@@ -89,14 +93,14 @@ public class FmtBlankLines extends javax.swing.JPanel {
         bClassEndField.addKeyListener(new NumericKeyListener());
         aClassHeaderField.addKeyListener(new NumericKeyListener());
         bFieldsField.addKeyListener(new NumericKeyListener());
-	betweenFields.addKeyListener(new NumericKeyListener());
+        betweenFields.addKeyListener(new NumericKeyListener());
         aFieldsField.addKeyListener(new NumericKeyListener());
         bMethodsField.addKeyListener(new NumericKeyListener());
         aMethodsField.addKeyListener(new NumericKeyListener());
         bFunctionEndField.addKeyListener(new NumericKeyListener());
-	aOpenPHPTagField.addKeyListener(new NumericKeyListener());
-	aOpenPHPTagHTMLField.addKeyListener(new NumericKeyListener());
-	bClosePHPTagField.addKeyListener(new NumericKeyListener());
+        aOpenPHPTagField.addKeyListener(new NumericKeyListener());
+        aOpenPHPTagHTMLField.addKeyListener(new NumericKeyListener());
+        bClosePHPTagField.addKeyListener(new NumericKeyListener());
 
         Dimension dimension = new Dimension((int) jPanel1.getPreferredSize().getWidth() + Utils.POSSIBLE_SCROLL_BAR_WIDTH, (int) scrollPane1.getMinimumSize().getHeight());
         scrollPane1.setMinimumSize(dimension);
@@ -107,7 +111,7 @@ public class FmtBlankLines extends javax.swing.JPanel {
         try {
             preview = Utils.loadPreviewText(FmtBlankLines.class.getClassLoader().getResourceAsStream("org/netbeans/modules/php/editor/indent/ui/BlankLines.php"));
         } catch (IOException ex) {
-            // TODO log it
+            LOGGER.log(Level.WARNING, null, ex);
         }
 
         return new CategorySupport.Factory("blank-lines", FmtBlankLines.class, preview); // NOI18N

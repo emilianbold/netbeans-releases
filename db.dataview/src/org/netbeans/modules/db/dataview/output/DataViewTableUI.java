@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.db.dataview.output;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Toolkit;
@@ -56,14 +57,19 @@ import java.awt.event.MouseEvent;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JComponent;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JTable;
+import javax.swing.RowFilter;
+import javax.swing.border.LineBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableModel;
+import org.jdesktop.swingx.renderer.JRendererCheckBox;
 import org.netbeans.modules.db.dataview.meta.DBColumn;
 import org.netbeans.modules.db.dataview.meta.DBException;
 import org.netbeans.modules.db.dataview.meta.DBTable;
@@ -72,7 +78,6 @@ import org.netbeans.modules.db.dataview.table.ResultSetJXTable;
 import org.netbeans.modules.db.dataview.table.ResultSetTableModel;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.datatransfer.ExClipboard;
@@ -105,6 +110,14 @@ final class DataViewTableUI extends ResultSetJXTable {
         createPopupMenu(handler, dataView);
     }
 
+    @Override
+    @SuppressWarnings({"unchecked"})
+    public void setModel(TableModel dataModel) {
+        RowFilter<?, ?> oldFilter = getRowFilter();
+        super.setModel(dataModel);
+        setRowFilter((RowFilter) oldFilter);
+    }
+    
     @Override
     public TableCellRenderer getCellRenderer(int row, int column) {
         if (dView.getUpdatedRowContext().hasUpdates(
@@ -140,13 +153,15 @@ final class DataViewTableUI extends ResultSetJXTable {
     }
 
     private static class UpdatedResultSetCellRenderer extends ResultSetCellRenderer {
-
+        static int borderThickness = 1;
         static Color green = new Color(0, 128, 0);
         static Color gray = new Color(245, 245, 245);
+        private JComponent holder = new JComponent() {};
         DataView dataView;
 
         public UpdatedResultSetCellRenderer(DataView dView) {
             dataView = dView;
+            holder.setLayout(new BorderLayout());
         }
 
         @Override
@@ -156,18 +171,33 @@ final class DataViewTableUI extends ResultSetJXTable {
                     table.convertRowIndexToModel(row),
                     table.convertColumnIndexToModel(column));
 
+            Color color;
+            boolean override = false;
+
             if (isSelected) {
                 if ((obj == null && value == null) || (obj != null && value != null && value.equals(obj))) {
-                    c.setForeground(gray);
+                    color = gray;
+                    override = true;
                 } else {
-                    c.setForeground(Color.ORANGE);
+                    color = Color.ORANGE;
+                    override = true;
                 }
             } else {
                 if ((obj == null && value == null) || (obj != null && value != null && value.equals(obj))) {
-                    c.setForeground(table.getForeground());
+                    color = table.getForeground();
                 } else {
-                    c.setForeground(green);
+                    color = green;
+                    override = true;
                 }
+            }
+
+            if(override && c instanceof JRendererCheckBox) {
+                holder.removeAll();
+                holder.setBorder(new LineBorder(color, borderThickness));
+                holder.add(c);
+                return holder;
+            } else {
+                c.setForeground(color);
             }
             return c;
         }
@@ -316,7 +346,8 @@ final class DataViewTableUI extends ResultSetJXTable {
             public void actionPerformed(ActionEvent e) {
                 try {
                     Object o = getValueAt(selectedRow, selectedColumn);
-                    String output = (o != null) ? o.toString() : ""; //NOI18N
+                    // Limit 1 MB/1 Million Characters.
+                    String output = convertToClipboardString(o, 1024 * 1024);
 
                     ExClipboard clipboard = Lookup.getDefault().lookup(ExClipboard.class);
                     StringSelection strSel = new StringSelection(output);
@@ -380,7 +411,7 @@ final class DataViewTableUI extends ResultSetJXTable {
                         int modelIndex = convertRowIndexToModel(rows[j]);
                         Object[] insertRow = dataView.getDataViewPageContext().getCurrentRows().get(modelIndex);
                         String sql = dataView.getSQLStatementGenerator().generateRawInsertStatement(insertRow);
-                        insertSQL += sql.replaceAll("\n", "").replaceAll("\t", "") + ";\n"; // NOI18N
+                        insertSQL += sql + ";\n"; // NOI18N
                     }
                     ShowSQLDialog dialog = new ShowSQLDialog();
                     dialog.setLocationRelativeTo(WindowManager.getDefault().getMainWindow());
@@ -522,55 +553,4 @@ final class DataViewTableUI extends ResultSetJXTable {
             }
         });
     }
-
-    private void copyRowValues(boolean withHeader) {
-        try {
-            int[] rows = getSelectedRows();
-            int[] columns;
-            if (getRowSelectionAllowed()) {
-                columns = new int[getColumnCount()];
-                for (int a = 0; a < columns.length; a++) {
-                    columns[a] = a;
                 }
-            } else {
-                columns = getSelectedColumns();
-            }
-            if (rows != null && columns != null) {
-                StringBuilder output = new StringBuilder();
-
-                if (withHeader) {
-                    for (int column = 0; column < columns.length; column++) {
-                        if (column > 0) {
-                            output.append('\t'); //NOI18N
-
-                        }
-                        Object o = getColumnModel().getColumn(column).getIdentifier();
-                        output.append(o != null ? o.toString() : ""); //NOI18N
-
-                    }
-                    output.append('\n'); //NOI18N
-
-                }
-
-                for (int row = 0; row < rows.length; row++) {
-                    for (int column = 0; column < columns.length; column++) {
-                        if (column > 0) {
-                            output.append('\t'); //NOI18N
-
-                        }
-                        Object o = getValueAt(rows[row], columns[column]);
-                        output.append(o != null ? o.toString() : ""); //NOI18N
-
-                    }
-                    output.append('\n'); //NOI18N
-
-                }
-                ExClipboard clipboard = Lookup.getDefault().lookup(ExClipboard.class);
-                StringSelection strSel = new StringSelection(output.toString());
-                clipboard.setContents(strSel, strSel);
-            }
-        } catch (ArrayIndexOutOfBoundsException exc) {
-            Exceptions.printStackTrace(exc);
-        }
-    }
-}

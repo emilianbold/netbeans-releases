@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.j2ee.deployment.config;
 
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeApplication;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ResourceChangeReporter;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.ResourceChangeReporterImplementation;
 import org.openide.util.Exceptions;
@@ -52,16 +53,28 @@ import org.openide.util.Exceptions;
  */
 public abstract class ResourceChangeReporterAccessor {
 
-    public static ResourceChangeReporterAccessor DEFAULT;
+    private static volatile ResourceChangeReporterAccessor accessor;
 
-    // force loading of J2eeApplication class. That will set DEFAULT variable.
-    static {
+    public static void setDefault(ResourceChangeReporterAccessor accessor) {
+        if (ResourceChangeReporterAccessor.accessor != null) {
+            throw new IllegalStateException("Already initialized accessor"); // NOI18N
+        }
+        ResourceChangeReporterAccessor.accessor = accessor;
+    }
+
+    public static ResourceChangeReporterAccessor getDefault() {
+        if (accessor != null) {
+            return accessor;
+        }
+
         Class c = ResourceChangeReporter.class;
         try {
-            Class.forName(c.getName(), true, J2eeApplicationAccessor.class.getClassLoader()); // NOI18N
+            Class.forName(c.getName(), true, ResourceChangeReporterAccessor.class.getClassLoader()); // NOI18N
         } catch (ClassNotFoundException cnf) {
             Exceptions.printStackTrace(cnf);
         }
+
+        return accessor;
     }
 
     public abstract ResourceChangeReporter createResourceChangeReporter(ResourceChangeReporterImplementation impl);

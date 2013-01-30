@@ -46,7 +46,6 @@ package org.netbeans.jellytools;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
 import junit.framework.Test;
-import junit.textui.TestRunner;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.Waitable;
@@ -59,7 +58,7 @@ import org.netbeans.jemmy.Waiter;
  */
 public class HelpOperatorTest extends JellyTestCase {
 
-    private static final String[] tests = new String[]{
+    public static final String[] tests = new String[]{
         "testInvoke",
         "testContentsSelection",
         "testSearchFind",

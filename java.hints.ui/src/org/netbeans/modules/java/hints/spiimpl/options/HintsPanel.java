@@ -85,6 +85,8 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.StyledDocument;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
@@ -118,6 +120,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.text.CloneableEditorSupport;
+import org.openide.text.NbDocument;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
 
@@ -210,13 +213,22 @@ public final class HintsPanel extends javax.swing.JPanel   {
         return hasNewHints;
     }
     
-
+    private org.netbeans.modules.java.hints.spiimpl.refactoring.OptionsFilter optionsFilter;
+    
+    private void setModel(DefaultTreeModel errorTreeModel) {
+        if (optionsFilter!=null) {
+            optionsFilter.installFilteringModel(errorTree, errorTreeModel, new AcceptorImpl());
+        } else {
+            errorTree.setModel(errorTreeModel);
+        }
+    }
+    
     private void init(@NullAllowed OptionsFilter filter, boolean inOptionsDialog, boolean useConfigCombo, boolean showOkCancel, boolean showCheckBoxes) {
         initComponents();
         scriptScrollPane.setVisible(false);
-        org.netbeans.modules.java.hints.spiimpl.refactoring.OptionsFilter f = null;
+        optionsFilter = null;
         if (!inOptionsDialog && filter==null) {
-            f = new org.netbeans.modules.java.hints.spiimpl.refactoring.OptionsFilter(
+            optionsFilter = new org.netbeans.modules.java.hints.spiimpl.refactoring.OptionsFilter(
                     searchTextField.getDocument(), new Runnable() {
         
                 @Override
@@ -289,17 +301,15 @@ public final class HintsPanel extends javax.swing.JPanel   {
 
         if (filter != null) {
              ((OptionsFilter) filter).installFilteringModel(errorTree, errorTreeModel, new AcceptorImpl());
-        } else if (f!=null) {
-                ((org.netbeans.modules.java.hints.spiimpl.refactoring.OptionsFilter) f).installFilteringModel(errorTree, errorTreeModel, new AcceptorImpl());
         } else {
-            errorTree.setModel(errorTreeModel);
+            setModel(errorTreeModel);
         }
 
         initialized.set(true);
-        update();
+        update(inOptionsDialog);
         
         if (toSelect != null) {
-            select(toSelect);
+            select(toSelect, true);
             
             toSelect = null;
         }
@@ -683,7 +693,7 @@ public final class HintsPanel extends javax.swing.JPanel   {
         }
         if (queryStatus == QueryStatus.ONLY_ENABLED) {
             errorTreeModel = constructTM(Utilities.getBatchSupportedHints(cpBased).keySet(), false);
-            errorTree.setModel(errorTreeModel);
+            setModel(errorTreeModel);
             if (logic != null) {
                 logic.errorTreeModel = errorTreeModel;
             }
@@ -703,7 +713,7 @@ public final class HintsPanel extends javax.swing.JPanel   {
             RulesManager.getInstance().reload();
             cpBased.reset();
             errorTreeModel = constructTM(Utilities.getBatchSupportedHints(cpBased).keySet(), false);
-            errorTree.setModel(errorTreeModel);
+            setModel(errorTreeModel);
             logic.errorTreeModel = errorTreeModel;
             HintMetadata newHint = getHintByName(newIfcDO.getPrimaryFile().getNameExt());
             HintsSettings.setEnabled(logic.getCurrentPrefernces(newHint.id), true);
@@ -714,6 +724,9 @@ public final class HintsPanel extends javax.swing.JPanel   {
         }
 }//GEN-LAST:event_newButtonActionPerformed
 
+    private String customHintCodeBeforeEditing;
+    private boolean wasModified;
+    
     private void editScriptButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editScriptButtonActionPerformed
         descriptionScrollPane.setVisible(false);
         scriptScrollPane.setVisible(true);
@@ -724,7 +737,19 @@ public final class HintsPanel extends javax.swing.JPanel   {
         DataObject dob = getDataObject(getSelectedHint());
         EditorCookie ec = dob.getCookie(EditorCookie.class);
         try {
-            scriptTextArea.setDocument(ec.openDocument());
+            final StyledDocument doc = ec.openDocument();
+            doc.render(new Runnable() {
+                @Override public void run() {
+                    try {
+                        customHintCodeBeforeEditing = doc.getText(0, doc.getLength());
+                    } catch (BadLocationException ex) {
+                        Exceptions.printStackTrace(ex);
+                        customHintCodeBeforeEditing = null;
+                    }
+                }
+            });
+            wasModified = DataObject.getRegistry().getModifiedSet().contains(dob);
+            scriptTextArea.setDocument(doc);
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -745,6 +770,28 @@ public final class HintsPanel extends javax.swing.JPanel   {
         editingButtons.setVisible(false);
         editScriptButton.setVisible(true);
         org.openide.awt.Mnemonics.setLocalizedText(descriptionLabel, org.openide.util.NbBundle.getMessage(HintsPanel.class, "CTL_Description_Border"));
+
+        if (customHintCodeBeforeEditing != null) {
+            DataObject dob = getDataObject(getSelectedHint());
+            EditorCookie ec = dob.getCookie(EditorCookie.class);
+            try {
+                final StyledDocument doc = ec.openDocument();
+                NbDocument.runAtomic(doc, new Runnable() {
+                    @Override public void run() {
+                        try {
+                            doc.remove(0, doc.getLength());
+                            doc.insertString(0, customHintCodeBeforeEditing, null);
+                        } catch (BadLocationException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+                });
+                customHintCodeBeforeEditing = null;
+                if (!wasModified) ec.saveDocument();
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
 
         okButton.setEnabled(true);
         newButton.setEnabled(true);
@@ -775,8 +822,9 @@ public final class HintsPanel extends javax.swing.JPanel   {
         RulesManager.getInstance().reload();
         cpBased.reset();
         errorTreeModel = constructTM(Utilities.getBatchSupportedHints(cpBased).keySet(), false);
-        errorTree.setModel(errorTreeModel);
+        setModel(errorTreeModel);
         select(getHintByName(selectedHintId));
+        customHintCodeBeforeEditing = null;
         cancelEditActionPerformed(evt);
         hasNewHints = true;
     }//GEN-LAST:event_saveButtonActionPerformed
@@ -793,13 +841,13 @@ public final class HintsPanel extends javax.swing.JPanel   {
         }
         return null;
     }    
-    synchronized void update() {
+    synchronized void update(boolean inOptionsDialog) {
         if (!initialized.get()) return;
         if ( logic != null ) {
             logic.disconnect();
         }
         logic = new HintsPanelLogic();
-        logic.connect(errorTree, errorTreeModel, severityLabel, severityComboBox, toProblemCheckBox, customizerPanel, descriptionTextArea, configCombo, editScriptButton);
+        logic.connect(errorTree, errorTreeModel, severityLabel, severityComboBox, toProblemCheckBox, customizerPanel, descriptionTextArea, configCombo, editScriptButton, inOptionsDialog);
     }
     
     void cancel() {
@@ -880,8 +928,7 @@ public final class HintsPanel extends javax.swing.JPanel   {
                 renderer.setText(treeRule.displayName);
 
                 if (logic != null) {
-                    Preferences node = logic.getCurrentPrefernces(treeRule.id);
-                    renderer.setSelected(HintsSettings.isEnabled(treeRule, node));
+                    renderer.setSelected(logic.isEnabled(treeRule));
                 }
             } else {
                 renderer.setText(value.toString());
@@ -1102,7 +1149,7 @@ public final class HintsPanel extends javax.swing.JPanel   {
                 if (queryStatus == QueryStatus.NEVER) {
                     continue;
                 }
-                if (queryStatus == QueryStatus.ONLY_ENABLED && logic != null && !HintsSettings.isEnabled(m, logic.getCurrentPrefernces(m.id))) {
+                if (queryStatus == QueryStatus.ONLY_ENABLED && logic != null && !logic.isEnabled(m)) {
                     continue;
                 }
             }
@@ -1153,7 +1200,7 @@ public final class HintsPanel extends javax.swing.JPanel   {
                         RulesManager.getInstance().reload();
                         cpBased.reset();
                         errorTreeModel = constructTM(Utilities.getBatchSupportedHints(cpBased).keySet(), false);
-                        errorTree.setModel(errorTreeModel);
+                        setModel(errorTreeModel);
                         select(getHintByName((String) newValue));
                         hasNewHints = true;
                     } catch (IOException ex) {
@@ -1168,6 +1215,10 @@ public final class HintsPanel extends javax.swing.JPanel   {
     }
 
     public void select(HintMetadata hm) {
+        select(hm, false);
+    }
+    
+    public void select(HintMetadata hm, boolean setFocus) {
         if (errorTree == null) {
             //lazy init:
             toSelect = hm;
@@ -1180,6 +1231,8 @@ public final class HintsPanel extends javax.swing.JPanel   {
 	
         errorTree.setSelectionPath(path);
 	errorTree.scrollPathToVisible(path);
+        if (setFocus)
+            errorTree.requestFocusInWindow();
     }
 
     private static int compare(String s1, String s2) {
@@ -1290,7 +1343,7 @@ public final class HintsPanel extends javax.swing.JPanel   {
                     cpBased.reset();
                     //errorTreeModel.removeNodeFromParent(node);
                     errorTreeModel = constructTM(Utilities.getBatchSupportedHints(cpBased).keySet(), false);
-                    errorTree.setModel(errorTreeModel);
+                    setModel(errorTreeModel);
                     hasNewHints = true;
                 }
             } catch (IOException ex) {

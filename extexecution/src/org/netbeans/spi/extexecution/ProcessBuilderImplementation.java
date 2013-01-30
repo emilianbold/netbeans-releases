@@ -46,6 +46,7 @@ import java.util.List;
 import java.util.Map;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
+import org.openide.util.UserQuestionException;
 
 /**
  * The interface representing the implementation
@@ -80,6 +81,10 @@ public interface ProcessBuilderImplementation {
      * @return a process created with specified parameters and environment
      *             configuration
      * @throws IOException IOException if the process could not be created
+     * @throws UserQuestionException in case there is a need to interact with
+     *    user, don't be afraid to throw a subclass of 
+     *    {@link UserQuestionException} with overriden {@link UserQuestionException#confirmed()}
+     *    method.
      */
     @NonNull
     Process createProcess(@NonNull String executable, @NullAllowed String workingDirectory, @NonNull List<String> arguments,

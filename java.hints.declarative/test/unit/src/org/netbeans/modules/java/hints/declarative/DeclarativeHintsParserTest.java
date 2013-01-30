@@ -240,6 +240,18 @@ public class DeclarativeHintsParserTest extends NbTestCase {
 
         performParserSanityTest(code);
     }
+    
+    public void testCustomConditionSanity() throws Exception {
+        String code = "Thread.sleep($time) :: condition($time) ;;\n<? boolean condition(Variable var) { return false; } ?>\n";
+
+        performParserSanityTest(code);
+    }
+    
+    public void test218739() throws Exception {
+        String code = "<!description=\"ImageIcon\">\nnew javax.swing.ImageIcon($image) ::\norg.openide.util.ImageUtilities.image2icon(@image)\n;;";
+
+        performSimpleParserSanityTest(code);
+    }
 
     public void testError1() throws Exception {
         performErrorGatheringTest("$a + $b :: unknown($a, $b);;",
@@ -332,6 +344,14 @@ public class DeclarativeHintsParserTest extends NbTestCase {
 
             new DeclarativeHintsParser().parse(file, currentpath, h.tokenSequence(DeclarativeHintTokenId.language()));
         }
+    }
+    
+    private void performSimpleParserSanityTest(String code) throws Exception {
+        FileObject file = FileUtil.createData(new File(getWorkDir(), "Test.java"));
+        TestUtilities.copyStringToFile(file, code);
+        TokenHierarchy<?> h = TokenHierarchy.create(code, DeclarativeHintTokenId.language());
+
+        new DeclarativeHintsParser().parse(file, code, h.tokenSequence(DeclarativeHintTokenId.language()));
     }
 
     private static final class StringHintDescription {

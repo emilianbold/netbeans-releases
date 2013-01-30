@@ -443,7 +443,8 @@ public final class MySQLDatabaseServer implements DatabaseServer, PropertyChange
                             String dbname = rs.getString(1);
                             dblist.put(dbname, new Database(server, dbname));
                         }
-
+                        rs.close();
+                        ps.close();
                         setDatabases(dblist);
                     } finally {
                         notifyChange();
@@ -679,7 +680,9 @@ public final class MySQLDatabaseServer implements DatabaseServer, PropertyChange
                     Connection conn = connProcessor.getConnection();
                     Quoter quoter = connProcessor.getQuoter();
                     String quotedName = quoter.quoteIfNeeded(dbname);
-                    conn.prepareStatement(CREATE_DATABASE_SQL + quotedName).executeUpdate();
+                    PreparedStatement stmt = conn.prepareStatement(CREATE_DATABASE_SQL + quotedName);
+                    stmt.executeUpdate();
+                    stmt.close();
                 } finally {
                     refreshDatabaseList();
                 }
@@ -697,7 +700,9 @@ public final class MySQLDatabaseServer implements DatabaseServer, PropertyChange
                     Connection conn = connProcessor.getConnection();
                     Quoter quoter = connProcessor.getQuoter();
                     String quotedName = quoter.quoteIfNeeded(dbname);
-                    conn.prepareStatement(DROP_DATABASE_SQL + quotedName).executeUpdate();
+                    PreparedStatement stmt = conn.prepareStatement(DROP_DATABASE_SQL + quotedName);
+                    stmt.executeUpdate();
+                    stmt.close();
 
                     if (deleteConnections) {
                         String hostname = getHost();
@@ -747,8 +752,9 @@ public final class MySQLDatabaseServer implements DatabaseServer, PropertyChange
         DatabaseCommand cmd = new DatabaseCommand(queue, true) {
             @Override
             public void execute() throws Exception {
-                ResultSet rs = connProcessor.getConnection().
-                        prepareStatement(GET_USERS_SQL).executeQuery();
+                PreparedStatement stmt = connProcessor.getConnection().
+                                  prepareStatement(GET_USERS_SQL);
+                ResultSet rs = stmt.executeQuery();
 
                 while ( rs.next() ) {
                     String user = rs.getString(1).trim();
@@ -757,6 +763,7 @@ public final class MySQLDatabaseServer implements DatabaseServer, PropertyChange
                 }
 
                 rs.close();
+                stmt.close();
             }
         };
 
@@ -793,6 +800,7 @@ public final class MySQLDatabaseServer implements DatabaseServer, PropertyChange
                 ps.setString(1, grantUser.getUser());
                 ps.setString(2, grantUser.getHost());
                 ps.executeUpdate();
+                ps.close();
             }
         }.postCommand("grantFullDatabaseRights"); // NOI8N
     }

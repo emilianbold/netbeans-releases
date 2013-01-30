@@ -1,6 +1,15 @@
-#!/bin/bash
+#!/bin/sh
+
+#
+# Copyright (c) 2009, 2012, Oracle and/or its affiliates. All rights reserved.
+#
+
 if [ -z "${MAKE}" ]; then
+    if [ `uname -s` = SunOS ]; then
 	MAKE=gmake
+    else
+        MAKE=make
+    fi
 fi
 
 if [ "$1" = "-t" ]; then

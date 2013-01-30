@@ -50,7 +50,6 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.ide.FXProjectSupport;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.test.MockLookup;
 
 /**
@@ -355,30 +354,30 @@ public class JFXConfigsTest extends NbTestCase {
         FileObject projectDir = jfxprops.getProject().getProjectDirectory();
         assertNotNull(projectDir);
         EditableProperties ep;
-        ep = JFXProjectProperties.readFromFile(projectDir.getFileObject(CONFIG_PROPERTIES_FILE));
+        ep = JFXProjectUtils.readFromFile(projectDir.getFileObject(CONFIG_PROPERTIES_FILE));
         assertTrue(ep.size() == 1);
         assertTrue(ep.getProperty("config").equals(NONDEF1));
-        ep = JFXProjectProperties.readFromFile(projectDir.getFileObject(PROJECT_PROPERTIES_FILE));
+        ep = JFXProjectUtils.readFromFile(projectDir.getFileObject(PROJECT_PROPERTIES_FILE));
         assertTrue(ep.getProperty(JFXProjectProperties.RUN_APP_WIDTH).equals("444"));
         assertTrue(ep.getProperty(JFXProjectProperties.RUN_APP_HEIGHT).equals("333"));
         assertTrue(ep.getProperty("javafx.param.0.name").equals("par2"));
         assertTrue(ep.getProperty("javafx.param.0.value").equals("val2"));
-        ep = JFXProjectProperties.readFromFile(projectDir.getFileObject(PRIVATE_PROPERTIES_FILE));
+        ep = JFXProjectUtils.readFromFile(projectDir.getFileObject(PRIVATE_PROPERTIES_FILE));
         assertTrue(ep.getProperty(JFXProjectProperties.RUN_AS).equals("dummy"));
         assertTrue(ep.getProperty("application.args").equals("--par2=val2"));
-        ep = JFXProjectProperties.readFromFile(projectDir.getFileObject(NONDEF1_PROJECT_PROPERTIES_FILE));
+        ep = JFXProjectUtils.readFromFile(projectDir.getFileObject(NONDEF1_PROJECT_PROPERTIES_FILE));
         assertTrue(ep.size() == 3);
         assertTrue(ep.getProperty("javafx.param.1.name").equals("par4"));
         assertTrue(ep.getProperty(PROP2).equals("value2"));
         assertTrue(ep.getProperty(PROP3).equals("dummy_1_3"));
-        ep = JFXProjectProperties.readFromFile(projectDir.getFileObject(NONDEF1_PRIVATE_PROPERTIES_FILE));
+        ep = JFXProjectUtils.readFromFile(projectDir.getFileObject(NONDEF1_PRIVATE_PROPERTIES_FILE));
         assertTrue(ep.size() == 1);
         assertTrue(ep.getProperty("application.args").equals("--par2=val2 par4"));
-        ep = JFXProjectProperties.readFromFile(projectDir.getFileObject(NONDEF2_PROJECT_PROPERTIES_FILE));
+        ep = JFXProjectUtils.readFromFile(projectDir.getFileObject(NONDEF2_PROJECT_PROPERTIES_FILE));
         assertTrue(ep.size() == 2);
         assertTrue(ep.getProperty(PROP2).equals("value2"));
         assertTrue(ep.getProperty(PROP3).equals("dummy_2_3"));
-        ep = JFXProjectProperties.readFromFile(projectDir.getFileObject(NONDEF2_PRIVATE_PROPERTIES_FILE));
+        ep = JFXProjectUtils.readFromFile(projectDir.getFileObject(NONDEF2_PRIVATE_PROPERTIES_FILE));
         assertTrue(ep.size() == 0);
     }
     

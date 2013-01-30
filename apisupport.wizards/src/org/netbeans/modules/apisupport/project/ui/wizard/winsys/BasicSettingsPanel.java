@@ -345,10 +345,10 @@ private void redefineActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRS
     try {
         final AtomicReference<FileObject> userDir = new AtomicReference<FileObject>();
         Task task = DesignSupport.invokeDesignMode(data.getProject(), userDir);
-        redefine.setEnabled(false);
         if (task == null) {
             return;
         }
+        redefine.setEnabled(false);
         redefine.setText(org.openide.util.NbBundle.getMessage(BasicSettingsPanel.class, "MSG_LaunchingLayout", new Object[]{}));
         
         class PostProcess implements TaskListener, Runnable {

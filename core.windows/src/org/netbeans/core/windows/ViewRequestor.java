@@ -156,7 +156,9 @@ class ViewRequestor {
             || type == View.CHANGE_DND_PERFORMED
             || type == View.CHANGE_UI_UPDATE
             || type == View.TOPCOMPONENT_CANCEL_REQUEST_ATTENTION
-            || type == View.TOPCOMPONENT_REQUEST_ATTENTION;
+            || type == View.TOPCOMPONENT_REQUEST_ATTENTION
+            || type == View.TOPCOMPONENT_ATTENTION_HIGHLIGHT_OFF
+            || type == View.TOPCOMPONENT_ATTENTION_HIGHLIGHT_ON;
             
         synchronized(requests) {
             Object oldValue = null;

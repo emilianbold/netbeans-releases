@@ -90,9 +90,8 @@ public final class DelayScanRegistry {
             } catch (Exception ex) {
                 // not interested
             }
-            scan.afterProjetOpenning = true;
         }
-        if (scan.afterProjetOpenning && IndexingBridge.getInstance().isIndexingInProgress()
+        if (IndexingBridge.getInstance().isIndexingInProgress()
                 && scan.waitingLoops * WAITING_PERIOD < MAX_WAITING_TIME) {
             // do not steal disk from openning projects and indexing tasks
             boolean asserts = false;
@@ -103,7 +102,6 @@ public final class DelayScanRegistry {
             rescheduled = true;
         } else {
             scan.waitingLoops = 0;
-            scan.afterProjetOpenning = false;
         }
         return rescheduled;
     }
@@ -119,7 +117,6 @@ public final class DelayScanRegistry {
     }
 
     private static class DelayedScan {
-        private boolean afterProjetOpenning;
         private int waitingLoops;
     }
 }

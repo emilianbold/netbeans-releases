@@ -248,6 +248,7 @@ public final class RemoteClient implements Cancellable, RemoteClientImplementati
         return success;
     }
 
+    @Override
     public List<TransferFile> listFiles(TransferFile file) throws RemoteException {
         ensureConnected();
 
@@ -985,7 +986,7 @@ public final class RemoteClient implements Cancellable, RemoteClientImplementati
                 try {
                     return parentFo.createData(target.getName());
                 } catch (IOException ex) {
-                    LOGGER.log(Level.WARNING, "Error while creating local file '" + target + "'", ex);
+                    LOGGER.log(Level.INFO, "Error while creating local file '" + target + "'", ex);
                     return null;
                 }
             }

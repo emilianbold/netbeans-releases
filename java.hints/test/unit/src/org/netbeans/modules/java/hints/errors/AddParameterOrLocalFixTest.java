@@ -432,6 +432,32 @@ public class AddParameterOrLocalFixTest extends ErrorHintsTestBase {
                 "    }\n" +
                  "}\n").replaceAll("[ \t\n]+", " "));
     }
+    
+    public void test206536() throws Exception {
+        parameter = false;
+        performFixTest("test/Test.java",
+                "package test;\n" +
+                "public class Test {\n" +
+                "    interface Foo<T> {\n" +
+                "        Foo<? extends ThreadLocal<? extends T>> foo();\n" +
+                "    }\n" +
+                "    private void t() {\n" +
+                "        Foo<? extends Number> bar = null;\n" +
+                "        fo|o = bar.foo();\n" +
+                "    }\n" +
+                "}\n",
+                "AddParameterOrLocalFix:foo:test.Test.Foo<? extends java.lang.ThreadLocal<? extends java.lang.Number>>:false",
+                ("package test;\n" +
+                 "public class Test {\n" +
+                 "    interface Foo<T> {\n" +
+                 "        Foo<? extends ThreadLocal<? extends T>> foo();\n" +
+                 "    }\n" +
+                 "    private void t() {\n" +
+                 "        Foo<? extends Number> bar = null;\n" +
+                 "        Foo<? extends ThreadLocal<? extends Number>> foo = bar.foo();\n" +
+                 "    }\n" +
+                 "}\n").replaceAll("[ \t\n]+", " "));
+    }
 
     protected List<Fix> computeFixes(CompilationInfo info, int pos, TreePath path) throws IOException {
         List<Fix> fixes = CreateElement.analyze(info, pos);

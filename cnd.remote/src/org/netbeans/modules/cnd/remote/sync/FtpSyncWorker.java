@@ -43,6 +43,8 @@
 package org.netbeans.modules.cnd.remote.sync;
 
 import java.io.*;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -53,7 +55,6 @@ import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
-import org.netbeans.modules.cnd.remote.support.RemoteCommandSupport;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.cnd.remote.sync.FileData.FileInfo;
 import org.netbeans.modules.cnd.utils.CndUtils;
@@ -61,6 +62,8 @@ import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport.UploadStatus;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Cancellable;
@@ -166,7 +169,7 @@ import org.openide.util.NbBundle;
         }
         filter = new TimestampAndSharabilityFilter(privProjectStorageDir, executionEnvironment);
         preliminaryCount = 0;
-        StringBuilder script = new StringBuilder("sh -c \'"); // NOI18N
+        List<String> dirsToCreate = new LinkedList<String>();
         for (int i = 0; i < files.length; i++) {
             final File name = files[i];
             String remoteFile = mapper.getRemotePath(name.getAbsolutePath(), true);
@@ -174,16 +177,18 @@ import org.openide.util.NbBundle;
                 File parent = name.getParentFile();
                 if (parent != null) {
                     String remoteParent = mapper.getRemotePath(parent.getAbsolutePath(), true);
-                    script.append("mkdir -p \"").append(remoteParent).append("\"; "); // NOI18N
+                    dirsToCreate.add(remoteParent);
                 }
             }
-            preprocessFile( name, script, remoteFile);
+            preprocessFile(name, dirsToCreate, remoteFile);
         }
-        script.append("\'"); // NOI18N
         
-        RemoteCommandSupport rcs = new RemoteCommandSupport(executionEnvironment, script.toString());
-        if (rcs.run() != 0) {
-            throw new IOException("Can not check remote directories"); //NOI18N
+        if (!dirsToCreate.isEmpty()) {
+            dirsToCreate.add(0, "-p"); // NOI18N
+            ExitStatus status = ProcessUtils.execute(executionEnvironment, "mkdir", dirsToCreate.toArray(new String[dirsToCreate.size()])); // NOI18N
+            if (!status.isOK()) {
+                throw new IOException("Can not check remote directories: " + status.toString()); // NOI18N
+            }
         }
 
         progressHandle.switchToDeterminate(preliminaryCount);
@@ -216,12 +221,12 @@ import org.openide.util.NbBundle;
         }
     }
 
-    private void preprocessFile(File file, StringBuilder script, String remoteFile) {
+    private void preprocessFile(File file, List<String> dirsToCreate, String remoteFile) {
         if (file.isDirectory()) {
-            script.append("mkdir -p \"").append(remoteFile).append("\"; "); // create all directories // NOI18N
+            dirsToCreate.add(remoteFile); // create all directories // NOI18N
             File[] children = file.listFiles(filter);
             for (File child : children) {
-                preprocessFile(child, script, remoteFile + '/' + child.getName());
+                preprocessFile(child, dirsToCreate, remoteFile + '/' + child.getName());
             }
         } else {
             preliminaryCount++;

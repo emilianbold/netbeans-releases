@@ -1,0 +1,37 @@
+Code completion result for source line:
+number.|
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
+------------------------------------
+CLASS      prototype                       [PUBLIC]   JS Platform
+METHOD     apply(thisArg: String, argArra  [PUBLIC]   JS Platform
+METHOD     bind(thisArg: Object): String   [PUBLIC]   JS Platform
+METHOD     call(thisArg: Object): String   [PUBLIC]   JS Platform
+METHOD     create(O: Object): Object       [PUBLIC,   JS Platform
+METHOD     defineProperties(O: Object, Pr  [PUBLIC,   JS Platform
+METHOD     defineProperty(O: Object, P: S  [PUBLIC,   JS Platform
+METHOD     freeze(O: Object): Object       [PUBLIC,   JS Platform
+METHOD     getOwnPropertyDescriptor(O: Ob  [PUBLIC,   JS Platform
+METHOD     getOwnPropertyNames(O: Object)  [PUBLIC,   JS Platform
+METHOD     getPrototypeOf(O: Object): Obj  [PUBLIC,   JS Platform
+METHOD     hasOwnProperty(V: String): Boo  [PUBLIC]   JS Platform
+METHOD     isExtensible(O: Object): Boole  [PUBLIC,   JS Platform
+METHOD     isFrozen(O: Object): Boolean    [PUBLIC,   JS Platform
+METHOD     isPrototypeOf(V: Object): Bool  [PUBLIC]   JS Platform
+METHOD     isSealed(O: Object): Boolean    [PUBLIC,   JS Platform
+METHOD     keys(O: Object): Array          [PUBLIC,   JS Platform
+METHOD     preventExtensions(O: Object):   [PUBLIC,   JS Platform
+METHOD     propertyIsEnumerable(V: String  [PUBLIC]   JS Platform
+METHOD     seal(O: Object): Object         [PUBLIC,   JS Platform
+METHOD     toExponential(fractionDigits:   [PUBLIC]   JS Platform
+METHOD     toFixed(fractionDigits: Number  [PUBLIC]   JS Platform
+METHOD     toLocaleString(): String        [PUBLIC]   JS Platform
+METHOD     toPrecision(precision: Number)  [PUBLIC]   JS Platform
+METHOD     toString(): String              [PUBLIC]   JS Platform
+METHOD     valueOf(): Number               [PUBLIC]   JS Platform
+FIELD      MAX_VALUE: Number               [PUBLIC,   JS Platform
+FIELD      MIN_VALUE: Number               [PUBLIC,   JS Platform
+FIELD      NEGATIVE_INFINITY: String       [PUBLIC,   JS Platform
+FIELD      NaN: Number                     [PUBLIC,   JS Platform
+FIELD      POSITIVE_INFINITY: String       [PUBLIC,   JS Platform
+FIELD      constructor: Function           [PUBLIC]   JS Platform
+FIELD      length: Number                  [PUBLIC]   JS Platform

@@ -961,6 +961,7 @@ public final class HintsUI implements MouseListener, MouseMotionListener, KeyLis
                 final String[] warning = new String[] {AnnotationHolder.resolveWarnings(doc, caret, caret)};
 
                 if (warning[0] == null || warning[0].trim().isEmpty()) {
+                    final HighlightAttributeValue[] hav = new HighlightAttributeValue[1];
                     doc.render(new Runnable() {
                         @Override public void run() {
                             HighlightsSequence hit = hm.getBottomHighlights().getHighlights(caret, caret + 1);
@@ -969,15 +970,19 @@ public final class HintsUI implements MouseListener, MouseMotionListener, KeyLis
                                 Object tp = hit.getAttributes().getAttribute(EditorStyleConstants.Tooltip);
 
                                 if (tp instanceof HighlightAttributeValue) {
-                                    Object res = ((HighlightAttributeValue) tp).getValue(errorTooltip, doc, tp, caret, caret);
-
-                                    if (res instanceof String) {
-                                        warning[0] = (String) res;
-                                    }
+                                    hav[0] = (HighlightAttributeValue) tp;
                                 }
                             }
                         }
                     });
+                    
+                    if (hav[0] != null) {
+                        Object res = hav[0].getValue(errorTooltip, doc, hav[0], caret, caret);
+
+                        if (res instanceof String) {
+                            warning[0] = (String) res;
+                        }
+                    }
                 } else {
                     warning[0] = warning[0].replace('\n', ' ');
                 }

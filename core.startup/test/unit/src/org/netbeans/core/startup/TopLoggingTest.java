@@ -68,7 +68,6 @@ import org.openide.util.RequestProcessor;
 /**
  * Checks the behaviour of NetBeans logging support.
  */
-@RandomlyFails
 public class TopLoggingTest extends NbTestCase {
     private ByteArrayOutputStream w;
     private Handler handler;

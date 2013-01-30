@@ -47,6 +47,7 @@ import java.awt.event.KeyEvent;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import javax.swing.KeyStroke;
+import org.netbeans.core.options.keymap.api.KeyStrokeUtils;
 import org.openide.util.Utilities;
 
 /**
@@ -109,6 +110,7 @@ public class ShortcutProvider {
         KeyEvent.VK_SLASH,
         KeyEvent.VK_MINUS,
         KeyEvent.VK_EQUALS,
+        KeyEvent.VK_SPACE,
 
         Utilities.isMac() ? KeyEvent.VK_HELP : KeyEvent.VK_INSERT,
         KeyEvent.VK_HOME,
@@ -129,35 +131,35 @@ public class ShortcutProvider {
 
             //CTRL
             for (int i = 0; i < letters.length; i++) {
-                shortcutSet.add(Utils.getKeyStrokeAsText(KeyStroke.getKeyStroke(letters[i], InputEvent.CTRL_MASK)));
+                shortcutSet.add(KeyStrokeUtils.getKeyStrokeAsText(KeyStroke.getKeyStroke(letters[i], InputEvent.CTRL_MASK)));
             }
 
             if (Utilities.isMac())
                 //META
                 for (int i = 0; i < letters.length; i++) {
-                    shortcutSet.add(Utils.getKeyStrokeAsText(KeyStroke.getKeyStroke(letters[i], InputEvent.META_MASK)));
+                    shortcutSet.add(KeyStrokeUtils.getKeyStrokeAsText(KeyStroke.getKeyStroke(letters[i], InputEvent.META_MASK)));
                 }
             else
                 //ALT
                 for (int i = 0; i < letters.length; i++) {
-                    shortcutSet.add(Utils.getKeyStrokeAsText(KeyStroke.getKeyStroke(letters[i], InputEvent.ALT_MASK)));
+                    shortcutSet.add(KeyStrokeUtils.getKeyStrokeAsText(KeyStroke.getKeyStroke(letters[i], InputEvent.ALT_MASK)));
                 }
 
             //CTRL+SHIFT
             for (int i = 0; i < letters.length; i++) {
-                shortcutSet.add(Utils.getKeyStrokeAsText(KeyStroke.getKeyStroke(letters[i], InputEvent.CTRL_MASK | InputEvent.SHIFT_MASK)));
+                shortcutSet.add(KeyStrokeUtils.getKeyStrokeAsText(KeyStroke.getKeyStroke(letters[i], InputEvent.CTRL_MASK | InputEvent.SHIFT_MASK)));
 
             }
 
             if (Utilities.isMac())
                 //SHIFT+META
                 for (int i = 0; i < letters.length; i++) {
-                    shortcutSet.add(Utils.getKeyStrokeAsText(KeyStroke.getKeyStroke(letters[i], InputEvent.SHIFT_MASK | InputEvent.META_MASK)));
+                    shortcutSet.add(KeyStrokeUtils.getKeyStrokeAsText(KeyStroke.getKeyStroke(letters[i], InputEvent.SHIFT_MASK | InputEvent.META_MASK)));
                 }
             else
                 //SHIFT+ALT
                 for (int i = 0; i < letters.length; i++) {
-                    shortcutSet.add(Utils.getKeyStrokeAsText(KeyStroke.getKeyStroke(letters[i], InputEvent.SHIFT_MASK | InputEvent.ALT_MASK)));
+                    shortcutSet.add(KeyStrokeUtils.getKeyStrokeAsText(KeyStroke.getKeyStroke(letters[i], InputEvent.SHIFT_MASK | InputEvent.ALT_MASK)));
                 }
         }
         return shortcutSet;

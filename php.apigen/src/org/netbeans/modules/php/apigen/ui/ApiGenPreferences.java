@@ -161,6 +161,7 @@ public final class ApiGenPreferences {
         put(phpModule, TARGET, target);
     }
 
+    @org.netbeans.api.annotations.common.SuppressWarnings("ES_COMPARING_STRINGS_WITH_EQ")
     public static String get(PhpModule phpModule, Property<? extends Object> property) {
         // get default value lazyly since it can do anything...
         String value = getPreferences(phpModule).get(property.getKey(), DEFAULT_VALUE);

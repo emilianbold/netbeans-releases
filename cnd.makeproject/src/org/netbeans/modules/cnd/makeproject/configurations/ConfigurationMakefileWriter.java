@@ -53,8 +53,10 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -212,7 +214,7 @@ public class ConfigurationMakefileWriter {
             }
             final String msg = getString("TARGET_MISMATCH_TXT", platform.getDisplayName(), list.toString());
             final String title = getString("TARGET_MISMATCH_DIALOG_TITLE.TXT");
-            if (CndUtils.isUnitTestMode()) {
+            if (CndUtils.isUnitTestMode() || CndUtils.isStandalone()) {
                 new Exception(msg).printStackTrace(System.err);
             } else {
                 SwingUtilities.invokeLater(new Runnable() {
@@ -697,7 +699,7 @@ public class ConfigurationMakefileWriter {
         LinkerConfiguration linkerConfiguration = conf.getLinkerConfiguration();
         String command = getLinkerTool(projectDescriptor, conf, conf.getLinkerConfiguration(), compilerSet);
         if (conf.getDevelopmentHost().isLocalhost()) {
-            command += linkerConfiguration.getOptions() + " "; // NOI18N
+            command += linkerConfiguration.getOutputOptions() + " "; // NOI18N
         } else {
             // This hack is used to workaround the following issue:
             // the linker options contains linker output file
@@ -705,10 +707,18 @@ public class ConfigurationMakefileWriter {
             // It's quite hard to implement mapping in the LinkerConfiguration class,
             // as it's not quite clear when we should do this.
             // See Bug 193797 - '... does not exists or is not an executable' when remote mode and not default linker output
-            command += linkerConfiguration.getOptions().replace(conf.getOutputValue(), output) + " "; // NOI18N
+            command += linkerConfiguration.getOutputOptions().replace(conf.getOutputValue(), output) + " "; // NOI18N
         }
         command += "${OBJECTFILES}" + " "; // NOI18N
-        command += "${LDLIBSOPTIONS}" + " "; // NOI18N
+        command += "${LDLIBSOPTIONS}"; // NOI18N
+        String options = linkerConfiguration.getCommandLineConfiguration().getValue();
+        if (options.length() > 0) {
+            command += " " + options; // NOI18N
+        }
+        options = linkerConfiguration.getBasicOptions();
+        if (options.length() > 0) {
+            command += " " + options; // NOI18N
+        }
         String[] additionalDependencies = linkerConfiguration.getAdditionalDependencies().getValues();
         for (int i = 0; i < additionalDependencies.length; i++) {
             bw.write(output + ": " + additionalDependencies[i] + "\n\n"); // NOI18N
@@ -875,8 +885,19 @@ public class ConfigurationMakefileWriter {
         }
     }
 
+    public static Item[] getSortedProjectItems(MakeConfigurationDescriptor projectDescriptor) {
+        List<Item> res = new ArrayList<Item>(Arrays.asList(projectDescriptor.getProjectItems()));
+        Collections.<Item>sort(res, new Comparator<Item>(){
+            @Override
+            public int compare(Item o1, Item o2) {
+                return o1.getPath().compareTo(o2.getPath());
+            }
+        });
+        return res.toArray(new Item[res.size()]);
+    }
+    
     public static void writeCompileTargets(MakeConfigurationDescriptor projectDescriptor, MakeConfiguration conf, Writer bw) throws IOException {
-        Item[] items = projectDescriptor.getProjectItems();
+        Item[] items = getSortedProjectItems(projectDescriptor);
         if (conf.isCompileConfiguration()) {
             String target = null;
             String folders;
@@ -912,8 +933,9 @@ public class ConfigurationMakefileWriter {
                 command = ""; // NOI18N
                 comment = null;
                 additionalDep = null;
+                PredefinedToolKind tool = itemConfiguration.getTool();
                 if (itemConfiguration.isCompilerToolConfiguration()) {
-                    AbstractCompiler compiler = (AbstractCompiler) compilerSet.getTool(itemConfiguration.getTool());
+                    AbstractCompiler compiler = (AbstractCompiler) compilerSet.getTool(tool);
                     BasicCompilerConfiguration compilerConfiguration = itemConfiguration.getCompilerConfiguration();
                     target = compilerConfiguration.getOutputFile(items[i], conf, false);
                     if (compiler != null && compiler.getDescriptor() != null) {
@@ -949,7 +971,7 @@ public class ConfigurationMakefileWriter {
                         command += file;
                     }
                     additionalDep = compilerConfiguration.getAdditionalDependencies().getValue();
-                } else if (itemConfiguration.getTool() == PredefinedToolKind.CustomTool) {
+                } else if (tool == PredefinedToolKind.CustomTool) {
                     CustomToolConfiguration customToolConfiguration = itemConfiguration.getCustomToolConfiguration();
                     if (customToolConfiguration.getModified()) {
                         target = customToolConfiguration.getOutputs().getValue();
@@ -1131,7 +1153,7 @@ public class ConfigurationMakefileWriter {
     }
 
     public static void writeCompileTargetsWithoutMain(MakeConfigurationDescriptor projectDescriptor, MakeConfiguration conf, Writer bw) throws IOException {
-        Item[] items = projectDescriptor.getProjectItems();
+        Item[] items = getSortedProjectItems(projectDescriptor);
         if (conf.isCompileConfiguration()) {
             String target = null;
             String folders;
@@ -1370,7 +1392,7 @@ public class ConfigurationMakefileWriter {
             }
 
             // Also clean output from custom tool
-            Item[] items = projectDescriptor.getProjectItems();
+            Item[] items = getSortedProjectItems(projectDescriptor);
             for (int i = 0; i < items.length; i++) {
                 ItemConfiguration itemConfiguration = items[i].getItemConfiguration(conf); //ItemConfiguration)conf.getAuxObject(ItemConfiguration.getId(items[i].getPath()));
                 if (itemConfiguration == null){
@@ -1467,7 +1489,7 @@ public class ConfigurationMakefileWriter {
     }
 
     private static String getObjectFiles(MakeConfigurationDescriptor projectDescriptor, MakeConfiguration conf) {
-        Item[] items = projectDescriptor.getProjectItems();
+        Item[] items = getSortedProjectItems(projectDescriptor);
         StringBuilder linkObjects = new StringBuilder();
         if (conf.isCompileConfiguration()) {
             for (int x = 0; x < items.length; x++) {
@@ -1683,6 +1705,9 @@ public class ConfigurationMakefileWriter {
     }
 
     private void writePackagingScript(MakeConfiguration conf) {
+        if (conf.getConfigurationType().getValue() == MakeConfiguration.TYPE_MAKEFILE) {
+            return;
+        }
         if (conf.getPackagingConfiguration().getFiles().getValue().isEmpty()) {
             // Nothing to do
             return;

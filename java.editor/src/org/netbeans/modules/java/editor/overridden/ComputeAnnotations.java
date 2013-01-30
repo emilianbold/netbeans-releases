@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.java.editor.overridden;
 
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.MethodTree;
 import java.awt.event.KeyEvent;
 import com.sun.source.tree.Tree;
 import java.util.Collection;
@@ -192,7 +194,26 @@ public class ComputeAnnotations extends JavaParserResultTask<Result> {
                         dn += NbBundle.getMessage(ComputeAnnotations.class, "LBL_shortcut_promotion", kb, 3); //NOI18N
                 }
 
-                Position pos = getPosition(doc, (int) info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), t));
+                int[] elementNameSpan;
+                
+                switch (t.getKind()) {
+                    case ANNOTATION_TYPE:
+                    case CLASS:
+                    case ENUM:
+                    case INTERFACE:
+                        elementNameSpan = info.getTreeUtilities().findNameSpan((ClassTree) t);
+                        break;
+                    case METHOD:
+                        elementNameSpan = info.getTreeUtilities().findNameSpan((MethodTree) t);
+                        break;
+                    default:
+                        elementNameSpan = new int[] {(int) info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), t), -1};
+                        break;
+                }
+                
+                if (elementNameSpan == null) continue;
+                
+                Position pos = getPosition(doc, elementNameSpan[0]);
 
                 if (pos == null) {
                     //#179304: possibly the position is outside document bounds (i.e. <0 or >doc.getLenght())

@@ -47,12 +47,18 @@ import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.util.Collection;
+import java.util.Set;
 import javax.swing.AbstractListModel;
 import javax.swing.DefaultListModel;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 import org.netbeans.core.options.keymap.api.ShortcutAction;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
 
 /**
@@ -131,7 +137,7 @@ public class ShortcutPopupPanel extends javax.swing.JPanel {
         ShortcutAction action = ((ActionHolder) table.getValueAt(row, 0)).getAction();
         KeymapViewModel keymapViewModel = (KeymapViewModel) ((TableSorter) table.getModel()).getTableModel();
         if (scText.length() != 0)
-            keymapViewModel.removeShortcut(action, scText);
+            keymapViewModel.getMutableModel().removeShortcut(action, scText);
         if (((ActionHolder) table.getValueAt(row, 0)).isAlternative())
             //alternative SC, remove row
             keymapViewModel.removeRow(row);
@@ -146,9 +152,39 @@ public class ShortcutPopupPanel extends javax.swing.JPanel {
         pm.setVisible(false);
         ShortcutAction action = ((ActionHolder) table.getValueAt(row, 0)).getAction();
         KeymapViewModel mod = (KeymapViewModel) ((TableSorter) table.getModel()).getTableModel();
-        mod.revertShortcutsToDefault(action);
+        Collection<ShortcutAction> conflicts = mod.getMutableModel().revertShortcutsToDefault(action, false);
+        if (conflicts != null) {
+            if (!overrideAll(conflicts)) {
+                return;
+            }
+            mod.getMutableModel().revertShortcutsToDefault(action, true);
+        }
+        mod.update();
         mod.fireTableDataChanged();
     }
+
+    private boolean overrideAll(Collection<ShortcutAction> actions) {
+        JPanel innerPane = new JPanel();
+        StringBuffer display = new StringBuffer();
+        for(ShortcutAction sc : actions) {
+            display.append(" '" + sc.getDisplayName() + "'<br>"); //NOI18N
+        }
+
+        innerPane.add(new JLabel(NbBundle.getMessage(KeymapViewModel.class, "Override_All", display))); //NOI18N
+        DialogDescriptor descriptor = new DialogDescriptor(
+                innerPane,
+                NbBundle.getMessage(KeymapViewModel.class, "Conflicting_Shortcut_Dialog"), //NOI18N
+                true,
+                DialogDescriptor.YES_NO_OPTION,
+                null,
+                null);
+        DialogDisplayer.getDefault().notify(descriptor);
+
+        if (descriptor.getValue().equals(DialogDescriptor.YES_OPTION))
+            return true;
+        else return false;
+    }
+
 
     /** This method is called from within the constructor to
      * initialize the form.
@@ -205,6 +241,12 @@ public class ShortcutPopupPanel extends javax.swing.JPanel {
         itemSelected(index);
     }//GEN-LAST:event_listMouseClicked
 
+    private boolean customProfile;
+    
+    void setCustomProfile(boolean customProfile) {
+        this.customProfile = customProfile;
+    }
+    
     private void itemSelected(int index) {
         if (displayAlternative) {
         switch (index) {

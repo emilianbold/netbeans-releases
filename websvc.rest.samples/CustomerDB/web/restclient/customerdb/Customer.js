@@ -206,7 +206,6 @@ Customer.prototype = {
             customer = myObj;
             useWrapCustomer = false;
          }
-         this.uri = customer['@uri'];
          this.customerId = this.findValue(this.customerId, customer['customerId']);
          this.zip = this.findValue(this.zip, customer['zip']);
          this.name = this.findValue(this.name, customer['name']);
@@ -218,7 +217,7 @@ Customer.prototype = {
          this.fax = this.findValue(this.fax, customer['fax']);
          this.email = this.findValue(this.email, customer['email']);
          this.creditLimit = this.findValue(this.creditLimit, customer['creditLimit']);
-         this.discountCode = new DiscountCode(customer['discountCode']['@uri']);
+         this.discountCode = customer['discountCode'];
 
          this.initialized = true;
       }
@@ -249,8 +248,7 @@ Customer.prototype = {
          this.init();
       var myObj = 
          '{'+
-         '"@uri":"'+this.uri+'"'+
-                  ', "customerId":"'+this.customerId+'"'+
+         '"customerId":"'+this.customerId+'"'+
          ', "zip":"'+this.zip+'"'+
          ', "name":"'+this.name+'"'+
          ', "addressline1":"'+this.addressline1+'"'+
@@ -261,8 +259,6 @@ Customer.prototype = {
          ', "fax":"'+this.fax+'"'+
          ', "email":"'+this.email+'"'+
          ', "creditLimit":"'+this.creditLimit+'"'+
-         ', "discountCode":{"@uri":"'+this.discountCode.getUri()+'"}'+
-
          '}';
       if(useWrapCustomer) {
           myObj = '"customer":'+myObj;
@@ -290,7 +286,7 @@ Customer.prototype = {
 }
 
 function CustomerRemote(uri_) {
-    this.uri = uri_+'?expandLevel=1';
+    this.uri = uri_;
 }
 
 CustomerRemote.prototype = {

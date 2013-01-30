@@ -364,7 +364,7 @@ public class JsfVariablesModel {
         return vars;
     }
 
-    private static class Expression {
+    /* test */ static class Expression {
         
         private String base, postfix, expression;
 
@@ -376,10 +376,10 @@ public class JsfVariablesModel {
         private Expression(String expression) {
             //first strip the EL delimiters
             //strip #{ or ${ && }
-            if((expression.charAt(0) == '#' || expression.charAt(0) == '$') && expression.charAt(1) == '{') {
+            if(expression.length() >= 2 && ( expression.charAt(0) == '#' || expression.charAt(0) == '$') && expression.charAt(1) == '{') {
                 expression = expression.substring(2);
             }
-            if(expression.charAt(expression.length() - 1) == '}') {
+            if(expression.length() >= 1 && expression.charAt(expression.length() - 1) == '}') {
                 expression = expression.substring(0, expression.length() - 1);
             }
 

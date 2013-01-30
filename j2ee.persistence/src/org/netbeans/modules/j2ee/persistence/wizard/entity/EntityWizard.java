@@ -82,6 +82,7 @@ import org.netbeans.modules.j2ee.core.api.support.wizard.Wizards;
 import org.netbeans.modules.j2ee.persistence.dd.PersistenceUtils;
 import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
 import org.netbeans.modules.j2ee.persistence.provider.InvalidPersistenceXmlException;
+import org.netbeans.modules.schema2beans.Schema2BeansException;
 import org.netbeans.modules.j2ee.persistence.unit.PUDataObject;
 import org.netbeans.modules.j2ee.persistence.util.EntityMethodGenerator;
 import org.netbeans.modules.j2ee.persistence.util.JPAClassPathHelper;
@@ -131,11 +132,11 @@ public final class EntityWizard implements WizardDescriptor.InstantiatingIterato
         sourceGroups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
 
         ejbPanel = new EntityWizardDescriptor();
-        WizardDescriptor.Panel targetChooserPanel = null;
+        WizardDescriptor.Panel targetChooserPanel;
         // Need to check if there are any Java Source group. See issue 139851
         if(sourceGroups.length == 0) {
             sourceGroups = sources.getSourceGroups( Sources.TYPE_GENERIC ); 
-            targetChooserPanel = new ValidatingPanel(Templates.createSimpleTargetChooser( project, sourceGroups, ejbPanel ));
+            targetChooserPanel = new ValidatingPanel(Templates.buildSimpleTargetChooser(project, sourceGroups).bottomPanel(ejbPanel).create(  ));
         } else {
             targetChooserPanel = new ValidatingPanel(JavaTemplates.createPackageChooser(project,sourceGroups, ejbPanel, true));
         }
@@ -143,7 +144,9 @@ public final class EntityWizard implements WizardDescriptor.InstantiatingIterato
         boolean noPuNeeded = true;
         try {
             noPuNeeded = ProviderUtil.persistenceExists(project) || !ProviderUtil.isValidServerInstanceOrNone(project);
-        } catch (InvalidPersistenceXmlException ex) {
+        } catch (InvalidPersistenceXmlException ex){
+            Logger.getLogger(EntityWizard.class.getName()).log(Level.FINE, "Invalid persistence.xml"); //NOI18N
+        } catch (RuntimeException ex){
             Logger.getLogger(EntityWizard.class.getName()).log(Level.FINE, "Invalid persistence.xml"); //NOI18N
         }
         if(noPuNeeded){
@@ -199,22 +202,24 @@ public final class EntityWizard implements WizardDescriptor.InstantiatingIterato
     private void addEntityToPersistenceUnit(FileObject entity) throws InvalidPersistenceXmlException{
         
         Project project = Templates.getProject(wiz);
-        String entityFQN = "";
-        ClassPathProvider classPathProvider = project.getLookup().lookup(ClassPathProvider.class);
-        if (classPathProvider != null) {
-            ClassPath clsPath = classPathProvider.findClassPath(entity, ClassPath.SOURCE);
-            if(clsPath == null ) {
-               return;
+        if(project != null) {
+            String entityFQN = "";
+            ClassPathProvider classPathProvider = project.getLookup().lookup(ClassPathProvider.class);
+            if (classPathProvider != null) {
+                ClassPath clsPath = classPathProvider.findClassPath(entity, ClassPath.SOURCE);
+                if(clsPath == null ) {
+                   return;
+                }
+                entityFQN = clsPath.getResourceName(entity, '.', false);
             }
-            entityFQN = clsPath.getResourceName(entity, '.', false);
-        }
-        
-        if (project != null && !(Util.isSupportedJavaEEVersion(project) && Util.isContainerManaged(project)) && ProviderUtil.getDDFile(project) != null) {
-            PUDataObject pudo = ProviderUtil.getPUDataObject(project);
-            PersistenceUnit pu[] = pudo.getPersistence().getPersistenceUnit();
-            //only add if a PU exists, if there are more we do not know where to add - UI needed to ask
-            if (pu.length == 1) {
-                pudo.addClass(pu[0], entityFQN, false);
+
+            if (!(Util.isSupportedJavaEEVersion(project) && Util.isContainerManaged(project)) && ProviderUtil.getDDFile(project) != null) {
+                PUDataObject pudo = ProviderUtil.getPUDataObject(project);
+                PersistenceUnit pu[] = pudo.getPersistence().getPersistenceUnit();
+                //only add if a PU exists, if there are more we do not know where to add - UI needed to ask
+                if (pu.length == 1) {
+                    pudo.addClass(pu[0], entityFQN, false);
+                }
             }
         }
     }
@@ -344,7 +349,8 @@ public final class EntityWizard implements WizardDescriptor.InstantiatingIterato
         
         if(targetSource == null) {
             //need some logging to investigate possible npes
-            Logger.getLogger(EntityWizard.class.getName()).log(Level.WARNING, "Classpaths compile, boot, source: "+compile +"," + boot + ","+ source + "; target folder is valid, entity fo is valid: "+targetFolder.isValid() + "," +entityFo.isValid());
+            Logger.getLogger(EntityWizard.class.getName()).log(Level.WARNING, "Classpaths compile, boot, source: {0},{1},{2}; target folder is valid, entity fo is valid: {3},{4}", new Object[]{compile, boot, source, targetFolder.isValid(), entityFo.isValid()});
+            return entityFo;//NO need to get NPE below
         }
         
         targetSource.runModificationTask(task).commit();

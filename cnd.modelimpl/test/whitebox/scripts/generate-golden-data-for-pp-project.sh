@@ -1,5 +1,9 @@
 #!/bin/bash
 
+#
+# Copyright (c) 2009, 2012, Oracle and/or its affiliates. All rights reserved.
+#
+
 function main() {
 
     files="`find $1 -name '*.cc' -o -name '*.cpp' -o -name '*.c++' -o -name '*.cxx' -o -name '*.c' -o -name '*.C' -o -name '*.mm'`"

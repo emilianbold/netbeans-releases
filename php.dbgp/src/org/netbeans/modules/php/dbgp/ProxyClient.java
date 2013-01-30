@@ -46,6 +46,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.nio.charset.Charset;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.php.project.api.PhpOptions;
@@ -139,7 +140,7 @@ class ProxyClient {
     }
 
     private static void sendCommand(OutputStream outputStream, String command) throws IOException {
-        outputStream.write(command.getBytes());
+        outputStream.write(command.getBytes(Charset.defaultCharset()));
         if (LOGGER.isLoggable(Level.FINE)) {
             LOGGER.log(Level.FINE, String.format("send command: %s: ", command));//NOI18N
         }
@@ -154,7 +155,7 @@ class ProxyClient {
             responseBytes[len] = (byte) nextByte;
         }
         if (len > 0) {
-            retval = new String(responseBytes, 0, len);
+            retval = new String(responseBytes, 0, len, Charset.defaultCharset());
             if (LOGGER.isLoggable(Level.FINE)) {
                 LOGGER.log(Level.FINE, String.format("response(%s) is %s: ", command, retval));//NOI18N
             }

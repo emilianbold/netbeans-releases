@@ -41,7 +41,13 @@
  */
 package org.netbeans.modules.php.editor.model;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.Set;
+import java.util.TreeSet;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
@@ -163,7 +169,8 @@ public final class FindUsageSupport {
                 for (FileObject fo : index.getLocationsForIdentifiers(name)) {
                     FileType fileType = PhpSourcePath.getFileType(fo);
                     if (fileType == PhpSourcePath.FileType.SOURCE
-                            || fileType == PhpSourcePath.FileType.TEST) {
+                            || fileType == PhpSourcePath.FileType.TEST
+                            || fileType == PhpSourcePath.FileType.UNKNOWN) {
                         this.files.add(fo);
                     }
                 }

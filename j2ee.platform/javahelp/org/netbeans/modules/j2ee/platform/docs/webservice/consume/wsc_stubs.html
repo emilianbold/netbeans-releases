@@ -16,23 +16,36 @@
         
         
         <p>For each RESTful resource class, you can generate a JavaScript
-        client stub that makes it easy for client applications to access
-        the RESTful service. Using a wizard, you can select from a list of
-        projects containing RESTful services. Alternatively, you can enter the 
-        URL of a RESTful service's WADL file (See <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-            <param name="content" value="https://wadl.dev.java.net/">
-            <param name="text" value="<html><u>the Java.net WADL project</u></html>">
-            <param name="textFontSize" value="medium">
-            <param name="textColor" value="blue">
-        </object>  
-        for more information about the Java.net WADL project.) When you finish the
-        wizard, you will have created the client stubs 
-        for the services contained by the selected projects or represented by the
-        WADL.
+        client that makes it easy for client applications to access
+        a RESTful service. 
+        You can use wizards in the IDE to generate JavaScript clients in web applications
+        and HTML5 applications.</p>
+        
+        
+        <h3>JavaScript Clients in Web Applications</h3>
+        
+        <p>To generate a JavaScript client in a Java web application 
+        you can use a wizard to generate a client stub
+        for a local project that contains a RESTful service.
+        The wizard can also generate a stub that is 
+        based on the URL of the WADL file of a RESTful service.</p>
+        
+        <ol>
+            <li>Confirm that you have a local project with web service resources 
+                or a WADL file.</li>
+            <li>Right-click the project node
+                and choose New &gt; Other &gt; Web Services &gt; RESTful JavaScript Client.</li>
+            <li>Specify the project containing the resources or the WADL file. Click Finish.</li>
+        </ol>
+        <p>If you expand the Web Pages node in the Projects window you will notice that you have
+        a 'rest' node that contains the generated JavaScript classes and a 'TestStubs.html' file. 
+        You can right-click the <tt>html</tt> file and choose View to view the generated test page
+        that lists URIs to the client stubs.
+        You can click the URIs to test that the client stub generation was successful.</p>
         
         <ul class="note">
             <li>For details on RESTful web services client stubs,
-                see:
+                see the following document.
                 <p><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
                     <param name="content" value="http://wiki.netbeans.org/wiki/view/RESTRemoting">
                     <param name="text" value="<html><u> RESTful Web Service Remoting (a.k.a RESTful Web Service Client Stub)</u></html>">
@@ -42,23 +55,38 @@
             </li>
         </ul>
         
-        <p><b>To generate RESTful web service client stubs:</b> 
+        <p>See the following documentation for more about the Java.net WADL project.</p>
+        <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+            <param name="content" value="http://wadl.java.net/">
+            <param name="text" value="<html><u>http://wadl.java.net/</u></html>">
+            <param name="textFontSize" value="medium">
+            <param name="textColor" value="blue">
+        </object>  
+        
+        
+        <h3>JavaScript Clients in HTML5 Applications</h3>
+        <p>To generate a JavaScript client in an HTML5 application you can use a 
+        wizard to generate a client for a local project that contains a RESTful service.
+        In the wizard you also have the option of specifying a table as the user interface.</p>
+        
+        <p><b>Perform the following steps to generate a JavaScript client for a RESTful web service.</b> 
         
         <ol>
-            <li><a href="nbdocs://org.netbeans.modules.web.helpset/org/netbeans/modules/web/helpset/docs/web/create/about/create_webapps_proj.html">Create a web application project</a>.
-            <li>In the Projects window or Files window, right-click the web application project node
-                and choose New &gt; Other &gt; Web Services &gt; RESTful JavaScript Client.
-                
-            </li>
-            <li>Click Next and complete the wizard.
-            <li>In the Projects window, expand the Web Pages node. Notice that you have
-            a 'rest' node, which contains the generated JavaScript classes. There is
-            also a 'TestStubs.html' file. Right-click it, choose View, and you can
-            view the generated test page. The test
-            page lists URIs to the client stubs, which
-            you can click to test whether client
-            stub generation succeeded as expected.
+            <li>Confirm that you have a local project with web service resources.</li>
+            <li>Right-click the project node
+                and choose New &gt; Other &gt; HTML/JavaScript &gt; RESTful JavaScript Client.</li>
+            <li>Click Browse to specify the location of the REST resource.</li>
+            <li>Select a UI option and click Next.</li>
+            <li>Specify a name and location for the generated HTML file. Click Finish.</li>
         </ol>
+        <p>When you click Finish the IDE generates the JavaScript file in the location that you
+        specified in the wizard. 
+        If you selected <tt>Tablesorter</tt> as the UI for the client, the IDE generates the 
+        HTML file with the name and in the location that you specified.</p>
+        
+        
+        
+        
         <dl>
             <dt><a name="seealso">See Also</a></dt>
             <dd><a href="../about/about_ws.html">About Web Services</a></dd>
@@ -70,9 +98,7 @@
         
         <hr>
         <small><a href="../../credits.html">Legal Notices</a></small> 
-        <table cellpadding="20" border="0"> 
-            <tr><td>&nbsp;</td></tr> 
-            <tr><td>&nbsp;</td></tr> 
+        <table cellpadding="50" border="0"> 
             <tr><td>&nbsp;</td></tr> 
         </table> 
         

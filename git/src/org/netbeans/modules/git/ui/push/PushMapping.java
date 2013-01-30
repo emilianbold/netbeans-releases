@@ -58,10 +58,11 @@ public abstract class PushMapping extends ItemSelector.Item {
     private final String label;
     private final String tooltip;
     private static final String BRANCH_MAPPING_LABEL = "{0} -> {1} [{2}]"; //NOI18N
+    private static final String BRANCH_MAPPING_LABEL_UPTODATE = "{0} -> {1}"; //NOI18N
     private final String localName;
     
-    protected PushMapping (String localName, String remoteName) {
-        super(false);
+    protected PushMapping (String localName, String localId, String remoteName, String remoteId, boolean conflict, boolean preselected) {
+        super(preselected);
         this.localName = localName;
         if (remoteName == null) {
             // added
@@ -73,6 +74,21 @@ public abstract class PushMapping extends ItemSelector.Item {
                         localName,
                         NbBundle.getMessage(PushBranchesStep.class, "LBL_PushBranchMapping.Mode.added.description") //NOI18N
                     }); //NOI18N
+        } else if (localId.equals(remoteId)) {
+            // up to date
+            label = MessageFormat.format(BRANCH_MAPPING_LABEL_UPTODATE, localName, remoteName);
+            tooltip = NbBundle.getMessage(PushBranchesStep.class,
+                    "LBL_PushBranchMapping.Mode.uptodate.description", //NOI18N
+                    remoteName);
+        } else if (conflict) {
+            // modified
+            label = MessageFormat.format(BRANCH_MAPPING_LABEL, localName, remoteName, "<font color=\"#FF0000\">C</font>"); //NOI18N                 
+            tooltip = NbBundle.getMessage(
+                    PushBranchesStep.class,
+                    "LBL_PushBranchMapping.Mode.conflict.description", //NOI18N
+                    new Object[]{
+                        remoteName
+                    });
         } else {
             // modified
             label = MessageFormat.format(BRANCH_MAPPING_LABEL, localName, remoteName, "<font color=\"#0000FF\">U</font>"); //NOI18N                 
@@ -112,20 +128,26 @@ public abstract class PushMapping extends ItemSelector.Item {
     
     public static final class PushBranchMapping extends PushMapping {
         private final GitBranch localBranch;
-        private final GitBranch remoteBranch;
+        private final String remoteBranchName;
+        private final String remoteBranchId;
         
-        public PushBranchMapping (GitBranch remoteBranch, GitBranch localBranch) {
-            super(localBranch.getName(), remoteBranch == null ? null : remoteBranch.getName());
+        public PushBranchMapping (String remoteBranchName, String remoteBranchId, GitBranch localBranch, boolean conflict, boolean preselected) {
+            super(localBranch.getName(), localBranch.getId(), 
+                    remoteBranchName, 
+                    remoteBranchId,
+                    conflict,
+                    preselected);
             this.localBranch = localBranch;
-            this.remoteBranch = remoteBranch;
+            this.remoteBranchName = remoteBranchName;
+            this.remoteBranchId = remoteBranchId;
         }
 
         public String getRemoteRepositoryBranchName () {
-            return remoteBranch == null ? localBranch.getName() : remoteBranch.getName();
+            return remoteBranchName == null ? localBranch.getName() : remoteBranchName;
         }
 
         public String getRemoteRepositoryBranchHeadId () {
-            return remoteBranch == null ? null : remoteBranch.getId();
+            return remoteBranchId;
         }
 
         public String getLocalRepositoryBranchHeadId () {
@@ -134,7 +156,7 @@ public abstract class PushMapping extends ItemSelector.Item {
 
         @Override
         public String getRefSpec () {
-            return GitUtils.getPushRefSpec(localBranch.getName(), (remoteBranch == null ? localBranch : remoteBranch).getName());
+            return GitUtils.getPushRefSpec(localBranch.getName(), remoteBranchName == null ? localBranch.getName() : remoteBranchName);
         }
     }
     
@@ -142,7 +164,7 @@ public abstract class PushMapping extends ItemSelector.Item {
         private final GitTag tag;
         
         public PushTagMapping (GitTag tag) {
-            super("tags/" + tag.getTagName(), null); //NOI18N
+            super("tags/" + tag.getTagName(), tag.getTaggedObjectId(), null, null, false, false); //NOI18N
             this.tag = tag;
         }
 

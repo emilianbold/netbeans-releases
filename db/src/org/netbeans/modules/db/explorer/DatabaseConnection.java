@@ -56,6 +56,11 @@ import java.sql.SQLException;
 import java.sql.SQLWarning;
 import java.text.MessageFormat;
 import java.util.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.db.explorer.DatabaseException;
@@ -288,7 +293,7 @@ public final class DatabaseConnection implements DBConnection {
             if (LOGGER.isLoggable(Level.FINE) && warnings != null) {
                 LOGGER.log(Level.FINE, "Warnings while trying vitality of connection: " + warnings);
             }
-            return ! conn.isClosed();
+            return !checkClosedWithTimeout(conn);
         } catch (Exception ex) {
             if (dbconn != null) {
                 try {
@@ -302,6 +307,36 @@ public final class DatabaseConnection implements DBConnection {
         }
     }
     
+    /**
+     * Check whether a connection is closed, using a reasonable timeout. See bug
+     * #221602.
+     */
+    private static boolean checkClosedWithTimeout(final Connection connection) {
+        Callable<Boolean> task = new Callable<Boolean>() {
+            @Override
+            public Boolean call() {
+                try {
+                    return connection.isClosed();
+                } catch (SQLException ex) {
+                    LOGGER.log(Level.FINE,
+                            "While trying vitality of connection: " //NOI18N
+                            + ex.getLocalizedMessage(), ex);
+                    return false;
+                }
+            }
+        };
+        Future<Boolean> future = RP.submit(task);
+        try {
+            return future.get(1, TimeUnit.SECONDS);
+        } catch (TimeoutException e) {
+            return false;
+        } catch (InterruptedException e) {
+            return false;
+        } catch (ExecutionException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public static boolean test(Connection conn, String connectionName) {
         try {
             if (! isVitalConnection(conn, null)) {

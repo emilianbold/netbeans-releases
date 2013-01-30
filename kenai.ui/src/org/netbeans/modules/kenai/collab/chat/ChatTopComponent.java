@@ -49,7 +49,6 @@ import java.beans.PropertyChangeListener;
 import java.io.Serializable;
 import java.net.PasswordAuthentication;
 import java.util.*;
-import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
@@ -62,10 +61,13 @@ import org.jivesoftware.smack.util.StringUtils;
 import org.jivesoftware.smackx.muc.MultiUserChat;
 import org.netbeans.modules.kenai.api.*;
 import org.netbeans.modules.kenai.ui.Utilities;
-import org.netbeans.modules.kenai.ui.spi.KenaiUserUI;
-import org.netbeans.modules.kenai.ui.spi.UIUtils;
+import org.netbeans.modules.kenai.ui.api.KenaiUserUI;
+import org.netbeans.modules.kenai.ui.api.KenaiUIUtils;
+import org.netbeans.modules.team.ui.spi.TeamServer;
+import org.openide.awt.ActionID;
 import org.openide.awt.TabbedPaneFactory;
 import org.openide.util.*;
+import org.openide.util.NbBundle.Messages;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
@@ -75,9 +77,17 @@ import org.openide.windows.WindowManager;
  * @see ChatContainer
  * @author Jan Becicka
  */
+@TopComponent.OpenActionRegistration(
+    displayName = "#Actions/Team/org-netbeans-modules-kenai-collab-chat-SendChatMessageAction.instance",
+preferredID = "ChatTopComponent")
+@Messages({
+    "Actions/Team/org-netbeans-modules-kenai-collab-chat-SendChatMessageAction.instance=Send Chat Message..."
+})
+@ActionID(category="Team", id=ChatTopComponent.ACTION_ID)
 public class ChatTopComponent extends TopComponent {
     private static final String KENAI_OPEN_CHATS_PREF = ".open.chats."; // NOI18N
     private static ChatTopComponent instance;
+    public static final String ACTION_ID = "org.netbeans.modules.kenai.collab.chat.SendChatMessageAction"; //NOI18N
 
     /** path to the icon used by the component and its open action */
     static final String ICON_PATH = "org/netbeans/modules/kenai/collab/resources/chat.png"; // NOI18N
@@ -99,7 +109,7 @@ public class ChatTopComponent extends TopComponent {
     };
 
     public void reconnect(final KenaiConnection kec) {
-        RequestProcessor.getDefault().post(new Runnable() {
+        Utilities.getRequestProcessor().post(new Runnable() {
 
             public void run() {
                 synchronized (kec) {
@@ -595,12 +605,12 @@ public class ChatTopComponent extends TopComponent {
     private void loginLinkMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_loginLinkMouseClicked
         final Kenai kenai = Utilities.getPreferredKenai();
         if (kenai==null || kenai.getStatus() == Kenai.Status.OFFLINE) {
-            UIUtils.showLogin();
+            KenaiUIUtils.showLogin();
         } else {
             if (!Utilities.isChatSupported(kenai)) {
                 JOptionPane.showMessageDialog(retryLink, NbBundle.getMessage(ChatTopComponent.class, "ChatTopComponent.ChatNotAvailable", kenai.getName()));
              } else {
-                RequestProcessor.getDefault().post(new Runnable() {
+                Utilities.getRequestProcessor().post(new Runnable() {
 
                     public void run() {
                         try {
@@ -765,7 +775,7 @@ public class ChatTopComponent extends TopComponent {
     final class KenaiL implements PropertyChangeListener {
 
         public void propertyChange(final PropertyChangeEvent e) {
-            if (Kenai.PROP_LOGIN.equals(e.getPropertyName())) {
+            if (TeamServer.PROP_LOGIN.equals(e.getPropertyName())) {
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
                         Kenai.Status s = ((Kenai) e.getSource()).getStatus();

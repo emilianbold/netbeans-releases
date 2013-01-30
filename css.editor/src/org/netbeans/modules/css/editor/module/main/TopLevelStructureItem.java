@@ -52,6 +52,8 @@ import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.HtmlFormatter;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.StructureItem;
+import org.netbeans.modules.css.editor.module.spi.FeatureContext;
+import org.netbeans.modules.parsing.api.Snapshot;
 import org.openide.util.NbBundle;
 
 /**
@@ -151,14 +153,31 @@ public abstract class TopLevelStructureItem implements StructureItem {
     
     public static class Rules extends ChildrenListStructureItem {
         
-        public Rules(List<StructureItem> children) {
+        public FeatureContext context;
+        
+        public Rules(List<StructureItem> children, FeatureContext context) {
             super(children);
+            this.context = context;
         }
         
         @Override
         public String getName() {
             return NbBundle.getMessage(TopLevelStructureItem.class, "Rules"); //NOI18N
         }
+
+        //return the element range 0 - source lenght to ensure the recursive
+        //leaf node search mechanism in CSL navigator will try to match
+        //the rule children
+        @Override
+        public long getPosition() {
+            return 0;
+        }
+        @Override
+        public long getEndPosition() {
+            Snapshot s = context.getSnapshot();
+            return s.getOriginalOffset(s.getText().length());
+        }
+        
     }
     
     public static class Elements extends ChildrenSetStructureItem {

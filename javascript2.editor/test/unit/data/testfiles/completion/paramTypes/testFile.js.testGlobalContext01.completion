@@ -1,0 +1,15 @@
+Code completion result for source line:
+f|ormatter.print("text");
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
+------------------------------------
+METHOD     find(aString: String, aCaseSen  [PUBLIC]   JS Platform
+METHOD     focus(): undefined              [PUBLIC]   JS Platform
+METHOD     forward(): undefined            [PUBLIC]   JS Platform
+METHOD     freeze(O: Object): Object       [PUBLIC,   JS Platform
+FIELD      frameElement: Element           [PUBLIC]   JS Platform
+FIELD      frames: Array                   [PUBLIC]   JS Platform
+FIELD      fullScreen: Boolean             [PUBLIC]   JS Platform
+VARIABLE   formatter                       [PUBLIC]   Formatter.js
+KEYWORD    finally                                    null
+KEYWORD    for                                        null
+KEYWORD    function                                   null

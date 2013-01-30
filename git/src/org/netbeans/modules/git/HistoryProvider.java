@@ -333,8 +333,9 @@ public class HistoryProvider implements VCSHistoryProvider {
             HistoryEntry ancestorEntry = commonAncestors.get(file);
             if (ancestorEntry == null && !commonAncestors.containsKey(file)) {
                 GitRevisionInfo parent = null;
+                GitClient client = null;
                 try {
-                    GitClient client = Git.getInstance().getClient(repository);
+                    client = Git.getInstance().getClient(repository);
                     if (info.getParents().length == 1) {
                         File historyFile = info.getModifiedFiles().containsKey(file)
                                 ? file
@@ -347,6 +348,10 @@ public class HistoryProvider implements VCSHistoryProvider {
                     }
                 } catch (GitException ex) {
                     LOG.log(Level.INFO, null, ex);
+                } finally {
+                    if (client != null) {
+                        client.release();
+                    }
                 }
                 ancestorEntry = parent == null ? null : createHistoryEntry(parent, files, repository);
                 commonAncestors.put(file, ancestorEntry);

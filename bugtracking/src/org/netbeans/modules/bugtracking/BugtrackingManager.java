@@ -43,8 +43,6 @@
  */
 package org.netbeans.modules.bugtracking;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -58,15 +56,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiAccessor;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
-import org.netbeans.modules.bugtracking.ui.issue.IssueTopComponent;
 import org.netbeans.modules.bugtracking.kenai.spi.RecentIssue;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.RequestProcessor;
-import org.openide.windows.TopComponent;
-import org.openide.windows.TopComponent.Registry;
-import org.openide.windows.WindowManager;
 
 /**
  * Top level class that manages issues from all repositories.  
@@ -92,7 +86,7 @@ public final class BugtrackingManager implements LookupListener {
     private Lookup.Result<BugtrackingConnector> connectorsLookup;
 
     private Map<String, List<RecentIssue>> recentIssues;
-    private KenaiAccessor kenaiAccessor;
+    private KenaiAccessor[] kenaiAccessors;
 
     public synchronized static BugtrackingManager getInstance() {
         if(instance == null) {
@@ -101,9 +95,7 @@ public final class BugtrackingManager implements LookupListener {
         return instance;
     }
 
-    private BugtrackingManager() { 
-        WindowManager.getDefault().getRegistry().addPropertyChangeListener(new ActivatedTCListener());
-    }
+    private BugtrackingManager() { }
 
     public RequestProcessor getRequestProcessor() {
         return rp;
@@ -171,11 +163,12 @@ public final class BugtrackingManager implements LookupListener {
         return Collections.unmodifiableMap(getRecentIssues());
     }
 
-    public KenaiAccessor getKenaiAccessor() {
-        if (kenaiAccessor == null) {
-            kenaiAccessor = Lookup.getDefault().lookup(KenaiAccessor.class);
+    public KenaiAccessor[] getKenaiAccessors() {
+        if (kenaiAccessors == null) {
+            Collection<? extends KenaiAccessor> coll = Lookup.getDefault().lookupAll(KenaiAccessor.class);
+            kenaiAccessors = coll.toArray(new KenaiAccessor[coll.size()]);
         }
-        return kenaiAccessor;
+        return kenaiAccessors;
     }
 
     private Map<String, List<RecentIssue>> getRecentIssues() {
@@ -206,25 +199,13 @@ public final class BugtrackingManager implements LookupListener {
         }
     }
 
-    private class ActivatedTCListener implements PropertyChangeListener {
-        @Override
-        public void propertyChange(PropertyChangeEvent evt) {
-            Registry registry = WindowManager.getDefault().getRegistry();
-            if (registry.PROP_ACTIVATED.equals(evt.getPropertyName())) {
-                TopComponent tc = registry.getActivated();
-                LOG.log(Level.FINER, "activated TC : {0}", tc); // NOI18N
-                if(!(tc instanceof IssueTopComponent)) {
-                    return;
-                }
-                IssueTopComponent itc = (IssueTopComponent) tc;
-                IssueImpl issue = itc.getIssue();
-                LOG.log(Level.FINE, "activated issue : {0}", issue); // NOI18N
-                if(issue == null || issue.isNew()) {
-                    return;
-                }
-                addRecentIssue(issue.getRepositoryImpl(), issue);
-            } 
+    DelegatingConnector getConnector(String connectorId) {
+        assert connectorId != null;
+        for(DelegatingConnector c : getConnectors()) {
+            if(connectorId.equals(c.getID())) {
+                return c;
+            }
         }
+        return null;
     }
-
 }

@@ -43,6 +43,8 @@
 package org.netbeans.modules.parsing.api;
 
 import java.lang.ref.Reference;
+import java.lang.ref.ReferenceQueue;
+import java.lang.ref.SoftReference;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -98,10 +100,13 @@ public final class ParserManager {
     ) throws ParseException {
         Parameters.notNull("sources", sources);     //NOI18N
         Parameters.notNull("userTask", userTask);   //NOI18N
-        if (sources.size () == 1)
-            TaskProcessor.runUserTask (new UserTaskAction (sources.iterator ().next (), userTask), sources);
-        else
+        if (sources.size () == 1) {
+            final Source source = sources.iterator().next();
+            Parameters.notNull("sources[0]", source);   //NOI18N
+            TaskProcessor.runUserTask (new UserTaskAction (source, userTask), sources);
+        } else {
             TaskProcessor.runUserTask (new MultiUserTaskAction (sources, userTask), sources);
+        }
     }
 
     /**
@@ -369,13 +374,16 @@ public final class ParserManager {
             this.parser = parser;
         }
 
+        @Override
         public Void run () throws Exception {
             TaskProcessor.callParse(parser, null, userTask, null);
-            Parser.Result result = TaskProcessor.callGetResult(parser, userTask);
+            final Parser.Result result = TaskProcessor.callGetResult(parser, userTask);
             try {
                 TaskProcessor.callUserTask(userTask, new ResultIterator (result));
             } finally {
-                ParserAccessor.getINSTANCE ().invalidate (result);
+                if (result != null) {
+                    ParserAccessor.getINSTANCE ().invalidate (result);
+                }
             }
             return null;
         }
@@ -394,12 +402,12 @@ public final class ParserManager {
                 throw new IllegalArgumentException("No parser for mime type: " + mimeType);
             }
             p = parserFactory.createParser(Collections.<Snapshot>emptyList());
-            cachedParsers.put(mimeType, new TimedWeakReference<Parser>(p));
+            cachedParsers.put(mimeType, new SoftReference<Parser>(p));
         }
         return p;
     }
     //where
-    private static Map<String,Reference<Parser>> cachedParsers = new HashMap<String,Reference<Parser>>();
+    private static Map<String,Reference<Parser>> cachedParsers = new HashMap<String,Reference<Parser>>();    
 }
 
 

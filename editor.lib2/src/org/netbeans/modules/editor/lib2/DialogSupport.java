@@ -53,7 +53,6 @@ import java.awt.GridLayout;
 import java.util.Collection;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
-import org.netbeans.spi.editor.DialogFactory;
 import org.openide.util.Lookup;
 
 /**

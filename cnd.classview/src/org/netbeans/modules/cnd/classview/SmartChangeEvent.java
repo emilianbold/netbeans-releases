@@ -67,7 +67,7 @@ public class SmartChangeEvent {
     }
     
     public boolean addChangeEvent(CsmChangeEvent e){
-        if (e.getRemovedDeclarations().size() == 0){
+        if (e.getRemovedDeclarations().isEmpty()){
             doAdd(e);
             count++;
             return true;
@@ -103,10 +103,13 @@ public class SmartChangeEvent {
                 storage.getNewDeclarations().addAll(entry.getValue().getNewDeclarations());
                 storage.getRemovedDeclarations().addAll(entry.getValue().getRemovedDeclarations());
                 storage.getChangedDeclarations().putAll(entry.getValue().getChangedDeclarations());
+                if (entry.getValue().hasChangedLibs()) {
+                    storage.setChangedLibs(true);
+                }
             }
         }
     }
-    
+
     private void doAdd(CsmChangeEvent e){
         for (CsmNamespace ns : e.getNewNamespaces()){
             Storage storage = getStorage(ns);
@@ -138,41 +141,43 @@ public class SmartChangeEvent {
                 storage.addChangedDeclarations(decl.getKey(),decl.getValue());
             }
         }
+        for (CsmProject proj : e.getProjectsWithChangedLibs()) {
+            Storage storage = getStorage(proj);
+            if (storage != null){
+                storage.setChangedLibs(true);
+            }
+        }
     }
     
     private Storage getStorage(CsmNamespace ns){
         CsmProject project = ns.getProject();
-        if (project != null && project.isValid()){
-            Storage storage = changedProjects.get(project);
-            if (storage == null) {
-                storage = new Storage(project);
-                changedProjects.put(project, storage);
-            }
-            return storage;
-        }
-        return null;
+        return getStorage(project);
     }
     
     private Storage getStorage(CsmOffsetableDeclaration decl){
         CsmProject project = findProject(decl);
+        return getStorage(project);
+    }
+    
+    private Storage getStorage(CsmProject project){
         if (project != null && project.isValid()){
             Storage storage = changedProjects.get(project);
             if (storage == null) {
                 storage = new Storage(project);
                 changedProjects.put(project, storage);
             }
-            return storage;
+            return storage;        
         }
         return null;
     }
-    
+
     private static CsmProject findProject(CsmOffsetableDeclaration decl){
         CsmFile file = decl.getContainingFile();
         if (file != null){
-            if (file.isValid()) {
+            //if (file.isValid()) {
                 return file.getProject();
-            }
-            return null;
+            //}
+            //return null;
         }
         System.err.println("Cannot fing project for declaration "+decl.getUniqueName());
         return null;
@@ -189,6 +194,7 @@ public class SmartChangeEvent {
         private Set<CsmOffsetableDeclaration> newDeclarations = new HashSet<CsmOffsetableDeclaration>();
         private Set<CsmOffsetableDeclaration> removedDeclarations = new HashSet<CsmOffsetableDeclaration>();
         private Map<CsmOffsetableDeclaration,CsmOffsetableDeclaration> changedDeclarations = new HashMap<CsmOffsetableDeclaration,CsmOffsetableDeclaration>();
+        private boolean changedLibs = false;
         
         public Storage(CsmProject project){
             changedProject = project;
@@ -226,6 +232,14 @@ public class SmartChangeEvent {
             return newNamespaces;
         }
         
+        public boolean hasChangedLibs() {
+            return changedLibs;
+        }
+
+        public void setChangedLibs(boolean changedLibs) {
+            this.changedLibs = changedLibs;
+        }
+                
         private void addNewNamespaces(CsmNamespace ns) {
             newNamespaces.add(ns);
         }

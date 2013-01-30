@@ -404,17 +404,24 @@ public class RADComponent {
     }
 
     public Object cloneBeanInstance(Collection<RADProperty> relativeProperties) {
-        Object clone;
+        Object clone = null;
         try {
             if (JavaCodeGenerator.VALUE_SERIALIZE.equals(getAuxValue(JavaCodeGenerator.AUX_CODE_GENERATION))) {
                 clone = createDefaultDeserializedInstance();
-            } else {
-                clone = createBeanInstance();
             }
+        } catch (Exception ex) {
+            // The serialization support is usually useless and not working well in many situations.
+            // If set on, its mostly by mistake. In case of failure let's fall back to a default
+            // instance creation so the cloning does not fail (or does not return null as it used to,
+            // which was not good for the replicated design view).
+            Logger.getLogger(RADComponent.class.getName()).log(Level.INFO, ex.getMessage(), ex);
         }
-        catch (Exception ex) { // ignore, this should not fail
-            org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
-            return null;
+        if (clone == null) {
+            try {
+                clone = createBeanInstance();
+            } catch (Exception ex) { // this should not fail, we already have an instance of this kind
+                Logger.getLogger(RADComponent.class.getName()).log(Level.SEVERE, ex.getMessage(), ex);
+            }
         }
 
         FormUtils.copyPropertiesToBean(getKnownBeanProperties(),
@@ -429,7 +436,7 @@ public class RADComponent {
     public BeanInfo getBeanInfo() {
         if (beanInfo == null) {
             try {
-                beanInfo = FormUtils.getBeanInfo(beanClass);        
+                beanInfo = createBeanInfo(beanClass);        
             } catch (Error err) { // Issue 74002
                 org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, err);
                 beanInfo = new FakeBeanInfo();
@@ -447,7 +454,11 @@ public class RADComponent {
             return fakeBeanInfo ;            
         }        
     }            
-    
+
+    protected BeanInfo createBeanInfo(Class cls) throws IntrospectionException {
+        return FormUtils.getBeanInfo(cls);        
+    }
+
     /** This method can be used to check whether the bean represented by this
      * RADComponent has hidden-state.
      * @return true if the component has hidden state, false otherwise
@@ -1703,7 +1714,8 @@ public class RADComponent {
         for (Object o : props) {
             FormProperty prop = (FormProperty)o;
             String propName = prop.getName();
-            if (!nameToProperty.containsKey(propName)) {
+            Node.Property knownProp = nameToProperty.get(propName);
+            if (prop != knownProp) {
                 nameToProperty.put(propName, prop);
                 setPropertyListener(prop);
             }

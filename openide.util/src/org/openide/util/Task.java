@@ -164,20 +164,24 @@ public class Task extends Object implements Runnable {
                     wait(milliseconds);
 
                     if (finished) {
+                        LOG.log(Level.FINER, "finished, return"); // NOI18N
                         return true;
                     }
                     
                     if (milliseconds == 0) {
+                        LOG.log(Level.FINER, "infinite wait, again"); // NOI18N
                         continue;
                     }
                     
                     long now = System.currentTimeMillis();
-
-                    if (expectedEnd <= now) {
+                    long remains = expectedEnd - now;
+                    LOG.log(Level.FINER, "remains {0} ms", remains);
+                    if (remains <= 0) {
+                        LOG.log(Level.FINER, "exit, timetout");
                         return false;
                     }
 
-                    milliseconds = expectedEnd - now;
+                    milliseconds = remains;
                 }
             }
         }
@@ -257,17 +261,24 @@ public class Task extends Object implements Runnable {
         }
     }
 
-    /** Add a listener to the task.
-    * @param l the listener to add
-    */
-    public synchronized void addTaskListener(TaskListener l) {
-        if (list == null) {
-            list = new HashSet<TaskListener>();
+    /** Add a listener to the task. The listener will be called once the 
+     * task {@link #isFinished()}. In case the task is already finished, the
+     * listener is called immediately.
+     * 
+     * @param l the listener to add
+     */
+    public void addTaskListener(TaskListener l) {
+        boolean callNow;
+        synchronized (this) {
+            if (list == null) {
+                list = new HashSet<TaskListener>();
+            }
+            list.add(l);
+            
+            callNow = finished;
         }
 
-        list.add(l);
-
-        if (finished) {
+        if (callNow) {
             l.taskFinished(this);
         }
     }

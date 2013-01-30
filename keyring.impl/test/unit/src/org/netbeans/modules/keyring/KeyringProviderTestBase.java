@@ -42,7 +42,7 @@
 
 package org.netbeans.modules.keyring;
 
-import java.util.UUID;
+import java.security.SecureRandom;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.spi.keyring.KeyringProvider;
 
@@ -60,13 +60,19 @@ public abstract class KeyringProviderTestBase extends NbTestCase {
             System.err.println(p + " disabled on " + System.getProperty("os.name") + ", skipping");
             return;
         }
-        doTestStorage(p, "something", "secret stuff " + UUID.randomUUID(), null);
+        
+        byte[] randomArray = new byte[36];
+        new SecureRandom().nextBytes(randomArray);
+        doTestStorage(p, "something", "secret stuff " + new String(randomArray), null);
         doTestStorage(p, "more", "secret stuff", "a description here");
         doTestStorage(p, "klíč", "hezky česky", "můj heslo");
         doTestStorage(p, "klā′vē ər", "ॐ", "κρυπτός");
     }
+    
     private void doTestStorage(KeyringProvider p, String key, String password, String description) throws Exception {
-        key = "KeyringProviderTestBase." + UUID.randomUUID() + key; // avoid interfering with anything real
+        byte[] randomArray = new byte[36];
+        new SecureRandom().nextBytes(randomArray);
+        key = "KeyringProviderTestBase." + new String(randomArray) + key; // avoid interfering with anything real
         assertEquals(null, p.read(key));
         try {
             p.save(key, password.toCharArray(), description);

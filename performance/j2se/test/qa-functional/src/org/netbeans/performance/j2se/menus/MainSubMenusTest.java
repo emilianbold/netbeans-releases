@@ -121,17 +121,20 @@ public class MainSubMenusTest extends PerformanceTestCase {
         testSubMenu("org.netbeans.core.ui.resources.Bundle","Menu/View", "org.netbeans.core.windows.actions.Bundle", "CTL_ToolbarsListAction");
     }
     
+    /** CVS no longer part of the distribution 
     public void testVersioningCVSMenu() {
         testSubMenu("org.netbeans.modules.versioning.Bundle","Menu/Versioning", "org.netbeans.modules.versioning.system.cvss.Bundle", "CTL_CVS_DisplayName");
     }
-
+    */
         public void testVersioningMercurialMenu() {
         testSubMenu("org.netbeans.modules.versioning.Bundle","Menu/Versioning", "org.netbeans.modules.mercurial.Bundle", "CTL_Mercurial_DisplayName");
     }
 
+    /** Local history no longer in the team menu - moved to editor tab
     public void testVersioningLocalHistoryMenu() {
         testSubMenu("org.netbeans.modules.versioning.Bundle","Menu/Versioning", "org.netbeans.modules.localhistory.Bundle", "CTL_MainMenuItem");
     }
+    */ 
        
     public void testToolsI18nMenu(){
         testSubMenu("org.netbeans.core.ui.resources.Bundle","Menu/Tools", "org.netbeans.modules.i18n.Bundle", "LBL_I18nGroupActionName");

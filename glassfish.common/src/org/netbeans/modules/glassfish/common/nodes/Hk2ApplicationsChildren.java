@@ -51,8 +51,8 @@ import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.glassfish.common.CommandRunner;
+import org.netbeans.modules.glassfish.common.CommonServerSupport;
 import org.netbeans.modules.glassfish.spi.AppDesc;
-import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
@@ -83,11 +83,13 @@ public class Hk2ApplicationsChildren extends Children.Keys<Object> implements Re
             
             @Override
             public void run() {
-                GlassfishModule commonSupport = lookup.lookup(GlassfishModule.class);
+                CommonServerSupport commonSupport = lookup.lookup(
+                        CommonServerSupport.class);
                 if(commonSupport != null) {
                     try {
-                        java.util.Map<String, String> ip = commonSupport.getInstanceProperties();
-                        CommandRunner mgr = new CommandRunner(true, commonSupport.getCommandFactory(), ip);
+                        CommandRunner mgr = new CommandRunner(true,
+                                commonSupport.getCommandFactory(),
+                                commonSupport.getInstance());
                         java.util.Map<String, List<AppDesc>> appMap = mgr.getApplications(null);
                         for(Entry<String, List<AppDesc>> entry: appMap.entrySet()) {
                             List<AppDesc> apps = entry.getValue();

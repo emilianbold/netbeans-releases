@@ -45,12 +45,8 @@
 package org.netbeans.modules.editor.bookmarks;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
@@ -69,7 +65,7 @@ import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.Line;
-import org.openide.util.Exceptions;
+import org.openide.util.RequestProcessor;
 
 /**
  * Services to update or save bookmarks to persistent format.
@@ -135,17 +131,17 @@ public final class BookmarkUtils {
     
     public static void postOpenEditor(BookmarkInfo bookmark) {
         try {
-            final EditorCookie ec = BookmarkUtils.findEditorCookie(bookmark);
+            final EditorCookie ec = findEditorCookie(bookmark);
             Document doc;
             if (ec != null && (doc = ec.openDocument()) != null) {
-                BookmarkUtils.updateCurrentLineIndex(bookmark, doc);
+                updateCurrentLineIndex(bookmark, doc);
                 BookmarkHistory.get().add(bookmark);
                 final int lineIndex = bookmark.getCurrentLineIndex();
                 // Post opening since otherwise the focus would get returned to an original pane
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {
-                        BookmarkUtils.openEditor(ec, lineIndex); // Take url from bookmarkInfo
+                        openEditor(ec, lineIndex); // Take url from bookmarkInfo
                     }
                 });
             }
@@ -192,10 +188,6 @@ public final class BookmarkUtils {
         return ec;
     }
     
-    public static URI toURI(Project project) {
-        return (project != null) ? project.getProjectDirectory().toURI() : null;
-    }
-    
     public static Project findProject(URI projectURI) {
         if (projectURI != null) {
             try {
@@ -203,8 +195,6 @@ public final class BookmarkUtils {
                 if (prjFO != null && prjFO.isFolder()) {
                     return ProjectManager.getDefault().findProject(prjFO);
                 }
-            } catch (MalformedURLException ex) {
-                Exceptions.printStackTrace(ex);
             } catch (IOException ex) {
                 // Cannot load project -> return null
             }
@@ -212,14 +202,11 @@ public final class BookmarkUtils {
         return null;
     }
     
-    public static Map<URI,Project> toURIMap(List<Project> projects) {
-        Map<URI,Project> uri2Project = new HashMap<URI, Project>(projects.size() << 1, 0.6f);
-        for (Project p : projects) {
-            uri2Project.put(toURI(p), p);
-        }
-        return uri2Project;
+    public static URI getRelativeURI(ProjectBookmarks projectBookmarks, URI fileURI) {
+        URI projectURI = projectBookmarks.getProjectURI();
+        return (projectURI != null) ? projectURI.relativize(fileURI) : fileURI;
     }
-
+    
     public static KeyStroke findKeyStroke(KeyBindingSettings kbs, String actionName) {
         if (kbs != null) {
             for (MultiKeyBinding kb : kbs.getKeyBindings()) {
@@ -238,6 +225,10 @@ public final class BookmarkUtils {
             return (KeyStroke) a.getValue(Action.ACCELERATOR_KEY);
         }
         return null;
+    }
+
+    public static RequestProcessor.Task postTask(Runnable run) {
+        return BookmarksPersistence.get().postTask(run);
     }
 
 }

@@ -108,14 +108,13 @@ public final class LocFiles extends Task {
 
             StringTokenizer tok = new StringTokenizer(locales, ",");
             while (tok.hasMoreElements()) {
-                String l = tok.nextToken();
-                if (l.equals("default")) { // NOI18N
-                    l = Locale.getDefault().toString();
+                String locale = tok.nextToken();
+                if (locale.equals("default")) { // NOI18N
+                    locale = Locale.getDefault().toString();
                 }
-                do { 
-                    processLocale(l, includes);
-                    l = trailingUnderscore(l);
-                } while (l != null);
+                for (String l = locale; l != null; l = trailingUnderscore(l)) {
+                    processLocale(l, includes, l.equals(locale));
+                }
             }
         }
         
@@ -150,10 +149,12 @@ public final class LocFiles extends Task {
         return cnbDashes;
     }
     
-    private void processLocale(String locale, Collection<? super String> toAdd) {
+    private void processLocale(String locale, Collection<? super String> toAdd, boolean warn) {
         File baseSrcDir = fileFrom(srcDir, locale);
         if (!baseSrcDir.exists()) {
-            log("No files for locale: " + locale);
+            if (warn) {
+                log("No files for locale: " + locale);
+            }
             return;
         }
         log("Found L10N dir " + baseSrcDir, Project.MSG_VERBOSE);

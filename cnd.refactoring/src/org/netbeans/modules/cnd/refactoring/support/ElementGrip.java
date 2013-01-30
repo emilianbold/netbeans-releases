@@ -45,9 +45,11 @@
 package org.netbeans.modules.cnd.refactoring.support;
 
 import javax.swing.Icon;
+import org.netbeans.api.actions.Openable;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.modelutil.CsmImageLoader;
+import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -56,7 +58,7 @@ import org.openide.filesystems.FileObject;
  * based on ElementGrip from java refactoring
  * @author Vladimir Voskresensky
  */
-public final class ElementGrip {
+public final class ElementGrip implements Openable {
     private static final boolean LAZY = false;
     private CsmUID<CsmOffsetable> thisObject;
     private String toString;
@@ -105,6 +107,14 @@ public final class ElementGrip {
     
     public CsmOffsetable getResolved() {
         return thisObject.getObject();
+    }
+
+    @Override
+    public void open() {
+        CsmOffsetable resolved = getResolved();
+        if (resolved != null) {
+            CsmUtilities.openSource(resolved);
+        }
     }
     
 }

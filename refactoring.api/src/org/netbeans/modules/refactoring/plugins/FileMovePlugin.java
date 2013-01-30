@@ -45,6 +45,7 @@ package org.netbeans.modules.refactoring.plugins;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.Set;
 import java.util.logging.Logger;
 import org.netbeans.modules.refactoring.spi.Transaction;
 import org.netbeans.modules.refactoring.api.MoveRefactoring;
@@ -80,8 +81,11 @@ public class FileMovePlugin implements RefactoringPlugin {
     
     @Override
     public Problem prepare(RefactoringElementsBag elements) {
-        for (FileObject o: refactoring.getRefactoringSource().lookupAll(FileObject.class)) {
-            elements.addFileChange(refactoring, new MoveFile(o, elements));
+        URL targetUrl = ((MoveRefactoring) refactoring).getTarget().lookup(URL.class);        
+        if(targetUrl != null) {
+            for (FileObject o: refactoring.getRefactoringSource().lookupAll(FileObject.class)) {
+                elements.addFileChange(refactoring, new MoveFile(o, elements));
+            }
         }
         return null;
     }

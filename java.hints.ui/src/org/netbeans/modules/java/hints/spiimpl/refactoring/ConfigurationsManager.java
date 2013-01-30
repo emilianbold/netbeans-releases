@@ -142,13 +142,16 @@ public class ConfigurationsManager {
         return config;
     }
     
+    //TODO: copied from HintsSettings - would be better to have it on one place:
+    private static final String PREFERENCES_LOCATION = "org/netbeans/modules/java/hints";
+    
     public Configuration duplicate(Configuration orig, String id, String displayName) {
         assert !id.startsWith(RULE_PREFIX);
         Configuration config = new Configuration(RULE_PREFIX + id, displayName);
         configs.add(config);
         
-        Preferences oldOne = NbPreferences.forModule(this.getClass()).node(orig.id());
-        Preferences newOne = NbPreferences.forModule(this.getClass()).node(config.id());
+        Preferences oldOne = NbPreferences.root().node(PREFERENCES_LOCATION).node(orig.id());
+        Preferences newOne = NbPreferences.root().node(PREFERENCES_LOCATION).node(config.id());
         try {
             for (String name:oldOne.childrenNames()) {
                 Preferences node = oldOne.node(name);

@@ -65,12 +65,12 @@ public class CodeTemplatesTest extends JavaEditorTestCase {
     protected void setUp() throws Exception {
         super.setUp();
         openProject("java_editor_test");
-        CustomizedLog.enableInstances(Logger.getLogger("TIMER"),"CompilationInfo", Level.FINEST);
+        //CustomizedLog.enableInstances(Logger.getLogger("TIMER"),"CompilationInfo", Level.FINEST);
     }
 
     @Override
     protected void tearDown() throws Exception {
-        CustomizedLog.assertInstances("All instances are not removed","CompilationInfo");
+        //CustomizedLog.assertInstances("All instances are not removed","CompilationInfo");
         super.tearDown();
         //throw new OutOfMemoryError("Intentional OOMF");
     }

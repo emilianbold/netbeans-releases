@@ -54,6 +54,8 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
+import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
+import org.netbeans.modules.cnd.discovery.buildsupport.BuildTraceSupport;
 import org.netbeans.modules.cnd.discovery.wizard.api.support.ProjectBridge;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileUtil;
@@ -69,16 +71,26 @@ public class DiscoveryUtils {
     }
     
     public static ProjectBridge getProjectBridge(ProjectProxy project) {
-        Project p = project.getProject();
-        if (p != null){
-            ProjectBridge bridge = new ProjectBridge(p);
-            if (bridge.isValid()) {
-                return bridge;
+        if (project != null) {
+            Project p = project.getProject();
+            if (p != null){
+                ProjectBridge bridge = new ProjectBridge(p);
+                if (bridge.isValid()) {
+                    return bridge;
+                }
             }
         }
         return null;
     }
     
+    public static Set<String> getCompilerNames(ProjectProxy project, PredefinedToolKind kind) {
+        Project p = null;
+        if (project != null) {
+            p = project.getProject();
+        }
+        return BuildTraceSupport.getCompilerNames(p, kind);
+    }
+
     public static List<String> getSystemIncludePaths(ProjectBridge bridge, boolean isCPP) {
         if (bridge != null) {
             return bridge.getSystemIncludePaths(isCPP);
@@ -294,8 +306,10 @@ public class DiscoveryUtils {
             if (isScriptOutput == LogOrigin.BuildLog) {
                 if (option.startsWith("'") && option.endsWith("'") || // NOI18N
                     option.startsWith("\"") && option.endsWith("\"")){ // NOI18N
-                    option = option.substring(1,option.length()-1);
-                    isQuote = true;
+                    if (option.length() >= 2) {
+                        option = option.substring(1,option.length()-1);
+                        isQuote = true;
+                    }
                 }
             }
             if (option.startsWith("-D")){ // NOI18N

@@ -66,12 +66,13 @@ import org.netbeans.modules.kenai.api.KenaiManager;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.api.KenaiProjectMember;
 import org.netbeans.modules.kenai.api.KenaiUser;
-import org.netbeans.modules.kenai.ui.api.NbModuleOwnerSupport;
-import org.netbeans.modules.kenai.ui.api.NbModuleOwnerSupport.OwnerInfo;
-import org.netbeans.modules.kenai.ui.spi.Dashboard;
-import org.netbeans.modules.kenai.ui.spi.KenaiUserUI;
-import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
-import org.netbeans.modules.kenai.ui.spi.UIUtils;
+import org.netbeans.modules.team.ui.common.NbModuleOwnerSupport;
+import org.netbeans.modules.team.ui.common.NbModuleOwnerSupport.OwnerInfo;
+import org.netbeans.modules.kenai.ui.api.KenaiUserUI;
+import org.netbeans.modules.team.ui.spi.ProjectHandle;
+import org.netbeans.modules.kenai.ui.api.KenaiUIUtils;
+import org.netbeans.modules.team.ui.common.DefaultDashboard;
+import org.netbeans.modules.team.ui.spi.TeamServer;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
@@ -84,13 +85,41 @@ import org.openide.util.lookup.ServiceProvider;
                                            @ServiceProvider(service=org.netbeans.modules.bugtracking.kenai.KenaiAccessorImpl.class)})
 public class KenaiAccessorImpl extends KenaiAccessor {
 
+    private final List<PropertyChangeListener> allKenaiListeners = new ArrayList<PropertyChangeListener>(1);
+    public KenaiAccessorImpl() {
+        super();
+        KenaiManager.getDefault().addPropertyChangeListener(new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                if(KenaiManager.PROP_INSTANCES.equals(evt.getPropertyName())) {
+                    if(evt.getNewValue() != null) {
+                        Kenai k = (Kenai) evt.getNewValue();
+                        synchronized(allKenaiListeners) {
+                            for (PropertyChangeListener l : allKenaiListeners) {
+                                addPropertyChangeListener(l, k);
+                            }
+                        }
+                    } else {
+                        Kenai k = (Kenai) evt.getOldValue();
+                        synchronized(allKenaiListeners) {
+                            for (PropertyChangeListener l : allKenaiListeners) {
+                                removePropertyChangeListener(l, k);
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    
     static KenaiAccessorImpl getInstance() {
         return Lookup.getDefault().lookup(KenaiAccessorImpl.class);
     }
 
     @Override
     public void logKenaiUsage(Object... parameters) {
-        UIUtils.logKenaiUsage(parameters); 
+        KenaiUIUtils.logKenaiUsage(parameters); 
     }
 
     @Override
@@ -121,8 +150,8 @@ public class KenaiAccessorImpl extends KenaiAccessor {
 
     @Override
     public Collection<RepositoryUser> getProjectMembers(org.netbeans.modules.bugtracking.kenai.spi.KenaiProject kp) throws IOException {
-        List<RepositoryUser> members = null;
         if(kp instanceof KenaiProjectImpl) {
+            List<RepositoryUser> members;
             KenaiProjectMember[] kenaiMembers = ((KenaiProjectImpl)kp).getProject().getMembers();
             members = new ArrayList<RepositoryUser>(kenaiMembers.length);
             for (KenaiProjectMember member : kenaiMembers) {
@@ -134,7 +163,7 @@ public class KenaiAccessorImpl extends KenaiAccessor {
             }
             return members;
         }
-        return Collections.EMPTY_LIST;
+        return null;
     }
 
 
@@ -142,7 +171,7 @@ public class KenaiAccessorImpl extends KenaiAccessor {
     public PasswordAuthentication getPasswordAuthentication(String url, boolean forceLogin) {
         Kenai kenai = getKenai(url);
         if (kenai == null) {
-            Support.LOG.log(Level.INFO, "no kenai for url : [{0}]", url);
+            Support.LOG.log(Level.FINEST, "no kenai for url : [{0}]", url);
             return null;
         }
         return getPasswordAuthentication(kenai, forceLogin);
@@ -180,15 +209,15 @@ public class KenaiAccessorImpl extends KenaiAccessor {
     }
 
     @Override
-    public org.netbeans.modules.bugtracking.kenai.spi.KenaiProject[] getDashboardProjects() {
-        ProjectHandle[] handles = Dashboard.getDefault().getOpenProjects();
+    public org.netbeans.modules.bugtracking.kenai.spi.KenaiProject[] getDashboardProjects(boolean onlyOpened) {
+        ProjectHandle<KenaiProject>[] handles = KenaiUIUtils.getDashboardProjects(onlyOpened);
         if ((handles == null) || (handles.length == 0)) {
             return new KenaiProjectImpl[0];
         }
 
         List<KenaiProjectImpl> kenaiProjects = new LinkedList<KenaiProjectImpl>();
-        for (ProjectHandle handle : handles) {
-            KenaiProject project = handle.getKenaiProject();
+        for (ProjectHandle<KenaiProject> handle : handles) {
+            KenaiProject project = handle.getTeamProject();
             if (project != null) {
                 kenaiProjects.add(KenaiProjectImpl.getInstance(project));
             } else {
@@ -211,7 +240,7 @@ public class KenaiAccessorImpl extends KenaiAccessor {
     public org.netbeans.modules.bugtracking.kenai.spi.KenaiProject getKenaiProject(String url, String projectName) throws IOException {
         Kenai kenai = getKenai(url);
         if (kenai == null) {
-            Support.LOG.log(Level.INFO, "no kenai for url : [{0}]", url);
+            Support.LOG.log(Level.FINEST, "no kenai for url : [{0}]", url);
             return null;
         }
         KenaiProject kp = kenai.getProject(projectName);
@@ -238,6 +267,11 @@ public class KenaiAccessorImpl extends KenaiAccessor {
         }
     }
 
+    @Override
+    public boolean isOwner (String url) {
+        return getKenai(url) != null;
+    }
+    
     /**
      * Returns true if logged into kenai, otherwise false.
      *
@@ -299,7 +333,7 @@ public class KenaiAccessorImpl extends KenaiAccessor {
     }
 
     static boolean showLoginIntern() {
-        return UIUtils.showLogin();
+        return KenaiUIUtils.showLogin();
     }
 
     void addPropertyChangeListener(PropertyChangeListener listener, Kenai kenai) {
@@ -308,6 +342,28 @@ public class KenaiAccessorImpl extends KenaiAccessor {
 
     void removePropertyChangeListener(PropertyChangeListener listener, Kenai kenai) {
         getKenaiListener(kenai).remove(listener);
+    }
+
+    @Override
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        synchronized(allKenaiListeners) {
+            allKenaiListeners.add(listener);
+        }
+        // XXX what if new team server created
+        for (Kenai kenai : KenaiManager.getDefault().getKenais()) {
+            addPropertyChangeListener(listener, kenai);
+        }
+    }
+
+    @Override
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        synchronized(allKenaiListeners) {
+            allKenaiListeners.remove(listener);
+        }
+        // XXX what if new team server created        
+        for (Kenai kenai : KenaiManager.getDefault().getKenais()) {
+            removePropertyChangeListener(listener, kenai);
+        }
     }
 
     private class OwnerInfoImpl extends org.netbeans.modules.bugtracking.kenai.spi.OwnerInfo {
@@ -345,30 +401,42 @@ public class KenaiAccessorImpl extends KenaiAccessor {
         private final Collection<PropertyChangeListener> delegates = new LinkedList<PropertyChangeListener>();
         private final Kenai kenai;
         public DelegateKenaiListener(Kenai kenai) {
-            this.kenai = kenai;
+            this.kenai = kenai; // XXX do not leak this
         }
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
-            if(evt.getPropertyName().equals(Kenai.PROP_LOGIN)) {
+            if(evt.getPropertyName().equals(TeamServer.PROP_LOGIN) || 
+               evt.getPropertyName().equals(DefaultDashboard.PROP_OPENED_PROJECTS)) {
+                
                 PropertyChangeListener[] la;
                 synchronized (delegates) {
                    la = delegates.toArray(new PropertyChangeListener[delegates.size()]);
                 }
-                for (PropertyChangeListener l : la) {
-                    l.propertyChange(new PropertyChangeEvent(evt.getSource(), PROP_LOGIN, evt.getOldValue(), evt.getNewValue()));
+                String propName;
+                if(TeamServer.PROP_LOGIN.equals(evt.getPropertyName())) {
+                    propName = PROP_LOGIN;
+                } else if (DefaultDashboard.PROP_OPENED_PROJECTS.equals(evt.getPropertyName())) {
+                    propName = PROP_PROJETCS_CHANGED;
+                } else {
+                    throw new IllegalStateException("Unknown event " + evt.getPropertyName()); // NOI18N
                 }
-            }
+                for (PropertyChangeListener l : la) {
+                    l.propertyChange(new PropertyChangeEvent(evt.getSource(), propName, evt.getOldValue(), evt.getNewValue()));
+                }
+            } 
         }
         private synchronized void add(PropertyChangeListener l) {
             delegates.add(l);
             if(delegates.size() == 1) {
                 kenai.addPropertyChangeListener(this);
+                KenaiUIUtils.addDashboardListener(kenai, this);
             }
         }
         private synchronized void remove(PropertyChangeListener l) {
             delegates.remove(l);
             if(delegates.isEmpty()) {
                 kenai.removePropertyChangeListener(this);
+                KenaiUIUtils.removeDashboardListener(kenai, this);
             }
         }
     }

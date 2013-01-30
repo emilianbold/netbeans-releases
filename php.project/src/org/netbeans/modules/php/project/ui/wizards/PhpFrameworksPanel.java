@@ -50,9 +50,9 @@ import java.util.Map.Entry;
 import java.util.Set;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.php.api.phpmodule.PhpFrameworks;
-import org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider;
-import org.netbeans.modules.php.spi.phpmodule.PhpModuleExtender;
+import org.netbeans.modules.php.api.framework.PhpFrameworks;
+import org.netbeans.modules.php.spi.framework.PhpFrameworkProvider;
+import org.netbeans.modules.php.spi.framework.PhpModuleExtender;
 import org.openide.WizardDescriptor;
 import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
@@ -65,7 +65,7 @@ public class PhpFrameworksPanel implements WizardDescriptor.Panel<WizardDescript
         WizardDescriptor.FinishablePanel<WizardDescriptor>, ChangeListener {
 
     static final String VALID = "PhpFrameworksPanel.valid"; // NOI18N // used in the previous steps while validating
-    static final String EXTENDERS = "frameworks";
+    static final String EXTENDERS = "frameworks"; // NOI18N
 
     private final String[] steps;
     private final ChangeSupport changeSupport = new ChangeSupport(this);
@@ -74,7 +74,7 @@ public class PhpFrameworksPanel implements WizardDescriptor.Panel<WizardDescript
     private WizardDescriptor descriptor = null;
 
     public PhpFrameworksPanel(String[] steps) {
-        this.steps = steps;
+        this.steps = steps.clone();
     }
 
     String[] getSteps() {

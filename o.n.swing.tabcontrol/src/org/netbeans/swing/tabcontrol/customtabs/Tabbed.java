@@ -72,6 +72,14 @@ public abstract class Tabbed {
     public abstract void requestAttention(TopComponent tc);
 
     public abstract void cancelRequestAttention(TopComponent tc);
+
+    /**
+     * Turn tab highlight on/off
+     * @param tab
+     * @since 1.38
+     */
+    public void setAttentionHighlight(TopComponent tc, boolean highlight) {
+    }
     
     public abstract void addTopComponent(String name, Icon icon, TopComponent tc, String toolTip);
 

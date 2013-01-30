@@ -84,7 +84,9 @@ made subject to such option by the copyright holder.
 	  validate="true"
 	  attrProp="true"
 	  removeUnreferencedNodes="true"
-	  rootDir="src"/>
+	  rootDir="src"
+          java5="true"/>
+        <echo file="${s2b_root_web_2_4}/package-info.java">@org.netbeans.api.annotations.common.SuppressWarnings("NM_SAME_SIMPLE_NAME_AS_INTERFACE") // justification="Generated implementation classes"${line.separator}package org.netbeans.modules.j2ee.dd.impl.web.model_2_4;</echo>
 	<schema2beans schema="${s2b_res_root}/web-app_2_5.xsd"
 	  mddFile="${s2b_res_root}/web-app_2_5.mdd"
 	  package="org.netbeans.modules.j2ee.dd.impl.web.model_2_5"
@@ -93,7 +95,9 @@ made subject to such option by the copyright holder.
 	  validate="true"
 	  attrProp="true"
 	  removeUnreferencedNodes="true"
-	  rootDir="src"/>
+	  rootDir="src"
+          java5="true"/>
+        <echo file="${s2b_root_web_2_5}/package-info.java">@org.netbeans.api.annotations.common.SuppressWarnings("NM_SAME_SIMPLE_NAME_AS_INTERFACE") // justification="Generated implementation classes"${line.separator}package org.netbeans.modules.j2ee.dd.impl.web.model_2_5;</echo>
 	<schema2beans schema="${s2b_res_root}/web-app_3_0.xsd"
 	  mddFile="${s2b_res_root}/web-app_3_0.mdd"
 	  package="org.netbeans.modules.j2ee.dd.impl.web.model_3_0"
@@ -102,7 +106,9 @@ made subject to such option by the copyright holder.
 	  validate="true"
 	  attrProp="true"
 	  removeUnreferencedNodes="true"
-	  rootDir="src"/>
+	  rootDir="src"
+          java5="true"/>
+        <echo file="${s2b_root_web_3_0}/package-info.java">@org.netbeans.api.annotations.common.SuppressWarnings("NM_SAME_SIMPLE_NAME_AS_INTERFACE") // justification="Generated implementation classes"${line.separator}package org.netbeans.modules.j2ee.dd.impl.web.model_3_0;</echo>
 	<schema2beans schema="${s2b_res_root}/web-fragment_3_0.xsd"
 	  mddFile="${s2b_res_root}/web-fragment_3_0.mdd"
 	  package="org.netbeans.modules.j2ee.dd.impl.web.model_3_0_frag"
@@ -111,7 +117,9 @@ made subject to such option by the copyright holder.
 	  validate="true"
 	  attrProp="true"
 	  removeUnreferencedNodes="true"
-	  rootDir="src"/>
+	  rootDir="src"
+          java5="true"/>
+        <echo file="${s2b_root_web_3_0_frag}/package-info.java">@org.netbeans.api.annotations.common.SuppressWarnings("NM_SAME_SIMPLE_NAME_AS_INTERFACE") // justification="Generated implementation classes"${line.separator}package org.netbeans.modules.j2ee.dd.impl.web.model_3_0_frag;</echo>
 
     <replace file="${s2b_root_web_2_5}/ServletMapping.java" summary="true">
         <replacetoken>public java.lang.String[] getUrlPattern() {</replacetoken>
@@ -278,7 +286,9 @@ made subject to such option by the copyright holder.
 	  validate="true"
 	  attrProp="true"
 	  removeUnreferencedNodes="true"
-	  rootDir="src"/> 
+	  rootDir="src"
+          java5="true"/>
+        <echo file="${s2b_root_2_1}/package-info.java">@org.netbeans.api.annotations.common.SuppressWarnings("NM_SAME_SIMPLE_NAME_AS_INTERFACE") // justification="Generated implementation classes"${line.separator}package org.netbeans.modules.j2ee.dd.impl.ejb.model_2_1;</echo>
 	<schema2beans schema="${s2b_res_root}/ejb-jar_3_0.xsd"
  	  mddFile="${s2b_res_root}/ejb-jar_3_0.mdd"
 	  package="org.netbeans.modules.j2ee.dd.impl.ejb.model_3_0"
@@ -287,7 +297,9 @@ made subject to such option by the copyright holder.
 	  validate="true"
 	  attrProp="true"
 	  removeUnreferencedNodes="true"
-	  rootDir="src"/> 
+	  rootDir="src"
+          java5="true"/>
+        <echo file="${s2b_root_3_0}/package-info.java">@org.netbeans.api.annotations.common.SuppressWarnings("NM_SAME_SIMPLE_NAME_AS_INTERFACE") // justification="Generated implementation classes"${line.separator}package org.netbeans.modules.j2ee.dd.impl.ejb.model_3_0;</echo>
 	<schema2beans schema="${s2b_res_root}/ejb-jar_3_1.xsd"
  	  mddFile="${s2b_res_root}/ejb-jar_3_1.mdd"
 	  package="org.netbeans.modules.j2ee.dd.impl.ejb.model_3_1"
@@ -296,7 +308,9 @@ made subject to such option by the copyright holder.
 	  validate="true"
 	  attrProp="true"
 	  removeUnreferencedNodes="true"
-	  rootDir="src"/>
+	  rootDir="src"
+          java5="true"/>
+        <echo file="${s2b_root_3_1}/package-info.java">@org.netbeans.api.annotations.common.SuppressWarnings("NM_SAME_SIMPLE_NAME_AS_INTERFACE") // justification="Generated implementation classes"${line.separator}package org.netbeans.modules.j2ee.dd.impl.ejb.model_3_1;</echo>
     <replace file="${s2b_root_3_1}/EjbJar.java" summary="true">
         <replacetoken>public java.lang.String getVersion() {</replacetoken>
         <replacevalue>public java.lang.String getVersionString() {</replacevalue>
@@ -321,7 +335,9 @@ made subject to such option by the copyright holder.
 	  validate="true"
 	  attrProp="true"
 	  removeUnreferencedNodes="true"
-	  rootDir="src"/>  
+	  rootDir="src"
+          java5="true"/>
+        <echo file="${s2b_root_app_1_4}/package-info.java">@org.netbeans.api.annotations.common.SuppressWarnings("NM_SAME_SIMPLE_NAME_AS_INTERFACE") // justification="Generated implementation classes"${line.separator}package org.netbeans.modules.j2ee.dd.impl.application.model_1_4;</echo>
         <schema2beans schema="${s2b_res_root}/application_5.xsd"
  	  mddFile="${s2b_res_root}/application_5.mdd"
 	  package="org.netbeans.modules.j2ee.dd.impl.application.model_5"
@@ -330,7 +346,9 @@ made subject to such option by the copyright holder.
 	  validate="true"
 	  attrProp="true"
 	  removeUnreferencedNodes="true"
-	  rootDir="src"/>  
+	  rootDir="src"
+          java5="true"/>
+        <echo file="${s2b_root_app_5}/package-info.java">@org.netbeans.api.annotations.common.SuppressWarnings("NM_SAME_SIMPLE_NAME_AS_INTERFACE") // justification="Generated implementation classes"${line.separator}package org.netbeans.modules.j2ee.dd.impl.application.model_5;</echo>
         <schema2beans schema="${s2b_res_root}/application_6.xsd"
  	  mddFile="${s2b_res_root}/application_6.mdd"
 	  package="org.netbeans.modules.j2ee.dd.impl.application.model_6"
@@ -339,7 +357,9 @@ made subject to such option by the copyright holder.
 	  validate="true"
 	  attrProp="true"
 	  removeUnreferencedNodes="true"
-	  rootDir="src"/>
+	  rootDir="src"
+          java5="true"/>
+        <echo file="${s2b_root_app_6}/package-info.java">@org.netbeans.api.annotations.common.SuppressWarnings("NM_SAME_SIMPLE_NAME_AS_INTERFACE") // justification="Generated implementation classes"${line.separator}package org.netbeans.modules.j2ee.dd.impl.application.model_6;</echo>
     <replace file="${s2b_root_app_6}/Application.java" summary="true">
         <replacetoken>public java.lang.String getVersion() {</replacetoken>
         <replacevalue>public java.lang.String getVersionString() {</replacevalue>
@@ -364,7 +384,9 @@ made subject to such option by the copyright holder.
 	  validate="true"
 	  attrProp="true"
 	  removeUnreferencedNodes="true"
-	  rootDir="src"/>
+	  rootDir="src"
+          java5="true"/>
+        <echo file="${s2b_root_client_1_4}/package-info.java">@org.netbeans.api.annotations.common.SuppressWarnings("NM_SAME_SIMPLE_NAME_AS_INTERFACE") // justification="Generated implementation classes"${line.separator}package org.netbeans.modules.j2ee.dd.impl.client.model_1_4;</echo>
         <schema2beans schema="${s2b_res_root}/application-client_5.xsd"
  	  mddFile="${s2b_res_root}/application-client_5.mdd"
 	  package="org.netbeans.modules.j2ee.dd.impl.client.model_5_0"
@@ -373,7 +395,9 @@ made subject to such option by the copyright holder.
 	  validate="true"
 	  attrProp="true"
 	  removeUnreferencedNodes="true"
-	  rootDir="src"/>
+	  rootDir="src"
+          java5="true"/>
+        <echo file="${s2b_root_client_5_0}/package-info.java">@org.netbeans.api.annotations.common.SuppressWarnings("NM_SAME_SIMPLE_NAME_AS_INTERFACE") // justification="Generated implementation classes"${line.separator}package org.netbeans.modules.j2ee.dd.impl.client.model_5_0;</echo>
         <schema2beans schema="${s2b_res_root}/application-client_6.xsd"
  	  mddFile="${s2b_res_root}/application-client_6.mdd"
 	  package="org.netbeans.modules.j2ee.dd.impl.client.model_6_0"
@@ -382,7 +406,9 @@ made subject to such option by the copyright holder.
 	  validate="true"
 	  attrProp="true"
 	  removeUnreferencedNodes="true"
-	  rootDir="src"/>
+	  rootDir="src"
+          java5="true"/>
+        <echo file="${s2b_root_client_6_0}/package-info.java">@org.netbeans.api.annotations.common.SuppressWarnings("NM_SAME_SIMPLE_NAME_AS_INTERFACE") // justification="Generated implementation classes"${line.separator}package org.netbeans.modules.j2ee.dd.impl.client.model_6_0;</echo>
     <replace file="${s2b_root_client_6_0}/ApplicationClient.java" summary="true">
         <replacetoken>public java.lang.String getVersion() {</replacetoken>
         <replacevalue>public java.lang.String getVersionString() {</replacevalue>

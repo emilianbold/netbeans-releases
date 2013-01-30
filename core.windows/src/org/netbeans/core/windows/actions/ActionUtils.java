@@ -485,21 +485,25 @@ public abstract class ActionUtils {
             TopComponent activeTC = TopComponent.getRegistry().getActivated();
             List<TopComponent> tcs = getOpened(activeTC);
 
-            for(TopComponent tc: tcs) {
-                if( !Switches.isClosingEnabled(tc) )
-                    continue;
-                tc.putClientProperty("inCloseAll", Boolean.TRUE);
-                tc.close();
-            }
+            closeAll( tcs.toArray(new TopComponent[tcs.size()]) );
         } else {
             TopComponent[] tcs = WindowManagerImpl.getInstance().getEditorTopComponents();
+            closeAll( tcs );
+        }
+    }
 
-            for(TopComponent tc: tcs) {
-                if( !Switches.isClosingEnabled(tc) )
-                    continue;
-                tc.putClientProperty("inCloseAll", Boolean.TRUE);
-                tc.close();
-            }
+    private static void closeAll( TopComponent[] tcs ) {
+        for( TopComponent tc: tcs ) {
+            if( !Switches.isClosingEnabled(tc) )
+                continue;
+            final TopComponent toBeClosed = tc;
+            SwingUtilities.invokeLater( new Runnable() {
+                @Override
+                public void run() {
+                    toBeClosed.putClientProperty("inCloseAll", Boolean.TRUE);
+                    toBeClosed.close();
+                }
+            });
         }
     }
 

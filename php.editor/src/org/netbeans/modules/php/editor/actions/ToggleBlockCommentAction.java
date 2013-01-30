@@ -39,6 +39,7 @@ package org.netbeans.modules.php.editor.actions;
 
 import java.awt.event.ActionEvent;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.Action;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
@@ -49,6 +50,7 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.ExtKit;
 import org.netbeans.modules.csl.api.CslActions;
+import static org.netbeans.modules.php.api.util.FileUtils.PHP_MIME_TYPE;
 import org.netbeans.modules.php.editor.PHPLanguage;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
@@ -58,24 +60,23 @@ import org.openide.util.Exceptions;
  *
  * @author Petr Pisl
  */
+public class ToggleBlockCommentAction extends BaseAction {
 
-@EditorActionRegistration(name = ExtKit.toggleCommentAction, mimeType="text/x-php5")
-public class ToggleBlockCommentAction extends BaseAction{
-
-    static final long serialVersionUID = -1L;
-    static final private String FORCE_COMMENT = "force-comment";    //NOI18N
-    static final private String FORCE_UNCOMMENT = "force-uncomment";    //NOI18N
-
-    public ToggleBlockCommentAction() {
-        super(ExtKit.toggleCommentAction);
+    @EditorActionRegistration(name = ExtKit.toggleCommentAction, mimeType = PHP_MIME_TYPE)
+    public static ToggleBlockCommentAction create(Map<String, ?> attrs) {
+        return new ToggleBlockCommentAction(attrs);
     }
 
-    public ToggleBlockCommentAction (Map<String,?> attrs) {
+    static final long serialVersionUID = -1L;
+    private static final String FORCE_COMMENT = "force-comment"; //NOI18N
+    private static final String FORCE_UNCOMMENT = "force-uncomment"; //NOI18N
+
+    public ToggleBlockCommentAction(Map<String, ?> attrs) {
         super(null);
         if (attrs != null) {
-            String actionName = (String)attrs.get(Action.NAME);
+            String actionName = (String) attrs.get(Action.NAME);
             if (actionName == null) {
-                throw new IllegalArgumentException("Null Action.NAME attribute for action " + this.getClass()); // NOI18N
+                throw new IllegalArgumentException("Null Action.NAME attribute for action " + this.getClass()); //NOI18N
             }
             putValue(Action.NAME, actionName);
         }
@@ -83,78 +84,102 @@ public class ToggleBlockCommentAction extends BaseAction{
 
     @Override
     public void actionPerformed(ActionEvent evt, JTextComponent target) {
-        boolean processedHere = false;
+        final AtomicBoolean processedHere = new AtomicBoolean(false);
         if (target != null) {
             if (!target.isEditable() || !target.isEnabled() || !(target.getDocument() instanceof BaseDocument)) {
                 target.getToolkit().beep();
                 return;
             }
-            int caretOffset = Utilities.isSelectionShowing(target) ? target.getSelectionStart() : target.getCaretPosition();
+            final int caretOffset = Utilities.isSelectionShowing(target) ? target.getSelectionStart() : target.getCaretPosition();
             final BaseDocument doc = (BaseDocument) target.getDocument();
-            TokenSequence<PHPTokenId> ts = LexUtilities.getPHPTokenSequence(doc, caretOffset);
-            if (ts != null) {
-                ts.move(caretOffset);
-                ts.moveNext();
-                if (ts.token().id() != PHPTokenId.T_INLINE_HTML) {
-                    boolean newLine = false;
+            doc.runAtomic(new Runnable() {
+
+                @Override
+                public void run() {
+                    performCustomAction(doc, caretOffset, processedHere);
+                }
+            });
+            if (!processedHere.get()) {
+                performDefaultAction(evt, target);
+            }
+        }
+    }
+
+    private void performCustomAction(BaseDocument doc, int caretOffset, AtomicBoolean processedHere) {
+        TokenSequence<PHPTokenId> ts = LexUtilities.getPHPTokenSequence(doc, caretOffset);
+        if (ts != null) {
+            ts.move(caretOffset);
+            ts.moveNext();
+            if (isAroundPhpComment(ts)) {
+                processedHere.set(true);
+            } else if (ts.token().id() != PHPTokenId.T_INLINE_HTML) {
+                boolean newLine = false;
+                if (isNewLineBeforeCaretOffset(ts, caretOffset)) {
+                    newLine = true;
+                }
+                while (!newLine && ts.movePrevious() && ts.token().id() != PHPTokenId.PHP_OPENTAG) {
                     if (isNewLineBeforeCaretOffset(ts, caretOffset)) {
                         newLine = true;
                     }
-                    while (!newLine && ts.movePrevious() && ts.token().id() != PHPTokenId.PHP_OPENTAG) {
-                        if(isNewLineBeforeCaretOffset(ts, caretOffset)) {
-                            newLine = true;
-                        }
-                    }
-                    if (!newLine && ts.token().id() == PHPTokenId.PHP_OPENTAG) {
-                        processedHere = true;
-                        int possibleChangeOffset = ts.offset() + ts.token().length();
-                        int possibleWhitespaceLength = 0;
-                        boolean possibleLineComment = false;
+                }
+                if (!newLine && ts.token().id() == PHPTokenId.PHP_OPENTAG) {
+                    processedHere.set(true);
+                    int possibleChangeOffset = ts.offset() + ts.token().length();
+                    int possibleWhitespaceLength = 0;
+                    boolean possibleLineComment = false;
+                    if (ts.moveNext() && ts.token().id() == PHPTokenId.PHP_LINE_COMMENT) {
+                        possibleLineComment = true;
+                    } else if (ts.token().id() == PHPTokenId.WHITESPACE) {
+                        possibleWhitespaceLength = ts.token().length();
                         if (ts.moveNext() && ts.token().id() == PHPTokenId.PHP_LINE_COMMENT) {
                             possibleLineComment = true;
-                        } else if (ts.token().id() == PHPTokenId.WHITESPACE) {
-                            possibleWhitespaceLength = ts.token().length();
-                            if (ts.moveNext() && ts.token().id() == PHPTokenId.PHP_LINE_COMMENT) {
-                                possibleLineComment = true;
+                        }
+                    }
+                    final boolean lineComment = possibleLineComment;
+                    final int changeOffset = lineComment ? possibleChangeOffset + possibleWhitespaceLength : possibleChangeOffset;
+                    final int length = lineComment ? ts.offset() + ts.token().length() + countForgoingWhitespaces(ts) - changeOffset : 0;
+                    try {
+                        if (!lineComment) {
+                            if (forceDirection(true)) {
+                                doc.insertString(changeOffset, " " + PHPLanguage.LINE_COMMENT_PREFIX, null);
+                            }
+                        } else {
+                            if (forceDirection(false)) {
+                                doc.remove(changeOffset, length);
                             }
                         }
-                        final boolean lineComment = possibleLineComment;
-                        final int changeOffset = lineComment ? possibleChangeOffset + possibleWhitespaceLength : possibleChangeOffset;
-                        final int length = lineComment ? ts.offset() + ts.token().length() + countForgoingWhitespaces(ts) - changeOffset : 0;
-                        doc.runAtomic(new Runnable() {
-
-                            public @Override
-                            void run() {
-                                try {
-                                    if (!lineComment) {
-                                        if (forceDirection(true)) {
-                                            doc.insertString(changeOffset, " " + PHPLanguage.LINE_COMMENT_PREFIX, null);
-                                        }
-                                    } else {
-                                        if (forceDirection(false)) {
-                                            doc.remove(changeOffset, length);
-                                        }
-                                    }
-
-                                } catch (BadLocationException ex) {
-                                    Exceptions.printStackTrace(ex);
-                                }
-                            }
-                        });
+                    } catch (BadLocationException ex) {
+                        Exceptions.printStackTrace(ex);
                     }
                 }
             }
         }
-        if(!processedHere) {
-            BaseAction action = (BaseAction) CslActions.createToggleBlockCommentAction();
-            if (getValue(FORCE_COMMENT) != null) {
-                action.putValue(FORCE_COMMENT, getValue(FORCE_COMMENT));
-            }
-            if (getValue(FORCE_UNCOMMENT) != null) {
-                action.putValue(FORCE_UNCOMMENT, getValue(FORCE_UNCOMMENT));
-            }
-            action.actionPerformed(evt, target);
+    }
+
+    private void performDefaultAction(ActionEvent evt, JTextComponent target) {
+        BaseAction action = (BaseAction) CslActions.createToggleBlockCommentAction();
+        if (getValue(FORCE_COMMENT) != null) {
+            action.putValue(FORCE_COMMENT, getValue(FORCE_COMMENT));
         }
+        if (getValue(FORCE_UNCOMMENT) != null) {
+            action.putValue(FORCE_UNCOMMENT, getValue(FORCE_UNCOMMENT));
+        }
+        action.actionPerformed(evt, target);
+    }
+
+    private static boolean isAroundPhpComment(final TokenSequence<PHPTokenId> ts) {
+        boolean result = isPhpComment(ts.token().id());
+        if (!result && PHPTokenId.WHITESPACE.equals(ts.token().id()) && ts.movePrevious()) {
+            result = isPhpComment(ts.token().id());
+            ts.moveNext();
+        }
+        return result;
+    }
+
+    private static boolean isPhpComment(final PHPTokenId tokenId) {
+        return PHPTokenId.PHP_COMMENT.equals(tokenId) || PHPTokenId.PHP_COMMENT_START.equals(tokenId)
+                || PHPTokenId.PHP_COMMENT_END.equals(tokenId) || PHPTokenId.PHPDOC_COMMENT.equals(tokenId)
+                || PHPTokenId.PHPDOC_COMMENT_START.equals(tokenId) || PHPTokenId.PHPDOC_COMMENT_END.equals(tokenId);
     }
 
     private static int countForgoingWhitespaces(final TokenSequence<PHPTokenId> tokenSequence) {
@@ -188,9 +213,8 @@ public class ToggleBlockCommentAction extends BaseAction{
 
         Object force = comment ? fComment : fUncomment;
         if (force instanceof Boolean) {
-            return ((Boolean)force).booleanValue();
+            return ((Boolean) force).booleanValue();
         }
         return fComment == null && fUncomment == null;
     }
 }
-

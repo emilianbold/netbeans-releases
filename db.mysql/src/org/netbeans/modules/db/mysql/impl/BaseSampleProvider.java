@@ -49,6 +49,7 @@ import java.io.InputStreamReader;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
@@ -116,7 +117,8 @@ public class BaseSampleProvider implements SampleProvider {
     }
     private boolean checkInnodbSupport(Connection conn) throws DatabaseException {
         try {
-            ResultSet rs = conn.createStatement().executeQuery("SHOW STORAGE ENGINES"); // NOI18N
+            Statement stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery("SHOW STORAGE ENGINES"); // NOI18N
 
             while (rs.next()) {
                 if ("INNODB".equals(rs.getString(1).toUpperCase()) &&
@@ -124,6 +126,8 @@ public class BaseSampleProvider implements SampleProvider {
                     return true;
                 }
             }
+            rs.close();
+            stmt.close();
 
             return false;
         } catch (SQLException sqle) {

@@ -50,12 +50,13 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.repository.JiraRepository;
+import org.netbeans.modules.mylyn.util.BugtrackingCommand;
 
 /**
  *
  * @author Tomas Stupka
  */
-public class NamedFiltersCommand extends JiraCommand {
+public class NamedFiltersCommand extends BugtrackingCommand {
     private NamedFilter[] namedFilters;
     private final JiraRepository repository;
 
@@ -64,8 +65,12 @@ public class NamedFiltersCommand extends JiraCommand {
     }
 
     @Override
-    public void execute() throws JiraException, CoreException, IOException, MalformedURLException {
-        namedFilters = Jira.getInstance().getClient(repository.getTaskRepository()).getNamedFilters(new NullProgressMonitor());
+    public void execute() throws CoreException, IOException, MalformedURLException {
+        try {
+            namedFilters = Jira.getInstance().getClient(repository.getTaskRepository()).getNamedFilters(new NullProgressMonitor());
+        } catch (JiraException ex) {
+            throw new IOException(ex);
+        }
     }
 
     public NamedFilter[] getNamedFilters() {

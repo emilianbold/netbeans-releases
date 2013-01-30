@@ -57,7 +57,6 @@ import org.netbeans.Module;
 import org.netbeans.ModuleManager;
 import org.netbeans.core.startup.Main;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.RandomlyFails;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -65,7 +64,6 @@ import org.openide.filesystems.FileUtil;
  *
  * @author Stanislav Aubrecht
  */
-@RandomlyFails
 public class RemoveWritablesModifiedTest extends NbTestCase {
     Module myModule;
     File configDir;
@@ -80,6 +78,12 @@ public class RemoveWritablesModifiedTest extends NbTestCase {
     public RemoveWritablesModifiedTest(String testName) {
         super(testName);
     }
+    
+    @Override
+    protected int timeOut() {
+        return 15000;
+    }
+    
 
     protected @Override void setUp() throws Exception {
         clearWorkDir();

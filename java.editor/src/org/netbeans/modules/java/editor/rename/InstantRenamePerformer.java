@@ -57,6 +57,7 @@ import java.io.IOException;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -73,6 +74,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.ElementScanner6;
 import javax.swing.Action;
+import javax.swing.SwingUtilities;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -90,6 +92,8 @@ import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoableEdit;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.api.editor.mimelookup.MimeRegistration;
+import org.netbeans.api.editor.mimelookup.MimeRegistrations;
 import org.netbeans.api.editor.settings.AttributesUtilities;
 import org.netbeans.api.editor.settings.EditorStyleConstants;
 import org.netbeans.api.editor.settings.FontColorSettings;
@@ -108,13 +112,22 @@ import org.netbeans.editor.GuardedDocument;
 import org.netbeans.editor.MarkBlock;
 import org.netbeans.editor.Utilities;
 import org.netbeans.lib.editor.util.swing.MutablePositionRegion;
-import org.netbeans.modules.editor.java.JavaKit.JavaDeleteCharAction;
 import org.netbeans.modules.editor.java.ComputeOffAWT;
 import org.netbeans.modules.editor.java.ComputeOffAWT.Worker;
+import org.netbeans.modules.editor.java.JavaKit;
 import org.netbeans.modules.java.editor.javadoc.JavadocImports;
 import org.netbeans.modules.java.editor.semantic.FindLocalUsagesQuery;
+import org.netbeans.modules.refactoring.api.AbstractRefactoring;
+import org.netbeans.modules.refactoring.api.Problem;
+import org.netbeans.modules.refactoring.api.ProgressEvent;
+import org.netbeans.modules.refactoring.api.ProgressListener;
 import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
+import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
+import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
+import org.netbeans.modules.refactoring.spi.RefactoringPluginFactory;
 import org.netbeans.spi.editor.highlighting.support.OffsetsBag;
+import org.netbeans.spi.editor.typinghooks.DeletedTextInterceptor;
+import org.netbeans.spi.editor.typinghooks.DeletedTextInterceptor.Context;
 import org.openide.cookies.EditorCookie;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
@@ -122,8 +135,10 @@ import org.openide.text.NbDocument;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.WeakSet;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
@@ -132,6 +147,7 @@ import org.openide.util.lookup.InstanceContent;
 public class InstantRenamePerformer implements DocumentListener, KeyListener {
     
     private static final Logger LOG = Logger.getLogger(InstantRenamePerformer.class.getName());
+    private static final Set<InstantRenamePerformer> registry = Collections.synchronizedSet(new WeakSet<InstantRenamePerformer>());
 
     private SyncDocumentRegion region;
     private int span;
@@ -159,12 +175,12 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
         List<MutablePositionRegion> regions = new ArrayList<MutablePositionRegion>();
 
         for (Token h : highlights) {
-            // type parameter name is represented as html tag -> ignore surrounding <> in rename
-            int delta = h.id() == JavadocTokenId.HTML_TAG ? 1 : 0;
+            // type parameter name is represented as ident -> ignore surrounding <> in rename
+            int delta = h.id() == JavadocTokenId.IDENT && h.text().charAt(0) == '<' && h.text().charAt(h.length() - 1) == '>' ? 1 : 0;
             Position start = NbDocument.createPosition(doc, h.offset(null) + delta, Bias.Backward);
             Position end = NbDocument.createPosition(doc, h.offset(null) + h.length() - delta, Bias.Forward);
             MutablePositionRegion current = new MutablePositionRegion(start, end);
-
+            
             if (isIn(current, caretOffset)) {
                 mainRegion = current;
             } else {
@@ -199,6 +215,8 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
         target.select(mainRegion.getStartOffset(), mainRegion.getEndOffset());
         
         span = region.getFirstRegionLength();
+        
+        registry.add(this);
     }
     
     public static void invokeInstantRename(JTextComponent target) {
@@ -481,7 +499,7 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
                     // ann type is not final even if it cannot be subclassed
                     || enclosingKind == ElementKind.ANNOTATION_TYPE;
             return isAnyEncloserPrivate(e) && !eu.overridesMethod((ExecutableElement) e) && !eu.implementsMethod((ExecutableElement)e) &&
-                    (isEnclosingFinal || !isOverridenInsideOutermostEnclosingClass((ExecutableElement)e, eu));
+                    (isEnclosingFinal || !isOverriddenInsideOutermostEnclosingClass((ExecutableElement)e, eu));
         }
         return false;
     }
@@ -498,7 +516,7 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
         return false;
     }
     
-    private static boolean isOverridenInsideOutermostEnclosingClass(final ExecutableElement ee, final ElementUtilities eu) {
+    private static boolean isOverriddenInsideOutermostEnclosingClass(final ExecutableElement ee, final ElementUtilities eu) {
         final boolean[] ret = new boolean[] {false};
         new ElementScanner6<Void, Void>() {
             @Override
@@ -540,11 +558,11 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
         new InstantRenamePerformer(target, highlights, caretOffset);
     }
 
-    private boolean isIn(MutablePositionRegion region, int caretOffset) {
+    private static boolean isIn(MutablePositionRegion region, int caretOffset) {
 	return region.getStartOffset() <= caretOffset && caretOffset <= region.getEndOffset();
     }
     
-    private boolean inSync;
+    private volatile boolean inSync;
     
     @Override
     public synchronized void insertUpdate(DocumentEvent e) {
@@ -583,14 +601,7 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
                     LOG.log(Level.FINE, "region.getFirstRegionEndOffset()={0}", region.getFirstRegionEndOffset ());
                     LOG.log(Level.FINE, "span= {0}", span);
                 }
-                JavaDeleteCharAction jdca = (JavaDeleteCharAction) target.getClientProperty(JavaDeleteCharAction.class);
-                
-                if (jdca != null && !jdca.getNextChar()) {
-                    undo();
-                } else {
-                    release();
-                }
-                
+                release();
                 return;
             }
             
@@ -601,15 +612,8 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
                     LOG.log(Level.FINE, "region.getFirstRegionEndOffset()={0}", region.getFirstRegionEndOffset ());
                     LOG.log(Level.FINE, "span= {0}", span);
                 }
-            //XXX: moves the caret anyway:
-//                JavaDeleteCharAction jdca = (JavaDeleteCharAction) target.getClientProperty(JavaDeleteCharAction.class);
-//
-//                if (jdca != null && jdca.getNextChar()) {
-//                    undo();
-//                } else {
-                    release();
-//                }
 
+                release();
                 return;
             }
             if (e.getOffset() == region.getFirstRegionEndOffset() && e.getOffset() == region.getFirstRegionStartOffset() && region.getFirstRegionLength() == 0 && region.getFirstRegionLength() == span) {
@@ -620,13 +624,8 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
                     LOG.log(Level.FINE, "span= {0}", span);
                 }
                 
-                JavaDeleteCharAction jdca = (JavaDeleteCharAction) target.getClientProperty(JavaDeleteCharAction.class);
-                if (jdca != null && !jdca.getNextChar()) {
-                    undo();
-                } else {
-                    release();
-                }
-
+               
+                release();
                 return;
             }
         } else {
@@ -679,7 +678,7 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
     public void keyReleased(KeyEvent e) {
     }
 
-    private void release() {
+    private synchronized void release() {
         if (target == null) {
             //already released
             return ;
@@ -700,20 +699,6 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
         doc = null;
     }
 
-    private void undo() {
-        if (doc instanceof BaseDocument && ((BaseDocument) doc).isAtomicLock()) {
-            ((BaseDocument) doc).atomicUndo();
-        } else {
-            UndoableEdit undoMgr = (UndoableEdit) doc.getProperty(BaseDocument.UNDO_MANAGER_PROP);
-            if (target != null && undoMgr != null) {
-                try {
-                    undoMgr.undo();
-                } catch (CannotUndoException e) {
-                    Logger.getLogger(InstantRenamePerformer.class.getName()).log(Level.WARNING, null, e);
-                }
-            }
-        }
-    }
     
     private void requestRepaint() {
         if (region == null) {
@@ -845,7 +830,7 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
         
         return bag;
     }
-
+    
     private static class CancelInstantRenameUndoableEdit extends AbstractUndoableEdit {
 
         private final Reference<InstantRenamePerformer> performer;
@@ -867,4 +852,99 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
         }
     }
     
+    @ServiceProvider(service=RefactoringPluginFactory.class, position=95)
+    public static class AllRefactoringsPluginFactory implements RefactoringPluginFactory {
+
+        @Override
+        public RefactoringPlugin createInstance(AbstractRefactoring refactoring) {
+            return new RefactoringPluginImpl();
+        }
+
+        private static final class RefactoringPluginImpl implements RefactoringPlugin {
+
+            @Override
+            public Problem preCheck() {
+                return null;
+            }
+
+            @Override
+            public Problem checkParameters() {
+                return null;
+            }
+
+            @Override
+            public Problem fastCheckParameters() {
+                return null;
+            }
+
+            @Override
+            public void cancelRequest() {}
+
+            @Override
+            public Problem prepare(RefactoringElementsBag refactoringElements) {
+                refactoringElements.getSession().addProgressListener(new ProgressListener() {
+                    @Override
+                    public void start(ProgressEvent event) {
+                        final InstantRenamePerformer[] performers = registry.toArray(new InstantRenamePerformer[0]);
+                        for (InstantRenamePerformer p : performers) {
+                            p.inSync = true;
+                        }
+                        SwingUtilities.invokeLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                for (InstantRenamePerformer p : performers) {
+                                    p.release();
+                                }
+                            }
+                        });
+                    }
+                    @Override
+                    public void step(ProgressEvent event) {}
+                    @Override
+                    public void stop(ProgressEvent event) {}
+                });
+
+                return null;
+            }
+
+        }
+
+    }
+    
+    public static class RenameDeletedTextInterceptor implements DeletedTextInterceptor {
+        
+        @Override
+        public boolean beforeRemove(Context context) throws BadLocationException {
+            Object getObject = context.getComponent().getClientProperty(InstantRenamePerformer.class);
+            if (getObject instanceof InstantRenamePerformer) {
+                InstantRenamePerformer instantRenamePerformer = (InstantRenamePerformer)getObject;
+                MutablePositionRegion region = instantRenamePerformer.region.getRegion(0);
+                return ((context.isBackwardDelete() && region.getStartOffset() == context.getOffset()) || (!context.isBackwardDelete() && region.getEndOffset() == context.getOffset()));
+            } else {
+                return false;
+            }
+        }
+        @Override
+        public void remove(Context context) throws BadLocationException {            
+        }
+
+        @Override
+        public void afterRemove(Context context) throws BadLocationException {
+        }
+
+        @Override
+        public void cancelled(Context context) {
+        }
+
+        @MimeRegistrations({
+            @MimeRegistration(mimeType = JavaKit.JAVA_MIME_TYPE, service = DeletedTextInterceptor.Factory.class)
+        })
+        public static class Factory implements DeletedTextInterceptor.Factory {
+
+            @Override
+            public DeletedTextInterceptor createDeletedTextInterceptor(MimePath mimePath) {
+                return new RenameDeletedTextInterceptor();
+            }
+        }
+    }
 }

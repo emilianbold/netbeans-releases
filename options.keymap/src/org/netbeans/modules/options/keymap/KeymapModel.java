@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.options.keymap;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -59,19 +60,57 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import org.netbeans.core.options.keymap.api.ShortcutAction;
 import org.netbeans.core.options.keymap.spi.KeymapManager;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
+ * There are 3 areas of information loaded using SPI:
+ * <ul>
+ * <li>profile definitions: set of profiles + current profile
+ * <li>actions: all actions registered in the system for keymap configuration
+ * <li>keymaps: the actual keymaps (action-keystroke) for individual profiles
+ * </ul>
+ * Out of those 3, actions loading takes most of the time, as action instances 
+ * must be created. At least action initialization should NOT happen in the
+ * awt thread.
+ * <p/>
+ * Each of these areas area loaded by a "loader" (AL, KL, PL), which does all the processing
+ * and keeps the loaded data. In the case of multiple initial requests, the loading may
+ * happen multiple times, but only one loader will win and register itself in the member
+ * variable. The code was originally written to run in a RP, but more simple synchronization
+ * was chosen.
+ * <p/>
+ * Note: the class actually does not hold any own data; all data it serves are collected from
+ * KeymapManager instances, and change/deleteProfile will immediately write the changes to those
+ * Managers. So it's not necessary to keep multiple instances of KeymapModel - it only takes 
+ * initialization time. Therefore {@link KeymapModel#create} should be used preferrably to constructor,
+ * so multiple instances in the future are supported.
  *
- * @author Jan Jancura
+ * @author Jan Jancura, Svata Dedic
  */
 public class KeymapModel {
+    
+    /* package */ static final RequestProcessor RP = new RequestProcessor(KeymapModel.class);
     
     private static final Logger LOG = Logger.getLogger(KeymapModel.class.getName ());
     private static final Logger UI_LOG = Logger.getLogger("org.netbeans.ui.options"); // NOI18N
                                     
-    private static ArrayList<KeymapManager> managers = null;
+    private static volatile List<KeymapManager> managers = null;
+    
+    private volatile static KeymapModel INSTANCE;
+    
+    static KeymapModel create() {
+        if (INSTANCE != null) {
+            return INSTANCE;
+        }
+        synchronized (KeymapModel.class) {
+            return INSTANCE = new KeymapModel();
+        }
+    }
     
     /**
      * @return All the registered implementations.
@@ -80,9 +119,9 @@ public class KeymapModel {
         if (managers != null) {
             return managers;
         }
-        ArrayList<KeymapManager> al = new ArrayList<KeymapManager>(
-            Lookup.getDefault().lookupAll(KeymapManager.class)
-        );
+        
+        final Lookup.Result r = Lookup.getDefault().lookupResult(KeymapManager.class);
+        ArrayList<KeymapManager> al = new ArrayList<KeymapManager>(r.allInstances());
         al.trimToSize();
         if (LOG.isLoggable(Level.FINE)) {
             LOG.fine("Dumping registered KeymapManagers: ");
@@ -94,33 +133,228 @@ public class KeymapModel {
         synchronized (KeymapModel.class) {
             if (managers == null) {
                 managers = al;
+                
+                r.addLookupListener(new LookupListener() {
+                    @Override
+                    public void resultChanged(LookupEvent ev) {
+                        synchronized (KeymapModel.class) {
+                            managers = null;
+                            r.removeLookupListener(this);
+                        }
+                        if (INSTANCE != null) {
+                            INSTANCE.refreshActions();
+                        }
+                    }
+                });
             }
         }
-        assert managers != null;
-        return managers;
+        return al;
     }
     
     // actions .................................................................
     
     public Set<String> getActionCategories () {
-        Set<String> result = new HashSet<String>();
-        for (KeymapManager m : getKeymapManagerInstances()) {
-            result.addAll(m.getActions().keySet());
+        AL data = ensureActionsLoaded();
+        return data.categories;
+    }
+
+    /**
+     * Data for set of all actions
+     */
+    private volatile AL actionData;
+    
+    /**
+     * Data for keymap profiles
+     */
+    private volatile PL profileData;
+    
+    /**
+     * The keymaps themselves
+     */
+    private volatile KL keymapData;
+    
+    /**
+     * Loads and processes action data from the underlying KeymapManagers
+     */
+    private class AL implements Runnable {
+        private volatile AL current;
+        
+        private Set<String> categories;
+        
+        private Set<String> allActionIds = new HashSet<String>();
+
+        private Set<String> duplicateIds = new HashSet<String>();
+
+        private Map<String,Set<ShortcutAction>> categoryToActions = 
+            new HashMap<String,Set<ShortcutAction>>();
+
+        private Map<ShortcutAction,CompoundAction> sharedActions = 
+                new HashMap<ShortcutAction,CompoundAction>();
+
+        public void run() {
+            if ((current = actionData) != null) {
+                return;
+            }
+            List<Map<String, Set<ShortcutAction>>> mgrActions = new ArrayList<Map<String, Set<ShortcutAction>>>();
+            Set<String> categoryIds = new HashSet<String>();
+            Map<String, Set<ShortcutAction>> cats = new HashMap<String, Set<ShortcutAction>>();
+            Collection<? extends KeymapManager> mgrInstances = getKeymapManagerInstances();
+            for (KeymapManager m : mgrInstances) {
+                Map<String, Set<ShortcutAction>> a = m.getActions();
+                mgrActions.add(a);
+                categoryIds.addAll(a.keySet());
+            }
+
+            Set<String> allIds = new HashSet<String>();
+            Set<String> duplIds = new HashSet<String>();
+            categoryIds.add(""); // NOI18N
+            for (String category : categoryIds) {
+                Iterator<? extends KeymapManager> mgrIt = mgrInstances.iterator();
+                Set<ShortcutAction> actions = new HashSet<ShortcutAction>();
+                for (Map<String, Set<ShortcutAction>> aa : mgrActions) {
+                    Set<ShortcutAction> s = aa.get(category);
+                    KeymapManager mgr = mgrIt.next();
+                    if (s != null) {
+                        actions = mergeActions(actions, s, mgr.getName(), sharedActions);
+                    }
+                }
+                findDuplicateIds(category, actions, allIds, duplIds);
+                cats.put(category, actions);
+            }
+
+            this.allActionIds = allIds;
+            this.duplicateIds = duplIds;
+            this.categoryToActions = cats;
+            categories = categoryIds;
+            
+            synchronized (KeymapModel.this) {
+                if (actionData != null) {
+                    this.current = actionData;
+                } else {
+                    this.current = actionData = this;
+                }
+            }
         }
-        return Collections.unmodifiableSet (result);
+
+    }
+    
+    /**
+     * Loads profile-related information: set of profiles + the current profile
+     */
+    private class PL implements Runnable { 
+        private volatile PL current;
+        private Map<String, String> profilesMap = new HashMap<String, String>();
+        private String currentProfile;
+        private Map<String, Boolean> customProfiles = new HashMap<String, Boolean>();
+        
+        public void run() {
+            if ((current = profileData) != null) {
+                return;
+            }
+            for (KeymapManager m : getKeymapManagerInstances()) {
+                List<String> l = m.getProfiles();
+                if (currentProfile == null) {
+                    currentProfile = m.getCurrentProfile();
+                }
+                if (l != null && profilesMap.isEmpty()) {
+                    for(String name : l) {
+                        profilesMap.put(m.getProfileDisplayName(name), name);
+                        customProfiles.put(name, Boolean.TRUE.equals(customProfiles.get(name)) || 
+                                m.isCustomProfile(name));
+                    }
+                }
+            }
+            if (currentProfile == null) {
+                currentProfile = "NetBeans"; // NOI18N
+            }
+            synchronized (KeymapModel.this) {
+                if (profileData == null) {
+                    current = profileData = this;
+                } else {
+                    current = profileData;
+                }
+            }
+        }
+    }
+    
+    private class KL implements Runnable {
+        private AL      actionData;
+        private String  profile;
+        private volatile KL      current;
+        
+        /**
+         * Map (String (profile) > Map (ShortcutAction > Set (String (shortcut AS-M)))).
+         */
+        private volatile Map<String, Map<ShortcutAction,Set<String>>> keyMaps = 
+                new HashMap<String, Map<ShortcutAction,Set<String>>>();
+
+        /**
+         * Map (String (keymap name) > Map (ShortcutAction > Set (String (shortcut AS-M)))).
+         */
+        private Map<String,Map<ShortcutAction,Set<String>>> keyMapDefaults = 
+                new HashMap<String,Map<ShortcutAction,Set<String>>>();
+        
+        public KL(AL actionData, String profile) {
+            this.actionData = actionData;
+            this.profile = profile;
+        }
+
+        public void run() {
+            current = keymapData;
+            if (current != null && current.keyMaps.get(profile) != null) {
+                return;
+            }
+            Map<ShortcutAction,Set<String>>  res;
+            Map<ShortcutAction,Set<String>>  defRes;
+            res = new HashMap<ShortcutAction,Set<String>>();
+            defRes = new HashMap<ShortcutAction,Set<String>>();
+
+            for (KeymapManager m : getKeymapManagerInstances()) {
+                Map<ShortcutAction,Set<String>> mm = m.getKeymap(profile);
+                res = mergeShortcuts(res, mm, actionData.sharedActions);
+
+                mm = m.getDefaultKeymap(profile);
+                defRes = mergeShortcuts(defRes, mm, actionData.sharedActions);
+            }
+            
+            synchronized (this) {
+                if (keymapData != null && keymapData.keyMaps.get(profile) != null) {
+                    current = keymapData;
+                } else {
+                    if (keymapData != null) {
+                        keyMaps.putAll(keymapData.keyMaps);
+                        keyMapDefaults.putAll(keymapData.keyMapDefaults);
+                    }
+                    keyMaps.put(profile, res);
+                    keyMapDefaults.put(profile, defRes);
+                    keymapData = current = this;
+                }
+            }
+        }
+    }
+    
+    private PL ensureProfilesLoaded() {
+        PL p = profileData;
+        if (p == null) {
+            waitFinished(p = new PL());
+        }
+        return p.current;
+    }
+    
+    private KL ensureKeymapsLoaded(String forProfile) {
+        KL k = keymapData;
+        if (k == null || k.keyMaps.get(forProfile) == null) {
+            waitFinished(k = new KL(ensureActionsLoaded(), forProfile));
+        }
+        return k.current;
     }
     
     /**
      * Map (String (category name) > Set (ShortcutAction)).
      */
-    private Map<String,Set<ShortcutAction>> categoryToActions = 
-            new HashMap<String,Set<ShortcutAction>>();
     
-    private Set<String> allActionIds = new HashSet<String>();
-    
-    private Set<String> duplicateIds = new HashSet<String>();
-    
-    private void findDuplicateIds(String category, Collection<ShortcutAction> actions) {
+    // @GuardedBy(this)
+    private static void findDuplicateIds(String category, Collection<ShortcutAction> actions, Set<String> allActionIds, Set<String> duplicateIds) {
         for (ShortcutAction sa : actions) {
             String id = sa.getId();
             
@@ -132,38 +366,29 @@ public class KeymapModel {
             id = LayersBridge.getOrigActionClass(sa);
             if (id != null && !allActionIds.add(id)) {
                 duplicateIds.add(id);
-            }
+            } 
         }
     }
 
     /**
      * Returns List (ShortcutAction) of all global and editor actions.
      */
-    public Set<ShortcutAction> getActions(String category) {
-        if (!categoryToActions.containsKey (category)) {
-            Set<ShortcutAction> actions = new HashSet<ShortcutAction>();
-            for (KeymapManager m : getKeymapManagerInstances()) {
-                Set<ShortcutAction> s = m.getActions().get(category);
-                if (s != null) {
-                    actions = mergeActions(actions, s, m.getName());
-                }
+    public Set<ShortcutAction> getActions(final String category) {
+        AL al = ensureActionsLoaded();
+        Set<ShortcutAction>  actions = al.categoryToActions.get(category);
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.fine("Category '" + category + "' actions (" + actions.size() + "), KeymapModel=" + this + ":"); //NOI18N
+            for(ShortcutAction sa : actions) {
+                LOG.fine("    id='" + sa.getId() + "', did='" + sa.getDelegatingActionId() + ", " + s2s(sa)); //NOI18N
             }
-
-            categoryToActions.put(category, actions);
-            findDuplicateIds(category, actions);
-            if (LOG.isLoggable(Level.FINE)) {
-                LOG.fine("Category '" + category + "' actions (" + actions.size() + "), KeymapModel=" + this + ":"); //NOI18N
-                for(ShortcutAction sa : actions) {
-                    LOG.fine("    id='" + sa.getId() + "', did='" + sa.getDelegatingActionId() + ", " + s2s(sa)); //NOI18N
-                }
-                LOG.fine("---------------------------"); //NOI18N
-            }
+            LOG.fine("---------------------------"); //NOI18N
         }
-        return categoryToActions.get(category);
+        return actions;
     }
     
     boolean isDuplicateId(String id) {
-        if (!duplicateIds.contains(id)) {
+        AL al = ensureActionsLoaded();
+        if (!al.duplicateIds.contains(id)) {
             return false;
         }
         LOG.log(Level.WARNING, "Duplicate action ID used: {0}", new Object[] { id });
@@ -175,13 +400,11 @@ public class KeymapModel {
      * Clear action caches.
      */
     public void refreshActions () {
-        categoryToActions = new HashMap<String,Set<ShortcutAction>>();
-        duplicateIds = new HashSet<String>();
-        allActionIds = new HashSet<String>();
-        
-        sharedActions = new HashMap<ShortcutAction, CompoundAction>();
-        keyMaps = new HashMap<String, Map<ShortcutAction, Set<String>>>();
-        keyMapDefaults = new HashMap<String, Map<ShortcutAction, Set<String>>>();
+        synchronized (this) {
+            actionData = null;
+            profileData = null;
+            keymapData = null;
+        }
 
         for (KeymapManager m : getKeymapManagerInstances()) {
             m.refreshActions();
@@ -191,43 +414,107 @@ public class KeymapModel {
     // keymaps .................................................................
     
     public String getCurrentProfile () {
-        String profileName = null;
-        for (KeymapManager m : getKeymapManagerInstances()) {
-            String res = m.getCurrentProfile();
-            if (res != null) {
-                profileName = res;
-                break;
-            }
-        }
-        
-        if (profileName == null) {
-            profileName = "NetBeans"; //NOI18N
-        }
-        
-        Map<String, String> map = getProfilesMap();
-        for(Map.Entry<String, String> entry : map.entrySet()) {
-            if (entry.getValue().equals(profileName)) {
-                return entry.getKey();
-            }
-        }
-        
-        return profileName;
+        return ensureProfilesLoaded().currentProfile;
     }
     
-    public void setCurrentProfile (String profile) {
+    public void setCurrentProfile (String profileName) {
         String prev = getCurrentProfile();
-        if (!prev.equals(profile)) {
+        if (!prev.equals(profileName)) {
             LogRecord rec = new LogRecord(Level.CONFIG, "KEYMAP_SET_PROFILE"); // NOI18N
-            rec.setParameters(new Object[]{ profile, prev });
+            rec.setParameters(new Object[]{ profileName, prev });
             rec.setResourceBundle(NbBundle.getBundle(KeymapModel.class));
             rec.setResourceBundleName(KeymapModel.class.getPackage().getName() + ".Bundle");
             rec.setLoggerName(UI_LOG.getName());
             UI_LOG.log(rec);
         }
         
-        profile = displayNameToName(profile);
-        for (KeymapManager m : getKeymapManagerInstances()) {
-            m.setCurrentProfile(profile);
+        final String profile = displayNameToName(profileName);
+        
+        waitFinished(new Runnable() {
+            public void run() {
+                for (KeymapManager m : getKeymapManagerInstances()) {
+                    m.setCurrentProfile(profile);
+                }
+                profileData = null;
+            }
+        });
+    }
+    
+    /**
+     * Reverts an action in KeymapManagers, which support the revert
+     * operation. 
+     * 
+     * @param ac
+     * @throws IOException 
+     */
+    public void revertActions(final Collection<ShortcutAction> ac) throws IOException {
+        final IOException[] exc = new IOException[1];
+        
+        waitFinished(new Runnable() {
+            public void run() {
+                try {
+                    for (KeymapManager m : getKeymapManagerInstances()) {
+                        if (m instanceof KeymapManager.WithRevert) {
+                            try {
+                                ((KeymapManager.WithRevert)m).revertActions(getCurrentProfile(), ac);
+                            } catch (IOException ex) {
+                                exc[0] = ex;
+                                return;
+                            }
+                        } else {
+                            Map<ShortcutAction, Set<String>> actions = m.getDefaultKeymap(getCurrentProfile());
+                            Map<ShortcutAction, Set<String>> keymap = new HashMap<ShortcutAction, Set<String>>(m.getKeymap(getCurrentProfile()));
+                            for (ShortcutAction a : ac) {
+                                Set<String> defKeys = actions.get(a);
+                                if (defKeys == null) {
+                                    keymap.remove(a);
+                                } else {
+                                    keymap.put(a, defKeys);
+                                }
+                            }
+                            m.saveKeymap(getCurrentProfile(), keymap);
+                        }
+                    }
+                } finally {
+                    synchronized (KeymapModel.this) {
+                        keymapData = null;
+                    }
+                }
+            }
+        });
+        if (exc[0] != null) {
+            throw exc[0];
+        }
+    }
+    
+    public void revertProfile(final String profileName) throws IOException {
+        final IOException[] exc = new IOException[1];
+        
+        waitFinished(new Runnable() {
+            public void run() {
+                try {
+                    for (KeymapManager m : getKeymapManagerInstances()) {
+                        if (m instanceof KeymapManager.WithRevert) {
+                            try {
+                                ((KeymapManager.WithRevert)m).revertProfile(profileName);
+                            } catch (IOException ex) {
+                                exc[0] = ex;
+                                return;
+                            }
+                        } else {
+                            m.saveKeymap(profileName, m.getDefaultKeymap(profileName));
+                        }
+                    }
+                } finally {
+                    synchronized (KeymapModel.this) {
+                        profileData = null;
+                        keymapData = null;
+                    }
+                }
+            }
+        });
+        if (exc[0] != null) {
+            throw exc[0];
         }
     }
     
@@ -237,61 +524,24 @@ public class KeymapModel {
     
     public boolean isCustomProfile (String profile) {
         profile = displayNameToName(profile);
-        for (KeymapManager m : getKeymapManagerInstances()) {
-            boolean res = m.isCustomProfile(profile);
-            if (res) {
-                return true;
-            }
-        }
-        return false;
+        Boolean b = ensureProfilesLoaded().customProfiles.get(profile);
+        return b == null || b.booleanValue();
     }
-    
-    /**
-     * Map (String (profile) > Map (ShortcutAction > Set (String (shortcut AS-M)))).
-     */
-    private Map<String, Map<ShortcutAction,Set<String>>> keyMaps = 
-            new HashMap<String, Map<ShortcutAction,Set<String>>>();
     
     /**
      * Returns Map (ShortcutAction > Set (String (shortcut))).
      */
     public Map<ShortcutAction,Set<String>> getKeymap (String profile) {
         profile = displayNameToName(profile);
-        if (!keyMaps.containsKey(profile)) {
-            ensureActionsLoaded();
-            Map<ShortcutAction,Set<String>> res = new 
-                    HashMap<ShortcutAction,Set<String>>();
-            for (KeymapManager m : getKeymapManagerInstances()) {
-                Map<ShortcutAction,Set<String>> mm = m.getKeymap(profile);
-                res = mergeShortcuts(res, mm);
-            }
-            keyMaps.put(profile, res);
-        }
-        return keyMaps.get(profile);
+        return ensureKeymapsLoaded(profile).keyMaps.get(profile);
     }
-    
-    /**
-     * Map (String (keymap name) > Map (ShortcutAction > Set (String (shortcut AS-M)))).
-     */
-    private Map<String,Map<ShortcutAction,Set<String>>> keyMapDefaults = 
-            new HashMap<String,Map<ShortcutAction,Set<String>>>();
     
     /**
      * Returns Map (ShortcutAction > Set (String (shortcut))).
      */
     public Map<ShortcutAction, Set<String>> getKeymapDefaults(String profile) {
         profile = displayNameToName(profile);
-        if (!keyMapDefaults.containsKey (profile)) {
-            ensureActionsLoaded();
-            Map<ShortcutAction,Set<String>> res = new 
-                    HashMap<ShortcutAction,Set<String>>();
-            for (KeymapManager m : getKeymapManagerInstances()) {
-                Map<ShortcutAction,Set<String>> mm = m.getDefaultKeymap(profile);
-                res = mergeShortcuts(res, mm);
-            }
-            keyMapDefaults.put(profile, res);
-        }
-        return keyMapDefaults.get(profile);
+        return ensureKeymapsLoaded(profile).keyMapDefaults.get(profile);
     }
     
     public void deleteProfile(String profile) {
@@ -305,20 +555,31 @@ public class KeymapModel {
      * Defines new shortcuts for some actions in given keymap.
      * Map (ShortcutAction > Set (String (shortcut AS-M P)).
      */
-    public void changeKeymap(String profile, Map<ShortcutAction,Set<String>> actionToShortcuts) {
-        profile = displayNameToName(profile);
+    public void changeKeymap(String profileName, Map<ShortcutAction,Set<String>> actionToShortcuts) {
+        final String profile = displayNameToName(profileName);
         
         log ("changeKeymap.actionToShortcuts", actionToShortcuts.entrySet ());
-        
+
         // 1) mix changes with current keymap and put them to cached current shortcuts
-        Map<ShortcutAction,Set<String>> m = 
+        final Map<ShortcutAction,Set<String>> m = 
                 new HashMap<ShortcutAction,Set<String>>(getKeymap(profile));
         m.putAll (actionToShortcuts);
-        keyMaps.put(profile, m);
-        log ("changeKeymap.m", m.entrySet ());
-        for (KeymapManager km : getKeymapManagerInstances()) {
-            km.saveKeymap(profile, m);
-        }
+        
+        waitFinished(new Runnable() {
+            public void run() {
+                KL k = keymapData;
+                if (k != null) {
+                    Map newMap = new HashMap<String, Map<ShortcutAction,Set<String>>>();
+                    newMap.putAll(k.keyMaps);
+                    newMap.put(profile, m);
+                    k.keyMaps = newMap;
+                }
+                log ("changeKeymap.m", m.entrySet ());
+                for (KeymapManager km : getKeymapManagerInstances()) {
+                    km.saveKeymap(profile, m);
+                }
+            }
+        });
     }
     
     
@@ -334,15 +595,13 @@ public class KeymapModel {
         }
     }
     
-    private Map<ShortcutAction,CompoundAction> sharedActions = 
-            new HashMap<ShortcutAction,CompoundAction>();
-    
     /**
      * Merges editor actions and layers actions. Creates CompoundAction for
      * actions like Copy, registerred to both contexts.
      */
-    /* package */ Set<ShortcutAction> mergeActions (
-        Collection<ShortcutAction> res, Collection<ShortcutAction> adding, String name) {
+    /* package-test */ static Set<ShortcutAction> mergeActions (
+        Collection<ShortcutAction> res, Collection<ShortcutAction> adding, String name, 
+        Map<ShortcutAction, CompoundAction> sharedActions) {
         
         Set<ShortcutAction> result = new HashSet<ShortcutAction>();
         Map<String,ShortcutAction> idToAction = new HashMap<String,ShortcutAction>();
@@ -370,7 +629,7 @@ public class KeymapModel {
                 result.add(compoundAction);
                 sharedActions.put(origAction, compoundAction);
                 sharedActions.put(action, compoundAction);
-                result.add(compoundAction);
+                continue;
             }
             String delegatingId = action.getDelegatingActionId();
             if (idToAction.containsKey(delegatingId)) {
@@ -383,7 +642,28 @@ public class KeymapModel {
                 result.add(compoundAction);
                 sharedActions.put(origAction, compoundAction);
                 sharedActions.put(action, compoundAction);
-                result.add(compoundAction);
+                continue;
+            }
+            ShortcutAction old = idToAction.get(id);
+            if (old != null) {
+                if (old instanceof CompoundAction) {
+                    ((CompoundAction)old).addAction(name, action);
+                    sharedActions.put(action, (CompoundAction)old);
+                } else {
+                    idToAction.remove(id);
+                    ShortcutAction origAction = old;
+                    KeymapManager origActionKeymapManager = findOriginator(origAction);
+                    Map<String, ShortcutAction> ss = new HashMap<String, ShortcutAction>();
+                    ss.put(origActionKeymapManager.getName(), origAction);
+                    ss.put(name,action);
+                    CompoundAction compoundAction = new CompoundAction(ss);
+                    // must remove
+                    result.remove(origAction);
+                    result.add(compoundAction);
+                    sharedActions.put(origAction, compoundAction);
+                    sharedActions.put(action, compoundAction);
+                }
+                continue;
             }
             if (!sharedActions.containsKey(action)) {
                 result.add(action);
@@ -393,7 +673,7 @@ public class KeymapModel {
         return result;
     }
     
-    Collection<ShortcutAction> filterSameScope(Set<ShortcutAction> actions, ShortcutAction anchor) {
+    static Collection<ShortcutAction> filterSameScope(Set<ShortcutAction> actions, ShortcutAction anchor) {
         KeymapManager mgr = findOriginator(anchor);
         if (mgr == null) {
             return Collections.EMPTY_SET;
@@ -415,7 +695,7 @@ public class KeymapModel {
     /**
      * Tries to determince where the action originates.
      */
-    private KeymapManager findOriginator(ShortcutAction a) {
+    private static KeymapManager findOriginator(ShortcutAction a) {
         for (KeymapManager km : getKeymapManagerInstances()) {
             if (a.getKeymapManagerInstance(km.getName()) != null) {
                 return km;
@@ -424,9 +704,10 @@ public class KeymapModel {
         return null;
     }
     
-    private Map<ShortcutAction,Set<String>> mergeShortcuts (
+    private static Map<ShortcutAction,Set<String>> mergeShortcuts (
         Map<ShortcutAction,Set<String>> res,
-        Map<ShortcutAction,Set<String>> adding) {
+        Map<ShortcutAction,Set<String>> adding,
+        Map<ShortcutAction, CompoundAction> sharedActions) {
 
         for (ShortcutAction action : adding.keySet()) {
             Set<String> shortcuts = adding.get(action);
@@ -445,10 +726,14 @@ public class KeymapModel {
         return res;
     }
 
-    private void ensureActionsLoaded() {
-        for(String c : getActionCategories()) {
-            getActions(c);
+    private AL ensureActionsLoaded() {
+        AL al = actionData;
+        if (al != null) {
+            return al;
         }
+        al = new AL();
+        waitFinished(al);
+        return al.current;
     }
 
     private String displayNameToName(String keymapDisplayName) {
@@ -456,21 +741,22 @@ public class KeymapModel {
         return name == null ? keymapDisplayName : name;
     }
 
-    private Map<String, String> profilesMap;
-    private Map<String, String> getProfilesMap() {
-        if (profilesMap == null) {
-            for (KeymapManager m : getKeymapManagerInstances()) {
-                List<String> l = m.getProfiles();
-                if (l != null) {
-                    profilesMap = new HashMap<String, String>();
-                    for(String name : l) {
-                        profilesMap.put(m.getProfileDisplayName(name), name);
-                    }
-                    break;
-                }
-            }
+    private void waitFinished(Runnable r) {
+        synchronized (this) {
+            r.run();
         }
-        return profilesMap;
+        /*
+          if RP is ever needed to initialize the actions
+        if (RP.isRequestProcessorThread()) {
+            r.run(); 
+        } else {
+            RP.post(r).waitFinished();
+        }
+        */
+    }
+    
+    private Map<String, String> getProfilesMap() {
+        return ensureProfilesLoaded().profilesMap;
     }
     
     public KeymapModel() {
@@ -505,9 +791,6 @@ public class KeymapModel {
 
         // HACK - loads all actions. othervise during second open of Options
         // Dialog (after cancel) map of sharedActions is not initialized.
-        Iterator it = getActionCategories ().iterator ();
-        while (it.hasNext ())
-            getActions ((String) it.next ());
     }
 
     private static String s2s(Object o) {

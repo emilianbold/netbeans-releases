@@ -488,11 +488,14 @@ public class CommonTestsCfgOfCreate extends SelfResizingPanel implements ChangeL
      * This method is called from within the constructor to initialize the form.
      */
     private void initComponents() {
-        setLayout(new BorderLayout(0, 12));
+	JPanel jPanel = new JPanel();
+        jPanel.setLayout(new BorderLayout(0, 12));
         
-        add(createNameAndLocationPanel(), BorderLayout.NORTH);
-        add(createMessagePanel(), BorderLayout.CENTER);
-        add(createCodeGenPanel(), BorderLayout.SOUTH);
+        jPanel.add(createNameAndLocationPanel(), BorderLayout.NORTH);
+        jPanel.add(createMessagePanel(), BorderLayout.CENTER);
+        jPanel.add(createCodeGenPanel(), BorderLayout.SOUTH);
+
+	add(jPanel);
     }
     
     /**

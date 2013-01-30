@@ -74,6 +74,7 @@ public final class Report {
     private int failures;
     private int errors;
     private int pending;
+    private int skippedNum;
     private long elapsedTimeMillis;
     private int detectedPassedTests;
     private Collection<Testcase> tests;
@@ -106,6 +107,7 @@ public final class Report {
         Project prj = project.get();
         if (prj == null) {
             prj = FileOwnerQuery.getOwner(projectURI);
+	    assert prj != null : "Project was null for projectURI: " + projectURI; //NOI18N
             project = new WeakReference<Project>(prj);
         }
         return prj;
@@ -118,7 +120,7 @@ public final class Report {
         //PENDING - should be synchronized
         tests.add(test);
         
-        if (!Status.isFailureOrError(test.getStatus())) {
+        if (!Status.isFailureOrError(test.getStatus()) && !Status.isSkipped(test.getStatus())) {
             detectedPassedTests++;
         }
     }
@@ -139,13 +141,14 @@ public final class Report {
             this.tests = report.tests;
             this.completed = report.completed;
             this.skipped = report.skipped;
+            this.skippedNum = report.skippedNum;
         }
     }
     
     public Status getStatus() {
         if (aborted){
             return Status.ABORTED;
-        } else if (skipped) {
+        } else if (skippedNum > 0) {
             return Status.SKIPPED;
         } else if (errors > 0) {
             return Status.ERROR;
@@ -244,6 +247,20 @@ public final class Report {
      */
     public void setPassedWithErrors(int passedWithErrors) {
         this.passedWithErrors = passedWithErrors;
+    }
+
+    /**
+     * @return the the number of skipped tests
+     */
+    public int getSkipped() {
+        return skippedNum;
+    }
+
+    /**
+     * @param skipped the number of skipped tests to set
+     */
+    public void setSkipped(int skipped) {
+        this.skippedNum = skipped;
     }
 
     /**
@@ -359,6 +376,7 @@ public final class Report {
         statusMask |= getPassedWithErrors() > 0 ? Status.PASSEDWITHERRORS.getBitMask() : 0;
         statusMask |= getFailures() > 0 ? Status.FAILED.getBitMask() : 0;
         statusMask |= getErrors() > 0 ? Status.ERROR.getBitMask() : 0;
+        statusMask |= getSkipped() > 0 ? Status.SKIPPED.getBitMask() : 0;
         return statusMask;
     }
 }

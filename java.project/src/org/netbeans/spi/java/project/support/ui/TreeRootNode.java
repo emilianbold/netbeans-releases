@@ -171,7 +171,7 @@ final class TreeRootNode extends FilterNode implements PropertyChangeListener {
     }
 
     /** Copied from PhysicalView and PackageRootNode. */
-    public static final class PathFinder {
+    public static final class PathFinder implements org.netbeans.spi.project.ui.PathFinder {
         
         private final SourceGroup g;
         private final boolean reduced;
@@ -181,6 +181,7 @@ final class TreeRootNode extends FilterNode implements PropertyChangeListener {
             this.reduced = reduced;
         }
         
+        @Override
         public Node findPath(Node rootNode, Object o) {
             FileObject fo;
             if (o instanceof FileObject) {

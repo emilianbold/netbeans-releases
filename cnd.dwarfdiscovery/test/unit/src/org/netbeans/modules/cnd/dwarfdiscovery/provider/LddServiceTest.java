@@ -166,6 +166,10 @@ public class LddServiceTest extends NativeExecutionBaseTestCase {
         try {
             res.add(NativeExecutionTestSupport.getRcFile().get("jdk.paths", "java1_5"));
             res.add(NativeExecutionTestSupport.getRcFile().get("jdk.paths", "java1_6"));
+            String path = NativeExecutionTestSupport.getRcFile().get("jdk.paths", "java1_7");
+            if (path != null) {
+                res.add(path);
+            }
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         } catch (FormatException ex) {

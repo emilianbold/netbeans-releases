@@ -69,4 +69,15 @@ public abstract class VCSVisibilityQuery {
     protected final void fireVisibilityChanged() {
         Utils.fireVisibilityChanged();
     }
+    
+    /**
+     * Notify a visibility change
+     * 
+     * @param File[] the files with a changed visibility
+     * @since 1.37
+     */
+    protected final void fireVisibilityChanged(File... files) {
+        Utils.fireVisibilityChanged(files);
+    }
+    
 }

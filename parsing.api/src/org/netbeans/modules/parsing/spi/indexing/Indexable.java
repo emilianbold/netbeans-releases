@@ -45,10 +45,12 @@ package org.netbeans.modules.parsing.spi.indexing;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Map;
+import java.util.concurrent.Callable;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.parsing.impl.indexing.CancelRequest;
+import org.netbeans.modules.parsing.impl.indexing.FileObjectProvider;
 import org.netbeans.modules.parsing.impl.indexing.IndexFactoryImpl;
 import org.netbeans.modules.parsing.impl.indexing.IndexableImpl;
 import org.netbeans.modules.parsing.impl.indexing.LogContext;
@@ -58,6 +60,7 @@ import org.netbeans.modules.parsing.impl.indexing.SuspendSupport.SuspendStatusIm
 import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexingSupport;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.URLMapper;
 import org.openide.util.Parameters;
 
 
@@ -186,6 +189,35 @@ public final class Indexable {
                     cancelRequest,
                     logContext);
         }
+    
+        @Override
+        @NonNull
+        public Context createContext(
+                @NonNull final Callable<FileObject> indexFolderFactory,
+                @NonNull final URL rootURL,
+                @NonNull final String indexerName,
+                int indexerVersion,
+                @NullAllowed final IndexFactoryImpl factory,
+                boolean followUpJob,
+                boolean checkForEditorModifications,
+                boolean sourceForBinaryRoot,
+                @NonNull final SuspendStatus suspendedStatus,
+                @NullAllowed final CancelRequest cancelRequest,
+                @NullAllowed final LogContext logContext) throws IOException {
+            return new Context(
+                indexFolderFactory,
+                rootURL,
+                indexerName,
+                indexerVersion,
+                factory,
+                followUpJob,
+                checkForEditorModifications,
+                sourceForBinaryRoot,
+                suspendedStatus,
+                cancelRequest,
+                logContext);
+        }
+
 
         @NonNull
         @Override
@@ -301,6 +333,21 @@ public final class Indexable {
                 @NonNull final Context context,
                 @NonNull final String propName) {
             return context.getProperty(propName);
+        }
+
+        @Override
+        public boolean isTypeOf (
+                @NonNull final Indexable indexable,
+                @NonNull final String mimeType) {
+            return indexable.delegate.isTypeOf(mimeType);
+        }
+
+        @Override
+        public FileObject getFileObject(
+                @NonNull final Indexable indexable) {
+            return indexable.delegate instanceof FileObjectProvider ?
+                ((FileObjectProvider)indexable.delegate).getFileObject() :
+                URLMapper.findFileObject(indexable.getURL());
         }
     }
 

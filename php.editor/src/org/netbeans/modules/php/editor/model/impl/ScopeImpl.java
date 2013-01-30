@@ -81,7 +81,7 @@ abstract class ScopeImpl extends ModelElementImpl implements Scope {
     ScopeImpl(Scope inScope, String name, Union2<String/*url*/, FileObject> file,
             OffsetRange offsetRange, PhpElementKind kind) {
         super(inScope, name, file, offsetRange, kind);
-        assert isScopeKind(kind): kind.toString();
+        assert isScopeKind(kind) : kind.toString();
     }
 
     ScopeImpl(Scope inScope, String name, Union2<String/*url*/, FileObject> file,
@@ -92,6 +92,7 @@ abstract class ScopeImpl extends ModelElementImpl implements Scope {
     }
 
     private static boolean isScopeKind(PhpElementKind kind) {
+        boolean result;
         switch (kind) {
             case PROGRAM:
             case NAMESPACE_DECLARATION:
@@ -104,9 +105,12 @@ abstract class ScopeImpl extends ModelElementImpl implements Scope {
             case FIELD:
             case USE_STATEMENT:
             case TRAIT:
-                return true;
+                result = true;
+                break;
+            default:
+                result = false;
         }
-        return false;
+        return result;
     }
 
     @Override
@@ -131,7 +135,7 @@ abstract class ScopeImpl extends ModelElementImpl implements Scope {
         return retval;
     }
 
-    static interface ElementFilter<T extends ModelElement> {
+    interface ElementFilter<T extends ModelElement> {
         boolean isAccepted(ModelElement element);
     }
 
@@ -145,6 +149,7 @@ abstract class ScopeImpl extends ModelElementImpl implements Scope {
         this.blockRange = new OffsetRange(program.getStartOffset(), program.getEndOffset());
     }
 
+    @Override
     public OffsetRange getBlockRange() {
         //assert blockRange != null;
         return blockRange;

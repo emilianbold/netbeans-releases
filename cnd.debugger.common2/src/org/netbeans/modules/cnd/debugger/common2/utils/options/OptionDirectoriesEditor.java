@@ -74,11 +74,13 @@ class OptionDirectoriesEditor extends PropertyEditorSupport
     }
 
     // interface PropertyEditor
+    @Override
     public void setAsText(String text) {
 	ops.setValue(text); // from PropertyEditorSupport
     }
 
     // interface PropertyEditor
+    @Override
     public String getAsText() {
         return (String) getValue();
     }
@@ -107,16 +109,19 @@ class OptionDirectoriesEditor extends PropertyEditorSupport
     }
 
     // interface PropertyEditor
+    @Override
     public boolean supportsCustomEditor() {
 	return true;
     }
 
     // interface PropertyEditor
+    @Override
     public java.awt.Component getCustomEditor() {
         return new DirectoriesChooser(this, env, baseDir, (String) ops.getValue());
     }
 
     // interface ExPropertyEditor
+    @Override
     public void attachEnv(PropertyEnv env) {
 	this.env = env;
     }
@@ -203,7 +208,7 @@ class OptionDirectoriesEditor extends PropertyEditorSupport
             if (notifyDescriptor.getValue() != NotifyDescriptor.OK_OPTION) {
                 return;
             }
-            String newS = notifyDescriptor.getInputText();
+            String newS = notifyDescriptor.getInputText().trim();
             replaceElement(o, newS, i);
         }
         

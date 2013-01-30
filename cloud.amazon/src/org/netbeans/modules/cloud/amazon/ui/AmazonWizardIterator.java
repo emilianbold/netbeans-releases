@@ -77,8 +77,9 @@ public class AmazonWizardIterator implements WizardDescriptor.InstantiatingItera
         assert key != null;
         String name = (String)wizard.getProperty(PROP_DISPLAY_NAME);
         assert name != null;
+        String regionUrl = (String)wizard.getProperty(AmazonWizardPanel.REGION);
         
-        AmazonInstanceManager.getDefault().add(new AmazonInstance(name, keyId, key));
+        AmazonInstanceManager.getDefault().add(new AmazonInstance(name, keyId, key, regionUrl));
         
         return Collections.emptySet();
     }

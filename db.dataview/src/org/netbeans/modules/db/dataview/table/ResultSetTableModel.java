@@ -43,6 +43,7 @@ Other names may be trademarks of their respective owners.
  */
 package org.netbeans.modules.db.dataview.table;
 
+import java.math.BigDecimal;
 import java.sql.Blob;
 import java.sql.Clob;
 import java.sql.Date;
@@ -64,7 +65,7 @@ public class ResultSetTableModel extends DefaultTableModel {
     private Class[] collumnClasses;
     protected ResultSetJXTable table;
 
-    public static Class getTypeClass(DBColumn col) {
+    public static Class<? extends Object> getTypeClass(DBColumn col) {
         int colType = col.getJdbcType();
 
         if (colType == Types.BIT && col.getPrecision() <= 1) {
@@ -82,15 +83,19 @@ public class ResultSetTableModel extends DefaultTableModel {
             case -100:
                 return Timestamp.class;
             case Types.BIGINT:
+                return Long.class;
             case Types.DOUBLE:
+                return Double.class;
             case Types.FLOAT:
             case Types.REAL:
+                return Float.class;
             case Types.DECIMAL:
             case Types.NUMERIC:
+                return BigDecimal.class;
             case Types.INTEGER:
             case Types.SMALLINT:
             case Types.TINYINT:
-                return Number.class;
+                return Integer.class;
 
             case Types.CHAR:
             case Types.VARCHAR:
@@ -116,6 +121,7 @@ public class ResultSetTableModel extends DefaultTableModel {
         }
     }
 
+    @SuppressWarnings("rawtypes")
     public ResultSetTableModel(ResultSetJXTable table) {
         super();
         this.table = table;
@@ -155,7 +161,8 @@ public class ResultSetTableModel extends DefaultTableModel {
     }
 
     @Override
-    public Class getColumnClass(int columnIndex) {
+    @SuppressWarnings("unchecked")
+    public Class<? extends Object> getColumnClass(int columnIndex) {
         if (collumnClasses[columnIndex] == null) {
             return super.getColumnClass(columnIndex);
         } else {

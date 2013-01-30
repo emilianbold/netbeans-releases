@@ -1,0 +1,76 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--       
+*     Copyright © 1997, 2012, Oracle and/or its affiliates. All rights reserved. 
+*     Use is subject to license terms.
+-->
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>Running an HTML5 Application</title>
+<link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+<h2>Running an HTML5 Application</h2>
+<p> <small><a href="#seealso">See Also</a>&nbsp; </small> 
+<p>An HTML5 application project is typically run in a browser on your desktop or a mobile device.
+    When you run an HTML5 application on your local system for testing or debugging 
+    you do not need to compile or deploy the application to a server because the JavaScript engine in the browser 
+    generally handles any scripts in the application.
+    To run the application you only need to specify the browser and then run the application.</p>
+
+<h3>Specifying the browser</h3>
+<p>When you want to run an HTML5 application or file from the IDE you need to specify
+the target browser. The IDE enables you to easily select any of the browsers that
+are installed on your local system or you can select the embedded WebKit browser.</p>
+
+<p>You can specify the target browser for the application in the following ways.</p>
+<ul>
+    <li>Select the application in the Projects window and then select the browser from the dropdown list in the Toolbar.</li>
+    <li>Open the Project Properties window and select the browser in the Run panel of the window.</li>
+</ul>
+<ul class="note">
+    <li>If you want to debug an HTML5 application or file, or synchronize the IDE with your browser to inspect 
+        your code, you should select either Chrome with NetBeans Integration or Embedded WebKit Browser 
+        as the target browser.</li>
+</ul>
+
+<h3>Running an application</h3>
+<p>After you specify the browser, you can run the application in the following ways.</p>
+<ul>
+    <li>Right-click the project node in the Projects window and choose Run in the popup menu.</li>
+    <li>Select the application in the Projects window and then click Run in the Toolbar
+    or choose Run &gt; Run Project (F6) in the main menu.</li>
+</ul>
+<p>When you run an application the IDE opens the application in the selected browser.
+You can run an application using the internal web server or specify an external server.
+You can set the web server in the Run category in the Project Properties window of the project.</p>
+
+<ul class="note">
+    <li>If more than one project is open you can specify one of the projects as the Main Project.
+    After you specify the project as the Main Project, the F6 keyboard shortcut
+    will always run the Main Project regardless of the project that is selected in the Projects window.</li>
+</ul>
+
+<h3>Running a file</h3>
+<p>You can run an HTML file in an HTML5 application in the following ways.
+<ul>
+    <li>Right-click the HTML file in the Projects window and choose Run File from the popup menu (Shift-F6). </li>
+    <li>If the HTML file is open in the editor, you can right-click in the file and choose Run File (Shift-F6)
+        from the popup menu or click the Run File button in the Selection tab of the CSS Styles window.</li> 
+</ul>
+<p>When you run a file the IDE opens the file in the target browser for the application.</p>
+
+
+<dl>
+    <dt><a name="seealso">See Also</a></dt>
+    <dd><a href="../javascript/js-debug.html">Debugging an HTML5 Application Project</a></dd>
+    <dd><a href="html5-chrome.html">Integrating an HTML5 Project with the Browser</a></dd>
+    <dd><a href="html5-inspect.html">Inspecting HTML5 Code with the Browser</a></dd>
+    <dd><a href="html5-preview.html">Changing Browser Screen Sizes</a></dd>
+</dl>
+<hr><small><a href="../credits.html">Legal Notices</a></small>
+
+<table border="0" cellpadding="50">
+<tr><td>&nbsp;</td></tr>
+</table></body>
+</html>

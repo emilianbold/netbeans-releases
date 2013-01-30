@@ -103,6 +103,7 @@ import org.netbeans.modules.classfile.Method;
 import org.netbeans.modules.classfile.NestedElementValue;
 import org.netbeans.modules.classfile.Variable;
 import org.netbeans.modules.classfile.Parameter;
+import org.netbeans.modules.java.source.ElementHandleAccessor;
 import org.netbeans.modules.java.source.indexing.JavaIndex;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl.UsageType;
@@ -295,6 +296,8 @@ public class BinaryAnalyser {
                 }
                 cont = new FolderContinuation (todo, path, ctx);
                 return cont.execute();
+            } else if (!rootFile.exists()) {
+                return deleted();
             }
         } else {
             final FileObject rootFo =  URLMapper.findFileObject(root);
@@ -323,7 +326,7 @@ public class BinaryAnalyser {
                     final String[] parts = line.split("=");    //NOI18N
                     if (parts.length == 2) {
                         try {
-                            final ElementHandle<TypeElement> handle = ElementHandle.createTypeElementHandle(ElementKind.CLASS, parts[0]);
+                            final ElementHandle<TypeElement> handle = ElementHandleAccessor.getInstance().create(ElementKind.OTHER, parts[0]);
                             final Long crc = Long.parseLong(parts[1]);
                             result.add(Pair.of(handle, crc));
                         } catch (NumberFormatException e) {
@@ -874,7 +877,7 @@ public class BinaryAnalyser {
                 }
 
                 if ( !ze.isDirectory()  && accepts(ze.getName()))  {
-                    cont.report (ElementHandle.createTypeElementHandle(ElementKind.CLASS, FileObjects.convertFolder2Package(FileObjects.stripExtension(ze.getName()))),ze.getCrc());
+                    cont.report (ElementHandleAccessor.getInstance().create(ElementKind.OTHER, FileObjects.convertFolder2Package(FileObjects.stripExtension(ze.getName()))),ze.getCrc());
                     InputStream in = new BufferedInputStream (zipFile.getInputStream( ze ));
                     try {
                         analyse(in);
@@ -940,7 +943,7 @@ public class BinaryAnalyser {
                     String filePath = file.getAbsolutePath();
                     long fileMTime = file.lastModified();
                     int dotIndex = filePath.lastIndexOf('.');
-                    int slashIndex = filePath.lastIndexOf('/');
+                    int slashIndex = filePath.lastIndexOf(File.separatorChar);
                     int endPos;
                     if (dotIndex>slashIndex) {
                         endPos = dotIndex;
@@ -948,8 +951,8 @@ public class BinaryAnalyser {
                     else {
                         endPos = filePath.length();
                     }
-                    String relativePath = FileObjects.convertFolder2Package (filePath.substring(rootPath.length(), endPos));
-                    cont.report(ElementHandle.createTypeElementHandle(ElementKind.CLASS, relativePath), fileMTime);
+                    String relativePath = FileObjects.convertFolder2Package (filePath.substring(rootPath.length(), endPos), File.separatorChar);
+                    cont.report(ElementHandleAccessor.getInstance().create(ElementKind.OTHER, relativePath), fileMTime);
                     if (!isUpToDate (relativePath, fileMTime)) {
                         markChanged();
                         toDelete.add(Pair.<String,String>of (relativePath,null));
@@ -982,6 +985,11 @@ public class BinaryAnalyser {
                     return Result.CLOSED;
                 }
             }
+            
+            for (String deleted : getTimeStamps().second) {
+                delete(deleted);
+                markChanged();
+            }
             return Result.FINISHED;
         }
 
@@ -1011,7 +1019,7 @@ public class BinaryAnalyser {
                 FileObject fo = todo.nextElement();
                 if (accepts(fo.getName())) {
                     final String rp = FileObjects.stripExtension(FileUtil.getRelativePath(root, fo));
-                    cont.report(ElementHandle.createTypeElementHandle(ElementKind.CLASS, FileObjects.convertFolder2Package(rp)), 0L);
+                    cont.report(ElementHandleAccessor.getInstance().create(ElementKind.OTHER, FileObjects.convertFolder2Package(rp)), 0L);
                     InputStream in = new BufferedInputStream (fo.getInputStream());
                     try {
                         analyse (in);

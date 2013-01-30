@@ -43,7 +43,6 @@
  */
 package org.netbeans.modules.uihandler.interactive;
 
-import org.netbeans.modules.uihandler.*;
 import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Component;
@@ -67,30 +66,33 @@ import org.openide.awt.Actions;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
-import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 import org.openide.util.actions.CallableSystemAction;
 
 public final class SubmitAction extends CallableSystemAction {
     
+    @Override
     public void performAction() {
         Controller.getDefault().submit();
     }
     
     
+    @Override
     public String getName() {
         return NbBundle.getMessage(SubmitAction.class, "CTL_SubmitAction");
     }
     
+    @Override
     protected String iconResource() {
         return "org/netbeans/modules/uihandler/tachometer.png";
     }
     
+    @Override
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
     
+    @Override
     protected boolean asynchronous() {
         return false;
     }
@@ -107,7 +109,6 @@ public final class SubmitAction extends CallableSystemAction {
         private ImageIcon tacho;
         private ImageIcon tachoOk;
         private Timer timer;
-        private RequestProcessor logRecordsCountRP = new RequestProcessor("Log Records Count", 1);
         
         public NrButton(Action action) {
             Actions.connect(this, action);
@@ -122,22 +123,30 @@ public final class SubmitAction extends CallableSystemAction {
             setToolTipText(NbBundle.getMessage(SubmitAction.class, "CTL_SubmitAction"));
         }
     
+        @Override
         public void propertyChange(PropertyChangeEvent arg0) {
             SwingUtilities.invokeLater(this);
         }
         
+        @Override
         public void run() {
             setIcon(tachoOk);
             setEnabled(true);
             timer.restart();
             
-            setToolTipText(NbBundle.getMessage(
-                SubmitAction.class, 
-                "MSG_SubmitAction", 
-                Controller.getDefault().getLogRecordsCount()
-            )); // NOI18N
+            LRUtil.invokeWithLogRecordsCount(new LRUtil.LRRun() {
+                @Override
+                public void run(int logRecordsCount) {
+                    setToolTipText(NbBundle.getMessage(
+                        SubmitAction.class,
+                        "MSG_SubmitAction",
+                        logRecordsCount
+                    )); // NOI18N
+                }
+            });
         }
     
+        @Override
         public void actionPerformed(ActionEvent arg0) {
             setIcon(tacho);
             timer.stop();
@@ -154,16 +163,10 @@ public final class SubmitAction extends CallableSystemAction {
         
         @Override
         public void setIcon(final Icon original) {
-            logRecordsCountRP.post(new Runnable() {
+            LRUtil.invokeWithLogRecordsCount(new LRUtil.LRRun() {
                 @Override
-                public void run() {
-                    final int logRecordsCount = Controller.getDefault().getLogRecordsCount();
-                    SwingUtilities.invokeLater(new Runnable() {
-                        @Override
-                        public void run() {
-                            setIcon(original, logRecordsCount);
-                        }
-                    });
+                public void run(int logRecordsCount) {
+                    setIcon(original, logRecordsCount);
                 }
             });
         }

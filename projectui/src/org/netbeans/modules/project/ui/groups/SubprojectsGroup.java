@@ -50,6 +50,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -98,7 +99,9 @@ public class SubprojectsGroup extends Group {
         return n;
     }
 
+    @Override
     protected void findProjects(Set<Project> projects, ProgressHandle h, int start, int end) {
+        assert !SwingUtilities.isEventDispatchThread();
         Project p = projectForPath(prefs().get(KEY_PATH, null));
         if (p != null) {
             visitSubprojects(p, projects, h, new int[] {start, end});
@@ -131,6 +134,7 @@ public class SubprojectsGroup extends Group {
         return null;
     }
 
+    @Override
     public GroupEditPanel createPropertiesPanel() {
         return new SubprojectsGroupEditPanel(this);
     }

@@ -46,12 +46,15 @@ package org.openide.explorer.propertysheet;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.lang.reflect.InvocationTargetException;
 import org.netbeans.junit.NbTestCase;
 import org.openide.explorer.propertysheet.ProxyNode.DifferentValuesException;
 import org.openide.nodes.AbstractNode;
+import org.openide.nodes.BeanNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.nodes.Node.Property;
 import org.openide.nodes.NodeEvent;
 import org.openide.nodes.NodeListener;
 import org.openide.nodes.NodeMemberEvent;
@@ -183,6 +186,95 @@ public class ProxyNodeTest extends NbTestCase {
         a.fireCookies();
         nodeL.assertFired("One node firing prop cookies should cause an event to node listeners", Node.PROP_COOKIE);
         pcl.assertNoEvent("No event should have been fired to a property change listener on a cookies change");
+    }
+    
+    public void testClashInNameProperties() throws Exception {
+        NBean nb = new NBean();
+        BeanNode n = new BeanNode(nb);
+        ProxyNode pn = new ProxyNode(n);
+        
+        Property<?> prop = findProperty(pn, "name");
+        assertEquals("Name", "name", prop.getName());
+        assertEquals("Value", 1, prop.getValue());
+        
+        nb.setName(10);
+        
+        assertEquals("Value", 10, prop.getValue());
+    }
+
+    public void testNullInPropertySets() throws Exception {
+        class MN extends AbstractNode {
+            public MN() {
+                super(Children.LEAF);
+                this.ps = new PropertySet[]{new PropertySet() {
+                    @Override
+                    public Property<?>[] getProperties() {
+                        final Property[] arr = new Property[1];
+                        arr[0] = new PropertySupport("name", String.class, "my name", "my real name", true, false) {
+                            @Override
+                            public Object getValue() throws IllegalAccessException, InvocationTargetException {
+                                return "Name";
+                            }
+                            
+                            @Override
+                            public void setValue(Object val) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+                                throw new IllegalAccessException();
+                            }
+                        };
+                        return arr;
+                    }
+                }};
+            }
+            private PropertySet[] ps;
+            @Override
+            public PropertySet[] getPropertySets() {
+                return ps;
+            }
+            
+        }
+        MN n = new MN();
+        ProxyNode pn = new ProxyNode(n);
+        
+        Property<?> prop = findProperty(pn, "name");
+        assertEquals("Name", "name", prop.getName());
+        assertEquals("Value", "Name", prop.getValue());
+    }
+
+    private static Property<?> findProperty(ProxyNode pn, String name) {
+        for (Node.PropertySet propertySet : pn.getPropertySets()) {
+            for (Property<?> property : propertySet.getProperties()) {
+                if (property.getName().equals(name)) {
+                    return property;
+                }
+            }
+        }
+        throw new IllegalStateException("Not found");
+    }
+    
+    public static final class NBean {
+
+        private int name = 1;
+        public static final String PROP_NAME = "name";
+
+        public int getName() {
+            return name;
+        }
+
+        public void setName(int name) {
+            int oldName = this.name;
+            this.name = name;
+            propertyChangeSupport.firePropertyChange(PROP_NAME, oldName, name);
+        }
+        private transient final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
+
+        public void addPropertyChangeListener(PropertyChangeListener listener) {
+            propertyChangeSupport.addPropertyChangeListener(listener);
+        }
+
+        public void removePropertyChangeListener(PropertyChangeListener listener) {
+            propertyChangeSupport.removePropertyChangeListener(listener);
+        }
+        
     }
     
     

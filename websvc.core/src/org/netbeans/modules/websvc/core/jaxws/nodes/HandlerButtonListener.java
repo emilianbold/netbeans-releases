@@ -54,6 +54,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
@@ -110,6 +111,8 @@ public class HandlerButtonListener implements ActionListener{
         this.service = service;
         this.isNew = isNew;
     }
+    
+    @org.netbeans.api.annotations.common.SuppressWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE")
     public void actionPerformed(ActionEvent evt) {
         if(evt.getSource() == NotifyDescriptor.OK_OPTION) {
             if(!panel.isChanged()) return;
@@ -305,14 +308,25 @@ public class HandlerButtonListener implements ActionListener{
         // read the config from resource first
         StringBuffer sb = new StringBuffer();
         String lineSep = System.getProperty("line.separator");//NOI18N
-        BufferedReader br = new BufferedReader(new InputStreamReader(is));
+        BufferedReader br = null;
+        try {
+            new BufferedReader(new InputStreamReader(is,
+                Charset.forName("UTF-8")));
         String line = br.readLine();
-        while (line != null) {
-            sb.append(line);
-            sb.append(lineSep);
-            line = br.readLine();
+            while (line != null) {
+                sb.append(line);
+                sb.append(lineSep);
+                line = br.readLine();
+            }
         }
-        br.close();
+        finally {
+            if ( br!= null ){
+                br.close();
+            }
+            else {
+                is.close();
+            }
+        }
         return sb.toString();
     }
 }

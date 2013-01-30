@@ -401,33 +401,28 @@ public final class QueryTopComponent extends TopComponent
             setSaved();
         } else if(evt.getPropertyName().equals(QueryProvider.EVENT_QUERY_REMOVED)) {
             if(query != null && query.isData(evt.getSource())) {
-                SwingUtilities.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        close();
-                    }
-                });
+                // removed
+                closeInAwt();
             }
         } else if(evt.getPropertyName().equals(Repository.EVENT_QUERY_LIST_CHANGED)) {
             updateSavedQueries();
         } else if(evt.getPropertyName().equals(RepositoryRegistry.EVENT_REPOSITORIES_CHANGED)) {
             if(query != null) {
-                Object cNew = evt.getNewValue();
                 Object cOld = evt.getOldValue();
-                if(cNew != null && cOld != null &&
-                   cNew instanceof Collection &&
+                if(cOld != null &&
                    cOld instanceof Collection)
                 {
                     RepositoryImpl thisRepo = query.getRepositoryImpl();
-                    if(contains((Collection) cOld, thisRepo) && !contains((Collection) cNew, thisRepo)) {
+                    if(contains((Collection) cOld, thisRepo)) {
                         // removed
-                        SwingUtilities.invokeLater(new Runnable() {
-                            @Override
-                            public void run() {
-                                close();
-                            }
-                        });
-                        return;
+                        closeInAwt();
+                    }
+                } else if(cOld == null) {
+                    RepositoryImpl thisRepo = query.getRepositoryImpl();
+                    Collection<RepositoryImpl> knownRepos = RepositoryRegistry.getInstance().getKnownRepositories(true);
+                    if(!contains((Collection) knownRepos, thisRepo)) {
+                        // removed
+                        closeInAwt();
                     }
                 }
             }
@@ -474,6 +469,15 @@ public final class QueryTopComponent extends TopComponent
     @Override
     public void focusLost(FocusEvent e) {
         // do nothing
+    }
+
+    private void closeInAwt() {
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                close();
+            }
+        });
     }
 
     final static class ResolvableHelper implements Serializable {

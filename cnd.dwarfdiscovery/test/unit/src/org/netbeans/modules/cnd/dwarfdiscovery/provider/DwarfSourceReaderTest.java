@@ -58,7 +58,7 @@ import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
 import org.netbeans.modules.cnd.discovery.api.ItemProperties;
 import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
 import org.netbeans.modules.cnd.dwarfdiscovery.provider.BaseDwarfProvider.GrepEntry;
-import org.netbeans.modules.cnd.dwarfdump.CompilationUnit;
+import org.netbeans.modules.cnd.dwarfdump.CompilationUnitInterface;
 import org.netbeans.modules.cnd.dwarfdump.CompileLineService;
 import org.netbeans.modules.cnd.dwarfdump.CompileLineService.SourceFile;
 import org.netbeans.modules.cnd.dwarfdump.Dwarf;
@@ -121,7 +121,7 @@ public class DwarfSourceReaderTest extends NbTestCase {
         assertEquals(source.getUserInludePaths().get(0), "/export1/sside/pomona/java_cp/wsb131/proto/root_i386/usr/include");
         printInclidePaths(source);
         List<SourceFile> list = CompileLineService.getSourceFileProperties(getDataDir().getAbsolutePath()+"/org/netbeans/modules/cnd/dwarfdiscovery/provider/echo");
-        assertTrue(list.size()==1);
+        assertEquals(1, list.size());
         SourceFile sf = list.get(0);
         assertEquals(sf.getCompileDir(), "/export1/sside/pomona/java_cp/wsb131/usr/src/cmd/echo");
         assertEquals(sf.getSource(), "echo.c");
@@ -131,7 +131,14 @@ public class DwarfSourceReaderTest extends NbTestCase {
         assertTrue(compareMap(map, golden));
         assertEquals(sf.getUserPaths().get(0), "/export1/sside/pomona/java_cp/wsb131/proto/root_i386/usr/include");
         list = CompileLineService.getSourceFolderProperties(getDataDir().getAbsolutePath());
-        assertTrue(list.size()==2);
+        //assertEquals(8, list.size());
+        int i = 0;
+        for(SourceFile file : list){
+            if (!file.getCompileLine().isEmpty()) {
+                i++;
+            }
+        }
+        assertEquals(2, i);
     }
 
     public void testLeopard(){
@@ -761,7 +768,7 @@ public class DwarfSourceReaderTest extends NbTestCase {
             CompilationUnitIterator units = dump.iteratorCompilationUnits();
             if (units != null && units.hasNext()) {
                 while (units.hasNext()) {
-                    CompilationUnit cu = units.next();
+                    CompilationUnitInterface cu = units.next();
                     CompilerSettings settings = new CompilerSettings(new ProjectProxy() {
                         @Override
                         public boolean createSubProjects() { return false; }

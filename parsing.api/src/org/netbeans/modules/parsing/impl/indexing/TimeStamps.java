@@ -52,6 +52,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.URL;
+import java.text.MessageFormat;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
@@ -63,6 +65,7 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
+import org.openide.util.Parameters;
 
 /**
  *
@@ -101,6 +104,21 @@ public final class TimeStamps {
         impl.reset(now);
     }
 
+    void remove(@NonNull final Iterable<? extends String> relativePaths) {
+        Parameters.notNull("relativePaths", relativePaths); //NOI18N
+        impl.remove(relativePaths);
+    }
+
+    @NonNull
+    Collection<? extends String> getEnclosedFiles(@NonNull String folder) {
+        Parameters.notNull("folder", folder);           //NOI18N
+        if (!folder.isEmpty() && folder.charAt(folder.length()-1) != '/') {  //NOI18N
+            folder = folder + '/';                      //NOI18N
+        }
+        Collection<? extends String> res = impl.getEnclosedFiles(folder);
+        return res;
+    }
+
     public static TimeStamps forRoot(
             @NonNull final URL root,
             final boolean detectDeletedFiles) throws IOException {
@@ -126,6 +144,9 @@ public final class TimeStamps {
         boolean checkAndStoreTimestamp(FileObject root, String relativePath);
         Set<String> getUnseenFiles();
         void reset(long time);
+        void remove(@NonNull Iterable<? extends String> relativePaths);
+        @NonNull
+        Collection<? extends String> getEnclosedFiles(@NonNull String relativePath);
         void store() throws IOException;
     }
     
@@ -150,7 +171,15 @@ public final class TimeStamps {
             if (rootFoCache == null) {
                 rootFoCache = URLMapper.findFileObject(root);
             }
-            String fileId = relativePath != null ? relativePath : URLMapper.findURL(f, URLMapper.EXTERNAL).toExternalForm();
+            final String fileId = relativePath != null ? relativePath : URLMapper.findURL(f, URLMapper.EXTERNAL).toExternalForm();
+            if (fileId == null) {
+                throw new IllegalArgumentException(MessageFormat.format(
+                    "The fileId == null, relativePath: {0}, FileObject: {1}, URL: {2}, external URL: {3}", //NOI18N
+                    relativePath,
+                    f,
+                    f.toURL().toExternalForm(),
+                    URLMapper.findURL(f, URLMapper.EXTERNAL).toExternalForm()));
+            }
             long fts = f.lastModified().getTime();
             long lts = timestamps.put(fileId, fts);
             if (lts == LongHashMap.NO_VALUE) {
@@ -183,6 +212,25 @@ public final class TimeStamps {
             for (LongHashMap.Entry<String> entry : timestamps.entrySet()) {
                 entry.setValue(value);
             }
+        }
+
+        @Override
+        public void remove(@NonNull final Iterable<? extends String> relativePaths) {
+            for (String relPath : relativePaths) {
+                timestamps.remove(relPath);
+            }
+        }
+
+        @NonNull
+        @Override
+        public Collection<? extends String> getEnclosedFiles(@NonNull final String relativePath) {
+            final Set<String> res = new HashSet<String>();
+            for (String filePath : timestamps.keySet()) {
+                if (filePath.startsWith(relativePath)) {
+                    res.add(filePath);
+                }
+            }
+            return res;
         }
 
         @Override
@@ -237,8 +285,19 @@ public final class TimeStamps {
                                     int idx = line.indexOf('='); //NOI18N
                                     if (idx != -1) {
                                         try {
-                                            long ts = Long.parseLong(line.substring(idx + 1));
-                                            timestamps.put(line.substring(0, idx), ts);
+                                            final String path = line.substring(0, idx);
+                                            if (!path.isEmpty() && path.charAt(0) != '/') {
+                                                final long ts = Long.parseLong(line.substring(idx + 1));
+                                                timestamps.put(path, ts);
+                                            } else {
+                                                LOG.log(
+                                                    Level.WARNING,
+                                                    "Invalid timestamp entry {0} in {1}",   //NOI18N
+                                                    new Object[]{
+                                                        path,
+                                                        f.getAbsolutePath()
+                                                    });
+                                            }
                                         } catch (NumberFormatException nfe) {
                                             LOG.log(Level.FINE, "Invalid timestamp: line={0}, timestamps={1}, exception={2}", new Object[] { line, f.getPath(), nfe }); //NOI18N
                                         }
@@ -265,7 +324,10 @@ public final class TimeStamps {
 
                         for(Map.Entry<Object, Object> entry : p.entrySet()) {
                             try {
-                                timestamps.put((String) entry.getKey(), Long.parseLong((String) entry.getValue()));
+                                final String fileId = (String) entry.getKey();
+                                if (fileId != null) {
+                                    timestamps.put(fileId, Long.parseLong((String) entry.getValue()));
+                                }
                             } catch (NumberFormatException nfe) {
                                 LOG.log(Level.FINE, "Invalid timestamp: key={0}, value={1}, timestamps={2}, exception={3}", //NOI18N
                                         new Object[] { entry.getKey(), entry.getValue(), f, nfe });
@@ -311,6 +373,16 @@ public final class TimeStamps {
 
         @Override
         public void reset(long time) {
+        }
+
+        @Override
+        public void remove(@NonNull final Iterable<? extends String> relativePaths) {
+        }
+
+        @NonNull
+        @Override
+        public Collection<? extends String> getEnclosedFiles(@NonNull final String relativePath) {
+            return Collections.<String>emptySet();
         }
 
         @Override

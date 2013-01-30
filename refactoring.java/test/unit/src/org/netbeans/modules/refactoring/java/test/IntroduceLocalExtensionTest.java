@@ -90,16 +90,16 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
                 .append("\n").append("     * Create a new SingleList. This list will hold only one element.")
                 .append("\n").append("     */")
                 .append("\n").append("    public SingleList() {")
-                .append("\n").append("    }")
-                .append("\n").append("")
+                .append("\n").append("    }");
+                sb.append("\n").append("")
                 .append("\n").append("    /**")
                 .append("\n").append("     * Create a new SingleList. The list will hold the supplied element.")
                 .append("\n").append("     * @param element the element for this list.")
                 .append("\n").append("     */")
                 .append("\n").append("    public SingleList(E element) {")
                 .append("\n").append("        elements[0] = element;")
-                .append("\n").append("    }")
-                .append("\n").append("")
+                .append("\n").append("    }");
+                sb.append("\n").append("")
                 .append("\n").append("    /**")
                 .append("\n").append("     * Returns the number of elements in this list.")
                 .append("\n").append("     *")
@@ -107,8 +107,8 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
                 .append("\n").append("     */")
                 .append("\n").append("    public int size() {")
                 .append("\n").append("        return 1;")
-                .append("\n").append("    }")
-                .append("\n").append("")
+                .append("\n").append("    }");
+                sb.append("\n").append("")
                 .append("\n").append("    /**")
                 .append("\n").append("     * Returns <tt>true</tt> if this list contains no elements.")
                 .append("\n").append("     *")
@@ -116,8 +116,8 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
                 .append("\n").append("     */")
                 .append("\n").append("    public boolean isEmpty() {")
                 .append("\n").append("	return elements[0] == null;")
-                .append("\n").append("    }")
-                .append("\n").append("")
+                .append("\n").append("    }");
+                sb.append("\n").append("")
                 .append("\n").append("    /**")
                 .append("\n").append("     * Returns <tt>true</tt> if this list contains the specified element.")
                 .append("\n").append("     * More formally, returns <tt>true</tt> if and only if this list contains")
@@ -129,8 +129,8 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
                 .append("\n").append("     */")
                 .append("\n").append("    public boolean contains(Object o) {")
                 .append("\n").append("	return elements[0] == o;")
-                .append("\n").append("    }")
-                .append("\n").append("")
+                .append("\n").append("    }");
+                sb.append("\n").append("")
                 .append("\n").append("    /**")
                 .append("\n").append("     * Returns the index of the first occurrence of the specified element")
                 .append("\n").append("     * in this list, or -1 if this list does not contain the element.")
@@ -144,8 +144,8 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
                 .append("\n").append("	} else {")
                 .append("\n").append("            return -1;")
                 .append("\n").append("        }")
-                .append("\n").append("    }")
-                .append("\n").append("")
+                .append("\n").append("    }");
+                sb.append("\n").append("")
                 .append("\n").append("    /**")
                 .append("\n").append("     * Returns the index of the last occurrence of the specified element")
                 .append("\n").append("     * in this list, or -1 if this list does not contain the element.")
@@ -155,8 +155,8 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
                 .append("\n").append("     */")
                 .append("\n").append("    public int lastIndexOf(Object o) {")
                 .append("\n").append("	return indexOf(o);")
-                .append("\n").append("    }")
-                .append("\n").append("")
+                .append("\n").append("    }");
+                sb.append("\n").append("")
                 .append("\n").append("    /**")
                 .append("\n").append("     * Returns an array containing all of the elements in this list")
                 .append("\n").append("     * combined with the provided list")
@@ -174,15 +174,15 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
                 .append("\n").append("     */")
                 .append("\n").append("    public E[] combine(SingleList<E> list) {")
                 .append("\n").append("        return (E[]) new Object[]{this.elements[0], list.elements[0]};")
-                .append("\n").append("    }")
-                .append("\n").append("")
+                .append("\n").append("    }");
+                sb.append("\n").append("")
                 .append("\n").append("    /**")
                 .append("\n").append("     * Creates and returns a copy of this object.")
                 .append("\n").append("     */")
                 .append("\n").append("    public SingleList<E> clone() {")
                 .append("\n").append("        return new SingleList(this.elements[0]);")
-                .append("\n").append("    }")
-                .append("\n").append("")
+                .append("\n").append("    }");
+                sb.append("\n").append("")
                 .append("\n").append("    /**")
                 .append("\n").append("     * Returns an array containing all of the elements in this list")
                 .append("\n").append("     * in proper sequence (from first to last element).")
@@ -199,8 +199,8 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
                 .append("\n").append("     */")
                 .append("\n").append("    public Object[] toArray() {")
                 .append("\n").append("        return Arrays.copyOf(elements, 1);")
-                .append("\n").append("    }")
-                .append("\n").append("")
+                .append("\n").append("    }");
+                sb.append("\n").append("")
                 .append("\n").append("    /**")
                 .append("\n").append("     * Returns an array containing all of the elements in this list in proper")
                 .append("\n").append("     * sequence (from first to last element); the runtime type of the returned")
@@ -233,8 +233,8 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
                 .append("\n").append("        if (a.length > 1)")
                 .append("\n").append("            a[1] = null;")
                 .append("\n").append("        return a;")
-                .append("\n").append("    }")
-                .append("\n").append("")
+                .append("\n").append("    }");
+                sb.append("\n").append("")
                 .append("\n").append("    // Positional Access Operations")
                 .append("\n").append("")
                 .append("\n").append("    /**")
@@ -249,8 +249,8 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
                 .append("\n").append("            throw new IndexOutOfBoundsException(\"Index should be 0\");")
                 .append("\n").append("        }")
                 .append("\n").append("	return elements[index];")
-                .append("\n").append("    }")
-                .append("\n").append("")
+                .append("\n").append("    }");
+                sb.append("\n").append("")
                 .append("\n").append("    /**")
                 .append("\n").append("     * Replaces the element at the specified position in this list with")
                 .append("\n").append("     * the specified element.")
@@ -267,8 +267,8 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
                 .append("\n").append("	E oldValue = elements[index];")
                 .append("\n").append("	elements[index] = element;")
                 .append("\n").append("	return oldValue;")
-                .append("\n").append("    }")
-                .append("\n").append("")
+                .append("\n").append("    }");
+                sb.append("\n").append("")
                 .append("\n").append("    /**")
                 .append("\n").append("     * Appends the specified element to the end of this list.")
                 .append("\n").append("     *")
@@ -281,8 +281,8 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
                 .append("\n").append("            return true;")
                 .append("\n").append("        }")
                 .append("\n").append("	return false;")
-                .append("\n").append("    }")
-                .append("\n").append("")
+                .append("\n").append("    }");
+                sb.append("\n").append("")
                 .append("\n").append("    /**")
                 .append("\n").append("     * Inserts the specified element at the specified position in this")
                 .append("\n").append("     * list. Shifts the element currently at that position (if any) and")
@@ -298,8 +298,8 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
                 .append("\n").append("        }")
                 .append("\n").append("")
                 .append("\n").append("	add(element);")
-                .append("\n").append("    }")
-                .append("\n").append("")
+                .append("\n").append("    }");
+                sb.append("\n").append("")
                 .append("\n").append("    /**")
                 .append("\n").append("     * Removes the element at the specified position in this list.")
                 .append("\n").append("     * Shifts any subsequent elements to the left (subtracts one from their")
@@ -319,8 +319,8 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
                 .append("\n").append("	elements[0] = null; // Let gc do its work")
                 .append("\n").append("")
                 .append("\n").append("	return oldValue;")
-                .append("\n").append("    }")
-                .append("\n").append("")
+                .append("\n").append("    }");
+                sb.append("\n").append("")
                 .append("\n").append("    /**")
                 .append("\n").append("     * Removes the first occurrence of the specified element from this list,")
                 .append("\n").append("     * if it is present.  If the list does not contain the element, it is")
@@ -340,16 +340,16 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
                 .append("\n").append("            return true;")
                 .append("\n").append("	}")
                 .append("\n").append("	return false;")
-                .append("\n").append("    }")
-                .append("\n").append("")
+                .append("\n").append("    }");
+                sb.append("\n").append("")
                 .append("\n").append("    /**")
                 .append("\n").append("     * Removes all of the elements from this list.  The list will")
                 .append("\n").append("     * be empty after this call returns.")
                 .append("\n").append("     */")
                 .append("\n").append("    public void clear() {")
                 .append("\n").append("	remove(0);")
-                .append("\n").append("    }")
-                .append("\n").append("")
+                .append("\n").append("    }");
+                sb.append("\n").append("")
                 .append("\n").append("    /**")
                 .append("\n").append("     * Appends all of the elements in the specified collection to the end of")
                 .append("\n").append("     * this list, in the order that they are returned by the")
@@ -372,8 +372,8 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
                 .append("\n").append("        }")
                 .append("\n").append("        elements[0] = c.iterator().next();")
                 .append("\n").append("	return true;")
-                .append("\n").append("    }")
-                .append("\n").append("")
+                .append("\n").append("    }");
+                sb.append("\n").append("")
                 .append("\n").append("    /**")
                 .append("\n").append("     * Inserts all of the elements in the specified collection into this")
                 .append("\n").append("     * list, starting at the specified position.  Shifts the element")
@@ -630,69 +630,69 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
                 .append("\n").append("")
                 .append("\n").append("    public MyList(SingleList<E> delegate) {")
                 .append("\n").append("        this.delegate = delegate;")
-                .append("\n").append("    }")
-                .append("\n").append("")
+                .append("\n").append("    }");
+                sb1.append("\n").append("")
                 .append("\n").append("    /**")
                 .append("\n").append("     * Create a new SingleList. This list will hold only one element.")
                 .append("\n").append("     */")
                 .append("\n").append("    public MyList() {")
                 .append("\n").append("        this.delegate = new SingleList();")
-                .append("\n").append("    }")
-                .append("\n").append("")
+                .append("\n").append("    }");
+                sb1.append("\n").append("")
                 .append("\n").append("    /**")
                 .append("\n").append("     * Create a new SingleList. The list will hold the supplied element.")
                 .append("\n").append("     * @param element the element for this list.")
                 .append("\n").append("     */")
                 .append("\n").append("    public MyList(E element) {")
                 .append("\n").append("        this.delegate = new SingleList(element);")
-                .append("\n").append("    }")
-                .append("\n").append("")
+                .append("\n").append("    }");
+                sb1.append("\n").append("")
                 .append("\n").append("    /**")
                 .append("\n").append("     * @return the someMagicNumber")
                 .append("\n").append("     */")
                 .append("\n").append("    public int getSomeMagicNumber() {")
                 .append("\n").append("        return delegate.someMagicNumber;")
-                .append("\n").append("    }")
-                .append("\n").append("")
+                .append("\n").append("    }");
+                sb1.append("\n").append("")
                 .append("\n").append("    /**")
                 .append("\n").append("     * @param someMagicNumber the someMagicNumber to set")
                 .append("\n").append("     */")
                 .append("\n").append("    public void setSomeMagicNumber(int someMagicNumber) {")
                 .append("\n").append("        this.delegate.someMagicNumber = someMagicNumber;")
-                .append("\n").append("    }")
-                .append("\n").append("")
+                .append("\n").append("    }");
+                sb1.append("\n").append("")
                 .append("\n").append("    public boolean containsAll(Collection<?> c) {")
                 .append("\n").append("        return delegate.containsAll(c);")
-                .append("\n").append("    }")
-                .append("\n").append("")
+                .append("\n").append("    }");
+                sb1.append("\n").append("")
                 .append("\n").append("    public boolean removeAll(Collection<?> c) {")
                 .append("\n").append("        return delegate.removeAll(c);")
-                .append("\n").append("    }")
-                .append("\n").append("")
+                .append("\n").append("    }");
+                sb1.append("\n").append("")
                 .append("\n").append("    public boolean retainAll(Collection<?> c) {")
                 .append("\n").append("        return delegate.retainAll(c);")
-                .append("\n").append("    }")
-                .append("\n").append("")
+                .append("\n").append("    }");
+                sb1.append("\n").append("")
                 .append("\n").append("    public String toString() {")
                 .append("\n").append("        return delegate.toString();")
-                .append("\n").append("    }")
-                .append("\n").append("")
+                .append("\n").append("    }");
+                sb1.append("\n").append("")
                 .append("\n").append("    public Iterator<E> iterator() {")
                 .append("\n").append("        return delegate.iterator();")
-                .append("\n").append("    }")
-                .append("\n").append("")
+                .append("\n").append("    }");
+                sb1.append("\n").append("")
                 .append("\n").append("    public ListIterator<E> listIterator() {")
                 .append("\n").append("        return delegate.listIterator();")
-                .append("\n").append("    }")
-                .append("\n").append("")
+                .append("\n").append("    }");
+                sb1.append("\n").append("")
                 .append("\n").append("    public ListIterator<E> listIterator(int index) {")
                 .append("\n").append("        return delegate.listIterator(index);")
-                .append("\n").append("    }")
-                .append("\n").append("")
+                .append("\n").append("    }");
+                sb1.append("\n").append("")
                 .append("\n").append("    public List<E> subList(int fromIndex, int toIndex) {")
                 .append("\n").append("        return delegate.subList(fromIndex, toIndex);")
-                .append("\n").append("    }")
-                .append("\n").append("")
+                .append("\n").append("    }");
+                sb1.append("\n").append("")
                 .append("\n").append("    /**")
                 .append("\n").append("     * Returns the number of elements in this list.")
                 .append("\n").append("     *")
@@ -700,8 +700,8 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
                 .append("\n").append("     */")
                 .append("\n").append("    public int size() {")
                 .append("\n").append("        return delegate.size();")
-                .append("\n").append("    }")
-                .append("\n").append("")
+                .append("\n").append("    }");
+                sb1.append("\n").append("")
                 .append("\n").append("    /**")
                 .append("\n").append("     * Returns <tt>true</tt> if this list contains no elements.")
                 .append("\n").append("     *")
@@ -709,8 +709,8 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
                 .append("\n").append("     */")
                 .append("\n").append("    public boolean isEmpty() {")
                 .append("\n").append("        return delegate.isEmpty();")
-                .append("\n").append("    }")
-                .append("\n").append("")
+                .append("\n").append("    }");
+                sb1.append("\n").append("")
                 .append("\n").append("    /**")
                 .append("\n").append("     * Returns <tt>true</tt> if this list contains the specified element.")
                 .append("\n").append("     * More formally, returns <tt>true</tt> if and only if this list contains")
@@ -722,8 +722,8 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
                 .append("\n").append("     */")
                 .append("\n").append("    public boolean contains(Object o) {")
                 .append("\n").append("        return delegate.contains(o);")
-                .append("\n").append("    }")
-                .append("\n").append("")
+                .append("\n").append("    }");
+                sb1.append("\n").append("")
                 .append("\n").append("    /**")
                 .append("\n").append("     * Returns the index of the first occurrence of the specified element")
                 .append("\n").append("     * in this list, or -1 if this list does not contain the element.")
@@ -733,8 +733,8 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
                 .append("\n").append("     */")
                 .append("\n").append("    public int indexOf(Object o) {")
                 .append("\n").append("        return delegate.indexOf(o);")
-                .append("\n").append("    }")
-                .append("\n").append("")
+                .append("\n").append("    }");
+                sb1.append("\n").append("")
                 .append("\n").append("    /**")
                 .append("\n").append("     * Returns the index of the last occurrence of the specified element")
                 .append("\n").append("     * in this list, or -1 if this list does not contain the element.")
@@ -744,8 +744,8 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
                 .append("\n").append("     */")
                 .append("\n").append("    public int lastIndexOf(Object o) {")
                 .append("\n").append("        return delegate.lastIndexOf(o);")
-                .append("\n").append("    }")
-                .append("\n").append("")
+                .append("\n").append("    }");
+                sb1.append("\n").append("")
                 .append("\n").append("    /**")
                 .append("\n").append("     * Returns an array containing all of the elements in this list")
                 .append("\n").append("     * combined with the provided list")
@@ -763,15 +763,15 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
                 .append("\n").append("     */")
                 .append("\n").append("    public E[] combine(MyList<E> list) {")
                 .append("\n").append("        return delegate.combine(list.delegate);")
-                .append("\n").append("    }")
-                .append("\n").append("")
+                .append("\n").append("    }");
+                sb1.append("\n").append("")
                 .append("\n").append("    /**")
                 .append("\n").append("     * Creates and returns a copy of this object.")
                 .append("\n").append("     */")
                 .append("\n").append("    public MyList<E> clone() {")
                 .append("\n").append("        return new MyList<E>(delegate.clone());")
-                .append("\n").append("    }")
-                .append("\n").append("")
+                .append("\n").append("    }");
+                sb1.append("\n").append("")
                 .append("\n").append("    /**")
                 .append("\n").append("     * Returns an array containing all of the elements in this list")
                 .append("\n").append("     * in proper sequence (from first to last element).")
@@ -788,8 +788,8 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
                 .append("\n").append("     */")
                 .append("\n").append("    public Object[] toArray() {")
                 .append("\n").append("        return delegate.toArray();")
-                .append("\n").append("    }")
-                .append("\n").append("")
+                .append("\n").append("    }");
+                sb1.append("\n").append("")
                 .append("\n").append("    /**")
                 .append("\n").append("     * Returns an array containing all of the elements in this list in proper")
                 .append("\n").append("     * sequence (from first to last element); the runtime type of the returned")
@@ -816,8 +816,8 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
                 .append("\n").append("     */")
                 .append("\n").append("    public <T> T[] toArray(T[] a) {")
                 .append("\n").append("        return delegate.<T>toArray(a);")
-                .append("\n").append("    }")
-                .append("\n").append("")
+                .append("\n").append("    }");
+                sb1.append("\n").append("")
                 .append("\n").append("    /**")
                 .append("\n").append("     * Returns the element at the specified position in this list.")
                 .append("\n").append("     *")
@@ -827,8 +827,8 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
                 .append("\n").append("     */")
                 .append("\n").append("    public E get(int index) {")
                 .append("\n").append("         return delegate.get(index);")
-                .append("\n").append("    }")
-                .append("\n").append("")
+                .append("\n").append("    }");
+                sb1.append("\n").append("")
                 .append("\n").append("    /**")
                 .append("\n").append("     * Replaces the element at the specified position in this list with")
                 .append("\n").append("     * the specified element.")
@@ -840,8 +840,8 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
                 .append("\n").append("     */")
                 .append("\n").append("    public E set(int index, E element) {")
                 .append("\n").append("        return delegate.set(index, element);")
-                .append("\n").append("    }")
-                .append("\n").append("")
+                .append("\n").append("    }");
+                sb1.append("\n").append("")
                 .append("\n").append("    /**")
                 .append("\n").append("     * Appends the specified element to the end of this list.")
                 .append("\n").append("     *")
@@ -850,8 +850,8 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
                 .append("\n").append("     */")
                 .append("\n").append("    public boolean add(E e) {")
                 .append("\n").append("        return delegate.add(e);")
-                .append("\n").append("    }")
-                .append("\n").append("")
+                .append("\n").append("    }");
+                sb1.append("\n").append("")
                 .append("\n").append("    /**")
                 .append("\n").append("     * Inserts the specified element at the specified position in this")
                 .append("\n").append("     * list. Shifts the element currently at that position (if any) and")
@@ -863,8 +863,8 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
                 .append("\n").append("     */")
                 .append("\n").append("    public void add(int index, E element) {")
                 .append("\n").append("        delegate.add(index, element);")
-                .append("\n").append("    }")
-                .append("\n").append("")
+                .append("\n").append("    }");
+                sb1.append("\n").append("")
                 .append("\n").append("    /**")
                 .append("\n").append("     * Removes the element at the specified position in this list.")
                 .append("\n").append("     * Shifts any subsequent elements to the left (subtracts one from their")
@@ -876,8 +876,8 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
                 .append("\n").append("     */")
                 .append("\n").append("    public E remove(int index) {")
                 .append("\n").append("        return delegate.remove(index);")
-                .append("\n").append("    }")
-                .append("\n").append("")
+                .append("\n").append("    }");
+                sb1.append("\n").append("")
                 .append("\n").append("    /**")
                 .append("\n").append("     * Removes the first occurrence of the specified element from this list,")
                 .append("\n").append("     * if it is present.  If the list does not contain the element, it is")
@@ -893,16 +893,16 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
                 .append("\n").append("     */")
                 .append("\n").append("    public boolean remove(Object o) {")
                 .append("\n").append("        return delegate.remove(o);")
-                .append("\n").append("    }")
-                .append("\n").append("")
+                .append("\n").append("    }");
+                sb1.append("\n").append("")
                 .append("\n").append("    /**")
                 .append("\n").append("     * Removes all of the elements from this list.  The list will")
                 .append("\n").append("     * be empty after this call returns.")
                 .append("\n").append("     */")
                 .append("\n").append("    public void clear() {")
                 .append("\n").append("        delegate.clear();")
-                .append("\n").append("    }")
-                .append("\n").append("")
+                .append("\n").append("    }");
+                sb1.append("\n").append("")
                 .append("\n").append("    /**")
                 .append("\n").append("     * Appends all of the elements in the specified collection to the end of")
                 .append("\n").append("     * this list, in the order that they are returned by the")
@@ -919,8 +919,8 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
                 .append("\n").append("     */")
                 .append("\n").append("    public boolean addAll(Collection<? extends E> c) {")
                 .append("\n").append("        return delegate.addAll(c);")
-                .append("\n").append("    }")
-                .append("\n").append("")
+                .append("\n").append("    }");
+                sb1.append("\n").append("")
                 .append("\n").append("    /**")
                 .append("\n").append("     * Inserts all of the elements in the specified collection into this")
                 .append("\n").append("     * list, starting at the specified position.  Shifts the element")
@@ -938,8 +938,8 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
                 .append("\n").append("     */")
                 .append("\n").append("    public boolean addAll(int index, Collection<? extends E> c) {")
                 .append("\n").append("        return delegate.addAll(index, c);")
-                .append("\n").append("    }")
-                .append("\n").append("")
+                .append("\n").append("    }");
+                sb1.append("\n").append("")
                 .append("\n").append("    @Override public boolean equals(Object obj) {")
                 .append("\n").append("        if (obj == null) {")
                 .append("\n").append("            return false;")
@@ -952,8 +952,8 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
                 .append("\n").append("            return false;")
                 .append("\n").append("        }")
                 .append("\n").append("        return true;")
-                .append("\n").append("    }")
-                .append("\n").append("")
+                .append("\n").append("    }");
+                sb1.append("\n").append("")
                 .append("\n").append("    @Override public int hashCode() {")
                 .append("\n").append("       int hash = 1;")
                 .append("\n").append("       hash = 1 * hash + (this.delegate != null ? this.delegate.hashCode() : 0);")
@@ -978,6 +978,28 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
                 new File("t/SingleList.java", sb.toString()),
                 new File("t/A.java", "package t; import java.util.List; public class A { public static void main(String[] args) { SingleList<String> lijst = new SingleList<String>(); SingleList<String> cloned = lijst.clone(); } }"));
         performIntroduceLocalExtension("MyList", true, true, "...", IntroduceLocalExtensionRefactoring.Equality.DELEGATE, new Problem(true, "ERR_InvalidPackage"));
+    }
+    
+    public void testAbstractWrapper() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t; public class A { public static void main(String[] args) { AbstractClass some; } }"),
+                new File("t/AbstractClass.java", "package t; public abstract class AbstractClass {\n\n public void doIt() {\n }\n\n public abstract void doItNow();\n}"));
+        performIntroduceLocalExtension("MyList", true, true, "t", IntroduceLocalExtensionRefactoring.Equality.DELEGATE);
+        verifyContent(src,
+                new File("t/A.java", "package t; public class A { public static void main(String[] args) { MyList some; } }"),
+                new File("t/AbstractClass.java", "package t; public abstract class AbstractClass {\n\n public void doIt() {\n }\n\n public abstract void doItNow();\n}"),
+                new File("t/MyList.java", "/* * Refactoring License */ package t; /** * * @author junit */ public class MyList { private AbstractClass delegate; public MyList(AbstractClass delegate) { this.delegate = delegate; } public void doIt() { delegate.doIt(); } public void doItNow() { delegate.doItNow(); } public boolean equals(Object o) { Object target = o; if (o instanceof MyList) { target = ((MyList) o).delegate; } return this.delegate.equals(target); } public int hashCode() { return this.delegate.hashCode(); } } "));
+    }
+    
+    public void testInterface() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t; public class A implements Inter { public void method() { } }"),
+                new File("t/Inter.java", "package t; public interface Inter { void method(); }"));
+        performIntroduceLocalExtensionInterface("t/Inter.java", "InterWrapper", false, true, "t", IntroduceLocalExtensionRefactoring.Equality.DELEGATE);
+        verifyContent(src,
+                new File("t/A.java", "package t; public class A implements InterWrapper { public void method() { } }"),
+                new File("t/Inter.java", "package t; public interface Inter { void method(); }"),
+                new File("t/InterWrapper.java", "/* * Refactoring License */ package t; /** * * @author junit */ public interface InterWrapper extends Inter { } "));
     }
 
     public void testWrapper() throws Exception {
@@ -1007,68 +1029,68 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
                 .append("\n").append("")
                 .append("\n").append("    public MyList(SingleList<E> delegate) {")
                 .append("\n").append("        this.delegate = delegate;")
-                .append("\n").append("    }")
-                .append("\n").append("")
+                .append("\n").append("    }");
+                sb1.append("\n").append("")
                 .append("\n").append("    /**")
                 .append("\n").append("     * Create a new SingleList. This list will hold only one element.")
                 .append("\n").append("     */")
                 .append("\n").append("    public MyList() {")
                 .append("\n").append("        this.delegate = new SingleList();")
-                .append("\n").append("    }")
-                .append("\n").append("")
+                .append("\n").append("    }");
+                sb1.append("\n").append("")
                 .append("\n").append("    /**")
                 .append("\n").append("     * Create a new SingleList. The list will hold the supplied element.")
                 .append("\n").append("     * @param element the element for this list.")
                 .append("\n").append("     */")
                 .append("\n").append("    public MyList(E element) {")
                 .append("\n").append("        this.delegate = new SingleList(element);")
-                .append("\n").append("    }")
-                .append("\n").append("    /**")
+                .append("\n").append("    }");
+                sb1.append("\n").append("    /**")
                 .append("\n").append("     * @return the someMagicNumber")
                 .append("\n").append("     */")
                 .append("\n").append("    public int getSomeMagicNumber() {")
                 .append("\n").append("        return delegate.someMagicNumber;")
-                .append("\n").append("    }")
-                .append("\n").append("")
+                .append("\n").append("    }");
+                sb1.append("\n").append("")
                 .append("\n").append("    /**")
                 .append("\n").append("     * @param someMagicNumber the someMagicNumber to set")
                 .append("\n").append("     */")
                 .append("\n").append("    public void setSomeMagicNumber(int someMagicNumber) {")
                 .append("\n").append("        this.delegate.someMagicNumber = someMagicNumber;")
-                .append("\n").append("    }")
-                .append("\n").append("")
+                .append("\n").append("    }");
+                sb1.append("\n").append("")
                 .append("\n").append("    public boolean containsAll(Collection<?> c) {")
                 .append("\n").append("        return delegate.containsAll(c);")
-                .append("\n").append("    }")
-                .append("\n").append("")
+                .append("\n").append("    }");
+                sb1.append("\n").append("")
                 .append("\n").append("    public boolean removeAll(Collection<?> c) {")
                 .append("\n").append("        return delegate.removeAll(c);")
-                .append("\n").append("    }")
-                .append("\n").append("")
+                .append("\n").append("    }");
+                sb1.append("\n").append("")
                 .append("\n").append("    public boolean retainAll(Collection<?> c) {")
                 .append("\n").append("        return delegate.retainAll(c);")
-                .append("\n").append("    }")
-                .append("\n").append("")
+                .append("\n").append("    }");
+                sb1.append("\n").append("")
                 .append("\n").append("    public String toString() {")
                 .append("\n").append("        return delegate.toString();")
-                .append("\n").append("    }")
-                .append("\n").append("")
+                .append("\n").append("    }");
+                sb1.append("\n").append("")
                 .append("\n").append("    public Iterator<E> iterator() {")
                 .append("\n").append("        return delegate.iterator();")
-                .append("\n").append("    }")
-                .append("\n").append("")
+                .append("\n").append("    }");
+                sb1.append("\n").append("")
                 .append("\n").append("    public ListIterator<E> listIterator() {")
                 .append("\n").append("        return delegate.listIterator();")
-                .append("\n").append("    }")
-                .append("\n").append("")
+                .append("\n").append("    }");
+                sb1.append("\n").append("")
                 .append("\n").append("    public ListIterator<E> listIterator(int index) {")
                 .append("\n").append("        return delegate.listIterator(index);")
-                .append("\n").append("    }")
-                .append("\n").append("")
+                .append("\n").append("    }");
+                sb1.append("\n").append("")
                 .append("\n").append("    public List<E> subList(int fromIndex, int toIndex) {")
                 .append("\n").append("        return delegate.subList(fromIndex, toIndex);")
-                .append("\n").append("    }")
-                .append("\n").append("")
+                .append("\n").append("    }");
+                sb1.append("\n").append("")
                 .append("\n").append("    /**")
                 .append("\n").append("     * Returns the number of elements in this list.")
                 .append("\n").append("     *")
@@ -1076,8 +1098,8 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
                 .append("\n").append("     */")
                 .append("\n").append("    public int size() {")
                 .append("\n").append("        return delegate.size();")
-                .append("\n").append("    }")
-                .append("\n").append("")
+                .append("\n").append("    }");
+                sb1.append("\n").append("")
                 .append("\n").append("    /**")
                 .append("\n").append("     * Returns <tt>true</tt> if this list contains no elements.")
                 .append("\n").append("     *")
@@ -1085,8 +1107,8 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
                 .append("\n").append("     */")
                 .append("\n").append("    public boolean isEmpty() {")
                 .append("\n").append("        return delegate.isEmpty();")
-                .append("\n").append("    }")
-                .append("\n").append("")
+                .append("\n").append("    }");
+                sb1.append("\n").append("")
                 .append("\n").append("    /**")
                 .append("\n").append("     * Returns <tt>true</tt> if this list contains the specified element.")
                 .append("\n").append("     * More formally, returns <tt>true</tt> if and only if this list contains")
@@ -1098,8 +1120,8 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
                 .append("\n").append("     */")
                 .append("\n").append("    public boolean contains(Object o) {")
                 .append("\n").append("        return delegate.contains(o);")
-                .append("\n").append("    }")
-                .append("\n").append("")
+                .append("\n").append("    }");
+                sb1.append("\n").append("")
                 .append("\n").append("    /**")
                 .append("\n").append("     * Returns the index of the first occurrence of the specified element")
                 .append("\n").append("     * in this list, or -1 if this list does not contain the element.")
@@ -1109,8 +1131,8 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
                 .append("\n").append("     */")
                 .append("\n").append("    public int indexOf(Object o) {")
                 .append("\n").append("        return delegate.indexOf(o);")
-                .append("\n").append("    }")
-                .append("\n").append("")
+                .append("\n").append("    }");
+                sb1.append("\n").append("")
                 .append("\n").append("    /**")
                 .append("\n").append("     * Returns the index of the last occurrence of the specified element")
                 .append("\n").append("     * in this list, or -1 if this list does not contain the element.")
@@ -1120,8 +1142,8 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
                 .append("\n").append("     */")
                 .append("\n").append("    public int lastIndexOf(Object o) {")
                 .append("\n").append("        return delegate.lastIndexOf(o);")
-                .append("\n").append("    }")
-                .append("\n").append("")
+                .append("\n").append("    }");
+                sb1.append("\n").append("")
                 .append("\n").append("    /**")
                 .append("\n").append("     * Returns an array containing all of the elements in this list")
                 .append("\n").append("     * combined with the provided list")
@@ -1139,15 +1161,15 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
                 .append("\n").append("     */")
                 .append("\n").append("    public E[] combine(MyList<E> list) {")
                 .append("\n").append("        return delegate.combine(list.delegate);")
-                .append("\n").append("    }")
-                .append("\n").append("")
+                .append("\n").append("    }");
+                sb1.append("\n").append("")
                 .append("\n").append("    /**")
                 .append("\n").append("     * Creates and returns a copy of this object.")
                 .append("\n").append("     */")
                 .append("\n").append("    public MyList<E> clone() {")
                 .append("\n").append("        return new MyList<E>(delegate.clone());")
-                .append("\n").append("    }")
-                .append("\n").append("")
+                .append("\n").append("    }");
+                sb1.append("\n").append("")
                 .append("\n").append("    /**")
                 .append("\n").append("     * Returns an array containing all of the elements in this list")
                 .append("\n").append("     * in proper sequence (from first to last element).")
@@ -1164,8 +1186,8 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
                 .append("\n").append("     */")
                 .append("\n").append("    public Object[] toArray() {")
                 .append("\n").append("        return delegate.toArray();")
-                .append("\n").append("    }")
-                .append("\n").append("")
+                .append("\n").append("    }");
+                sb1.append("\n").append("")
                 .append("\n").append("    /**")
                 .append("\n").append("     * Returns an array containing all of the elements in this list in proper")
                 .append("\n").append("     * sequence (from first to last element); the runtime type of the returned")
@@ -1192,8 +1214,8 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
                 .append("\n").append("     */")
                 .append("\n").append("    public <T> T[] toArray(T[] a) {")
                 .append("\n").append("        return delegate.<T>toArray(a);")
-                .append("\n").append("    }")
-                .append("\n").append("")
+                .append("\n").append("    }");
+                sb1.append("\n").append("")
                 .append("\n").append("    /**")
                 .append("\n").append("     * Returns the element at the specified position in this list.")
                 .append("\n").append("     *")
@@ -1203,8 +1225,8 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
                 .append("\n").append("     */")
                 .append("\n").append("    public E get(int index) {")
                 .append("\n").append("         return delegate.get(index);")
-                .append("\n").append("    }")
-                .append("\n").append("")
+                .append("\n").append("    }");
+                sb1.append("\n").append("")
                 .append("\n").append("    /**")
                 .append("\n").append("     * Replaces the element at the specified position in this list with")
                 .append("\n").append("     * the specified element.")
@@ -1216,8 +1238,8 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
                 .append("\n").append("     */")
                 .append("\n").append("    public E set(int index, E element) {")
                 .append("\n").append("        return delegate.set(index, element);")
-                .append("\n").append("    }")
-                .append("\n").append("")
+                .append("\n").append("    }");
+                sb1.append("\n").append("")
                 .append("\n").append("    /**")
                 .append("\n").append("     * Appends the specified element to the end of this list.")
                 .append("\n").append("     *")
@@ -1226,8 +1248,8 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
                 .append("\n").append("     */")
                 .append("\n").append("    public boolean add(E e) {")
                 .append("\n").append("        return delegate.add(e);")
-                .append("\n").append("    }")
-                .append("\n").append("")
+                .append("\n").append("    }");
+                sb1.append("\n").append("")
                 .append("\n").append("    /**")
                 .append("\n").append("     * Inserts the specified element at the specified position in this")
                 .append("\n").append("     * list. Shifts the element currently at that position (if any) and")
@@ -1239,8 +1261,8 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
                 .append("\n").append("     */")
                 .append("\n").append("    public void add(int index, E element) {")
                 .append("\n").append("        delegate.add(index, element);")
-                .append("\n").append("    }")
-                .append("\n").append("")
+                .append("\n").append("    }");
+                sb1.append("\n").append("")
                 .append("\n").append("    /**")
                 .append("\n").append("     * Removes the element at the specified position in this list.")
                 .append("\n").append("     * Shifts any subsequent elements to the left (subtracts one from their")
@@ -1252,8 +1274,8 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
                 .append("\n").append("     */")
                 .append("\n").append("    public E remove(int index) {")
                 .append("\n").append("        return delegate.remove(index);")
-                .append("\n").append("    }")
-                .append("\n").append("")
+                .append("\n").append("    }");
+                sb1.append("\n").append("")
                 .append("\n").append("    /**")
                 .append("\n").append("     * Removes the first occurrence of the specified element from this list,")
                 .append("\n").append("     * if it is present.  If the list does not contain the element, it is")
@@ -1269,16 +1291,16 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
                 .append("\n").append("     */")
                 .append("\n").append("    public boolean remove(Object o) {")
                 .append("\n").append("        return delegate.remove(o);")
-                .append("\n").append("    }")
-                .append("\n").append("")
+                .append("\n").append("    }");
+                sb1.append("\n").append("")
                 .append("\n").append("    /**")
                 .append("\n").append("     * Removes all of the elements from this list.  The list will")
                 .append("\n").append("     * be empty after this call returns.")
                 .append("\n").append("     */")
                 .append("\n").append("    public void clear() {")
                 .append("\n").append("        delegate.clear();")
-                .append("\n").append("    }")
-                .append("\n").append("")
+                .append("\n").append("    }");
+                sb1.append("\n").append("")
                 .append("\n").append("    /**")
                 .append("\n").append("     * Appends all of the elements in the specified collection to the end of")
                 .append("\n").append("     * this list, in the order that they are returned by the")
@@ -1295,8 +1317,8 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
                 .append("\n").append("     */")
                 .append("\n").append("    public boolean addAll(Collection<? extends E> c) {")
                 .append("\n").append("        return delegate.addAll(c);")
-                .append("\n").append("    }")
-                .append("\n").append("")
+                .append("\n").append("    }");
+                sb1.append("\n").append("")
                 .append("\n").append("    /**")
                 .append("\n").append("     * Inserts all of the elements in the specified collection into this")
                 .append("\n").append("     * list, starting at the specified position.  Shifts the element")
@@ -1314,16 +1336,16 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
                 .append("\n").append("     */")
                 .append("\n").append("    public boolean addAll(int index, Collection<? extends E> c) {")
                 .append("\n").append("        return delegate.addAll(index, c);")
-                .append("\n").append("    }")
-                .append("\n").append("")
+                .append("\n").append("    }");
+                sb1.append("\n").append("")
                 .append("\n").append("    public boolean equals(Object o) {")
                 .append("\n").append("        Object target = o;")
                 .append("\n").append("        if (o instanceof MyList) {")
                 .append("\n").append("            target = ((MyList) o).delegate;")
                 .append("\n").append("        }")
                 .append("\n").append("        return this.delegate.equals(target);")
-                .append("\n").append("    }")
-                .append("\n").append("")
+                .append("\n").append("    }");
+                sb1.append("\n").append("")
                 .append("\n").append("    public int hashCode() {")
                 .append("\n").append("        return this.delegate.hashCode();")
                 .append("\n").append("    }")
@@ -1416,6 +1438,47 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
                 new File("t/A.java", "package t; import java.util.*; public class A { public static void main(String[] args) { List<String> lijst = new t.ArrayList<String>(); } }"),
                 new File("t/ArrayList.java", sb1.toString()));
     }
+    
+    private void performIntroduceLocalExtensionInterface(final String source, final String name, final boolean wrap, final boolean replace, final String packageName, final IntroduceLocalExtensionRefactoring.Equality equality, Problem... expectedProblems) throws Exception {
+        final IntroduceLocalExtensionRefactoring[] r = new IntroduceLocalExtensionRefactoring[1];
+
+        JavaSource.forFileObject(src.getFileObject(source)).runUserActionTask(new Task<CompilationController>() {
+
+            @Override
+            public void run(org.netbeans.api.java.source.CompilationController parameter) throws Exception {
+                parameter.toPhase(JavaSource.Phase.RESOLVED);
+                CompilationUnitTree cut = parameter.getCompilationUnit();
+
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+
+                TreePath tp = TreePath.getPath(cut, clazz);
+                r[0] = new IntroduceLocalExtensionRefactoring(TreePathHandle.create(tp, parameter));
+                r[0].setNewName(name);
+                r[0].setPackageName(packageName);
+                r[0].setSourceRoot(src);
+                r[0].setWrap(wrap);
+                r[0].setReplace(replace);
+                r[0].setEquality(equality);
+                r[0].getContext().add(new Integer(1));
+            }
+        }, true);
+
+        RefactoringSession rs = RefactoringSession.create("Session");
+        List<Problem> problems = new LinkedList<Problem>();
+
+        addAllProblems(problems, r[0].preCheck());
+        if (!problemIsFatal(problems)) {
+            addAllProblems(problems, r[0].checkParameters());
+        }
+        if (!problemIsFatal(problems)) {
+            addAllProblems(problems, r[0].prepare(rs));
+        }
+        if (!problemIsFatal(problems)) {
+            addAllProblems(problems, rs.doRefactoring(true));
+        }
+
+        assertProblems(Arrays.asList(expectedProblems), problems);
+    }
 
     private void performIntroduceLocalExtension(final String name, final boolean wrap, final boolean replace, final String packageName, final IntroduceLocalExtensionRefactoring.Equality equality, Problem... expectedProblems) throws Exception {
         final IntroduceLocalExtensionRefactoring[] r = new IntroduceLocalExtensionRefactoring[1];
@@ -1431,9 +1494,14 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
                 MethodTree method = (MethodTree) clazz.getMembers().get(1);
                 VariableTree statement = (VariableTree) method.getBody().getStatements().get(0);
                 NewClassTree expression = (NewClassTree) statement.getInitializer();
-                ExpressionTree identifier = expression.getIdentifier();
-
-                TreePath tp = TreePath.getPath(cut, identifier);
+                Tree type;
+                if(expression != null) {
+                    type = expression.getIdentifier();
+                } else {
+                    type = statement.getType();
+                }
+                
+                TreePath tp = TreePath.getPath(cut, type);
                 r[0] = new IntroduceLocalExtensionRefactoring(TreePathHandle.create(tp, parameter));
                 r[0].setNewName(name);
                 r[0].setPackageName(packageName);

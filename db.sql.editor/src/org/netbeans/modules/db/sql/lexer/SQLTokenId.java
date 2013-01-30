@@ -66,6 +66,7 @@ public enum SQLTokenId implements TokenId {
     BLOCK_COMMENT("sql-block-comment"), // NOI18N
     STRING("sql-string-literal"), // NOI18N
     INCOMPLETE_STRING("sql-errors"), // NOI18N
+    INCOMPLETE_IDENTIFIER("sql-errors"), // NOI18N
     IDENTIFIER("sql-identifier"), // NOI18N
     OPERATOR("sql-operator"), // NOI18N
     LPAREN("sql-operator"), // NOI18N

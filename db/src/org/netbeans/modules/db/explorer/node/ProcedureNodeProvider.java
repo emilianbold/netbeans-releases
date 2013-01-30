@@ -201,6 +201,8 @@ public class ProcedureNodeProvider extends NodeProvider {
                                         // XXX: all procedurec are valid in MySQL
                                         validObjects.add(objectName);
                                     }
+                                    rs.close();
+                                    stmt.close();
                                 } catch (SQLException ex) {
                                     Logger.getLogger(ProcedureNodeProvider.class.getName()).log(Level.INFO, ex + " while refreshStatuses() of procedures in schema " + schemaName);
                                 }
@@ -272,6 +274,8 @@ public class ProcedureNodeProvider extends NodeProvider {
                                             assert false : "Unknown type " + objectType;
                                         }                                    
                                     }
+                                    rs.close();
+                                    stmt.close();
                                 } catch (SQLException ex) {
                                     Logger.getLogger(ProcedureNodeProvider.class.getName()).log(Level.INFO, ex + " while refreshStatuses() of procedures in schema" + schemaName);
                                 }
@@ -295,7 +299,7 @@ public class ProcedureNodeProvider extends NodeProvider {
     }
 
     public ProcedureNode.Type getType(String name) {
-        if (object2type == null) {
+        if (object2type == null || object2type.get(name) == null) {
             refreshObjects();
         }
         return object2type.get(name);

@@ -46,18 +46,16 @@ import java.util.EventListener;
 import java.util.Locale;
 import java.util.TimeZone;
 import java.util.logging.Logger;
-
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JFormattedTextField;
+import javax.swing.JFormattedTextField.AbstractFormatter;
+import javax.swing.JFormattedTextField.AbstractFormatterFactory;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.UIManager;
-import javax.swing.JFormattedTextField.AbstractFormatter;
-import javax.swing.JFormattedTextField.AbstractFormatterFactory;
 import javax.swing.text.DefaultFormatterFactory;
-
 import org.jdesktop.swingx.JXHyperlink;
 import org.jdesktop.swingx.JXMonthView;
 import org.jdesktop.swingx.JXPanel;
@@ -318,7 +316,7 @@ public class JXDateTimePicker extends JComponent {
     }
 
     protected class SelectedValuesComparator implements Comparator<Calendar> {
-
+        @Override
         public int compare(Calendar cal1, Calendar cal2) {
 
             if (cal1.get(Calendar.YEAR) == cal2.get(Calendar.YEAR) &&
@@ -372,7 +370,7 @@ public class JXDateTimePicker extends JComponent {
     private PropertyChangeListener getMonthViewListener() {
         if (monthViewListener == null) {
             monthViewListener = new PropertyChangeListener() {
-
+                @Override
                 public void propertyChange(PropertyChangeEvent evt) {
                     if ("timeZone".equals(evt.getPropertyName())) {
                         updateTimeZone((TimeZone) evt.getOldValue(), (TimeZone) evt.getNewValue());
@@ -849,6 +847,7 @@ public class JXDateTimePicker extends JComponent {
      * @param height Height of the component to determine baseline for.
      * @return baseline for the specified component
      */
+    @Override
     public int getBaseline(int width, int height) {
         return ((BasicDateTimePickerUI) ui).getBaseline(width, height);
     }
@@ -916,6 +915,7 @@ public class JXDateTimePicker extends JComponent {
         private TodayAction todayAction;
         private JXHyperlink todayLink;
 
+        @SuppressWarnings("rawtypes")
         TodayPanel() {
             super(new FlowLayout());
             setBackgroundPainter(new MattePainter(new GradientPaint(0, 0, new Color(238, 238, 238), 0, 1, Color.WHITE)));
@@ -936,7 +936,9 @@ public class JXDateTimePicker extends JComponent {
 
                 @Override
                 public void mousePressed(MouseEvent e) {
-                    if (e.getClickCount() != 2) return;
+                    if (e.getClickCount() != 2) {
+                        return;
+                    }
                     todayAction.select = true;
                 }
                 
@@ -973,6 +975,7 @@ public class JXDateTimePicker extends JComponent {
                 putValue(NAME, getLinkFormat().format(new Object[] {cal.getTime()}));
             }
 
+            @Override
             public void actionPerformed(ActionEvent ae) {
                 String key = select ? JXDateTimePicker.HOME_COMMIT_KEY : JXDateTimePicker.HOME_NAVIGATE_KEY;
                 select = false;

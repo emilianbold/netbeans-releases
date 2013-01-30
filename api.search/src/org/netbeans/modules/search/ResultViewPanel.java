@@ -44,7 +44,6 @@ package org.netbeans.modules.search;
 
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
-import java.awt.Color;
 import java.awt.FlowLayout;
 import java.awt.SystemColor;
 import java.awt.event.ActionEvent;
@@ -56,7 +55,6 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
-import javax.swing.UIManager;
 import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.modules.search.ui.UiUtils;
 import org.netbeans.spi.search.provider.SearchComposition;
@@ -79,11 +77,6 @@ class ResultViewPanel extends JPanel implements Lookup.Provider {
 
     private static final String CARD_NAME_RESULTS = "results";          //NOI18N
     private static final String CARD_NAME_INFO = "info";                //NOI18N
-
-    private static final boolean isMacLaf =
-            "Aqua".equals(UIManager.getLookAndFeel().getID()); //NOI18N
-    private static final Color macBackground =
-            UIManager.getColor("NbExplorerView.background"); //NOI18N
 
     /**
      * tree view for displaying found objects
@@ -129,7 +122,7 @@ class ResultViewPanel extends JPanel implements Lookup.Provider {
     void componentOpened() {
     }
 
-    synchronized void showInfo(String title) {
+    final synchronized void showInfo(String title) {
         if (infoPanel == null) {
             infoPanel = new JPanel();
             infoPanel.setLayout(new BorderLayout());

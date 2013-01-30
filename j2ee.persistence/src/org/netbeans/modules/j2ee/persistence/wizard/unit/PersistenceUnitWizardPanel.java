@@ -44,11 +44,9 @@
 
 package org.netbeans.modules.j2ee.persistence.wizard.unit;
 
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JPanel;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.j2ee.persistence.dd.common.Persistence;
 import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
 import org.netbeans.modules.j2ee.persistence.provider.InvalidPersistenceXmlException;
@@ -103,34 +101,6 @@ public abstract class PersistenceUnitWizardPanel extends JPanel {
         PUDataObject pudo = ProviderUtil.getPUDataObject(project);
         Persistence persistence = pudo.getPersistence();
         return isUnique(getPersistenceUnitName(), persistence.getPersistenceUnit());
-    }
-
-    /**
-     *@return an initial name for a persistence unit, i.e. a name that 
-     * is unique.
-     */ 
-    protected final String getCandidateName(){
-        String candidateNameBase = ProjectUtils.getInformation(project).getName() + "PU"; //NOI18N
-        try {
-            if (!ProviderUtil.persistenceExists(project)) {
-                return candidateNameBase;
-            }
-            PUDataObject pudo = ProviderUtil.getPUDataObject(project);
-            Persistence persistence = pudo.getPersistence();
-
-            int suffix = 2;
-            PersistenceUnit[] punits = persistence.getPersistenceUnit();
-            String candidateName = candidateNameBase;
-            while (!isUnique(candidateName, punits)) {
-                candidateName = candidateNameBase + suffix++;
-            }
-            return candidateName;
-        } catch (InvalidPersistenceXmlException ipex) {
-            // just log, the user is notified about invalid persistence.xml when 
-            // the panel is validated
-            LOG.log(Level.FINE, "Invalid persistence.xml found", ipex); //NOI18N
-        }
-        return candidateNameBase;
     }
     
     /**

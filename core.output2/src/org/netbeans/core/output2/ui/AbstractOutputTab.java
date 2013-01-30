@@ -53,6 +53,7 @@ import javax.swing.*;
 import javax.swing.text.Document;
 import java.awt.*;
 import org.netbeans.core.output2.OutputDocument;
+import org.netbeans.core.output2.options.OutputOptions;
 
 /**
  * A basic output pane.  This class implements the non-output window specific
@@ -68,6 +69,7 @@ public abstract class AbstractOutputTab extends JComponent implements Accessible
     private boolean inputVisible = false;
     private AbstractOutputPane outputPane;
     private Action[] actions = new Action[0];  
+    protected static final String ACCELERATORS_KEY = "ACCELERATORS_KEY";//NOI18N
 
     private Component toFocus;
     
@@ -191,22 +193,28 @@ public abstract class AbstractOutputTab extends JComponent implements Accessible
             //It is a Controller.ControllerAction - don't create a memory leak by listening to it
             a = new WeakAction(a);
         }
-        KeyStroke accel = null;
+        KeyStroke[] accels = null;
         String name;
-        Object o = a.getValue (Action.ACCELERATOR_KEY);
-        if (o instanceof KeyStroke) {
-            accel = (KeyStroke) o;
+        Object o = a.getValue(ACCELERATORS_KEY);
+        if (o instanceof KeyStroke[]) {
+            accels = (KeyStroke[]) o;
         }
         name = (String) a.getValue(Action.NAME);
-        if (accel != null) {
-            if (Controller.LOG) Controller.log ("Installed action " + name + " on " + accel);
-            // if the logic here changes, check the popup escaping hack in Controller
-            // it temporarily removes the VK_ESCAPE from input maps..
-            JComponent c = getOutputPane().textView;
-            c.getInputMap().put(accel, name);
-            c.getActionMap().put(name, a);
-            getInputMap (WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put (accel, name);
-            getActionMap().put(name, a);
+        if (accels != null) {
+            for (KeyStroke accel : accels) {
+                if (Controller.LOG) {
+                    Controller.log("Installed action " //NOI18N
+                            + name + " on " + accel);                   //NOI18N
+                }
+                // if the logic here changes, check the popup escaping hack in
+                // Controller it temporarily removes the VK_ESCAPE from input
+                // maps..
+                JComponent c = getOutputPane().textView;
+                c.getInputMap().put(accel, name);
+                c.getActionMap().put(name, a);
+                getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(accel, name);
+                getActionMap().put(name, a);
+            }
         }
     }
 

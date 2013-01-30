@@ -82,6 +82,7 @@ public class CustomizerFrameworks extends javax.swing.JPanel implements HelpCtx.
     private WebProjectProperties uiProperties;
     private List<WebModuleExtender> newExtenders = new LinkedList<WebModuleExtender>();
     private List<WebFrameworkProvider> usedFrameworks = new LinkedList<WebFrameworkProvider>();
+    private List<String> addedFrameworks = new LinkedList<String>();
     private Map<WebFrameworkProvider, WebModuleExtender> extenders = new IdentityHashMap<WebFrameworkProvider, WebModuleExtender>();
     private ExtenderController controller = ExtenderController.create();
     private boolean initialized = false;
@@ -193,14 +194,13 @@ public class CustomizerFrameworks extends javax.swing.JPanel implements HelpCtx.
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 373, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jButtonAdd))
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(jLabelFrameworks)
-                .addContainerGap())
             .addComponent(jSeparator1, javax.swing.GroupLayout.DEFAULT_SIZE, 456, Short.MAX_VALUE)
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(jLabelConfig)
-                .addContainerGap())
             .addComponent(jPanelConfig, javax.swing.GroupLayout.DEFAULT_SIZE, 456, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabelFrameworks)
+                    .addComponent(jLabelConfig))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -209,7 +209,7 @@ public class CustomizerFrameworks extends javax.swing.JPanel implements HelpCtx.
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(jButtonAdd)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 253, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 131, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(9, 9, 9)
                 .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -238,7 +238,6 @@ public class CustomizerFrameworks extends javax.swing.JPanel implements HelpCtx.
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 12);
         inner.add(panel, gridBagConstraints);
  
-        List<String> addedFrameworks = new LinkedList<String>();
         DialogDescriptor desc = new DialogDescriptor(inner, NbBundle.getMessage(CustomizerFrameworks.class, "LBL_SelectWebExtension_DialogTitle")); //NOI18N
         Object res = DialogDisplayer.getDefault().notify(desc);
         if (res.equals(NotifyDescriptor.YES_OPTION)) {

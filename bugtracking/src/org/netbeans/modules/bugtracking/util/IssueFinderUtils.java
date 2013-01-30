@@ -60,7 +60,10 @@ public class IssueFinderUtils {
         List<IssueFinder> ret = new LinkedList<IssueFinder>();
         DelegatingConnector[] dcs = BugtrackingManager.getInstance().getConnectors();
         for (DelegatingConnector dc : dcs) {
-            ret.add(dc.getIssueFinder());
+            IssueFinder issueFinder = dc.getIssueFinder();
+            if(issueFinder != null) {
+                ret.add(issueFinder);
+            }
         }
         return ret;
     }

@@ -45,8 +45,8 @@ package org.netbeans.modules.php.editor.model.nodes;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.api.PhpModifiers;
+import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.parser.astnodes.FieldsDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.SingleFieldDeclaration;
 
@@ -54,8 +54,9 @@ import org.netbeans.modules.php.editor.parser.astnodes.SingleFieldDeclaration;
  *
  * @author Radek Matous
  */
-public class SingleFieldDeclarationInfo extends ASTNodeInfo<SingleFieldDeclaration> {
+public final class SingleFieldDeclarationInfo extends ASTNodeInfo<SingleFieldDeclaration> {
     private FieldsDeclaration fd;
+
     private SingleFieldDeclarationInfo(FieldsDeclaration fd, SingleFieldDeclaration node) {
         super(node);
         this.fd = fd;
@@ -93,4 +94,5 @@ public class SingleFieldDeclarationInfo extends ASTNodeInfo<SingleFieldDeclarati
     public QualifiedName getQualifiedName() {
         return QualifiedName.createUnqualifiedName(getName());
     }
+
 }

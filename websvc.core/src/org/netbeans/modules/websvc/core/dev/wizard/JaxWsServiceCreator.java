@@ -288,7 +288,7 @@ public class JaxWsServiceCreator implements ServiceCreator {
                 if (classPath != null) {
                     String serviceImplPath = classPath.getResourceName(createdFile, 
                         '.', false);
-                    Service service = jaxWsModel.addService(wsName, serviceImplPath);
+                    jaxWsModel.addService(wsName, serviceImplPath);
                     ProjectManager.mutex().writeAccess(new Runnable() {
 
                     public void run() {
@@ -525,6 +525,7 @@ public class JaxWsServiceCreator implements ServiceCreator {
         });        
     }
 
+    @org.netbeans.api.annotations.common.SuppressWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE")
     private void generateDelegateMethods(final FileObject targetFo, 
             EjbReference ref) throws IOException 
     {

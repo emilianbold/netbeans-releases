@@ -469,7 +469,6 @@ public final class ClientStubsSetupPanelVisual extends JPanel implements Abstrac
     }// </editor-fold>//GEN-END:initComponents
 
 private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed
-        Sources sources = ProjectUtils.getSources(project);
         FileObject fo = BrowseFolders.showDialog( sourceGroups, DataFolder.class,
                 folderTextField.getText().replace( File.separatorChar, '/' ) );
 

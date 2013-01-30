@@ -47,7 +47,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.List;
 import javax.swing.AbstractButton;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -55,16 +54,17 @@ import javax.swing.JPanel;
 import javax.swing.JSplitPane;
 import org.netbeans.modules.search.BasicComposition;
 import org.netbeans.modules.search.ContextView;
+import org.netbeans.modules.search.FindDialogMemory;
 import org.netbeans.modules.search.Manager;
 import org.netbeans.modules.search.ReplaceTask;
 import org.netbeans.modules.search.ResultModel;
 import org.netbeans.modules.search.ResultView;
-import org.openide.filesystems.FileObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -72,13 +72,16 @@ import org.openide.util.NbBundle;
  */
 public class BasicReplaceResultsPanel extends BasicAbstractResultsPanel {
 
+    private static final RequestProcessor RP =
+            new RequestProcessor(BasicReplaceResultsPanel.class.getName());
+    private final RequestProcessor.Task SAVE_TASK = RP.create(new SaveTask());
     private JButton replaceButton;
+    private JSplitPane splitPane;
 
     public BasicReplaceResultsPanel(ResultModel resultModel,
-            BasicComposition composition, List<FileObject> rootFiles,
-            Node infoNode) {
-        super(resultModel, composition, true, rootFiles,
-                new ResultsOutlineSupport(true, true, resultModel, rootFiles,
+            BasicComposition composition, Node infoNode) {
+        super(resultModel, composition, true,
+                new ResultsOutlineSupport(true, true, resultModel, composition,
                 infoNode));
         init();
     }
@@ -101,10 +104,11 @@ public class BasicReplaceResultsPanel extends BasicAbstractResultsPanel {
         leftPanel.add(resultsOutlineSupport.getOutlineView());
         leftPanel.add(buttonPanel);
 
-        JSplitPane splitPane = new JSplitPane();
+        this.splitPane = new JSplitPane();
         splitPane.setLeftComponent(leftPanel);
         splitPane.setRightComponent(new ContextView(resultModel,
                 getExplorerManager()));
+        initSplitDividerLocationHandling();
 
         getContentPanel().add(splitPane);
         initResultModelListener();
@@ -124,6 +128,22 @@ public class BasicReplaceResultsPanel extends BasicAbstractResultsPanel {
 
     private void initResultModelListener() {
         resultModel.addPropertyChangeListener(new ModelListener());
+    }
+
+    private void initSplitDividerLocationHandling() {
+        splitPane.addPropertyChangeListener(new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                String pn = evt.getPropertyName();
+                if (pn.equals(JSplitPane.DIVIDER_LOCATION_PROPERTY)) {
+                    SAVE_TASK.schedule(1000);
+                }
+            }
+        });
+        int location = FindDialogMemory.getDefault().getReplaceResultsDivider();
+        if (location > 0) {
+            splitPane.setDividerLocation(location);
+        }
     }
 
     private class ModelListener implements PropertyChangeListener {
@@ -221,5 +241,16 @@ public class BasicReplaceResultsPanel extends BasicAbstractResultsPanel {
                 btnExpand.setEnabled(false);
             }
         });
+    }
+
+    private class SaveTask implements Runnable {
+
+        @Override
+        public void run() {
+            if (splitPane != null) {
+                FindDialogMemory.getDefault().setReplaceResultsDivider(
+                        splitPane.getDividerLocation());
+            }
+        }
     }
 }

@@ -45,9 +45,10 @@ package org.netbeans.modules.cnd.repository.translator;
 
 import java.util.HashSet;
 import java.util.Set;
-import org.netbeans.modules.cnd.repository.api.RepositoryTranslation;
 import org.netbeans.modules.cnd.repository.disk.StorageAllocator;
+import org.netbeans.modules.cnd.repository.impl.BaseRepository;
 import org.netbeans.modules.cnd.repository.util.IntToStringCache;
+import org.netbeans.modules.cnd.repository.relocate.api.UnitCodec;
 
 /**
  * This class is responsible for int <-> String translation for both
@@ -81,8 +82,7 @@ import org.netbeans.modules.cnd.repository.util.IntToStringCache;
  * 
  * @author Nickolay Dalmatov
  */
-@org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.cnd.repository.api.RepositoryTranslation.class)
-public class RepositoryTranslatorImpl implements RepositoryTranslation {
+public class RepositoryTranslatorImpl {
 
     /**
      * It is 
@@ -90,55 +90,75 @@ public class RepositoryTranslatorImpl implements RepositoryTranslation {
      * 2) a container for int/string table for each unit's file names (a table per unit)
      * (stores units timestamps as well)
      */
-    private static UnitsCache unitNamesCache = null;
-    private static final Object initLock = new Object();
-    private static boolean loaded = false;
+    private UnitsCache unitNamesCache = null;
+    private final Object initLock = new Object();
+    private volatile boolean loaded = false;
+    private final StorageAllocator storageAllocator;
+    private final BaseRepository repository;
+
     private static final int DEFAULT_VERSION_OF_PERSISTENCE_MECHANIZM = 0;
     private static int version = DEFAULT_VERSION_OF_PERSISTENCE_MECHANIZM;
 
     /** Creates a new instance of RepositoryTranslatorImpl */
-    public RepositoryTranslatorImpl() {
-        // load master index
+    public RepositoryTranslatorImpl(StorageAllocator storageAllocator, BaseRepository repository) {
+        this.storageAllocator = storageAllocator;
+        this.repository = repository;
     }
 
-    @Override
-    public int getFileIdByName(final int unitId, final CharSequence fileName) {
+    public int getFileIdByName(int unitId, final CharSequence fileName) {
         assert fileName != null;
-        final IntToStringCache unitFileNames = getUnitFileNames(unitId);
+        unitId = repository.unmaskRepositoryID(unitId);
+        IntToStringCache unitFileNames = getUnitFileNames(unitId);
         return unitFileNames.getId(fileName);
     }
 
-    @Override
-    public CharSequence getFileNameById(final int unitId, final int fileId) {
+    public CharSequence getFileNameById(int unitId, final int fileId) {
+        unitId = repository.unmaskRepositoryID(unitId);
         final IntToStringCache fileNames = getUnitFileNames(unitId);
+        // #215449 - IndexOutOfBoundsException in RepositoryTranslatorImpl.getFileNameById
+        int size = fileNames.isDummy() ? -1 : fileNames.size();
+        if (size <= fileId) {
+            StringBuilder message = new StringBuilder();
+            message.append("Unit: ").append(getUnitName(unitId)); //NOI18N
+            message.append(" FileIndex: ").append(fileId); //NOI18N
+            message.append(" CacheSize: ").append(size); //NOI18N
+            message.append(" Thread=").append(Thread.currentThread().getName()); //NOI18N
+            Exception cause = fileNames.getCreationStack();
+            if (cause == null) {
+                throw new IllegalArgumentException(message.toString());
+            } else {
+                throw new IllegalArgumentException(message.toString(), cause);
+            }
+        }
         final CharSequence fileName = fileNames.getValueById(fileId);
         return fileName;
     }
 
-    @Override
-    public CharSequence getFileNameByIdSafe(final int unitId, final int fileId) {
+    public CharSequence getFileNameByIdSafe(int unitId, final int fileId) {
+        unitId = repository.unmaskRepositoryID(unitId);
         final IntToStringCache fileNames = getUnitFileNames(unitId);
         final CharSequence fileName = fileNames.containsId(fileId) ? fileNames.getValueById(fileId) : "?"; // NOI18N
         return fileName;
     }
 
-    @Override
     public int getUnitId(CharSequence unitName) {
         if (!unitNamesCache.containsValue(unitName)) {
             // NB: this unit can't be open (since there is no such unit in unitNamesCache)
             // so we are just removing some ocassionally existing in persisntence files
-            StorageAllocator.getInstance().deleteUnitFiles(unitName, false);
+            storageAllocator.deleteUnitFiles(unitName, false);
         }
-        return unitNamesCache.getId(unitName);
+        int unitId = unitNamesCache.getId(unitName);
+        unitId = repository.maskByRepositoryID(unitId);
+        return unitId;
     }
 
-    @Override
     public CharSequence getUnitName(int unitId) {
+        unitId = repository.unmaskRepositoryID(unitId);
         return unitNamesCache.getValueById(unitId);
     }
 
-    @Override
     public CharSequence getUnitNameSafe(int unitId) {
+        unitId = repository.unmaskRepositoryID(unitId);
         return unitNamesCache.containsId(unitId) ? unitNamesCache.getValueById(unitId) : "No Index " + unitId + " in " + unitNamesCache; // NOI18N
     }
 
@@ -152,36 +172,51 @@ public class RepositoryTranslatorImpl implements RepositoryTranslation {
         }
         unitNamesCache.storeUnitIndex(unitName);
         unitNamesCache.removeFileNames(unitName);
+        unitNamesCache.storeMasterIndex();
     }
 
     public void shutdown() {
         unitNamesCache.storeMasterIndex();
-        StorageAllocator.getInstance().purgeCaches();
+        unitNamesCache.shutdown();
+        storageAllocator.purgeCaches();
     }
 
-    public void loadUnitIndex(final CharSequence unitName) {
-        unitNamesCache.loadUnitIndex(unitName, new HashSet<CharSequence>());
+    public IntToStringCache loadUnitIndex(int unitId, CharSequence unitName) {
+        synchronized (repository.getUnitLock(unitId)) {
+            unitNamesCache.loadUnitIndex(unitName, new HashSet<CharSequence>());
+            unitId = repository.unmaskRepositoryID(unitId);
+            return unitNamesCache.getFileNames(unitId);
+        }
     }
 
     public void removeUnit(final CharSequence unitName) {
         unitNamesCache.removeUnit(unitName);
     }
 
-    public void startup(int newVersion) {
+    public void startup(int newVersion, UnitCodec unitCodec) {
         version = newVersion;
-        init();
+        init(unitCodec);
     }
 
     private IntToStringCache getUnitFileNames(int unitId) {
-        return unitNamesCache.getFileNames(unitId);
+        unitId = repository.unmaskRepositoryID(unitId);
+        IntToStringCache unitFileNames = unitNamesCache.getFileNames(unitId);
+        if (unitFileNames.isDummy()) {
+            // load unit index
+            if (unitNamesCache.containsId(unitId)) {
+                CharSequence unitName = unitNamesCache.getValueById(unitId);
+                unitFileNames = loadUnitIndex(unitId, unitName);
+            }
+        }
+        return unitFileNames;
     }
 
-    private void init() {
+    private void init(UnitCodec unitCodec) {
         boolean aLoaded = loaded;
         if (!aLoaded) {
             synchronized (initLock) {
                 if (!loaded) {
-                    unitNamesCache = new UnitsCache();
+                    unitNamesCache = new UnitsCache(storageAllocator, unitCodec);
                     loaded = true;
                 }
             }

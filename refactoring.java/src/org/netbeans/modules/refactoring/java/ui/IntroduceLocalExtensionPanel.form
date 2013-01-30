@@ -25,26 +25,6 @@
           <Group type="102" alignment="1" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" alignment="0" attributes="0">
-                      <Component id="labelPackage" min="-2" pref="86" max="-2" attributes="0"/>
-                      <EmptySpace min="-2" pref="7" max="-2" attributes="0"/>
-                      <Component id="packageComboBox" max="32767" attributes="0"/>
-                  </Group>
-                  <Group type="102" alignment="0" attributes="0">
-                      <Component id="labelNewName" min="-2" pref="87" max="-2" attributes="0"/>
-                      <EmptySpace min="-2" pref="6" max="-2" attributes="0"/>
-                      <Component id="newNameField" max="32767" attributes="0"/>
-                  </Group>
-                  <Group type="102" alignment="0" attributes="0">
-                      <Component id="labelProject" min="-2" pref="55" max="-2" attributes="0"/>
-                      <EmptySpace min="-2" pref="38" max="-2" attributes="0"/>
-                      <Component id="projectsComboBox" max="32767" attributes="0"/>
-                  </Group>
-                  <Group type="102" alignment="0" attributes="0">
-                      <Component id="labelLocation" min="-2" pref="66" max="-2" attributes="0"/>
-                      <EmptySpace min="-2" pref="27" max="-2" attributes="0"/>
-                      <Component id="rootComboBox" max="32767" attributes="0"/>
-                  </Group>
                   <Group type="102" attributes="0">
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="chkReplace" alignment="0" min="-2" max="-2" attributes="0"/>
@@ -55,6 +35,21 @@
                           </Group>
                       </Group>
                       <EmptySpace min="0" pref="70" max="32767" attributes="0"/>
+                  </Group>
+                  <Group type="102" alignment="0" attributes="0">
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="labelNewName" linkSize="1" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="labelPackage" linkSize="1" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="labelLocation" linkSize="1" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="labelProject" linkSize="1" alignment="0" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace min="-2" pref="6" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="projectsComboBox" max="32767" attributes="0"/>
+                          <Component id="rootComboBox" max="32767" attributes="0"/>
+                          <Component id="packageComboBox" max="32767" attributes="0"/>
+                          <Component id="newNameField" max="32767" attributes="0"/>
+                      </Group>
                   </Group>
               </Group>
               <EmptySpace type="separate" max="-2" attributes="0"/>

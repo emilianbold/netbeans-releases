@@ -45,7 +45,9 @@ package org.netbeans.modules.maven.osgi.customizer;
 import javax.swing.JComponent;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.api.NbMavenProject;
+import org.netbeans.modules.maven.api.PluginPropertyUtils;
 import org.netbeans.modules.maven.api.customizer.ModelHandle2;
+import org.netbeans.modules.maven.osgi.OSGiConstants;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
 import org.openide.util.Lookup;
@@ -61,7 +63,16 @@ public class PackagesPanelProvider implements ProjectCustomizer.CompositeCategor
     public Category createCategory(Lookup context) {
         Project project = context.lookup(Project.class);
         NbMavenProject watcher = project.getLookup().lookup(NbMavenProject.class);
-        if (NbMavenProject.TYPE_OSGI.equalsIgnoreCase(watcher.getPackagingType())) {
+        String effPackaging = watcher.getPackagingType();
+        String[] types = PluginPropertyUtils.getPluginPropertyList(project, OSGiConstants.GROUPID_FELIX, OSGiConstants.ARTIFACTID_BUNDLE_PLUGIN, "supportedProjectTypes", "supportedProjectType", /*"bundle" would not work for GlassFish parent POM*/null);
+        if (types != null) {
+            for (String type : types) {
+                if (effPackaging.equals(type)) {
+                    effPackaging = NbMavenProject.TYPE_OSGI;
+                }
+            }
+        }
+        if (NbMavenProject.TYPE_OSGI.equalsIgnoreCase(effPackaging)) {
             return ProjectCustomizer.Category.create(
                     ModelHandle2.PANEL_COMPILE,
                     org.openide.util.NbBundle.getMessage(PackagesPanelProvider.class, "TIT_Packages"),

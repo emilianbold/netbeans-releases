@@ -110,8 +110,8 @@ public class ProjectUtilities {
                 assert false : "DataObject must exist for " + fo;
                 return false;
             }
-            EditCookie ec = dobj.getCookie(EditCookie.class);
-            OpenCookie oc = dobj.getCookie(OpenCookie.class);
+            EditCookie ec = dobj.getLookup().lookup(EditCookie.class);
+            OpenCookie oc = dobj.getLookup().lookup(OpenCookie.class);
             if (ec != null) {
                 ec.edit();
             } else if (oc != null) {

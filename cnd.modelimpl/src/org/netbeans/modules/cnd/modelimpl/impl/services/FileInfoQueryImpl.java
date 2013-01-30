@@ -66,6 +66,7 @@ import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.support.StartEntry;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.content.project.FileContainer;
+import org.netbeans.modules.cnd.modelimpl.csm.core.FileBuffer;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FilePreprocessorConditionState;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Offsetable;
@@ -75,6 +76,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.APTFindMacrosWalker;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.GuardBlockWalker;
+import org.netbeans.modules.cnd.modelimpl.platform.FileBufferDoc;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.CndUtils;
@@ -223,6 +225,16 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
     }
     
     private final ConcurrentMap<CsmFile, Object> macroUsagesLocks = new ConcurrentHashMap<CsmFile, Object>();
+
+    @Override
+    public boolean isDocumentBasedFile(CsmFile file) {
+        if (file instanceof FileImpl) {
+            FileImpl impl = (FileImpl) file;
+            FileBuffer buffer = impl.getBuffer();
+            return !buffer.isFileBased();
+        }
+        return false;
+    }
 
     private static final class NamedLock {
         private final CharSequence name;

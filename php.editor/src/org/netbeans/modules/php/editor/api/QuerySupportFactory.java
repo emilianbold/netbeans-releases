@@ -54,7 +54,10 @@ import org.openide.util.Exceptions;
 /**
  * @author Radek Matous
  */
-public class QuerySupportFactory {
+public final class QuerySupportFactory {
+
+    private QuerySupportFactory() {
+    }
 
     public static QuerySupport get(final FileObject source) {
         return get(QuerySupport.findRoots(source,

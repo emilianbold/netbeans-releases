@@ -70,7 +70,7 @@ final class PhpTemplates implements RecommendedTemplates, PrivilegedTemplates {
         "Templates/Other/xhtml.xhtml", // NOI18N
         "Templates/Other/javascript.js", // NOI18N
         "Templates/Other/CascadeStyleSheet.css", // NOI18N
-        "Templates/Other/Folder" // NOI18N
+        "Templates/Other/org-netbeans-modules-project-ui-NewFileIterator-folderIterator", // NOI18N
     };
 
     @Override

@@ -28,7 +28,23 @@
         <p>You can specify the following Subversion settings:</p>
             
         <ul>
-            <li><strong>Specify the SVN executable File</strong>. Enter the path to the Subversion
+		    <li><strong>Preferred Client</strong>. Select and implementation of the Subversion client to use. The possible options are:
+			  <ul>
+			
+			<li><strong>JavaHL</strong>. A Java language binding for the Subversion API. The default and recommended client.</li>
+			<li><strong>SvnKit</strong>. A pure Java toolkit for working with the Subversion version control system.</li>
+			<li><strong>CLI</strong>. A command line client of the Subversion version control system.</li>
+			</ul>
+			<ul class="note"><li>For more information about Subversion clients supported by the NetBeans IDE, see the <i>Supported Clients FAQ</i> at:</li></ul>
+        <p><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+            <param name="content" value="http://wiki.netbeans.org/FaqSubversionClients">
+            <param name="text" value="<html><u>http://wiki.netbeans.org/FaqSubversionClients"> 
+            <param name="textFontSize" value="medium">
+            <param name="textColor" value="blue">
+        </object></p>   </li>
+            <li><strong>Path to the client libraries folder</strong>. (Applicable to the JavaHL client only.) Specify the path to the JavaHL client libraries folder stored on your system or click Browse to navigate to the folder on your system. Any changes made
+                will take effect upon restarting the IDE.</li>
+			<li><strong>Path to the SVN executable File</strong>. (Applicable to the Command Line client only.) Enter the path to the Subversion
                 executable file in the IDE. This should be the path up to, but not including,
                 the file. Click Browse to navigate to the folder on your system. If left blank,
                 the IDE searches for the executable in its default location. Any changes made
@@ -60,16 +76,28 @@
             <li><strong>Variable content</strong>. You can specify rules defining how status 
                 labels should appear depending on the repository folder(s) which files belong 
                 to. To do so, click the Define {folder} button.</li>
-            <li><strong>Other: Automatically open Output window tabs</strong>. Selecting this option
+			 <li><strong>Locking Settings</strong>. You can specify the following options for locking  version controlled files  to avoid clashing commits:
+				<ul>
+				<li><strong>Check Repository for Locked Files</strong>. If selected, the IDE checks the lock status of files in the Subversion repository when refreshing statuses of files. The refresh may thus last a bit longer.</li>
+				<li><strong>Lock Edited Files With svn:needs-lock Property</strong>. When selected, the IDE automatically locks files in the repository when you start editing or perform refactoring on them.				</li>
+				</ul>
+			 </li>	
+            <li><strong>Other</strong>. 
+			    <ul>
+				<li><strong> Automatically open Output window tabs</strong>. Selecting this option
                 sets the Output window to open a new tab each time that a new versioning operation that involves
                 interaction with the repository takes place (e.g., commit, checkout). This
                 option is selected by default.</li>
+				<li><strong>Apply &quot;Exclude From Commit&quot; On New Files Automatically</strong>. When selected, the IDE automatically excludes new files from the commit action.</li>
+				<li><strong>Prefix Repository Location with Repository URL</strong>. When selected, the IDE adds a repository root URL prefix to the repository path columns of modified files displayed in the <a href="svn_versioning_window.html">Versioning window</a>, <a href="svn_diff_viewer.html">Diff viewer</a> and <a href="svn_commit_dialog.html">Commit dialog box</a>.</li>
+				</ul></li>
         </ul>
     
         <dl>
             <dt><a name="seealso">See Also</a></dt>
             <dd><a href="../svn_about.html">About the IDE's Subversion Support</a></dd>
-            <dd><a href="../svn_quickref.html">Subversion Tasks: Quick Reference</a></dd>            
+            <dd><a href="../svn_quickref.html">Subversion Tasks: Quick Reference</a></dd>
+			       
         </dl>
         
         <hr>

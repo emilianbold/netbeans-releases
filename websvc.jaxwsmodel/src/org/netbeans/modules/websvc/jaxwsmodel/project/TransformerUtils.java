@@ -51,6 +51,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.zip.CRC32;
 import java.util.zip.Checksum;
 import javax.xml.transform.Transformer;
@@ -58,10 +62,18 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
+
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.websvc.api.jaxws.project.JAXWSVersionProvider;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -81,10 +93,11 @@ public class TransformerUtils {
     public static final String JAXWS_BUILD_XML_PATH = "nbproject/jaxws-build.xml"; // NOI18N
     
     static final String GENFILES_PROPERTIES_PATH = "nbproject/genfiles.properties"; // NOI18N
-    static final String KEY_SUFFIX_JAXWS_BUILD_CRC = ".stylesheet.CRC32"; // NOI18N
+    static final String KEY_SUFFIX_JAXWS_BUILD_CRC = ".stylesheet.CRC32";   // NOI18N
 
-    static final String JAXWS_20_LIB = "jaxws20lib";
-    static final String JAXWS_VERSION = "jaxwsversion";
+    static final String JAXWS_20_LIB = "jaxws20lib";                        // NOI18N
+    static final String JAXWS_VERSION = "jaxwsversion";                     // NOI18N
+    static final String XJC_ENCODING ="xjcencoding";                        // NOI18N
     
     /** xsl transformation utility for generating jaxws-build.xml script
     */ 
@@ -141,6 +154,9 @@ public class TransformerUtils {
                 if(!isJAXWS21(projectDirectory)) {
                     t.setParameter(JAXWS_VERSION, JAXWS_20_LIB );
                 }
+            }
+            if ( hasEncoding(FileOwnerQuery.getOwner(projectDirectory))){
+                t.setParameter(XJC_ENCODING, Boolean.TRUE.toString());
             }
             File jaxws_xml_F = FileUtil.toFile(jaxws_xml);
             assert jaxws_xml_F != null;
@@ -200,6 +216,50 @@ public class TransformerUtils {
         }
         // By default return true
         return true;
+    }
+    
+    private static boolean hasEncoding(Project project){
+        SourceGroup[] srcGroups = ProjectUtils.getSources(project).getSourceGroups(
+                JavaProjectConstants.SOURCES_TYPE_JAVA);
+        boolean hasXjc = false;
+        if (srcGroups != null ) {
+            for(SourceGroup group : srcGroups){
+                ClassPath classpath = ClassPath.getClassPath(
+                        group.getRootFolder(), ClassPath.COMPILE);
+                if ( classpath!= null && classpath.findResource(
+                        "com/sun/tools/xjc/XJCTask.class")!= null)
+                {
+                    hasXjc = true;
+                }
+                if ( classpath== null){
+                    return false;
+                }
+                FileObject fo = classpath.findResource(
+                        "com/sun/tools/xjc/generator/bean/field/MessageBundle_it.properties"); //NOI18N    
+                if ( fo!= null){
+                    return true;
+                }
+            }
+        }
+        if ( hasXjc ){
+            /* JEE server based project with XJC in classpath. This task has no 
+             *  "encoding" attribute.
+             */
+            return false;    
+        }
+        else {
+            /* 
+             * Non JEE server based project ( J2SE ). It uses libs.jaxws21.classpath
+             * property to define XJC classpath task. Project's classpath 
+             * doesn't contain XJC class.
+             */
+            String jaxWs21 = PropertyUtils.getGlobalProperties().
+                    getProperty("libs.jaxws21.classpath");
+            ClassPath classPath = ClassPathSupport.createClassPath(jaxWs21);
+            FileObject fo = classPath.findResource(
+                    "com/sun/tools/xjc/generator/bean/field/MessageBundle_it.properties"); //NOI18N    
+            return fo!= null;
+        }
     }
     
     /** Find (maybe cached) CRC for a URL, using a preexisting input stream (not closed by this method). */

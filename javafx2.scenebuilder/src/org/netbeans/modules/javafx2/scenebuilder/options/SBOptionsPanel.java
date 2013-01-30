@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.javafx2.scenebuilder.options;
 
@@ -49,10 +49,14 @@ import javax.swing.AbstractAction;
 import javax.swing.JFileChooser;
 import org.netbeans.modules.javafx2.scenebuilder.Home;
 import org.netbeans.modules.javafx2.scenebuilder.impl.SBHomeFactory;
+import org.netbeans.modules.options.java.api.JavaOptions;
+import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 
+@OptionsPanelController.Keywords(keywords={"#KW_JavaFXOptions"}, location=JavaOptions.JAVA, tabTitle= "JavaFX")
+@NbBundle.Messages("KW_JavaFXOptions=JavaFX,Scene Builder")
 final class SBOptionsPanel extends javax.swing.JPanel {    
     private final SBOptionsPanelController controller;
     

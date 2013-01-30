@@ -55,11 +55,9 @@ import org.openide.util.Utilities;
  * @author mkuchtiak
  */
 public class WsdlNode extends AbstractNode {
-    WsdlModel model;
     
     public WsdlNode(WsdlModel model) {
         super(new WsdlNodeChildren(model));
-        this.model=model;
         setName("WSDL model");
         setDisplayName("WSDL model");
     }

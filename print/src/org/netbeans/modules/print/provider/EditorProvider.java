@@ -157,7 +157,12 @@ public final class EditorProvider extends ComponentProvider {
         if (document == null) {
             return null;
         }
-        return ((String) document.getProperty(Document.TitleProperty)).replace('\\', '/'); // NOI18N
+        String title = (String) document.getProperty(Document.TitleProperty);
+
+        if (title == null) {
+            return null;
+        }
+        return title.replace('\\', '/'); // NOI18N
     }
 
     private JTextComponent getTextComponent() {

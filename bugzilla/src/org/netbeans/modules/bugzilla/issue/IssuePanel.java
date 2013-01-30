@@ -208,7 +208,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                 scrollRectToVisible(scrollPane1.getBounds());
             }
         });
-        attachmentsPanel = new AttachmentsPanel();
+        attachmentsPanel = new AttachmentsPanel(this);
         GroupLayout layout = (GroupLayout)getLayout();
         layout.replace(dummyCommentsPanel, commentsPanel);
         layout.replace(dummyAttachmentsPanel, attachmentsPanel);
@@ -221,6 +221,9 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     }
 
     private void initDefaultButton() {
+        if(Boolean.getBoolean("bugtracking.suppressActionKeys")) {
+            return;
+        }
         InputMap inputMap = getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
         inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "submit"); // NOI18N
         ActionMap actionMap = getActionMap();
@@ -544,10 +547,12 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                     int index = reporter.indexOf('@');
                     String userName = (index == -1) ? reporter : reporter.substring(0,index);
                     String host = ((KenaiRepository) issue.getRepository()).getHost();
-                    JLabel label = KenaiUtil.createUserWidget(userName, host, KenaiUtil.getChatLink(issue.getID()));
-                    label.setText(null);
-                    ((GroupLayout)getLayout()).replace(reportedStatusLabel, label);
-                    reportedStatusLabel = label;
+                    JLabel label = KenaiUtil.createUserWidget(issue.getRepository().getUrl(), userName, host, KenaiUtil.getChatLink(issue.getID()));
+                    if (label != null) {
+                        label.setText(null);
+                        ((GroupLayout)getLayout()).replace(reportedStatusLabel, label);
+                        reportedStatusLabel = label;
+                    }
                 }
 
                 // modified field
@@ -589,11 +594,13 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                 int index = assignee.indexOf('@');
                 String userName = (index == -1) ? assignee : assignee.substring(0,index);
                 String host = ((KenaiRepository) issue.getRepository()).getHost();
-                JLabel label = KenaiUtil.createUserWidget(userName, host, KenaiUtil.getChatLink(issue.getID()));
-                label.setText(null);
-                ((GroupLayout)getLayout()).replace(assignedToStatusLabel, label);
-                label.setVisible(assignedToStatusLabel.isVisible());
-                assignedToStatusLabel = label;
+                JLabel label = KenaiUtil.createUserWidget(issue.getRepository().getUrl(), userName, host, KenaiUtil.getChatLink(issue.getID()));
+                if (label != null) {
+                    label.setText(null);
+                    ((GroupLayout)getLayout()).replace(assignedToStatusLabel, label);
+                    label.setVisible(assignedToStatusLabel.isVisible());
+                    assignedToStatusLabel = label;
+                }
             }
             if (force) {
                 assignedToStatusLabel.setVisible(assignee.trim().length() > 0);
@@ -622,8 +629,8 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             commentsPanel.setIssue(issue, attachments);
         }
         attachmentsPanel.setAttachments(attachments, isNetbeans);
-        UIUtils.keepFocusedComponentVisible(commentsPanel);
-        UIUtils.keepFocusedComponentVisible(attachmentsPanel);
+        UIUtils.keepFocusedComponentVisible(commentsPanel, this);
+        UIUtils.keepFocusedComponentVisible(attachmentsPanel, this);
         if (force && !isNew) {
             addCommentArea.setText(""); // NOI18N
         }
@@ -1855,6 +1862,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         assignToDefaultCheckBox.setBackground(javax.swing.UIManager.getDefaults().getColor("TextArea.background"));
         org.openide.awt.Mnemonics.setLocalizedText(assignToDefaultCheckBox, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.assignToDefaultCheckBox.text")); // NOI18N
 
+        attachLogCheckBox.setBackground(javax.swing.UIManager.getDefaults().getColor("TextArea.background"));
         org.openide.awt.Mnemonics.setLocalizedText(attachLogCheckBox, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.attachLogCheckBox.text")); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
@@ -2475,27 +2483,29 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         RP.post(new Runnable() {
             @Override
             public void run() {
-                boolean ret = false;
+                boolean submitOK = false;
                 try {
-                    ret = issue.submitAndRefresh();
-                    for (AttachmentsPanel.AttachmentInfo attachment : attachmentsPanel.getNewAttachments()) {
-                        if (attachment.file.exists() && attachment.file.isFile()) {
-                            if (attachment.description.trim().length() == 0) {
-                                attachment.description = NbBundle.getMessage(IssuePanel.class, "IssuePanel.attachment.noDescription"); // NOI18N
+                    submitOK = issue.submitAndRefresh();
+                    if(submitOK) {
+                        for (AttachmentsPanel.AttachmentInfo attachment : attachmentsPanel.getNewAttachments()) {
+                            if (attachment.file.exists() && attachment.file.isFile()) {
+                                if (attachment.description.trim().length() == 0) {
+                                    attachment.description = NbBundle.getMessage(IssuePanel.class, "IssuePanel.attachment.noDescription"); // NOI18N
+                                }
+                                issue.addAttachment(attachment.file, null, attachment.description, attachment.contentType, attachment.isPatch); // NOI18N
+                            } else {
+                                // PENDING notify user
                             }
-                            issue.addAttachment(attachment.file, null, attachment.description, attachment.contentType, attachment.isPatch); // NOI18N
+                        }
+                        if(attachLogCheckBox.isVisible() && attachLogCheckBox.isSelected()) {
+                            File f = new File(Places.getUserDirectory(), NbBugzillaConstants.NB_LOG_FILE_PATH); 
+                            if(f.exists()) {
+                                issue.addAttachment(f, "", NbBundle.getMessage(IssuePanel.class, "MSG_LOG_FILE_DESC"), NbBugzillaConstants.NB_LOG_FILE_ATT_CONT_TYPE, false); // NOI18N
+                            }
+                            BugzillaConfig.getInstance().putAttachLogFile(true);
                         } else {
-                            // PENDING notify user
+                            BugzillaConfig.getInstance().putAttachLogFile(false);
                         }
-                    }
-                    if(attachLogCheckBox.isVisible() && attachLogCheckBox.isSelected()) {
-                        File f = new File(Places.getUserDirectory(), NbBugzillaConstants.NB_LOG_FILE_PATH); 
-                        if(f.exists()) {
-                            issue.addAttachment(f, "", NbBundle.getMessage(IssuePanel.class, "MSG_LOG_FILE_DESC"), NbBugzillaConstants.NB_LOG_FILE_ATT_CONT_TYPE, false); // NOI18N
-                        }
-                        BugzillaConfig.getInstance().putAttachLogFile(true);
-                    } else {
-                        BugzillaConfig.getInstance().putAttachLogFile(false);
                     }
                 } finally {
                     EventQueue.invokeLater(new Runnable() {
@@ -2506,7 +2516,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                         }
                     });
                     handle.finish();
-                    if(ret) {
+                    if(submitOK) {
                         if (isNew) {
                             // Show all custom fields, not only the ones shown on bug creation
                             EventQueue.invokeLater(new Runnable() {
@@ -3044,7 +3054,7 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
         return unitIncrement;
     }
 
-    private static final String CURRENT_NB_VERSION = "7.2";                     // NOI18N
+    private static final String CURRENT_NB_VERSION = "7.3";                     // NOI18N
     private String getCurrentNetBeansVersion() {        
         String version = parseProductVersion(getProductVersionValue());        
         if(version != null) {

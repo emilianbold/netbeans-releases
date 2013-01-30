@@ -65,6 +65,11 @@ public class UnresolvedIdentifierTest extends ErrorHighlightingBaseTestCase {
         super(testName);
     }
 
+    public void test218303() throws Exception {
+        // #218303 - Unresolved identifiers in preprocessor directives with alternative tokens
+        performStaticTest("iz218303.cpp");
+    }
+
     public void test212841() throws Exception {
         // #212841 - C++11 strongly typed enum incorrectly handled by code assistance
         performStaticTest("iz212841.cpp");
@@ -332,6 +337,41 @@ public class UnresolvedIdentifierTest extends ErrorHighlightingBaseTestCase {
         performStaticTest("bug212905.cpp");
         Logger.getLogger("cnd.logger").setLevel(oldLevel);
     }
+    
+    public void testBug218192() throws Exception {
+        // Bug 218192 - Exception: attempt to put local declaration FUNCTION_FRIEND_DEFINITION
+        performStaticTest("bug218192.cpp");
+    }      
+
+    public void testBug215225() throws Exception {
+        // Bug 215225 - Infinite loop in TemplateUtils.checkTemplateType
+        performStaticTest("bug215225.cpp");
+    }      
+
+    public void testBug215225_2() throws Exception {
+        // Bug 215225 - Infinite loop in TemplateUtils.checkTemplateType
+        performStaticTest("bug215225_2.cpp");
+    }      
+
+    public void testBug218759() throws Exception {
+        // Bug 218759 - inaccuracy tests: a lot of parser errors in some files (a order of declaration specifiers)
+        performStaticTest("bug218759.cpp");
+    }      
+
+    public void testBug217798() throws Exception {
+        // Bug 217798 - "unexpected token: static" in valid C code (no explicit type given)
+        performStaticTest("bug217798.cpp");
+    }      
+    
+    public void testBug223298() throws Exception {
+        // Bug 223298 - Wrong recognition of function
+        performStaticTest("bug223298.cpp");
+    }            
+
+    public void testBug222883() throws Exception {
+        // Bug 222883 - goto labes ("Unable to resolve identifier G_1")
+        performStaticTest("bug222883.cpp");
+    }            
     
     /////////////////////////////////////////////////////////////////////
     // FAILS

@@ -91,11 +91,13 @@ public class EBDetailsAndCMPFieldPanelTest extends J2eeTestCase {
     }
 
     public static Test suite() {
-        NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(EBDetailsAndCMPFieldPanelTest.class);
-        conf = addServerTests(conf, "testOpenProject", "testEBName", "testDescription", "testSmallIcon",
-                "testLargeIcon", "testRevertChanges");
-        conf = conf.enableModules(".*").clusters(".*");
-        return NbModuleSuite.create(conf);
+        return createAllModulesServerSuite(Server.ANY, EBDetailsAndCMPFieldPanelTest.class,
+                "testOpenProject",
+                "testEBName",
+                "testDescription",
+                "testSmallIcon",
+                "testLargeIcon",
+                "testRevertChanges");
     }
 
     public void testOpenProject() throws Exception {

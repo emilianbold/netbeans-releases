@@ -94,6 +94,7 @@ import javax.swing.plaf.IconUIResource;
 import javax.swing.plaf.basic.BasicComboBoxUI;
 import org.netbeans.lib.profiler.common.CommonUtils;
 import org.netbeans.lib.profiler.common.event.SimpleProfilingStateAdapter;
+import org.netbeans.lib.profiler.global.ProfilingSessionStatus;
 import org.netbeans.modules.profiler.ProfilerControlPanel2.WhiteFilter;
 import org.netbeans.modules.profiler.api.icons.GeneralIcons;
 import org.netbeans.modules.profiler.api.icons.Icons;
@@ -168,7 +169,7 @@ import org.openide.util.lookup.ServiceProvider;
     "ProfilerControlPanel2_SnapshotsNotDeletedMsg=<html><b>Problem deleting snapshot(s).</b><br><br>The snapshot(s) might not have been deleted<br>or have already been deleted outside of the IDE.</html>",
     "ProfilerControlPanel2_RenameSnapshotCaption=Rename Snapshot",
     "ProfilerControlPanel2_NewFileNameLbl=&New file name:",
-    "ProfilerControlPanel2_RenameSnapshotFailedMsg=Failed to rename snapshot to {0}",
+    "ProfilerControlPanel2_RenameSnapshotFailedMsg=<html><b>Failed to rename snapshot to \"{0}\".</b><br><br>Make sure you have provided a valid and unique file name.</html>",
     "ProfilerControlPanel2_EmptyNameMsg=Snapshot name cannot be empty.",
     "MSG_Loading_Progress=Loading...",
     "LAB_ControlPanelName=Profiler",
@@ -443,24 +444,23 @@ public final class ProfilerControlPanel2 extends ProfilerTopComponent {
         void refreshStatus() {
             final int state = Profiler.getDefault().getProfilingState();
 
-            final TargetAppRunner targetAppRunner = Profiler.getDefault().getTargetAppRunner();
-
             String instrStatusText = ""; // NOI18N
-
-            if (state != Profiler.PROFILING_INACTIVE) {
-                final int currentInstrType = targetAppRunner.getProfilingSessionStatus().currentInstrType;
+            
+            if (state == Profiler.PROFILING_RUNNING) {
+                ProfilingSessionStatus pss = Profiler.getDefault().getTargetAppRunner().getProfilingSessionStatus();
+                int currentInstrType = pss.currentInstrType;
 
                 switch (currentInstrType) {
                     case CommonConstants.INSTR_CODE_REGION:
                         instrStatusText = Bundle.ProfilerControlPanel2_NoLinesCodeRegionMsg(
-                                            Integer.valueOf(targetAppRunner.getProfilingSessionStatus().instrEndLine
-                                                - targetAppRunner.getProfilingSessionStatus().instrStartLine));
+                                            Integer.valueOf(pss.instrEndLine
+                                                - pss.instrStartLine));
 
                         break;
                     case CommonConstants.INSTR_RECURSIVE_FULL:
                     case CommonConstants.INSTR_RECURSIVE_SAMPLED:
 
-                        int nMethods = targetAppRunner.getProfilingSessionStatus().getNInstrMethods();
+                        int nMethods = pss.getNInstrMethods();
 
                         if (nMethods > 0) {
                             nMethods--; // Because nInstrMethods is actually the array size where element 0 is always empty
@@ -472,19 +472,20 @@ public final class ProfilerControlPanel2 extends ProfilerTopComponent {
                     case CommonConstants.INSTR_OBJECT_ALLOCATIONS:
                     case CommonConstants.INSTR_OBJECT_LIVENESS:
 
-                        final int nClasses = targetAppRunner.getProfilingSessionStatus().getNInstrClasses();
+                        final int nClasses = pss.getNInstrClasses();
                         instrStatusText = Bundle.ProfilerControlPanel2_NoClassesMsg(Integer.valueOf(nClasses));
                         ;
 
                         break;
                     case CommonConstants.INSTR_NONE_SAMPLING:
+                    case CommonConstants.INSTR_NONE_MEMORY_SAMPLING:
                     case CommonConstants.INSTR_NONE:
                         instrStatusText = Bundle.ProfilerControlPanel2_NothingInstrumentedMsg();
 
                         break;
                 }
             }
-
+            
             if ((savedInstrText == null) || !savedInstrText.equals(instrStatusText)) {
                 savedInstrText = instrStatusText;
                 instrValueLabel.setText(savedInstrText);
@@ -493,21 +494,7 @@ public final class ProfilerControlPanel2 extends ProfilerTopComponent {
             String filterText = ""; // NOI18N
 
             switch (state) {
-                case Profiler.PROFILING_INACTIVE:
-
-                    if (inactive) {
-                        return;
-                    }
-
-                    inactive = true;
-                    threadsValueLabel.setText(""); // NOI18N
-                    totalMemValueLabel.setText(""); // NOI18N
-                    usedMemValueLabel.setText(""); // NOI18N
-                    relTimeValueLabel.setText(""); // NOI18N
-                    typeValueLabel.setText(""); // NOI18N
-
-                    break;
-                default:
+                case Profiler.PROFILING_RUNNING:
                     inactive = false;
 
                     final MonitoredData data = Profiler.getDefault().getVMTelemetryManager().getLastData();
@@ -527,6 +514,20 @@ public final class ProfilerControlPanel2 extends ProfilerTopComponent {
                         relTimeValueLabel.setText(""); // NOI18N
                         typeValueLabel.setText(""); // NOI18N
                     }
+
+                    break;
+                    
+                default:
+                    if (inactive) {
+                        return;
+                    }
+
+                    inactive = true;
+                    threadsValueLabel.setText(""); // NOI18N
+                    totalMemValueLabel.setText(""); // NOI18N
+                    usedMemValueLabel.setText(""); // NOI18N
+                    relTimeValueLabel.setText(""); // NOI18N
+                    typeValueLabel.setText(""); // NOI18N
 
                     break;
             }
@@ -847,6 +848,7 @@ public final class ProfilerControlPanel2 extends ProfilerTopComponent {
                     break;
                 case CommonConstants.INSTR_OBJECT_ALLOCATIONS:
                 case CommonConstants.INSTR_OBJECT_LIVENESS:
+                case CommonConstants.INSTR_NONE_MEMORY_SAMPLING:
                     newMode = MEMORY;
 
                     break;
@@ -931,6 +933,8 @@ public final class ProfilerControlPanel2 extends ProfilerTopComponent {
 
             if (ProfilerIDESettings.getInstance().getAutoSaveSnapshot()) {
                 ResultsManager.getDefault().saveSnapshot(ls);
+                if (!ProfilerIDESettings.getInstance().getAutoOpenSnapshot())
+                    ResultsManager.getDefault().closeSnapshot(ls);
             }
         }
     }
@@ -986,6 +990,7 @@ public final class ProfilerControlPanel2 extends ProfilerTopComponent {
                         return fragmentIcon;
                     case LoadedSnapshot.SNAPSHOT_TYPE_MEMORY_ALLOCATIONS:
                     case LoadedSnapshot.SNAPSHOT_TYPE_MEMORY_LIVENESS:
+                    case LoadedSnapshot.SNAPSHOT_TYPE_MEMORY_SAMPLED:
                         return memoryIcon;
                     default:
                         return null;
@@ -1031,7 +1036,16 @@ public final class ProfilerControlPanel2 extends ProfilerTopComponent {
                 }
             };
 
-            combo = new JComboBox(new DefaultComboBoxModel());
+            combo = new JComboBox(new DefaultComboBoxModel()) {
+                public Dimension getPreferredSize() {
+                    Dimension dim = super.getPreferredSize();
+                    dim.width = 1;
+                    return dim;
+                }
+                public Dimension getMinimumSize() {
+                    return getPreferredSize();
+                }
+            };
             combo.setRenderer(new ProjectNameRenderer());
             combo.getAccessibleContext().setAccessibleName(Bundle.ProfilerControlPanel2_ComboAccessName());
             combo.getAccessibleContext().setAccessibleDescription(Bundle.ProfilerControlPanel2_ComboAccessDescr());
@@ -1090,24 +1104,7 @@ public final class ProfilerControlPanel2 extends ProfilerTopComponent {
 
                         if (value instanceof Snapshot) {
                             Snapshot s = (Snapshot)value;
-                            // FileObject
-                            final FileObject fo = s.getFile();
-
-                            if (s.isHeapDump()) {
-                                Set<TopComponent> tcs = WindowManager.getDefault().getRegistry().getOpened();
-                                for (TopComponent tc : tcs) {
-                                    Object o = tc.getClientProperty("HeapDumpFileName"); // NOI18N
-                                    if (o != null && FileUtil.toFile(fo).equals(new File(o.toString()))) {
-                                        c.setFont(c.getFont().deriveFont(Font.BOLD));
-                                        break;
-                                    }
-                                }
-                            } else {
-                                LoadedSnapshot ls = ResultsManager.getDefault().findLoadedSnapshot(FileUtil.toFile(fo));
-                                if (ls != null) {
-                                    c.setFont(c.getFont().deriveFont(Font.BOLD));
-                                }
-                            }
+                            if (isOpen(s)) c.setFont(c.getFont().deriveFont(Font.BOLD));
                             c.setText(s.getDisplayName());
                             c.setIcon(s.getIcon());
                         } else {
@@ -1218,7 +1215,26 @@ public final class ProfilerControlPanel2 extends ProfilerTopComponent {
 
             updateButtons();
             updateCombo();
-            setDisplayedProject(ProjectUtilities.getMainProject());
+            
+            Lookup.Provider project = NetBeansProfiler.getDefaultNB().getProfiledProject();
+            if (project == null) project = ProjectUtilities.getMainProject();
+            setDisplayedProject(project);
+        }
+        
+        private boolean isOpen(Snapshot s) {
+            File f = FileUtil.toFile(s.getFile());
+
+            if (s.isHeapDump()) {
+                Set<TopComponent> tcs = WindowManager.getDefault().getRegistry().getOpened();
+                for (TopComponent tc : tcs) {
+                    if (f.equals(tc.getClientProperty(ProfilerTopComponent.RECENT_FILE_KEY)))
+                        return true;
+                }
+            } else {
+                LoadedSnapshot ls = ResultsManager.getDefault().findLoadedSnapshot(f);
+                if (ls != null) return true;
+            }
+            return false;
         }
 
         //~ Methods --------------------------------------------------------------------------------------------------------------
@@ -1486,9 +1502,15 @@ public final class ProfilerControlPanel2 extends ProfilerTopComponent {
         private void updateButtons() {
             int[] selected = list.getSelectedIndices();
             openButton.setEnabled(selected.length > 0);
-            renameButton.setEnabled(selected.length == 1);
             deleteButton.setEnabled(selected.length > 0);
             exportButton.setEnabled(selected.length > 0);
+            if (selected.length != 1) {
+                renameButton.setEnabled(false);
+            } else {
+                Object o = list.getModel().getElementAt(selected[0]);
+                if (!(o instanceof Snapshot)) renameButton.setEnabled(false);
+                else renameButton.setEnabled(!isOpen((Snapshot)o));
+            }
         }
 
         private void updateCombo() {
@@ -1519,7 +1541,7 @@ public final class ProfilerControlPanel2 extends ProfilerTopComponent {
     @NbBundle.Messages({
         "ProfilerControlPanel2_ModeLabelString=Mode:",
         "ProfilerControlPanel2_ConfigLabelString=Configuration:",
-        "ProfilerControlPanel2_OnLabelString=On:",
+        "ProfilerControlPanel2_OnLabelString=Host:",
         "ProfilerControlPanel2_StatusLabelString=Status:",
         "ProfilerControlPanel2_NoConfigurationString=None",
         "ProfilerControlPanel2_AttachLabelString=Attach",
@@ -1527,7 +1549,8 @@ public final class ProfilerControlPanel2 extends ProfilerTopComponent {
         "ProfilerControlPanel2_CodeFragmentLabelString=Code Fragment",
         "ProfilerControlPanel2_CpuSamplingLabelString=CPU sampling",
         "ProfilerControlPanel2_CpuLabelString=CPU instrumentation",       
-        "ProfilerControlPanel2_MemoryLabelString=Memory",
+        "ProfilerControlPanel2_MemorySamplingLabelString=Memory sampling",
+        "ProfilerControlPanel2_MemoryLabelString=Memory instrumentation",
         "ProfilerControlPanel2_MonitorLabelString=Monitor",
         "ProfilerControlPanel2_RunningLabelString=Running",
         "ProfilerControlPanel2_StartedLabelString=Started",
@@ -1632,6 +1655,10 @@ public final class ProfilerControlPanel2 extends ProfilerTopComponent {
                         typeValueLabel.setText(Bundle.ProfilerControlPanel2_CpuLabelString());
 
                         break;
+                    case ProfilingSettings.PROFILE_MEMORY_SAMPLING:
+                        typeValueLabel.setText(Bundle.ProfilerControlPanel2_MemorySamplingLabelString());
+
+                        break;
                     case ProfilingSettings.PROFILE_MEMORY_ALLOCATIONS:
                     case ProfilingSettings.PROFILE_MEMORY_LIVENESS:
                         typeValueLabel.setText(Bundle.ProfilerControlPanel2_MemoryLabelString());
@@ -1646,27 +1673,8 @@ public final class ProfilerControlPanel2 extends ProfilerTopComponent {
                 profileValueLabel.setText(ps.getSettingsName());
             }
 
-            String newHost = Profiler.getDefault().getTargetAppRunner().getProfilerEngineSettings().getRemoteHost();
-
-            if (newHost == null) {
-                newHost = ""; // NOI18N
-            }
-
-            if ((host == null) || !host.equals(newHost)) {
-                host = newHost;
-
-                if ("".equals(host)) { // NOI18N
-                    onValueLabel.setText(""); // NOI18N
-                    onLabel.setVisible(false);
-                    onValueLabel.setVisible(false);
-                } else {
-                    onValueLabel.setText(host);
-                    onLabel.setVisible(true);
-                    onValueLabel.setVisible(true);
-                }
-            }
-
             final int newState = Profiler.getDefault().getProfilingState();
+            String newHost = ""; // NOI18N
 
             if (state != newState) {
                 state = newState;
@@ -1677,6 +1685,22 @@ public final class ProfilerControlPanel2 extends ProfilerTopComponent {
 
                         break;
                     case Profiler.PROFILING_STARTED:
+                        TargetAppRunner runner = Profiler.getDefault().getTargetAppRunner();
+                        if (runner != null) newHost = runner.getProfilerEngineSettings().getRemoteHost();
+                        if ((host == null) || !host.equals(newHost)) {
+                            host = newHost;
+
+                            if ("".equals(host)) { // NOI18N
+                                onValueLabel.setText(""); // NOI18N
+                                onLabel.setVisible(false);
+                                onValueLabel.setVisible(false);
+                            } else {
+                                onValueLabel.setText(host);
+                                onLabel.setVisible(true);
+                                onValueLabel.setVisible(true);
+                            }
+                        }
+                        
                         statusValueLabel.setText(Bundle.ProfilerControlPanel2_StartedLabelString());
                         count = 1;
 
@@ -1687,7 +1711,7 @@ public final class ProfilerControlPanel2 extends ProfilerTopComponent {
                         break;
                     case Profiler.PROFILING_RUNNING:
                         statusValueLabel.setText(Bundle.ProfilerControlPanel2_RunningLabelString());
-
+                        
                         break;
                     case Profiler.PROFILING_STOPPED:
                         statusValueLabel.setText(Bundle.ProfilerControlPanel2_StoppedLabelString());
@@ -1943,6 +1967,10 @@ public final class ProfilerControlPanel2 extends ProfilerTopComponent {
 
     //~ Methods ------------------------------------------------------------------------------------------------------------------
 
+    public static synchronized boolean hasDefault() {
+        return defaultInstance != null;
+    }
+    
     public static synchronized ProfilerControlPanel2 getDefault() {
         while (defaultInstance == null) {
             Runnable resolver = new Runnable() {

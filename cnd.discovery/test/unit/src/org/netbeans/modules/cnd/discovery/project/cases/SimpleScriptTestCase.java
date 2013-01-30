@@ -89,7 +89,7 @@ public class SimpleScriptTestCase extends MakeProjectTestBase {
     }
 
     @Test
-    public void testSimple(){
+    public void testSimple() throws Exception {
         File dataDir = getDataDir();
         String zip = dataDir.getAbsolutePath()+"/org/netbeans/modules/cnd/discovery/project/DiscoveryTestApplication.tar.gz";
         assert new File(zip).exists() : "Not  found file "+zip;
@@ -97,7 +97,7 @@ public class SimpleScriptTestCase extends MakeProjectTestBase {
     }
     
     @Override
-    public void performTestProject(String URL, List<String> additionalScripts, boolean useSunCompilers, final String subFolder){
+    public void performTestProject(String URL, List<String> additionalScripts, boolean useSunCompilers, final String subFolder) throws Exception {
         Map<String, String> tools = findTools();
         CompilerSet def = CompilerSetManager.get(getEE()).getDefaultCompilerSet();
         if (useSunCompilers) {

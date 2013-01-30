@@ -48,6 +48,6 @@ import org.netbeans.modules.php.editor.api.PhpElementKind;
  * @author Radek Matous
  */
 public interface FieldElement extends TypedInstanceElement, TypeMemberElement {
-    public final static PhpElementKind KIND = PhpElementKind.FIELD;
-    public String getName(boolean dollared);
+    PhpElementKind KIND = PhpElementKind.FIELD;
+    String getName(boolean dollared);
 }

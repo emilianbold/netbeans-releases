@@ -1,4 +1,4 @@
-<?xml version="1.1" encoding="UTF-8" ?>
+<?xml version="1.0" encoding="UTF-8" ?>
 
 <Form version="1.5" maxVersion="1.6" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <Properties>
@@ -26,27 +26,48 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Group type="102" alignment="0" attributes="0">
-              <EmptySpace max="-2" attributes="0"/>
+          <Group type="102" attributes="0">
+              <EmptySpace min="12" pref="12" max="-2" attributes="0"/>
+              <Component id="cometCheckBox" max="32767" attributes="0"/>
+              <EmptySpace min="327" pref="327" max="-2" attributes="0"/>
+          </Group>
+          <Group type="102" attributes="0">
+              <EmptySpace min="12" pref="12" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="startDerby" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="monitorCheckBox" min="-2" max="-2" attributes="0"/>
+                  <Component id="labelDomainName" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="jdbcDriverDeployCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="monitorCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="cometCheckBox" alignment="0" pref="404" max="32767" attributes="0"/>
+              </Group>
+              <EmptySpace min="-2" pref="361" max="-2" attributes="0"/>
+          </Group>
+          <Group type="102" alignment="1" attributes="0">
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="1" attributes="0">
                   <Group type="102" alignment="0" attributes="0">
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="labelLocation" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="targetValueLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="userNameLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="passwordLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="labelDomainsFolder" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="labelDomainName" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="labelLocation" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="textLocation" alignment="0" pref="293" max="32767" attributes="0"/>
-                          <Component id="textDomainsFolder" alignment="0" pref="293" max="32767" attributes="0"/>
-                          <Component id="textDomainName" alignment="0" pref="293" max="32767" attributes="0"/>
+                          <Component id="targetValueField" alignment="0" min="-2" pref="146" max="-2" attributes="0"/>
+                          <Component id="userNameField" alignment="0" min="-2" pref="146" max="-2" attributes="0"/>
+                          <Component id="passwordField" alignment="0" min="-2" pref="146" max="-2" attributes="0"/>
+                          <Component id="textDomainsFolder" max="32767" attributes="0"/>
+                          <Component id="textDomainName" alignment="0" max="32767" attributes="0"/>
+                          <Component id="textLocation" alignment="0" max="32767" attributes="0"/>
                       </Group>
                   </Group>
-                  <Component id="enableSessionsCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Group type="102" alignment="1" attributes="0">
+                      <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="enableSessionsCheckBox" alignment="0" min="-2" pref="313" max="-2" attributes="0"/>
+                          <Component id="startDerby" alignment="0" min="-2" pref="239" max="-2" attributes="0"/>
+                      </Group>
+                  </Group>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
@@ -70,17 +91,34 @@
                   <Component id="labelDomainName" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="textDomainName" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace type="unrelated" max="-2" attributes="0"/>
-              <Component id="cometCheckBox" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="monitorCheckBox" min="-2" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="targetValueLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="targetValueField" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="userNameLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="userNameField" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="passwordLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="passwordField" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="cometCheckBox" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="enableSessionsCheckBox" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="monitorCheckBox" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="startDerby" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="jdbcDriverDeployCheckBox" min="-2" max="-2" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
-              <Component id="enableSessionsCheckBox" min="-2" max="-2" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
-              <Component id="startDerby" min="-2" max="-2" attributes="0"/>
-              <EmptySpace max="32767" attributes="0"/>
+              <EmptySpace pref="17" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -244,6 +282,48 @@
       <AuxValues>
         <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
       </AuxValues>
+    </Component>
+    <Component class="javax.swing.JLabel" name="targetValueLabel">
+      <Properties>
+        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+          <ComponentRef name="targetValueField"/>
+        </Property>
+        <Property name="text" type="java.lang.String" value="&amp;Target:"/>
+      </Properties>
+      <AuxValues>
+        <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
+      </AuxValues>
+    </Component>
+    <Component class="javax.swing.JTextField" name="targetValueField">
+      <Properties>
+        <Property name="editable" type="boolean" value="false"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="userNameLabel">
+      <Properties>
+        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+          <ComponentRef name="userNameField"/>
+        </Property>
+        <Property name="text" type="java.lang.String" value="&amp;User Name:"/>
+      </Properties>
+      <AuxValues>
+        <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
+      </AuxValues>
+    </Component>
+    <Component class="javax.swing.JTextField" name="userNameField">
+    </Component>
+    <Component class="javax.swing.JLabel" name="passwordLabel">
+      <Properties>
+        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+          <ComponentRef name="passwordField"/>
+        </Property>
+        <Property name="text" type="java.lang.String" value="Pass&amp;word:"/>
+      </Properties>
+      <AuxValues>
+        <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
+      </AuxValues>
+    </Component>
+    <Component class="javax.swing.JPasswordField" name="passwordField">
     </Component>
   </SubComponents>
 </Form>

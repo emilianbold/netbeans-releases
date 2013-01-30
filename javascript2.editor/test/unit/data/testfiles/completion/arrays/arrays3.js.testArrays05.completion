@@ -1,0 +1,49 @@
+Code completion result for source line:
+myArray2.|push("1");
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
+------------------------------------
+CLASS      prototype                       [PUBLIC]   JS Platform
+METHOD     apply(thisArg: String, argArra  [PUBLIC]   JS Platform
+METHOD     bind(thisArg: Object): String   [PUBLIC]   JS Platform
+METHOD     call(thisArg: Object): String   [PUBLIC]   JS Platform
+METHOD     concat(): Array                 [PUBLIC]   JS Platform
+METHOD     create(O: Object): Object       [PUBLIC,   JS Platform
+METHOD     defineProperties(O: Object, Pr  [PUBLIC,   JS Platform
+METHOD     defineProperty(O: Object, P: S  [PUBLIC,   JS Platform
+METHOD     every(callbackfn: Function): B  [PUBLIC]   JS Platform
+METHOD     filter(callbackfn: Function):   [PUBLIC]   JS Platform
+METHOD     forEach(callbackfn: Function):  [PUBLIC]   JS Platform
+METHOD     freeze(O: Object): Object       [PUBLIC,   JS Platform
+METHOD     getOwnPropertyDescriptor(O: Ob  [PUBLIC,   JS Platform
+METHOD     getOwnPropertyNames(O: Object)  [PUBLIC,   JS Platform
+METHOD     getPrototypeOf(O: Object): Obj  [PUBLIC,   JS Platform
+METHOD     hasOwnProperty(V: String): Boo  [PUBLIC]   JS Platform
+METHOD     indexOf(searchElement: Array):  [PUBLIC]   JS Platform
+METHOD     isArray(arg: Object): Boolean   [PUBLIC,   JS Platform
+METHOD     isExtensible(O: Object): Boole  [PUBLIC,   JS Platform
+METHOD     isFrozen(O: Object): Boolean    [PUBLIC,   JS Platform
+METHOD     isPrototypeOf(V: Object): Bool  [PUBLIC]   JS Platform
+METHOD     isSealed(O: Object): Boolean    [PUBLIC,   JS Platform
+METHOD     join(separator: String): Strin  [PUBLIC]   JS Platform
+METHOD     keys(O: Object): Array          [PUBLIC,   JS Platform
+METHOD     lastIndexOf(searchElement: Obj  [PUBLIC]   JS Platform
+METHOD     map(callbackfn: Function): Arr  [PUBLIC]   JS Platform
+METHOD     pop(): Object                   [PUBLIC]   JS Platform
+METHOD     preventExtensions(O: Object):   [PUBLIC,   JS Platform
+METHOD     propertyIsEnumerable(V: String  [PUBLIC]   JS Platform
+METHOD     push(): Number                  [PUBLIC]   JS Platform
+METHOD     reduce(callbackfn: Function):   [PUBLIC]   JS Platform
+METHOD     reduceRight(callbackfn: Functi  [PUBLIC]   JS Platform
+METHOD     reverse(): Array                [PUBLIC]   JS Platform
+METHOD     seal(O: Object): Object         [PUBLIC,   JS Platform
+METHOD     shift(): Object                 [PUBLIC]   JS Platform
+METHOD     slice(start: Number, end: Numb  [PUBLIC]   JS Platform
+METHOD     some(callbackfn: Function): Bo  [PUBLIC]   JS Platform
+METHOD     sort(comparefn: Array): Array   [PUBLIC]   JS Platform
+METHOD     splice(start: Number, deleteCo  [PUBLIC]   JS Platform
+METHOD     toLocaleString(): String        [PUBLIC]   JS Platform
+METHOD     toString(): String              [PUBLIC]   JS Platform
+METHOD     unshift(): Number               [PUBLIC]   JS Platform
+METHOD     valueOf(): Object               [PUBLIC]   JS Platform
+FIELD      constructor: Function           [PUBLIC]   JS Platform
+FIELD      length: Number                  [PUBLIC]   JS Platform

@@ -49,5 +49,5 @@ import org.netbeans.modules.php.editor.api.PhpElementKind;
  * @author Radek Matous
  */
 public interface FunctionElement extends FullyQualifiedElement, BaseFunctionElement {
-    public final static PhpElementKind KIND = PhpElementKind.FUNCTION;
+    PhpElementKind KIND = PhpElementKind.FUNCTION;
 }

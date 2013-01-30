@@ -92,20 +92,23 @@ public class ProjectsViewSubMenusTest extends PerformanceTestCase {
     }
  
     
-    public void testProjectNodeMercurialSubmenu() {
-        // in NB 7 the submenu is titled "Mercurial"
-        testedSubmenu = "Mercurial"; //CVS
-//        testedSubmenu = "Versioning"; //CVS
+    public void testProjectNodeConfigurationSubmenu() {
+        testedSubmenu = "Set Configuration";
+        testNode(getProjectNode("PerformanceTestData"));
+    }
+    
+    public void testProjectNodeVersioningSubmenu() {
+        testedSubmenu = "Versioning";
         testNode(getProjectNode("PerformanceTestData"));
     }
 
     public void testProjectNodeLocalHistorySubmenu() {
-        testedSubmenu = "Local History"; //CVS
+        testedSubmenu = "History";
         testNode(getProjectNode("PerformanceTestData"));
     }
     
     public void testProjectNodeNewSubmenu(){
-        testedSubmenu = "New"; //New
+        testedSubmenu = "New";
         testNode(getProjectNode("PerformanceTestData"));
     }
     

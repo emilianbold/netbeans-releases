@@ -945,6 +945,70 @@ public class PHPNewLineIndenterTest extends PHPCodeCompletionTestBase {
         testIndentInFile("testfiles/indent/issue203389.php");
     }
 
+    public void testIssue222753_01() throws Exception {
+        testIndentInFile("testfiles/indent/issue222753_01.php");
+    }
+
+    public void testIssue222753_02() throws Exception {
+        testIndentInFile("testfiles/indent/issue222753_02.php");
+    }
+
+    public void testIssue222753_03() throws Exception {
+        testIndentInFile("testfiles/indent/issue222753_03.php");
+    }
+
+    public void testIssue191896_01() throws Exception {
+        testIndentInFile("testfiles/indent/issue191896_01.php");
+    }
+
+    public void testIssue191896_02() throws Exception {
+        testIndentInFile("testfiles/indent/issue191896_02.php");
+    }
+
+    public void testIssue191896_03() throws Exception {
+        testIndentInFile("testfiles/indent/issue191896_03.php");
+    }
+
+    public void testIssue191896_04() throws Exception {
+        testIndentInFile("testfiles/indent/issue191896_04.php");
+    }
+
+    public void testIssue222980_01() throws Exception {
+        testIndentInFile("testfiles/indent/issue222980_01.php");
+    }
+
+    public void testIssue222980_02() throws Exception {
+        testIndentInFile("testfiles/indent/issue222980_02.php");
+    }
+
+    public void testIssue222980_03() throws Exception {
+        testIndentInFile("testfiles/indent/issue222980_03.php");
+    }
+
+    public void testIssue222980_04() throws Exception {
+        testIndentInFile("testfiles/indent/issue222980_04.php");
+    }
+
+    public void testIssue222980_05() throws Exception {
+        testIndentInFile("testfiles/indent/issue222980_05.php");
+    }
+
+    public void testIssue222980_06() throws Exception {
+        testIndentInFile("testfiles/indent/issue222980_06.php");
+    }
+
+    public void testIssue222980_07() throws Exception {
+        testIndentInFile("testfiles/indent/issue222980_07.php");
+    }
+
+    public void testIssue222980_08() throws Exception {
+        testIndentInFile("testfiles/indent/issue222980_08.php");
+    }
+
+    public void testIssue222980_09() throws Exception {
+        testIndentInFile("testfiles/indent/issue222980_09.php");
+    }
+
     @Override
     protected boolean runInEQ() {
         return true;
@@ -976,7 +1040,7 @@ public class PHPNewLineIndenterTest extends PHPCodeCompletionTestBase {
 
 
         Preferences prefs = CodeStylePreferences.get(doc).getPreferences();
-        prefs.putInt(FmtOptions.initialIndent, initialIndent);
+        prefs.putInt(FmtOptions.INITIAL_INDENT, initialIndent);
 
         runKitAction(ta, DefaultEditorKit.insertBreakAction, "\n");
 

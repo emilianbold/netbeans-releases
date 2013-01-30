@@ -41,10 +41,10 @@
  */
 package org.netbeans.modules.php.doctrine2.annotations.odm;
 
-import org.netbeans.modules.php.spi.annotations.PhpAnnotationTag;
+import org.netbeans.modules.php.spi.annotation.AnnotationCompletionTag;
 import org.openide.util.NbBundle;
 
-public class TimestampTag extends PhpAnnotationTag {
+public class TimestampTag extends AnnotationCompletionTag {
 
     public TimestampTag() {
         super("Timestamp", // NOI18N

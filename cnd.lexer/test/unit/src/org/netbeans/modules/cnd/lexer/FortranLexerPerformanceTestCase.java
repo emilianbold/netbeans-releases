@@ -47,6 +47,7 @@ package org.netbeans.modules.cnd.lexer;
 import java.io.File;
 import java.io.FileReader;
 import java.nio.CharBuffer;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -148,12 +149,21 @@ public class FortranLexerPerformanceTestCase extends NbTestCase {
     private int prepareTestDocument(String text) throws Exception {
         ModificationTextDocument doc = new ModificationTextDocument();
         doc.insertString(0, text, null);
-        doc.putProperty(Language.class, CppTokenId.languageC());
-        TokenHierarchy<?> hi = TokenHierarchy.get(doc);
-        TokenSequence<?> ts = hi.tokenSequence();
-        int tokenCount = 0;
-        while (ts.moveNext()) { tokenCount++; }
-        return tokenCount;
+        doc.putProperty(Language.class, FortranTokenId.languageFortran());
+        final TokenHierarchy<?> hi = TokenHierarchy.get(doc);
+        final AtomicInteger tokenCount = new AtomicInteger(0);
+        // Force all the tokens to be initialized
+        Runnable runnable = new Runnable() {
+            @Override
+            public void run() {
+                TokenSequence<?> ts = hi.tokenSequence();
+                while (ts.moveNext()) {
+                    tokenCount.incrementAndGet();
+                }
+            }
+        };
+        doc.render(runnable);
+        return tokenCount.intValue();
     }
 
     private String readFile() throws Exception {

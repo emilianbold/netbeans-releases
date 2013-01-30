@@ -82,6 +82,11 @@ public abstract class ProjectComponent implements Persistent, SelfPersistent {
         return key;
     }
 
+    /** conveniency shortcut */
+    protected final int getUnitId() {
+        return getKey().getUnitId();
+    }
+
     public void put() {
         if (TraceFlags.TRACE_PROJECT_COMPONENT_RW) {
             System.err.printf("> ProjectComponent: store %s by key %s\n", this, key);

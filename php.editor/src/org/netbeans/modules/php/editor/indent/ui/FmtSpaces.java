@@ -56,6 +56,8 @@ import java.io.IOException;
 import java.util.Enumeration;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.JCheckBox;
 import javax.swing.JPanel;
@@ -67,14 +69,16 @@ import javax.swing.tree.TreeCellRenderer;
 import javax.swing.tree.TreePath;
 import org.netbeans.modules.options.editor.spi.PreferencesCustomizer;
 import org.netbeans.modules.php.editor.indent.FmtOptions;
-import org.openide.util.NbBundle;
 import static org.netbeans.modules.php.editor.indent.FmtOptions.*;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author  phrebejk
  */
-public class FmtSpaces extends JPanel implements TreeCellRenderer, MouseListener, KeyListener {
+public final class FmtSpaces extends JPanel implements TreeCellRenderer, MouseListener, KeyListener {
+
+    private static final Logger LOGGER = Logger.getLogger(FmtSpaces.class.getName());
 
     private SpacesCategorySupport scs;
     private DefaultTreeModel model;
@@ -98,8 +102,8 @@ public class FmtSpaces extends JPanel implements TreeCellRenderer, MouseListener
         dr.setOpenIcon(null);
         dr.setClosedIcon(null);
 
-        DefaultMutableTreeNode root = (DefaultMutableTreeNode)model.getRoot();
-        for( int i = root.getChildCount(); i >= 0; i-- ) {
+        DefaultMutableTreeNode root = (DefaultMutableTreeNode) model.getRoot();
+        for (int i = root.getChildCount(); i >= 0; i--) {
             cfgTree.expandRow(i);
         }
 
@@ -115,7 +119,7 @@ public class FmtSpaces extends JPanel implements TreeCellRenderer, MouseListener
                 try {
                     preview = Utils.loadPreviewText(FmtTabsIndents.class.getClassLoader().getResourceAsStream("org/netbeans/modules/php/editor/indent/ui/Spaces.php"));
                 } catch (IOException ex) {
-                    // TODO log it
+                    LOGGER.log(Level.WARNING, null, ex);
                 }
                 return new SpacesCategorySupport(preferences, new FmtSpaces(), preview);
             }
@@ -168,25 +172,23 @@ public class FmtSpaces extends JPanel implements TreeCellRenderer, MouseListener
     @Override
     public Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
 
-        renderer.setBackground( selected ? dr.getBackgroundSelectionColor() : dr.getBackgroundNonSelectionColor() );
-        renderer.setForeground( selected ? dr.getTextSelectionColor() : dr.getTextNonSelectionColor() );
-        renderer.setEnabled( true );
+        renderer.setBackground(selected ? dr.getBackgroundSelectionColor() : dr.getBackgroundNonSelectionColor());
+        renderer.setForeground(selected ? dr.getTextSelectionColor() : dr.getTextNonSelectionColor());
+        renderer.setEnabled(true);
 
-        Object data = ((DefaultMutableTreeNode)value).getUserObject();
+        Object data = ((DefaultMutableTreeNode) value).getUserObject();
 
-        if ( data instanceof Item ) {
-            Item item = ((Item)data);
+        if (data instanceof Item) {
+            Item item = ((Item) data);
 
-            if ( ((DefaultMutableTreeNode)value).getAllowsChildren() ) {
+            if (((DefaultMutableTreeNode) value).getAllowsChildren()) {
                 Component c = dr.getTreeCellRendererComponent(tree, value, leaf, expanded, leaf, row, hasFocus);
                 return c;
+            } else {
+                renderer.setText(item.displayName);
+                renderer.setSelected(item.value);
             }
-            else {
-                renderer.setText( item.displayName );
-                renderer.setSelected( item.value );
-            }
-        }
-        else {
+        } else {
             Component c = dr.getTreeCellRendererComponent(tree, value, leaf, expanded, leaf, row, hasFocus);
             return c;
         }
@@ -201,45 +203,51 @@ public class FmtSpaces extends JPanel implements TreeCellRenderer, MouseListener
     public void mouseClicked(MouseEvent e) {
         Point p = e.getPoint();
         TreePath path = cfgTree.getPathForLocation(e.getPoint().x, e.getPoint().y);
-        if ( path != null ) {
+        if (path != null) {
             Rectangle r = cfgTree.getPathBounds(path);
             if (r != null) {
-                if ( r.contains(p)) {
-                    toggle( path );
+                if (r.contains(p)) {
+                    toggle(path);
                 }
             }
         }
     }
 
     @Override
-    public void mouseEntered(MouseEvent e) {}
+    public void mouseEntered(MouseEvent e) {
+    }
 
     @Override
-    public void mouseExited(MouseEvent e) {}
+    public void mouseExited(MouseEvent e) {
+    }
 
     @Override
-    public void mousePressed(MouseEvent e) {}
+    public void mousePressed(MouseEvent e) {
+    }
 
     @Override
-    public void mouseReleased(MouseEvent e) {}
+    public void mouseReleased(MouseEvent e) {
+    }
 
     // KeyListener implementation ----------------------------------------------
 
     @Override
-    public void keyTyped(KeyEvent e) {}
+    public void keyTyped(KeyEvent e) {
+    }
 
     @Override
-    public void keyReleased(KeyEvent e) {}
+    public void keyReleased(KeyEvent e) {
+    }
 
     @Override
     public void keyPressed(KeyEvent e) {
-        if (e.getKeyCode() == KeyEvent.VK_SPACE || e.getKeyCode() == KeyEvent.VK_ENTER ) {
+        if (e.getKeyCode() == KeyEvent.VK_SPACE || e.getKeyCode() == KeyEvent.VK_ENTER) {
 
-            if ( e.getSource() instanceof JTree ) {
+            if (e.getSource() instanceof JTree) {
                 JTree tree = (JTree) e.getSource();
                 TreePath path = tree.getSelectionPath();
 
-                if ( toggle( path )) {
+                if (toggle(path)) {
                     e.consume();
                 }
             }
@@ -252,89 +260,80 @@ public class FmtSpaces extends JPanel implements TreeCellRenderer, MouseListener
 
         Item[] categories = new Item[] {
             new Item("BeforeKeywords",                          // NOI18N
-                new Item(spaceBeforeWhile),
-                new Item(spaceBeforeElse),
-                new Item(spaceBeforeCatch)),
+                new Item(SPACE_BEFORE_WHILE),
+                new Item(SPACE_BEFORE_ELSE),
+                new Item(SPACE_BEFORE_CATCH)),
 
             new Item("BeforeParentheses",                       // NOI18N
-                new Item(spaceBeforeMethodDeclParen),
-                new Item(spaceBeforeMethodCallParen),
-                new Item(spaceBeforeIfParen),
-                new Item(spaceBeforeForParen),
-                new Item(spaceBeforeWhileParen),
-                new Item(spaceBeforeCatchParen),
-                new Item(spaceBeforeSwitchParen),
-		new Item(spaceBeforeArrayDeclParen)
+                new Item(SPACE_BEFORE_METHOD_DECL_PAREN),
+                new Item(SPACE_BEFORE_METHOD_CALL_PAREN),
+                new Item(SPACE_BEFORE_IF_PAREN),
+                new Item(SPACE_BEFORE_FOR_PAREN),
+                new Item(SPACE_BEFORE_WHILE_PAREN),
+                new Item(SPACE_BEFORE_CATCH_PAREN),
+                new Item(SPACE_BEFORE_SWITCH_PAREN),
+                new Item(SPACE_BEFORE_ARRAY_DECL_PAREN)
                 ),
 
             new Item("AroundOperators",                         // NOI18N
-                new Item(spaceAroundUnaryOps),
-                new Item(spaceAroundBinaryOps),
-                new Item(spaceAroundTernaryOps),
-		new Item(spaceAroundStringConcatOps),
-		new Item(spaceAroundKeyValueOps),
-                new Item(spaceAroundAssignOps),
-		new Item(spaceAroundObjectOps)),
+                new Item(SPACE_AROUND_UNARY_OPS),
+                new Item(SPACE_AROUND_BINARY_OPS),
+                new Item(SPACE_AROUND_TERNARY_OPS),
+                new Item(SPACE_AROUND_STRING_CONCAT_OPS),
+                new Item(SPACE_AROUND_KEY_VALUE_OPS),
+                new Item(SPACE_AROUND_ASSIGN_OPS),
+                new Item(SPACE_AROUND_OBJECT_OPS)),
 
             new Item("BeforeLeftBraces",                        // NOI18N
-                new Item(spaceBeforeClassDeclLeftBrace),
-                new Item(spaceBeforeMethodDeclLeftBrace),
-                new Item(spaceBeforeIfLeftBrace),
-                new Item(spaceBeforeElseLeftBrace),
-                new Item(spaceBeforeWhileLeftBrace),
-                new Item(spaceBeforeForLeftBrace),
-                new Item(spaceBeforeDoLeftBrace),
-                new Item(spaceBeforeSwitchLeftBrace),
-                new Item(spaceBeforeTryLeftBrace),
-                new Item(spaceBeforeCatchLeftBrace),
-                new Item(spaceBeforeUseTraitBodyLeftBrace)
-//                new Item(spaceBeforeSynchronizedLeftBrace),
-//                new Item(spaceBeforeStaticInitLeftBrace),
-//                new Item(spaceBeforeArrayInitLeftBrace) ),
+                new Item(SPACE_BEFORE_CLASS_DECL_LEFT_BRACE),
+                new Item(SPACE_BEFORE_METHOD_DECL_LEFT_BRACE),
+                new Item(SPACE_BEFORE_IF_LEFT_BRACE),
+                new Item(SPACE_BEFORE_ELSE_LEFT_BRACE),
+                new Item(SPACE_BEFORE_WHILE_LEFT_BRACE),
+                new Item(SPACE_BEFORE_FOR_LEFT_BRACE),
+                new Item(SPACE_BEFORE_DO_LEFT_BRACE),
+                new Item(SPACE_BEFORE_SWITCH_LEFT_BRACE),
+                new Item(SPACE_BEFORE_TRY_LEFT_BRACE),
+                new Item(SPACE_BEFORE_CATCH_LEFT_BRACE),
+                new Item(SPACE_BEFORE_USE_TRAIT_BODY_LEFT_BRACE)
                 ),
 
             new Item("WithinParentheses",                       // NOI18N
-//                new Item(spaceWithinParens),
-                new Item(spaceWithinMethodDeclParens),
-                new Item(spaceWithinMethodCallParens),
-                new Item(spaceWithinIfParens),
-                new Item(spaceWithinForParens),
-                new Item(spaceWithinWhileParens),
-                new Item(spaceWithinSwitchParens),
-                new Item(spaceWithinCatchParens),
-//                new Item(spaceWithinSynchronizedParens),
-		new Item(spaceWithinArrayDeclParens),
-                new Item(spaceWithinTypeCastParens),
-//                new Item(spaceWithinAnnotationParens),
-//                new Item(spaceWithinBraces),
-                new Item(spaceWithinArrayBrackets)
-		),
+                new Item(SPACE_WITHIN_METHOD_DECL_PARENS),
+                new Item(SPACE_WITHIN_METHOD_CALL_PARENS),
+                new Item(SPACE_WITHIN_IF_PARENS),
+                new Item(SPACE_WITHIN_FOR_PARENS),
+                new Item(SPACE_WITHIN_WHILE_PARENS),
+                new Item(SPACE_WITHIN_SWITCH_PARENS),
+                new Item(SPACE_WITHIN_CATCH_PARENS),
+                new Item(SPACE_WITHIN_ARRAY_DECL_PARENS),
+                new Item(SPACE_WITHIN_TYPE_CAST_PARENS),
+                new Item(SPACE_WITHIN_ARRAY_BRACKETS)
+            ),
 
 
              new Item("Other",                                  // NOI18N
-                new Item(spaceBeforeComma),
-                new Item(spaceAfterComma),
-                new Item(spaceBeforeSemi),
-                new Item(spaceAfterSemi),
-//                new Item(spaceBeforeColon),
-//                new Item(spaceAfterColon),
-                new Item(spaceAfterTypeCast),
-		new Item(spaceCheckAfterKeywords),
-                new Item(spaceAfterShortPHPTag),
-		new Item(spaceBeforeClosePHPTag))
+                new Item(SPACE_BEFORE_COMMA),
+                new Item(SPACE_AFTER_COMMA),
+                new Item(SPACE_BEFORE_SEMI),
+                new Item(SPACE_AFTER_SEMI),
+                new Item(SPACE_AFTER_TYPE_CAST),
+                new Item(SPACE_CHECK_AFTER_KEYWORDS),
+                new Item(SPACE_AFTER_SHORT_PHP_TAG),
+                new Item(SPACE_BEFORE_CLOSE_PHP_TAG))
 
         };
 
 
         DefaultMutableTreeNode root = new DefaultMutableTreeNode("root", true); // NOI18N
-        DefaultTreeModel dtm = new DefaultTreeModel( root );
+        DefaultTreeModel dtm = new DefaultTreeModel(root);
 
 
-        for( Item item : categories ) {
-            DefaultMutableTreeNode cn = new DefaultMutableTreeNode( item, true );
+        for (Item item : categories) {
+            DefaultMutableTreeNode cn = new DefaultMutableTreeNode(item, true);
             root.add(cn);
-            for ( Item si : item.items ) {
-                DefaultMutableTreeNode in = new DefaultMutableTreeNode( si, false );
+            for (Item si : item.items) {
+                DefaultMutableTreeNode in = new DefaultMutableTreeNode(si, false);
                 cn.add(in);
             }
         }
@@ -344,19 +343,19 @@ public class FmtSpaces extends JPanel implements TreeCellRenderer, MouseListener
 
     private boolean toggle(TreePath treePath) {
 
-        if( treePath == null ) {
+        if (treePath == null) {
             return false;
         }
 
-        Object o = ((DefaultMutableTreeNode)treePath.getLastPathComponent()).getUserObject();
+        Object o = ((DefaultMutableTreeNode) treePath.getLastPathComponent()).getUserObject();
 
-        DefaultTreeModel dtm = (DefaultTreeModel)cfgTree.getModel();
+        DefaultTreeModel dtm = (DefaultTreeModel) cfgTree.getModel();
         DefaultMutableTreeNode node = (DefaultMutableTreeNode) treePath.getLastPathComponent();
 
-        if ( o instanceof Item ) {
-            Item item = (Item)o;
+        if (o instanceof Item) {
+            Item item = (Item) o;
 
-            if ( node.getAllowsChildren() ) {
+            if (node.getAllowsChildren()) {
                 return false;
             }
 
@@ -381,7 +380,7 @@ public class FmtSpaces extends JPanel implements TreeCellRenderer, MouseListener
         public Item(String id, Item... items) {
             this.id = id;
             this.items = items;
-            this.displayName = NbBundle.getMessage(FmtSpaces.class, "LBL_" + id ); // NOI18N
+            this.displayName = NbBundle.getMessage(FmtSpaces.class, "LBL_" + id); // NOI18N
         }
 
         @Override
@@ -396,7 +395,7 @@ public class FmtSpaces extends JPanel implements TreeCellRenderer, MouseListener
         public SpacesCategorySupport(Preferences preferences, FmtSpaces panel, String preview) {
 
             super(preferences, "spaces", panel, //NOI18N
-                  preview);//,
+                  preview); //,
 //                  new String[] {FmtOptions.placeCatchOnNewLine, Boolean.FALSE.toString()},
 //                  new String[] {FmtOptions.placeElseOnNewLine, Boolean.FALSE.toString()},
 //                  new String[] {FmtOptions.placeWhileOnNewLine, Boolean.FALSE.toString()},
@@ -421,10 +420,11 @@ public class FmtSpaces extends JPanel implements TreeCellRenderer, MouseListener
         protected void storeTo(Preferences preferences) {
             for (Item item : getAllItems()) {
                 boolean df = FmtOptions.getDefaultAsBoolean(item.id);
-                if (df == item.value)
+                if (df == item.value) {
                     preferences.remove(item.id);
-                else
+                } else {
                     preferences.putBoolean(item.id, item.value);
+                }
             }
         }
 
@@ -432,13 +432,13 @@ public class FmtSpaces extends JPanel implements TreeCellRenderer, MouseListener
             List<Item> result = new LinkedList<FmtSpaces.Item>();
             DefaultMutableTreeNode root = (DefaultMutableTreeNode) ((FmtSpaces) panel).model.getRoot();
             Enumeration children = root.depthFirstEnumeration();
-            while( children.hasMoreElements() ) {
+            while (children.hasMoreElements()) {
                 DefaultMutableTreeNode node = (DefaultMutableTreeNode) children.nextElement();
                 Object o = node.getUserObject();
                 if (o instanceof Item) {
                     Item item = (Item) o;
-                    if ( item.items == null || item.items.length == 0 ) {
-                        result.add( item );
+                    if (item.items == null || item.items.length == 0) {
+                        result.add(item);
                     }
                 }
             }

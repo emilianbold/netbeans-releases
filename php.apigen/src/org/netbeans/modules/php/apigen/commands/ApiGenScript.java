@@ -41,18 +41,21 @@
  */
 package org.netbeans.modules.php.apigen.commands;
 
+import java.awt.EventQueue;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
-import org.netbeans.api.extexecution.ExternalProcessBuilder;
-import org.netbeans.modules.php.api.phpmodule.PhpInterpreter;
+import org.netbeans.modules.php.api.executable.InvalidPhpExecutableException;
+import org.netbeans.modules.php.api.executable.PhpExecutable;
+import org.netbeans.modules.php.api.executable.PhpExecutableValidator;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
-import org.netbeans.modules.php.api.phpmodule.PhpProgram;
 import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.api.util.UiUtils;
@@ -62,11 +65,14 @@ import org.netbeans.modules.php.apigen.ui.options.ApiGenOptionsPanelController;
 import org.openide.awt.HtmlBrowser;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  * Represents <a href="http://apigen.org/">apigen</a> command line tool.
  */
-public final class ApiGenScript extends PhpProgram {
+public final class ApiGenScript {
+
+    static final Logger LOGGER = Logger.getLogger(ApiGenScript.class.getName());
 
     public static final String SCRIPT_NAME = "apigen"; // NOI18N
     public static final String SCRIPT_NAME_LONG = SCRIPT_NAME + FileUtils.getScriptExtension(true);
@@ -108,33 +114,30 @@ public final class ApiGenScript extends PhpProgram {
     // check for update just once
     private static boolean updateChecked = false;
 
+    private final String apiGenPath;
 
-    private ApiGenScript(String command) {
-        super(command);
+
+    private ApiGenScript(String apiGenPath) {
+        this.apiGenPath = apiGenPath;
     }
 
     /**
      * Get the default, <b>valid only</b> ApiGen script.
      * @return the default, <b>valid only</b> ApiGen script.
-     * @throws InvalidPhpProgramException if ApiGen script is not valid.
+     * @throws InvalidPhpExecutableException if ApiGen script is not valid.
      */
-    public static ApiGenScript getDefault() throws InvalidPhpProgramException {
+    public static ApiGenScript getDefault() throws InvalidPhpExecutableException {
         String apiGen = ApiGenOptions.getInstance().getApiGen();
         String error = validate(apiGen);
         if (error != null) {
-            throw new InvalidPhpProgramException(error);
+            throw new InvalidPhpExecutableException(error);
         }
         return new ApiGenScript(apiGen);
     }
 
-    public static String validate(String command) {
-        return new ApiGenScript(command).validate();
-    }
-
     @NbBundle.Messages("ApiGenScript.script.label=ApiGen script")
-    @Override
-    public String validate() {
-        return FileUtils.validateFile(Bundle.ApiGenScript_script_label(), getProgram(), false);
+    public static String validate(String apiGenPath) {
+        return PhpExecutableValidator.validateCommand(apiGenPath, Bundle.ApiGenScript_script_label());
     }
 
     @NbBundle.Messages({
@@ -143,35 +146,28 @@ public final class ApiGenScript extends PhpProgram {
         "# {0} - project name",
         "ApiGenScript.error.generating=Generating API documentation for {0} failed, review Output window for details."
     })
-    public void generateDocumentation(final PhpModule phpModule) {
-        String target = ApiGenPreferences.getTarget(phpModule, true);
+    public void generateDocumentation(PhpModule phpModule) {
+        assert !EventQueue.isDispatchThread();
+        final String target = ApiGenPreferences.getTarget(phpModule, true);
         if (target == null) {
             // canceled
             return;
         }
 
-        ExternalProcessBuilder processBuilder = getProcessBuilder()
-                .workingDirectory(FileUtil.toFile(phpModule.getProjectDirectory()));
-        for (String param : getParams(phpModule)) {
-            processBuilder = processBuilder
-                    .addArgument(param);
-        }
-        ExecutionDescriptor executionDescriptor = getExecutionDescriptor()
-                .frontWindow(true)
-                .optionsPath(ApiGenOptionsPanelController.getOptionsPath());
-
+        Future<Integer> result = new PhpExecutable(apiGenPath)
+                .optionsSubcategory(ApiGenOptionsPanelController.OPTIONS_SUBPATH)
+                .workDir(FileUtil.toFile(phpModule.getProjectDirectory()))
+                .displayName(Bundle.ApiGenScript_api_generating(phpModule.getDisplayName()))
+                .additionalParameters(getParams(phpModule))
+                .run(getDescriptor());
         try {
-            int status = executeAndWait(
-                    processBuilder,
-                    executionDescriptor,
-                    Bundle.ApiGenScript_api_generating(phpModule.getDisplayName()));
             File targetDir = new File(target);
-            if (status == 0) {
+            if (result != null && result.get() == 0) {
                 if (targetDir.isDirectory()) {
                     File index = new File(target, "index.html"); // NOI18N
                     if (index.isFile()) {
                         // false for pdf e.g.
-                        HtmlBrowser.URLDisplayer.getDefault().showURL(index.toURI().toURL());
+                        HtmlBrowser.URLDisplayer.getDefault().showURL(Utilities.toURI(index).toURL());
                     }
                 }
             }
@@ -190,20 +186,10 @@ public final class ApiGenScript extends PhpProgram {
         }
     }
 
-    @Override
-    public ExternalProcessBuilder getProcessBuilder() {
-        // XXX
-        if (getProgram().endsWith(".bat")) { // NOI18N
-            return super.getProcessBuilder();
-        }
-        // run file via php interpreter
-        try {
-            return PhpInterpreter.getDefault().getProcessBuilder()
-                    .addArgument(getProgram());
-        } catch (InvalidPhpProgramException ex) {
-            // ignored
-        }
-        return super.getProcessBuilder();
+    private ExecutionDescriptor getDescriptor() {
+        return PhpExecutable.DEFAULT_EXECUTION_DESCRIPTOR
+                .optionsPath(ApiGenOptionsPanelController.getOptionsPath())
+                .inputVisible(false);
     }
 
     private List<String> getParams(PhpModule phpModule) {

@@ -12,6 +12,7 @@ THIRDPARTY COMPONENT FILE                                                LICENSE
 (path in the installation)                   (see license text reproduced below)
 --------------------------------------------------------------------------------
 enterprise/docs/struts-1.3.10-javadoc.zip                             Apache-2.0
+enterprise/docs/struts-tags.zip                                       Apache-2.0
 enterprise/modules/ext/aws-sdk/aws-java-sdk-1.2.1.jar                 AWS-LICENSE
 enterprise/modules/ext/aws-sdk/commons-codec-1.3.jar                  Apache-2.0
 enterprise/modules/ext/aws-sdk/commons-logging-1.1.1.jar              Apache-2.0
@@ -27,9 +28,12 @@ enterprise/modules/ext/jsf-2_1                                        CDDL-1.0 (
 enterprise/modules/ext/jstl.jar                                       Apache-2.0
 enterprise/modules/ext/metro/webservices-rt.jar                       CDDL-1.0, incl. Apache-2.0
 enterprise/modules/ext/metro/webservices-tools.jar                    CDDL-1.0, incl. Apache-2.0
-enterprise/modules/ext/primefaces/primefaces-3.2.jar                  Apache-2.0
-enterprise/modules/ext/rest/asm-3.1.jar                               BSD-ASM
-enterprise/modules/ext/rest/jackson-core-asl-1.7.1.jar                Apache-2.0
+enterprise/modules/ext/primefaces/primefaces-3.4.jar                  Apache-2.0
+enterprise/modules/ext/rest/asm-3.1.jar                               BSD-ASM31
+enterprise/modules/ext/rest/jackson-core-asl-1.9.2.jar                Apache-2.0
+enterprise/modules/ext/rest/jackson-jaxrs-1.9.2.jar                   Apache-2.0
+enterprise/modules/ext/rest/jackson-mapper-asl-1.9.2.jar              Apache-2.0
+enterprise/modules/ext/rest/jackson-xc-1.9.2.jar                      Apache-2.0
 enterprise/modules/ext/rest/jettison-1.1.jar                          Apache-2.0
 enterprise/modules/ext/spring/spring-webmvc-2.5.6.SEC03.jar           Apache-2.0
 enterprise/modules/ext/standard.jar                                   Apache-2.0
@@ -58,16 +62,20 @@ harness/antlib/bindex-2.2.jar                                         Apache-2.0
 ide/docs/css21-spec.zip                                               W3C (the original at http://www.w3.org/TR/CSS21/)
 ide/docs/css3-spec.zip                                                W3C (the original at http://www.w3.org/Style/CSS/current-work)
 ide/docs/html-4.01.zip                                                W3C (the original at http://www.w3.org/TR/1999/REC-html401-19991224/)
+ide/jsstubs/corestubs.zip                                             BSD-ecmascript
+ide/jsstubs/domstubs.zip                                              W3C (the original at http://www.w3.org/TR/#tr_DOM)
 ide/docs/html5doc.zip                                                 HTML5DOC
+ide/docs/jquery-api.xml                                               MIT-jquery
 ide/modules/dict/ispell-enwl-3.1.20.zip                               BSD-ispell-enwl
-ide/modules/ext/antlr-runtime-3.3.jar                                 BSD-antlr-runtime
+ide/modules/ext/antlr-runtime-3.4.jar                                 BSD-antlr-runtime
 ide/modules/org-apache-commons-codec.jar                              Apache-2.0
+ide/modules/ext/asm-all-4.0.jar                                       BSD-ASM40
 ide/modules/ext/bytelist-0.1.jar                                      LGPL-2.1
 ide/modules/org-apache-commons-httpclient.jar                         Apache-2.0
 ide/modules/org-apache-commons-io.jar                                 Apache-2.0
 ide/modules/org-apache-commons-lang.jar                               Apache-2.0
 ide/modules/org-apache-commons-logging.jar                            Apache-2.0
-ide/modules/ext/commons-net-3.0.1.jar                                 Apache-2.0
+ide/modules/ext/commons-net-3.1.jar                                   Apache-2.0
 ide/modules/org-apache-ws-commons-util.jar                            Apache-2.0
 ide/modules/org-apache-xmlrpc.jar                                     Apache-2.0
 ide/modules/ext/freemarker-2.3.8.jar                                  freemarker
@@ -79,9 +87,11 @@ ide/modules/ext/io-xml-util.jar                                       Apache-2.0
 ide/modules/ext/iri.jar                                               BSD-iri
 ide/modules/ext/isorelax20041111.jar                                  MIT-isorelax
 ide/modules/ext/jaxb/jaxb1-impl.jar                                   CDDL-1.0, incl. MIT (iso-relax) and BSD (RelaxNG)
+ide/modules/ext/jaxb/jaxb-xjc.jar                                     CDDL-1.0, incl. MIT (iso-relax) and BSD (RelaxNG)
 ide/modules/ext/jing.jar                                              BSD-jing
 ide/modules/com-jcraft-jsch.jar                                       BSD-jsch
 ide/modules/ext/js.jar                                                MPL-1.1
+ide/modules/ext/json-simple-1.1.1.jar                                 Apache-2.0
 ide/modules/ext/jvyamlb-0.2.3.jar                                     MIT-jvyamlb
 ide/modules/com-jcraft-jzlib.jar                                      BSD-jzlib
 ide/modules/ext/libpam4j-1.1.jar                                      MIT
@@ -103,6 +113,7 @@ ide/modules/org-eclipse-mylyn-bugzilla-core.jar                       EPL-v10
 ide/modules/org-eclipse-mylyn-commons-core.jar                        EPL-v10
 ide/modules/org-eclipse-mylyn-commons-net.jar                         EPL-v10
 ide/modules/org-eclipse-mylyn-commons-xmlrpc.jar                      EPL-v10
+ide/modules/org-eclipse-mylyn-commons-repositories-core.jar           EPL-v10
 ide/modules/org-eclipse-mylyn-tasks-core.jar                          EPL-v10
 ide/modules/org-eclipse-jgit.jar                                      EDL-v10-jgit
 ide/modules/org-netbeans-modules-xml-catalog.jar!org/netbeans/modules/xml/catalog/resources/XMLSchema.xsd  W3C (the original at http://www.w3.org/2001/XMLSchema.xsd)
@@ -116,14 +127,14 @@ ide/modules/ext/saxon9B.jar                                           MPL-1.0
 ide/modules/ext/servlet-2.2.jar                                       Apache-1.1
 ide/modules/ext/smack.jar                                             Apache-2.0
 ide/modules/ext/smackx.jar                                            Apache-2.0
-ide/modules/ext/sqljet-1.1.0.jar                                      TMate
-ide/modules/ext/svnClientAdapter-javahl-1.8.5.jar                     Apache-2.0
-ide/modules/ext/svnClientAdapter-main-1.8.5.jar                       Apache-2.0
-ide/modules/ext/svnClientAdapter-svnkit-1.8.5.jar                     Apache-2.0
-ide/modules/ext/svnjavahl-1.7.2.jar                                   Subversion
-ide/modules/ext/svnkit-1.7.4.jar                                      TMate
-ide/modules/ext/swingx-0.9.5.jar                                      LGPL-2.1
-ide/modules/ext/trilead.ssh2_1.0.0.jar                                TRILEAD-LICENSE
+ide/modules/ext/sqljet.jar                                            TMate
+ide/modules/ext/svnClientAdapter-javahl.jar                           Apache-2.0
+ide/modules/ext/svnClientAdapter-main.jar                             Apache-2.0
+ide/modules/ext/svnClientAdapter-svnkit.jar                           Apache-2.0
+ide/modules/ext/svnjavahl.jar                                         Subversion
+ide/modules/ext/svnkit.jar                                            TMate
+ide/modules/ext/swingx-all-1.6.4.jar                                  LGPL-2.1
+ide/modules/ext/trilead.ssh2.jar                                      TRILEAD-LICENSE
 ide/modules/ext/validator.jar                                         MIT-validator
 ide/modules/ext/webserver.jar                                         Apache-1.1
 ide/modules/ext/winp-1.14-patched.jar                                 MIT
@@ -146,17 +157,18 @@ java/modules/ext/eclipselink/org.eclipse.persistence.jpa.jpql_1.0.1.jar  EPL-v10
 java/modules/ext/hibernate                                            LGPL-2.1, incl. BSD, Apache-2.0 (see also Hibernate 3.2.5 at http://hibernate.org)
 java/modules/ext/jaxws22/woodstox-core-asl.jar                        Apache-2.0
 java/modules/ext/jaxws22/stax2-api.jar                                BSD-woodstox
-java/modules/ext/maven/indexer-artifact-4.1.2.jar                     Apache-2.0
-java/modules/ext/maven/indexer-core-4.1.2.jar                         Apache-2.0
+java/modules/ext/maven/indexer-artifact-5.1.0.jar                     Apache-2.0
+java/modules/ext/maven/indexer-core-5.1.0.jar                         Apache-2.0
 java/modules/ext/maven/jdom-1.0.jar                                   Apache-JDOM
-java/modules/ext/maven/lucene-core-3.0.3.jar                          Apache-2.0
-java/modules/ext/maven/maven-dependency-tree-1.2.jar                  Apache-2.0
+java/modules/ext/maven/lucene-core-3.6.1.jar                          Apache-2.0
+java/modules/ext/maven/lucene-highlighter-3.6.1.jar                   Apache-2.0
+java/modules/ext/maven/maven-dependency-tree-2.0.jar                  Apache-2.0
 java/modules/ext/spring-3.0/spring-aop-3.1.1.RELEASE.jar              Apache-2.0
 java/modules/ext/spring-3.0/spring-asm-3.1.1.RELEASE.jar              Apache-2.0
 java/modules/ext/spring-3.0/spring-aspects-3.1.1.RELEASE.jar          Apache-2.0
 java/modules/ext/spring-3.0/spring-beans-3.1.1.RELEASE.jar            Apache-2.0
 java/modules/ext/spring-3.0/spring-context-3.1.1.RELEASE.jar          Apache-2.0
-java/modules/ext/spring-3.0/spring-context-support-3.1.1.RELEASE.jar   Apache-2.0
+java/modules/ext/spring-3.0/spring-context-support-3.1.1.RELEASE.jar  Apache-2.0
 java/modules/ext/spring-3.0/spring-core-3.1.1.RELEASE.jar             Apache-2.0
 java/modules/ext/spring-3.0/spring-expression-3.1.1.RELEASE.jar       Apache-2.0
 java/modules/ext/spring-3.0/spring-instrument-3.1.1.RELEASE.jar       Apache-2.0
@@ -181,6 +193,7 @@ mobility/modules/ext/jdom-1.0.jar                                     Apache-JDO
 mobility/modules/ext/jmunit4cldc10-1.2.1.jar                          Apache-2.0
 mobility/modules/ext/jmunit4cldc11-1.2.1.jar                          Apache-2.0
 php/docs/phpdocdesc.zip                                               LGPL-2.1
+php/docs/predefined_vars.zip                                          LGPL-2.1
 php/hudson/config.xml                                                 BSD-php-jenkins-template
 php/modules/ext/java-cup-11a.jar                                      JavaCUP-LICENSE
 platform/docs/swing-layout-1.0.4-doc.zip                              LGPL-2.1
@@ -190,9 +203,9 @@ platform/modules/ext/testng-6.5.1-dist.jar                            Apache-2.0
 platform/modules/ext/felix-4.0.2.jar                                  Apache-2.0
 platform/modules/ext/jna-3.4.0.jar                                    LGPL-2.1
 platform/modules/ext/nsProxyAutoConfig.js                             LGPL-2.1
-platform/modules/ext/org.eclipse.osgi_3.7.1.R37x_v20110808-1106.jar   OSGi-LICENSE
+platform/modules/ext/org.eclipse.osgi_3.8.0.v20120529-1548.jar        OSGi-LICENSE
 platform/modules/ext/osgi.cmpn-4.2.jar                                Apache-2.0
-platform/modules/ext/osgi.core-4.3.jar                                Apache-2.0
+platform/modules/ext/osgi.core-5.0.0.jar                              Apache-2.0
 platform/modules/ext/platform-3.4.0.jar                               LGPL-2.1
 platform/modules/ext/swing-layout-1.0.4.jar                           LGPL-2.1
 
@@ -1778,6 +1791,31 @@ THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ===
 ======
+======================== MIT-jquery ===========================
+
+
+Copyright (c) 2011 John Resig, http://jquery.com/
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this
+software and associated documentation files (the "Software"), to deal in the
+Software without restriction, including without limitation the rights to use, copy,
+modify, merge, publish, distribute, sublicense, and/or sell copies of the Software,
+and to permit persons to whom the Software is furnished to do so, subject to
+the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF  ANY KIND, EXPRESS OR IMPLIED,
+INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
+THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+
+===
+======
 ========================= MIT-jvyamlb =========================
 
 
@@ -2887,10 +2925,46 @@ Software Society, please see http://www.visigoths.org/
 
 ===
 ======
-========================= BSD-ASM =========================
+========================= BSD-ASM31 =========================
 
 
 Copyright (c) 2000-2005 INRIA, France Telecom
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions
+are met:
+
+1. Redistributions of source code must retain the above copyright
+   notice, this list of conditions and the following disclaimer.
+
+2. Redistributions in binary form must reproduce the above copyright
+   notice, this list of conditions and the following disclaimer in the
+   documentation and/or other materials provided with the distribution.
+
+3. Neither the name of the copyright holders nor the names of its
+   contributors may be used to endorse or promote products derived from
+   this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+THE POSSIBILITY OF SUCH DAMAGE.
+
+
+===
+======
+========================= BSD-ASM40 =========================
+
+
+Copyright (c) 2000-2011 INRIA, France Telecom
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -3020,6 +3094,87 @@ WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
 OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
+
+
+===
+======
+====================== BSD-ecmascript =====================
+
+
+Copyright (c) 2011 Ecma International
+
+Ecma International
+Rue du Rhone 114
+CH-1204 Geneva
+Tel: +41 22 849 6000
+Fax: +41 22 849 6001
+Web: http://www.ecma-international.org
+
+This document and possible translations of it may be copied
+and furnished to others, and derivative works that comment
+on or otherwise explain it or assist in its implementation
+may be prepared, copied, published, and distributed, in whole
+or in part, without restriction of any kind, provided that
+the above copyright notice and this section are included on
+all such copies and derivative works. However, this document
+itself may not be modified in any way, including by removing
+the copyright notice or references to Ecma International,
+except as needed for the purpose of developing any document
+or deliverable produced by Ecma International (in which case
+the rules applied to copyrights must be followed) or as
+required to translate it into languages other than English.
+
+The limited permissions granted above are perpetual and will
+not be revoked by Ecma International or its successors
+or assigns.
+
+This document and the information contained herein is provided
+on an "AS IS" basis and ECMA INTERNATIONAL DISCLAIMS ALL
+WARRANTIES, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED
+TO ANY WARRANTY THAT THE USE OF THE INFORMATION HEREIN WILL
+NOT INFRINGE ANY OWNERSHIP RIGHTS OR ANY IMPLIED WARRANTIES
+OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE."
+
+Software License
+
+All Software contained in this document ("Software)" is protected
+by copyright and is being made available under the "BSD License",
+included below. This Software may be subject to third party
+rights (rights from parties other than Ecma International),
+including patent rights, and no licenses under such third party
+rights are granted under this license even if the third party
+concerned is a member of Ecma International. SEE THE ECMA CODE
+OF CONDUCT IN PATENT MATTERS AVAILABLE AT
+http://www.ecma-international.org/memento/codeofconduct.htm
+FOR INFORMATION REGARDING THE LICENSING OF PATENT CLAIMS THAT
+ARE REQUIRED TO IMPLEMENT ECMA INTERNATIONAL STANDARDS*.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions
+are met:
+
+1. Redistributions of source code must retain the above copyright
+notice, this list of conditions and the following disclaimer.
+
+2. Redistributions in binary form must reproduce the above copyright
+notice, this list of conditions and the following disclaimer in the
+documentation and/or other materials provided with the distribution.
+
+3. Neither the name of the authors nor Ecma International may be
+used to endorse or promote products derived from this software
+without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE ECMA INTERNATIONAL "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL ECMA INTERNATIONAL
+BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,
+OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT
+OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
+BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
+OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 ===

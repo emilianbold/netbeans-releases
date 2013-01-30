@@ -42,7 +42,6 @@
 package org.netbeans.modules.ws.qaf.rest;
 
 import junit.framework.Test;
-import org.netbeans.junit.NbModuleSuite;
 
 /**
  * Tests for New REST web services from Database wizard
@@ -64,9 +63,9 @@ public class JEE6FromDBTest extends FromDBTest {
      * Creates suite from particular test cases. You can define order of testcases here.
      */
     public static Test suite() {
-        return NbModuleSuite.create(addServerTests(Server.GLASSFISH, NbModuleSuite.createConfiguration(JEE6FromDBTest.class),
+        return createAllModulesServerSuite(Server.GLASSFISH, JEE6FromDBTest.class,
                 "testFromDB", //NOI18N
                 "testDeploy", //NOI18N
-                "testUndeploy").enableModules(".*").clusters(".*")); //NOI18N
+                "testUndeploy"); //NOI18N
     }
 }

@@ -41,14 +41,14 @@
  */
 package org.netbeans.modules.php.apigen.annotations;
 
-import org.netbeans.modules.php.spi.annotations.PhpAnnotationTag;
+import org.netbeans.modules.php.spi.annotation.AnnotationCompletionTag;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class PropertyWriteTag extends PhpAnnotationTag {
+public class PropertyWriteTag extends AnnotationCompletionTag {
 
     public PropertyWriteTag() {
         super("property-write", "@property-write ${type} $$${name} ${Description}", //NOI18N

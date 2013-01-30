@@ -53,7 +53,6 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -84,27 +83,14 @@ public class ProxyClassLoader extends ClassLoader {
         LOG_LOADING = prop1 || LOGGER.isLoggable(Level.FINE);
     }
 
-    /** All known packages */
+    /** All known packages 
+     * @GuardedBy("packages")
+     */
     private final Map<String, Package> packages = new HashMap<String, Package>();
 
-    /** All parents of this classloader, including their parents recursively */
-    private ProxyClassLoader[] parents;
+    /** keeps information about parent classloaders, system classloader, etc.*/
+    volatile ProxyClassParents parents;
 
-    private final boolean transitive;
-
-    /** The base class loader that is before all ProxyClassLoaders. */
-    private ClassLoader systemCL = TOP_CL;
- 
-    /** A shared map of all packages known by all classloaders. Also covers META-INF based resources.
-     * It contains two kinds of keys: dot-separated package names and slash-separated
-     * META-INF resource names, e.g. {"org.foobar", "/services/org.foobar.Foo"} 
-     */
-    private static final Map<String,Set<ProxyClassLoader>> packageCoverage = new HashMap<String,Set<ProxyClassLoader>>();
-    
-    private Set<ProxyClassLoader> parentSet = new HashSet<ProxyClassLoader>(); 
-     
-    private static Map<String,Boolean> sclPackages = Collections.synchronizedMap(new HashMap<String,Boolean>());  
-   
     /** Create a multi-parented classloader.
      * @param parents all direct parents of this classloader, except system one.
      * @param transitive whether other PCLs depending on this one will
@@ -112,29 +98,11 @@ public class ProxyClassLoader extends ClassLoader {
      */
     public ProxyClassLoader(ClassLoader[] parents, boolean transitive) {
         super(TOP_CL);
-        this.transitive = transitive;
-        
-        this.parents = coalesceParents(parents);
-        parentSet.addAll(Arrays.asList(this.parents));
+        this.parents = ProxyClassParents.coalesceParents(this, parents, TOP_CL, transitive);
     }
     
     protected final void addCoveredPackages(Iterable<String> coveredPackages) {
-        synchronized(packageCoverage) {
-            for (String pkg : coveredPackages) {
-                Set<ProxyClassLoader> delegates = packageCoverage.get(pkg); 
-                if (delegates == null) { 
-                    delegates = Collections.<ProxyClassLoader>singleton(this);
-                    packageCoverage.put(pkg, delegates); 
-                } else if (delegates.size() == 1) {
-                    delegates = new HashSet<ProxyClassLoader>(delegates);
-                    packageCoverage.put(pkg, delegates);
-                    delegates.add(this); 
-                } else {
-                    delegates.add(this);
-                }
-            }
-        }
-        
+        ProxyClassPackages.addCoveredPackages(this, coveredPackages);
     }
     
     // this is used only by system classloader, maybe we can redesign it a bit
@@ -155,17 +123,9 @@ public class ProxyClassLoader extends ClassLoader {
         if (moduleFactory != null && moduleFactory.removeBaseClassLoader()) {
             // this hack is here to prevent having the application classloader
             // as parent to all module classloaders.
-            systemCL = ClassLoader.getSystemClassLoader();
-            resParents = coalesceAppend(new ProxyClassLoader[0], nueparents);
+            parents = ProxyClassParents.coalesceParents(this, nueparents, ClassLoader.getSystemClassLoader(), parents.isTransitive());
         } else {
-            resParents = coalesceAppend(parents, nueparents);
-        }
-        synchronized (this) {
-            // synchronized because we don't want to mess up potentially running
-            // classloading
-            parents = resParents;
-            parentSet.clear();
-            parentSet.addAll(Arrays.asList(parents));
+            parents = parents.append(this, nueparents);
         }
     }
          
@@ -204,13 +164,13 @@ public class ProxyClassLoader extends ClassLoader {
 
         final String path = pkg.replace('.', '/') + "/";
 
-        Set<ProxyClassLoader> del = packageCoverage.get(pkg);
+        Set<ProxyClassLoader> del = ProxyClassPackages.findCoveredPkg(pkg);
  
-        Boolean boo = sclPackages.get(pkg);
+        Boolean boo = isSystemPackage(pkg);
         if ((boo == null || boo.booleanValue()) && shouldDelegateResource(path, null)) {
             try {
-                cls = systemCL.loadClass(name);
-                if (boo == null) sclPackages.put(pkg, true);
+                cls = parents.systemCL().loadClass(name);
+                if (boo == null) registerSystemPackage(pkg, true);
                 return cls; // try SCL first
             } catch (ClassNotFoundException e) {
                 // No dissaster, try other loaders
@@ -219,19 +179,19 @@ public class ProxyClassLoader extends ClassLoader {
 
         if (del == null) {
             // uncovered package, go directly to SCL (may throw the CNFE for us)
-            //if (shouldDelegateResource(path, null)) cls = systemCL.loadClass(name);
+            //if (shouldDelegateResource(path, null)) cls = par.systemCL().loadClass(name);
         } else if (del.size() == 1) {
             // simple package coverage
             ProxyClassLoader pcl = del.iterator().next();
-            if (pcl == this || (parentSet.contains(pcl) && shouldDelegateResource(path, pcl))) {
+            if (pcl == this || (parents.contains(pcl) && shouldDelegateResource(path, pcl))) {
                 cls = pcl.selfLoadClass(pkg, name);
-                if (cls != null) sclPackages.put(pkg, false);
+                if (cls != null) registerSystemPackage(pkg, false);
             }/* else { // maybe it is also covered by SCL
-                if (shouldDelegateResource(path, null)) cls = systemCL.loadClass(name);
+                if (shouldDelegateResource(path, null)) cls = par.systemCL().loadClass(name);
             }*/
         } else {
             // multicovered package, search in order
-            for (ProxyClassLoader pcl : parents) { // all our accessible parents
+            for (ProxyClassLoader pcl : parents.loaders()) { // all our accessible parents
                 if (del.contains(pcl) && shouldDelegateResource(path, pcl)) { // that cover given package
                     Class _cls = pcl.selfLoadClass(pkg, name);
                     if (_cls != null) {
@@ -255,11 +215,11 @@ public class ProxyClassLoader extends ClassLoader {
                 }
             }
             if (cls == null && del.contains(this)) cls = selfLoadClass(pkg, name); 
-            if (cls != null) sclPackages.put(pkg, false); 
+            if (cls != null) registerSystemPackage(pkg, false); 
         }
         if (cls == null && shouldDelegateResource(path, null)) {
             try {
-                cls = systemCL.loadClass(name);
+                cls = parents.systemCL().loadClass(name);
             } catch (ClassNotFoundException e) {
                 throw new ClassNotFoundException(diagnosticCNFEMessage(e.getMessage(), del), e);
             }
@@ -272,23 +232,22 @@ public class ProxyClassLoader extends ClassLoader {
     }
     private String diagnosticCNFEMessage(String base, Set<ProxyClassLoader> del) {
         String parentSetS;
-        int size = parentSet.size();
-        if (size <= 10) {
-            parentSetS = parentSet.toString();
-        } else {
-            // Too big to show in its entirety - overwhelms the log file.
-            StringBuilder b = new StringBuilder();
-            Iterator<ProxyClassLoader> parentSetI = parentSet.iterator();
-            for (int i = 0; i < 10; i++) {
-                b.append(i == 0 ? "[" : ", ");
-                b.append(parentSetI.next());
-            }
-            b.append(", ...").append(size - 10).append(" more]");
-            parentSetS = b.toString();
+        int size = parents.size();
+        // Too big to show in its entirety - overwhelms the log file.
+        StringBuilder b = new StringBuilder();
+        b.append(base).append(" starting from ").append(this)
+            .append(" with possible defining loaders ").append(del)
+            .append(" and declared parents ");
+        Iterator<ProxyClassLoader> parentSetI = parents.loaders().iterator();
+        for (int i = 0; i < 10 && parentSetI.hasNext(); i++) {
+            b.append(i == 0 ? "[" : ", ");
+            b.append(parentSetI.next());
         }
-        return base + " starting from " + this +
-                " with possible defining loaders " + del +
-                " and declared parents " + parentSetS;
+        if (parentSetI.hasNext()) {
+            b.append(", ...").append(size - 10).append(" more");
+        }
+        b.append(']');
+        return b.toString();
     }
     private static final Set<String> arbitraryLoadWarnings = Collections.synchronizedSet(new HashSet<String>());
 
@@ -360,21 +319,21 @@ public class ProxyClassLoader extends ClassLoader {
         }
         String path = name.substring(0, last+1);
         
-        Boolean systemPackage = sclPackages.get(pkg);
+        Boolean systemPackage = isSystemPackage(pkg);
         if ((systemPackage == null || systemPackage) && shouldDelegateResource(path, null)) {
-            URL u = systemCL.getResource(name);
+            URL u = parents.systemCL().getResource(name);
             if (u != null) {
                 if (systemPackage == null) {
-                    sclPackages.put(pkg, true);
+                    registerSystemPackage(pkg, true);
                 }
                 return u;
             }
             // else try other loaders
         }
 
-        Set<ProxyClassLoader> del = packageCoverage.get(cover);
+        Set<ProxyClassLoader> del = ProxyClassPackages.findCoveredPkg(cover);
         if (pkg.length() == 0) {
-            Set<ProxyClassLoader> snd = packageCoverage.get(pkg);
+            Set<ProxyClassLoader> snd = ProxyClassPackages.findCoveredPkg(pkg);
             if (snd != null) {
                 if (del != null) {
                     del = new HashSet<ProxyClassLoader>(del);
@@ -387,15 +346,15 @@ public class ProxyClassLoader extends ClassLoader {
 
         if (del == null) {
             // uncovered package, go directly to SCL
-            if (shouldDelegateResource(path, null)) url = systemCL.getResource(name);
+            if (shouldDelegateResource(path, null)) url = parents.systemCL().getResource(name);
         } else if (del.size() == 1) {
             // simple package coverage
             ProxyClassLoader pcl = del.iterator().next();
-            if (pcl == this || (parentSet.contains(pcl) && shouldDelegateResource(path, pcl)))
+            if (pcl == this || (parents.contains(pcl) && shouldDelegateResource(path, pcl)))
                 url = pcl.findResource(name);
         } else {
             // multicovered package, search in order
-            for (ProxyClassLoader pcl : parents) { // all our accessible parents
+            for (ProxyClassLoader pcl : parents.loaders()) { // all our accessible parents
                 if (del.contains(pcl) && shouldDelegateResource(path, pcl)) { // that cover given package
                     url = pcl.findResource(name);
                     if (url != null) break;
@@ -405,7 +364,7 @@ public class ProxyClassLoader extends ClassLoader {
         }
 
         // uncovered package, go directly to SCL
-        if (url == null && shouldDelegateResource(path, null)) url = systemCL.getResource(name);
+        if (url == null && shouldDelegateResource(path, null)) url = parents.systemCL().getResource(name);
         
         return url;
     }
@@ -446,11 +405,11 @@ public class ProxyClassLoader extends ClassLoader {
         List<Enumeration<URL>> sub = new ArrayList<Enumeration<URL>>();
 
         // always consult SCL first
-        if (shouldDelegateResource(path, null)) sub.add(systemCL.getResources(name));
+        if (shouldDelegateResource(path, null)) sub.add(parents.systemCL().getResources(name));
         
-        Set<ProxyClassLoader> del = packageCoverage.get(pkg);
+        Set<ProxyClassLoader> del = ProxyClassPackages.findCoveredPkg(pkg);
         if (fallDef != null) {
-            Set<ProxyClassLoader> snd = packageCoverage.get(fallDef);
+            Set<ProxyClassLoader> snd = ProxyClassPackages.findCoveredPkg(fallDef);
             if (snd != null) {
                 if (del != null) {
                     del = new HashSet<ProxyClassLoader>(del);
@@ -462,7 +421,7 @@ public class ProxyClassLoader extends ClassLoader {
         }
 
         if (del != null) {
-            for (ProxyClassLoader pcl : parents) { // all our accessible parents
+            for (ProxyClassLoader pcl : parents.loaders()) { // all our accessible parents
                 if (del.contains(pcl) && shouldDelegateResource(path, pcl)) { // that cover given package
                     sub.add(pcl.findResources(name));
                 }
@@ -512,8 +471,7 @@ public class ProxyClassLoader extends ClassLoader {
             if (!recurse) {
                 return null;
             }
-            for (int i = 0; i < parents.length; i++) {
-                ProxyClassLoader par = parents[i];
+            for (ProxyClassLoader par : this.parents.loaders()) {
                 pkg = par.getPackageFast(name, false);
                 if (pkg != null) break;
             }
@@ -540,12 +498,12 @@ public class ProxyClassLoader extends ClassLoader {
                 String specVersion, String specVendor, String implTitle,
 		String implVersion, String implVendor, URL sealBase )
 		throws IllegalArgumentException {
-	synchronized (packages) {
+        synchronized (packages) {
             Package pkg = super.definePackage(name, specTitle, specVersion, specVendor, implTitle,
-                    implVersion, implVendor, sealBase);
+                implVersion, implVendor, sealBase);
             packages.put(name, pkg);
             return pkg;
-	}
+        }
     }
 
     /**
@@ -566,12 +524,11 @@ public class ProxyClassLoader extends ClassLoader {
      * @return the array of <code>Package</code> objects defined by this
      * <code>ClassLoader</code>
      */
-    private synchronized Package[] getPackages(Set<ClassLoader> addedParents) {
+    private Package[] getPackages(Set<ClassLoader> addedParents) {
         Map<String,Package> all = new HashMap<String, Package>();
         // XXX call shouldDelegateResource on each?
         addPackages(all, super.getPackages());
-        for (int i = 0; i < parents.length; i++) {
-            ClassLoader par = parents[i];
+        for (ClassLoader par : this.parents.loaders()) {
             if (par instanceof ProxyClassLoader && addedParents.add(par)) {
                 // XXX should ideally use shouldDelegateResource here...
                 addPackages(all, ((ProxyClassLoader)par).getPackages(addedParents));
@@ -580,85 +537,10 @@ public class ProxyClassLoader extends ClassLoader {
         synchronized (packages) {
             all.keySet().removeAll(packages.keySet());
             packages.putAll(all);
+            return packages.values().toArray(new Package[packages.size()]);
         }
-        return packages.values().toArray(new Package[packages.size()]);
     }
     
-    /** Coalesce parent classloaders into an optimized set.
-     * This means that all parents of the specified classloaders
-     * are also added recursively, removing duplicates along the way.
-     * Search order should be preserved (parents before children, stable w.r.t. inputs).
-     * @param loaders list of suggested parents (no nulls or duplicates permitted)
-     * @return optimized list of parents (no nulls or duplicates)
-     * @throws IllegalArgumentException if there are cycles
-     */
-    private ProxyClassLoader[] coalesceParents(ClassLoader[] loaders) throws IllegalArgumentException {
-        return coalesceAppend(new ProxyClassLoader[0], loaders);
-    }
-    
-    /** Coalesce a new set of loaders into the existing ones.
-     */
-    private ProxyClassLoader[] coalesceAppend(ProxyClassLoader[] existing, ClassLoader[] appended) throws IllegalArgumentException {
-        int likelySize = existing.length + appended.length;
-        
-        LinkedHashSet<ClassLoader> uniq = new LinkedHashSet<ClassLoader>(likelySize);
-        uniq.addAll(Arrays.asList(existing));
-
-        if (uniq.containsAll(Arrays.asList(appended))) return existing; // No change required.
-
-        for (ClassLoader l : appended) addRec(uniq, l); // add all loaders (maybe recursively)
-        
-        // validate the configuration
-        // it is valid if all heading non-ProxyClassLoaders are parents of the last one
-        boolean head = true;
-        List<ProxyClassLoader> pcls = new ArrayList<ProxyClassLoader>(uniq.size());
-        for (ClassLoader l : uniq) {
-            if (head) {
-                if (l instanceof ProxyClassLoader) {
-                    // only PCLs after this point
-                    head = false; 
-                    pcls.add((ProxyClassLoader)l);
-                } else {
-                    if (isParentOf(systemCL, l)) {
-                        systemCL = l;
-                    } else {
-                        throw new IllegalArgumentException("Bad ClassLoader ordering: " + Arrays.asList(appended));
-                    }
-                }
-            } else {
-                if (l instanceof ProxyClassLoader) {
-                    pcls.add((ProxyClassLoader)l);
-                } else {
-                        throw new IllegalArgumentException("Bad ClassLoader ordering: " + Arrays.asList(appended));
-                    
-                }
-            }
-        }
-         
-        ProxyClassLoader[] ret = pcls.toArray(new ProxyClassLoader[pcls.size()]);
-        return ret;
-    }
-    
-    private static boolean isParentOf(ClassLoader parent, ClassLoader child) {
-        while (child != null) {
-            if (child == parent) return true;
-            child = child.getParent();
-        }
-        return false;
-    }
-    
-    private void addRec(Set<ClassLoader> resultingUnique, ClassLoader loader) throws IllegalArgumentException {
-        if (loader == this) throw new IllegalArgumentException("cycle in parents"); // NOI18N
-        if (resultingUnique.contains(loader)) return;
-        if (loader instanceof ProxyClassLoader && ((ProxyClassLoader)loader).transitive) {
-            for (ProxyClassLoader lpar : ((ProxyClassLoader)loader).parents) {
-                addRec(resultingUnique, lpar);
-            }
-        }
-        resultingUnique.add(loader);
-    }
-
-
     private void addPackages(Map<String,Package> all, Package[] pkgs) {
         // Would be easier if Package.equals() was just defined sensibly...
         for (int i = 0; i < pkgs.length; i++) {
@@ -667,7 +549,7 @@ public class ProxyClassLoader extends ClassLoader {
     }
     
     protected final void setSystemClassLoader(ClassLoader s) {
-        systemCL = s;
+        parents = parents.changeSystemClassLoader(s);
     }
     
     protected boolean shouldDelegateResource(String pkg, ClassLoader parent) {
@@ -677,24 +559,23 @@ public class ProxyClassLoader extends ClassLoader {
     /** Called before releasing the classloader so it can itself unregister
      * from the global ClassLoader pool */
     public void destroy() {
-        synchronized(packageCoverage) {
-            for (Iterator<String> it = packageCoverage.keySet().iterator(); it.hasNext(); ) {
-                String pkg = it.next();
-                Set<ProxyClassLoader> set = packageCoverage.get(pkg);
-                if (set.contains(this) && set.size() == 1 ) {
-                    it.remove();
-                } else {
-                    set.remove(this);
-                }
-            }
-        }
+        ProxyClassPackages.removeCoveredPakcages(this);
     }
 
     final ClassLoader firstParent() {
-        if (parents == null || parents.length == 0) {
-            return null;
-        }
-        return parents[0];
+        Iterator<ProxyClassLoader> it = parents.loaders().iterator();
+        return it.hasNext() ? it.next() : null;
     }
 
+    //
+    // System Class Loader Packages Support
+    //
+    
+    private static Map<String,Boolean> sclPackages = Collections.synchronizedMap(new HashMap<String,Boolean>());  
+    private static Boolean isSystemPackage(String pkg) {
+        return sclPackages.get(pkg);
+    }
+    private static void registerSystemPackage(String pkg, boolean isSystemPkg) {
+        sclPackages.put(pkg, isSystemPkg);
+    }
 }

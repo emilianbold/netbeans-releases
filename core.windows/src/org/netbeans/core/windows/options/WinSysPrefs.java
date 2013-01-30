@@ -55,7 +55,7 @@ import org.openide.util.NbPreferences;
 public interface WinSysPrefs {
     
     public static final Preferences HANDLER = NbPreferences.forModule(WinSysPrefs.class);
-    
+
     public final String DND_SMALLWINDOWS = "dnd.smallwindows";
      
     public final String DND_SMALLWINDOWS_WIDTH = "dnd.smallwindows.width";
@@ -103,5 +103,9 @@ public interface WinSysPrefs {
      */
     public final String DOCUMENT_TABS_MULTIROW = "document.tabs.multirow";
 
+    /**
+     * @since 2.54
+     */
+    public static String MAXIMIZE_NATIVE_LAF = "laf.maximize.native"; //NOI18N
     
 }

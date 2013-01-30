@@ -186,8 +186,8 @@ public class J2eeTestCase extends JellyTestCase {
      */
     protected static Test createAllModulesServerSuite(Server server, Class<? extends TestCase> clazz, String... testNames) {
         Configuration result = NbModuleSuite.createConfiguration(clazz);
-        result = addServerTests(server, result, testNames).enableModules(".*").clusters(".*");
-        return NbModuleSuite.create(result);
+        result = addServerTests(server, result, testNames).enableModules(".*").clusters(".*").honorAutoloadEager(true);
+        return result.suite();
     }
 
     /**

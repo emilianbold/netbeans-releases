@@ -931,7 +931,49 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("bug161749.c", 10, 44, "bug161749.c", 10, 19);
         performTest("bug161749.c", 11, 44, "bug161749.c", 11, 19);
     }
+    
+    public void testBug210996() throws Exception {
+        // Bug 210996 - forward class is colored as field
+        performTest("bug210996.cpp", 5, 13, "bug210996.cpp", 8, 1);
+    }    
 
+    public void testBug200171() throws Exception {
+        // Bug 200171 - Unresolved forward class declaration
+        performTest("bug200171.c", 2, 17, "bug200171.c", 2, 5);
+    }    
+    
+    public void testTwoMacros() throws Exception {
+        // two macros with the same name
+        performTest("twoMacros1.h", 1, 9, "twoMacros1.c", 1, 1);
+        performTest("twoMacros2.h", 1, 9, "twoMacros2.c", 1, 1);
+    }    
+
+    public void testBug216965() throws Exception {
+        // Bug 216965 - Unresolved identifier when using constant unsigned indices
+        performTest("bug216965.cpp", 8, 26, "bug216965.cpp", 3, 5);
+        performTest("bug216965.cpp", 9, 27, "bug216965.cpp", 3, 5);
+    }    
+
+    public void testBug220310() throws Exception {
+        // Bug 220310 - Incorrect find usages results
+        performTest("bug220310.cpp", 4, 39, "bug220310.cpp", 4, 21);
+    }    
+
+    public void testBug220680() throws Exception {
+        // Bug 220680 - C11 parser error for _Noreturn
+        performTest("bug220680.c", 1, 17, "bug220680.c", 1, 1);
+    }    
+
+    public void testBug223298() throws Exception {
+        // Bug 223298 - Wrong recognition of function
+        performTest("bug223298.cpp", 10, 10, "bug223298.cpp", 6, 1);
+    }    
+
+    public void testBug223298_2() throws Exception {
+        // Bug 223298 - Wrong recognition of function
+        performTest("bug223298.c", 10, 10, "bug223298.c", 6, 1);
+    }    
+    
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override
@@ -943,11 +985,6 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
             super(testName, true);
         }
 
-        public void testBug200171() throws Exception {
-            // Bug 200171 - Unresolved forward class declaration
-            performTest("bug200171.c", 2, 17, "bug200171.c", 2, 5);
-        }    
-        
     }
 }
 

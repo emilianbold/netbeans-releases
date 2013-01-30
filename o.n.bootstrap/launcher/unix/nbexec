@@ -153,11 +153,14 @@ if [ -z "$jdkhome" ] ; then
         Darwin*)
         # read Java Preferences
         if [ -x "/usr/libexec/java_home" ]; then
-            jdkhome=`/usr/libexec/java_home`
+            jdkhome=`/usr/libexec/java_home --version 1.7.0_10+ --failfast`
+            if [ -z $jdkhome ]; then 
+                jdkhome=`/usr/libexec/java_home --version 1.6 --failfast`
+            fi
 
-        # JDK1.7
-        elif [ -f "/Library/Java/JavaVirtualMachines/1.7.0.jdk/Contents/Home/bin/java" ] ; then
-            jdkhome="/Library/Java/JavaVirtualMachines/1.7.0.jdk/Contents/Home"
+        # JDK1.7 Update 10 as a fallback
+        elif [ -f "/Library/Java/JavaVirtualMachines/jdk1.7.0_10.jdk/Contents/Home/bin/java" ] ; then
+            jdkhome="/Library/Java/JavaVirtualMachines/jdk1.7.0_10.jdk/Contents/Home"
 
         # JDK1.6
         elif [ -f "/System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Home/bin/java" ] ; then
@@ -167,6 +170,7 @@ if [ -z "$jdkhome" ] ; then
         elif [ -f "/System/Library/Frameworks/JavaVM.framework/Versions/1.6.0/Home/bin/java" ] ; then
             jdkhome="/System/Library/Frameworks/JavaVM.framework/Versions/1.6.0/Home"
         fi
+        echo Found jdkhome=$jdkhome
         ;;
         *) javac=`which javac`
         if [ -z "$javac" ] ; then
@@ -187,6 +191,10 @@ if [ ! -x "${jdkhome}/bin/java" ] ; then
     echo "Cannot find java. Please use the --jdkhome switch." >&2
     exit 2
 fi
+
+# Make sure native code libraries of jdk7 are found
+LD_LIBRARY_PATH=${jdkhome}/jre/lib/amd64:${jdkhome}/jre/lib/i386:${LD_LIBRARY_PATH}
+export LD_LIBRARY_PATH
 
 # if the Java option for heap dump on OOME is supported enable it
 if "${jdkhome}/bin/java" -XX:+HeapDumpOnOutOfMemoryError -cp "${progdir}/boot.jar" org.netbeans.NbExecJavaStartTry > /dev/null 2>&1 ; then
@@ -440,7 +448,7 @@ EOF
 
     if /usr/bin/grep "ProxyAuto.*: *1" ${scutil_out} >/dev/null 2>&1; then
         if  /usr/bin/grep "ProxyAutoConfigEnable.*: *1" ${scutil_out} >/dev/null 2>&1; then
-            http_proxy_tmp="PAC `/usr/bin/grep ProxyAutoConfigURLString ${scutil_out} | /usr/bin/awk '{print $3}'`"
+            http_proxy_tmp="PAC `/usr/bin/grep ProxyAutoConfigURLString ${scutil_out} | /usr/bin/awk 'END{print $3}'`"
             rm ${scutil_out}
             return 0
         fi
@@ -450,8 +458,8 @@ EOF
     fi
 
     if /usr/bin/grep "HTTPEnable *: *1" ${scutil_out} >/dev/null 2>&1; then
-	http_proxy_host=`/usr/bin/grep HTTPProxy ${scutil_out} | /usr/bin/awk '{print $3}'`
-	http_proxy_port=`/usr/bin/grep HTTPPort ${scutil_out} | /usr/bin/awk '{print $3} '`
+	http_proxy_host=`/usr/bin/grep HTTPProxy ${scutil_out} | /usr/bin/awk 'END{print $3}'`
+	http_proxy_port=`/usr/bin/grep HTTPPort ${scutil_out} | /usr/bin/awk 'END{print $3} '`
         http_proxy_tmp=$http_proxy_host:$http_proxy_port
         rm ${scutil_out}
         return 0

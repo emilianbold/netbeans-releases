@@ -292,7 +292,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         }
         dc = (DeclarationContainerNamespace) RepositoryUtils.get(declarationsSorageKey);
         if (dc == null && preventMultiplyDiagnosticExceptions < DiagnosticExceptoins.LimitMultiplyDiagnosticExceptions) {
-            DiagnosticExceptoins.register(new IllegalStateException("Failed to get DeclarationsSorage by key " + declarationsSorageKey)); // NOI18N
+            DiagnosticExceptoins.registerIllegalRepositoryStateException("Failed to get DeclarationsSorage by key ", declarationsSorageKey); // NOI18N
             preventMultiplyDiagnosticExceptions++;
         }
         if (TraceFlags.USE_WEAK_MEMORY_CACHE && dc != null && weakDeclarationContainer != null) {
@@ -701,7 +701,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         assert this.qualifiedName != null;
         PersistentUtils.writeUTF(qualifiedName, output);
 
-        theFactory.writeStringToUIDMap(this.nestedNamespaces, output, true);
+        theFactory.writeStringToUIDMap(this.nestedNamespaces, output, false);
         ProjectComponent.writeKey(this.declarationsSorageKey, output);
         try {
             nsDefinitionsLock.readLock().lock();

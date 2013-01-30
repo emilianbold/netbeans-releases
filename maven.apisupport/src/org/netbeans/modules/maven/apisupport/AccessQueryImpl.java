@@ -120,7 +120,7 @@ public class AccessQueryImpl implements AccessibilityQueryImplementation {
                 MavenNbModuleImpl.GROUPID_MOJO, MavenNbModuleImpl.NBM_PLUGIN, //NOI18N
                 "publicPackages", "publicPackage", "manifest"); //NOI18N
         if (params != null) {
-            toRet = preparePublicPackagesPatterns(params);
+            toRet = prepareMavenPublicPackagesPatterns(params);
         } else {
             FileObject obj = project.getProjectDirectory().getFileObject(MANIFEST_PATH);
             if (obj != null) {
@@ -130,7 +130,7 @@ public class AccessQueryImpl implements AccessibilityQueryImplementation {
                     Manifest man = new Manifest();
                     man.read(in);
                     String value = man.getMainAttributes().getValue(ATTR_PUBLIC_PACKAGE);
-                    toRet = preparePublicPackagesPatterns(value);
+                    toRet = prepareManifestPublicPackagesPatterns(value);
                 } catch (Exception ex) {
                     Exceptions.printStackTrace(ex);
                 } finally {
@@ -141,13 +141,15 @@ public class AccessQueryImpl implements AccessibilityQueryImplementation {
         ref = new WeakReference<List<Pattern>>(toRet);
         return toRet;
     }
-    static List<Pattern> preparePublicPackagesPatterns(String[] values) {
+    
+    /** as defined in nbm-maven-plugin **/
+    static List<Pattern> prepareMavenPublicPackagesPatterns(String[] values) {
         List<Pattern> toRet = new ArrayList<Pattern>();
         for (String token : values) {
                 token = token.trim();
                 boolean recursive = false;
-                if (token.endsWith(".**")) { //NOI18N
-                    token = token.substring(0, token.length() - ".**".length()); //NOI18N
+                if (token.endsWith(".*")) { //NOI18N
+                    token = token.substring(0, token.length() - ".*".length()); //NOI18N
                     recursive = true;
                 }
                 token = token.replace(".","\\."); //NOI18N
@@ -159,7 +161,8 @@ public class AccessQueryImpl implements AccessibilityQueryImplementation {
         return toRet;
     }
     
-    static List<Pattern> preparePublicPackagesPatterns(String value) {
+    /** as defined in module manifest */
+    static List<Pattern> prepareManifestPublicPackagesPatterns(String value) {
         List<Pattern> toRet = new ArrayList<Pattern>();
         if (value != null) {
             StringTokenizer tok = new StringTokenizer(value, " ,", false); //NOI18N

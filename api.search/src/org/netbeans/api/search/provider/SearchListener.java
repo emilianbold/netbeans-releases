@@ -41,6 +41,7 @@
  */
 package org.netbeans.api.search.provider;
 
+import java.net.URI;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.spi.search.SearchFilterDefinition;
@@ -64,6 +65,20 @@ public abstract class SearchListener {
      * @param message message describing reasons for skipping (can be null).
      */
     public void fileSkipped(@NonNull FileObject fileObject,
+            @NullAllowed SearchFilterDefinition filter,
+            @NullAllowed String message) {
+    }
+
+    /**
+     * Called when a file is skipped - filtered out by a filter.
+     *
+     * @param uri the skipped URI.
+     * @param filter filter that filtered out the file (can be null).
+     * @param message message describing reasons for skipping (can be null).
+     *
+     * @since org.netbeans.api.search/1.4
+     */
+    public void fileSkipped(@NonNull URI uri,
             @NullAllowed SearchFilterDefinition filter,
             @NullAllowed String message) {
     }

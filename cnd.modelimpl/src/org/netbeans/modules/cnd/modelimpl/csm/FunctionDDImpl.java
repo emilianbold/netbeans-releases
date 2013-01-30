@@ -62,15 +62,20 @@ import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
+import org.netbeans.modules.cnd.modelimpl.csm.FunctionParameterListImpl.FunctionParameterListBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstRenderer;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Disposable;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
+import org.netbeans.modules.cnd.modelimpl.csm.deep.CompoundStatementImpl.CompoundStatementBuilder;
+import org.netbeans.modules.cnd.modelimpl.csm.deep.StatementBase.StatementBuilder;
+import org.netbeans.modules.cnd.modelimpl.csm.deep.StatementBase.StatementBuilderContainer;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
+import org.openide.util.CharSequences;
 
 /**
  * Implements both CsmFunction and CsmFunctionDefinition -
@@ -252,6 +257,57 @@ public class FunctionDDImpl<T> extends FunctionImpl<T> implements CsmFunctionDef
         return l;
     }
 
+    public static class FunctionDDBuilder extends FunctionBuilder implements StatementBuilderContainer {
+
+        CompoundStatementBuilder bodyBuilder;
+        
+        public void setBodyBuilder(CompoundStatementBuilder builder) {
+            bodyBuilder = builder;
+        }
+        
+        @Override
+        public FunctionDDImpl create() {
+            CsmScope scope = AstRenderer.FunctionRenderer.getScope(getScope(), getFile(), isStatic(), true);
+
+            FunctionDDImpl<?> functionDDImpl = new FunctionDDImpl(getName(), getRawName(), scope, isStatic(), isConst(), getFile(), getStartOffset(), getEndOffset(), true);        
+            temporaryRepositoryRegistration(true, functionDDImpl);
+
+//            StringBuilder clsTemplateSuffix = new StringBuilder();
+//            TemplateDescriptor templateDescriptor = createTemplateDescriptor(ast, file, functionDDImpl, clsTemplateSuffix, global);
+//            CharSequence classTemplateSuffix = NameCache.getManager().getString(clsTemplateSuffix);
+//
+//            functionDDImpl.setTemplateDescriptor(templateDescriptor, classTemplateSuffix);
+            if(getTemplateDescriptorBuilder() != null) {
+                functionDDImpl.setTemplateDescriptor(getTemplateDescriptor(), NameCache.getManager().getString(CharSequences.create(""))); // NOI18N
+            }
+            
+            functionDDImpl.setReturnType(getType());
+            ((FunctionParameterListBuilder)getParametersListBuilder()).setScope(functionDDImpl);
+            functionDDImpl.setParameters(((FunctionParameterListBuilder)getParametersListBuilder()).create(), false);
+            
+            bodyBuilder.setScope(functionDDImpl);
+            functionDDImpl.setCompoundStatement(bodyBuilder.create());
+
+            postObjectCreateRegistration(true, functionDDImpl);
+            getNameHolder().addReference(getFileContent(), functionDDImpl);
+            
+            addDeclaration(functionDDImpl);
+            
+            return functionDDImpl;
+        }        
+
+        @Override
+        public void addStatementBuilder(StatementBuilder builder) {
+            assert builder instanceof CompoundStatementBuilder;
+            setBodyBuilder((CompoundStatementBuilder)builder);
+        }
+        
+        protected void setBody(FunctionDDImpl fun) {
+            bodyBuilder.setScope(fun);
+            fun.setCompoundStatement(bodyBuilder.create());
+        }        
+    }
+    
     ////////////////////////////////////////////////////////////////////////////
     // iml of SelfPersistent
 

@@ -41,16 +41,13 @@
  */
 package org.netbeans.modules.php.smarty.editor.completion;
 
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import javax.swing.JEditorPane;
-import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import junit.framework.AssertionFailedError;
-import junit.framework.TestCase;
 import org.netbeans.modules.csl.api.test.CslTestBase;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.php.smarty.editor.TplDataLoader;
@@ -72,6 +69,10 @@ public class TplCompletionQueryTest extends CslTestBase {
         assertItems("{|", arr("append", "if", "section"), Match.CONTAINS);
     }
 
+    public void testIssue22376() throws Exception {
+        assertItems("{|\n", arr("append", "if", "section"), Match.CONTAINS);
+    }
+
     protected void assertItems(String documentText, final String[] expectedItemsNames, final Match type) throws Exception {
         assertItems(documentText, expectedItemsNames, type, -1);
     }
@@ -89,7 +90,7 @@ public class TplCompletionQueryTest extends CslTestBase {
         //remove the pipe
         doc.remove(pipeOffset, 1);
 
-        TplCompletionQuery query = new TplCompletionQuery(doc, pipeOffset);
+        TplCompletionQuery query = new TplCompletionQuery(doc);
         JEditorPane component = new JEditorPane();
         component.setDocument(doc);
 

@@ -115,7 +115,7 @@ import org.openide.util.RequestProcessor;
 */
 public class Operator {
 
-    private static Logger logger = Logger.getLogger("org.netbeans.modules.debugger.jpda.jdievents"); // NOI18N
+    private static final Logger logger = Logger.getLogger("org.netbeans.modules.debugger.jpda.jdievents"); // NOI18N
 
     public static final String SILENT_EVENT_PROPERTY = "silent"; // NOI18N
 
@@ -166,7 +166,7 @@ public class Operator {
         final SuspendCount suspendCount = new SuspendCount();
         final Object[] params = new Object[] {eventQueue, starter, finalizer};
         thread = new Thread (new Runnable () {
-        public void run () {
+        @Override public void run () {
             EventQueue eventQueue = (EventQueue) params [0];
             Executor starter = (Executor) params [1];
             Runnable finalizer = (Runnable) params [2];
@@ -687,7 +687,7 @@ public class Operator {
         logger.fine("DUMP DONE.");
     }
     
-    private static final ThreadReference getEventThread(Event e) throws InternalExceptionWrapper, VMDisconnectedExceptionWrapper {
+    private static ThreadReference getEventThread(Event e) throws InternalExceptionWrapper, VMDisconnectedExceptionWrapper {
         ThreadReference tref = null;
         if (e instanceof LocatableEvent) {
             tref = LocatableEventWrapper.thread((LocatableEvent) e);

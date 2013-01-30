@@ -41,6 +41,7 @@
  */
 package org.netbeans.api.search.provider.impl;
 
+import java.net.URI;
 import org.netbeans.api.search.provider.SearchFilter;
 import org.netbeans.spi.search.SearchFilterDefinition;
 import org.openide.filesystems.FileObject;
@@ -63,12 +64,26 @@ public class DelegatingSearchFilter extends SearchFilter {
     }
 
     @Override
+    public boolean searchFile(URI fileUri) {
+        return definition.searchFile(fileUri);
+    }
+
+    @Override
+    public FolderResult traverseFolder(URI folderUri)
+            throws IllegalArgumentException {
+        return definitionToClientFolderResult(
+                definition.traverseFolder(folderUri));
+    }
+
+    @Override
     public FolderResult traverseFolder(FileObject folder)
             throws IllegalArgumentException {
+        return definitionToClientFolderResult(
+                definition.traverseFolder(folder));
+    }
 
-        SearchFilterDefinition.FolderResult result =
-                definition.traverseFolder(folder);
-
+    private FolderResult definitionToClientFolderResult(
+            SearchFilterDefinition.FolderResult result) {
         switch (result) {
             case DO_NOT_TRAVERSE:
                 return FolderResult.DO_NOT_TRAVERSE;

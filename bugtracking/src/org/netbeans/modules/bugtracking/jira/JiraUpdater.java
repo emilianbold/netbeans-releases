@@ -45,6 +45,7 @@ package org.netbeans.modules.bugtracking.jira;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -58,10 +59,8 @@ import javax.swing.JPanel;
 import javax.swing.LayoutStyle;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.bugtracking.APIAccessor;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.DelegatingConnector;
-import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.spi.*;
 import org.openide.DialogDescriptor;
@@ -170,6 +169,7 @@ public class JiraUpdater {
         org.openide.awt.Mnemonics.setLocalizedText(linkButton, NbBundle.getMessage(JiraUpdater.class, "MSG_PROJECT_NEEDS_JIRA_LINK")); // NOI18N
         if (url != null) {
             linkButton.addActionListener(new ActionListener() {
+                @Override
                 public void actionPerformed(ActionEvent e) {
                     HtmlBrowser.URLDisplayer displayer = HtmlBrowser.URLDisplayer.getDefault ();
                     if (displayer != null) {
@@ -214,7 +214,7 @@ public class JiraUpdater {
         }
         @Override
         public Repository createRepository(RepositoryInfo info) {
-            throw new UnsupportedOperationException("Not supported yet.");
+            throw new UnsupportedOperationException("Not supported yet.");      // NOI18N
         }
     }
     private class JiraProxyRepositoryProvider extends RepositoryProvider<Object,Object,Object> {
@@ -242,7 +242,7 @@ public class JiraUpdater {
         }
         @Override
         public Object createQuery(Object r) {
-            throw new UnsupportedOperationException("Not supported yet.");
+            throw new UnsupportedOperationException("Not supported yet.");      // NOI18N
         }
         @Override
         public Collection<Object> getQueries(Object r) {
@@ -255,6 +255,14 @@ public class JiraUpdater {
         @Override
         public Lookup getLookup(Object r) {
             return Lookup.EMPTY;
+        }
+        @Override
+        public void removePropertyChangeListener(Object r, PropertyChangeListener listener) {
+            // do nothing
+        }
+        @Override
+        public void addPropertyChangeListener(Object r, PropertyChangeListener listener) {
+            // do nothing
         }
     }
 
@@ -281,13 +289,14 @@ public class JiraUpdater {
         }
 
         private JPanel createControllerPanel() {
-            JPanel panel = new JPanel();
+            JPanel controllerPanel = new JPanel();
 
             JLabel pane = new JLabel();
-            pane.setText(NbBundle.getMessage(JiraUpdater.class, "MSG_NOT_YET_INSTALLED"));
+            pane.setText(NbBundle.getMessage(JiraUpdater.class, "MSG_NOT_YET_INSTALLED")); // NOI18N
 
             JButton downloadButton = new JButton();
             downloadButton.addActionListener(new ActionListener() {
+                @Override
                 public void actionPerformed(ActionEvent e) {
                     downloadAndInstall();
                 }
@@ -295,8 +304,8 @@ public class JiraUpdater {
             
             org.openide.awt.Mnemonics.setLocalizedText(downloadButton, org.openide.util.NbBundle.getMessage(MissingJiraSupportPanel.class, "MissingJiraSupportPanel.downloadButton.text")); // NOI18N
 
-            GroupLayout layout = new GroupLayout(panel);
-            panel.setLayout(layout);
+            GroupLayout layout = new GroupLayout(controllerPanel);
+            controllerPanel.setLayout(layout);
             layout.setHorizontalGroup(
                 layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                 .addGroup(layout.createSequentialGroup()
@@ -315,7 +324,7 @@ public class JiraUpdater {
                 .addContainerGap())
             );
 
-            return panel;
+            return controllerPanel;
         }
 
         @Override

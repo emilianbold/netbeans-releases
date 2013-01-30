@@ -47,6 +47,9 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  * Provides a means of detecting a project's packaging for purposes of IDE internals.
+ * Semi deprecated. Please be very careful when implementing this, overriding
+ * packaging can mean the original packaging's support will be gone. (eg. when a war project is turned into bundle project using this interface, 
+ * then all war project functionality will be gone and project will only pose as bundle/osgi)
  * @see NbMavenProject#getPackagingType
  * @see ServiceProvider
  * @since 2.20

@@ -44,12 +44,17 @@
 
 package org.netbeans.modules.java.navigation;
 
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import javax.lang.model.element.Element;
 import javax.swing.JComponent;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.spi.navigator.NavigatorPanel;
+import org.netbeans.spi.navigator.NavigatorPanelWithToolbar;
 import org.netbeans.spi.navigator.NavigatorPanelWithUndo;
 import org.openide.awt.UndoRedo;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -63,13 +68,15 @@ import org.openide.util.lookup.Lookups;
     @NavigatorPanel.Registration(mimeType="text/x-java", position=100, displayName="#LBL_members"),
     @NavigatorPanel.Registration(mimeType="application/x-class-file", displayName="#LBL_members")
 })
-public class ClassMemberPanel implements NavigatorPanelWithUndo {
+public class ClassMemberPanel implements NavigatorPanelWithUndo, NavigatorPanelWithToolbar {
 
-    private ClassMemberPanelUI component;
-
-    private static volatile ClassMemberPanel INSTANCE;   //Apparently not accessed in event dispatch thread in CaretListeningTask
-    
+    private static volatile ClassMemberPanel INSTANCE;   //Apparently not accessed in event dispatch thread in CaretListeningTask    
     private static final RequestProcessor RP = new RequestProcessor(ClassMemberPanel.class.getName(),1);
+    //@GuardedBy("ClassMemberPanel.class")
+    private static Reference<FileObject> lastFileRef = null;
+
+    //@GuardedBy("this")
+    private ClassMemberPanelUI component;
     
     public ClassMemberPanel() {
     }
@@ -83,15 +90,22 @@ public class ClassMemberPanel implements NavigatorPanelWithUndo {
             @Override
             public void run () {
                 ClassMemberNavigatorJavaSourceFactory f = ClassMemberNavigatorJavaSourceFactory.getInstance();
-                if (f != null)
+                if (f != null) {
                     f.setLookup(context, panel);
+                    CaretListeningFactory.runAgain();
+                }
             }
         });
     }
 
     @Override
     public void panelDeactivated() {
+        final FileObject luf = getLastUsedFile();
+        compareAndSetLastUsedFile(null);
         getClassMemberPanelUI().clearNodes();
+        if (JavadocTopComponent.exists()) {
+            JavadocTopComponent.getDefault().clearContent(luf);
+        }
         INSTANCE = null;
         //Even the setLookup(EMPTY) is fast, has to be called in RP to keep ordering
         RP.post( new Runnable () {
@@ -128,7 +142,7 @@ public class ClassMemberPanel implements NavigatorPanelWithUndo {
         getClassMemberPanelUI().selectElementNode(eh);
     }
     
-    private synchronized ClassMemberPanelUI getClassMemberPanelUI() {
+    synchronized ClassMemberPanelUI getClassMemberPanelUI() {
         if (this.component == null) {
             this.component = new ClassMemberPanelUI();
         }
@@ -143,5 +157,21 @@ public class ClassMemberPanel implements NavigatorPanelWithUndo {
     public UndoRedo getUndoRedo() {
         final UndoRedo undoRedo = Lookups.forPath("org/netbeans/modules/refactoring").lookup(UndoRedo.class);
         return undoRedo==null?UndoRedo.NONE:undoRedo;
+    }
+
+    @Override
+    public synchronized JComponent getToolbarComponent() {
+        return getClassMemberPanelUI().getToolbar();
+    }
+
+    static synchronized FileObject getLastUsedFile() {
+        return lastFileRef == null ? null : lastFileRef.get();
+    }
+
+    static synchronized boolean compareAndSetLastUsedFile(@NullAllowed final FileObject file) {
+        final FileObject lastFile = lastFileRef == null ? null : lastFileRef.get();
+        final boolean res = file == null ? lastFile == null : file.equals(lastFile);
+        lastFileRef = file == null ? null : new WeakReference<FileObject>(file);
+        return res;
     }
 }

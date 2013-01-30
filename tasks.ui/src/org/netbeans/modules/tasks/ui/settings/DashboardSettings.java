@@ -55,6 +55,7 @@ import org.openide.util.NbPreferences;
 public class DashboardSettings {
 
     public static final String TASKS_LIMIT_SETTINGS_CHANGED = "dashboard.task_limit_changed"; //NOI18N
+    public static final String AUTO_SYNC_SETTINGS_CHANGED = "dashboard.auto_sync_changed"; //NOI18N
 
     private static DashboardSettings instance = null;
     private static final String AUTO_SYNC = "dashboard.auto_sync"; //NOI18N
@@ -76,10 +77,8 @@ public class DashboardSettings {
     private static final boolean DEFAULT_FINISHED_TASK_FILTER = true;
 
     private PropertyChangeSupport support = new PropertyChangeSupport(this);
-    private List<PropertyChangeListener> listeners;
 
     private DashboardSettings() {
-        listeners = new ArrayList<PropertyChangeListener>();
     }
 
     public static DashboardSettings getInstance(){
@@ -90,27 +89,33 @@ public class DashboardSettings {
     }
 
     public void addPropertyChangedListener(PropertyChangeListener listener) {
-        listeners.add(listener);
+        support.addPropertyChangeListener(listener);
     }
 
     public void removePropertyChangedListener(PropertyChangeListener listener) {
-        listeners.remove(listener);
+        support.removePropertyChangeListener(listener);
     }
 
     public boolean isAutoSync() {
         return getPreferences().getBoolean(AUTO_SYNC, DEFAULT_AUTO_SYNC);
     }
 
-    public void setAutoSync(boolean autoSync) {
+    public void setAutoSync(boolean autoSync, boolean fireEvent) {
         getPreferences().putBoolean(AUTO_SYNC, autoSync);
+        if (fireEvent) {
+            fireSyncChangedEvent();
+        }
     }
 
     public int getAutoSyncValue() {
         return getPreferences().getInt(AUTO_SYNC_VALUE, DEFAULT_AUTO_SYNC_VALUE);
     }
 
-    public void setAutoSyncValue(int autoSyncValue) {
+    public void setAutoSyncValue(int autoSyncValue, boolean fireEvent) {
         getPreferences().putInt(AUTO_SYNC_VALUE, autoSyncValue);
+        if (fireEvent) {
+            fireSyncChangedEvent();
+        }
     }
 
     public boolean isTasksLimit() {
@@ -171,5 +176,9 @@ public class DashboardSettings {
 
     private void fireLimitChangedEvent() {
         support.firePropertyChange(TASKS_LIMIT_SETTINGS_CHANGED, null, null);
+    }
+
+    private void fireSyncChangedEvent() {
+        support.firePropertyChange(AUTO_SYNC_SETTINGS_CHANGED, null, null);
     }
 }

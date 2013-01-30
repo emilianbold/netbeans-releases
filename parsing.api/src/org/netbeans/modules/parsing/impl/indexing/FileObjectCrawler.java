@@ -62,6 +62,7 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.queries.VisibilityQuery;
+import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -71,6 +72,7 @@ import org.openide.filesystems.FileUtil;
  */
 final class FileObjectCrawler extends Crawler {
 
+    private static final char SEPARATOR = '/';  //NOI18N
     private static final Logger LOG = Logger.getLogger(FileObjectCrawler.class.getName());
     /*test*/ static Map<Pair<File,File>,Boolean> mockLinkTypes;
 
@@ -105,26 +107,61 @@ final class FileObjectCrawler extends Crawler {
     }
 
     @Override
-    protected boolean collectResources(Collection<IndexableImpl> resources, Collection<IndexableImpl> allResources) {
+    protected boolean collectResources(Collection<Indexable> resources, Collection<Indexable> allResources) {
         boolean finished = true;
         final long tm1 = System.currentTimeMillis();
         final Stats stats = LOG.isLoggable(Level.FINE) ? new Stats() : null;
 
         if (files != null) {
             if (files.length > 1) {
-                Map<FileObject, Set<FileObject>> clusters = new HashMap<FileObject, Set<FileObject>>();
-                for(FileObject f : files) {
+                final Map<FileObject, Set<FileObject>> clusters = new HashMap<FileObject, Set<FileObject>>();
+                final Map<FileObject, StringBuilder> relPaths = new HashMap<FileObject, StringBuilder>();
+NEXT_FILE:      for(FileObject f : files) {
                     FileObject parent = f.getParent();
                     Set<FileObject> cluster = clusters.get(parent);
                     if (cluster == null) {
+                        StringBuilder currentRelPath = getRelativePath(root, parent);
+                        for (Iterator<Map.Entry<FileObject,StringBuilder>> it = relPaths.entrySet().iterator(); it.hasNext();) {
+                            final Map.Entry<FileObject, StringBuilder> relPath = it.next();
+                            switch (getFileRelation(currentRelPath, relPath.getValue())) {
+                                case FIRST_IN_SECOND:
+                                    final Set<FileObject> cs = clusters.get(relPath.getKey());
+                                    for (FileObject csFile : cs) {
+                                        if (csFile.isFolder() && FileUtil.isParentOf(csFile, f)) {
+                                            continue NEXT_FILE;
+                                        }
+                                    }
+                                    break;
+                                case SECOND_IN_FIRST:
+                                    if (f.equals(relPath.getKey()) || FileUtil.isParentOf(f, relPath.getKey())) {
+                                        clusters.remove(relPath.getKey());
+                                        it.remove();
+                                    }
+                                    break;
+                                case UNRELATED:
+                                    break;
+                                case EQUAL:
+                                default:
+                                    throw new IllegalStateException();
+                            }
+                        }
                         cluster = new HashSet<FileObject>();
                         clusters.put(parent, cluster);
+                        relPaths.put(parent, currentRelPath);
+                    } else {
+                        for (Iterator<Map.Entry<FileObject,StringBuilder>> it = relPaths.entrySet().iterator(); it.hasNext();) {
+                            final Map.Entry<FileObject, StringBuilder> relPath = it.next();
+                            if (f.equals(relPath.getKey()) || FileUtil.isParentOf(f, relPath.getKey())) {
+                                clusters.remove(relPath.getKey());
+                                it.remove();
+                            }
+                        }
                     }
                     cluster.add(f);
                 }
                 for(FileObject parent : clusters.keySet()) {
                     Set<FileObject> cluster = clusters.get(parent);
-                    StringBuilder relativePath = getRelativePath(root, parent);
+                    StringBuilder relativePath = relPaths.get(parent);
                     if (relativePath != null) {
                         finished = collect(
                                 cluster.toArray(new FileObject[cluster.size()]),
@@ -196,8 +233,8 @@ final class FileObjectCrawler extends Crawler {
     private boolean collect (
             final @NonNull FileObject[] fos,
             final @NonNull FileObject root,
-            final @NonNull Collection<IndexableImpl> resources,
-            final @NonNull Collection<IndexableImpl> allResources,
+            final @NonNull Collection<Indexable> resources,
+            final @NonNull Collection<Indexable> allResources,
             final @NullAllowed Stats stats,
             final @NullAllowed ClassPath.Entry entry,
             final @NonNull Deque<File> path,
@@ -217,7 +254,7 @@ final class FileObjectCrawler extends Crawler {
 
             relativePathBuilder.append(fo.getNameExt());
             boolean folder = fo.isFolder();
-            if (folder) relativePathBuilder.append('/');
+            if (folder) relativePathBuilder.append(SEPARATOR);
             String relativePath = relativePathBuilder.toString();
             try {
                 if (entry != null && !entry.includes(relativePath)) {
@@ -247,7 +284,7 @@ final class FileObjectCrawler extends Crawler {
                         Stats.inc(stats.extensions, fo.getExt());
                     }
 
-                    FileObjectIndexable indexable = new FileObjectIndexable(root, relativePath);
+                    Indexable indexable = createIndexable(new FileObjectIndexable(root, relativePath));
                     allResources.add(indexable);
                     if (!isUpToDate(fo, relativePath)) {
                         resources.add(indexable);
@@ -266,7 +303,7 @@ final class FileObjectCrawler extends Crawler {
         if (rp != null) {
             StringBuilder relativePath = new StringBuilder(rp);
             if (relativePath.length() > 0) {
-                relativePath.append('/'); //NOI18N
+                relativePath.append(SEPARATOR);
             }
             return relativePath;
         } else {
@@ -349,6 +386,27 @@ final class FileObjectCrawler extends Crawler {
         }
         return result;
     }
+
+    @NonNull
+    private static PathRelation getFileRelation (
+            @NonNull final StringBuilder firstPath,
+            @NonNull final StringBuilder secondPath) {
+        final int min = Math.min(firstPath.length(),secondPath.length());
+        for (int i=0; i<min; i++) {
+            if (firstPath.charAt(i) != secondPath.charAt(i)) {
+                return PathRelation.UNRELATED;
+            }
+        }
+        if (firstPath.length() > secondPath.length()) {
+            assert secondPath.length() == 0 || secondPath.charAt(secondPath.length()-1) == SEPARATOR;
+            return PathRelation.FIRST_IN_SECOND;
+        } else if (firstPath.length() < secondPath.length()) {
+            assert firstPath.length() == 0 || firstPath.charAt(firstPath.length()-1) == SEPARATOR;
+            return PathRelation.SECOND_IN_FIRST;
+        } else {
+            return PathRelation.EQUAL;
+        }
+    }
     
     private static final class Stats {
         public int filesCount;
@@ -387,4 +445,11 @@ final class FileObjectCrawler extends Crawler {
             }
         };
     } // End of Stats class
+
+    private enum PathRelation {
+        UNRELATED,
+        EQUAL,
+        FIRST_IN_SECOND,
+        SECOND_IN_FIRST
+    }
 }

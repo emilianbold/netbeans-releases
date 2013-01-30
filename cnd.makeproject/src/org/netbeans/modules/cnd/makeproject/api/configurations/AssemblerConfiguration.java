@@ -83,10 +83,10 @@ public class AssemblerConfiguration extends BasicCompilerConfiguration implement
     // Interface OptionsProvider
     @Override
     public String getOptions(AbstractCompiler compiler) {
-        String options = "$(AS) $(ASFLAGS) "; // NOI18N
-        options += getAllOptions2(compiler) + " "; // NOI18N
-        options += getCommandLineConfiguration().getValue() + " "; // NOI18N
-        return CppUtils.reformatWhitespaces(options);
+        StringBuilder options = new StringBuilder("$(AS) $(ASFLAGS) "); // NOI18N
+        options.append(getAllOptions2(compiler)).append(' '); // NOI18N
+        options.append(getCommandLineOptions(true));
+        return CppUtils.reformatWhitespaces(options.toString());
     }
 
     public String getAsFlagsBasic(AbstractCompiler compiler) {

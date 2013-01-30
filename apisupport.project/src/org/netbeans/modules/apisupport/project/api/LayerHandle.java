@@ -277,8 +277,7 @@ public final class LayerHandle {
         if (path == null) {
             return null;
         }
-        FileObject ret = Util.getResourceDirectory(project);
-        return ret == null ? null : ret.getFileObject(path);
+        return Util.getResource(project, path);
     }
 
     /**

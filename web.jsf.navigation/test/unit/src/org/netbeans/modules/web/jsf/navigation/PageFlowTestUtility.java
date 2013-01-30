@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.web.jsf.navigation;
 
-import java.awt.EventQueue;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -51,6 +50,7 @@ import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import javax.swing.text.EditorKit;
+import junit.framework.Assert;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ui.OpenProjects;
@@ -65,6 +65,7 @@ import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigModel;
 import org.netbeans.modules.web.jsf.navigation.graph.PageFlowScene;
 import org.netbeans.modules.web.project.WebProject;
 import org.netbeans.modules.xml.text.syntax.XMLKit;
+import org.netbeans.spi.project.support.ant.AntBasedProjectType;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -73,7 +74,6 @@ import org.openide.loaders.DataLoaderPool;
 import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
-import org.openide.util.test.MockLookup;
 
 /**
  *
@@ -88,6 +88,17 @@ public class PageFlowTestUtility {
     private WeakReference<PageFlowScene> refScene;
     private WeakReference<PageFlowController> refController;
     NbTestCase nbTestCase;
+
+    private static final Lookup PROJECTS;
+
+    static {
+        TestUtilities.class.getClassLoader().setDefaultAssertionStatus(true);
+        System.setProperty("org.openide.util.Lookup", TestUtilities.class.getName());
+        Assert.assertEquals(TestUtilities.class, Lookup.getDefault().getClass());
+        Lookup p = Lookups.forPath("Services/AntBasedProjectTypes/");
+        p.lookupAll(AntBasedProjectType.class);
+        PROJECTS = p;
+    }
 
     public PageFlowTestUtility(NbTestCase nbTestCase) {
         this.nbTestCase = nbTestCase;
@@ -168,14 +179,8 @@ public class PageFlowTestUtility {
     }
 
     protected void setupServices() {
-
-        if (nbTestCase instanceof TestServices) {
-            ((TestServices) nbTestCase).setupServices();
-
-        } else {
-            ClassLoader l = this.getClass().getClassLoader();
-            MockLookup.setLookup(Lookups.fixed(l), Lookups.metaInfServices(l));
-        }
+        ClassLoader l = this.getClass().getClassLoader();
+        TestUtilities.setLookup(Lookups.fixed(l), Lookups.metaInfServices(l));
     }
     //    JSFConfigLoader loader;
 

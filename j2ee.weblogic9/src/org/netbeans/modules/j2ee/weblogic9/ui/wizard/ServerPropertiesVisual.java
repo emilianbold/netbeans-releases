@@ -86,7 +86,7 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
 
     private final List<Instance> instances = new ArrayList<Instance>();
     
-    private WLJpa2SwitchSupport support;
+    private transient WLJpa2SwitchSupport support;
     
     /**
      * Creates a new instance of the ServerPropertiesVisual. It initializes all

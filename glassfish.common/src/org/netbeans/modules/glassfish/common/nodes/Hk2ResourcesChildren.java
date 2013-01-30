@@ -51,12 +51,8 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.glassfish.common.CommandRunner;
-import org.netbeans.modules.glassfish.common.ui.AdminObjectCustomizer;
-import org.netbeans.modules.glassfish.common.ui.ConnectionPoolCustomizer;
-import org.netbeans.modules.glassfish.common.ui.ConnectorConnectionPoolCustomizer;
-import org.netbeans.modules.glassfish.common.ui.ConnectorCustomizer;
-import org.netbeans.modules.glassfish.common.ui.JavaMailCustomizer;
-import org.netbeans.modules.glassfish.common.ui.JdbcResourceCustomizer;
+import org.netbeans.modules.glassfish.common.CommonServerSupport;
+import org.netbeans.modules.glassfish.common.ui.*;
 import org.netbeans.modules.glassfish.spi.Decorator;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.glassfish.spi.ResourceDecorator;
@@ -100,11 +96,13 @@ public class Hk2ResourcesChildren extends Children.Keys<Object> implements Refre
                 }
             } else {
                 String childtype = childTypes[0];
-                GlassfishModule commonSupport = lookup.lookup(GlassfishModule.class);
+                CommonServerSupport commonSupport = lookup.lookup(
+                        CommonServerSupport.class);
                 if (commonSupport != null) {
                     try {
-                        java.util.Map<String, String> ip = commonSupport.getInstanceProperties();
-                        CommandRunner mgr = new CommandRunner(true, commonSupport.getCommandFactory(), ip);
+                        CommandRunner mgr = new CommandRunner(true,
+                                commonSupport.getCommandFactory(),
+                                commonSupport.getInstance());
                         Decorator decorator = DecoratorManager.findDecorator(childtype, null, true);
                         List<ResourceDesc> reslourcesList = mgr.getResources(childtype);
                         for (ResourceDesc resource : reslourcesList) {
@@ -165,11 +163,13 @@ public class Hk2ResourcesChildren extends Children.Keys<Object> implements Refre
 
                 @Override
                 public void run() {
-                    GlassfishModule commonSupport = lookup.lookup(GlassfishModule.class);
+                    CommonServerSupport commonSupport = lookup.lookup(
+                            CommonServerSupport.class);
                     if (commonSupport != null) {
                         try {
-                            java.util.Map<String, String> ip = commonSupport.getInstanceProperties();
-                            CommandRunner mgr = new CommandRunner(true, commonSupport.getCommandFactory(), ip);
+                            CommandRunner mgr = new CommandRunner(true,
+                                    commonSupport.getCommandFactory(),
+                                    commonSupport.getInstance());
                             Decorator decorator = DecoratorManager.findDecorator(type, null,true);
                             if (decorator == null) {
                                 if (type.equals(GlassfishModule.JDBC_RESOURCE)) {

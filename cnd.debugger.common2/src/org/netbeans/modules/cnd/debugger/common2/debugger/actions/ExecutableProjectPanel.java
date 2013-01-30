@@ -66,12 +66,18 @@ import org.netbeans.modules.cnd.debugger.common2.utils.IpeUtils;
 import java.awt.event.ItemEvent;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
+import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Host;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationSupport;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.filesystems.FileSystem;
 
@@ -97,7 +103,7 @@ public final class ExecutableProjectPanel extends javax.swing.JPanel {
 
     private void initialize() {
         initComponents();
-         // NOI18N
+        // NOI18N
         errorLabel.setForeground(javax.swing.UIManager.getColor("nb.errorForeground")); // NOI18N
         initGui();
 
@@ -105,7 +111,7 @@ public final class ExecutableProjectPanel extends javax.swing.JPanel {
 //        executableComboBox.setModel(new DefaultComboBoxModel(exePaths));
 //        ((JTextField) executableComboBox.getEditor().getEditorComponent()).
 //                getDocument().addDocumentListener(executableValidateListener);
-    
+
 //	validateExecutablePath();
         projectComboBox.addItemListener(new java.awt.event.ItemListener() {
             @Override
@@ -139,29 +145,29 @@ public final class ExecutableProjectPanel extends javax.swing.JPanel {
 //	exe = ((JTextField) executableComboBox.getEditor().
 //		getEditorComponent()).getText();
 //	return exe;
-	
-	/* LATER, for Project only IDE
-        if (DebuggerManager.isStandalone()) {
-            exe = ((JTextField) executableComboBox.getEditor().
-                    getEditorComponent()).getText();
-        } else {
-            // get executable from project
-            Project project = getSelectedProject();
-            ConfigurationDescriptorProvider pdp = (ConfigurationDescriptorProvider)
-                    project.getLookup().lookup(ConfigurationDescriptorProvider.class);
-            if (pdp == null) {
-                return null;
-            }
-            MakeConfigurationDescriptor projectDescriptor =
-                    (MakeConfigurationDescriptor) pdp.getConfigurationDescriptor();
-            MakeConfiguration configuration =
-                    (MakeConfiguration) projectDescriptor.getConfs().getActive();
 
-            MakeArtifact maf = new MakeArtifact(projectDescriptor, configuration);
-            exe = maf.getWorkingDirectory() + '/' + maf.getOutput();
-        }
-        return exe;
-	*/
+        /* LATER, for Project only IDE
+         if (DebuggerManager.isStandalone()) {
+         exe = ((JTextField) executableComboBox.getEditor().
+         getEditorComponent()).getText();
+         } else {
+         // get executable from project
+         Project project = getSelectedProject();
+         ConfigurationDescriptorProvider pdp = (ConfigurationDescriptorProvider)
+         project.getLookup().lookup(ConfigurationDescriptorProvider.class);
+         if (pdp == null) {
+         return null;
+         }
+         MakeConfigurationDescriptor projectDescriptor =
+         (MakeConfigurationDescriptor) pdp.getConfigurationDescriptor();
+         MakeConfiguration configuration =
+         (MakeConfiguration) projectDescriptor.getConfs().getActive();
+
+         MakeArtifact maf = new MakeArtifact(projectDescriptor, configuration);
+         exe = maf.getWorkingDirectory() + '/' + maf.getOutput();
+         }
+         return exe;
+         */
     }
 
 //    public void setExecutablePaths(String[] paths) {
@@ -205,9 +211,9 @@ public final class ExecutableProjectPanel extends javax.swing.JPanel {
         gridBagConstraints.gridy = 0;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(8, 0, 8, 0);
-	// LATER, for Project only IDE
+        // LATER, for Project only IDE
         // if (DebuggerManager.Standalone()) {
-            add(executableLabel, gridBagConstraints);
+        add(executableLabel, gridBagConstraints);
         //}
 
         executableField.setEditable(false);
@@ -218,9 +224,9 @@ public final class ExecutableProjectPanel extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(8, 4, 8, 0);
-	// LATER, for Project only IDE
+        // LATER, for Project only IDE
         //if (DebuggerManager.Standalone()) {
-            add(executableField, gridBagConstraints);
+        add(executableField, gridBagConstraints);
         //}
 
 //        Catalog.setAccessibleDescription(executableBrowseButton,
@@ -239,7 +245,7 @@ public final class ExecutableProjectPanel extends javax.swing.JPanel {
         gridBagConstraints.gridy = 0;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(8, 4, 8, 0);
-	// LATER, for Project only IDE
+        // LATER, for Project only IDE
         //if (DebuggerManager.get().Standalone()) {
 //            add(executableBrowseButton, gridBagConstraints);
         //}
@@ -248,13 +254,13 @@ public final class ExecutableProjectPanel extends javax.swing.JPanel {
         projectLabel.setLabelFor(projectComboBox);
         projectLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/debugger/common2/debugger/actions/Bundle").getString("ASSOCIATED_PROJECT_LBL"));
         Catalog.setAccessibleDescription(projectComboBox,
-                "ACSD_Project");	// NOI18N
+                "ACSD_Project");    // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
-        if (!NativeDebuggerManager.isStandalone()) {
+        if (!NativeDebuggerManager.isStandalone() && !NativeDebuggerManager.isPL()) {
             add(projectLabel, gridBagConstraints);
         }
 
@@ -265,7 +271,7 @@ public final class ExecutableProjectPanel extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 4, 6, 0);
-        if (!NativeDebuggerManager.isStandalone()) {
+        if (!NativeDebuggerManager.isStandalone() && !NativeDebuggerManager.isPL()) {
             add(projectComboBox, gridBagConstraints);
         }
 
@@ -280,7 +286,6 @@ public final class ExecutableProjectPanel extends javax.swing.JPanel {
 
     }
     // </editor-fold>//GEN-END:initComponents
-
 //    private void executableBrowseButtonActionPerformed(java.awt.event.ActionEvent evt) {
 //        //GEN-FIRST:event_executableBrowseButtonActionPerformed
 //        String startFolder = getExecutablePath();
@@ -308,28 +313,28 @@ public final class ExecutableProjectPanel extends javax.swing.JPanel {
     private javax.swing.JComboBox projectComboBox;
     private javax.swing.JLabel projectLabel;
     // End of variables declaration//GEN-END:variables
-    
+
     public static class ProjectCBItem {
         private ProjectInformation pinfo;
-        
+
         public ProjectCBItem(ProjectInformation pinfo) {
             this.pinfo = pinfo;
         }
-        
+
         @Override
         public String toString() {
             return pinfo.getDisplayName();
         }
-        
+
         public Project getProject() {
             return pinfo.getProject();
         }
-        
+
         public ProjectInformation getProjectInformation() {
             return pinfo;
         }
     }
-    
+
     public static void fillProjectsCombo(javax.swing.JComboBox comboBox, Project selectedProject) {
         if (selectedProject == null) {
             selectedProject = OpenProjects.getDefault().getMainProject();
@@ -346,13 +351,13 @@ public final class ExecutableProjectPanel extends javax.swing.JPanel {
             }
         }
     }
-    
+
     public void initGui() {
         projectComboBox.removeAllItems();
-        
+
         // fake items
         projectComboBox.addItem(getString("NO_PROJECT"));
-	projectComboBox.addItem(getString("NEW_PROJECT"));
+        projectComboBox.addItem(getString("NEW_PROJECT"));
 
         fillProjectsCombo(projectComboBox, lastSelectedProject);
 
@@ -363,13 +368,13 @@ public final class ExecutableProjectPanel extends javax.swing.JPanel {
     public boolean validateExecutablePath() {
         String exePath = getExecutablePath().trim();
 
-	// If debugger cannot automatically derive executable, user needs to
-	// provide one. It's validity will be checked further below.
+        // If debugger cannot automatically derive executable, user needs to
+        // provide one. It's validity will be checked further below.
 	if (! debuggerType.hasCapability(EngineCapability.DERIVE_EXECUTABLE) &&
 	    IpeUtils.isEmpty(exePath)) {
-	    setError("ERROR_NEED_EXEC", true); // NOI18N
-	    return false;
-	}
+            setError("ERROR_NEED_EXEC", true); // NOI18N
+            return false;
+        }
 //        String pName = IpeUtils.getBaseName(exePath);
 
 //        if (!DebuggerManager.isStandalone()) {
@@ -379,43 +384,43 @@ public final class ExecutableProjectPanel extends javax.swing.JPanel {
 //                    !matchProject(pName)) {
 //                setLastProject();
 //            }
-//        } 
+//        }
 
-	// validate executable
+        // validate executable
 //	if (exePath.length() == 0 || exePath.equals(autoString)) {
 //	    clearError();
 //	    return true;
 //	} 
 
-	File exeFile = new File(exePath);
-	// TODO
-	// Need a remote file validation
-	// or disable error for remote debugging
-	if (!exeFile.exists()) {
-	    setError("ERROR_DONTEXIST", true); // NOI18N
+        File exeFile = new File(exePath);
+        // TODO
+        // Need a remote file validation
+        // or disable error for remote debugging
+        if (!exeFile.exists()) {
+            setError("ERROR_DONTEXIST", true); // NOI18N
             return false;
-	}
-	if (exeFile.isDirectory()) {
-	    setError("ERROR_NOTAEXEFILE", true); // NOI18N
-	    return false;
-	}
+        }
+        if (exeFile.isDirectory()) {
+            setError("ERROR_NOTAEXEFILE", true); // NOI18N
+            return false;
+        }
 
-	FileObject fo = FileUtil.toFileObject(exeFile);
-	if (fo == null) {
-	    setError("ERROR_NOTAEXEFILE", true); // NOI18N
-	    return false;
-	}
-	DataObject dataObject = null;
-	try {
-	    dataObject = DataObject.find(fo);
-	} catch (Exception e) {
-	    setError("ERROR_DONTEXIST", true); // NOI18N
-	    return false;
-	}
-	if (!MIMENames.isBinary(IpeUtils.getMime(dataObject))) {
-	    setError("ERROR_NOTAEXEFILE", true); // NOI18N
-	    return false;
-	}
+        FileObject fo = FileUtil.toFileObject(exeFile);
+        if (fo == null) {
+            setError("ERROR_NOTAEXEFILE", true); // NOI18N
+            return false;
+        }
+        DataObject dataObject = null;
+        try {
+            dataObject = DataObject.find(fo);
+        } catch (Exception e) {
+            setError("ERROR_DONTEXIST", true); // NOI18N
+            return false;
+        }
+        if (!MIMENames.isBinary(IpeUtils.getMime(dataObject))) {
+            setError("ERROR_NOTAEXEFILE", true); // NOI18N
+            return false;
+        }
 
         clearError();
         return true;
@@ -506,39 +511,72 @@ public final class ExecutableProjectPanel extends javax.swing.JPanel {
     }
 
     private ProjectCBItem getProjectByPath(String hostName, String path) {
-        
-        FileSystem fs = FileSystemProvider.getFileSystem(Host.byName(hostName).executionEnvironment());
-        FileObject f;
+        final ExecutionEnvironment executionEnvironment = Host.byName(hostName).executionEnvironment();
+
+        FileSystem fs = FileSystemProvider.getFileSystem(executionEnvironment);
+        FileObject f = null;
         Project prj = null;
-        int pos = path.indexOf(" "); // NOI18N
-        while (pos != -1) {                
-            f = CndFileUtils.toFileObject(fs, path.substring(0, pos));
+        
+        int pos = -1;
+        do {
+            pos = path.indexOf(" ", pos + 1); // NOI18N
+            f = CndFileUtils.toFileObject(fs, pos == -1 ? path : path.substring(0, pos));
             if (f != null && f.isValid()) {
                 prj = FileOwnerQuery.getOwner(f);
                 if (prj != null) {
                     break;
                 }
             }
-            pos = path.indexOf(" ", pos+1); // NOI18N
+        } while (pos != -1);
+
+        for (int i = 0; i < projectComboBox.getModel().getSize(); i++) {
+            Object item = projectComboBox.getModel().getElementAt(i);
+            if (item instanceof ProjectCBItem) {
+                if (((ProjectCBItem) item).getProject().equals(prj)) {
+                    return (ProjectCBItem) item;
+                }
+            }
         }
-        if (prj == null) {
-            f = CndFileUtils.toFileObject(fs, path);
+        //if not found there could be corner case: we are in remote and in shared folder (/home/user)
+        //in this case the default behaviuor would be return Full Remote project
+        //let's try to get  local project
+        final boolean isRemote = executionEnvironment.isRemote() && ConnectionManager.getInstance().isConnectedTo(executionEnvironment);
+        if (!isRemote) {
+            return null;
+        }
+
+        PathMap map = HostInfoProvider.getMapper(executionEnvironment);
+
+        String filePath = map.getLocalPath(path);
+        if (filePath == null) {
+            return null;
+        }
+        
+        do {
+            f = CndFileUtils.toFileObject(FileSystemProvider.getFileSystem(ExecutionEnvironmentFactory.getLocal()), filePath);
             if (f != null && f.isValid()) {
                 prj = FileOwnerQuery.getOwner(f);
-                if (prj == null) {
-                    return null;
+                if (prj != null) {
+                    break;
+                }
+            }
+
+            filePath = CndPathUtilitities.getDirName(filePath);
+        } while (filePath != null);
+
+        if (f == null) {
+            return null;
+        }
+
+        for (int i = 0; i < projectComboBox.getModel().getSize(); i++) {
+            Object item = projectComboBox.getModel().getElementAt(i);
+            if (item instanceof ProjectCBItem) {
+                if (((ProjectCBItem) item).getProject().equals(prj)) {
+                    return (ProjectCBItem) item;
                 }
             }
         }
         
-        for(int i=0; i<projectComboBox.getModel().getSize(); i++) {
-            Object item = projectComboBox.getModel().getElementAt(i);
-            if (item instanceof ProjectCBItem) {
-                if (((ProjectCBItem) item).getProject().equals(prj)) {
-                        return (ProjectCBItem) item;
-                }
-            }
-        }
         return null;
     }
 

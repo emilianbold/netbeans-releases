@@ -74,6 +74,7 @@ import org.netbeans.spi.project.ui.support.NodeList;
 import org.openide.nodes.Node;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  * NodeFactory to create source and test library nodes.
@@ -87,6 +88,7 @@ public final class LibrariesNodeFactory implements NodeFactory {
     public LibrariesNodeFactory() {
     }
 
+    @Override
     public NodeList createNodes(Project p) {
         EjbJarProject project = p.getLookup().lookup(EjbJarProject.class);
         assert project != null;
@@ -116,13 +118,14 @@ public final class LibrariesNodeFactory implements NodeFactory {
                     new ClassPathSupportCallbackImpl(updateHelper.getAntProjectHelper()));
         }
         
+        @Override
         public List<String> keys() {
             List<String> result = new ArrayList<String>();
             result.add(LIBRARIES);
             URL[] testRoots = testSources.getRootURLs();
             boolean addTestSources = false;
             for (int i = 0; i < testRoots.length; i++) {
-                File f = new File(URI.create(testRoots[i].toExternalForm()));
+                File f = Utilities.toFile(URI.create(testRoots[i].toExternalForm()));
                 if (f.exists()) {
                     addTestSources = true;
                     break;
@@ -134,16 +137,19 @@ public final class LibrariesNodeFactory implements NodeFactory {
             return result;
         }
 
+        @Override
         public void addChangeListener(ChangeListener l) {
             changeSupport.addChangeListener(l);
         }
 
+        @Override
         public void removeChangeListener(ChangeListener l) {
             changeSupport.removeChangeListener(l);
         }
 
+        @Override
         public Node node(String key) {
-            if (key == LIBRARIES) {
+            if (LIBRARIES.equals(key)) {
                 //Libraries Node
                 return  new LibrariesNode(
                     NbBundle.getMessage(LibrariesNodeFactory.class,"CTL_LibrariesNode"), // NOI18N
@@ -165,7 +171,7 @@ public final class LibrariesNodeFactory implements NodeFactory {
                     cs,
                     new ExtraLibrariesNode(project, evaluator, EjbJarProjectProperties.J2EE_SERVER_INSTANCE, cs)
                 );
-            } else if (key == TEST_LIBRARIES) {
+            } else if (TEST_LIBRARIES.equals(key)) {
                 return  new LibrariesNode(
                     NbBundle.getMessage(LibrariesNodeFactory.class,"CTL_TestLibrariesNode"), // NOI18N
                     project,
@@ -196,17 +202,21 @@ public final class LibrariesNodeFactory implements NodeFactory {
             
         }
 
+        @Override
         public void addNotify() {
             testSources.addPropertyChangeListener(this);
         }
 
+        @Override
         public void removeNotify() {
             testSources.removePropertyChangeListener(this);
         }
 
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             // The caller holds ProjectManager.mutex() read lock
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     changeSupport.fireChange();
                 }

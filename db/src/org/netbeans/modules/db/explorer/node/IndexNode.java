@@ -51,7 +51,6 @@ import org.netbeans.lib.ddl.DDLException;
 import org.netbeans.lib.ddl.impl.Specification;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.explorer.DatabaseConnector;
-import org.netbeans.modules.db.explorer.action.RefreshAction;
 import org.netbeans.modules.db.metadata.model.api.Action;
 import org.netbeans.modules.db.metadata.model.api.Index;
 import org.netbeans.modules.db.metadata.model.api.Metadata;
@@ -60,12 +59,10 @@ import org.netbeans.modules.db.metadata.model.api.MetadataModel;
 import org.netbeans.modules.db.metadata.model.api.MetadataModelException;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.nodes.Node;
 import org.openide.nodes.PropertySupport;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.SystemAction;
 
 /**
  *
@@ -162,20 +159,7 @@ public class IndexNode extends BaseNode {
         try {
             Specification spec = connector.getDatabaseSpecification();
             DDLHelper.deleteIndex(spec, schemaName, tablename, getName());
-            
-            // go up as many as 2 nodes to find a parent to refresh
-            Node refreshNode = getParentNode();
-            if (refreshNode == null) {
-                refreshNode = this;
-            } else {
-                Node parent = refreshNode.getParentNode();
-                if (parent != null) {
-                    refreshNode = parent;
-                }
-            }
-
-            SystemAction.get(RefreshAction.class).performAction(new Node[] { refreshNode } );
-            
+            setValue(BaseFilterNode.REFRESH_ANCESTOR_DISTANCE, new Integer(2));
         } catch (DDLException e) {
             Logger.getLogger(IndexNode.class.getName()).log(Level.INFO, e + " while deleting index " + getName());
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));

@@ -79,7 +79,6 @@ import java.awt.Point;
 import java.text.MessageFormat;
 import java.beans.PropertyChangeListener;
 import java.beans.VetoableChangeListener;
-import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.Charset;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -130,6 +129,11 @@ public final class Utils {
      * Metrics logger
      */
     private static final Logger METRICS_LOG = Logger.getLogger("org.netbeans.ui.metrics.vcs");
+
+    /**
+     * Metrics logger
+     */
+    private static final Logger UIGESTURES_LOG = Logger.getLogger("org.netbeans.ui.vcs"); //NOI18N
 
     /**
      * Keeps track about already logged metrics events
@@ -819,6 +823,7 @@ public final class Utils {
 
     private static final Object ENCODING_LOCK = new Object();
     private static Map<FileObject, Charset> fileToCharset;
+    private static Map<File, FileObject> fileToFileObject;
 
     /**
      * Retrieves the Charset for the referenceFile and associates it weakly with
@@ -830,7 +835,24 @@ public final class Utils {
      *
      */
     public static void associateEncoding(File referenceFile, File file) {
-        associateEncoding(FileUtil.toFileObject(referenceFile), FileUtil.toFileObject(file));
+        FileObject refFO = FileUtil.toFileObject(referenceFile);
+        if (refFO == null || refFO.isFolder()) {
+            return;
+        }
+        FileObject fo = FileUtil.toFileObject(file);
+        if (fo == null || fo.isFolder()) {
+            return;
+        }
+        Charset c = FileEncodingQuery.getEncoding(refFO);
+        if (c != null) {
+            synchronized(ENCODING_LOCK) {
+                if (fileToFileObject == null) {
+                    fileToFileObject = new WeakHashMap<File, FileObject>();
+                }
+                fileToFileObject.put(file, fo);
+            }
+            associateEncoding(fo, c);
+        }
     }
     
     /**
@@ -1017,6 +1039,31 @@ public final class Utils {
         rec.setParameters(new Object[] { vcs });
         rec.setLoggerName(METRICS_LOG.getName());
         METRICS_LOG.log(rec);
+    }
+    
+    /**
+     * Logs vcs command usage.
+     *
+     * @param vcs - the particular vcs "GIT", "HG", ...
+     * @param time - time in millis the command took to finish
+     * @param modifications - number of modified/created/deleted files during 
+     * the command's progress
+     * @param command - command name
+     * @param external - true if the command was invoked externally
+     * (e.g. on commandline) and not from within the IDE.
+     */
+    public static void logVCSCommandUsageEvent (String vcs, long time,
+            long modifications, String command, boolean external) {
+        if (command == null) {
+            command = "UNKNOWN"; //NOI18N
+        }
+        LogRecord rec = new LogRecord(Level.INFO, "USG_VCS_CMD"); //NOI18N
+        String cmdType = external ? "EXTERNAL" : "INTERNAL";
+        rec.setResourceBundle(NbBundle.getBundle(Utils.class));
+        rec.setResourceBundleName(Utils.class.getPackage().getName() + ".Bundle"); //NOI18N
+        rec.setParameters(new Object[] { vcs, time, modifications, command, cmdType });
+        rec.setLoggerName(UIGESTURES_LOG.getName());
+        UIGESTURES_LOG.log(rec);
     }
 
     private static boolean checkMetricsKey(String key) {
@@ -1585,34 +1632,4 @@ public final class Utils {
         return a;
     }
 
-    /**
-     * Determines if the given DataObject has an opened editor
-     * @param dataObject
-     * @return true if the given DataObject has an opened editor. Otherwise false.
-     * @throws InterruptedException
-     * @throws InvocationTargetException 
-     */
-    public static boolean hasOpenedEditorPanes(final DataObject dataObject) throws InterruptedException, InvocationTargetException {
-        final boolean[] hasEditorPanes = new boolean[] {false};
-        Runnable r = new Runnable() {
-            @Override
-            public void run() {
-                EditorCookie cookie = dataObject.getLookup().lookup(EditorCookie.class);
-                if(cookie != null) {
-                    // hack - care only about dataObjects with opened editors.
-                    // otherwise we won't assume it's file were opened to be edited
-                    JEditorPane[] panes = cookie.getOpenedPanes();
-                    if(panes != null && panes.length > 0) {
-                        hasEditorPanes[0] = true;
-                    }
-                }
-            }
-        };
-        if(SwingUtilities.isEventDispatchThread()) { 
-            r.run();
-        } else {
-            SwingUtilities.invokeAndWait(r);
-        }
-        return hasEditorPanes[0];
-    }      
 }

@@ -85,4 +85,6 @@ public class WizardProperties {
     public static final String APPLICATION_PACKAGE = "restApplicationConfigPackage";// NOI18N
     public static final String APPLICATION_CLASS = "restApplicatoin";               // NOI18N
     public static final String USE_JERSEY = "useJersey";                            // NOI18N
+    
+    public static final String CREATE_PERSISTENCE_UNIT ="createPersistenceUnit";    // NOI18N
 }

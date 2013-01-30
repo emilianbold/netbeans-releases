@@ -230,6 +230,10 @@ public class BridgingServerInstance implements ServerInstanceImplementation, Loo
 
     private static class BridgingCustomizerAction extends NodeAction {
 
+        public BridgingCustomizerAction() {
+            super();
+        }
+
         public void performAction(Node[] nodes) {
             BridgingServerInstance instance = (BridgingServerInstance) nodes[0].getCookie(BridgingServerInstance.class);
             CommonServerUIs.showCustomizer(instance.getCommonInstance());

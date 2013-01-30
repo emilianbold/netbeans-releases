@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.24
+#Version 1.27.1
 
 CLSS public abstract interface java.io.Serializable
 
@@ -153,7 +153,7 @@ supr org.openide.util.Task
 
 CLSS public org.openide.execution.NbClassLoader
 cons public init()
-cons public init(org.openide.filesystems.FileObject[],java.lang.ClassLoader,org.openide.windows.InputOutput) throws org.openide.filesystems.FileStateInvalidException
+cons public init(org.openide.filesystems.FileObject[],java.lang.ClassLoader,org.openide.windows.InputOutput)
 cons public init(org.openide.filesystems.FileSystem[])
 cons public init(org.openide.filesystems.FileSystem[],java.lang.ClassLoader)
 cons public init(org.openide.windows.InputOutput)
@@ -225,12 +225,15 @@ cons public init()
 supr java.lang.Object
 
 CLSS public final org.openide.util.HelpCtx
-cons public init(java.lang.Class)
+cons public init(java.lang.Class<?>)
+ anno 0 java.lang.Deprecated()
 cons public init(java.lang.String)
 cons public init(java.net.URL)
  anno 0 java.lang.Deprecated()
 fld public final static org.openide.util.HelpCtx DEFAULT_HELP
+innr public abstract interface static Displayer
 innr public abstract interface static Provider
+meth public boolean display()
 meth public boolean equals(java.lang.Object)
 meth public int hashCode()
 meth public java.lang.String getHelpID()
@@ -261,5 +264,5 @@ meth public void removeTaskListener(org.openide.util.TaskListener)
 meth public void run()
 meth public void waitFinished()
 supr java.lang.Object
-hfds RP,finished,list,overrides,run
+hfds LOG,RP,finished,list,overrides,run
 

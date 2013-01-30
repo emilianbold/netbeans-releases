@@ -47,9 +47,9 @@ package org.netbeans.modules.openfile;
 import java.awt.Component;
 import java.awt.MouseInfo;
 import java.awt.Point;
+import java.awt.PointerInfo;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
-import java.beans.BeanInfo;
 import java.io.File;
 import java.util.List;
 import javax.swing.*;
@@ -59,11 +59,9 @@ import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import org.netbeans.modules.openfile.RecentFiles.HistoryItem;
 import org.openide.awt.*;
-import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.actions.Presenter;
 
@@ -79,6 +77,9 @@ import org.openide.util.actions.Presenter;
 @ActionReference(path="Menu/File", position=900)
 public class RecentFileAction extends AbstractAction
         implements Presenter.Menu, PopupMenuListener, ChangeListener {
+
+    private static final RequestProcessor RP =
+            new RequestProcessor(RecentFileAction.class);
 
     /** property of menu items where we store fileobject to open */
     private static final String PATH_PROP =
@@ -183,9 +184,7 @@ public class RecentFileAction extends AbstractAction
      * @param hItem the {@code HistoryItem}.
      * @return the munu item.
      */
-    private JMenuItem newSubMenuItem(final HistoryItem hItem) 
-                                     throws DataObjectNotFoundException {
-        Icon icon = getIcon(hItem); // may throws exception
+    private JMenuItem newSubMenuItem(final HistoryItem hItem) {
         final String path = hItem.getPath();
         final JMenuItem jmi = new JMenuItem(hItem.getFileName()) {
             public @Override void menuSelectionChanged(boolean isIncluded) {
@@ -197,24 +196,8 @@ public class RecentFileAction extends AbstractAction
         };
         jmi.putClientProperty(PATH_PROP, path);
         jmi.addActionListener(this);
-        jmi.setIcon(icon);
+        jmi.setIcon(hItem.getIcon());
         return jmi;
-    }
-
-    private Icon getIcon(final HistoryItem hItem)
-                        throws DataObjectNotFoundException {
-        String path = hItem.getPath();
-        return getIcon(path);
-    }
-
-    private Icon getIcon(String path) throws DataObjectNotFoundException {
-        FileObject fo = RecentFiles.convertPath2File(path);
-        if(fo == null) {
-            throw new NullPointerException();
-        }
-        DataObject dObj = DataObject.find(fo);
-        return new ImageIcon(
-                 dObj.getNodeDelegate().getIcon(BeanInfo.ICON_COLOR_16x16));
     }
 
     /** Workaround for JDK bug 6663119, it ensures that first item in submenu
@@ -229,8 +212,11 @@ public class RecentFileAction extends AbstractAction
         if (!(first instanceof JMenuItem)) {
             return;
         }
-        
-        Point loc = MouseInfo.getPointerInfo().getLocation();
+        PointerInfo pointerInfo = MouseInfo.getPointerInfo();
+        if (pointerInfo == null) {
+            return; // probably a mouseless computer
+        }
+        Point loc = pointerInfo.getLocation();
         SwingUtilities.convertPointFromScreen(loc, menu);
         MenuElement[] selPath =
                 MenuSelectionManager.defaultManager().getSelectedPath();

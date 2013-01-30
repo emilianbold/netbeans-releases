@@ -10,12 +10,12 @@
    <fileset dir='${dir}'>
     <include name="${include}" />
    </fileset>
-   <convert token='^( *[^ ]) *Sun Public License Notice' replace='Ahoj\nJardo' prefix='true'/>
-   <convert token=' *Sun Public License Notice'>
+   <convert token='^( *[^ ]) *DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.' replace='Ahoj\nJardo' prefix='true'/>
+   <convert token=' *DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.'>
        <line text='Ahoj'/>
        <line text='Jardo'/>
    </convert>
-   <convert token=' *The.*contents.*of.*this.*file.*License.*is.*available.*at.*http://www.sun.com/'
+   <convert token=' *Oracle and Java.*are.*registered.*trademarks.*of.*Oracle.*and.*or.*its.* affiliates.'
    >
        <line text='New'/>
        <line text='Warning'/>

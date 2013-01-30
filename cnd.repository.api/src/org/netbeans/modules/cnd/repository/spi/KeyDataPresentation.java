@@ -47,7 +47,7 @@ package org.netbeans.modules.cnd.repository.spi;
  * @author Vladimir Voskresensky
  */
 public interface KeyDataPresentation {
-    short getUnitPresentation();
+    int getUnitPresentation();
     CharSequence getNamePresentation();
     short getKindPresentation();
 

@@ -200,20 +200,27 @@ compilation_unit: translation_unit;
 
 // [gram.basic] 
 translation_unit:
+                                                                                {action.translation_unit(input.LT(1));}
         declaration[object_decl]* EOF
+                                                                                {action.end_translation_unit(input.LT(0));}
     ;
 
 // [gram.stmt]
 /*
  * As per 2003 standard:
- * "An expression-statement with a function-style explicit type conversion as its leftmost 
- * subexpression can be indistinguishable from a declaration where the first declarator starts with a '('. 
+ * "An expression-statement with a function-style 
+ * explicit type conversion as its leftmost 
+ * subexpression can be indistinguishable from a declaration 
+ * where the first declarator starts with a '('. 
  * In those cases the statement is a declaration."
  *
  * Resolve declaration vs expression conflict in favor of declaration.
- * (actually declaration synpred is a HUGE hammer, we should try find something else)
+ * (actually declaration synpred is a HUGE hammer, 
+ * we should try find something else)
  */
-statement:
+statement
+@init                                                                           {if(state.backtracking == 0){action.statement(input.LT(1));}}
+    :
         labeled_statement
     |
         expression_or_declaration_statement
@@ -228,35 +235,65 @@ statement:
     |
         try_block
     ;
+finally                                                                         {if(state.backtracking == 0){action.end_statement(input.LT(0));}}
 
-labeled_statement:
-        IDENT COLON statement
+labeled_statement
+    :                                                                           {action.labeled_statement(input.LT(1));}
+    (
+        IDENT COLON                                                             {action.labeled_statement(action.LABELED_STATEMENT__LABEL, $IDENT, input.LT(0));}
+        statement
     |
-        LITERAL_case constant_expression COLON statement
+        LITERAL_case                                                            {action.labeled_statement(action.LABELED_STATEMENT__CASE, $LITERAL_case);}
+        constant_expression 
+        COLON                                                                   {action.labeled_statement(action.LABELED_STATEMENT__CASE_COLON, input.LT(0));}
+        statement
     |
-        LITERAL_default COLON statement
+        LITERAL_default COLON                                                   {action.labeled_statement(action.LABELED_STATEMENT__DEFAULT, $LITERAL_default, input.LT(0));}
+        statement
+    )                                                                           {action.end_labeled_statement(input.LT(0));}
     ;
 
-expression_statement:
-        expression? SEMICOLON
+expression_statement
+    :                                                                           {action.expression_statement(input.LT(1));}
+        expression? SEMICOLON                                                   {action.end_expression_statement(input.LT(0));}
     ;
 
 expression_or_declaration_statement
     :
-        (declaration_statement)=> declaration_statement
+        (declaration_statement) => declaration_statement
     |
+        {action.expression_statement(input.LT(1));}
         expression SEMICOLON
+        {action.end_expression_statement(input.LT(0));}
     ;
 
 
-compound_statement:
+compound_statement
+@init                                                                           {if(state.backtracking == 0){action.compound_statement(input.LT(1));}}
+    :
         LCURLY statement* RCURLY
     ;
+finally                                                                         {if(state.backtracking == 0){action.end_compound_statement(input.LT(0));}}
 
-selection_statement:
-        LITERAL_if LPAREN condition RPAREN statement ( (LITERAL_else)=> LITERAL_else statement )?
+selection_statement
+    :                                                                           {action.selection_statement(input.LT(1));}
+    (
+        LITERAL_if                                                              {action.selection_statement(action.SELECTION_STATEMENT__IF, input.LT(0));}
+        LPAREN                                                                  {action.selection_statement(action.SELECTION_STATEMENT__IF_LPAREN, input.LT(0));}
+        condition 
+        RPAREN                                                                  {action.selection_statement(action.SELECTION_STATEMENT__IF_RPAREN, input.LT(0));}
+        statement 
+        ( (LITERAL_else)=> 
+            LITERAL_else                                                        {action.selection_statement(action.SELECTION_STATEMENT__ELSE, input.LT(0));}
+            statement 
+        )?
     |
-        LITERAL_switch LPAREN condition RPAREN statement
+        LITERAL_switch                                                          {action.selection_statement(action.SELECTION_STATEMENT__SWITCH, input.LT(0));}
+        LPAREN                                                                  {action.selection_statement(action.SELECTION_STATEMENT__SWITCH_LPAREN, input.LT(0));}
+        condition 
+        RPAREN                                                                  {action.selection_statement(action.SELECTION_STATEMENT__SWITCH_RPAREN, input.LT(0));}
+        statement
+    )                                                                           {action.end_selection_statement(input.LT(0));}
     ;
 
 /*
@@ -265,54 +302,102 @@ selection_statement:
 condition
 scope Declaration;
 @init { init_declaration(CTX, blockscope_decl); }
-    :
+    :                                                                           {action.condition(input.LT(1));}
+    (
         (type_specifier+ declarator EQUAL)=>
-            type_specifier+ declarator EQUAL assignment_expression
+            condition_declaration
     |
-        expression
+        condition_expression
+    )                                                                           {action.end_condition(input.LT(0));}
     ;
 
-iteration_statement:
-        LITERAL_while LPAREN condition RPAREN statement
+condition_declaration
+@init                                                                           {if(state.backtracking == 0){action.condition_declaration(input.LT(1));}}
+    :
+        type_specifier+ declarator 
+        EQUAL                                                                   {action.condition(action.CONDITION__EQUAL, input.LT(0));}
+        assignment_expression
+    ;
+finally                                                                         {if(state.backtracking == 0){action.end_condition_declaration(input.LT(0));}}
+
+condition_expression
+@init                                                                           {if(state.backtracking == 0){action.condition_expression(input.LT(1));}}
+    :
+        expression
+    ;
+finally                                                                         {if(state.backtracking == 0){action.end_condition_expression(input.LT(0));}}
+
+iteration_statement
+    :                                                                           {action.iteration_statement(input.LT(1));}
+    (
+        LITERAL_while                                                           {action.iteration_statement(action.ITERATION_STATEMENT__WHILE, input.LT(0));}
+        LPAREN                                                                  {action.iteration_statement(action.ITERATION_STATEMENT__WHILE_LPAREN, input.LT(0));}
+        condition
+        RPAREN                                                                  {action.iteration_statement(action.ITERATION_STATEMENT__WHILE_RPAREN, input.LT(0));}
+        statement
     |
-        LITERAL_do statement LITERAL_while LPAREN expression RPAREN SEMICOLON
+        LITERAL_do                                                              {action.iteration_statement(action.ITERATION_STATEMENT__DO, input.LT(0));}
+        statement 
+        LITERAL_while                                                           {action.iteration_statement(action.ITERATION_STATEMENT__DO_WHILE, input.LT(0));}
+        LPAREN                                                                  {action.iteration_statement(action.ITERATION_STATEMENT__DO_WHILE_LPAREN, input.LT(0));}
+        expression 
+        RPAREN                                                                  {action.iteration_statement(action.ITERATION_STATEMENT__DO_WHILE_RPAREN, input.LT(0));}
+        SEMICOLON
     |
-        LITERAL_for LPAREN 
+        LITERAL_for                                                             {action.iteration_statement(action.ITERATION_STATEMENT__FOR, input.LT(0));}
+        LPAREN                                                                  {action.iteration_statement(action.ITERATION_STATEMENT__FOR_LPAREN, input.LT(0));}
         (
             (for_range_declaration COLON) =>
-            for_range_declaration COLON for_range_initializer
+            for_range_declaration 
+            COLON                                                               {action.iteration_statement(action.ITERATION_STATEMENT__FOR_COLON, input.LT(0));}
+            for_range_initializer
         |
-            for_init_statement condition? SEMICOLON expression? 
+            for_init_statement 
+            condition? 
+            SEMICOLON                                                           {action.iteration_statement(action.ITERATION_STATEMENT__FOR_SEMICOLON, input.LT(0));}
+            expression? 
         )
-        RPAREN statement
+        RPAREN                                                                  {action.iteration_statement(action.ITERATION_STATEMENT__FOR_RPAREN, input.LT(0));}
+        statement
+    )                                                                           {action.end_iteration_statement(input.LT(0));}
     ;
 /*
  * The same expression-declaration ambiguity as in statement rule.
  */
-for_init_statement:
+for_init_statement
+    :                                                                           {action.for_init_statement(input.LT(1));}
+    (
         (simple_declaration[blockscope_decl])=>
             simple_declaration[blockscope_decl]
     |
         expression_statement
-
+    )                                                                           {action.end_for_init_statement(input.LT(0));}
     ;
 
 for_range_declaration:
-    type_specifier+ declarator
+                                                                                {action.for_range_declaration(input.LT(1));}
+    type_specifier+ declarator                                                  {action.end_for_range_declaration(input.LT(0));}
     ;
 
-for_range_initializer:
+for_range_initializer
+    :                                                                           {action.for_range_initializer(input.LT(1));}
+    (
         expression 
     |   
         braced_init_list
+    )                                                                           {action.end_for_range_initializer(input.LT(0));}
     ;
 
-jump_statement:
-        LITERAL_break SEMICOLON
+jump_statement
+    :                                                                           {action.jump_statement(input.LT(1));}
+    (
+        LITERAL_break                                                           {action.jump_statement(action.JUMP_STATEMENT__BREAK, input.LT(0));}
+        SEMICOLON
     |
-        LITERAL_continue SEMICOLON
+        LITERAL_continue                                                        {action.jump_statement(action.JUMP_STATEMENT__CONTINUE, input.LT(0));}
+        SEMICOLON
     |
-        LITERAL_return 
+        LITERAL_return                                                          {action.jump_statement(action.JUMP_STATEMENT__RETURN, input.LT(0));}
         (   
             expression?
         |   
@@ -320,24 +405,31 @@ jump_statement:
         )               
         SEMICOLON
     |
-        LITERAL_goto IDENT SEMICOLON
+        LITERAL_goto IDENT                                                      {action.jump_statement(action.JUMP_STATEMENT__GOTO, $LITERAL_goto, input.LT(0));}
+        SEMICOLON
+    )                                                                           {action.end_jump_statement(input.LT(0));}
     ;
 
 /*
  * simple_declaration has been split out of block_declaration so to have
  * an easier view of simple_declaration vs function_definition major conflict.
  */
-declaration_statement:
+declaration_statement
+@init                                                                           {if(state.backtracking == 0){action.declaration_statement(input.LT(1));}}
+    :
         simple_declaration[blockscope_decl]
     |
         block_declaration
     ;
+finally                                                                         {if(state.backtracking == 0){action.end_declaration_statement(input.LT(0));}}
 
 //[gram.dcl] 
 /*
  * function_definition merged into one rule with simple_declaration (which in turn was taken out of block_declaration)
  */
-declaration [decl_kind kind] :
+declaration [decl_kind kind] 
+    :                                                                           {action.declaration(input.LT(1));}
+    (
         block_declaration
     |
         simple_declaration_or_function_definition[kind]
@@ -353,8 +445,11 @@ declaration [decl_kind kind] :
         namespace_definition 
     |
         attribute_declaration
+    )                                                                           {action.end_declaration(input.LT(0));}
     ;
-block_declaration:
+block_declaration
+    :                                                                           {action.block_declaration(input.LT(1));}
+    (
         asm_definition 
     |
         namespace_alias_definition 
@@ -368,13 +463,18 @@ block_declaration:
         alias_declaration
 //    |
 //        opaque_enum_declaration
+    )                                                                           {action.end_block_declaration(input.LT(0));}
     ;
 
 // IDs
-id_expression:
-        unqualified_id
+id_expression
+    :                                                                           {action.id_expression(input.LT(1));}
+    (
+        // TODO: review temp predicate
+        ((simple_template_id_or_IDENT)? SCOPE) => qualified_id
     |
-        qualified_id
+        unqualified_id
+    )                                                                           {action.end_id_expression(input.LT(0));}
     ;
 
 unqualified_id:
@@ -396,13 +496,17 @@ qualified_id:
         nested_name_specifier LITERAL_template? unqualified_id
     |
         SCOPE (
+            // TODO: review temp predicate
+            (simple_template_id_or_IDENT SCOPE) =>
             nested_name_specifier LITERAL_template? unqualified_id
+        |
+            // TODO: review temp predicate
+            (LITERAL_OPERATOR STRING_LITERAL IDENT) =>
+            literal_operator_id
         |
             operator_function_id
         |
             simple_template_id_or_IDENT
-        |
-            literal_operator_id
         )
     ;
 
@@ -424,13 +528,14 @@ nested_name_specifier:
 
 nested_name_specifier returns [ name_specifier_t namequal ]
     :
-        IDENT                   {action.nested_name_specifier(input.LT(0));}
+        simple_template_id_or_IDENT
         SCOPE 
         (
-            (LITERAL_template lookup_simple_template_id_nocheck SCOPE )=> LITERAL_template simple_template_id_nocheck SCOPE
+            (LITERAL_template lookup_simple_template_id_nocheck SCOPE )=> 
+                LITERAL_template simple_template_id_nocheck SCOPE
         |
             (IDENT SCOPE) =>
-                IDENT           {action.nested_name_specifier(input.LT(0));}
+                IDENT                                                           {action.nested_name_specifier(input.LT(0));}
                 SCOPE     
         |
             (lookup_simple_template_id SCOPE)=>
@@ -439,20 +544,22 @@ nested_name_specifier returns [ name_specifier_t namequal ]
     ;
 
 lookup_nested_name_specifier:
-        IDENT SCOPE
-        (
-            IDENT SCOPE
-        |
-            LITERAL_template lookup_simple_template_id SCOPE
-        |
-            lookup_simple_template_id SCOPE
-        )*
+        simple_template_id_or_IDENT SCOPE
+//        (
+//            IDENT SCOPE
+//        |
+//            LITERAL_template lookup_simple_template_id SCOPE
+//        |
+//            lookup_simple_template_id SCOPE
+//        )*
     ;
 
 //[gram.dcl]
 
 alias_declaration:
-    LITERAL_using IDENT ASSIGNEQUAL type_id SEMICOLON
+    LITERAL_using IDENT ASSIGNEQUAL                                             {action.alias_declaration($LITERAL_using, $IDENT, $ASSIGNEQUAL);}
+    type_id 
+    SEMICOLON                                                                   {action.end_alias_declaration(input.LT(0));}
     ;
 
 /*
@@ -468,9 +575,10 @@ simle_declaration
  */
 simple_declaration [decl_kind kind]
 scope Declaration;
-@init { init_declaration(CTX, kind); }
+@init                                                                           {if(state.backtracking == 0){action.simple_declaration(input.LT(1));}}
     :
-        decl_specifier*
+                                                                                {action.decl_specifiers(input.LT(1));}
+        decl_specifier*                                                         {action.end_decl_specifiers(input.LT(0));}
         (
             SEMICOLON
         |
@@ -480,9 +588,23 @@ scope Declaration;
                 init_declarator
             )
             // this is a continuation of init_declarator_list after constructor_declarator/init_declarator
-            (COMMA init_declarator)* SEMICOLON
+            (
+                COMMA                                                           {action.simple_declaration(action.SIMPLE_DECLARATION__COMMA2, input.LT(0));}
+                init_declarator
+            )* 
+            SEMICOLON                                                           {action.simple_declaration(action.SIMPLE_DECLARATION__SEMICOLON, input.LT(0));}
         )
     ;
+finally                                                                         {if(state.backtracking == 0){action.end_simple_declaration(input.LT(0));}}
+
+
+
+
+
+
+
+
+
 
 /*
  * This is the above simple_declaration rule merged together with function definition
@@ -491,11 +613,11 @@ scope Declaration;
  * (see different init_declarator_list continuation sequences).
  */
 simple_declaration_or_function_definition [decl_kind kind]
-//scope Declaration;
-@init { init_declaration(CTX, kind); }
+scope Declaration;
+@init                                                                           {if(state.backtracking == 0){action.simple_declaration(input.LT(1));}}
     :
-        {action.simple_declaration(input.LT(1));}
-        decl_specifier*
+                                                                                {action.decl_specifiers(input.LT(1));}
+        decl_specifier*                                                         {action.end_decl_specifiers(input.LT(0));}
         (
             SEMICOLON
         |
@@ -503,7 +625,11 @@ simple_declaration_or_function_definition [decl_kind kind]
                 constructor_declarator
                 (
                     // this is a continuation of init_declarator_list after constructor_declarator
-                    ( COMMA init_declarator )* SEMICOLON
+                    ( 
+                        COMMA                                                   {action.simple_declaration(action.SIMPLE_DECLARATION__COMMA2, input.LT(0));}
+                        init_declarator 
+                    )* 
+                    SEMICOLON                                                   {action.simple_declaration(action.SIMPLE_DECLARATION__SEMICOLON, input.LT(0));}
                 |
                     function_definition_after_declarator
                 )
@@ -511,15 +637,21 @@ simple_declaration_or_function_definition [decl_kind kind]
             // greedy_declarator starts init_declarator
             greedy_declarator
             (
-                { /*$greedy_declarator.type.is_function()*/ true }?
+                { /*$greedy_declarator.type.is_function()*/ input.LA(1) != ASSIGNEQUAL }?
                     function_definition_after_declarator
             |
-                // this is a continuation of init_declarator_list after greedy_declarator
-                initializer? ( COMMA init_declarator )* SEMICOLON
+                // this is a continuation of init_declarator_list 
+                // after greedy_declarator
+                initializer? 
+                ( 
+                    COMMA                                                       {action.simple_declaration(action.SIMPLE_DECLARATION__COMMA2, input.LT(0));}
+                    init_declarator 
+                )* 
+                SEMICOLON                                                       {action.simple_declaration(action.SIMPLE_DECLARATION__SEMICOLON, input.LT(0));}
             )
         )
-        {action.end_simple_declaration(input.LT(0));}
     ;
+finally                                                                         {if(state.backtracking == 0){action.end_simple_declaration(input.LT(0));}}
 
 static_assert_declaration:
     LITERAL_static_assert LPAREN constant_expression COMMA STRING_LITERAL RPAREN SEMICOLON
@@ -531,34 +663,35 @@ attribute_declaration:
 
 decl_specifier
     :
-        storage_class_specifier {action.decl_specifier(action.DECL_SPECIFIER__STORAGE_CLASS_SPECIFIER, null);}
+        storage_class_specifier                                                 {action.decl_specifier(action.DECL_SPECIFIER__STORAGE_CLASS_SPECIFIER, input.LT(0));}
     |
-        function_specifier      {action.decl_specifier(action.DECL_SPECIFIER__FUNCTION_SPECIFIER, null);}
+        function_specifier                                                      {action.decl_specifier(action.DECL_SPECIFIER__FUNCTION_SPECIFIER, input.LT(0));}
     |
-        LITERAL_friend          {action.decl_specifier(action.DECL_SPECIFIER__LITERAL_FRIEND, $LITERAL_friend);}
+        LITERAL_friend                                                          {action.decl_specifier(action.DECL_SPECIFIER__LITERAL_FRIEND, $LITERAL_friend);}
     |
-        LITERAL_typedef         {action.decl_specifier(action.DECL_SPECIFIER__LITERAL_TYPEDEF, $LITERAL_typedef);}
+        LITERAL_typedef                                                         {action.decl_specifier(action.DECL_SPECIFIER__LITERAL_TYPEDEF, $LITERAL_typedef);}
     |
-        type_specifier          {action.decl_specifier(action.DECL_SPECIFIER__TYPE_SPECIFIER, null);}
+        type_specifier                                                          {action.decl_specifier(action.DECL_SPECIFIER__TYPE_SPECIFIER, input.LT(0));}
     |
-        LITERAL_constexpr
+        LITERAL_constexpr                                                       {action.decl_specifier(action.DECL_SPECIFIER__LITERAL_CONSTEXPR, $LITERAL_constexpr);}
     ;
 
 storage_class_specifier:
 //        LITERAL_auto 
 //    |
-        LITERAL_register 
+        LITERAL_register                                                        {action.decl_specifier(action.STORAGE_CLASS_SPECIFIER__REGISTER, $LITERAL_register);}
     |
-        LITERAL_static 
+        LITERAL_static                                                          {action.decl_specifier(action.STORAGE_CLASS_SPECIFIER__STATIC, $LITERAL_static);}
     |
-        LITERAL_extern 
+        LITERAL_extern                                                          {action.decl_specifier(action.STORAGE_CLASS_SPECIFIER__EXTERN, $LITERAL_extern);}
     |
-        LITERAL_mutable 
+        LITERAL_mutable                                                         {action.decl_specifier(action.STORAGE_CLASS_SPECIFIER__MUTABLE, $LITERAL_mutable);}
     |
-        LITERAL___thread
+        LITERAL___thread                                                        {action.decl_specifier(action.STORAGE_CLASS_SPECIFIER____THREAD, $LITERAL___thread);}
     |
-        LITERAL_thread_local
+        LITERAL_thread_local                                                    {action.decl_specifier(action.STORAGE_CLASS_SPECIFIER__THREAD_LOCAL, $LITERAL_thread_local);}
     ;
+
 function_specifier:
         LITERAL_inline 
     |
@@ -590,6 +723,7 @@ type_specifier:
  */
 
 type_specifier returns [type_specifier_t ts]
+@init                                                                           {if(state.backtracking == 0){action.type_specifier(input.LT(1));}}
     :
         // LITERAL_class SCOPE does not cover all the elaborated_type_specifier cases even with LITERAL_class
         (LITERAL_class SCOPE)=>
@@ -605,8 +739,11 @@ type_specifier returns [type_specifier_t ts]
     |
         trailing_type_specifier
     ;
+finally                                                                         {if(state.backtracking == 0){action.end_type_specifier(input.LT(0));}}
 
-trailing_type_specifier:
+trailing_type_specifier
+@init                                                                           {action.trailing_type_specifier(input.LT(1));}
+    :   
         simple_type_specifier
     |
         elaborated_type_specifier
@@ -615,38 +752,39 @@ trailing_type_specifier:
     |
         cv_qualifier
     ;
+finally                                                                         {action.end_trailing_type_specifier(input.LT(0));}
 
 simple_type_specifier returns [type_specifier_t ts_val]
 scope QualName;
-@init { qual_setup(); }
+@init                                                                           {if(state.backtracking == 0){action.simple_type_specifier(input.LT(1));}}
     :
-        LITERAL_char
+        LITERAL_char                                                            {action.simple_type_specifier(action.SIMPLE_TYPE_SPECIFIER__CHAR, input.LT(0));}
     |
-        LITERAL_wchar_t
+        LITERAL_wchar_t                                                         {action.simple_type_specifier(action.SIMPLE_TYPE_SPECIFIER__WCHAR_T, input.LT(0));}
     |
-        LITERAL_char16_t
+        LITERAL_char16_t                                                        {action.simple_type_specifier(action.SIMPLE_TYPE_SPECIFIER__CHAR16_T, input.LT(0));}
     |
-        LITERAL_char32_t
+        LITERAL_char32_t                                                        {action.simple_type_specifier(action.SIMPLE_TYPE_SPECIFIER__CHAR32_T, input.LT(0));}
     |
-        LITERAL_bool
+        LITERAL_bool                                                            {action.simple_type_specifier(action.SIMPLE_TYPE_SPECIFIER__BOOL, input.LT(0));}
     |
-        LITERAL_short
+        LITERAL_short                                                           {action.simple_type_specifier(action.SIMPLE_TYPE_SPECIFIER__SHORT, input.LT(0));}
     |
-        LITERAL_int
+        LITERAL_int                                                             {action.simple_type_specifier(action.SIMPLE_TYPE_SPECIFIER__INT, input.LT(0));}
     |
-        LITERAL_long
+        LITERAL_long                                                            {action.simple_type_specifier(action.SIMPLE_TYPE_SPECIFIER__LONG, input.LT(0));}
     |
-        LITERAL_signed
+        LITERAL_signed                                                          {action.simple_type_specifier(action.SIMPLE_TYPE_SPECIFIER__SIGNED, input.LT(0));}
     |
-        LITERAL_unsigned
+        LITERAL_unsigned                                                        {action.simple_type_specifier(action.SIMPLE_TYPE_SPECIFIER__UNSIGNED, input.LT(0));}
     |
-        LITERAL_float
+        LITERAL_float                                                           {action.simple_type_specifier(action.SIMPLE_TYPE_SPECIFIER__FLOAT, input.LT(0));}
     |
-        LITERAL_double
+        LITERAL_double                                                          {action.simple_type_specifier(action.SIMPLE_TYPE_SPECIFIER__DOUBLE, input.LT(0));}
     |
-        LITERAL_void
+        LITERAL_void                                                            {action.simple_type_specifier(action.SIMPLE_TYPE_SPECIFIER__VOID, input.LT(0));}
     |
-        LITERAL_auto
+        LITERAL_auto                                                            {action.simple_type_specifier(action.SIMPLE_TYPE_SPECIFIER__AUTO, input.LT(0));}
     |
         decltype_specifier
     |
@@ -654,21 +792,26 @@ scope QualName;
          * "at most one type-specifier is allowed in the complete decl-specifier-seq of a declaration..."
          * In particular (qualified)type_name is allowed only once.
          */
-        { !type_specifier_already_present(CTX) }? =>
-            (SCOPE {{ qual_add_colon2(); }} )?
+        { action.type_specifier_already_present(input) }? =>
+                                                                                {action.simple_type_specifier(action.SIMPLE_TYPE_SPECIFIER__ID, input.LT(0));}
+//        { !type_specifier_already_present(CTX) }? =>
+            (
+                SCOPE {{ qual_add_colon2(); }}                                  {action.simple_type_specifier(action.SIMPLE_TYPE_SPECIFIER__SCOPE, input.LT(0));}
+            )?
             /* note that original rule does not allow empty nested_name_specifier for the LITERAL_template alternative */
             (
                 (lookup_nested_name_specifier)=>
                     nested_name_specifier 
-                    (IDENT      {action.simple_type_specifier(input.LT(0));}
+                    (simple_template_id_or_IDENT                                //{action.simple_type_specifier(input.LT(0));}
                     | LITERAL_template simple_template_id)
             |
-                IDENT           {action.simple_type_specifier(input.LT(0));}
+                simple_template_id_or_IDENT                                     //{action.simple_type_specifier(input.LT(0));}
             )
     ;
+finally                                                                         {if(state.backtracking == 0){action.end_simple_type_specifier(input.LT(0));}}
 
 lookup_type_name:
-        IDENT { identifier_is(IDT_CLASS_NAME|IDT_ENUM_NAME|IDT_TYPEDEF_NAME) }?
+        IDENT { action.identifier_is(IDT_CLASS_NAME|IDT_ENUM_NAME|IDT_TYPEDEF_NAME, $IDENT) }?
     ;
 
 /*
@@ -691,16 +834,29 @@ elaborated_type_specifier:
 * Resolved by specifically predicating IDENT SCOPE in 'enum' situation.
 */
 
-decltype_specifier:
-    LITERAL_decltype LPAREN expression RPAREN
+decltype_specifier
+    :
+    LITERAL_decltype                                                            {action.decltype_specifier(input.LT(0));}
+    LPAREN                                                                      {action.decltype_specifier(action.DECLTYPE_SPECIFIER__LPAREN, input.LT(0));}
+    expression 
+    RPAREN                                                                      {action.decltype_specifier(action.DECLTYPE_SPECIFIER__RPAREN, input.LT(0));}
+                                                                                {action.end_decltype_specifier(input.LT(0));}
     ;
 
-elaborated_type_specifier:
-        class_key SCOPE? (
+elaborated_type_specifier
+@init                                                                           {if(state.backtracking == 0){action.elaborated_type_specifier(input.LT(1));}}
+    :                                                                           //{action.elaborated_type_specifier(input.LT(1));}
+    (
+        class_key SCOPE?         
+        (
             (IDENT SCOPE) =>
                 nested_name_specifier (simple_template_id_or_IDENT | LITERAL_template simple_template_id_nocheck)
         |
-             (simple_template_id_or_IDENT | LITERAL_template simple_template_id_nocheck)
+            (
+                simple_template_id_or_IDENT                                     //{action.elaborated_type_specifier(input.LT(0));}
+            | 
+                LITERAL_template simple_template_id_nocheck
+            )
         )
     |
         LITERAL_enum SCOPE? (
@@ -712,12 +868,17 @@ elaborated_type_specifier:
             (IDENT)=>
                 IDENT
         )
+    )                                                                           //{action.end_elaborated_type_specifier(input.LT(0));}
     ;
+finally                                                                         {if(state.backtracking == 0){action.end_elaborated_type_specifier(input.LT(0));}}
 
 // In C++0x this is factored out already
-typename_specifier:
+typename_specifier
+@init                                                                           {if(state.backtracking == 0){action.typename_specifier(input.LT(1));}}
+    :
         LITERAL_typename SCOPE? nested_name_specifier ( simple_template_id_or_IDENT  | LITERAL_template simple_template_id_nocheck )
     ;
+finally                                                                         {if(state.backtracking == 0){action.end_typename_specifier(input.LT(0));}}
 
 /*
  * original rule (not needed now):
@@ -728,19 +889,25 @@ enum_name:
  */
 enum_specifier:
 //        LITERAL_enum IDENT? LCURLY enumerator_list? RCURLY
+                                                                                {action.enum_declaration(input.LT(1));}
         enum_head 
         (
-            LCURLY (enumerator_list COMMA?)? RCURLY
+            LCURLY                                                              {action.enum_body($LCURLY);}
+            (enumerator_list COMMA?)? 
+            RCURLY                                                              {action.end_enum_body($RCURLY);}
+                                                                                {action.end_enum_declaration($RCURLY);}
         |
-            SEMICOLON
+            SEMICOLON                                                           {action.end_enum_declaration($SEMICOLON);}
         )
     ;
 enum_head:
     enum_key 
     (
-        nested_name_specifier IDENT
+        nested_name_specifier IDENT                                             {action.enum_name(input.LT(0));}
     |
-        IDENT?
+        (   
+            IDENT                                                               {action.enum_name(input.LT(0));}
+        )?
     )
     enum_base?
     ;
@@ -763,7 +930,7 @@ enumerator_definition:
     ;
 
 enumerator:
-        IDENT 
+        IDENT                                                                   {action.enumerator($IDENT);}
     ;
 
 /*
@@ -810,14 +977,14 @@ unnamed_namespace_definition:
  */
 namespace_definition:
         LITERAL_inline?
-        LITERAL_namespace       {action.namespace_declaration($LITERAL_namespace);}
+        LITERAL_namespace                                                       {action.namespace_declaration($LITERAL_namespace);}
         (   
-            IDENT               {action.namespace_name($IDENT);}
+            IDENT                                                               {action.namespace_name($IDENT);}
         )? 
-        LCURLY                  {action.namespace_body($LCURLY);}
+        LCURLY                                                                  {action.namespace_body($LCURLY);}
         namespace_body 
-        RCURLY                  {action.end_namespace_body($RCURLY);} 
-                                {action.end_namespace_declaration($RCURLY);}
+        RCURLY                                                                  {action.end_namespace_body($RCURLY);} 
+                                                                                {action.end_namespace_declaration($RCURLY);} 
     ;
 
 namespace_body:
@@ -829,11 +996,17 @@ namespace_alias:
     ;
 
 namespace_alias_definition:
-        LITERAL_namespace IDENT ASSIGNEQUAL qualified_namespace_specifier SEMICOLON
+        LITERAL_namespace IDENT ASSIGNEQUAL                                     {action.namespace_alias_definition($LITERAL_namespace, $IDENT, $ASSIGNEQUAL);}
+        qualified_namespace_specifier 
+        SEMICOLON                                                               {action.end_namespace_alias_definition($SEMICOLON);}
     ;
 
 qualified_namespace_specifier:
-        SCOPE? nested_name_specifier? IDENT
+        (
+            SCOPE                                                               {action.qualified_namespace_specifier(action.QUALIFIED_NAMESPACE_SPECIFIER__SCOPE, $SCOPE);}
+        )? 
+        nested_name_specifier? 
+        IDENT                                                                   {action.qualified_namespace_specifier(action.QUALIFIED_NAMESPACE_SPECIFIER__IDENT, $IDENT);}
     ;
 
 /*
@@ -850,26 +1023,53 @@ using-declaration:
  * It should be ruled out after the parsing.
  */
 using_declaration
-     : LITERAL_using LITERAL_typename? SCOPE? nested_name_specifier? unqualified_id SEMICOLON
+     : 
+        LITERAL_using                                                           {action.using_declaration($LITERAL_using);}
+        (
+            LITERAL_typename                                                    {action.using_declaration(action.USING_DECLARATION__TYPENAME, $LITERAL_typename);}
+        )?
+        (
+            SCOPE                                                               {action.using_declaration(action.USING_DECLARATION__SCOPE, $SCOPE);}
+        )?
+        // TODO: review temp predicate
+        ((simple_template_id_or_IDENT SCOPE) => nested_name_specifier)? 
+        unqualified_id
+        SEMICOLON                                                               {action.end_using_declaration($SEMICOLON);}
     ;
 
 using_directive:
-        LITERAL_using LITERAL_namespace SCOPE? nested_name_specifier? IDENT SEMICOLON
+        LITERAL_using LITERAL_namespace                                         {action.using_directive($LITERAL_using, $LITERAL_namespace);}
+        (
+            SCOPE                                                               {action.using_directive(action.USING_DIRECTIVE__SCOPE, $SCOPE);}
+        )? 
+        nested_name_specifier? 
+        IDENT                                                                   {action.using_directive(action.USING_DIRECTIVE__IDENT, $IDENT);}
+        SEMICOLON                                                               {action.end_using_directive($SEMICOLON);}
     ;
 
 
 asm_definition:
-        LITERAL_asm LPAREN STRING_LITERAL RPAREN SEMICOLON
+        LITERAL_asm LPAREN STRING_LITERAL RPAREN SEMICOLON                      {action.asm_definition($LITERAL_asm, $LPAREN, $STRING_LITERAL, $RPAREN, $SEMICOLON);}
     ;
 
 linkage_specification [decl_kind kind]:
-        LITERAL_extern STRING_LITERAL LCURLY declaration[kind] * RCURLY
+        LITERAL_extern STRING_LITERAL                                           {action.linkage_specification($LITERAL_extern, $STRING_LITERAL);}
+        (
+            LCURLY                                                              {action.linkage_specification(action.LINKAGE_SPECIFICATION__LCURLY, input.LT(0));}
+            declaration[kind] * 
+            RCURLY                                                              {action.linkage_specification(action.LINKAGE_SPECIFICATION__RCURLY, input.LT(0));}
     |
-        LITERAL_extern STRING_LITERAL declaration[kind]
+            declaration[kind]
+        )                                                                       {action.end_linkage_specification(input.LT(0));}
     ;
 
-init_declarator_list:
-        init_declarator (COMMA init_declarator)*
+init_declarator_list
+        :                                                                       {action.init_declarator_list(input.LT(1));}
+        init_declarator
+        (
+            COMMA                                                               {action.init_declarator_list(action.INIT_DECLARATOR_LIST__COMMA, input.LT(0));}
+            init_declarator
+        )*                                                                      {action.end_init_declarator_list(input.LT(0));}
     ;
 
 /*
@@ -882,8 +1082,9 @@ init_declarator_list:
  * Thus we take parameters_and_qualifiers as far as possible.
  *
  */
-init_declarator:
-        greedy_declarator initializer?
+init_declarator
+    :                                                                           {action.init_declarator(input.LT(1));}
+        greedy_declarator initializer?                                          {action.end_init_declarator(input.LT(0));}
     ;
 
 /*
@@ -913,35 +1114,41 @@ noptr_declarator:
 
 
 declarator returns [declarator_type_t type]
-    :
-        noptr_declarator 
-//            {{ type = $noptr_declarator.type; }}
-    |
+    :                                                                           {action.declarator(input.LT(1));}
+    (
         (ptr_operator)=>
             ptr_operator nested=declarator
 //                {{ type = $nested.type;
 //                   type.apply_ptr($ptr_operator.type);
 //                }}
+    |
+        noptr_declarator 
+//            {{ type = $noptr_declarator.type; }}
+    )                                                                           {action.end_declarator(input.LT(0));}
     ;
 
 // is quite unpretty because of left recursion removed here
 noptr_declarator returns [declarator_type_t type]
-    :
+    :                                                                           {action.noptr_declarator(input.LT(1));}
         (
             declarator_id
 //                {{ type = $declarator_id.type; }}
         |
-            LPAREN declarator RPAREN
+            LPAREN                                                              {action.noptr_declarator(action.NOPTR_DECLARATOR__LPAREN, input.LT(0));}
+            declarator 
+            RPAREN                                                              {action.noptr_declarator(action.NOPTR_DECLARATOR__RPAREN, input.LT(0));}
 //                {{ type = $declarator.type; }}
         ) // continued
         (
             parameters_and_qualifiers
 //                {{ type.apply_parameters($parameters_and_qualifiers.pq); }}
          |
-             LSQUARE constant_expression? RSQUARE
+            LSQUARE                                                             {action.noptr_declarator(action.NOPTR_DECLARATOR__LSQUARE, input.LT(0));}
+            constant_expression? 
+            RSQUARE                                                             {action.noptr_declarator(action.NOPTR_DECLARATOR__RSQUARE, input.LT(0));}
 //                {{ type.apply_array($constant_expression.expr); }}
         )*
-        trailing_return_type?
+        trailing_return_type?                                                   {action.end_noptr_declarator(input.LT(0));}
     ;
 
 trailing_return_type:
@@ -955,16 +1162,18 @@ trailing_return_type:
  * leading class name.
  */
 function_declarator returns [declarator_type_t type]
-    :
+    :                                                                           {action.function_declarator(input.LT(1));}
+    (
         (constructor_declarator)=>
             constructor_declarator //{{ type = $constructor_declarator.type; }}
     |
         declarator //{{ type = $declarator.type; }}
+    )                                                                           {action.end_function_declarator(input.LT(0));}
     ;
 
 constructor_declarator returns [declarator_type_t type]
-    :
-        parameters_and_qualifiers
+    :                                                                           {action.constructor_declarator(input.LT(1));}
+        parameters_and_qualifiers                                               {action.end_constructor_declarator(input.LT(0));}
             //{{ type.set_constructor($parameters_and_qualifiers.pq); }}
     ;
 
@@ -989,8 +1198,10 @@ noptr_abstract_declarator:
 */
 
 abstract_declarator returns [declarator_type_t type]
-    :
-        noptr_abstract_declarator //{{ type = $noptr_abstract_declarator.type; }}
+    :                                                                           {action.function_declarator(input.LT(1));}
+    (
+        noptr_abstract_declarator 
+        //{{ type = $noptr_abstract_declarator.type; }}
         trailing_return_type?
     |
         ptr_operator ((abstract_declarator) => abstract_declarator)? // review: predicate to avoid ambiguity around ELLIPSIS
@@ -998,27 +1209,47 @@ abstract_declarator returns [declarator_type_t type]
 //               type.apply_ptr($ptr_operator.type);
 //            }}
     |
-        ELLIPSIS
+        ELLIPSIS                                                                {action.function_declarator(action.FUNCTION_DECLARATOR__ELLIPSIS, input.LT(0));}
+    )                                                                           {action.end_function_declarator(input.LT(0));}
     ;
 
 noptr_abstract_declarator returns [declarator_type_t type]
-    :
-        ( parameters_and_qualifiers | LSQUARE constant_expression? RSQUARE )+
+    :                                                                           {action.noptr_abstract_declarator(input.LT(1));}
+    (
+        ( 
+            parameters_and_qualifiers 
+    |
+            LSQUARE                                                             {action.noptr_abstract_declarator(action.NOPTR_ABSTRACT_DECLARATOR__LSQUARE, input.LT(0));}
+            constant_expression? 
+            RSQUARE                                                             {action.noptr_abstract_declarator(action.NOPTR_ABSTRACT_DECLARATOR__RSQUARE, input.LT(0));}
+        )+
     |
         (LPAREN abstract_declarator RPAREN)=>
-            LPAREN abstract_declarator RPAREN ( parameters_and_qualifiers | LSQUARE constant_expression? RSQUARE )*
+            LPAREN                                                              {action.noptr_abstract_declarator(action.NOPTR_ABSTRACT_DECLARATOR__LPAREN, input.LT(0));}
+            abstract_declarator 
+            RPAREN                                                              {action.noptr_abstract_declarator(action.NOPTR_ABSTRACT_DECLARATOR__RPAREN, input.LT(0));}
+            ( 
+                parameters_and_qualifiers 
+            | 
+                LSQUARE                                                         {action.noptr_abstract_declarator(action.NOPTR_ABSTRACT_DECLARATOR__LSQUARE, input.LT(0));}
+                constant_expression? 
+                RSQUARE                                                         {action.noptr_abstract_declarator(action.NOPTR_ABSTRACT_DECLARATOR__RSQUARE, input.LT(0));}
+        )*
+    )                                                                           {action.end_noptr_abstract_declarator(input.LT(0));}
     ;
 
 universal_declarator returns [declarator_type_t type]
-options { backtrack = true; }
-    :
+    :                                                                           {action.universal_declarator(input.LT(1));}
+    (options { backtrack = true; }:
         declarator //{ type = $declarator.type; }
     |
         abstract_declarator //{ type = $abstract_declarator.type; }
+    )                                                                           {action.end_universal_declarator(input.LT(0));}
     ;
 
 greedy_declarator returns [declarator_type_t type]
-    :
+    :                                                                           {action.greedy_declarator(input.LT(1));}
+    (
         greedy_nonptr_declarator //{{ type = $greedy_nonptr_declarator.type; }}
     |
         (ptr_operator)=>
@@ -1026,6 +1257,7 @@ greedy_declarator returns [declarator_type_t type]
 //            {{ type = $decl.type;
 //               type.apply_ptr($ptr_operator.type);
 //            }}
+    )                                                                           {action.end_greedy_declarator(input.LT(0));}
     ;
 
 /*
@@ -1033,12 +1265,15 @@ greedy_declarator returns [declarator_type_t type]
  * Eat as much parameter sets as possible.
  */
 greedy_nonptr_declarator returns [declarator_type_t type]
-    :
+    :                                                                           {action.greedy_nonptr_declarator(input.LT(1));}
+    (
         (
             declarator_id
                 //{{ type = $declarator_id.type; }}
         |
-            LPAREN greedy_declarator RPAREN
+            LPAREN                                                              {action.greedy_nonptr_declarator(action.GREEDY_NONPTR_DECLARATOR__LPAREN, input.LT(0));}
+            greedy_declarator 
+            RPAREN                                                              {action.greedy_nonptr_declarator(action.GREEDY_NONPTR_DECLARATOR__RPAREN, input.LT(0));}
                 //{{ type = $greedy_declarator.type; }}
         ) // continued
         (
@@ -1046,35 +1281,48 @@ greedy_nonptr_declarator returns [declarator_type_t type]
                 parameters_and_qualifiers
                 //{{ type.apply_parameters($parameters_and_qualifiers.pq); }}
         |
-            LSQUARE constant_expression? RSQUARE
+            LSQUARE                                                             {action.greedy_nonptr_declarator(action.GREEDY_NONPTR_DECLARATOR__LSQUARE, input.LT(0));}
+            constant_expression? 
+            RSQUARE                                                             {action.greedy_nonptr_declarator(action.GREEDY_NONPTR_DECLARATOR__RSQUARE, input.LT(0));}
                 //{{ type.apply_array($constant_expression.expr); }}
         )*
+    )                                                                           {action.end_greedy_nonptr_declarator(input.LT(0));}
     ;
 
 ptr_operator returns [ declarator_type_t type ]
-    :
-        STAR cv_qualifier*
+    :                                                                           {action.ptr_operator(input.LT(1));}
+    (
+        STAR                                                                    {action.ptr_operator(action.PTR_OPERATOR__STAR, input.LT(0));}
+        cv_qualifier*
             //{{ type.set_ptr(NULL, $cv_qualifier.qual); }}
     |
-        AMPERSAND 
+        AMPERSAND                                                               {action.ptr_operator(action.PTR_OPERATOR__AMPERSAND, input.LT(0));}
             //{{ type.set_ref(); }}
     |
-        AND
+        AND                                                                     {action.ptr_operator(action.PTR_OPERATOR__AND, input.LT(0));}
     |
-        SCOPE? nested_name_specifier STAR cv_qualifier*
-/*DIFF*/ //           {{ type.set_ptr(& $nested_name_specifier.namequal, $cv_qualifier.qual); }}
+        (
+            SCOPE                                                               {action.ptr_operator(action.PTR_OPERATOR__SCOPE, input.LT(0));}
+        )? 
+        nested_name_specifier 
+        STAR                                                                    {action.ptr_operator(action.PTR_OPERATOR__STAR2, input.LT(0));}
+        cv_qualifier*
+//           {{ type.set_ptr(& $nested_name_specifier.namequal, $cv_qualifier.qual); }}
+    )                                                                           {action.end_ptr_operator(input.LT(0));}
     ;
 
 cv_qualifier returns [ qualifier_t qual ]:
-/*DIFF*/        LITERAL_const //{{ qual = LITERAL_const; }}
+        LITERAL_const                                                           {action.cv_qualifier(action.CV_QUALIFIER__CONST, input.LT(0));}
+        //{{ qual = LITERAL_const; }}
     |
-/*DIFF*/        LITERAL_volatile //{{ qual = LITERAL_volatile; }}
+        LITERAL_volatile                                                        {action.cv_qualifier(action.CV_QUALIFIER__VOLATILE, input.LT(0));}
+        //{{ qual = LITERAL_volatile; }}
     ;
 
 ref_qualifier:
-        AMPERSAND
+        AMPERSAND                                                               {action.ref_qualifier(action.REF_QUALIFIER__AMPERSAND, input.LT(0));}
     |
-        AND
+        AND                                                                     {action.ref_qualifier(action.REF_QUALIFIER__AND, input.LT(0));}
     ;
 
 /*
@@ -1086,8 +1334,13 @@ ref_qualifier:
  * This alternative deleted, as it actually is contained in id_expression
  */
 
-declarator_id returns [ declarator_type_t type ] :
-        ELLIPSIS? id_expression //{{ type.set_ident(); }}
+declarator_id returns [ declarator_type_t type ] 
+    :                                                                           {action.declarator_id(input.LT(1));}
+        (
+            ELLIPSIS                                                            {action.declarator_id(action.DECLARATOR_ID__ELLIPSIS, input.LT(0));}
+        )? 
+        id_expression //{{ type.set_ident(); }}                       
+                                                                                {action.end_declarator_id(input.LT(0));}
     ;
 
 /*
@@ -1095,33 +1348,59 @@ declarator_id returns [ declarator_type_t type ] :
  * "any construct that could possibly be a type-id in its syntactic context
  * shall be considered a type-id"
  */
-type_id:
+type_id
+    :                                                                           {action.type_id(input.LT(1));}
         type_specifier+ 
         ((abstract_declarator) => abstract_declarator)? // review: predicate to avoid ambiguity around ELLIPSIS
+                                                                                {action.end_type_id(input.LT(0));}
     ;
 
 parameters_and_qualifiers returns [ parameters_and_qualifiers_t pq ]
-    :
-        LPAREN parameter_declaration_clause RPAREN cv_qualifier* ref_qualifier? exception_specification?
+    :                                                                           {action.parameters_and_qualifiers(input.LT(1));}
+        LPAREN                                                                  {action.parameters_and_qualifiers(action.PARAMETERS_AND_QUALIFIERS__LPAREN, input.LT(0));}
+        parameter_declaration_clause 
+        RPAREN                                                                  {action.parameters_and_qualifiers(action.PARAMETERS_AND_QUALIFIERS__RPAREN, input.LT(0));}
+        cv_qualifier* 
+        ref_qualifier? 
+        exception_specification?                                                {action.end_parameters_and_qualifiers(input.LT(0));}
     ;
 
 parameter_declaration_clause
 scope Declaration; /* need it zero'ed to handle hoisted type_specifier predicate */
 @init { init_declaration(CTX, parm_decl); }
-    :
-        ELLIPSIS?
+    :                                                                           {action.parameter_declaration_clause(input.LT(1));}
+    (
+        (
+            ELLIPSIS                                                            {action.parameter_declaration_clause(action.PARAMETER_DECLARATION_CLAUSE__ELLIPSIS, input.LT(0));}
+        )?
     |
-        parameter_declaration_list (COMMA ELLIPSIS)?
+        parameter_declaration_list 
+        (
+            COMMA                                                               {action.parameter_declaration_clause(action.PARAMETER_DECLARATION_CLAUSE__COMMA, input.LT(0));}
+            ELLIPSIS                                                            {action.parameter_declaration_clause(action.PARAMETER_DECLARATION_CLAUSE__ELLIPSIS2, input.LT(0));}
+        )?
+    )                                                                           {action.end_parameter_declaration_clause(input.LT(0));}
     ;
 
-parameter_declaration_list:
-        parameter_declaration[parm_decl] (COMMA parameter_declaration[parm_decl])*
+parameter_declaration_list
+    :                                                                           {action.parameter_declaration_list(input.LT(1));}
+        parameter_declaration[parm_decl] 
+        (
+            COMMA                                                               {action.end_parameter_declaration_list(action.PARAMETER_DECLARATION_LIST__COMMA, input.LT(0));}
+            parameter_declaration[parm_decl]
+        )*                                                                      {action.end_parameter_declaration_list(input.LT(0));}
     ;
 parameter_declaration [decl_kind kind]
 scope Declaration;
 @init { init_declaration(CTX, kind); }
-    :
-        decl_specifier+ universal_declarator? (ASSIGNEQUAL assignment_expression)?
+    :                                                                           {action.parameter_declaration(input.LT(1));}
+        decl_specifier
+        decl_specifier*
+        universal_declarator? 
+        (
+            ASSIGNEQUAL                                                         {action.parameter_declaration(action.PARAMETER_DECLARATION__ASSIGNEQUAL, input.LT(0));}
+            assignment_expression
+        )?                                                                      {action.end_parameter_declaration(input.LT(0));}
     ;
 
 /*
@@ -1136,13 +1415,22 @@ function_definition:
  * Factoring out a sequence that follows declarator, as it helps disambiguating in context when
  * function_definition conflicts because of decl_specifier
  */
-function_definition_after_declarator:
+function_definition_after_declarator
+@init                                                                           {if(state.backtracking == 0){action.function_definition_after_declarator(input.LT(1));}}
+    :
         ctor_initializer? function_body
     |
         function_try_block
     |
-        ASSIGNEQUAL (LITERAL_delete | LITERAL_default) SEMICOLON
+        ASSIGNEQUAL                                                             {action.function_definition_after_declarator(action.FUNCTION_DEFINITION_AFTER_DECLARATOR__ASSIGNEQUAL, input.LT(0));}
+        (
+            LITERAL_delete                                                      {action.function_definition_after_declarator(action.FUNCTION_DEFINITION_AFTER_DECLARATOR__DELETE, input.LT(0));}
+        | 
+            LITERAL_default                                                     {action.function_definition_after_declarator(action.FUNCTION_DEFINITION_AFTER_DECLARATOR__DEFAULT, input.LT(0));}
+        ) 
+        SEMICOLON
     ;
+finally                                                                         {if(state.backtracking == 0){action.end_function_definition_after_declarator(input.LT(0));}}
 
 /*
  * We have a baaad conflict caused by declaration w/o decl_specifier,
@@ -1160,53 +1448,84 @@ function_definition_after_declarator:
 function_declaration [decl_kind kind]
 scope Declaration;
 @init { init_declaration(CTX, kind); }
+    :                                                                           {action.function_declaration(input.LT(1));}
+        decl_specifier* function_declarator                                     {action.end_function_declaration(input.LT(0));}
+    ;
+
+function_definition [decl_kind kind]
+    :                                                                           {action.function_definition(input.LT(1));}
+        function_declaration[kind] function_definition_after_declarator         {action.end_function_definition(input.LT(0));}
+    ;
+
+function_body
+@init                                                                           {if(state.backtracking == 0){action.function_body(input.LT(1));}}
     :
-        decl_specifier* function_declarator
-    ;
-
-function_definition [decl_kind kind]:
-        function_declaration[kind] function_definition_after_declarator
-    ;
-
-function_body:
         compound_statement 
     ;
+finally                                                                         {if(state.backtracking == 0){action.end_function_body(input.LT(0));}}
 
-initializer:
+initializer
+    :                                                                           {action.initializer(input.LT(1));}
+    (
         brace_or_equal_initializer
     |
-        LPAREN expression_list RPAREN 
+        LPAREN                                                                  {action.initializer(action.INITIALIZER__LPAREN, input.LT(0));}
+        expression_list 
+        RPAREN                                                                  {action.initializer(action.INITIALIZER__RPAREN, input.LT(0));}
+    )                                                                           {action.end_initializer(input.LT(0));}
     ;
-brace_or_equal_initializer:
-        ASSIGNEQUAL initializer_clause 
+brace_or_equal_initializer
+    :                                                                           {action.brace_or_equal_initializer(input.LT(1));}
+    (
+        ASSIGNEQUAL                                                             {action.brace_or_equal_initializer(action.BRACE_OR_EQUAL_INITIALIZER__ASSIGNEQUAL, input.LT(0));}
+        initializer_clause 
     |
         braced_init_list
+    )                                                                           {action.end_brace_or_equal_initializer(input.LT(0));}
     ;
-initializer_clause:
+initializer_clause
+    :                                                                           {action.initializer_clause(input.LT(1));}
+    (
         assignment_expression 
     |
         braced_init_list
+    )                                                                           {action.end_initializer_clause(input.LT(0));}
     ;
-initializer_list:
-        initializer_clause (COMMA initializer_clause )*
+initializer_list
+        :                                                                       {action.initializer_list(input.LT(1));}                            
+        initializer_clause 
+        (   
+            COMMA                                                               {action.initializer_list(action.INITIALIZER_LIST__COMMA, input.LT(0));}
+            initializer_clause 
+        )*                                                                      {action.end_initializer_list(input.LT(0));}
     ;
-braced_init_list:
-    LCURLY (initializer_list COMMA?)? RCURLY
+braced_init_list
+    :                                                                           {action.braced_init_list(input.LT(1));}
+    LCURLY 
+    (
+        initializer_list 
+        (
+            COMMA                                                               {action.braced_init_list(action.BRACED_INIT_LIST__COMMA, input.LT(0));}
+        )?
+    )? 
+    RCURLY                                                                      {action.end_braced_init_list(input.LT(0));}
     ;
 
 //[gram.class] 
-class_name:
-        simple_template_id_or_IDENT 
+class_name
+    :                                                                           {action.class_name(input.LT(1));}
+        simple_template_id_or_IDENT                                             {action.end_class_name(input.LT(0));}
     ;
 
-class_specifier:
-                                {action.class_declaration(input.LT(1));}
+class_specifier
+@init                                                                           {if(state.backtracking == 0){action.class_declaration(input.LT(1));}}
+    :
         class_head 
         LCURLY                  {action.class_body($LCURLY);}
         member_specification? 
         RCURLY                  {action.end_class_body($RCURLY);}
-                                {action.end_class_declaration(input.LT(1));}
     ;
+finally                                                                         {if(state.backtracking == 0){action.end_class_declaration(input.LT(0));}}
 
 /*
  * Original rule:
@@ -1222,32 +1541,45 @@ class_head:
 *  Ambiguity due to nested_name_specifier usage
 */
 optionally_qualified_name
-    :
-        nested_name_specifier? simple_template_id_or_IDENT
+    :                                                                           {action.optionally_qualified_name(input.LT(1));}
+        // TODO: review temp predicate
+        (((lookup_simple_template_id | IDENT) SCOPE) => nested_name_specifier)? 
+        simple_template_id_or_IDENT                                             //{action.class_name(input.LT(0));}
+                                                                                {action.end_optionally_qualified_name(input.LT(0));}
     ;
 
-class_head:
-        class_key optionally_qualified_name? class_virtual_specifier* base_clause?
+class_head
+    :                                                                           {action.class_head(input.LT(1));}
+        class_key 
+        optionally_qualified_name? 
+        class_virtual_specifier* 
+        base_clause?                                                            {action.end_class_head(input.LT(0));}
     ;
 
 class_virtual_specifier:
-        LITERAL_final
+        LITERAL_final                                                           {action.class_virtual_specifier(action.CLASS_VIRTUAL_SPECIFIER__FINAL, input.LT(0));}
     |   
-        LITERAL_explicit
+        LITERAL_explicit                                                        {action.class_virtual_specifier(action.CLASS_VIRTUAL_SPECIFIER__EXPLICIT, input.LT(0));}
     ;
 
 class_key:
-        LITERAL_class           {action.class_kind($LITERAL_class);}
+        LITERAL_class                                                           {action.class_kind($LITERAL_class);}
     |
-        LITERAL_struct          {action.class_kind($LITERAL_struct);}
+        LITERAL_struct                                                          {action.class_kind($LITERAL_struct);}
     |
-        LITERAL_union           {action.class_kind($LITERAL_union);}
+        LITERAL_union                                                           {action.class_kind($LITERAL_union);}
     ;
-member_specification :
+
+member_specification 
+@init                                                                           {if(state.backtracking == 0){action.member_specification(input.LT(1));}}
+    :
         member_declaration[field_decl] member_specification?
     |
-        access_specifier COLON member_specification?
+        access_specifier 
+        COLON                                                                   {action.member_specification(action.MEMBER_SPECIFICATION__COLON, input.LT(0));}
+        member_specification?
     ;
+finally                                                                         {if(state.backtracking == 0){action.end_member_specification(input.LT(0));}}
 
 
 /*
@@ -1278,34 +1610,9 @@ member_declarator:
  * There needs to be a special semantic check for "access declaration" when handling results of member declaration.
  */
 member_declaration [decl_kind kind]
-scope Declaration;
-@init { init_declaration(CTX, kind); }
+@init                                                                           {if(state.backtracking == 0){action.member_declaration(input.LT(1));}}
     :
-        decl_specifier*
-        (
-            (IDENT? COLON)=>
-                member_bitfield_declarator ( COMMA member_declarator )* SEMICOLON
-        |
-            (constructor_declarator)=>
-                constructor_declarator
-                (
-                    // this was member_declarator_list
-                    ( COMMA member_declarator )* SEMICOLON
-                |
-                    function_definition_after_declarator
-                )
-        |
-            declarator
-            (
-                { /*$declarator.type.is_function()*/ true }?
-                    function_definition_after_declarator
-            |
-                // this was member_declarator_list
-                constant_initializer? ( COMMA member_declarator )* SEMICOLON
-            )
-        |
-            SEMICOLON
-        )
+        simple_member_declaration_or_function_definition[kind]
     |
         /* this is likely to be covered by decl_specifier/declarator part of member_declarator
             SCOPE? nested_name_specifier LITERAL_template? unqualified_id SEMICOLON
@@ -1320,15 +1627,66 @@ scope Declaration;
     |
         alias_declaration
     ;
+finally                                                                         {if(state.backtracking == 0){action.end_member_declaration(input.LT(0));}}
 
-member_bitfield_declarator:
-        IDENT? virt_specifier+ COLON constant_expression
+simple_member_declaration_or_function_definition[decl_kind kind]
+@init                                                                           {if(state.backtracking == 0){action.simple_member_declaration(input.LT(1));}}
+    :
+                                                                                {action.decl_specifiers(input.LT(1));}
+        decl_specifier*                                                         {action.end_decl_specifiers(input.LT(0));}
+        (
+            (IDENT? COLON)=>
+                member_bitfield_declarator ( COMMA member_declarator )* SEMICOLON
+        |
+            (constructor_declarator)=>
+                constructor_declarator
+                (
+                    // this was member_declarator_list
+                    ( 
+                        COMMA                                                   {action.simple_member_declaration(action.SIMPLE_MEMBER_DECLARATION__COMMA2, input.LT(0));}
+                        member_declarator 
+                    )* 
+                    SEMICOLON                                                   {action.simple_member_declaration(action.SIMPLE_MEMBER_DECLARATION__SEMICOLON, input.LT(0));}
+                |
+                    function_definition_after_declarator
+                )
+        |
+            declarator
+            (
+                { /*$declarator.type.is_function()*/ (input.LA(1) != ASSIGNEQUAL && (input.LA(1) != COLON || input.LA(0) == RPAREN)) }?
+                    function_definition_after_declarator
+            |
+                // this was member_declarator_list
+                constant_initializer? 
+                ( 
+                    COMMA                                                       {action.simple_member_declaration(action.SIMPLE_MEMBER_DECLARATION__COMMA2, input.LT(0));}
+                    member_declarator 
+                )* 
+                SEMICOLON                                                       {action.simple_member_declaration(action.SIMPLE_MEMBER_DECLARATION__SEMICOLON, input.LT(0));}
+            )
+        |
+            SEMICOLON
+        )
+    ;
+finally                                                                         {if(state.backtracking == 0){action.end_simple_member_declaration(input.LT(0));}}
+
+member_bitfield_declarator
+    :
+        (
+            IDENT
+        )? 
+        virt_specifier* 
+        COLON 
+        constant_expression
     ;
 
-member_declarator:
-        declarator virt_specifier+ brace_or_equal_initializer
+member_declarator
+    :                                                                           {action.member_declarator(input.LT(1));}
+    (
+        declarator virt_specifier* brace_or_equal_initializer
     |
         member_bitfield_declarator
+    )                                                                           {action.end_member_declarator(input.LT(0));}
     ;
 
 /*
@@ -1344,28 +1702,42 @@ member_declarator_list:
  */
 
 // = 0 (not used, as it conflicts with constant_initializer
-pure_specifier:
-        ASSIGNEQUAL literal
+pure_specifier
+    :                                                                           {action.pure_specifier(input.LT(1));}
+        ASSIGNEQUAL literal                                                     {action.end_pure_specifier(input.LT(0));}
     ;
 
-constant_initializer:
-        ASSIGNEQUAL constant_expression 
+constant_initializer
+    :                                                                           {action.constant_initializer(input.LT(1));}
+        ASSIGNEQUAL constant_expression                                         {action.end_constant_initializer(input.LT(0));}
     ;
 
 virt_specifier:
-        LITERAL_override
+        LITERAL_override                                                        {action.virt_specifier(action.VIRT_SPECIFIER__OVERRIDE, input.LT(0));}
     |
-        LITERAL_final
+        LITERAL_final                                                           {action.virt_specifier(action.VIRT_SPECIFIER__FINAL, input.LT(0));}
     |
-        LITERAL_new
+        LITERAL_new                                                             {action.virt_specifier(action.VIRT_SPECIFIER__NEW, input.LT(0));}
     ;
 
 // [gram.class.derived] 
-base_clause:
-        COLON base_specifier_list 
+base_clause
+    :                                                                           {action.base_clause(input.LT(1));}
+        COLON base_specifier_list                                               {action.end_base_clause(input.LT(0));}
     ;
-base_specifier_list:
-        base_specifier ELLIPSIS? ( COMMA base_specifier ELLIPSIS? )*
+base_specifier_list
+        :                                                                       {action.base_specifier_list(input.LT(1));}
+        base_specifier 
+        (
+            ELLIPSIS                                                            {action.base_specifier_list(action.BASE_SPECIFIER_LIST__ELLIPSIS, input.LT(0));}
+        )? 
+        ( 
+            COMMA                                                               {action.base_specifier_list(action.BASE_SPECIFIER_LIST__COMMA, input.LT(0));}
+            base_specifier 
+            (
+                ELLIPSIS                                                        {action.base_specifier_list(action.BASE_SPECIFIER_LIST__ELLIPSIS, input.LT(0));}
+            )? 
+        )*                                                                      {action.end_base_specifier_list(input.LT(0));}
     ;
 base_specifier:
         base_type_specifier
@@ -1374,25 +1746,35 @@ base_specifier:
     |
         access_specifier LITERAL_virtual? base_type_specifier
     ;
-class_or_decltype:
-        SCOPE? nested_name_specifier? class_name
+class_or_decltype
+    :                                                                           {action.class_or_decltype(input.LT(1));}
+    (
+        (
+            SCOPE                                                               {action.class_or_decltype(action.CLASS_OR_DECLTYPE__SCOPE, input.LT(0));}
+        )? 
+        // TODO: review temp predicate
+        ((simple_template_id_or_IDENT SCOPE) => nested_name_specifier)?
+        class_name
     |
         decltype_specifier
+    )                                                                           {action.end_class_or_decltype(input.LT(0));}
     ;
-base_type_specifier:
-    class_or_decltype
+base_type_specifier
+    :                                                                           {action.base_type_specifier(input.LT(1));}
+        class_or_decltype                                                       {action.end_base_type_specifier(input.LT(0));}
     ;
 access_specifier:
-        LITERAL_private
+        LITERAL_private                                                         {action.access_specifier(action.ACCESS_SPECIFIER__PRIVATE, input.LT(0));}
     |
-        LITERAL_protected
+        LITERAL_protected                                                       {action.access_specifier(action.ACCESS_SPECIFIER__PROTECTED, input.LT(0));}
     |
-        LITERAL_public
+        LITERAL_public                                                          {action.access_specifier(action.ACCESS_SPECIFIER__PUBLIC, input.LT(0));}
     ;
 
 // [gram.special] 
-conversion_function_id:
-        LITERAL_OPERATOR conversion_type_id 
+conversion_function_id
+    :                                                                           {action.conversion_function_id(input.LT(1));}
+        LITERAL_OPERATOR conversion_type_id                                     {action.end_conversion_function_id(input.LT(0));}
     ;
 /*
  * original rule:
@@ -1411,26 +1793,43 @@ conversion_declarator:
  *
  * Resolve by folding and adding a synpred.
  */
-conversion_type_id:
-        type_specifier+
-        ((ptr_operator)=> ptr_operator)*
+conversion_type_id
+    :                                                                           {action.conversion_type_id(input.LT(1));}
+        type_specifier
+        (type_specifier)*
+        ((ptr_operator)=> ptr_operator)*                                        {action.end_conversion_type_id(input.LT(0));}
     ;
 
-ctor_initializer:
-        COLON mem_initializer_list
+ctor_initializer
+    :                                                                           {action.ctor_initializer(input.LT(1));}
+        COLON mem_initializer_list                                              {action.end_ctor_initializer(input.LT(0));}
     ;
 
-mem_initializer_list:
-        mem_initializer ELLIPSIS? ( COMMA mem_initializer ELLIPSIS? )*
+mem_initializer_list
+    :                                                                           {action.mem_initializer_list(input.LT(1));}
+        mem_initializer 
+        (
+            ELLIPSIS                                                            {action.mem_initializer_list(action.MEM_INITIALIZER_LIST__ELLIPSIS, input.LT(0));}
+        )? 
+        ( 
+            COMMA                                                               {action.mem_initializer_list(action.MEM_INITIALIZER_LIST__COMMA, input.LT(0));}
+            mem_initializer 
+            (
+                ELLIPSIS                                                        {action.mem_initializer_list(action.MEM_INITIALIZER_LIST__ELLIPSIS, input.LT(0));}
+            )? 
+        )*                                                                      {action.end_mem_initializer_list(input.LT(0));}
     ;
 
-mem_initializer:
+mem_initializer
+    :                                                                           {action.mem_initializer(input.LT(1));}
         mem_initializer_id 
         (
-            LPAREN expression_list? RPAREN 
+            LPAREN                                                              {action.mem_initializer(action.MEM_INITIALIZER__LPAREN, input.LT(0));}
+            expression_list? 
+            RPAREN                                                              {action.mem_initializer(action.MEM_INITIALIZER__RPAREN, input.LT(0));}
         |
             braced_init_list
-        )
+        )                                                                       {action.end_mem_initializer(input.LT(0));}
     ;
 
 /*
@@ -1442,18 +1841,28 @@ mem_initializer_id:
     ;
  * Ambiguity resolved by removing special class_name case
  */
-mem_initializer_id:
-        class_or_decltype
+mem_initializer_id
+    :                                                                           {action.mem_initializer_id(input.LT(1));}
+        class_or_decltype                                                       {action.end_mem_initializer_id(input.LT(0));}
     ;
 
 // [gram.over] 
-operator_function_id:
-        LITERAL_OPERATOR operator_id ( { operator_is_template() }?=> LESSTHAN template_argument_list? GREATERTHAN)?
+operator_function_id
+        :                                                                       {action.mem_operator_function_id(input.LT(1));}
+        LITERAL_OPERATOR 
+        operator_id 
+        ( { operator_is_template() }?=> 
+            LESSTHAN                                                            {action.operator_function_id(action.OPERATOR_FUNCTION_ID__LESSTHAN, input.LT(0));}
+            template_argument_list? 
+            GREATERTHAN                                                         {action.operator_function_id(action.OPERATOR_FUNCTION_ID__GREATERTHAN, input.LT(0));}
+        )?                                                                      {action.end_operator_function_id(input.LT(0));}
     ;
 /*
  * Ambiguity between operator new/delete and operator new/delete[] resolved towards the latter.
  */
-operator_id returns [int id]:
+operator_id returns [int id]
+    :                                                                           {action.operator_id(input.LT(1));}
+    (
         (LITERAL_new LSQUARE RSQUARE)=>
             LITERAL_new LSQUARE RSQUARE |
         (LITERAL_delete LSQUARE RSQUARE)=>
@@ -1464,19 +1873,33 @@ operator_id returns [int id]:
         BITWISEXOREQUAL | BITWISEANDEQUAL | BITWISEOREQUAL | SHIFTLEFT | SHIFTRIGHT | SHIFTRIGHTEQUAL | SHIFTLEFTEQUAL | EQUAL | NOTEQUAL |
         LESSTHANOREQUALTO | GREATERTHANOREQUALTO | AND | OR | PLUSPLUS | MINUSMINUS | COMMA | POINTERTOMBR | POINTERTO | 
         LPAREN RPAREN | LSQUARE RSQUARE
+    )                                                                           {action.end_operator_id(input.LT(0));}
     ;
 
-literal_operator_id:
-        LITERAL_OPERATOR STRING_LITERAL IDENT
+literal_operator_id
+    :
+        LITERAL_OPERATOR STRING_LITERAL IDENT                                   {action.literal_operator_id($LITERAL_OPERATOR, $STRING_LITERAL, $IDENT);}
     ;
 
 // [gram.temp] 
-template_declaration [decl_kind kind]:
-        LITERAL_export? LITERAL_template LESSTHAN template_parameter_list GREATERTHAN declaration[kind]
+template_declaration [decl_kind kind]
+    :                                                                           {action.template_declaration(input.LT(1));}
+        (
+            LITERAL_export                                                      {action.template_declaration(action.TEMPLATE_DECLARATION__EXPORT, $LITERAL_export);}
+        )? 
+        LITERAL_template                                                        {action.template_declaration(action.TEMPLATE_DECLARATION__TEMPLATE, $LITERAL_template);}
+        LESSTHAN                                                                {action.template_declaration(action.TEMPLATE_DECLARATION__TEMPLATE_ARGUMENT_LIST, $LESSTHAN);}
+        template_parameter_list 
+        GREATERTHAN                                                             {action.template_declaration(action.TEMPLATE_DECLARATION__END_TEMPLATE_ARGUMENT_LIST, $GREATERTHAN);}
+        declaration[kind]                                                       {action.end_template_declaration(input.LT(0));}
     ;
 
 template_parameter_list:
-        template_parameter ( COMMA template_parameter )*
+        template_parameter                                                      {action.template_parameter_list(input.LT(1));}
+        ( 
+            COMMA                                                               {action.template_parameter_list(action.TEMPLATE_PARAMETER_LIST__COMMA, input.LT(0));}
+            template_parameter 
+        )*                                                                      {action.end_template_parameter_list(input.LT(0));}
     ;
 
 /*
@@ -1488,7 +1911,9 @@ template_parameter_list:
  * Note that COMMA comes from template_parameter_list rule and GREATERTHAN comes even further from 
  * template_declaration rule
 */
-template_parameter:
+template_parameter
+    :                                                                           {action.template_parameter(input.LT(1));}
+    (
     (LITERAL_class ( IDENT | GREATERTHAN | COMMA | ASSIGNEQUAL ) )=>
         type_parameter
     |
@@ -1496,35 +1921,39 @@ template_parameter:
         type_parameter
     |
         parameter_declaration[tparm_decl]
+    )                                                                           {action.end_template_parameter(input.LT(0));}
     ;
 type_parameter:
-        LITERAL_class ELLIPSIS? IDENT? 
+        LITERAL_class ELLIPSIS? IDENT?                                          {action.type_parameter(action.TYPE_PARAMETER__CLASS, $LITERAL_class, $ELLIPSIS, $IDENT);}
     |
-        LITERAL_class IDENT? ASSIGNEQUAL type_id 
+        LITERAL_class IDENT? ASSIGNEQUAL type_id                                {action.type_parameter(action.TYPE_PARAMETER__CLASS_ASSIGNEQUAL, $LITERAL_class, $IDENT, $ASSIGNEQUAL);}
     |
-        LITERAL_typename ELLIPSIS? IDENT? 
+        LITERAL_typename ELLIPSIS? IDENT?                                       {action.type_parameter(action.TYPE_PARAMETER__TYPENAME, $LITERAL_typename, $ELLIPSIS, $IDENT);}
     |
-        LITERAL_typename IDENT? ASSIGNEQUAL type_id 
+        LITERAL_typename IDENT? ASSIGNEQUAL type_id                             {action.type_parameter(action.TYPE_PARAMETER__TYPENAME_ASSIGNEQUAL, $LITERAL_typename, $IDENT, $ASSIGNEQUAL);}
     |
         LITERAL_template LESSTHAN template_parameter_list GREATERTHAN LITERAL_class ELLIPSIS? IDENT? (ASSIGNEQUAL id_expression)?
     ;
 
 simple_template_id
     :
-        IDENT                   {action.simple_template_id($IDENT);}
-        LESSTHAN { (identifier_is(IDT_TEMPLATE_NAME)) }?
-            template_argument_list? GREATERTHAN
+        IDENT                                                                   {action.simple_template_id($IDENT);}
+        LESSTHAN { (action.identifier_is(IDT_TEMPLATE_NAME, $IDENT)) }?         {action.simple_template_id(action.SIMPLE_TEMPLATE_ID__TEMPLATE_ARGUMENT_LIST, $LESSTHAN);}
+        template_argument_list? 
+        GREATERTHAN                                                             {action.simple_template_id(action.SIMPLE_TEMPLATE_ID__END_TEMPLATE_ARGUMENT_LIST, $GREATERTHAN);}
     ;
 lookup_simple_template_id
     :
-        IDENT LESSTHAN { (identifier_is(IDT_TEMPLATE_NAME)) }?
+        IDENT LESSTHAN { (action.identifier_is(IDT_TEMPLATE_NAME, $IDENT)) }?
             look_after_tmpl_args
     ;
 
 simple_template_id_nocheck
     :
-        IDENT                   {action.simple_template_id_nocheck($IDENT);}
-        LESSTHAN template_argument_list? GREATERTHAN 
+        IDENT                                                                   {action.simple_template_id_nocheck($IDENT);}
+        LESSTHAN                                                                {action.simple_template_id_nocheck(action.SIMPLE_TEMPLATE_ID_NOCHECK__TEMPLATE_ARGUMENT_LIST, $LESSTHAN);}
+        template_argument_list? 
+        GREATERTHAN                                                             {action.simple_template_id_nocheck(action.SIMPLE_TEMPLATE_ID_NOCHECK__END_TEMPLATE_ARGUMENT_LIST, $GREATERTHAN);}
     ;
 lookup_simple_template_id_nocheck
     :
@@ -1533,10 +1962,18 @@ lookup_simple_template_id_nocheck
 
 simple_template_id_or_IDENT
     :
-        IDENT                   {action.class_name($IDENT);}
-        ( (LESSTHAN { (identifier_is(IDT_TEMPLATE_NAME)) }?) =>
-            LESSTHAN template_argument_list? GREATERTHAN
-        )?
+        ( (IDENT LESSTHAN) => 
+                ( { action.identifier_is(IDT_TEMPLATE_NAME, input.LT(1)) }? =>
+                IDENT                                                           {action.simple_template_id_or_ident(input.LT(0));}
+                LESSTHAN                                                        {action.simple_template_id_or_ident(action.SIMPLE_TEMPLATE_ID_OR_IDENT__TEMPLATE_ARGUMENT_LIST, $LESSTHAN);}
+                template_argument_list?
+                GREATERTHAN                                                     {action.simple_template_id_or_ident(action.SIMPLE_TEMPLATE_ID_OR_IDENT__END_TEMPLATE_ARGUMENT_LIST, $GREATERTHAN);}
+            |   
+                IDENT                                                           {action.simple_template_id_or_ident(input.LT(0));}
+            )
+        |   
+            IDENT                                                               {action.simple_template_id_or_ident(input.LT(0));}
+        )
     ;
 
 lookup_simple_template_id_or_IDENT
@@ -1555,34 +1992,63 @@ template_name:
  * not needed
  */
 
-template_argument_list:
-        template_argument ELLIPSIS? ( COMMA template_argument ELLIPSIS? )*
+template_argument_list
+    :                                                                           {action.template_argument_list(input.LT(1));}
+        template_argument 
+        (
+            ELLIPSIS                                                            {action.template_argument_list(action.TEMPLATE_ARGUMENT_LIST__ELLIPSIS, input.LT(0));}
+        )? 
+        ( 
+            COMMA                                                               {action.template_argument_list(action.TEMPLATE_ARGUMENT_LIST__COMMA, input.LT(0));}
+            template_argument 
+            (
+                ELLIPSIS                                                        {action.template_argument_list(action.TEMPLATE_ARGUMENT_LIST__ELLIPSIS, input.LT(0));}
+            )? 
+        )*                                                                      {action.end_template_argument_list(input.LT(0));}
     ;
-template_argument:
+
+template_argument
+    :                                                                           {action.template_argument(input.LT(1));}
+    (
         // id_exression is included into assignment_expression, thus we need to explicitly rule it up
-        (id_expression)=> id_expression
+        (id_expression ELLIPSIS? (COMMA | GREATERTHAN))=> id_expression
     |
         (type_id)=> type_id
     |
         assignment_expression
+    )                                                                           {action.end_template_argument(input.LT(0));}
     ;
 
-explicit_instantiation [decl_kind kind]:
-        LITERAL_template declaration[kind]
+explicit_instantiation [decl_kind kind]
+    :                                                                           {action.explicit_instantiation(input.LT(1));}
+        (
+            LITERAL_extern                                                      {action.explicit_instantiation(action.EXPLICIT_INSTANTIATION__EXTERN, input.LT(0));}
+        )? 
+        LITERAL_template                                                        {action.explicit_instantiation(action.EXPLICIT_INSTANTIATION__TEMPLATE, input.LT(0));}
+        declaration[kind]                                                       {action.end_explicit_instantiation(input.LT(0));}
     ;
-explicit_specialization [decl_kind kind]:
-        LITERAL_template LESSTHAN GREATERTHAN declaration[kind]
+explicit_specialization [decl_kind kind]
+    :                                                                           
+        LITERAL_template LESSTHAN GREATERTHAN                                   {action.explicit_specialization($LITERAL_template, $LESSTHAN, $GREATERTHAN);}
+        declaration[kind]                                                       {action.end_explicit_specialization(input.LT(0));}
     ;
 // [gram.except] 
-try_block:
-        LITERAL_try compound_statement handler+
+try_block
+    :                                                                           {action.try_block(input.LT(1));}
+        LITERAL_try compound_statement handler+                                 {action.end_try_block(input.LT(0));}
     ;
-function_try_block:
-        LITERAL_try ctor_initializer? function_body handler+
+function_try_block
+    :                                                                           {action.function_try_block(input.LT(1));}
+        LITERAL_try ctor_initializer? function_body handler+                    {action.end_function_try_block(input.LT(0));}
     ;
 
-handler:
-        LITERAL_catch LPAREN exception_declaration RPAREN compound_statement 
+handler
+    :                                                                           {action.handler(input.LT(1));}
+        LITERAL_catch 
+        LPAREN                                                                  {action.handler(action.HANDLER__LPAREN, input.LT(0));}
+        exception_declaration 
+        RPAREN                                                                  {action.handler(action.HANDLER__RPAREN, input.LT(0));}
+        compound_statement                                                      {action.end_handler(input.LT(0));}
     ;
 
 /*
@@ -1824,10 +2290,10 @@ unary_expression:
         unary_operator_but_not_TILDE cast_expression
     |
         LITERAL_sizeof (
-            unary_expression
-        |
             (LPAREN type_id RPAREN)=>
                 LPAREN type_id RPAREN
+        |
+            unary_expression
         )
     |
         noexcept_expression
@@ -1880,8 +2346,9 @@ new_placement:
  *  new (int(*p)) int; // new-placement expression
  */
 new_type_id:
-        type_specifier+
-        ((ptr_operator)=>
+        type_specifier
+        (type_specifier)*
+        ((LSQUARE | ptr_operator)=>
             new_declarator)?
     ;
 
@@ -1951,7 +2418,7 @@ shift_expression:
 relational_expression:
         shift_expression
         ( 
-            { !top_level_of_template_arguments() }?=>
+            { !action.top_level_of_template_arguments() }?=>
             GREATERTHAN shift_expression
           |
             LESSTHAN shift_expression
@@ -2023,7 +2490,9 @@ assignment_expression:
  * Ambiguity on logical_or_expression in assignment vs conditional_expression.
  * Resolved by unpretty rule-splitting and left-factoring.
  */
-assignment_expression:
+assignment_expression
+@init                                                                           {if(state.backtracking == 0){action.assignment_expression(input.LT(1));}}
+    :
         // this is taken from conditional_expression
         QUESTIONMARK expression COLON assignment_expression
     |
@@ -2036,25 +2505,31 @@ assignment_expression:
     |
         throw_expression
     ;
+finally                                                                         {if(state.backtracking == 0){action.end_assignment_expression(input.LT(0));}}
 
 assignment_operator:
         ASSIGNEQUAL | TIMESEQUAL | DIVIDEEQUAL | MODEQUAL | PLUSEQUAL | MINUSEQUAL | SHIFTRIGHTEQUAL | SHIFTLEFTEQUAL |
         BITWISEANDEQUAL | BITWISEXOREQUAL | BITWISEOREQUAL
     ;
 
-expression:
+expression
+@init                                                                           {if(state.backtracking == 0){action.expression(input.LT(1));}}
+    :
         assignment_expression ( COMMA assignment_expression )*
     ;
+finally                                                                         {if(state.backtracking == 0){action.end_expression(input.LT(0));}}
 
 constant_expression returns [ expression_t expr ]
+@init                                                                           {if(state.backtracking == 0){action.constant_expression(input.LT(1));}}
     :
         conditional_expression
     ;
+finally                                                                         {if(state.backtracking == 0){action.end_constant_expression(input.LT(0));}}
 
 // [gram.lex]
 
 literal:
-    DECIMALINT|FLOATONE|CHAR_LITERAL|STRING_LITERAL
+    DECIMALINT|HEXADECIMALINT|FLOATONE|CHAR_LITERAL|STRING_LITERAL|NUMBER|OCTALINT|LITERAL_true|LITERAL_false
     ;
 
 // lookahead stuff
@@ -2064,7 +2539,7 @@ literal:
 
 lookahead_tokenset_arg_syms
     :
-        IDENT|DECIMALINT|FLOATONE|CHAR_LITERAL|STRING_LITERAL|
+        IDENT|DECIMALINT|HEXADECIMALINT|FLOATONE|CHAR_LITERAL|STRING_LITERAL|NUMBER|OCTALINT|
         PLUS|MINUS|STAR|AMPERSAND|LITERAL_sizeof|TILDE|
         NOT|PLUSPLUS|MINUSMINUS|LITERAL_OPERATOR|LITERAL_new|LITERAL_delete|
         LITERAL_this|
@@ -2329,3 +2804,4 @@ skip_balanced_Curl
 //     ;
 
 /*END*/
+

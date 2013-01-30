@@ -153,6 +153,7 @@ public class DataLoaderInLayerTest extends NbTestCase {
         LOG.info("wait after revalidating");
     }
     private static <F extends DataObject.Factory> void addRemove(String mime, F factory, boolean add) throws IOException {
+        LOG.log(Level.INFO, "addRemove {0} factory: {1} add: {2}", new Object[]{mime, factory, add});
         String res = "Loaders/" + mime + "/Factories/" + factory.getClass().getSimpleName().replace('.', '-') + ".instance";
         FileObject root = FileUtil.getConfigRoot();
         if (add) {
@@ -165,13 +166,17 @@ public class DataLoaderInLayerTest extends NbTestCase {
                 fo.delete();
             }
         }
-        for (;;) {
+        for (int cnt = 0;; cnt++) {
             Object f = Lookups.forPath("Loaders/" + mime + "/Factories").lookup(factory.getClass());
+            if (cnt > 5) {
+                LOG.log(Level.WARNING, "Waiting cnt: {0} factory: {1}", new Object[]{cnt, f});
+            }
             FolderLookup.ProxyLkp.DISPATCH.waitFinished();
             if (add == (f != null)) {
                 break;
             }
         }
+        LOG.log(Level.INFO, "done addRemove {0} factory: {1} add: {2}", new Object[]{mime, factory, add});
     }
     
     public void testSimpleGetChildren() throws Exception {

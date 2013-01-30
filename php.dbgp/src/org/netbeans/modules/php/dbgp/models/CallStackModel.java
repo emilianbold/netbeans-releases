@@ -1,31 +1,51 @@
 /*
- * The contents of this file are subject to the terms of the Common Development
- * and Distribution License (the License). You may not use this file except in
- * compliance with the License.
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
- * or http://www.netbeans.org/cddl.txt.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
- * When distributing Covered Code, include this CDDL Header Notice in each file
- * and include the License file at http://www.netbeans.org/cddl.txt.
- * If applicable, add the following below the CDDL Header, with the fields
- * enclosed by brackets [] replaced by your own identifying information:
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Oracle in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.php.dbgp.models;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
-
 import javax.swing.Action;
-
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.php.dbgp.DebugSession;
@@ -66,7 +86,7 @@ public class CallStackModel extends ViewModelSupport
         myStack = new AtomicReference<List<Stack>>();
         myCurrentStack = new AtomicReference<Stack>();
     }
-    
+
     /* (non-Javadoc)
      * @see org.netbeans.modules.php.dbgp.models.ViewModelSupport#clearModel()
      */
@@ -79,7 +99,7 @@ public class CallStackModel extends ViewModelSupport
     public Object getRoot() {
         return ROOT;
     }
-    
+
     public void setCallStack(List<Stack> stacks ){
         List<Stack> list = new ArrayList<Stack>( stacks );
         myStack.set(list);
@@ -93,8 +113,8 @@ public class CallStackModel extends ViewModelSupport
      * @see org.netbeans.spi.viewmodel.TreeModel#getChildren(java.lang.Object, int, int)
      */
     @Override
-    public Object[] getChildren(Object parent, int from, int to) 
-        throws UnknownTypeException 
+    public Object[] getChildren(Object parent, int from, int to)
+        throws UnknownTypeException
     {
         if (parent == ROOT) {
             List<Stack> list = myStack.get();
@@ -110,7 +130,7 @@ public class CallStackModel extends ViewModelSupport
                 return stack.toArray();
             }
         }
-        
+
         throw new UnknownTypeException(parent);
     }
 
@@ -125,7 +145,7 @@ public class CallStackModel extends ViewModelSupport
         else if (node instanceof Stack) {
             return true;
         }
-        
+
         throw new UnknownTypeException(node);
     }
 
@@ -143,7 +163,7 @@ public class CallStackModel extends ViewModelSupport
                 return list.size();
             }
         }
-        
+
         throw new UnknownTypeException(node);
     }
 
@@ -164,7 +184,7 @@ public class CallStackModel extends ViewModelSupport
         else if (node == ROOT) {
             return ROOT.toString();
         }
-        
+
         throw new UnknownTypeException(node);
     }
 
@@ -185,7 +205,7 @@ public class CallStackModel extends ViewModelSupport
         else if (node == ROOT) {
             return null;
         }
-        
+
         throw new UnknownTypeException (node);
     }
 
@@ -200,7 +220,7 @@ public class CallStackModel extends ViewModelSupport
         else if (node instanceof Stack) {
             return null;
         }
-        
+
         throw new UnknownTypeException (node);
     }
 
@@ -217,7 +237,7 @@ public class CallStackModel extends ViewModelSupport
             // Focus current file/line of selected stack frame.
             final Line line = Utils.getLine( stack.getLine(), stack.getFileName() ,
                     getSessionId());
-            
+
             if (line != null) {
                 Mutex.EVENT.readAccess(new Runnable () {
                     @Override
@@ -239,23 +259,23 @@ public class CallStackModel extends ViewModelSupport
      * @see org.netbeans.spi.viewmodel.TableModel#getValueAt(java.lang.Object, java.lang.String)
      */
     @Override
-    public Object getValueAt(Object node, String columnID) 
-        throws UnknownTypeException 
+    public Object getValueAt(Object node, String columnID)
+        throws UnknownTypeException
     {
         if(node == ROOT) {
             return null;
         }
         else if (node instanceof Stack) {
-            if (columnID == Constants.CALL_STACK_FRAME_LOCATION_COLUMN_ID) {
+            if (Constants.CALL_STACK_FRAME_LOCATION_COLUMN_ID.equals(columnID)) {
                 Stack stack = (Stack)node;
-                
+
                 return getFile(stack) ;
             }
             else {
                 return "?! unknown column";     // NOI18N
             }
         }
-        
+
         throw new UnknownTypeException (node);
     }
 
@@ -263,8 +283,8 @@ public class CallStackModel extends ViewModelSupport
      * @see org.netbeans.spi.viewmodel.TableModel#isReadOnly(java.lang.Object, java.lang.String)
      */
     @Override
-    public boolean isReadOnly(Object node, String columnID) 
-        throws UnknownTypeException 
+    public boolean isReadOnly(Object node, String columnID)
+        throws UnknownTypeException
     {
         if(node == ROOT) {
             return true;
@@ -272,7 +292,7 @@ public class CallStackModel extends ViewModelSupport
         else if (node instanceof Stack) {
             return true;
         }
-        
+
         throw new UnknownTypeException (node);
     }
 
@@ -280,21 +300,21 @@ public class CallStackModel extends ViewModelSupport
      * @see org.netbeans.spi.viewmodel.TableModel#setValueAt(java.lang.Object, java.lang.String, java.lang.Object)
      */
     @Override
-    public void setValueAt(Object node, String columnID, Object value) 
-        throws UnknownTypeException 
+    public void setValueAt(Object node, String columnID, Object value)
+        throws UnknownTypeException
     {
         throw new UnknownTypeException(node);
     }
-    
+
     private ContextProvider getContextProvider() {
         return myContextProvider;
     }
-    
+
     private SessionId getSessionId(){
-        return (SessionId)getContextProvider().lookupFirst( null, 
+        return (SessionId)getContextProvider().lookupFirst( null,
                 SessionId.class );
     }
-    
+
     private String getFile( Stack stack ){
         String fileName = stack.getFileName();
         FileObject fileObject = getSessionId().toSourceFile( fileName );
@@ -314,12 +334,12 @@ public class CallStackModel extends ViewModelSupport
             return f != null ? f.getAbsolutePath() : fileName;
         }
     }
-    
+
     private DebugSession getSession() {
         return SessionManager.getInstance().getSession(
                 getSessionId() );
     }
-    
+
     private void updateDependentViews( Stack stack ) {
         // Update stack dependent models to current frame.
         myCurrentStack.set(stack);
@@ -327,34 +347,34 @@ public class CallStackModel extends ViewModelSupport
         if ( session == null ) {
             return;
         }
-        
+
         // Update local view.
         int depth = stack.getLevel();
-        ContextNamesCommand command = new ContextNamesCommand( 
+        ContextNamesCommand command = new ContextNamesCommand(
                 session.getTransactionId() );
         command.setDepth(depth);
         session.sendCommandLater( command );
-        
+
         // Update watches view
         /*
          * Currently this has no effect.
          * "eval" command performs evaluation only against current stack depth.
-         * So changing <code>stack</code> object doesn't lead to any change in 
+         * So changing <code>stack</code> object doesn't lead to any change in
          * watches view.
          * I have asked authors of XDebug inforamtion about this behavior.
-         *     
+         *
          * Result of asking authors is bug number 0000316.
          * http://bugs.xdebug.org/bug_view_page.php?bug_id=0000316
          */
         StackGetResponse.updateWatchView( session );
-        
+
         refresh();
     }
-    
+
     private final ContextProvider myContextProvider;
-    
+
     private AtomicReference<List<Stack>> myStack;
-    
+
     private AtomicReference<Stack>  myCurrentStack;
 
 }

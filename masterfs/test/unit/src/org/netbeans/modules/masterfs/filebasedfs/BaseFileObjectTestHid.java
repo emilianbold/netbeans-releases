@@ -48,6 +48,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.ref.WeakReference;
 import java.util.*;
@@ -305,6 +306,56 @@ public class BaseFileObjectTestHid extends TestBaseHid{
         }
     }
     
+    public void testReadRecreatedFile() throws Exception {
+        FileObject fo = root.getFileObject("testdir/mountdir4/file.ext");
+        assertNotNull("File found properly", fo);
+        String txt = fo.asText("UTF-8");
+        
+        File f = FileUtil.toFile(fo);
+        
+        f.delete();
+        
+        
+        fo.getParent().refresh();
+        
+        assertFalse("No longer valid", fo.isValid());
+        try {
+            InputStream is = fo.getInputStream();
+            fail("Should throw an exception: " + is);
+        } catch (FileNotFoundException ex) {
+            // ok
+        }
+        
+        f.createNewFile();
+        
+        String newTxt = fo.asText("UTF-8");
+        assertEquals("Empty text read even the file object is not valid anymore", "", newTxt);
+        assertFalse("Still invalid", fo.isValid());
+    }
+    public void testWriteRecreatedFile() throws Exception {
+        FileObject fo = root.getFileObject("testdir/mountdir4/file.ext");
+        assertNotNull("File found properly", fo);
+        String txt = fo.asText("UTF-8");
+        
+        File f = FileUtil.toFile(fo);
+        
+        f.delete();
+        
+        fo.getParent().refresh();
+        
+        assertFalse("No longer valid", fo.isValid());
+        
+        f.createNewFile();
+        
+        OutputStream os = fo.getOutputStream();
+        os.write("Ahoj".getBytes());
+        os.close();
+        
+        String newTxt = fo.asText("UTF-8");
+        assertEquals("Text read even the file object is not valid anymore", "Ahoj", newTxt);
+        assertFalse("Still invalid", fo.isValid());
+    }
+    
     public void testRefresh109490() throws Exception {
         final File wDir = new File(getWorkDir(), getName());
         wDir.mkdir();
@@ -319,6 +370,7 @@ public class BaseFileObjectTestHid extends TestBaseHid{
                 }            
             };
         try {
+            fs.refresh(true); // catch and skip changes made in VCS metadata, they are not part of this test
             fs.addFileChangeListener(fListener);
 
             File file = new File(wDir, "testao.f");
@@ -1204,6 +1256,30 @@ public class BaseFileObjectTestHid extends TestBaseHid{
         } finally {
             LOGGER.setLevel(originalLevel);
         }
+    }
+    
+    public void testDeepStructureDelete() throws Exception {
+        clearWorkDir();
+        
+        final File rf = new File(getWorkDir(), "wd");
+        rf.mkdirs();
+        
+        FileObject root = FileUtil.toFileObject(rf);
+        FileObject next = root;
+        for (int i = 0; i < 10; i++) {
+            next = next.createFolder("i" + i);
+        }
+        
+        assertTrue("Is valid", root.isValid());
+        assertTrue("Is valid leaft", next.isValid());
+        
+        clearWorkDir();
+        assertFalse("Root file is gone", rf.exists());
+        
+        root.refresh();
+        
+        assertFalse("Became invalid", root.isValid());
+        assertFalse("Leaf is invalid as well", next.isValid());
     }
     
     private class IgnoreDirFileSystem extends LocalFileSystem {

@@ -391,17 +391,19 @@ public class DataShadow extends MultiDataObject implements DataObject.Container 
     }
     
     /**
-     * Tries to load the original file from a shadow.
+     * Tries to locate the original file from a shadow.
      * Looks for file contents as well as the originalFile/originalFileSystem attributes.
-     * Attempts to discover locations for migrated files in configuration.
+     * Attempts to discover locations for migrated files in configuration. Returns
+     * {@code null}, if the target file could not be found (broken link)
      * 
      * @param fileObject a data shadow
-     * @return the original <code>DataObject</code> referenced by the shadow
-     * @throws IOException error during load or broken link
+     * @return the original <code>FileObject</code> referenced by the shadow
+     * @throws IOException error during load 
      * 
      * @see Utilities#translate
+     * @since 7.42
      */
-    protected static DataObject deserialize(FileObject fileObject) throws IOException {
+    public static FileObject findOriginal(FileObject fileObject) throws IOException {
         String[] fileAndFileSystem = readOriginalFileAndFileSystem(fileObject);
         String path = fileAndFileSystem[0];
         assert path != null;
@@ -465,12 +467,31 @@ public class DataShadow extends MultiDataObject implements DataObject.Container 
                 }
             }
         }
+        return target;
+    }
+    
+    /**
+     * Tries to load the original file from a shadow.
+     * Looks for file contents as well as the originalFile/originalFileSystem attributes.
+     * Attempts to discover locations for migrated files in configuration.
+     * 
+     * @param fileObject a data shadow
+     * @return the original <code>DataObject</code> referenced by the shadow
+     * @throws IOException error during load or broken link
+     * 
+     * @see Utilities#translate
+     */
+    protected static DataObject deserialize(FileObject fileObject) throws IOException {
+        FileObject target = findOriginal(fileObject);
         if (target != null) {
             return DataObject.find(target);
         } else {
-            throw new FileNotFoundException(path + ':' + fsname);
+            String[] fileAndFileSystem = readOriginalFileAndFileSystem(fileObject);
+            String path = fileAndFileSystem[0];
+            throw new FileNotFoundException(path + ':' + fileAndFileSystem[1]);
         }
     }
+    
     static URL readURL(FileObject fileObject) throws IOException {
         String[] fileAndFileSystem = readOriginalFileAndFileSystem(fileObject);
         String path = fileAndFileSystem[0];
@@ -649,6 +670,20 @@ public class DataShadow extends MultiDataObject implements DataObject.Container 
         } catch (java.beans.PropertyVetoException e) {                        
         }         
     }
+
+    @Override
+    void notifyAttributeChanged(FileAttributeEvent fae) {
+        super.notifyAttributeChanged(fae);
+        refresh(false);
+    }
+
+    @Override
+    void notifyFileChanged(FileEvent fe) {
+        super.notifyFileChanged(fe);
+        refresh(false);
+    }
+    
+    
     
     private void tryUpdate() throws IOException {
         URL url = readURL(getPrimaryFile ());

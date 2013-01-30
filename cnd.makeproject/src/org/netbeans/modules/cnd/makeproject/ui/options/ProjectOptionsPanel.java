@@ -53,7 +53,9 @@ import javax.swing.JPanel;
 import javax.swing.JSeparator;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
+import org.netbeans.modules.cnd.utils.ui.CndUIConstants;
 import org.netbeans.modules.cnd.utils.ui.NamedOption;
+import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
@@ -61,6 +63,7 @@ import org.openide.util.lookup.Lookups;
 /**
  * Replaces the old project system options panel.
  */
+@OptionsPanelController.Keywords(keywords={"#ProjectsOptionsKeywords"}, location=CndUIConstants.TOOLS_OPTIONS_CND_CATEGORY_ID, tabTitle= "#TAB_ProjectsTab")
 public class ProjectOptionsPanel extends JPanel {
 
     private boolean changed;
@@ -163,7 +166,13 @@ public class ProjectOptionsPanel extends JPanel {
     }
     
     private List<NamedOption> getEntries() {
-        return new ArrayList<NamedOption>(Lookups.forPath(NamedOption.MAKE_PROJECT_CATEGORY).lookupAll(NamedOption.class));
+        List<NamedOption> result = new ArrayList<NamedOption>();
+        for(NamedOption option: Lookups.forPath(NamedOption.MAKE_PROJECT_CATEGORY).lookupAll(NamedOption.class)) {
+            if (option.isVisible()) {
+                result.add(option);
+            }
+        }
+        return result;
     }
     
     private JCheckBox getWrapper(final NamedOption entry) {

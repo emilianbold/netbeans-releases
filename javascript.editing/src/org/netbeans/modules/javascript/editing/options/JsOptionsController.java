@@ -64,7 +64,6 @@ import org.openide.util.Lookup;
  * @author Petr Hejl
  */
 @OptionsPanelController.SubRegistration(
-    id="JavaScript",
     displayName="#JsOptions.displayName",
     keywords="#KW_JavaScriptOptions",
     keywordsCategory="Advanced/JavaScript"

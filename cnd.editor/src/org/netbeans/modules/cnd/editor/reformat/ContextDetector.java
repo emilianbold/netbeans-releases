@@ -191,6 +191,7 @@ public class ContextDetector extends ExtendedTokenSequence {
                         break;
                     case SCOPE:
                     case STRUCT:
+                    case CLASS:
                     case CONST:
                     case VOID:
                     case UNSIGNED:
@@ -397,6 +398,7 @@ public class ContextDetector extends ExtendedTokenSequence {
                  previous.id() != RPAREN && previous.id() != RBRACKET)){
                 switch(current.id()){
                     case STAR:
+                    case AMPAMP:
                     case AMP:
                         return OperatorKind.TYPE_MODIFIER;
                     case PLUS:
@@ -471,12 +473,19 @@ public class ContextDetector extends ExtendedTokenSequence {
                 LITERAL_CATEGORY.equals(prevCategory) ||
                 CHAR_CATEGORY.equals(prevCategory) ||
                 STRING_CATEGORY.equals(prevCategory)){
-                return OperatorKind.BINARY;
+                if (current.id() == GT && isLikeTemplate(current)) {
+                    // get<0>()
+                    //      ^
+                    return OperatorKind.SEPARATOR;
+                } else {
+                    return OperatorKind.BINARY;
+                }
             }
             String nextCategory = next.id().primaryCategory();
             if (KEYWORD_CATEGORY.equals(nextCategory)){
                 switch(current.id()){
                     case STAR:
+                    case AMPAMP:
                     case AMP:
                         return OperatorKind.BINARY;
                     case PLUS:
@@ -497,6 +506,7 @@ public class ContextDetector extends ExtendedTokenSequence {
                      switch(current.id()){
                         case STAR:
                         case AMP:
+                        case AMPAMP:
                             return OperatorKind.TYPE_MODIFIER;
                         case GT:
                         case LT:
@@ -512,7 +522,13 @@ public class ContextDetector extends ExtendedTokenSequence {
                             return OperatorKind.UNARY;
                     }
                 } else {
-                    return OperatorKind.BINARY;
+                    if (previous.id() == IDENTIFIER && current.id() == LT && isLikeTemplate(current)) {
+                        // get<0>()
+                        //    ^
+                        return OperatorKind.SEPARATOR;
+                    } else {
+                        return OperatorKind.BINARY;
+                    }
                 }
             }
             if (previous.id() == RPAREN || previous.id() == RBRACKET){
@@ -521,6 +537,7 @@ public class ContextDetector extends ExtendedTokenSequence {
                         switch(current.id()){
                             case STAR:
                             case AMP:
+                            case AMPAMP:
                                 return OperatorKind.TYPE_MODIFIER;
                             case PLUS:
                             case MINUS:
@@ -542,6 +559,7 @@ public class ContextDetector extends ExtendedTokenSequence {
                         switch(current.id()){
                             case STAR:
                             case AMP:
+                            case AMPAMP:
                                 return OperatorKind.TYPE_MODIFIER;
                             case PLUS:
                             case MINUS:
@@ -551,14 +569,26 @@ public class ContextDetector extends ExtendedTokenSequence {
                             default:
                                 return OperatorKind.SEPARATOR;
                         }
+                    } else {
+                        switch(current.id()){
+                            case GT:
+                            case LT:
+                                if (braces.isDeclarationLevel()) {
+                                    return OperatorKind.SEPARATOR;
+                                } else if (isLikeTemplate(current)) {
+                                    return OperatorKind.SEPARATOR;
+                                }
+                            default:
+                                return OperatorKind.BINARY;
+                        }
                     }
-                    return OperatorKind.BINARY;
                 }
                 if (OPERATOR_CATEGORY.equals(nextCategory) ||
                     SEPARATOR_CATEGORY.equals(nextCategory)){
                     switch(current.id()){
                         case STAR:
                         case AMP:
+                        case AMPAMP:
                             return OperatorKind.TYPE_MODIFIER;
                         case PLUS:
                         case MINUS:
@@ -574,6 +604,7 @@ public class ContextDetector extends ExtendedTokenSequence {
                     switch(current.id()){
                         case STAR:
                         case AMP:
+                        case AMPAMP:
                             if (braces.isDeclarationLevel()) {
                                 return OperatorKind.TYPE_MODIFIER;
                             } else if (isLikeForDeclaration()) {
@@ -738,9 +769,23 @@ public class ContextDetector extends ExtendedTokenSequence {
     
     private boolean isLikeExpession(){
         StackEntry entry = braces.peek();
-        if (entry != null && 
-           (entry.getKind() == FOR || entry.getKind() == WHILE || entry.getKind() == IF)){
-            return true;
+        if (entry != null) {
+            if ((entry.getKind() == FOR || entry.getKind() == WHILE || entry.getKind() == IF)){
+                return true;
+            } else {
+                if (entry.getImportantKind() != null) {
+                    switch (entry.getImportantKind()) {
+                        case NAMESPACE:
+                        case STRUCT:
+                        case CLASS:
+                        case UNION:
+                        case ENUM:
+                            if (braces.parenDepth == 1) {
+                                return false;
+                            }
+                    }
+                }
+            }
         }
         int index = index();
         try {

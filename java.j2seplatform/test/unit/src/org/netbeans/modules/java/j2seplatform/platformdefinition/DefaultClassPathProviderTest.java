@@ -74,6 +74,8 @@ import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ui.ProjectGroup;
+import org.netbeans.api.project.ui.ProjectGroupChangeListener;
 
 
 
@@ -472,6 +474,19 @@ public class DefaultClassPathProviderTest extends NbTestCase {
         @Override
         public Future<Project[]> openProjectsAPI() {
             return future;
+        }
+
+        @Override
+        public ProjectGroup getActiveProjectGroupAPI() {
+            return null;
+        }
+
+        @Override
+        public void addProjectGroupChangeListenerAPI(ProjectGroupChangeListener listener) {
+        }
+
+        @Override
+        public void removeProjectGroupChangeListenerAPI(ProjectGroupChangeListener listener) {
         }
     }
 

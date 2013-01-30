@@ -46,6 +46,8 @@ import java.beans.PropertyChangeListener;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.extexecution.print.LineConvertors;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
@@ -72,6 +74,7 @@ public class MavenFileLocator implements LineConvertors.FileLocator {
     private ClassPath classpath;
     private final Project project;
     private static final Object LOCK = new Object();
+    private static final Logger LOG = Logger.getLogger(MavenFileLocator.class.getName());
 
     public MavenFileLocator(Project project) {
         this.project = project;
@@ -97,7 +100,11 @@ public class MavenFileLocator implements LineConvertors.FileLocator {
             }
             cp = classpath;
         }
-        return cp.findResource(filename);
+        FileObject toRet = cp.findResource(filename);
+        if (toRet == null) {
+            LOG.log(Level.FINE, "#221053: Cannot find FileObject for {0}", filename);
+        }
+        return toRet;
     }
 
     private ClassPath getProjectClasspath(Project p) {

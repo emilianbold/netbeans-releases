@@ -48,7 +48,7 @@ import java.util.logging.Logger;
 import javax.swing.JPanel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.php.spi.phpmodule.PhpModuleCustomizerExtender;
+import org.netbeans.modules.php.spi.framework.PhpModuleCustomizerExtender;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
 import org.openide.util.HelpCtx;
 

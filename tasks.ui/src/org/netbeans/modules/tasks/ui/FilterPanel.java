@@ -46,7 +46,7 @@ import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.event.DocumentListener;
 import org.jdesktop.swingx.painter.BusyPainter;
-import org.jdesktop.swingx.painter.PainterIcon;
+import org.jdesktop.swingx.icon.PainterIcon;
 import org.netbeans.modules.tasks.ui.actions.DummyAction;
 import org.netbeans.modules.tasks.ui.dashboard.DashboardViewer;
 import org.netbeans.modules.tasks.ui.filter.OpenedCategoryFilter;
@@ -108,6 +108,16 @@ public class FilterPanel extends javax.swing.JPanel {
                 }
             }
 
+        });
+        textFilter.addFocusListener(new FocusListener() {
+            @Override
+            public void focusGained(FocusEvent e) {
+                focusChanged(true);
+            }
+
+            @Override
+            public void focusLost(FocusEvent e) {
+            }
         });
         textFilter.setMinimumSize(new java.awt.Dimension(150, 20));
         textFilter.setPreferredSize(new java.awt.Dimension(150, 20));
@@ -186,8 +196,19 @@ public class FilterPanel extends javax.swing.JPanel {
     }
 
     void clear() {
+        textFilter.setText("");
         lblCount.setText("");
         lblCount.setVisible(false);
+    }
+
+    void handleFilterShortcut(){
+        textFilter.requestFocusInWindow();
+    }
+
+    private void focusChanged (boolean hasFocus) {
+        if (hasFocus) {
+            textFilter.selectAll();
+        }
     }
 
     private JPopupMenu createFilterPopup() {

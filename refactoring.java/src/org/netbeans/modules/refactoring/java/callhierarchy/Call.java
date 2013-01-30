@@ -49,6 +49,7 @@ import java.util.*;
 import javax.lang.model.element.*;
 import javax.lang.model.type.*;
 import javax.swing.Icon;
+import javax.swing.JEditorPane;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.TreePathHandle;
@@ -185,7 +186,9 @@ final class Call implements CallDescriptor {
     }
 
     public static Call createRoot(CompilationInfo javac, TreePath selection, Element selectionElm, boolean isCallerGraph) {
-        return createReference(javac, selection, selectionElm, null, isCallerGraph, Collections.<TreePath>emptyList());
+        // supports go to source on the root of hierarchy tree  
+        final List<TreePath> occurrences = Arrays.asList(selection);
+        return createReference(javac, selection, selectionElm, null, isCallerGraph, occurrences);
     }
 
     public static Call createUsage(CompilationInfo javac, TreePath selection, Element selectionElm, Call parent, List<TreePath> occurrences) {
@@ -415,8 +418,11 @@ final class Call implements CallDescriptor {
 
                     @Override
                     public void run() {
-                        ec.getOpenedPanes()[0].setSelectionStart(begin);
-                        ec.getOpenedPanes()[0].setSelectionEnd(end);
+                        JEditorPane textC = NbDocument.findRecentEditorPane(ec);
+                        if(textC != null) {
+                            textC.setSelectionStart(begin);
+                            textC.setSelectionEnd(end);
+                        }
                     }
                 });
                 return true;

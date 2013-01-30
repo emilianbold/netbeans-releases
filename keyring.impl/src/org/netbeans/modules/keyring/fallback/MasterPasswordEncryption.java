@@ -44,10 +44,10 @@ package org.netbeans.modules.keyring.fallback;
 
 import java.awt.GraphicsEnvironment;
 import java.security.Key;
+import java.security.SecureRandom;
 import java.security.spec.AlgorithmParameterSpec;
 import java.security.spec.KeySpec;
 import java.util.Arrays;
-import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
@@ -99,7 +99,8 @@ public class MasterPasswordEncryption implements EncryptionProvider {
             String saltKey = "salt"; // NOI18N
             byte[] salt = prefs.getByteArray(saltKey, null);
             if (salt == null) {
-                salt = UUID.randomUUID().toString().getBytes();
+                salt = new byte[36];
+                new SecureRandom().nextBytes(salt);
                 prefs.putByteArray(saltKey, salt);
             }
             PARAM_SPEC = new PBEParameterSpec(salt, 20);

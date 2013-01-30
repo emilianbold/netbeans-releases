@@ -41,13 +41,31 @@
  */
 package org.netbeans.core;
 
+import java.io.File;
+import java.net.Proxy;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.LinkedList;
+import java.util.List;
+import junit.framework.Test;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
+import org.openide.util.Utilities;
 
 /**
  *
  * @author Jirka Rechtacek
  */
 public class ProxyAutoConfigTest extends NbTestCase {
+    
+    public static Test suite() {
+        return NbModuleSuite
+                .emptyConfiguration()
+                .gui(false)
+                .addTest(ProxyAutoConfigTest.class)
+                .suite();
+    }
+    
     public ProxyAutoConfigTest(String name) {
         super(name);
     }
@@ -74,6 +92,69 @@ public class ProxyAutoConfigTest extends NbTestCase {
     }
     
     public void testGetProxyAutoConfigWithInvalidURL() {
-        assertNull(ProxyAutoConfig.get("http:\\\\pac\\pac.txt"));
+        assertNotNull(ProxyAutoConfig.get("http:\\\\pac\\pac.txt"));
+    }
+    
+    public void testGetProxyAutoConfigWithRelativePath() {
+        assertNotNull(ProxyAutoConfig.get("http://pac/../pac/pac.txt"));
+    }
+    
+    public void testGetProxyAutoConfigWithLocalPAC() throws URISyntaxException {
+        List<String> pacFileLocations = new LinkedList<String>();
+        for (File pacFile : new File(getDataDir(), "pacFiles").listFiles()) {
+            pacFileLocations.add(pacFile.getAbsolutePath());
+            pacFileLocations.add("file://" + pacFile.getAbsolutePath());
+            pacFileLocations.add(pacFile.toURI().toString());
+        }
+        for (String pacFileLoc : pacFileLocations) {
+            ProxyAutoConfig pac = ProxyAutoConfig.get(pacFileLoc);
+            assertNotNull(pac);
+            URI uri = pac.getPacURI();
+            assertNotNull(uri);
+            assertNull(uri.getHost());
+            List<Proxy> proxies = pac.findProxyForURL(new URI("http://netbeans.org"));
+            assertEquals(1, proxies.size());
+            assertTrue(pacFileLoc + ": " + proxies.get(0).toString(), proxies.get(0).toString().startsWith("HTTP @ www-proxy.us.oracle.com/"));
+            System.setProperty("netbeans.system_http_proxy", "PAC " + pacFileLoc);
+            proxies = NbProxySelector.getDefault().select(new URI("http://netbeans.org"));
+            assertTrue(pacFileLoc + ": " + proxies.get(0).toString(), proxies.get(0).toString().startsWith("HTTP @ www-proxy.us.oracle.com/"));
+            
+            proxies = pac.findProxyForURL(new URI("https://netbeans.org"));
+            assertEquals(1, proxies.size());
+            assertTrue(pacFileLoc + ": " + proxies.get(0).toString(), proxies.get(0).toString().startsWith("HTTP @ www-proxy.us.oracle.com/"));
+            System.setProperty("netbeans.system_http_proxy", "PAC " + pacFileLoc);
+            proxies = NbProxySelector.getDefault().select(new URI("https://netbeans.org"));
+            assertTrue(pacFileLoc + ": " + proxies.get(0).toString(), proxies.get(0).toString().startsWith("HTTP @ www-proxy.us.oracle.com/"));
+            
+            proxies = pac.findProxyForURL(new URI("http://localhost"));
+            assertEquals(1, proxies.size());
+            assertEquals(pacFileLoc + ": " + proxies.get(0).toString(), "DIRECT", proxies.get(0).toString());
+            proxies = NbProxySelector.getDefault().select(new URI("http://localhost"));
+            assertEquals(pacFileLoc + ": " + proxies.get(0).toString(), "DIRECT", proxies.get(0).toString());
+        }
+    }
+    
+    public void testGetProxyAutoConfigWithLocalInvalidPAC() throws URISyntaxException {
+        List<String> pacFileLocations = new LinkedList<String>();
+        for (File pacFile : new File[] {
+            new File(getDataDir(), "pacFiles"),
+            new File(getDataDir(), "doesNotExist")
+        }) {
+            pacFileLocations.add(pacFile.getAbsolutePath());
+            pacFileLocations.add("file://" + pacFile.getAbsolutePath());
+            pacFileLocations.add(pacFile.toURI().toString());
+        }
+        for (String pacFileLoc : pacFileLocations) {
+            ProxyAutoConfig pac = ProxyAutoConfig.get(pacFileLoc);
+            assertNotNull(pac);
+            URI uri = pac.getPacURI();
+            assertNotNull(uri);
+            List<Proxy> proxies = pac.findProxyForURL(new URI("http://netbeans.org"));
+            assertEquals(1, proxies.size());
+            assertEquals("DIRECT", proxies.get(0).toString());
+            System.setProperty("netbeans.system_http_proxy", "PAC " + pacFileLoc);
+            proxies = NbProxySelector.getDefault().select(new URI("http://netbeans.org"));
+            assertEquals(pacFileLoc + ": " + proxies.get(0).toString(), "DIRECT", proxies.get(0).toString());
+        }
     }
 }

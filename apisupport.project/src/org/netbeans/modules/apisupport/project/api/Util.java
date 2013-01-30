@@ -200,6 +200,9 @@ public final class Util {
      * when ever there is need for non-java files creation or lookup,
      * use this method to get the right location for all projects. 
      * Eg. maven places resources not next to the java files.
+     * Please note that the method should not be used for 
+     * checking file existence. There can be multiple resource roots, the returned one
+     * is just the first in line. Use <code>getResource</code> instead in that case.
      */ 
     public static FileObject getResourceDirectory(Project prj) {
         Sources srcs = ProjectUtils.getSources(prj);
@@ -212,5 +215,29 @@ public final class Util {
         assert prov != null;
         return prov.getSourceDirectory();
     }
-
+    
+    /**
+     * check if resource of given path exists in the current project resources.
+     * 
+     * @param prj
+     * @param path as in <code>FileObject.getFileObject(path)</code>
+     * @return FileObject or null if not found.
+     * @since 1.57
+     */
+    public static FileObject getResource(Project prj, String path) {
+        Sources srcs = ProjectUtils.getSources(prj);
+        SourceGroup[] grps = srcs.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_RESOURCES);
+        if (grps != null && grps.length > 0) {
+            for (SourceGroup sg : grps) {
+                FileObject fo = sg.getRootFolder().getFileObject(path);
+                if (fo != null) {
+                    return fo;
+                }
+            }
+        }
+        // fallback to sources..
+        NbModuleProvider prov = prj.getLookup().lookup(NbModuleProvider.class);
+        assert prov != null;
+        return prov.getSourceDirectory().getFileObject(path);
+    }
 }

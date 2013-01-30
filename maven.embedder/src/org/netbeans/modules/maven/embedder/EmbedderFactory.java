@@ -44,6 +44,7 @@ package org.netbeans.modules.maven.embedder;
 
 import java.io.File;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
@@ -59,6 +60,10 @@ import org.codehaus.plexus.component.repository.exception.ComponentLookupExcepti
 import org.codehaus.plexus.logging.BaseLoggerManager;
 import org.codehaus.plexus.util.cli.CommandLineUtils;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.api.project.ui.ProjectGroup;
+import org.netbeans.api.project.ui.ProjectGroupChangeEvent;
+import org.netbeans.api.project.ui.ProjectGroupChangeListener;
 import org.netbeans.modules.maven.embedder.impl.ExtensionModule;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
@@ -79,6 +84,7 @@ public final class EmbedderFactory {
     private static final Logger LOG = Logger.getLogger(EmbedderFactory.class.getName());
 
     private static MavenEmbedder project;
+    private static AtomicBoolean projectLoaded = new AtomicBoolean(false);
     private static final Object PROJECT_LOCK = new Object();
     private static MavenEmbedder online;
     private static final Object ONLINE_LOCK = new Object();
@@ -94,6 +100,21 @@ public final class EmbedderFactory {
             }
         });
 
+    static {
+        OpenProjects.getDefault().addProjectGroupChangeListener(new ProjectGroupChangeListener() {
+
+            @Override
+            public void projectGroupChanging(ProjectGroupChangeEvent event) {
+                resetCachedEmbedders();
+            }
+
+            @Override
+            public void projectGroupChanged(ProjectGroupChangeEvent event) {
+                
+            }
+        });
+    }
+    
     private EmbedderFactory() {
     }
 
@@ -102,6 +123,7 @@ public final class EmbedderFactory {
      */
     public static void resetCachedEmbedders() {
         synchronized (PROJECT_LOCK) {
+            projectLoaded.set(false);
             project = null;
         }
         synchronized (ONLINE_LOCK) {
@@ -118,7 +140,19 @@ public final class EmbedderFactory {
     private static Preferences getPreferences() { // compatibility; used to be in MavenSettings
         return NbPreferences.root().node("org/netbeans/modules/maven");
     }
+    
+    private static Preferences getGroupedPreferences() { 
+        ProjectGroup grp = OpenProjects.getDefault().getActiveProjectGroup();
+        if (grp != null) {
+            return grp.preferencesForPackage(EmbedderFactory.class);
+        }
+        return null;
+    }
 
+    /**
+     * global settings value for maven installation root folder.
+     * @return 
+     */
     public static @NonNull File getMavenHome() {
         String str =  getPreferences().get(PROP_COMMANDLINE_PATH, null);
         if (str != null) {
@@ -127,6 +161,24 @@ public final class EmbedderFactory {
             return getDefaultMavenHome();
         }
     }
+    
+    /**
+     * maven home (installation root) taken from various places (global settings, project group settings ,...)
+     * @return 
+     * @since 2.32
+     */
+    public static @NonNull File getEffectiveMavenHome() {
+        Preferences grPref = getGroupedPreferences();
+        String str =  grPref != null ? grPref.get(PROP_COMMANDLINE_PATH, null) : null;
+        if (str == null) {
+            str = getPreferences().get(PROP_COMMANDLINE_PATH, null);
+        }
+        if (str != null) {
+            return FileUtil.normalizeFile(new File(str));
+        } else {
+            return getDefaultMavenHome();
+        }
+    }    
 
     public static void setMavenHome(File path) {
         File oldValue = getMavenHome();
@@ -172,7 +224,7 @@ public final class EmbedderFactory {
     }
 
     private static File getSettingsXml() {
-        return new File(getMavenHome(), "conf/settings.xml");
+        return new File(getEffectiveMavenHome(), "conf/settings.xml");
     }
 
     /**
@@ -262,6 +314,17 @@ public final class EmbedderFactory {
             rethrowThreadDeath(t2);
         }
     }
+    
+    /**
+     * a simple way to tell if projectEmbedder is loaded or not.
+     * just for performance reasons if someone wants to skip processing because of risk of loading the embedder.
+     * Mostly applies to global services only.
+     * @return 
+     * @since 2.35
+     */
+    public static boolean isProjectEmbedderLoaded() {
+        return projectLoaded.get();
+    }
 
     public static @NonNull MavenEmbedder getProjectEmbedder() {
         synchronized (PROJECT_LOCK) {
@@ -272,6 +335,7 @@ public final class EmbedderFactory {
                     rethrowThreadDeath(ex);
                     throw new IllegalStateException(ex);
                 }
+                projectLoaded.set(true);
             }
             return project;
         }
@@ -367,53 +431,6 @@ public final class EmbedderFactory {
     public static List<Model> createModelLineage(File pom, MavenEmbedder embedder) throws ModelBuildingException {
         return embedder.createModelLineage(pom);
     }
-
-
-//    /**
-//     * creates model lineage for the given pom file.
-//     * Useful to be able to locate where certain elements are defined.
-//     *
-//     * @param pom
-//     * @param embedder
-//     * @param allowStubs
-//     * @return
-//     */
-//    public static ModelLineage createModelLineage(File pom, MavenEmbedder embedder, boolean allowStubs) throws ProjectBuildingException {
-//        try {
-//            ModelLineageBuilder bldr = (ModelLineageBuilder) embedder.getPlexusContainer().lookup(ModelLineageBuilder.class);
-//            ProfileActivationContext context = new DefaultProfileActivationContext(new Properties(), true); //TODO shall we pass some execution props in here?
-//            ProfileManager manager = new DefaultProfileManager(embedder.getPlexusContainer(), context);
-//            DefaultProjectBuilderConfiguration conf = new DefaultProjectBuilderConfiguration();
-//            conf.setGlobalProfileManager(manager);
-//            conf.setExecutionProperties(new Properties());
-//            conf.setLocalRepository(embedder.getLocalRepository());
-//            conf.setUserProperties(new Properties());
-//            return bldr.buildModelLineage(pom, conf, new ArrayList(), allowStubs, true);
-//        } catch (ComponentLookupException ex) {
-//            Exceptions.printStackTrace(ex);
-//        }
-//        return new DefaultModelLineage();
-//    }
-
-//    private static void copyConfig(PlexusConfiguration old, XmlPlexusConfiguration conf) throws PlexusConfigurationException {
-//        conf.setValue(old.getValue());
-//        String[] attrNames = old.getAttributeNames();
-//        if (attrNames != null && attrNames.length > 0) {
-//            for (int i = 0; i < attrNames.length; i++) {
-//                conf.setAttribute(attrNames[i], old.getAttribute(attrNames[i]));
-//            }
-//        }
-//        if ("lifecycle".equals(conf.getName())) { //NOI18N
-//            conf.setAttribute("implementation", "org.apache.maven.lifecycle.Lifecycle"); //NOI18N
-//        }
-//        for (int i = 0; i < old.getChildCount(); i++) {
-//            PlexusConfiguration oldChild = old.getChild(i);
-//            XmlPlexusConfiguration newChild = new XmlPlexusConfiguration(oldChild.getName());
-//            conf.addChild(newChild);
-//            copyConfig(oldChild, newChild);
-//        }
-//    }
-
 
     /**
      * Maven assumes the env vars are included in execution properties with the "env." prefix.

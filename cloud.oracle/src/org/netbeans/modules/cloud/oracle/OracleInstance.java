@@ -111,6 +111,7 @@ public class OracleInstance {
     private String dbServiceName;
     private String onPremiseServerInstanceId;
     private String sdkFolder;
+    private String dataCenter;
     
     private ServerInstance serverInstance;
     
@@ -119,21 +120,22 @@ public class OracleInstance {
     /* GuardedBy(this) */
     private OracleJ2EEInstance j2eeInstance;
 
-    public OracleInstance(String name, String user, String password, String adminURL, String identityDomain, 
+    public OracleInstance(String name, String user, String password, String adminURL, String dataCenter, String identityDomain, 
           String javaServiceName, String dbServiceName, String onPremiseServerInstanceId,
           String sdkFolder) {
-        this(name, adminURL, identityDomain, javaServiceName, dbServiceName, onPremiseServerInstanceId, sdkFolder);
+        this(name, adminURL, dataCenter, identityDomain, javaServiceName, dbServiceName, onPremiseServerInstanceId, sdkFolder);
         this.userLoaded = true;
         this.user = user;
         this.passwordLoaded = true;
         this.password = password;
     }
     
-    public OracleInstance(String name, String adminURL, String identityDomain, 
+    public OracleInstance(String name, String adminURL, String dataCenter, String identityDomain, 
           String javaServiceName, String dbServiceName, String onPremiseServerInstanceId,
           String sdkFolder) {
         this.name = name;
         this.adminURL = adminURL;
+        this.dataCenter = dataCenter;
         this.identityDomain = identityDomain;
         this.javaServiceName = javaServiceName;
         this.dbServiceName = dbServiceName;
@@ -167,7 +169,6 @@ public class OracleInstance {
             ch = new char[]{' '};
         }
         String passwd = new String(ch);
-        assert passwd != null : "password is missing for "+name; // NOI18N
         
         synchronized (this) {
             if (!passwordLoaded) {
@@ -192,7 +193,6 @@ public class OracleInstance {
             ch = new char[]{' '};
         }
         String userName = new String(ch);
-        assert userName != null : "username is missing for "+name; // NOI18N
         
         synchronized (this) {
             if (!userLoaded) {
@@ -227,7 +227,7 @@ public class OracleInstance {
         sdkFolder = s;
     }
     
-    public void setPlatform(ApplicationManager platform) {
+    public synchronized void setPlatform(ApplicationManager platform) {
         this.platform = platform;
     }
 
@@ -355,12 +355,7 @@ public class OracleInstance {
         OutputWriter owe = null;
         try {
             assert f.exists() : "archive does not exist: "+f;
-            String name = "";
             FileObject fo = FileUtil.toFileObject(f);
-            Project p = FileOwnerQuery.getOwner(fo);
-            if (p != null) {
-                name = ProjectUtils.getInformation(p).getDisplayName();
-            }
             String tabName = NbBundle.getMessage(OracleInstance.class, "MSG_DeploymentOutput", cloudInstanceName);
             InputOutput io = IOProvider.getDefault().getIO(tabName, false);
             if (io.isClosed()) {
@@ -383,7 +378,6 @@ public class OracleInstance {
             if ("EAR".equalsIgnoreCase(fo.getExt())) { // NOI18N
                 at = ApplicationType.EAR;
             }
-            String ctx = CommandBasedDeployer.readWebContext(fo);
             boolean redeploy = false;
             List<Application> apps = am.listApplications(identityDomain, serviceName);
             for (Application app : apps) {
@@ -403,7 +397,8 @@ public class OracleInstance {
                 jt = am.deployApplication(identityDomain, serviceName, appId, at, is);
                 LOG.log(Level.INFO, "deployed as "+jt.getJobId()+" "+jt); // NOI18N
             }
-            
+            is.close();
+
             if (po != null) {
                 po.updateDepoymentStage(NbBundle.getMessage(OracleInstance.class, redeploy ? "MSG_REDEPLOYING_APP" : "MSG_DEPLOYING_APP"));
                 ow.print(NbBundle.getMessage(OracleInstance.class, redeploy ? "MSG_REDEPLOYING_APP" : "MSG_DEPLOYING_APP"));
@@ -418,7 +413,9 @@ public class OracleInstance {
                 } catch (InterruptedException ex) {
                     Exceptions.printStackTrace(ex);
                 }
-                po.updateDepoymentStage(NbBundle.getMessage(OracleInstance.class, redeploy ? "MSG_REDEPLOYING_APP" : "MSG_DEPLOYING_APP"));
+                if (po != null) {
+                    po.updateDepoymentStage(NbBundle.getMessage(OracleInstance.class, redeploy ? "MSG_REDEPLOYING_APP" : "MSG_DEPLOYING_APP"));
+                }
                 Job latestJob = am.describeJob(jt.getJobId());
                 JobStatus jobStatus = latestJob.getStatus();
                 numberOfJobsToIgnore = dumpLog(am, ow, owe, latestJob, numberOfJobsToIgnore);
@@ -579,6 +576,10 @@ public class OracleInstance {
             }
         }
         return sb.toString();
+    }
+
+    public String getDataCenter() {
+        return dataCenter;
     }
     
 }

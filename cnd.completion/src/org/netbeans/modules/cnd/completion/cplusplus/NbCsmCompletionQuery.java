@@ -51,6 +51,7 @@ import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmClassForwardDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmConstructor;
@@ -78,7 +79,6 @@ import org.netbeans.modules.cnd.completion.csm.CompletionResolverImpl;
 import org.netbeans.modules.cnd.completion.impl.xref.FileReferencesContext;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.utils.MIMENames;
-import org.netbeans.modules.editor.NbEditorDocument;
 import org.openide.filesystems.FileObject;
 import org.openide.text.NbDocument;
 
@@ -125,7 +125,7 @@ public class NbCsmCompletionQuery extends CsmCompletionQuery {
             BaseDocument bDoc = getBaseDocument();
             if (bDoc != null) {
                 this.csmFile = CsmUtilities.getCsmFile(bDoc, true, false);
-                String mimeType = (String) bDoc.getProperty(NbEditorDocument.MIME_TYPE_PROP); 
+                String mimeType = DocumentUtilities.getMimeType(bDoc);
                 if ("text/x-dialog-binding".equals(mimeType)) { // NOI18N
                     // this is context based code completion
                     InputAttributes inputAttributes = (InputAttributes) bDoc.getProperty(InputAttributes.class);

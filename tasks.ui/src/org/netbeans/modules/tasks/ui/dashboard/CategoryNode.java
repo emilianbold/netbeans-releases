@@ -42,9 +42,11 @@
 package org.netbeans.modules.tasks.ui.dashboard;
 
 import java.awt.*;
+import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Level;
 import javax.swing.*;
 import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.tasks.ui.LinkButton;
@@ -83,22 +85,22 @@ public class CategoryNode extends TaskContainerNode implements Comparable<Catego
     public CategoryNode(Category category, boolean opened, boolean refresh) {
         super(refresh, opened, null, category.getName());
         this.category = category;
-        updateNodes();
     }
 
     @Override
-    protected List<Issue> load() {
-        if (isRefresh()) {
-            category.refresh();
-            updateNodes();
-            setRefresh(false);
-        }
-        return new ArrayList<Issue>(category.getTasks());
+    void refreshTaskContainer() {
+        category.refresh();
     }
 
     @Override
     List<Issue> getTasks() {
-        return category.getTasks();
+        List<Issue> tasks = Collections.emptyList();
+        try {
+            tasks = new ArrayList<Issue>(category.getTasks());
+        } catch (Throwable throwable) {
+            handleError(throwable);
+        }
+        return tasks;
     }
 
     @Override
@@ -132,6 +134,11 @@ public class CategoryNode extends TaskContainerNode implements Comparable<Catego
 
     @Override
     protected JComponent createComponent(List<Issue> data) {
+        if (isError()) {
+            setError(false);
+            return null;
+        }
+        updateNodes(data);
         panel = new JPanel(new GridBagLayout());
         panel.setOpaque(false);
         synchronized (LOCK) {

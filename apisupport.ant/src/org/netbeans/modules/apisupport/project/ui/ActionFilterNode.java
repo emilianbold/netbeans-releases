@@ -127,7 +127,7 @@ class ActionFilterNode extends FilterNode {
     public Action getPreferredAction() {
         if (mode == MODE_FILE) {
             Action[] actions = initActions();
-            if (actions.length > 0 && (actions[0] instanceof OpenAction || actions[0] instanceof EditAction )) {
+            if (actions.length > 0 && (isOpenAction(actions[0]))) {
                 return actions[0];
             }
         }
@@ -139,7 +139,7 @@ class ActionFilterNode extends FilterNode {
             List<Action> result = new ArrayList<Action>(2);
             if (mode == MODE_FILE) {
                 for (Action superAction : super.getActions(false)) {
-                    if (superAction instanceof OpenAction || superAction instanceof EditAction) {
+                    if (isOpenAction(superAction)) {
                         result.add(superAction);
                     }
                 }
@@ -147,7 +147,7 @@ class ActionFilterNode extends FilterNode {
             } else if (mode == MODE_PACKAGE) {
                 result.add(SystemAction.get(ShowJavadocAction.class));
                 for (Action superAction : super.getActions(false)) {
-                    if (superAction instanceof FindAction) {
+                    if (isFindAction(superAction)) {
                         result.add(superAction);
                     }
                 }
@@ -155,6 +155,32 @@ class ActionFilterNode extends FilterNode {
             actionCache = result.toArray(new Action[result.size()]);
         }
         return actionCache;
+    }
+    
+    private static boolean isOpenAction(final Action action) {
+        if (action == null) {
+            return false;
+        }
+        if (action instanceof OpenAction || action instanceof EditAction) {
+            return true;
+        }
+        if ("org.netbeans.api.actions.Openable".equals(action.getValue("type"))) { //NOI18N
+            return true;
+        }
+        return false;
+    }
+    
+    private static boolean isFindAction(final Action action) {
+        if (action == null) {
+            return false;
+        }
+        if (action instanceof FindAction) {
+            return true;
+        }
+        if ("org.openide.actions.FindAction".equals(action.getValue("key"))) { //NOI18N
+            return true;
+        }
+        return false;
     }
     
     private static class ActionFilterChildren extends FilterNode.Children {

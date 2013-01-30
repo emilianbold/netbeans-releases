@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.23
+#Version 1.26.1
 
 CLSS public java.lang.Object
 cons public init()
@@ -68,15 +68,27 @@ hfds name,version
 
 CLSS public final org.netbeans.api.java.platform.Specification
 cons public init(java.lang.String,org.openide.modules.SpecificationVersion)
+ anno 1 org.netbeans.api.annotations.common.NullAllowed()
+ anno 2 org.netbeans.api.annotations.common.NullAllowed()
+cons public init(java.lang.String,org.openide.modules.SpecificationVersion,java.lang.String,org.netbeans.api.java.platform.Profile[])
+ anno 1 org.netbeans.api.annotations.common.NullAllowed()
+ anno 2 org.netbeans.api.annotations.common.NullAllowed()
+ anno 3 org.netbeans.api.annotations.common.NullAllowed()
+ anno 4 org.netbeans.api.annotations.common.NullAllowed()
 cons public init(java.lang.String,org.openide.modules.SpecificationVersion,org.netbeans.api.java.platform.Profile[])
+ anno 1 org.netbeans.api.annotations.common.NullAllowed()
+ anno 2 org.netbeans.api.annotations.common.NullAllowed()
+ anno 3 org.netbeans.api.annotations.common.NullAllowed()
 meth public boolean equals(java.lang.Object)
 meth public final java.lang.String getName()
 meth public final org.netbeans.api.java.platform.Profile[] getProfiles()
 meth public final org.openide.modules.SpecificationVersion getVersion()
 meth public int hashCode()
+meth public java.lang.String getDisplayName()
+ anno 0 org.netbeans.api.annotations.common.NonNull()
 meth public java.lang.String toString()
 supr java.lang.Object
-hfds name,profiles,version
+hfds displayName,name,profiles,version
 
 CLSS public abstract org.netbeans.spi.java.platform.CustomPlatformInstall
 cons public init()

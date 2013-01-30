@@ -164,7 +164,7 @@ public class ProgressObjectImpl implements ProgressObject {
         });
     }
     
-    private class TargetModuleIDImpl implements TargetModuleID {
+    private static class TargetModuleIDImpl implements TargetModuleID {
 
         private String url;
         private String id;

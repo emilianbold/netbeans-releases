@@ -44,19 +44,17 @@
 
 package org.netbeans.modules.java.hints.errors;
 
-import org.netbeans.modules.java.hints.errors.AddCast;
+import com.sun.source.tree.BinaryTree;
+import com.sun.source.tree.ConditionalExpressionTree;
 import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.Tree;
-import java.io.IOException;
+import com.sun.source.util.TreePath;
 import javax.lang.model.type.TypeMirror;
-import org.netbeans.api.java.source.Task;
+import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.TreeMaker;
-import org.netbeans.api.java.source.JavaSource.Phase;
-import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.spi.editor.hints.ChangeInfo;
-import org.netbeans.spi.editor.hints.Fix;
-import org.openide.util.Exceptions;
+import org.netbeans.api.java.source.TreePathHandle;
+import org.netbeans.api.java.source.TypeMirrorHandle;
+import org.netbeans.spi.java.hints.JavaFix;
 import org.openide.util.NbBundle;
 
 
@@ -64,57 +62,46 @@ import org.openide.util.NbBundle;
  *
  * @author Jan Lahoda
  */
-final class AddCastFix implements Fix {
+final class AddCastFix extends JavaFix {
     
     private JavaSource js;
     private String treeName;
     private String type;
-    private int position;
-    private boolean wrapWithBrackets;
+    private final TypeMirrorHandle<TypeMirror> targetType;
+    private final TreePathHandle idealTypeTree;
     
-    public AddCastFix(JavaSource js, String treeName, String type, int position, boolean wrapWithBrackets) {
-        this.js = js;
-        this.treeName = treeName;
-        this.type = type;
-        this.position = position;
-        this.wrapWithBrackets = wrapWithBrackets;
+    public AddCastFix(CompilationInfo info, TreePath expression, TreePath idealTypeTree, TypeMirror targetType) {
+        super(info, expression);
+        this.idealTypeTree = idealTypeTree != null ? TreePathHandle.create(idealTypeTree, info) : null;
+        this.targetType = TypeMirrorHandle.create(targetType);
+        this.treeName = Utilities.shortDisplayName(info, (ExpressionTree) expression.getLeaf());
+        this.type = org.netbeans.modules.editor.java.Utilities.getTypeName(info, targetType, false).toString();
     }
     
-    public ChangeInfo implement() {
-        try {
-            js.runModificationTask(new Task<WorkingCopy>() {
-
-                public void run(final WorkingCopy working) throws IOException {
-                    working.toPhase(Phase.RESOLVED);
-                    TypeMirror[] tm = new TypeMirror[1];
-                    Tree[] tmTree = new Tree[1];
-                    ExpressionTree[] expression = new ExpressionTree[1];
-                    Tree[] leaf = new Tree[1];
-                    
-                    AddCast.computeType(working, position, tm, tmTree, expression, leaf);
-                    
-                    if (tm[0] == null) {
-                        //cannot resolve anymore:
-                        return ;
-                    }
-                    
-                    TreeMaker make = working.getTreeMaker();
-                    ExpressionTree toCast = expression[0];
-                    
-                    if (wrapWithBrackets) {
-                        toCast = make.Parenthesized(toCast);
-                    }
-                    
-                    ExpressionTree cast = make.TypeCast(tmTree[0] != null ? tmTree[0] : make.Type(tm[0]), toCast);
-                    
-                    working.rewrite(expression[0], cast);
-                }
-            }).commit();
-        } catch (IOException e) {
-            Exceptions.printStackTrace(e);
+    @Override
+    protected void performRewrite(TransformationContext ctx) throws Exception {
+        TypeMirror resolvedTargetType = targetType.resolve(ctx.getWorkingCopy());
+        
+        if (resolvedTargetType == null) {
+            //cannot resolve anymore:
+            return;
         }
         
-        return null;
+        TreePath resolvedIdealTypeTree = idealTypeTree != null ? idealTypeTree.resolve(ctx.getWorkingCopy()) : null;
+        
+        TreeMaker make = ctx.getWorkingCopy().getTreeMaker();
+        ExpressionTree toCast = (ExpressionTree) ctx.getPath().getLeaf();
+
+        Class interf = toCast.getKind().asInterface();
+        boolean wrapWithBrackets = interf == BinaryTree.class || interf == ConditionalExpressionTree.class;
+
+        if (/*TODO: replace with JavaFixUtilities.requiresparenthesis*/wrapWithBrackets) {
+            toCast = make.Parenthesized(toCast);
+        }
+
+        ExpressionTree cast = make.TypeCast(resolvedIdealTypeTree != null ? resolvedIdealTypeTree.getLeaf() : make.Type(resolvedTargetType), toCast);
+
+        ctx.getWorkingCopy().rewrite(ctx.getPath().getLeaf(), cast);
     }
     
     public String getText() {

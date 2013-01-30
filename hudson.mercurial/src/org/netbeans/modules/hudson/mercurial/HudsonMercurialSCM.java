@@ -81,13 +81,18 @@ public class HudsonMercurialSCM implements HudsonSCM {
 
     static final Logger LOG = Logger.getLogger(HudsonMercurialSCM.class.getName());
 
-    @Messages({"# {0} - repository location", "warning.local_repo={0} will only be accessible from a Hudson server on the same machine."})
+    @Messages({
+        "# {0} - repository location",
+        "warning.local_repo={0} will only be accessible from a Hudson server on the same machine.",
+        "error.repo.in.parent=Cannot find repository metadata in the project folder. Please configure the build manually."
+    })
     public Configuration forFolder(File folder) {
         // XXX could also permit projects as subdirs of Hg repos (lacking SPI currently)
-        final URI source = getDefaultPull(org.openide.util.Utilities.toURI(folder));
-        if (source == null) {
+        final FindDefaultPullResult result = findDefaultPull(folder);
+        if (!result.found()) {
             return null;
         }
+        final URI source = result.getDefaultPull();
         final String repo;
         if ("file".equals(source.getScheme())) { // NOI18N
             repo = org.openide.util.Utilities.toFile(source).getAbsolutePath();
@@ -105,13 +110,35 @@ public class HudsonMercurialSCM implements HudsonSCM {
                 Helper.addTrigger(doc);
             }
             public ConfigurationStatus problems() {
-                if (!source.isAbsolute() || "file".equals(source.getScheme())) { // NOI18N
+                if (result.isFoundInParenFolder()) {
+                    return ConfigurationStatus.withError(error_repo_in_parent());
+                } else if (!source.isAbsolute() || "file".equals(source.getScheme())) { // NOI18N
                     return ConfigurationStatus.withWarning(warning_local_repo(repo));
                 } else {
                     return null;
                 }
             }
         };
+    }
+
+    /**
+     * Find default pull URL in a (project) folder and its ancestor folders.
+     */
+    private FindDefaultPullResult findDefaultPull(File folder) {
+        boolean inParent = false;
+        URI defaultPull = null;
+        File repoRoot = folder;
+        while (repoRoot != null) {
+            defaultPull = getDefaultPull(
+                    org.openide.util.Utilities.toURI(repoRoot));
+            if (defaultPull != null) {
+                break;
+            } else {
+                repoRoot = repoRoot.getParentFile();
+                inParent = true;
+            }
+        }
+        return new FindDefaultPullResult(repoRoot, defaultPull, inParent);
     }
 
     public String translateWorkspacePath(HudsonJob job, String workspacePath, File localRoot) {
@@ -273,4 +300,44 @@ public class HudsonMercurialSCM implements HudsonSCM {
         }
     }
 
+    /**
+     * Result of finding the default pull. Instances of this class are created
+     * by method {@link #findDefaultPull(java.io.File)}
+     */
+    private static class FindDefaultPullResult {
+
+        private final File localRepoFolder;
+        private final URI defaultPull;
+        private final boolean foundInParenFolder;
+
+        public FindDefaultPullResult(File localRepoFolder, URI defaultPull,
+                boolean foundInParenFolder) {
+            this.localRepoFolder = localRepoFolder;
+            this.defaultPull = defaultPull;
+            this.foundInParenFolder = foundInParenFolder;
+        }
+
+        public File getLocalRepoFolder() {
+            return localRepoFolder;
+        }
+
+        public URI getDefaultPull() {
+            return defaultPull;
+        }
+
+        /**
+         * @return False if the folder is root of the repository, true if the
+         * folder is a subfolder of the repository root.
+         */
+        public boolean isFoundInParenFolder() {
+            return foundInParenFolder;
+        }
+
+        /**
+         * @return True if default pull was found, false otherwise.
+         */
+        public boolean found() {
+            return defaultPull != null;
+        }
+    }
 }

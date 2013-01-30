@@ -53,6 +53,7 @@ import java.util.List;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.artifact.resolver.AbstractArtifactResolutionException;
+import org.apache.maven.repository.RepositorySystem;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.codehaus.plexus.util.IOUtil;
 import org.netbeans.api.annotations.common.NonNull;
@@ -114,9 +115,9 @@ public final class RepositoryUtil {
         if (repo != null && repo.isRemoteDownloadable()) {
             remotes = Collections.singletonList(online.createRemoteRepository(repo.getRepositoryUrl(), repo.getId()));
         } else {
-            remotes = Collections.emptyList();
+            remotes = Collections.singletonList(online.createRemoteRepository(RepositorySystem.DEFAULT_REMOTE_REPO_URL, RepositorySystem.DEFAULT_REMOTE_REPO_ID));
         }
-        online.resolve(createArtifact(info), remotes, online.getLocalRepository());
+        online.resolve(a, remotes, online.getLocalRepository());
         return a.getFile();
     }
     

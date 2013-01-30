@@ -64,6 +64,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ItemConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.NamedRunnable;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -91,7 +92,6 @@ public class ConfigurationXMLReader extends XMLDocReader {
         // LATER configurationDescriptor = new
     }
 
-
     /*
      * was: readFromDisk
      */
@@ -99,7 +99,7 @@ public class ConfigurationXMLReader extends XMLDocReader {
         final String tag;
         final FileObject xml;
         // Try first new style file
-        FileObject fo = projectDirectory.getFileObject("nbproject/configurations.xml"); // NOI18N
+        FileObject fo = projectDirectory.getFileObject(MakeConfiguration.NBPROJECT_FOLDER + '/' + MakeConfiguration.CONFIGURATIONS_XML); // NOI18N
         if (fo == null) {
             // then try old style file....
             tag = CommonConfigurationXMLCodec.PROJECT_DESCRIPTOR_ELEMENT;
@@ -149,22 +149,21 @@ public class ConfigurationXMLReader extends XMLDocReader {
 
         boolean success;
 
-        XMLDecoder decoder =
-                new ConfigurationXMLCodec(tag,
-                projectDirectory,
-                configurationDescriptor,
-                relativeOffset);
+        XMLDecoder decoder = new ConfigurationXMLCodec(tag, projectDirectory, configurationDescriptor, relativeOffset);
         registerXMLDecoder(decoder);
         InputStream inputStream = null;
         try {
             inputStream = xml.getInputStream();
             success = read(inputStream, xml.getPath());
+            if (getMasterComment() != null && project instanceof MakeProject) {
+                ((MakeProject) project).setConfigurationXMLComment(getMasterComment());
+            }
         } finally {
+            deregisterXMLDecoder(decoder);
             if (inputStream != null) {
                 inputStream.close();
             }
         }
-        deregisterXMLDecoder(decoder);
 
         if (!success) {
             displayErrorDialog();
@@ -176,23 +175,22 @@ public class ConfigurationXMLReader extends XMLDocReader {
         // Now for the auxiliary/private entry
         //
 
-        xml = projectDirectory.getFileObject("nbproject/private/configurations.xml"); // NOI18N
+        xml = projectDirectory.getFileObject(MakeConfiguration.NBPROJECT_PRIVATE_FOLDER + '/' + MakeConfiguration.CONFIGURATIONS_XML); // NOI18N
         if (xml != null) {
             // Don't post an error.
             // It's OK to sometimes not have a private config
-            XMLDecoder auxDecoder =
-                    new AuxConfigurationXMLCodec(tag, configurationDescriptor);
+            XMLDecoder auxDecoder = new AuxConfigurationXMLCodec(tag, configurationDescriptor);
             registerXMLDecoder(auxDecoder);
             inputStream = null;
             try {
                 inputStream = xml.getInputStream();
                 success = read(inputStream, projectDirectory.getName());
             } finally {
+                deregisterXMLDecoder(auxDecoder);
                 if (inputStream != null) {
                     inputStream.close();
                 }
             }
-            deregisterXMLDecoder(auxDecoder);
 
             if (!success) {
                 return null;
@@ -212,12 +210,23 @@ public class ConfigurationXMLReader extends XMLDocReader {
         for (Configuration configuration : configurationDescriptor.getConfs().getConfigurations()) {
             for (Item item : projectItems) {
                 if (item.getItemConfiguration(configuration) == null) {
-                    configuration.addAuxObject(new ItemConfiguration(configuration, item));
+                    ItemConfiguration itemConfiguration = new ItemConfiguration(configuration, item);
+                    configuration.addAuxObject(itemConfiguration);
+                    // in version with inverted serialization all items not seen 
+                    // during deserialization of current 'configuration' are 
+                    // considered as excluded by default => set exclude state to 'true'
+                    if (configurationDescriptor.getVersion() >= CommonConfigurationXMLCodec.VERSION_WITH_INVERTED_SERIALIZATION) {
+                        itemConfiguration.getExcluded().setValue(true);
+                    }
                 }
             }
         }
 
-        attachListeners(configurationDescriptor);
+        boolean schemeWithExcludedItems = false;
+        if (configurationDescriptor.getVersion() >= 0 && configurationDescriptor.getVersion() < CommonConfigurationXMLCodec.VERSION_WITH_INVERTED_SERIALIZATION) {
+            schemeWithExcludedItems = true;
+        }
+        prepareFoldersTask(configurationDescriptor, schemeWithExcludedItems);
         configurationDescriptor.setState(State.READY);
 
         // Some samples are generated without generated makefile. Don't mark these 'not modified'. Then
@@ -236,21 +245,27 @@ public class ConfigurationXMLReader extends XMLDocReader {
         // Check version and display deprecation warning if too old
         if (configurationDescriptor.getVersion() >= 0 && configurationDescriptor.getVersion() <= DEPRECATED_VERSIONS) {
             final String message = NbBundle.getMessage(ConfigurationXMLReader.class, "OLD_VERSION_WARNING", projectDirectory.getPath()); // NOI18N
-            Runnable warning = new Runnable() {
+            if (CndUtils.isStandalone()) {
+                System.err.print(message);
+                System.err.println(NbBundle.getMessage(ConfigurationXMLReader.class, "OLD_VERSION_WARNING_AUTO"));
+                configurationDescriptor.setModified();
+            } else {
+                Runnable warning = new Runnable() {
 
-                @Override
-                public void run() {
-                    NotifyDescriptor nd = new NotifyDescriptor(message,
-                            NbBundle.getMessage(ConfigurationXMLReader.class, "CONVERT_DIALOG_TITLE"), NotifyDescriptor.YES_NO_OPTION, // NOI18N
-                            NotifyDescriptor.QUESTION_MESSAGE,
-                            null, NotifyDescriptor.YES_OPTION);
-                    Object ret = DialogDisplayer.getDefault().notify(nd);
-                    if (ret == NotifyDescriptor.YES_OPTION) {
-                        configurationDescriptor.setModified();
+                    @Override
+                    public void run() {
+                        NotifyDescriptor nd = new NotifyDescriptor(message,
+                                NbBundle.getMessage(ConfigurationXMLReader.class, "CONVERT_DIALOG_TITLE"), NotifyDescriptor.YES_NO_OPTION, // NOI18N
+                                NotifyDescriptor.QUESTION_MESSAGE,
+                                null, NotifyDescriptor.YES_OPTION);
+                        Object ret = DialogDisplayer.getDefault().notify(nd);
+                        if (ret == NotifyDescriptor.YES_OPTION) {
+                            configurationDescriptor.setModified();
+                        }
                     }
-                }
-            };
-            SwingUtilities.invokeLater(warning);
+                };
+                SwingUtilities.invokeLater(warning);
+            }
         }
 
         if (configurationDescriptor.isModified()) {
@@ -268,27 +283,37 @@ public class ConfigurationXMLReader extends XMLDocReader {
     }
 
     // Attach listeners to all disk folders
-    private void attachListeners(final MakeConfigurationDescriptor configurationDescriptor) {
-        Task task = REQUEST_PROCESSOR.post(new Runnable() {
-
+    private void prepareFoldersTask(final MakeConfigurationDescriptor configurationDescriptor, final boolean oldSchemeWasRestored) {
+        Task task = REQUEST_PROCESSOR.create(new Runnable() {
+            // retstore in only scheme only once, then switch to new scheme
+            private volatile boolean restoreInOldScheme = oldSchemeWasRestored;
             @Override
             public void run() {
+                String postfix = configurationDescriptor.getBaseDir();
+                String threadName = "Attach listeners and refresh content of all disk folders " + postfix; // NOI18N
+                LOGGER.log(Level.FINE, "Start {0}", threadName);
                 long time = System.currentTimeMillis();
-                LOGGER.log(Level.FINE, "Start attach folder listeners");
                 String oldName = Thread.currentThread().getName();
                 try {
                     //boolean currentState = configurationDescriptor.getModified();
-                    Thread.currentThread().setName("Attach listeners to all disk folders"); // NOI18N
+                    Thread.currentThread().setName(threadName); // NOI18N
                     List<Folder> firstLevelFolders = configurationDescriptor.getLogicalFolders().getFolders();
                     for (Folder f : firstLevelFolders) {
                         if (f.isDiskFolder()) {
-                            // need to set modified descriptor for store new/deleted items in the folder
-                            f.refreshDiskFolder(true);
+                            if (restoreInOldScheme) {
+                                LOGGER.log(Level.FINE, "Restore based on old scheme {0}", f);
+                                restoreInOldScheme = false;
+                                f.refreshDiskFolderAfterRestoringOldScheme();
+                            } else {
+                                LOGGER.log(Level.FINE, "Restore based on new scheme {0}", f);
+                                f.refreshDiskFolder();
+                            }
                             f.attachListeners();
                         }
                     }
                     //configurationDescriptor.setModified(currentState);
-                    LOGGER.log(Level.FINE, "End attach folder listeners, time {0}ms.", (System.currentTimeMillis() - time));
+                    LOGGER.log(Level.FINE, "End attach listeners and refresh content of all disk folders, time {0}ms. {1}", 
+                            new Object[] {(System.currentTimeMillis() - time), postfix});
                 } finally {
                     // restore thread name - it might belong to the pool
                     Thread.currentThread().setName(oldName);
@@ -298,6 +323,7 @@ public class ConfigurationXMLReader extends XMLDocReader {
         // Refresh disk folders in background process
         // revert changes bacause opening project time is increased.
         //task.waitFinished(); // See IZ https://netbeans.org/bugzilla/show_bug.cgi?id=184260
+        configurationDescriptor.setFoldersTask(task);
     }
 
     // interface XMLDecoder

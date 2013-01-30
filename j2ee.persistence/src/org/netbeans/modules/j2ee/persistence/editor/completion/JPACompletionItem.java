@@ -242,16 +242,16 @@ public abstract class JPACompletionItem implements CompletionItem {
                         completion.hideDocumentation();
                     }
                     break;
-                case ';':
-                case ',':
-                case '(':
-                    completion.hideCompletion();
-                    completion.hideDocumentation();
-                case '.':
-                    if (defaultAction((JTextComponent) evt.getSource(), Character.toString(evt.getKeyChar()))) {
-                        evt.consume();
-                        break;
-                    }
+//                case ';': //TODO, can special handling be added even if we press these buttons within a literal?
+//                case ',':
+//                case '(':
+//                    completion.hideCompletion();
+//                    completion.hideDocumentation();
+//                case '.':
+//                    if (defaultAction((JTextComponent) evt.getSource(), Character.toString(evt.getKeyChar()))) {
+//                        evt.consume();
+//                        break;
+//                    }
             }
         }
     }
@@ -539,12 +539,17 @@ public abstract class JPACompletionItem implements CompletionItem {
         private final ContentAssistProposals caProposal;
         private final int internalOffset;
         private int customOffset = 0;
+        private boolean toQuote = true;
 
-        public JPQLElementItem(String name, boolean quote, int substituteOffset, int internalOffset, String valueInitial, ContentAssistProposals buildContentAssistProposals) {
+        public JPQLElementItem(String name, boolean quote, boolean toQuote, int substituteOffset, int internalOffset, String valueInitial, ContentAssistProposals buildContentAssistProposals) {
             super(name, quote, substituteOffset);
             this.initialvalue = valueInitial;
             this.caProposal = buildContentAssistProposals;
             this.internalOffset = internalOffset;
+            this.toQuote = toQuote;
+        }
+        public JPQLElementItem(String name, boolean quote, int substituteOffset, int internalOffset, String valueInitial, ContentAssistProposals buildContentAssistProposals) {
+            this(name, quote, true, substituteOffset, internalOffset, valueInitial, buildContentAssistProposals);
         }
 
         @Override
@@ -564,7 +569,7 @@ public abstract class JPACompletionItem implements CompletionItem {
 
         @Override
         public int getCutomPosition() {
-            return customOffset + 1;
+            return customOffset + (toQuote ? 1 : 0);
         }
 
         @Override
@@ -595,18 +600,18 @@ public abstract class JPACompletionItem implements CompletionItem {
                     }
 
                     //dirty hack for @Table(name=CUS|
-                    if (!text.startsWith("\"")) {
+                    if (toQuote && !text.startsWith("\"")) {
                         text = quoteText(text);
                     }
 
                     //check if there is already an end quote
                     char ch = doc.getText(offset + len, 1).charAt(0);
-                    if (ch == '"') {
+                    if (toQuote && ch == '"') {
                         //remove also this end quote since the inserted value is always quoted
                         len++;
                     }
 
-                    doc.remove(offset, getCutomPosition() - ((text.length() - 2) - initialvalue.length()));
+                    doc.remove(offset, getCutomPosition() - ((text.length() - (toQuote ? 2 : 0)) - initialvalue.length()));
                     doc.insertString(offset, text.substring(0, getCutomPosition()), null);
                 } catch (BadLocationException e) {
                     // Can't update
@@ -980,14 +985,12 @@ public abstract class JPACompletionItem implements CompletionItem {
 
         private static final String FIELD_ICON = "org/netbeans/modules/editor/resources/completion/field_16.png"; //NOI18N
         private ElementHandle<VariableElement> elemHandle;
-        private boolean deprecated;
         private String displayName;
 
         public ClassPropertyItem(int substitutionOffset, VariableElement elem, ElementHandle<VariableElement> elemHandle,
                 boolean deprecated) {
             super(substitutionOffset);
             this.elemHandle = elemHandle;
-            this.deprecated = deprecated;
             this.displayName = elem.getSimpleName().toString();
         }
 
@@ -1036,6 +1039,7 @@ public abstract class JPACompletionItem implements CompletionItem {
 
                         js.runUserActionTask(new Task<CompilationController>() {
 
+                            @Override
                             public void run(CompilationController cc) throws Exception {
                                 cc.toPhase(JavaSource.Phase.RESOLVED);
                                 Element element = elemHandle.resolve(cc);
@@ -1125,6 +1129,7 @@ public abstract class JPACompletionItem implements CompletionItem {
             this.displayText = displayText;
         }
 
+        @Override
         public int getSortPriority() {
             if (displayText.startsWith("--")) // NOI18N
             // The entry such as "--Enter your custom class--" should be the last 
@@ -1144,14 +1149,17 @@ public abstract class JPACompletionItem implements CompletionItem {
             }
         }
 
+        @Override
         public CharSequence getSortText() {
             return displayText;
         }
 
+        @Override
         public CharSequence getInsertPrefix() {
             return displayText;
         }
 
+        @Override
         public String getDisplayText() {
             return displayText;
         }

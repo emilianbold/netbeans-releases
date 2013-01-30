@@ -44,8 +44,10 @@ package org.netbeans.modules.html.editor.lib;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import org.netbeans.editor.BaseElement;
 import org.netbeans.modules.html.editor.lib.api.ProblemDescription;
 import org.netbeans.modules.html.editor.lib.api.elements.*;
+import org.netbeans.modules.html.editor.lib.plain.TextElement;
 import org.netbeans.modules.web.common.api.LexerUtils;
 import org.openide.util.CharSequences;
 
@@ -54,17 +56,71 @@ import org.openide.util.CharSequences;
  * @author marekfukala
  */
 public class XmlSTElements {
+    
+    static abstract class ElementBase implements Element {
 
-    static abstract class NamedElement implements Named, Element {
-
-        private CharSequence name;
+        private CharSequence source;
         private int from, to;
         private Node parent;
 
-        public NamedElement(CharSequence name, int from, int to) {
-            this.name = name;
+        public ElementBase(CharSequence source, int from, int to) {
+            this.source = source;
             this.from = from;
             this.to = to;
+        }
+
+        @Override
+        public int from() {
+            return from;
+        }
+
+        @Override
+        public int to() {
+            return to;
+        }
+
+        @Override
+        public CharSequence image() {
+            return source.subSequence(from, to);
+        }
+
+        @Override
+        public CharSequence id() {
+            return null;
+        }
+
+        @Override
+        public Collection<ProblemDescription> problems() {
+            return Collections.emptyList();
+        }
+
+        void setParent(Node parent) {
+            this.parent = parent;
+        }
+
+        @Override
+        public Node parent() {
+            return parent;
+        }
+
+        @Override
+        public String toString() {
+            return new StringBuilder()
+                    .append(type().name())
+                    .append("; ")
+                    .append(from())
+                    .append("-")
+                    .append(to()).toString();
+        }
+    }
+    
+    static abstract class NamedElement extends ElementBase  implements Named {
+
+        private CharSequence name; //we can possibly use the original source code + pointer
+        
+        public NamedElement(CharSequence name, CharSequence source, int from, int to) {
+            super(source, from, to);
+            this.name = name;
         }
 
         @Override
@@ -85,37 +141,8 @@ public class XmlSTElements {
         }
 
         @Override
-        public int from() {
-            return from;
-        }
-
-        @Override
-        public int to() {
-            return to;
-        }
-
-        @Override
-        public CharSequence image() {
-            return name();
-        }
-
-        @Override
         public CharSequence id() {
             return name();
-        }
-
-        @Override
-        public Collection<ProblemDescription> problems() {
-            return Collections.emptyList();
-        }
-
-        void setParent(Node parent) {
-            this.parent = parent;
-        }
-
-        @Override
-        public Node parent() {
-            return parent;
         }
 
         @Override
@@ -128,8 +155,8 @@ public class XmlSTElements {
 
         private Collection<Attribute> attrs;
 
-        public EmptyOT(Collection<Attribute> attrs, CharSequence name, int from, int to) {
-            super(name, from, to);
+        public EmptyOT(Collection<Attribute> attrs, CharSequence name, CharSequence source, int from, int to) {
+            super(name, source, from, to);
             this.attrs = attrs;
         }
 
@@ -207,8 +234,8 @@ public class XmlSTElements {
         private CloseTag matchingEndTag;
         private int logicalEndOffset;
 
-        public OT(Collection<Attribute> attrs, CharSequence name, int from, int to) {
-            super(attrs, name, from, to);
+        public OT(Collection<Attribute> attrs, CharSequence name, CharSequence source, int from, int to) {
+            super(attrs, name, source, from, to);
             logicalEndOffset = to;
         }
 
@@ -231,7 +258,7 @@ public class XmlSTElements {
                 children = new ArrayList<Element>(1);
             }
             children.add(child);
-            ((NamedElement)child).setParent(this);
+            ((ElementBase)child).setParent(this);
         }
 
         @Override
@@ -286,8 +313,8 @@ public class XmlSTElements {
 
         private OpenTag matchingOpenTag;
 
-        public ET(CharSequence name, int from, int to) {
-            super(name, from, to);
+        public ET(CharSequence name, CharSequence source, int from, int to) {
+            super(name, source, from, to);
         }
 
         @Override
@@ -304,13 +331,37 @@ public class XmlSTElements {
             this.matchingOpenTag = openTag;
         }
     }
+    
+    public static class Text extends ElementBase {
+
+        public Text(CharSequence source, int from, int to) {
+            super(source, from, to);
+        }
+
+        @Override
+        public ElementType type() {
+            return ElementType.TEXT;
+        }
+
+        @Override
+        public String toString() {
+            return new StringBuilder()
+                    .append(super.toString())
+                    .append(" \"")
+                    .append(image())
+                    .append("\"").toString();
+        }
+        
+        
+
+    }
 
     public static class Root extends OT implements FeaturedNode {
 
         private String namespace;
 
-        public Root(String namespace, int sourceLength) {
-            super(null, "root", 0, sourceLength); //NOI18N
+        public Root(String namespace, CharSequence source) {
+            super(Collections.<Attribute>emptyList(), "root", source, 0, source.length());
             this.namespace = namespace;
         }
 

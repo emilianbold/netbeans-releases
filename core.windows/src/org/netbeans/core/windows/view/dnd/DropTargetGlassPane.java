@@ -274,22 +274,33 @@ public final class DropTargetGlassPane extends JPanel implements DropTargetListe
     }
 
     private TexturePaint texturePaint;
+    private int modeKind = -1;
     private TexturePaint getIndicationPaint() {
-        if( null == texturePaint ) {
+        if (droppable != null && droppable.getKind() != modeKind) {
             BufferedImage image = new BufferedImage(2,2,BufferedImage.TYPE_INT_ARGB);
             Graphics2D g2 = image.createGraphics();
             Color c = UIManager.getColor("Panel.dropTargetGlassPane");
+            boolean isModeMixing = (droppable.getKind() == Constants.MODE_KIND_EDITOR
+                        && windowDragAndDrop.getStartingTransfer().getKind() != Constants.MODE_KIND_EDITOR) ||
+                        (droppable.getKind() != Constants.MODE_KIND_EDITOR
+                        && windowDragAndDrop.getStartingTransfer().getKind() == Constants.MODE_KIND_EDITOR);
             if (c == null) {
                 c = new Color(255, 90, 0);
             }
-            g2.setColor(c);
-            g2.fillRect(0,0,1,1);
-            g2.fillRect(1,1,1,1);
-            g2.setColor(new Color(c.getRed(), c.getGreen(), c.getBlue(), 0));
-            g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.75f));
-            g2.fillRect(1,0,1,1);
-            g2.fillRect(0,1,1,1);
+            if( isModeMixing ) {
+                g2.setColor(c);
+                g2.fillRect(0,0,1,1);
+                g2.fillRect(1,1,1,1);
+                g2.setColor(new Color(c.getRed(), c.getGreen(), c.getBlue(), 0));
+                g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.75f));
+                g2.fillRect(1,0,1,1);
+                g2.fillRect(0,1,1,1);
+            } else {
+                g2.setColor(new Color(c.getRed(), c.getGreen(), c.getBlue(), 200));
+                g2.fillRect( 0, 0, 2, 2);
+            }
             texturePaint = new TexturePaint(image, new Rectangle(0,0,2,2));
+            modeKind = droppable.getKind();
         }
         return texturePaint;
     }

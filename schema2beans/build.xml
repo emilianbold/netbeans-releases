@@ -68,7 +68,7 @@ made subject to such option by the copyright holder.
                 <pathelement path="${build.classes.dir}"/>
             </classpath>
             <arg value="-f"/>
-            <arg file="src/org/netbeans/modules/schema2beansdev/beangraph/beangraph.xsd "/>
+            <arg file="src/org/netbeans/modules/schema2beansdev/beangraph/beangraph.xsd"/>
             <arg line="-xmlschema -r src -p org.netbeans.modules.schema2beansdev.beangraph -premium -noGenInterfaces -nogenerateTimeStamp"/>
         </java>
     </target>

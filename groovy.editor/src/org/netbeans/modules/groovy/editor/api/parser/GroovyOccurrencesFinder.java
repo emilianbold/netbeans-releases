@@ -45,20 +45,20 @@ package org.netbeans.modules.groovy.editor.api.parser;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.codehaus.groovy.ast.ASTNode;
+import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.ModuleNode;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.groovy.editor.api.AstPath;
-import org.netbeans.modules.groovy.editor.api.AstUtilities;
-import org.netbeans.modules.groovy.editor.api.lexer.LexUtilities;
-import java.util.logging.Logger;
-import java.util.logging.Level;
-import org.codehaus.groovy.ast.ClassNode;
 import org.netbeans.modules.csl.api.ColoringAttributes;
 import org.netbeans.modules.csl.api.OccurrencesFinder;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.groovy.editor.api.AstUtilities.FakeASTNode;
-import org.netbeans.modules.groovy.editor.api.VariableScopeVisitor;
+import org.netbeans.modules.groovy.editor.api.AstPath;
+import org.netbeans.modules.groovy.editor.api.ASTUtils;
+import org.netbeans.modules.groovy.editor.api.ASTUtils.FakeASTNode;
+import org.netbeans.modules.groovy.editor.occurrences.VariableScopeVisitor;
+import org.netbeans.modules.groovy.editor.api.lexer.LexUtilities;
 import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.openide.filesystems.FileObject;
@@ -85,6 +85,7 @@ public class GroovyOccurrencesFinder extends OccurrencesFinder<GroovyParserResul
         super();
     }
 
+    @Override
     public Map<OffsetRange, ColoringAttributes> getOccurrences() {
         LOG.log(Level.FINEST, "getOccurrences()\n"); //NOI18N
         return occurrences;
@@ -98,6 +99,7 @@ public class GroovyOccurrencesFinder extends OccurrencesFinder<GroovyParserResul
         cancelled = false;
     }
 
+    @Override
     public final synchronized void cancel() {
         cancelled = true;
     }
@@ -129,11 +131,11 @@ public class GroovyOccurrencesFinder extends OccurrencesFinder<GroovyParserResul
             file = currentFile;
         }
 
-        ModuleNode rootNode = AstUtilities.getRoot(result);
+        ModuleNode rootNode = ASTUtils.getRoot(result);
         if (rootNode == null) {
             return;
         }
-        int astOffset = AstUtilities.getAstOffset(result, caretPosition);
+        int astOffset = ASTUtils.getAstOffset(result, caretPosition);
         if (astOffset == -1) {
             return;
         }
@@ -180,6 +182,7 @@ public class GroovyOccurrencesFinder extends OccurrencesFinder<GroovyParserResul
      * 
      * @param position
      */
+    @Override
     public void setCaretPosition(int position) {
         this.caretPosition = position;
         LOG.log(Level.FINEST, "\n\nsetCaretPosition() = {0}\n", position); //NOI18N
@@ -199,8 +202,8 @@ public class GroovyOccurrencesFinder extends OccurrencesFinder<GroovyParserResul
                 int line = orig.getLineNumber();
                 int column = orig.getColumnNumber();
                 if (line > 0 && column > 0) {
-                    int start = AstUtilities.getOffset(document, line, column);
-                    range = AstUtilities.getNextIdentifierByName(document, text, start);
+                    int start = ASTUtils.getOffset(document, line, column);
+                    range = ASTUtils.getNextIdentifierByName(document, text, start);
                 } else {
                     range = OffsetRange.NONE;
                 }
@@ -209,7 +212,7 @@ public class GroovyOccurrencesFinder extends OccurrencesFinder<GroovyParserResul
                 ClassNode found = (ClassNode) astNode;
                 ClassNode leaf = (ClassNode) path.leaf();
                 if (found == leaf) {
-                   OffsetRange rangeClassName = AstUtilities.getRange(astNode, document);
+                   OffsetRange rangeClassName = ASTUtils.getRange(astNode, document);
                    if (rangeClassName.containsInclusive(cursorOffset)) {
                        range = rangeClassName;
                    } else {
@@ -218,10 +221,10 @@ public class GroovyOccurrencesFinder extends OccurrencesFinder<GroovyParserResul
                        break;
                    }
                 } else {
-                    range = AstUtilities.getRange(astNode, document);
+                    range = ASTUtils.getRange(astNode, document);
                 }
             } else {
-                range = AstUtilities.getRange(astNode, document);
+                range = ASTUtils.getRange(astNode, document);
             }
             if (range != OffsetRange.NONE) {
                 highlights.put(range, ColoringAttributes.MARK_OCCURRENCES);

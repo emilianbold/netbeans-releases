@@ -312,8 +312,13 @@ public class ProcedureNode extends BaseNode {
         private void updateProcedureProperties() {
             PropertySupport.Name ps = new PropertySupport.Name(this);
             addProperty(ps);
-            
-            switch (provider.getType(getName())) {
+            Type type = provider.getType(getName());
+            if (type == null) {
+                Logger.getLogger(ProcedureNode.class.getName()).log(
+                        Level.WARNING, "Unknown type of object " + getName(), new Exception()); //NOI18N
+                return;
+            }
+            switch (type) {
                 case Function:
                     addProperty(TYPE, TYPEDESC, String.class, false, NbBundle.getMessage (ProcedureNode.class, "StoredFunction")); // NOI18N
                     break;
@@ -392,6 +397,8 @@ public class ProcedureNode extends BaseNode {
                                     '(' + params + ")" + '\n' + // NOI18N
                                     body;
                         }
+                        rs.close();
+                        stat.close();
                         break;
                     case Trigger:
                         /*
@@ -422,6 +429,8 @@ public class ProcedureNode extends BaseNode {
                                     "FOR EACH ROW" + '\n' + // NOI18N
                                     trigger_body;
                         }
+                        rs2.close();
+                        stat2.close();
                         break;
                     default:
                         assert false : "Unknown type" + getType();
@@ -444,6 +453,8 @@ public class ProcedureNode extends BaseNode {
                         while(rs.next()) {
                             params = rs.getString("param_list"); // NOI18N
                         }
+                        rs.close();
+                        stat.close();
                         break;
                     case Trigger:
                         Statement stat2 = connection.getConnection().createStatement();
@@ -459,6 +470,8 @@ public class ProcedureNode extends BaseNode {
                             params = trigger_time + ' ' + trigger_event + " ON " + tbl_name + '\n' +
                                     "FOR EACH ROW" + '\n'; // NOI18N
                         }
+                        rs2.close();
+                        stat2.close();
                         break;
                     default:
                         assert false : "Unknown type " + getType();
@@ -481,6 +494,8 @@ public class ProcedureNode extends BaseNode {
                         while(rs.next()) {
                             body = rs.getString("body"); // NOI18N
                         }
+                        rs.close();
+                        stat.close();
                         break;
                     case Trigger:
                         Statement stat2 = connection.getConnection().createStatement();
@@ -488,6 +503,8 @@ public class ProcedureNode extends BaseNode {
                         while(rs2.next()) {
                             body = rs2.getString("ACTION_STATEMENT"); // NOI18N
                         }
+                        rs2.close();
+                        stat2.close();
                         break;
                     default:
                         assert false : "Unknown type" + getType();
@@ -639,6 +656,8 @@ public class ProcedureNode extends BaseNode {
                     sb.append(rs.getString("text")); // NOI18N
                     owner = rs.getString("owner"); // NOI18N
                 }
+                rs.close();
+                stat.close();
             } catch (SQLException ex) {
                 Logger.getLogger(ProcedureNode.class.getName()).log(Level.INFO, ex + " while get source of " + getTypeName(getType()) + " " + getName());
             }

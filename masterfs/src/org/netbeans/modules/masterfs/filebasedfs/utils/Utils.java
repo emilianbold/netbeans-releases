@@ -42,8 +42,11 @@
 package org.netbeans.modules.masterfs.filebasedfs.utils;
 
 import java.io.File;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Locale;
 import java.util.Stack;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Utilities;
 
 /**
@@ -116,5 +119,24 @@ public class Utils {
             }
         }
         return retval.toString();
+    }
+
+    public static void reassignLkp(FileObject from, FileObject to) {
+        try {
+            Class<?> c = Class.forName("org.openide.filesystems.FileObjectLkp");
+            Method m = c.getDeclaredMethod("reassign", FileObject.class, FileObject.class);
+            m.setAccessible(true);
+            m.invoke(null, from, to);
+        } catch (InvocationTargetException ex) {
+            if (ex.getCause() instanceof RuntimeException) {
+                throw (RuntimeException) ex.getCause();
+            }
+            if (ex.getCause() instanceof Error) {
+                throw (Error) ex.getCause();
+            }
+            throw new IllegalStateException(ex);
+        } catch (Exception ex) {
+            throw new IllegalStateException(ex);
+        }
     }
 }

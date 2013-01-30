@@ -58,6 +58,7 @@ import javax.swing.text.*;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.editor.EditorUI;
 import org.netbeans.editor.MultiKeymap;
+import org.netbeans.editor.ext.ExtKit;
 import org.netbeans.lib.editor.util.swing.DocumentListenerPriority;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.openide.util.Exceptions;
@@ -68,21 +69,20 @@ public class SearchComboBoxEditor implements ComboBoxEditor {
     private Object oldValue;
     private static JTextField referenceTextField = (JTextField) new JComboBox().getEditor().getEditorComponent();
     private static final Logger LOG = Logger.getLogger(SearchComboBoxEditor.class.getName());
-    
+
     public SearchComboBoxEditor() {
         editorPane = new JEditorPane();
         changeToOneLineEditorPane(editorPane);
-        
+
         Set<AWTKeyStroke> tfkeys = referenceTextField.getFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS);
         editorPane.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, tfkeys);
         tfkeys = referenceTextField.getFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS);
         editorPane.setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, tfkeys);
-        LOG.log(Level.FINE, "Constructor - Reference Font: Name: {0}, Size: {1}\n", new Object[]{referenceTextField.getFont().getFontName(), referenceTextField.getFont().getSize()});
+        LOG.log(Level.FINE, "Constructor - Reference Font: Name: {0}, Size: {1}\n", new Object[]{referenceTextField.getFont().getFontName(), referenceTextField.getFont().getSize()}); //NOI18N
         editorPane.setFont(referenceTextField.getFont());
-        LOG.log(Level.FINE, "Constructor - Set Font: Name: {0}, Size: {1}\n", new Object[]{editorPane.getFont().getFontName(), editorPane.getFont().getSize()});
+        LOG.log(Level.FINE, "Constructor - Set Font: Name: {0}, Size: {1}\n", new Object[]{editorPane.getFont().getFontName(), editorPane.getFont().getSize()}); //NOI18N
         final Insets margin = referenceTextField.getMargin();
-        final Insets borderInsets = referenceTextField.getBorder().getBorderInsets(referenceTextField);
-        
+
         scrollPane = new JScrollPane(JScrollPane.VERTICAL_SCROLLBAR_NEVER,
                                                JScrollPane.HORIZONTAL_SCROLLBAR_NEVER) {
 
@@ -106,18 +106,28 @@ public class SearchComboBoxEditor implements ComboBoxEditor {
             }
         });
 
-        scrollPane.setBorder(new DelegatingBorder(referenceTextField.getBorder(), borderInsets));
+        final Border border = referenceTextField.getBorder();
+        if (border != null) {
+            final Insets borderInsets = border.getBorderInsets(referenceTextField);
+            if (isCurrentLF("Aqua")) {  //NOI18N
+                scrollPane.setBorder(new EmptyBorder (0, 0, 0, 0));
+            } else {
+                scrollPane.setBorder(new EmptyBorder(borderInsets));
+            }
+        }
         scrollPane.setFont(referenceTextField.getFont());
         scrollPane.setBackground(referenceTextField.getBackground());
         int preferredHeight = referenceTextField.getPreferredSize().height;
         Dimension spDim = scrollPane.getPreferredSize();
-        spDim.height = preferredHeight;
-        spDim.height += margin.bottom + margin.top;//borderInsets.top + borderInsets.bottom;
+        spDim.height = preferredHeight + getLFHeightAdjustment();
+        if (!isCurrentLF("Aqua")) {  //NOI18N 
+            spDim.height += margin.bottom + margin.top; //borderInsets.top + borderInsets.bottom;
+        }
         scrollPane.setPreferredSize(spDim);
         scrollPane.setMinimumSize(spDim);
         scrollPane.setMaximumSize(spDim);
         scrollPane.setViewportView(editorPane);
-        
+
         final DocumentListener manageViewListener = new ManageViewPositionListener(editorPane, scrollPane);
         DocumentUtilities.addDocumentListener(editorPane.getDocument(), manageViewListener, DocumentListenerPriority.AFTER_CARET_UPDATE);
         editorPane.addPropertyChangeListener(new PropertyChangeListener() {
@@ -136,9 +146,9 @@ public class SearchComboBoxEditor implements ComboBoxEditor {
             }
         });
     }
-    
+
     public static void changeToOneLineEditorPane(JEditorPane editorPane) {
-        editorPane.putClientProperty("AsTextField", Boolean.TRUE);
+        editorPane.putClientProperty("AsTextField", Boolean.TRUE); //NOI18N
         editorPane.putClientProperty(
             "HighlightsLayerExcludes", //NOI18N
             ".*(?<!TextSelectionHighlighting)$" //NOI18N
@@ -148,53 +158,53 @@ public class SearchComboBoxEditor implements ComboBoxEditor {
         if (kit == null) {
             throw new IllegalArgumentException("No EditorKit for '" + SearchNbEditorKit.SEARCHBAR_MIMETYPE + "' mimetype."); //NOI18N
         }
-        
+
         editorPane.setEditorKit(kit);
 
-        ActionInvoker.putActionToComponent(new ActionInvoker(SearchNbEditorKit.INCREMENTAL_SEARCH_FORWARD, editorPane), editorPane);        
+        ActionInvoker.putActionToComponent(new ActionInvoker(SearchNbEditorKit.SEARCH_ACTION, editorPane), editorPane);
         ActionInvoker.putActionToComponent(new ActionInvoker(SearchNbEditorKit.REPLACE_ACTION, editorPane), editorPane);
-        
+        ActionInvoker.putActionToComponent(new ActionInvoker(ExtKit.gotoAction, editorPane), editorPane);
+
         InputMap im = editorPane.getInputMap();
         im.put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), NO_ACTION);
         im.put(KeyStroke.getKeyStroke(KeyEvent.VK_TAB, 0), NO_ACTION);
-        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 0), NO_ACTION); 
-        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0), NO_ACTION); 
-        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), NO_ACTION); 
- 
-        
+        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 0), NO_ACTION);
+        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0), NO_ACTION);
+        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), NO_ACTION);
+
+
         ((AbstractDocument) editorPane.getDocument()).setDocumentFilter(new DocumentFilter() {
 
                     @Override
                     public void insertString(DocumentFilter.FilterBypass fb, int offset, String string, AttributeSet attr) throws BadLocationException {
-                        if (string != null)
-                            fb.insertString(offset, string.replaceAll("\\t", "").replaceAll("\\n", ""), attr);
+                        if (string != null) {
+                            fb.insertString(offset, string.replaceAll("\\t", "").replaceAll("\\n", ""), attr); //NOI18N
+                        }
                     }
 
                     @Override
                     public void replace(DocumentFilter.FilterBypass fb, int offset, int length, String string, AttributeSet attr) throws BadLocationException {
-                        if (string != null)
-                            fb.replace(offset, length, string.replaceAll("\\t", "").replaceAll("\\n", ""), attr);
+                        if (string != null) {
+                            fb.replace(offset, length, string.replaceAll("\\t", "").replaceAll("\\n", ""), attr); //NOI18N
+                        }
                     }
-                }); 
-        editorPane.setBorder (
-            new EmptyBorder (0, 0, 0, 0)
-        );     
-        editorPane.setBackground(referenceTextField.getBackground());
-        LOG.log(Level.FINE, "Changed editorkit - Set Font: Name: {0}, Size: {1}\n", new Object[]{editorPane.getFont().getFontName(), editorPane.getFont().getSize()});
+                });
+        editorPane.setBorder(new EmptyBorder (0, 0, 0, 0));
+        LOG.log(Level.FINE, "Changed editorkit - Set Font: Name: {0}, Size: {1}\n", new Object[]{editorPane.getFont().getFontName(), editorPane.getFont().getSize()}); //NOI18N
         editorPane.setFont(referenceTextField.getFont());
-        LOG.log(Level.FINE, "Changed editorkit - Set Font: Name: {0}, Size: {1}\n", new Object[]{editorPane.getFont().getFontName(), editorPane.getFont().getSize()});
+        LOG.log(Level.FINE, "Changed editorkit - Set Font: Name: {0}, Size: {1}\n", new Object[]{editorPane.getFont().getFontName(), editorPane.getFont().getSize()}); //NOI18N
     }
 
     private static void adjustScrollPaneSize(JScrollPane sp, JEditorPane editorPane) {
         int height;
         Dimension prefSize = sp.getPreferredSize();
-        Insets borderInsets = sp.getBorder().getBorderInsets(sp);//sp.getInsets();
+        Insets borderInsets = sp.getBorder().getBorderInsets(sp); //sp.getInsets();
         int vBorder = borderInsets.bottom + borderInsets.top;
         EditorUI eui = org.netbeans.editor.Utilities.getEditorUI(editorPane);
         if (eui != null) {
             height = eui.getLineHeight();
             if (height < eui.getLineAscent()) {
-                height = (eui.getLineAscent()*4)/3; // Hack for the case when line height = 1
+                height = (eui.getLineAscent() * 4) / 3; // Hack for the case when line height = 1
             }
         } else {
             java.awt.Font font = editorPane.getFont();
@@ -215,23 +225,27 @@ public class SearchComboBoxEditor implements ComboBoxEditor {
         }
     }
 
+    private static boolean isCurrentLF(String lf) {
+        LookAndFeel laf = UIManager.getLookAndFeel();
+        String lfID = laf.getID();
+        return lf.equals(lfID);
+    }
+
     private static int getLFHeightAdjustment() {
-        LookAndFeel lf = UIManager.getLookAndFeel();
-        String lfID = lf.getID();
-        if ("Metal".equals(lfID)) {
-            return 0;
+        if (isCurrentLF("Metal")) { //NOI18N
+            return -7;
         }
-        if ("GTK".equals(lfID)) {
+        if (isCurrentLF("GTK")) { //NOI18N
             return 2;
         }
-        if ("Motif".equals(lfID)) {
+        if (isCurrentLF("Motif")) { //NOI18N
             return 3;
         }
-        if ("Nimbus".equals(lfID)) {
+        if (isCurrentLF("Nimbus")) { //NOI18N
             return 0;
         }
-        if ("Aqua".equals(lfID)) {
-            return -2;
+        if (isCurrentLF("Aqua")) { //NOI18N
+            return -10;
         }
         return 0;
     }
@@ -280,31 +294,6 @@ public class SearchComboBoxEditor implements ComboBoxEditor {
         }
     }
 
-    private static final class DelegatingBorder implements Border {
-
-        private Border delegate;
-        private Insets insets;
-
-        public DelegatingBorder(Border delegate, Insets insets) {
-            this.delegate = delegate;
-            this.insets = insets;
-        }
-
-        @Override
-        public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
-            delegate.paintBorder(c, g, x, y, width, height);
-        }
-
-        @Override
-        public Insets getBorderInsets(Component c) {
-            return insets;
-        }
-
-        @Override
-        public boolean isBorderOpaque() {
-            return delegate.isBorderOpaque();
-        }
-    }
     private static final String NO_ACTION = "no-action"; //NOI18N
 
 
@@ -342,7 +331,7 @@ public class SearchComboBoxEditor implements ComboBoxEditor {
                 // Must take the value from the editor and get the value and cast it to the new type.
                 Class cls = oldValue.getClass();
                 try {
-                    Method method = cls.getMethod("valueOf", new Class[]{String.class});
+                    Method method = cls.getMethod("valueOf", new Class[]{String.class}); //NOI18N
                     newValue = method.invoke(oldValue, new Object[]{editorPane.getText()});
                 } catch (Exception ex) {
                     // Fail silently and return the newValue (a String object)
@@ -373,12 +362,12 @@ public class SearchComboBoxEditor implements ComboBoxEditor {
     public JEditorPane getEditorPane() {
         return editorPane;
     }
-    
-    
-    
-    
+
+
+
+
     private static final class ActionInvoker extends AbstractAction {
-        private static final String PREFIX = "search-invoke-";
+        private static final String PREFIX = "search-invoke-";  //NOI18N
         private final String originalActionName;
         private final Action delegateAction;
         public ActionInvoker(String name, JTextComponent component) {
@@ -386,8 +375,8 @@ public class SearchComboBoxEditor implements ComboBoxEditor {
             originalActionName = name;
             delegateAction = component.getActionMap().get(originalActionName);
         }
-        
-     
+
+
         @Override
         public void actionPerformed(ActionEvent e) {
             if (SearchBar.getInstance().getActualTextComponent() != null) {
@@ -413,6 +402,6 @@ public class SearchComboBoxEditor implements ComboBoxEditor {
 
         public String getOriginalActionName() {
             return originalActionName;
-        }  
+        }
     };
 }

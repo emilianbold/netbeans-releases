@@ -184,7 +184,7 @@ public class ImportantFilesNodeFactory implements NodeFactory {
     /**
      * Actual list of important files.
      */
-    @Messages({"LBL_module_manifest=Module Manifest", "LBL_module.xml=Module Descriptor"})
+    @Messages({"LBL_module_manifest=Module Manifest", "LBL_module.xml=Module Descriptor (deprecated)"})
     private static final class ImportantFilesChildren extends Children.Keys<String> {
         
         private List<String> visibleFiles = new ArrayList<String>();

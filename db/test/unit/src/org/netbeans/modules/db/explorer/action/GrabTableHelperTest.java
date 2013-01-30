@@ -68,7 +68,7 @@ public class GrabTableHelperTest extends DDLTestBase {
         File file = null;
 
         try {
-            String tablename = "grabtable";
+            String tablename = "GRABTABLE";
             String pkName = "id";
             String col1 = "col1";
             String col2 = "col2";

@@ -85,6 +85,9 @@ Contributor(s):
             <file name="TestFileContainerAction.instance">
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.modelui.trace.TestProjectReferencesAction.getFileContainerAction"/>
             </file>
+            <file name="TestGraphContainerAction.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.modelui.trace.TestProjectReferencesAction.getGraphContainerAction"/>
+            </file>
             <file name="SwitchIndexAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.modelui.trace.SwitchIndexAction"/>
             </file>
@@ -145,6 +148,10 @@ Contributor(s):
             <file name="TestFileContainerAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/NativeProjectCodeAssistance/TestFileContainerAction.instance"/>
                 <attr name="position" intvalue="1900"/>
+            </file>
+            <file name="TestGraphContainerAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/NativeProjectCodeAssistance/TestGraphContainerAction.instance"/>
+                <attr name="position" intvalue="2000"/>
             </file>
             <file name="CodeModelDiagnosticAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/NativeProjectCodeAssistance/CodeModelDiagnosticAction.instance"/>

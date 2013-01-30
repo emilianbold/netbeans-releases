@@ -60,6 +60,7 @@ public class WizardConstants {
     public static final String PROPERTY_NAME = "name"; // String // NOI18N
     public static final String MAIN_CLASS = "mainClass"; // String // NOI18N
     public static final String PROPERTY_PROJECT_FOLDER = "projdir"; // File // NOI18N
+    public static final String PROPERTY_PROJECT_FOLDER_STRING_VALUE = "projdir.text"; // File // NOI18N
     public static final String PROPERTY_SIMPLE_MODE = "simpleMode"; // Boolean // NOI18N
     public static final String PROPERTY_HOST_UID = "hostUID"; // String // NOI18N
     public static final String PROPERTY_SOURCE_HOST_ENV = "sourceHostEnv"; // ExecutionEnvironment // NOI18N
@@ -89,6 +90,7 @@ public class WizardConstants {
     public static final String PROPERTY_CONSOLIDATION_LEVEL = "consolidationLevel"; // String // NOI18N
     public static final String PROPERTY_TEST_FOLDERS = "testFolders"; // String // NOI18N
     public static final String PROPERTY_RUN_REBUILD = "makeProject"; // String // NOI18N
+    public static final String PROPERTY_BUILD_LOG = "buildLog"; // String // NOI18N
     public static final String PROPERTY_MANUAL_CODE_ASSISTANCE = "manualCA"; // String // NOI18N
     public static final String PROPERTY_WORKING_DIR = "buildCommandWorkingDirTextField"; // String // NOI18N
     public static final String PROPERTY_SOURCE_FOLDER_PATH = "sourceFolderPath"; // String // NOI18N

@@ -45,11 +45,27 @@
 package org.netbeans.modules.git.options;
 
 
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.git.GitModuleConfig;
+import org.netbeans.spi.options.OptionsPanelController;
+import org.openide.util.NbBundle;
 
+@OptionsPanelController.Keywords(keywords={"git", "#GitOptionsPanel.kw1", "#GitOptionsPanel.kw2", "#GitOptionsPanel.kw3", "#GitOptionsPanel.kw4"},
+        location=OptionsDisplayer.ADVANCED, tabTitle="#CTL_OptionsPanel.title")
+@NbBundle.Messages({
+    "CTL_OptionsPanel.title=Versioning",
+    "GitOptionsPanel.kw1=versioning",
+    "GitOptionsPanel.kw2=exclude new files from commit",
+    "GitOptionsPanel.kw3=signed-off-by line",
+    "GitOptionsPanel.kw4=non-sharable folders"
+})
 final class GitOptionsPanel extends javax.swing.JPanel {
     
     private final GitOptionsPanelController controller;
+    private String[] keywords;
     
     GitOptionsPanel(GitOptionsPanelController controller) {
         this.controller = controller;        
@@ -64,6 +80,19 @@ final class GitOptionsPanel extends javax.swing.JPanel {
     @Override
     public void removeNotify() {        
         super.removeNotify();
+    }
+
+    Collection<String> getKeywords () {
+        if (keywords == null) {
+            keywords = new String[] {
+                "GIT",
+                Bundle.GitOptionsPanel_kw1().toUpperCase(),
+                Bundle.GitOptionsPanel_kw2().toUpperCase(),
+                Bundle.GitOptionsPanel_kw3().toUpperCase(),
+                Bundle.GitOptionsPanel_kw4().toUpperCase()
+            };
+        }
+        return Collections.unmodifiableList(Arrays.asList(keywords));
     }
 
     /** This method is called from within the constructor to

@@ -107,18 +107,28 @@ final class CppFoldManager extends CppFoldManagerBase
         }
         return cppFoldsRP;
     }
+    
+    private FileObject getFileObject() {
+        FoldHierarchy h = (operation != null) ? operation.getHierarchy() : null;
+        javax.swing.text.JTextComponent comp = (h != null) ? h.getComponent() : null;
+        Document doc = (comp != null) ? comp.getDocument() : null;
+        DataObject dob = (doc != null) ? NbEditorUtilities.getDataObject(doc) : null;
+        if (dob != null) {
+            return dob.getPrimaryFile();
+        }
+        return null;
+    }
 
     /**
      *  Get the filename associated with this FileManager. Used (currently) only for debugging.
      *  @returns A String representing the absolute path of file
      */
     private String getFilename() {
-        FoldHierarchy h = (operation != null) ? operation.getHierarchy() : null;
-        javax.swing.text.JTextComponent comp = (h != null) ? h.getComponent() : null;
-        Document doc = (comp != null) ? comp.getDocument() : null;
-        DataObject dob = (doc != null) ? NbEditorUtilities.getDataObject(doc) : null;
-        String path = (dob != null) ? FileUtil.getFileDisplayName(dob.getPrimaryFile()) : null;
-        return path;
+        FileObject fileObject = getFileObject();
+        if (fileObject != null) {
+            return FileUtil.getFileDisplayName(fileObject);
+        }
+        return null;
     }
 
     private String getShortName() {
@@ -311,34 +321,42 @@ final class CppFoldManager extends CppFoldManagerBase
         Document doc = getDocument();
         return (doc != null) ? NbEditorUtilities.getDataObject(doc) : null;
     }
+    
+    private boolean foldingEnabled() {
+        FileObject fileObject = getFileObject();
+        if (fileObject != null) {
+            return !fileObject.isVirtual();
+        }
+        return false;
+    }
 
     // Implement Runnable
     @Override
     public void run() {
         try {
-            if ((new File(getFilename())).exists()) {
+            // see bug 217627
+            assert foldingEnabled();
+            if (log.isLoggable(Level.FINE)){
+                log.log(Level.FINE, "CFM.run: Processing {0} [{1}]",
+                        new Object[]{getShortName(), Thread.currentThread().getName()}); // NOI18N
+            }
+            if (!listeningOnParsing) {
                 if (log.isLoggable(Level.FINE)){
                     log.log(Level.FINE, "CFM.run: Processing {0} [{1}]",
-                            new Object[]{getShortName(), Thread.currentThread().getName()}); // NOI18N
+                            new Object[]{getShortName(), Thread.currentThread().getName()});
                 }
-                if (!listeningOnParsing) {
-                    if (log.isLoggable(Level.FINE)){
-                        log.log(Level.FINE, "CFM.run: Processing {0} [{1}]",
-                                new Object[]{getShortName(), Thread.currentThread().getName()});
-                    }
-                    listeningOnParsing = true;
-                    if (log.isLoggable(Level.FINE)){
-                        log.log(Level.FINE, "CFM.run: Starting WeakParsingListener [{0}]",
-                                Thread.currentThread().getName()); // NOI18N
-                    }
-                    new WeakParsingListener(this).startListening();
-                }
+                listeningOnParsing = true;
                 if (log.isLoggable(Level.FINE)){
-                    log.log(Level.FINE, "CFM.run: Calling updateFolds [{0}]",
+                    log.log(Level.FINE, "CFM.run: Starting WeakParsingListener [{0}]",
                             Thread.currentThread().getName()); // NOI18N
                 }
-                updateFolds();
+                new WeakParsingListener(this).startListening();
             }
+            if (log.isLoggable(Level.FINE)){
+                log.log(Level.FINE, "CFM.run: Calling updateFolds [{0}]",
+                        Thread.currentThread().getName()); // NOI18N
+            }
+            updateFolds();
         } catch (ThreadDeath e) {
             throw e;
         } catch (Throwable t) {
@@ -369,7 +387,7 @@ final class CppFoldManager extends CppFoldManagerBase
 
     @Override
     public void initFolds(FoldHierarchyTransaction transaction) {
-        if (getFilename() != null && getFilename().length() > 0) {
+        if (foldingEnabled()) {
             if (log.isLoggable(Level.FINE)){
                 log.log(Level.FINE, "CFM.initFolds: Posting for {0} on Cpp Folds RP [{1}]",// NOI18N
                         new Object[]{getShortName(), Thread.currentThread().getName()});

@@ -84,13 +84,19 @@ public class VersionsCache {
         } else {
             File tempFile = new File(Utils.getTempFolder(), "nb-git-" + base.getName()); //NOI18N
             tempFile.deleteOnExit();
+            GitClient client = null;
             try {
-                GitClient client = Git.getInstance().getClient(repository);
+                client = Git.getInstance().getClient(repository);
                 boolean result;
-                if (GitUtils.INDEX.equals(revision)) {
-                    result = client.catIndexEntry(base, 0, new FileOutputStream(tempFile), pm);
-                } else {
-                    result = client.catFile(base, revision, new FileOutputStream(tempFile), pm);
+                FileOutputStream fos = new FileOutputStream(tempFile);
+                try {
+                    if (GitUtils.INDEX.equals(revision)) {
+                        result = client.catIndexEntry(base, 0, fos, pm);
+                    } else {
+                        result = client.catFile(base, revision, fos, pm);
+                    }
+                } finally {
+                    fos.close();
                 }
                 if (!result) {
                     tempFile.delete();
@@ -104,6 +110,10 @@ public class VersionsCache {
                 tempFile = null;
             } catch (GitException ex) {
                 throw new IOException(ex);
+            } finally {
+                if (client != null) {
+                    client.release();
+                }
             }
             return tempFile;
         }

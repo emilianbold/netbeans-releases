@@ -53,6 +53,7 @@ import org.netbeans.modules.php.project.api.PhpSourcePath;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import static org.netbeans.modules.php.api.util.FileUtils.PHP_MIME_TYPE;
 
 /**
  *
@@ -69,7 +70,7 @@ public class PHPCodeTemplateFilterTest extends PHPCodeCompletionTestBase {
         int sourcePos = source.indexOf('^');
         assertNotNull(sourcePos);
         String modifiedSource = source.substring(0, sourcePos) + source.substring(sourcePos+1);
-        Document document = getDocument(modifiedSource, "text/x-php5");
+        Document document = getDocument(modifiedSource, PHP_MIME_TYPE);
         assertNotNull(document);
         Collection<? extends CodeTemplate> codeTemplates = getCodeTemplates(document);
         PHPCodeTemplateFilter filter = new PHPCodeTemplateFilter(document, sourcePos);
@@ -84,7 +85,7 @@ public class PHPCodeTemplateFilterTest extends PHPCodeCompletionTestBase {
         int sourcePos = source.indexOf('^');
         assertNotNull(sourcePos);
         String modifiedSource = source.substring(0, sourcePos) + source.substring(sourcePos+1);
-        Document document = getDocument(modifiedSource, "text/x-php5");
+        Document document = getDocument(modifiedSource, PHP_MIME_TYPE);
         assertNotNull(document);
         Collection<? extends CodeTemplate> codeTemplates = getCodeTemplates(document);
         PHPCodeTemplateFilter filter = new PHPCodeTemplateFilter(document, sourcePos);
@@ -101,7 +102,7 @@ public class PHPCodeTemplateFilterTest extends PHPCodeCompletionTestBase {
         int sourcePos = source.indexOf('^');
         assertNotNull(sourcePos);
         String modifiedSource = source.substring(0, sourcePos) + source.substring(sourcePos+1);
-        Document document = getDocument(modifiedSource, "text/x-php5");
+        Document document = getDocument(modifiedSource, PHP_MIME_TYPE);
         assertNotNull(document);
         CodeTemplateManager templateManager = CodeTemplateManager.get(document);
         assertNotNull(templateManager);

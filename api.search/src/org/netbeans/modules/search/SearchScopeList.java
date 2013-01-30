@@ -61,8 +61,8 @@ import org.openide.util.Lookup;
  */
 public class SearchScopeList {
 
-    private List<SearchScopeDefinition> scopes = null;
-    private List<ChangeListener> changeListeners =
+    private final List<SearchScopeDefinition> scopes;
+    private final List<ChangeListener> changeListeners =
             new ArrayList<ChangeListener>(1);
     private ProxyChangeListener proxyChangeListener = new ProxyChangeListener();
 
@@ -78,19 +78,25 @@ public class SearchScopeList {
      * Clean all resources if search scopes are no longer needed.
      */
     public void clean() {
-        for (SearchScopeDefinition ssd : scopes) {
-            ssd.removeChangeListener(proxyChangeListener);
-            ssd.clean();
+        synchronized (scopes) {
+            for (SearchScopeDefinition ssd : scopes) {
+                ssd.removeChangeListener(proxyChangeListener);
+                ssd.clean();
+            }
+            scopes.clear();
         }
-        scopes.clear();
-        changeListeners.clear();
+        synchronized (changeListeners) {
+            changeListeners.clear();
+        }
     }
 
     /**
      * Add listener that is notified when any of search scopes changes.
      */
     public void addChangeListener(ChangeListener changeListener) {
-        this.changeListeners.add(changeListener);
+        synchronized (changeListeners) {
+            this.changeListeners.add(changeListener);
+        }
     }
 
     /**
@@ -98,32 +104,37 @@ public class SearchScopeList {
      *
      */
     public void removeChangeListener(ChangeListener changeListener) {
-        this.changeListeners.remove(changeListener);
+        synchronized (changeListeners) {
+            this.changeListeners.remove(changeListener);
+        }
     }
 
     private List<SearchScopeDefinition> createScopeList(
             SearchScopeDefinition... extraSearchScopes) {
 
-        scopes = new ArrayList<SearchScopeDefinition>(6);
+        List<SearchScopeDefinition> scopeList =
+                new ArrayList<SearchScopeDefinition>(6);
         Collection<? extends SearchScopeDefinitionProvider> providers;
         providers = Lookup.getDefault().lookupAll(
                 SearchScopeDefinitionProvider.class);
         for (SearchScopeDefinitionProvider provider : providers) {
-            scopes.addAll(provider.createSearchScopeDefinitions());
+            scopeList.addAll(provider.createSearchScopeDefinitions());
         }
-        scopes.addAll(Arrays.asList(extraSearchScopes));
-        Collections.sort(scopes, new ScopePriorityComparator());
-        for (SearchScopeDefinition scope : scopes) {
+        scopeList.addAll(Arrays.asList(extraSearchScopes));
+        Collections.sort(scopeList, new ScopePriorityComparator());
+        for (SearchScopeDefinition scope : scopeList) {
             scope.addChangeListener(proxyChangeListener);
         }
-        return scopes;
+        return scopeList;
     }
 
     /**
      * Return list of contained search scope definitions, sorted by priority.
      */
     public List<SearchScopeDefinition> getSeachScopeDefinitions() {
-        return scopes;
+        synchronized (scopes) {
+            return new ArrayList<SearchScopeDefinition>(scopes); //#220505
+        }
     }
 
     /**
@@ -145,8 +156,10 @@ public class SearchScopeList {
 
         @Override
         public void stateChanged(ChangeEvent e) {
-            for (ChangeListener changeListener : changeListeners) {
-                changeListener.stateChanged(e);
+            synchronized (changeListeners) {
+                for (ChangeListener changeListener : changeListeners) {
+                    changeListener.stateChanged(e);
+                }
             }
         }
     }

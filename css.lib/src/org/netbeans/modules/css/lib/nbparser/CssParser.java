@@ -49,11 +49,11 @@ import org.netbeans.modules.css.lib.ExtCss3Lexer;
 import org.netbeans.modules.css.lib.ExtCss3Parser;
 import org.netbeans.modules.css.lib.api.CssParserResult;
 import javax.swing.event.ChangeListener;
-import org.antlr.runtime.ANTLRStringStream;
-import org.antlr.runtime.CharStream;
 import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.RecognitionException;
 import org.antlr.runtime.TokenStream;
+import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.css.lib.AbstractParseTreeNode;
 import org.netbeans.modules.css.lib.NbParseTreeBuilder;
 import org.netbeans.modules.css.lib.api.ProblemDescription;
@@ -62,7 +62,9 @@ import org.netbeans.modules.parsing.api.Task;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.SourceModificationEvent;
+import org.netbeans.modules.web.common.api.Lines;
 import org.openide.filesystems.FileObject;
+import org.openide.util.CharSequences;
 
 /**
  *
@@ -70,15 +72,18 @@ import org.openide.filesystems.FileObject;
  */
 public class CssParser extends Parser {
     
-    private static final Logger LOG = Logger.getLogger(CssParser.class.getSimpleName());
-
+    private static final CharSequence TEMPLATING_MARK = "@@@"; //NOI18N
     
+    private static final Logger LOG = Logger.getLogger(CssParser.class.getSimpleName());
     private CssParserResult result;
 
     public static CssParserResult parse(Snapshot snapshot) throws ParseException {
+        if(snapshot == null) {
+            return null;
+        }
         FileObject fo = snapshot.getSource().getFileObject();
-        String fileName = fo == null ? "no file" : fo.getPath();
-        LOG.log(Level.FINE, "Parsing {0} ", fileName);
+        String fileName = fo == null ? "no file" : fo.getPath(); //NOI18N
+        LOG.log(Level.FINE, "Parsing {0} ", fileName); //NOI18N
         long start = System.currentTimeMillis();
         try {
             CharSequence source = snapshot.getText();
@@ -94,13 +99,69 @@ public class CssParser extends Parser {
             problems.addAll(lexer.getProblems());
             //add parser issues
             problems.addAll(builder.getProblems());
+            
+            
 
-            return new CssParserResult(snapshot, tree, problems);
+            return new CssParserResult(snapshot, tree, filterTemplatingProblems(snapshot, problems));
         } catch (RecognitionException ex) {
-            throw new ParseException(String.format("Error parsing %s snapshot.", snapshot), ex);
+            throw new ParseException(String.format("Error parsing %s snapshot.", snapshot), ex); //NOI18N
         } finally {
             long end = System.currentTimeMillis();
-            LOG.log(Level.FINE, "Parsing of {0} took {1} ms.", new Object[]{fileName, (end - start)});
+            LOG.log(Level.FINE, "Parsing of {0} took {1} ms.", new Object[]{fileName, (end - start)}); //NOI18N
+        }
+    }
+    
+    
+    //filtering out problems caused by templating languages
+    private static List<ProblemDescription> filterTemplatingProblems(Snapshot snapshot, List<ProblemDescription> problems) {
+        MimePath mimePath = snapshot.getMimePath();
+        CharSequence text = snapshot.getText();
+        if(mimePath.size() <= 2 || mimePath.size() == 3 && mimePath.getMimeType(0).equals("text/xhtml")) { //NOI18N
+            //text/css
+            //or
+            //text/html/text/css
+            //or
+            //hack for the fake text/xhtml language:
+            //for .xhtml files the mime is text/xhtml/text/html/text/css
+            return problems;
+        } else {
+            //typically text/php/text/html/text/css
+            List<ProblemDescription> filtered = new ArrayList<ProblemDescription>(problems.size());
+            for(ProblemDescription p : problems) {
+                //XXX Idealy the filtering context should be dependent on the enclosing node
+                //sg. like if there's a templating error in an declaration - search the whole
+                //declaration for the templating mark. 
+                //
+                //Using some simplification - line context, though some nodes may span multiple
+                //lines and the templating mark may not necessarily be at the line with the error.
+                //
+                //so find line bounds...
+                
+                //the "premature end of file" error has position pointing after the last char (=text.length())!
+                if(p.getFrom() == text.length()) {
+                    continue; //consider this as hidden error
+                }
+                
+                int from, to;
+                for(from = p.getFrom(); from > 0;from--) {
+                    char c = text.charAt(from);
+                    if(c == '\n') {
+                        break;
+                    }
+                }
+                for(to = p.getTo(); to < text.length(); to++) {
+                    char c = text.charAt(to);
+                    if(c == '\n') {
+                        break;
+                    }
+                }
+                //check if there's the templating mark (@@@) in the context
+                CharSequence img = snapshot.getText().subSequence(from, to);
+                if(CharSequences.indexOf(img, TEMPLATING_MARK) == -1) {
+                    filtered.add(p);
+                }
+            }
+            return filtered;
         }
     }
 
@@ -110,7 +171,7 @@ public class CssParser extends Parser {
     }
 
     @Override
-    public Result getResult(Task task) throws ParseException {
+    public ParserResult getResult(Task task) throws ParseException {
         return result;
     }
 

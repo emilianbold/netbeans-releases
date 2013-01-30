@@ -52,6 +52,19 @@ made subject to such option by the copyright holder.
     <apidef name="general">OSGi Related Behavior</apidef>
 </apidefs>
 <changes>
+    <change id="inject.system.properties">
+      <api name="spi"/>
+      <summary>Use -J-D to influence configuration of Felix</summary>
+      <version major="1" minor="18"/>
+      <date day="20" month="9" year="2012"/>
+      <author login="jtulach"/>
+      <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible"/>
+      <description>
+          One can influence behavior of Felix OSGi container by <a href="architecture-summary.html#systemproperty-felix_org.osgi.framework">
+          specifying</a> system properties. 
+     </description>
+     <issue number="218022"/>
+    </change>
     <change id="osgi-4.3">
       <api name="general"/>
       <summary>Updated to OSGi 4.3</summary>

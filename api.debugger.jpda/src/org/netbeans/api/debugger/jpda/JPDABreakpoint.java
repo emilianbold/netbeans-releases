@@ -243,7 +243,7 @@ public class JPDABreakpoint extends Breakpoint {
     /**
      * Get the specific session where this breakpoint belongs to.
      * If not <code>null</code>, the breakpoint is considered in this session only
-     * and is discarted after this session finishes.
+     * and is discarded after this session finishes.
      *
      * @return the specific session or <code>null</code>.
      */

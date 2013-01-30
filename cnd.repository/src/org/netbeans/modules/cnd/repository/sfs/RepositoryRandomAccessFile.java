@@ -47,14 +47,19 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
+import org.netbeans.modules.cnd.repository.relocate.api.UnitCodec;
 
 /**
  *
  * @author Alexander Simon
  */
 public class RepositoryRandomAccessFile extends RandomAccessFile implements RepositoryDataOutput, RepositoryDataInput, SharedStringBuffer {
-    public RepositoryRandomAccessFile(File file, String mode) throws FileNotFoundException {
+    
+    private final UnitCodec unitCodec;
+    
+    public RepositoryRandomAccessFile(File file, String mode, UnitCodec unitCodec) throws FileNotFoundException {
         super(file, mode);
+        this.unitCodec = unitCodec;
     }
 
     @Override
@@ -63,10 +68,20 @@ public class RepositoryRandomAccessFile extends RandomAccessFile implements Repo
     }
 
     @Override
+    public void writeUnitId(int unitId) throws IOException {
+        writeInt(unitCodec.unmaskRepositoryID(unitId));
+    }
+
+    @Override
     public CharSequence readCharSequenceUTF() throws IOException {
         return UTF.readCharSequenceUTF(this);
     }
-    
+
+    @Override
+    public int readUnitId() throws IOException {
+        return unitCodec.maskByRepositoryID(readInt());
+    }
+
     private static final int sharedArrySize = 1024;
     private final byte[] sharedByteArray = new byte[sharedArrySize];
     private final char[] sharedCharArray = new char[sharedArrySize];

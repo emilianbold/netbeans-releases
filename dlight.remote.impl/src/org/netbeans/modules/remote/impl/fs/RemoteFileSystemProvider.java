@@ -48,6 +48,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.logging.Level;
+import org.netbeans.modules.dlight.libs.common.DLightLibsCommonLogger;
 import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
@@ -92,7 +93,7 @@ public class RemoteFileSystemProvider implements FileSystemProviderImplementatio
     public boolean isAbsolute(String path) {
         return path.startsWith("/"); //NOI18N
     }
-    
+
     @Override
     public FileObject getFileObject(FileObject baseFileObject, String relativeOrAbsolutePath) {
         if (baseFileObject instanceof RemoteFileObject) {
@@ -154,7 +155,7 @@ public class RemoteFileSystemProvider implements FileSystemProviderImplementatio
     }
 
     @Override
-    public String getCanonicalPath(FileSystem fs, String absPath) throws IOException {        
+    public String getCanonicalPath(FileSystem fs, String absPath) throws IOException {
         FileObject fo = fs.findResource(absPath);
         if (fo != null) {
             try {
@@ -165,14 +166,14 @@ public class RemoteFileSystemProvider implements FileSystemProviderImplementatio
         }
         return PathUtilities.normalizeUnixPath(absPath);
     }
-    
+
     @Override
     public String getCanonicalPath(ExecutionEnvironment env, String absPath) throws IOException {
         RemoteLogger.assertTrueInConsole(env.isRemote(), getClass().getSimpleName() + ".getCanonicalPath is called for LOCAL env: " + env); //NOI18N
         FileSystem fs = RemoteFileSystemManager.getInstance().getFileSystem(env);
         return getCanonicalPath(fs, absPath);
     }
-    
+
     @Override
     public ExecutionEnvironment getExecutionEnvironment(FileSystem fileSystem) {
         if (fileSystem instanceof RemoteFileSystem) {
@@ -194,7 +195,7 @@ public class RemoteFileSystemProvider implements FileSystemProviderImplementatio
             return true;
         }
     }
-    
+
     @Override
     public boolean waitWrites(ExecutionEnvironment env, Collection<FileObject> filesToWait, Collection<String> failedFiles) throws InterruptedException {
         if (env.isRemote() && RemoteFileObjectBase.DEFER_WRITES) {
@@ -202,123 +203,106 @@ public class RemoteFileSystemProvider implements FileSystemProviderImplementatio
         } else {
             return true;
         }
-    }    
+    }
 
     @Override
+    /**
+     * Returns a FileOblect referenced by the provided URI.
+     * Strictly speaking this is not an URL, but rather a string returned by
+     * one of the toURL() methods.
+     */
     public FileObject urlToFileObject(String path) {
-        if (path.startsWith(RemoteFileURLStreamHandler.PROTOCOL_PREFIX)) {
-            // path is like "rfs:hostname:22/tmp/filename.ext"
-            // or           "rfs:username@hostname:22/tmp/filename.ext"
-            // or           "rfs://username@hostname:22/tmp/filename.ext"
-            int port = 0;
-            StringBuilder hostName = new StringBuilder();
-            String userName = null;
-            CharSequence remotePath = "";
-            boolean insideHostOrUser = true;
-            int firstSlashes = 0;
-            for (int i = RemoteFileURLStreamHandler.PROTOCOL_PREFIX.length(); i < path.length(); i++) {
-                char c = path.charAt(i);
-                if (firstSlashes >= 0) {
-                    if (c == '/') {
-                        firstSlashes++;
-                        if (firstSlashes > 2) {
-                            // error
-                            throw new IllegalArgumentException("Invalid path: " + path); //NOI18N
-                        }
-                        continue;
-                    } else {
-                        if (firstSlashes != 0 && firstSlashes != 2) {
-                            // error
-                            throw new IllegalArgumentException("Invalid path: " + path); //NOI18N
-                        }
-                        firstSlashes = -1;
-                        insideHostOrUser = true;
-                    }
-                }
-                if (insideHostOrUser) {
-                    if (c == '@') {
-                        userName = hostName.toString(); // it was user, not host
-                        hostName = new StringBuilder();
-                    } else if (c == ':') {
-                        insideHostOrUser = false;
-                    } else {
-                        hostName.append(c);
-                    }
-                } else {
-                    if (Character.isDigit(c)) {
-                        int digit = (int) c - (int) '0';
-                        port = port * 10 + digit;
-                    } else {
-                        remotePath = path.subSequence(i + 1, path.length());
-                        break;
-                    }
-                }
-            }
-            if (hostName.length() == 0) {
-                throw new IllegalArgumentException("Invalid path: " + path); //NOI18N
-            }
-            if (port == 0) {
-                port = 22;
-            }
-            FileObject fo = null;
-            RemoteFileSystem fs = null;
-            ExecutionEnvironment env;
-            if (userName == null) {
-                RemoteLogger.assertTrueInConsole(false, "Trying to access remote file system without user name");
-                env = RemoteFileSystemUtils.getExecutionEnvironment(hostName.toString(), 0);
-                if (env == null) {
-                    env = ExecutionEnvironmentFactory.createNew(System.getProperty("user.name"), hostName.toString());
-                }
-            } else {
-                env = ExecutionEnvironmentFactory.createNew(userName, hostName.toString(), port);
-            }
-            fs = RemoteFileSystemManager.getInstance().getFileSystem(env);
-            fo = fs.findResource(remotePath.toString());
-//            if (fo == null) {
-//                fo = InvalidFileObjectSupport.getInvalidFileObject(fs, remotePath);
-//            }
-            return fo;
+        DLightLibsCommonLogger.assertNonUiThreadOnce(Level.INFO);
+
+        if (!path.startsWith(RemoteFileURLStreamHandler.PROTOCOL_PREFIX)) {
+            return null;
         }
-        return null;
+
+        String url = path.substring(RemoteFileURLStreamHandler.PROTOCOL_PREFIX.length());
+        if (url.startsWith("//")) { // NOI18N
+            url = url.substring(2);
+        }
+
+        int idx = url.indexOf(":/"); // NOI18N
+
+        String envPart;
+        String pathPart;
+        if (idx < 0) {
+            envPart = url;
+            pathPart = "/"; // NOI18N
+        } else {
+            envPart = url.substring(0, idx);
+            pathPart = url.substring(idx + 1);
+        }
+
+        ExecutionEnvironment env = null;
+        if (envPart.indexOf('@') < 0) {
+            // The magic below is about getting connected environment even
+            // when no user is specified ...
+            RemoteLogger.assertTrueInConsole(false, "Trying to access remote file system without user name"); // NOI18N
+            idx = envPart.lastIndexOf(':');
+            String host = (idx < 0) ? envPart : envPart.substring(0, idx);
+            env = RemoteFileSystemUtils.getExecutionEnvironment(host, 0);
+        }
+        if (env == null) {
+            env = ExecutionEnvironmentFactory.fromUniqueID(envPart);
+        }
+        if (env == null) {
+            throw new IllegalArgumentException("Invalid path: " + path); //NOI18N
+        }
+
+        RemoteFileSystem fs = RemoteFileSystemManager.getInstance().getFileSystem(env);
+        return fs.findResource(pathPart);
     }
 
     @Override
+    /**
+     * Returns an URL-like string for the passed fileObject.
+     * Later it could be passed to the urlToFileObject() method to get a 
+     * FileObject. 
+     */
     public String toURL(FileObject fileObject) {
-        if (fileObject instanceof RemoteFileObject) {
-            ExecutionEnvironment env =((RemoteFileObject) fileObject).getExecutionEnvironment();
-            return getUrlPrefix(env) + fileObject.getPath();
+        if (!(fileObject instanceof RemoteFileObject)) {
+            return null;
         }
-        return null;
-    }
-    
-    private String getUrlPrefix(ExecutionEnvironment env) {
-        return RemoteFileURLStreamHandler.PROTOCOL_PREFIX + env.getUser() + '@' + env.getHost() + ':' + env.getSSHPort();
+
+        ExecutionEnvironment env = ((RemoteFileObject) fileObject).getExecutionEnvironment();
+        String path = fileObject.getPath();
+        if (path == null || path.isEmpty()) {
+            path = "/"; // NOI18N
+        }
+        return RemoteFileURLStreamHandler.PROTOCOL_PREFIX + ExecutionEnvironmentFactory.toUniqueID(env) + ':' + path;
     }
 
     @Override
+    /**
+     * Returns an URL-like string for the passed fileSystem and absPath.
+     * Later it could be passed to the urlToFileObject() method to get a 
+     * FileObject. 
+     */
     public String toURL(FileSystem fileSystem, String absPath) {
         RemoteLogger.assertTrue(RemoteFileSystemUtils.isPathAbsolute(absPath), "Path must be absolute: " + absPath); //NOPI18N        
-        if (fileSystem instanceof RemoteFileSystem) {
-            ExecutionEnvironment env =((RemoteFileSystem) fileSystem).getExecutionEnvironment();
-            return getUrlPrefix(env) + absPath;
-        } else {
+        if (!(fileSystem instanceof RemoteFileSystem)) {
             throw new IllegalArgumentException("File system should be an istance of " + RemoteFileSystem.class.getName()); //NOI18N
         }
+
+        ExecutionEnvironment env = ((RemoteFileSystem) fileSystem).getExecutionEnvironment();
+        return RemoteFileURLStreamHandler.PROTOCOL_PREFIX + ExecutionEnvironmentFactory.toUniqueID(env) + ':' + absPath;
     }
 
     @Override
     public FileObject fileToFileObject(File file) {
-        if (file instanceof FileObjectBasedFile) {
-            return ((FileObjectBasedFile) file).getFileObject();
+        if (!(file instanceof FileObjectBasedFile)) {
+            return null;
         }
-        return null;
+        return ((FileObjectBasedFile) file).getFileObject();
     }
 
     @Override
     public boolean isMine(File file) {
         return file instanceof FileObjectBasedFile;
     }
-    
+
     @Override
     public void scheduleRefresh(FileObject fileObject) {
         if (fileObject instanceof RemoteFileObject) {
@@ -352,12 +336,12 @@ public class RemoteFileSystemProvider implements FileSystemProviderImplementatio
             fileObject.removeRecursiveListener(listener);
         }
     }
-    
+
     @Override
     public void addFileChangeListener(FileChangeListener listener, FileSystem fileSystem, String path) {
         RemoteLogger.assertTrue(fileSystem instanceof RemoteFileSystem, "Unexpected file system class: " + fileSystem); // NOI18N
         ((RemoteFileSystem) fileSystem).getFactory().addFileChangeListener(path, listener);
-        
+
     }
 
     @Override
@@ -375,7 +359,7 @@ public class RemoteFileSystemProvider implements FileSystemProviderImplementatio
     public void removeFileChangeListener(FileChangeListener listener) {
         RemoteFileSystemManager.getInstance().removeFileChangeListener(listener);
     }
-    
+
     @Override
     public boolean canExecute(FileObject fileObject) {
         RemoteLogger.assertTrue(fileObject instanceof RemoteFileObject, "Unexpected file object class: " + fileObject); // NOI18N
@@ -383,8 +367,8 @@ public class RemoteFileSystemProvider implements FileSystemProviderImplementatio
             return ((RemoteFileObject) fileObject).getImplementor().canExecute();
         }
         return false;
-    }    
-    
+    }
+
     @Override
     public char getFileSeparatorChar() {
         return '/';

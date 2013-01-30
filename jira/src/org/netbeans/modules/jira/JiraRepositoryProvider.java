@@ -38,6 +38,7 @@
 package org.netbeans.modules.jira;
 
 import java.awt.Image;
+import java.beans.PropertyChangeListener;
 import java.util.Collection;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiRepositoryProvider;
 import org.netbeans.modules.bugtracking.spi.RepositoryController;
@@ -104,6 +105,16 @@ public class JiraRepositoryProvider extends KenaiRepositoryProvider<JiraReposito
         return r.getLookup();
     }
     
+    @Override
+    public void removePropertyChangeListener(JiraRepository r, PropertyChangeListener listener) {
+        
+    }
+
+    @Override
+    public void addPropertyChangeListener(JiraRepository r, PropertyChangeListener listener) {
+    
+    }
+    
     /********************************************************************************
      * Kenai
      ********************************************************************************/
@@ -119,4 +130,5 @@ public class JiraRepositoryProvider extends KenaiRepositoryProvider<JiraReposito
         assert repository instanceof KenaiRepository;
         return ((KenaiRepository)repository).getMyIssuesQuery();
     }
+
 }

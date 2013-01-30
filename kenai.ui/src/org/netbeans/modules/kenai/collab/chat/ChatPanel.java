@@ -53,6 +53,8 @@ import java.net.URL;
 import java.text.DateFormat;
 import java.util.*;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.*;
@@ -89,8 +91,8 @@ import org.netbeans.modules.kenai.api.KenaiService;
 import org.netbeans.modules.kenai.api.KenaiService.Type;
 import org.netbeans.modules.kenai.ui.spi.KenaiIssueAccessor;
 import org.netbeans.modules.kenai.ui.spi.KenaiIssueAccessor.IssueHandle;
-import org.netbeans.modules.kenai.ui.spi.KenaiUserUI;
-import org.netbeans.modules.kenai.ui.spi.UIUtils;
+import org.netbeans.modules.kenai.ui.api.KenaiUserUI;
+import org.netbeans.modules.kenai.ui.api.KenaiUIUtils;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.awt.DropDownButtonFactory;
 import org.openide.awt.HtmlBrowser.URLDisplayer;
@@ -241,13 +243,16 @@ public class ChatPanel extends javax.swing.JPanel {
     }
 
     private void insertLinkToIssue() {
-        IssueHandle[] issues;
-        if (muc==null) {
-            issues = KenaiIssueAccessor.getDefault().getRecentIssues();
-        } else {
-            issues = KenaiIssueAccessor.getDefault().getRecentIssues(getKenaiProject());
+        IssueHandle[] issues = null;
+        KenaiIssueAccessor issueAccessor = KenaiIssueAccessor.getDefault();
+        if (issueAccessor != null) {
+            if (muc==null) {
+                issues = issueAccessor.getRecentIssues();
+            } else {
+                issues = issueAccessor.getRecentIssues(getKenaiProject());
+            }
         }
-        if (issues.length >0) {
+        if (issues != null && issues.length >0) {
             new InsertLinkAction(issues[0], outbox, false).actionPerformed(null);
         }
     }
@@ -295,21 +300,22 @@ public class ChatPanel extends javax.swing.JPanel {
         } catch (KenaiException ex) {
             Exceptions.printStackTrace(ex);
         }
-        if (trackers.length == 0) { // No issue trackers found for the project
+        final KenaiIssueAccessor acc = KenaiIssueAccessor.getDefault();
+        if (acc == null || trackers.length == 0) { // No issue trackers found for the project
             return;
         }
         if (trackers[0].getService().equals(KenaiService.Names.JIRA)) {
             SwingUtilities.invokeLater(new Runnable() {
 
                 public void run() { // issue ID format: PROJECT_NAME-123
-                    KenaiIssueAccessor.getDefault().open(proj, proj.getName().toUpperCase().replaceAll("-", "_") + "-" + issueNumber); // NOI18N
+                    acc.open(proj, proj.getName().toUpperCase().replaceAll("-", "_") + "-" + issueNumber); // NOI18N
                 }
             });
         } else if (trackers[0].getService().equals(KenaiService.Names.BUGZILLA)) {
             SwingUtilities.invokeLater(new Runnable() {
 
                 public void run() {
-                    KenaiIssueAccessor.getDefault().open(proj, issueNumber);
+                    acc.open(proj, issueNumber);
                 }
             });
         }
@@ -514,7 +520,7 @@ public class ChatPanel extends javax.swing.JPanel {
         outbox.setComponentPopupMenu(dropDownMenu);
 
 
-        UIUtils.logKenaiUsage("CHAT", isPrivate() ? "PRIVATE_CHAT" : "CHATROOM"); // NOI18N
+        KenaiUIUtils.logKenaiUsage("CHAT", isPrivate() ? "PRIVATE_CHAT" : "CHATROOM"); // NOI18N
     }
 
     void insertToInputArea(String message) {
@@ -819,7 +825,7 @@ public class ChatPanel extends javax.swing.JPanel {
                         suc.sendMessage(m);
                         insertMessage(m);
                     }
-                    UIUtils.logKenaiUsage("CHAT", "MESSAGE_SENT"); // NOI18N
+                    KenaiUIUtils.logKenaiUsage("CHAT", "MESSAGE_SENT"); // NOI18N
                 }
             } catch (XMPPException ex) {
                 Exceptions.printStackTrace(ex);
@@ -887,15 +893,18 @@ public class ChatPanel extends javax.swing.JPanel {
 
     private boolean isIssueRelated(TopComponent tc) {
         IssueHandle[] issues;
-        if (muc==null) {
-            issues = KenaiIssueAccessor.getDefault().getRecentIssues();
+        KenaiIssueAccessor accessor = KenaiIssueAccessor.getDefault();
+        if (accessor == null) {
+            return false;
+        } else if (muc==null) {
+            issues = accessor.getRecentIssues();
             if (issues.length<1) {
                 return false;
             }
             return issues[0].isShowing();
         } else {
-            issues = KenaiIssueAccessor.getDefault().getRecentIssues(getKenaiProject());
-            IssueHandle[] allIssues = KenaiIssueAccessor.getDefault().getRecentIssues();
+            issues = accessor.getRecentIssues(getKenaiProject());
+            IssueHandle[] allIssues = accessor.getRecentIssues();
             if (issues.length < 1) {
                 return false;
             }
@@ -957,13 +966,19 @@ public class ChatPanel extends javax.swing.JPanel {
         }
 
         IssueHandle[] issues;
-        if (muc==null) {
-            issues = KenaiIssueAccessor.getDefault().getRecentIssues();
+        KenaiIssueAccessor issueAccessor = KenaiIssueAccessor.getDefault();
+        if (issueAccessor == null) {
+            issues = null;
+        } else if (muc==null) {
+            issues = issueAccessor.getRecentIssues();
         } else {
-            issues = KenaiIssueAccessor.getDefault().getRecentIssues(getKenaiProject());
+            issues = issueAccessor.getRecentIssues(getKenaiProject());
+        }
+        if (issues == null) {
+            issues = new IssueHandle[0];
         }
 
-        for (int i=0;issues!=null&& i<3 && i< issues.length;i++) {
+        for (int i=0;i<3 && i< issues.length;i++) {
             Mode editor = WindowManager.getDefault().findMode("editor");//NOI18N
             TopComponent tc = editor.getSelectedTopComponent();
             dropDownMenu.add(new InsertLinkAction(issues[i], outbox, isIssueRelated(tc)));
@@ -1039,12 +1054,18 @@ public class ChatPanel extends javax.swing.JPanel {
             return body;
         }
 
-        String id = n.getModifications().get(0).getId();
+        String id;
+        if (n.getModifications().isEmpty()) {
+            Logger.getLogger(ChatPanel.class.getName()).log(Level.INFO, "empty modifications: {0}", n.getUri());
+            id = ""; //NOI18N
+        } else {
+            id = n.getModifications().get(0).getId();
+        }
         String projectName = StringUtils.parseName(m.getFrom());
         if (projectName.contains("@")) { // NOI18N
             projectName = StringUtils.parseName(projectName);
         }
-        String url = kenai.getUrl().toString()+ "/projects/" + projectName + "/sources/" + (n.getFeatureName()!=null?n.getFeatureName():n.getServiceName()) + "/revision/" + id; // NOI18N
+        String url = kenai.getUrl().toString()+ "/projects/" + projectName + "/sources/" + (n.getFeatureName()!=null?n.getFeatureName():n.getServiceName()) + (id.isEmpty() ? "/show" : "/revision/" + id); //NOI18N
         return body + "\n" + url; // NOI18N
     }
 

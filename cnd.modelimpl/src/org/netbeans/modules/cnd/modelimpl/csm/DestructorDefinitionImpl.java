@@ -52,12 +52,14 @@ import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.deep.CsmCompoundStatement;
 import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
+import org.netbeans.modules.cnd.modelimpl.csm.FunctionParameterListImpl.FunctionParameterListBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstRenderer;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
-import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
+import org.netbeans.modules.cnd.modelimpl.csm.deep.StatementBase.StatementBuilderContainer;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
+import org.openide.util.CharSequences;
 
 /**
  * @author Vladimir Kvashin
@@ -121,6 +123,42 @@ public final class DestructorDefinitionImpl extends FunctionDefinitionImpl<CsmFu
     public CsmType getReturnType() {
         return NoType.instance();
     }
+    
+    public static class DestructorDefinitionBuilder extends FunctionDefinitionBuilder implements StatementBuilderContainer {
+
+        @Override
+        public void setName(CharSequence name) {
+            super.setName("~" + name); // NOI18N
+        }        
+        
+        @Override
+        public DestructorDefinitionImpl create() {
+            CsmScope scope = AstRenderer.FunctionRenderer.getScope(getScope(), getFile(), isStatic(), true);
+
+            DestructorDefinitionImpl impl = new DestructorDefinitionImpl(getName(), getRawName(), scope, isStatic(), isConst(), getFile(), getStartOffset(), getEndOffset(), true);
+            temporaryRepositoryRegistration(true, impl);
+
+            if(getTemplateDescriptorBuilder() != null) {
+                impl.setTemplateDescriptor(getTemplateDescriptor(), NameCache.getManager().getString(CharSequences.create(""))); // NOI18N
+            }
+            
+            ((FunctionParameterListBuilder)getParametersListBuilder()).setScope(impl);
+            impl.setParameters(((FunctionParameterListBuilder)getParametersListBuilder()).create(), false);
+            
+            impl.setClassOrNspNames(getScopeNames());        
+            
+            getBodyBuilder().setScope(impl);
+            impl.setCompoundStatement(getBodyBuilder().create());
+
+            postObjectCreateRegistration(true, impl);
+            postFunctionImpExCreateRegistration(getFileContent(), isGlobal(), impl);
+            getNameHolder().addReference(getFileContent(), impl);
+            
+            addDeclaration(impl);
+            
+            return impl;
+        }
+    }    
 
     ////////////////////////////////////////////////////////////////////////////
     // impl of SelfPersistent

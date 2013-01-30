@@ -100,15 +100,13 @@ class FoldingTaskListModel extends TaskListModel {
     @Override
     protected Task getTaskAtRow( int row ) {
         synchronized( groups ) {
-            if( isGroupRow( row ) )
-                return null;
             int groupRow = 0;
             for( FoldingGroup g : groups ) {
                 synchronized (g.TASK_LOCK) {
                     if( row < groupRow+g.getRowCount() ) {
                         int indexInGroup = row-groupRow-1;
-                        if (indexInGroup < 0) {
-                            LOG.log(Level.WARNING, "wrong index calculated: indexInGroup={0}, row={1}, groupRow={2}", new Object[] {indexInGroup, row, groupRow});
+                        if (indexInGroup == -1) {
+                            return null;
                         }
                         return g.getTaskAt( indexInGroup);
                     }

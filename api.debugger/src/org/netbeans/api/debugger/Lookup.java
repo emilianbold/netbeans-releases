@@ -47,14 +47,11 @@ package org.netbeans.api.debugger;
 import java.beans.Customizer;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
+import java.lang.reflect.Field;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -78,15 +75,14 @@ import java.util.logging.Logger;
 import org.netbeans.spi.debugger.ContextAwareService;
 import org.netbeans.spi.debugger.ContextAwareSupport;
 import org.netbeans.spi.debugger.ContextProvider;
+import org.openide.filesystems.FileObject;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup.Item;
 import org.openide.util.LookupEvent;
-import org.openide.util.LookupListener;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 import org.openide.util.WeakSet;
-import org.openide.util.lookup.Lookups;
 import org.openide.util.Lookup.Result;
 import org.openide.util.lookup.AbstractLookup;
 
@@ -108,14 +104,18 @@ abstract class Lookup implements ContextProvider {
 
     private static final Logger logger = Logger.getLogger(Lookup.class.getName());
     
+    @Override
     public <T> T lookupFirst(String folder, Class<T> service) {
         List<? extends T> l = lookup(folder, service);
         synchronized (l) {
-            if (l.isEmpty ()) return null;
+            if (l.isEmpty ()) {
+                return null;
+            }
             return l.get (0);
         }
     }
     
+    @Override
     public abstract <T> List<? extends T> lookup(String folder, Class<T> service);
     
     
@@ -130,13 +130,15 @@ abstract class Lookup implements ContextProvider {
             this.services = services;
         }
         
+        @Override
         public <T> List<? extends T> lookup(String folder, Class<T> service) {
             List<T> l = new ArrayList<T>();
             for (Object s : services) {
                 if (service.isInstance(s)) {
                     l.add(service.cast(s));
-                    if (verbose)
+                    if (verbose) {
                         System.out.println("\nR  instance " + s + " found");
+                    }
                 }
             }
             return l;
@@ -153,24 +155,41 @@ abstract class Lookup implements ContextProvider {
             setContext (this);
         }
         
+        @Override
         public <T> List<? extends T> lookup(String folder, Class<T> service) {
             return new CompoundLookupList<T>(folder, service);
         }
         
         void setContext (Lookup context) {
-            if (l1 instanceof Compound) ((Compound) l1).setContext (context);
-            if (l1 instanceof MetaInf) ((MetaInf) l1).setContext (context);
-            if (l2 instanceof Compound) ((Compound) l2).setContext (context);
-            if (l2 instanceof MetaInf) ((MetaInf) l2).setContext (context);
+            if (l1 instanceof Compound) {
+                ((Compound) l1).setContext (context);
+            }
+            if (l1 instanceof MetaInf) {
+                ((MetaInf) l1).setContext (context);
+            }
+            if (l2 instanceof Compound) {
+                ((Compound) l2).setContext (context);
+            }
+            if (l2 instanceof MetaInf) {
+                ((MetaInf) l2).setContext (context);
+            }
         }
 
-        private class CompoundLookupList<T> extends LookupList<T> implements Customizer,
-                                                                       PropertyChangeListener {
+        @Override
+        public String toString() {
+            return "Lookup.Compound@"+Integer.toHexString(hashCode())+"[l1="+l1+", l2="+l2+"]";
+        }
+        
+        private class CompoundLookupList<T> extends LookupList<T>
+                                            implements PositionedList<T>,
+                                                       Customizer,
+                                                       PropertyChangeListener {
             
             private String folder;
             private Class<T> service;
             private List<PropertyChangeListener> propertyChangeListeners;
             private Customizer sublist1, sublist2;
+            private List<PositionedElement> positionedElements;
             
             public CompoundLookupList(String folder, Class<T> service) {
                 super(null);
@@ -183,30 +202,126 @@ abstract class Lookup implements ContextProvider {
                 clear();
                 List<? extends T> list1 = l1.lookup(folder, service);
                 List<? extends T> list2 = l2.lookup(folder, service);
+                if (list1 instanceof PositionedList || list2 instanceof PositionedList) {
+                    List<PositionedElement> positioned = new ArrayList<PositionedElement>();
+                    List<T> others = new ArrayList<T>();
+                    boolean hp1 = false;
+                    if (list1 instanceof PositionedList) {
+                        PositionedList<? extends T> ml1 = (PositionedList<? extends T>) list1;
+                        if (ml1.hasPositions()) {
+                            fillElements(ml1, positioned, others);
+                            hp1 = true;
+                        }
+                    }
+                    boolean hp2 = false;
+                    if (list2 instanceof PositionedList) {
+                        PositionedList<? extends T> ml2 = (PositionedList<? extends T>) list2;
+                        if (ml2.hasPositions()) {
+                            fillElements(ml2, positioned, others);
+                            hp2 = true;
+                        }
+                    }
+                    if (hp1 && hp2) { // merge
+                        if (!positioned.isEmpty()) {
+                            Collections.sort(positioned);
+                            Set<String> hiddenClassNames = new HashSet<String>();
+                            addHiddenClassNames(list1, hiddenClassNames);
+                            addHiddenClassNames(list2, hiddenClassNames);
+                            List<T> sorted = new LookupList<T>(hiddenClassNames);
+                            for (PositionedElement<T> pe : positioned) {
+                                sorted.add(pe.element);
+                            }
+                            positionedElements = positioned;
+                            list1 = sorted;
+                        } else {
+                            list1 = Collections.emptyList();
+                        }
+                        list2 = others;
+                    } else if (hp1) {
+                        positionedElements = positioned;
+                    } else if (hp2) {
+                        positionedElements = positioned;
+                        List<? extends T> switchList = list1;
+                        list1 = list2;
+                        list2 = switchList;
+                    }
+                }
                 addAll (list1);
                 addAll (list2);
                 sublist1 = (list1 instanceof Customizer) ? (Customizer) list1 : null;
                 sublist2 = (list2 instanceof Customizer) ? (Customizer) list2 : null;
             }
-
-            public synchronized void setObject(Object bean) {
-                if (sublist1 != null) sublist1.setObject(bean);
-                if (sublist2 != null) sublist2.setObject(bean);
+            
+            private void addHiddenClassNames(List list, Set<String> hiddenClassNames) {
+                if (list instanceof LookupList) {
+                    Set<String> hcn = ((LookupList) list).hiddenClassNames;
+                    if (hcn != null) {
+                        hiddenClassNames.addAll(hcn);
+                    }
+                }
+            }
+            
+            private void fillElements(PositionedList<? extends T> ml,
+                                      List<PositionedElement> positioned, List<T> others) {
+                int s1 = ml.size();
+                for (int i = 0; i < s1; i++) {
+                    T obj = ml.get(i);
+                    int pos = ml.getPosition(i);
+                    if (pos == 0 || pos == Integer.MAX_VALUE) {
+                        others.add(obj);
+                    } else {
+                        PositionedElement<T> p = new PositionedElement<T>();
+                        p.element = obj;
+                        p.position = pos;
+                        positioned.add(p);
+                    }
+                }
             }
 
+            @Override
+            public boolean hasPositions() {
+                return positionedElements != null && !positionedElements.isEmpty();
+            }
+
+            @Override
+            public int getPosition(int elementIndex) {
+                if (elementIndex < positionedElements.size()) {
+                    return positionedElements.get(elementIndex).position;
+                } else {
+                    return Integer.MAX_VALUE;
+                }
+            }
+            
+            @Override
+            public synchronized void setObject(Object bean) {
+                if (sublist1 != null) {
+                    sublist1.setObject(bean);
+                }
+                if (sublist2 != null) {
+                    sublist2.setObject(bean);
+                }
+            }
+
+            @Override
             public synchronized void addPropertyChangeListener(PropertyChangeListener listener) {
                 if (propertyChangeListeners == null) {
                     propertyChangeListeners = new ArrayList<PropertyChangeListener>();
-                    if (sublist1 != null) sublist1.addPropertyChangeListener(this);
-                    if (sublist2 != null) sublist2.addPropertyChangeListener(this);
+                    if (sublist1 != null) {
+                        sublist1.addPropertyChangeListener(this);
+                    }
+                    if (sublist2 != null) {
+                        sublist2.addPropertyChangeListener(this);
+                    }
                 }
                 propertyChangeListeners.add(listener);
             }
 
+            @Override
             public synchronized void removePropertyChangeListener(PropertyChangeListener listener) {
                 propertyChangeListeners.remove(listener);
             }
 
+            @Override
             public void propertyChange(PropertyChangeEvent e) {
                 setUp();
                 List<PropertyChangeListener> listeners;
@@ -219,6 +334,20 @@ abstract class Lookup implements ContextProvider {
                 PropertyChangeEvent evt = new PropertyChangeEvent(this, "content", null, null);
                 for (PropertyChangeListener l : listeners) {
                     l.propertyChange(evt);
+                }
+            }
+        }
+        
+        private static class PositionedElement<T> implements Comparable {
+            T element;
+            int position;
+
+            @Override
+            public int compareTo(Object o) {
+                if (o instanceof PositionedElement) {
+                    return position - ((PositionedElement) o).position;
+                } else {
+                    return +1;
                 }
             }
         }
@@ -249,7 +378,9 @@ abstract class Lookup implements ContextProvider {
 
         
         MetaInf (String rootFolder) {
-            if (rootFolder != null && rootFolder.length() == 0) rootFolder = null;
+            if (rootFolder != null && rootFolder.length() == 0) {
+                rootFolder = null;
+            }
             this.rootFolder = rootFolder;
             moduleLookupResult = org.openide.util.Lookup.getDefault().lookupResult(ModuleInfo.class);
             //System.err.println("\nModules = "+moduleLookupResult.allInstances().size()+"\n");
@@ -264,6 +395,7 @@ abstract class Lookup implements ContextProvider {
             this.context = context;
         }
         
+        @Override
         public <T> List<? extends T> lookup(String folder, Class<T> service) {
             MetaInfLookupList<T> mll = new MetaInfLookupList<T>(folder, service);
             synchronized (lookupLists) {
@@ -338,19 +470,28 @@ abstract class Lookup implements ContextProvider {
                 while (e.hasMoreElements ()) {
                     URL url = e.nextElement();
                     // Ignore duplicated URLs, necessary because of tests
-                    if (urls.contains(url)) continue;
+                    if (urls.contains(url)) {
+                        continue;
+                    }
                     urls.add(url);
                     InputStream is = url.openStream ();
-                    if (is == null) continue;
+                    if (is == null) {
+                        continue;
+                    }
                     try {
                         BufferedReader br = new BufferedReader (
                             new InputStreamReader (is)
                         );
                         for (String s = br.readLine(); s != null; s = br.readLine()) {
-                            if (s.startsWith ("#")) continue;
-                            if (s.length () == 0) continue;
-                            if (verbose)
+                            if (s.startsWith ("#")) {
+                                continue;
+                            }
+                            if (s.length () == 0) {
+                                continue;
+                            }
+                            if (verbose) {
                                 v.append("\nR  service ").append(s).append(" found");
+                            }
 
                             l.add (s);
                         }
@@ -358,8 +499,9 @@ abstract class Lookup implements ContextProvider {
                         is.close();
                     }
                 }
-                if (verbose)
+                if (verbose) {
                     System.out.println (v.toString());
+                }
                 return l; 
             } catch (IOException e) {
                 e.printStackTrace ();
@@ -461,6 +603,7 @@ abstract class Lookup implements ContextProvider {
 
         private static Comparator<MetaInfLookupList> getMetaInfLookupListComparator(final boolean load) {
             return new Comparator<MetaInfLookupList>() {
+                @Override
                 public int compare(MetaInfLookupList l1, MetaInfLookupList l2) {
                     if (load) {
                         return l1.notifyLoadOrder - l2.notifyLoadOrder;
@@ -471,6 +614,11 @@ abstract class Lookup implements ContextProvider {
             };
         }
 
+        @Override
+        public String toString() {
+            return "Lookup.MetaInf@"+Integer.toHexString(hashCode())+"[rootFolder="+rootFolder+"]";
+        }
+        
         private final class ModuleChangeListener implements PropertyChangeListener, org.openide.util.LookupListener {
 
             private ClassLoader cl;
@@ -480,6 +628,7 @@ abstract class Lookup implements ContextProvider {
             }
 
             // Some module enabled or disabled
+            @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 //System.err.println("ModuleChangeListener.propertyChange("+evt+")");
                 //System.err.println("  getPropertyName = "+evt.getPropertyName()+", source = "+evt.getSource());
@@ -505,6 +654,7 @@ abstract class Lookup implements ContextProvider {
                     if (mi.isEnabled()) {
                         if (refreshListEnabled == null) {
                             refreshListEnabled = RP.create(new Runnable() {
+                                @Override
                                 public void run() { refreshLists(true); }
                             });
                         }
@@ -512,6 +662,7 @@ abstract class Lookup implements ContextProvider {
                     } else {
                         if (refreshListDisabled == null) {
                             refreshListDisabled = RP.create(new Runnable() {
+                                @Override
                                 public void run() { refreshLists(false); }
                             });
                         }
@@ -522,6 +673,7 @@ abstract class Lookup implements ContextProvider {
             }
 
             // Some new modules installed or old uninstalled
+            @Override
             public void resultChanged(LookupEvent ev) {
                 clearCaches(null);
                 synchronized (moduleChangeListeners) {
@@ -541,13 +693,14 @@ abstract class Lookup implements ContextProvider {
          * The refreshing is performed under a lock on this list object so that
          * clients have consistent data under synchronization on this.
          */
-        private final class MetaInfLookupList<T> extends LookupList<T> implements Customizer {
+        private final class MetaInfLookupList<T> extends LookupList<T> implements PositionedList<T>, Customizer {
             
             private String folder;
             private final Class<T> service;
             private List<PropertyChangeListener> propertyChangeListeners;
             public int notifyLoadOrder = 0;
             public int notifyUnloadOrder = 0;
+            public List<Integer> elementPositions = new ArrayList<Integer>();
             
             public MetaInfLookupList(String folder, Class<T> service) {
                 this(list(folder, service), listLookup(folder, service), service);
@@ -564,6 +717,7 @@ abstract class Lookup implements ContextProvider {
                 this.service = service;
                 fillInstances(l, lr, s);
                 RP.post(new Runnable() {
+                    @Override
                     public void run() {
                         // This may take a while...
                         listenOnDisabledModules();
@@ -573,8 +727,12 @@ abstract class Lookup implements ContextProvider {
             
             private void fillInstances(List<String> l, Result<T> lr, Set<String> s) {
                 for (String className : l) {
-                    if (className.endsWith(HIDDEN)) continue;
-                    if (s != null && s.contains (className)) continue;
+                    if (className.endsWith(HIDDEN)) {
+                        continue;
+                    }
+                    if (s != null && s.contains (className)) {
+                        continue;
+                    }
                     fillClassInstance(className);
                 }
                 for (Item<T> li : lr.allItems()) {
@@ -583,7 +741,9 @@ abstract class Lookup implements ContextProvider {
                     String serviceName = getServiceName(li.getId());
                     //System.err.println("ID = '"+li.getId()+"' => serviceName = '"+serviceName+"'");
                     // We do not recognize method calls correctly
-                    if (s != null && (s.contains (serviceName) || s.contains (serviceName+"()"))) continue;
+                    if (s != null && (s.contains (serviceName) || s.contains (serviceName+"()"))) {
+                        continue;
+                    }
                     //add(new LazyInstance<T>(service, li));
                     fillServiceInstance(li);
                 }
@@ -600,8 +760,11 @@ abstract class Lookup implements ContextProvider {
 
             private String getServiceName(String itemId) {
                 int i = itemId.lastIndexOf('/');
-                if (i < 0) i = 0;
-                else i++; // Skip '/'
+                if (i < 0) {
+                    i = 0;
+                } else {
+                    i++;
+                } // Skip '/'
                 String serviceName = itemId.substring(i);
                 boolean isMethodCall = serviceName.indexOf('.') > 0;
                 serviceName = serviceName.replace('-', '.');
@@ -612,7 +775,7 @@ abstract class Lookup implements ContextProvider {
             }
 
             private void fillClassInstance(String className) {
-                Object instance = null;
+                Object instance;
                 synchronized(instanceCache) {
                     instance = instanceCache.get (className);
                 }
@@ -631,7 +794,9 @@ abstract class Lookup implements ContextProvider {
             private String getClassName(Item li) {
                 String id = li.getId();
                 int i = id.lastIndexOf("/");
-                if (i >= 0) id = id.substring(i+1);
+                if (i >= 0) {
+                    id = id.substring(i+1);
+                }
                 return id.replace('-', '.');
             }
 
@@ -673,6 +838,12 @@ abstract class Lookup implements ContextProvider {
                         }
                     }
                 }
+                // remember the instance position for merge purpose: li.fo.getAttribute("position")
+                int position = getPosition(li);
+                while (elementPositions.size() < size()) {
+                    elementPositions.add(Integer.MAX_VALUE);
+                }
+                elementPositions.add(position);
                 if (instance != null) {
                     try {
                         add(service.cast(instance), className);
@@ -684,7 +855,77 @@ abstract class Lookup implements ContextProvider {
                     add(new LazyInstance<T>(service, li));
                 }
             }
+            
+            private int getPosition(Item<T> li) {
+                int position = Integer.MAX_VALUE;
+                try {
+                    Field foField = li.getClass().getDeclaredField("fo");
+                    foField.setAccessible(true);
+                    FileObject fo = (FileObject) foField.get(li);
+                    if (fo != null) {
+                        Object positionObj = fo.getAttribute("position");
+                        if (positionObj instanceof Integer) {
+                            position = (Integer) positionObj;
+                        }
+                    }
+                } catch (Exception ex) {
+                    logger.log(Level.INFO, "Not able to retieve position from item "+li, ex);
+                }
+                return position;
+            }
+            
+            @Override
+            public int getPosition(int elementIndex) {
+                if (elementPositions.size() <= elementIndex) {
+                    return Integer.MAX_VALUE;
+                } else {
+                    return elementPositions.get(elementIndex);
+                }
+            }
+            
+            @Override
+            public boolean hasPositions() {
+                return !elementPositions.isEmpty();
+            }
 
+            @Override
+            public void clear() {
+                super.clear();
+                elementPositions.clear();
+            }
+
+            @Override
+            public T remove(int index) {
+                T o = super.remove(index);
+                elementPositions.remove(index);
+                return o;
+            }
+
+            @Override
+            public boolean remove(Object o) {
+                if (o instanceof LazyEntry) {
+                    return super.remove(o);
+                } else {
+                    int size = size();
+                    if (o == null) {
+                        for (int index = 0; index < size; index++) {
+                            if (getRaw(index) == null) {
+                                remove(index);
+                                return true;
+                            }
+                        }
+                    } else {
+                        for (int index = 0; index < size; index++) {
+                            if (o.equals(getRaw(index))) {
+                                remove(index);
+                                return true;
+                            }
+                        }
+                    }
+                    return false;
+                }
+            }
+            
             private boolean checkClassName(String service) {
                 //String method = null;
                 if (service.endsWith("()")) {
@@ -708,15 +949,17 @@ abstract class Lookup implements ContextProvider {
                 return true;
             }
             
-            private synchronized void refreshContent() {
+            private void refreshContent() {
                 // Perform changes under a lock so that iterators reading this list
                 // can sync on it
-                clear();
-                List<String> l = list(folder, service);
-                Result lr = listLookup(folder, service);
-                Set<String> s = getHiddenClassNames(l);
-                hiddenClassNames = s;
-                fillInstances(l, lr, s);
+                synchronized(this) {
+                    clear();
+                    List<String> l = list(folder, service);
+                    Result lr = listLookup(folder, service);
+                    Set<String> s = getHiddenClassNames(l);
+                    hiddenClassNames = s;
+                    fillInstances(l, lr, s);
+                }
                 firePropertyChange();
             }
             
@@ -733,6 +976,7 @@ abstract class Lookup implements ContextProvider {
                 };
             }*/
             
+            @Override
             public void setObject(Object bean) {
                 if (NOTIFY_LOAD_FIRST == bean) {
                     notifyLoadOrder = -1;
@@ -747,6 +991,7 @@ abstract class Lookup implements ContextProvider {
                 }
             }
 
+            @Override
             public synchronized void addPropertyChangeListener(PropertyChangeListener listener) {
                 if (propertyChangeListeners == null) {
                     propertyChangeListeners = new ArrayList<PropertyChangeListener>();
@@ -754,6 +999,7 @@ abstract class Lookup implements ContextProvider {
                 propertyChangeListeners.add(listener);
             }
 
+            @Override
             public synchronized void removePropertyChangeListener(PropertyChangeListener listener) {
                 propertyChangeListeners.remove(listener);
             }
@@ -790,6 +1036,7 @@ abstract class Lookup implements ContextProvider {
 
                 private final Object instanceCreationLock = new Object();
                 
+                @Override
                 protected T getEntry() {
                     Object instance = null;
                     if (lookupItem != null) {
@@ -905,6 +1152,7 @@ abstract class Lookup implements ContextProvider {
                             }
                         }
                     } else {
+                        logger.log(Level.INFO, "Returning null instance from LazyInstance.getEntry(). className = {0}, service = {1}, lookupItem = {2}", new Object[]{ className, service, lookupItem });
                         return null;
                     }
                 }
@@ -988,12 +1236,16 @@ abstract class Lookup implements ContextProvider {
                     if (newHiddenClassNames != null) {
                         //System.err.println("\nLookupList.addAll("+c+"), hiddenClassNames = "+hiddenClassNames+" + "+newHiddenClassNames);
                         // Check the instances we have and remove the newly hidden ones:
-                        for (Iterator it = newHiddenClassNames.iterator(); it.hasNext(); ) {
-                            String className = (String) it.next();
-                            if (instanceClassNames.containsValue(className)) {
-                                for (Iterator ii = instanceClassNames.keySet().iterator(); it.hasNext(); ) {
+                        for (String className : newHiddenClassNames) {
+                            String className2 = null;
+                            if (className.endsWith("()")) {
+                                className2 = className.substring(0, className.length() - 2);
+                            }
+                            if (instanceClassNames.containsValue(className) || className2 != null && instanceClassNames.containsValue(className2)) {
+                                for (Iterator ii = instanceClassNames.keySet().iterator(); ii.hasNext(); ) {
                                     Object instance = ii.next();
-                                    if (className.equals(instanceClassNames.get(instance))) {
+                                    String icn = instanceClassNames.get(instance);
+                                    if (className.equals(icn) || className2 != null && className2.equals(icn)) {
                                         remove(instance);
                                         instanceClassNames.remove(instance);
                                         break;
@@ -1036,6 +1288,7 @@ abstract class Lookup implements ContextProvider {
         }
 
         protected abstract class LookupLazyEntry<T> extends LazyEntry<T> {
+            @Override
             protected final T get() {
                 T e = getEntry();
                 synchronized (LookupList.this) {

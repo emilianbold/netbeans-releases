@@ -259,7 +259,7 @@ public abstract class Sampler {
                 return;
             }
             saveSnapshot(out.toByteArray());
-        } catch (Exception ex) {
+        } catch (IOException ex) {
             printStackTrace(ex);
         } finally {
             // just to be sure

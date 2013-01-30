@@ -285,7 +285,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
                         NotifyDescriptor.WARNING_MESSAGE));
                 return;
             }
-            Configuration cfg = manager.createNew(config, name);
+            manager.createNew(config, name);
             comboModel.addElement(config);
             manager.markAsCurrentConfiguration(config);
             selectCurrentItem();

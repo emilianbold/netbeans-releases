@@ -45,6 +45,8 @@
 package org.netbeans.modules.form.layoutsupport.delegates;
 
 import java.awt.*;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.beans.*;
 import java.util.*;
 import java.util.List;
@@ -64,9 +66,12 @@ import org.netbeans.modules.form.FormProperty;
 import org.netbeans.modules.form.FormPropertyContext;
 import org.netbeans.modules.form.RADVisualContainer;
 import org.netbeans.modules.form.editors.PrimitiveTypeArrayEditor;
-import org.netbeans.modules.form.layoutsupport.griddesigner.GridDesignerWindow;
+import org.netbeans.modules.form.layoutsupport.griddesigner.GridDesigner;
 import org.netbeans.modules.form.project.ClassPathUtils;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Utilities;
 
 /**
  * Support class for GridBagLayout. This is an example of support for layout
@@ -77,8 +82,11 @@ import org.openide.filesystems.FileObject;
  * @author Tran Duc Trung, Tomas Pavek
  */
 
-public class GridBagLayoutSupport extends AbstractLayoutSupport
-{
+public class GridBagLayoutSupport extends AbstractLayoutSupport {
+
+    private GridBagLayout initialLayout;
+
+    private Rectangle customizerBounds;
     private static Reference<GridBagCustomizer.Window> customizerRef;
     private FormProperty[] layoutProperties;
 
@@ -99,7 +107,7 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport
      */
     @Override
     public Class getCustomizerClass() {
-        return isGridDesignerEnabled() ? GridDesignerWindow.class : GridBagCustomizer.Window.class;
+        return isGridDesignerEnabled() ? GridDesigner.class : GridBagCustomizer.Window.class;
     }
 
     /** Creates an instance of customizer for GridBagLayout.
@@ -108,11 +116,24 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport
     @Override
     public Component getSupportCustomizer() {
         if (isGridDesignerEnabled()) {
-            GridDesignerWindow designer = new GridDesignerWindow();
+            GridDesigner designer = new GridDesigner();
             RADVisualContainer container = ((LayoutSupportManager)getLayoutContext()).getMetaContainer();
-            designer.setObject(container);
-            return designer;            
-        } else {
+            designer.setDesignedContainer(container);
+            DialogDescriptor dd = new DialogDescriptor(designer, NbBundle.getMessage(GridDesigner.class, "GridDesignerWindow.title")); // NOI18N
+            dd.setOptions(new Object[] { DialogDescriptor.CLOSED_OPTION });
+            Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
+            dialog.addWindowListener(new WindowAdapter() {
+                @Override
+                public void windowClosed(WindowEvent e) {
+                    customizerBounds = e.getWindow().getBounds();
+                }
+            });
+            if (customizerBounds != null) { // set same bounds as last time
+                dialog.setBounds(customizerBounds);
+                dialog.setPreferredSize(new Dimension(customizerBounds.width, customizerBounds.height)); // so pack() does not change size
+            }
+            return dialog;
+        } else { // the old GridBag customizer
             GridBagCustomizer.Window customizer = null;
             if (customizerRef != null)
                 customizer = customizerRef.get();
@@ -169,6 +190,31 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport
         return layout;
     }
 
+    @Override
+    protected void initializeInstance(LayoutManager initialInstance, boolean initializeProperties)
+            throws Exception {
+        super.initializeInstance(initialInstance, initializeProperties);
+        // the four property we may set are not bean properties, so not handled in AbstractLayoutSupport
+        if (initialInstance instanceof GridBagLayout) {
+            initialLayout = (GridBagLayout) initialInstance;
+            if (initializeProperties) {
+                for (FormProperty prop : getProperties()) {
+                    if (prop instanceof GBLProperty) {
+                        ((GBLProperty)prop).setFromInitial();
+                    }
+                }
+            }
+        }
+    }
+
+    @Override
+    protected boolean isPropertyChangedFromInitial(FormProperty prop) {
+        if (prop instanceof GBLProperty) {
+            return ((GBLProperty)prop).isChangedFromInitial();
+        }
+        return prop.isChanged();
+    }
+
     private CodeGroup layoutCode;
     private CodeExpression layoutExpression;
     @Override
@@ -177,7 +223,7 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport
         layoutExpression = getCodeStructure().createExpression(
                 getLayoutConstructor(),
                 CodeStructure.EMPTY_PARAMS);
-
+        updateLayoutExpression();
         return layoutExpression;
     }
 
@@ -1485,6 +1531,35 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport
             } catch (IllegalAccessException ex) {
                 Exceptions.printStackTrace(ex);
             }
+        }
+
+        void setFromInitial() throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
+            if (initialLayout != null) {
+                Object initValue = getField().get(initialLayout);
+                if (initValue != null) {
+                    boolean firing = isChangeFiring();
+                    try {
+                        setChangeFiring(false);
+                        setValue(initValue);
+                    } finally {
+                        setChangeFiring(firing);
+                    }
+                }
+            }
+        }
+
+        boolean isChangedFromInitial() {
+            if (initialLayout != null) {
+                try {
+                    Object initValue = getField().get(initialLayout);
+                    return !Utilities.compareObjects(value, initValue);
+                } catch (IllegalArgumentException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (IllegalAccessException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+            return isChanged();
         }
 
         Field getField() {

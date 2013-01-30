@@ -44,8 +44,10 @@
 package org.netbeans.modules.cnd.highlight.semantic;
 
 import javax.swing.text.Document;
+import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.cnd.highlight.semantic.options.SemanticHighlightingOptions;
 import org.netbeans.modules.cnd.model.tasks.CaretAwareCsmFileTaskFactory;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -64,10 +66,15 @@ public class MarkOccurrencesHighlighterFactory extends CaretAwareCsmFileTaskFact
         if (enabled()) {
             try {
                 DataObject dobj = DataObject.find(fo);
-                EditorCookie ec = dobj.getCookie(EditorCookie.class);
+                EditorCookie ec = dobj.getLookup().lookup(EditorCookie.class);
                 Document doc = ec.getDocument();
                 if (doc != null) {
-                    ph = new MarkOccurrencesHighlighter(doc);
+                    String mimeType = DocumentUtilities.getMimeType(doc);
+                    if (mimeType != null) {
+                        if (MIMENames.isHeaderOrCppOrC(mimeType)) {
+                            ph = new MarkOccurrencesHighlighter(doc);
+                        }
+                    }
                 }
             } catch (DataObjectNotFoundException ex) {
                 // file object or data object can be already invalid

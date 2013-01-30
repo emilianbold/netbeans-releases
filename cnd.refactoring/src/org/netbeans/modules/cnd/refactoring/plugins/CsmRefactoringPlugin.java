@@ -48,11 +48,15 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.cnd.api.model.*;
+import org.netbeans.modules.cnd.api.model.deep.CsmGotoStatement;
+import org.netbeans.modules.cnd.api.model.deep.CsmLabel;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmIncludeHierarchyResolver;
+import org.netbeans.modules.cnd.api.model.xref.CsmReferenceRepository;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceSupport;
+import org.netbeans.modules.cnd.debug.CndTraceFlags;
 import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
 import org.netbeans.modules.cnd.refactoring.elements.DiffElement;
 import org.netbeans.modules.cnd.refactoring.support.ModificationResult;
@@ -216,26 +220,42 @@ public abstract class CsmRefactoringPlugin extends ProgressProviderAdapter imple
         if (startFile.equals(scopeFile)) {
             return Collections.singleton(scopeFile);
         } else {
+            Collection<CsmFile> relevantFiles = new HashSet<CsmFile>();
+            Collection<CsmProject> relevantPrjs = new HashSet<CsmProject>();
             CsmProject[] prjs = refactoring.getContext().lookup(CsmProject[].class);
             CsmFile declFile = CsmRefactoringUtils.getCsmFile(referencedObject);
             if (prjs == null || prjs.length == 0 || declFile == null) {
                 CsmProject prj = startFile.getProject();
-                return prj.getAllFiles();
+                relevantPrjs.add(prj);
             } else {
                 CsmProject declPrj = declFile.getProject();
-                Collection<CsmProject> relevantPrjs = new HashSet<CsmProject>();
                 for (CsmProject csmProject : prjs) {
                     // if the same project or declaration from shared library
                     if (csmProject.equals(declPrj) || csmProject.getLibraries().contains(declPrj)) {
                         relevantPrjs.add(csmProject);
                     }
                 }
-                Collection<CsmFile> relevantFiles = new HashSet<CsmFile>();
+            }
+            if (CndTraceFlags.TEXT_INDEX) {
+                CharSequence name = "";
+                if (CsmKindUtilities.isNamedElement(referencedObject)) {
+                    name = ((CsmNamedElement)referencedObject).getName();
+                } else if (CsmKindUtilities.isStatement(referencedObject)) {
+                    if (referencedObject instanceof CsmLabel) {
+                        name = ((CsmLabel)referencedObject).getLabel();
+                    } else if (referencedObject instanceof CsmGotoStatement){
+                        name = ((CsmGotoStatement)referencedObject).getLabel();
+                    }
+                }
+                
+                final CsmReferenceRepository xRef = CsmReferenceRepository.getDefault();
+                relevantFiles.addAll(xRef.findRelevantFiles(relevantPrjs, name));
+            } else {
                 for (CsmProject csmProject : relevantPrjs) {
                     relevantFiles.addAll(csmProject.getAllFiles());
                 }
-                return relevantFiles;
             }
+            return relevantFiles;
         }
     }
 

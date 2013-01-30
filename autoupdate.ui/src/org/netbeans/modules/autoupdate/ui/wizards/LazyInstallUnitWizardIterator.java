@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -86,29 +86,37 @@ public final class LazyInstallUnitWizardIterator implements WizardDescriptor.Ite
         panels.add (new LazyOperationDescriptionStep (installModel, doOperation, forceReload));
     }
     
+    @Override
     public WizardDescriptor.Panel<WizardDescriptor> current () {
         assert panels != null;
         return panels.get (index);
     }
     
+    @Override
     public String name () {
         return NbBundle.getMessage (LazyInstallUnitWizardIterator.class, "InstallUnitWizard_Title");
     }
     
+    @Override
     public boolean hasNext () {
         return false;
     }
     
+    @Override
     public boolean hasPrevious () {
         return false;
     }
     
+    @Override
     public void nextPanel () {}
     
+    @Override
     public void previousPanel () {}
     
+    @Override
     public synchronized void addChangeListener(ChangeListener l) {}
 
+    @Override
     public synchronized void removeChangeListener(ChangeListener l) {}
 
     public static class LazyUnit extends Object {

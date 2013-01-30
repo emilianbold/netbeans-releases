@@ -55,10 +55,17 @@ import org.netbeans.modules.csl.api.CompletionProposal;
  * @author Anton Chechel <anton.chechel@oracle.com>
  */
 public final class JavaFXEditorUtils {
-
+    /**
+     * The FXML ns URI
+     */
+    public static final String FXML_FX_NAMESPACE = "http://javafx.com/fxml"; // NOI18N
+    public static final String FXML_FX_PREFIX = "fx"; // NOI18N
+    
     public static final String FXML_MIME_TYPE = "text/x-fxml+xml"; // NOI18N
     public static final String FXML_FILE_EXTENSION = "fxml"; // NOI18N
-
+    public static final String JAVA_MIME_TYPE = "text/x-java"; // NOI18N
+    public static final String FXML_NODE_CLASS = "javafx.scene.Node"; // NOI18N
+    
     private JavaFXEditorUtils() {
     }
 

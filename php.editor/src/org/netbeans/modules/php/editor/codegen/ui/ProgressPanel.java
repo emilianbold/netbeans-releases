@@ -91,11 +91,12 @@ public class ProgressPanel extends JPanel {
                 true);
         dialog = DialogDisplayer.getDefault().createDialog(dd);
         if (dialog instanceof JDialog) {
-            JDialog jDialog = ((JDialog)dialog);
+            JDialog jDialog = ((JDialog) dialog);
             jDialog.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
             JRootPane rootPane = jDialog.getRootPane();
             rootPane.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "cancel"); // NOI18N
             rootPane.getActionMap().put("cancel", new AbstractAction() { // NOI18N
+                @Override
                 public void actionPerformed(ActionEvent event) {
                     if (cancelButton.isEnabled()) {
                         cancelButton.doClick();
@@ -108,10 +109,10 @@ public class ProgressPanel extends JPanel {
     }
 
     public void close() {
-	if (dialog != null) {
-	    dialog.setVisible(false);
-	    dialog.dispose();
-	}
+        if (dialog != null) {
+            dialog.setVisible(false);
+            dialog.dispose();
+        }
     }
 
     public boolean isOpen() {
@@ -199,6 +200,7 @@ public class ProgressPanel extends JPanel {
     private javax.swing.JLabel info;
     // End of variables declaration
 
+    @Override
     public Dimension getPreferredSize() {
         Dimension orig = super.getPreferredSize();
         return new Dimension(500, orig.height);

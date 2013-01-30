@@ -45,7 +45,8 @@
     schemaType=SchemaType.DTD,
     mddFile="../resources/endpoints.mdd",
     outputType=OutputType.TRADITIONAL_BASEBEAN,
-    attrProp=true
+    attrProp=true,
+    java5=true
 )
 package org.netbeans.modules.websvc.jaxwsmodel.endpoints_config1_0;
 

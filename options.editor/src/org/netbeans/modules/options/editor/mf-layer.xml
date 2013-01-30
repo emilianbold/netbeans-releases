@@ -182,6 +182,14 @@ made subject to such option by the copyright holder.
                 <attr name="displayName" bundlevalue="org.netbeans.modules.options.editor.Bundle#Editor.Options.Export.Other.displayName"/>
             </file>
         </folder>
+        <folder name="Formatting">
+                <attr name="position" intvalue="250"/>
+                <attr name="displayName" bundlevalue="org.netbeans.modules.options.editor.Bundle#Editor.Options.Export.Formatting.displayName"/>
+                <file name="Indentation">
+                    <attr name="include" stringvalue="config/Editors/Preferences/org-netbeans-modules-editor-settings-CustomPreferences.xml"/>
+                    <attr name="displayName" bundlevalue="org.netbeans.modules.options.editor.Bundle#Editor.Options.Export.Indentation.displayName"/>
+                </file>
+        </folder>
         <folder name="FontsAndColors">
             <attr name="displayName" bundlevalue="org.netbeans.modules.options.colors.Bundle#FontsAndColors.Options.Export.Category.displayName"/>
             <attr name="position" intvalue="300"/>

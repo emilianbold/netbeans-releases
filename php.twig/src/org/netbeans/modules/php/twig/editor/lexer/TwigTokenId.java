@@ -39,7 +39,6 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.php.twig.editor.lexer;
 
 import java.util.Collection;
@@ -59,31 +58,26 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 
 public enum TwigTokenId implements TokenId {
 
-    T_TWIG_NAME( null, "twig_name" ),
-    T_TWIG_STRING( null, "twig_string" ),
-    T_TWIG_NUMBER( null, "twig_number" ),
-    T_TWIG_OPERATOR( null, "twig_operator" ),
-    T_TWIG_PUNCTUATION( null, "twig_punctuation" ),
-    T_TWIG_WHITESPACE( null, "twig_whitespace" ),
-    T_TWIG_FUNCTION( null, "twig_function" ),
+    T_TWIG_NAME("twig_name"), //NOI18N
+    T_TWIG_STRING("twig_string"), //NOI18N
+    T_TWIG_NUMBER("twig_number"), //NOI18N
+    T_TWIG_OPERATOR("twig_operator"), //NOI18N
+    T_TWIG_PUNCTUATION("twig_punctuation"), //NOI18N
+    T_TWIG_WHITESPACE("twig_whitespace"), //NOI18N
+    T_TWIG_TAG("twig_tag"), //NOI18N
+    T_TWIG_BLOCK_START("twig_block"), //NOI18N
+    T_TWIG_BLOCK_END("twig_block"), //NOI18N
+    T_TWIG_VAR_START("twig_var"), //NOI18N
+    T_TWIG_VAR_END("twig_var"), //NOI18N
+    T_TWIG_COMMENT("twig_comment"), //NOI18N
+    T_TWIG_OTHER("twig_other"), //NOI18N
+    T_TWIG_INTERPOLATION_START("twig_interpolation"), //NOI18N
+    T_TWIG_INTERPOLATION_END("twig_interpolation"); //NOI18N
 
-    T_TWIG_INSTRUCTION( null, "twig_instruction" ),
-    T_TWIG_VARIABLE( null, "twig_variable" ),
-    T_TWIG_COMMENT( null, "twig_comment" ),
-
-    T_TWIG_OTHER( null, "twig_other" )
-    ;
-
-    private final String fixedText;
     private final String primaryCategory;
 
-    TwigTokenId( String fixedText, String primaryCategory ) {
-        this.fixedText = fixedText;
+    TwigTokenId(String primaryCategory) {
         this.primaryCategory = primaryCategory;
-    }
-
-    public String fixedText() {
-        return fixedText;
     }
 
     @Override
@@ -93,10 +87,9 @@ public enum TwigTokenId implements TokenId {
 
     private static final Language<TwigTokenId> language =
             new LanguageHierarchy<TwigTokenId>() {
-
                 @Override
                 protected Collection<TwigTokenId> createTokenIds() {
-                    return EnumSet.allOf( TwigTokenId.class );
+                    return EnumSet.allOf(TwigTokenId.class);
                 }
 
                 @Override
@@ -107,7 +100,7 @@ public enum TwigTokenId implements TokenId {
 
                 @Override
                 protected Lexer<TwigTokenId> createLexer(LexerRestartInfo<TwigTokenId> info) {
-                    return TwigLexer.create( info );
+                    return new TwigLexer(info);
                 }
 
                 @Override
@@ -116,8 +109,8 @@ public enum TwigTokenId implements TokenId {
                 }
 
                 @Override
-                protected LanguageEmbedding<?> embedding( Token<TwigTokenId> token,
-                        LanguagePath languagePath, InputAttributes inputAttributes ) {
+                protected LanguageEmbedding<?> embedding(Token<TwigTokenId> token,
+                        LanguagePath languagePath, InputAttributes inputAttributes) {
                     return null;
                 }
             }.language();

@@ -3,12 +3,13 @@
     Editors                >   E
     Code Folds             >   C
 ============================
-    Web Browser                W
     IDE Log                    L
 ============================
     Toolbars               >   T
 [x] Show Editor Toolbar        h
-[ ] Show Line Numbers          S
+[x] Show Line Numbers          S
+[ ] Show Non-printable Characters      N
+[x] Show Breadcrumbs           B
 [x] Show Diff Sidebar          D
 [ ] Show Versioning Labels     V
 [ ] Synchronize Editor with Views      y

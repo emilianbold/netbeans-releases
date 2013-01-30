@@ -346,6 +346,9 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
 
         // refresh all subprojects
         SubprojectProvider spp = targetPrj.getLookup().lookup(SubprojectProvider.class);
+        //mkleint: we are assuming complete result (transitive projects included)
+        //that's ok as far as the current maven impl goes afaik, but not according to the
+        //documentation for SubProjectprovider
         Set<? extends Project> childrenProjs = spp.getSubprojects();
         if (!childrenProjs.contains(project)) {
             NbMavenProject.fireMavenProjectReload(project);

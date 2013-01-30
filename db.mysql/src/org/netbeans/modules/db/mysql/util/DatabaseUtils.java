@@ -82,6 +82,9 @@ public class DatabaseUtils {
     public static final String SQLSTATE_COMM_ERROR = "08S01";
     // The SQL State prefix (class) used for client-side exceptions
     private static final String SQLSTATE_CLIENT_PREFIX = "20";
+    // Default URL parameters
+    private static final String DFLT_CONFIG_OPTIONS =
+            "?zeroDateTimeBehavior=convertToNull";                      //NOI18N
     
     private static final Logger LOGGER = 
             Logger.getLogger(DatabaseUtils.class.getName());
@@ -326,7 +329,7 @@ public class DatabaseUtils {
         if ( database != null && (! database.equals(""))) {
             url.append("/" + database); // NOI18N
         }
-        
+        url.append(DFLT_CONFIG_OPTIONS); //#183440
         return url.toString();
     }
 

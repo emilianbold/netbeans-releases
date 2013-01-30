@@ -301,5 +301,6 @@ public class TraceModelTestBase extends ModelImplBaseTestCase {
             showDiff(diffOutputFile, buf);
             assertTrue(buf.toString(), false); // NOI18N
         }
+        assertNoExceptions();
     }
 }

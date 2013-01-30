@@ -137,9 +137,7 @@ class MultiViewCloneableEditor extends CloneableEditor  implements MultiViewElem
     
     @Override
     public void componentShowing() {
-        if (multiViewObserver != null) {
-            updateName();
-        }
+        updateDisplayText();
         super.componentShowing();
     }
     
@@ -184,6 +182,10 @@ class MultiViewCloneableEditor extends CloneableEditor  implements MultiViewElem
     @Override
     public void updateName() {
         super.updateName();
+        updateDisplayText();
+    }
+
+    private void updateDisplayText() {
         if (multiViewObserver != null) {
             TopComponent tc = multiViewObserver.getTopComponent();
             tc.setHtmlDisplayName(getHtmlDisplayName());
@@ -245,7 +247,9 @@ class MultiViewCloneableEditor extends CloneableEditor  implements MultiViewElem
                 if (sav.getClass().getMethod("toString").getDeclaringClass() != Object.class) {
                     save.putValue(Action.LONG_DESCRIPTION, Bundle.MSG_SaveModified(sav));
                 } else {
-                    Logger.getLogger(MultiViewCloneableEditor.class.getName()).log(Level.WARNING, "Need to override toString in {0} with lookup {1}", new Object[] {sav.getClass(), getLookup().lookupAll(Object.class)});
+                    Logger.getLogger(MultiViewCloneableEditor.class.getName()).log(Level.WARNING, 
+                            "Need to override toString() to contain the file name in o.n.api.action.Savable {0} with lookup {1}", 
+                            new Object[] {sav.getClass(), getLookup().lookupAll(Object.class)});
                     Node n = getLookup().lookup(Node.class);
                     if (n != null) {
                         // #201696: compatibility fallback.

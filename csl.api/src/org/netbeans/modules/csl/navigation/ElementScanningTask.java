@@ -65,11 +65,13 @@ import org.netbeans.modules.csl.api.StructureItem;
 import org.netbeans.modules.csl.core.Language;
 import org.netbeans.modules.csl.core.LanguageRegistry;
 import org.netbeans.modules.csl.api.HtmlFormatter;
+import org.netbeans.modules.csl.navigation.ElementNode.Description;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.*;
 import org.netbeans.modules.parsing.spi.Parser.Result;
@@ -89,11 +91,10 @@ import org.openide.util.RequestProcessor;
  *
  * @author phrebejk
  */
-public final class ElementScanningTask extends IndexingAwareParserResultTask<ParserResult> {
+public abstract class ElementScanningTask extends IndexingAwareParserResultTask<ParserResult> {
 
     private static final Logger LOG = Logger.getLogger(ElementScanningTask.class.getName());
     
-    private final ClassMemberPanelUI ui;
     private boolean canceled;
     
     /**
@@ -117,10 +118,8 @@ public final class ElementScanningTask extends IndexingAwareParserResultTask<Par
         
     }
 
-    public ElementScanningTask(ClassMemberPanelUI ui) {
+    public ElementScanningTask() {
         super(TaskIndexingMode.ALLOWED_DURING_SCAN);
-        assert ui != null;
-        this.ui = ui;
     }
     
     // not synchronized as the Task invocation itself is synced by parsing API
@@ -147,21 +146,18 @@ public final class ElementScanningTask extends IndexingAwareParserResultTask<Par
         lastResults.put(r.getSnapshot(), new WeakReference(new ResultStructure(r, structure)));
     }
 
-    public @Override void run(ParserResult result, SchedulerEvent event) {
-        
-        resume();
-
+    protected final StructureItem computeStructureRoot(Source source) {
         //System.out.println("The task is running" + info.getFileObject().getNameExt() + "=====================================" ) ;
 
-        final FileObject fileObject = result.getSnapshot().getSource().getFileObject();
+        final FileObject fileObject = source.getFileObject();
         if (fileObject == null) {
-            return;
+            return null;
         }
 
         final int [] mimetypesWithElements = new int [] { 0 };
         final List<MimetypeRootNode> roots = new ArrayList<MimetypeRootNode>();
         try {
-            ParserManager.parse(Collections.singleton(result.getSnapshot().getSource()), new UserTask() {
+            ParserManager.parse(Collections.singleton(source), new UserTask() {
                 public @Override void run(ResultIterator resultIterator) throws Exception {
                     Language language = LanguageRegistry.getInstance().getLanguageByMimeType(resultIterator.getSnapshot().getMimeType());
                     if(language != null) { //check for non csl results
@@ -172,6 +168,7 @@ public final class ElementScanningTask extends IndexingAwareParserResultTask<Par
                                 List<? extends StructureItem> children = findCachedStructure(resultIterator.getSnapshot(), r);
                                 if (children == null) {
                                     long startTime = System.currentTimeMillis();
+//                                    children = convert(scanner.scan((ParserResult) r), language);
                                     children = scanner.scan((ParserResult) r);
                                     long endTime = System.currentTimeMillis();
                                     Logger.getLogger("TIMER").log(Level.FINE, "Structure (" + language.getMimeType() + ")",
@@ -249,15 +246,7 @@ public final class ElementScanningTask extends IndexingAwareParserResultTask<Par
             }
         }
 
-        ui.refresh(new RootStructureItem(items), fileObject);
-    }
-
-    public @Override int getPriority() {
-        return Integer.MAX_VALUE;
-    }
-
-    public @Override Class<? extends Scheduler> getSchedulerClass() {
-        return CSLNavigatorScheduler.class;
+        return new RootStructureItem(items);
     }
 
     public @Override synchronized void cancel() {
@@ -271,7 +260,7 @@ public final class ElementScanningTask extends IndexingAwareParserResultTask<Par
     public synchronized boolean isCancelled() {
         return canceled;
     }
-
+    
     private static final class RootStructureItem implements StructureItem {
 
         private final List<? extends StructureItem> items;
@@ -289,7 +278,7 @@ public final class ElementScanningTask extends IndexingAwareParserResultTask<Par
         }
 
         public ElementHandle getElementHandle() {
-            throw new UnsupportedOperationException("Not supported on the Root Node.");
+            return null;
         }
 
         public ElementKind getKind() {
@@ -328,7 +317,7 @@ public final class ElementScanningTask extends IndexingAwareParserResultTask<Par
     static final class MimetypeRootNode implements StructureItem {
 
         //hack - see the getSortText() comment
-        private static final String CSS_MIMETYPE = "text/x-css"; //NOI18N
+        private static final String CSS_MIMETYPE = "text/css"; //NOI18N
         private static final String CSS_SORT_TEXT = "2";//NOI18N
         private static final String JAVASCRIPT_MIMETYPE = "text/javascript";//NOI18N
         private static final String RUBY_MIMETYPE = "text/x-ruby";//NOI18N
@@ -349,12 +338,13 @@ public final class ElementScanningTask extends IndexingAwareParserResultTask<Par
 
         private MimetypeRootNode(Language lang, List<? extends StructureItem> items, MimePath mimePath) {
             this.language = lang;
-            this.items = items;
+            this.items = new ArrayList<StructureItem>(items);
+            Collections.sort(items, Description.POSITION_COMPARATOR);
             this.from = items.size() > 0 ? items.get(0).getPosition() : 0;
             this.to = items.size() > 0 ? items.get(items.size() - 1).getEndPosition() : 0;
             this.mimePath = mimePath;
         }
-
+        
         public MimePath getMimePath() {
             return mimePath;
         }

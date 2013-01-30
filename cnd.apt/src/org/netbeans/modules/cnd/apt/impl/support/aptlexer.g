@@ -330,6 +330,7 @@ tokens {
     LITERAL___is_base_of="__is_base_of"; // NOI18N
     LITERAL___has_trivial_constructor="__has_trivial_constructor"; // NOI18N
     LITERAL___restrict__="__restrict__"; // NOI18N
+    LITERAL__Noreturn="_Noreturn"; // NOI18N
 
     LAST_LITERAL_TOKEN;
 
@@ -790,7 +791,9 @@ tokens {
                 return null;
             }
         }
-        APTToken k = APTUtils.createAPTToken(t, tokenStartOffset, offset, getTokenStartColumn(), getTokenStartLine(), inputState.getColumn(), inputState.getLine());
+        // Our literal check
+        int literalType = testLiteralsTable(0);
+        APTToken k = APTUtils.createAPTToken(t, tokenStartOffset, offset, getTokenStartColumn(), getTokenStartLine(), inputState.getColumn(), inputState.getLine(), literalType);
         // it should be impossible to have preprocessor directive 
         // after valid token. preprocessor directive valid only
         // at start of line @see newline()
@@ -916,16 +919,17 @@ FIRST_MOD options { constText=true; } :
     '%' ( {$setType(MOD);}                  //MOD             : '%' ;
     | '=' {$setType(MODEQUAL);}             //MODEQUAL        : "%=" ;
     | '>' {$setType(RCURLY);}               //RCURLY          : "%>" ;
-    | ':' ( {isPreprocPending()}? {$setType(SHARP);}     
+    | ':' ( {isPreprocPending()}? {$setType(SHARP);}
         | {isPreprocPending()}? '%' ':' {$setType(DBL_SHARP);}
         | {!isPreprocPossible()}? {$setType(SHARP);}
         | {isPreprocPossible()}?
             {
+                $setType(PREPROC_DIRECTIVE);
                 setPreprocPossible(false);
                 setPreprocPending(true);
                 setPPDefinedAllowed(true);
             }
-            (options{greedy = true;}:Space)*
+            (options{greedy = true;}:Space|COMMENT)*
             (  // lexer has no token labels
               ("include" PostPPKwdChar) => "include" { $setType(INCLUDE); setAfterInclude(true); setPPDefinedAllowed(false); } 
             | ("include_next" PostPPKwdChar) => "include_next" { $setType(INCLUDE_NEXT); setAfterInclude(true); setPPDefinedAllowed(false); } 
@@ -1090,11 +1094,12 @@ PREPROC_DIRECTIVE :
                  |
                     {isPreprocPossible()}? 
                     {
+                        $setType(PREPROC_DIRECTIVE);
                         setPreprocPossible(false);
                         setPreprocPending(true);
                         setPPDefinedAllowed(true);
                     }
-                    (options{greedy = true;}:Space)*
+                    (options{greedy = true;}:Space|COMMENT)*
                     (  // lexer has no token labels
                       ("include" PostPPKwdChar) => "include" { $setType(INCLUDE); setAfterInclude(true); setPPDefinedAllowed(false); } 
                     | ("include_next" PostPPKwdChar) => "include_next" { $setType(INCLUDE_NEXT); setAfterInclude(true); setPPDefinedAllowed(false); } 
@@ -1355,6 +1360,7 @@ ID_LIKE:
      |  ('u' 'R' '"') => 'u' 'R' RAW_STRING_LITERAL {$setType(STRING_LITERAL);}
      |  ('U' 'R' '"') => 'U' 'R' RAW_STRING_LITERAL {$setType(STRING_LITERAL);}
      |  ('u' '8' 'R' '"') => 'u' '8' 'R' RAW_STRING_LITERAL {$setType(STRING_LITERAL);}
+     |  ('u' '8' '"') => 'u' '8' STRING_LITERAL {$setType(STRING_LITERAL);}
      |
         // We have checked opposite above
         //{isAfterPPDefined()}? 

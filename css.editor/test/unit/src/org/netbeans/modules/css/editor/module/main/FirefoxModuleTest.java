@@ -58,7 +58,7 @@ public class FirefoxModuleTest extends CssModuleTestBase {
         CssEditorModule firefoxModule = getCssModuleByClass(FirefoxModule.class);
         assertNotNull(firefoxModule);
         
-        Browser firefox = firefoxModule.getExtraBrowsers().iterator().next();
+        Browser firefox = firefoxModule.getExtraBrowsers(null).iterator().next();
         
         assertEquals("Firefox", firefox.getName());
         assertEquals("Mozilla", firefox.getVendor());

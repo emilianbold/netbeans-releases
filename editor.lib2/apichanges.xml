@@ -107,6 +107,21 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="OnSaveTask">
+            <summary>OnSaveTask interface added</summary>
+            <version major="1" minor="66"/>
+            <date day="5" month="9" year="2012"/>
+            <author login="mmetelka"/>
+            <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes"/>
+            <description>
+                <p>
+                    Added OnSaveTask interface which allows modules to register
+                    tasks into MimeLookup that will be performed right before document saving.
+                </p>
+            </description>
+            <issue number="217904"/>
+        </change>
+
         <change id="UndoableEditWrapper">
             <summary>UndoableEditWrapper interface added</summary>
             <version major="1" minor="60"/>

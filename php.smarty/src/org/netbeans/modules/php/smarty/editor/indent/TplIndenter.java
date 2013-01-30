@@ -43,16 +43,19 @@ package org.netbeans.modules.php.smarty.editor.indent;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Stack;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.Utilities;
+import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.editor.indent.spi.Context;
+import org.netbeans.modules.php.smarty.editor.TplSyntax;
 import org.netbeans.modules.php.smarty.editor.lexer.TplTokenId;
 import org.netbeans.modules.php.smarty.editor.lexer.TplTopTokenId;
 import org.netbeans.modules.web.indent.api.LexUtilities;
@@ -66,19 +69,10 @@ import org.netbeans.modules.web.indent.api.support.IndenterContextData;
  **/
 public class TplIndenter extends AbstractIndenter<TplTopTokenId> {
 
+    private static final Logger LOGGER = Logger.getLogger(TplIndenter.class.getName());
+
     private Stack<TplStackItem> stack = null;
     private int preservedLineIndentation = -1;
-    private static final List<String> bodyCommands = new ArrayList<String>(Arrays.asList("capture", "foreach", "foreachelse", "if", "elseif", "else", //NOI18N
-            "literal", "php", "section", "sectionelse", "strip"));      //NOI18N
-    private static final List<String> elseCommands = new ArrayList<String>(Arrays.asList("foreachelse", "elseif", "else", "sectionelse"));  //NOI18N
-    private static final HashMap<String, ArrayList<String>> relatedCommands = new HashMap<String, ArrayList<String>>() {
-
-        {
-            put("if", new ArrayList<String>(Arrays.asList("else", "elseif")));  //NOI18N
-            put("foreach", new ArrayList<String>(Arrays.asList("foreachelse")));  //NOI18N
-            put("section", new ArrayList<String>(Arrays.asList("sectionelse")));  //NOI18N
-        }
-    };
 
     public TplIndenter(Context context) {
         super(TplTopTokenId.language(), context);
@@ -95,7 +89,7 @@ public class TplIndenter extends AbstractIndenter<TplTopTokenId> {
             if (sequence.token().id() == TplTokenId.WHITESPACE) {
                 continue;
             } else {
-                return sequence.token().toString();
+                return CharSequenceUtilities.toString(sequence.token().text());
             }
         }
         return "";
@@ -113,6 +107,7 @@ public class TplIndenter extends AbstractIndenter<TplTopTokenId> {
     @Override
     protected void reset() {
         stack = new Stack<TplStackItem>();
+        preservedLineIndentation = -1;
     }
 
     @Override
@@ -144,7 +139,6 @@ public class TplIndenter extends AbstractIndenter<TplTopTokenId> {
                         tk = LexUtilities.findPrevious(ts, Arrays.asList(TplTopTokenId.T_SMARTY));
                         if (tk != null) {
                             ts.moveNext();
-                            tk = LexUtilities.findNext(ts, Arrays.asList(TplTopTokenId.T_SMARTY));
                         }
                     }
                     return ts.offset();
@@ -213,7 +207,7 @@ public class TplIndenter extends AbstractIndenter<TplTopTokenId> {
         String lastTplCommand = "";
         // iterate over tokens on the line and push to stack any changes
         while (!context.isBlankLine() && ts.moveNext()
-                && ((ts.isCurrentTokenSequenceVirtual() && ts.offset() < context.getLineEndOffset())
+                 && ((ts.isCurrentTokenSequenceVirtual() && ts.offset() < context.getLineEndOffset())
                 || ts.offset() <= context.getLineEndOffset())) {
             Token<TplTopTokenId> token = ts.token();
             if (token == null) {
@@ -223,10 +217,10 @@ public class TplIndenter extends AbstractIndenter<TplTopTokenId> {
                 if (embeddingLevel == 1 && afterDelimiter) {
                     if (token.id() == TplTopTokenId.T_SMARTY && context.isIndentThisLine()) {
                         String tplToken = getFunctionalTplTokenId(token);
-                        isSmartyBodyCommand = isBodyCommand(tplToken, context);
+                        isSmartyBodyCommand = TplSyntax.isBlockCommand(tplToken);
                         if (isSmartyBodyCommand) {
                             lastTplCommand = tplToken;
-                            isSmartyElseCommand = isElseCommand(tplToken);
+                            isSmartyElseCommand = TplSyntax.isElseSmartyCommand(tplToken);
                         }
                     } else {
                         isSmartyBodyCommand = false;
@@ -250,7 +244,10 @@ public class TplIndenter extends AbstractIndenter<TplTopTokenId> {
                     if (embeddingLevel == 0) {
                         assert item.state == StackItemState.IN_RULE;
                         if (isSmartyBodyCommand) {
-                            if (!blockStack.isEmpty() && isInRelatedCommand(lastTplCommand, blockStack.peek().getCommand())) {
+                            if (!blockStack.isEmpty()
+                                    // issue #219375 - happens when the selection ends inside the Smarty tag
+                                    && blockStack.peek().getCommand() != null
+                                    && TplSyntax.isInRelatedCommand(lastTplCommand, blockStack.peek().getCommand())) {
                                 if (isSmartyElseCommand) {
                                     String command = blockStack.pop().command;
                                     blockStack.push(new TplStackItem(StackItemState.IN_BODY, command));
@@ -315,6 +312,11 @@ public class TplIndenter extends AbstractIndenter<TplTopTokenId> {
             }
         }
 
+        if (LOGGER.isLoggable(Level.FINE)) {
+            for (IndentCommand command : iis) {
+                LOGGER.log(Level.FINE, command.toString());
+            }
+        }
         return iis;
     }
 
@@ -325,29 +327,6 @@ public class TplIndenter extends AbstractIndenter<TplTopTokenId> {
             }
         }
         return false;
-    }
-
-    private boolean isBodyCommand(String tplToken, IndenterContextData<TplTopTokenId> context) {
-        String tokenText = tplToken.toLowerCase();
-        if (tokenText.isEmpty()) return false;
-        return bodyCommands.contains(tokenText) || bodyCommands.contains(tokenText.substring(1));
-    }
-
-    private boolean isElseCommand(String tplToken) {
-        String tokenText = tplToken.toLowerCase();
-        if (tokenText.isEmpty()) return false;
-        return elseCommands.contains(tokenText) || elseCommands.contains(tokenText.substring(1));
-    }
-
-    private boolean isInRelatedCommand(String actualString, String comparingString) {
-        if (comparingString != null && actualString != null) {
-            if (actualString.isEmpty()) return false;
-            return actualString.substring(1).equals(comparingString)
-                    || (relatedCommands.get(comparingString) != null
-                    && relatedCommands.get(comparingString).contains(actualString));
-        } else {
-            return false;
-        }
     }
 
     private static enum StackItemState {

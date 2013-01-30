@@ -53,7 +53,7 @@ import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.groovy.editor.api.AstUtilities;
+import org.netbeans.modules.groovy.editor.api.ASTUtils;
 import org.netbeans.modules.groovy.editor.api.elements.ast.ASTElement;
 import org.netbeans.modules.groovy.editor.api.elements.index.IndexedElement;
 import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
@@ -89,20 +89,20 @@ public class ElementHandleSupport {
             return null;
         }
         
-        ParserResult result = AstUtilities.getParseResult(info);
+        ParserResult result = ASTUtils.getParseResult(info);
 
         if (result == null) {
             return null;
         }
 
-        ASTNode root = AstUtilities.getRoot(info);
+        ASTNode root = ASTUtils.getRoot(info);
 
         return new GroovyElementHandle(root, object, info.getSnapshot().getSource().getFileObject());
     }
 
     @SuppressWarnings("unchecked")
     public static ElementHandle createHandle(ParserResult result, final ASTElement object) {
-        ASTNode root = AstUtilities.getRoot(result);
+        ASTNode root = ASTUtils.getRoot(result);
 
         return new GroovyElementHandle(root, object, result.getSnapshot().getSource().getFileObject());
     }
@@ -123,7 +123,7 @@ public class ElementHandleSupport {
             return null;
         }
 
-        ASTNode newRoot = AstUtilities.getRoot(info);
+        ASTNode newRoot = ASTUtils.getRoot(info);
         if (newRoot == null) {
             return null;
         }
@@ -132,7 +132,7 @@ public class ElementHandleSupport {
         ASTNode newNode = find(oldRoot, oldNode, newRoot);
 
         if (newNode != null) {
-            GroovyElement co = ASTElement.create(AstUtilities.getParseResult(info), newNode);
+            GroovyElement co = ASTElement.create(ASTUtils.getParseResult(info), newNode);
 
             return co;
         }
@@ -148,9 +148,9 @@ public class ElementHandleSupport {
     private static ASTNode find(ASTNode oldRoot, ASTNode oldObject, ASTNode newRoot) {
         // Walk down the tree to locate oldObject, and in the process, pick the same child for newRoot
         @SuppressWarnings("unchecked")
-        List<?extends ASTNode> oldChildren = AstUtilities.children(oldRoot);
+        List<?extends ASTNode> oldChildren = ASTUtils.children(oldRoot);
         @SuppressWarnings("unchecked")
-        List<?extends ASTNode> newChildren = AstUtilities.children(newRoot);
+        List<?extends ASTNode> newChildren = ASTUtils.children(newRoot);
         Iterator<?extends ASTNode> itOld = oldChildren.iterator();
         Iterator<?extends ASTNode> itNew = newChildren.iterator();
 

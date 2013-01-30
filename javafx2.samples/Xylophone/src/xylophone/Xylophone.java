@@ -187,10 +187,6 @@ public final class Xylophone extends Application {
         return squareGroup;
     }
 
-    public double getSampleWidth() { return 400; }
-
-    public double getSampleHeight() { return 400; }
-
     @Override public void start(Stage primaryStage) throws Exception {
         init(primaryStage);
         primaryStage.show();

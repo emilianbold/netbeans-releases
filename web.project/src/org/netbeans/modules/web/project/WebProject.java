@@ -61,6 +61,7 @@ import java.util.zip.ZipFile;
 import javax.swing.Icon;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.project.SourceGroup;
@@ -157,6 +158,7 @@ import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
 import org.netbeans.modules.web.project.api.WebProjectUtilities;
 import org.netbeans.modules.web.project.classpath.ClassPathSupportCallbackImpl;
+import org.netbeans.modules.web.project.classpath.DelagatingProjectClassPathModifierImpl;
 import org.netbeans.modules.web.project.classpath.WebProjectLibrariesModifierImpl;
 import org.netbeans.modules.web.project.spi.BrokenLibraryRefFilter;
 import org.netbeans.modules.web.project.spi.BrokenLibraryRefFilterProvider;
@@ -223,7 +225,7 @@ public final class WebProject implements Project {
     private final UpdateHelper updateHelper;
     private final UpdateProjectImpl updateProject;
     private final AuxiliaryConfiguration aux;
-    private final ClassPathModifier cpMod;
+    private final DelagatingProjectClassPathModifierImpl cpMod;
     private final WebProjectLibrariesModifierImpl libMod;
     private final ClassPathProviderImpl cpProvider;
     private ClassPathUiSupport.Callback classPathUiSupportCallback;
@@ -262,15 +264,11 @@ public final class WebProject implements Project {
             if (propertyValue != null) {
                 String resolvedPath = helper.resolvePath(propertyValue);
                 resolvedFile = new File(resolvedPath).getAbsoluteFile();
-                if (resolvedFile != null) {
-                    File f = resolvedFile;
-                    while (f != null && (fo = FileUtil.toFileObject(f)) == null) {
-                        f = f.getParentFile();
-                    }
-                    watchRename = f == resolvedFile;
-                } else {
-                    watchRename = false;
+                File f = resolvedFile;
+                while (f != null && (fo = FileUtil.toFileObject(f)) == null) {
+                    f = f.getParentFile();
                 }
+                watchRename = f == resolvedFile;
             } else {
                 resolvedFile = null;
                 watchRename = false;
@@ -302,35 +300,46 @@ public final class WebProject implements Project {
 
         // AntProjectListener
 
+        @Override
         public void configurationXmlChanged(AntProjectEvent ev) {
             updateFileChangeListener();
         }
 
+        @Override
         public void propertiesChanged(AntProjectEvent ev) {
             updateFileChangeListener();
         }
 
         // FileChangeListener
 
+        @Override
         public void fileFolderCreated(FileEvent fe) {
             updateFileChangeListener();
         }
 
+        @Override
         public void fileDataCreated(FileEvent fe) {
             updateFileChangeListener();
         }
 
+        @Override
         public void fileChanged(FileEvent fe) {
             updateFileChangeListener();
         }
 
+        @Override
         public void fileDeleted(FileEvent fe) {
             updateFileChangeListener();
         }
 
+        @Override
         public void fileRenamed(final FileRenameEvent fe) {
             if(watchRename && fileObject.isValid()) {
-                final File f = new File(helper.getStandardPropertyEvaluator().getProperty(propertyName));
+                String prop = helper.getStandardPropertyEvaluator().getProperty(propertyName);
+                if (prop == null) {
+                    return;
+                }
+                final File f = new File(prop);
                 if(f.getName().equals(fe.getName())) {
                     ProjectManager.mutex().postWriteRequest(new Runnable() {
                         public void run() {
@@ -352,6 +361,7 @@ public final class WebProject implements Project {
             updateFileChangeListener();
         }
 
+        @Override
         public void fileAttributeChanged(FileAttributeEvent fe) {
         }
     };
@@ -386,9 +396,10 @@ public final class WebProject implements Project {
         apiWebServicesClientSupport = WebServicesClientSupportFactory.createWebServicesClientSupport (webProjectWebServicesClientSupport);
         apiJAXWSClientSupport = JAXWSClientSupportFactory.createJAXWSClientSupport(jaxWsClientSupport);
         enterpriseResourceSupport = new WebContainerImpl(this, refHelper, helper);
-        cpMod = new ClassPathModifier(this, this.updateHelper, eval, refHelper,
+        ClassPathModifier cpModTemp = new ClassPathModifier(this, this.updateHelper, eval, refHelper,
             new ClassPathSupportCallbackImpl(helper), createClassPathModifierCallback(), getClassPathUiSupportCallback());
         libMod = new WebProjectLibrariesModifierImpl(this, this.updateHelper, eval, refHelper);
+        cpMod = new DelagatingProjectClassPathModifierImpl(cpModTemp, libMod);
         lookup = createLookup(aux, cpProvider);
         css = new CopyOnSaveSupport();
         artifactSupport = new ArtifactCopySupport();
@@ -403,7 +414,7 @@ public final class WebProject implements Project {
         this.projectPropertiesSave.set(value);
     }
     
-    public ClassPathModifier getClassPathModifier() {
+    public DelagatingProjectClassPathModifierImpl getClassPathModifier() {
         return cpMod;
     }
 
@@ -548,7 +559,6 @@ public final class WebProject implements Project {
             // remove in next release
             new WebModuleImpl(apiWebModule),
             enterpriseResourceSupport,
-            new WebActionProvider( this, this.updateHelper, this.eval ),
             new WebLogicalViewProvider(this, this.updateHelper, evaluator (), refHelper, webModule),
             new CustomizerProviderImpl(this, this.updateHelper, evaluator(), refHelper),        
             LookupMergerSupport.createClassPathProviderMerger(cpProvider),
@@ -575,6 +585,7 @@ public final class WebProject implements Project {
             ProjectClassPathModifier.extenderForModifier(cpMod),
             buildExtender,
             cpMod,
+            cpMod.getClassPathModifier(),
             new WebProjectOperations(this),
             new WebPersistenceProvider(this, evaluator(), cpProvider),
             new WebPersistenceProviderSupplier(this),
@@ -586,6 +597,7 @@ public final class WebProject implements Project {
             UILookupMergerSupport.createPrivilegedTemplatesMerger(),
             UILookupMergerSupport.createRecommendedTemplatesMerger(),
             LookupProviderSupport.createSourcesMerger(),
+            LookupProviderSupport.createActionProviderMerger(),
             WhiteListQueryMergerSupport.createWhiteListQueryMerger(),
             new WebPropertyEvaluatorImpl(evaluator()),
             WebProject.this, // never cast an externally obtained Project to WebProject - use lookup instead
@@ -596,7 +608,7 @@ public final class WebProject implements Project {
             LookupMergerSupport.createSFBLookupMerger(),
             ExtraSourceJavadocSupport.createExtraJavadocQueryImplementation(this, helper, eval),
             LookupMergerSupport.createJFBLookupMerger(),
-            QuerySupport.createBinaryForSourceQueryImplementation(sourceRoots, testRoots, helper, eval),
+            QuerySupport.createBinaryForSourceQueryImplementation(getSourceRoots(), getTestSourceRoots(), helper, eval),
             new ProjectWebRootProviderImpl()
         });
 
@@ -1469,7 +1481,8 @@ public final class WebProject implements Project {
                 projectCap = J2eeProjectCapabilities.forProject(project);
                 Profile profile = Profile.fromPropertiesString(eval.getProperty(WebProjectProperties.J2EE_PLATFORM));
                 isEE5 = profile == Profile.JAVA_EE_5;
-                serverSupportsEJB31 = Util.getSupportedProfiles(project).contains(Profile.JAVA_EE_6_FULL);
+                serverSupportsEJB31 = Util.getSupportedProfiles(project).contains(Profile.JAVA_EE_6_FULL) ||
+                        Util.getSupportedProfiles(project).contains(Profile.JAVA_EE_7_FULL);
                 checked = true;
             }
         }
@@ -1841,7 +1854,6 @@ public final class WebProject implements Project {
                         return;
                     }
                     FileObject destFile = ensureDestinationFileExists(webBuildBase, path, fo.isFolder());
-                    assert destFile != null : "webBuildBase: " + webBuildBase + ", path: " + path + ", isFolder: " + fo.isFolder();
                     if (!fo.isFolder()) {
                         InputStream is = null;
                         OutputStream os = null;
@@ -1875,6 +1887,7 @@ public final class WebProject implements Project {
          * Returns the destination (parent) directory needed to create file
          * with relative path path under webBuilBase
          */
+        @NonNull
         private FileObject ensureDestinationFileExists(FileObject webBuildBase, String path, boolean isFolder) throws IOException {
             FileObject current = webBuildBase;
             StringTokenizer st = new StringTokenizer(path, "/");
@@ -1892,7 +1905,6 @@ public final class WebProject implements Project {
                         assert newCurrent != null : "webBuildBase: " + webBuildBase + ", path: " + path + ", isFolder: " + isFolder;
                     }
                 }
-                assert newCurrent != null : "webBuildBase: " + webBuildBase + ", path: " + path + ", isFolder: " + isFolder;
                 current = newCurrent;
             }
             assert current != null : "webBuildBase: " + webBuildBase + ", path: " + path + ", isFolder: " + isFolder;
@@ -2134,7 +2146,7 @@ public final class WebProject implements Project {
     // FIXME this is just fallback for code searching for the old SPI in lookup
     // remove in next release
     @SuppressWarnings("deprecation")
-    private class WebModuleImpl implements WebModuleImplementation {
+    private static class WebModuleImpl implements WebModuleImplementation {
 
         private final WebModule apiModule;
 
@@ -2171,7 +2183,7 @@ public final class WebProject implements Project {
         }
     }
 
-    private class WebModuleImpl2 implements WebModuleImplementation2 {
+    private static class WebModuleImpl2 implements WebModuleImplementation2 {
 
         private final ProjectWebModule webModule;
 
@@ -2217,7 +2229,7 @@ public final class WebProject implements Project {
 
     }
 
-    private class WebProjectLookup extends ProxyLookup implements PropertyChangeListener{
+    private static class WebProjectLookup extends ProxyLookup implements PropertyChangeListener{
         Lookup base, ee6;
         WebProject project;
 
@@ -2231,7 +2243,8 @@ public final class WebProject implements Project {
 
         private void updateLookup(){
             Profile profile = Profile.fromPropertiesString(project.evaluator().getProperty(WebProjectProperties.J2EE_PLATFORM));
-            if (Profile.JAVA_EE_6_FULL.equals(profile) || Profile.JAVA_EE_6_WEB.equals(profile)){
+            if (Profile.JAVA_EE_6_FULL.equals(profile) || Profile.JAVA_EE_6_WEB.equals(profile) ||
+                    Profile.JAVA_EE_7_FULL.equals(profile) || Profile.JAVA_EE_7_WEB.equals(profile)){
                 setLookups(base, ee6);
             }else{
                 setLookups(base);
@@ -2267,7 +2280,7 @@ public final class WebProject implements Project {
         }
     }
 
-    private final class ProjectWebRootProviderImpl implements ProjectWebRootProvider {
+    private static final class ProjectWebRootProviderImpl implements ProjectWebRootProvider {
 
         @Override
         public FileObject getWebRoot(FileObject file) {

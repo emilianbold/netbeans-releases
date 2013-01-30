@@ -81,6 +81,7 @@ public final class NewFileWizard extends TemplateWizard {
         //setTitleFormat( new MessageFormat( "{0}") );
         addPropertyChangeListener(new PropertyChangeListener() {
 
+            @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 // check ProjectChooserFactory.WIZARD_KEY_PROJECT property
                 if (ProjectChooserFactory.WIZARD_KEY_PROJECT.equals(evt.getPropertyName())) {
@@ -118,6 +119,7 @@ public final class NewFileWizard extends TemplateWizard {
         });
     }
 
+    @Override
     public void updateState() {
         super.updateState();
         String substitute = (String) getProperty("NewFileWizard_Title"); // NOI18N
@@ -134,9 +136,11 @@ public final class NewFileWizard extends TemplateWizard {
         super.setTitle(title);
     }
 
+    @Override
     public void setTitle(String ignore) {
     }
 
+    @Override
     protected WizardDescriptor.Panel<WizardDescriptor> createTemplateChooser() {
         WizardDescriptor.Panel<WizardDescriptor> panel = new TemplateChooserPanel(getCurrentProject() /*, recommendedTypes */);
         JComponent jc = (JComponent) panel.getComponent();
@@ -145,6 +149,7 @@ public final class NewFileWizard extends TemplateWizard {
         return panel;
     }
 
+    @Override
     protected WizardDescriptor.Panel<WizardDescriptor> createTargetChooser() {
         Sources c = ProjectUtils.getSources(getCurrentProject());
         return Templates.buildSimpleTargetChooser(getCurrentProject(), c.getSourceGroups(Sources.TYPE_GENERIC)).create();

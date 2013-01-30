@@ -68,12 +68,12 @@ import org.openide.util.Exceptions;
  */
 public class TestUtil {
     
-    public static final String bodysetPath = "styleSheet/bodylist/bodyset/";
+    public static final String bodysetPath = "styleSheet/body/bodyItem/";
 
     public static CssParserResult parse(String code) {
         try {
             Document doc = new PlainDocument();
-            doc.putProperty("mimeType", "text/x-css");
+            doc.putProperty("mimeType", "text/css");
             doc.insertString(0, code, null);
             Source source = Source.create(doc);
             return parse(source);
@@ -123,7 +123,7 @@ public class TestUtil {
     public static void dumpResult(CssParserResult result) {
         System.out.println("Parse Tree:");
         NodeUtil.dumpTree(result.getParseTree());
-        Collection<ProblemDescription> problems = result.getDiagnostics();
+        Collection<ProblemDescription> problems = result.getParserDiagnostics();
         if (!problems.isEmpty()) {
             System.out.println(String.format("Found %s problems while parsing:", problems.size()));
             for (ProblemDescription pp : problems) {

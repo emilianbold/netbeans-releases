@@ -53,13 +53,16 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Stack;
 import java.util.StringTokenizer;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport;
+import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryUtils;
 import org.netbeans.modules.cnd.discovery.api.ItemProperties;
 import org.netbeans.modules.cnd.discovery.api.Progress;
@@ -74,9 +77,15 @@ import org.netbeans.modules.cnd.makeproject.spi.configurations.PkgConfigManager.
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.MIMESupport;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 import org.openide.util.Utilities;
 
 /**
@@ -93,8 +102,15 @@ public class LogReader {
     private final PathMap pathMapper;
     private final ProjectProxy project;
     private final CompilerSettings compilerSettings;
+    private final RelocatablePathMapper localMapper;
+    private final FileSystem fileSystem;
+    private final Map<String,String> alreadyConverted = new HashMap<String,String>();
+    private final Set<String> C_NAMES;
+    private final Set<String> CPP_NAMES;
+    private final Set<String> FORTRAN_NAMES;
+    private boolean isWindows = false;
 
-    public LogReader(String fileName, String root, ProjectProxy project) {
+    public LogReader(String fileName, String root, ProjectProxy project, RelocatablePathMapper relocatablePathMapper, FileSystem fileSystem) {
         if (root.length()>0) {
             this.root = CndFileUtils.normalizeFile(new File(root)).getAbsolutePath();
         } else {
@@ -104,28 +120,99 @@ public class LogReader {
         this.project = project;
         this.pathMapper = getPathMapper(project);
         this.compilerSettings = new CompilerSettings(project);
-
-        // XXX
-        setWorkingDir(root);
+        this.localMapper = relocatablePathMapper;
+        this.fileSystem = fileSystem;
+        C_NAMES = DiscoveryUtils.getCompilerNames(project, PredefinedToolKind.CCompiler);
+        CPP_NAMES = DiscoveryUtils.getCompilerNames(project, PredefinedToolKind.CCCompiler);
+        FORTRAN_NAMES = DiscoveryUtils.getCompilerNames(project, PredefinedToolKind.FortranCompiler);
     }
 
     private String convertPath(String path){
-        if(pathMapper != null) {
-            if (CndPathUtilitities.isPathAbsolute(path)) {
+        if (isPathAbsolute(path)) {
+            String originalPath = path;
+            String converted = alreadyConverted.get(path);
+            if (converted != null) {
+                return converted;
+            }
+            if(pathMapper != null) {
                 String local = pathMapper.getLocalPath(path);
                 if (local != null) {
-                    return local;
+                    path = local;
                 }
             }
+            if (localMapper != null && fileSystem != null) {
+                FileObject fo = fileSystem.findResource(path);
+                if (fo == null || !fo.isValid()) {
+                    RelocatablePathMapper.ResolvedPath resolvedPath = localMapper.getPath(path);
+                    if (resolvedPath == null) {
+                        if (root != null) {
+                            RelocatablePathMapper.FS fs = new RelocatablePathMapperImpl.FS() {
+                                @Override
+                                public boolean exists(String path) {
+                                    FileObject fo = fileSystem.findResource(path);
+                                    if (fo != null && fo.isValid()) {
+                                        return true;
+                                    }
+                                    return false;
+                                }
+                            };
+                            if (localMapper.discover(fs, root, path)) {
+                                resolvedPath = localMapper.getPath(path);
+                                fo = fileSystem.findResource(resolvedPath.getPath());
+                                if (fo != null && fo.isValid()) {
+                                    path = fo.getPath();
+                                }
+                            }
+                        }
+                    } else {
+                        fo = fileSystem.findResource(resolvedPath.getPath());
+                        if (fo != null && fo.isValid()) {
+                            path = fo.getPath();
+                        }
+                    }
+                } else {
+                    RelocatablePathMapper.ResolvedPath resolvedPath = localMapper.getPath(fo.getPath());
+                    if (resolvedPath == null) {
+                        if (root != null) {
+                            RelocatablePathMapper.FS fs = new RelocatablePathMapperImpl.FS() {
+                                @Override
+                                public boolean exists(String path) {
+                                    FileObject fo = fileSystem.findResource(path);
+                                    if (fo != null && fo.isValid()) {
+                                        return true;
+                                    }
+                                    return false;
+                                }
+                            };
+                            if (localMapper.discover(fs, root, path)) {
+                                resolvedPath = localMapper.getPath(path);
+                                fo = fileSystem.findResource(resolvedPath.getPath());
+                                if (fo != null && fo.isValid()) {
+                                    path = fo.getPath();
+                                }
+                            }
+                        }
+                    } else {
+                        path = fo.getPath();
+                        fo = fileSystem.findResource(resolvedPath.getPath());
+                        if (fo != null && fo.isValid()) {
+                            path = fo.getPath();
+                        }
+                    }
+                }
+            }
+            alreadyConverted.put(originalPath, path);
         }
         return path;
     }
 
     private PathMap getPathMapper(ProjectProxy project) {
-        Project p = project.getProject();
-        if (p != null) {
-            // it won't now return null for local environment
-            return RemoteSyncSupport.getPathMap(p);
+        if (project != null) {
+            Project p = project.getProject();
+            if (p != null) {
+                // it won't now return null for local environment
+                return RemoteSyncSupport.getPathMap(p);
+            }
         }
         return null;
     }
@@ -164,7 +251,16 @@ public class LogReader {
         if (file.exists() && file.canRead()){
             try {
                 MakeConfiguration conf = getConfiguration(this.project);
-                PkgConfig pkgConfig = PkgConfigManager.getDefault().getPkgConfig(getExecutionEnvironment(conf));
+                ExecutionEnvironment executionEnvironment = getExecutionEnvironment(conf);
+                try {
+                    HostInfo hostInfo = HostInfoUtils.getHostInfo(executionEnvironment);
+                    if (hostInfo.getOSFamily() == HostInfo.OSFamily.WINDOWS) {
+                        isWindows = true;
+                    }
+                } catch (CancellationException ex) {
+                    ex.printStackTrace(System.err);
+                }
+                PkgConfig pkgConfig = PkgConfigManager.getDefault().getPkgConfig(executionEnvironment);
                 BufferedReader in = new BufferedReader(new FileReader(file));
                 long length = file.length();
                 long read = 0;
@@ -195,10 +291,9 @@ public class LogReader {
                             line = line.substring(0, line.length() - 1) + " " + oneMoreLine.trim(); //NOI18N
                         }
                         line = trimBackApostropheCalls(line, pkgConfig);
-
                         String[] cmds = pattern.split(line);
                         for (int i = 0; i < cmds.length; i++) {
-                            if (parseLine(cmds[i], storage)){
+                            if (parseLine(cmds[i].trim(), storage)){
                                 nFoundFiles++;
                             }
                         }
@@ -227,6 +322,8 @@ public class LogReader {
 
     public List<SourceFileProperties> getResults(Progress progress, AtomicBoolean isStoped, CompileLineStorage storage) {
         if (result == null) {
+            // XXX
+            setWorkingDir(root);
             run(progress, isStoped, storage);
             if (subFolders != null) {
                 subFolders.clear();
@@ -305,7 +402,37 @@ public class LogReader {
     private static final String CURRENT_DIRECTORY = "Current working directory"; //NOI18N
     private static final String ENTERING_DIRECTORY = "Entering directory"; //NOI18N
     private static final String LEAVING_DIRECTORY = "Leaving directory"; //NOI18N
-    
+    private static final Pattern MAKE_DIRECTORY = Pattern.compile(".*make(?:\\.exe)?(?:\\[([0-9]+)\\])?: .*`([^']*)'$"); //NOI18N
+    private boolean isEntered;
+    private Stack<Integer> relativesLevel = new Stack<Integer>();
+    private Stack<String> relativesTo = new Stack<String>();
+
+    private void popPath() {
+        if (relativesTo.size() > 1) {
+            relativesTo.pop();
+        }
+    }
+
+    private String peekPath() {
+        if (relativesTo.size() > 1) {
+            return relativesTo.peek();
+        }
+        return root;
+    }
+
+    private void popLevel() {
+        if (relativesLevel.size() > 1) {
+            relativesLevel.pop();
+        }
+    }
+
+    private Integer peekLevel() {
+        if (relativesLevel.size() > 1) {
+            return relativesLevel.peek();
+        }
+        return Integer.valueOf(0);
+    }
+
     private String convertWindowsRelativePath(String path) {
         if (Utilities.isWindows()) {
             if (path.startsWith("/") || path.startsWith("\\")) { // NOI18N
@@ -381,6 +508,33 @@ public class LogReader {
             workDir = convertWindowsRelativePath(workDir);
             if (DwarfSource.LOG.isLoggable(Level.FINE)) {
                 message = "**>> by [just path string] "; //NOI18N
+            }
+        } else if (line.indexOf("make") >= 0) { //NOI18N
+            Matcher m = MAKE_DIRECTORY.matcher(line);
+            boolean found = m.find();
+            if (found && m.start() == 0) {
+                String levelString = m.group(1);
+                int level = levelString == null ? 0 : Integer.valueOf(levelString);
+                int baseLavel = peekLevel().intValue();
+                workDir = m.group(2);
+                workDir = convertPath(workDir);
+                workDir = convertWindowsRelativePath(workDir);
+                if (level > baseLavel) {
+                    isEntered = true;
+                    relativesLevel.push(level);
+                    isEntered = true;
+                } else if (level == baseLavel) {
+                    isEntered = !this.isEntered;
+                } else {
+                    isEntered = false;
+                    popLevel();
+                }
+                if (isEntered) {
+                    relativesTo.push(workDir);
+                } else {
+                    popPath();
+                    workDir = peekPath();
+                }
             }
         }
 
@@ -485,198 +639,84 @@ public class LogReader {
     }
 
     private static final String LABEL_CD        = "cd "; //NOI18N
-    private static final String INVOKE_GNU_C    = "gcc "; //NOI18N
-    private static final String INVOKE_GNU_C2   = "gcc.exe "; //NOI18N
-    private static final String INVOKE_CLANG_C  = "clang "; //NOI18N
-    private static final String INVOKE_CLANG_C2 = "clang.exe "; //NOI18N
-    private static final String INVOKE_INTEL_C  = "icc "; //NOI18N
-    private static final String INVOKE_SUN_C    = "cc "; //NOI18N
-    //private static final String INVOKE_GNU_XC = "xgcc "; //NOI18N
-    private static final String INVOKE_GNU_Cpp  = "g++ "; //NOI18N
-    private static final String INVOKE_GNU_Cpp2 = "g++.exe "; //NOI18N
-    private static final String INVOKE_GNU_Cpp3 = "c++ "; //NOI18N
-    private static final String INVOKE_GNU_Cpp4 = "c++.exe "; //NOI18N
-    private static final String INVOKE_CLANG_Cpp  = "clang++ "; //NOI18N
-    private static final String INVOKE_CLANG_Cpp2 = "clang++.exe "; //NOI18N
-    private static final String INVOKE_INTEL_Cpp  = "icpc "; //NOI18N
-    private static final String INVOKE_SUN_Cpp  = "CC "; //NOI18N
-    private static final String INVOKE_MSVC_Cpp = "cl "; //NOI18N
-    private static final String INVOKE_MSVC_Cpp2= "cl.exe "; //NOI18N
-
-// Gnu: gfortran,g95,g90,g77
-    private static final String INVOKE_GNU_Fortran1 = "gfortran "; //NOI18N
-    private static final String INVOKE_GNU_Fortran2 = "gfortran.exe "; //NOI18N
-    private static final String INVOKE_GNU_Fortran3 = "g95.exe "; //NOI18N
-    private static final String INVOKE_GNU_Fortran4 = "g90.exe "; //NOI18N
-    private static final String INVOKE_GNU_Fortran5 = "g77.exe "; //NOI18N
-    private static final String INVOKE_INTEL_Fortran= "ifort "; //NOI18N
-// common for gnu and sun ? prefer gnu family 
-    private static final String INVOKE_GNU_Fortran6 = "g95 "; //NOI18N
-    private static final String INVOKE_GNU_Fortran7 = "g90 "; //NOI18N
-    private static final String INVOKE_GNU_Fortran8 = "g77 "; //NOI18N
-// Sun: ffortran,f95,f90,f77
-    private static final String INVOKE_SUN_Fortran  = "ffortran "; //NOI18N
-    private static final String INVOKE_SUN_Fortran1 = "f95 "; //NOI18N
-    private static final String INVOKE_SUN_Fortran2 = "f90 "; //NOI18N
-    private static final String INVOKE_SUN_Fortran3 = "f77 "; //NOI18N
     private static final String MAKE_DELIMITER  = ";"; //NOI18N
 
-    private static int[] foundCompiler(String line, String ... patterns){
+    private String[] findCompiler(String line, Set<String> patterns, boolean checkExe){
         for(String pattern : patterns)    {
-            int start = line.indexOf(pattern);
-            if (start >=0) {
-                char prev = ' ';
-                if (start > 0) {
-                    prev = line.charAt(start-1);
-                }
-                if (prev == ' ' || prev == '\t' || prev == '/' || prev == '\\' || prev == '-') {
-                    // '-' to support any king of arm-elf-gcc
-                    int end = start + pattern.length();
-                    return new int[]{start,end};
+            int[] find = find(line, pattern);
+            if (find != null) {
+                return new String[]{pattern,line.substring(find[2])};
+            }
+            if (checkExe) {
+                find = find(line, pattern+".exe"); //NOI18N
+                if (find != null) {
+                    return new String[]{pattern,line.substring(find[2])};
                 }
             }
         }
         return null;
     }
+    
+    private int[] find(String line, String pattern) {
+        int fromIndex = 0;
+        while(true) {
+            int start = line.indexOf(pattern, fromIndex);
+            if (start < 0) {
+                return null;
+            }
+            fromIndex = start + 1;
+            char prev = ' ';
+            if (start > 0) {
+                prev = line.charAt(start-1);
+            }
+            if (prev == ' ' || prev == '\t' || prev == '/' || prev == '\\') {
+                if (start + pattern.length() >= line.length()) {
+                    continue;
+                }
+                char next = line.charAt(start+pattern.length());
+                if (next == ' ' || next == '\t') {
+                    int binaryStart = start;
+                    if (prev == '/' || prev == '\\') {
+                        char first = prev;
+                        for(int i = start - 2; i >= 0; i--) {
+                            char c = line.charAt(i);
+                            if (c == ' ' || c == '\t') {
+                                break;
+                            }
+                            binaryStart = i;
+                            first = c;
+                        }
+                        if (first == '-') {
+                            continue;
+                        }
+                    }
+                    int end = start + pattern.length();
+                    return new int[]{start,end, binaryStart};
+                }
+            }
+        }
+    }
 
-    /*package-local*/ static LineInfo testCompilerInvocation(String line) {
+    /*package-local*/ LineInfo testCompilerInvocation(String line) {
         LineInfo li = new LineInfo(line);
-        int start = 0, end = -1;
-        if (li.compilerType == CompilerType.UNKNOWN) {
-            //TODO: can fail on gcc calls with -shared-libgcc
-            int[] res = foundCompiler(line, INVOKE_GNU_C, INVOKE_GNU_C2 /*, INVOKE_GNU_XC*/);
-            if (res != null) {
-                start = res[0];
-                end = res[1];
-                li.compilerType = CompilerType.C;
-                li.compiler = "gcc"; // NOI18N
-            }
-        }
-        if (li.compilerType == CompilerType.UNKNOWN) {
-            //TODO: can fail on gcc calls with -shared-libgcc
-            int[] res = foundCompiler(line, INVOKE_CLANG_C, INVOKE_CLANG_C2);
-            if (res != null) {
-                start = res[0];
-                end = res[1];
-                li.compilerType = CompilerType.C;
-                li.compiler = "clang"; // NOI18N
-            }
-        }
-        if (li.compilerType == CompilerType.UNKNOWN) {
-            //TODO: can fail on gcc calls with -shared-libgcc
-            int[] res = foundCompiler(line, INVOKE_INTEL_C);
-            if (res != null) {
-                start = res[0];
-                end = res[1];
-                li.compilerType = CompilerType.C;
-                li.compiler = "icc"; // NOI18N
-            }
-        }
-        if (li.compilerType == CompilerType.UNKNOWN) {
-            int[] res = foundCompiler(line, INVOKE_GNU_Cpp,INVOKE_GNU_Cpp2,INVOKE_GNU_Cpp3,INVOKE_GNU_Cpp4);
-            if (res != null) {
-                start = res[0];
-                end = res[1];
+        String[] compiler = findCompiler(line, C_NAMES, isWindows);
+        if (compiler != null) {
+            li.compilerType = CompilerType.C;
+            li.compiler = compiler[0];
+            li.compileLine = compiler[1];
+        } else {
+            compiler = findCompiler(line, CPP_NAMES, isWindows);
+            if (compiler != null) {
                 li.compilerType = CompilerType.CPP;
-                li.compiler = "g++"; // NOI18N
-            }
-        }
-        if (li.compilerType == CompilerType.UNKNOWN) {
-            int[] res = foundCompiler(line, INVOKE_CLANG_Cpp, INVOKE_CLANG_Cpp2);
-            if (res != null) {
-                start = res[0];
-                end = res[1];
-                li.compilerType = CompilerType.CPP;
-                li.compiler = "clang++"; // NOI18N
-            }
-        }
-        if (li.compilerType == CompilerType.UNKNOWN) {
-            int[] res = foundCompiler(line, INVOKE_INTEL_Cpp);
-            if (res != null) {
-                start = res[0];
-                end = res[1];
-                li.compilerType = CompilerType.CPP;
-                li.compiler = "icpc"; // NOI18N
-            }
-        }
-        if (li.compilerType == CompilerType.UNKNOWN) {
-            int[] res = foundCompiler(line, INVOKE_SUN_C);
-            if (res != null) {
-                start = res[0];
-                end = res[1];
-                li.compilerType = CompilerType.C;
-                li.compiler = "cc"; // NOI18N
-            }
-        }
-        if (li.compilerType == CompilerType.UNKNOWN) {
-            int[] res = foundCompiler(line, INVOKE_SUN_Cpp);
-            if (res != null) {
-                start = res[0];
-                end = res[1];
-                li.compilerType = CompilerType.CPP;
-                li.compiler = "CC"; // NOI18N
-            }
-        }
-        if (li.compilerType == CompilerType.UNKNOWN) {
-            int[] res = foundCompiler(line, INVOKE_GNU_Fortran1,INVOKE_GNU_Fortran2,INVOKE_GNU_Fortran3,INVOKE_GNU_Fortran4,INVOKE_GNU_Fortran5,INVOKE_GNU_Fortran6,INVOKE_GNU_Fortran7,INVOKE_GNU_Fortran8);
-            if (res != null) {
-                start = res[0];
-                end = res[1];
-                li.compilerType = CompilerType.FORTRAN;
-                li.compiler = "gfortran"; // NOI18N
-            }
-        }
-        if (li.compilerType == CompilerType.UNKNOWN) {
-            int[] res = foundCompiler(line, INVOKE_SUN_Fortran,INVOKE_SUN_Fortran1,INVOKE_SUN_Fortran2,INVOKE_SUN_Fortran3);
-            if (res != null) {
-                start = res[0];
-                end = res[1];
-                li.compilerType = CompilerType.FORTRAN;
-                li.compiler = "ffortran"; // NOI18N
-            }
-        }
-        if (li.compilerType == CompilerType.UNKNOWN) {
-            int[] res = foundCompiler(line, INVOKE_INTEL_Fortran);
-            if (res != null) {
-                start = res[0];
-                end = res[1];
-                li.compilerType = CompilerType.FORTRAN;
-                li.compiler = "ifort"; // NOI18N
-            }
-        }
-        if (li.compilerType == CompilerType.UNKNOWN) {
-            int[] res = foundCompiler(line, INVOKE_MSVC_Cpp, INVOKE_MSVC_Cpp2);
-            if (res != null) {
-                start = res[0];
-                end = res[1];
-                li.compilerType = CompilerType.CPP;
-                li.compiler = "cl"; // NOI18N
-            }
-        }
-
-        if (li.compilerType != CompilerType.UNKNOWN) {
-            li.compileLine = line.substring(start);
-            while(end < line.length() && (line.charAt(end) == ' ' || line.charAt(end) == '\t')){
-                end++;
-            }
-            if (end >= line.length() || line.charAt(end)!='-') {
-                // suspected compiler invocation has no options or a part of a path?? -- noway
-                li.compilerType =  CompilerType.UNKNOWN;
-//            } else if (start > 0 && line.charAt(start-1)!='/') {
-//                // suspected compiler invocation is not first command in line?? -- noway
-//                String prefix = line.substring(0, start - 1).trim();
-//                // wait! maybe it's called in condition?
-//                if (!(line.charAt(start - 1) == ' ' &&
-//                        ( prefix.equals("if") || prefix.equals("then") || prefix.equals("else") ))) { //NOI18N
-//                    // or it's a lib compiled by libtool?
-//                    int ltStart = line.substring(0, start).indexOf("libtool"); //NOI18N
-//                        if (!(ltStart >= 0 && line.substring(ltStart, start).indexOf("compile") >= 0)) { //NOI18N
-//                            // no, it's not a compile line
-//                            li.compilerType = CompilerType.UNKNOWN;
-//                            // I hope
-//                            if (TRACE) {System.err.println("Suspicious line: " + line);}
-//                        }
-//                    }
+                li.compiler = compiler[0];
+                li.compileLine = compiler[1];
+            } else {
+                compiler = findCompiler(line, FORTRAN_NAMES, isWindows);
+                if (compiler != null) {
+                    li.compilerType = CompilerType.FORTRAN;
+                    li.compiler = compiler[0];
+                    li.compileLine = compiler[1];
+                }
             }
         }
         return li;
@@ -703,9 +743,9 @@ public class LogReader {
        if (workingDir == null) {
            return false;
        }
-       if (!workingDir.startsWith(root)){
-           return false;
-       }
+       //if (!workingDir.startsWith(root)){
+       //    return false;
+       //}
        LineInfo li = testCompilerInvocation(line);
        if (li.compilerType != CompilerType.UNKNOWN) {
            gatherLine(li, storage);
@@ -716,6 +756,7 @@ public class LogReader {
 
     private static final String PKG_CONFIG_PATTERN = "pkg-config "; //NOI18N
     private static final String ECHO_PATTERN = "echo "; //NOI18N
+    private static final String CYGPATH_PATTERN = "cygpath "; //NOI18N
     /*package-local*/ static String trimBackApostropheCalls(String line, PkgConfig pkgConfig) {
         int i = line.indexOf('`'); //NOI18N
         if (line.lastIndexOf('`') == i) {  //NOI18N // do not trim unclosed `quotes`
@@ -763,18 +804,31 @@ public class LogReader {
                         out.append(" "); //NOI18N
                     }
                 }
+            } else if (pkg.startsWith(CYGPATH_PATTERN)) {
+                pkg = pkg.substring(CYGPATH_PATTERN.length());
+                int start = 0;
+                for(int i1 = 0; i1 < pkg.length(); i1++) {
+                    char c = pkg.charAt(i1);
+                    if (c == ' ' || c == '\t') {
+                        start = i1;
+                        if (i1 + 1 < pkg.length() && pkg.charAt(i1 + 1) != '-') {
+                            break;
+                        }
+                    }
+                }
+                pkg = pkg.substring(start).trim();
+                if (pkg.startsWith("'") && pkg.endsWith("'")) { //NOI18N
+                    out.append(pkg.substring(1, pkg.length()-1));
+                } else {
+                    out.append(pkg);
+                }
             } else if (pkg.startsWith(ECHO_PATTERN)) {
                 pkg = pkg.substring(ECHO_PATTERN.length());
                 if (pkg.startsWith("'") && pkg.endsWith("'")) { //NOI18N
                     out.append(pkg.substring(1, pkg.length()-1));
                 } else {
                     StringTokenizer st = new StringTokenizer(pkg);
-                    boolean first = true;
                     if (st.hasMoreTokens()) {
-                        if (!first) {
-                            out.append(" "); //NOI18N
-                        }
-                        first = false;
                         out.append(st.nextToken());
                     }
                 }
@@ -784,12 +838,7 @@ public class LogReader {
                     out.append(pkg.substring(1, pkg.length()-1)); //NOI18N
                 } else {
                     StringTokenizer st = new StringTokenizer(pkg);
-                    boolean first = true;
                     if (st.hasMoreTokens()) {
-                        if (!first) {
-                            out.append(" "); //NOI18N
-                        }
-                        first = false;
                         out.append(st.nextToken());
                     }
                 }
@@ -817,8 +866,10 @@ public class LogReader {
                 continue;
             }
             String file;
-            if (what.startsWith("/")){  //NOI18N
+            boolean isRelative = true;
+            if (isPathAbsolute(what)){
                 what = convertWindowsRelativePath(what);
+                isRelative = false;
                 file = what;
             } else {
                 file = workingDir+"/"+what;  //NOI18N
@@ -844,6 +895,21 @@ public class LogReader {
                 result.add(new CommandLineSource(li, languageArtifacts, workingDir, what, userIncludesCached, userMacrosCached, undefinedMacros, storage));
                 continue;
             }
+            if (!isRelative) {
+                file = convertPath(what);
+                if (!file.equals(what)) {
+                    what = file;
+                    f = new File(file);
+                    if (f.exists() && f.isFile()) {
+                        if (DwarfSource.LOG.isLoggable(Level.FINE)) {
+                            DwarfSource.LOG.log(Level.FINE, "**** Gotcha: {0}", file);
+                        }
+                        result.add(new CommandLineSource(li, languageArtifacts, workingDir, what, userIncludesCached, userMacrosCached, undefinedMacros, storage));
+                        continue;
+                    }
+                }
+            }
+
             if (guessWorkingDir != null && !what.startsWith("/")) { //NOI18N
                 f = new File(guessWorkingDir+"/"+what);  //NOI18N
                 if (f.exists() && f.isFile()) {
@@ -884,21 +950,38 @@ public class LogReader {
             }
         }
     }
+    
+    //copy of CndPathUtilitities.isPathAbsolute(CharSequence)
+    // except checking on windows
+    private boolean isPathAbsolute(CharSequence path) {
+        if (path == null || path.length() == 0) {
+            return false;
+        } else if (path.charAt(0) == '/') {
+            return true;
+        } else if (path.charAt(0) == '\\') {
+            return true;
+        } else if (CharSequenceUtils.indexOf(path, ':') == 1) {
+            if (path.length()==2) {
+                return false;
+            } else if (path.charAt(2) == '\\' || path.charAt(2) == '/') {
+                return true;
+            }
+            return false;
+        } else {
+            return false;
+        }
+    }
 
-    static class CommandLineSource implements SourceFileProperties {
+    static class CommandLineSource extends RelocatableImpl implements SourceFileProperties {
 
-        private String compilePath;
         private String sourceName;
-        private String fullName;
         private String compiler;
         private ItemProperties.LanguageKind language;
         private ItemProperties.LanguageStandard standard = LanguageStandard.Unknown;
-        private List<String> userIncludes;
         private List<String> systemIncludes = Collections.<String>emptyList();
         private Map<String, String> userMacros;
         private List<String> undefinedMacros;
         private Map<String, String> systemMacros = Collections.<String, String>emptyMap();
-        private Set<String> includedFiles = Collections.<String>emptySet();
         private CompileLineStorage storage;
         private int handler = -1;
 
@@ -910,14 +993,21 @@ public class LogReader {
             } else if (languageArtifacts.contains("c++")) { // NOI18N
                 language = ItemProperties.LanguageKind.CPP;
             } else {
-                String mime =MIMESupport.getKnownSourceFileMIMETypeByExtension(sourcePath);
-                if (MIMENames.CPLUSPLUS_MIME_TYPE.equals(mime)) {
-                    if (li.getLanguage() != ItemProperties.LanguageKind.CPP) {
-                        language = ItemProperties.LanguageKind.CPP;
+                if (language == LanguageKind.Unknown || "cl".equals(li.compiler)) { // NOI18N
+                    String mime =MIMESupport.getKnownSourceFileMIMETypeByExtension(sourcePath);
+                    if (MIMENames.CPLUSPLUS_MIME_TYPE.equals(mime)) {
+                        if (li.getLanguage() != ItemProperties.LanguageKind.CPP) {
+                            language = ItemProperties.LanguageKind.CPP;
+                        }
+                    } else if (MIMENames.C_MIME_TYPE.equals(mime)) {
+                        if (li.getLanguage() != ItemProperties.LanguageKind.C) {
+                            language = ItemProperties.LanguageKind.C;
+                        }
                     }
-                } else if (MIMENames.C_MIME_TYPE.equals(mime)) {
-                    if (li.getLanguage() != ItemProperties.LanguageKind.C) {
-                        language = ItemProperties.LanguageKind.C;
+                } else if (language == LanguageKind.C && !li.compiler.equals("cc")) { // NOI18N
+                    String mime =MIMESupport.getKnownSourceFileMIMETypeByExtension(sourcePath);
+                    if (MIMENames.CPLUSPLUS_MIME_TYPE.equals(mime)) {
+                        language = ItemProperties.LanguageKind.CPP;
                     }
                 }
             }
@@ -976,7 +1066,7 @@ public class LogReader {
         public String getItemName() {
             return sourceName;
         }
-
+        
         @Override
         public List<String> getUserInludePaths() {
             return userIncludes;

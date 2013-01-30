@@ -124,6 +124,13 @@ public class FolderConfiguration implements ConfigurationAuxObject {
         return true;
     }
 
+    public boolean isVCSVisible() {
+        if (folder != null) {
+            return folder.hasAttributedItems();
+        }
+        return shared();
+    }
+    
     // interface ConfigurationAuxObject
     @Override
     public boolean hasChanged() {

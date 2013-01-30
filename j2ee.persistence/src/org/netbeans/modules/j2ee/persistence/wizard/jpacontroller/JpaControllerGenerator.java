@@ -42,10 +42,8 @@
 
 package org.netbeans.modules.j2ee.persistence.wizard.jpacontroller;
 
-import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
-import com.sun.source.tree.ExpressionTree;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -56,19 +54,16 @@ import java.util.logging.Logger;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
-import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.Task;
-import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.core.api.support.java.GenerationUtils;
@@ -77,14 +72,11 @@ import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
 import org.netbeans.modules.j2ee.persistence.dd.PersistenceMetadata;
 import org.netbeans.modules.j2ee.persistence.dd.PersistenceUtils;
 import org.netbeans.modules.j2ee.persistence.dd.common.Persistence;
-import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
-import org.netbeans.modules.j2ee.persistence.entitygenerator.EntityClass;
 import org.netbeans.modules.j2ee.persistence.wizard.Util;
 import org.netbeans.modules.j2ee.persistence.wizard.jpacontroller.JpaControllerUtil.EmbeddedPkSupport;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
-import org.netbeans.modules.j2ee.persistence.wizard.jpacontroller.JpaControllerUtil.AnnotationInfo;
 import org.netbeans.modules.j2ee.persistence.wizard.jpacontroller.JpaControllerUtil.TypeInfo;
 import org.netbeans.modules.j2ee.persistence.wizard.jpacontroller.JpaControllerUtil.MethodInfo;
 import org.openide.filesystems.FileUtil;
@@ -118,7 +110,6 @@ public class JpaControllerGenerator {
         final List<ElementHandle<ExecutableElement>> toOneRelMethods = new ArrayList<ElementHandle<ExecutableElement>>();
         final List<ElementHandle<ExecutableElement>> toManyRelMethods = new ArrayList<ElementHandle<ExecutableElement>>();
         final boolean[] fieldAccess = new boolean[] { false };
-        final String[] idProperty = new String[1];
 
         //detect access type
         final ClasspathInfo classpathInfo = ClasspathInfo.create(pkg);
@@ -139,7 +130,6 @@ public class JpaControllerGenerator {
                             if (JpaControllerUtil.isAnnotatedWith(f, "javax.persistence.Id") ||
                                     JpaControllerUtil.isAnnotatedWith(f, "javax.persistence.EmbeddedId")) {
                                 idGetter.add(ElementHandle.create(method));
-                                idProperty[0] = JpaControllerUtil.getPropNameFromMethod(methodName);
                             } else if (JpaControllerUtil.isAnnotatedWith(f, "javax.persistence.OneToOne") ||
                                     JpaControllerUtil.isAnnotatedWith(f, "javax.persistence.ManyToOne")) {
                                 toOneRelMethods.add(ElementHandle.create(method));
@@ -165,11 +155,8 @@ public class JpaControllerGenerator {
             addImplementsClause(arrEntityClassFO[0], entityClass, "java.io.Serializable"); //NOI18N
         }
 
-        ClassPath cp = Util.getFullClasspath(pkg);
-        boolean isAnnotation = cp.findResource("javax/faces/bean/ManagedBean.class") != null; //NOI18N
-
         controllerFileObject = addImplementsClause(controllerFileObject, controllerClass, "java.io.Serializable"); //NOI18N
-        controllerFileObject = generateJpaController(fieldName, pkg, idGetter.get(0), persistenceUnit, controllerClass, exceptionPackage,
+        generateJpaController(fieldName, pkg, idGetter.get(0), persistenceUnit, controllerClass, exceptionPackage,
                 entityClass, simpleEntityName, toOneRelMethods, toManyRelMethods, isInjection, fieldAccess[0], controllerFileObject, embeddedPkSupport, getPersistenceVersion(project));
     }
     
@@ -186,37 +173,6 @@ public class JpaControllerGenerator {
         return version;
     }
 
-     private static void addAnnotation(FileObject fileObject, final String className, final String annotationName, final String[] argNames, final Object[] argValues) throws IOException {
-        JavaSource javaSource = JavaSource.forFileObject(fileObject);
-        final boolean[] modified = new boolean[] { false };
-        ModificationResult modificationResult = javaSource.runModificationTask(new Task<WorkingCopy>() {
-            @Override
-            public void run(WorkingCopy workingCopy) throws Exception {
-                workingCopy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                TypeElement typeElement = workingCopy.getElements().getTypeElement(className);
-                TypeMirror annotationType = workingCopy.getElements().getTypeElement(annotationName).asType();
-                if (!workingCopy.getTypes().isSubtype(typeElement.asType(), annotationType)) {
-                    ClassTree classTree = workingCopy.getTrees().getTree(typeElement);
-                    AnnotationInfo annotation = new AnnotationInfo(annotationName,argNames, argValues);
-                    GenerationUtils generationUtils = GenerationUtils.newInstance(workingCopy);
-                    List<ExpressionTree> arguments = new ArrayList<ExpressionTree>();
-                    int i = 0;
-                    if (argNames != null) {
-                        for (String arg : argNames) {
-                            arguments.add(generationUtils.createAnnotationArgument(arg, argValues[i++]));
-                        }
-                    }
-                    AnnotationTree annotationTree =  generationUtils.createAnnotation(annotation.getType(),arguments);
-                    ClassTree newClassTree = generationUtils.addAnnotation(classTree, annotationTree);
-                    modified[0] = true;
-                    workingCopy.rewrite(classTree, newClassTree);
-                }
-            }
-        });
-        if (modified[0]) {
-            modificationResult.commit();
-        }
-    }
     private static FileObject addImplementsClause(FileObject fileObject, final String className, final String interfaceName) throws IOException {
         JavaSource javaSource = JavaSource.forFileObject(fileObject);
         if(javaSource == null){
@@ -227,7 +183,8 @@ public class JpaControllerGenerator {
             } 
         }
         if(javaSource == null){
-                            Logger.getLogger(JpaControllerGenerator.class.getName()).log(Level.WARNING, "Can''t find JavaSource for {0}", fileObject.getPath());
+            Logger.getLogger(JpaControllerGenerator.class.getName()).log(Level.WARNING, "Can''t find JavaSource for {0}", fileObject.getPath());
+            return fileObject;//just return, no need in npe next step
         }
         final boolean[] modified = new boolean[] { false };
         ModificationResult modificationResult = javaSource.runModificationTask(new Task<WorkingCopy>() {
@@ -285,6 +242,7 @@ public class JpaControllerGenerator {
                 
                 if(controllerJavaSource == null){
                     Logger.getLogger(JpaControllerGenerator.class.getName()).log(Level.WARNING, "Can''t find JavaSource for {0}", controllerFileObject.getPath());
+                    return controllerFileObject;//don't need npe later
                 }
             }
             controllerJavaSource.runModificationTask(new Task<WorkingCopy>() {
@@ -308,7 +266,7 @@ public class JpaControllerGenerator {
                                 ExecutableElement derivedIdGetterElement  = findPrimaryKeyGetter(workingCopy, idClass);
                                 derivedIdGetterName[0] = derivedIdGetterElement.getSimpleName().toString();
                                 TypeMirror derivedIdType = derivedIdGetterElement.getReturnType();
-                                TypeElement derivedIdClass = null;
+                                TypeElement derivedIdClass;
                                 if (TypeKind.DECLARED == idType.getKind()) {
                                     DeclaredType derivedDeclaredType = (DeclaredType) derivedIdType;
                                     derivedIdClass = (TypeElement) derivedDeclaredType.asElement();
@@ -338,9 +296,7 @@ public class JpaControllerGenerator {
                     }
                     
                     String simpleIdPropertyType = JpaControllerUtil.simpleClassName(idPropertyType[0]);
-                    
-                    TreeMaker make = workingCopy.getTreeMaker();
-                    
+                         
                     TypeElement controllerTypeElement = SourceUtils.getPublicTopLevelElement(workingCopy);
                     ClassTree classTree = workingCopy.getTrees().getTree(controllerTypeElement);
                     ClassTree modifiedClassTree = classTree;
@@ -354,7 +310,7 @@ public class JpaControllerGenerator {
                     List<String> parameterNames = new ArrayList<String>();
                     String body = "";   //NOI18N
                     boolean isUserTransaction = workingCopy.getClasspathInfo().getClassPath(ClasspathInfo.PathKind.COMPILE).findResource("javax/transaction/UserTransaction.class")!=null;  //NOI18N
-                    if (isUserTransaction) {
+                    if (isUserTransaction && isInjection) {
                         modifiedClassTree = JpaControllerUtil.TreeMakerUtils.addVariable(modifiedClassTree, workingCopy, "utx", "javax.transaction.UserTransaction", privateModifier, null, null);   //NOI18N
                         parameterTypes.add("javax.transaction.UserTransaction");   //NOI18N
                         parameterNames.add("utx");   //NOI18N
@@ -373,16 +329,16 @@ public class JpaControllerGenerator {
                     modifiedClassTree = JpaControllerUtil.TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo);
 
                     String bodyText;
-                    StringBuffer updateRelatedInCreate = new StringBuffer();
-                    StringBuffer updateRelatedInEditPre = new StringBuffer();
-                    StringBuffer attachRelatedInEdit = new StringBuffer();
-                    StringBuffer updateRelatedInEditPost = new StringBuffer();
-                    StringBuffer updateRelatedInDestroy = new StringBuffer();
-                    StringBuffer initRelatedInCreate = new StringBuffer();
-                    StringBuffer illegalOrphansInCreate = new StringBuffer();
-                    StringBuffer illegalOrphansInEdit = new StringBuffer();
-                    StringBuffer illegalOrphansInDestroy = new StringBuffer();
-                    StringBuffer initCollectionsInCreate = new StringBuffer();  //useful in case user removes listbox from New.jsp
+                    StringBuilder updateRelatedInCreate = new StringBuilder();
+                    StringBuilder updateRelatedInEditPre = new StringBuilder();
+                    StringBuilder attachRelatedInEdit = new StringBuilder();
+                    StringBuilder updateRelatedInEditPost = new StringBuilder();
+                    StringBuilder updateRelatedInDestroy = new StringBuilder();
+                    StringBuilder initRelatedInCreate = new StringBuilder();
+                    StringBuilder illegalOrphansInCreate = new StringBuilder();
+                    StringBuilder illegalOrphansInEdit = new StringBuilder();
+                    StringBuilder illegalOrphansInDestroy = new StringBuilder();
+                    StringBuilder initCollectionsInCreate = new StringBuilder();  //useful in case user removes listbox from New.jsp
 
                     List<ElementHandle<ExecutableElement>> allRelMethods = new ArrayList<ElementHandle<ExecutableElement>>(toOneRelMethods);
                     allRelMethods.addAll(toManyRelMethods);
@@ -461,7 +417,7 @@ public class JpaControllerGenerator {
                             }
                             
                             ExecutableElement relIdGetterElement = JpaControllerUtil.getIdGetter(isFieldAccess, relClass);
-                            String refOrMergeString = null;
+                            String refOrMergeString;
                             
                             if (isCollection) {
                                 refOrMergeString = getRefOrMergeString(relIdGetterElement, relFieldToAttach);
@@ -711,7 +667,7 @@ public class JpaControllerGenerator {
                     }
                     
                     TypeElement entityType = workingCopy.getElements().getTypeElement(entityClass);
-                    StringBuffer codeToPopulatePkFields = new StringBuffer();
+                    StringBuilder codeToPopulatePkFields = new StringBuilder();
                     if (embeddable[0]) {
                         for (ExecutableElement pkMethod : embeddedPkSupport.getPkAccessorMethods(entityType)) {
                             if (embeddedPkSupport.isRedundantWithRelationshipField(entityType, pkMethod)) {

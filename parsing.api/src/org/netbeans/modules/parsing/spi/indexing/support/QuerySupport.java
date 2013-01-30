@@ -63,6 +63,7 @@ import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.parsing.impl.Installer;
 import org.netbeans.modules.parsing.impl.RunWhenScanFinishedSupport;
 import org.netbeans.modules.parsing.impl.Utilities;
 import org.netbeans.modules.parsing.impl.indexing.CacheFolder;
@@ -78,6 +79,7 @@ import org.netbeans.modules.parsing.impl.indexing.Util;
 import org.netbeans.modules.parsing.impl.indexing.lucene.LayeredDocumentIndex;
 import org.netbeans.modules.parsing.impl.indexing.lucene.LuceneIndexFactory;
 import org.netbeans.modules.parsing.lucene.support.DocumentIndex;
+import org.netbeans.modules.parsing.lucene.support.Index;
 import org.netbeans.modules.parsing.lucene.support.Queries;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -310,6 +312,12 @@ public final class QuerySupport {
                     return result;
                 }
             });
+        } catch (Index.IndexClosedException ice) {
+            if (Installer.isClosed()) {
+                return Collections.<IndexResult>emptySet();
+            } else {
+                throw ice;
+            }
         } catch (IOException ioe) {
             throw ioe;
         } catch (RuntimeException re) {
@@ -398,7 +406,7 @@ public final class QuerySupport {
                     if (srcRoots != null) {
                         LOG.log(Level.FINE, "Translating {0} -> {1}", new Object [] { binRootUrl, srcRoots }); //NOI18N
                         for(URL srcRootUrl : srcRoots) {
-                            FileObject srcRoot = URLCache.getInstance().findFileObject(srcRootUrl);
+                            FileObject srcRoot = URLCache.getInstance().findFileObject(srcRootUrl, false);
                             if (srcRoot != null) {
                                 roots.add(srcRoot);
                             }
@@ -426,7 +434,7 @@ public final class QuerySupport {
             roots = new HashSet<FileObject>();
             Set<URL> urls = PathRegistry.getDefault().getRootsMarkedAs(classpathId);
             for(URL url : urls) {
-                FileObject f = URLCache.getInstance().findFileObject(url);
+                FileObject f = URLCache.getInstance().findFileObject(url, false);
                 if (f != null) {
                     roots.add(f);
                 }

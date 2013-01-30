@@ -44,27 +44,28 @@
 
 package org.netbeans.modules.web.project.classpath;
 
-import java.net.URL;
-import org.netbeans.api.project.ant.AntArtifact;
-import org.netbeans.modules.java.api.common.classpath.ClassPathSupport.Item;
-import org.netbeans.modules.web.project.api.*;
 import java.io.IOException;
 import java.net.URI;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.libraries.Library;
+import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.api.common.classpath.ClassPathModifier;
 import org.netbeans.modules.java.api.common.classpath.ClassPathModifierSupport;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
-import org.netbeans.modules.java.api.common.project.ui.ClassPathUiSupport;
-import org.netbeans.modules.java.api.common.ant.UpdateHelper;
+import org.netbeans.modules.java.api.common.classpath.ClassPathSupport.Item;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
+import org.netbeans.modules.java.api.common.project.ui.ClassPathUiSupport;
 import org.netbeans.modules.web.project.WebProject;
+import org.netbeans.modules.web.project.api.*;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 
-public class WebProjectLibrariesModifierImpl implements WebProjectLibrariesModifier {
+@SuppressWarnings("deprecation")
+public class WebProjectLibrariesModifierImpl implements WebProjectLibrariesModifier, WebProjectLibrariesModifier2 {
     
     private final WebProject project;
     private final UpdateHelper helper;

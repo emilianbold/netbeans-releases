@@ -60,6 +60,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.AnnotationMirror;
@@ -68,6 +69,8 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.swing.Action;
+import javax.swing.JEditorPane;
+
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
@@ -120,6 +123,7 @@ import org.openide.ErrorManager;
 import org.openide.actions.DeleteAction;
 import org.openide.actions.OpenAction;
 import org.openide.actions.PropertiesAction;
+import org.openide.cookies.EditorCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
@@ -129,6 +133,7 @@ import org.openide.nodes.AbstractNode;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.AbstractLookup;
@@ -182,9 +187,29 @@ public class JaxWsNode extends AbstractNode implements
                 if (service.isUseProvider() && implBeanClass.getAttribute("jax-ws-service-provider") == null) {
                     implBeanClass.setAttribute("jax-ws-service-provider", Boolean.TRUE);
                 }
-                getDataObject().setValid(false);
-            } catch (PropertyVetoException ex) {
-                ErrorManager.getDefault().notify(ex);
+                //getDataObject().setValid(false);
+                Mutex.EVENT.writeAccess( new Runnable(){
+                    /* (non-Javadoc)
+                     * @see java.lang.Runnable#run()
+                     */
+                    @Override
+                    public void run() {
+                        try {
+                            EditorCookie cookie = getDataObject().getCookie(EditorCookie.class);
+                            JEditorPane[] panes = cookie.getOpenedPanes();
+                            getDataObject().setValid(false);
+                            if ( panes != null && panes.length >0 ){
+                                getDataObject().getCookie(EditorCookie.class).open();
+                            }
+                        }
+                        catch (PropertyVetoException ex) {
+                            Logger.getLogger(JaxWsNode.class.getName()).log( 
+                                    Level.WARNING, null , ex);
+                        } 
+                    }
+                });
+            /*} catch (PropertyVetoException ex) {
+                ErrorManager.getDefault().notify(ex);*/
             } catch (IOException ex) {
                 ErrorManager.getDefault().notify(ex);
             }
@@ -354,7 +379,7 @@ public class JaxWsNode extends AbstractNode implements
     // Create the popup menu:
     @Override
     public Action[] getActions(boolean context) {
-        DataObject dobj = getCookie(DataObject.class);
+        //DataObject dobj = getCookie(DataObject.class);
         ArrayList<Action> actions = new ArrayList<Action>(Arrays.asList(
                 SystemAction.get(OpenAction.class),
                 SystemAction.get(JaxWsRefreshAction.class),
@@ -462,6 +487,7 @@ public class JaxWsNode extends AbstractNode implements
         return new ServerContextInfo(hostName, portNumber, contextRoot);
     }
 
+    @org.netbeans.api.annotations.common.SuppressWarnings("DE_MIGHT_IGNORE")
     private ServiceInfo getServiceInfo() {
         ServiceInfo serviceInfo = new ServiceInfo();
         J2eeModuleProvider provider = project.getLookup().lookup(J2eeModuleProvider.class);
@@ -503,7 +529,7 @@ public class JaxWsNode extends AbstractNode implements
                     if (uriDescriptor != null) {
                         fromStack = true;
 
-                        ServerContextInfo serverContextInfo = getServerContextInfo();
+                        //ServerContextInfo serverContextInfo = getServerContextInfo();
                         wsURI = uriDescriptor.getServiceUri(contextRoot, serviceInfo.getServiceName(), serviceInfo.getPortName(), serviceInfo.isEjb());
                     }
                 }
@@ -859,6 +885,7 @@ public class JaxWsNode extends AbstractNode implements
     /**
      * Implementation of the ConfigureHandlerCookie
      */
+    @org.netbeans.api.annotations.common.SuppressWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE")
     @Override
     public void configureHandler() {
         FileObject implBeanFo = getImplBean();
@@ -893,9 +920,11 @@ public class JaxWsNode extends AbstractNode implements
                     Map<? extends ExecutableElement, 
                             ? extends AnnotationValue> expressions = 
                                 handlerAnnotation.getElementValues();
-                    for (ExecutableElement ex : expressions.keySet()) {
+                    for (Entry<? extends ExecutableElement, 
+                            ? extends AnnotationValue> entry : expressions.entrySet()) {
+                        ExecutableElement ex = entry.getKey();
                         if (ex.getSimpleName().contentEquals("file")) {   //NOI18N
-                            handlerFileName[0] = (String) expressions.get(ex).getValue();
+                            handlerFileName[0] = (String) entry.getValue().getValue();
                             break;
                         }
                     }
@@ -994,9 +1023,7 @@ public class JaxWsNode extends AbstractNode implements
                     //TODO: throw exception here?
                     url = null;
                 } finally {
-                    if (httpConnection != null) {
-                        httpConnection.disconnect();
-                    }
+                    httpConnection.disconnect();
                 }
                 if (!connectionOK) {
                     //TODO: throw exception here?
@@ -1108,7 +1135,7 @@ public class JaxWsNode extends AbstractNode implements
         return hostName;
     }
     
-    private class ServerContextInfo {
+    private static class ServerContextInfo {
         private String host, port, contextRoot;
 
         public ServerContextInfo(String host, String port, String contextRoot) {
@@ -1131,7 +1158,7 @@ public class JaxWsNode extends AbstractNode implements
         }
     }
 
-    private class ServiceInfo {
+    private static class ServiceInfo {
         private String serviceName, portName;
         private boolean ejb;
 

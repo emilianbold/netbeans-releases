@@ -86,6 +86,7 @@ import javax.swing.JEditorPane;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.core.startup.Main;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.JavaDataLoader;
 import org.openide.filesystems.FileLock;
@@ -108,8 +109,9 @@ public class GeneratorUtilitiesTest extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
         SharedClassObject loader = JavaDataLoader.findObject(JavaDataLoader.class, true);
-        SourceUtilsTestUtil.prepareTest(new String[]{"org/netbeans/modules/java/source/resources/layer.xml"}, new Object[]{loader/*, cpp*/});
+        SourceUtilsTestUtil.prepareTest(new String[]{"org/netbeans/modules/java/source/resources/layer.xml", "META-INF/generated-layer.xml"}, new Object[]{loader/*, cpp*/});
         JEditorPane.registerEditorKitForContentType("text/x-java", "org.netbeans.modules.editor.java.JavaKit");
+        Main.initializeURLFactory();
     }
 
     private void writeIntoFile(FileObject file, String what) throws Exception {
@@ -1198,7 +1200,7 @@ public class GeneratorUtilitiesTest extends NbTestCase {
 
         SourceUtilsTestUtil.prepareTest(sourceDir, buildDir, cacheDir, new FileObject[0]);
         SourceUtilsTestUtil.setSourceLevel(source, sourceLevel);
-
+        
         JavaSource js = JavaSource.forFileObject(source);
 
         ModificationResult result = js.runModificationTask(task);

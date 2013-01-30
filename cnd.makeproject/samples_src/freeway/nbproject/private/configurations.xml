@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configurationDescriptor version="47">
-  <projectmakefile>GtkFreeway-Makefile.mk</projectmakefile>
+  <projectmakefile>Makefile</projectmakefile>
   <defaultConf>0</defaultConf>
   <confs>
     <conf name="Default" type="0">

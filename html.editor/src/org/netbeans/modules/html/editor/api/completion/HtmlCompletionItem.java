@@ -58,7 +58,12 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.modules.editor.indent.api.Indent;
 import org.netbeans.spi.editor.completion.*;
 import java.awt.Color;
+import java.awt.EventQueue;
 import java.awt.event.KeyEvent;
+import java.beans.FeatureDescriptor;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.lang.reflect.Method;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.html.editor.lib.api.model.HtmlTagAttribute;
@@ -66,13 +71,15 @@ import org.netbeans.modules.html.editor.HtmlPreferences;
 import org.netbeans.modules.html.editor.javadoc.HelpManager;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
 import org.netbeans.spi.editor.completion.support.CompletionUtilities;
+import org.openide.explorer.propertysheet.PropertySheet;
+import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.xml.XMLUtil;
 
 /**
  * Code completion result item base class
  *
- * @author  Dusan Balek, Marek Fukala
+ * @author Dusan Balek, Marek Fukala
  */
 public class HtmlCompletionItem implements CompletionItem {
 
@@ -82,11 +89,11 @@ public class HtmlCompletionItem implements CompletionItem {
     public static HtmlCompletionItem createTag(HtmlTag tag, String name, int substitutionOffset, String helpId, boolean possible) {
         return new Tag(tag, name, substitutionOffset, helpId, possible);
     }
- 
+
     public static HtmlCompletionItem createEndTag(HtmlTag tag, String name, int substitutionOffset, String helpId, int order, EndTag.Type type) {
         return new EndTag(tag, name, substitutionOffset, helpId, order, type);
     }
-    
+
     public static HtmlCompletionItem createEndTag(String name, int substitutionOffset, String helpId, int order, EndTag.Type type) {
         return new EndTag(name, substitutionOffset, helpId, order, type);
     }
@@ -122,8 +129,6 @@ public class HtmlCompletionItem implements CompletionItem {
     public static HtmlCompletionItem createGoUpFileCompletionItem(int substitutionOffset, Color color, ImageIcon icon) {
         return new GoUpFileAttributeValue(substitutionOffset, color, icon);
     }
-
-
     //------------------------------------------
     protected int substitutionOffset;
     protected String text, helpId;
@@ -177,7 +182,10 @@ public class HtmlCompletionItem implements CompletionItem {
                 Completion.get().hideCompletion();
             }
             int caretOffset = component.getSelectionEnd();
-            substituteText(component, caretOffset - substitutionOffset);
+            int len = caretOffset - substitutionOffset;
+            if (len >= 0) {
+                substituteText(component, len);
+            }
         }
 
     }
@@ -186,9 +194,9 @@ public class HtmlCompletionItem implements CompletionItem {
         return 0; //default
     }
 
-    /** 
-     * Subclasses may override to customize the completed text 
-     * if they do not want to override the substituteText method. 
+    /**
+     * Subclasses may override to customize the completed text if they do not
+     * want to override the substituteText method.
      */
     protected String getSubstituteText() {
         return getItemText();
@@ -208,7 +216,6 @@ public class HtmlCompletionItem implements CompletionItem {
         result[0] = true;
 
         doc.runAtomic(new Runnable() {
-
             @Override
             public void run() {
                 try {
@@ -220,7 +227,7 @@ public class HtmlCompletionItem implements CompletionItem {
                         doc.insertString(substitutionOffset, substituteText, null);
                     } else {
                         c.setCaretPosition(c.getCaret().getDot() + substituteText.length() - len);
-                        }
+                    }
                 } catch (BadLocationException ex) {
                     result[0] = false;
                 }
@@ -248,7 +255,6 @@ public class HtmlCompletionItem implements CompletionItem {
         indent.lock();
         try {
             doc.runAtomic(new Runnable() {
-
                 @Override
                 public void run() {
                     try {
@@ -257,7 +263,7 @@ public class HtmlCompletionItem implements CompletionItem {
                         indent.reindent(startOffset, endOffset);
                     } catch (BadLocationException ex) {
                         //ignore
-                        }
+                    }
                 }
             });
         } finally {
@@ -310,7 +316,8 @@ public class HtmlCompletionItem implements CompletionItem {
         return this.helpId;
     }
 
-    /** Returns a url or null, if the help is not URL or the help is not defined.
+    /**
+     * Returns a url or null, if the help is not URL or the help is not defined.
      */
     public URL getHelpURL() {
         if (helpId == null || helpId.equals("")) {
@@ -323,8 +330,10 @@ public class HtmlCompletionItem implements CompletionItem {
         return null;
     }
 
-    /** Returns help for the item. It can be only url. If the item doesn't have a help
-     *  than returns null. The class can overwrite this method and compounds the help realtime.
+    /**
+     * Returns help for the item. It can be only url. If the item doesn't have a
+     * help than returns null. The class can overwrite this method and compounds
+     * the help realtime.
      */
     public String getHelp() {
         return HelpManager.getDefault().getHelp(helpId);
@@ -381,24 +390,20 @@ public class HtmlCompletionItem implements CompletionItem {
         hash = 97 * hash + (this.helpId != null ? this.helpId.hashCode() : 0);
         return hash;
     }
-    
-    
 
     //------------------------------------------------------------------------------
-    /** 
-     * Completion item representing a JSP tag including its prefix eg. <jsp:useBean />
+    /**
+     * Completion item representing a JSP tag including its prefix eg.
+     * <jsp:useBean />
      */
     public static class Tag extends HtmlCompletionItem {
 
         private static final ImageIcon HTML_TAG_ICON =
-            ImageUtilities.loadImageIcon("org/netbeans/modules/csl/source/resources/icons/html_element.png", false); // NOI18N
-
+                ImageUtilities.loadImageIcon("org/netbeans/modules/csl/source/resources/icons/html_element.png", false); // NOI18N
         private static final ImageIcon SVG_TAG_ICON =
-            ImageUtilities.loadImageIcon("org/netbeans/modules/csl/source/resources/icons/class.png", false); // NOI18N
-
+                ImageUtilities.loadImageIcon("org/netbeans/modules/csl/source/resources/icons/class.png", false); // NOI18N
         private static final ImageIcon MATHML_TAG_ICON =
-            ImageUtilities.loadImageIcon("org/netbeans/modules/html/editor/resources/mathml.png", false); // NOI18N
-
+                ImageUtilities.loadImageIcon("org/netbeans/modules/html/editor/resources/mathml.png", false); // NOI18N
         private String GRAY_COLOR_CODE = hexColorCode(Color.GRAY);
         private boolean possible;
         private HtmlTag tag;
@@ -432,9 +437,9 @@ public class HtmlCompletionItem implements CompletionItem {
 
         @Override
         protected String getLeftHtmlText() {
-            return possible ? 
-                "<font color=#0000ff>&lt;" + getItemText() + "&gt;</font>" : //NOI18N
-                "<font color=#" + GRAY_COLOR_CODE + ">&lt;" + getItemText() + "&gt;</font>"; //NOI18N
+            return possible
+                    ? "<font color=#0000ff>&lt;" + getItemText() + "&gt;</font>" : //NOI18N
+                    "<font color=#" + GRAY_COLOR_CODE + ">&lt;" + getItemText() + "&gt;</font>"; //NOI18N
         }
 
         @Override
@@ -462,24 +467,23 @@ public class HtmlCompletionItem implements CompletionItem {
 
         @Override
         public boolean hasHelp() {
-            return tag != null && tag.getHelp() != null ||  super.hasHelp();
+            return tag != null && tag.getHelp() != null || super.hasHelp();
         }
-
-
     }
 
     /**
-     * Completion item representing a JSP tag including its prefix eg. <jsp:useBean />
+     * Completion item representing a JSP tag including its prefix eg.
+     * <jsp:useBean />
      */
     public static class EndTag extends HtmlCompletionItem {
- 
+
         public enum Type {
+
             DEFAULT(hexColorCode(Color.BLUE), false, DEFAULT_SORT_PRIORITY), //NOI18N
             OPTIONAL_EXISTING(hexColorCode(Color.GRAY), false, DEFAULT_SORT_PRIORITY),
             OPTIONAL_MISSING(hexColorCode(Color.BLUE), false, DEFAULT_SORT_PRIORITY - 10), //NOI18N
             REQUIRED_EXISTING(hexColorCode(Color.GRAY), false, DEFAULT_SORT_PRIORITY),
             REQUIRED_MISSING(hexColorCode(Color.BLUE), false, DEFAULT_SORT_PRIORITY - 10); //NOI18N
-                    
             private String colorCode;
             private boolean bold;
             private int sortPriority;
@@ -489,9 +493,7 @@ public class HtmlCompletionItem implements CompletionItem {
                 this.bold = bold;
                 this.sortPriority = sortPriority;
             }
-
         }
-
         private int orderIndex;
         private Type type;
         private HtmlTag tag;
@@ -516,7 +518,7 @@ public class HtmlCompletionItem implements CompletionItem {
             } else {
                 char[] result = new char[Integer.toString(Integer.MAX_VALUE).length()];
                 char[] orderIndexChars = Integer.toString(orderIndex).toCharArray();
-                Arrays.fill(result,'0'); //NOI18N
+                Arrays.fill(result, '0'); //NOI18N
                 System.arraycopy(orderIndexChars, 0, result, result.length - orderIndexChars.length, orderIndexChars.length);
 
                 return new String(result);
@@ -544,7 +546,6 @@ public class HtmlCompletionItem implements CompletionItem {
         public boolean hasHelp() {
             return tag != null && tag.getHelp() != null || super.hasHelp();
         }
-
     }
 
     public static class AutocompleteEndTag extends EndTag {
@@ -562,7 +563,6 @@ public class HtmlCompletionItem implements CompletionItem {
         public boolean instantSubstitution(JTextComponent component) {
             return false;
         }
-
     }
 
     /**
@@ -601,7 +601,9 @@ public class HtmlCompletionItem implements CompletionItem {
         }
     }
 
-    /** Item representing a JSP attribute value. */
+    /**
+     * Item representing a JSP attribute value.
+     */
     public static class AttributeValue extends HtmlCompletionItem {
 
         private boolean addQuotation;
@@ -615,8 +617,6 @@ public class HtmlCompletionItem implements CompletionItem {
         protected String getSubstituteText() {
             return addQuotation ? "\"" + super.getSubstituteText() + "\"" : super.getSubstituteText();
         }
-
-
     }
 
     public static class Attribute extends HtmlCompletionItem {
@@ -624,7 +624,6 @@ public class HtmlCompletionItem implements CompletionItem {
         private boolean required;
         private boolean autocompleteQuotes;
         private HtmlTagAttribute attr;
-
         protected static final String ATTR_NAME_COLOR = hexColorCode(Color.green.darker());
 
         public Attribute(HtmlTagAttribute attr, String value, int offset, boolean required, String helpId) {
@@ -661,18 +660,16 @@ public class HtmlCompletionItem implements CompletionItem {
                     "<font color=#" + ATTR_NAME_COLOR + ">" + getItemText() + "</font>" + //NOI18N
                     (required ? "</b>" : ""); //NOI18N
         }
-        
+
         @Override
         public boolean hasHelp() {
             return attr != null && attr.getHelp() != null || super.hasHelp();
         }
-
     }
 
     public static class BooleanAttribute extends HtmlCompletionItem {
 
         private boolean required;
-
         protected static final String ATTR_NAME_COLOR = hexColorCode(Color.green.darker());
 
         public BooleanAttribute(String value, int offset, boolean required, String helpId) {
@@ -688,11 +685,14 @@ public class HtmlCompletionItem implements CompletionItem {
         }
     }
 
-    /** Item representing a File attribute */
-    public static class FileAttributeValue extends HtmlCompletionItem {
+    /**
+     * Item representing a File attribute
+     */
+    public static class FileAttributeValue extends HtmlCompletionItem implements PropertyChangeListener, LazyCompletionItem {
 
         private javax.swing.ImageIcon icon;
         private Color color;
+        private boolean visible = false;
 
         FileAttributeValue(String text, int substitutionOffset, Color color, javax.swing.ImageIcon icon) {
             super(text, substitutionOffset);
@@ -708,6 +708,47 @@ public class HtmlCompletionItem implements CompletionItem {
         @Override
         protected String getLeftHtmlText() {
             return "<font color='" + hexColorCode(color) + "'>" + getItemText() + "</font>"; //NOI18N
+        }
+
+        private void iconLoaded(ImageIcon icon) {
+            this.icon = icon;
+            if(visible) {
+                repaintCompletionView_EDT();
+            }
+        }
+        
+        private void repaintCompletionView_EDT() {
+            EventQueue.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    repaintCompletionView();
+                }
+            });
+        }
+
+        private static void repaintCompletionView() {
+            try {
+                Completion completion = Completion.get();
+                Class<? extends Completion> clz = completion.getClass();
+                Method method = clz.getDeclaredMethod("repaintCompletionView"); //NOI18N
+                method.setAccessible(true);
+                method.invoke(completion);
+            } catch (Exception e) {
+                //ignore
+            }
+        }
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            if(evt.getPropertyName().equals("iconLoaded")) { //NOI18N
+                iconLoaded((ImageIcon)evt.getNewValue());
+            }
+        }
+
+        @Override
+        public boolean accept() {
+            visible = true;
+            return true;
         }
     }
 

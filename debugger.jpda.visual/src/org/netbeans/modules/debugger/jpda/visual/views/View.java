@@ -44,23 +44,11 @@
 
 package org.netbeans.modules.debugger.jpda.visual.views;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
 import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
-import javax.swing.JComponent;
-import javax.swing.JToolBar;
-import javax.swing.UIManager;
-import javax.swing.border.EmptyBorder;
-import javax.swing.border.MatteBorder;
-import org.netbeans.spi.viewmodel.Models;
-
-import org.openide.util.ImageUtilities;
+import org.netbeans.spi.debugger.ui.ViewFactory;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 
@@ -69,144 +57,9 @@ public class View extends TopComponent implements org.openide.util.HelpCtx.Provi
     
     public static final String EVENTS_VIEW_NAME = "EventsView";
     
-    private transient JComponent contentComponent;
-    private transient ViewModelListener viewModelListener;
-    private String name; // Store just the name persistently, we'll create the component from that
-    private transient String helpID;
-    private transient String propertiesHelpID;
-    private transient String displayNameResource;
-    private transient String toolTipResource;
-    
-    private View (String icon, String name, String helpID, String propertiesHelpID,
-                  String displayNameResource, String toolTipResource) {
-        setIcon (ImageUtilities.loadImage (icon));
-        // Remember the location of the component when closed.
-        putClientProperty("KeepNonPersistentTCInModelWhenClosed", Boolean.TRUE); // NOI18N
-        this.name = name;
-        this.helpID = helpID;
-        this.propertiesHelpID = propertiesHelpID;
-        this.displayNameResource = displayNameResource;
-        this.toolTipResource = toolTipResource;
-    }
-
-    @Override
-    protected String preferredID() {
-        return this.getClass().getPackage().getName() + "." + name;
-    }
-
-    @Override
-    protected void componentShowing () {
-        super.componentShowing ();
-        if (viewModelListener != null) {
-            viewModelListener.setUp();
-            return ;
-        }
-        JComponent buttonsPane;
-        if (contentComponent == null) {
-            setLayout (new BorderLayout ());
-            contentComponent = new javax.swing.JPanel(new BorderLayout ());
-            
-            //tree = Models.createView (Models.EMPTY_MODEL);
-            contentComponent.setName (NbBundle.getMessage (View.class, toolTipResource));
-            add (contentComponent, BorderLayout.CENTER);  //NOI18N
-            JToolBar toolBar = new JToolBar(JToolBar.VERTICAL);
-            toolBar.setFloatable(false);
-            toolBar.setRollover(true);
-            toolBar.setBorderPainted(true);
-            if( "Aqua".equals(UIManager.getLookAndFeel().getID()) ) { //NOI18N
-                toolBar.setBackground(UIManager.getColor("NbExplorerView.background")); //NOI18N
-            }
-            toolBar.setBorder(javax.swing.BorderFactory.createCompoundBorder(
-                    javax.swing.BorderFactory.createMatteBorder(0, 0, 0, 1,
-                    javax.swing.UIManager.getDefaults().getColor("Separator.background")),
-                    javax.swing.BorderFactory.createMatteBorder(0, 0, 0, 1,
-                    javax.swing.UIManager.getDefaults().getColor("Separator.foreground"))));
-            add(toolBar, BorderLayout.WEST);
-            buttonsPane = toolBar;
-        } else {
-            buttonsPane = (JComponent) ((BorderLayout) getLayout()).getLayoutComponent(BorderLayout.WEST);
-        }
-        // <RAVE> CR 6207738 - fix debugger help IDs
-        // Use the modified constructor that stores the propertiesHelpID
-        // for nodes in this view
-        // viewModelListener = new ViewModelListener (
-        //     "ThreadsView",
-        //     tree
-        // );
-        // ====
-        viewModelListener = new ViewModelListener (
-            name,
-            contentComponent,
-            buttonsPane,
-            propertiesHelpID,
-            getIcon()
-        );
-        // </RAVE>
-    }
-    
-    @Override
-    protected void componentHidden () {
-        super.componentHidden ();
-        if (viewModelListener != null) {
-            viewModelListener.destroy ();
-        }
-    }
-    
-    // <RAVE>
-    // Implement getHelpCtx() with the correct help ID
-    @Override
-    public org.openide.util.HelpCtx getHelpCtx() {
-        return new org.openide.util.HelpCtx(helpID);
-    }
-    // </RAVE>
-    
-    @Override
-    public int getPersistenceType () {
-        return PERSISTENCE_ALWAYS;
-    }
-        
-    @Override
-    public boolean requestFocusInWindow () {
-        super.requestFocusInWindow ();
-        if (contentComponent == null) return false;
-        if (contentComponent.getComponentCount() > 0) {
-            return contentComponent.getComponent(0).requestFocusInWindow ();
-        } else {
-            return contentComponent.requestFocusInWindow ();
-        }
-    }
-
-    @Override
-    public void requestActive() {
-        super.requestActive();
-        if (contentComponent != null) {
-            if (contentComponent.getComponentCount() > 0) {
-                contentComponent.getComponent(0).requestFocusInWindow ();
-            } else {
-                contentComponent.requestFocusInWindow ();
-            }
-        }
-    }
-    
-    @Override
-    public String getName () {
-        return NbBundle.getMessage (View.class, displayNameResource);
-    }
-    
-    @Override
-    public String getToolTipText () {
-        return NbBundle.getMessage (View.class, toolTipResource);// NOI18N
-    }
-    
-    @Override
-    public Object writeReplace() {
-        return new ResolvableHelper(name);
-    }
-     
-    
-    
     /**
      * The serializing class.
+     * For compatibility reasons.
      */
     private static final class ResolvableHelper implements Externalizable {
         
@@ -240,13 +93,13 @@ public class View extends TopComponent implements org.openide.util.HelpCtx.Provi
      * @deprecated Do not call.
      */
     public static synchronized TopComponent getEventsView() {
-        return new View(
+        return ViewFactory.getDefault().createViewTC(
             "org/netbeans/modules/debugger/resources/breakpointsView/Breakpoint.gif",
             EVENTS_VIEW_NAME,
             "NetbeansDebuggerEventNode",
             null,
-            "CTL_Events_view",
-            "CTL_Events_view_tooltip"
+            NbBundle.getMessage(View.class, "CTL_Events_view"),
+            NbBundle.getMessage(View.class, "CTL_Events_view_tooltip")
         );
     }
     

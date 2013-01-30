@@ -52,7 +52,7 @@ import org.netbeans.spi.lexer.TokenFactory;
  *
  * @author Petr Pisl
  */
-public class PHPTopLexer implements Lexer<PHPTopTokenId> {
+public final class PHPTopLexer implements Lexer<PHPTopTokenId> {
 
     private final PHPTopColoringLexer scanner;
     private TokenFactory<PHPTopTokenId> tokenFactory;
@@ -66,6 +66,7 @@ public class PHPTopLexer implements Lexer<PHPTopTokenId> {
         return new PHPTopLexer(info);
     }
 
+    @Override
     public Token<PHPTopTokenId> nextToken() {
         PHPTopTokenId tokenId = scanner.nextToken();
         Token<PHPTopTokenId> token = null;
@@ -75,10 +76,12 @@ public class PHPTopLexer implements Lexer<PHPTopTokenId> {
         return token;
     }
 
+    @Override
     public Object state() {
         return scanner.getState();
     }
 
+    @Override
     public void release() {
     }
 
@@ -97,7 +100,7 @@ public class PHPTopLexer implements Lexer<PHPTopTokenId> {
         IN_PHP
     }
 
-    private class PHPTopColoringLexer {
+    private static class PHPTopColoringLexer {
 
         private State state;
         private final LexerInput input;
@@ -147,8 +150,7 @@ public class PHPTopLexer implements Lexer<PHPTopTokenId> {
                     case IN_PHP_DELIMITER_SHORT:
                         if (cc == 'p') {
                             state = State.IN_PHP_DELIMITER;
-                        }
-                        else {
+                        } else {
                             if (input.readLength() == 3) {
                                 state = State.IN_PHP;
                                 input.backup(1);
@@ -185,13 +187,16 @@ public class PHPTopLexer implements Lexer<PHPTopTokenId> {
                                 break;
                             case '<':
                                 if (input.readLength() > 3) {
-                                    if (text.charAt(textLength-3) == '<'
-                                            && text.charAt(textLength-2) == '<'
-                                            && Character.isWhitespace(text.charAt(textLength-4))) {
+                                    if (text.charAt(textLength - 3) == '<'
+                                            && text.charAt(textLength - 2) == '<'
+                                            && Character.isWhitespace(text.charAt(textLength - 4))) {
                                         state = State.IN_PHP_HEREDOC_STRING;
                                         hereDocStart = textLength - 3;
                                     }
                                 }
+                                break;
+                            default:
+                                // no-op
                         }
                         break;
                     case IN_PHP_CONSTANT_STRING:
@@ -232,34 +237,36 @@ public class PHPTopLexer implements Lexer<PHPTopTokenId> {
                                             && ++delimiterStart < textLength) {
                                         delimiterChar = text.charAt(delimiterStart);
                                     }
-                                    if (delimiterChar != '\n' && delimiterChar !='\r') {
+                                    if (delimiterChar != '\n' && delimiterChar != '\r') {
                                         // find heredoc delimiter
                                         hereDocDelimiter = text.subSequence(delimiterStart, text.length() - 1);
                                         if (hereDocDelimiter.charAt(0) == '\''
                                             || hereDocDelimiter.charAt(0) == '"') {
                                                 // possible nowdoc or 5.3 heredoc
-                                                hereDocDelimiter = hereDocDelimiter.subSequence(1, hereDocDelimiter.length()-1);
+                                                hereDocDelimiter = hereDocDelimiter.subSequence(1, hereDocDelimiter.length() - 1);
                                             }
                                         hereDocDelimiterLenght = hereDocDelimiter.length();
                                         hereDocStart = -1;
-                                    }
-                                    else {
+                                    } else {
                                         // the heredoc delimiter is not finished yet
                                         state = State.IN_PHP;
                                     }
-                                }
-                                else {
+                                } else {
                                     // check whether is on the line is just the heredoc delimiter
-                                    if (text.charAt(textLength-2) == ';'
-                                            && (text.charAt(textLength - 3 -hereDocDelimiterLenght) == '\r'
-                                            || text.charAt(textLength - 3 -hereDocDelimiterLenght) == '\n')
+                                    if (text.charAt(textLength - 2) == ';'
+                                            && (text.charAt(textLength - 3 - hereDocDelimiterLenght) == '\r'
+                                            || text.charAt(textLength - 3 - hereDocDelimiterLenght) == '\n')
                                             && TokenUtilities.textEquals(hereDocDelimiter, text.subSequence(textLength - 2 - hereDocDelimiterLenght, textLength - 2))) {
                                         // heredoc finished
-                                        state = state.IN_PHP;
+                                        state = State.IN_PHP;
                                     }
                                 }
                                 break;
+                            default:
+                                //no-op
                         }
+                    default:
+                        //no-op
                 }
                 c = input.read();
             }

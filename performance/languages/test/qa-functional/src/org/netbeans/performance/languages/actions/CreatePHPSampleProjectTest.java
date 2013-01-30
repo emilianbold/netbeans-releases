@@ -112,8 +112,7 @@ public class CreatePHPSampleProjectTest  extends PerformanceTestCase {
     
     public void testCreatePhpSampleProject() {
         category = "Samples|PHP";        
-        project = Bundle.getStringTrimmed("org.netbeans.modules.php.samples.Bundle",
-                "Templates/Project/Samples/PHP/AirAlliance");  // "Air Alliance Sample Application"
+        project = Bundle.getStringTrimmed("org.netbeans.modules.php.samples.Bundle","Templates/Project/Samples/PHP/TodoList");  // "TODOList Sample Application"
         project_type="PHPSampleApp";              
         doMeasurement();
     }

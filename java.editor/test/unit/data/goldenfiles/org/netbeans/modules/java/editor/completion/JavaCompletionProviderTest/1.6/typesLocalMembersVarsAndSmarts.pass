@@ -17,6 +17,8 @@ public final native Class<?> getClass()
 public native int hashCode()
 public String toString()
 false
+super
+this
 true
 public static final Comparator<String> String.CASE_INSENSITIVE_ORDER
 public static final byte Character.COMBINING_SPACING_MARK
@@ -300,8 +302,6 @@ long
 new
 null
 short
-super
-this
 AbstractMethodError
 Appendable
 ArithmeticException

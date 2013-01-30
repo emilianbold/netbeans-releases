@@ -54,6 +54,7 @@ import javax.swing.SwingUtilities;
 import org.netbeans.api.debugger.ActionsManager;
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.spi.debugger.ActionsProvider;
 import org.netbeans.spi.debugger.ActionsProviderSupport;
 import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
 import org.openide.text.Line;
@@ -63,6 +64,7 @@ import org.openide.util.WeakListeners;
  *
  * @author ads
  */
+@ActionsProvider.Registration(actions={"toggleBreakpoint"}, activateForMIMETypes={Utils.MIME_TYPE})
 public class BreakpointActionProvider extends ActionsProviderSupport
         implements PropertyChangeListener 
 {

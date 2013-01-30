@@ -63,6 +63,7 @@ import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
+import java.lang.ref.WeakReference;
 import java.util.ResourceBundle;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
@@ -115,6 +116,8 @@ public class GotoLineOrBookmarkPanel extends JPanel implements ActionListener, F
     private JButton[] buttons;
 
     private static Dialog dialog;
+    
+    private WeakReference<JTextComponent> targetComponent;
 
     /** The variable used during updating combo to prevent firing */
     private KeyEventBlocker blocker;
@@ -132,6 +135,16 @@ public class GotoLineOrBookmarkPanel extends JPanel implements ActionListener, F
         closeButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_gotoDialogCloseButton")); // NOI18N
         buttons = new JButton[] { gotoButton, closeButton };
     }
+    
+    private JTextComponent getTargetComponent() {
+        return targetComponent != null ? targetComponent.get() :  EditorRegistry.lastFocusedComponent();
+    }
+
+    public void setTargetComponent(JTextComponent targetComponent) {
+        this.targetComponent = new WeakReference<JTextComponent>(targetComponent);
+    }
+    
+    
 
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
@@ -166,7 +179,8 @@ public class GotoLineOrBookmarkPanel extends JPanel implements ActionListener, F
     protected javax.swing.JLabel gotoLabel;
     // End of variables declaration//GEN-END:variables
 
-    public void showDialog(final KeyEventBlocker blocker) {
+    public void showDialog(final JTextComponent target, final KeyEventBlocker blocker) {
+        setTargetComponent(target);
         this.blocker = blocker;
         if (dialog == null) {
             initDialog();
@@ -260,7 +274,7 @@ public class GotoLineOrBookmarkPanel extends JPanel implements ActionListener, F
             Dimension dim = dialog.getPreferredSize();
             int x;
             int y;
-            JTextComponent c = EditorRegistry.lastFocusedComponent();
+            JTextComponent c = getTargetComponent();
             Window w = c != null ? SwingUtilities.getWindowAncestor(c) : null;
             if (w != null) {
                 x = Math.max(0, w.getX() + (w.getWidth() - dim.width) / 2);
@@ -307,7 +321,7 @@ public class GotoLineOrBookmarkPanel extends JPanel implements ActionListener, F
      * @return whether the dialog should be made invisible or not
      */
     private boolean performGoto() {
-        JTextComponent c = EditorRegistry.lastFocusedComponent();
+        JTextComponent c = getTargetComponent();
         String text = (String) gotoCombo.getEditor().getItem();
         if (c != null) {
             try {
@@ -318,17 +332,15 @@ public class GotoLineOrBookmarkPanel extends JPanel implements ActionListener, F
                 int lineIndex = lineNumber - 1;
                 Document doc = c.getDocument();
                 Element rootElem = doc.getDefaultRootElement();
-                if (doc != null) {
-                    int lineCount = rootElem.getElementCount();
-                    if (lineIndex >= 0) {
-                        if (lineIndex >= lineCount) {
-                            lineIndex = lineCount - 1;
-                        }
-                        int offset = rootElem.getElement(lineIndex).getStartOffset();
-                        c.setCaretPosition(offset);
-                        return true;
-                    } // else: lineIndex < 0 => beep and return false
-                }
+                int lineCount = rootElem.getElementCount();
+                if (lineIndex >= 0) {
+                    if (lineIndex >= lineCount) {
+                        lineIndex = lineCount - 1;
+                    }
+                    int offset = rootElem.getElement(lineIndex).getStartOffset();
+                    c.setCaretPosition(offset);
+                    return true;
+                } // else: lineIndex < 0 => beep and return false
             } catch (NumberFormatException e) {
                 // Contains letters or other chars -> attempt bookmarks
                 BookmarkManager lockedBookmarkManager = BookmarkManager.getLocked();
@@ -426,9 +438,10 @@ public class GotoLineOrBookmarkPanel extends JPanel implements ActionListener, F
         public BookmarksGotoAction() {
         }
     
+        @Override
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
             if (target != null) {
-                new GotoLineOrBookmarkPanel().showDialog(new KeyEventBlocker(target, false));
+                new GotoLineOrBookmarkPanel().showDialog(target, new KeyEventBlocker(target, false));
             }
         }
 

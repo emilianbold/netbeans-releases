@@ -53,7 +53,6 @@ import java.util.Map.Entry;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo.OSFamily;
 import org.netbeans.modules.nativeexecution.api.pty.Pty;
-import org.netbeans.modules.nativeexecution.api.pty.PtySupport;
 import org.netbeans.modules.nativeexecution.api.util.MacroMap;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
@@ -66,15 +65,10 @@ import org.netbeans.modules.nativeexecution.pty.PtyUtility;
 public final class PtyNativeProcess extends AbstractNativeProcess {
 
     private static final Boolean fixEraseKeyInTerminal = Boolean.valueOf(System.getProperty("fixEraseKeyInTerminal", "true")); // NOI18N;
-    private String tty;
     private AbstractNativeProcess delegate = null;
 
-    public PtyNativeProcess(NativeProcessInfo info) {
-        super(new NativeProcessInfo(info));
-    }
-
-    public String getTTY() {
-        return tty;
+    public PtyNativeProcess(final NativeProcessInfo info) {
+        super(new NativeProcessInfo(info, true));
     }
 
     @Override
@@ -87,6 +81,10 @@ public final class PtyNativeProcess extends AbstractNativeProcess {
         if (pty != null) {
             newArgs.add("-p"); // NOI18N
             newArgs.add(pty.getSlaveName());
+        }
+
+        if (fixEraseKeyInTerminal) {
+            newArgs.add("--set-erase-key"); // NOI18N
         }
 
         final MacroMap envMap = info.getEnvironment();
@@ -119,7 +117,11 @@ public final class PtyNativeProcess extends AbstractNativeProcess {
         if (origCommand != null) {
             newArgs.add(hostInfo.getShell());
             newArgs.add("-c"); // NOI18N
-            newArgs.add("exec " + origCommand); // NOI18N
+            if (info.isRedirectError()) {
+                newArgs.add("exec 2>&1; exec " + origCommand); // NOI18N
+            } else {
+                newArgs.add("exec " + origCommand); // NOI18N
+            }
         } else {
             // this means that there is no shell available
             String processExecutable = info.getExecutable();
@@ -140,29 +142,23 @@ public final class PtyNativeProcess extends AbstractNativeProcess {
         // no need to preload unbuffer in case of running in internal terminal
         info.setUnbuffer(false);
 
-        // Listeners...
-        // listeners are copied already in super()
-        // and never accessed via info anymore...
-        // so when we change listeners here,
-        // this change has effect on delegate only...
-
-        if (info.getListeners() != null) {
-            info.getListeners().clear();
-        }
+        NativeProcessInfo delegateInfo = new NativeProcessInfo(info, false);
 
         if (env.isLocal()) {
-            delegate = new LocalNativeProcess(info);
+            delegate = new LocalNativeProcess(delegateInfo);
         } else {
-            delegate = new RemoteNativeProcess(info);
+            delegate = new RemoteNativeProcess(delegateInfo);
         }
 
         delegate.createAndStart();
+
+        InputStream inputStream = delegate.getInputStream();
 
         if (pty != null) {
             setInputStream(pty.getInputStream());
             setOutputStream(pty.getOutputStream());
         } else {
-            setInputStream(delegate.getInputStream());
+            setInputStream(inputStream);
             setOutputStream(delegate.getOutputStream());
         }
 
@@ -170,17 +166,20 @@ public final class PtyNativeProcess extends AbstractNativeProcess {
 
         String pidLine = null;
         String ttyLine = null;
+        String line;
 
-        String line = readLine(delegate.getInputStream());
+        while ((line = readLine(inputStream)) != null) {
+            line = line.trim();
+            if (line.isEmpty()) {
+                break;
+            }
 
-        if (line != null && line.startsWith("PID=")) { // NOI18N
-            pidLine = line.substring(4);
-        }
-
-        line = readLine(delegate.getInputStream());
-
-        if (line != null && line.startsWith("TTY=")) { // NOI18N
-            ttyLine = line.substring(4);
+            if (line.startsWith("PID=")) { // NOI18N
+                pidLine = line.substring(4);
+            } else if (line.startsWith("TTY=")) { // NOI18N
+                addProcessInfo(line);
+                ttyLine = line;
+            }
         }
 
         if (pidLine == null || ttyLine == null) {
@@ -188,14 +187,8 @@ public final class PtyNativeProcess extends AbstractNativeProcess {
             throw new IOException("Unable to start pty process: " + error); // NOI18N
         }
 
-        tty = ttyLine;
-
         ByteArrayInputStream bis = new ByteArrayInputStream(pidLine.getBytes());
         readPID(bis);
-
-        if (fixEraseKeyInTerminal) {
-            PtySupport.setBackspaceAsEraseChar(env, tty);
-        }
     }
 
     @Override
@@ -205,6 +198,7 @@ public final class PtyNativeProcess extends AbstractNativeProcess {
         }
 
         int result = delegate.waitResult();
+        finishing();
 
         return result;
     }

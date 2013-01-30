@@ -44,14 +44,13 @@ package org.netbeans.modules.php.twig.editor.lexer;
 import java.io.File;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenHierarchy;
-import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.php.twig.editor.util.TestUtils;
 
 /**
  * Tests for Twig lexer.
  */
-public class TwigLexerTest extends TwigTestBase {
+public class TwigLexerTest extends TwigLexerTestBase {
 
     public TwigLexerTest(String testName) {
         super(testName);
@@ -549,18 +548,57 @@ public class TwigLexerTest extends TwigTestBase {
         performTest("tests-odd");
     }
 
+    public void testComment() throws Exception {
+        performTest("comment");
+    }
+
+    public void testMultiInterpolation() throws Exception {
+        performTest("multi-interpolation");
+    }
+
     @Override
     protected String getTestResult(String filename) throws Exception {
         String content = TestUtils.getFileContent(new File(getDataDir(), "testfiles/lexer/twig/" + filename + ".twig"));
-        Language<TwigTokenId> language = TwigTokenId.language();
+        Language<TwigTopTokenId> language = TwigTopTokenId.language();
         TokenHierarchy<?> hierarchy = TokenHierarchy.create(content, language);
         return createResult(hierarchy.tokenSequence(language));
     }
 
-    private String createResult(TokenSequence<?> ts) throws Exception {
+    private String createResult(TokenSequence<TwigTopTokenId> ts) throws Exception {
         StringBuilder result = new StringBuilder();
         while (ts.moveNext()) {
-            TokenId tokenId = ts.token().id();
+            TwigTopTokenId tokenId = ts.token().id();
+            if (TwigTopTokenId.T_TWIG.equals(tokenId)) {
+                result.append(getEmbeddedResult(ts.token().text()));
+            } else {
+                CharSequence text = ts.token().text();
+                result.append("TOP token #");
+                result.append(ts.index());
+                result.append(" ");
+                result.append(tokenId.name());
+                String token = TestUtils.replaceLinesAndTabs(text.toString());
+                if (!token.isEmpty()) {
+                    result.append(" ");
+                    result.append("[");
+                    result.append(token);
+                    result.append("]");
+                }
+                result.append("\n");
+            }
+        }
+        return result.toString();
+    }
+
+    private String getEmbeddedResult(final CharSequence text) throws Exception {
+        Language<TwigTokenId> language = TwigTokenId.language();
+        TokenHierarchy<?> hierarchy = TokenHierarchy.create(text, language);
+        return createEmbeddedResult(hierarchy.tokenSequence(language));
+    }
+
+    private String createEmbeddedResult(TokenSequence<TwigTokenId> ts) throws Exception {
+        StringBuilder result = new StringBuilder();
+        while (ts.moveNext()) {
+            TwigTokenId tokenId = ts.token().id();
             CharSequence text = ts.token().text();
             result.append("token #");
             result.append(ts.index());

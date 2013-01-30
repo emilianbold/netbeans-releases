@@ -136,7 +136,8 @@ public final class UnshelveChangesAction extends AbstractAction {
             Mnemonics.setLocalizedText(unshelveButton, NbBundle.getMessage(UnshelveChangesAction.class, "CTL_UnshelveChangesPanel.unshelveButton.text")); //NOI18N
             Mnemonics.setLocalizedText(removeButton, NbBundle.getMessage(UnshelveChangesAction.class, "CTL_UnshelveChangesPanel.removeButton.text")); //NOI18N
             DialogDescriptor dd = new DialogDescriptor(panel, NbBundle.getMessage(UnshelveChangesAction.class, "LBL_UnshelveChangesPanel.title"), //NOI18N
-                    true, new Object[] { unshelveButton, removeButton, DialogDescriptor.CANCEL_OPTION }, unshelveButton, DialogDescriptor.DEFAULT_ALIGN, new HelpCtx(UnshelveChangesAction.class), null);
+                    true, new Object[] { unshelveButton, removeButton, DialogDescriptor.CANCEL_OPTION }, unshelveButton, DialogDescriptor.DEFAULT_ALIGN,
+                    new HelpCtx("org.netbeans.modules.versioning.shelve.impl.UnshelveChangesAction"), null); //NOI18N
             Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
             dialog.setVisible(true);
             patchName = panel.cmbPatches.getSelectedItem() instanceof Patch ? ((Patch) panel.cmbPatches.getSelectedItem()).getPatchName().trim() : null;

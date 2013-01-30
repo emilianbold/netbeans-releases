@@ -43,6 +43,7 @@
 package org.netbeans.modules.php.project.connections.spi;
 
 import java.util.Set;
+import org.netbeans.modules.php.api.validation.ValidationResult;
 import org.netbeans.modules.php.project.connections.ConfigManager;
 import org.openide.windows.InputOutput;
 
@@ -116,4 +117,13 @@ public interface RemoteConnectionProvider {
      * @see #getRemoteConfiguration(org.netbeans.modules.php.project.connections.ConfigManager.Configuration)
      */
     RemoteConfigurationPanel getRemoteConfigurationPanel(ConfigManager.Configuration configuration);
+
+    /**
+     * Validate the given configuration and return possible errors/warnings. Return {@code null} if this provider
+     * cannot validate the given configuration.
+     * @param remoteConfiguration remote configuration to be validated
+     * @return errors/warnings or {@code null} if this provider cannot validate the given configuration
+     */
+    ValidationResult validate(RemoteConfiguration remoteConfiguration);
+
 }

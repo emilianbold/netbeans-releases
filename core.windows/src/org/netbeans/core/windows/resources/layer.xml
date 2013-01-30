@@ -101,6 +101,7 @@ made subject to such option by the copyright holder.
             <file name="org-netbeans-core-windows-actions-ResizeModeAction.instance"/>
             <file name="org-netbeans-core-windows-actions-MoveModeAction.instance"/>
             <file name="org-netbeans-core-windows-actions-MoveWindowAction.instance"/>
+            <file name="org-netbeans-core-windows-actions-ToolbarsListAction.instance"/>
         </folder>
     </folder>
     
@@ -126,9 +127,9 @@ made subject to such option by the copyright holder.
                 <attr name="position" intvalue="600"/>
             </file>
             
-            <file name="org-netbeans-core-windows-actions-ToolbarsListAction.instance">
+            <file name="org-netbeans-core-windows-actions-ToolbarsListAction.shadow">
                 <attr name="position" intvalue="700"/>
-                <attr name="misplaced.action.allowed" boolvalue="true"/>
+                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-ToolbarsListAction.instance"/>
             </file>
 
             <file name="Separator3.instance">

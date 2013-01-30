@@ -69,7 +69,7 @@ public class FileSearchProviderImpl implements APTProjectFileSearchProvider {
             Object platformProject = project.getPlatformProject();
             if (platformProject instanceof NativeProject) {
                 NativeProject nativeProject = (NativeProject) platformProject;
-                Key aKey = KeyUtilities.createProjectKey(ProjectBase.getUniqueName(nativeProject));
+                Key aKey = KeyUtilities.createProjectKey(nativeProject);
                 if (prjKey.equals(aKey)) {
                     return new APTFileSearchImplementationImpl(nativeProject);
                 }

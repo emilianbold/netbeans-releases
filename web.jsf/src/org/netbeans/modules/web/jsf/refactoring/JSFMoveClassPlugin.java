@@ -46,7 +46,6 @@ package org.netbeans.modules.web.jsf.refactoring;
 
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
 import java.io.IOException;
 import java.net.URL;
@@ -59,7 +58,6 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreePathHandle;
@@ -70,7 +68,6 @@ import org.netbeans.modules.refactoring.api.MoveRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
-import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 /**
@@ -138,7 +135,6 @@ public class JSFMoveClassPlugin implements RefactoringPlugin{
                                         List<? extends Tree> typeDecls = cut.getTypeDecls();
                                         if (!typeDecls.isEmpty()){
                                             treePathHandles.add(TreePathHandle.create(TreePath.getPath(cut, typeDecls.get(0)), co));
-                                            refactoring.getContext().add(co);
                                         }
                                     }
                                 }, false);
@@ -158,27 +154,25 @@ public class JSFMoveClassPlugin implements RefactoringPlugin{
                 if (treePathHandle != null && TreeUtilities.CLASS_TREE_KINDS.contains(treePathHandle.getKind())) {
                     Project project = FileOwnerQuery.getOwner(treePathHandle.getFileObject());
                     if (project != null) {
-                        CompilationInfo info = JSFRefactoringUtils.getCompilationInfo(refactoring, treePathHandle.getFileObject());
-                        if (info != null) {
-                            Element resElement = treePathHandle.resolveElement(info);
-                            TypeElement type = (TypeElement) resElement;
-                            if (type != null) {
-                                String oldFQN = type.getQualifiedName().toString();
-                                String newPackageName = JSFRefactoringUtils.getPackageName(refactoring.getTarget().lookup(URL.class));
-                                String newFQN = newPackageName.length() == 0 ? type.getSimpleName().toString() : newPackageName + '.' + type.getSimpleName().toString();
-                                if (isTargetOtherProject(treePathHandle.getFileObject(), refactoring)) {
-                                    List<Occurrences.OccurrenceItem> items = Occurrences.getAllOccurrences(project, oldFQN, newFQN);
-                                    for (Occurrences.OccurrenceItem item : items) {
-                                        refactoringElements.add(refactoring, new JSFSafeDeletePlugin.JSFSafeDeleteClassElement(item));
-                                    }
-                                } else {
-                                    List<Occurrences.OccurrenceItem> items = Occurrences.getAllOccurrences(project, oldFQN, newFQN);
-                                    Modifications modification = new Modifications();
-                                    for (Occurrences.OccurrenceItem item : items) {
-                                        Modifications.Difference difference = new Modifications.Difference(Modifications.Difference.Kind.CHANGE, item.getChangePosition().getBegin(), item.getChangePosition().getEnd(), item.getOldValue(), item.getNewValue(), item.getRenamePackageMessage());
-                                        modification.addDifference(item.getFacesConfig(), difference);
-                                        refactoringElements.add(refactoring, new DiffElement.ChangeFQCNElement(difference, item, modification));
-                                    }
+                        Element resElement = JSFRefactoringUtils.resolveElement(refactoring, treePathHandle);
+                        TypeElement type = (TypeElement) resElement;
+                        URL targetUrl = refactoring.getTarget().lookup(URL.class);
+                        if (type != null && targetUrl != null) {
+                            String oldFQN = type.getQualifiedName().toString();
+                            String newPackageName = JSFRefactoringUtils.getPackageName(targetUrl);
+                            String newFQN = newPackageName.length() == 0 ? type.getSimpleName().toString() : newPackageName + '.' + type.getSimpleName().toString();
+                            if (isTargetOtherProject(treePathHandle.getFileObject(), refactoring)) {
+                                List<Occurrences.OccurrenceItem> items = Occurrences.getAllOccurrences(project, oldFQN, newFQN);
+                                for (Occurrences.OccurrenceItem item : items) {
+                                    refactoringElements.add(refactoring, new JSFSafeDeletePlugin.JSFSafeDeleteClassElement(item));
+                                }
+                            } else {
+                                List<Occurrences.OccurrenceItem> items = Occurrences.getAllOccurrences(project, oldFQN, newFQN);
+                                Modifications modification = new Modifications();
+                                for (Occurrences.OccurrenceItem item : items) {
+                                    Modifications.Difference difference = new Modifications.Difference(Modifications.Difference.Kind.CHANGE, item.getChangePosition().getBegin(), item.getChangePosition().getEnd(), item.getOldValue(), item.getNewValue(), item.getRenamePackageMessage());
+                                    modification.addDifference(item.getFacesConfig(), difference);
+                                    refactoringElements.add(refactoring, new DiffElement.ChangeFQCNElement(difference, item, modification));
                                 }
                             }
                         }

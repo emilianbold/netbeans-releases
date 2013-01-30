@@ -60,6 +60,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
@@ -72,7 +73,6 @@ import org.eclipse.mylyn.internal.bugzilla.core.BugzillaTaskDataHandler;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaVersion;
 import org.eclipse.mylyn.internal.tasks.core.data.FileTaskAttachmentSource;
 import org.eclipse.mylyn.tasks.core.RepositoryResponse;
-import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 import org.eclipse.mylyn.tasks.core.data.TaskAttributeMapper;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
@@ -93,7 +93,7 @@ import org.netbeans.modules.bugzilla.commands.AddAttachmentCommand;
 import org.netbeans.modules.bugzilla.repository.BugzillaConfiguration;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.bugzilla.commands.GetAttachmentCommand;
-import org.netbeans.modules.bugzilla.commands.SubmitCommand;
+import org.netbeans.modules.mylyn.util.SubmitCommand;
 import org.netbeans.modules.bugzilla.repository.IssueField;
 import org.openide.filesystems.FileUtil;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
@@ -103,7 +103,7 @@ import org.openide.filesystems.FileChooserBuilder;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -747,13 +747,23 @@ public class BugzillaIssue {
     boolean canAssignToDefault() {
         BugzillaConfiguration rc = getRepository().getConfiguration();
         final BugzillaVersion installedVersion = rc != null ? rc.getInstalledVersion() : null;
-        boolean oldRepository = installedVersion != null ? installedVersion.compareMajorMinorOnly(BugzillaVersion.BUGZILLA_3_0) <= 0 : false;
-        if(oldRepository) {
+        boolean pre4 = installedVersion != null ? installedVersion.compareMajorMinorOnly(BugzillaVersion.BUGZILLA_3_0) <= 0 : false;
+        if(pre4) {
             return BugzillaOperation.reassignbycomponent.getInputId() != null ? 
                         data.getRoot().getMappedAttribute(BugzillaOperation.reassignbycomponent.getInputId()) != null :
                         false;
         } else {
-            return data.getRoot().getAttribute(BugzillaAttribute.SET_DEFAULT_ASSIGNEE.getKey()) != null;
+            boolean before4 = installedVersion != null ? installedVersion.compareMajorMinorOnly(BugzillaVersion.BUGZILLA_4_0) < 0 : false;
+            TaskAttribute ta = data.getRoot().getAttribute(BugzillaAttribute.SET_DEFAULT_ASSIGNEE.getKey()); 
+            if(before4) {
+                return ta != null;
+            } else {
+                BugzillaAttribute key = BugzillaAttribute.SET_DEFAULT_ASSIGNEE;
+                TaskAttribute operationAttribute = data.getRoot().createAttribute(key.getKey());
+                operationAttribute.getMetaData().defaults().setReadOnly(key.isReadOnly()).setKind(key.getKind()).setLabel(key.toString()).setType(key.getType());
+                operationAttribute.setValue("0"); // NOI18N
+                return true;
+            }     
         }
     }
     
@@ -811,7 +821,7 @@ public class BugzillaIssue {
         return attachments;
     }
 
-    void addAttachment(File file, final String comment, final String desc, String contentType, final boolean patch) {
+    public void addAttachment(File file, final String comment, final String desc, String contentType, final boolean patch) {
         assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
         final FileTaskAttachmentSource attachmentSource = new FileTaskAttachmentSource(file);
         if (contentType == null) {
@@ -935,7 +945,11 @@ public class BugzillaIssue {
         final boolean wasNew = data.isNew();
         final boolean wasSeenAlready = wasNew || repository.getIssueCache().wasSeen(getID());
         
-        SubmitCommand submitCmd = new SubmitCommand(getRepository(), data);
+        SubmitCommand submitCmd = 
+            new SubmitCommand(
+                Bugzilla.getInstance().getRepositoryConnector(),
+                getRepository().getTaskRepository(), 
+                data);
         repository.getExecutor().execute(submitCmd);
 
         if (!wasNew) {
@@ -1298,7 +1312,12 @@ public class BugzillaIssue {
                     @Override
                     public void run() {
                         try {
-                            getAttachementData(new FileOutputStream(file));
+                            FileOutputStream fos = new FileOutputStream(file);
+                            try {
+                                getAttachementData(fos);
+                            } finally {
+                                fos.close();
+                            }
                         } catch (IOException ioex) {
                             Bugzilla.LOG.log(Level.INFO, ioex.getMessage(), ioex);
                         } finally {
@@ -1343,7 +1362,12 @@ public class BugzillaIssue {
                 prefix = prefix + "tmp";                                //NOI18N
             }
             File file = File.createTempFile(prefix, suffix);
-            getAttachementData(new FileOutputStream(file));
+            FileOutputStream fos = new FileOutputStream(file);
+            try {
+                getAttachementData(fos);
+            } finally {
+                fos.close();
+            }
             return file;
         }
 

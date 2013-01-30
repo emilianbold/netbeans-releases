@@ -48,7 +48,12 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.util.Collection;
+import java.util.Date;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import org.netbeans.modules.cnd.repository.api.CacheLocation;
+import org.netbeans.modules.cnd.repository.api.RepositoryAccessor;
+import org.netbeans.modules.cnd.repository.impl.BaseRepository;
+import org.netbeans.modules.cnd.repository.impl.DelegateRepository;
 import org.netbeans.modules.cnd.repository.sfs.BufferedRWAccess;
 import org.netbeans.modules.cnd.repository.sfs.statistics.BaseStatistics;
 import org.netbeans.modules.cnd.repository.spi.Key;
@@ -56,6 +61,7 @@ import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
 import org.netbeans.modules.cnd.repository.testbench.Stats;
 import org.netbeans.modules.cnd.repository.util.Filter;
+import org.netbeans.modules.cnd.repository.relocate.api.UnitCodec;
 
 /**
  * Implements FilesAccessStrategy
@@ -64,24 +70,24 @@ import org.netbeans.modules.cnd.repository.util.Filter;
  */
 public class FilesAccessStrategyImpl implements FilesAccessStrategy {
     
-    private static class ConcurrentFileRWAccess extends BufferedRWAccess {
+    private class ConcurrentFileRWAccess extends BufferedRWAccess {
        
         public final ReentrantReadWriteLock lock = new ReentrantReadWriteLock(true);
         public final CharSequence unit;
 
         public ConcurrentFileRWAccess(File file, CharSequence unit) throws IOException {
-            super(file);
+            super(file, unitCodec);
             this.unit = unit;
         }
     }
 
     private static final class Lock {}
+
     private final Object cacheLock = new Lock();
     private final RepositoryCacheMap<String, ConcurrentFileRWAccess> nameToFileCache;
+    private final StorageAllocator storageAllocator;
     
     private static final int OPEN_FILES_LIMIT = Integer.getInteger("cnd.repository.files.cache", 20); // NOI18N
-    
-    private static final FilesAccessStrategyImpl instance = new FilesAccessStrategyImpl();
     
     private static final boolean TRACE_CONFLICTS = Boolean.getBoolean("cnd.repository.trace.conflicts");
     
@@ -92,18 +98,17 @@ public class FilesAccessStrategyImpl implements FilesAccessStrategy {
     private int writeHitCnt = 0;
     BaseStatistics<String> writeStatistics;
     BaseStatistics<String> readStatistics;
+    private final UnitCodec unitCodec;
     
-    private FilesAccessStrategyImpl() {
+    public FilesAccessStrategyImpl(StorageAllocator storageAllocator, UnitCodec unitCodec) {
+        this.unitCodec = unitCodec;
+        this.storageAllocator = storageAllocator;
         nameToFileCache = new RepositoryCacheMap<String, ConcurrentFileRWAccess>(OPEN_FILES_LIMIT);
         if( Stats.multyFileStatistics ) {
             resetStatistics();
         }
     }
     
-    public static FilesAccessStrategy getInstance() {
-        return instance;
-    }
-
     @Override
     public Persistent read(Key key) throws IOException {
         readCnt++; // always increment counters
@@ -197,7 +202,7 @@ public class FilesAccessStrategyImpl implements FilesAccessStrategy {
                 } else {
                     aFile.lock.writeLock().lock();
                 }
-                if (aFile.getFD().valid()) {
+                if (aFile.isValid()) {
                     keepLocked = true;
                     break;
                 } else if( TRACE_CONFLICTS ) {
@@ -219,14 +224,14 @@ public class FilesAccessStrategyImpl implements FilesAccessStrategy {
     }
     
     private void putFile(String fileName, ConcurrentFileRWAccess aFile) throws IOException {
-        ConcurrentFileRWAccess removedFile = null;
+        ConcurrentFileRWAccess removedFile;
         synchronized (cacheLock) {
             removedFile = nameToFileCache.put(fileName, aFile);
         }
         if (removedFile != null) {
             try {
                 removedFile.lock.writeLock().lock();
-                if (removedFile.getFD().valid()) {
+                if (removedFile.isValid()) {
                     removedFile.close();
                 }
                 
@@ -242,7 +247,7 @@ public class FilesAccessStrategyImpl implements FilesAccessStrategy {
         String fileName = resolveFileName(id);
         assert fileName != null;
         
-        ConcurrentFileRWAccess removedFile = null;
+        ConcurrentFileRWAccess removedFile;
         synchronized (cacheLock) {
             removedFile = nameToFileCache.remove(fileName);
         }
@@ -250,7 +255,7 @@ public class FilesAccessStrategyImpl implements FilesAccessStrategy {
             try {
                 removedFile.lock.writeLock().lock();
                 
-                if (removedFile.getFD().valid() ) {
+                if (removedFile.isValid() ) {
                     removedFile.close();
                 }
                 
@@ -280,7 +285,7 @@ public class FilesAccessStrategyImpl implements FilesAccessStrategy {
             for (ConcurrentFileRWAccess fileToRemove: removedFiles) {
                 try {
                     fileToRemove.lock.writeLock().lock();
-                    if (fileToRemove.getFD().valid()) {
+                    if (fileToRemove.isValid()) {
                         fileToRemove.close();
                     }
 
@@ -319,32 +324,29 @@ public class FilesAccessStrategyImpl implements FilesAccessStrategy {
     
     private final static char SEPARATOR_CHAR = '-';
     
-    private static String resolveFileName(Key id) throws IOException {
+    private String resolveFileName(Key id) throws IOException {
         
         assert id != null;
         int size = id.getDepth();
         
         StringBuilder    nameBuffer = new StringBuilder(""); //NOI18N
 
-        if( size == 0 ) {
-            nameBuffer.append(id.getUnit());
+        for (int j = 0 ; j < id.getSecondaryDepth(); ++j) {
+            nameBuffer.append(id.getSecondaryAt(j)).append(SEPARATOR_CHAR);
         }
-        else {
+
+        if( size != 0 ) {
             for (int i = 0 ; i < size; ++i) {
                 nameBuffer.append(id.getAt(i)).append(SEPARATOR_CHAR);
             }
-        }
-
-        for (int j = 0 ; j < id.getSecondaryDepth(); ++j) {
-            nameBuffer.append(id.getSecondaryAt(j)).append(SEPARATOR_CHAR);
         }
 
         String fileName = nameBuffer.toString();
 
         fileName = URLEncoder.encode(fileName, Stats.ENCODING);
 
-        fileName = StorageAllocator.getInstance().getUnitStorageName(id.getUnit()) + 
-                StorageAllocator.getInstance().reduceString(fileName);
+        fileName = storageAllocator.getUnitStorageName(id.getUnit()) + 
+                storageAllocator.reduceString(fileName);
 
         return fileName;
     }
@@ -368,6 +370,16 @@ public class FilesAccessStrategyImpl implements FilesAccessStrategy {
         synchronized( cacheLock ) {
             return nameToFileCache.keys();
         }
+    }
+    
+    public static FilesAccessStrategyImpl testGetStrategy(CacheLocation cacheLocation) {
+        DelegateRepository repository = (DelegateRepository) RepositoryAccessor.getRepository();
+        for (BaseRepository delegate : repository.testGetDelegates()) {
+            if (cacheLocation.equals(delegate.getCacheLocation())) {
+                return (FilesAccessStrategyImpl) delegate.getFilesAccessStrategy();
+            }
+        }
+        return null;
     }
 
     /** For test purposes ONLY! - gets read hit count */
@@ -400,4 +412,19 @@ public class FilesAccessStrategyImpl implements FilesAccessStrategy {
         return nameToFileCache.size();
     }
     
+    @Override
+    public void debugDump(Key key) {
+        assert key != null;
+        try {
+            String fileName = resolveFileName(key);
+            ls(new File(fileName));
+        } catch (IOException ex) {
+            System.err.printf("Exception when dumping by key %s\n", key);
+            ex.printStackTrace(System.err);
+        }
+    }
+    
+    private void ls(File file) {
+        System.err.printf("\tFile: %s\n\tExists: %b\n\tLength: %d\n\tModified: %s\n\n", file.getAbsolutePath(), file.exists(), file.length(), new Date(file.lastModified()));
+    }
 }

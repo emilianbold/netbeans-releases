@@ -170,7 +170,12 @@ public class AntTestNGSupport extends TestNGSupportImplementation {
             Properties props = new Properties();
             String cmd = null;
             FileObject test = config.getTest();
-            FileObject[] testRoots = ClassPath.getClassPath(test, ClassPath.SOURCE).getRoots();
+            ClassPath classPath = ClassPath.getClassPath(test, ClassPath.SOURCE);
+	    if(classPath == null) {
+		LOGGER.log(Level.WARNING, "Could not find any classpath for file {0}", FileUtil.toFile(test)); //NOI18N
+		return;
+	    }
+            FileObject[] testRoots = classPath.getRoots();
             FileObject testRoot = null;
             for (FileObject root : testRoots) {
                 if (FileUtil.isParentOf(root, test)) {
@@ -198,7 +203,12 @@ public class AntTestNGSupport extends TestNGSupportImplementation {
             assert cmd != null : "Unsupported action: " + action; //NOI18N
             props.put("javac.includes", ActionUtils.antIncludesList(new FileObject[]{testRoot}, testRoot, true)); //NOI18N
             props.setProperty("ignore.failing.tests", "true"); //NOI18N
-            ActionUtils.runTarget(projectHome.getFileObject("build.xml"), new String[]{cmd}, props); //NOI18N
+	    FileObject buildFO = projectHome.getFileObject("build.xml"); //NOI18N
+	    if(buildFO == null) {
+		LOGGER.log(Level.WARNING, "Could not locate build.xml for project in {0}", projectHome); //NOI18N
+		return;
+	    }
+            ActionUtils.runTarget(buildFO, new String[]{cmd}, props);
         }
     }
 }

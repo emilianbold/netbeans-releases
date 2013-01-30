@@ -75,7 +75,6 @@ public class PlatformSelectionPanel implements WizardDescriptor.FinishablePanel,
     
     public static final String REQUIRED_CONFIGURATION = "RequiredConfiguration"; // NOI18N
     public static final String REQUIRED_PROFILE ="RequiredProfile"; // NOI18N
-    public static final String IS_EMBEDDED = "is_embedded";//NOI18N
     
     public static final String IMPNG_PROFILE_NAME = "IMP-NG"; // NOI18N
     public static final String IMPNG_PROFILE_VERSION = "1.0"; // NOI18N
@@ -138,7 +137,7 @@ public class PlatformSelectionPanel implements WizardDescriptor.FinishablePanel,
     
     @Override
     public HelpCtx getHelp() {
-        return new HelpCtx(PlatformSelectionPanel.class.getName());
+        return new HelpCtx(PlatformSelectionPanel.class.getName() + (embedded ? "Embedded" : "") ); // NOI18N
     }
     
     @Override
@@ -175,7 +174,7 @@ public class PlatformSelectionPanel implements WizardDescriptor.FinishablePanel,
             final TemplateWizard wiz = (TemplateWizard)settings;
             reqCfg = (String)wiz.getProperty(REQUIRED_CONFIGURATION);
             reqProf = (String)wiz.getProperty(REQUIRED_PROFILE);
-            embedded = wiz.getProperty(IS_EMBEDDED) == null ? false : (Boolean)wiz.getProperty(IS_EMBEDDED);
+            embedded = wiz.getProperty(Utils.IS_EMBEDDED) == null ? false : (Boolean)wiz.getProperty(Utils.IS_EMBEDDED);
             final ArrayList<Profile> l = new ArrayList<Profile>();
             final Profile cfg = parseProfile(reqCfg);
             if (cfg != null) l.add(cfg);

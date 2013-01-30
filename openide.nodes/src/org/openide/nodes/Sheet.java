@@ -66,7 +66,9 @@ public final class Sheet extends Object {
     /** list of sets (Sheet.Set) */
     private ArrayList<Set> sets;
 
-    /** array of sets */
+    /** array of sets 
+     * @GuardedBy("this")
+     */
     private Node.PropertySet[] array;
 
     /** support for changes */
@@ -88,7 +90,7 @@ public final class Sheet extends Object {
     /** Copy constrcutor.
     * @param ar array to use
     */
-    private Sheet(ArrayList<Set> ar) {
+    Sheet(ArrayList<Set> ar) {
         sets = ar;
     }
 
@@ -96,21 +98,19 @@ public final class Sheet extends Object {
     * @return the array
     */
     public final Node.PropertySet[] toArray() {
-        Node.PropertySet[] l = array;
-
-        if (l != null) {
-            return l;
-        }
-
-        synchronized (this) {
-            if (array != null) {
-                return array;
+        for (;;) {
+            synchronized (this) {
+                if (array != null) {
+                    return array;
+                }
             }
-
-            array = new Node.PropertySet[sets.size()];
-            sets.toArray(array);
-
-            return array;
+            Node.PropertySet[] l = new Node.PropertySet[sets.size()];
+            sets.toArray(l);
+            synchronized (this) {
+                if (array == null) {
+                    array = l;
+                }
+            }
         }
     }
 
@@ -251,7 +251,9 @@ public final class Sheet extends Object {
     /** Refreshes and fire info about the set
     */
     private void refresh() {
-        array = null;
+        synchronized (this) {
+            array = null;
+        }
         supp.firePropertyChange(null, null, null);
     }
 

@@ -131,7 +131,7 @@ abstract public class DwarfProvider extends BaseDwarfProvider {
     public List<Configuration> analyze(final ProjectProxy project, Progress progress) {
         isStoped.set(false);
         List<Configuration> confs = new ArrayList<Configuration>();
-        setCommpilerSettings(project);
+        init(project);
         if (!isStoped.get()) {
             Configuration conf = new Configuration(){
                 private List<SourceFileProperties> myFileProperties;
@@ -151,7 +151,7 @@ abstract public class DwarfProvider extends BaseDwarfProvider {
                     if (myFileProperties == null){
                         String[] objFileNames = (String[])getProperty(EXECUTABLES_KEY).getValue();
                         if (objFileNames != null) {
-                            myFileProperties = getSourceFileProperties(objFileNames,null, null, null, new CompileLineStorage());
+                            myFileProperties = getSourceFileProperties(objFileNames,null, project, null, new CompileLineStorage());
                         }
                     }
                     return myFileProperties;

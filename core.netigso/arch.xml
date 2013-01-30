@@ -659,6 +659,12 @@ made subject to such option by the copyright holder.
    resolves the bundle, it may not always be appropriate. In such case brand
    this token to empty string and only "Export-Package" values will be used.
    </api>
+   <api category="devel" group="systemproperty" name="felix_org.osgi.framework" type="export">
+       <code>System.getProperties()</code> that start with prefix <code>felix.</code>
+       or <code>org.osgi.framework.</code> are read on initialization of the
+       Netigso system and injected into configuration of OSGi container 
+       before it starts.
+   </api>
   </p>
  </answer>
 

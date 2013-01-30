@@ -218,6 +218,10 @@ public abstract class AttrValuesCompletion {
             this.values = values;
         }
 
+        public String[] getTags() {
+            return values;
+        }
+        
         @Override
         public List<HtmlCompletionItem> getItems(FileObject file, int offset, String valuePart) {
             //linear search, too little items, no problem

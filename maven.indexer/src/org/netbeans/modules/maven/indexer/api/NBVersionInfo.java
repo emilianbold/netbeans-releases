@@ -51,18 +51,20 @@ import org.openide.util.Utilities;
  */
 public final class NBVersionInfo implements Comparable<NBVersionInfo> {
 
-    private String groupId;
-    private String artifactId;
-    private String version;
-    private String type;
-    private String packaging;
-    private String projectName;
-    private String classifier;
-    private String projectDescription;
-    private String repoId;
+    private final String groupId;
+    private final String artifactId;
+    private final String version;
+    private final ComparableVersion comparableVersion;
+    private final String type;
+    private final String packaging;
+    private final String projectName;
+    private final String classifier;
+    private final String projectDescription;
+    private final String repoId;
 //    private String sha;
     private long lastModified;
     private long size;
+    private float luceneScore = 0f;
 
     //-----
     private boolean sourcesExists;
@@ -80,6 +82,16 @@ public final class NBVersionInfo implements Comparable<NBVersionInfo> {
         this.projectName = projectName;
         this.projectDescription = desc;
         this.classifier = classifier;
+        if (version != null) {
+            if (version.matches("RELEASE\\d+(-.+)?")) { // NOI18N
+                // Maven considers RELEASE671 to be newer than RELEASE69. Hack up the version here.
+                comparableVersion = new ComparableVersion(version.replaceAll("(\\d)", ".$1")); // NOI18N
+            } else {
+                comparableVersion = new ComparableVersion(version);
+            }
+        } else {
+            comparableVersion = null;
+        }
     }
 
     public String getRepoId() {
@@ -109,9 +121,6 @@ public final class NBVersionInfo implements Comparable<NBVersionInfo> {
     public void setSourcesExists(boolean sourcesExists) {
         this.sourcesExists = sourcesExists;
     }
-    
-  
-    
 
     public String getGroupId() {
         return groupId;
@@ -174,19 +183,54 @@ public final class NBVersionInfo implements Comparable<NBVersionInfo> {
         return groupId + ":" + artifactId + ":" + version + ":" + repoId;
     }
 
-    @Override public boolean equals(Object obj) {
-        if (!(obj instanceof NBVersionInfo)) {
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 97 * hash + (this.groupId != null ? this.groupId.hashCode() : 0);
+        hash = 97 * hash + (this.artifactId != null ? this.artifactId.hashCode() : 0);
+        hash = 97 * hash + (this.comparableVersion != null ? this.comparableVersion.hashCode() : 0);
+        hash = 97 * hash + (this.type != null ? this.type.hashCode() : 0);
+        hash = 97 * hash + (this.classifier != null ? this.classifier.hashCode() : 0);
+        hash = 97 * hash + (this.repoId != null ? this.repoId.hashCode() : 0);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
             return false;
         }
-        NBVersionInfo other = (NBVersionInfo) obj;
-        return toString().equals(other.toString()) && Utilities.compareObjects(type, other.type) && Utilities.compareObjects(classifier, other.classifier);
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final NBVersionInfo other = (NBVersionInfo) obj;
+        if ((this.groupId == null) ? (other.groupId != null) : !this.groupId.equals(other.groupId)) {
+            return false;
+        }
+        if ((this.artifactId == null) ? (other.artifactId != null) : !this.artifactId.equals(other.artifactId)) {
+            return false;
+        }
+        if ((this.comparableVersion == null) ? (other.comparableVersion != null) : !this.comparableVersion.equals(other.comparableVersion)) {
+            return false;
+        }
+        if ((this.type == null) ? (other.type != null) : !this.type.equals(other.type)) {
+            return false;
+        }
+        if ((this.classifier == null) ? (other.classifier != null) : !this.classifier.equals(other.classifier)) {
+            return false;
+        }
+        if ((this.repoId == null) ? (other.repoId != null) : !this.repoId.equals(other.repoId)) {
+            return false;
+        }
+        return true;
     }
 
-    @Override public int hashCode() {
-        return toString().hashCode();
-    }
-
+    
     public @Override int compareTo(NBVersionInfo o) {
+//        int c = Float.compare(luceneScore, o.luceneScore);
+//        if (c != 0) {
+//            return c;
+//        }
         int c = groupId.compareTo(o.groupId);
         if (c != 0) {
             return c;
@@ -195,22 +239,22 @@ public final class NBVersionInfo implements Comparable<NBVersionInfo> {
         if (c != 0) {
             return c;
         }
-        c = version().compareTo(o.version());
+        c = comparableVersion.compareTo(o.comparableVersion);
         if (c != 0) {
             return -c; // show newest versions first!
         }
         return extrakey().compareTo(o.extrakey());// show e.g. jar vs. nbm artifacts in some predictable order
     }
-    private ComparableVersion version() {
-        if (version.matches("RELEASE\\d+(-.+)?")) { // NOI18N
-            // Maven considers RELEASE671 to be newer than RELEASE69. Hack up the version here.
-            return new ComparableVersion(version.replaceAll("(\\d)", ".$1")); // NOI18N
-        } else {
-            return new ComparableVersion(version);
-        }
-    }
+    
     private String extrakey() {
         return "" + classifier + type + repoId;
     }
     
+    public float getLuceneScore() {
+        return luceneScore;
+}
+
+    public void setLuceneScore(float luceneScore) {
+        this.luceneScore = luceneScore;
+    }
 }

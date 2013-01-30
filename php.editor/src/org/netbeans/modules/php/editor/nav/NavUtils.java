@@ -64,7 +64,10 @@ import org.openide.loaders.DataObject;
  *
  * @author Jan Lahoda
  */
-public class NavUtils {
+public final class NavUtils {
+
+    private NavUtils() {
+    }
 
     public static List<ASTNode> underCaret(ParserResult info, final int offset) {
         class Result extends Error {
@@ -83,7 +86,7 @@ public class NavUtils {
                 @Override
                 public void scan(ASTNode node) {
                     if (node == null) {
-                        return ;
+                        return;
                     }
 
                     if (node.getStartOffset() <= offset && offset <= node.getEndOffset()) {
@@ -102,9 +105,7 @@ public class NavUtils {
 
 
     public static boolean isQuoted(String value) {
-        return value.length() >= 2 &&
-               (value.startsWith("\"") || value.startsWith("'")) &&
-               (value.endsWith("\"") || value.endsWith("'"));
+        return value.length() >= 2 && (value.startsWith("\"") || value.startsWith("'")) && (value.endsWith("\"") || value.endsWith("'"));
     }
 
     public static String dequote(String value) {
@@ -125,7 +126,7 @@ public class NavUtils {
 
             if (Type.STRING == s.getScalarType()) {
                 String fileName = s.getStringValue();
-                fileName = fileName.length() >= 2 ? fileName.substring(1, fileName.length() - 1) : fileName;//TODO: not nice
+                fileName = fileName.length() >= 2 ? fileName.substring(1, fileName.length() - 1) : fileName; //TODO: not nice
 
                 return resolveRelativeFile(info, fileName);
             }

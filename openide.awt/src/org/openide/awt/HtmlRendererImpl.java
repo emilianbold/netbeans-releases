@@ -538,6 +538,10 @@ class HtmlRendererImpl extends JLabel implements HtmlRenderer.Renderer {
     }
 
     public @Override Insets getInsets() {
+        return getInsets(null);
+    }
+
+    public @Override Insets getInsets(Insets insets) {
         Insets result;
 
         //Call getBorder(), not just read the field - if swingRendering, the border will be constructed, and the
@@ -556,7 +560,10 @@ class HtmlRendererImpl extends JLabel implements HtmlRenderer.Renderer {
                 result = EMPTY_INSETS;
             }
         }
-
+        if( null != insets ) {
+            insets.set( result.top, result.left, result.bottom, result.right);
+            return insets;
+        }
         return result;
     }
 

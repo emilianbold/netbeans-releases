@@ -49,8 +49,10 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -62,6 +64,7 @@ import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Element;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.lexer.InputAttributes;
@@ -69,6 +72,7 @@ import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
+import org.netbeans.modules.parsing.impl.SchedulerAccessor;
 import org.netbeans.modules.parsing.impl.SourceAccessor;
 import org.netbeans.modules.parsing.impl.SourceCache;
 import org.netbeans.modules.parsing.impl.SourceFlags;
@@ -233,6 +237,20 @@ public final class Source {
      *   or <code>null</code> if no document has been loaded yet.
      */
     public Document getDocument (boolean forceOpen) {
+        if (preferFile.get()) {
+            if (!forceOpen) {
+                return null;
+            } else {
+                boolean ae = false;
+                assert  ae = true;
+                if (ae) {
+                    LOG.log(
+                       Level.INFO,
+                       "Calling Source.getDocument(forceOpen=true) for Source preferring files -> possible performance problem {0}",    //NOI18N
+                       Arrays.asList(Thread.currentThread().getStackTrace()));
+                }
+            }
+        }
         if (document != null) return document;
         EditorCookie ec = null;
 
@@ -290,7 +308,7 @@ public final class Source {
     public Snapshot createSnapshot () {
         final CharSequence [] text = new CharSequence [] {""}; //NOI18N
         final int [][] lineStartOffsets = new int [][] { new int [] { 0 } };
-        final Document doc = preferFile.get() ? null : getDocument (false);
+        final Document doc = getDocument (false);
         if (LOG.isLoggable(Level.FINER)) {
             LOG.log(Level.FINER, null, new Throwable("Creating snapshot: doc=" + doc + ", file=" + fileObject)); //NOI18N
         } else if (LOG.isLoggable(Level.FINE)) {
@@ -334,22 +352,22 @@ public final class Source {
                                 while(-1 != (size = reader.read(buffer, 0, buffer.length))) {
                                     for(int i = 0; i < size; i++) {
                                         char ch = buffer[i];
-                                        if (lastCharCR && ch == LF) { // found CRLF sequence
+                                        if (lastCharCR && ch == LF) {
+                                            // CR-LF pair changed to single LF
+                                            continue;
+                                        }
+                                        if (ch == CR) {
+                                            // convert to LF; subsequent LF will be skipped
+                                            output.append(LF);
+                                            lso.add(output.length());
+                                            lastCharCR = true;
+                                        } else if (ch == LS || ch == PS) { // Unicode LS, PS
                                             output.append(LF);
                                             lso.add(output.length());
                                             lastCharCR = false;
-
-                                        } else { // not CRLF sequence
-                                            if (ch == CR) {
-                                                lastCharCR = true;
-                                            } else if (ch == LS || ch == PS) { // Unicode LS, PS
-                                                output.append(LF);
-                                                lso.add(output.length());
-                                                lastCharCR = false;
-                                            } else { // current char not CR
-                                                lastCharCR = false;
-                                                output.append(ch);
-                                            }
+                                        } else { // current char not CR
+                                            lastCharCR = false;
+                                            output.append(ch);
                                         }
                                     }
                                 }
@@ -459,7 +477,7 @@ public final class Source {
     private volatile Parser cachedParser;
     private final AtomicReference<ASourceModificationEvent> sourceModificationEvent = new AtomicReference<ASourceModificationEvent>();
     private final ASourceModificationEvent unspecifiedSourceModificationEvent = new ASourceModificationEvent (this, true, -1, -1);
-    private Map<Class<? extends Scheduler>,? extends SchedulerEvent> schedulerEvents;
+    private Map<Class<? extends Scheduler>, SchedulerEvent> schedulerEvents;
     //GuardedBy(this)
     private SourceCache     cache;
     //GuardedBy(this)
@@ -601,7 +619,7 @@ public final class Source {
         }
         
         @Override
-        public void assignListeners (final Source source) {
+        public void assignListeners (@NonNull final Source source) {
             assert source != null;
             source.assignListeners();
         }
@@ -646,14 +664,39 @@ public final class Source {
         }
 
         @Override
-        public void setSchedulerEvents (Source source, Map<Class<? extends Scheduler>,? extends SchedulerEvent> events) {
-            assert source != null;
-            assert events != null;
-            synchronized (TaskProcessor.INTERNAL_LOCK) {
-                if (events == null) {
-                    throw new IllegalStateException();
+        public Map<Class<? extends Scheduler>,SchedulerEvent> createSchedulerEvents(
+                @NonNull final Source source,
+                @NonNull final Iterable<? extends Scheduler> schedulers,
+                @NonNull final SourceModificationEvent sourceModificationEvent) {
+            Parameters.notNull("source", source);   //NOI18N
+            Parameters.notNull("schedulers", schedulers);   //NOI18N
+            Parameters.notNull("sourceModificationEvent", sourceModificationEvent); //NOI18N
+            final Map<Class<? extends Scheduler>,SchedulerEvent> result = new HashMap<Class<? extends Scheduler>, SchedulerEvent>();
+            for (Scheduler scheduler : schedulers) {
+                final SchedulerEvent schedulerEvent = SchedulerAccessor.get ().createSchedulerEvent (scheduler, sourceModificationEvent);
+                if (schedulerEvent != null) {
+                    result.put (scheduler.getClass (), schedulerEvent);
                 }
-                source.schedulerEvents = events;
+            }
+            synchronized (TaskProcessor.INTERNAL_LOCK) {
+                source.schedulerEvents = result;
+            }
+            return Collections.unmodifiableMap(result);
+        }
+
+        @Override
+        public void setSchedulerEvent(
+                final @NonNull Source source,
+                final @NonNull Scheduler scheduler,
+                final @NonNull SchedulerEvent event) {
+            Parameters.notNull("source", source);           //NOI18N
+            Parameters.notNull("scheduler", scheduler);     //NOI18N
+            Parameters.notNull("event", event);             //NOI18N
+            synchronized (TaskProcessor.INTERNAL_LOCK) {
+                if (source.schedulerEvents == null) {
+                    source.schedulerEvents = new HashMap<Class<? extends Scheduler>, SchedulerEvent>();
+                }
+                source.schedulerEvents.put(scheduler.getClass(), event);
             }
         }
 

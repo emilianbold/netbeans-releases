@@ -44,6 +44,8 @@ package org.netbeans.modules.php.editor.lexer;
 
 import org.netbeans.spi.lexer.LexerInput;
 import org.netbeans.spi.lexer.LexerRestartInfo;
+
+@org.netbeans.api.annotations.common.SuppressWarnings({"SF_SWITCH_FALLTHROUGH", "URF_UNREAD_FIELD", "DLS_DEAD_LOCAL_STORE", "DM_DEFAULT_ENCODING", "EI_EXPOSE_REP"})
 %%
 
 %public
@@ -70,6 +72,7 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 %state ST_PHP_DOC_COMMENT
 %state ST_PHP_LINE_COMMENT
 %state ST_PHP_HIGHLIGHTING_ERROR
+%state ST_HALTED_COMPILER
 
 %eofval{
        if(input.readLength() > 0) {
@@ -92,6 +95,7 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
     private boolean short_tags_allowed;
 
     private LexerInput input;
+    private boolean haltedCompiler = false;
 
     /*public PhpLexer5(int state){
         initialize(state);
@@ -132,13 +136,14 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
                 setState((LexerState)info.state());
             } else {
                 //initial state
+                stack.pushStack(YYINITIAL);
                 if (inPHP) {
+                    stack.pushStack(ST_PHP_IN_SCRIPTING);
                     zzState = zzLexicalState = ST_PHP_IN_SCRIPTING;
                 }
                 else {
                     zzState = zzLexicalState = YYINITIAL;
                 }
-                stack.clear();
             }
 
         }
@@ -290,7 +295,7 @@ HEREDOC_LABEL_NO_NEWLINE=({LABEL}([^a-zA-Z0-9_\x7f-\xff;$\n\r\\{]|(";"[^$\n\r\\{
 DOUBLE_QUOTES_CHARS=("{"*([^$\"\\{]|("\\"{ANY_CHAR}))|{DOUBLE_QUOTES_LITERAL_DOLLAR})
 BACKQUOTE_CHARS=("{"*([^$`\\{]|("\\"{ANY_CHAR}))|{BACKQUOTE_LITERAL_DOLLAR})
 
-HEREDOC_CHARS=("{"*([^$\n\r\\{]|("\\"[^\n\r]))|{HEREDOC_LITERAL_DOLLAR}|({HEREDOC_NEWLINE}+({HEREDOC_NON_LABEL}|{HEREDOC_LABEL_NO_NEWLINE})))
+HEREDOC_CHARS=([^$\"\\{]|("\\"{ANY_CHAR}))({HEREDOC_LABEL_NO_NEWLINE} | {HEREDOC_NON_LABEL} | {LABEL})*
 NOWDOC_CHARS=({NEWLINE}*(([^a-zA-Z_\x7f-\xff\n\r][^\n\r]*)|({LABEL}[^a-zA-Z0-9_\x7f-\xff;\n\r][^\n\r]*)|({LABEL}[;][^\n\r]+)))
 PHP_OPERATOR=       "=>"|"++"|"--"|"==="|"!=="|"=="|"!="|"<>"|"<="|">="|"+="|"-="|"*="|"/="|".="|"%="|"<<="|">>="|"&="|"|="|"^="|"||"|"&&"|"OR"|"AND"|"XOR"|"<<"|">>"
 
@@ -643,7 +648,13 @@ PHP_OPERATOR=       "=>"|"++"|"--"|"==="|"!=="|"=="|"!="|"<>"|"<="|">="|"+="|"-=
 }
 
 <ST_PHP_IN_SCRIPTING>"__halt_compiler" {
+    pushState(ST_HALTED_COMPILER);
 	return PHPTokenId.PHP_HALT_COMPILER;
+}
+
+<ST_HALTED_COMPILER> {ANY_CHAR}+ {
+    popState();
+    return PHPTokenId.T_INLINE_HTML;
 }
 
 <ST_PHP_IN_SCRIPTING>"static" {
@@ -1039,46 +1050,74 @@ PHP_OPERATOR=       "=>"|"++"|"--"|"==="|"!=="|"=="|"!="|"<>"|"<="|">="|"+="|"-=
     return PHPTokenId.PHP_HEREDOC_TAG;
 }
 
-<ST_PHP_IN_SCRIPTING>[`] {
-    pushState(ST_PHP_BACKQUOTE);
-    return PHPTokenId.PHP_CONSTANT_ENCAPSED_STRING;
+<ST_PHP_START_HEREDOC> {
+    {LABEL}";"?[\n\r] {
+        int trailingNewLineLength = 1;
+        int label_len = yylength() - trailingNewLineLength;
+        int back = trailingNewLineLength;
+
+        if (yytext().charAt(label_len-1)==';') {
+           label_len--;
+           back++;
+        }
+        if (label_len == heredoc_len && yytext().substring(label_len - heredoc_len,label_len).equals(heredoc)) {
+            back = back + heredoc_len;
+            yypushback(back);
+            yybegin(ST_PHP_END_HEREDOC);
+        } else {
+            yypushback(yylength() - trailingNewLineLength);
+            yybegin(ST_PHP_HEREDOC);
+        }
+    }
+    {ANY_CHAR} {
+        yypushback(1);
+        yybegin(ST_PHP_HEREDOC);
+    }
 }
 
-<ST_PHP_START_HEREDOC>{ANY_CHAR} {
-	yypushback(1);
-	yybegin(ST_PHP_HEREDOC);
-}
+<ST_PHP_HEREDOC> {
+    {NEWLINE}{LABEL}";"?[\n\r] {
+        int trailingNewLineLength = 1;
+        int label_len = yylength() - trailingNewLineLength;
+        int back = trailingNewLineLength;
 
-<ST_PHP_START_HEREDOC>{LABEL}";"?[\n\r] {
-    int label_len = yylength() - 1;
-
-    if (yytext().charAt(label_len-1)==';') {
-	    label_len--;
+        if (yytext().charAt(label_len-1)==';') {
+           label_len--;
+           back++;
+        }
+        if (label_len > heredoc_len && yytext().substring(label_len - heredoc_len,label_len).equals(heredoc)) {
+            back = back + heredoc_len;
+            yypushback(back);
+            yybegin(ST_PHP_END_HEREDOC);
+        } else {
+            yypushback(trailingNewLineLength);
+            return PHPTokenId.PHP_CONSTANT_ENCAPSED_STRING;
+        }
     }
 
-    if (label_len==heredoc_len && yytext().substring(0,label_len).equals(heredoc)) {
-        heredoc=null;
-        heredoc_len=0;
-        yybegin(ST_PHP_IN_SCRIPTING);
-        return PHPTokenId.PHP_HEREDOC_TAG;
-    } else {
+    {HEREDOC_CHARS} {
+        return PHPTokenId.PHP_CONSTANT_ENCAPSED_STRING;
+    }
+
+    {HEREDOC_CHARS}("{$" | "${") {
+        yypushback(2);
+        return PHPTokenId.PHP_ENCAPSED_AND_WHITESPACE;
+    }
+
+    {HEREDOC_CHARS}"$"{LABEL}"["? {
+        String text = yytext();
+        int lastIndexOfDollar = text.lastIndexOf('$');
+        yypushback(text.length() - lastIndexOfDollar);
+        return PHPTokenId.PHP_ENCAPSED_AND_WHITESPACE;
+    }
+
+    "$" | "{" {
         return PHPTokenId.PHP_CONSTANT_ENCAPSED_STRING;
     }
 }
 
-<ST_PHP_HEREDOC>{HEREDOC_CHARS}*{HEREDOC_NEWLINE}+{LABEL}";"?[\n\r] {
-    int label_len = yylength() - 1;
-    int back = 1;
-
-    if (yytext().charAt(label_len-1)==';') {
-	   label_len--;
-           back++;
-    }
-    if (label_len > heredoc_len && yytext().substring(label_len - heredoc_len,label_len).equals(heredoc)) {
-           back = back + heredoc_len;
-    	   yypushback(back);
-        yybegin(ST_PHP_END_HEREDOC);
-    }
+<ST_PHP_IN_SCRIPTING>[`] {
+    pushState(ST_PHP_BACKQUOTE);
     return PHPTokenId.PHP_CONSTANT_ENCAPSED_STRING;
 }
 
@@ -1125,19 +1164,6 @@ but jflex doesn't support a{n,} so we changed a{2,} to aa+
 <ST_PHP_BACKQUOTE>{BACKQUOTE_CHARS}*("{""{"+|"$""$"+|(("{"+|"$"+)[`])) {
 	yypushback(1);
 	return PHPTokenId.PHP_ENCAPSED_AND_WHITESPACE;
-}
-
-<ST_PHP_HEREDOC>{HEREDOC_CHARS}*({HEREDOC_NEWLINE}+({LABEL}";"?)?)? {
-	return PHPTokenId.PHP_ENCAPSED_AND_WHITESPACE;
-}
-
-/*
-The original parsing rule was {HEREDOC_CHARS}*({HEREDOC_NEWLINE}+({LABEL}";"?)?)?("{"{2,}|"$"{2,})
-but jflex doesn't support a{n,} so we changed a{2,} to aa+
-*/
-<ST_PHP_HEREDOC>{HEREDOC_CHARS}*({HEREDOC_NEWLINE}+({LABEL}";"?)?)?("{""{"+|"$""$"+) {
-    yypushback(1);
-    return PHPTokenId.PHP_ENCAPSED_AND_WHITESPACE;
 }
 
 <ST_PHP_DOUBLE_QUOTES>[\"] {

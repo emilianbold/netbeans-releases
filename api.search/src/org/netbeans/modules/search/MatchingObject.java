@@ -112,8 +112,6 @@ public final class MatchingObject implements Comparable<MatchingObject>,
     /** */
     private Node nodeDelegate = null;
     /** */
-    private String relativeSearchPath = null;
-    /** */
     List<TextDetail> textDetails;
     
     /**
@@ -199,7 +197,6 @@ public final class MatchingObject implements Comparable<MatchingObject>,
         if (dataObject != null) {
             matchesCount = computeMatchesCount();
             nodeDelegate = dataObject.getNodeDelegate();
-            relativeSearchPath = computeRelativeSearchPath();
         }
         setUpDataObjValidityChecking();
         if (textDetails != null && !textDetails.isEmpty()) {
@@ -774,6 +771,37 @@ public final class MatchingObject implements Comparable<MatchingObject>,
     }
 
     /**
+     * Update data object. Can be called when a module is enabled and new data
+     * loader produces new data object.
+     */
+    public void updateDataObject(DataObject updatedDataObject) {
+        FileObject updatedPF = updatedDataObject.getPrimaryFile();
+        if (dataObject == null
+                || dataObject.getPrimaryFile().equals(updatedPF)) {
+            if (updatedPF.isValid()) {
+                this.invalidityStatus = null;
+                if (fileListener == null) {
+                    this.fileListener = new FileListener();
+                    updatedPF.addFileChangeListener(fileListener);
+                } else if (updatedPF != dataObject.getPrimaryFile()) {
+                    dataObject.getPrimaryFile().removeFileChangeListener(
+                            fileListener);
+                    updatedPF.addFileChangeListener(fileListener);
+                }
+                this.dataObject = updatedDataObject;
+                this.nodeDelegate = updatedDataObject.getNodeDelegate();
+                this.valid = true;
+                for (TextDetail td : textDetails) {
+                    td.updateDataObject(updatedDataObject);
+                }
+            }
+        } else {
+            throw new IllegalArgumentException(
+                    "Expected data object for the same file");          //NOI18N
+        }
+    }
+
+    /**
      */
     public InvalidityStatus replace() throws IOException {
         assert !EventQueue.isDispatchThread();
@@ -946,19 +974,6 @@ public final class MatchingObject implements Comparable<MatchingObject>,
         return resultModel.getDetailsCount(this);
     }
 
-    private String computeRelativeSearchPath() {
-
-        FileObject searchRoot = resultModel.getCommonSearchFolder();
-        FileObject fileFolder = fileObject.getParent();
-
-        if (searchRoot == null) {
-            return FileUtil.getFileDisplayName(fileFolder);
-        } else {
-            String p = FileUtil.getRelativePath(searchRoot, fileFolder);
-            return p == null ? FileUtil.getFileDisplayName(fileFolder) : p;
-        }
-    }
-
     /** Get file display name, e.g. for JTree tooltip. */
     String getFileDisplayName() {
         return FileUtil.getFileDisplayName(fileObject);
@@ -967,11 +982,6 @@ public final class MatchingObject implements Comparable<MatchingObject>,
     /** Return pre-computed matches count. */
     int getMatchesCount() {
         return matchesCount;
-    }
-
-    /** Return pre-computed search path. */
-    String getRelativeSearchPath() {
-        return relativeSearchPath;
     }
 
     /** Return node delegate. */

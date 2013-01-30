@@ -44,10 +44,15 @@ package org.netbeans.modules.php.editor.model.impl;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import org.netbeans.modules.php.editor.model.*;
 import java.util.List;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.editor.api.PhpElementKind;
+import org.netbeans.modules.php.editor.model.CodeMarker;
+import org.netbeans.modules.php.editor.model.FileScope;
+import org.netbeans.modules.php.editor.model.IndexScope;
+import org.netbeans.modules.php.editor.model.ModelElement;
+import org.netbeans.modules.php.editor.model.ModelUtils;
+import org.netbeans.modules.php.editor.model.NamespaceScope;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Union2;
@@ -62,12 +67,16 @@ final class FileScopeImpl extends ScopeImpl implements FileScope  {
     private final List<CodeMarkerImpl> codeMarkers = Collections.synchronizedList(new ArrayList<CodeMarkerImpl>());
 
     FileScopeImpl(PHPParseResult info) {
-        this(info, "program");//NOI18N
+        this(info, "program"); //NOI18N
     }
 
     private FileScopeImpl(PHPParseResult info, String name) {
-        super(null, name, Union2.<String, FileObject>createSecond(info != null ? info.getSnapshot().getSource().getFileObject() : null), new OffsetRange(0, 0), PhpElementKind.PROGRAM);//NOI18N
-        this.info = info;
+        super(
+                null,
+                name,
+                Union2.<String, FileObject>createSecond(info != null ? info.getSnapshot().getSource().getFileObject() : null),
+                new OffsetRange(0, 0),
+                PhpElementKind.PROGRAM);        this.info = info;
     }
 
     void addCodeMarker(CodeMarkerImpl codeMarkerImpl) {

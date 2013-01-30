@@ -41,36 +41,23 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-/*
- * CheckoutAction.java
- *
- * Created on 20 April 2006, 15:23
- *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
- */
 package org.netbeans.test.subversion.operators.actions;
-
-import org.netbeans.jellytools.actions.ActionNoBlock;
 
 /**
  *
  * @author peter
  */
-public class CheckoutAction extends ActionNoBlock {
+public class CheckoutAction extends SvnAction {
 
-    /** "Team" menu item. */
-    public static final String TEAM_ITEM = "Team";
-    
-    /** "Subversion" menu item. */
-    public static final String SVN_ITEM = "Subversion";
-
-    /** "Checkout..." menu item. */
+    /**
+     * "Checkout..." menu item.
+     */
     public static final String CHECKOUT_ITEM = "Checkout...";
-    
-    /** Creates a new instance of CheckoutAction */
+
+    /**
+     * Creates a new instance of CheckoutAction
+     */
     public CheckoutAction() {
         super(TEAM_ITEM + "|" + SVN_ITEM + "|" + CHECKOUT_ITEM, null);
     }
-    
 }

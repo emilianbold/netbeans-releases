@@ -79,7 +79,8 @@ public class ClobFieldTableCellEditor extends AbstractCellEditor
                 }
             });
             charsetSelect = new JComboBox();
-            charsetSelect.setModel(new DefaultComboBoxModel(charset.toArray()));
+            charsetSelect.setModel(new DefaultComboBoxModel(
+                    charset.toArray(new Charset[charset.size()])));
             charsetSelect.setSelectedItem(Charset.defaultCharset());
             this.add(charsetSelect);
         }
@@ -352,12 +353,14 @@ public class ClobFieldTableCellEditor extends AbstractCellEditor
             
         }
         
-        JTextArea textArea = new JTextArea(10, 50);
+        JTextArea textArea = new JTextArea(20, 80);
         textArea.setText(stringVal);
         textArea.setCaretPosition(0);
         textArea.setEditable(table.isCellEditable(currentRow, currentColumn));
         
         JScrollPane pane = new JScrollPane(textArea);
+        pane.addHierarchyListener(
+                new StringTableCellEditor.MakeResizableListener(pane));
         Component parent = WindowManager.getDefault().getMainWindow();
         
         if (table.isCellEditable(currentRow, currentColumn)) {

@@ -91,6 +91,7 @@ public class MySQLSchema extends JDBCSchema {
                 if (rs != null) {
                     rs.close();
                 }
+                stmt.close();
             }
         } catch (SQLException e) {
             throw new MetadataException(e);
@@ -112,6 +113,7 @@ public class MySQLSchema extends JDBCSchema {
                 if (rs != null) {
                     rs.close();
                 }
+                stmt.close();
             }
         } catch (SQLException e) {
             throw new MetadataException(e);

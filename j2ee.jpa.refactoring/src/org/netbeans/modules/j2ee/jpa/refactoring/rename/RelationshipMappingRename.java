@@ -59,9 +59,9 @@ import com.sun.source.util.TreePath;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
@@ -98,6 +98,7 @@ import org.openide.util.lookup.Lookups;
 public final class RelationshipMappingRename implements JPARefactoring {
     
     private final RenameRefactoring rename;
+    private final static Logger LOG = Logger.getLogger(RelationshipMappingRename.class.getName());
     
     public RelationshipMappingRename(RenameRefactoring rename) {
         this.rename = rename;
@@ -115,7 +116,9 @@ public final class RelationshipMappingRename implements JPARefactoring {
             VariableElement var = (VariableElement) resElement;
             Element mainEntTmp = var.getEnclosingElement();
             TypeElement mainEnt = mainEntTmp instanceof TypeElement ? (TypeElement)mainEntTmp : null;
-            if(mainEnt == null)return null;
+            if(mainEnt == null) {
+                return null;
+            }
             List<? extends AnnotationMirror> ans = var.getAnnotationMirrors();
             boolean checkFoMappedBy = false;
             for(AnnotationMirror an:ans){
@@ -128,59 +131,67 @@ public final class RelationshipMappingRename implements JPARefactoring {
             if(checkFoMappedBy){
                 TypeMirror tm = var.asType();
                 TypeElement oppEntEl = RefactoringUtil.getCompilationInfo(handle, rename).getElements().getTypeElement(tm.toString());
-                for (VariableElement field : ElementFilter.fieldsIn(oppEntEl.getEnclosedElements())) {
-                    String fqn = field.asType().toString();
-                    if(fqn.endsWith("<"+mainEnt+">") && fqn.startsWith("java.util.")){//it's 99% some generic collection
-                        ans = field.getAnnotationMirrors();
-                        for(AnnotationMirror an : ans){
-                            String tp = an.getAnnotationType().toString();
-                            if("javax.persistence.OneToMany".equals(tp) || "javax.persistence.ManyToMany".equals(tp)) {//NOI18N
-                                for(ExecutableElement el : an.getElementValues().keySet()) {
-                                    if(el.getSimpleName().toString().equals("mappedBy")) {
-                                        if(an.getElementValues().get(el).getValue().toString().equals(var.getSimpleName().toString())) {
-                                            FileObject fo = null;
-                                            try {
-                                                //it's usage
-                                                 fo = RefactoringUtil.getTreePathHandle(field.getSimpleName().toString(), oppEntEl.toString(), handle.getFileObject()).getFileObject();
-                                            } catch (IOException ex) {
-                                                
-                                            }
-                                            TreePathHandle ph = null;
-                                            try {
-                                                ph = RefactoringUtil.getTreePathHandle(field.getSimpleName().toString(), oppEntEl.toString(), handle.getFileObject());
-                                            } catch (IOException ex) {
-                                                Exceptions.printStackTrace(ex);
-                                            }
-                                            CompilationInfo ci = RefactoringUtil.getCompilationInfo(ph, rename);
-                                            TreePath tree = ph.resolve(ci);
-                                            CompilationUnitTree unit = tree.getCompilationUnit();
-                                            Tree t= tree.getLeaf();
-                                            List<? extends AnnotationTree> aList = ((VariableTree)t).getModifiers().getAnnotations();
-                                            AnnotationTree at0 = null;
-                                            for(AnnotationTree at:aList)
-                                            {
-                                                for(ExpressionTree et:at.getArguments())
+                if(oppEntEl!=null) {
+                    for (VariableElement field : ElementFilter.fieldsIn(oppEntEl.getEnclosedElements())) {
+                        String fqn = field.asType().toString();
+                        if(fqn.endsWith("<"+mainEnt+">") && fqn.startsWith("java.util.")){//it's 99% some generic collection
+                            ans = field.getAnnotationMirrors();
+                            for(AnnotationMirror an : ans){
+                                String tp = an.getAnnotationType().toString();
+                                if("javax.persistence.OneToMany".equals(tp) || "javax.persistence.ManyToMany".equals(tp)) {//NOI18N
+                                    for(ExecutableElement el : an.getElementValues().keySet()) {
+                                        if(el.getSimpleName().toString().equals("mappedBy")) {
+                                            if(an.getElementValues().get(el).getValue().toString().equals(var.getSimpleName().toString())) {
+                                                FileObject fo;
+                                                try {
+                                                    //it's usage
+                                                     fo = RefactoringUtil.getTreePathHandle(field.getSimpleName().toString(), oppEntEl.toString(), handle.getFileObject()).getFileObject();
+                                                } catch (IOException ex) {
+                                                    LOG.log(Level.INFO, "Can't get fileobject.", ex);//NOI18N
+                                                    continue;
+                                                }
+                                                TreePathHandle ph;
+                                                try {
+                                                    ph = RefactoringUtil.getTreePathHandle(field.getSimpleName().toString(), oppEntEl.toString(), handle.getFileObject());
+                                                } catch (IOException ex) {
+                                                    LOG.log(Level.INFO, "Can't get tree path handle.", ex);//NOI18N
+                                                    continue;
+                                                }
+                                                CompilationInfo ci = RefactoringUtil.getCompilationInfo(ph, rename);
+                                                TreePath tree = ph.resolve(ci);
+                                                CompilationUnitTree unit = tree.getCompilationUnit();
+                                                Tree t= tree.getLeaf();
+                                                List<? extends AnnotationTree> aList = ((VariableTree)t).getModifiers().getAnnotations();
+                                                AnnotationTree at0 = null;
+                                                for(AnnotationTree at:aList)
                                                 {
-                                                    if(et instanceof AssignmentTree)
+                                                    for(ExpressionTree et:at.getArguments())
                                                     {
-                                                        AssignmentTree ast = ((AssignmentTree)et);
-                                                        if(ast.toString().startsWith("mappedBy")){//NOI18N
-                                                            t = ast.getExpression();
-                                                            at0 = at;
-                                                            break;
+                                                        if(et instanceof AssignmentTree)
+                                                        {
+                                                            AssignmentTree ast = ((AssignmentTree)et);
+                                                            if(ast.toString().startsWith("mappedBy")){//NOI18N
+                                                                t = ast.getExpression();
+                                                                at0 = at;
+                                                                break;
+                                                            }
                                                         }
                                                     }
                                                 }
+                                                SourcePositions sp = ci.getTrees().getSourcePositions();
+                                                sp.getStartPosition(unit, t);
+                                                if(fo!=null) {
+                                                    refactoringElementsBag.add(rename, new RelationshipAnnotationRenameRefactoringElement(fo, field, at0, an, var.getSimpleName().toString(), (int)sp.getStartPosition(unit, t), (int)sp.getEndPosition(unit, t)));
+                                                }
                                             }
-                                            SourcePositions sp = ci.getTrees().getSourcePositions();
-                                            sp.getStartPosition(unit, t);
-                                            if(fo!=null)refactoringElementsBag.add(rename, new RelationshipAnnotationRenameRefactoringElement(fo, oppEntEl, field, at0, t, an, var.getSimpleName().toString(), (int)sp.getStartPosition(unit, t), (int)sp.getEndPosition(unit, t)));
                                         }
                                     }
                                 }
                             }
                         }
                     }
+                } else {
+                    LOG.log(Level.INFO, "Can't resolve {0}", tm.toString());//NOI18N
                 }
             }
         }
@@ -195,12 +206,10 @@ public final class RelationshipMappingRename implements JPARefactoring {
         private final AnnotationMirror annotation;
         private final String attrValue;
         private final FileObject fo;
-        private final TypeElement oppEntEl;
-        private final Tree tree;
         private final VariableElement var;
         private final AnnotationTree at;
         
-        RelationshipAnnotationRenameRefactoringElement(FileObject fo, TypeElement oppEntEl, VariableElement var, AnnotationTree at, Tree valueTree, AnnotationMirror annotation, String attrValue, int start, int end) {
+        RelationshipAnnotationRenameRefactoringElement(FileObject fo, VariableElement var, AnnotationTree at, AnnotationMirror annotation, String attrValue, int start, int end) {
             this.fo = fo;
             this.annotation = annotation;
             this.attrValue = attrValue;
@@ -209,8 +218,6 @@ public final class RelationshipMappingRename implements JPARefactoring {
                 end--;
             }
             loc = new int[]{start, end};
-            this.oppEntEl = oppEntEl;
-            this.tree = valueTree;
             this.at = at;
             this.var = var;
         }
@@ -239,7 +246,6 @@ public final class RelationshipMappingRename implements JPARefactoring {
                     public void run(WorkingCopy workingCopy) throws Exception {
 
                         workingCopy.toPhase(JavaSource.Phase.RESOLVED);
-                        Element element = oppEntEl;
 
                         for (AnnotationMirror annotation : var.getAnnotationMirrors()) {
 
@@ -294,7 +300,7 @@ public final class RelationshipMappingRename implements JPARefactoring {
             try {
                 DataObject dobj = DataObject.find(getParentFile());
                 if (dobj != null) {
-                    EditorCookie.Observable obs = (EditorCookie.Observable)dobj.getCookie(EditorCookie.Observable.class);
+                    EditorCookie.Observable obs = (EditorCookie.Observable)dobj.getLookup().lookup(EditorCookie.Observable.class);
                     if (obs != null && obs instanceof CloneableEditorSupport) {
                         CloneableEditorSupport supp = (CloneableEditorSupport)obs;
 
@@ -307,7 +313,7 @@ public final class RelationshipMappingRename implements JPARefactoring {
                 }
                 }
             } catch (DataObjectNotFoundException ex) {
-                ex.printStackTrace();
+                LOG.log(Level.INFO, "Can't resolve", ex);//NOI18N
             }
             return null;
         }

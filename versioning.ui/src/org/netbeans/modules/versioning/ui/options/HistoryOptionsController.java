@@ -46,10 +46,14 @@ package org.netbeans.modules.versioning.ui.options;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeListener;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.versioning.ui.history.HistorySettings;
+import org.netbeans.modules.versioning.util.VCSOptionsKeywordsProvider;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
@@ -58,7 +62,7 @@ import org.openide.util.Lookup;
  *
  * @author Tomas Stupka
  */
-public final class HistoryOptionsController extends OptionsPanelController implements DocumentListener, ActionListener {
+public final class HistoryOptionsController extends OptionsPanelController implements DocumentListener, ActionListener, VCSOptionsKeywordsProvider {
     
     private final HistoryOptionsPanel panel;
     private boolean noLabelValue;
@@ -191,6 +195,13 @@ public final class HistoryOptionsController extends OptionsPanelController imple
         } else if(e.getSource() == panel.loadAllRadioButton || e.getSource() == panel.loadIncrementsRadioButton) {
             updateLoadAllState();
         }
+    }
+
+    @Override
+    public boolean acceptKeywords (List<String> keywords) {
+        Set<String> allKeywords = new HashSet<String>(panel.getKeywords());
+        allKeywords.retainAll(keywords);
+        return !allKeywords.isEmpty();
     }
     
     private void updateForeverState() {

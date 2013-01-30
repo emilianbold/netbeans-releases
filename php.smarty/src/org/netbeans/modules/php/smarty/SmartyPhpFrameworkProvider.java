@@ -38,13 +38,12 @@
  */
 package org.netbeans.modules.php.smarty;
 
+import java.beans.PropertyChangeEvent;
 import java.io.File;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
-import org.netbeans.api.progress.ProgressUtils;
-import org.netbeans.modules.php.api.phpmodule.BadgeIcon;
+import org.netbeans.modules.php.api.framework.BadgeIcon;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.phpmodule.PhpModuleProperties;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassInstanceCreation;
@@ -52,13 +51,12 @@ import org.netbeans.modules.php.editor.parser.astnodes.NamespaceName;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 import org.netbeans.modules.php.smarty.editor.TplDataLoader;
 import org.netbeans.modules.php.smarty.ui.options.SmartyOptions;
-import org.netbeans.modules.php.spi.commands.FrameworkCommandSupport;
-import org.netbeans.modules.php.spi.editor.EditorExtender;
-import org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider;
-import org.netbeans.modules.php.spi.phpmodule.PhpModuleActionsExtender;
-import org.netbeans.modules.php.spi.phpmodule.PhpModuleCustomizerExtender;
-import org.netbeans.modules.php.spi.phpmodule.PhpModuleExtender;
-import org.netbeans.modules.php.spi.phpmodule.PhpModuleIgnoredFilesExtender;
+import org.netbeans.modules.php.spi.framework.PhpFrameworkProvider;
+import org.netbeans.modules.php.spi.framework.PhpModuleActionsExtender;
+import org.netbeans.modules.php.spi.framework.PhpModuleCustomizerExtender;
+import org.netbeans.modules.php.spi.framework.PhpModuleExtender;
+import org.netbeans.modules.php.spi.framework.PhpModuleIgnoredFilesExtender;
+import org.netbeans.modules.php.spi.framework.commands.FrameworkCommandSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ImageUtilities;
@@ -69,6 +67,8 @@ import org.openide.util.RequestProcessor;
  * @author Martin Fousek
  */
 public final class SmartyPhpFrameworkProvider extends PhpFrameworkProvider {
+
+    protected static final RequestProcessor RP = new RequestProcessor(SmartyPhpFrameworkProvider.class);
 
     private static final Logger LOGGER = Logger.getLogger(SmartyPhpFrameworkProvider.class.getName());
 
@@ -118,6 +118,10 @@ public final class SmartyPhpFrameworkProvider extends PhpFrameworkProvider {
      * @return {@code false} if not found
      */
     public static boolean locatedTplFiles(FileObject fo, int maxDepth, int actualDepth) {
+        if (fo == null || !fo.isValid()) {
+            return false;
+        }
+
         while (actualDepth <= maxDepth) {
             for (FileObject child : fo.getChildren()) {
                 if (!child.isFolder()) {
@@ -137,6 +141,10 @@ public final class SmartyPhpFrameworkProvider extends PhpFrameworkProvider {
 
     public static FileObject locate(PhpModule phpModule, String relativePath, boolean subdirs) {
         FileObject sourceDirectory = phpModule.getSourceDirectory();
+        if (sourceDirectory == null) {
+            // broken project
+            return null;
+        }
 
         FileObject fileObject = sourceDirectory.getFileObject(relativePath);
         if (fileObject != null || !subdirs) {
@@ -153,48 +161,29 @@ public final class SmartyPhpFrameworkProvider extends PhpFrameworkProvider {
 
     @Override
     public boolean isInPhpModule(final PhpModule phpModule) {
-        // get php files within the module
-        long time = System.currentTimeMillis();
-        try {
-            final AtomicBoolean isSmartyFound = new AtomicBoolean(false);
-            final Preferences preferences = phpModule.getPreferences(SmartyPhpFrameworkProvider.class, true);
+        final Preferences preferences = phpModule.getPreferences(SmartyPhpFrameworkProvider.class, true);
 
-            // TODO - can be removed one release after NB71
-            SmartyOptions.updateSmartyScanningDepthProperty();
-            updateSmartyAvailableProperty(preferences);
+        // TODO - can be removed one release after NB71
+        SmartyOptions.updateSmartyScanningDepthProperty();
+        updateSmartyAvailableProperty(preferences);
 
-            if (preferences.getBoolean(PROP_SMARTY_AVAILABLE, false)) {
-                return true;
-            }
-
-            // search for appropriate MIME types inside source directory
-            ProgressUtils.runOffEventDispatchThread(new Runnable() {
-
-                @Override
-                public void run() {
-                    FileObject sourceDirectory = phpModule.getSourceDirectory();
-                    int scanningDepth = SmartyFramework.getDepthOfScanningForTpl();
-                    LOGGER.log(Level.FINEST, "Locating for Smarty templates in depth={0}", scanningDepth);
-                    if (locatedTplFiles(sourceDirectory, scanningDepth, 0)) {
-                        isSmartyFound.set(true);
-                    }
-                }
-            }, NbBundle.getMessage(SmartyPhpFrameworkProvider.class, "MSG_SearchingForSmartyExt"),  // NOI18N
-               new AtomicBoolean(false), false, 1000, 10000);
-
-            if (isSmartyFound.get()) {
-                RequestProcessor.getDefault().post(new Runnable() {
-                    @Override
-                    public void run() {
-                        preferences.putBoolean(PROP_SMARTY_AVAILABLE, true);
-                    }
-                });
-            }
-
-            return isSmartyFound.get();
-        } finally {
-            LOGGER.log(Level.FINE, "Smarty.isInPhpModule total time spent={0} ms", (System.currentTimeMillis() - time)); //NOI18N
+        if (preferences.getBoolean(PROP_SMARTY_AVAILABLE, false)) {
+            return true;
         }
+
+        RP.post(new Runnable() {
+            @Override
+            public void run() {
+                FileObject sourceDirectory = phpModule.getSourceDirectory();
+                int scanningDepth = SmartyFramework.getDepthOfScanningForTpl();
+                LOGGER.log(Level.FINEST, "Locating for Smarty templates in depth={0}", scanningDepth);
+                if (locatedTplFiles(sourceDirectory, scanningDepth, 0)) {
+                    preferences.putBoolean(PROP_SMARTY_AVAILABLE, true);
+                    phpModule.propertyChanged(new PropertyChangeEvent(SmartyPhpFrameworkProvider.this, PhpModule.PROPERTY_FRAMEWORKS, null, null));
+                }
+            }
+        });
+        return false;
     }
 
     /**
@@ -243,11 +232,6 @@ public final class SmartyPhpFrameworkProvider extends PhpFrameworkProvider {
 
     @Override
     public FrameworkCommandSupport getFrameworkCommandSupport(PhpModule phpModule) {
-        return null;
-    }
-
-    @Override
-    public EditorExtender getEditorExtender(PhpModule phpModule) {
         return null;
     }
 

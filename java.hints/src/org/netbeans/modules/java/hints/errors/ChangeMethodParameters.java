@@ -194,6 +194,17 @@ public class ChangeMethodParameters implements ErrorRule<Void> {
                         newParameterInfo[i] = new ParameterInfo(param.getOriginalIndex(), param.getName(), typeString, param.getDefaultValue());
                     }
                     
+                    // Find old parameters with the same index and copy the information if removed
+                    for (i = 0; i < newParameterInfo.length; i++) {
+                        if(cancel) return Collections.<Fix>emptyList();
+                        ParameterInfo param = newParameterInfo[i];
+                        if (param.getOriginalIndex() == -1 &&
+                                parameterInfo.length > i &&
+                                parameterInfo[i].getOriginalIndex() != -1) {
+                            newParameterInfo[i] = new ParameterInfo(parameterInfo[i].getOriginalIndex(), parameterInfo[i].getName(), param.getType(), param.getDefaultValue());
+                        }
+                    }
+                    
                     TreePathHandle tph = TreePathHandle.create(path, info);
                     boolean doFullRefactoring = true;
                     if(methodTree.getModifiers().getFlags().contains(Modifier.PRIVATE)) {

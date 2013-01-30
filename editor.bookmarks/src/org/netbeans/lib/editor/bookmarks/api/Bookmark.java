@@ -44,13 +44,8 @@
 
 package org.netbeans.lib.editor.bookmarks.api;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.lang.ref.Reference;
-import java.lang.ref.WeakReference;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 import javax.swing.text.Document;
@@ -58,7 +53,6 @@ import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.editor.bookmarks.BookmarkAPIAccessor;
 import org.netbeans.modules.editor.bookmarks.BookmarkInfo;
 import org.netbeans.modules.editor.bookmarks.BookmarkUtils;
-import org.netbeans.modules.editor.bookmarks.BookmarksPersistence;
 import org.openide.loaders.DataObject;
 import org.openide.text.Annotation;
 import org.openide.text.Line;
@@ -96,8 +90,6 @@ public final class Bookmark {
 
     private Line            line;
     private AAnnotation     annotation;
-    private Map<BookmarkList,LineListener>
-                            bookmarkListToLineListener = new WeakHashMap<BookmarkList,LineListener> ();
     
     /**
      * Construct new instance of bookmark.
@@ -130,14 +122,7 @@ public final class Bookmark {
         line = NbEditorUtilities.getLine (bookmarkList.getDocument (), offset, false);
         if (line != null) { // In tests it may be null
             annotation = new AAnnotation ();
-            lineToAnnotation.put (line, new WeakReference<AAnnotation>(annotation));
             annotation.attach (line);
-            LineListener lineListener = bookmarkListToLineListener.get (bookmarkList);
-            if (lineListener == null) {
-                lineListener = new LineListener (bookmarkList);
-                bookmarkListToLineListener.put (bookmarkList, lineListener);
-            }
-            line.addPropertyChangeListener (lineListener);
         }
     }
 
@@ -214,49 +199,33 @@ public final class Bookmark {
     BookmarkInfo info() {
         return info;
     }
-    
+
+    @Override
+    public String toString() {
+        return "Bookmark: " + info + "\n"; // NOI18N
+    }
     
     // innerclasses ............................................................
     
     public final class AAnnotation extends Annotation {
 
+        @Override
         public String getAnnotationType () {
             return BOOKMARK_ANNOTATION_TYPE;
         }
 
+        @Override
         public String getShortDescription () {
             String fmt = NbBundle.getBundle (Bookmark.class).getString ("Bookmark_Tooltip"); // NOI18N
             int lineIndex = getLineNumber ();
-            return MessageFormat.format (fmt, new Object[] {new Integer (lineIndex + 1)});
+            return MessageFormat.format (fmt, new Object[] {Integer.valueOf(lineIndex + 1)});
         }
 
+        @Override
         public String toString() {
             return getShortDescription();
         }
     }
-
-    private static class LineListener implements PropertyChangeListener {
-
-        private WeakReference<BookmarkList> bookmarkListReference;
-
-        LineListener (BookmarkList bookmarkList) {
-            bookmarkListReference = new WeakReference<BookmarkList> (bookmarkList);
-        }
-
-        public void propertyChange(PropertyChangeEvent evt) {
-            BookmarkList bookmarkList = bookmarkListReference.get ();
-            if (bookmarkList == null)
-                return;
-            List<Bookmark> bookmarks = new ArrayList<Bookmark> (bookmarkList.getBookmarks ());
-            int lineNumber = -1;
-            for (Bookmark bookmark : bookmarks) {
-                if (bookmark.getLineNumber () == lineNumber) {
-                    bookmarkList.removeBookmark (bookmark);
-                }
-                lineNumber = bookmark.getLineNumber ();
-            }
-        }
-    };
 
     private static final class BookmarkAPIAccessorImpl extends BookmarkAPIAccessor {
 

@@ -76,7 +76,7 @@ import org.netbeans.spi.settings.Saver;
 import org.openide.awt.Actions;
 import org.openide.awt.Mnemonics;
 
-/**
+/** 
  * Toolbar configuration, it contains toolbar panel with a list of toolbar rows.
  *
  * @author S. Aubrecht
@@ -86,11 +86,11 @@ public final class ToolbarConfiguration implements ToolbarPool.Configuration {
     private final JPanel toolbarPanel;
 
     private static Map<String,ToolbarConfiguration> name2config = new HashMap<String,ToolbarConfiguration>(10);
-
+    
     /** Toolbar menu is global so it is static. It it the same for all toolbar
      configurations. */
     private static JMenu toolbarMenu;
-
+    
     /** Name of configuration. */
     private final String configName;
     /** Display name of configuration. */
@@ -140,11 +140,11 @@ public final class ToolbarConfiguration implements ToolbarPool.Configuration {
     public static final ToolbarConfiguration findConfiguration (String name) {
         return name2config.get(name);
     }
-
+    
     private static final ToolbarPool getToolbarPool() {
         return ToolbarPool.getDefault ();
     }
-
+    
     public static void rebuildMenu() {
         synchronized( ToolbarConfiguration.class ) {
             if (toolbarMenu != null) {
@@ -266,9 +266,9 @@ public final class ToolbarConfiguration implements ToolbarPool.Configuration {
             }
         }
     } // getContextMenu
+    
 
-
-
+    
     /** Rebuild toolbar panel when size of icons is changed.
      * All components are removed and again added using ToolbarPool's list of correct toolbars.
      */
@@ -287,8 +287,10 @@ public final class ToolbarConfiguration implements ToolbarPool.Configuration {
                 if (comps[j] instanceof JComponent) {
                     if (smallToolbarIcons) {
                         ((JComponent) comps[j]).putClientProperty("PreferredIconSize",null); //NOI18N
+                        tb.putClientProperty("PreferredIconSize",null); //NOI18N
                     } else {
                         ((JComponent) comps[j]).putClientProperty("PreferredIconSize",Integer.valueOf(24)); //NOI18N
+                        tb.putClientProperty("PreferredIconSize",Integer.valueOf(24)); //NOI18N
                     }
                 }
                 //TODO add icon shadow for mac l&f?
@@ -318,10 +320,10 @@ public final class ToolbarConfiguration implements ToolbarPool.Configuration {
         adjustToolbarPanelBorder();
 
         rebuildMenu();
-
+        
         repaint();
     }
-
+    
     /**
      * Add a new row if the screen location points 'just below' the toolbar panel.
      * @param screenLocation
@@ -405,7 +407,7 @@ public final class ToolbarConfiguration implements ToolbarPool.Configuration {
     public String getName () {
         return configName;
     }
-
+    
     public String getDisplayName () {
         return configDisplayName;
     }
@@ -423,13 +425,13 @@ public final class ToolbarConfiguration implements ToolbarPool.Configuration {
     }
 
     /** Fills given menu with toolbars and configurations items and returns
-     * filled menu. */
+     * filled menu. */ 
     public static JMenu getToolbarsMenu (JMenu menu) {
         fillToolbarsMenu(menu, false);
         toolbarMenu = menu;
         return menu;
     }
-
+    
     /** Make toolbar visible/invisible in this configuration
      * @param tb toolbar
      * @param b true to make toolbar visible
@@ -443,7 +445,7 @@ public final class ToolbarConfiguration implements ToolbarPool.Configuration {
             save();
         }
     }
-
+    
     /** Returns true if the toolbar is visible in this configuration
      * @param tb toolbar
      * @return true if the toolbar is visible
@@ -509,7 +511,7 @@ public final class ToolbarConfiguration implements ToolbarPool.Configuration {
         }
         return null;
     }
-
+    
     /**
      * Take a snapshot of current toolbar configuration and ask for saving it to a file.
      * (The actual saving will happen at some later undefined time).
@@ -521,7 +523,7 @@ public final class ToolbarConfiguration implements ToolbarPool.Configuration {
             createSnapshot();
             saver.requestSave();
         } catch( IOException ioE ) {
-            Logger.getLogger(ToolbarConfiguration.class.getName()).log(Level.INFO,
+            Logger.getLogger(ToolbarConfiguration.class.getName()).log(Level.INFO, 
                     "Error while saving toolbar configuration", ioE); //NOI18N
         }
     }
@@ -600,6 +602,12 @@ public final class ToolbarConfiguration implements ToolbarPool.Configuration {
         mid = new Color(r, g, b);
     }
 
+    private static boolean isWindows8() {
+        String osName = System.getProperty ("os.name");
+        return osName.indexOf("Windows 8") >= 0
+            || (osName.equals( "Windows NT (unknown)" ) && "6.2".equals( System.getProperty("os.version") ));
+    }
+
     private static final Border lowerBorder = BorderFactory.createCompoundBorder(
         BorderFactory.createMatteBorder(0, 0, 1, 0,
         fetchColor("controlShadow", Color.DARK_GRAY)),
@@ -621,14 +629,18 @@ public final class ToolbarConfiguration implements ToolbarPool.Configuration {
             //add border
             if ("Windows".equals(UIManager.getLookAndFeel().getID())) { //NOI18N
                 if( isXPTheme() ) {
-                    //Set up custom borders for XP
-                    toolbarPanel.setBorder(BorderFactory.createCompoundBorder(
-                        upperBorder,
-                        BorderFactory.createCompoundBorder(
-                            BorderFactory.createMatteBorder(0, 0, 1, 0,
-                            fetchColor("controlShadow", Color.DARK_GRAY)),
-                            BorderFactory.createMatteBorder(0, 0, 1, 0, mid))
-                    )); //NOI18N
+                    if( isWindows8() ) {
+                        toolbarPanel.setBorder( BorderFactory.createEmptyBorder() );
+                    } else {
+                        //Set up custom borders for XP
+                        toolbarPanel.setBorder(BorderFactory.createCompoundBorder(
+                            upperBorder,
+                            BorderFactory.createCompoundBorder(
+                                BorderFactory.createMatteBorder(0, 0, 1, 0,
+                                fetchColor("controlShadow", Color.DARK_GRAY)),
+                                BorderFactory.createMatteBorder(0, 0, 1, 0, mid))
+                        )); //NOI18N
+                    }
                 } else {
                     toolbarPanel.setBorder( BorderFactory.createEtchedBorder() );
                 }

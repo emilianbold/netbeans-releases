@@ -60,6 +60,8 @@ class StackEntry {
     private String text;
     private int indent;
     private int selfIndent;
+    private int lambdaIndent = 0;
+    private int lambdaParen = 0;
 
     StackEntry(ExtendedTokenSequence ts) {
         super();
@@ -86,18 +88,34 @@ class StackEntry {
     private void initImportant(ExtendedTokenSequence ts) {
         int i = ts.index();
         try {
+            int bracket = 0;
             int paren = 0;
-            int curly = 0;
             int triangle = 0;
+            boolean hasID = false;
             while (true) {
                 if (!ts.movePrevious()) {
                     return;
                 }
                 Token<CppTokenId> current = ts.token();
                 switch (current.id()) {
+                    case TEMPLATE:
+                    {
+                        if (paren == 0 && triangle == 0) {
+                            likeToArrayInitialization = false;
+                            likeToFunction = true;
+                        }
+                        break;
+                    }
+                    case IDENTIFIER:
+                    {
+                        if (paren == 0 && triangle == 0) {
+                            hasID = true;
+                        }
+                        break;
+                    }
                     case RPAREN: //(")", "separator"),
                     {
-                        if (paren == 0 && curly == 0 && triangle == 0) {
+                        if (paren == 0 && triangle == 0) {
                             likeToFunction = true;
                         }
                         paren++;
@@ -107,10 +125,12 @@ class StackEntry {
                     {
                         if (paren == 0) {
                             Token<CppTokenId> prev = ts.lookPreviousImportant();
-                            if (prev != null && prev.id() == OPERATOR) {
-                                likeToArrayInitialization = false;
-                                likeToFunction = true;
-                                return;
+                            if (prev != null) {
+                                if (prev.id() == OPERATOR) {
+                                    likeToArrayInitialization = false;
+                                    likeToFunction = true;
+                                    return;
+                                }
                             }
                             likeToArrayInitialization = true;
                             return;
@@ -118,10 +138,39 @@ class StackEntry {
                         paren--;
                         break;
                     }
+                        
+                    case LBRACKET: //[
+                    {
+                        bracket--;
+                        if (paren == 0 && triangle == 0 && bracket == 0) {
+                            Token<CppTokenId> prev = ts.lookPreviousImportant();
+                            if (prev != null) {
+                                if (prev.id() == IDENTIFIER) {
+                                    likeToArrayInitialization = true;
+                                    return;
+                                }
+                                if (prev.id() == IDENTIFIER || prev.id() == RBRACKET || prev.id() == LBRACKET) {
+                                    break;
+                                }
+                            }
+                            likeToArrayInitialization = false;
+                            likeToFunction = false;
+                            importantKind = ARROW;
+                            lambdaIndent = lambdaIndent(ts);
+                            return;
+                        }
+                        break;
+                    }
+                    case RBRACKET: //]
+                    {
+                        bracket++;
+                        break;
+                    }
+                        
                     case CASE:
                     case DEFAULT:
                     {
-                        if (paren == 0 && curly == 0 && triangle == 0) {
+                        if (paren == 0 && triangle == 0) {
                             likeToArrayInitialization = false;
                             likeToFunction = false;
                             return;
@@ -132,7 +181,10 @@ class StackEntry {
                     case LBRACE: //("{", "separator"),
                     case SEMICOLON: //(";", "separator"),
                     {
-                        if (paren == 0 && curly == 0 && triangle == 0) {
+                        if (paren == 0 && triangle == 0) {
+                            if (hasID && !likeToFunction) {
+                                likeToArrayInitialization = true;
+                            }
                             // undefined
                             return;
                         }
@@ -140,7 +192,7 @@ class StackEntry {
                     }
                     case EQ: //("=", "operator"),
                     {
-                        if (paren == 0) {
+                        if (paren == 0 && triangle == 0) {
                             Token<CppTokenId> prev = ts.lookPreviousImportant();
                             if (prev != null && prev.id() == OPERATOR) {
                                 likeToArrayInitialization = false;
@@ -155,7 +207,7 @@ class StackEntry {
                     }
                     case GT: //(">", "operator"),
                     {
-                        if (paren == 0 && curly == 0) {
+                        if (paren == 0) {
                             Token<CppTokenId> prev = ts.lookPreviousImportant();
                             if (prev != null && prev.id() == OPERATOR) {
                                 likeToArrayInitialization = false;
@@ -168,7 +220,7 @@ class StackEntry {
                     }
                     case LT: //("<", "operator"),
                     {
-                        if (paren == 0 && curly == 0) {
+                        if (paren == 0) {
                             if (triangle == 0) {
                             Token<CppTokenId> prev = ts.lookPreviousImportant();
                                 if (prev != null && prev.id() == OPERATOR) {
@@ -186,7 +238,7 @@ class StackEntry {
                     case NAMESPACE: //("namespace", "keyword"), //C++
                     case CLASS: //("class", "keyword"), //C++
                     {
-                        if (paren == 0 && curly == 0 && triangle == 0) {
+                        if (paren == 0 && triangle == 0) {
                             importantKind = current.id();
                             likeToFunction = false;
                             return;
@@ -197,7 +249,7 @@ class StackEntry {
                     case ENUM: //("enum", "keyword"),
                     case UNION: //("union", "keyword"),
                     {
-                        if (paren == 0 && curly == 0 && triangle == 0) {
+                        if (paren == 0 && triangle == 0) {
                             if (!likeToFunction) {
                                 importantKind = current.id();
                                 return;
@@ -207,7 +259,7 @@ class StackEntry {
                     }
                     case EXTERN: //EXTERN("extern", "keyword"),
                     {
-                        if (paren == 0 && curly == 0 && triangle == 0) {
+                        if (paren == 0 && triangle == 0) {
                             if (!likeToFunction) {
                                 importantKind = CppTokenId.NAMESPACE;
                                 return;
@@ -224,9 +276,19 @@ class StackEntry {
                     case TRY: //("try", "keyword-directive"), // C++
                     case CATCH: //("catch", "keyword-directive"), //C++
                     {
-                        if (paren == 0 && curly == 0 && triangle == 0) {
+                        if (paren == 0 && triangle == 0) {
                             importantKind = current.id();
                             likeToFunction = false;
+                            return;
+                        }
+                        break;
+                    }
+                    case ARROW: // ->
+                    { 
+                        if (paren == 0 && triangle == 0) {
+                            importantKind = current.id();
+                            likeToFunction = false;
+                            lambdaIndent = lambdaIndent(ts);
                             return;
                         }
                         break;
@@ -237,6 +299,46 @@ class StackEntry {
             ts.moveIndex(i);
             ts.moveNext();
         }
+    }
+
+    private int lambdaIndent(ExtendedTokenSequence ts) {
+        int i = ts.index();
+        try {
+            while(true) {
+                if (!ts.movePrevious()){
+                    return 0;
+                }
+                if (ts.token().id() == NEW_LINE){
+                    while(true) {
+                        if (!ts.moveNext()) {
+                            return 0;
+                        }
+                        switch(ts.token().id()) {
+                            case WHITESPACE:
+                                break;
+                            default:
+                                int d = ts.getTokenPosition();
+                                return d;
+                        }
+                    }
+                }
+            }
+        } finally {
+            ts.moveIndex(i);
+            ts.moveNext();
+        }
+    }
+
+    public int getLambdaIndent(){
+        return lambdaIndent;
+    }
+
+    public int getLambdaParen(){
+        return lambdaParen;
+    }
+
+    public void setLambdaParen(int lambdaParen){
+        this.lambdaParen = lambdaParen;
     }
 
     public int getIndent(){

@@ -46,10 +46,10 @@ package org.netbeans.modules.localhistory.ui.view;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
 import java.util.Set;
 import java.util.logging.Level;
+import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
@@ -58,19 +58,18 @@ import org.netbeans.core.api.multiview.MultiViewPerspective;
 import org.netbeans.core.api.multiview.MultiViews;
 import org.netbeans.core.spi.multiview.MultiViewDescription;
 import org.netbeans.modules.versioning.spi.VCSContext;
-import org.netbeans.modules.versioning.spi.VersioningSupport;
-import org.netbeans.modules.versioning.spi.VersioningSystem;
 import org.netbeans.modules.versioning.ui.history.History;
-import org.netbeans.modules.versioning.util.Utils;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionRegistration;
 import org.openide.cookies.EditCookie;
+import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
+import org.openide.text.NbDocument;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -139,13 +138,32 @@ public class ShowHistoryAction extends NodeAction {
                     }
                 }
                 
+                final EditorCookie editorCookie = dataObject.getLookup().lookup(EditorCookie.class);
+                if(editorCookie != null) {
+                    Runnable r = new Runnable() {
+                        @Override
+                        public void run() {
+                            JEditorPane pane = NbDocument.findRecentEditorPane(editorCookie);
+                            if(pane != null) {
+                                // editor is oen, though we havent found a multiview => open the LH top component
+                                openLocalHistoryTC(files);
+                            }
+                        }
+                    };
+                    if(SwingUtilities.isEventDispatchThread()) {
+                        r.run();
+                    } else {
+                        SwingUtilities.invokeLater(r);
+                    }
+                }
+               
+                EditCookie editCookie = dataObject.getLookup().lookup(EditCookie.class);
+                if(editCookie != null) {
                 // no editor found, lets open it...
-                EditCookie cookie = dataObject.getLookup().lookup(EditCookie.class);
-                if(cookie != null) {
                     // editcookie might return imediately, so listen for the TC 
                     // to be opened and activate then
                     TopComponent.getRegistry().addPropertyChangeListener(new TCOpenedListener(dataObject, files));
-                    cookie.edit();
+                    editCookie.edit();
                     return;
                 }
             }
@@ -155,7 +173,7 @@ public class ShowHistoryAction extends NodeAction {
 
     private void openLocalHistoryTC(final File[] files) {
         // fallback opening a LHTopComponent
-        SwingUtilities.invokeLater(new Runnable() {
+        Runnable r = new Runnable() {
             @Override
             public void run() {
                 final HistoryTopComponent tc = new HistoryTopComponent(files);
@@ -163,7 +181,12 @@ public class ShowHistoryAction extends NodeAction {
                 tc.open();
                 tc.requestActive();                                
             }
-        });
+        };
+        if(SwingUtilities.isEventDispatchThread()) {
+            r.run();
+        } else {
+            SwingUtilities.invokeLater(r);
+        }
     }
 
     /**

@@ -91,6 +91,7 @@ import org.openide.util.TaskListener;
 /**
  * @author Tomas Mysik
  */
+@org.netbeans.api.annotations.common.SuppressWarnings("SE_BAD_FIELD_STORE")
 public final class RemoteConnectionsPanel extends JPanel implements ChangeListener, HelpCtx.Provider {
     private static final long serialVersionUID = -286975118754121236L;
 
@@ -668,7 +669,7 @@ public final class RemoteConnectionsPanel extends JPanel implements ChangeListen
         }
     }
 
-    public class ConfigListModel extends AbstractListModel {
+    public static final class ConfigListModel extends AbstractListModel {
         private static final long serialVersionUID = -1945188556310432557L;
 
         private final List<Configuration> data = new ArrayList<Configuration>();

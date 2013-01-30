@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.search.matcher;
 
+import java.io.InputStream;
 import java.util.Collection;
 import java.util.HashSet;
 import org.netbeans.api.search.SearchPattern;
@@ -143,7 +144,8 @@ public class DefaultMatcher extends AbstractMatcher {
             if (searchableExtensions.contains(fileObj.getExt().toLowerCase())) {
                 return true;
             } else {
-                return fileObj.getSize() <= MAX_UNRECOGNIZED_FILE_SIZE;
+                return fileObj.getSize() <= MAX_UNRECOGNIZED_FILE_SIZE ||
+                        hasTextContent(fileObj);
             }
         }
 
@@ -157,11 +159,64 @@ public class DefaultMatcher extends AbstractMatcher {
                     || subtype.equals("sgml") //NOI18N
                     || subtype.startsWith("xml-") //NOI18N
                     || subtype.endsWith("+xml") //NOI18N
-                    || subtype.startsWith("x-") //NOI18N
-                    && searchableXMimeTypes.contains(subtype.substring(2));
+                    || isApplicationXSource(subtype, fileObj);
         }
 
         return false;
+    }
+
+    /**
+     * Check whether this is a text file with MIME type application/x-something.
+     * See issue #88210.
+     *
+     * @param subtype of MIME type, after "application/", e.g. x-php
+     * @param fo File object containing the data.
+     */
+    private static boolean isApplicationXSource(String subtype, FileObject fo) {
+        return (subtype.startsWith("x-") //NOI18N
+                && (searchableXMimeTypes.contains(subtype.substring(2))
+                || hasTextContent(fo)));
+    }
+
+    /**
+     * Try to detect whether the content of the file is textual.
+     *
+     * @return True if the file seems to be a text file, false if it seems to be
+     * a binary file.
+     */
+    static boolean hasTextContent(FileObject fo) {
+        byte[] bytes = new byte[1024]; // check the first kB of the file
+        byte fe = (byte) 0xFE, ff = (byte) 0xFF, oo = (byte) 0x00,
+                ef = (byte) 0xEF, bf = (byte) 0xBF, bb = (byte) 0xBB;
+        try {
+            InputStream is = fo.getInputStream();
+            try {
+                int read = is.read(bytes);
+                if (read > 2 && bytes[0] == ef && bytes[1] == bb
+                        && bytes[2] == bf) {
+                    return true; //UTF-8 BOM
+                } else if (read > 1 && ((bytes[0] == ff) && bytes[1] == fe
+                        || (bytes[0] == fe && bytes[1] == ff))) {
+                    return true; // UTF-16
+                } else if (read > 3 && ((bytes[0] == oo && bytes[1] == oo
+                        && bytes[2] == fe && bytes[3] == ff)
+                        || (bytes[0] == ff && bytes[1] == fe
+                        && bytes[2] == oo && bytes[3] == oo))) {
+                    return true; //UTF-32
+                } else {
+                    for (int i = 0; i < read; i++) {
+                        if (bytes[i] == oo) {
+                            return false; // zero-byte found
+                        }
+                    }
+                    return true; // no zero-byte found
+                }
+            } finally {
+                is.close();
+            }
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     @Override

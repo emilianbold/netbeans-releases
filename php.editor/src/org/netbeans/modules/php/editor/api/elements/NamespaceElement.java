@@ -48,7 +48,7 @@ import org.netbeans.modules.php.editor.api.PhpElementKind;
  * @author Radek Matous
  */
 public interface NamespaceElement extends FullyQualifiedElement {
-    public final static PhpElementKind KIND = PhpElementKind.NAMESPACE_DECLARATION;
-    public static final String NAMESPACE_SEPARATOR = "\\";//NOI18N
-    public static final String DEFAULT_NAMESPACE_NAME = "";//NOI18N
+    PhpElementKind KIND = PhpElementKind.NAMESPACE_DECLARATION;
+    String NAMESPACE_SEPARATOR = "\\"; //NOI18N
+    String DEFAULT_NAMESPACE_NAME = ""; //NOI18N
 }

@@ -243,12 +243,13 @@ public final class ELTypeUtilities {
     public static boolean isSameMethod(CompilationContext info, Node methodNode, ExecutableElement method) {
         String image = methodNode.getImage();
         String methodName = method.getSimpleName().toString();
+        TypeMirror methodReturnType = method.getReturnType();
         if (image == null) {
             return false;
         }
         int methodParams = method.getParameters().size();
-        if (NodeUtil.isMethodCall(methodNode)
-                && (methodName.equals(image) || RefactoringUtil.getPropertyName(methodName).equals(image))) {
+        if (NodeUtil.isMethodCall(methodNode) &&
+                (methodName.equals(image) || RefactoringUtil.getPropertyName(methodName, methodReturnType).equals(image))) {
             //now we are in AstDotSuffix or AstBracketSuffix
             
             //lets check if the parameters are equal
@@ -261,13 +262,23 @@ public final class ELTypeUtilities {
         }
 
         if (methodNode instanceof AstDotSuffix
-                && (methodName.equals(image) || RefactoringUtil.getPropertyName(methodName).equals(image))) {
+                && (methodName.equals(image) || RefactoringUtil.getPropertyName(methodName, methodReturnType).equals(image))) {
 
-            // for validators params are passed automatically (they are not present in EL)
-            if (isValidatorMethod(info, method)) {
+            if (methodNode.jjtGetNumChildren() > 0) {
+                for (int i = 0; i < method.getParameters().size(); i++) {
+                    final VariableElement methodParameter = method.getParameters().get(i);
+                    final Node methodNodeParameter = methodNode.jjtGetChild(i);
+                    
+                    if (!isSameType(info, methodNodeParameter, methodParameter)) {
+                        return false;
+                    }
+                }
+            }
+            
+            if (image.equals(methodName)) {
                 return true;
             }
-
+            
             return method.isVarArgs()
                     ? method.getParameters().size() == 1
                     : method.getParameters().isEmpty();

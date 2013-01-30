@@ -31,6 +31,7 @@
 package org.netbeans.modules.java.hints.errors;
 
 import org.netbeans.modules.java.hints.infrastructure.HintsTestBase;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -90,5 +91,8 @@ public class OrigCreateMethodTest extends HintsTestBase {
     protected String testDataExtension() {
         return "org/netbeans/test/java/hints/OrigCreateMethodTest/";
     }
-    
+
+    static {
+        NbBundle.setBranding("test");
+    }
 }

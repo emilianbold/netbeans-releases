@@ -51,30 +51,41 @@ package org.netbeans.modules.php.editor.parser.astnodes;
 public class InfixExpression extends Expression {
 
     public enum OperatorType {
-        IS_IDENTICAL, // '==='
-        IS_NOT_IDENTICAL, // '!=='
-        IS_EQUAL, // '=='
-    	IS_NOT_EQUAL, // '!='
-        RGREATER, // '<'
-        IS_SMALLER_OR_EQUAL, // '<='
-        LGREATER, // '>'
-    	IS_GREATER_OR_EQUAL, // '>='
-        BOOL_OR, // '||'
-        BOOL_AND, // '&&'
-        STRING_OR, // 'or'
-    	STRING_AND, // 'and'
-        STRING_XOR, // 'xor'
-        OR, // '|'
-        AND, // '&'
-        XOR, // '^'
-        CONCAT, // '.'
-        PLUS, // '+'
-        MINUS, // '-'
-    	MUL, // '*'
-        DIV, // '/'
-        MOD, // '%'
-        SL, // '<<'
-    	SR // '>>'
+        IS_IDENTICAL("==="), //NOI18N
+        IS_NOT_IDENTICAL("!=="), //NOI18N
+        IS_EQUAL("=="), //NOI18N
+    	IS_NOT_EQUAL("!="), //NOI18N
+        RGREATER("<"), //NOI18N
+        IS_SMALLER_OR_EQUAL("<="), //NOI18N
+        LGREATER(">"), //NOI18N
+    	IS_GREATER_OR_EQUAL(">="), //NOI18N
+        BOOL_OR("||"), //NOI18N
+        BOOL_AND("&&"), //NOI18N
+        STRING_OR("or"), //NOI18N
+    	STRING_AND("and"), //NOI18N
+        STRING_XOR("xor"), //NOI18N
+        OR("|"), //NOI18N
+        AND("&"), //NOI18N
+        XOR("^"), //NOI18N
+        CONCAT("."), //NOI18N
+        PLUS("+"), //NOI18N
+        MINUS("-"), //NOI18N
+    	MUL("*"), //NOI18N
+        DIV("/"), //NOI18N
+        MOD("%"), //NOI18N
+        SL("<<"), //NOI18N
+    	SR(">>"); //NOI18N
+
+        private final String operatorSign;
+
+        private OperatorType(final String operatorSign) {
+            this.operatorSign = operatorSign;
+        }
+
+        @Override
+        public String toString() {
+            return operatorSign;
+        }
     }
 
     private Expression left;
@@ -127,3 +138,4 @@ public class InfixExpression extends Expression {
         visitor.visit(this);
     }
 }
+

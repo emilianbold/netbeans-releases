@@ -102,8 +102,8 @@ public class PojsonLoad {
     public <T1> T1 update(InputStream is, T1 object) throws IOException {
         Handlers.PojoInfo i = new Handlers.PojoInfo(object);
         Handlers.Generic h = new Handlers.Generic(i);
-        Parser.parse(is, h);        
-        return (T1)i.getValue();       
+        Parser.parse(is, h);
+        return (T1) i.getValue();
     }
         
     public <T1> T1 load(String s, Class<T1> clazz) {

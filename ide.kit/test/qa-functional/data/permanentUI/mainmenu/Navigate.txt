@@ -3,14 +3,12 @@
 Go to File...                    F
 Go to Type...                    T
 Go to Symbol...                  y
-Go to Function or Variable...    V
 Go to Spring Bean...             B
-==============================
 Go to Test                       G
-Go to Rails Action or View       R
-Go to Grails Controller          t
+Go to Grails Domain class
+Go to Grails Controller
 Go to Grails View                e
-Go to Previous Document          r
+Go to Previous Document
 ==============================
 Go to Source                     S
 Go to Declaration                D
@@ -23,8 +21,8 @@ Forward                          w
 ==============================
 Go to Line...                    L
 Toggle Bookmark                  k
-Next Bookmark                    o
-Previous Bookmark                u
+Bookmark History Popup Next
+Bookmark History Popup Previous
 ==============================
 Next Error                       x
 Previous Error                   P

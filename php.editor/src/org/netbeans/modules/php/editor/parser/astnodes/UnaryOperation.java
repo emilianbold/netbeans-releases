@@ -51,10 +51,21 @@ package org.netbeans.modules.php.editor.parser.astnodes;
 public class UnaryOperation extends Expression {
 
     public enum Operator {
-        PLUS, // '+'
-        MINUS, // '-'
-        NOT, // '!'
-    	TILDA // '~'
+        PLUS("+"), //NOI18N
+        MINUS("-"), //NOI18N
+        NOT("!"), //NOI18N
+    	TILDA("~"); //NOI18N
+
+        private final String operatorSign;
+
+        private Operator(String operatorSign) {
+            this.operatorSign = operatorSign;
+        }
+
+        @Override
+        public String toString() {
+            return operatorSign;
+        }
     }
 
     private Expression expression;

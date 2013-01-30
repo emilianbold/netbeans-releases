@@ -45,6 +45,7 @@ package org.netbeans.modules.parsing.impl.indexing;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Map;
+import java.util.concurrent.Callable;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.parsing.spi.Parser;
@@ -80,12 +81,27 @@ public abstract class SPIAccessor {
 
     public abstract Indexable create (final IndexableImpl delegate);
 
+    @NonNull
     public abstract Context createContext(
-            FileObject indexFolder,
-            URL rootURL,
-            String indexerName,
+            @NonNull FileObject indexFolder,
+            @NonNull URL rootURL,
+            @NonNull String indexerName,
             int indexerVersion,
-            IndexFactoryImpl factory,
+            @NullAllowed IndexFactoryImpl factory,
+            boolean followUpJob,
+            boolean checkForEditorModifications,
+            boolean sourceForBinaryRoot,
+            @NonNull final SuspendStatus suspendedStatus,
+            @NullAllowed final CancelRequest cancelRequest,
+            @NullAllowed final LogContext logContext) throws IOException;
+
+    @NonNull
+    public abstract Context createContext(
+            @NonNull final Callable<FileObject> indexFolderFactory,
+            @NonNull final URL rootURL,
+            @NonNull final String indexerName,
+            int indexerVersion,
+            @NullAllowed final IndexFactoryImpl factory,
             boolean followUpJob,
             boolean checkForEditorModifications,
             boolean sourceForBinaryRoot,
@@ -130,4 +146,7 @@ public abstract class SPIAccessor {
 
     public abstract Object getProperty(@NonNull Context context, @NonNull String propName);
 
+    public abstract boolean isTypeOf (@NonNull Indexable indexable, @NonNull String mimeType);
+
+    public abstract FileObject getFileObject(@NonNull Indexable indexable);
 }

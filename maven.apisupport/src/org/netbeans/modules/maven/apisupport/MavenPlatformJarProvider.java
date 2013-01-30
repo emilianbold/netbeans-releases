@@ -64,6 +64,7 @@ import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.embedder.MavenEmbedder;
 import org.netbeans.spi.project.ProjectServiceProvider;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Cancellable;
 import org.openide.util.NbBundle.Messages;
 
@@ -89,7 +90,7 @@ public class MavenPlatformJarProvider implements PlatformJarProvider {
             Project parent = MavenNbModuleImpl.findAppProject(project);
             app = parent != null ? parent.getLookup().lookup(NbMavenProject.class) : null;
             if (app == null) { // #202946: standalone or suite component
-                File ide = MavenNbModuleImpl.findIDEInstallation(nbmp);
+                File ide = MavenNbModuleImpl.findIDEInstallation(project);
                 return ide != null ? allModulesIn(ide) : Collections.<File>emptySet();
             }
         } else {
@@ -102,19 +103,24 @@ public class MavenPlatformJarProvider implements PlatformJarProvider {
             String type = dep.getType();
             if ("jar".equals(type)) {
                 // XXX how to eliminate non-module deps? does it matter?
-                if (dep.isRelease()) {
+                if (!dep.isSnapshot()) {
                     arts.add(dep);
                 } // else a snapshot is probably from this "suite"... crude heuristic, rethink
             } else if ("nbm-file".equals(type)) { // usually via org.netbeans.cluster:*:*:pom
                 arts.add(online.createArtifact(dep.getGroupId(), dep.getArtifactId(), dep.getVersion(), "jar"));
             }
         }
-        download(arts, online, mp.getRemoteArtifactRepositories());
-        Set<File> jars = new LinkedHashSet<File>();
-        for (Artifact art : arts) {
-            jars.add(art.getFile());
+        try {
+            download(arts, online, mp.getRemoteArtifactRepositories());
+        } finally {
+            Set<File> jars = new LinkedHashSet<File>();
+            for (Artifact art : arts) {
+                if (art.getFile() != null && art.getFile().exists()) {
+                    jars.add(FileUtil.normalizeFile(art.getFile()));
+                }
+            }
+            return jars;
         }
-        return jars;
         // XXX as a fallback could use findPlatformFolder and just scan for $plaf/*/{lib,core,modules}/{,locale/}*.jar
     }
 
@@ -144,6 +150,11 @@ public class MavenPlatformJarProvider implements PlatformJarProvider {
                     }
                     try {
                         online.resolve(art, remoteRepos, online.getLocalRepository());
+                    } catch (ThreadDeath td) {
+                    } catch (IllegalStateException ise) { //download interrupted in dependent thread. #213812
+                        if (!(ise.getCause() instanceof ThreadDeath)) {
+                            throw ise;
+                        }
                     } catch (AbstractArtifactResolutionException x) {
                         throw new IOException(x);
                     }

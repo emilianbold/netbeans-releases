@@ -45,20 +45,15 @@ import java.net.URL;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Logger;
-import java.util.prefs.Preferences;
 import javax.swing.text.Document;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.csl.api.ColoringAttributes;
 import org.netbeans.modules.csl.api.CompletionProposal;
 import org.netbeans.modules.csl.api.DeclarationFinder.DeclarationLocation;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.StructureItem;
 import org.netbeans.modules.css.editor.module.spi.*;
-import org.netbeans.modules.css.editor.properties.parser.GrammarParser;
-import org.netbeans.modules.css.editor.properties.parser.PropertyModel;
 import org.netbeans.modules.css.lib.api.NodeVisitor;
+import org.netbeans.modules.css.lib.api.properties.PropertyDefinition;
 import org.netbeans.modules.web.common.api.Pair;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
@@ -70,10 +65,6 @@ import org.openide.util.Lookup;
 public class CssModuleSupport {
 
     private static final Logger LOGGER = Logger.getLogger(CssModuleSupport.class.getSimpleName());
-    //TODO possibly add support for refreshing the cached data based on css module changes in the lookup
-    private static final AtomicReference<Map<String, Collection<Property>>> PROPERTIES_MAP = new AtomicReference<Map<String, Collection<Property>>>();
-    private static final AtomicReference<Collection<Property>> PROPERTIES = new AtomicReference<Collection<Property>>();
-    private static final Map<String, PropertyModel> PROPERTY_MODELS = new HashMap<String, PropertyModel>();
 
     public static Collection<? extends CssEditorModule> getModules() {
         return Lookup.getDefault().lookupAll(CssEditorModule.class);
@@ -233,167 +224,79 @@ public class CssModuleSupport {
 
     }
     
-    //hotfix for Bug 214819 - Completion list is corrupted after IDE upgrade 
-    //http://netbeans.org/bugzilla/show_bug.cgi?id=214819
-    //o.n.m.javafx2.editor.css.JavaFXCSSModule
-    private static final String JAVA_FX_CSS_EDITOR_MODULE_NAME = "javafx2_css"; //NOI18N
-    
-    private static Collection<Property> NON_JAVA_FX_PROPERTIES;
-    
-    public static boolean isJavaFxCssFile(FileObject file) {
-        if(file == null) {
-            return false;
-        }
-        
-        Project project = FileOwnerQuery.getOwner(file);
-        if(project == null) {
-            return false;
-        }
-        
-        return isJavaFxProject(project);
-    }
-    
-    private static boolean isJavaFxProject(Project project) {
-        //hotfix for Bug 214819 - Completion list is corrupted after IDE upgrade 
-        //http://netbeans.org/bugzilla/show_bug.cgi?id=214819
-        Preferences prefs = ProjectUtils.getPreferences(project, Project.class, false);
-        String isFX = prefs.get("issue214819_fx_enabled", "false"); //NOI18N
-        if(isFX != null && isFX.equals("true")) {
-            return true;
-        }
-        return false;
-    }
-    
-    /**
-     * 
-     * @param filter_out_java_fx if true the returned collection won't contain
-     *                           properties defined by the javafx2.editor module.
-     */
-    public static synchronized Collection<Property> getProperties(boolean filter_out_java_fx) {
-        if(!filter_out_java_fx) {
-            return getProperties();
-        }
-
-        //better cache the non-java fx properties
-        if (NON_JAVA_FX_PROPERTIES == null) {
-            NON_JAVA_FX_PROPERTIES = new ArrayList<Property>();
-            for (Property p : getProperties()) {
-                if (!JAVA_FX_CSS_EDITOR_MODULE_NAME.equals(p.getCssModule().getName())) {
-                    NON_JAVA_FX_PROPERTIES.add(p);
-                }
-            }
-        }
-
-        return NON_JAVA_FX_PROPERTIES;
-    }
-    
-    public static Collection<Property> getProperties(FileObject file) {
-        return getProperties(!isJavaFxCssFile(file));
-    }
-    
-    public static Collection<Property> getProperties(FeatureContext featureContext) {
-        return getProperties(featureContext.getSource().getFileObject());
-    }
-
-    public static PropertyModel getPropertyModel(String name, FileObject file) {
-        PropertyModel pm = getPropertyModel(name);
-        if(pm == null) {
-            return null;
-        }
-        
-        Property p = pm.getProperty();
-        return getProperties(file).contains(p) ? pm : null; 
-    }
-    
-    //eof hotfix
-
-    public static Collection<Property> getProperties() {
-        synchronized (PROPERTIES) {
-            if(PROPERTIES.get() == null) {
-                PROPERTIES.set(createAllPropertiesCollection());
-            }
-            return PROPERTIES.get();
-        }
-    }
-    
-    /**
-     * @return map of property name to collection of Property impls.
-     */
-    public static Map<String, Collection<Property>> getPropertiesMap() {
-        synchronized (PROPERTIES_MAP) {
-            if(PROPERTIES_MAP.get() == null) {
-                PROPERTIES_MAP.set(loadProperties());
-            }
-            return PROPERTIES_MAP.get();
-        }
-    }
-    
-    private static Collection<Property> createAllPropertiesCollection() {
-        Collection<Property> all = new LinkedList<Property>();
-        for(Collection<Property> props : getPropertiesMap().values()) {
-            all.addAll(props);
-        }
-        return all;
-    }
-
-    //property name to set of Property impls - one name may be mapped to more properties
-    private static Map<String, Collection<Property>> loadProperties() {
-        Map<String, Collection<Property>> all = new HashMap<String, Collection<Property>>();
-        for (CssEditorModule module : getModules()) {
-            for (Property pd : module.getProperties()) {
-                String propertyName = pd.getName();
-                Collection<Property> props = all.get(propertyName);
-                if(props == null) {
-                    props = new LinkedList<Property>();
-                    all.put(propertyName, props);
-                }
-                if(!GrammarParser.isArtificialElementName(propertyName)) {
-                    //standart (visible) properties cannot be duplicated
-                    if(!props.isEmpty()) {
-                        LOGGER.warning(String.format("Duplicate property %s found, "
-                                + "offending css module: %s", pd.getName(), pd.getCssModule())); //NOI18N
-                        for(Property p : props) {
-                            LOGGER.warning(String.format("Existing property found"
-                                + " in css module: %s", p.getCssModule())); //NOI18N
-                        }
-                    }
-                }
-                props.add(pd);
-            }
-        }
-        return all;
-    }
-
-    public static Collection<Property> getProperties(String propertyName) {
-        return getProperties(propertyName, false);
-    }
-    
-    public static Collection<Property> getProperties(String propertyName, boolean allowToGetInvisibleProperties) {
-        //try to resolve the refered element name with the at-sign prefix so
-        //the property appearance may contain link to appearance, which in fact
-        //will be resolved as the @appearance property:
-        //
-        //appearance=<appearance> |normal
-        //@appearance=...
-        //
-        StringBuilder sb = new StringBuilder().append(GrammarParser.INVISIBLE_PROPERTY_PREFIX).append(propertyName);
-        Collection<Property> invisibleProperty = getPropertiesMap().get(sb.toString());
-        
-        return allowToGetInvisibleProperties && invisibleProperty != null ? invisibleProperty : PROPERTIES_MAP.get().get(propertyName);
-    }
-    
-    public static PropertyModel getPropertyModel(String name) {
-        synchronized (PROPERTY_MODELS) {
-            PropertyModel model = PROPERTY_MODELS.get(name);
-            if (model == null) {
-                Collection<Property> properties = getProperties(name);
-                model = properties != null ? new PropertyModel(name, properties) : null;
-                PROPERTY_MODELS.put(name, model);
-            }
-            return model;
-        }
-
-    }
+//    //hotfix for Bug 214819 - Completion list is corrupted after IDE upgrade 
+//    //http://netbeans.org/bugzilla/show_bug.cgi?id=214819
+//    //o.n.m.javafx2.editor.css.JavaFXCSSModule
+//    private static final String JAVA_FX_CSS_EDITOR_MODULE_NAME = "javafx2_css"; //NOI18N
+//    
+//    private static Collection<Property> NON_JAVA_FX_PROPERTIES;
+//    
+//    public static boolean isJavaFxCssFile(FileObject file) {
+//        if(file == null) {
+//            return false;
+//        }
+//        
+//        Project project = FileOwnerQuery.getOwner(file);
+//        if(project == null) {
+//            return false;
+//        }
+//        
+//        return isJavaFxProject(project);
+//    }
+//    
+//    private static boolean isJavaFxProject(Project project) {
+//        //hotfix for Bug 214819 - Completion list is corrupted after IDE upgrade 
+//        //http://netbeans.org/bugzilla/show_bug.cgi?id=214819
+//        Preferences prefs = ProjectUtils.getPreferences(project, Project.class, false);
+//        String isFX = prefs.get("issue214819_fx_enabled", "false"); //NOI18N
+//        if(isFX != null && isFX.equals("true")) {
+//            return true;
+//        }
+//        return false;
+//    }
+//    
+//    /**
+//     * 
+//     * @param filter_out_java_fx if true the returned collection won't contain
+//     *                           properties defined by the javafx2.editor module.
+//     */
+//    public static synchronized Collection<Property> getProperties(boolean filter_out_java_fx) {
+//        if(!filter_out_java_fx) {
+//            return getProperties();
+//        }
+//
+//        //better cache the non-java fx properties
+//        if (NON_JAVA_FX_PROPERTIES == null) {
+//            NON_JAVA_FX_PROPERTIES = new ArrayList<Property>();
+//            for (Property p : getProperties()) {
+//                if (!JAVA_FX_CSS_EDITOR_MODULE_NAME.equals(p.getCssModule().getName())) {
+//                    NON_JAVA_FX_PROPERTIES.add(p);
+//                }
+//            }
+//        }
+//
+//        return NON_JAVA_FX_PROPERTIES;
+//    }
+//    
+//    public static Collection<Property> getProperties(FileObject file) {
+//        return getProperties(!isJavaFxCssFile(file));
+//    }
+//    
+//    public static Collection<Property> getProperties(FeatureContext featureContext) {
+//        return getProperties(featureContext.getSource().getFileObject());
+//    }
+//
+//    public static PropertyModel getPropertyModel(String name, FileObject file) {
+//        PropertyModel pm = getPropertyModel(name);
+//        if(pm == null) {
+//            return null;
+//        }
+//        
+//        Property p = pm.getProperty();
+//        return getProperties(file).contains(p) ? pm : null; 
+//    }
+//    
+//    //eof hotfix
 
     public static List<CompletionProposal> getCompletionProposals(CompletionContext context) {
         List<CompletionProposal> all = new ArrayList<CompletionProposal>();
@@ -403,12 +306,10 @@ public class CssModuleSupport {
         return all;
     }
 
-    //todo: cache results of most of the methods below!!!!!!!!!!!!!!!
-    //TODO: the pseudo elements and classes should be context aware, not simple strings ... later
-    public static Collection<String> getPseudoClasses() {
+    public static Collection<String> getPseudoClasses(EditorFeatureContext context) {
         Collection<String> all = new HashSet<String>();
         for (CssEditorModule module : getModules()) {
-            Collection<String> vals = module.getPseudoClasses();
+            Collection<String> vals = module.getPseudoClasses(context);
             if (vals != null) {
                 all.addAll(vals);
             }
@@ -416,10 +317,10 @@ public class CssModuleSupport {
         return all;
     }
 
-    public static Collection<String> getPseudoElements() {
+    public static Collection<String> getPseudoElements(EditorFeatureContext context) {
         Collection<String> all = new HashSet<String>();
         for (CssEditorModule module : getModules()) {
-            Collection<String> vals = module.getPseudoElements();
+            Collection<String> vals = module.getPseudoElements(context);
             if (vals != null) {
                 all.addAll(vals);
             }
@@ -427,7 +328,7 @@ public class CssModuleSupport {
         return all;
     }
 
-    public static SortedSet<Browser> getBrowsers() {
+    public static SortedSet<Browser> getBrowsers(FileObject file) {
         //sort by browser name
         SortedSet<Browser> all = new TreeSet<Browser>(new Comparator<Browser>() {
 
@@ -437,7 +338,7 @@ public class CssModuleSupport {
             }
         });
         for (CssEditorModule module : getModules()) {
-            Collection<Browser> extraBrowsers = module.getExtraBrowsers();
+            Collection<Browser> extraBrowsers = module.getExtraBrowsers(file);
             if (extraBrowsers != null) {
                 all.addAll(extraBrowsers);
             }
@@ -465,10 +366,10 @@ public class CssModuleSupport {
         return new HelpResolver() {
 
             @Override
-            public String getHelp(Property property) {
+            public String getHelp(FileObject context, PropertyDefinition property) {
                 StringBuilder sb = new StringBuilder();
-                for (HelpResolver resolver : getSortedHelpResolvers()) {
-                    String help = resolver.getHelp(property);
+                for (HelpResolver resolver : getSortedHelpResolvers(context)) {
+                    String help = resolver.getHelp(context, property);
                     if (help != null) {
                         sb.append(help);
                     }
@@ -477,9 +378,9 @@ public class CssModuleSupport {
             }
 
             @Override
-            public URL resolveLink(Property property, String link) {
-                for (HelpResolver resolver : getSortedHelpResolvers()) {
-                    URL url = resolver.resolveLink(property, link);
+            public URL resolveLink(FileObject context, PropertyDefinition property, String link) {
+                for (HelpResolver resolver : getSortedHelpResolvers(context)) {
+                    URL url = resolver.resolveLink(context, property, link);
                     if (url != null) {
                         return url;
                     }
@@ -495,10 +396,10 @@ public class CssModuleSupport {
 
     }
 
-    private static Collection<HelpResolver> getSortedHelpResolvers() {
+    private static Collection<HelpResolver> getSortedHelpResolvers(FileObject file) {
         List<HelpResolver> list = new ArrayList<HelpResolver>();
         for (CssEditorModule module : getModules()) {
-            Collection<HelpResolver> resolvers = module.getHelpResolvers();
+            Collection<HelpResolver> resolvers = module.getHelpResolvers(file);
             if (resolvers != null) {
                 list.addAll(resolvers);
             }

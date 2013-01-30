@@ -56,7 +56,7 @@ public class TesseractTestCase extends MakeProjectTestBase {
     }
 
     @Test
-    public void testTesseract(){
+    public void testTesseract() throws Exception {
         performTestProject("http://tesseract-ocr.googlecode.com/files/tesseract-2.03.tar.gz", null, false, "");
     }
 }

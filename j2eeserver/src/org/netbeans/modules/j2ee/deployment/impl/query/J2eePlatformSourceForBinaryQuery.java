@@ -75,6 +75,7 @@ import org.openide.util.WeakListeners;
  * Finds the locations of sources for various libraries.
  * @since 1.5
  */
+@org.netbeans.api.annotations.common.SuppressWarnings("DMI_COLLECTION_OF_URLS") // justification="File URLs only"
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation.class)
 public class J2eePlatformSourceForBinaryQuery implements SourceForBinaryQueryImplementation2 {
 
@@ -84,6 +85,7 @@ public class J2eePlatformSourceForBinaryQuery implements SourceForBinaryQueryImp
     /** Default constructor for lookup. */
     public J2eePlatformSourceForBinaryQuery() {}
 
+    @org.netbeans.api.annotations.common.SuppressWarnings("DMI_BLOCKING_METHODS_ON_URL") // justification="File URLs only"
     public SourceForBinaryQueryImplementation2.Result findSourceRoots2 (URL binaryRoot) {
         SourceForBinaryQueryImplementation2.Result res = this.cache.get (binaryRoot);
         if (res != null) {

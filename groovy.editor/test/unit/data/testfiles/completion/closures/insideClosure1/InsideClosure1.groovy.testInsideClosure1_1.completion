@@ -159,12 +159,12 @@ CLASS      GrabExclude                                null
 CLASS      GrabResolver                               null
 CLASS      Grapes                                     null
 CLASS      GregorianCalendar                          null
+CLASS      GroovyAssert                               null
 CLASS      GroovyCallable                             null
 CLASS      GroovyClassLoader                          null
 CLASS      GroovyCodeSource                           null
 CLASS      GroovyCollections                          null
 CLASS      GroovyInterceptable                        null
-CLASS      GroovyLog                                  null
 CLASS      GroovyLogTestCase                          null
 CLASS      GroovyMBean                                null
 CLASS      GroovyObject                               null
@@ -201,7 +201,6 @@ CLASS      IllegalMonitorStateException               null
 CLASS      IllegalPropertyAccessException             null
 CLASS      IllegalStateException                      null
 CLASS      IllegalThreadStateException                null
-CLASS      Immutable                                  null
 CLASS      IncompatibleClassChangeError               null
 CLASS      IncorrectClosureArgumentsExcep             null
 CLASS      IndentPrinter                              null
@@ -242,6 +241,7 @@ CLASS      LinkedList                                 null
 CLASS      List                                       null
 CLASS      ListIterator                               null
 CLASS      ListResourceBundle                         null
+CLASS      ListWithDefault                            null
 CLASS      Locale                                     null
 CLASS      Long                                       null
 CLASS      MalformedURLException                      null
@@ -317,7 +317,6 @@ CLASS      OutputStream                               null
 CLASS      OutputStreamWriter                         null
 CLASS      Override                                   null
 CLASS      Package                                    null
-CLASS      PackageScope                               null
 CLASS      ParameterArray                             null
 CLASS      PasswordAuthentication                     null
 CLASS      PermutationGenerator                       null
@@ -403,6 +402,7 @@ CLASS      StringBufferInputStream                    null
 CLASS      StringBuilder                              null
 CLASS      StringIndexOutOfBoundsExceptio             null
 CLASS      StringReader                               null
+CLASS      StringTestUtil                             null
 CLASS      StringTokenizer                            null
 CLASS      StringWriter                               null
 CLASS      StringWriterIOException                    null
@@ -456,7 +456,6 @@ CLASS      XmlParser                                  null
 CLASS      XmlSlurper                                 null
 FIELD      binding                                    Binding
 FIELD      class                                      Class
-FIELD      metaClass                                  MetaClass
 VARIABLE   it                                         Object
 KEYWORD    assert                                     null
 KEYWORD    boolean                                    null

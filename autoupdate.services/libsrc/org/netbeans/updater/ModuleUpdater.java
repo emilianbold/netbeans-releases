@@ -240,14 +240,14 @@ public final class ModuleUpdater extends Thread {
         if (files2clustersForInstall == null) {
             processFilesForInstall ();
         }
-        return files2clustersForInstall.get (cluster);
+        return files2clustersForInstall == null ? null : files2clustersForInstall.get(cluster);
     }
 
     private Collection<File> getClustersForInstall () {
         if (files2clustersForInstall == null) {
             processFilesForInstall ();
         }
-        return files2clustersForInstall.keySet ();
+        return files2clustersForInstall == null ? null : files2clustersForInstall.keySet();
     }
 
     /** Determines size of unpacked modules */
@@ -328,6 +328,8 @@ public final class ModuleUpdater extends Thread {
                 UpdateTracking.Version version;
                 UpdateTracking.Module modtrack;
                 
+                context.setLabel( Localization.getBrandedString("CTL_UnpackingFile") + "  " + nbm.getName() ); //NOI18N
+                XMLUtil.LOG.info("780: " + Localization.getBrandedString("CTL_UnpackingFile") + " " + nbm.getName()); //NOI18N
                 context.unpackingIsRunning ();
                 
                 ModuleUpdate mu;
@@ -363,7 +365,6 @@ public final class ModuleUpdater extends Thread {
                 //System.gc();
 
                 hasMainClass = false;
-                context.setLabel( Localization.getBrandedString("CTL_UnpackingFile") + "  " + nbm.getName() ); //NOI18N
                 context.setProgressValue( bytesRead );
                 JarFile jarFile = null;
 
@@ -396,122 +397,134 @@ public final class ModuleUpdater extends Thread {
                         long crc = UpdateTracking.getFileCRC(destFile);
                         version.addFileWithCrc("modules/" + osgiJar.getName(), Long.toString(crc));
                         //create config/Modules/cnb.xml
+                        File configDir = new File (new File (cluster, ModuleDeactivator.CONFIG), ModuleDeactivator.MODULES); // NOI18N
+                        String configFileName = symbolicName.replace ('.', '-') + ".xml";
+                        File configFile = new File(configDir, configFileName);
+                        if (configFile.exists()) {
+                            long configFileCRC = UpdateTracking.getFileCRC(configFile);
+                            version.addFileWithCrc("config/Modules/" + configFileName, Long.toString(configFileCRC));
+                        }
 
                         context.setProgressValue(bytesRead);
                         modtrack.setOSGi(true);
                     } else {
                         //NBM
-                    List <String> executableFiles = readExecutableFilesList(jarFile);
-                    List <File> filesToChmod = new ArrayList <File> ();
-                    while( entries.hasMoreElements() ) {
-                        JarEntry entry = entries.nextElement();
-                        checkStop();
-                        if ( entry.getName().startsWith( UPDATE_NETBEANS_DIR ) ) {
-                            if (! entry.isDirectory ()) {
-                                if (AUTOUPDATE_UPDATER_JAR_PATH.equals (entry.getName ()) ||
-                                        entry.toString().matches(AUTOUPDATE_UPDATER_JAR_LOCALE_PATTERN)) {
-                                    // skip updater.jar
-                                    continue;
-                                }
-                                String pathTo = entry.getName ().substring (UPDATE_NETBEANS_DIR.length () + 1);
-                                // path without netbeans prefix
-                                File destFile = new File (cluster, entry.getName ().substring (UPDATE_NETBEANS_DIR.length()));
-                                if ( destFile.exists() ) {
-                                    File bckFile = new File( getBackupDirectory (cluster), entry.getName() );
-                                    bckFile.getParentFile ().mkdirs ();
-                                    copyStreams( new FileInputStream( destFile ), context.createOS( bckFile ), -1 );
-                                    XMLUtil.LOG.info("Backup file " + destFile + " to " + bckFile);
-                                    if (!destFile.delete() && isWindows()) {
-                                        trickyDeleteOnWindows(destFile);
-                                    } else {
-                                        XMLUtil.LOG.info("File " + destFile + " deleted.");
+                        List <String> executableFiles = readExecutableFilesList(jarFile);
+                        List <File> filesToChmod = new ArrayList <File> ();
+                        while( entries.hasMoreElements() ) {
+                            JarEntry entry = entries.nextElement();
+                            checkStop();
+                            if ( entry.getName().startsWith( UPDATE_NETBEANS_DIR ) ) {
+                                if (! entry.isDirectory ()) {
+                                    String pathTo = entry.getName().substring(UPDATE_NETBEANS_DIR.length() + 1);
+                                    File destFile = new File (cluster, pathTo);
+                                    if (AUTOUPDATE_UPDATER_JAR_PATH.equals (entry.getName ()) ||
+                                            entry.toString().matches(AUTOUPDATE_UPDATER_JAR_LOCALE_PATTERN)) {
+                                        
+                                        // #220807 - NoClassDefFoundError: updater/XMLUtil
+                                        version.addFileWithCrc(pathTo, Long.toString(destFile.exists() ? UpdateTracking.getFileCRC(destFile) : 0));
+                                        
+                                        // skip updater.jar
+                                        continue;
                                     }
-                                } else {
-                                    destFile.getParentFile ().mkdirs ();
-                                }
-                                
-                                long crc;
-                                if (pathTo.endsWith(".external")) {
-                                    File downloaded = new File(destFile.getParentFile(), destFile.getName().substring(0, destFile.getName().lastIndexOf(".external")));
-                                    final InputStream spec = jarFile.getInputStream(entry);
-                                    pathTo = pathTo.substring(0, pathTo.length() - ".external".length());
-                                    long expectedCRC = externalDownload(spec, nbm);
-                                    File external = new File(nbm + "." + Long.toHexString(expectedCRC));
-                                    InputStream is = new FileInputStream(external);
-                                    try {
-                                        spec.close();
-                                        OutputStream os = context.createOS(downloaded);
-                                        try {
-                                            bytesRead = copyStreams(is, os, -1);
-                                            XMLUtil.LOG.info("Copied external file " + external + " to " + downloaded);
-                                        } finally {
-                                            os.close();
+                                    // path without netbeans prefix
+                                    if ( destFile.exists() ) {
+                                        File bckFile = new File( getBackupDirectory (cluster), entry.getName() );
+                                        bckFile.getParentFile ().mkdirs ();
+                                        copyStreams( new FileInputStream( destFile ), context.createOS( bckFile ), -1 );
+                                        XMLUtil.LOG.info("Backup file " + destFile + " to " + bckFile);
+                                        if (!destFile.delete() && isWindows()) {
+                                            trickyDeleteOnWindows(destFile);
+                                        } else {
+                                            XMLUtil.LOG.info("File " + destFile + " deleted.");
                                         }
-                                    } finally {
-                                        external.delete();
-                                        XMLUtil.LOG.info("File " + external + " deleted.");
-                                        is.close();
+                                    } else {
+                                        destFile.getParentFile ().mkdirs ();
                                     }
-                                    crc = UpdateTracking.getFileCRC(downloaded);
-                                    if (crc != expectedCRC) {
-                                        downloaded.delete();
-                                        XMLUtil.LOG.info("File " + downloaded + " deleted.");
-                                        throw new IOException("Wrong CRC for " + downloaded);
+
+                                    long crc;
+                                    if (pathTo.endsWith(".external")) {
+                                        File downloaded = new File(destFile.getParentFile(), destFile.getName().substring(0, destFile.getName().lastIndexOf(".external")));
+                                        final InputStream spec = jarFile.getInputStream(entry);
+                                        pathTo = pathTo.substring(0, pathTo.length() - ".external".length());
+                                        long expectedCRC = externalDownload(spec, nbm);
+                                        File external = new File(nbm + "." + Long.toHexString(expectedCRC));
+                                        InputStream is = new FileInputStream(external);
+                                        try {
+                                            spec.close();
+                                            OutputStream os = context.createOS(downloaded);
+                                            try {
+                                                XMLUtil.LOG.info("810: " + Localization.getBrandedString("CTL_DownloadingFile") + " " + downloaded); //NOI18N
+                                                bytesRead = copyStreams(is, os, -1);
+                                                XMLUtil.LOG.info("Copied external file " + external + " to " + downloaded);
+                                            } finally {
+                                                os.close();
+                                            }
+                                        } finally {
+                                            external.delete();
+                                            XMLUtil.LOG.info("File " + external + " deleted.");
+                                            is.close();
+                                        }
+                                        crc = UpdateTracking.getFileCRC(downloaded);
+                                        if (crc != expectedCRC) {
+                                            downloaded.delete();
+                                            XMLUtil.LOG.info("File " + downloaded + " deleted.");
+                                            throw new IOException("Wrong CRC for " + downloaded);
+                                        }
+                                    } else {
+                                        bytesRead = copyStreams( jarFile.getInputStream( entry ), context.createOS( destFile ), bytesRead );
+                                        XMLUtil.LOG.info("Copied file " + entry + " to " + destFile);
+                                        crc = entry.getCrc();
                                     }
-                                } else {
-                                    bytesRead = copyStreams( jarFile.getInputStream( entry ), context.createOS( destFile ), bytesRead );
-                                    XMLUtil.LOG.info("Copied file " + entry + " to " + destFile);
-                                    crc = entry.getCrc();
+                                    if(executableFiles.contains(pathTo)) {
+                                        filesToChmod.add(destFile);
+                                    }
+                                    if(pathTo.endsWith(".jar.pack.gz") &&
+                                            jarFile.getEntry(entry.getName().substring(0, entry.getName().lastIndexOf(".pack.gz")))==null) {
+                                         //check if file.jar.pack.gz does not exit for file.jar - then unpack current .pack.gz file
+                                        File unpacked = new File(destFile.getParentFile(), destFile.getName().substring(0, destFile.getName().lastIndexOf(".pack.gz")));
+                                        unpack200(destFile, unpacked);
+                                        destFile.delete();
+                                        XMLUtil.LOG.info("File " + destFile + " deleted.");
+                                        pathTo = pathTo.substring(0, pathTo.length() - ".pack.gz".length());
+                                        crc = UpdateTracking.getFileCRC(unpacked);
+                                    }
+                                    if ( mu.isL10n() ) {
+                                        version.addL10NFileWithCrc( pathTo, Long.toString(crc), mu.getSpecification_version());
+                                    } else {
+                                        version.addFileWithCrc( pathTo, Long.toString(crc));
+                                    }
+
+                                    context.setProgressValue( bytesRead );
                                 }
+                            } else if ( entry.getName().startsWith( UPDATE_MAIN_DIR )&&
+                                      !entry.isDirectory() ) {
+                                // run main
+                                String pathTo = entry.getName().substring(UPDATE_MAIN_DIR.length() + 1);
+                                File destFile = new File (getMainDirectory (cluster), pathTo);
                                 if(executableFiles.contains(pathTo)) {
                                     filesToChmod.add(destFile);
                                 }
-                                if(pathTo.endsWith(".jar.pack.gz") &&
-                                        jarFile.getEntry(entry.getName().substring(0, entry.getName().lastIndexOf(".pack.gz")))==null) {
-                                     //check if file.jar.pack.gz does not exit for file.jar - then unpack current .pack.gz file
-                                    File unpacked = new File(destFile.getParentFile(), destFile.getName().substring(0, destFile.getName().lastIndexOf(".pack.gz")));
-                                    unpack200(destFile, unpacked);
-                                    destFile.delete();
-                                    XMLUtil.LOG.info("File " + destFile + " deleted.");
-                                    pathTo = pathTo.substring(0, pathTo.length() - ".pack.gz".length());
-                                    crc = UpdateTracking.getFileCRC(unpacked);
-                                }
-                                if ( mu.isL10n() ) {
-                                    version.addL10NFileWithCrc( pathTo, Long.toString(crc), mu.getSpecification_version());
-                                } else {
-                                    version.addFileWithCrc( pathTo, Long.toString(crc));
-                                }
-                                
+                                destFile.getParentFile ().mkdirs ();
+                                hasMainClass = true;
+                                bytesRead = copyStreams( jarFile.getInputStream( entry ), context.createOS( destFile ), bytesRead );
+                                XMLUtil.LOG.info("Copied file " + entry + " to " + destFile);
                                 context.setProgressValue( bytesRead );
                             }
-                        } else if ( entry.getName().startsWith( UPDATE_MAIN_DIR )&&
-                                  !entry.isDirectory() ) {
-                            // run main
-                            String pathTo = entry.getName().substring(UPDATE_MAIN_DIR.length() + 1);
-                            File destFile = new File (getMainDirectory (cluster), pathTo);
-                            if(executableFiles.contains(pathTo)) {
-                                filesToChmod.add(destFile);
-                            }
-                            destFile.getParentFile ().mkdirs ();
-                            hasMainClass = true;
-                            bytesRead = copyStreams( jarFile.getInputStream( entry ), context.createOS( destFile ), bytesRead );
-                            XMLUtil.LOG.info("Copied file " + entry + " to " + destFile);
-                            context.setProgressValue( bytesRead );
                         }
-                    }
-                    chmod(filesToChmod);
-                    if ( hasMainClass ) {                    
-                        MainConfig mconfig = new MainConfig (getMainDirString (cluster) + UpdateTracking.FILE_SEPARATOR + JVM_PARAMS_FILE, cluster);
-                        if (mconfig.isValid()) {
-                            String java_path = System.getProperty ("java.home") + UpdateTracking.FILE_SEPARATOR
-                                + "bin"  + UpdateTracking.FILE_SEPARATOR + "java";                              // NOI18N
-                            java_path = quoteString( java_path );
-                            String torun = java_path + " -cp " + quoteString (getMainDirString (cluster) + mconfig.getClasspath() ) + mconfig.getCommand();  // NOI18N
-                            startCommand(torun);
+                        chmod(filesToChmod);
+                        if ( hasMainClass ) {                    
+                            MainConfig mconfig = new MainConfig (getMainDirString (cluster) + UpdateTracking.FILE_SEPARATOR + JVM_PARAMS_FILE, cluster);
+                            if (mconfig.isValid()) {
+                                String java_path = System.getProperty ("java.home") + UpdateTracking.FILE_SEPARATOR
+                                    + "bin"  + UpdateTracking.FILE_SEPARATOR + "java";                              // NOI18N
+                                java_path = quoteString( java_path );
+                                String torun = java_path + " -cp " + quoteString (getMainDirString (cluster) + mconfig.getClasspath() ) + mconfig.getCommand();  // NOI18N
+                                startCommand(torun);
 
-                            deleteDir( getMainDirectory (cluster) );
+                                deleteDir( getMainDirectory (cluster) );
+                            }
                         }
-                    }
                     }
                 }
                 catch ( java.io.IOException e ) {
@@ -520,8 +533,9 @@ public final class ModuleUpdater extends Thread {
                 }
                 finally {
                     try {
-                        if ( jarFile != null )
+                        if ( jarFile != null ) {
                             jarFile.close();
+                        }
                     }
                     catch ( java.io.IOException e ) {
                         // We can't close the file do nothing
@@ -662,8 +676,9 @@ public final class ModuleUpdater extends Thread {
                         String vystup;
                         do {
                             vystup = reader.readLine();
-                            if (vystup!=null)
+                            if (vystup!=null) {
                                 XMLUtil.LOG.info(vystup);
+                            }
                         } while (vystup != null);
                     } catch (Exception e) {
                         XMLUtil.LOG.log(Level.INFO, null, e);
@@ -714,10 +729,11 @@ public final class ModuleUpdater extends Thread {
              StringBuilder sb = new StringBuilder(s);
              int i = 0;
              while ( i < sb.length() ) {
-                 if ( sb.charAt(i) == QUOTE )
+                 if ( sb.charAt(i) == QUOTE ) {
                      sb.deleteCharAt( i );
-                 else
+                 } else {
                      i++;
+                 }
              }
              sb.insert( 0, QUOTE );
              sb.append( QUOTE );
@@ -1009,7 +1025,9 @@ public final class ModuleUpdater extends Thread {
             } catch (IOException e) {            
                 return false;
             } finally {
-                if (fis != null) try { fis.close(); } catch (IOException e) { /* ignore */ };
+                if (fis != null) {
+                    try { fis.close(); } catch (IOException e) { /* ignore */ }
+                };
             }
             
             String mainclass;
@@ -1028,19 +1046,22 @@ public final class ModuleUpdater extends Thread {
         
             parameters = "";
             jvmparms = details.getProperty(PAR_JVMPAR,null);
-            if (jvmparms != null)
+            if (jvmparms != null) {
                 parameters = parameters + " " + jvmparms;  // NOI18N
+            }
             
             mainclass = details.getProperty(PAR_MAIN,null);
-            if (mainclass == null)
+            if (mainclass == null) {
                 return false;
-            else
-                parameters = parameters + " " + mainclass;  // NOI18N
+            } else {
+                parameters = parameters + " " + mainclass;
+            }  // NOI18N
             
             mainargs = details.getProperty(PAR_MAINARGS,null);
-            if (mainargs != null)
+            if (mainargs != null) {
                 parameters = parameters + " " + mainargs;  // NOI18N
-
+            }
+            
             parameters = replaceVars( parameters );
             return true;            
         }
@@ -1060,14 +1081,15 @@ public final class ModuleUpdater extends Thread {
         }
         
         private String changeRelative(String path) {
-            if ( new File( path ).isAbsolute() )
+            if ( new File( path ).isAbsolute() ) {
                 return path;
-            else
+            } else {
                 return getMainDirString (this.activeCluster) + UpdateTracking.FILE_SEPARATOR + path;
+            }
         }
         
         
-        /** replace all occurences of String what by String repl in the String sin */
+        /** replace all occurrences of String what by String repl in the String sin */
         private String replaceAll(String sin, String what, String repl) {
             StringBuilder sb = new StringBuilder(sin);
             int i = sb.toString().indexOf(what);

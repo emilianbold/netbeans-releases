@@ -136,18 +136,16 @@ public abstract class FlatProfilePanel extends CPUResultsPanel {
     private JPanel noDataPanel;
     private int minNamesColumnWidth; // minimal width of classnames columns
     private int sortingColumn;
-    private boolean sampling;
 
     //~ Constructors -------------------------------------------------------------------------------------------------------------
 
-    public FlatProfilePanel(CPUResUserActionsHandler actionsHandler, boolean sampling) {
+    public FlatProfilePanel(CPUResUserActionsHandler actionsHandler, Boolean sampling) {
         this(actionsHandler, null, sampling);
     }
 
-    public FlatProfilePanel(CPUResUserActionsHandler actionsHandler, CPUSelectionHandler selectionHandler, boolean sampling) {
-        super(actionsHandler);
+    public FlatProfilePanel(CPUResUserActionsHandler actionsHandler, CPUSelectionHandler selectionHandler, Boolean sampling) {
+        super(actionsHandler, sampling);
         this.selectionHandler = selectionHandler;
-        this.sampling = sampling;
         setDefaultSorting();
 
         minNamesColumnWidth = getFontMetrics(getFont()).charWidth('W') * 30; // NOI18N
@@ -257,12 +255,20 @@ public abstract class FlatProfilePanel extends CPUResultsPanel {
 
     // NOTE: this method only sets sortingColumn, sortOrder and sortBy, it doesn't refresh UI!
     public void setSorting(int sColumn, boolean sOrder) {
-        if (sColumn == CommonConstants.SORTING_COLUMN_DEFAULT) {
+        setSorting(sColumn, sOrder, false);
+    }
+    
+    public void setSorting(int sColumn, boolean sOrder, boolean refreshUI) {
+        if (!refreshUI && sColumn == CommonConstants.SORTING_COLUMN_DEFAULT) {
             setDefaultSorting();
         } else {
             sortingColumn = sColumn;
             sortOrder = sOrder;
             sortBy = getSortBy(sortingColumn);
+        }
+        if (refreshUI) {
+            resTableModel.setInitialSorting(resTableModel.getVirtualColumn(sColumn), sOrder);
+            resTableModel.sortByColumn(sColumn, sOrder);
         }
     }
 
@@ -442,7 +448,7 @@ public abstract class FlatProfilePanel extends CPUResultsPanel {
         columnsVisibility = new boolean[columnCount];
         for (int i = 0; i < columnCount - 1; i++)
             columnsVisibility[i] = true;
-        if (!sampling) columnsVisibility[columnCount - 1] = true;
+        if (isSampling() != null && !isSampling()) columnsVisibility[columnCount - 1] = true;
 
         columnWidths = new int[columnCount - 1]; // Width of the first column fits to width
         columnNames = new String[columnCount];
@@ -461,7 +467,7 @@ public abstract class FlatProfilePanel extends CPUResultsPanel {
         if (collectingTwoTimeStamps) {
             columnNames[3] = SELFTIME_CPU_COLUMN_NAME;
             columnToolTips[3] = SELFTIME_CPU_COLUMN_TOOLTIP;
-            if (sampling) {
+            if (isSampling() != null && isSampling()) {
                 columnNames[4] = SAMPLES_COLUMN_NAME;
                 columnToolTips[4] = SAMPLES_COLUMN_TOOLTIP;
             } else {
@@ -469,7 +475,7 @@ public abstract class FlatProfilePanel extends CPUResultsPanel {
                 columnToolTips[4] = INVOCATIONS_COLUMN_TOOLTIP;
             }
         } else { // just absolute
-            if (sampling) {
+            if (isSampling() != null && isSampling()) {
                 columnNames[3] = SAMPLES_COLUMN_NAME;
                 columnToolTips[3] = SAMPLES_COLUMN_TOOLTIP;
             } else {
@@ -497,6 +503,8 @@ public abstract class FlatProfilePanel extends CPUResultsPanel {
             columnWidths[i - 1] = maxWidth;
             columnRenderers[i] = labelTableCellRenderer;
         }
+        
+        if (isSampling() == null) columnCount--;
     }
 
     /*  public void updateValueFilter(double value) {
@@ -571,7 +579,6 @@ public abstract class FlatProfilePanel extends CPUResultsPanel {
             }
         }
 
-        columnsVisibility = null;
         columnsVisibility = resTableModel.getColumnsVisibility();
     }
 
@@ -992,4 +999,24 @@ public abstract class FlatProfilePanel extends CPUResultsPanel {
             resTable.getTableHeader().repaint();
         }
     }
+    
+    public void setColumnsVisibility(boolean[] columnsVisibility) {
+        resTableModel.setColumnsVisibility(columnsVisibility);
+        resTable.createDefaultColumnsFromModel();
+        resTableModel.setTable(resTable);
+        setColumnsData();
+    }
+    
+    public boolean[] getColumnsVisibility() {
+        return resTableModel.getColumnsVisibility();
+    }
+    
+    public void setFilterVisible(boolean visible) {
+        if (filterComponent != null) filterComponent.getComponent().setVisible(visible);
+    }
+    
+    public boolean isFilterVisible() {
+        return filterComponent == null ? false : filterComponent.getComponent().isVisible();
+    }
+    
 }

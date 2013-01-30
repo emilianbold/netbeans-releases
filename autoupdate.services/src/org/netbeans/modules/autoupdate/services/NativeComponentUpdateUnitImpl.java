@@ -48,6 +48,7 @@ import java.util.logging.Logger;
 import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.api.autoupdate.UpdateManager.TYPE;
+import org.netbeans.api.autoupdate.UpdateUnit;
 
 public class NativeComponentUpdateUnitImpl extends UpdateUnitImpl {
     private Logger err = Logger.getLogger (this.getClass ().getName ());
@@ -81,6 +82,11 @@ public class NativeComponentUpdateUnitImpl extends UpdateUnitImpl {
         } else {
             super.addUpdate (update);
         }
+    }
+
+    @Override
+    public UpdateUnit getVisibleAncestor() {
+        return this.getUpdateUnit();
     }
 }
 

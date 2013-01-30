@@ -80,11 +80,16 @@ public final class OperationContainerImpl<Support> {
     public static OperationContainerImpl<InstallSupport> createForUpdate () {
         return new OperationContainerImpl<InstallSupport> (OperationType.UPDATE);
     }
-    public static OperationContainerImpl<OperationSupport> createForDirectInstall () {
-        return new OperationContainerImpl<OperationSupport> (OperationType.INSTALL);
+    public static OperationContainerImpl<OperationSupport> createForDirectInstall() {
+        OperationContainerImpl<OperationSupport> impl = new OperationContainerImpl<OperationSupport>(OperationType.INSTALL);
+        impl.delegate = OperationContainer.createForUpdate();
+        return impl;
     }
-    public static OperationContainerImpl<OperationSupport> createForDirectUpdate () {
-        return new OperationContainerImpl<OperationSupport> (OperationType.UPDATE);
+
+    public static OperationContainerImpl<OperationSupport> createForDirectUpdate() {
+        OperationContainerImpl<OperationSupport> impl = new OperationContainerImpl<OperationSupport>(OperationType.UPDATE);
+        impl.delegate = OperationContainer.createForUpdate();
+        return impl;
     }
     public static OperationContainerImpl<OperationSupport> createForUninstall () {
         return new OperationContainerImpl<OperationSupport> (OperationType.UNINSTALL);
@@ -111,12 +116,12 @@ public final class OperationContainerImpl<Support> {
     public OperationInfo<Support> add (UpdateUnit updateUnit, UpdateElement updateElement) throws IllegalArgumentException {
         OperationInfo<Support> retval = null;
         boolean isValid = isValid (updateUnit, updateElement);
-        if (!isValid) {
-            throw new IllegalArgumentException ("Invalid " + updateElement.getCodeName () + " for operation " + type);
-        }
         if (UpdateUnitFactory.getDefault().isScheduledForRestart (updateElement)) {
             LOGGER.log (Level.INFO, updateElement + " is scheduled for restart IDE.");
             throw new IllegalArgumentException (updateElement + " is scheduled for restart IDE.");
+        }
+        if (!isValid) {
+            throw new IllegalArgumentException("Invalid " + updateElement.getCodeName() + " for operation " + type);
         }
         if (isValid) {
             switch (type) {
@@ -222,9 +227,10 @@ public final class OperationContainerImpl<Support> {
         if ((type == OperationType.INSTALL || type == OperationType.UPDATE || type==OperationType.INTERNAL_UPDATE) && checkEagers) {
             Collection<UpdateElement> all = new HashSet<UpdateElement> (operations.size ());
             for (OperationInfo<?> i : operations) {
-                all.add (i.getUpdateElement ());
-                all.addAll (i.getRequiredElements());
-                //TODO: what if elImpl instanceof FeatureUpdateElementImpl ?
+                all.add(i.getUpdateElement());
+            }
+            for (OperationInfo<?> i : operations) {
+                all.addAll(i.getRequiredElements());
             }
             for (UpdateElement eagerEl : UpdateManagerImpl.getInstance ().getAvailableEagers ()) {
                 if(eagerEl.getUpdateUnit().isPending() || eagerEl.getUpdateUnit().getAvailableUpdates().isEmpty()) {
@@ -432,7 +438,11 @@ public final class OperationContainerImpl<Support> {
         public UpdateUnit/*or null*/ getUpdateUnit () {
             return uUnit;
         }
+        private List<UpdateElement> requiredElements;
         public List<UpdateElement> getRequiredElements (){
+            if (upToDate && requiredElements != null) {
+                return requiredElements;
+            }
             List<ModuleInfo> moduleInfos = new ArrayList<ModuleInfo>();
             for (OperationContainer.OperationInfo oii : listAll ()) {
                 UpdateElementImpl impl = Trampoline.API.impl (oii.getUpdateElement ());
@@ -441,7 +451,13 @@ public final class OperationContainerImpl<Support> {
                 moduleInfos.addAll (infos);
             }
             brokenDeps = new HashSet<String> ();
-            return OperationValidator.getRequiredElements (type, getUpdateElement (), moduleInfos, brokenDeps);
+            Set<UpdateElement> recommeded = new HashSet<UpdateElement>();
+            requiredElements = OperationValidator.getRequiredElements (type, getUpdateElement (), moduleInfos, brokenDeps, recommeded);
+            if (! brokenDeps.isEmpty() && ! recommeded.isEmpty()) {
+                brokenDeps = new HashSet<String> ();
+                requiredElements = OperationValidator.getRequiredElements (type, getUpdateElement (), moduleInfos, brokenDeps, recommeded);
+            }
+            return requiredElements;
         }
 
         public Set<String> getBrokenDependencies () {
@@ -466,7 +482,7 @@ public final class OperationContainerImpl<Support> {
     private OperationContainerImpl (OperationType type) {
         this.type = type;
     }
-    
+        
     public OperationType getType () {
         return type;
     }
@@ -496,4 +512,5 @@ public final class OperationContainerImpl<Support> {
         CUSTOM_UNINSTALL
     }
     private OperationType type;
+    private OperationContainer delegate;
 }

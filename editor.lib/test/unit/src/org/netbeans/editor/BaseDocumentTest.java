@@ -45,9 +45,9 @@ import javax.swing.text.PlainDocument;
 import javax.swing.text.Position;
 import javax.swing.text.Position.Bias;
 import javax.swing.undo.UndoManager;
+import org.netbeans.api.editor.document.EditorDocumentUtils;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
-import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -65,7 +65,7 @@ public class BaseDocumentTest extends NbTestCase {
         final BaseDocument doc = new BaseDocument(false, "text/plain"); // NOI18N
         doc.insertString(0, "Nazdar", null);
         
-        doc.runExclusive(new Runnable() {
+        EditorDocumentUtils.runExclusive(doc, new Runnable() {
             @Override
             public void run() {
                 try {
@@ -76,7 +76,7 @@ public class BaseDocumentTest extends NbTestCase {
             }
         });
         
-        doc.runExclusive(new Runnable() {
+        EditorDocumentUtils.runExclusive(doc, new Runnable() {
             @Override
             public void run() {
                 try {
@@ -90,7 +90,7 @@ public class BaseDocumentTest extends NbTestCase {
             }
         });
         
-        doc.runExclusive(new Runnable() {
+        EditorDocumentUtils.runExclusive(doc, new Runnable() {
             @Override
             public void run() {
                 try {
@@ -112,7 +112,7 @@ public class BaseDocumentTest extends NbTestCase {
         doc.runAtomic(new Runnable() {
             @Override
             public void run() {
-                doc.runExclusive(new Runnable() {
+                EditorDocumentUtils.runExclusive(doc, new Runnable() {
                     @Override
                     public void run() {
                         try {
@@ -128,7 +128,7 @@ public class BaseDocumentTest extends NbTestCase {
         doc.runAtomic(new Runnable() {
             @Override
             public void run() {
-                doc.runExclusive(new Runnable() {
+                EditorDocumentUtils.runExclusive(doc, new Runnable() {
                     @Override
                     public void run() {
                         try {
@@ -144,7 +144,7 @@ public class BaseDocumentTest extends NbTestCase {
         });
         
         // doc.render() in runExclusive()
-        doc.runExclusive(new Runnable() {
+        EditorDocumentUtils.runExclusive(doc, new Runnable() {
             @Override
             public void run() {
                 doc.render(new Runnable() {
@@ -161,10 +161,10 @@ public class BaseDocumentTest extends NbTestCase {
         });
 
         // Nested runExclusive()
-        doc.runExclusive(new Runnable() {
+        EditorDocumentUtils.runExclusive(doc, new Runnable() {
             @Override
             public void run() {
-                doc.runExclusive(new Runnable() {
+                EditorDocumentUtils.runExclusive(doc, new Runnable() {
                     @Override
                     public void run() {
                         try {
@@ -187,7 +187,7 @@ public class BaseDocumentTest extends NbTestCase {
         final boolean t2Started[] = new boolean[1];
         final boolean t2DocReadLockGranted[] = new boolean[1];
         final Object LOCK = new Object();
-        doc.runExclusive(new Runnable() {
+        EditorDocumentUtils.runExclusive(doc, new Runnable() {
             @Override
             public void run() {
                 RequestProcessor.getDefault().post(new Runnable() {
@@ -227,7 +227,7 @@ public class BaseDocumentTest extends NbTestCase {
                     @Override
                     public void run() {
                         t2Started[0] = true;
-                        doc.runExclusive(new Runnable() {
+                        EditorDocumentUtils.runExclusive(doc, new Runnable() {
                             @Override
                             public void run() {
                                 t2DocAccess[0] = true;

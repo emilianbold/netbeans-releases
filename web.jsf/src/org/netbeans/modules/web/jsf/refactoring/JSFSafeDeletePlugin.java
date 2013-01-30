@@ -44,13 +44,11 @@
 
 package org.netbeans.modules.web.jsf.refactoring;
 
-import com.sun.source.tree.Tree.Kind;
 import java.util.List;
 import java.util.logging.Logger;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
-import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -60,7 +58,6 @@ import org.netbeans.modules.refactoring.api.SafeDeleteRefactoring;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
 import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
-import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.openide.filesystems.FileObject;
 import org.openide.text.PositionBounds;
 import org.openide.util.Exceptions;
@@ -127,15 +124,12 @@ public class JSFSafeDeletePlugin implements RefactoringPlugin{
             if (treePathHandle != null && TreeUtilities.CLASS_TREE_KINDS.contains(treePathHandle.getKind())){
                 project = FileOwnerQuery.getOwner(treePathHandle.getFileObject());
                 if (project != null){
-                    CompilationInfo info = JSFRefactoringUtils.getCompilationInfo(refactoring, treePathHandle.getFileObject());
-                    if (info != null) {
-                        Element resElement = treePathHandle.resolveElement(info);
-                        TypeElement type = (TypeElement) resElement;
-                        String fqcn = type.getQualifiedName().toString();
-                        List <Occurrences.OccurrenceItem> items = Occurrences.getAllOccurrences(project, fqcn, null);
-                        for (Occurrences.OccurrenceItem item : items) {
-                            refactoringElements.add(refactoring, new JSFSafeDeleteClassElement(item));
-                        }
+                    Element resElement = JSFRefactoringUtils.resolveElement(refactoring, treePathHandle);
+                    TypeElement type = (TypeElement) resElement;
+                    String fqcn = type.getQualifiedName().toString();
+                    List <Occurrences.OccurrenceItem> items = Occurrences.getAllOccurrences(project, fqcn, null);
+                    for (Occurrences.OccurrenceItem item : items) {
+                        refactoringElements.add(refactoring, new JSFSafeDeleteClassElement(item));
                     }
                 }
             }

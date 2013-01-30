@@ -55,8 +55,8 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
  */
 public final class ProjectSettingsValidatorKey extends ProjectNameBasedKey {
 
-    public ProjectSettingsValidatorKey(CharSequence project) {
-        super(project);
+    public ProjectSettingsValidatorKey(int unitId) {
+        super(unitId);
     }
 
     ProjectSettingsValidatorKey(RepositoryDataInput in) throws IOException {
@@ -90,7 +90,7 @@ public final class ProjectSettingsValidatorKey extends ProjectNameBasedKey {
 
     @Override
     public PersistentFactory getPersistentFactory() {
-        return ProjectSettingsValidator.getPersistentFactory();
+        return ProjectSettingsValidator.getPersistentFactory(getUnitId());
     }
 
     @Override

@@ -105,7 +105,11 @@ public class PasswdEncryption {
     private static PublicKey getPublicKey() throws IOException, GeneralSecurityException {
         InputStream inputStr = PasswdEncryption.class.getResourceAsStream("pubKey"); // NOI18N
         byte[] encodedKey = new byte[inputStr.available()];
-        inputStr.read(encodedKey);
+        try {
+            inputStr.read(encodedKey);
+        } finally {
+            inputStr.close();
+        }
         X509EncodedKeySpec publicKeySpec = new X509EncodedKeySpec(encodedKey);
         KeyFactory kf = KeyFactory.getInstance("RSA"); // NOI18N
         PublicKey publicKey = kf.generatePublic(publicKeySpec);

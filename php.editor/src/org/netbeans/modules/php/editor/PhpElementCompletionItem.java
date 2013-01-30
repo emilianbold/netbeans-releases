@@ -54,6 +54,7 @@ import org.netbeans.modules.php.editor.api.elements.TypeResolver;
 import org.netbeans.modules.php.editor.elements.VariableElementImpl;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Utilities;
 
 /**
  * Convert {@link PhpBaseElement PHP element} to {@link CompletionProposal}.
@@ -98,7 +99,7 @@ public final class PhpElementCompletionItem {
             FileObject file = variable.getFile();
             if (file != null && file.isValid()) {
                 try {
-                    return FileUtil.toFile(file).toURI().toURL().toExternalForm();
+                    return Utilities.toURI(FileUtil.toFile(file)).toURL().toExternalForm();
                 } catch (MalformedURLException ex) {
                     Logger.getLogger(PhpElementCompletionItem.class.getName()).log(Level.WARNING, null, ex);
                 }

@@ -57,6 +57,7 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.editor.LocaleSupport;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.LazyCompletionItem;
+import org.openide.util.Utilities;
 
 /**
 * @author Miloslav Metelka, Dusan Balek
@@ -158,8 +159,9 @@ public class CompletionJList extends JList {
             boolean stop = false;
             for(int index = 0; index < itemCount; index++) {
                 Object value = data.get(index);
-                if (value instanceof LazyCompletionItem)
-                    maxWidth = (int)(ScreenBoundsProvider.getScreenBounds(editorComponent).width * ScreenBoundsProvider.COMPL_COVERAGE);
+                if (value instanceof LazyCompletionItem) {
+                    maxWidth = (int)(Utilities.getUsableScreenBounds().width * CompletionLayoutPopup.COMPL_COVERAGE);
+                }
                 Component c = renderer.getListCellRendererComponent(this, value, index, false, false);
                 if (c != null) {
                     Dimension cellSize = c.getPreferredSize();

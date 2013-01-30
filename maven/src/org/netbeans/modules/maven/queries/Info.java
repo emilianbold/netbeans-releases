@@ -75,6 +75,9 @@ public final class Info implements ProjectInformation, PropertyChangeListener {
     @Override public String getName() {
         //always return the same value, never skip in AWT, used in quite some places relying on 
         //consistency for some reason..
+        //For performance reasons, we should rather try to use something like:
+        //return project.getProjectDirectory().toURL().toExternalForm();
+        //..but we need to check getName() usages at first because it's used all over the place
         final NbMavenProject nb = project.getLookup().lookup(NbMavenProject.class);
         return nb.getMavenProject().getId().replace(':', '_');
     }

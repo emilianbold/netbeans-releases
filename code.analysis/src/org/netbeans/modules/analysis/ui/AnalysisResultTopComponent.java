@@ -63,6 +63,7 @@ import org.netbeans.modules.analysis.AnalysisResult;
 import org.netbeans.modules.analysis.DescriptionReader;
 import org.netbeans.modules.analysis.RunAnalysis;
 import org.netbeans.modules.analysis.RunAnalysisPanel.DialogState;
+import org.netbeans.modules.analysis.RunAnalysisPanel.FutureWarnings;
 import org.netbeans.modules.analysis.spi.Analyzer.AnalyzerFactory;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.openide.awt.ActionID;
@@ -92,8 +93,8 @@ persistenceType = TopComponent.PERSISTENCE_ALWAYS)
 @TopComponent.OpenActionRegistration(displayName = "#CTL_AnalysisResultAction",
 preferredID = "AnalysisResultTopComponent")
 @Messages({
-    "CTL_AnalysisResultAction=Inspector Window",
-    "CTL_AnalysisResultTopComponent=Inspector Window",
+    "CTL_AnalysisResultAction=Inspector",
+    "CTL_AnalysisResultTopComponent=Inspector",
     "HINT_AnalysisResultTopComponent=This is an Inspector Window"
 })
 public final class AnalysisResultTopComponent extends TopComponent implements ExplorerManager.Provider {
@@ -125,7 +126,7 @@ public final class AnalysisResultTopComponent extends TopComponent implements Ex
         prevAction.addPropertyChangeListener(l);
         nextAction.addPropertyChangeListener(l);
 
-        setData(Lookup.EMPTY, null, new AnalysisResult(Collections.<AnalyzerFactory, List<ErrorDescription>>emptyMap(), Collections.<Node>emptyList()));
+        setData(Lookup.EMPTY, null, new AnalysisResult(Collections.<AnalyzerFactory, List<ErrorDescription>>emptyMap(), new FutureWarnings(), Collections.<Node>emptyList()));
 
         getActionMap().put("jumpNext", nextAction);
         getActionMap().put("jumpPrev", prevAction);

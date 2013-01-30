@@ -41,7 +41,13 @@
  */
 
 package org.netbeans.modules.php.editor.indent;
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
 import javax.swing.text.BadLocationException;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.spi.ParserResult;
@@ -63,7 +69,27 @@ import org.netbeans.modules.php.editor.model.nodes.NamespaceDeclarationInfo;
 import org.netbeans.modules.php.editor.nav.NavUtils;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.api.Utils;
-import org.netbeans.modules.php.editor.parser.astnodes.*;
+import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
+import org.netbeans.modules.php.editor.parser.astnodes.ArrayAccess;
+import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
+import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.ClassInstanceCreation;
+import org.netbeans.modules.php.editor.parser.astnodes.Comment;
+import org.netbeans.modules.php.editor.parser.astnodes.Expression;
+import org.netbeans.modules.php.editor.parser.astnodes.ExpressionStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.FieldsDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
+import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.GlobalStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
+import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.NamespaceName;
+import org.netbeans.modules.php.editor.parser.astnodes.Reference;
+import org.netbeans.modules.php.editor.parser.astnodes.ReturnStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
+import org.netbeans.modules.php.editor.parser.astnodes.StaticStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.ThrowStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -73,16 +99,19 @@ import org.openide.util.RequestProcessor;
  *
  * @author Jan Lahoda
  */
-public class GeneratingBracketCompleter {
+public final class GeneratingBracketCompleter {
 
     private static final RequestProcessor RP = new RequestProcessor("Generating Bracket Completer"); //NOI18N
+
+    static final String TYPE_PLACEHOLDER = "type";
+
+    private GeneratingBracketCompleter() {
+    }
 
     static void generateDocTags(final BaseDocument doc, final int offset, final int indent) {
         Runnable docTagsGenerator = new DocTagsGenerator(doc, offset, indent);
         RP.post(docTagsGenerator);
     }
-
-    static final String TYPE_PLACEHOLDER = "type";
 
     private static void generateFunctionDoc(BaseDocument doc, int offset, int indent, ParserResult info, FunctionDeclaration decl) throws BadLocationException {
         StringBuilder toAdd = new StringBuilder();
@@ -105,7 +134,7 @@ public class GeneratingBracketCompleter {
 
     private static void addVariables(BaseDocument doc, StringBuilder toAdd, String text, int indent, List<Pair<String, String>> vars) {
         for (Pair<String, String> p : vars) {
-            generateDocEntry(doc, toAdd, text,indent, p.getA(), p.getB());
+            generateDocEntry(doc, toAdd, text, indent, p.getA(), p.getB());
         }
     }
 
@@ -115,11 +144,9 @@ public class GeneratingBracketCompleter {
 
         toAdd.append(" * ");
         toAdd.append(text);
-        if (type != null) {
-            if (type != null) {
-                toAdd.append(" ");
-                toAdd.append(type);
-            }
+        if (type != null && !type.isEmpty()) {
+            toAdd.append(" ");
+            toAdd.append(type);
         } else {
             toAdd.append(" ");
             toAdd.append(TYPE_PLACEHOLDER);
@@ -130,7 +157,7 @@ public class GeneratingBracketCompleter {
         }
     }
 
-    private static void generateGlobalVariableDoc (BaseDocument doc, int offset, int indent, String indexName, String type) throws BadLocationException {
+    private static void generateGlobalVariableDoc(BaseDocument doc, int offset, int indent, String indexName, String type) throws BadLocationException {
         StringBuilder toAdd = new StringBuilder();
 
         generateDocEntry(doc, toAdd, "@global", indent, "$GLOBALS['" + indexName + "']", type);
@@ -164,12 +191,16 @@ public class GeneratingBracketCompleter {
             if (info instanceof PHPParseResult) {
                 PHPParseResult parseResult = (PHPParseResult) info;
                 Model model = parseResult.getModel();
-                final VariableScope variableScope = model.getVariableScope(decl.getEndOffset()-1);
+                final VariableScope variableScope = model.getVariableScope(decl.getEndOffset() - 1);
                 if (variableScope instanceof FunctionScope) {
                     fnc = (FunctionScope) variableScope;
                     declaredVariables.addAll(fnc.getDeclaredVariables());
-                } else { fnc = null;}
-            } else { fnc = null;}
+                } else {
+                    fnc = null;
+                }
+            } else {
+                fnc = null;
+            }
             this.decl = decl;
         }
 
@@ -189,7 +220,7 @@ public class GeneratingBracketCompleter {
                 var = (Variable) expr;
             }
             if (expr instanceof Reference) {
-                Reference ref = (Reference)expr;
+                Reference ref = (Reference) expr;
                 if (ref.getExpression() instanceof Variable) {
                     var = (Variable) ref.getExpression();
                 }
@@ -235,16 +266,16 @@ public class GeneratingBracketCompleter {
         public void visit(ReturnStatement node) {
             hasReturn = true;
             Collection<? extends String> typeNames = fnc.getReturnTypeNames();
-            String type = null;
-            String item = null;
-            for (Iterator<String> i = (Iterator<String>) typeNames.iterator(); i.hasNext(); ) {
+            StringBuilder type = new StringBuilder();
+            String item;
+            for (Iterator<String> i = (Iterator<String>) typeNames.iterator(); i.hasNext();) {
                 item = i.next();
                 if (item != null && item.contains(VariousUtils.PRE_OPERATION_TYPE_DELIMITER)) { // NOI18N
                     break;
                 }
-                type = type == null ? item : type + "|" + item; //NOI18N
+                type = type.toString().isEmpty() ? type.append(item) : type.append("|").append(item); //NOI18N
             }
-            returnType = type;
+            returnType = type.toString();
         }
 
         @Override
@@ -340,7 +371,7 @@ public class GeneratingBracketCompleter {
         public void run() {
             FileObject file = NavUtils.getFile(doc);
             if (file == null) {
-                return ;
+                return;
             }
             try {
                 ParserManager.parse(Collections.singleton(Source.create(doc)), new UserTask() {
@@ -361,7 +392,7 @@ public class GeneratingBracketCompleter {
                             }
                             ASTNode n = null;
                             try {
-                                new DefaultVisitor() {
+                                DefaultVisitor visitor = new DefaultVisitor() {
 
                                     @Override
                                     public void scan(ASTNode node) {
@@ -375,7 +406,8 @@ public class GeneratingBracketCompleter {
                                         }
                                         super.scan(node);
                                     }
-                                }.scan(Utils.getRoot(parserResult));
+                                };
+                                visitor.scan(Utils.getRoot(parserResult));
                             } catch (Result r) {
                                 n = r.node;
                             }
@@ -394,24 +426,24 @@ public class GeneratingBracketCompleter {
                             }
 
                             if (n instanceof ExpressionStatement) {
-                                if (((ExpressionStatement)n).getExpression() instanceof Assignment) {
-                                    Assignment assignment = (Assignment)((ExpressionStatement) n).getExpression();
+                                if (((ExpressionStatement) n).getExpression() instanceof Assignment) {
+                                    Assignment assignment = (Assignment) ((ExpressionStatement) n).getExpression();
                                     if (assignment.getLeftHandSide() instanceof ArrayAccess) {
-                                        ArrayAccess arrayAccess = (ArrayAccess)assignment.getLeftHandSide();
+                                        ArrayAccess arrayAccess = (ArrayAccess) assignment.getLeftHandSide();
                                         if (arrayAccess.getName() instanceof Variable) {
-                                            Variable variable = (Variable)arrayAccess.getName();
+                                            Variable variable = (Variable) arrayAccess.getName();
                                             if (variable.isDollared()
                                                     && variable.getName() instanceof Identifier
-                                                    && "GLOBALS".equals(((Identifier)variable.getName()).getName())
+                                                    && "GLOBALS".equals(((Identifier) variable.getName()).getName())
                                                     && arrayAccess.getDimension().getIndex() instanceof Scalar) {
-                                                String index = ((Scalar)arrayAccess.getDimension().getIndex()).getStringValue().trim();
-                                                if(index.length() > 0
+                                                String index = ((Scalar) arrayAccess.getDimension().getIndex()).getStringValue().trim();
+                                                if (index.length() > 0
                                                         && (index.charAt(0) == '\'' || index.charAt(0) == '"')) {
                                                     index = index.substring(1, index.length() - 1);
                                                 }
                                                 String type = null;
                                                 if (assignment.getRightHandSide() instanceof Scalar) {
-                                                    switch(((Scalar)assignment.getRightHandSide()).getScalarType()) {
+                                                    switch (((Scalar) assignment.getRightHandSide()).getScalarType()) {
                                                         case INT:
                                                             type = "integer";   //NOI18N
                                                             break;
@@ -421,6 +453,8 @@ public class GeneratingBracketCompleter {
                                                         case STRING:
                                                             type = "string";    //NOI18N
                                                             break;
+                                                        default:
+                                                            //no-op
                                                     }
                                                 }
                                                 generateGlobalVariableDoc(doc, offset, indent, index, type);

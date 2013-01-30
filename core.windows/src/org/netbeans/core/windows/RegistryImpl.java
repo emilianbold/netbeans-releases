@@ -154,9 +154,6 @@ public final class RegistryImpl extends Object implements TopComponent.Registry 
         }
         activatedTopComponent = new WeakReference<TopComponent>(tc);
         
-        Window w = tc == null ? null : SwingUtilities.windowForComponent(tc);
-        cancelMenu(w);
-        
 /** PENDING:  Firing the change asynchronously improves perceived responsiveness
  considerably (toolbars are updated after the component repaints, so it appears
  to immediately become selected), but means that 
@@ -181,6 +178,7 @@ public final class RegistryImpl extends Object implements TopComponent.Registry 
     
     /** Called when a TopComponent is opened. */
     public synchronized void topComponentOpened(TopComponent tc) {
+        assert null != tc;
         if (openSet.contains(tc)) {
             return;
         }
@@ -217,6 +215,7 @@ public final class RegistryImpl extends Object implements TopComponent.Registry 
      * @param tc
      */
     public synchronized void addTopComponent( TopComponent tc ) {
+        assert null != tc;
         openSet.add( tc );
     }
     

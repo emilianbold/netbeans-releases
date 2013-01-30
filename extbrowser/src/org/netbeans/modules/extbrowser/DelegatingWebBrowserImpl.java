@@ -44,8 +44,8 @@
 
 package org.netbeans.modules.extbrowser;
 
-import org.openide.util.Utilities;
 import java.net.URL;
+import org.openide.util.Utilities;
 
 /**
  * @author  snajper
@@ -108,8 +108,8 @@ public class DelegatingWebBrowserImpl extends ExtBrowserImpl {
      *  Sets current URL.
      * @param url URL to show in the browser.
      */
-    public void setURL(URL url) {
-        getImplementation().setURL(url);        
+    protected void loadURLInBrowser(URL url) {
+        getImplementation().loadURLInBrowser(url);        
     }
         
 }

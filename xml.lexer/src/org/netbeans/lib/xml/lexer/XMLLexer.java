@@ -42,6 +42,7 @@
 
 package org.netbeans.lib.xml.lexer;
 
+import org.netbeans.api.lexer.PartType;
 import org.netbeans.api.xml.lexer.XMLTokenId;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.spi.lexer.Lexer;
@@ -66,7 +67,7 @@ public class XMLLexer implements Lexer<XMLTokenId> {
     private TokenFactory<XMLTokenId> tokenFactory;
     
     public Object state() {
-        Integer encoded = (subState << 020) + (this.state << 010) + (subInternalDTD ? 1 : 0);
+        Integer encoded = (prevState << 030) + (subState << 020) + (this.state << 010) + (subInternalDTD ? 1 : 0);
         return encoded;
     }
     
@@ -78,6 +79,7 @@ public class XMLLexer implements Lexer<XMLTokenId> {
         } else {
             int encoded = ((Integer) state).intValue();
             
+            this.prevState = (encoded & 0xff000000) >> 030;
             subState = (encoded & 0xff0000) >> 020;
             this.state    = (encoded & 0xff00) >> 010;
             subInternalDTD = encoded % 2 == 1;
@@ -99,6 +101,11 @@ public class XMLLexer implements Lexer<XMLTokenId> {
      * ransition to charref subanalyzer.
      */
     protected int subState = INIT;
+
+    /**
+     * The previous saved state for transitions from _WS to non WS states.
+     */
+    protected int prevState = INIT;
     
     /**
      * Identifies internal DTD layer. Most of functionality is same
@@ -175,6 +182,9 @@ public class XMLLexer implements Lexer<XMLTokenId> {
     
     // internal DTD handling
     private static final int ISA_INIT_BR = 54;
+    
+    private static final int ISI_ERROR_TAG = 55;
+    private static final int ISI_ERROR_TAG_RECOVER = 55;
     
     public XMLLexer(LexerRestartInfo<XMLTokenId> info) {
         this.input = info.input();
@@ -300,8 +310,20 @@ public class XMLLexer implements Lexer<XMLTokenId> {
                     
                 case ISI_ERROR:      // DONE
                     state = INIT;
+                    prevState = 0;
+                    subState = 0;
+                    if (input.readLength() > 1) {
+                        input.backup(1);
+                    }
                     return token(XMLTokenId.ERROR);
                     
+                case ISI_ERROR_TAG:
+                    state = ISP_TAG_X;
+                    if (input.readLength() > 1) {
+                        input.backup(1);
+                    }
+                    return token(XMLTokenId.ERROR);
+                
                 case ISA_LT:         // DONE
                     
                     if( UnicodeClasses.isXMLNameStartChar( actChar ) && isInternalDTD() == false) {
@@ -319,8 +341,13 @@ public class XMLLexer implements Lexer<XMLTokenId> {
                             state = ISI_PI;
                             return token(XMLTokenId.PI_START);
                         default:
-                            state = ISI_TEXT;  //RELAXED to allow editing in the  middle of document
-                            continue;             // don't eat the char, maybe its '&'
+                            // note: it would be more correct to raise an error here,
+                            // and return TAG PartType=Start, BUT some code already expects
+                            // unfinished tags to be reported as TEXT.
+                            state = INIT;
+                            input.backup(1);
+                            return tokenFactory.createToken(
+                                    XMLTokenId.TEXT, input.readLength());
                     }
                     break;
                     
@@ -349,9 +376,15 @@ public class XMLLexer implements Lexer<XMLTokenId> {
                     return token(XMLTokenId.WS);
                     
                 case ISI_PI_CONTENT:
-                    if (actChar != '?') break;  // eat content
-                    state = ISP_PI_CONTENT_QMARK;
-                    input.backup(1);
+                    // < is in theory allowed in PI content, as the delimiter is ?>, nut noone uses it.
+                    if (actChar == '<') {
+                        state = INIT;
+                        input.backup(1);
+                    } else {
+                        if (actChar != '?') break;  // eat content
+                        state = ISP_PI_CONTENT_QMARK;
+                        input.backup(1);
+                    }
                     if(input.readLength() > 0) {
                         return token(XMLTokenId.PI_CONTENT);  // may do extra break
                     }
@@ -421,8 +454,11 @@ public class XMLLexer implements Lexer<XMLTokenId> {
                     if( isWS( actChar ) ) break;  // eat all WS
                     state = ISP_ENDTAG_X;
                     input.backup(1);
-                    return token(XMLTokenId.WS);
-                    
+                    if (actChar == '>') {  
+                        return token(XMLTokenId.WS);
+                    }
+                    state = ISI_ERROR;
+                    break;
                     
                 case ISI_TAG:        // DONE
                     if( UnicodeClasses.isXMLNameChar( actChar ) ) break; // Still in tag identifier, eat next char
@@ -436,33 +472,90 @@ public class XMLLexer implements Lexer<XMLTokenId> {
                         break;
                     }
                     if( UnicodeClasses.isXMLNameStartChar( actChar ) ) {
+                        if (prevState == ISP_TAG_WS) {
+                            prevState = 0;
+                            input.backup(1);
+                            return token(XMLTokenId.WS);
+                        }
                         state = ISI_ARG;
                         break;
                     }
+                    int c;
+                    
                     switch( actChar ) {
                         case '/':
-                            break;
+                            c = input.read();
+                            if (c == '>') {
+                                if (prevState == ISP_TAG_WS) {
+                                    prevState = 0;
+                                    input.backup(2);
+                                    return token(XMLTokenId.WS);
+                                }
+                                state = INIT;
+                                return token(XMLTokenId.TAG);
+                            } else {
+                                state = ISI_ERROR;
+                                input.backup(1);
+                                continue;
+                            }
                         case '?': //Prolog and PI's now similar to Tag
-                            break;
+                            c = input.read();
+                            if (c == '>') {
+                                if (prevState == ISP_TAG_WS) {
+                                    prevState = 0;
+                                    input.backup(1);
+                                    return token(XMLTokenId.WS);
+                                }
+                                state = INIT;
+                                return token(XMLTokenId.TAG);
+                            } else {
+                                state = ISI_ERROR;
+                                input.backup(1);
+                                continue;
+                            }
                         case '>':
+                            if (prevState == ISP_TAG_WS) {
+                                prevState = 0;
+                                input.backup(1);
+                                return token(XMLTokenId.WS);
+                            }
                             state = INIT;
                             return token(XMLTokenId.TAG);
+                        case '<':
+                            if (prevState == ISP_TAG_WS) {
+                                prevState = 0;
+                                input.backup(1);
+                                state = ISI_ERROR;
+                                continue;
+                            }
+                            // unexpected tag start:
+                            state = INIT;
+                            input.backup(1);
+                            continue;
                         default:
-                            state = ISI_ERROR;
+                            if (prevState == ISP_TAG_WS) {
+                                prevState = 0;
+                                input.backup(1);
+                                return token(XMLTokenId.WS);
+                            }
+                            input.backup(1);
+                            state = ISI_ERROR_TAG;
                             continue;
                     }
-                    break;
                     
                     
                 case ISP_TAG_WS:        // DONE
                     //input.backup(1);
                     if( isWS( actChar ) ) break;    // eat all WS
+                    prevState = state;
                     state = ISP_TAG_X;
                     input.backup(1);
-                    return token(XMLTokenId.WS);
+                    break;
+                    //return token(XMLTokenId.WS);
                     
                 case ISI_ARG:           // DONE
                     if( UnicodeClasses.isXMLNameChar( actChar ) ) break; // eat next char
+                    prevState = ISI_ARG;
                     state = ISP_ARG_X;
                     input.backup(1);
                     return token(XMLTokenId.ARGUMENT);
@@ -474,43 +567,93 @@ public class XMLLexer implements Lexer<XMLTokenId> {
                     }
                     switch( actChar ) {
                         case '=':
+                            if (prevState == ISP_ARG_WS) {
+                                prevState = 0;
+                                input.backup(1);
+                                return token(XMLTokenId.WS);
+                            }
+                            prevState = state;
                             state = ISP_EQ;
-                            return token(XMLTokenId.OPERATOR);
-                        default:
-                            state = ISI_ERROR;
-                            continue;
-                    }
-                    //break;
-                    
-                case ISP_ARG_WS:
-                    if( isWS( actChar ) ) break;    // Eat all WhiteSpace
-                    state = ISP_ARG_X;
-                    input.backup(1);
-                    return token(XMLTokenId.WS);
-                    
-                case ISP_EQ:
-                    if( isWS( actChar ) ) {
-                        state = ISP_EQ_WS;
-                        break;
-                    }
-                    switch( actChar ) {
-                        case '\'':
-                            state = ISI_VAL_APOS;
                             break;
-                        case '"':
-                            state = ISI_VAL_QUOT;
-                            break;
+                        case '<':
+                            if (prevState == ISP_ARG_WS) {
+                                prevState = 0;
+                                state = ISI_ERROR;
+                                input.backup(1);
+                                continue;
+                            } else {
+                                input.backup(1);
+                                state = INIT;
+                                continue;
+                            }
+                            
                         default:
-                            state = ISI_ERROR;
+                            if (input.readLength() > 1) {
+                                input.backup(1);
+                            }
+                            if (prevState == ISP_ARG_WS) {
+                                prevState = 0;
+                                state = ISI_ERROR_TAG;
+                                continue;
+                            }
+                            prevState = state;
+                            state = ISI_ERROR_TAG;
                             continue;
                     }
                     break;
                     
+                case ISP_ARG_WS:
+                    if( isWS( actChar ) ) break;    // Eat all WhiteSpace
+                    prevState = state;
+                    state = ISP_ARG_X;
+                    input.backup(1);
+                    break;
+                    
+                case ISP_EQ:
+                    if (prevState == ISI_VAL_APOS || prevState == ISI_VAL_QUOT) {
+                        state = prevState;
+                        break;
+                    }
+                    if( isWS( actChar ) ) {
+                        state = ISP_EQ_WS;
+                        input.backup(1);
+                        return token(XMLTokenId.OPERATOR);
+                    }
+                    int pSubstate = prevState;
+                    switch( actChar ) {
+                        case '\'':
+                            prevState = ISI_VAL_APOS;
+                            break;
+                        case '"':
+                            prevState = ISI_VAL_QUOT;
+                            break;
+                        case '<':
+                            if (input.readLength() > 0) {
+                                input.backup(1);
+                            }
+                            state = ISI_ERROR;
+                            continue;
+                        default:
+                            if (prevState == ISP_EQ_WS && input.readLength() > 1) {
+                                input.backup(1);
+                                // erroneous whitespace
+                            }
+                            state = ISI_ERROR_TAG;
+                            continue;
+                            
+                    }
+                    input.backup(1);
+                    if (pSubstate == ISP_EQ_WS) {
+                        return token(XMLTokenId.WS);
+                    }
+                    return token(XMLTokenId.OPERATOR);
+                    
                 case ISP_EQ_WS:
                     if( isWS( actChar ) ) break;    // Consume all WS
+                    prevState = state;
                     state = ISP_EQ;
                     input.backup(1);
-                    return token(XMLTokenId.WS);
+                    break;
                     
                 case ISI_VAL_APOS:
                     switch( actChar ) {
@@ -526,6 +669,14 @@ public class XMLLexer implements Lexer<XMLTokenId> {
                                 input.backup(1);
                                 return token(XMLTokenId.VALUE);
                             }
+                        case '<':
+                            // error / unterminated tag, but the next token should be
+                            state = INIT;
+                            input.backup(1);
+                            if(input.readLength() > 0) {
+                                return token(XMLTokenId.VALUE);
+                            }
+                            break;
                     }
                     break;  // else simply consume next char of VALUE
                     
@@ -543,6 +694,14 @@ public class XMLLexer implements Lexer<XMLTokenId> {
                                 input.backup(1);
                                 return token(XMLTokenId.VALUE);
                             }
+                        case '<':
+                            // error / unterminated tag, but the next token should be
+                            state = INIT;
+                            input.backup(1);
+                            if(input.readLength() > 0) {
+                                return token(XMLTokenId.VALUE);
+                            }
+                            break;
                     }
                     break;  // else simply consume next char of VALUE
                     
@@ -781,6 +940,8 @@ public class XMLLexer implements Lexer<XMLTokenId> {
                         state = ISA_REF_HASH;
                         break;
                     }
+                    // get back to &, proclaim as character, although not according to spec.
+                    input.backup(1);
                     state = subState;
                     continue;
                     

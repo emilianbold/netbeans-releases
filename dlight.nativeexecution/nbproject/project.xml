@@ -160,6 +160,8 @@
                 <friend>com.microchip.mplab.nbide.embedded</friend>
                 <friend>com.microchip.mplab.nbide.embedded.makeproject</friend>
                 <friend>com.microchip.mplab.nbide.programmer</friend>
+                <friend>com.oracle.tools.ide.projectless.debug.impl</friend>
+                <friend>com.oracle.tools.ide.projectless.impl</friend>
                 <friend>com.sun.cloud.api</friend>
                 <friend>com.sun.cloud.cnd</friend>
                 <friend>com.sun.cloud.cnd.remote.ext</friend>
@@ -205,6 +207,7 @@
                 <friend>com.sun.tools.ide.analysis.analytics</friend>
                 <friend>com.sun.tools.ide.analysis.common</friend>
                 <friend>com.sun.tools.ide.analysis.discover</friend>
+                <friend>com.sun.tools.ide.analysis.parfait</friend>
                 <friend>com.sun.tools.ide.analysis.previse</friend>
                 <friend>com.sun.tools.ide.analysis.tha</friend>
                 <friend>com.sun.tools.ide.remote</friend>

@@ -45,8 +45,10 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.css.lib.api.CssParserResult;
 import org.netbeans.modules.css.lib.api.CssTokenId;
 import org.netbeans.modules.css.lib.api.Node;
+import org.netbeans.modules.css.model.api.Model;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
+import org.openide.filesystems.FileObject;
 
 /**
  * An instance of this class or its subclass is typically passed to the
@@ -94,10 +96,24 @@ public class FeatureContext {
     }
         
     /**
+     * @return the associated file object, it there's any
+     */
+    public FileObject getFileObject() {
+        return getSource().getFileObject();
+    }
+    
+    /**
      * @return token sequence created from the snapshot.
      */
     public TokenSequence<CssTokenId> getTokenSequence() {
         return getSnapshot().getTokenHierarchy().tokenSequence(CssTokenId.language());
+    }
+    
+    /**
+     * @return an instance of {@link Model}.
+     */
+    public Model getSourceModel() {
+        return Model.getModel(result);
     }
     
 }

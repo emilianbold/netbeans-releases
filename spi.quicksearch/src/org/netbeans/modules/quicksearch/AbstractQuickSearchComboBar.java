@@ -60,9 +60,16 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.text.AbstractDocument;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.DocumentFilter;
+import javax.swing.text.DocumentFilter.FilterBypass;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.quicksearch.ProviderModel.Category;
 import org.netbeans.modules.quicksearch.ResultsModel.ItemResult;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
@@ -111,6 +118,10 @@ public abstract class AbstractQuickSearchComboBar extends javax.swing.JPanel imp
             }
 
         });
+        if (command.getDocument() instanceof AbstractDocument) {
+            AbstractDocument ad = (AbstractDocument) command.getDocument();
+            ad.setDocumentFilter(new InvalidSearchTextDocumentFilter());
+        }
     }
 
     public KeyStroke getKeyStroke() {
@@ -134,7 +145,12 @@ public abstract class AbstractQuickSearchComboBar extends javax.swing.JPanel imp
         });
 
         command = createCommandField();
-        command.setToolTipText(org.openide.util.NbBundle.getMessage(AbstractQuickSearchComboBar.class, "AbstractQuickSearchComboBar.command.toolTipText", new Object[] {"(" + SearchResultRender.getKeyStrokeAsText(keyStroke) + ")"})); // NOI18N
+        String shortcutText = "";                                       //NOI18N
+        if (!SearchResultRender.getKeyStrokeAsText(keyStroke).isEmpty()) {
+            shortcutText = "(" + SearchResultRender.getKeyStrokeAsText( //NOI18N
+                    keyStroke) + ")";                                   //NOI18N
+        }
+        command.setToolTipText(org.openide.util.NbBundle.getMessage(AbstractQuickSearchComboBar.class, "AbstractQuickSearchComboBar.command.toolTipText", new Object[] {shortcutText})); // NOI18N
         command.setName("command"); // NOI18N
         command.addFocusListener(new java.awt.event.FocusAdapter() {
             @Override
@@ -178,6 +194,7 @@ public abstract class AbstractQuickSearchComboBar extends javax.swing.JPanel imp
             displayer.clearModel();
         } else if (evt.getKeyCode() == KeyEvent.VK_F10 &&
                 evt.isShiftDown()) {
+            evt.consume();
             maybeShowPopup(null);
         }
     }
@@ -325,9 +342,12 @@ public abstract class AbstractQuickSearchComboBar extends javax.swing.JPanel imp
         } else {
             sb.append(NbBundle.getMessage(AbstractQuickSearchComboBar.class, "MSG_DiscoverabilityHint")); //NOI18N
         }
-        sb.append(" (");
-        sb.append(SearchResultRender.getKeyStrokeAsText(keyStroke));
-        sb.append(")");
+        String keyStrokeAsText = SearchResultRender.getKeyStrokeAsText(keyStroke);
+        if (!keyStrokeAsText.isEmpty()) {
+            sb.append(" (");                                            //NOI18N
+            sb.append(keyStrokeAsText);
+            sb.append(")");                                             //NOI18N
+        }
 
         return sb.toString();
     }
@@ -389,5 +409,88 @@ public abstract class AbstractQuickSearchComboBar extends javax.swing.JPanel imp
         }
         // don't allow width grow too much
         return Math.min(350, maxWidth);
+    }
+
+    /**
+     * Document filter that checks invalid input. See bug 217364.
+     */
+    static class InvalidSearchTextDocumentFilter extends DocumentFilter {
+
+        private static final int SEARCH_TEXT_LENGTH_LIMIT = 256;
+        private static final int SEARCH_NUM_WORDS_LIMIT = 20;
+
+        @Override
+        public void insertString(FilterBypass fb, int offset,
+                String string, AttributeSet attr)
+                throws BadLocationException {
+            String normalized = normalizeWhiteSpaces(string);
+            if (isLengthInLimit(normalized, fb, 0)) {
+                super.insertString(fb, offset, normalized, attr);
+            } else {
+                warnAboutInvalidText();
+            }
+        }
+
+        @Override
+        public void replace(FilterBypass fb, int offset, int length,
+                String text, AttributeSet attrs)
+                throws BadLocationException {
+            String normalized = text == null
+                    ? null : normalizeWhiteSpaces(text); //NOI18N
+            if (normalized == null || isLengthInLimit(normalized, fb, length)) {
+                super.replace(fb, offset, length, normalized, attrs);
+            } else {
+                warnAboutInvalidText();
+            }
+        }
+
+        /**
+         * Check whether length limit or nubmer of words is exceeded when the
+         * new string is inserted or replaced.
+         *
+         * @param newContent String to be inserted
+         * @param fb Current FilterBypass
+         * @param charsToBeRemoved Number of characters going to be replaced by
+         * new string.
+         */
+        private boolean isLengthInLimit(String newContent, FilterBypass fb,
+                int charsToBeRemoved) {
+            return isLengthInLimit(newContent, SEARCH_TEXT_LENGTH_LIMIT
+                    - fb.getDocument().getLength() + charsToBeRemoved);
+        }
+
+        /**
+         * Check whether length limit or nubmer of words is exceeded when the
+         * new string is inserted or replaced.
+         *
+         * @param newContent String to be inserted.
+         * @param remainingChars Limit for characters to be inserted.
+         */
+        boolean isLengthInLimit(String newContent, int remainingChars) {
+            return (newContent.length() <= remainingChars)
+                    && (newContent.split(" ").length //NOI18N
+                    <= SEARCH_NUM_WORDS_LIMIT);
+        }
+
+        /**
+         * Replace all line breaks and multiple spaces with single space.
+         */
+        String normalizeWhiteSpaces(String s) {
+            String replaced =  s.replaceAll("\\s+", " ");               //NOI18N
+            return (replaced.length() > 1) ? replaced.trim() : replaced;
+        }
+
+        /**
+         * Warn that search text would be invalid.
+         */
+        @NbBundle.Messages({
+            "MSG_INVALID_SEARCH_TEST=Search text is too long."
+        })
+        private void warnAboutInvalidText() {
+            NotifyDescriptor nd = new NotifyDescriptor.Message(
+                    Bundle.MSG_INVALID_SEARCH_TEST(),
+                    NotifyDescriptor.ERROR_MESSAGE);
+            DialogDisplayer.getDefault().notifyLater(nd);
+        }
     }
 }

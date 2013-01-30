@@ -47,6 +47,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.ClassImpl.ClassBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.CsmObjectBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.EnumImpl.EnumBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.NamespaceDefinitionImpl.NamespaceBuilder;
+import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase.SimpleDeclarationBuilder;
 
 /**
  * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
@@ -71,6 +72,14 @@ public class CppParserBuilderContext {
         }
     }
 
+    public CsmObjectBuilder top(int i) {
+        if(!builders.isEmpty() && builders.size() > i) {
+            return builders.get(builders.size() - 1 - i);
+        } else {
+            return null;
+        }
+    }
+    
     public EnumBuilder getEnumBuilder() {
         CsmObjectBuilder builder = top();
         assert builder instanceof EnumBuilder;
@@ -97,6 +106,15 @@ public class CppParserBuilderContext {
         if(builder instanceof NamespaceBuilder) {
             NamespaceBuilder nsBuilder = (NamespaceBuilder)builder;        
             return nsBuilder;
+        }
+        return null;
+    }
+
+    public SimpleDeclarationBuilder getSimpleDeclarationBuilderIfExist() {
+        CsmObjectBuilder builder = top();
+        if(builder instanceof SimpleDeclarationBuilder) {
+            SimpleDeclarationBuilder sdBuilder = (SimpleDeclarationBuilder)builder;        
+            return sdBuilder;
         }
         return null;
     }

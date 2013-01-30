@@ -212,6 +212,7 @@ public final class PositionRef extends Object implements Serializable {
          * full pass sweep, i.e. removes items with garbaged referents from
          * data strucure. */
         private transient RequestProcessor.Task sweepTask;
+        private static final RequestProcessor RP = new RequestProcessor(PositionRef.class);
 
         /** support for the editor */
         transient private CloneableEditorSupport support;
@@ -362,7 +363,7 @@ public final class PositionRef extends Object implements Serializable {
                 counter = 0;
 
                 if (sweepTask == null) {
-                    sweepTask = RequestProcessor.getDefault().post(this);
+                    sweepTask = RP.post(this);
                 } else if (sweepTask.isFinished()) {
                     sweepTask.schedule(0);
                 }

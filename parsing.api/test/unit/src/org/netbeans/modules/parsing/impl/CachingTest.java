@@ -397,12 +397,12 @@ public class CachingTest extends IndexingAwareTestCase {
         final Source source = Source.create(doc);
         final SourceCache hanz = SourceAccessor.getINSTANCE().getCache(source);
         Iterable<? extends Embedding> embeddings = hanz.getAllEmbeddings();
-        assertEquals(Arrays.asList(new Integer[]{1,2,3,4,5,6}),asContentNumber(embeddings));
+        assertEquals(Arrays.asList(new Integer[]{4,5,6,1,2,3}),asContentNumber(embeddings));
         final EmbeddingProvider toRefresh = ep1Ref.get();
         assertNotNull(toRefresh);
         hanz.refresh(toRefresh, toRefresh.getSchedulerClass());
         embeddings = hanz.getAllEmbeddings();
-        assertEquals(Arrays.asList(new Integer[]{1,2,3,4,5,6}),asContentNumber(embeddings));
+        assertEquals(Arrays.asList(new Integer[]{4,5,6,1,2,3}),asContentNumber(embeddings));
     }
 
     private Collection<? extends Integer> asContentNumber(final Iterable<? extends Embedding> embeddings) {

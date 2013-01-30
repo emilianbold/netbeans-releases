@@ -66,6 +66,7 @@ import org.netbeans.modules.cnd.modelimpl.content.project.GraphContainer.ParentF
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileObject;
 
@@ -88,7 +89,7 @@ public final class DeepReparsingUtils {
         if (TRACE) {
             LOG.log(Level.INFO, "reparseOnlyOneFile {0}", fileImpl.getAbsolutePath());
         }
-        project.markAsParsingPreprocStates(fileImpl.getAbsolutePath());
+        project.markAsParsingPreprocStates(fileImpl);
         fileImpl.markReparseNeeded(false);
         ParserQueue.instance().addToBeParsedNext(fileImpl);
     }
@@ -117,21 +118,12 @@ public final class DeepReparsingUtils {
      * Reparse including/included files at fileImpl content changed.
      */
     public static void tryPartialReparseOnChangedFile(final ProjectBase changedFileProject, final FileImpl fileImpl) {
-        if (TraceFlags.USE_PARTIAL_REPARSE) {
-            if (TRACE) {
-                LOG.log(Level.INFO, "tryPartialReparseOnChangedFile {0}", fileImpl.getAbsolutePath());
-            }
-            changedFileProject.markAsParsingPreprocStates(fileImpl.getAbsolutePath());
-            fileImpl.markReparseNeeded(false);
-            ParserQueue.instance().addForPartialReparse(fileImpl);
-        } else {
-            if (TraceFlags.DEEP_REPARSING_OPTIMISTIC) {
-                if (TRACE) LOG.log(Level.INFO, "OPTIMISTIC partial ReparseOnChangedFile {0}", fileImpl.getAbsolutePath());
-                reparseOnlyOneFile(changedFileProject, fileImpl);
-            } else {
-                reparseOnChangedFileImpl(changedFileProject, fileImpl, true);
-            }
+        if (TRACE) {
+            LOG.log(Level.INFO, "tryPartialReparseOnChangedFile {0}", fileImpl.getAbsolutePath());
         }
+        changedFileProject.markAsParsingPreprocStates(fileImpl);
+        fileImpl.markReparseNeeded(false);
+        ParserQueue.instance().addForPartialReparse(fileImpl);
     }
 
     static boolean finishPartialReparse(FileImpl fileImpl, FileContentSignature lastFileBasedSignature, FileContentSignature newSignature) {
@@ -315,7 +307,7 @@ public final class DeepReparsingUtils {
                 // invalide libraries when asked but after deep reparsing activity
                 // because this activity uses information about project dependency and library dependencies
                 assert (changedProject instanceof ProjectImpl): "should be ProjectImpl: " + changedProject;
-                LibraryManager.getInstance().onProjectPropertyChanged(changedProject);
+                LibraryManager.getInstance(changedProject).onProjectPropertyChanged(changedProject);
             }
         } catch (Exception e) {
             DiagnosticExceptoins.register(e);
@@ -377,14 +369,15 @@ public final class DeepReparsingUtils {
         }
     }
 
-    static void reparseOnRemoved(Collection<FileImpl> toReparse, ProjectBase project) {
+    static void reparseOnRemoved(Collection<FileImpl> removedPhysically, Collection<FileImpl> removedAsExcluded, ProjectBase project) {
         if (TRACE) {
-            LOG.log(Level.INFO, "reparseOnRemoved {0}", toString(toReparse));
+            LOG.log(Level.INFO, "reparseOnRemoved \nPHYSICAL:{0}\nEXCLUDED:{1}", new Object[] {toString(removedPhysically), toString(removedAsExcluded)});
         }
         CndFileUtils.clearFileExistenceCache();
         Set<CsmFile> topParents = new HashSet<CsmFile>();
         Set<CsmFile> coherence = new HashSet<CsmFile>();
-        for (FileImpl impl : toReparse) {
+        // physically removed can cause broken #includes => we need to reparse parent and coherence files
+        for (FileImpl impl : removedPhysically) {
             if (impl != null) {
                 topParents.addAll(project.getGraph().getTopParentFiles(impl).getCompilationUnits());
                 coherence.addAll(project.getGraph().getCoherenceFiles(impl).getCoherenceFiles());
@@ -392,6 +385,13 @@ public final class DeepReparsingUtils {
                 topParents.remove(impl);
                 coherence.remove(impl);
             }
+        }
+        // excluded are just removed, because their model excluded from model
+        // but physically they could be in place, no need to reparse those who includes them
+        for (FileImpl impl : removedAsExcluded) {
+            project.getGraph().removeFile(impl);
+            topParents.remove(impl);
+            coherence.remove(impl);
         }
         addToReparse(project, topParents, coherence, false);
     }
@@ -423,7 +423,7 @@ public final class DeepReparsingUtils {
 
     private static void addCompilationUnitToReparse(final FileImpl fileImpl, final boolean invalidateCache) {
         ProjectBase project = fileImpl.getProjectImpl(true);
-        project.markAsParsingPreprocStates(fileImpl.getAbsolutePath());
+        project.markAsParsingPreprocStates(fileImpl);
         fileImpl.markReparseNeeded(invalidateCache);
         ParserQueue.instance().add(fileImpl, fileImpl.getPreprocHandlersForParse(), ParserQueue.Position.HEAD);
         if (TraceFlags.USE_DEEP_REPARSING_TRACE) {
@@ -435,10 +435,14 @@ public final class DeepReparsingUtils {
         if (nativeFile.getFileObject() != null && nativeFile.getFileObject().isValid()) {
             file.markReparseNeeded(true);
             APTPreprocHandler.State state = project.setChangedFileState(nativeFile);
-            if (TraceFlags.USE_DEEP_REPARSING_TRACE) {
-                System.out.println("Add file to reparse " + file.getAbsolutePath() + " from " + project); // NOI18N
+            if (state == null) {
+                CndUtils.assertTrue(!file.isValid(), "setChangedFileState returned null for valid file ", file); //NOI18N
+            } else {
+                if (TraceFlags.USE_DEEP_REPARSING_TRACE) {
+                    System.out.println("Add file to reparse " + file.getAbsolutePath() + " from " + project); // NOI18N
+                }
+                ParserQueue.instance().add(file, state, ParserQueue.Position.HEAD);
             }
-            ParserQueue.instance().add(file, state, ParserQueue.Position.HEAD);
         } else {
             assert false;
         }
@@ -492,7 +496,7 @@ public final class DeepReparsingUtils {
         }
     }
     
-    private static String toString(Collection<?> files) {
+    static String toString(Collection<?> files) {
         StringBuilder out = new StringBuilder();
         for (Object elem : files) {
             if (elem instanceof FileImpl) {

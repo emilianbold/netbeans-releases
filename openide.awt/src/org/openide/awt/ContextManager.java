@@ -52,10 +52,13 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.util.Lookup;
 import org.openide.util.Lookup.Item;
 import org.openide.util.Lookup.Provider;
@@ -72,6 +75,7 @@ import org.openide.util.lookup.ProxyLookup;
 /** Listener on a global context.
  */
 class ContextManager extends Object {
+    private static final Logger LOG = GeneralAction.LOG;
     
     private static final Map<LookupRef, Reference<ContextManager>> CACHE = new HashMap<LookupRef, Reference<ContextManager>>();
     private static final Map<LookupRef, Reference<ContextManager>> SURVIVE = new HashMap<LookupRef, Reference<ContextManager>>();
@@ -164,6 +168,12 @@ class ContextManager extends Object {
     }
     
     private <T> boolean isEnabledOnData(Lookup.Result<T> result, Class<T> type, ContextSelection selectMode) {
+        boolean res = isEnabledOnDataImpl(result, type, selectMode);
+        LOG.log(Level.FINE, "isEnabledOnData(result, {0}, {1}) = {2}", new Object[]{type, selectMode, res});
+        return res;
+    }
+    
+    private <T> boolean isEnabledOnDataImpl(Lookup.Result<T> result, Class<T> type, ContextSelection selectMode) {
         switch (selectMode) {
             case EXACTLY_ONE:
                 Collection<Lookup.Item<T>> instances = new HashSet<Lookup.Item<T>>(result.allItems());
@@ -247,10 +257,15 @@ class ContextManager extends Object {
         perf.actionPerformed(e, Collections.unmodifiableList(all), new LkpAE());
     }
 
-    @SuppressWarnings("unchecked") // XXX cast Collection<? extends T> -> List<? extends T> should not be unsafe, right? maybe javac bug
     private <T> List<? extends T> listFromResult(Lookup.Result<T> result) {
-        List<? extends T> all;
         Collection<? extends T> col = result.allInstances();
+        Collection<T> tmp = new LinkedHashSet<T>(col);
+        if (tmp.size() != col.size()) {
+            Collection<T> nt = new ArrayList<T>(tmp.size());
+            nt.addAll(tmp);
+            col = nt;
+        }
+        List<? extends T> all;
         if (col instanceof List) {
             all = (List<? extends T>)col;
         } else {
@@ -405,6 +420,12 @@ class ContextManager extends Object {
         }
 
         @Override
+        public boolean add(ContextAction e) {
+            assert e != null;
+            return super.add(e);
+        }
+
+        @Override
         public void resultChanged(LookupEvent ev) {
             Mutex.EVENT.readAccess(this);
         }
@@ -415,8 +436,18 @@ class ContextManager extends Object {
             synchronized (CACHE) {
                 arr = toArray(new ContextAction[0]);
             }
+            long now = 0; 
+            assert (now = System.currentTimeMillis()) >= 0;
             for (ContextAction a : arr) {
                 a.updateState();
+            }
+            long took = 0;
+            assert (took = System.currentTimeMillis() - now) >= 0;
+            if (took > 2000) {
+                LOG.log(Level.WARNING, "Updating state of {1} actions took {0} ms. here is the action list:", new Object[] { took, arr.length });
+                for (ContextAction a : arr) {
+                    LOG.log(Level.INFO, "  {0}", a);
+                }
             }
         }
     }

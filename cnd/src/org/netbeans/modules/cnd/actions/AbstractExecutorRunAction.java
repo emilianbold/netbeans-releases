@@ -585,6 +585,9 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
                 }
                 outputListener = null;
             }
+            if (lineConvertor instanceof ChangeListener) {
+                ((ChangeListener)lineConvertor).stateChanged(new ChangeEvent(this));
+            }
         }
 
         private synchronized List<ConvertedLine> convert(String line) {

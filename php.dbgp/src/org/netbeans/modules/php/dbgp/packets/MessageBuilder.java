@@ -43,6 +43,8 @@
  */
 package org.netbeans.modules.php.dbgp.packets;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.php.dbgp.packets.DbgpStream.StreamType;
 import org.w3c.dom.Node;
 
@@ -52,6 +54,8 @@ import org.w3c.dom.Node;
  *
  */
 class MessageBuilder {
+
+    private static final Logger LOGGER = Logger.getLogger(MessageBuilder.class.getName());
 
     private static final String TYPE    = "type";       // NOI18N
 
@@ -77,80 +81,59 @@ class MessageBuilder {
 
     static DbgpMessage createResponse( Node node ) {
         String command = DbgpMessage.getAttribute(node, DbgpResponse.COMMAND );
-        assert command != null;
-        if ( command.equals( RunCommand.RUN ) ||
-                command.equals( StatusCommand.STATUS ) ||
-                command.equals( StepOutCommand.STEP_OUT ) ||
-                command.equals( StepOverCommand.STEP_OVER )||
-                command.equals( StepIntoCommand.STEP_INTO ) ||
-                command.equals( StopCommand.COMMAND ) )
-        {
-            return new StatusResponse( node );
-        }
-        else if( command.equals( BrkpntSetCommand.BREAKPOINT_SET )) {
-            return new BrkpntSetResponse( node );
-        }
-        else if( command.equals( BrkpntUpdateCommand.UPDATE )) {
-            return new BrkpntUpdateResponse( node );
-        }
-        else if( command.equals( BrkpntRemoveCommand.REMOVE )) {
-            return new BrkpntRemoveResponse( node );
-        }
-        else if ( command.equals( ContextNamesCommand.CONTEXT_NAMES) ){
-            return new ContextNamesResponse( node );
-        }
-        else if ( command.equals( ContextGetCommand.CONTEXT_GET ) ){
-            return new ContextGetResponse( node );
-        }
-        else if ( command.equals( StackDepthCommand.STACK_DEPTH ) ){
-            return new StackDepthResponse( node );
-        }
-        else if ( command.equals( StackGetCommand.STACK_GET )){
-            return new StackGetResponse( node );
-        }
-        else if ( command.equals( TypeMapGetCommand.TYPEMAP_GET )){
-            return new TypeMapGetResponse( node );
-        }
-        else if ( command.equals( PropertySetCommand.PROPERTY_SET )){
-            return new PropertySetResponse( node );
-        }
-        else if ( command.equals( PropertyGetCommand.PROPERTY_GET )){
-            return new PropertyGetResponse( node );
-        }
-        else if ( command.equals( PropertyValueCommand.PROPERTY_VALUE )){
-            return new PropertyValueResponse( node );
-        }
-        else if ( command.equals( SourceCommand.SOURCE )){
-            return new SourceResponse( node );
-        }
-        else if ( command.equals( StreamType.STDERR.toString() )
-                || command.equals( StreamType.STDOUT.toString() ))
-        {
-            return new StreamResponse( node );
-        }
-        else if( command.equals( FeatureGetCommand.FEATURE_GET )){
-            return new FeatureGetResponse( node );
-        }
-        else if( command.equals( FeatureSetCommand.FEATURE_SET )){
-            return new FeatureSetResponse( node );
-        }
-        else if( command.equals( BreakCommand.BREAK )){
-            return new BreakResponse( node );
-        }
-        else if( command.equals( EvalCommand.EVAL )){
+        if (RunCommand.RUN.equals(command) ||
+                StatusCommand.STATUS.equals(command) ||
+                StepOutCommand.STEP_OUT.equals(command) ||
+                StepOverCommand.STEP_OVER.equals(command) ||
+                StepIntoCommand.STEP_INTO.equals(command) ||
+                StopCommand.COMMAND.equals(command)) {
+            return new StatusResponse(node);
+        } else if(BrkpntSetCommand.BREAKPOINT_SET.equals(command)) {
+            return new BrkpntSetResponse(node);
+        } else if(BrkpntUpdateCommand.UPDATE.equals(command)) {
+            return new BrkpntUpdateResponse(node);
+        } else if(BrkpntRemoveCommand.REMOVE.equals(command)) {
+            return new BrkpntRemoveResponse(node);
+        } else if (ContextNamesCommand.CONTEXT_NAMES.equals(command)){
+            return new ContextNamesResponse(node);
+        } else if (ContextGetCommand.CONTEXT_GET.equals(command)){
+            return new ContextGetResponse(node);
+        } else if (StackDepthCommand.STACK_DEPTH.equals(command)){
+            return new StackDepthResponse(node);
+        } else if (StackGetCommand.STACK_GET.equals(command)){
+            return new StackGetResponse(node);
+        } else if (TypeMapGetCommand.TYPEMAP_GET.equals(command)){
+            return new TypeMapGetResponse(node);
+        } else if (PropertySetCommand.PROPERTY_SET.equals(command)){
+            return new PropertySetResponse(node);
+        } else if (PropertyGetCommand.PROPERTY_GET.equals(command)){
+            return new PropertyGetResponse(node);
+        } else if (PropertyValueCommand.PROPERTY_VALUE.equals(command)){
+            return new PropertyValueResponse(node);
+        } else if (SourceCommand.SOURCE.equals(command)){
+            return new SourceResponse(node);
+        } else if (StreamType.STDERR.toString().equals(command)
+                || StreamType.STDOUT.toString().equals(command)) {
+            return new StreamResponse(node);
+        } else if (FeatureGetCommand.FEATURE_GET.equals(command)){
+            return new FeatureGetResponse(node);
+        } else if (FeatureSetCommand.FEATURE_SET.equals(command)){
+            return new FeatureSetResponse(node);
+        } else if (BreakCommand.BREAK.equals(command)){
+            return new BreakResponse(node);
+        } else if (EvalCommand.EVAL.equals(command)){
             String transactionId = DbgpMessage.getAttribute(node, DbgpResponse.TRANSACTION_ID);
-            if (transactionId.equals(RequestedUrlEvalCommand.LAST_USED_TRANSACTION_ID)) {
+            if (transactionId.equals(RequestedUrlEvalCommand.getLastUsedTransactionId())) {
                 return new RequestedUrlEvalResponse(node);
             }
-            return new EvalResponse( node );
+            return new EvalResponse(node);
+        } else if (ExprCommand.EXPR.equals(command)){
+            return new ExprResponse(node);
+        } else if (ExecCommand.EXEC.equals(command)){
+            return new ExecResponse(node);
         }
-        else if( command.equals( ExprCommand.EXPR )){
-            return new ExprResponse( node );
-        }
-        else if( command.equals( ExecCommand.EXEC )){
-            return new ExecResponse( node );
-        }
-        return null;
+        LOGGER.log(Level.INFO, "Command not matched: {0} NODE: {1}", new Object[] {command, node});
+        return new DbgpMessage.NoneDbgpMessage(node);
     }
 
 }

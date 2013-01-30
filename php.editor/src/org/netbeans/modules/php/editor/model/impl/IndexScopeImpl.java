@@ -53,14 +53,17 @@ import org.netbeans.modules.php.editor.api.NameKind;
 import org.netbeans.modules.php.editor.api.NameKind.Exact;
 import org.netbeans.modules.php.editor.api.PhpElementKind;
 import org.netbeans.modules.php.editor.api.QualifiedName;
-import static  org.netbeans.modules.php.editor.api.elements.ElementFilter.forFiles;
+import org.netbeans.modules.php.editor.api.QuerySupportFactory;
 import org.netbeans.modules.php.editor.api.elements.ClassElement;
+import static org.netbeans.modules.php.editor.api.elements.ElementFilter.forFiles;
 import org.netbeans.modules.php.editor.api.elements.FunctionElement;
 import org.netbeans.modules.php.editor.api.elements.InterfaceElement;
 import org.netbeans.modules.php.editor.api.elements.MethodElement;
+import org.netbeans.modules.php.editor.api.elements.TraitElement;
 import org.netbeans.modules.php.editor.api.elements.TypeConstantElement;
 import org.netbeans.modules.php.editor.api.elements.TypeElement;
 import org.netbeans.modules.php.editor.api.elements.VariableElement;
+import org.netbeans.modules.php.editor.elements.IndexQueryImpl;
 import org.netbeans.modules.php.editor.model.ClassConstantElement;
 import org.netbeans.modules.php.editor.model.ClassScope;
 import org.netbeans.modules.php.editor.model.ConstantElement;
@@ -70,18 +73,15 @@ import org.netbeans.modules.php.editor.model.IndexScope;
 import org.netbeans.modules.php.editor.model.InterfaceScope;
 import org.netbeans.modules.php.editor.model.MethodScope;
 import org.netbeans.modules.php.editor.model.Model;
+import org.netbeans.modules.php.editor.model.ModelElement;
 import org.netbeans.modules.php.editor.model.ModelUtils;
+import org.netbeans.modules.php.editor.model.Scope;
+import org.netbeans.modules.php.editor.model.TraitScope;
 import org.netbeans.modules.php.editor.model.TypeScope;
 import org.netbeans.modules.php.editor.model.VariableName;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Union2;
-import org.netbeans.modules.php.editor.api.QuerySupportFactory;
-import org.netbeans.modules.php.editor.api.elements.TraitElement;
-import org.netbeans.modules.php.editor.elements.IndexQueryImpl;
-import org.netbeans.modules.php.editor.model.ModelElement;
-import org.netbeans.modules.php.editor.model.Scope;
-import org.netbeans.modules.php.editor.model.TraitScope;
 
 /**
  *
@@ -93,11 +93,16 @@ class IndexScopeImpl extends ScopeImpl implements IndexScope {
     private final Model model;
 
     IndexScopeImpl(PHPParseResult info) {
-        this(info, "index", PhpElementKind.INDEX);//NOI18N
+        this(info, "index", PhpElementKind.INDEX); //NOI18N
     }
 
     private IndexScopeImpl(PHPParseResult info, String name, PhpElementKind kind) {
-        super(null, name, Union2.<String, FileObject>createSecond(info != null ? info.getSnapshot().getSource().getFileObject() : null), new OffsetRange(0, 0), kind);//NOI18N
+        super(
+                null,
+                name,
+                Union2.<String, FileObject>createSecond(info != null ? info.getSnapshot().getSource().getFileObject() : null),
+                new OffsetRange(0, 0),
+                kind);        assert info != null;
         this.model = info.getModel();
         this.index = IndexQueryImpl.create(QuerySupportFactory.get(info), this.model);
     }
@@ -112,7 +117,7 @@ class IndexScopeImpl extends ScopeImpl implements IndexScope {
     static Collection<? extends FieldElement> getFields(TypeScope typeScope, String fieldName, ModelElement elem, final int... modifiers) {
         Set<FieldElement> retval = new HashSet<FieldElement>();
         if (typeScope instanceof ClassScope) {
-            ClassScope clsScope = (ClassScope)typeScope;
+            ClassScope clsScope = (ClassScope) typeScope;
             retval.addAll(ModelUtils.filter(clsScope.getDeclaredFields(), fieldName));
             retval.addAll(ModelUtils.filter(clsScope.getInheritedFields(), fieldName));
         } else {
@@ -219,11 +224,11 @@ class IndexScopeImpl extends ScopeImpl implements IndexScope {
             Set<TypeElement> types = getIndex().getTypes(exact);
             for (TypeElement typeElement : forFiles(getFileObject()).prefer(types)) {
                     if (typeElement instanceof ClassElement) {
-                        retval.add(new ClassScopeImpl(this, (ClassElement)typeElement));
+                        retval.add(new ClassScopeImpl(this, (ClassElement) typeElement));
                     } else if (typeElement instanceof InterfaceElement) {
-                        retval.add(new InterfaceScopeImpl(this, (InterfaceElement)typeElement));
+                        retval.add(new InterfaceScopeImpl(this, (InterfaceElement) typeElement));
                     } else if (typeElement instanceof TraitElement) {
-                        retval.add(new TraitScopeImpl(this, (TraitElement)typeElement));
+                        retval.add(new TraitScopeImpl(this, (TraitElement) typeElement));
                     } else {
                         assert false : typeElement.getClass();
                     }

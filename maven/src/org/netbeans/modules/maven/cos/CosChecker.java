@@ -43,26 +43,30 @@ package org.netbeans.modules.maven.cos;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
 import org.apache.maven.artifact.versioning.ComparableVersion;
 import org.apache.maven.model.Build;
 import org.apache.maven.model.Dependency;
-import org.apache.maven.model.Resource;
 import org.apache.maven.project.MavenProject;
-import org.codehaus.plexus.util.DirectoryScanner;
+import org.codehaus.plexus.util.cli.CommandLineException;
 import org.codehaus.plexus.util.cli.CommandLineUtils;
 import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.extexecution.startup.StartupExtender;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.project.runner.JavaRunner;
+import org.netbeans.api.java.source.ui.ScanDialog;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
@@ -83,11 +87,14 @@ import static org.netbeans.modules.maven.cos.Bundle.*;
 import org.netbeans.modules.maven.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.maven.customizer.RunJarPanel;
 import org.netbeans.modules.maven.execute.DefaultReplaceTokenProvider;
+import org.netbeans.modules.maven.spi.cos.CompileOnSaveSkipper;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.SingleMethod;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.awt.Notification;
 import org.openide.awt.NotificationDisplayer;
 import org.openide.execution.ExecutorTask;
@@ -95,8 +102,11 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Task;
+import org.openide.util.TaskListener;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
@@ -113,6 +123,8 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
     private static final String RUN_MAIN = ActionProvider.COMMAND_RUN_SINGLE + ".main"; //NOI18N
     private static final String DEBUG_MAIN = ActionProvider.COMMAND_DEBUG_SINGLE + ".main"; //NOI18N
     private static final String PROFILE_MAIN = ActionProvider.COMMAND_PROFILE_SINGLE + ".main"; // NOI18N
+    private static final Logger LOG = Logger.getLogger(CosChecker.class.getName());
+    private static final RequestProcessor RP = new RequestProcessor(CosChecker.class);
 
     @Override
     public boolean checkRunConfig(RunConfig config) {
@@ -138,18 +150,20 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
         // any other means of long term execution will not keep the CoS stamp around while running..
         // -->> ONLY DELETE FOR BUILD ACTION
         if (ActionProvider.COMMAND_BUILD.equals(config.getActionName())) {
-            deleteCoSTimeStamp(config, true);
-            deleteCoSTimeStamp(config, false);
-            //do clean the generated class files everytime, that won't hurt anything
-            // unless the classes are missing then ?!? if the action doesn't perform the compilation step?
-            try {
-                cleanGeneratedClassfiles(config);
-            } catch (IOException ex) {
-                if (!"clean".equals(config.getGoals().get(0))) { //NOI18N
-                    config.getGoals().add(0, "clean"); //NOI18N
-                    }
-                Logger.getLogger(CosChecker.class.getName()).log(Level.INFO, "Compile on Save Clean failed", ex);
-            }
+            
+//commented out because deleting the timestamp makes the createGeneratedClassfiles action a noop.
+//            deleteCoSTimeStamp(config, true);
+//            deleteCoSTimeStamp(config, false);
+//            //do clean the generated class files everytime, that won't hurt anything
+//            // unless the classes are missing then ?!? if the action doesn't perform the compilation step?
+//            try {
+//                cleanGeneratedClassfiles(config.getProject());
+//            } catch (IOException ex) {
+//                if (!"clean".equals(config.getGoals().get(0))) { //NOI18N
+//                    config.getGoals().add(0, "clean"); //NOI18N
+//                    }
+//                Logger.getLogger(CosChecker.class.getName()).log(Level.INFO, "Compile on Save Clean failed", ex);
+//            }
         } else if (!ActionProvider.COMMAND_REBUILD.equals(config.getActionName())) {
             //now for all custom and non-build only related actions,
             //make sure we place the stamp files into all opened projects.
@@ -161,75 +175,8 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
         return true;
     }
 
-    private boolean hasChangedFilteredResources(boolean includeTests, long stamp, RunConfig config) {
-        List<Resource> res = config.getMavenProject().getResources();
-        for (Resource r : res) {
-            if (r.isFiltering()) {
-                if (hasChangedResources(r, stamp)) {
-                    return true;
-                }
-                // if filtering resource not changed, proceed with CoS
-                continue;
-            }
-        }
-        if (includeTests) {
-            res = config.getMavenProject().getTestResources();
-            for (Resource r : res) {
-                if (r.isFiltering()) {
-                    if (hasChangedResources(r, stamp)) {
-                        return true;
-                    }
-                    // if filtering resource not changed, proceed with CoS
-                    continue;
-                }
-            }
-        }
-        return false;
-    }
-
-    static final String[] DEFAULT_INCLUDES = {"**"};
-
-    private boolean hasChangedResources(Resource r, long stamp) {
-        String dir = r.getDirectory();
-        File dirFile = FileUtil.normalizeFile(new File(dir));
-  //      System.out.println("checkresource dirfile =" + dirFile);
-        if (dirFile.exists()) {
-            List<File> toCopy = new ArrayList<File>();
-            DirectoryScanner ds = new DirectoryScanner();
-            ds.setBasedir(dirFile);
-            //includes/excludes
-            String[] incls = r.getIncludes().toArray(new String[0]);
-            if (incls.length > 0) {
-                ds.setIncludes(incls);
-            } else {
-                ds.setIncludes(DEFAULT_INCLUDES);
-            }
-            String[] excls = r.getExcludes().toArray(new String[0]);
-            if (excls.length > 0) {
-                ds.setExcludes(excls);
-            }
-            ds.addDefaultExcludes();
-            ds.scan();
-            String[] inclds = ds.getIncludedFiles();
-//            System.out.println("found=" + inclds.length);
-            for (String inc : inclds) {
-                File f = new File(dirFile, inc);
-                if (f.lastModified() >= stamp) { 
-                    toCopy.add(FileUtil.normalizeFile(f));
-                }
-            }
-            if (toCopy.size() > 0) {
-                    //the case of filtering source roots, here we want to return false
-                    //to skip CoS altogether.
-                return true;
-            }
-        }
-        return false;
-    }
-
-
-    private boolean checkRunMainClass(RunConfig config) {
-        String actionName = config.getActionName();
+    private boolean checkRunMainClass(final RunConfig config) {
+        final String actionName = config.getActionName();
         //compile on save stuff
         if (RunUtils.hasApplicationCompileOnSaveEnabled(config)) {
             if ((NbMavenProject.TYPE_JAR.equals(
@@ -248,14 +195,14 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
                 }
                 //check the COS timestamp against resources etc.
                 //if changed, perform part of the maven build. (or skip COS)
-                if (hasChangedFilteredResources(false, stamp, config)) {
-                    //we have some filtered resources modified or encountered other problem,
-                    //skip CoS
-                    return true;
+                for (CompileOnSaveSkipper skipper : Lookup.getDefault().lookupAll(CompileOnSaveSkipper.class)) {
+                    if (skipper.skip(config, false, stamp)) {
+                        return true;
+                    }
                 }
 
-                Map<String, Object> params = new HashMap<String, Object>();
-                params.put(JavaRunner.PROP_PROJECT_NAME, config.getExecutionName());
+                final Map<String, Object> params = new HashMap<String, Object>();
+                params.put(JavaRunner.PROP_PROJECT_NAME, config.getExecutionName() + "/CoS");
                 String proppath = config.getProperties().get("exec.workingdir"); //NOI18N
                 if (proppath != null) {
                     params.put(JavaRunner.PROP_WORK_DIR, FileUtil.normalizeFile(new File(proppath)));
@@ -290,8 +237,14 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
                     try {
                         //jvm args, add and for debugging, remove the debugging ones..
                         params.put(JavaRunner.PROP_RUN_JVMARGS, extractDebugJVMOptions(args[0]));
+                    } catch (CommandLineException cli) {
+                        LOG.log(Level.INFO, "error parsing exec.args property:" + args[0], cli);
+                        if (DEBUG_MAIN.equals(actionName) || ActionProvider.COMMAND_DEBUG.equals(actionName)) {
+                            NotifyDescriptor.Message msg = new NotifyDescriptor.Message("Error parsing exec.args property, arguments will not be passed to internal execution. Error: " + cli.getLocalizedMessage(), NotifyDescriptor.ERROR_MESSAGE);
+                            DialogDisplayer.getDefault().notifyLater(msg);
+                        } 
                     } catch (Exception ex) {
-                        Exceptions.printStackTrace(ex);
+                        LOG.log(Level.INFO, "error extracting debug params from exec.args property:" + args[0], ex);              
                     }
                 }
                 //make sure to run with the proper jdk
@@ -302,18 +255,48 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
 
                 if (params.get(JavaRunner.PROP_EXECUTE_FILE) != null ||
                         params.get(JavaRunner.PROP_CLASSNAME) != null) {
-                    String action2Quick = action2Quick(actionName);
+                    final String action2Quick = action2Quick(actionName);
                     boolean supported = JavaRunner.isSupported(action2Quick, params);
                     if (supported) {
                         try {
-                            collectStartupArgs(config, params);
-                            JavaRunner.execute(action2Quick, params);
-                        } catch (IOException ex) {
+                            SwingUtilities.invokeAndWait(new Runnable() {
+                                @Override
+                                public void run() {
+                                    ScanDialog.runWhenScanFinished(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            if (SwingUtilities.isEventDispatchThread()) {
+                                                RP.post(this);
+                                                return;
+                                            }
+                                            try {
+                                                collectStartupArgs(config, params);
+                                                ExecutorTask tsk = JavaRunner.execute(action2Quick, params);
+                                                warnCoSInOutput(tsk, config);
+                                                tsk.addTaskListener(new TaskListener() {
+                                                    @Override
+                                                    public void taskFinished(Task task) {
+                                                        warnTestCoS(config);
+                                                    }
+                                                });
+
+                                            } catch (IOException ex) {
+                                                Exceptions.printStackTrace(ex);
+                                            } catch (UnsupportedOperationException ex) {
+                                                Exceptions.printStackTrace(ex);
+                                            } finally {
+                                                if (RunUtils.hasApplicationCompileOnSaveEnabled(config)) {
+                                                    touchCoSTimeStamp(config, false);
+                                                }
+                                            }
+                                        }
+                                    }, config.getTaskDisplayName());
+                                }
+                            });
+                        } catch (InterruptedException ex) {
                             Exceptions.printStackTrace(ex);
-                        } catch (UnsupportedOperationException ex) {
+                        } catch (InvocationTargetException ex) {
                             Exceptions.printStackTrace(ex);
-                        } finally {
-                            touchCoSTimeStamp(config, false);
                         }
                         return false;
                     }
@@ -325,7 +308,7 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
         return true;
     }
 
-    private boolean checkRunTest(RunConfig config) {
+    private boolean checkRunTest(final RunConfig config) {
         String actionName = config.getActionName();
         if (!(ActionProvider.COMMAND_TEST_SINGLE.equals(actionName) ||
                 ActionProvider.COMMAND_DEBUG_TEST_SINGLE.equals(actionName) ||
@@ -334,7 +317,7 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
         }
         if (RunUtils.hasTestCompileOnSaveEnabled(config)) {
             String testng = PluginPropertyUtils.getPluginProperty(config.getMavenProject(), Constants.GROUP_APACHE_PLUGINS,
-                    Constants.PLUGIN_SUREFIRE, "testNGArtifactName", "test"); //NOI18N
+                    Constants.PLUGIN_SUREFIRE, "testNGArtifactName", "test", "testNGArtifactName"); //NOI18N
             if (testng == null) {
                 testng = "org.testng:testng"; //NOI18N
             }
@@ -353,7 +336,7 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
                 //CoS requires at least TestNG 6.5.2-SNAPSHOT if JUnit is present
                 return true;
             }
-            Map<String, Object> params = new HashMap<String, Object>();
+            final Map<String, Object> params = new HashMap<String, Object>();
             String test = config.getProperties().get("test"); //NOI18N
             if (test == null) {
                 //user somehow configured mapping in unknown way.
@@ -369,12 +352,12 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
 
             //check the COS timestamp against resources etc.
             //if changed, perform part of the maven build. (or skip COS)
-            if (hasChangedFilteredResources(true, stamp, config)) {
-                //we have some filtered resources modified, skip CoS
-                return true;
+            
+            for (CompileOnSaveSkipper skipper : Lookup.getDefault().lookupAll(CompileOnSaveSkipper.class)) {
+                if (skipper.skip(config, true, stamp)) {
+                    return true;
+                }
             }
-
-            //#
             FileObject selected = config.getSelectedFileObject();
             ProjectSourcesClassPathProvider cpp = config.getProject().getLookup().lookup(ProjectSourcesClassPathProvider.class);
             ClassPath srcs = cpp.getProjectSourcesClassPath(ClassPath.SOURCE);
@@ -433,9 +416,9 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
             
             List<String> jvmProps = new ArrayList<String>();
             Set<String> jvmPropNames = new HashSet<String>();
-            params.put(JavaRunner.PROP_PROJECT_NAME, config.getExecutionName());
+            params.put(JavaRunner.PROP_PROJECT_NAME, config.getExecutionName() + "/CoS");
             String dir = PluginPropertyUtils.getPluginProperty(config.getMavenProject(), Constants.GROUP_APACHE_PLUGINS,
-                    Constants.PLUGIN_SUREFIRE, "basedir", "test"); //NOI18N
+                    Constants.PLUGIN_SUREFIRE, "basedir", "test", "basedir"); //NOI18N
             //TODO there's another property named workingDirectory that overrides  basedir.
             // basedir is also assumed to end up as system property for tests..
             jvmPropNames.add("basedir"); //NOI18N
@@ -482,7 +465,7 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
             }
 
             String argLine = PluginPropertyUtils.getPluginProperty(config.getMavenProject(), Constants.GROUP_APACHE_PLUGINS,
-                    Constants.PLUGIN_SUREFIRE, "argLine", "test"); //NOI18N
+                    Constants.PLUGIN_SUREFIRE, "argLine", "test", "argLine"); //NOI18N
             if (argLine != null) {
                 try {
                     String[] arr = CommandLineUtils.translateCommandline(argLine);
@@ -497,8 +480,14 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
                 if (argLine != null) {
                     try {
                         jvmProps.addAll(extractDebugJVMOptions(argLine));
+                    } catch (CommandLineException cli) {
+                        LOG.log(Level.INFO, "error parsing argLine property:" + argLine, cli);
+                        if (ActionProvider.COMMAND_DEBUG_TEST_SINGLE.equals(actionName)) {
+                            NotifyDescriptor.Message msg = new NotifyDescriptor.Message("Error parsing argLine property, arguments will not be passed to internal execution. Error: " + cli.getLocalizedMessage(), NotifyDescriptor.ERROR_MESSAGE);
+                            DialogDisplayer.getDefault().notifyLater(msg);
+                        } 
                     } catch (Exception ex) {
-                        Exceptions.printStackTrace(ex);
+                        LOG.log(Level.INFO, "error extracting debug params from argLine property:" + argLine, ex);              
                     }
                 }
             }
@@ -536,22 +525,55 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
             //#168551
             params.put("maven.disableSources", Boolean.TRUE);  //NOI18N
 
-            String action2Quick = action2Quick(actionName);
+            final String action2Quick = action2Quick(actionName);
             boolean supported = JavaRunner.isSupported(action2Quick, params);
             if (supported) {
                 try {
-                    collectStartupArgs(config, params);
-                    ExecutorTask tsk = JavaRunner.execute(action2Quick, params);
-                //TODO listen on result of execution
-                //if failed, tweak the timestamps to force a non-CoS build
-                //next time around.
-                } catch (IOException ex) {
+                    SwingUtilities.invokeAndWait(new Runnable() {
+                        @Override
+                        public void run() {
+                            ScanDialog.runWhenScanFinished(new Runnable() {
+                                @Override
+                                public void run() {
+                                    if (SwingUtilities.isEventDispatchThread()) {
+                                        RP.post(this);
+                                        return;
+                                    }
+
+                                    try {
+                                        collectStartupArgs(config, params);
+                                        final ExecutorTask tsk = JavaRunner.execute(action2Quick, params);
+                                        warnCoSInOutput(tsk, config);
+                                        tsk.addTaskListener(new TaskListener() {
+                                            @Override
+                                            public void taskFinished(Task task) {
+                                                warnTestCoS(config);
+                                            }
+                                        });
+                                        //TODO listen on result of execution
+                                        //if failed, tweak the timestamps to force a non-CoS build
+                                        //next time around.
+                                    } catch (IOException ex) {
+                                        Exceptions.printStackTrace(ex);
+                                    } catch (UnsupportedOperationException ex) {
+                                        Exceptions.printStackTrace(ex);
+                                    } finally {
+                                        touchCoSTimeStamp(config, true);
+                                        if (RunUtils.hasApplicationCompileOnSaveEnabled(config)) {
+                                            touchCoSTimeStamp(config, false);
+                                        } else {
+                                            deleteCoSTimeStamp(config, false);
+                                        }
+                                        
+                                    }
+                                }
+                            }, config.getTaskDisplayName());
+                        }
+                    });
+                } catch (InterruptedException ex) {
                     Exceptions.printStackTrace(ex);
-                } catch (UnsupportedOperationException ex) {
+                } catch (InvocationTargetException ex) {
                     Exceptions.printStackTrace(ex);
-                } finally {
-                    touchCoSTimeStamp(config, true);
-                    touchCoSTimeStamp(config, false);
                 }
                 return false;
             }
@@ -561,10 +583,9 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
         return true;
     }
 
-    private static void cleanGeneratedClassfiles(RunConfig config) throws IOException { // #145243
+    private static void cleanGeneratedClassfiles(Project p) throws IOException { // #145243
         //we execute normal maven build, but need to clean any
         // CoS classes present.
-        Project p = config.getProject();
         List<ClassPath> executePaths = new ArrayList<ClassPath>();
         for (SourceGroup g : ProjectUtils.getSources(p).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
             FileObject root = g.getRootFolder();
@@ -696,8 +717,12 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
             return false;
         }
         if (fl.getParentFile() == null || !(fl.getParentFile().exists())) {
-            //the project was not built
-            return false;
+            // The project was not built or it doesn't contains any source file
+            // and thus the target/classes folder isn't created yet - see #219916
+            boolean folderCreated = fl.getParentFile().mkdir();
+            if (!folderCreated) {
+                return false;
+            }
         }
         if (!fl.exists()) {
             try {
@@ -816,6 +841,15 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
             if (RunUtils.hasApplicationCompileOnSaveEnabled(project)) {
                 touchCoSTimeStamp(mvn, false);
             } else {
+                File f = getCoSFile(mvn, false);
+                boolean doClean = f != null && f.exists();
+                if (doClean) {
+                    try {
+                        cleanGeneratedClassfiles(project);
+                    } catch (IOException ex) {
+                        LOG.log(Level.FINE, "Error cleaning up", ex);
+                    }
+                }
                 deleteCoSTimeStamp(mvn, false);
             }
             if (RunUtils.hasTestCompileOnSaveEnabled(project)) {
@@ -827,13 +861,13 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
     }
 
     @StaticResource private static final String SUGGESTION = "org/netbeans/modules/maven/resources/suggestion.png";
-    private static boolean warned;
+    private static boolean warnedNoCoS;
     @Messages({
         "CosChecker.no_test_cos.title=Not using Compile on Save",
         "CosChecker.no_test_cos.details=Compile on Save mode can speed up single test execution for many projects."
     })
     private static void warnNoTestCoS(RunConfig config) {
-        if (warned) {
+        if (warnedNoCoS) {
             return;
         }
         final Project project = config.getProject();
@@ -842,10 +876,7 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
         }
         final Notification n = NotificationDisplayer.getDefault().notify(CosChecker_no_test_cos_title(), ImageUtilities.loadImageIcon(SUGGESTION, true), CosChecker_no_test_cos_details(), new ActionListener() {
             @Override public void actionPerformed(ActionEvent e) {
-                CustomizerProviderImpl prv = project.getLookup().lookup(CustomizerProviderImpl.class);
-                if (prv != null) {
-                    prv.showCustomizer(ModelHandle2.PANEL_COMPILE);
-                }
+                showCompilePanel(project);
             }
         }, NotificationDisplayer.Priority.LOW);
         RequestProcessor.getDefault().post(new Runnable() {
@@ -853,32 +884,122 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
                 n.clear();
             }
         }, 15 * 1000);
-        warned = true;
+        warnedNoCoS = true;
+    }
+    
+    private static boolean warnedCoS;
+    @Messages({
+        "CosChecker.test_cos.title=Using Compile on Save (CoS)",
+        "CosChecker.test_cos.details=CoS mode is not executing tests through Maven. Disable if causing problems."
+    })
+    private static void warnTestCoS(RunConfig config) {
+        if (warnedCoS) {
+            return;
+        }
+        final Project project = config.getProject();
+        if (project == null) {
+            return;
+        }
+        final Notification n = NotificationDisplayer.getDefault().notify(CosChecker_test_cos_title(), ImageUtilities.loadImageIcon(SUGGESTION, true), CosChecker_test_cos_details(), new ActionListener() {
+            @Override public void actionPerformed(ActionEvent e) {
+                showCompilePanel(project);
+            }
+
+        }, NotificationDisplayer.Priority.LOW);
+        RequestProcessor.getDefault().post(new Runnable() {
+            @Override public void run() {
+                n.clear();
+            }
+        }, 15 * 1000);
+        warnedCoS = true;
+    }
+    
+    private static void showCompilePanel(Project project) {
+        CustomizerProviderImpl prv = project.getLookup().lookup(CustomizerProviderImpl.class);
+        if (prv != null) {
+            prv.showCustomizer(ModelHandle2.PANEL_COMPILE);
+        }
     }
 
+    //this method has a problem of timing. There is the executor's task running in some other thread and
+    // and we try to write to it. In reality for short lived executions it either prints first or never at all.
+    // I suppose that for long running tasks we cannot guarantee the position at which the warning appears.
+    private void warnCoSInOutput(final ExecutorTask tsk, final RunConfig config) throws IOException {
+        return;
+//        if (IOColorPrint.isSupported(tsk.getInputOutput())) {
+//            IOColorPrint.print(tsk.getInputOutput(), "NetBeans: Compile on Save Execution is not done through Maven.", null, false, Color.GRAY);
+//            IOColorPrint.print(tsk.getInputOutput(), "Disable if it's causing problems.\n", new OutputListener() {
+//
+//                @Override
+//                public void outputLineSelected(OutputEvent ev) {
+//                }
+//                
+//                @Override
+//                public void outputLineAction(OutputEvent ev) {
+//                    showCompilePanel(config.getProject());
+//                }
+//
+//                @Override
+//                public void outputLineCleared(OutputEvent ev) {
+//                }
+//            }, false, Color.BLUE.darker());
+//        }
+    }
+
+    
     @ProjectServiceProvider(service=ProjectOpenedHook.class, projectType="org-netbeans-modules-maven")
     public static class CosPOH extends ProjectOpenedHook {
 
         private final Project project;
+        
+        private final PropertyChangeListener listener;
 
         public CosPOH(Project prj) {
             project = prj;
+            listener = new PropertyChangeListener() {
+                @Override
+                public void propertyChange(PropertyChangeEvent evt) {
+                    if (NbMavenProject.PROP_PROJECT.equals(evt.getPropertyName())) {
+                        touchProject(project);
+                    }
+                }
+            };
         }
 
         @Override
         protected void projectOpened() {
-            touchProject(project);
+            RP.post(new Runnable() {
+                @Override
+                public void run() {
+                    touchProject(project);
+                }
+            });
+            NbMavenProject prj = project.getLookup().lookup(NbMavenProject.class);
+            if (prj != null) {
+                prj.addPropertyChangeListener(listener);
+            }
         }
 
         @Override
         protected void projectClosed() {
             NbMavenProject prj = project.getLookup().lookup(NbMavenProject.class);
             if (prj != null) {
-                MavenProject mvn = prj.getMavenProject();
-                deleteCoSTimeStamp(mvn, true);
-                deleteCoSTimeStamp(mvn, false);
-
-                //TODO also delete the IDE generated class files now?
+                prj.removePropertyChangeListener(listener);
+                final MavenProject mvn = prj.getMavenProject();
+                RP.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            //also delete the IDE generated class files now?
+                            cleanGeneratedClassfiles(project);
+                        } catch (IOException ex) {
+                            LOG.log(Level.FINE, "Error cleaning up", ex);
+                        } finally {
+                            deleteCoSTimeStamp(mvn, true);
+                            deleteCoSTimeStamp(mvn, false);
+                        }
+                    }
+                });
             }
         }
     }

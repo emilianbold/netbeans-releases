@@ -37,9 +37,11 @@
  */
 package org.netbeans.modules.java.editor.imports;
 
+import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Scope;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
@@ -54,7 +56,10 @@ import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.Reader;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -71,7 +76,10 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.util.Elements;
 import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -83,10 +91,13 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
 import javax.swing.text.StyledDocument;
+
+import com.sun.source.tree.ImportTree;
 import org.netbeans.api.editor.EditorActionRegistration;
 import org.netbeans.api.editor.EditorActionRegistrations;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.SourceUtils;
@@ -129,6 +140,8 @@ public class ClipboardHandler {
                     copy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
 
                     TreePath context = copy.getTreeUtilities().pathFor(caret);
+                    Scope scope = copy.getTrees().getScope(context);
+                    Scope cutScope = copy.getTrees().getScope(new TreePath(context.getCompilationUnit()));
                     List<Position[]> spans = new ArrayList<Position[]>(inSpans);
 
                     Collections.sort(spans, new Comparator<Position[]>() {
@@ -146,9 +159,20 @@ public class ClipboardHandler {
                         if (handled == null) {
                             String fqn = simple2ImportFQN.get(currentSimpleName);
 
-                            if (fqn == null || copy.getElements().getTypeElement(fqn) == null) continue;
+                            Element e = fqn2element(copy.getElements(), fqn);
+                            if (e == null) continue;
 
-                            imported.put(currentSimpleName, handled = SourceUtils.resolveImport(copy, context, fqn));
+                            if (e.getKind().isClass() || e.getKind().isInterface()) {
+                                handled = SourceUtils.resolveImport(copy, context, fqn);
+                            } else {
+                                CompilationUnitTree cut = (CompilationUnitTree) copy.resolveRewriteTarget(copy.getCompilationUnit());
+                                if (e.getModifiers().contains(Modifier.STATIC) && copy.getTreeUtilities().isAccessible(cutScope, e, e.getEnclosingElement().asType())
+                                        && (scope.getEnclosingClass() == null || copy.getElementUtilities().outermostTypeElement(e) != copy.getElementUtilities().outermostTypeElement(scope.getEnclosingClass()))) {
+                                    copy.rewrite(copy.getCompilationUnit(), GeneratorUtilities.get(copy).addImports(cut, Collections.singleton(e)));
+                                }
+                                handled = e.getSimpleName().toString();
+                            }
+                            imported.put(currentSimpleName, handled);
                         }
 
                         putFQNs.put(span, handled);
@@ -239,20 +263,25 @@ public class ClipboardHandler {
                 SourcePositions[] sps = new SourcePositions[1];
 
                 OUTER: for (Entry<String, String> e : simple2FQNs.entrySet()) {
-                    TypeElement type = cc.getElements().getTypeElement(e.getValue());
-
-                    if (type != null) {
-                        ExpressionTree simpleName = cc.getTreeUtilities().parseExpression(e.getKey() + ".class", sps);
-
-                        cc.getTreeUtilities().attributeTree(simpleName, context);
-
-                        Element el = cc.getTrees().getElement(new TreePath(tp, ((MemberSelectTree) simpleName).getExpression()));
-
-                        if (type.equals(el)) continue OUTER;
-                    } else {
+                    Element el = fqn2element(cc.getElements(), e.getValue());
+                    if (el == null) {
                         continue;
+                    } else if (el.getKind().isClass() || el.getKind().isInterface()) {
+                        ExpressionTree simpleName = cc.getTreeUtilities().parseExpression(e.getKey() + ".class", sps);
+                        cc.getTreeUtilities().attributeTree(simpleName, context);
+                        Element elm = cc.getTrees().getElement(new TreePath(tp, ((MemberSelectTree) simpleName).getExpression()));
+                        if (el.equals(elm)) continue;
+                    } else {
+                        if (!cc.getTreeUtilities().isAccessible(context, el, el.getEnclosingElement().asType())
+                                || (context.getEnclosingClass() != null && cc.getElementUtilities().outermostTypeElement(el) == cc.getElementUtilities().outermostTypeElement(context.getEnclosingClass()))) continue;
+                        for (ImportTree importTree : cc.getCompilationUnit().getImports()) {
+                            if (importTree.isStatic() && importTree.getQualifiedIdentifier().getKind() == Tree.Kind.MEMBER_SELECT) {
+                                MemberSelectTree mst = (MemberSelectTree) importTree.getQualifiedIdentifier();
+                                Element elm = cc.getTrees().getElement(TreePath.getPath(cc.getCompilationUnit(), mst.getExpression()));
+                                if (el.getEnclosingElement().equals(elm) && ("*".contentEquals(mst.getIdentifier()) || el.getSimpleName().contentEquals(mst.getIdentifier()))) continue OUTER; //NOI18N
+                            }
+                        }
                     }
-
                     unavailable.add(e.getValue());
                 }
             }
@@ -263,6 +292,29 @@ public class ClipboardHandler {
         } else {
             return null;
         }
+    }
+    
+    private static Element fqn2element(final Elements elements, final String fqn) {
+        if (fqn == null) {
+            return null;
+        }
+        TypeElement type = elements.getTypeElement(fqn);
+        if (type != null) {
+            return type;
+        }
+        int idx = fqn.lastIndexOf('.');
+        if (idx > 0) {
+            type = elements.getTypeElement(fqn.substring(0, idx));
+            String name = fqn.substring(idx + 1);
+            if (type != null && name.length() > 0) {
+                for (Element el : type.getEnclosedElements()) {
+                    if (el.getModifiers().contains(Modifier.STATIC) && name.contentEquals(el.getSimpleName())) {
+                        return el;
+                    }
+                }
+            }
+        }
+        return null;
     }
 
     private static boolean runQuickly(final JavaSource js, final Task<CompilationController> task) {
@@ -392,9 +444,21 @@ public class ClipboardHandler {
                                     int e = (int) parameter.getTrees().getSourcePositions().getEndPosition(parameter.getCompilationUnit(), node);
                                     javax.lang.model.element.Element el = parameter.getTrees().getElement(getCurrentPath());
 
-                                    if (s >= start && e >= start && e <= end && el != null && (el.getKind().isClass() || el.getKind().isInterface())) {
-                                        simple2ImportFQN.put(el.getSimpleName().toString(), ((TypeElement) el).getQualifiedName().toString());
-                                        spans.add(new int[] {s - start, e - start});
+                                    if (s >= start && e >= start && e <= end && el != null) {
+                                        if (el.getKind().isClass() || el.getKind().isInterface()) {
+                                            TreePath parentPath = getCurrentPath().getParentPath();
+                                            if (parentPath == null || parentPath.getLeaf().getKind() != Tree.Kind.NEW_CLASS
+                                                    || ((NewClassTree)parentPath.getLeaf()).getEnclosingExpression() == null
+                                                    || ((NewClassTree)parentPath.getLeaf()).getIdentifier() != node) {
+                                                simple2ImportFQN.put(el.getSimpleName().toString(), ((TypeElement) el).getQualifiedName().toString());
+                                                spans.add(new int[] {s - start, e - start});
+                                            }
+                                        } else if ((el.getKind().isField() || el.getKind() == ElementKind.METHOD)
+                                                && el.getModifiers().contains(Modifier.STATIC)
+                                                && !el.getModifiers().contains(Modifier.PRIVATE)) {
+                                            simple2ImportFQN.put(el.getSimpleName().toString(), ((TypeElement) el.getEnclosingElement()).getQualifiedName().toString() + '.' + el.getSimpleName().toString());
+                                            spans.add(new int[] {s - start, e - start});
+                                        }
                                     }
                                     return super.visitIdentifier(node, p);
                                 }
@@ -539,6 +603,19 @@ public class ClipboardHandler {
                             s = s.replace("\"","\\\""); //NOI18N
                             s = s.replace("\n","\\n\" +\n\""); //NOI18N
                             data = s;
+                        } else if (data instanceof Reader) {
+                            BufferedReader br = new BufferedReader((Reader)data);
+                            StringBuilder sb = new StringBuilder();
+                            String line;
+                            while ((line = br.readLine()) != null) {
+                                line = line.replace("\\","\\\\"); //NOI18N
+                                line = line.replace("\"","\\\""); //NOI18N
+                                if (sb.length() > 0) {
+                                    sb.append("\\n\" +\n\""); //NOI18N
+                                }
+                                sb.append(line);
+                            }
+                            data = new StringReader(sb.toString());
                         }
                         return data;
                     }
@@ -547,13 +624,24 @@ public class ClipboardHandler {
             return delegate.importData(comp, t);
         }
         
-        private boolean insideToken(JTextComponent jtc, JavaTokenId first, JavaTokenId... rest) {
-            int offset = jtc.getSelectionStart();
-            TokenSequence<JavaTokenId> ts = SourceUtils.getJavaTokenSequence(TokenHierarchy.get(jtc.getDocument()), offset);
-            if (ts == null || !ts.moveNext() && !ts.movePrevious() || offset == ts.offset())
-                return false;
-            EnumSet tokenIds = EnumSet.of(first, rest);
-            return tokenIds.contains(ts.token().id());
+        private boolean insideToken(final JTextComponent jtc, final JavaTokenId first, final JavaTokenId... rest) {
+            final Document doc = jtc.getDocument();
+            final boolean[] result = new boolean[1];
+            
+            doc.render(new Runnable() {
+                @Override public void run() {
+                    int offset = jtc.getSelectionStart();
+                    TokenSequence<JavaTokenId> ts = SourceUtils.getJavaTokenSequence(TokenHierarchy.get(doc), offset);
+                    if (ts == null || !ts.moveNext() && !ts.movePrevious() || offset == ts.offset()) {
+                        result[0] = false;
+                    } else {
+                        EnumSet tokenIds = EnumSet.of(first, rest);
+                        result[0] = tokenIds.contains(ts.token().id());
+                    }
+                }
+            });
+            
+            return result[0];
         }
     }
 

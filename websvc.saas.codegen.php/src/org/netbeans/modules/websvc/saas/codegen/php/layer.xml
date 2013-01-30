@@ -9,6 +9,7 @@
             <!-- PHP -->
             <file name="RestConnection.php" url="/org/netbeans/modules/websvc/saas/codegen/php/resources/RestConnection.template">
                 <attr name="position" intvalue="510"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
             </file>
             <file name="RestResponse.php" url="/org/netbeans/modules/websvc/saas/codegen/php/resources/RestResponse.template">
                 <attr name="position" intvalue="520"/>

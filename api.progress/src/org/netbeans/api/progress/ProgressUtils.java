@@ -161,7 +161,7 @@ public final class ProgressUtils {
      * @param dialogAfter amount of time, in milliseconds, after which dialog
      *                    is shown
      * 
-     * @since 1.29.1
+     * @since 1.30
      */
     public static void runOffEventThreadWithProgressDialog(
             final Runnable operation,
@@ -200,7 +200,7 @@ public final class ProgressUtils {
      * @param dialogAfter amount of time, in milliseconds, after which dialog
      *                    is shown
      * 
-     * @since 1.29.1
+     * @since 1.30
      */
     public static void runOffEventThreadWithCustomDialogContent(
             final Runnable operation,

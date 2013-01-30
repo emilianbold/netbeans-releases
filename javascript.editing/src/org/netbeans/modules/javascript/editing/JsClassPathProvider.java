@@ -43,13 +43,16 @@
 package org.netbeans.modules.javascript.editing;
 
 import java.io.File;
+import java.net.MalformedURLException;
 import java.net.URISyntaxException;
+import java.net.URL;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
+import org.openide.util.Utilities;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -61,7 +64,7 @@ public final class JsClassPathProvider implements ClassPathProvider {
 
     public static final String BOOT_CP = "JavascriptBootClassPath"; //NOI18N
 
-    private static FileObject jsStubsFO;
+    private static URL jsStubs;
     private static ClassPath bootClassPath;
 
     public JsClassPathProvider() {
@@ -78,17 +81,17 @@ public final class JsClassPathProvider implements ClassPathProvider {
 
     public static synchronized ClassPath getBootClassPath() {
         if (bootClassPath == null) {
-            FileObject jsstubs = getJsStubs();
+            URL jsstubs = getJsStubs();
             if (jsstubs != null) {
-                bootClassPath = ClassPathSupport.createClassPath(getJsStubs());
+                bootClassPath = ClassPathSupport.createClassPath(jsstubs);
             }
         }
         return bootClassPath;
     }
 
     // TODO - add classpath recognizer for these ? No, don't need go to declaration inside these files...
-    private static FileObject getJsStubs() {
-        if (jsStubsFO == null) {
+    private static URL getJsStubs() {
+        if (jsStubs == null) {
             // Core classes: Stubs generated for the "builtin" Ruby libraries.
             File allstubs = InstalledFileLocator.getDefault().locate("jsstubs/allstubs.zip", "org.netbeans.modules.javascript.editing", false);
             if (allstubs == null) {
@@ -102,8 +105,13 @@ public final class JsClassPathProvider implements ClassPathProvider {
                 }
             }
             assert allstubs.isFile() : allstubs;
-            jsStubsFO = FileUtil.getArchiveRoot(FileUtil.toFileObject(allstubs));
+            try {
+                jsStubs = FileUtil.getArchiveRoot(Utilities.toURI(FileUtil.normalizeFile(allstubs)).toURL());
+            } catch (MalformedURLException ex) {
+                assert false : FileUtil.normalizeFile(allstubs);
+                return null;
+            }
         }
-        return jsStubsFO;
+        return jsStubs;
     }
 }

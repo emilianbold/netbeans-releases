@@ -803,30 +803,14 @@ final class RendererFactory {
                 lbl.setIconTextGap(getIconTextGap());
                 lbl.setBounds(getBounds());
                 lbl.setOpaque(true);
-                if( isGTK ) {
-                    //#127522 - debugger color scheme washed out, very hard to read
-                    Color bgColor = UIManager.getColor("Tree.textBackground" ); //NOI18N
-                    if( null == bgColor )
-                        bgColor = Color.WHITE;
-                    lbl.setBackground(bgColor);
-                } else { 
-                    lbl.setBackground(getBackground());
-                }
+                lbl.setBackground(getBackground());
                 lbl.setForeground(getForeground());
                 lbl.setBorder( getBorder() );
                 if ((isGTK || "com.sun.java.swing.plaf.windows.WindowsLabelUI".equals(lbl.getUI().getClass().getName())) 
                         && ! isEnabled() && ! htmlValueUsed) {
                     // the shadow effect from the label was making a problem
                     // let's paint the text "manually" in this case
-                    if( isGTK ) {
-                        //#127522 - debugger color scheme washed out, very hard to read
-                        Color bgColor = UIManager.getColor("Tree.textBackground" ); //NOI18N
-                        if( null == bgColor )
-                            bgColor = Color.WHITE;
-                        g.setColor(bgColor);
-                    } else {
-                        g.setColor(lbl.getBackground());
-                    }
+                    g.setColor(lbl.getBackground());
                     g.fillRect(0, 0, lbl.getWidth(), lbl.getHeight());
                     g.setColor(lbl.getForeground());
                     Icon icon = (lbl.isEnabled()) ? lbl.getIcon() : lbl.getDisabledIcon();

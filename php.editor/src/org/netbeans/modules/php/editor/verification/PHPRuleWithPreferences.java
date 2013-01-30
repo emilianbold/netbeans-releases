@@ -49,5 +49,7 @@ import java.util.prefs.Preferences;
  * @author Tomasz.Slota@Sun.COM
  */
 public interface PHPRuleWithPreferences {
+
     void setPreferences(Preferences prefs);
+
 }

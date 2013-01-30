@@ -50,13 +50,10 @@ import java.util.List;
 import java.util.Map;
 import org.netbeans.editor.TokenItem;
 import org.netbeans.modules.j2ee.persistence.editor.*;
-import org.netbeans.modules.j2ee.persistence.provider.Provider;
-import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
 import org.netbeans.modules.j2ee.persistence.unit.PersistenceCfgProperties;
 import org.netbeans.modules.xml.text.syntax.SyntaxElement;
 import org.netbeans.modules.xml.text.syntax.dom.StartTag;
 import org.netbeans.modules.xml.text.syntax.dom.Tag;
-import org.openide.util.NbBundle;
 import org.w3c.dom.Text;
 
 /**
@@ -107,8 +104,9 @@ public final class PUCompletionManager {
     public int completeAttributeValues(CompletionContext context, List<JPACompletionItem> valueItems) {
         int anchorOffset = -1;
         
-        if(context.getTag() == null)
+        if(context.getTag() == null) {
             return anchorOffset;
+        }
         
         String tagName = context.getTag().getNodeName();
         TokenItem attrib = ContextUtilities.getAttributeToken(context.getCurrentToken());
@@ -130,7 +128,7 @@ public final class PUCompletionManager {
         DocumentContext docContext = context.getDocumentContext();
         SyntaxElement curElem = docContext.getCurrentElement();
         SyntaxElement prevElem = docContext.getCurrentElement().getPrevious();
-        Tag propTag = null;
+        Tag propTag;
 
         String tagName = (curElem instanceof StartTag) ? ((StartTag) curElem).getTagName() : ((prevElem instanceof StartTag) ? ((StartTag) prevElem).getTagName() : null);
         PUCompletor completor = locateCompletor(tagName, null);

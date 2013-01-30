@@ -43,6 +43,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmListeners;
 import org.netbeans.modules.cnd.api.model.CsmModel;
@@ -121,6 +122,7 @@ public class MultiProjectsErrorHighlightingTest extends ErrorHighlightingBaseTes
         return outPrjDirs;
     }
     
+    @RandomlyFails
     public void test210384() throws Exception {
         // #210384 - unresolved "using namespace std"
         CsmModel model = super.getModel();

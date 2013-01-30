@@ -43,13 +43,12 @@
 package org.netbeans.core.browser.api;
 
 import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import org.openide.util.Lookup;
 
 /**
  * Factory to create embedded browser.
  *
- * @author S. Aubrecht
+ * @author S. Aubrecht, Jan Stola
  */
 public abstract class EmbeddedBrowserFactory {
 
@@ -64,7 +63,14 @@ public abstract class EmbeddedBrowserFactory {
      * @return The one and only instance.
      */
     public static EmbeddedBrowserFactory getDefault() {
-        EmbeddedBrowserFactory res = Lookup.getDefault().lookup(EmbeddedBrowserFactory.class);
+        EmbeddedBrowserFactory res = null;
+        for (EmbeddedBrowserFactory factory : Lookup.getDefault().lookupAll(EmbeddedBrowserFactory.class)) {
+            if (factory.isEnabled()) {
+                return factory;
+            } else {
+                res = factory;
+            }
+        }
         if( null == res ) {
             res = new EmbeddedBrowserFactory() {
 

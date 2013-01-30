@@ -508,7 +508,7 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
             for (Map.Entry<String,String> subentry : entry.getValue().entrySet()) {
                 String k = subentry.getKey();
                 if (k.equals("type")) { // NOI18N
-                    type = subentry.getValue();
+                    type = sanitizeSpaces(subentry.getValue());
                 } else if (k.equals("name")) { // NOI18N
                     // XXX currently overriding display name is not supported
                 } else if (k.equals("description")) { // NOI18N
@@ -521,6 +521,7 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
                     final String[] path = sanitizeHttp(subentry.getKey(), PropertyUtils.tokenizePath(subentry.getValue()));
                     List<URI> volume = new ArrayList<URI>(path.length);
                     for (String component : path) {
+                        component = sanitizeSpaces(component);
                         String jarFolder = null;
                         // "!/" was replaced in def.properties() with "!"+File.separatorChar
                         int index = component.indexOf("!"+File.separatorChar); //NOI18N
@@ -666,6 +667,18 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
         }
         return result.toArray(new String[result.size()]);
     }
+
+    /**
+     * Removes the leading & trailing spaces from property value.
+     * The user edited nblibraries.properties may be corrupted by ending spaces (tabs),
+     * this method removes them.
+     * @param str to remove leading & trailing spaces from.
+     * @return fixed string
+     */
+    @NonNull
+    private static String sanitizeSpaces(@NonNull final String str) {
+        return str.trim();
+    }
     
     static final class ProjectLibraryImplementation implements LibraryImplementation2,LibraryImplementation3 {
 
@@ -774,7 +787,7 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
         }
 
         public void setDescription(String text) {
-            throw new UnsupportedOperationException(); // XXX will anyone call this?
+            //NOP - dsescriptions are not supported
         }
 
         public void setContent(String volumeType, List<URL> path) throws IllegalArgumentException {

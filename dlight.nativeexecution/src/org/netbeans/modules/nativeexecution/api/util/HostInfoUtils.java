@@ -6,21 +6,22 @@ import java.io.PrintStream;
 import java.net.ConnectException;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
-import java.net.SocketException;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Future;
+import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
+import org.netbeans.modules.nativeexecution.support.Logger;
 import org.netbeans.modules.nativeexecution.support.filesearch.FileSearchParams;
 import org.netbeans.modules.nativeexecution.support.filesearch.FileSearchSupport;
-import org.netbeans.modules.nativeexecution.support.Logger;
 import org.netbeans.modules.nativeexecution.support.hostinfo.FetchHostInfoTask;
-import org.openide.util.Exceptions;
+import org.openide.util.RequestProcessor;
 
 /**
  * Utility class that provides information about particular host.
@@ -31,24 +32,31 @@ public final class HostInfoUtils {
      * String constant that can be used to identify a localhost.
      */
     public static final String LOCALHOST = "localhost"; // NOI18N
-    private static final List<String> myIPAdresses = new ArrayList<String>();
+    private static final Future<List<String>> myAddresses;
     private static final ConcurrentHashMap<ExecutionEnvironment, HostInfo> cache =
             new ConcurrentHashMap<ExecutionEnvironment, HostInfo>();
 
     static {
-        NetworkInterface iface = null;
-        try {
-            for (Enumeration<NetworkInterface> ifaces = NetworkInterface.getNetworkInterfaces();
-                    ifaces.hasMoreElements();) {
-                iface = ifaces.nextElement();
-                for (Enumeration<InetAddress> ips = iface.getInetAddresses();
-                        ips.hasMoreElements();) {
-                    myIPAdresses.add((ips.nextElement()).getHostAddress());
+        myAddresses = RequestProcessor.getDefault().submit(new Callable<List<String>>() {
+            @Override
+            public List<String> call() throws Exception {
+                List<String> result = new ArrayList<String>();
+                NetworkInterface iface;
+                try {
+                    for (Enumeration<NetworkInterface> ifaces = NetworkInterface.getNetworkInterfaces();
+                            ifaces.hasMoreElements();) {
+                        iface = ifaces.nextElement();
+                        for (Enumeration<InetAddress> ips = iface.getInetAddresses();
+                                ips.hasMoreElements();) {
+                            result.add((ips.nextElement()).getHostAddress());
+                        }
+                    }
+                } catch (Throwable th) {
+                    Logger.getInstance().log(Level.WARNING, "Exception while getting localhost IP", th); // NOI18N
                 }
+                return result;
             }
-        } catch (SocketException ex) {
-            Exceptions.printStackTrace(ex);
-        }
+        });
     }
 
     private HostInfoUtils() {
@@ -138,12 +146,15 @@ public final class HostInfoUtils {
      * @return true if and only if <tt>host</tt> identifies a localhost.
      */
     public static boolean isLocalhost(String host) {
+        if (LOCALHOST.equals(host)) {
+            return true;
+        }
+
         boolean result = false;
 
         try {
-            result = myIPAdresses.contains(
-                    InetAddress.getByName(host).getHostAddress());
-        } catch (UnknownHostException ex) {
+            result = myAddresses.get().contains(InetAddress.getByName(host).getHostAddress());
+        } catch (Throwable th) {
         }
 
         return result;

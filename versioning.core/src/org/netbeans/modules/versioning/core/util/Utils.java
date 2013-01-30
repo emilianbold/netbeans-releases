@@ -47,6 +47,7 @@ import java.util.Date;
 import javax.swing.Action;
 import org.netbeans.modules.versioning.core.*;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.netbeans.modules.versioning.core.filesystems.VCSFileProxyOperations;
 import org.netbeans.modules.versioning.core.spi.VCSHistoryProvider;
 import org.netbeans.modules.versioning.core.spi.VCSHistoryProvider.HistoryEntry;
 import org.netbeans.modules.versioning.core.spi.VCSHistoryProvider.MessageEditProvider;
@@ -136,6 +137,19 @@ public final class Utils {
      */
     public static void fireVisibilityChanged() {
         VcsVisibilityQueryImplementation.visibilityChanged();
+    }
+    
+    /**
+     * Notifies about visibility changes according to {@link VisibilityQueryImplementation}
+     * 
+     * @param File[] the files with a changed visibility
+     */
+    public static void fireVisibilityChanged(File... files) {
+        VCSFileProxy[] proxies = new VCSFileProxy[files.length];
+        for (int i = 0; i < files.length; i++) {
+            proxies[i] = VCSFileProxy.createFileProxy(files[i]);
+        }
+        VcsVisibilityQueryImplementation.visibilityChanged(proxies);
     }
     
     /**

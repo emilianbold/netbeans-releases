@@ -55,7 +55,6 @@ made subject to such option by the copyright holder.
 <replacefilter token="@org-openide-util@" value="${javadoc.docs.org-openide-util}"/>
 <replacefilter token="@org-openide-nodes@" value="${javadoc.docs.org-openide-nodes}"/>
 <replacefilter token="@org-netbeans-modules-nbjunit@" value="${javadoc.docs.org-netbeans-modules-nbjunit}"/>
-<replacefilter token="@org-netbeans-modules-jellytools@" value="${javadoc.docs.org-netbeans-modules-jellytools}"/>
 <replacefilter token="@org-openide-actions@" value="${javadoc.docs.org-openide-actions}"/>
 <replacefilter token="@org-openide-options@" value="${javadoc.docs.org-openide-options}"/>
 <replacefilter token="@org-openide-awt@" value="${javadoc.docs.org-openide-awt}"/>
@@ -214,3 +213,4 @@ made subject to such option by the copyright holder.
 <replacefilter token="@org-netbeans-modules-sampler@" value="${javadoc.docs.org-netbeans-modules-sampler}"/>
 <replacefilter token="@org-netbeans-api-search@" value="${javadoc.docs.org-netbeans-api-search}"/>
 <replacefilter token="@org-netbeans-modules-code-analysis@" value="${javadoc.docs.org-netbeans-modules-code-analysis}"/>
+<replacefilter token="@org-netbeans-modules-glassfish-cloud@" value="${javadoc.docs.org-netbeans-modules-glassfish-cloud}"/>

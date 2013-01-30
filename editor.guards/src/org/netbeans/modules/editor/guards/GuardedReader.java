@@ -189,7 +189,7 @@ final class GuardedReader extends Reader {
             isClosed = true;
             reader.close();
             if (this.result != null) {
-                callback.fillSections(this.result.getGuardedSections(), newLineStream.getNewLineType());
+                callback.fillSections(gr, this.result.getGuardedSections(), newLineStream.getNewLineType());
             }
         }
     }

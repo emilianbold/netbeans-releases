@@ -59,7 +59,7 @@ import org.openide.util.Lookup;
 @OptionsPanelController.SubRegistration(
     location=UiUtils.OPTIONS_PATH,
     id=ZendScript.OPTIONS_SUB_PATH,
-    displayName="#LBL_OptionsName",
+    displayName="#LBL_PHPZendOptionsName",
 //    toolTip="#LBL_OptionsTooltip"
     position=300
 )
@@ -119,7 +119,7 @@ public class ZendOptionsPanelController extends OptionsPanelController implement
 
     @Override
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(ZendOptions.class);
+        return new HelpCtx("org.netbeans.modules.php.zend.ui.options.ZendOptions"); // NOI18N
     }
 
     @Override

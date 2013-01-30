@@ -56,7 +56,9 @@ import org.jivesoftware.smack.util.StringUtils;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.ui.Utilities;
-import org.netbeans.modules.kenai.ui.dashboard.DashboardImpl;
+import org.netbeans.modules.kenai.ui.api.KenaiServer;
+import org.netbeans.modules.team.ui.spi.TeamServer;
+import org.netbeans.modules.team.ui.spi.TeamUIUtils;
 import org.openide.awt.Notification;
 import org.openide.awt.NotificationDisplayer;
 import org.openide.awt.NotificationDisplayer.Priority;
@@ -180,7 +182,10 @@ public class ChatNotifications {
         }, isDelayed(msg)?Priority.SILENT:Priority.NORMAL);
         privateNotifications.put(name, n);
         ChatTopComponent.refreshContactList();
-        DashboardImpl.getInstance().getComponent().repaint();
+        TeamServer ts = TeamUIUtils.getSelectedServer();
+        if(ts instanceof KenaiServer) {
+            ((KenaiServer)ts).getDashboard().getComponent().repaint();
+        }
     }
 
     public synchronized boolean hasNewPrivateMessages(String name) {

@@ -72,7 +72,6 @@ import org.openide.WizardDescriptor;
  */
 public class ServerSelectionHelper {
     
-    private final Deployment deployment;
     private final JComboBox serverModel;
     private final JComboBox j2eeVersion;
     private final ListCellRenderer delegate;
@@ -88,7 +87,6 @@ public class ServerSelectionHelper {
      * @param projectType project type
      */
     public ServerSelectionHelper(JComboBox serverModel, JComboBox j2eeVersion, J2eeModule.Type projectType) {
-        this.deployment = Deployment.getDefault();
         this.serverModel = serverModel;
         this.projectType = projectType;
         this.delegate = j2eeVersion.getRenderer();
@@ -117,7 +115,7 @@ public class ServerSelectionHelper {
         List<Wrapper> servers = new ArrayList<Wrapper>();
         
         // Iterate trought all registered servers
-        for (String instanceID : deployment.getServerInstanceIDs()) {
+        for (String instanceID : Deployment.getDefault().getServerInstanceIDs()) {
             // We want to add only servers with support for defined projectType
             if (isServerInstanceValid(instanceID)) {
                 Wrapper server = new Wrapper(instanceID);
@@ -167,7 +165,7 @@ public class ServerSelectionHelper {
             profiles.add(Profile.J2EE_14);
         } else {
             try {
-                profiles.addAll(deployment.getServerInstance(serverInstance).getJ2eePlatform().getSupportedProfiles(projectType));
+                profiles.addAll(findServerInstance(serverInstance).getJ2eePlatform().getSupportedProfiles(projectType));
             } catch (InstanceRemovedException ex) {
                 // If selected instance was removed during the process we can easily refresh Server model list and update versions again
                 initServerModel(null);
@@ -236,7 +234,7 @@ public class ServerSelectionHelper {
      * @return true if the server instance is valid and supports EAR projects, otherwise returns false
      */
     private boolean isServerInstanceValid(String instanceID) {
-        ServerInstance instance = deployment.getServerInstance(instanceID);
+        ServerInstance instance = findServerInstance(instanceID);
         
         try {
             if (instance != null && 
@@ -249,5 +247,9 @@ public class ServerSelectionHelper {
             return false;
         }
         return false;
+    }
+
+    private ServerInstance findServerInstance(String instanceID) {
+        return Deployment.getDefault().getServerInstance(instanceID);
     }
 }

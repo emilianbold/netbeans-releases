@@ -71,7 +71,7 @@ import org.openide.util.Utilities;
 class ResourceJavaScript extends TokenReplacer {
     private static final String ENTITY_NAME_VAR = "entity_name";
     
-    final String RJSSUPPORT = "rjsSupport";         // NOI18N
+    final static String RJSSUPPORT = "rjsSupport";         // NOI18N
 
     ResourceJavaScript( ClientStubsGenerator generator, Resource r, 
             FileObject jsFolder, Set<String> existingEntities) 
@@ -111,13 +111,13 @@ class ResourceJavaScript extends TokenReplacer {
                     entityName ,tokens );
             entityFiles.add( entity.getName() );
         }
-        String wsName = resource.getName();
+        StringBuilder wsName = new StringBuilder( resource.getName());
         while ( entityFiles.contains( wsName) ){
-            wsName = wsName+"REST";             // NOI18N
+            wsName.append( "REST");             // NOI18N
         }
         resource.setEntities( entityFiles );
         FileObject fo = createResource( ClientStubsGenerator.JS_STUB_TEMPLATE , 
-                wsName, null);
+                wsName.toString(), null);
         
         return fo;
     }

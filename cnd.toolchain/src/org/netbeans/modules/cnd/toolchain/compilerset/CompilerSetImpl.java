@@ -55,14 +55,17 @@ import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
 import org.netbeans.modules.cnd.spi.toolchain.CompilerProvider;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.ToolKind;
+import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.AlternativePath;
 import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.BaseFolder;
 import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.CMakeDescriptor;
 import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.CompilerDescriptor;
 import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.DebuggerDescriptor;
 import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.LinkerDescriptor;
 import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.MakeDescriptor;
+import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.PredefinedMacro;
 import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.QMakeDescriptor;
 import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.ScannerDescriptor;
+import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.ScannerPattern;
 import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.ToolchainDescriptor;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
@@ -340,8 +343,178 @@ public final class CompilerSetImpl extends CompilerSet {
     public void setEncoding(Charset charset) {
         this.charset = charset;
     }
+    
+    private static class UnknownCompilerDescriptor implements CompilerDescriptor {
+
+        @Override
+        public String getPathPattern() {
+            return "";//NOI18N
+        }
+
+        @Override
+        public String getExistFolder() {
+            return "";//NOI18N
+        }
+
+        @Override
+        public String getIncludeFlags() {
+            return "";//NOI18N
+        }
+
+        @Override
+        public String getUserIncludeFlag() {
+            return "";//NOI18N
+        }
+
+        @Override
+        public String getIncludeParser() {
+            return "";//NOI18N
+        }
+
+        @Override
+        public String getRemoveIncludePathPrefix() {
+            return "";//NOI18N
+        }
+
+        @Override
+        public String getRemoveIncludeOutputPrefix() {
+            return "";//NOI18N
+        }
+
+        @Override
+        public String getMacroFlags() {
+            return "";//NOI18N
+        }
+
+        @Override
+        public String getMacroParser() {
+            return "";//NOI18N
+        }
+
+        @Override
+        public List<PredefinedMacro> getPredefinedMacros() {
+            return Collections.emptyList();
+        }
+
+        @Override
+        public String getUserMacroFlag() {
+            return "";//NOI18N
+        }
+
+        @Override
+        public String[] getDevelopmentModeFlags() {
+            return new String[0];
+        }
+
+        @Override
+        public String[] getWarningLevelFlags() {
+            return new String[0];
+        }
+
+        @Override
+        public String[] getArchitectureFlags() {
+            return new String[0];
+        }
+
+        @Override
+        public String getStripFlag() {
+            return "";//NOI18N
+        }
+
+        @Override
+        public String[] getMultithreadingFlags() {
+            return new String[0];
+        }
+
+        @Override
+        public String[] getStandardFlags() {
+            return new String[0];
+        }
+
+        @Override
+        public String[] getLanguageExtensionFlags() {
+            return new String[0];
+        }
+
+        @Override
+        public String[] getCppStandardFlags() {
+            return new String[0];
+        }
+
+        @Override
+        public String[] getCStandardFlags() {
+            return new String[0];
+        }
+
+        @Override
+        public String[] getLibraryFlags() {
+            return new String[0];
+        }
+
+        @Override
+        public String getOutputObjectFileFlags() {
+            return "";//NOI18N
+        }
+
+        @Override
+        public String getDependencyGenerationFlags() {
+            return "";//NOI18N
+        }
+
+        @Override
+        public String getPrecompiledHeaderFlags() {
+            return "";//NOI18N
+        }
+
+        @Override
+        public String getPrecompiledHeaderSuffix() {
+            return "";//NOI18N
+        }
+
+        @Override
+        public boolean getPrecompiledHeaderSuffixAppend() {
+            return false;
+        }
+
+        @Override
+        public String[] getNames() {
+            return new String[0];
+        }
+
+        @Override
+        public String getVersionFlags() {
+            return "";//NOI18N
+        }
+
+        @Override
+        public String getVersionPattern() {
+            return "";//NOI18N
+        }
+
+        @Override
+        public String getFingerPrintFlags() {
+            return "";//NOI18N
+        }
+
+        @Override
+        public String getFingerPrintPattern() {
+            return "";//NOI18N
+        }
+
+        @Override
+        public boolean skipSearch() {
+            return true;
+        }
+
+        @Override
+        public AlternativePath[] getAlternativePath() {
+            return new AlternativePath[0];
+        }
+
+    }
 
     public static class UnknownToolchainDescriptor implements ToolchainDescriptor {
+        CompilerDescriptor unknowDescriptor = new UnknownCompilerDescriptor();
 
         @Override
         public String getFileName() {
@@ -399,6 +572,16 @@ public final class CompilerSetImpl extends CompilerSet {
         }
 
         @Override
+        public String[] getAliases() {
+            return new String[]{};
+        }
+
+        @Override
+        public String getSubsitute() {
+            return null;
+        }
+
+        @Override
         public String getDriveLetterPrefix() {
             return "/"; // NOI18N
         }
@@ -420,27 +603,73 @@ public final class CompilerSetImpl extends CompilerSet {
 
         @Override
         public CompilerDescriptor getC() {
-            return null;
+            return unknowDescriptor;
         }
 
         @Override
         public CompilerDescriptor getCpp() {
-            return null;
+            return unknowDescriptor;
         }
 
         @Override
         public CompilerDescriptor getFortran() {
-            return null;
+            return unknowDescriptor;
         }
 
         @Override
         public CompilerDescriptor getAssembler() {
-            return null;
+            return unknowDescriptor;
         }
 
         @Override
         public ScannerDescriptor getScanner() {
-            return null;
+            return new ScannerDescriptor() {
+
+                @Override
+                public String getID() {
+                    return ""; // NOI18N
+                }
+
+                @Override
+                public List<ScannerPattern> getPatterns() {
+                    return Collections.emptyList();
+                }
+
+                @Override
+                public String getChangeDirectoryPattern() {
+                    return ""; // NOI18N
+                }
+
+                @Override
+                public String getEnterDirectoryPattern() {
+                    return ""; // NOI18N
+                }
+
+                @Override
+                public String getLeaveDirectoryPattern() {
+                    return ""; // NOI18N
+                }
+
+                @Override
+                public String getMakeAllInDirectoryPattern() {
+                    return ""; // NOI18N
+                }
+
+                @Override
+                public String getStackHeaderPattern() {
+                    return ""; // NOI18N
+                }
+
+                @Override
+                public String getStackNextPattern() {
+                    return ""; // NOI18N
+                }
+
+                @Override
+                public List<String> getFilterOutPatterns() {
+                    return Collections.emptyList();
+                }
+            };
         }
 
         @Override
@@ -506,7 +735,7 @@ public final class CompilerSetImpl extends CompilerSet {
 
         @Override
         public MakeDescriptor getMake() {
-            return null;
+            return null;            
         }
 
         @Override
@@ -526,13 +755,85 @@ public final class CompilerSetImpl extends CompilerSet {
 
         @Override
         public QMakeDescriptor getQMake() {
-            return null;
+            return new QMakeDescriptor() {
+
+                @Override
+                public String[] getNames() {
+                    return new String[0];
+                }
+
+                @Override
+                public String getVersionFlags() {
+                    return ""; //NOI18N
+                }
+
+                @Override
+                public String getVersionPattern() {
+                    return ""; //NOI18N
+                }
+                
+                @Override
+                public String getFingerPrintFlags() {
+                    return ""; //NOI18N
+                }
+
+                @Override
+                public String getFingerPrintPattern() {
+                    return ""; //NOI18N
+                }
+
+                @Override
+                public boolean skipSearch() {
+                    return true;
+                }
+
+                @Override
+                public AlternativePath[] getAlternativePath() {
+                    return new AlternativePath[0];
+                }
+
+            };
         }
 
         @Override
         public CMakeDescriptor getCMake() {
-            return null;
-        }
+            return new CMakeDescriptor() {
 
+                @Override
+                public String[] getNames() {
+                    return new String[0];
+                }
+
+                @Override
+                public String getVersionFlags() {
+                    return ""; //NOI18N
+                }
+
+                @Override
+                public String getVersionPattern() {
+                    return ""; //NOI18N
+                }
+
+                @Override
+                public String getFingerPrintFlags() {
+                    return ""; //NOI18N
+                }
+
+                @Override
+                public String getFingerPrintPattern() {
+                    return ""; //NOI18N
+                }
+
+                @Override
+                public boolean skipSearch() {
+                    return true;
+                }
+
+                @Override
+                public AlternativePath[] getAlternativePath() {
+                    return new AlternativePath[0];
+                }
+            };
+        }
     }
 }

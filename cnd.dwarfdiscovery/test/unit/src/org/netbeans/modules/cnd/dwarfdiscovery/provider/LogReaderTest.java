@@ -59,8 +59,12 @@ import org.netbeans.modules.cnd.dwarfdiscovery.provider.LogReader.CommandLineSou
  */
 public class LogReaderTest extends TestCase {
 
+    public void testNotCompilerInvocation() {
+        testCompilerInvocation(ItemProperties.LanguageKind.Unknown, "CXX --mode=compile -I/export/home/gcc/gccobj/gcc/xgcc ../../../libjava/gnu/gcj/natCore.cc", 1);
+    }
+
     public void testWrongLibtoolCompilerInvocation() {
-        testCompilerInvocation(ItemProperties.LanguageKind.Unknown, "/bin/sh ./libtool --tag=CXX --mode=compile /export/home/gcc/gccobj/gcc/xgcc ../../../libjava/gnu/gcj/natCore.cc", 1);
+        testCompilerInvocation(ItemProperties.LanguageKind.CPP, "/bin/sh ./libtool --tag=CXX --mode=compile /export/home/gcc/gccobj/gcc/xgcc ../../../libjava/gnu/gcj/natCore.cc", 1);
     }
 
     public void testLibtoolCCompilerInvocation() {
@@ -271,6 +275,66 @@ public class LogReaderTest extends TestCase {
             res = res.substring(0,res.length()-1);
         }
        assertEquals(res, "D:/cygwin_dir");
+    }
+    
+    public void testCygwinCommandLine() {
+        String line = "gcc -g -O3 -Ospace --diag_suppress=1295   --thumb --apcs=/interwork --cpu Cortex-M3 "
+                + "-DENABLE_RTX -D__RTX -DUSE_PROPERTIES_FROM_FS -DUSE_MCBSTM32F200 -DUSE_MDK -DENABLE_JSR_75=1  "
+                + "-DENABLE_CBS=1  -DENABLE_JAVA_LOGGING=1          -I`cygpath -m  /tools/taiga/output/esa_rtx_mdk_impng/javacall/inc` "
+                + "-I/tools/taiga/platform/modules/stm32f2xx/inc -I/tools/taiga/platform/modules/mcbstm32f200/inc "
+                + "-I\"/tools/taiga/cldc/src/anilib/share\" "
+                + "-I/tools/taiga/platform/modules/usbd/inc  --default_extension=o  -c "
+                + "-o`cygpath -m  /tools/taiga/output/esa_rtx_mdk_impng/javacall/obj/device_info.o`  "
+                + "'D:\\tools\\taiga\\deviceaccess\\src\\native\\KNI_I2C.c'";
+          String expResult =
+                      "Source:D:\\tools\\taiga\\deviceaccess\\src\\native\\KNI_I2C.c\n"+
+                      "Macros:\n"+
+                      "ENABLE_CBS=1\n"+
+                      "ENABLE_JAVA_LOGGING=1\n"+
+                      "ENABLE_JSR_75=1\n"+
+                      "ENABLE_RTX\n"+
+                      "USE_MCBSTM32F200\n"+
+                      "USE_MDK\n"+
+                      "USE_PROPERTIES_FROM_FS\n"+
+                      "__RTX\n"+
+                      "Paths:\n"+
+                      "/tools/taiga/output/esa_rtx_mdk_impng/javacall/inc\n"+
+                      "/tools/taiga/platform/modules/stm32f2xx/inc\n"+
+                      "/tools/taiga/platform/modules/mcbstm32f200/inc\n"+
+                      "/tools/taiga/cldc/src/anilib/share\n"+
+                      "/tools/taiga/platform/modules/usbd/inc";
+        String result = processLine(line, DiscoveryUtils.LogOrigin.BuildLog);
+        assertDocumentText(line, expResult, result);
+    }
+
+    public void testCygwinCommandLine2() {
+        String line = "gcc -g -O3 -Ospace --diag_suppress=1295   --thumb --apcs=/interwork --cpu Cortex-M3 "
+                + "-DENABLE_RTX -D__RTX -DUSE_PROPERTIES_FROM_FS -DUSE_MCBSTM32F200 -DUSE_MDK -DENABLE_JSR_75=1  "
+                + "-DENABLE_CBS=1  -DENABLE_JAVA_LOGGING=1          -I`cygpath -m  /tools/taiga/output/esa_rtx_mdk_impng/javacall/inc` "
+                + "-I/tools/taiga/platform/modules/stm32f2xx/inc -I/tools/taiga/platform/modules/mcbstm32f200/inc "
+                + "-I\"/tools/taiga/cldc/src/anilib/share\" "
+                + "-I/tools/taiga/platform/modules/usbd/inc  --default_extension=o  -c "
+                + "-o`cygpath -m  /tools/taiga/output/esa_rtx_mdk_impng/javacall/obj/device_info.o`  "
+                + "`cygpath -m  /tools/taiga/javacall-com/implementation/rtx/midp/device_info.c`";
+          String expResult =
+                      "Source:/tools/taiga/javacall-com/implementation/rtx/midp/device_info.c\n"+
+                      "Macros:\n"+
+                      "ENABLE_CBS=1\n"+
+                      "ENABLE_JAVA_LOGGING=1\n"+
+                      "ENABLE_JSR_75=1\n"+
+                      "ENABLE_RTX\n"+
+                      "USE_MCBSTM32F200\n"+
+                      "USE_MDK\n"+
+                      "USE_PROPERTIES_FROM_FS\n"+
+                      "__RTX\n"+
+                      "Paths:\n"+
+                      "/tools/taiga/output/esa_rtx_mdk_impng/javacall/inc\n"+
+                      "/tools/taiga/platform/modules/stm32f2xx/inc\n"+
+                      "/tools/taiga/platform/modules/mcbstm32f200/inc\n"+
+                      "/tools/taiga/cldc/src/anilib/share\n"+
+                      "/tools/taiga/platform/modules/usbd/inc";
+        String result = processLine(line, DiscoveryUtils.LogOrigin.BuildLog);
+        assertDocumentText(line, expResult, result);
     }
 
     /**
@@ -724,19 +788,52 @@ public class LogReaderTest extends TestCase {
                 "/ws/cheetah/jsr135/src/share/components/direct-player/native";
         String result = processLine(line, DiscoveryUtils.LogOrigin.BuildLog);
         assertDocumentText(line, expResult, result);
-        LogReader.LineInfo li = LogReader.testCompilerInvocation(line);
+        LogReader reader = new LogReader(line, "", null, null, null);
+        LogReader.LineInfo li = reader.testCompilerInvocation(line);
         assert li.compilerType == LogReader.CompilerType.CPP;
     }
 
+    public void testIcpcInvocation() {
+        String line = "usr/local/packages/icc_remote/12.0.5.225_fixbug13889838/bin/icpc xsolmod.cpp -c -o xsolmod.o  -O2  -DOCCI_NO_WSTRING=1 -fPIC -cxxlib -std=c89 "+
+                "-fno-omit-frame-pointer -mp1 -fp_port -mP2OPT_convert_opt=F  -fno-strict-aliasing -sox=profile -sox=inline "+
+                "  -no-global-hoist -mGLOB_preemption_model=3  -hotpatch  -wd191 -wd175 -wd188 -wd810 -we127 -we1345 -we1338 -wd279 "+
+                "-wd186 -wd1572 -wd589 -wd11505 -we592 -Qoption,cpp,--treat_func_as_string_literal -mPGOPTI_func_group -mPGOPTI_conv_icall_pgosf=FALSE "+
+                "-vec-report0 -std=c89 -fno-omit-frame-pointer -mp1 -fp_port -mP2OPT_convert_opt=F  -fno-strict-aliasing -sox=profile -sox=inline   "+
+                "-no-global-hoist -mGLOB_preemption_model=3  -hotpatch  -wd191 -wd175 -wd188 -wd810 -we127 -we1345 -we1338 -wd279 -wd186 -wd1572 "+
+                "-wd589 -wd11505 -we592 -Qoption,cpp,--treat_func_as_string_literal -mPGOPTI_func_group -mPGOPTI_conv_icall_pgosf=FALSE "+
+                "-vec-report0 -DXSMODNAME=xsolapi -DXSolapi -Wall -Wcheck -w2 -Wunused-function -we55 -we140 -we266 -we117 -we167 -we1418 "+
+                "-wd981 -wd869 -wd174 -wd111 -wd593 -wd177 -wd1684 -wd193 -wd2415 -wd2545 -wd2259 -wd2557 -DTRUSTED_OLAPI -wd1476 -wd1505  "+
+                "-I/ade/b/1226108341/oracle/rdbms/src/hdir -I/ade/b/1226108341/oracle/rdbms/public -I/ade/b/1226108341/oracle/rdbms/include "+
+                "-I/ade/b/1226108341/oracle/rdbms/src/port/generic -I/ade/b/1226108341/oracle/oraolap/src/include -I/ade/b/1226108341/oracle/oraolap/src/xsolapi "+
+                "-I/ade/b/1226108341/oracle/oraolap/public -Iport/server -Iport/generic   -I/ade/b/1226108341/oracle/oracore/include "+
+                "-I/ade/b/1226108341/oracle/oracore/public -I/ade/b/1226108341/oracle/oracore/port/include -I/ade/b/1226108341/oracle/xdk/include "+
+                "-I/ade/b/1226108341/oracle/xdk/public -I/ade/b/1226108341/oracle/ldap/public/sslinc -I/ade/b/1226108341/oracle/ldap/include/sslinc "+
+                "-I/ade/b/1226108341/oracle/ldap/include/cryptoinc -I/ade/b/1226108341/oracle/network/public -I/ade/b/1226108341/oracle/network/include "+
+                "-I/ade/b/1226108341/oracle/plsql/public -I/ade/b/1226108341/oracle/plsql/include -I/ade/b/1226108341/oracle/javavm/include "+
+                "-I/ade/b/1226108341/oracle/has/include -I/ade/b/1226108341/oracle/opsm/include -I/ade/b/1226108341/oracle/ldap/public "+
+                "-I/ade/b/1226108341/oracle/ldap/include -I/ade/b/1226108341/oracle/nlsrtl/include -I/ade/b/1226108341/oracle/oss/include   "+
+                "-DLINUX -DORAX86_64 -D_GNU_SOURCE -D_LARGEFILE64_SOURCE=1 -D_LARGEFILE_SOURCE=1 -DSLTS_ENABLE -DSLMXMX_ENABLE -D_REENTRANT "+
+                "-DNS_THREADS -DLONG_IS_64 -DSS_64BIT_SERVER -DLDAP_CM -DBNRMAJVSN=12 -DBNRMINVSN=1 -DBNRMIDTVSN=0 -DBNRPMAJVSN=0 -DBNRPMINVSN=2 "+
+                "-DBNRMAJVSN_STR=\\\"12\\\" -DBNRMAJVSNLETTER_STR=\\\"12c\\\" -DBNRMINVSN_STR=\\\"1\\\" -DBNRMIDTVSN_STR=\\\"0\\\" -DBNRPMAJVSN_STR=\\\"0\\\" "+
+                "DBNRPMINVSN_STR=\\\"2\\\" -DBNRVERSION_STR=\\\"12.1.0.0.2\\\" -DBNRSTATUS_STR=\\\"Beta\\\" -DBNRSTATUS_MAC=BNRBETA -DBNRCURRYEAR=2012 "+
+                "-DBNRCURRYEAR_STR=\\\"2012\\\" -DPLSQLNCG_SUPPORTED=1  -DNTEV_USE_POLL -DNTEV_USE_QUEUE -DNTEV_USE_GENERIC -DNTEV_USE_EPOLL";
+        String result = processLine(line, DiscoveryUtils.LogOrigin.BuildLog);
+        assertTrue(result.startsWith("Source:xsolmod.cpp"));
+        //assertDocumentText(line, expResult, result);
+        LogReader reader = new LogReader(line, "", null, null, null);
+        LogReader.LineInfo li = reader.testCompilerInvocation(line);
+        assertEquals(LogReader.CompilerType.CPP, li.compilerType);
+    }
 
     private String processLine(String line, DiscoveryUtils.LogOrigin isScriptOutput) {
         List<String> userIncludes = new ArrayList<String>();
         Map<String, String> userMacros = new TreeMap<String, String>();
         List<String> undefs = new ArrayList<String>();
+        List<String> languageArtifacts = new ArrayList<String>();
         line = LogReader.trimBackApostropheCalls(line, null);
         Pattern pattern = Pattern.compile(";|\\|\\||&&"); // ;, ||, && //NOI18N
         String[] cmds = pattern.split(line);
-        String what = DiscoveryUtils.gatherCompilerLine(cmds[0], isScriptOutput, userIncludes, userMacros, undefs,null, null, null, false).get(0);
+        String what = DiscoveryUtils.gatherCompilerLine(cmds[0], isScriptOutput, userIncludes, userMacros, undefs, null, languageArtifacts, null, false).get(0);
         StringBuilder res = new StringBuilder();
         res.append("Source:").append(what).append("\n");
         res.append("Macros:");
@@ -800,12 +897,15 @@ public class LogReaderTest extends TestCase {
         }
         assertFalse(sb.toString(), true);
     }
-
+    
     private void testCompilerInvocation(ItemProperties.LanguageKind ct, String line, int size) {
-        LogReader.LineInfo li = LogReader.testCompilerInvocation(line);
+        LogReader reader = new LogReader(line, "", null, null, null);
+        LogReader.LineInfo li = reader.testCompilerInvocation(line);
         if (ct == ItemProperties.LanguageKind.Unknown) {
-            assertEquals(li.getLanguage(), ct);
+            assertEquals(ct, li.getLanguage());
             return;
+        } else {
+            assertNotSame(ItemProperties.LanguageKind.Unknown, li.getLanguage());
         }
         List<String> userIncludes = new ArrayList<String>();
         Map<String, String> userMacros = new HashMap<String, String>();
@@ -815,7 +915,7 @@ public class LogReaderTest extends TestCase {
         assertTrue(sourcesList.size() == size);
         for(String what :sourcesList) {
             CommandLineSource cs = new CommandLineSource(li, languageArtifacts, "/", what, userIncludes, userMacros, undefs, null);
-            assertEquals(cs.getLanguageKind(), ct);
+            assertEquals(ct, cs.getLanguageKind());
         }
     }
 

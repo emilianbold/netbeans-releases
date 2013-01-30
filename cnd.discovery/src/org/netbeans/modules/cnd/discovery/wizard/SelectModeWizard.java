@@ -47,6 +47,7 @@ import java.awt.Component;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
@@ -158,14 +159,14 @@ public class SelectModeWizard implements WizardDescriptor.AsynchronousValidating
 
     @Override
     public void prepareValidation() {
-        if (wizardDescriptor.isSimpleMode()) {
+        //if (wizardDescriptor.isSimpleMode()) {
             component.enableControls(false);
-        }
+        //}
     }
 
     @Override
     public void validate() throws WizardValidationException {
-        if (wizardDescriptor.isSimpleMode()) {
+        if (component.isSimpleMode()) {
             ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(SelectProviderPanel.class, "AnalyzingProjectProgress")); // NOI18N
             handle.setInitialDelay(100);
             handle.start();
@@ -175,7 +176,6 @@ public class SelectModeWizard implements WizardDescriptor.AsynchronousValidating
             } finally {
                 handle.finish();
             }
-            component.updateControls();
             if (!res) {
                 fireChangeEvent();
                 ((WizardDescriptor)wizardDescriptor).putProperty("ShowAlert", Boolean.TRUE);// NOI18N
@@ -193,6 +193,12 @@ public class SelectModeWizard implements WizardDescriptor.AsynchronousValidating
                 }
             }
         }
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                component.updateControls();
+            }
+        });
     }
     
     DiscoveryProvider initPreferedProvider(final DiscoveryDescriptor wizardDescriptor) {

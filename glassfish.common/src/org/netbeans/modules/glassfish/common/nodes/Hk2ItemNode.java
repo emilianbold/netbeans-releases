@@ -56,21 +56,9 @@ import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.JFileChooser;
 import org.netbeans.modules.glassfish.common.CommandRunner;
-import org.netbeans.modules.glassfish.common.nodes.actions.DeployDirectoryCookie;
-import org.netbeans.modules.glassfish.common.nodes.actions.DisableModulesAction;
-import org.netbeans.modules.glassfish.common.nodes.actions.DisableModulesCookie;
-import org.netbeans.modules.glassfish.common.nodes.actions.EditDetailsAction;
-import org.netbeans.modules.glassfish.common.nodes.actions.EnableModulesAction;
-import org.netbeans.modules.glassfish.common.nodes.actions.EnableModulesCookie;
-import org.netbeans.modules.glassfish.common.nodes.actions.OpenTestURLAction;
-import org.netbeans.modules.glassfish.common.nodes.actions.OpenURLAction;
-import org.netbeans.modules.glassfish.common.nodes.actions.RefreshModulesAction;
-import org.netbeans.modules.glassfish.common.nodes.actions.RefreshModulesCookie;
-import org.netbeans.modules.glassfish.common.nodes.actions.UndeployModuleAction;
-import org.netbeans.modules.glassfish.common.nodes.actions.UndeployModuleCookie;
-import org.netbeans.modules.glassfish.common.nodes.actions.UnregisterResourceAction;
+import org.netbeans.modules.glassfish.common.CommonServerSupport;
+import org.netbeans.modules.glassfish.common.nodes.actions.*;
 import org.netbeans.modules.glassfish.spi.Decorator;
-import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.glassfish.spi.GlassfishModule.OperationState;
 import org.netbeans.modules.glassfish.spi.ResourceDecorator;
 import org.openide.actions.CopyAction;
@@ -96,7 +84,8 @@ public class Hk2ItemNode extends AbstractNode {
     
     protected final Decorator decorator;
     
-    protected Hk2ItemNode(Children children, final Lookup lookup, final String name, final Decorator decorator) {
+    protected Hk2ItemNode(Children children, final Lookup lookup,
+            final String name, final Decorator decorator) {
         super(children);
         this.decorator = decorator;
         
@@ -149,9 +138,12 @@ public class Hk2ItemNode extends AbstractNode {
                     
                     final File dir = new File(chooser.getSelectedFile().getAbsolutePath());
                     
-                    GlassfishModule commonModule = lookup.lookup(GlassfishModule.class);
+                    CommonServerSupport commonModule = lookup.lookup(
+                            CommonServerSupport.class);
                     if(commonModule != null) {
-                        CommandRunner mgr = new CommandRunner(true, commonModule.getCommandFactory(), commonModule.getInstanceProperties());
+                        CommandRunner mgr = new CommandRunner(true,
+                                commonModule.getCommandFactory(),
+                                commonModule.getInstance());
                         mgr.deploy(dir);
                     }
                 }
@@ -166,9 +158,12 @@ public class Hk2ItemNode extends AbstractNode {
                 @Override
                 public Future<OperationState> undeploy() {
                     Future<OperationState> result = null;
-                    GlassfishModule commonModule = lookup.lookup(GlassfishModule.class);
+                    CommonServerSupport commonModule = lookup.lookup(
+                            CommonServerSupport.class);
                     if(commonModule != null) {
-                        CommandRunner mgr = new CommandRunner(true, commonModule.getCommandFactory(), commonModule.getInstanceProperties());
+                        CommandRunner mgr = new CommandRunner(true,
+                                commonModule.getCommandFactory(),
+                                commonModule.getInstance());
                         result = mgr.undeploy(name);
                         status = new WeakReference<Future<OperationState>>(result);
                     }
@@ -199,9 +194,12 @@ public class Hk2ItemNode extends AbstractNode {
                 @Override
                 public Future<OperationState> enableModule() {
                     Future<OperationState> result = null;
-                    GlassfishModule commonModule = lookup.lookup(GlassfishModule.class);
+                    CommonServerSupport commonModule = lookup.lookup(
+                            CommonServerSupport.class);
                     if(commonModule != null) {
-                        CommandRunner mgr = new CommandRunner(true, commonModule.getCommandFactory(), commonModule.getInstanceProperties());
+                        CommandRunner mgr = new CommandRunner(true,
+                                commonModule.getCommandFactory(),
+                                commonModule.getInstance());
                         result = mgr.enable(name);
                         status = new WeakReference<Future<OperationState>>(result);
                     }
@@ -232,9 +230,12 @@ public class Hk2ItemNode extends AbstractNode {
                 @Override
                 public Future<OperationState> disableModule() {
                     Future<OperationState> result = null;
-                    GlassfishModule commonModule = lookup.lookup(GlassfishModule.class);
+                    CommonServerSupport commonModule = lookup.lookup(
+                            CommonServerSupport.class);
                     if(commonModule != null) {
-                        CommandRunner mgr = new CommandRunner(true, commonModule.getCommandFactory(), commonModule.getInstanceProperties());
+                        CommandRunner mgr = new CommandRunner(true,
+                                commonModule.getCommandFactory(),
+                                commonModule.getInstance());
                         result = mgr.disable(name);
                         status = new WeakReference<Future<OperationState>>(result);
                     }
@@ -325,7 +326,7 @@ public class Hk2ItemNode extends AbstractNode {
     
     @Override
     public Image getIcon(int type) {
-        Image image = null;
+        Image image;
         Image badge = decorator.getIconBadge();
         if(badge != null) {
             if (null == decorator.getIcon(type)) {
@@ -341,7 +342,7 @@ public class Hk2ItemNode extends AbstractNode {
     
     @Override
     public Image getOpenedIcon(int type) {
-        Image image = null;
+        Image image;
         Image badge = decorator.getIconBadge();
         if(badge != null) {
             image = badgeFolder(badge, true);

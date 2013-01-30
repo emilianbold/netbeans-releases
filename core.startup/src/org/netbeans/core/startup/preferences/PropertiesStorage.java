@@ -48,7 +48,11 @@ import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.SyncFailedException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
@@ -75,6 +79,7 @@ class PropertiesStorage implements NbPreferences.FileStorage {
     private String filePath;
     private boolean isModified;
     private FileChangeAdapter fileChangeAdapter;
+    private static final Logger LOGGER = Logger.getLogger(PropertiesStorage.class.getName());
     
     
     static NbPreferences.FileStorage instance(final String absolutePath) {
@@ -230,7 +235,10 @@ class PropertiesStorage implements NbPreferences.FileStorage {
                         os = outputStream();
                         properties.store(os);
                     } finally {
-                        if (os != null) os.close();
+                        if (os != null) {
+			    LOGGER.log(Level.FINE, "Closing output-stream for file {0} in {1}.", new Object[]{filePath, folderPath});
+			    os.close();
+			}
                     }
                 } else {
                     FileObject file = toPropertiesFile();
@@ -316,7 +324,21 @@ class PropertiesStorage implements NbPreferences.FileStorage {
 	    retval = toPropertiesFile();
 	    if (retval == null) {
 		// we really need to create the file
-		retval = FileUtil.createData(SFS_ROOT, filePath());
+		try {
+		    retval = FileUtil.createData(SFS_ROOT, filePath());
+		} catch (SyncFailedException sfex) {
+		    // File could not be created as it already exists!!!
+		    retval = toPropertiesFile();
+		    DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+		    LOGGER.log(Level.WARNING, "File {0} seems to already exist."
+			    + "\nCurrent date/time: {1}"
+			    + "\nLast modified: {2}"
+			    + "\nContents: {3}",
+			    new Object[]{FileUtil.toFile(retval).getAbsolutePath(),
+				dateFormat.format(Calendar.getInstance()),
+				dateFormat.format(retval.lastModified()),
+				retval.asText()});
+		}
 	    }
         }
         assert (retval == null && !create) || (retval != null && retval.isData());

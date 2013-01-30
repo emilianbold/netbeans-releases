@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -56,6 +56,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.Module;
 import org.netbeans.api.autoupdate.UpdateUnitProvider.CATEGORY;
+import org.netbeans.modules.autoupdate.services.FeatureUpdateElementImpl;
 import org.netbeans.modules.autoupdate.services.ModuleUpdateElementImpl;
 import org.netbeans.modules.autoupdate.services.UpdateElementImpl;
 import org.netbeans.modules.autoupdate.services.Utilities;
@@ -91,14 +92,17 @@ public class ArtificialFeaturesProvider implements UpdateProvider {
         originalItems = items;
     }
 
+    @Override
     public String getName () {
         return "artificial-module-provider"; // NOI18N
     }
 
+    @Override
     public String getDisplayName () {
         return getName ();
     }
     
+    @Override
     public String getDescription () {
         return null;
     }
@@ -108,6 +112,7 @@ public class ArtificialFeaturesProvider implements UpdateProvider {
         return tmp != null && Boolean.valueOf (tmp);
     }
 
+    @Override
     public Map<String, UpdateItem> getUpdateItems () throws IOException {
         if (! generateArtificialFeatures ()) {
             return Collections.emptyMap ();
@@ -124,10 +129,8 @@ public class ArtificialFeaturesProvider implements UpdateProvider {
                 Module module = Utilities.toModule (installedModule.getModuleInfo ().getCodeNameBase (), installedModule.getModuleInfo ().getSpecificationVersion ());
                 assert module != null : "Module found for " + installedModule.getModuleInfo ().getCodeNameBase () + ", " + installedModule.getModuleInfo ().getSpecificationVersion ();
                 if (module.isAutoload () || module.isFixed ()) {
-                    category = LIBRARIES_CATEGORY;
                     continue;
                 } else if (module.isEager ()) {
-                    category = BRIDGES_CATEGORY;
                     continue;
                 } else if (category == null || category.length () == 0) {
                     category = UNSORTED_CATEGORY;
@@ -164,7 +167,7 @@ public class ArtificialFeaturesProvider implements UpdateProvider {
             if (true) {
                 throw new UnsupportedOperationException("Not supported yet.");
             }
-            FeatureItem featureItemImpl = createFeatureItem (category, null /*categoryToModules.get (category)*/, null, null);
+            FeatureItem featureItemImpl = createFeatureItem (category, null /*categoryToModules.get (category)*/, null, null, null);
             log.log (Level.FINE, "Create FeatureItem[" + category + ", " + featureItemImpl.getSpecificationVersion ().toString () +
                     "] containing modules " + featureItemImpl.getDependenciesToModules ());
             UpdateItem featureItem = Utilities.createUpdateItem (featureItemImpl);
@@ -174,21 +177,28 @@ public class ArtificialFeaturesProvider implements UpdateProvider {
         return res;
     }
 
+    @Override
     public boolean refresh (boolean force) throws IOException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
     
     public static FeatureItem createFeatureItem (String codeName,
             Set<ModuleUpdateElementImpl> modules,
+            Set<FeatureUpdateElementImpl> features,
             UpdateElementImpl original,
             String additionalDescription) {
-        Set<String> containsModules = new HashSet<String> ();
+        Set<String> containsModulesOrFeatures = new HashSet<String>();
         String versionN = "";
         for (ModuleUpdateElementImpl impl : modules) {
             ModuleInfo info = impl.getModuleInfo ();
-            containsModules.add (info.getCodeName () + " > " + info.getSpecificationVersion ());
+            containsModulesOrFeatures.add(info.getCodeName() + " > " + info.getSpecificationVersion());
             SpecificationVersion spec = info.getSpecificationVersion ();
             versionN = addVersion (versionN, spec);
+        }
+        for (FeatureUpdateElementImpl impl : features) {
+            containsModulesOrFeatures.add(impl.getCodeName() + " > " + impl.getSpecificationVersion());
+            SpecificationVersion spec = impl.getSpecificationVersion();
+            versionN = addVersion(versionN, spec);
         }
         
         String description = original == null || original.getDescription () == null || original.getDescription ().length () == 0 ? "" :
@@ -196,14 +206,13 @@ public class ArtificialFeaturesProvider implements UpdateProvider {
         description = additionalDescription == null || additionalDescription.length () == 0 ? description :
             description + additionalDescription;
         
-
         String displayName = original == null || original.getDisplayName () == null || original.getDisplayName ().length () == 0 ? codeName :
             original.getDisplayName ();
 
         String version = original == null || original.getSpecificationVersion() == null ? versionN :
             original.getSpecificationVersion ().toString ();
 
-        return new FeatureItem (codeName, version, containsModules, displayName, description, null);
+        return new FeatureItem(codeName, version, containsModulesOrFeatures, displayName, description, null);
     }
     
     // XXX: should be move somewhere into utils
@@ -286,6 +295,7 @@ public class ArtificialFeaturesProvider implements UpdateProvider {
         return digits;
     }
 
+    @Override
     public CATEGORY getCategory() {
         return CATEGORY.COMMUNITY;
     }

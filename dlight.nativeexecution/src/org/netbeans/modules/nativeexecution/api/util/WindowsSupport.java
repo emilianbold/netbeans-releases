@@ -45,13 +45,14 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
+import org.netbeans.modules.nativeexecution.api.util.Shell.ShellType;
 import org.netbeans.modules.nativeexecution.api.util.ShellValidationSupport.ShellValidationStatus;
 import org.netbeans.modules.nativeexecution.support.Logger;
-import org.netbeans.modules.nativeexecution.api.util.Shell.ShellType;
 import org.netbeans.modules.nativeexecution.support.windows.PathConverter;
 import org.netbeans.modules.nativeexecution.support.windows.PathConverter.PathType;
 import org.netbeans.modules.nativeexecution.support.windows.SimpleConverter;
@@ -69,6 +70,7 @@ public final class WindowsSupport {
     private Shell activeShell = null;
     private String REG_EXE;
     private PathConverter pathConverter = null;
+    private AtomicReference<String> pathKeyRef  = new AtomicReference<String>();
     private Charset charset;
 
     static {
@@ -114,7 +116,7 @@ public final class WindowsSupport {
     }
 
     private Shell findShell(String searchDir) {
-        Shell shell = null;
+        Shell shell;
         Shell candidate = null;
 
         String reg_exe = "reg.exe"; // NOI18N
@@ -222,7 +224,7 @@ public final class WindowsSupport {
             return shellPID;
         }
 
-        ProcessBuilder pb = null;
+        ProcessBuilder pb;
         File psFile = new File(activeShell.bindir, "ps.exe"); // NOI18N
 
         if (!psFile.exists()) {
@@ -310,8 +312,8 @@ public final class WindowsSupport {
     }
 
     /**
-     * Cygwin is preferrable shell (over msys). So it cygwin is
-     * installed we will always use it's for shell
+     * Cygwin is preferrable shell (over msys). So it cygwin is installed we
+     * will always use it's for shell
      */
     public String convertToShellPath(String path) {
         return activeShell == null ? null : convert(PathType.WINDOWS, activeShell.type.toPathType(), path, true);
@@ -379,9 +381,9 @@ public final class WindowsSupport {
             // Will not use NativeProcessBuilder here. This may lead to deadlock
             // if no HostInfo is available. (See bugs #202550, #202568)
             // Actually, there is no any need in using NBP here.
-            
+
             ExitStatus result = ProcessUtils.execute(new ProcessBuilder(activeShell.shell, "--login", "-c", "echo $LANG")); // NOI18N
-            
+
             if (result.isOK()) {
                 String shellOutput = result.output;
                 int dotIndex = shellOutput.indexOf('.');
@@ -414,5 +416,20 @@ public final class WindowsSupport {
             }
         } catch (Exception ex) {
         }
+    }
+
+    public String getPathKey() {
+        if (pathKeyRef.get() == null) {
+            ProcessBuilder pb = new ProcessBuilder(""); // NOI18N
+            String pathKey = "PATH"; // NOI18N
+            for (String key : pb.environment().keySet()) {
+                if ("PATH".equalsIgnoreCase(key)) { //NOI18N
+                    pathKey = key;
+                    break;
+                }
+            }
+            pathKeyRef.compareAndSet(null, pathKey);
+        }
+        return pathKeyRef.get();
     }
 }

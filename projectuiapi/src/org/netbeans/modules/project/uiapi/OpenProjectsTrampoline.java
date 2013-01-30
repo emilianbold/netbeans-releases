@@ -47,6 +47,8 @@ package org.netbeans.modules.project.uiapi;
 import java.beans.PropertyChangeListener;
 import java.util.concurrent.Future;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ui.ProjectGroup;
+import org.netbeans.api.project.ui.ProjectGroupChangeListener;
 
 /**
  * List of projects open in the GUI.
@@ -70,4 +72,10 @@ public interface OpenProjectsTrampoline {
     
     public void setMainProject(Project project);
     
+    public ProjectGroup getActiveProjectGroupAPI();
+
+    public void addProjectGroupChangeListenerAPI(ProjectGroupChangeListener listener);
+
+    public void removeProjectGroupChangeListenerAPI(ProjectGroupChangeListener listener);
+ 
 }

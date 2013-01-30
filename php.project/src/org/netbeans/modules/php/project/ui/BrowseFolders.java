@@ -64,26 +64,27 @@ import javax.swing.JScrollPane;
 import javax.swing.tree.TreeSelectionModel;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.php.project.PhpVisibilityQuery;
-import org.openide.util.NbBundle;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.loaders.DataFolder;
-import org.openide.nodes.Children;
-import org.openide.nodes.Node;
 import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
+import org.openide.nodes.Node;
 import org.openide.nodes.NodeNotFoundException;
 import org.openide.nodes.NodeOp;
+import org.openide.util.NbBundle;
 
 /**
  * @author  phrebejk, mkuchtiak, Tomas Mysik
  */
+@org.netbeans.api.annotations.common.SuppressWarnings("SE_COMPARATOR_SHOULD_BE_SERIALIZABLE")
 public class BrowseFolders extends JPanel implements ExplorerManager.Provider {
     private static final long serialVersionUID = -180677991433020051L;
 

@@ -66,7 +66,6 @@ import org.openide.util.lookup.Lookups;
  * @author Pavel Buzek
  */
 @OptionsPanelController.SubRegistration(
-    id="Versioning",
     displayName="#LBL_OptionsPanelName",
     keywords="#KW_VersioningOptions",
     keywordsCategory="Advanced/Versioning")
@@ -170,4 +169,17 @@ public class VcsAdvancedOptions extends OptionsPanelController {
         public HelpCtx getHelpCtx() {
             return new HelpCtx(VcsAdvancedOptions.class);
         }
+
+    @Override
+    public void handleSuccessfulSearch (String searchText, List<String> matchedKeywords) {
+        for (Map.Entry<String, OptionsPanelController> e : categoryToController.entrySet()) {
+            OptionsPanelController c = e.getValue();
+            if (c instanceof VCSOptionsKeywordsProvider) {
+                if (((VCSOptionsKeywordsProvider) c).acceptKeywords(matchedKeywords)) {
+                    panel.selectCategory(e.getKey());
+                    break;
+                }
+            }
+        }
+    }
 }

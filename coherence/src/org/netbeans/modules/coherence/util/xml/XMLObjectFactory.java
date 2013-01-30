@@ -102,7 +102,12 @@ public final class XMLObjectFactory extends JAXBXMLFactory {
      * @return
      */
     public CacheConfig unmarshalCacheConfigFile(File xmlFile) throws Exception {
-        return unmarshalCacheConfigFile(new FileInputStream(xmlFile));
+        FileInputStream fis = new FileInputStream(xmlFile);
+        try {
+            return unmarshalCacheConfigFile(fis);
+        } finally {
+            fis.close();
+        }
     }
 
     /**
@@ -111,7 +116,12 @@ public final class XMLObjectFactory extends JAXBXMLFactory {
      * @return
      */
     public CacheConfig unmarshalCacheConfigFile(String xmlString) throws Exception {
-        return unmarshalCacheConfigFile(new FileInputStream(xmlString));
+        FileInputStream fis = new FileInputStream(xmlString);
+        try {
+            return unmarshalCacheConfigFile(fis);
+        } finally {
+            fis.close();
+        }
     }
 
     /**
@@ -142,7 +152,12 @@ public final class XMLObjectFactory extends JAXBXMLFactory {
      * @return
      */
     public PofConfig unmarshalPofConfigFile(File xmlFile) throws Exception {
-        return unmarshalPofConfigFile(new FileInputStream(xmlFile));
+        FileInputStream fis = new FileInputStream(xmlFile);
+        try {
+            return unmarshalPofConfigFile(fis);
+        } finally {
+            fis.close();
+        }
     }
 
     /**
@@ -151,7 +166,12 @@ public final class XMLObjectFactory extends JAXBXMLFactory {
      * @return
      */
     public PofConfig unmarshalPofConfigFile(String xmlString) throws Exception {
-        return unmarshalPofConfigFile(new FileInputStream(xmlString));
+        FileInputStream fis = new FileInputStream(xmlString);
+        try {
+            return unmarshalPofConfigFile(fis);
+        } finally {
+            fis.close();
+        }
     }
 
     /**
@@ -182,7 +202,12 @@ public final class XMLObjectFactory extends JAXBXMLFactory {
      * @return
      */
     public Coherence unmarshalCoherenceConfigFile(File xmlFile) throws Exception {
-        return unmarshalCoherenceConfigFile(new FileInputStream(xmlFile));
+        FileInputStream fis = new FileInputStream(xmlFile);
+        try {
+            return unmarshalCoherenceConfigFile(fis);
+        } finally {
+            fis.close();
+        }
     }
 
     /**
@@ -191,7 +216,12 @@ public final class XMLObjectFactory extends JAXBXMLFactory {
      * @return
      */
     public Coherence unmarshalCoherenceConfigFile(String xmlString) throws Exception {
-        return unmarshalCoherenceConfigFile(new FileInputStream(xmlString));
+        FileInputStream fis = new FileInputStream(xmlString);
+        try {
+            return unmarshalCoherenceConfigFile(fis);
+        } finally {
+            fis.close();
+        }
     }
 
     /**

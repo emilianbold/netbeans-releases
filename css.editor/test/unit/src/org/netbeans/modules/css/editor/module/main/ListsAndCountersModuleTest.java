@@ -41,8 +41,8 @@
  */
 package org.netbeans.modules.css.editor.module.main;
 
-import org.netbeans.modules.css.editor.module.CssModuleSupport;
-import org.netbeans.modules.css.editor.properties.parser.PropertyModel;
+import org.netbeans.modules.css.lib.api.properties.Properties;
+import org.netbeans.modules.css.lib.api.properties.PropertyDefinition;
 import org.netbeans.modules.parsing.spi.ParseException;
 
 /**
@@ -63,13 +63,13 @@ public class ListsAndCountersModuleTest extends CssModuleTestBase {
     }
     
     public void testListStyleCompletion() {
-        PropertyModel p = CssModuleSupport.getPropertyModel("list-style");
-        assertAlternatives(p.getGrammar(), "",
+        PropertyDefinition p = Properties.getPropertyDefinition( "list-style");
+        assertAlternatives(p.getGrammarElement(null), "",
                 "repeating-linear-gradient","lower-latin","lower-greek",
                 "repeating-radial-gradient","disc","lower-alpha","lower-roman",
                 "!identifier","georgian","element","upper-alpha","armenian",
                 "upper-latin","linear-gradient","!string","image","decimal",
-                "upper-roman","url","cross-fade","radial-gradient","inside",
+                "upper-roman","!uri","cross-fade","radial-gradient","inside",
                 "decimal-leading-zero","square", "circle","none","symbols","outside");
     }
     
@@ -82,17 +82,17 @@ public class ListsAndCountersModuleTest extends CssModuleTestBase {
     }
     
     public void testListStyleTypeCompletion() {
-        PropertyModel p = CssModuleSupport.getPropertyModel("list-style-type");
-        assertAlternatives(p.getGrammar(), "",
+        PropertyDefinition p = Properties.getPropertyDefinition( "list-style-type");
+        assertAlternatives(p.getGrammarElement(null), "",
                 "georgian","armenian","upper-alpha","upper-latin","!string","lower-latin",
                 "circle","lower-greek","decimal","upper-roman","disc","lower-alpha",
                 "symbols","lower-roman","none","decimal-leading-zero","square","!identifier");
         
-        assertAlternatives(p.getGrammar(), "symbols", "(");
-        assertAlternatives(p.getGrammar(), "symbols(",
+        assertAlternatives(p.getGrammarElement(null), "symbols", "(");
+        assertAlternatives(p.getGrammarElement(null), "symbols(",
                 "repeating-linear-gradient","element","numeric","linear-gradient",
                 "!string","alphabetic","image","symbolic","repeating-radial-gradient",
-                "url","repeating","cross-fade","non-repeating","radial-gradient");
+                "!uri","repeating","cross-fade","non-repeating","radial-gradient");
     }
     
     public void testListStyleImage() {

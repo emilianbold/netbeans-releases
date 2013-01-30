@@ -44,14 +44,16 @@ package org.netbeans.modules.bugtracking.dummies;
 
 import java.awt.Image;
 import java.beans.PropertyChangeListener;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Collection;
 import java.util.Collections;
+import javax.imageio.ImageIO;
 import org.netbeans.modules.bugtracking.TestIssue;
 import org.netbeans.modules.bugtracking.TestKit;
 import org.netbeans.modules.bugtracking.TestQuery;
 import org.netbeans.modules.bugtracking.TestRepository;
 import org.netbeans.modules.bugtracking.spi.*;
-import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 
 /**
@@ -60,9 +62,19 @@ import org.openide.util.Lookup;
  */
 public class DummyRepository extends TestRepository {
 
-    private static final Image icon = ImageUtilities.loadImage(
-            "org/netbeans/modules/bugtracking/dummies/DummyRepositoryIcon.png");
+    private static final Image icon;
 
+    static {
+        try {
+            InputStream is = DummyRepository.class.getResourceAsStream(
+                    "/org/netbeans/modules/bugtracking/dummies/DummyRepositoryIcon.png");
+            icon = ImageIO.read(is);
+            is.close();
+        } catch (IOException ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+    
     private final DummyBugtrackingConnector connector;
     private final String id;
     private RepositoryInfo info;
@@ -134,13 +146,9 @@ public class DummyRepository extends TestRepository {
     }
 
     @Override
-    public void removePropertyChangeListener(PropertyChangeListener listener) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
+    public void removePropertyChangeListener(PropertyChangeListener listener) { }
 
     @Override
-    public void addPropertyChangeListener(PropertyChangeListener listener) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
+    public void addPropertyChangeListener(PropertyChangeListener listener) { }
 
 }

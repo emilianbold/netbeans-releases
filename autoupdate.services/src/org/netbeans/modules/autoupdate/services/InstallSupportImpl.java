@@ -47,6 +47,7 @@ package org.netbeans.modules.autoupdate.services;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.*;
+import java.net.ConnectException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
@@ -127,7 +128,7 @@ public class InstallSupportImpl {
         support = installSupport;
     }
     
-    public boolean doDownload (final ProgressHandle progress/*or null*/, Boolean isGlobal, boolean useUserdirAsFallback) throws OperationException {
+    public boolean doDownload (final ProgressHandle progress/*or null*/, final Boolean isGlobal, final boolean useUserdirAsFallback) throws OperationException {
         this.isGlobal = isGlobal;
         this.useUserdirAsFallback = useUserdirAsFallback;
         Callable<Boolean> downloadCallable = new Callable<Boolean>() {
@@ -165,9 +166,12 @@ public class InstallSupportImpl {
                 }
                 infos = newInfos;
                 
+                // check write permissions before started download and then sum download size
                 int size = 0;
                 for (OperationInfo info : infos) {
-                    size += info.getUpdateElement().getDownloadSize();
+                    UpdateElement ue = info.getUpdateElement();
+                    InstallManager.findTargetDirectory(ue.getUpdateUnit().getInstalled(), Trampoline.API.impl(ue), isGlobal, useUserdirAsFallback);
+                    size += ue.getDownloadSize();
                 }
                 
                 // start progress
@@ -181,7 +185,10 @@ public class InstallSupportImpl {
                 
                 try {
                     for (OperationInfo info : infos) {
-                        if (cancelled()) return false;
+                        if (cancelled()) {
+                            LOG.log (Level.INFO, "InstallSupport.doDownload was canceled"); // NOI18N
+                            return false;
+                        }
                         
                         int increment = doDownload(info, progress, aggregateDownload, size);
                         if (increment == -1) {
@@ -288,7 +295,7 @@ public class InstallSupportImpl {
     private Set<ModuleUpdateElementImpl> affectedModuleImpls = null;
     private Set<FeatureUpdateElementImpl> affectedFeatureImpls = null; 
     
-    public Boolean doInstall (final Installer installer, final ProgressHandle progress/*or null*/) throws OperationException {
+    public Boolean doInstall (final Installer installer, final ProgressHandle progress/*or null*/, final boolean forceInstall) throws OperationException {
         assert installer != null;
         Callable<Boolean> installCallable = new Callable<Boolean>() {
             @Override
@@ -403,7 +410,7 @@ public class InstallSupportImpl {
                         }
                     }
 
-                    if (! needsRestart) {
+                    if (! needsRestart || forceInstall) {
                         synchronized(LOCK) {
                             if (currentStep == STEP.CANCEL) {
                                 if (progress != null) progress.finish ();
@@ -429,8 +436,8 @@ public class InstallSupportImpl {
                                                 new RefreshModulesListener (progress),
                                                 NbBundle.getBranding()
                                             );
-                                        } catch (InterruptedException ex) {
-                                            Exceptions.printStackTrace(ex);
+                                        } catch (InterruptedException ie) {
+                                            LOG.log (Level.INFO, ie.getMessage (), ie);
                                         }
                                     }
                                 });
@@ -470,7 +477,7 @@ public class InstallSupportImpl {
                     }
                 }
                 
-                return needsRestart ? Boolean.TRUE : Boolean.FALSE;
+                return needsRestart && ! forceInstall ? Boolean.TRUE : Boolean.FALSE;
             }
         };
         
@@ -699,7 +706,8 @@ public class InstallSupportImpl {
     
     private int doDownload (UpdateElementImpl toUpdateImpl, ProgressHandle progress, final int aggregateDownload, final int totalSize) throws OperationException {
         if (cancelled()) {
-                return -1;
+            LOG.log (Level.INFO, "InstallSupport.doDownload was canceled, returns -1"); // NOI18N
+            return -1;
         }
         
         UpdateElement installed = toUpdateImpl.getUpdateUnit ().getInstalled ();
@@ -738,6 +746,7 @@ public class InstallSupportImpl {
                 downloadedFiles.add(normalized);
             }
             c = copy (source, dest, progress, toUpdateImpl.getDownloadSize (), aggregateDownload, totalSize, label);
+            boolean wasException = false;
             JarFile nbm = new JarFile(dest);
             try {
                 Enumeration<JarEntry> en = nbm.entries();
@@ -774,6 +783,11 @@ public class InstallSupportImpl {
                             }
                             real.close();
                             if (check.getValue() != crc.get()) {
+                                LOG.log(Level.INFO, "Deleting file with uncomplete external content(cause: wrong CRC) " + dest);
+                                dest.delete();
+                                synchronized(downloadedFiles) {
+                                    downloadedFiles.remove(FileUtil.normalizeFile (dest));
+                                }
                                 external.delete();
                                 throw new IOException("Wrong CRC for " + jarEntry.getName());
                             }
@@ -782,8 +796,19 @@ public class InstallSupportImpl {
                         }
                     }
                 }
+            } catch (FileNotFoundException x) {
+                LOG.log(Level.INFO, x.getMessage(), x);
+                wasException = true;
+                throw new OperationException(OperationException.ERROR_TYPE.INSTALL, x.getLocalizedMessage());
+            } catch (IOException x) {
+                LOG.log(Level.INFO, x.getMessage(), x);
+                wasException = true;
+                throw new OperationException(OperationException.ERROR_TYPE.PROXY, x.getLocalizedMessage());
             } finally {
                 nbm.close();
+                if (wasException) {
+                    dest.delete();
+                }
             }
         } catch (UnknownHostException x) {
             LOG.log (Level.INFO, x.getMessage (), x);
@@ -997,6 +1022,7 @@ public class InstallSupportImpl {
                 c += size;
                 if (! progressRunning && progress != null) {
                     progress.switchToDeterminate (totalSize);
+                    progress.progress (label);
                     progressRunning = true;
                 }
                 if (c > 1024) {
@@ -1027,7 +1053,7 @@ public class InstallSupportImpl {
         }
         if (contentLength != -1 && increment != contentLength) {
             if(canceled) {
-                LOG.log(Level.FINE, "Download of " + source + " was cancelled");
+                LOG.log(Level.INFO, "Download of " + source + " was cancelled");
             } else {
                 LOG.log(Level.INFO, "Content length was reported as " + contentLength + " byte(s) but read " + increment + " byte(s)");
             }
@@ -1115,7 +1141,7 @@ public class InstallSupportImpl {
         public void propertyChange(final PropertyChangeEvent ev) {
             if (UpdaterInternal.RUNNING.equals (ev.getPropertyName ())) {
                 if (handle != null) {
-                    handle.progress (i++);
+                    handle.progress (ev.getNewValue() == null ? "" : ev.getNewValue().toString(), i++);
                 }
             } else if (UpdaterInternal.FINISHED.equals (ev.getPropertyName ())){
                 this.ev = ev;
@@ -1240,6 +1266,9 @@ public class InstallSupportImpl {
         BufferedReader br = new BufferedReader(new InputStreamReader(is));
         URLConnection conn;
         crc.set(-1L);
+        String url = null;
+        String externalUrl = null;
+        IOException ioe = null;
         for (;;) {
             String line = br.readLine();
             if (line == null) {
@@ -1249,7 +1278,7 @@ public class InstallSupportImpl {
                 crc.set(Long.parseLong(line.substring(4).trim()));
             }
             if (line.startsWith("URL:")) {
-                String url = line.substring(4).trim();
+                url = line.substring(4).trim();
                 for (;;) {
                     int index = url.indexOf("${");
                     if (index == -1) {
@@ -1271,10 +1300,18 @@ public class InstallSupportImpl {
                 } catch (IOException ex) {
                     LOG.log(Level.WARNING, "Cannot connect to {0}", url);
                     LOG.log(Level.INFO, "Details", ex);
+                    if (ex instanceof UnknownHostException || ex instanceof ConnectException) {
+                        ioe = ex;
+                        externalUrl = url;
+                    }
                 }
             }
         }
-        throw new FileNotFoundException("Cannot resolve external reference to " + pathTo);
+        if (ioe == null) {
+            throw new FileNotFoundException("Cannot resolve external reference to " + (url == null ? pathTo : url));
+        } else {
+            throw new IOException("resolving external reference to " + (externalUrl == null ? pathTo : externalUrl));
+        }
     }
     
     private static class UpdaterInfo {

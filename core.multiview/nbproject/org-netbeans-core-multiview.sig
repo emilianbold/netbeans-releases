@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.26
+#Version 1.29.1
 
 CLSS public abstract interface java.io.Serializable
 
@@ -54,6 +54,7 @@ hfds del
 CLSS public final org.netbeans.core.api.multiview.MultiViewPerspective
 meth public int getPersistenceType()
 meth public java.awt.Image getIcon()
+ anno 0 org.netbeans.api.annotations.common.CheckForNull()
 meth public java.lang.String getDisplayName()
 meth public java.lang.String preferredID()
 meth public org.openide.util.HelpCtx getHelpCtx()
@@ -82,6 +83,7 @@ CLSS public abstract interface org.netbeans.core.spi.multiview.MultiViewDescript
  anno 0 org.netbeans.spi.editor.mimelookup.MimeLocation(java.lang.Class<? extends org.netbeans.spi.editor.mimelookup.InstanceProvider> instanceProviderClass=class org.netbeans.spi.editor.mimelookup.InstanceProvider, java.lang.String subfolderName="MultiView")
 meth public abstract int getPersistenceType()
 meth public abstract java.awt.Image getIcon()
+ anno 0 org.netbeans.api.annotations.common.CheckForNull()
 meth public abstract java.lang.String getDisplayName()
 meth public abstract java.lang.String preferredID()
 meth public abstract org.netbeans.core.spi.multiview.MultiViewElement createElement()
@@ -109,9 +111,9 @@ CLSS public abstract interface static !annotation org.netbeans.core.spi.multivie
  anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[TYPE, METHOD])
 intf java.lang.annotation.Annotation
 meth public abstract !hasdefault int position()
+meth public abstract !hasdefault java.lang.String iconBase()
 meth public abstract int persistenceType()
 meth public abstract java.lang.String displayName()
-meth public abstract java.lang.String iconBase()
 meth public abstract java.lang.String preferredID()
 meth public abstract java.lang.String[] mimeType()
 

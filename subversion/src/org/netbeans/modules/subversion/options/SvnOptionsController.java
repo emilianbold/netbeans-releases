@@ -73,6 +73,7 @@ import org.netbeans.modules.subversion.client.SvnClientFactory;
 import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.ui.repository.Repository;
 import org.netbeans.modules.versioning.util.AccessibleJFileChooser;
+import org.netbeans.modules.versioning.util.VCSOptionsKeywordsProvider;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -85,7 +86,7 @@ import org.openide.util.NbBundle;
  *
  * @author Tomas Stupka
  */
-public final class SvnOptionsController extends OptionsPanelController implements ActionListener {
+public final class SvnOptionsController extends OptionsPanelController implements ActionListener, VCSOptionsKeywordsProvider {
     
     private final SvnOptionsPanel panel;
     private Repository repository;
@@ -136,6 +137,13 @@ public final class SvnOptionsController extends OptionsPanelController implement
                 }
             }
         });
+    }
+    
+    @Override
+    public boolean acceptKeywords (List<String> keywords) {
+        Set<String> allKeywords = new HashSet<String>(panel.getKeywords());
+        allKeywords.retainAll(keywords);
+        return !allKeywords.isEmpty();
     }
 
     private void createRepository() throws MissingResourceException {

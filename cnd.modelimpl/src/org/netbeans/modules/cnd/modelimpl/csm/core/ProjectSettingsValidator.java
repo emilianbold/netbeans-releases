@@ -46,6 +46,7 @@ package org.netbeans.modules.cnd.modelimpl.csm.core;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -56,9 +57,9 @@ import java.util.zip.Checksum;
 import org.netbeans.modules.cnd.api.model.CsmModelState;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeProject;
+import org.netbeans.modules.cnd.apt.utils.APTSerializeUtils;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
-import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.repository.ProjectSettingsValidatorKey;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.repository.spi.Key;
@@ -66,7 +67,6 @@ import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
-import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.cache.FilePathCache;
 
@@ -131,7 +131,7 @@ public class ProjectSettingsValidator {
         }
 	updateMap(headers);
 	updateMap(sources);
-	Key key = new ProjectSettingsValidatorKey(csmProject.getUniqueName());
+	Key key = new ProjectSettingsValidatorKey(csmProject.getUnitId());
 	RepositoryUtils.put(key, data);
 	if( TraceFlags.TIMING ) {
 	    time = System.currentTimeMillis() - time;
@@ -157,11 +157,11 @@ public class ProjectSettingsValidator {
 	if( nativeProject == null ) {
 	    return;
 	}
-	Key key = new ProjectSettingsValidatorKey(csmProject.getUniqueName());
+	Key key = new ProjectSettingsValidatorKey(csmProject.getUnitId());
 	data = (Data) RepositoryUtils.get(key);
         if( data == null ) {
             data = new Data();
-            DiagnosticExceptoins.register(new IllegalStateException("Can not get project settings validator data by the key " + key)); //NOI18N
+            DiagnosticExceptoins.registerIllegalRepositoryStateException("Can not get project settings validator data by the key ", key); //NOI18N
         }
     }
     
@@ -213,17 +213,21 @@ public class ProjectSettingsValidator {
     }
 
     private void updateCrcByStrings(Checksum checksum, List<String> strings) {
+        strings = new ArrayList<String>(strings);
+        Collections.sort(strings);
 	for( String s : strings ) {
 	    updateCrc(checksum, s);
 	}
     }
     
-    public static PersistentFactory getPersistentFactory() {
+    public static PersistentFactory getPersistentFactory(int unitId) {
 	// it isn't worth caching factory since it's too rarely used
-	return new ValidatorPersistentFactory();
+	return new ValidatorPersistentFactory(unitId);
     }
     
-    private static class Data implements Persistent, SelfPersistent {
+    // Not SelfPersistent any more because I have to pass unitIndex into write() method
+    // It is private, so I don't think it's a problem. VK.
+    private static class Data implements Persistent {
 	
 	private Map<CharSequence, Long> map;
 	
@@ -244,21 +248,20 @@ public class ProjectSettingsValidator {
 	    map.put(FilePathCache.getManager().getString(name), crc);
 	}
 	
-	public Data(RepositoryDataInput stream) throws IOException {
+	public Data(RepositoryDataInput stream, int unitID) throws IOException {
 	    map = new HashMap<CharSequence, Long>();
 	    int cnt = stream.readInt();
 	    for (int i = 0; i < cnt; i++) {
-		CharSequence name = PersistentUtils.readUTF(stream, FilePathCache.getManager());
+		CharSequence name = APTSerializeUtils.readFileNameIndex(stream, FilePathCache.getManager(), unitID);
 		long crc = stream.readLong();
 		map.put(name, crc);
 	    }
 	}
 	
-        @Override
-	public void write(RepositoryDataOutput stream ) throws IOException {
+	public void write(RepositoryDataOutput stream, int unitID) throws IOException {
 	    stream.writeInt(map.size());
 	    for( Map.Entry<CharSequence, Long> entry : map.entrySet()) {
-		PersistentUtils.writeUTF(entry.getKey(), stream);
+                APTSerializeUtils.writeFileNameIndex(entry.getKey(), stream, unitID);
 		stream.writeLong(entry.getValue().longValue());
 	    }
 	}
@@ -266,15 +269,21 @@ public class ProjectSettingsValidator {
     
     private static class ValidatorPersistentFactory implements PersistentFactory {
 
+        private final int unitId;
+
+        public ValidatorPersistentFactory(int unitId) {
+            this.unitId = unitId;
+        }
+
         @Override
 	public void write(RepositoryDataOutput out, Persistent obj) throws IOException {
 	    assert obj instanceof Data;
-	    ((Data) obj).write(out);
+	    ((Data) obj).write(out, unitId);
 	}
 
         @Override
 	public Persistent read(RepositoryDataInput in) throws IOException {
-	    return new Data(in);
+	    return new Data(in, unitId);
 	}
     }
 	    

@@ -44,15 +44,20 @@
 
 package org.netbeans.modules.groovy.editor.api;
 
+import java.util.ArrayList;
+import java.util.List;
 import javax.lang.model.element.ExecutableElement;
+import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.ConstructorNode;
 import org.codehaus.groovy.ast.MethodNode;
+import org.codehaus.groovy.ast.Parameter;
 import org.codehaus.groovy.ast.expr.ArgumentListExpression;
 import org.codehaus.groovy.ast.expr.ConstantExpression;
 import org.codehaus.groovy.ast.expr.ConstructorCallExpression;
 import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.ast.expr.MethodCallExpression;
 import org.codehaus.groovy.ast.expr.NamedArgumentListExpression;
+import org.netbeans.modules.groovy.editor.api.elements.index.IndexedMethod;
 
 /**
  * Utilities related to methods
@@ -86,9 +91,16 @@ public class Methods {
 
     public static boolean isSameMethod(MethodNode methodNode1, MethodNode methodNode2) {
         if (methodNode1.getName().equals(methodNode2.getName())) {
-            // not comparing parameter types for now, only their count
-            // is it even possible to make some check for parameter types?
-            if (methodNode1.getParameters().length == methodNode2.getParameters().length) {
+            Parameter[] params1 = methodNode1.getParameters();
+            Parameter[] params2 = methodNode2.getParameters();
+            if (params1.length == params2.length) {
+                for (int i = 0; i < params1.length; i++) {
+                    ClassNode type1 = params1[i].getType();
+                    ClassNode type2 = params2[i].getType();
+                    if (!type1.equals(type2)) {
+                        return false;
+                    }
+                }
                 return true;
             }
         }
@@ -172,4 +184,51 @@ public class Methods {
         }
     }
 
+    public static boolean hasSameParameters(IndexedMethod indexedMethod, MethodNode method) {
+        return isSameList(indexedMethod.getParameters(), getMethodParams(method));
+    }
+
+    public static boolean hasSameParameters(IndexedMethod indexedMethod, MethodCallExpression methodCall) {
+        return isSameList(indexedMethod.getParameters(), getMethodParams(methodCall));
+    }
+
+    public static boolean hasSameParameters(MethodNode methodNode, MethodCallExpression methodCall) {
+        return isSameList(getMethodParams(methodNode), getMethodParams(methodCall));
+    }
+
+    public static boolean isSameList(List<String> list1, List<String> list2) {
+        if (list1.size() != list2.size()) {
+            return false;
+        }
+        for (int i = 0; i < list1.size(); i++) {
+            if (!list1.get(i).equals(list2.get(i))) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private static List<String> getMethodParams(MethodNode methodNode) {
+        final List<String> params = new ArrayList<String>();
+        for (Parameter param : methodNode.getParameters()) {
+            params.add(ElementUtils.getTypeName(param));
+        }
+        return params;
+
+    }
+
+    private static List<String> getMethodParams(MethodCallExpression methodCall) {
+        final List<String> params = new ArrayList<String>();
+        final Expression arguments = methodCall.getArguments();
+
+        if (arguments instanceof ArgumentListExpression) {
+            ArgumentListExpression argumentList = ((ArgumentListExpression) arguments);
+            if (argumentList.getExpressions().size() > 0) {
+                for (Expression argument : argumentList.getExpressions()) {
+                    params.add(ElementUtils.getTypeName(argument.getType()));
+                }
+            }
+        }
+        return params;
+    }
 }

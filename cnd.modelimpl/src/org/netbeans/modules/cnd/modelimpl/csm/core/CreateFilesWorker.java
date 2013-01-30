@@ -66,7 +66,7 @@ final class CreateFilesWorker {
     private FileModel lwm;
     private boolean lwmInited;
     private final ProjectBase project;
-    private final RequestProcessor PROJECT_FILES_WORKER = new RequestProcessor("Project Files", CndUtils.getNumberCndWorkerThreads()); // NOI18N
+    private final RequestProcessor PROJECT_FILES_WORKER;
     private final Set<FileImpl> reparseOnEdit = Collections.synchronizedSet(new HashSet<FileImpl>());
     private final Set<NativeFileItem> reparseOnPropertyChanged = Collections.synchronizedSet(new HashSet<NativeFileItem>());
     private final AtomicBoolean failureDetected = new AtomicBoolean(false);
@@ -76,6 +76,7 @@ final class CreateFilesWorker {
         this.project = project;
         this.removedFiles = removedFiles;
         this.validator = validator;
+        this.PROJECT_FILES_WORKER = new RequestProcessor("CreateFilesWorker " + project.getDisplayName(), CndUtils.getNumberCndWorkerThreads()); // NOI18N
     }
 
     private synchronized FileModel getLWM() {
@@ -230,7 +231,9 @@ final class CreateFilesWorker {
             if (removedFiles.contains(nativeFileItem)) {
                 FileImpl file = project.getFile(nativeFileItem.getAbsolutePath(), true);
                 if (file != null) {
-                    project.removeFile(nativeFileItem.getAbsolutePath());
+                    // comment out due to #215672
+                    // will be removed using checkForRemoved later on
+                    // project.removeFile(nativeFileItem.getAbsolutePath());
                     this.handledFiles.add(UIDCsmConverter.fileToUID(file));
                 }
                 return true;
@@ -240,7 +243,7 @@ final class CreateFilesWorker {
                 ModelSupport.trace(nativeFileItem);
             }
             try {
-                FileImpl fileImpl = project.createIfNeed(nativeFileItem, sources, CreateFilesWorker.this.getLWM(), validator, reparseOnEdit, reparseOnPropertyChanged);
+                FileImpl fileImpl = project.createIfNeed(nativeFileItem, CreateFilesWorker.this.getLWM(), validator, reparseOnEdit, reparseOnPropertyChanged);
                 this.handledFiles.add(UIDCsmConverter.fileToUID(fileImpl));
                 if (project.isValidating() && RepositoryUtils.getRepositoryErrorCount(project) > 0) {
                     failureDetected.set(true);

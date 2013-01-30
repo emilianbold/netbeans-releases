@@ -53,10 +53,12 @@ import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.explorer.propertysheet.editors.XMLPropertyEditor;
 import org.openide.nodes.Node;
+import org.openide.nodes.PropertyEditorRegistration;
 
 /** A property editor for array of Strings.
  * @author  Ian Formanek
  */
+@PropertyEditorRegistration(targetType=String[].class)
 public class StringArrayEditor implements XMLPropertyEditor, StringArrayCustomizable, ExPropertyEditor {
 
     // constants for XML persistence

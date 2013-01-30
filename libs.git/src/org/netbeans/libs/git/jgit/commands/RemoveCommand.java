@@ -117,13 +117,13 @@ public class RemoveCommand extends GitCommand {
                                 }
                                 edit.add(new DirCacheEditor.DeleteTree(treeWalk.getPathString()));
                             }
-                        } else {
+                        } else if (Utils.isUnderOrEqual(treeWalk, pathFilters)) {
                             listener.notifyFile(path, treeWalk.getPathString());
                             edit.add(new DirCacheEditor.DeletePath(treeWalk.getPathString()));
                         }
                     }
                     if (!cached && !Utils.isFromNested(treeWalk.getFileMode(1).getBits())
-                            && (!treeWalk.isSubtree() || treeWalk.isPostChildren() && Utils.isUnderOrEqual(treeWalk, pathFilters))) {
+                            && (!treeWalk.isSubtree() || treeWalk.isPostChildren()) && Utils.isUnderOrEqual(treeWalk, pathFilters)) {
                         // delete also the file
                         if (!path.delete() && path.exists()) {
                             monitor.notifyError(MessageFormat.format(Utils.getBundle(RemoveCommand.class).getString("MSG_Error_CannotDeleteFile"), path.getAbsolutePath())); //NOI18N

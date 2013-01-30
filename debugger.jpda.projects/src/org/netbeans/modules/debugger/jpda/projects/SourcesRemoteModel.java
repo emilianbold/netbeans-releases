@@ -523,7 +523,7 @@ NodeActionsProvider {
                     if (!zipOrDir.isDirectory() && !FileUtil.isArchiveFile(zipOrDir.toURI().toURL())) {
                         return ;
                     }
-                    String d = zipOrDir.getCanonicalPath();
+                    String d = FileUtil.normalizePath(zipOrDir.getAbsolutePath());
                     synchronized (SourcesRemoteModel.this) {
                         additionalSourceRoots.add(d);
 

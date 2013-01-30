@@ -59,6 +59,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
@@ -69,6 +70,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
@@ -159,8 +161,8 @@ import org.openide.util.RequestProcessor;
 public class RepositoryUpdaterTest extends NbTestCase {
 
 
-    private static final int TIME = Integer.getInteger("RepositoryUpdaterTest.timeout", 5000);                 //NOI18N
-    private static final int NEGATIVE_TIME = Integer.getInteger("RepositoryUpdaterTest.negative-timeout", 5000); //NOI18N
+    static final int TIME = Integer.getInteger("RepositoryUpdaterTest.timeout", 5000);                 //NOI18N
+    static final int NEGATIVE_TIME = Integer.getInteger("RepositoryUpdaterTest.negative-timeout", 5000); //NOI18N
     private static final String SOURCES = "FOO_SOURCES";
     private static final String PLATFORM = "FOO_PLATFORM";
     private static final String LIBS = "FOO_LIBS";
@@ -297,11 +299,19 @@ public class RepositoryUpdaterTest extends NbTestCase {
 
     @Override
     protected void tearDown() throws Exception {
-        for(String id : registeredClasspaths.keySet()) {
-            final Map<ClassPath,Void> classpaths = registeredClasspaths.get(id);
-            GlobalPathRegistry.getDefault().unregister(id, classpaths.keySet().toArray(new ClassPath[classpaths.size()]));
+        final TestHandler handler = new TestHandler();
+        final Logger logger = Logger.getLogger(RepositoryUpdater.class.getName()+".tests");
+        try {
+            logger.setLevel (Level.FINEST);
+            logger.addHandler(handler);
+            for(String id : registeredClasspaths.keySet()) {
+                final Map<ClassPath,Void> classpaths = registeredClasspaths.get(id);
+                GlobalPathRegistry.getDefault().unregister(id, classpaths.keySet().toArray(new ClassPath[classpaths.size()]));
+            }
+            handler.await();
+        } finally {
+            logger.removeHandler(handler);
         }
-
         super.tearDown();
     }
 
@@ -578,6 +588,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
         assertEquals(0, eindexerFactory.indexer.expectedDirty.size());
     }
 
+    @RandomlyFails
     public void testBinaryIndexers() throws Exception {
         final TestHandler handler = new TestHandler();
         final Logger logger = Logger.getLogger(RepositoryUpdater.class.getName()+".tests");
@@ -592,6 +603,53 @@ public class RepositoryUpdaterTest extends NbTestCase {
         assertEquals(2, handler.getBinaries().size());
 //        assertEquals(1, jarIndexerFactory.indexer.getCount());
         assertEquals(2, binIndexerFactory.indexer.getCount());
+    }
+    
+    public void testBinaryDeletedAdded() throws Exception {
+        final TestHandler handler = new TestHandler();
+        final Logger logger = Logger.getLogger(RepositoryUpdater.class.getName()+".tests");
+        logger.setLevel (Level.FINEST);
+        logger.addHandler(handler);
+        
+        final FileObject jarFile = FileUtil.toFileObject(getDataDir()).getFileObject("JavaApplication1.jar");
+        assertNotNull(jarFile);
+        assertTrue(FileUtil.isArchiveFile(jarFile));
+        
+        final FileObject wd = FileUtil.toFileObject(getWorkDir());
+        final FileObject[] jar2Delete = new FileObject[] {jarFile.copy(wd, "test", "jar")};
+        ClassPath cp = ClassPathSupport.createClassPath(new FileObject[] {FileUtil.getArchiveRoot(jar2Delete[0])});
+        
+        globalPathRegistry_register(PLATFORM,new ClassPath[] {cp});
+        assertTrue(handler.await());
+        assertEquals(1, handler.getBinaries().size());
+        
+        handler.reset();
+        
+        final long timeStamp = jar2Delete[0].lastModified().getTime();
+        
+        jar2Delete[0].delete();
+        
+        ParserManager.parseWhenScanFinished(Collections.<Source>emptyList(), new UserTask() {
+            @Override
+            public void run(ResultIterator resultIterator) throws Exception {
+            }
+        });
+        
+        binIndexerFactory.indexer.indexedAllFilesIndexing.clear();
+        handler.reset();
+        
+        IndexingManager.getDefault().runProtected(new Callable<Void>() {
+            @Override public Void call() throws Exception {
+                jar2Delete[0] = jarFile.copy(wd, "test", "jar");
+                FileUtil.toFile(jar2Delete[0]).setLastModified(timeStamp);
+                return null;
+            }
+        });
+        
+        IndexingManager.getDefault().refreshAllIndices(false, true, jar2Delete);
+        
+        assertTrue(handler.await());
+        assertTrue(binIndexerFactory.indexer.indexedAllFilesIndexing.toString(), binIndexerFactory.indexer.indexedAllFilesIndexing.contains(FileUtil.getArchiveRoot(jar2Delete[0]).toURL()));
     }
 
     @RandomlyFails
@@ -1215,13 +1273,13 @@ public class RepositoryUpdaterTest extends NbTestCase {
         assertFalse ("Created source should be valid", SourceAccessor.getINSTANCE().testFlag(src, SourceFlags.INVALID));
         RepositoryUpdater.getDefault().waitUntilFinished(-1);
         RepositoryUpdater.unitTestActiveSource = src;
+        TransientUpdateSupport.setTransientUpdate(true);
         try {
-            IndexingManager.getDefault().refreshIndexAndWait(this.srcRootWithFiles1.toURL(),
-                    Collections.singleton(f1.toURL()));
+            RepositoryUpdater.getDefault().enforcedFileListUpdate(this.srcRootWithFiles1.toURL(),Collections.singleton(f1.toURL()));
             assertFalse("Active shource should not be invalidated",SourceAccessor.getINSTANCE().testFlag(src, SourceFlags.INVALID));
-            
         } finally {
             RepositoryUpdater.unitTestActiveSource=null;
+            TransientUpdateSupport.setTransientUpdate(false);
         }
         IndexingManager.getDefault().refreshIndexAndWait(this.srcRootWithFiles1.toURL(),
                     Collections.singleton(f1.toURL()));
@@ -2488,7 +2546,11 @@ public class RepositoryUpdaterTest extends NbTestCase {
         }
 
         public boolean await () throws InterruptedException {
-            return latch.await(TIME, TimeUnit.MILLISECONDS);
+            return await(TIME);
+        }
+
+        public boolean await (long time) throws InterruptedException {
+            return latch.await(time, TimeUnit.MILLISECONDS);
         }
 
         public Set<URL> getBinaries () {
@@ -2959,6 +3021,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
     private static class BinIndexer extends BinaryIndexer {
 
         private Set<URL> expectedRoots = new HashSet<URL>();
+        private final Set<URL> indexedAllFilesIndexing = new HashSet<URL>();
         private CountDownLatch latch;
         private volatile int counter;
 
@@ -2982,6 +3045,10 @@ public class RepositoryUpdaterTest extends NbTestCase {
             if (expectedRoots.remove(context.getRootURI())) {
                 counter++;
                 latch.countDown();
+            }
+            
+            if (context.isAllFilesIndexing()) {
+                indexedAllFilesIndexing.add(context.getRootURI());
             }
         }
     }

@@ -66,6 +66,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -380,7 +381,9 @@ public class JavaSourceHelper {
         return null;
     }
 
-    private static DataObject createDataObjectFromTemplate(String template, FileObject targetFolder, String packageName, String targetName, Map<String, String> params) throws IOException {
+    private static DataObject createDataObjectFromTemplate(String template, 
+            FileObject targetFolder, String packageName, String targetName, 
+            Map<String, String> params) throws IOException {
         assert template != null;
         assert targetFolder != null;
         assert targetName != null && targetName.trim().length() > 0;
@@ -392,8 +395,8 @@ public class JavaSourceHelper {
         Map<String, String> parameters = new HashMap<String, String>();
         parameters.put("package", packageName);
         if (params != null) {
-            for (String param: params.keySet()) {
-                parameters.put(param, params.get(param));
+            for(Entry<String, String> entry: params.entrySet()){
+                parameters.put(entry.getKey(), entry.getValue());
             }
         }
 
@@ -743,8 +746,6 @@ public class JavaSourceHelper {
     }
 
     public static boolean isInjectionTarget(CompilationController controller, TypeElement typeElement) {
-        FileObject fo = controller.getFileObject();
-        Project project = FileOwnerQuery.getOwner(fo);
         if (ElementKind.INTERFACE != typeElement.getKind()) {
             List<? extends AnnotationMirror> annotations = typeElement.getAnnotationMirrors();
             boolean found = false;
@@ -898,7 +899,6 @@ public class JavaSourceHelper {
             source.runUserActionTask(new AbstractTask<CompilationController>() {
 
                 public void run(CompilationController controller) throws IOException {
-                    String className = controller.getFileObject().getName();
                     CompilationUnitTree cu = controller.getCompilationUnit();
                     if (cu != null) {
                         allTree[0] = cu.getTypeDecls();

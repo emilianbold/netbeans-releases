@@ -54,7 +54,7 @@ import org.netbeans.api.editor.EditorActionRegistration;
 import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.editor.BaseAction;
 import org.netbeans.modules.editor.NbEditorUtilities;
-import org.netbeans.modules.groovy.editor.api.AstUtilities;
+import org.netbeans.modules.groovy.editor.api.ASTUtils;
 import org.netbeans.modules.groovy.editor.api.parser.GroovyParserResult;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
@@ -150,7 +150,7 @@ public class FixImportsAction extends BaseAction {
 
         @Override
         public void run(ResultIterator resultIterator) throws Exception {
-            GroovyParserResult result = AstUtilities.getParseResult(resultIterator.getParserResult());
+            GroovyParserResult result = ASTUtils.getParseResult(resultIterator.getParserResult());
             if (result != null) {
                 ErrorCollector errorCollector = result.getErrorCollector();
                 if (errorCollector == null) {
@@ -166,6 +166,7 @@ public class FixImportsAction extends BaseAction {
         }
 
         private void collectMissingImports(List errors) {
+            missingNames.clear();
             for (Object error : errors) {
                 if (error instanceof SyntaxErrorMessage) {
                     SyntaxException se = ((SyntaxErrorMessage) error).getCause();

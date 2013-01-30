@@ -68,17 +68,18 @@ import org.openide.windows.WindowManager;
  */
 public abstract class KenaiAccessor {
 
-    public static final String PROP_LOGIN = "kenai.login.changed";              // NOI18N
+    public static final String PROP_LOGIN = "kenai.login.changed";               // NOI18N
+    public static final String PROP_PROJETCS_CHANGED = "kenai.projects.changed"; // NOI18N
 
-    public KenaiAccessor() {
+    protected KenaiAccessor() {
        WindowManager.getDefault().getRegistry().addPropertyChangeListener(new ActivatedTCListener());
     }
 
     /**
-     * Returns all projects from the kenai dashboard
+     * Returns the opened projects from the kenai dashboard 
      * @return
      */
-    public abstract KenaiProject[] getDashboardProjects();
+    public abstract KenaiProject[] getDashboardProjects(boolean onlyOpened);
 
     /**
      * Returns a KenaiProject for the given kenai vcs repository url
@@ -186,6 +187,28 @@ public abstract class KenaiAccessor {
      * @param kenaiHostUrl
      */
     public abstract void removePropertyChangeListener(PropertyChangeListener listener, String kenaiHostUrl);
+    
+    /**
+     * Registers a listener on all kenai instances 
+     *
+     * @param listener
+     * @param kenaiHostUrl
+     */
+    public abstract void addPropertyChangeListener(PropertyChangeListener listener);
+
+    /**
+     * Unregisters a listener on all kenai instance
+     * @param listener
+     * @param kenaiHostUrl
+     */
+    public abstract void removePropertyChangeListener(PropertyChangeListener listener);
+
+    /**
+     * The accessor instance must return true if it handles the given team url
+     * @param url
+     * @return 
+     */
+    public abstract boolean isOwner (String url);
 
     private class ActivatedTCListener implements PropertyChangeListener {
         @Override

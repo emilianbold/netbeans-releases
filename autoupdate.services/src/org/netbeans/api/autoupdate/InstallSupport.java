@@ -145,7 +145,7 @@ public final class InstallSupport {
      * @see #doValidate
      */
     public Restarter doInstall(Installer installer ,ProgressHandle progress/*or null*/) throws OperationException {
-        Boolean restart = impl.doInstall (installer, progress);
+        Boolean restart = impl.doInstall (installer, progress, false);
         if (restart == null /*was problem*/ || ! restart.booleanValue ()) {
             return null;
         } else {
@@ -243,5 +243,5 @@ public final class InstallSupport {
     //end of API - next just impl details
     private OperationContainer<InstallSupport> container;
     void setContainer(OperationContainer<InstallSupport> c) {container = c;}
-    private InstallSupportImpl impl;
+    InstallSupportImpl impl;
 }

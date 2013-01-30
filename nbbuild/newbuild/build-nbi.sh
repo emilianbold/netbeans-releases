@@ -1,4 +1,45 @@
 #!/bin/bash
+
+ # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ #
+ # Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ #
+ # Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ # Other names may be trademarks of their respective owners.
+ #
+ # The contents of this file are subject to the terms of either the GNU
+ # General Public License Version 2 only ("GPL") or the Common
+ # Development and Distribution License("CDDL") (collectively, the
+ # "License"). You may not use this file except in compliance with the
+ # License. You can obtain a copy of the License at
+ # http://www.netbeans.org/cddl-gplv2.html
+ # or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ # specific language governing permissions and limitations under the
+ # License.  When distributing the software, include this License Header
+ # Notice in each file and include the License file at
+ # nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
+ # particular file as subject to the "Classpath" exception as provided
+ # by Oracle in the GPL Version 2 section of the License file that
+ # accompanied this code. If applicable, add the following below the
+ # License Header, with the fields enclosed by brackets [] replaced by
+ # your own identifying information:
+ # "Portions Copyrighted [year] [name of copyright owner]"
+ #
+ # If you wish your version of this file to be governed by only the CDDL
+ # or only the GPL Version 2, indicate your decision by adding
+ # "[Contributor] elects to include this software in this distribution
+ # under the [CDDL or GPL Version 2] license." If you do not indicate a
+ # single choice of license, a recipient has the option to distribute
+ # your version of this file under either the CDDL, the GPL Version 2 or
+ # to extend the choice of license to its licensees as provided above.
+ # However, if you add GPL Version 2 code and therefore, elected the GPL
+ # Version 2 license, then the option applies only if the new code is
+ # made subject to such option by the copyright holder.
+ #
+ # Contributor(s):
+ #
+ # Portions Copyrighted 2012 Sun Microsystems, Inc.
+
 set -x
 
 DIRNAME=`dirname $0`
@@ -28,11 +69,10 @@ if [ ! -z $NATIVE_MAC_MACHINE ] && [ ! -z $MAC_PATH ]; then
    cd $NB_ALL
    gtar c installer/mac | ssh $NATIVE_MAC_MACHINE "( cd $MAC_PATH; tar x )"
 
-   if [ 1 -eq $ML_BUILD ] ; then
-       cd $NB_ALL/l10n
-       gtar c src/*/other/installer/mac/* | ssh $NATIVE_MAC_MACHINE "( cd $MAC_PATH; tar x)"
-       cd $NB_ALL
-   fi
+    cd $NB_ALL/l10n
+    gtar c src/*/other/installer/mac/* | ssh $NATIVE_MAC_MACHINE "( cd $MAC_PATH; tar x)"
+    cd $NB_ALL
+
    ssh $NATIVE_MAC_MACHINE rm -rf $MAC_PATH/zip/* 
    ERROR_CODE=$?
    if [ $ERROR_CODE != 0 ]; then
@@ -40,27 +80,27 @@ if [ ! -z $NATIVE_MAC_MACHINE ] && [ ! -z $MAC_PATH ]; then
        exit $ERROR_CODE;
    fi
    ssh $NATIVE_MAC_MACHINE mkdir -p $MAC_PATH/zip/moduleclusters
-# -o ConnectTimeout=60 is not supported on nbfixes   ls $DIST/zip/moduleclusters | grep -v "all-in-one" | xargs -I {} scp -o ConnectTimeout=60 -o ConnectionAttempts=3 -q -v $DIST/zip/moduleclusters/{} $NATIVE_MAC_MACHINE:$MAC_PATH/zip/moduleclusters/
-   ls $DIST/zip/moduleclusters | grep -v "all-in-one" | xargs -I {} scp -o ConnectionAttempts=3 -q -v $DIST/zip/moduleclusters/{} $NATIVE_MAC_MACHINE:$MAC_PATH/zip/moduleclusters/
-   if [ 1 -eq $ML_BUILD ] ; then
-        ssh $NATIVE_MAC_MACHINE rm -rf $MAC_PATH/zip-ml/*      
-        ssh $NATIVE_MAC_MACHINE mkdir -p $MAC_PATH/zip-ml/moduleclusters
-	#scp -q -v $DIST/ml/zip/$BASENAME*.zip $NATIVE_MAC_MACHINE:$MAC_PATH/zip-ml
-# -o ConnectTimeout=60 is not supported on nbfixes        ls $DIST/ml/zip/moduleclusters | grep -v "all-in-one" | xargs -I {} scp -o ConnectTimeout=60 -o ConnectionAttempts=3 -q -v $DIST/ml/zip/moduleclusters/{} $NATIVE_MAC_MACHINE:$MAC_PATH/zip-ml/moduleclusters/
-        ls $DIST/ml/zip/moduleclusters | grep -v "all-in-one" | xargs -I {} scp -o ConnectionAttempts=3 -q -v $DIST/ml/zip/moduleclusters/{} $NATIVE_MAC_MACHINE:$MAC_PATH/zip-ml/moduleclusters/
-   fi
+   ls $DIST/zip/moduleclusters | grep -v "all-in-one" | xargs -I {} scp -q -v $DIST/zip/moduleclusters/{} $NATIVE_MAC_MACHINE:$MAC_PATH/zip/moduleclusters/
+
    ERROR_CODE=$?
    if [ $ERROR_CODE != 0 ]; then
        echo "ERROR: $ERROR_CODE - Connection to MAC machine $NATIVE_MAC_MACHINE failed, can't put the zips"
        exit $ERROR_CODE;
    fi
-#   ssh $NATIVE_MAC_MACHINE $MAC_PATH/run-mac-installer.sh $ML_BUILD > $MAC_LOG 2>&1 &
 
-# Run new builds
+   # Run new builds
    sh $NB_ALL/installer/mac/newbuild/init.sh | ssh $NATIVE_MAC_MACHINE "cat > $MAC_PATH/installer/mac/newbuild/build-private.sh"
    ssh $NATIVE_MAC_MACHINE chmod a+x $MAC_PATH/installer/mac/newbuild/build.sh
 
-   ssh $NATIVE_MAC_MACHINE $MAC_PATH/installer/mac/newbuild/build.sh $MAC_PATH $BASENAME_PREFIX $BUILDNUMBER $ML_BUILD $BUILD_NBJDK7 $LOCALES > $MAC_LOG_NEW 2>&1 &
+   if [ ! -z $SIGNING_PASSWORD ] ; then
+       UNLOCK_COMMAND="security unlock-keychain -p $SIGNING_PASSWORD ;"
+   else
+       SIGNING_IDENTITY=0
+   fi
+
+   BASE_COMMAND="$MAC_PATH/installer/mac/newbuild/build.sh $MAC_PATH $BASENAME_PREFIX $BUILDNUMBER $BUILD_NBJDK7 '"$SIGNING_IDENTITY"' $LOCALES"
+   
+   ssh $NATIVE_MAC_MACHINE "$UNLOCK_COMMAND $BASE_COMMAND" > $MAC_LOG_NEW 2>&1 &
 
 fi
 
@@ -91,11 +131,6 @@ if [ ! -z $NATIVE_MAC_MACHINE ] && [ ! -z $MAC_PATH ]; then
     kill -s 9 $TAIL_PID
 fi
 
-if [ -d $DIST/ml ]; then
-    mv $OUTPUT_DIR/ml/* $DIST/ml
-    rm -rf $OUTPUT_DIR/ml
-fi
-
 mv $OUTPUT_DIR/* $DIST
 rmdir $OUTPUT_DIR
 
@@ -108,20 +143,13 @@ if [ ! -z $NATIVE_MAC_MACHINE ] && [ ! -z $MAC_PATH ]; then
     if [ $IS_NEW_MAC_FAILED -eq 0 ] && [ $IS_NEW_MAC_CONNECT -eq 0 ]; then
         #copy the bits back
         mkdir -p $DIST/bundles
-        scp -o ConnectionAttempts=3 -r $NATIVE_MAC_MACHINE:$MAC_PATH/installer/mac/newbuild/dist_en/* $DIST/bundles
+
+        scp -r $NATIVE_MAC_MACHINE:$MAC_PATH/installer/mac/newbuild/dist_en/* $DIST/bundles
         ERROR_CODE=$?
         if [ $ERROR_CODE != 0 ]; then
             echo "ERROR: $ERROR_CODE - Connection to MAC machine $NATIVE_MAC_MACHINE failed, can't get installers"
             exit $ERROR_CODE;
         fi
-	if [ 1 -eq $ML_BUILD ] ; then
-		scp -o ConnectionAttempts=3 -r $NATIVE_MAC_MACHINE:$MAC_PATH/installer/mac/newbuild/dist/* $DIST/ml/bundles
-                ERROR_CODE=$?
-                if [ $ERROR_CODE != 0 ]; then
-                    echo "ERROR: $ERROR_CODE - Connection to MAC machine $NATIVE_MAC_MACHINE failed, can't get ml installers"
-                    exit $ERROR_CODE;
-                fi    
-	fi
     else
         tail -100 $MAC_LOG_NEW
         echo "ERROR: - Native Mac Installers build failed"
@@ -163,19 +191,10 @@ if [ -z $DONT_SIGN_INSTALLER ]; then
 fi
 
 cd $DIST
-bash ${SCRIPTS_DIR}/files-info.sh bundles bundles/jdk zip zip/moduleclusters
+
+bash ${SCRIPTS_DIR}/files-info.sh bundles bundles/jdk bundles/weblogic zip zip/moduleclusters
 ERROR_CODE=$?
 if [ $ERROR_CODE != 0 ]; then
     echo "ERROR: $ERROR_CODE - Counting of MD5 sums and size failed"
 #    exit $ERROR_CODE;
-fi
-
-if [ $ML_BUILD == 1 ]; then
-    cd $DIST/ml
-    bash ${SCRIPTS_DIR}/files-info.sh bundles zip zip/moduleclusters
-    ERROR_CODE=$?
-    if [ $ERROR_CODE != 0 ]; then
-        echo "ERROR: $ERROR_CODE - Counting of MD5 sums and size failed"
-#        exit $ERROR_CODE;
-    fi
 fi

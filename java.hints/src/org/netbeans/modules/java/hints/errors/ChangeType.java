@@ -119,7 +119,9 @@ public final class ChangeType implements ErrorRule<Void> {
                         }
                     }
                 }
-            } else if (scope.getKind() == Kind.ENHANCED_FOR_LOOP) {
+            }
+            
+            if (scope.getKind() == Kind.ENHANCED_FOR_LOOP) {
                 EnhancedForLoopTree efl = (EnhancedForLoopTree) scope;
 
                 path = new TreePath(path, efl.getVariable());

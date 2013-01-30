@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.css.editor.csl;
 
-import org.netbeans.modules.css.editor.api.CssCslParserResult;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -53,6 +52,7 @@ import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.css.editor.module.CssModuleSupport;
 import org.netbeans.modules.css.editor.module.spi.EditorFeatureContext;
 import org.netbeans.modules.css.editor.module.spi.FeatureCancel;
+import org.netbeans.modules.css.lib.api.CssParserResult;
 import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
@@ -78,7 +78,9 @@ public class CssOccurrencesFinder extends OccurrencesFinder {
 
     @Override
     public void cancel() {
-        featureCancel.cancel();
+        if(featureCancel != null) {
+            featureCancel.cancel();
+        }
     }
 
     private void resume() {
@@ -89,20 +91,24 @@ public class CssOccurrencesFinder extends OccurrencesFinder {
     public void run(Result result, SchedulerEvent event) {
         resume();
         
-        CssCslParserResult parserResultWrapper = (CssCslParserResult)result;
-        EditorFeatureContext context = new EditorFeatureContext(parserResultWrapper.getWrappedCssParserResult(), caretDocumentPosition);
-        Set<OffsetRange> occurrences = CssModuleSupport.getMarkOccurrences(context, featureCancel);
-        
-        if(featureCancel.isCancelled()) {
-            return ;
+        try {
+            CssParserResult parserResultWrapper = (CssParserResult)result;
+            EditorFeatureContext context = new EditorFeatureContext(parserResultWrapper, caretDocumentPosition);
+            Set<OffsetRange> occurrences = CssModuleSupport.getMarkOccurrences(context, featureCancel);
+
+            if(featureCancel.isCancelled()) {
+                return ;
+            }
+
+            Map<OffsetRange, ColoringAttributes> occurrencesMapLocal = new HashMap<OffsetRange, ColoringAttributes>();
+            for(OffsetRange range : occurrences) {
+                occurrencesMapLocal.put(range, ColoringAttributes.MARK_OCCURRENCES);
+            }
+
+            occurrencesMap = occurrencesMapLocal;
+        } finally {
+            featureCancel = null;
         }
-        
-        Map<OffsetRange, ColoringAttributes> occurrencesMapLocal = new HashMap<OffsetRange, ColoringAttributes>();
-        for(OffsetRange range : occurrences) {
-            occurrencesMapLocal.put(range, ColoringAttributes.MARK_OCCURRENCES);
-        }
-        
-        occurrencesMap = occurrencesMapLocal;
     }
 
     @Override

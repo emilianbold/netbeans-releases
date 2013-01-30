@@ -548,8 +548,11 @@ public final class Evaluator implements PropertyEvaluator, PropertyChangeListene
                 bootcp = "${sun.boot.class.path}"; // NOI18N
             }
             props.put(NBJDK_BOOTCLASSPATH, bootcp); // NOI18N
-            if (home != null && !Utilities.isMac()) {   //On Mac everything is in classes.jar, there is no tools.jar
-                props.put("tools.jar", home + "/lib/tools.jar".replace('/', File.separatorChar)); // NOI18N
+            if (home != null) {
+                String toolsJar = home + "/lib/tools.jar".replace('/', File.separatorChar);
+                if (new File(toolsJar).exists()) { //On Mac OS X with Apple JDK, everything is in classes.jar, there is no tools.jar
+                    props.put("tools.jar", toolsJar); // NOI18N
+                }
             }
             if (Util.err.isLoggable(ErrorManager.INFORMATIONAL)) {
                 Map<String,String> _props = new TreeMap<String,String>(eval.getProperties());

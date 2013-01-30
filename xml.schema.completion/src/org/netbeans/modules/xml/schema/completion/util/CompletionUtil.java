@@ -494,8 +494,11 @@ public class CompletionUtil {
         List<String> prefixes = new ArrayList<String>();
         if(cm == null) {
             ae = findOriginal(ae);
-            if(context.getDefaultNamespace() != null &&
-               !context.getDefaultNamespace().equals(ae.getTargetNamespace())) {
+            String defaultNS = context.getDefaultNamespace();
+            String targetNS = ae.getTargetNamespace();
+            if((defaultNS != targetNS) &&  // in case both are null, go away
+               (defaultNS == null || targetNS == null ||
+                !context.getDefaultNamespace().equals(ae.getTargetNamespace()))) {
                 prefixes = getPrefixesAgainstNamespace(context, ae.getTargetNamespace());
                 if(prefixes.size() != 0)
                     return prefixes;
@@ -914,7 +917,7 @@ public class CompletionUtil {
             boolean closingTagFound = isClosingEndTagFoundAfter(caretPos,
                 tokenSequence, startTagName);
             if (closingTagFound) return null;
-
+            
             CompletionResultItem resultItem;
             if ((incompleteTagName != null) && 
                 (! startTagName.startsWith(incompleteTagName))) {
@@ -1018,20 +1021,28 @@ public class CompletionUtil {
         TokenSequence tokenSequence, String startTagName) {
         if ((tokenSequence == null) || (startTagName == null)) return false;
         tokenSequence.move(caretPos);
-
+        
         int unclosedTagCount = 1;
         while (tokenSequence.moveNext()) {
             Token token = tokenSequence.token();
             String nextTagName = getTokenTagName(token);
-            if (nextTagName != null) {
-                if (startTagName.equals(nextTagName)) {
-                    // fix for issue #185048
-                    // (http://netbeans.org/bugzilla/show_bug.cgi?id=185048)
-                    unclosedTagCount += isEndTagPrefix(token) ? -1 :
-                                       (isTagFirstChar(token) ?  1 : 0);
+            // fix for issue #185048
+            // (http://netbeans.org/bugzilla/show_bug.cgi?id=185048)
+            // also: must not count ends of nested tags, just the
+            // same level
+            if (isEndTagPrefix(token)) {
+                if (unclosedTagCount-- == 0) {
+                    return false;
                 }
-            } else if (isTagLastChar(token) && (unclosedTagCount < 1)) {
-                return true;
+            } else if (isTagFirstChar(token)) {
+                unclosedTagCount++;
+            } else {
+                continue;
+            }
+            if (unclosedTagCount == 0) {
+                if (isEndTagPrefix(token)) {
+                    return startTagName.equals(nextTagName);
+                }
             }
         }
         return false;
@@ -1052,7 +1063,7 @@ public class CompletionUtil {
         tokenSequence.moveNext();
         do {
             token = tokenSequence.token();
-            if (isTagFirstChar(token) || isEndTagPrefix(token)) {
+            if (isTagFirstChar(token)) {
                 tagFirstCharFound = true;
                 break;
             }
@@ -1070,6 +1081,11 @@ public class CompletionUtil {
                     tagLastCharFound = true;
                 }
                 break;
+            }
+            if (token.id() == XMLTokenId.TAG) {
+                if (token.text().charAt(0) == '<') {
+                    break;
+                }
             }
         }
         return (tagFirstCharFound && tagLastCharFound);
@@ -1134,6 +1150,9 @@ public class CompletionUtil {
         if (! tokenID.equals(XMLTokenId.TEXT)) return false;
 
         String tokenText = token.text().toString();
+        if (tokenText.equals("<")) {
+            return true;
+        }
         boolean result = PATTERN_TEXT_TAG_EOLs.matcher(tokenText).matches();
         return result;
     }

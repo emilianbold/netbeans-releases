@@ -120,6 +120,7 @@ final public class ExitDialog extends JPanel implements ActionListener {
         list = new JList(listModel);
         list.setBorder(new EmptyBorder(2, 2, 2, 2));
         list.addListSelectionListener (new ListSelectionListener () {
+            @Override
                                            public void valueChanged (ListSelectionEvent evt) {
                                                updateSaveButton ();
                                            }
@@ -152,6 +153,7 @@ final public class ExitDialog extends JPanel implements ActionListener {
 
     /** This method is called when is any of buttons pressed
     */
+    @Override
     public void actionPerformed (final ActionEvent evt) {
         if (exitOptions[0].equals (evt.getSource ())) {
             save(false);
@@ -337,6 +339,7 @@ final public class ExitDialog extends JPanel implements ActionListener {
             noFocusBorder = new EmptyBorder(1, 1, 1, 1);
         }
 
+        @Override
         public Component getListCellRendererComponent (JList list, Object value, int index, boolean isSelected, boolean cellHasFocus)    // the list and the cell have the focus
         {
             final DataObject obj = (DataObject)value;
@@ -344,6 +347,7 @@ final public class ExitDialog extends JPanel implements ActionListener {
                 // #17059: it might be invalid already.
                 // #18886: but if so, remove it later, otherwise BasicListUI gets confused.
                 SwingUtilities.invokeLater(new Runnable() {
+                    @Override
                     public void run() {
                         listModel.removeElement(obj);
                     }

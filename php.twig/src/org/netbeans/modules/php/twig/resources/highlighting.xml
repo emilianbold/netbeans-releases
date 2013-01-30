@@ -48,19 +48,21 @@ made subject to such option by the copyright holder.
 
     <fontcolor name="twig_comment" default="comment" />
 
-    <fontcolor name="twig_instruction" foreColor="ff966738">
+    <fontcolor name="twig_block" foreColor="ff966738">
         <font style="bold" />
     </fontcolor>
 
-    <fontcolor name="twig_variable" foreColor="ff966738">
+    <fontcolor name="twig_var" foreColor="ff966738">
         <font style="bold" />
     </fontcolor>
+
+    <fontcolor name="twig_interpolation" foreColor="ff966738" />
 
     <fontcolor name="twig_operator" foreColor="ff00a0a0" default="keyword" />
     <fontcolor name="twig_name" default="identifier" />
     <fontcolor name="twig_number" default="number" />
     <fontcolor name="twig_string" foreColor="ffb4b427" default="string" />
-    <fontcolor name="twig_function" foreColor="ff00a0a0" default="keyword" />
+    <fontcolor name="twig_tag" foreColor="ff00a0a0" default="keyword" />
     <fontcolor name="twig_punctuation" foreColor="ff00a0a0" default="keyword" />
 
     <fontcolor name="twig_other" default="error" />

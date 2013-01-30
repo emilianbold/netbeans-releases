@@ -259,6 +259,15 @@ made subject to such option by the copyright holder.
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.java.api.common</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>0</release-version>
+                        <specification-version>1.42</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.java.project</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -363,8 +372,8 @@ made subject to such option by the copyright holder.
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.4</specification-version>
+                        <release-version>2</release-version>
+                        <specification-version>2.0</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -389,7 +398,7 @@ made subject to such option by the copyright holder.
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>1.17</specification-version>
+                        <specification-version>1.20</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -642,9 +651,11 @@ made subject to such option by the copyright holder.
                 </test-type>
             </test-dependencies>
             <friend-packages>
+                <friend>org.icesoft.netbeans.icefaces.ee</friend>
+                <friend>org.icesoft.netbeans.icefaces.oss</friend>
+                <friend>org.icesoft.netbeans.icefaces.palette</friend>
                 <friend>org.netbeans.modules.visualweb.insync</friend>
                 <friend>org.netbeans.modules.visualweb.project.jsf</friend>
-                <friend>org.netbeans.modules.web.adf.complib</friend>
                 <friend>org.netbeans.modules.web.jsf.editor</friend>
                 <friend>org.netbeans.modules.web.jsf.icefaces</friend>
                 <friend>org.netbeans.modules.web.jsf.navigation</friend>

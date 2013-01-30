@@ -91,7 +91,7 @@ public class CatalogModelFactoryImpl extends CatalogWriteModelFactory{
     }
     
     
-    private static WeakHashMap <Project, CatalogModel> proj2cm = new WeakHashMap<Project, CatalogModel>();
+    private static final WeakHashMap <Project, CatalogModel> proj2cm = new WeakHashMap<Project, CatalogModel>();
     
     public CatalogModel getCatalogModel(ModelSource modelSource) throws CatalogModelException {
         if(modelSource == null)
@@ -110,13 +110,25 @@ public class CatalogModelFactoryImpl extends CatalogWriteModelFactory{
         CatalogModel catalogModel = null;
         Project project = FileOwnerQuery.getOwner(fo);
         if(project != null){
-            catalogModel = proj2cm.get(fo);
-            if(catalogModel != null)
+            synchronized (proj2cm) {
+                catalogModel = proj2cm.get(project);
+            }
+            if(catalogModel != null) {
                 return catalogModel;
+            }
             try {
+                // note: the CMI does not reference the project, just extracts a project catalog FO from it.
                 catalogModel = new CatalogModelImpl(project);
             } catch (IOException ex) {
                 throw new CatalogModelException(ex);
+            }
+            synchronized (proj2cm) {
+                CatalogModel cm2 = proj2cm.put(project, catalogModel);
+                if (cm2 != null) {
+                    // return the already escaped instanc eback
+                    proj2cm.put(project, cm2);
+                    return cm2;
+                }
             }
             return catalogModel;
         }

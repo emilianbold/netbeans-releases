@@ -131,34 +131,37 @@ public class OQLCompletionProvider implements CompletionProvider {
                     return;
                 }
 
-                String tokentext = currentToken.toString();
+                final String tokentext = currentToken.text().toString();
+                final int tokenLen = tokentext.length();
+                final String tokentextTrim = tokentext.trim();
+                final int tokenTrimLen = tokentextTrim.length();
                 switch (currentToken.id()) {
                     case UNKNOWN: {
-                        if ("instanceof".startsWith(tokentext.trim())) { // NOI18N
-                            resultSet.addItem(new KeywordCompletionItem("00", "instanceof", ts.offset() + tokentext.trim().length(), tokentext.length())); // NOI18N
+                        if ("instanceof".startsWith(tokentextTrim)) { // NOI18N
+                            resultSet.addItem(new KeywordCompletionItem("00", "instanceof", ts.offset() + tokenTrimLen, tokenLen)); // NOI18N
                         }
                         break;
                     }
                     case SELECT: {
-                        resultSet.addItem(new KeywordCompletionItem("00", "select", ts.offset() + tokentext.length(), tokentext.trim().length())); // NOI18N
+                        resultSet.addItem(new KeywordCompletionItem("00", "select", ts.offset() + tokenLen, tokenTrimLen)); // NOI18N
                         break;
                     }
                     case FROM: {
-                        resultSet.addItem(new KeywordCompletionItem("00", "from", ts.offset() + tokentext.length(), tokentext.trim().length())); // NOI18N
+                        resultSet.addItem(new KeywordCompletionItem("00", "from", ts.offset() + tokenLen, tokenTrimLen)); // NOI18N
                         break;
                     }
                     case INSTANCEOF: {
-                        resultSet.addItem(new KeywordCompletionItem("00", "instanceof", ts.offset() + tokentext.length())); // NOI18N
+                        resultSet.addItem(new KeywordCompletionItem("00", "instanceof", ts.offset() + tokenLen)); // NOI18N
                         break;
                     }
                     case WHERE: {
-                        resultSet.addItem(new KeywordCompletionItem("00", "where", ts.offset() + tokentext.length(), tokentext.trim().length())); // NOI18N
+                        resultSet.addItem(new KeywordCompletionItem("00", "where", ts.offset() + tokenLen, tokenTrimLen)); // NOI18N
                         break;
                     }
                     case ERROR: {
                         for(String keyword : keywords) {
-                            if (tokentext.trim().length() == 0 || keyword.startsWith(tokentext.trim())) {
-                                KeywordCompletionItem kci = new KeywordCompletionItem("00", keyword, ts.offset() + tokentext.trim().length(), tokentext.trim().length());  // NOI18N
+                            if (tokenTrimLen == 0 || keyword.startsWith(tokentextTrim)) {
+                                KeywordCompletionItem kci = new KeywordCompletionItem("00", keyword, ts.offset() + tokenTrimLen, tokenTrimLen);  // NOI18N
                                 resultSet.addItem(kci);
                             }
                         }
@@ -169,48 +172,47 @@ public class OQLCompletionProvider implements CompletionProvider {
                         int backout = 0;
                         if (ts.movePrevious()) backout++;
                         if (ts.movePrevious()) backout++; // check for "heap.somet[...]"
-                        isHeap = ts.token().toString().trim().toLowerCase().equals("heap"); // NOI18N
+                        isHeap = ts.token().text().toString().trim().toLowerCase().equals("heap"); // NOI18N
                         // get to the current token
                         for(int i=backout;i>0;i--) {
                             ts.moveNext();
                         }
 
-                        int wsPosDiff = tokentext.indexOf(tokentext.trim());
+                        int wsPosDiff = tokenTrimLen==0 ? tokenLen-1 : tokentext.indexOf(tokentextTrim);
                         for(String function : functions) {
-                            if (tokentext.trim().length() == 0 || function.startsWith(tokentext.trim())) {
-                                resultSet.addItem(new FunctionCompletionItem("00", function, ts.offset() + tokentext.trim().length() + wsPosDiff, tokentext.trim().length())); // NOI18N
+                            if (tokenTrimLen == 0 || function.startsWith(tokentextTrim)) {
+                                resultSet.addItem(new FunctionCompletionItem("00", function, ts.offset() + tokenTrimLen + wsPosDiff, tokenTrimLen)); // NOI18N
                             }
                         }
-                        if ("heap".startsWith(tokentext.trim())) { // NOI18N
-                            resultSet.addItem(new KeywordCompletionItem("00", "heap", ts.offset() + tokentext.trim().length(), tokentext.trim().length())); // NOI18N
+                        if ("heap".startsWith(tokentextTrim)) { // NOI18N
+                            resultSet.addItem(new KeywordCompletionItem("00", "heap", ts.offset() + tokenTrimLen + wsPosDiff, tokenTrimLen)); // NOI18N
                         }
 
                         if (isHeap) {
-                            tokentext = currentToken.toString().trim();
                             for(String method : heapMethods) {
-                                if (tokentext.length() == 0 || method.startsWith(tokentext)) {
-                                    resultSet.addItem(new FunctionCompletionItem("00", method, ts.offset() + tokentext.trim().length(), tokentext.trim().length())); // NOI18N
+                                if (tokenTrimLen == 0 || method.startsWith(tokentextTrim)) {
+                                    resultSet.addItem(new FunctionCompletionItem("00", method, ts.offset() + tokenTrimLen, tokenTrimLen)); // NOI18N
                                 }
                             }
-
                         }
 
                         // special hack for "from" keyword
                         // kind of space-magick; in the same place as "from" keyword there may be a valid javascript
                         // not exactly the best designed language but, hey, it's just a script ...
-                        if (tokentext.trim().isEmpty()) {
-                            resultSet.addItem(new KeywordCompletionItem("01", "from", ts.offset() + tokentext.length(), tokentext.trim().length())); // NOI18N
+                        if (tokentextTrim.isEmpty()) {
+                            resultSet.addItem(new KeywordCompletionItem("01", "from", ts.offset() + tokenLen, tokenTrimLen)); // NOI18N
                         } else {
-                            StringTokenizer t = new StringTokenizer(tokentext, " ");
+                            StringTokenizer t = new StringTokenizer(tokentext, " ");  // NOI18N
                             while (t.hasMoreTokens()) {
                                 String tt = t.nextToken();
-                                if ("FROM".startsWith(tt.trim().toUpperCase())) {
+                                if ("FROM".startsWith(tt.trim().toUpperCase())) {  // NOI18N
                                     int pos = tokentext.indexOf(tt);
                                     int wsPos = tokentext.indexOf(' ', pos);
-                                    if (tt.trim().length() == 3) {
+                                    int ttTrimLen = tt.trim().length();
+                                    if (ttTrimLen == 3) {
                                         pos++;
                                     }
-                                    resultSet.addItem(new KeywordCompletionItem("01", "from", ts.offset() + pos + (wsPos > -1 ? 1 : 2), tt.trim().length())); // NOI18N
+                                    resultSet.addItem(new KeywordCompletionItem("01", "from", ts.offset() + pos + (wsPos > -1 ? 1 : 2), ttTrimLen)); // NOI18N
                                     break;
                                 }
                             }
@@ -220,7 +222,7 @@ public class OQLCompletionProvider implements CompletionProvider {
                     }
                     case DOT: {
                         ts.movePrevious();
-                        if (ts.token().toString().trim().toLowerCase().equals("heap")) { // NOI18N
+                        if (ts.token().text().toString().trim().toLowerCase().equals("heap")) { // NOI18N
                             ts.moveNext();
 
                             for(String method : heapMethods) {
@@ -235,13 +237,12 @@ public class OQLCompletionProvider implements CompletionProvider {
 
                         String regex = ".*?" + tokentext.replace("[", "\\[").replace("]", "\\]").replace("$", "\\$") + ".*"; // NOI18N
                         String camel = null;
-                        if (tokentext.trim().equals(tokentext.trim().toUpperCase())) {
+                        if (tokentextTrim.equals(tokentextTrim.toUpperCase())) {
                             // prepare camel-case completion
-                            String trimmed = tokentext.trim();
                             StringBuilder sb = new StringBuilder(".*?"); // NOI18N
-                            for(int i=0;i<trimmed.length();i++) {
-                                if (trimmed.charAt(i) >= 'A' && trimmed.charAt(i) <= 'Z') { // NOI18N
-                                    sb.append(trimmed.charAt(i));
+                            for(int i=0;i<tokenTrimLen;i++) {
+                                if (tokentextTrim.charAt(i) >= 'A' && tokentextTrim.charAt(i) <= 'Z') { // NOI18N
+                                    sb.append(tokentextTrim.charAt(i));
                                     sb.append("[a-z]*?"); // NOI18N
                                 } else {
                                     sb = null;
@@ -261,7 +262,7 @@ public class OQLCompletionProvider implements CompletionProvider {
 
                         Iterator clzs = e.getHeap().getJavaClassesByRegExp(regex).iterator();
                         while(clzs.hasNext()) {
-                            String className = (String)((JavaClass)clzs.next()).getName();
+                            String className = ((JavaClass)clzs.next()).getName();
                             String[] sig = splitClassName(className);
                             if (sig[1].startsWith(tokentext)) {
                                 completions.add("00 " + className); // NOI18N
@@ -272,27 +273,27 @@ public class OQLCompletionProvider implements CompletionProvider {
 
                         clzs = e.getHeap().getJavaClassesByRegExp(prefix).iterator();
                         while(clzs.hasNext()) {
-                            String className = (String)((JavaClass)clzs.next()).getName();
+                            String className = ((JavaClass)clzs.next()).getName();
 
                             String[] sig = splitClassName(className);
 
-                            if (sig[0].length() > tokentext.trim().length() && sig[0].startsWith(tokentext.trim())) {
-                                int pkgSepPos = sig[0].indexOf('.', tokentext.trim().length() + 1); // NOI18N
+                            if (sig[0].length() > tokenTrimLen && sig[0].startsWith(tokentextTrim)) {
+                                int pkgSepPos = sig[0].indexOf('.', tokenTrimLen + 1); // NOI18N
                                 if (pkgSepPos == -1) {
                                     pkgCompletions.add(sig[0]);
                                 } else {
                                     pkgCompletions.add(sig[0].substring(0, pkgSepPos));
                                 }
                             }
-                            if (sig[0].indexOf('.', tokentext.trim().length() - 1) == -1) { // NOI18N
+                            if (sig[0].indexOf('.', tokenTrimLen - 1) == -1) { // NOI18N
                                 completions.add("01 " + className); // NOI18N
                             }
                         }
 
                         if (camel != null) {
-                            clzs = e.getHeap().getJavaClassesByRegExp(camel).iterator();;
+                            clzs = e.getHeap().getJavaClassesByRegExp(camel).iterator();
                             while(clzs.hasNext()) {
-                                String className = (String)((JavaClass)clzs.next()).getName();
+                                String className = ((JavaClass)clzs.next()).getName();
                                 completions.add("02 " + className); // NOI18N
                             }
                         }
@@ -303,13 +304,13 @@ public class OQLCompletionProvider implements CompletionProvider {
                             String sortPre = tok.nextToken();
                             String clzName = tok.nextToken();
                             if (!usedTypeNames.contains(clzName)) {
-                                resultSet.addItem(new ClassnameCompletionItem(sortPre, clzName, ts.offset(), tokentext.length()));
+                                resultSet.addItem(new ClassnameCompletionItem(sortPre, clzName, ts.offset(), tokenLen));
                                 usedTypeNames.add(clzName);
                             }
                         }
                         for(String completion : pkgCompletions) {
                             if (!usedTypeNames.contains(completion)) {
-                                resultSet.addItem(new PackageCompletionItem(completion, ts.offset(), tokentext.length()));
+                                resultSet.addItem(new PackageCompletionItem(completion, ts.offset(), tokenLen));
                             }
                         }
                         break;
@@ -324,7 +325,7 @@ public class OQLCompletionProvider implements CompletionProvider {
     }
 
     public int getAutoQueryTypes(JTextComponent component, String typedText) {
-        if (typedText.endsWith(".")) return CompletionProvider.COMPLETION_QUERY_TYPE;
+        if (typedText.endsWith(".")) return CompletionProvider.COMPLETION_QUERY_TYPE;  // NOI18N
         return CompletionProvider.COMPLETION_ALL_QUERY_TYPE;
     }
 

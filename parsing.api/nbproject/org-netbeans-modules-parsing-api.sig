@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.48.0
+#Version 1.55.1
 
 CLSS public abstract interface java.io.Serializable
 
@@ -161,7 +161,7 @@ meth public org.openide.filesystems.FileObject getFileObject()
 meth public static org.netbeans.modules.parsing.api.Source create(javax.swing.text.Document)
 meth public static org.netbeans.modules.parsing.api.Source create(org.openide.filesystems.FileObject)
 supr java.lang.Object
-hfds LOG,cache,cachedParser,document,eventId,fileObject,flags,instances,mimeType,schedulerEvents,sourceModificationEvent,support,suppressListening,taskCount,unspecifiedSourceModificationEvent
+hfds LOG,cache,cachedParser,document,eventId,fileObject,flags,instances,mimeType,preferFile,schedulerEvents,sourceModificationEvent,support,suppressListening,taskCount,unspecifiedSourceModificationEvent
 hcls ASourceModificationEvent,MySourceAccessor
 
 CLSS public abstract org.netbeans.modules.parsing.api.Task
@@ -207,6 +207,13 @@ meth public abstract int getPriority()
 meth public abstract java.util.List<org.netbeans.modules.parsing.api.Embedding> getEmbeddings(org.netbeans.modules.parsing.api.Snapshot)
 meth public final java.lang.Class<? extends org.netbeans.modules.parsing.spi.Scheduler> getSchedulerClass()
 supr org.netbeans.modules.parsing.spi.SchedulerTask
+
+CLSS public abstract org.netbeans.modules.parsing.spi.IndexingAwareParserResultTask<%0 extends org.netbeans.modules.parsing.spi.Parser$Result>
+cons protected init(org.netbeans.modules.parsing.spi.TaskIndexingMode)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+meth public final org.netbeans.modules.parsing.spi.TaskIndexingMode getIndexingMode()
+supr org.netbeans.modules.parsing.spi.ParserResultTask<{org.netbeans.modules.parsing.spi.IndexingAwareParserResultTask%0}>
+hfds scanMode
 
 CLSS public org.netbeans.modules.parsing.spi.ParseException
 cons public init()
@@ -303,6 +310,13 @@ cons public init()
 meth public abstract java.util.Collection<? extends org.netbeans.modules.parsing.spi.SchedulerTask> create(org.netbeans.modules.parsing.api.Snapshot)
 supr java.lang.Object
 
+CLSS public final !enum org.netbeans.modules.parsing.spi.TaskIndexingMode
+fld public final static org.netbeans.modules.parsing.spi.TaskIndexingMode ALLOWED_DURING_SCAN
+fld public final static org.netbeans.modules.parsing.spi.TaskIndexingMode DISALLOWED_DURING_SCAN
+meth public static org.netbeans.modules.parsing.spi.TaskIndexingMode valueOf(java.lang.String)
+meth public static org.netbeans.modules.parsing.spi.TaskIndexingMode[] values()
+supr java.lang.Enum<org.netbeans.modules.parsing.spi.TaskIndexingMode>
+
 CLSS public abstract org.netbeans.modules.parsing.spi.indexing.BinaryIndexer
 cons public init()
 meth protected abstract void index(org.netbeans.modules.parsing.spi.indexing.Context)
@@ -337,6 +351,7 @@ CLSS public abstract interface static !annotation org.netbeans.modules.parsing.s
  anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=SOURCE)
  anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[TYPE])
 intf java.lang.annotation.Annotation
+meth public abstract !hasdefault java.lang.String namePattern()
 meth public abstract !hasdefault java.lang.String[] mimeType()
 meth public abstract !hasdefault java.lang.String[] requiredResource()
 meth public abstract int indexVersion()
@@ -349,11 +364,13 @@ meth public boolean isCancelled()
 meth public boolean isSourceForBinaryRootIndexing()
 meth public boolean isSupplementaryFilesIndexing()
 meth public java.net.URL getRootURI()
+meth public org.netbeans.modules.parsing.spi.indexing.SuspendStatus getSuspendStatus()
+ anno 0 org.netbeans.api.annotations.common.NonNull()
 meth public org.openide.filesystems.FileObject getIndexFolder()
 meth public org.openide.filesystems.FileObject getRoot()
 meth public void addSupplementaryFiles(java.net.URL,java.util.Collection<? extends java.net.URL>)
 supr java.lang.Object
-hfds allFilesJob,cancelRequest,checkForEditorModifications,factory,followUpJob,indexBaseFolder,indexFolder,indexerName,indexerVersion,indexingSupport,logContext,props,root,rootURL,sourceForBinaryRoot
+hfds allFilesJob,cancelRequest,checkForEditorModifications,factory,followUpJob,indexBaseFolder,indexFolder,indexerName,indexerVersion,indexingSupport,logContext,props,root,rootURL,sourceForBinaryRoot,suspendedStatus
 
 CLSS public abstract org.netbeans.modules.parsing.spi.indexing.CustomIndexer
 cons public init()
@@ -440,6 +457,12 @@ meth public boolean scanStarted(org.netbeans.modules.parsing.spi.indexing.Contex
 meth public void rootsRemoved(java.lang.Iterable<? extends java.net.URL>)
 meth public void scanFinished(org.netbeans.modules.parsing.spi.indexing.Context)
 supr java.lang.Object
+
+CLSS public final org.netbeans.modules.parsing.spi.indexing.SuspendStatus
+meth public boolean isSuspended()
+meth public void parkWhileSuspended() throws java.lang.InterruptedException
+supr java.lang.Object
+hfds impl
 
 CLSS public final org.netbeans.modules.parsing.spi.indexing.support.IndexDocument
 meth public void addPair(java.lang.String,java.lang.String,boolean,boolean)

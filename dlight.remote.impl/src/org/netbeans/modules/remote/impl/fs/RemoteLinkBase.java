@@ -81,8 +81,9 @@ public abstract class RemoteLinkBase extends RemoteFileObjectBase implements Fil
         }
     }
 
-    public abstract RemoteFileObjectBase getDelegate();
+    public abstract RemoteFileObjectBase getCanonicalDelegate();
     protected abstract String getDelegateNormalizedPath();
+    protected abstract RemoteFileObjectBase getDelegateImpl();
  
     protected FileNotFoundException fileNotFoundException(String operation) {
         return new FileNotFoundException("can not " + operation + ' ' + getPath() + ": can not find link target"); //NOI18N
@@ -90,7 +91,7 @@ public abstract class RemoteLinkBase extends RemoteFileObjectBase implements Fil
     
     @Override
     public RemoteFileObject[] getChildren() {
-        RemoteFileObjectBase delegate = getDelegate();
+        RemoteFileObjectBase delegate = getCanonicalDelegate();
         if (delegate != null) {
             RemoteFileObject[] children = delegate.getChildren();
             for (int i = 0; i < children.length; i++) {
@@ -117,13 +118,13 @@ public abstract class RemoteLinkBase extends RemoteFileObjectBase implements Fil
 
     @Override
     protected boolean hasCache() {
-        RemoteFileObjectBase delegate = getDelegate();
+        RemoteFileObjectBase delegate = getCanonicalDelegate();
         return (delegate == null) ? false : delegate.hasCache();
     }
 
     @Override
     public RemoteFileObject getFileObject(String name, String ext) {
-        RemoteFileObjectBase delegate = getDelegate();
+        RemoteFileObjectBase delegate = getCanonicalDelegate();
         if (delegate != null) {
             RemoteFileObject fo = delegate.getFileObject(name, ext);
             if (fo != null) {
@@ -136,7 +137,7 @@ public abstract class RemoteLinkBase extends RemoteFileObjectBase implements Fil
 
     @Override
     public RemoteFileObject getFileObject(String relativePath) {
-        RemoteFileObjectBase delegate = getDelegate();
+        RemoteFileObjectBase delegate = getCanonicalDelegate();
         if (delegate != null) {
             RemoteFileObject fo = delegate.getFileObject(relativePath);
             if (fo != null) {
@@ -149,19 +150,19 @@ public abstract class RemoteLinkBase extends RemoteFileObjectBase implements Fil
 
     @Override
     public boolean isFolder() {
-        RemoteFileObjectBase delegate = getDelegate();
+        RemoteFileObjectBase delegate = getCanonicalDelegate();
         return (delegate == null) ? false : delegate.isFolder();
     }
 
     @Override
     public boolean isData() {
-        RemoteFileObjectBase delegate = getDelegate();
+        RemoteFileObjectBase delegate = getCanonicalDelegate();
         return (delegate == null) ? true : delegate.isData();
     }
 
     @Override
     public InputStream getInputStream() throws FileNotFoundException {
-        RemoteFileObjectBase delegate = getDelegate();
+        RemoteFileObjectBase delegate = getCanonicalDelegate();
         if (delegate == null) {
             throw fileNotFoundException("read"); //NOI18N
         }
@@ -170,13 +171,13 @@ public abstract class RemoteLinkBase extends RemoteFileObjectBase implements Fil
 
     @Override
     public boolean canRead() {
-        RemoteFileObjectBase delegate = getDelegate();
+        RemoteFileObjectBase delegate = getCanonicalDelegate();
         return (delegate == null) ? false : delegate.canRead();
     }
 
     @Override
     protected FileLock lockImpl(RemoteFileObjectBase orig) throws IOException {
-        RemoteFileObjectBase delegate = getDelegate();
+        RemoteFileObjectBase delegate = getCanonicalDelegate();
         if (delegate != null) {
             return delegate.lockImpl(orig);
         } else {
@@ -186,7 +187,7 @@ public abstract class RemoteLinkBase extends RemoteFileObjectBase implements Fil
 
     @Override
     public Date lastModified() {
-        RemoteFileObjectBase delegate = getDelegate();
+        RemoteFileObjectBase delegate = getCanonicalDelegate();
         if (delegate != null) {
             return delegate.lastModified();
         } else {
@@ -196,7 +197,7 @@ public abstract class RemoteLinkBase extends RemoteFileObjectBase implements Fil
 
     @Override
     protected boolean checkLock(FileLock aLock) throws IOException {
-        RemoteFileObjectBase delegate = getDelegate();
+        RemoteFileObjectBase delegate = getCanonicalDelegate();
         if (delegate != null) {
             return delegate.checkLock(aLock);
         } else {
@@ -207,13 +208,13 @@ public abstract class RemoteLinkBase extends RemoteFileObjectBase implements Fil
     @SuppressWarnings("deprecation")
     @Override
     protected boolean isReadOnlyImpl(RemoteFileObjectBase orig) {
-        RemoteFileObjectBase delegate = getDelegate();
+        RemoteFileObjectBase delegate = getCanonicalDelegate();
         return (delegate == null) ? true : delegate.isReadOnlyImpl(orig);
     }
 
     @Override
     protected OutputStream getOutputStreamImpl(FileLock lock, RemoteFileObjectBase orig) throws IOException {
-        RemoteFileObjectBase delegate = getDelegate();
+        RemoteFileObjectBase delegate = getCanonicalDelegate();
         if (delegate != null) {
             return delegate.getOutputStreamImpl(lock, orig);
         } else {
@@ -239,7 +240,7 @@ public abstract class RemoteLinkBase extends RemoteFileObjectBase implements Fil
         } else {
             antiLoop.add(getPath());
         }
-        RemoteFileObjectBase delegate = getDelegate();
+        RemoteFileObjectBase delegate = getCanonicalDelegate();
         // For link we need to refresh both delegate and link metadata itself
         refreshThisFileMetadataImpl(recursive, antiLoop, expected);
         if (delegate != null) {
@@ -257,22 +258,20 @@ public abstract class RemoteLinkBase extends RemoteFileObjectBase implements Fil
     }
     
     @Override
-    protected FileObject createFolderImpl(String name, RemoteFileObjectBase orig) throws IOException {
-        RemoteFileObjectBase delegate = getDelegate();
+    protected RemoteFileObject createFolderImpl(String name, RemoteFileObjectBase orig) throws IOException {
+        RemoteFileObjectBase delegate = getCanonicalDelegate();
         if (delegate != null) {
-            // TODO return right object
-            return delegate.createFolderImpl(name, orig);
+            return wrapFileObject(delegate.createFolderImpl(name, orig), null);
         } else {
             throw fileNotFoundException("create a folder in"); //NOI18N
         }
     }
 
     @Override
-    protected FileObject createDataImpl(String name, String ext, RemoteFileObjectBase orig) throws IOException {
-        RemoteFileObjectBase delegate = getDelegate();
+    protected RemoteFileObject createDataImpl(String name, String ext, RemoteFileObjectBase orig) throws IOException {
+        RemoteFileObjectBase delegate = getCanonicalDelegate();
         if (delegate != null) {
-            // TODO return right object
-            return delegate.createDataImpl(name, ext, orig);
+            return wrapFileObject(delegate.createDataImpl(name, ext, orig), null);
         } else {
             throw fileNotFoundException("create a file in"); //NOI18N
         }
@@ -280,7 +279,7 @@ public abstract class RemoteLinkBase extends RemoteFileObjectBase implements Fil
 
     @Override
     public boolean canWriteImpl(RemoteFileObjectBase orig) {
-        RemoteFileObjectBase delegate = getDelegate();
+        RemoteFileObjectBase delegate = getCanonicalDelegate();
         return (delegate == null) ? false : delegate.canWriteImpl(orig);
     }
 
@@ -318,7 +317,7 @@ public abstract class RemoteLinkBase extends RemoteFileObjectBase implements Fil
 
     public boolean isCyclicLink() {
         Set<RemoteFileObjectBase> antiCycle = new HashSet<RemoteFileObjectBase>();
-        RemoteFileObjectBase delegate = getDelegate();
+        RemoteFileObjectBase delegate = getCanonicalDelegate();
         if (delegate == null && getPath() != null) {
             // self-referencing link
             return true;
@@ -327,7 +326,7 @@ public abstract class RemoteLinkBase extends RemoteFileObjectBase implements Fil
             if (delegate instanceof RemoteLinkBase) {
                 if (antiCycle.contains(delegate)) return true;
                 antiCycle.add(delegate);
-                delegate = ((RemoteLinkBase) delegate).getDelegate();
+                delegate = ((RemoteLinkBase) delegate).getCanonicalDelegate();
             } else {
                 break;
             }
@@ -336,7 +335,7 @@ public abstract class RemoteLinkBase extends RemoteFileObjectBase implements Fil
     }
     
     private FileEvent transform(FileEvent fe) {
-        RemoteFileObjectBase delegate = getDelegate();
+        RemoteFileObjectBase delegate = getCanonicalDelegate();
         if (delegate != null) {
             FileObject src = transform((FileObject) fe.getSource(), delegate);
             FileObject file = transform(fe.getFile(), delegate);
@@ -373,7 +372,7 @@ public abstract class RemoteLinkBase extends RemoteFileObjectBase implements Fil
     
     @Override
     protected byte[] getMagic() {
-        RemoteFileObjectBase delegate = getDelegate();
+        RemoteFileObjectBase delegate = getCanonicalDelegate();
         if (delegate != null) {
             return delegate.getMagic();
         }

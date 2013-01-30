@@ -52,6 +52,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.MissingResourceException;
@@ -100,7 +102,8 @@ public final class EditorBridge extends KeymapManager {
         if (actions == null) {
             Map<String, String> categories = readCategories();
             actions = new HashMap<String, Set<ShortcutAction>>();
-            for (EditorAction action : getEditorActionsMap().values()) {
+            final Map<String, EditorAction> tmpEditorActionsMap = Collections.unmodifiableMap(getEditorActionsMap());
+            for (EditorAction action : tmpEditorActionsMap.values()) {
                 String category = categories.get(action.getId());
                 if (category == null) {
                     category = NbBundle.getMessage(EditorBridge.class, "CTL_Other"); // NOI18N
@@ -168,6 +171,46 @@ public final class EditorBridge extends KeymapManager {
      */
     public void saveKeymap(String profile, Map<ShortcutAction, Set<String>> actionToShortcuts) {
 
+        Set<String> allMimes = new HashSet<String>(getEditorSettings().getMimeTypes());
+        allMimes.add(null); // NOI18N
+        
+        // all knon action IDs for EditorActions (those which are handled by this Bridge)
+        Set<String> actionIds = new HashSet<String>(actionToShortcuts.size());
+        for(ShortcutAction action : actionToShortcuts.keySet()) {
+            action = action.getKeymapManagerInstance(EDITOR_BRIDGE);
+            if (!(action instanceof EditorAction)) {
+                continue;
+            }
+            actionIds.add(((EditorAction)action).getId());
+        }
+        
+        // each MIME entry contains action > MKB list mapping. Initialize to all actions,
+        // them remove individual action ids which are defined in the new keybinding map
+        Map<String, Object> undefinedActions = new HashMap<String, Object>(allMimes.size());
+        
+        for (String s : allMimes) {
+            KeyBindingSettingsFactory f = getKeyBindingSettings(s);
+            List<MultiKeyBinding> mkbs = f.getKeyBindings(profile);
+
+            Map<String, List<MultiKeyBinding>> actionToMkb = new HashMap<String, List<MultiKeyBinding>>();
+            for (MultiKeyBinding mkb : mkbs) {
+                String an = mkb.getActionName();
+                if (!actionIds.contains(an)) {
+                    // do not attempt to preserve missing actions; if the action is not present at all,
+                    // the user had removed it.
+                    continue;
+                }
+                List<MultiKeyBinding> bindings = actionToMkb.get(an);
+                if (bindings == null) {
+                    bindings = new ArrayList(2);
+                    actionToMkb.put(an, bindings);
+                }
+                bindings.add(mkb);
+            }
+            
+            undefinedActions.put(s, actionToMkb);
+        }
+        
         // 1)
         // convert actionToShortcuts: Map (ShortcutAction > Set (String (shortcut AS-M)))
         // to mimeTypeToKeyBinding: Map (String (mimetype) > List (MultiKeyBinding)).
@@ -181,13 +224,47 @@ public final class EditorBridge extends KeymapManager {
             }
             
             EditorAction editorAction = (EditorAction) action;
-            Set<String> mimeTypes = getMimeTypes(editorAction);
+            Set<String> mimeTypesPre = getMimeTypes(editorAction);
 
-            assert mimeTypes != null : "Cannot find MIME types for action " + editorAction; // NOI18N
+            assert mimeTypesPre != null : "Cannot find MIME types for action " + editorAction; // NOI18N
 
+            Set<String> mimeTypes = new LinkedHashSet<String>(mimeTypesPre.size() + 1);
+            mimeTypes.add(null);
+            mimeTypes.addAll(mimeTypesPre);
+            
+            List<MultiKeyBinding> nullBindings = new ArrayList<MultiKeyBinding>();
+            
             for (String shortcut : shortcuts) {
                 MultiKeyBinding mkb = new MultiKeyBinding(stringToKeyStrokes2(shortcut), editorAction.getId());
+                boolean presentInDefault = mimeTypesPre.contains(null);
+                
                 for (String mimeType : mimeTypes) {
+                    // check whether the action thing already exists in the specific MIME map:
+                    Map<String, List<MultiKeyBinding>> mimeActions = (Map<String, List<MultiKeyBinding>>)undefinedActions.get(mimeType);
+                    boolean exists = mimeActions != null && mimeActions.get(editorAction.getId()) != null;
+                    
+                    if (mimeType != null) {
+                        if (!exists) {
+                            if (presentInDefault) {
+                                // the action -> mkb is already defined in the null Mimetype, 
+                                // do not duplicate
+                                continue;
+                            }
+                            if (nullBindings.contains(mkb)) {
+                                // the root MIME defines the action, but its EKit does not handle it
+                                // == a common action binding for many MIMEs. Still do not duplicate, if the
+                                // mkb is the same.
+                                continue;
+                            }
+                        }
+                    } else {
+                        if (!presentInDefault && !exists) {
+                            // do not define in default iff not already defined and its editorKit does not know it
+                            continue;
+                        }
+                        nullBindings.add(mkb);
+                        presentInDefault = true;
+                    }
                     List<MultiKeyBinding> l = mimeTypeToKeyBinding.get(mimeType);
                     if (l == null) {
                         l = new ArrayList<MultiKeyBinding>();
@@ -195,6 +272,25 @@ public final class EditorBridge extends KeymapManager {
                     }
                     l.add(mkb);
                 }
+            }
+            for (String mimeType : mimeTypes) {
+                Map m = (Map)undefinedActions.get(mimeType);
+                if (m != null) {
+                    // action is defined for the MIME, remove from the leftover list
+                    m.remove(editorAction.getId());
+                }
+            }
+        }
+        
+        // merge in bindings for unknown actions:
+        for (String mimeType : keyBindingSettings.keySet()) {
+            Map<String, List<MultiKeyBinding>> actionToMkb = (Map<String, List<MultiKeyBinding>>)undefinedActions.get(mimeType);
+            List<MultiKeyBinding> l = mimeTypeToKeyBinding.get(mimeType);
+            if (l == null) {
+                mimeTypeToKeyBinding.put(mimeType, l = new ArrayList<MultiKeyBinding>(5));
+            }
+            for (List<MultiKeyBinding> keys : actionToMkb.values()) {
+                l.addAll(keys);
             }
         }
 
@@ -216,9 +312,9 @@ public final class EditorBridge extends KeymapManager {
      * Returns map of all editor actions.
      * Map (String (mimeType) > Set (String (action name)))
      */
-    private Map<String, EditorAction> getEditorActionsMap() {
+    /* test */ Map<String, EditorAction> getEditorActionsMap() {
         if (editorActionsMap == null) {
-            editorActionsMap = new HashMap<String, EditorAction>();
+            editorActionsMap = new LinkedHashMap<String, EditorAction>();
             initActionMap(null, null);
             Map<String, EditorAction> emptyMimePathActions = new HashMap<String, EditorAction>(editorActionsMap);
             
@@ -287,7 +383,9 @@ public final class EditorBridge extends KeymapManager {
 
             Set<String> s = actionNameToMimeTypes.get(id);
             if (s == null) {
-                s = new HashSet<String>();
+                // LinkedHS ensures that 'null' mime which is initialized 1st will be
+                // the 1st enumerated from getMimeTypes(). This invariant is used in saveKeyMap
+                s = new LinkedHashSet<String>();
                 actionNameToMimeTypes.put(id, s);
             }
             s.add(mimeType);
@@ -418,7 +516,7 @@ public final class EditorBridge extends KeymapManager {
                 if (j > 0) {
                     sb.append(' '); //NOI18N
                 }
-                sb.append(Utilities.keyToString(mkb.getKeyStrokeList().get(j)));
+                sb.append(Utilities.keyToString(mkb.getKeyStrokeList().get(j), true));
             }
 
             Set<String> keyStrokes = actionNameToShortcuts.get(mkb.getActionName());
@@ -524,6 +622,9 @@ public final class EditorBridge extends KeymapManager {
         public String getDelegatingActionId() {
             if (delegaitngActionId == null) {
                 delegaitngActionId = (String) action.getValue(NbEditorKit.SYSTEM_ACTION_CLASS_NAME_PROPERTY);
+                if (delegaitngActionId != null) {
+                    delegaitngActionId = delegaitngActionId.replaceAll("\\.", "-");
+                }
             }
             return delegaitngActionId;
         }

@@ -45,7 +45,6 @@ package org.netbeans.modules.php.dbgp.breakpoints;
 
 import java.beans.PropertyChangeEvent;
 import java.util.Collection;
-
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.debugger.Breakpoint;
@@ -57,8 +56,8 @@ import org.netbeans.modules.php.dbgp.SessionId;
 import org.netbeans.modules.php.dbgp.SessionManager;
 import org.netbeans.modules.php.dbgp.packets.BrkpntRemoveCommand;
 import org.netbeans.modules.php.dbgp.packets.BrkpntSetCommand;
-import org.netbeans.modules.php.dbgp.packets.BrkpntUpdateCommand;
 import org.netbeans.modules.php.dbgp.packets.BrkpntSetCommand.State;
+import org.netbeans.modules.php.dbgp.packets.BrkpntUpdateCommand;
 
 
 /**
@@ -74,10 +73,7 @@ public class BreakpointRuntimeSetter extends DebuggerManagerAdapter  {
      */
     @Override
     public String[] getProperties() {
-        if ( myProperties == null ) {
-            myProperties = new String[] { DebuggerManager.PROP_BREAKPOINTS };
-        }
-        return myProperties;
+        return new String[] { DebuggerManager.PROP_BREAKPOINTS };
     }
 
     /* (non-Javadoc)
@@ -191,7 +187,5 @@ public class BreakpointRuntimeSetter extends DebuggerManagerAdapter  {
         static final Command REMOVE_COMMAND = new RemoveBreakpointCommand();
         static final Command UPDATE_COMMAND = new UpdateBreakpointCommand();
     }
-
-    private String[] myProperties;
 
 }

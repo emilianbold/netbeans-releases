@@ -42,9 +42,13 @@
 package org.netbeans.modules.java.source.usages;
 
 import java.io.IOException;
+import java.net.URL;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.java.source.indexing.TransactionContext;
+import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 
 /**
  * Commits Class Indexes during scanFinished.
@@ -53,39 +57,61 @@ import org.netbeans.modules.java.source.indexing.TransactionContext;
  */
 //@NotThreadSafe
 public final class PersistentIndexTransaction extends TransactionContext.Service {
+
+    private static final Logger LOG = Logger.getLogger(PersistentIndexTransaction.class.getName());
+
+    private final URL root;
+
     private ClassIndexImpl.Writer indexWriter;
-    
-    
-    public static PersistentIndexTransaction create() {
-        return new PersistentIndexTransaction();
+    private boolean closedTx;
+    private boolean brokenIndex;
+
+    private PersistentIndexTransaction(@NonNull final URL root) {
+        this.root = root;
+    }
+
+    @NonNull
+    public static PersistentIndexTransaction create(@NonNull final URL root) {
+        return new PersistentIndexTransaction(root);
     }
 
     @Override
     protected void commit() throws IOException {
+        closeTx();
         if (indexWriter != null) {
-            try {
-                indexWriter.commit();
-            } catch (Throwable t) {
-                if (t instanceof ThreadDeath) {
-                    throw (ThreadDeath) t;
-                } else {
-                    throw new IOException(t);
+            if (!brokenIndex) {
+                try {
+                    indexWriter.commit();
+                } catch (Throwable t) {
+                    if (t instanceof ThreadDeath) {
+                        throw (ThreadDeath) t;
+                    } else {
+                        LOG.log(
+                            Level.WARNING,
+                            "Broken index for root: {0} reason: {1}, recovering.",  //NOI18N
+                            new Object[] {
+                                root,
+                                t.getMessage()
+                            });
+                        brokenIndex = true;
+                    }
                 }
+            } else {
+                rollBackImpl();
+            }
+            if (brokenIndex) {
+                handleBrokenRoot();
             }
         }
     }
 
     @Override
     protected void rollBack() throws IOException {
-        if (indexWriter != null) {
-            try {
-                indexWriter.rollback();
-            } catch (Throwable t) {
-                if (t instanceof ThreadDeath) {
-                    throw (ThreadDeath) t;
-                } else {
-                    throw new IOException(t);
-                }
+        closeTx();
+        if (indexWriter != null) {            
+            rollBackImpl();
+            if (brokenIndex) {
+                handleBrokenRoot();
             }
         }
     }
@@ -95,9 +121,44 @@ public final class PersistentIndexTransaction extends TransactionContext.Service
         assert writer != null;
         this.indexWriter = writer;
     }
+
+    public void setBroken() {
+        brokenIndex = true;
+    }
     
     @CheckForNull
     public ClassIndexImpl.Writer getIndexWriter() {
         return this.indexWriter;
+    }
+
+    private void closeTx() {
+        if (closedTx) {
+            throw new IllegalStateException("Already commited or rolled back transaction.");    //NOI18N
+        }
+        closedTx = true;
+    }
+
+    private void handleBrokenRoot() throws IOException {
+        indexWriter.clear();
+        IndexingManager.getDefault().refreshIndex(root, null, true, false);
+    }
+
+    private void rollBackImpl() {
+        try {
+            indexWriter.rollback();
+        } catch (Throwable t) {
+            if (t instanceof ThreadDeath) {
+                throw (ThreadDeath) t;
+            } else {
+                LOG.log(
+                    Level.WARNING,
+                    "Broken index for root: {0} reason: {1}, recovering.",  //NOI18N
+                    new Object[] {
+                        root,
+                        t.getMessage()
+                    });
+                brokenIndex = true;
+            }
+        }
     }
 }

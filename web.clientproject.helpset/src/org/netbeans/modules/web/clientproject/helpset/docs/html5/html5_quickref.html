@@ -1,0 +1,131 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ * Copyright © 1997, 2011, Oracle and/or its affiliates.  
+ * All rights reserved.
+ * Use is subject to license terms.
+-->
+<html>
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <title>HTML5 Application Tasks: Quick Reference</title>
+        <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+        <meta name="keywords" content="enterprise" />
+    </head>
+
+    <body>
+        <h2>HTML5 Application Tasks: Quick Reference</h2>
+        <p> This topic describes common tasks you might want to perform when you are
+            developing HTML5 applications. For
+            more detailed information, click the links in the right column. </p>
+
+        <table border="1" cellpadding="5" cellspacing="0" summary="The left column lists the
+               task name. The right column lists the steps to perform.">
+            <tr valign="top">
+                <th scope="col" align="left">To perform this task</th>
+                <th scope="col" align="left">Follow these steps</th>
+            </tr>
+            <tr valign="top">
+                <td>Create a project.</td>
+                <td>
+                    <ol>
+                        <li>Choose File &gt; New Project (Ctrl-Shift-N) in the main menu.</li>
+                        <li>Select the correct <a href="html5-createproj.html">project template</a> in the 
+                            New Project wizard.</li>
+                        <li>Step through the wizard to specify a site template option and add JavaScript files.</li>
+                    </ol>
+                </td>
+            </tr>
+            <tr valign="top">
+                <td>Add a JavaScript library to a project.</td>
+                <td>
+                    <ol>
+                        <li>In the Projects window, right-click the project node and
+                            choose Properties.</li>
+                        <li>Select the JavaScript Files category in the Project Properties window.</li>
+                        <li>Select the JavaScript file from the list in the left pane and click the right arrow button
+                            to move the selected file to the list in the right pane. Click OK.</li>
+                    </ol>
+                </td>
+            </tr>
+            <tr valign="top">
+                <td>Specify the target browser.</td>
+                <td>
+                    <ol>
+                        <li>Select the project node in the Projects window.</li>
+                        <li><a href="html5-runproject.html">Select the browser</a> from the dropdown list in the Toolbar.
+                            <p>Alternatively, right-click the project node and choose Properties
+                                in the popup menu and then select a browser from the dropdown list
+                                in the Run panel of the Project Properties window.</p>
+                        </li>
+                    </ol>
+                </td>
+            </tr>
+            <tr valign="top">
+                <td>Inspect source code with the browser.</td>
+                <td>
+                    <ol>
+                        <li>Specify Chrome with NetBeans Integration as the target browser and <a href="html5-chrome.html">install the NetBeans extension for Chrome</a>.
+                            <p>Alternatively, you can specify Embedded WebKit Browser. </p></li>
+                        <li>Run the project.</li>
+                        <li>Enable <a href="html5-inspect.html">Inspect in NetBeans Mode</a>.</li>
+                    </ol>
+                </td>
+            </tr>
+            <tr valign="top">
+                <td>View the application in various screen sizes.</td>
+                <td>
+                    <ol>
+                        <li>Specify either Chrome with NetBeans Integration or Embedded WebKit Browser as the target browser.</li>
+                        <li>Run the project.</li>
+                        <li>In the browser, <a href="html5-preview.html">select a screen size</a> or create
+                        a custom screen size.</li>
+                    </ol>
+                </td>
+            </tr>
+
+            <tr valign="top">
+                <td>Run a project.</td>
+                <td>
+                    <ol>
+                        <li>Specify a target browser for the application.</li>
+                        <li>Right-click the project node in the Projects window and choose Run.</li>
+                    </ol>
+                </td>
+            </tr>
+
+            
+            
+            <tr valign="top">
+                <td>Debug a JavaScript file.</td>
+                <td>
+                    <ol>
+                        <li>Specify either Chrome with NetBeans Integration or Embedded WebKit Browser as the target browser.</li>
+                        <li>Set the breakpoints in the JavaScript file.</li>
+                        <li>Right-click the project node and choose Run.
+                            <p>Alternatively, right-click the HTML file that invokes the JavaScript
+                                file and choose Run File.</p></li>
+                    </ol>
+                </td>
+            </tr>
+            <tr valign="top">
+                <td>Test a JavaScript file.</td>
+                <td>
+                    <ol>
+                        <li>In the Services window, right-click the JS Test Driver node and choose Configure.</li>
+                        <li>Configure JS Test Driver by specify the location of the JS Test Driver JAR
+                         and specifying the browsers that you would like to test the JavaScript against.</li>
+                        <li>Create a jsTest Driver Configuration File by choosing File &gt; New File and selecting jsTest Driver Configuration File in the Unit Tests category.</li>
+                        <li>Create the JavaScript file and add the unit tests to the file.</li>
+                        <li>Edit the jsTest Driver configuration file to load the JavaScript files and the test files.</li>
+                        <li>Right-click the project node and choose Test.</li>
+                    </ol>
+                </td>
+            </tr>
+            
+            
+            
+        </table>
+        <hr>
+        <small><a href="../../credits.html">Legal Notices</a></small>
+    </body>
+</html>

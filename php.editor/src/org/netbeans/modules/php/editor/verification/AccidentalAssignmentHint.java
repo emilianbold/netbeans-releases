@@ -79,7 +79,6 @@ import org.netbeans.modules.php.editor.parser.astnodes.UseStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.UseStatementPart;
 import org.netbeans.modules.php.editor.parser.astnodes.WhileStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
-import org.netbeans.modules.php.editor.verification.PHPHintsProvider.Kind;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle.Messages;
 
@@ -87,7 +86,7 @@ import org.openide.util.NbBundle.Messages;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class AccidentalAssignmentHint extends AbstractRule implements PHPRuleWithPreferences {
+public class AccidentalAssignmentHint extends AbstractHint implements PHPRuleWithPreferences {
 
     private static final String HINT_ID = "Accidental.Assignment.Hint"; //NOI18N
     private static final String CHECK_ASSIGNMENTS_IN_SUB_STATEMENTS = "php.verification.check.assignments.in.sub.statements"; //NOI18N
@@ -98,12 +97,15 @@ public class AccidentalAssignmentHint extends AbstractRule implements PHPRuleWit
     private Preferences preferences;
 
     @Override
-    void computeHintsImpl(PHPRuleContext context, List<Hint> hints, Kind kind) throws BadLocationException {
+    void compute(PHPRuleContext context, List<Hint> hints) {
         PHPParseResult phpParseResult = (PHPParseResult) context.parserResult;
         if (phpParseResult.getProgram() == null) {
             return;
         }
         FileObject fileObject = phpParseResult.getSnapshot().getSource().getFileObject();
+        if (fileObject == null) {
+            return;
+        }
         CheckVisitor checkVisitor = new CheckVisitor(fileObject, context.doc);
         phpParseResult.getProgram().accept(checkVisitor);
         hints.addAll(checkVisitor.getHints());
@@ -286,7 +288,7 @@ public class AccidentalAssignmentHint extends AbstractRule implements PHPRuleWit
 
     }
 
-    private class AssignmentVisitor extends DefaultVisitor {
+    private static class AssignmentVisitor extends DefaultVisitor {
 
         private final List<Assignment> accidentalAssignments = new LinkedList<Assignment>();
 
@@ -321,6 +323,7 @@ public class AccidentalAssignmentHint extends AbstractRule implements PHPRuleWit
             return Bundle.ChangeAssignmentDisp(getCorrectedAssignmentText());
         }
 
+        @org.netbeans.api.annotations.common.SuppressWarnings({"DLS_DEAD_LOCAL_STORE"})
         private String getCorrectedAssignmentText() {
             StringBuilder sb = new StringBuilder();
             try {
@@ -365,7 +368,7 @@ public class AccidentalAssignmentHint extends AbstractRule implements PHPRuleWit
             return false;
         }
 
-        abstract protected String getOperatorText();
+        protected abstract String getOperatorText();
 
     }
 

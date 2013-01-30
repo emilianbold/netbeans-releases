@@ -279,7 +279,8 @@ public class J2MEActionProviderTest extends NbTestCase {
         m1.put("nbproject","nbproject");
         J2MEProject p= (J2MEProject)ProjectManager.getDefault().findProject(projectDir);
         ReferenceHelper refs = p.getLookup().lookup(ReferenceHelper.class);
-        J2MEProjectOperations op=new J2MEProjectOperations(p,antProjectHelper,refs);
+        assertNotNull( actionProvider );
+        J2MEProjectOperations op=new J2MEProjectOperations(p,antProjectHelper,refs,actionProvider);
         List l1=op.getDataFiles();
         assertTrue(l1.size()==1);
         assertTrue( ((FileObject)(l1.get(0))).getName().equals("src"));

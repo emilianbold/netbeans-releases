@@ -474,8 +474,8 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
 
     public void testIncludes() throws Exception {
         // check #include "ClassA.h" hyperlinks
-        performTest("main.cc", 2, 12, "ClassA.h", -1, -1); // start of file ClassA.h
-        performTest("ClassA.cc", 2, 12, "ClassA.h", -1, -1); // start of file ClassA.h
+        performTest("main.cc", 2, 12, "ClassA.h", 1, 1); // start of file ClassA.h
+        performTest("ClassA.cc", 2, 12, "ClassA.h", 1, 1); // start of file ClassA.h
     }
 
     public void testOperators() throws Exception {
@@ -1053,6 +1053,28 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         // Bug 211033 - code model incorrectly resolves forward class declarations in case of external class definitions
         performTest("bug211033.cpp", 41, 13, "bug211033.cpp", 31, 5);
         performTest("bug211033.cpp", 46, 13, "bug211033.cpp", 36, 5);
+    }    
+
+    public void testBug217994() throws Exception {
+        // Bug 217994 - default method parameter construct isn't handled properly
+        performTest("bug217994.cpp", 17, 32, "bug217994.cpp", 3, 5);
+    }    
+
+    public void testIZ223046_overloads() throws Exception {
+        // Bug 217994 - default method parameter construct isn't handled properly
+        performTest("iz223046.cpp", 29, 12, "iz223046.cpp", 17, 5);
+        performTest("iz223046.cpp", 30, 20, "iz223046.cpp", 17, 5);
+        performTest("iz223046.cpp", 31, 24, "iz223046.cpp", 17, 5);
+
+        performTest("iz223046.cpp", 33, 13, "iz223046.cpp", 16, 5);
+        performTest("iz223046.cpp", 34, 17, "iz223046.cpp", 16, 5);
+        performTest("iz223046.cpp", 35, 25, "iz223046.cpp", 16, 5);
+    }
+
+    public void testIZ223966_overloads_template_spec() throws Exception {
+        // Bug 217994 - default method parameter construct isn't handled properly
+        performTest("iz_223966_overloads_template_spec.cpp", 14, 7, "iz_223966_overloads_template_spec.cpp", 9, 1);
+        performTest("iz_223966_overloads_template_spec.cpp", 15, 7, "iz_223966_overloads_template_spec.cpp", 9, 1);
     }    
     
     public static class Failed extends HyperlinkBaseTestCase {

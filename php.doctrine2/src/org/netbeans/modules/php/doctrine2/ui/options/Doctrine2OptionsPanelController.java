@@ -60,7 +60,7 @@ import org.openide.util.NbBundle;
 @OptionsPanelController.SubRegistration(
     location=UiUtils.OPTIONS_PATH,
     id=Doctrine2OptionsPanelController.OPTIONS_SUBPATH,
-    displayName="#LBL_OptionsName",
+    displayName="#LBL_PHPDoctrineOptionsName",
 //    toolTip="#LBL_OptionsTooltip"
     position=700
 )

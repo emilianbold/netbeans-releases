@@ -41,19 +41,15 @@
  */
 package org.netbeans.modules.ws.qaf.rest;
 
-import java.awt.event.KeyEvent;
+import java.awt.Container;
 import java.io.File;
 import java.util.HashSet;
 import java.util.Set;
-import javax.swing.tree.TreePath;
+import javax.swing.JCheckBox;
 import junit.framework.Test;
 import org.netbeans.jellytools.*;
 import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jellytools.nodes.ProjectRootNode;
-import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.operators.*;
-import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.modules.ws.qaf.utilities.RestWizardOperator;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -123,7 +119,6 @@ public class PatternsTest extends RestTestBase {
             throw new AssertionError("Unknown type: " + this); //NOI18N
         }
     }
-    private static boolean jerseyAdded = false;
 
     /**
      * Def constructor.
@@ -137,43 +132,6 @@ public class PatternsTest extends RestTestBase {
     @Override
     public void setUp() throws Exception {
         super.setUp();
-        // add Jersey library, otherwise package org.codehaus.jettison is not added from server libraries, see issue #206526
-        if (!PatternsTest.jerseyAdded && getProjectType().isAntBasedProject()) {
-            ProjectRootNode prn = ProjectsTabOperator.invoke().getProjectRootNode(getProjectName());
-            prn.select();
-            if (prn.isCollapsed()) {
-                prn.expand();
-            }
-
-            JemmyProperties.setCurrentTimeout("JTreeOperator.WaitNextNodeTimeout", 120000); //NOI18N
-            Node libNode = new Node(prn, "Libraries");
-            libNode.callPopup();
-            JPopupMenuOperator popup = new JPopupMenuOperator();
-            popup.pushMenuNoBlock("Add Library...");
-            NbDialogOperator libraries = new NbDialogOperator("Add Library");
-
-            JTreeOperator jto = new JTreeOperator(libraries);
-            Node gl = new Node(jto, jto.findPath("Global libraries")); //NOI18N
-            JTreeOperator jtolibs = gl.tree();
-
-
-            System.out.println("==== NULL");
-            TreePath[] tps = jtolibs.getChildPaths(jto.findPath("Global libraries"));
-            TreePath path=null;
-            for (int i = 0; i < tps.length; i++) {
-                if (tps[i].toString().contains("Jersey")) { // version independent
-                    path = tps[i];
-                    break;
-                }
-            }
-            assertNotNull("Jersey library not found", path);
-            new Node(jtolibs, path).select();
-            libraries.pushKey(KeyEvent.VK_ENTER);
-            waitScanFinished();
-            PatternsTest.jerseyAdded = true;
-        }
-
-
     }
 
     /**
@@ -290,59 +248,19 @@ public class PatternsTest extends RestTestBase {
         Set<File> files = createWsFromPatterns(name, Pattern.CcContainerItem, MimeType.TEXT_HTML);
     }
 
-    /**
-     * Make sure all REST services nodes are visible in project log. view
-     */
-    public void testNodes() {
-        Node restNode = getRestNode();
-        int expectedCount = 0;
-        switch (getJavaEEversion()) {
-            case JAVAEE5 :
-                if (getProjectType().isAntBasedProject()) {
-                    expectedCount = 22;
-                } else {
-                    expectedCount = 15;
-                }
-                break;
-            case JAVAEE6:
-                if (getProjectType().isAntBasedProject()) {
-                    expectedCount = 20;
-                } else {
-                    expectedCount = 20;
-                }
-                break;
-        }
-        assertEquals("missing nodes?", expectedCount, restNode.getChildren().length); //NOI18N
-        restNode.tree().clickOnPath(restNode.getTreePath(), 2);
-        assertTrue("Node not collapsed", restNode.isCollapsed());
-    }
-
     private Set<File> createWsFromPatterns(String name, Pattern pattern, MimeType mimeType) {
         //RESTful Web Services from Patterns
         String patternsTypeName = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.wizard.Bundle", "Templates/WebServices/RestServicesFromPatterns");
         createNewWSFile(getProject(), patternsTypeName);
         WizardOperator wo = new WizardOperator(patternsTypeName);
-        new JRadioButtonOperator(wo, pattern.ordinal()).clickMouse();
+        new JRadioButtonOperator(wo, pattern.ordinal()).changeSelection(true);
         wo.next();
-        wo = new RestWizardOperator(patternsTypeName);
+        wo.stepsWaitSelectedValue("Specify Resource Classes");
         //set resource package
         JComboBoxOperator jcbo = new JComboBoxOperator(wo, new Pkg());
         jcbo.clickMouse();
         jcbo.clearText();
         jcbo.typeText(getRestPackage());
-
-        if (!getProjectType().isAntBasedProject() && Pattern.CcContainerItem.equals(pattern)) {
-            //set resource class name
-            JTextFieldOperator jtfo = new JTextFieldOperator(wo, new ClsName());
-            jtfo.clickMouse();
-            jtfo.clearText();
-            jtfo.typeText("ItemResource_1"); //NOI18N
-            //set container resource class name
-            jtfo = new JTextFieldOperator(wo, new CClsName());
-            jtfo.clickMouse();
-            jtfo.clearText();
-            jtfo.typeText("ItemsResource_1"); //NOI18N
-        }
 
         if (name != null) {
             //we're not using Defs when name != null !!!
@@ -410,7 +328,14 @@ public class PatternsTest extends RestTestBase {
                 }
             }
         }
-        wo.finish();
+        // add Jersey libraries neeed for JSONObject (also see #206526)
+        JCheckBox useJerseyCheckBox = JCheckBoxOperator.findJCheckBox((Container) wo.getSource(), "Use Jersey specific features", true, true);
+        if (useJerseyCheckBox != null) {
+            new JCheckBoxOperator(useJerseyCheckBox).setSelected(true);
+        }
+        wo.btFinish().requestFocus();
+        wo.btFinish().pushNoBlock();
+        closeResourcesConfDialog();
         String progressDialogTitle = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.wizard.Bundle", "LBL_RestServicesFromPatternsProgress");
         waitDialogClosed(progressDialogTitle);
         Set<File> createdFiles = new HashSet<File>();
@@ -442,6 +367,7 @@ public class PatternsTest extends RestTestBase {
                 break;
         }
         closeCreatedFiles(createdFiles);
+        checkNodes(createdFiles);
         checkFiles(createdFiles);
         return createdFiles;
     }
@@ -460,13 +386,20 @@ public class PatternsTest extends RestTestBase {
             eo.close();
         }
     }
+    
+    private void checkNodes(Set<File> files) {
+        Node restNode = getRestNode();
+        for (File f : files) {
+            Node node = new Node(restNode, f.getName().replace(".java", ""));
+        }
+    }
 
     /**
      * Creates suite from particular test cases. You can define order of
      * testcases here.
      */
     public static Test suite() {
-        return NbModuleSuite.create(addServerTests(Server.GLASSFISH, NbModuleSuite.createConfiguration(PatternsTest.class),
+        return createAllModulesServerSuite(Server.GLASSFISH, PatternsTest.class,
                 "testSingletonDef", //NOI18N
                 "testContainerIDef", //NOI18N
                 "testCcContainerIDef", //NOI18N
@@ -479,10 +412,9 @@ public class PatternsTest extends RestTestBase {
                 "testContainerI3", //NOI18N
                 "testCcContainerI2", //NOI18N
                 "testCcContainerI3", //NOI18N
-                "testNodes", //NOI18N
                 "testDeploy", //NOI18N
                 "testUndeploy" //NOI18N
-                ).enableModules(".*").clusters(".*")); //NOI18N
+                );
     }
 
     static class Pkg extends JComponentByLabelFinder {

@@ -46,6 +46,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -53,6 +54,7 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
+import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
@@ -66,7 +68,6 @@ public class JsfIndex {
     public static JsfIndex create(ClassPath sourceCp, ClassPath compileCp, ClassPath executeCp, ClassPath bootCp) {
         return new JsfIndex(sourceCp, compileCp, executeCp, bootCp);
     }
-    
     private final FileObject[] roots;
     private final FileObject[] binaryRoots;
 
@@ -112,7 +113,7 @@ public class JsfIndex {
     private QuerySupport createCustomIndex() throws IOException {
         return QuerySupport.forRoots(JsfCustomIndexer.INDEXER_NAME, JsfCustomIndexer.INDEXER_VERSION, roots);
     }
-    
+
     // --------------- BOTH EMBEDDING && BINARY INDEXES ------------------
     public Collection<String> getAllCompositeLibraryNames() {
         Collection<String> col = new ArrayList<String>();

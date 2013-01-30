@@ -94,11 +94,17 @@ public class RemoteAWTService {
         awtAccessLoop = false;
     }
     
-    static void startHierarchyListener() {
+    static String startHierarchyListener() {
         if (hierarchyListener == null) {
             hierarchyListener = new RemoteAWTHierarchyListener();
-            Toolkit.getDefaultToolkit().addAWTEventListener(hierarchyListener, AWTEvent.HIERARCHY_EVENT_MASK);
+            try {
+                Toolkit.getDefaultToolkit().addAWTEventListener(hierarchyListener, AWTEvent.HIERARCHY_EVENT_MASK);
+            } catch (SecurityException se) {
+                hierarchyListener = null;
+                return "Toolkit.addAWTEventListener() threw "+se.toString();
+            }
         }
+        return null;
     }
     
     static void stopHierarchyListener() {

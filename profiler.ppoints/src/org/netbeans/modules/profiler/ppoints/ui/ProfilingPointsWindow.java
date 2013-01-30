@@ -96,6 +96,10 @@ public class ProfilingPointsWindow extends ProfilerTopComponent {
         return HELP_CTX;
     }
     
+    public static synchronized boolean hasDefault() {
+        return defaultInstance != null;
+    }
+    
     public static synchronized ProfilingPointsWindow getDefault() {
         if (defaultInstance == null) {
             CommonUtils.runInEventDispatchThreadAndWait(new Runnable() {

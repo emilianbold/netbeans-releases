@@ -89,14 +89,7 @@ public class RestConfigurationAction extends NodeAction  {
         if ( project== null) {
             return false;
         }
-        WebModule webModule = WebModule.getWebModule(project.getProjectDirectory());
-        if ( webModule == null ){
-            return false;
-        }
-        Profile profile = webModule.getJ2eeProfile();
-        if (Profile.JAVA_EE_6_WEB.equals(profile) 
-                || Profile.JAVA_EE_6_FULL.equals(profile))
-        {
+        if (RestUtils.isJavaEE6(project)){
             return false;
         }
             
@@ -269,7 +262,7 @@ public class RestConfigurationAction extends NodeAction  {
         FileObject srcRoot = WebRestSupport.findSourceRoot(project);
         if (srcRoot != null) {
             ClassPath cp = ClassPath.getClassPath(srcRoot, ClassPath.COMPILE);
-            if (cp.findResource(classResource) != null) {
+            if (cp != null && cp.findResource(classResource) != null) {
                 return true;
             }
         }

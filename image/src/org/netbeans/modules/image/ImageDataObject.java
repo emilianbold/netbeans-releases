@@ -84,6 +84,7 @@ public class ImageDataObject extends MultiDataObject implements CookieSet.Factor
         displayName="#ImageMimeResolverJPG",
         mimeType=ImageDataLoader.JPEG_MIME_TYPE,
         extension={"jpg", "JPG", "jpe", "JPE", "jpeg", "JPEG"},
+        showInFileChooser={"#ResourceFiles"},
         position=110
     )
     @Messages("ImageMimeResolverJPG=JPEG Image Files")
@@ -94,6 +95,7 @@ public class ImageDataObject extends MultiDataObject implements CookieSet.Factor
         displayName="#ImageMimeResolverGIF",
         mimeType=ImageDataLoader.GIF_MIME_TYPE,
         extension={"gif", "GIF"},
+        showInFileChooser={"#ResourceFiles"},
         position=111
     )
     @Messages("ImageMimeResolverGIF=GIF Image Files")
@@ -104,6 +106,7 @@ public class ImageDataObject extends MultiDataObject implements CookieSet.Factor
         displayName="#ImageMimeResolverPNG",
         mimeType=ImageDataLoader.PNG_MIME_TYPE,
         extension={"png", "PNG"},
+        showInFileChooser={"#ResourceFiles"},
         position=112
     )
     @Messages("ImageMimeResolverPNG=PNG Image Files")
@@ -113,6 +116,7 @@ public class ImageDataObject extends MultiDataObject implements CookieSet.Factor
         displayName="#ImageMimeResolverBMP",
         mimeType=ImageDataLoader.BMP_MIME_TYPE,
         extension={"bmp", "BMP"},
+        showInFileChooser={"#ResourceFiles"},
         position=113
     )
     @Messages("ImageMimeResolverBMP=BMP Image Files")

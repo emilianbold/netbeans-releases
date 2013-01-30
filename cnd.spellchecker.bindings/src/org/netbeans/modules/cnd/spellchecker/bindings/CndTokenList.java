@@ -104,32 +104,34 @@ public class CndTokenList implements TokenList {
     }
 
     private int[] findNextComment() throws BadLocationException {
-        TokenHierarchy<Document> h = TokenHierarchy.get(doc);
-//        TokenSequence<CppTokenId> ts = h.tokenSequence(CppTokenId.languageCpp());
-        TokenSequence<?> ts = CndLexerUtilities.getCppTokenSequence(doc, nextBlockStart, true, false);
-        if (ts == null) {
-            ts = CndLexerUtilities.getFortranTokenSequence(doc, nextBlockStart);
-            if (ts == null) {
-                return new int[]{-1, -1};
-            }
-        }
-
-        int diff = ts.move(nextBlockStart);
-
-        while (ts.moveNext()) {
-            category = ts.token().id().primaryCategory();
-            if (category != null) {
-                if (CppTokenId.COMMENT_CATEGORY.equals(category) || 
-                    FortranTokenId.COMMENT_CATEGORY.equals(category) || 
-                    CppTokenId.STRING_CATEGORY.equals(category) ||
-                    FortranTokenId.STRING_CATEGORY.equals(category)) {
-                    return new int[]{ts.offset(), ts.offset() + ts.token().length()};
+        final int[] out = new int[]{-1, -1};
+        Runnable r = new Runnable() {
+            @Override
+            public void run() {
+                TokenSequence<?> ts = CndLexerUtilities.getCppTokenSequence(doc, nextBlockStart, true, false);
+                if (ts == null) {
+                    ts = CndLexerUtilities.getFortranTokenSequence(doc, nextBlockStart);
+                }
+                if (ts != null) {
+                    int diff = ts.move(nextBlockStart);
+                    while (ts.moveNext()) {
+                        category = ts.token().id().primaryCategory();
+                        if (category != null) {
+                            if (CppTokenId.COMMENT_CATEGORY.equals(category)
+                                    || FortranTokenId.COMMENT_CATEGORY.equals(category)
+                                    || CppTokenId.STRING_CATEGORY.equals(category)
+                                    || FortranTokenId.STRING_CATEGORY.equals(category)) {
+                                out[0] = ts.offset();
+                                out[1] = ts.offset() + ts.token().length();
+                                break;
+                            }
+                        }
+                    }
                 }
             }
-        }
-        while(ts.moveNext()) {}
-
-        return new int[]{-1, -1};
+        };
+        doc.render(r);
+        return out;
     }
 
     private void handleDoxygenTag(CharSequence tag) {

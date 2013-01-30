@@ -190,6 +190,8 @@ public abstract class UpdateUnitImpl extends Object {
         }
     }
     
+    public abstract UpdateUnit getVisibleAncestor();
+
     private List<UpdateElement> identifyUpdates (UpdateElement installed, List<UpdateElement> updates) {
         List<UpdateElement> res = null;
 

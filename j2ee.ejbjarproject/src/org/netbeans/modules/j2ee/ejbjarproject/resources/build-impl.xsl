@@ -651,6 +651,21 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                     </and>
                 </condition>
             </target>
+
+            <target name="-init-test-properties">
+                <property>
+                    <xsl:attribute name="name">test.binaryincludes</xsl:attribute>
+                    <xsl:attribute name="value">&lt;nothing&gt;</xsl:attribute>
+                </property>
+                <property>
+                    <xsl:attribute name="name">test.binarytestincludes</xsl:attribute>
+                    <xsl:attribute name="value"></xsl:attribute>
+                </property>
+                <property>
+                    <xsl:attribute name="name">test.binaryexcludes</xsl:attribute>
+                    <xsl:attribute name="value"></xsl:attribute>
+                </property>
+            </target>
             
             <target name="-init-macrodef-junit-single" if="${{nb.junit.single}}" unless="${{nb.junit.batch}}">
                 <macrodef>
@@ -701,7 +716,7 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                 </macrodef>
             </target>
 
-            <target name="-init-macrodef-junit-batch" if="${{nb.junit.batch}}" unless="${{nb.junit.single}}">
+            <target name="-init-macrodef-junit-batch" if="${{nb.junit.batch}}" unless="${{nb.junit.single}}" depends="-init-test-properties">
                 <macrodef>
                     <xsl:attribute name="name">junit</xsl:attribute>
                     <xsl:attribute name="uri">http://www.netbeans.org/ns/j2ee-ejbjarproject/2</xsl:attribute>
@@ -726,6 +741,7 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                         <xsl:attribute name="optional">true</xsl:attribute>
                     </element>
                     <sequential>
+                        <property name="run.jvmargs.ide" value=""/>
                         <junit>
                             <xsl:attribute name="showoutput">true</xsl:attribute>
                             <xsl:attribute name="fork">true</xsl:attribute>
@@ -743,6 +759,9 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                                     <xsl:with-param name="includes2">@{testincludes}</xsl:with-param>
                                     <xsl:with-param name="excludes">@{excludes}</xsl:with-param>
                                 </xsl:call-template>
+                                <fileset dir="${{build.test.classes.dir}}" excludes="@{{excludes}},${{excludes}},${{test.binaryexcludes}}" includes="${{test.binaryincludes}}">
+                                    <filename name="${{test.binarytestincludes}}"/>
+                                </fileset>
                             </batchtest>
                             <syspropertyset>
                                 <propertyref prefix="test-sys-prop."/>
@@ -1004,7 +1023,7 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                 </macrodef>
             </target>
 
-            <target name="-init-macrodef-junit-debug-batch" if="${{nb.junit.batch}}">
+            <target name="-init-macrodef-junit-debug-batch" if="${{nb.junit.batch}}" depends="-init-test-properties">
                 <macrodef>
                     <xsl:attribute name="name">junit-debug</xsl:attribute>
                     <xsl:attribute name="uri">http://www.netbeans.org/ns/j2ee-ejbjarproject/2</xsl:attribute>
@@ -1047,6 +1066,9 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                                     <xsl:with-param name="includes2">@{testincludes}</xsl:with-param>
                                     <xsl:with-param name="excludes">@{excludes}</xsl:with-param>
                                 </xsl:call-template>
+                                <fileset dir="${{build.test.classes.dir}}" excludes="@{{excludes}},${{excludes}},${{test.binaryexcludes}}" includes="${{test.binaryincludes}}">
+                                    <filename name="${{test.binarytestincludes}}"/>
+                                </fileset>
                             </batchtest>
                             <syspropertyset>
                                 <propertyref prefix="test-sys-prop."/>
@@ -1446,21 +1468,21 @@ exists or setup the property manually. For example like this:
             </target>
 
             <target name="-profile-pre-init">
+                <xsl:attribute name="if">profiler.info.jvmargs.agent</xsl:attribute>
                 <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
                 <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
-                <xsl:attribute name="if">profiler.info.jvmargs.agent</xsl:attribute>
             </target>
 
             <target name="-profile-post-init">
+                <xsl:attribute name="if">profiler.info.jvmargs.agent</xsl:attribute>
                 <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
                 <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
-                <xsl:attribute name="if">profiler.info.jvmargs.agent</xsl:attribute>
             </target>
             <target name="-profile-init-check">
                 <xsl:attribute name="depends">-profile-pre-init, init, -profile-post-init</xsl:attribute>
+                <xsl:attribute name="if">profiler.info.jvmargs.agent</xsl:attribute>
                 <fail unless="profiler.info.jvm">Must set JVM to use for profiling in profiler.info.jvm</fail>
                 <fail unless="profiler.info.jvmargs.agent">Must set profiler agent JVM arguments in profiler.info.jvmargs.agent</fail>
-                <xsl:attribute name="if">profiler.info.jvmargs.agent</xsl:attribute>
             </target>
             <xsl:comment>
                 end of pre NB7.2 profiling section

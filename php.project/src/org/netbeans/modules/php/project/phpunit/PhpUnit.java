@@ -45,9 +45,13 @@ package org.netbeans.modules.php.project.phpunit;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.CancellationException;
@@ -58,7 +62,7 @@ import java.util.regex.Pattern;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExternalProcessBuilder;
 import org.netbeans.modules.php.api.editor.PhpClass;
-import org.netbeans.modules.php.api.phpmodule.PhpProgram;
+import org.netbeans.modules.php.project.deprecated.PhpProgram;
 import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.api.util.Pair;
 import org.netbeans.modules.php.api.util.StringUtils;
@@ -126,7 +130,7 @@ public final class PhpUnit extends PhpProgram {
 
     // suite file
     public static final String SUITE_NAME = "NetBeansSuite"; // NOI18N
-    public static final String SUITE_RUN = "run=%s"; // NOI18N
+    public static final String SUITE_RUN = "--run=%s"; // NOI18N
     private static final String SUITE_REL_PATH = "phpunit/" + SUITE_NAME + ".php"; // NOI18N
 
     // php props
@@ -212,13 +216,16 @@ public final class PhpUnit extends PhpProgram {
             }
         } else {
             // test does not exist yet
-            if (!generateTestInternal(configFiles, phpClass.getFullyQualifiedName(), sourceFo, workingDirectory)) {
+            String fullyQualifiedName = phpClass.getFullyQualifiedName();
+            assert fullyQualifiedName != null : "No FQN for php class: " + phpClass.getName();
+            if (!generateTestInternal(configFiles, fullyQualifiedName, sourceFo, workingDirectory)) {
                 // test not generated
                 return null;
             }
         }
         if (!generatedFile.isFile()) {
             LOGGER.log(Level.WARNING, "Generated PHPUnit test file {0} was not found.", generatedFile.getName());
+            return null;
         }
         return moveAndAdjustGeneratedFile(generatedFile, testFile, sourceFile);
     }
@@ -295,11 +302,11 @@ public final class PhpUnit extends PhpProgram {
     private File adjustFileContent(File generatedFile, File testFile, File sourceFile, String requireOnce) {
         try {
             // input
-            BufferedReader in = new BufferedReader(new FileReader(generatedFile));
+            BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(generatedFile), "UTF-8")); // NOI18N
 
             try {
                 // output
-                BufferedWriter out = new BufferedWriter(new FileWriter(testFile));
+                BufferedWriter out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(testFile), "UTF-8")); // NOI18N
 
                 try {
                     String line;
@@ -510,10 +517,10 @@ public final class PhpUnit extends PhpProgram {
     private static void moveAndAdjustBootstrap(PhpProject project, File tmpBootstrap, File finalBootstrap) {
         try {
             // input
-            BufferedReader in = new BufferedReader(new FileReader(tmpBootstrap));
+            BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(tmpBootstrap), "UTF-8")); // NOI18N
             try {
                 // output
-                BufferedWriter out = new BufferedWriter(new FileWriter(finalBootstrap));
+                BufferedWriter out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(finalBootstrap), "UTF-8")); // NOI18N
                 try {
                     String line;
                     while ((line = in.readLine()) != null) {
@@ -522,10 +529,12 @@ public final class PhpUnit extends PhpProgram {
                                 // comment about %INCLUDE_PATH%, let's skip it
                                 continue;
                             }
+                            String includePath = ProjectPropertiesSupport.getPropertyEvaluator(project).getProperty(PhpProjectProperties.INCLUDE_PATH);
+                            assert includePath != null : "Include path should be always present";
                             line = processIncludePath(
                                     finalBootstrap,
                                     line,
-                                    ProjectPropertiesSupport.getPropertyEvaluator(project).getProperty(PhpProjectProperties.INCLUDE_PATH),
+                                    includePath,
                                     FileUtil.toFile(project.getProjectDirectory()));
                         }
                         out.write(line);

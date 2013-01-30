@@ -96,6 +96,7 @@ public class JDBCForeignKey extends ForeignKeyImplementation {
 
     @Override
     public String getInternalName() {
-        return internalName;
+        String result = getName();
+        return (result != null) ? result : internalName;
     }
 }

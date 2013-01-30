@@ -65,6 +65,7 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.BoxLayout;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.Icon;
 import javax.swing.KeyStroke;
@@ -123,6 +124,8 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
     
     private static final Icon ICON_COLLAPSED = UIManager.getIcon("Tree.collapsedIcon"); //NOI18N
     private static final Icon ICON_EXPANDED = UIManager.getIcon("Tree.expandedIcon"); //NOI18N
+    private boolean selectFirstRevision;
+    private boolean searchStarted;
 
     enum FilterKind {
         ALL(null, NbBundle.getMessage(SearchHistoryPanel.class, "Filter.All")), //NOI18N
@@ -213,8 +216,8 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         return bIncomingSearch;
     }
 
-    void setSearchCriteria(boolean b) {
-        criteriaVisible = b;
+    void setSearchCriteria(boolean showCriteria) {
+        criteriaVisible = showCriteria;
         refreshComponents(false);
     }
 
@@ -230,8 +233,8 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
     private void enableFilters (boolean enabled) {
         lblFilter.setEnabled(enabled);
         cmbFilterKind.setEnabled(enabled);
-        lblFilterContains.setEnabled(enabled && cmbFilterKind.getSelectedItem() != FilterKind.ALL);
-        txtFilter.setEnabled(enabled && cmbFilterKind.getSelectedItem() != FilterKind.ALL);
+        lblFilterContains.setEnabled(enabled);
+        txtFilter.setEnabled(enabled);
     }
 
     private void setupComponents() {
@@ -316,12 +319,15 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         return explorerManager;
     }
     
+    @NbBundle.Messages("LBL_SearchHistory_NoSearchYet=<No Results - Search Not Started>")
     final void refreshComponents(boolean refreshResults) {
         if (refreshResults) {
             resultsPanel.removeAll();
             if (results == null) {
                 String branches = criteria.getBranch();
-                if (searchInProgress) {
+                if (!searchStarted) {
+                    resultsPanel.add(new NoContentPanel(Bundle.LBL_SearchHistory_NoSearchYet()));
+                } else if (searchInProgress) {
                     resultsPanel.add(new NoContentPanel(NbBundle.getMessage(SearchHistoryPanel.class,
                             branches.isEmpty() ? "LBL_SearchHistory_Searching" : "LBL_SearchHistory_Searching.branch", branches))); // NOI18N
                 } else {
@@ -340,6 +346,9 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
                         diffView = diffViewFactory.createDiffResultsView(this, filter(results));
                     }
                     resultsPanel.add(diffView.getComponent());
+                    if (selectFirstRevision) {
+                        selectFirstRevision();
+                    }
                 }
             }
             resultsPanel.revalidate();
@@ -356,6 +365,12 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         enableFilters(results != null);
         revalidate();
         repaint();
+    }
+
+    private void selectFirstRevision () {
+        if (diffView != null && results != null && !results.isEmpty()) {
+            diffView.select(results.get(0));
+        }
     }
  
     final void updateActions () {
@@ -388,6 +403,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
     }
 
     private synchronized void search() {
+        searchStarted = true;
         cancelBackgroundSearch();
         setResults(null, null, true, -1);
         HgModuleConfig.getDefault().setShowHistoryMerges(criteria.isIncludeMerges());
@@ -509,6 +525,12 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
     String getCurrentBranch () {
         return currentBranch == null ? "" : currentBranch;
     }
+
+    void activateDiffView (boolean selectFirstRevision) {
+        tbDiff.setSelected(true);
+        this.selectFirstRevision = selectFirstRevision;
+        selectFirstRevision();
+    }
     
     /** This method is called from within the constructor to
      * initialize the form.
@@ -539,6 +561,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/mercurial/ui/log/Bundle"); // NOI18N
         bSearch.setToolTipText(bundle.getString("TT_Search")); // NOI18N
 
+        jToolBar1.setLayout(new BoxLayout(jToolBar1, BoxLayout.X_AXIS));
         jToolBar1.setFloatable(false);
         jToolBar1.setRollover(true);
 
@@ -665,9 +688,19 @@ private void fileInfoCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//
     }//GEN-LAST:event_expandCriteriaButtonActionPerformed
 
     private void cmbFilterKindActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmbFilterKindActionPerformed
-        boolean filterCritEnabled = cmbFilterKind.getSelectedItem() != FilterKind.ALL;
-        lblFilterContains.setEnabled(filterCritEnabled);
-        txtFilter.setEnabled(filterCritEnabled);
+        boolean filterCritVisible = cmbFilterKind.getSelectedItem() != FilterKind.ALL;
+        lblFilterContains.setVisible(filterCritVisible);
+        txtFilter.setVisible(filterCritVisible);
+        if (filterCritVisible) {
+            EventQueue.invokeLater(new Runnable() {
+                @Override
+                public void run () {
+                    if (!cmbFilterKind.isPopupVisible()) {
+                        txtFilter.requestFocusInWindow();
+                    }
+                }
+            });
+        }
         if (filterTimer != null && !txtFilter.getText().trim().isEmpty()) {
             filterTimer.restart();
         }

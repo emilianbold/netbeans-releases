@@ -53,7 +53,14 @@ import org.netbeans.modules.csl.api.Modifier;
  * @author Tor Norbye
  */
 public interface Element extends ElementHandle {
+
+    @Override
     String getName();
+
+    @Override
     String getIn();
+
+    @Override
     Set<Modifier> getModifiers();
+
 }

@@ -67,6 +67,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultListModel;
 import javax.swing.JComponent;
@@ -85,14 +86,17 @@ import org.netbeans.modules.cnd.api.model.CsmErrorDirective;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmListeners;
+import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmModelListener;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.dwarfdump.CompilationUnit;
+import org.netbeans.modules.cnd.dwarfdump.CompilationUnitInterface;
 import org.netbeans.modules.cnd.dwarfdump.Dwarf;
 import org.netbeans.modules.cnd.dwarfdump.Dwarf.CompilationUnitIterator;
 import org.netbeans.modules.cnd.dwarfdump.exception.WrongFileFormatException;
@@ -118,34 +122,10 @@ public class ErrorIncludeDialog extends JPanel implements CsmModelListener {
     private static final RequestProcessor RP = new RequestProcessor(ErrorIncludeDialog.class.getName(), 1);
     private CsmProject baseProject;
     private Dialog parent;
+    private AtomicBoolean closed = new AtomicBoolean(false);
 
-    public ErrorIncludeDialog(Set<CsmFile> files) {
-        List<CsmInclude> includes = new ArrayList<CsmInclude>();
-        List<CsmErrorDirective> errors = new ArrayList<CsmErrorDirective>();
-        CsmFileInfoQuery fiq = CsmFileInfoQuery.getDefault();
-        for(CsmFile file:files){
-            Collection<CsmErrorDirective> fileErrors = file.getErrors();
-            boolean hasFailed = !fileErrors.isEmpty();
-            errors.addAll(fileErrors);
-            for(CsmInclude incl : fiq.getBrokenIncludes(file)) {
-                if (incl.getIncludeFile() == null){
-                    includes.add(incl);
-                    hasFailed = true;
-                }
-            }
-            if (baseProject == null){
-                baseProject = file.getProject();
-            }
-            if (!hasFailed && TRACE_ERROR_STATISTIC) {
-                System.out.println("File marked as failed does not contain failed directives:"); // NOI18N
-                System.out.println("  "+file.getAbsolutePath()); // NOI18N
-            }
-        }
-        if (baseProject != null && TRACE_ERROR_STATISTIC) {
-            checkHighlightModel(files);
-        }
-
-        createComponents(includes, errors);
+    public ErrorIncludeDialog(Set<CsmUID<CsmFile>> set) {
+        createComponents(set);
         setPreferredSize(new Dimension(NbPreferences.forModule(ErrorIncludeDialog.class).getInt("dialogSizeW", 500), // NOI18N
                                        NbPreferences.forModule(ErrorIncludeDialog.class).getInt("dialogSizeH", 240))); // NOI18N
         setMinimumSize(new Dimension(320, 240));
@@ -154,6 +134,7 @@ public class ErrorIncludeDialog extends JPanel implements CsmModelListener {
             public void hierarchyChanged(HierarchyEvent e) {
                 if (e.getChangeFlags() == HierarchyEvent.SHOWING_CHANGED) {
                     if (!e.getChanged().isVisible()){
+                        closed.set(true);
                         leftList.setModel(new DefaultListModel());
                         rightList.setModel(new DefaultListModel());
                         model = null;
@@ -188,8 +169,8 @@ public class ErrorIncludeDialog extends JPanel implements CsmModelListener {
     public void modelChanged(CsmChangeEvent e) {
     }
     
-    public static void showErrorIncludeDialog(Set<CsmFile> files) {
-        ErrorIncludeDialog errors = new ErrorIncludeDialog(files);
+    public static void showErrorIncludeDialog(Set<CsmUID<CsmFile>> set) {
+        ErrorIncludeDialog errors = new ErrorIncludeDialog(set);
         DialogDescriptor descriptor = new DialogDescriptor(errors, i18n("ErrorIncludeDialog_Title"), // NOI18N
                 false, new Object[]{DialogDescriptor.CLOSED_OPTION}, DialogDescriptor.CLOSED_OPTION,
                 DialogDescriptor.DEFAULT_ALIGN, null, null);
@@ -199,7 +180,7 @@ public class ErrorIncludeDialog extends JPanel implements CsmModelListener {
         CsmListeners.getDefault().addModelListener(errors);
     }
     
-    private void createComponents(List<CsmInclude> includes, List<CsmErrorDirective> errors) {
+    private void createComponents(final Set<CsmUID<CsmFile>> set) {
         setLayout(new GridBagLayout());
         GridBagConstraints c = new GridBagConstraints();
         c.fill = GridBagConstraints.BOTH;
@@ -208,22 +189,87 @@ public class ErrorIncludeDialog extends JPanel implements CsmModelListener {
         add(createIncludesPane(), c);
         getAccessibleContext().setAccessibleName(i18n("ErrorIncludeDialog_AccessibleName")); // NOI18N
         getAccessibleContext().setAccessibleDescription(i18n("ErrorIncludeDialog_AccessibleDescription")); // NOI18N
-        model = new ErrorIncludesModel(includes, errors);
-        leftList.setModel(model);
-        addListeners();
-        if (TRACE_ERROR_STATISTIC) {
-             RP.post(new Runnable(){
-                @Override
-                  public void run() {
-                      printStatistic();
-                  }
-             });
+        DefaultListModel wait = new DefaultListModel();
+        wait.add(0, i18n("MSG_Loading")); // NOI18N
+        leftList.setModel(wait);
+        RP.post(new Runnable(){
+           @Override
+             public void run() {
+                 computeList(set);
+             }
+        });
+    }
+    
+    private void computeList(Set<CsmUID<CsmFile>> set) {
+        Set<CsmFile> files = new HashSet<CsmFile>();
+        if (set != null) {
+            for (CsmUID<CsmFile> fileUID : set) {
+                CsmFile csmFile = fileUID.getObject();
+                assert csmFile != null;
+                if (csmFile != null) {
+                    files.add(csmFile);
+                }
+            }
         }
+
+        List<CsmInclude> includes = new ArrayList<CsmInclude>();
+        List<CsmErrorDirective> errors = new ArrayList<CsmErrorDirective>();
+        CsmFileInfoQuery fiq = CsmFileInfoQuery.getDefault();
+        for(CsmFile file:files){
+            Collection<CsmErrorDirective> fileErrors = file.getErrors();
+            boolean hasFailed = !fileErrors.isEmpty();
+            errors.addAll(fileErrors);
+            for(CsmInclude incl : fiq.getBrokenIncludes(file)) {
+                if (incl.getIncludeFile() == null){
+                    includes.add(incl);
+                    hasFailed = true;
+                }
+            }
+            if (baseProject == null){
+                baseProject = file.getProject();
+            }
+            if (!hasFailed && TRACE_ERROR_STATISTIC) {
+                System.out.println("File marked as failed does not contain failed directives:"); // NOI18N
+                System.out.println("  "+file.getAbsolutePath()); // NOI18N
+            }
+        }
+        if (closed.get()) {
+            return;
+        }
+        if (baseProject != null && TRACE_ERROR_STATISTIC) {
+            checkHighlightModel(files);
+        }
+        if (closed.get()) {
+            return;
+        }
+        ErrorIncludesModel aModel = new ErrorIncludesModel(includes, errors);
+        if (closed.get()) {
+            return;
+        }
+        model = aModel;
+        if (TRACE_ERROR_STATISTIC) {
+            printStatistic();
+        }
+        SwingUtilities.invokeLater(new Runnable(){
+
+            @Override
+            public void run() {
+                if (closed.get()) {
+                    return;
+                }
+                leftList.setModel(model);
+                addListeners();
+            }
+        });
     }
 
     private void checkHighlightModel(Set<CsmFile> files){
+        CsmProject aBaseProject = baseProject;
+        if (aBaseProject == null) {
+            return;
+        }
         CsmFileInfoQuery fiq = CsmFileInfoQuery.getDefault();
-        for(Object f : baseProject.getSourceFiles()){
+        for(Object f : aBaseProject.getSourceFiles()){
             CsmFile file = (CsmFile) f;
             boolean failed = fiq.hasBrokenIncludes(file);
             if (failed){
@@ -238,7 +284,7 @@ public class ErrorIncludeDialog extends JPanel implements CsmModelListener {
                 }
             }
         }
-        for(Object f :baseProject.getHeaderFiles()){
+        for(Object f :aBaseProject.getHeaderFiles()){
             CsmFile file = (CsmFile) f;
             boolean failed = fiq.hasBrokenIncludes(file);
             if (failed){
@@ -256,73 +302,78 @@ public class ErrorIncludeDialog extends JPanel implements CsmModelListener {
     }
     
     private void printStatistic(){
-        if (baseProject != null){
-            int files = 0;
-            int directives = 0;
-            int failedDirectives = 0;
-            int failedFiles = 0;
-            for(Object f : baseProject.getSourceFiles()){
-                CsmFile file = (CsmFile) f;
-                files++;
-                boolean failed = false;
-                for (CsmInclude directive : file.getIncludes()){
-                    if (directive.getIncludeFile()==null){
-                        failedDirectives++;
-                        failed = true;
-                    }
-                    directives++;
+        CsmProject aBaseProject = baseProject;
+        if (aBaseProject == null) {
+            return;
+        }
+        int files = 0;
+        int directives = 0;
+        int failedDirectives = 0;
+        int failedFiles = 0;
+        for(Object f : aBaseProject.getSourceFiles()){
+            CsmFile file = (CsmFile) f;
+            files++;
+            boolean failed = false;
+            for (CsmInclude directive : file.getIncludes()){
+                if (directive.getIncludeFile()==null){
+                    failedDirectives++;
+                    failed = true;
                 }
-                if (failed){
-                    failedFiles++;
+                directives++;
+            }
+            if (failed){
+                failedFiles++;
+            }
+        }
+        for(Object f :aBaseProject.getHeaderFiles()){
+            CsmFile file = (CsmFile) f;
+            files++;
+            boolean failed = false;
+            for (CsmInclude directive : file.getIncludes()){
+                if (directive.getIncludeFile()==null){
+                    failedDirectives++;
+                    failed = true;
+                }
+                directives++;
+            }
+            if (failed){
+                failedFiles++;
+            }
+        }
+        System.out.println("*Model #includes statistic*"); // NOI18N
+        System.out.println("  Amount of #includes:"+directives); // NOI18N
+        System.out.println("  Failed    #includes:"+failedDirectives); // NOI18N
+        System.out.println("  Amount     of files:"+files); // NOI18N
+        System.out.println("  Failed        files:"+failedFiles); // NOI18N
+        if (directives>0) {
+            double metric = 100.0 * (directives-failedDirectives) / directives;
+            System.out.println("  Resolve #include Accuracy:"+metric+"%"); // NOI18N
+            metric = 100.0 * (files-failedFiles) / files;
+            System.out.println("  File-based       Accuracy:"+metric+"%"); // NOI18N
+        }
+        Object o = aBaseProject.getPlatformProject();
+        if (o instanceof NativeProject){
+            files = 0;
+            NativeProject nativeProject = (NativeProject) o;
+            for(NativeFileItem item : nativeProject.getAllFiles()){
+                if (!item.isExcluded()) {
+                    switch(item.getLanguage()){
+                        case C:
+                        case CPP:
+                        case C_HEADER:
+                            files++;
+                            break;
+                        default:
+                            break;
+                    }
                 }
             }
-            for(Object f :baseProject.getHeaderFiles()){
-                CsmFile file = (CsmFile) f;
-                files++;
-                boolean failed = false;
-                for (CsmInclude directive : file.getIncludes()){
-                    if (directive.getIncludeFile()==null){
-                        failedDirectives++;
-                        failed = true;
-                    }
-                    directives++;
-                }
-                if (failed){
-                    failedFiles++;
-                }
-            }
-            System.out.println("*Model #includes statistic*"); // NOI18N
-            System.out.println("  Amount of #includes:"+directives); // NOI18N
-            System.out.println("  Failed    #includes:"+failedDirectives); // NOI18N
-            System.out.println("  Amount     of files:"+files); // NOI18N
-            System.out.println("  Failed        files:"+failedFiles); // NOI18N
-            if (directives>0) {
-                double metric = 100.0 * (directives-failedDirectives) / directives;
-                System.out.println("  Resolve #include Accuracy:"+metric+"%"); // NOI18N
-                metric = 100.0 * (files-failedFiles) / files;
-                System.out.println("  File-based       Accuracy:"+metric+"%"); // NOI18N
-            }
-            Object o = baseProject.getPlatformProject();
-            if (o instanceof NativeProject){
-                files = 0;
-                NativeProject nativeProject = (NativeProject) o;
-                for(NativeFileItem item : nativeProject.getAllFiles()){
-                    if (!item.isExcluded()) {
-                        switch(item.getLanguage()){
-                            case C:
-                            case CPP:
-                            case C_HEADER:
-                                files++;
-                                break;
-                            default:
-                                break;
-                        }
-                    }
-                }
-                System.out.println("*Details for project statistic*"); // NOI18N
-                System.out.println("  Amount of native project files:"+files); // NOI18N
-                System.out.println("  Failed   highlight   #includes:"+model.getFailedIncludesSize()); // NOI18N
-                System.out.println("  Failed   highlight      files:"+model.getFailedFilesSize()); // NOI18N
+            System.out.println("*Details for project statistic*"); // NOI18N
+            System.out.println("  Amount of native project files:"+files); // NOI18N
+            ErrorIncludesModel aModel = model;
+            if (aModel != null) {
+                System.out.println("  Failed   highlight   #includes:"+aModel.getFailedIncludesSize()); // NOI18N
+                System.out.println("  Failed   highlight      files:"+aModel.getFailedFilesSize()); // NOI18N
             }
         }
     }
@@ -578,11 +629,19 @@ public class ErrorIncludeDialog extends JPanel implements CsmModelListener {
         });
     }
     
-    private void openElement(int selected){
+    private void openElement(final int selected){
         if (baseProject != null && baseProject.isValid()) {
-            ErrorFilesModel m = (ErrorFilesModel)rightList.getModel();
-            CsmOffsetable error = m.getFailedDirective(selected);
-            CsmUtilities.openSource(error);
+            final String taskName = "Open include"; //NOI18N
+            Runnable run = new Runnable() {
+
+                @Override
+                public void run() {
+                    ErrorFilesModel m = (ErrorFilesModel)rightList.getModel();
+                    CsmOffsetable error = m.getFailedDirective(selected);
+                    CsmUtilities.openSource(error);
+                }
+            };
+            CsmModelAccessor.getModel().enqueue(run, taskName);
         }
     }
     
@@ -618,25 +677,25 @@ public class ErrorIncludeDialog extends JPanel implements CsmModelListener {
                 }
                 
                 CsmFile file = error.getContainingFile();
-                if (handleIncludeError) {
-                    getObjectFile(found, file.getAbsolutePath().toString(), buf);
-                }
-                if (file.isHeaderFile()) {
-                    List<CsmInclude> list = CsmFileInfoQuery.getDefault().getIncludeStack(file);
-                    if (list.size() > 0) {
-                        buf.append(i18n("PathToHeader"));  // NOI18N
-                        file = list.get(0).getContainingFile();
-                        for (CsmInclude inc : list) {
-                            buf.append("\n<br>&nbsp;&nbsp;&nbsp;&nbsp;");  // NOI18N
-                            buf.append(inc.getContainingFile().getAbsolutePath());
-                            buf.append(i18n("PathToHeaderLine", inc.getStartPosition().getLine()));  // NOI18N
-                        }
-                        buf.append("\n<br>"); // NOI18N
-                    } else {
-                        file = null;
-                    }
-                }
                 if (file != null) {
+                    if (handleIncludeError) {
+                        getObjectFile(found, file.getAbsolutePath().toString(), buf);
+                    }
+                    if (file.isHeaderFile()) {
+                        List<CsmInclude> list = CsmFileInfoQuery.getDefault().getIncludeStack(file);
+                        if (list.size() > 0) {
+                            buf.append(i18n("PathToHeader"));  // NOI18N
+                            file = list.get(0).getContainingFile();
+                            for (CsmInclude inc : list) {
+                                buf.append("\n<br>&nbsp;&nbsp;&nbsp;&nbsp;");  // NOI18N
+                                buf.append(inc.getContainingFile().getAbsolutePath());
+                                buf.append(i18n("PathToHeaderLine", inc.getStartPosition().getLine()));  // NOI18N
+                            }
+                            buf.append("\n<br>"); // NOI18N
+                        } else {
+                            file = null;
+                        }
+                    }
                     List<FSPath> list = CsmFileInfoQuery.getDefault().getUserIncludePaths(file);
                     if (list.size() > 0) {
                         buf.append(i18n("SourceUserPaths"));  // NOI18N
@@ -645,6 +704,10 @@ public class ErrorIncludeDialog extends JPanel implements CsmModelListener {
                             FileObject fo = fsPath.getFileObject();
                             if (fo != null && fo.isValid() && fo.isFolder()) {
                                 buf.append(fsPath.getPath());
+                            } else if (fo != null && fo.isValid() && fo.isData()) {
+                                buf.append("<font color='green'>");  // NOI18N
+                                buf.append(fsPath.getPath());
+                                buf.append("</font>");  // NOI18N
                             } else {
                                 buf.append("<font color='red'>");  // NOI18N
                                 buf.append(fsPath.getPath());
@@ -661,6 +724,10 @@ public class ErrorIncludeDialog extends JPanel implements CsmModelListener {
                             FileObject fo = fsPath.getFileObject();
                             if (fo != null && fo.isValid() && fo.isFolder()) {
                                 buf.append(fsPath.getPath());
+                            } else if (fo != null && fo.isValid() && fo.isData()) {
+                                buf.append("<font color='green'>");  // NOI18N
+                                buf.append(fsPath.getPath());
+                                buf.append("</font>");  // NOI18N
                             } else {
                                 buf.append("<font color='red'>");  // NOI18N
                                 buf.append(fsPath.getPath());
@@ -721,16 +788,18 @@ public class ErrorIncludeDialog extends JPanel implements CsmModelListener {
             dump = new Dwarf(objFileName.getPath());
             CompilationUnitIterator units = dump.iteratorCompilationUnits();
             if (units.hasNext()){
-                CompilationUnit cu = units.next();
+                CompilationUnitInterface cu = units.next();
                 String fullName = getRightName(cu.getSourceFileAbsolutePath());
                 if (unit.equals(fullName)){
-                    List<String> includes = cu.getStatementList().getPathsForFile(found);
-                    if (includes.size()>0){
-                        String path = getRightName(cu.getCompilationDir());
-                        String message = i18n("HeaderFromBinary");  // NOI18N
-                        return MessageFormat.format(message, new Object[]{
-                            path,fullName,includes.get(0)
-                        });
+                    if (cu instanceof CompilationUnit) {
+                        List<String> includes = ((CompilationUnit)cu).getStatementList().getPathsForFile(found);
+                        if (includes.size()>0){
+                            String path = getRightName(cu.getCompilationDir());
+                            String message = i18n("HeaderFromBinary");  // NOI18N
+                            return MessageFormat.format(message, new Object[]{
+                                path,fullName,includes.get(0)
+                            });
+                        }
                     }
                 }
             }

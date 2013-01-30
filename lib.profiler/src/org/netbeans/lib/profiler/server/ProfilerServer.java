@@ -1466,6 +1466,7 @@ public class ProfilerServer extends Thread implements CommonConstants {
                 Monitors.setThreadsSamplingEnabled(threadSampling);
                 ProfilerRuntimeCPU.setWaitAndSleepTracking(waitTracking,sleepTracking);
                 Classes.setWaitTrackingEnabled(threadSampling || waitTracking);
+                Classes.setParkTrackingEnabled(threadSampling || waitTracking);
                 Classes.setSleepTrackingEnabled(threadSampling || sleepTracking);
                 sendSimpleResponseToClient(true, null);
 
@@ -1633,6 +1634,7 @@ public class ProfilerServer extends Thread implements CommonConstants {
                 if(ProfilerInterface.isDetachStarted()) {
                     ProfilerInterface.serialClientOperationsLock.endTrans();
                 }
+                ProfilerInterface.setDetachStarted(false);
 
                 // Just in case, normally should be deactivated and cleaned up by client
                 ProfilerInterface.deactivateInjectedCode();
@@ -1653,6 +1655,11 @@ public class ProfilerServer extends Thread implements CommonConstants {
 
                 sendSimpleResponseToClient(error == null, error);
 
+                break;
+            case Command.GET_HEAP_HISTOGRAM:
+                HeapHistogramResponse resp = ProfilerInterface.computeHistogram();
+                sendComplexResponseToClient(resp);
+                
                 break;
         }
     }

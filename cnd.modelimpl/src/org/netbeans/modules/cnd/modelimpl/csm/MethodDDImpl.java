@@ -57,16 +57,20 @@ import org.netbeans.modules.cnd.api.model.CsmScopeElement;
 import org.netbeans.modules.cnd.api.model.CsmVisibility;
 import org.netbeans.modules.cnd.api.model.deep.CsmCompoundStatement;
 import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
+import org.netbeans.modules.cnd.modelimpl.csm.FunctionParameterListImpl.FunctionParameterListBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstRenderer;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Disposable;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
-import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
+import org.netbeans.modules.cnd.modelimpl.csm.deep.CompoundStatementImpl.CompoundStatementBuilder;
+import org.netbeans.modules.cnd.modelimpl.csm.deep.StatementBase.StatementBuilder;
+import org.netbeans.modules.cnd.modelimpl.csm.deep.StatementBase.StatementBuilderContainer;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
+import org.openide.util.CharSequences;
 
 /**
  * Method, which contains it's body right at throws POD (point of declaration)
@@ -168,6 +172,66 @@ public class MethodDDImpl<T> extends MethodImpl<T> implements CsmFunctionDefinit
         Collection<CsmScopeElement> l = super.getScopeElements();
         l.add(getBody());
         return l;
+    }
+    
+    public static class MethodDDBuilder extends MethodBuilder implements StatementBuilderContainer {
+
+        private CompoundStatementBuilder bodyBuilder;
+        
+        public void setBodyBuilder(CompoundStatementBuilder builder) {
+            bodyBuilder = builder;
+        }
+
+        public CompoundStatementBuilder getBodyBuilder() {
+            return bodyBuilder;
+        }
+        
+        @Override
+        public MethodDDImpl create() {
+            CsmClass cls = (CsmClass) getScope();
+            boolean _virtual = false;
+            boolean _explicit = false;
+
+
+            MethodDDImpl method = new MethodDDImpl(getName(), getRawName(), cls, getVisibility(), _virtual, _explicit, isStatic(), isConst(), getFile(), getStartOffset(), getEndOffset(), true);
+            temporaryRepositoryRegistration(true, method);
+
+            StringBuilder clsTemplateSuffix = new StringBuilder();
+            //TemplateDescriptor templateDescriptor = createTemplateDescriptor(ast, file, functionImpl, clsTemplateSuffix, global);
+            //CharSequence classTemplateSuffix = NameCache.getManager().getString(clsTemplateSuffix);
+
+            //functionImpl.setTemplateDescriptor(templateDescriptor, classTemplateSuffix);
+            if(getTemplateDescriptorBuilder() != null) {
+                method.setTemplateDescriptor(getTemplateDescriptor(), NameCache.getManager().getString(CharSequences.create(""))); // NOI18N
+            }
+
+            method.setReturnType(getType());
+            ((FunctionParameterListBuilder)getParametersListBuilder()).setScope(method);
+            method.setParameters(((FunctionParameterListBuilder)getParametersListBuilder()).create(),
+                    true);
+
+            postObjectCreateRegistration(true, method);
+            getNameHolder().addReference(getFileContent(), method);
+
+            addDeclaration(method);
+            
+            getBodyBuilder().setScope(method);
+            method.setCompoundStatement(getBodyBuilder().create());
+
+            postObjectCreateRegistration(true, method);
+            getNameHolder().addReference(getFileContent(), method);
+            
+//            addMember(method);
+            
+            return method;
+        }        
+
+        @Override
+        public void addStatementBuilder(StatementBuilder builder) {
+            assert builder instanceof CompoundStatementBuilder;
+            setBodyBuilder((CompoundStatementBuilder)builder);
+        }
+
     }
     
     ////////////////////////////////////////////////////////////////////////////

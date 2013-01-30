@@ -182,13 +182,8 @@ public class AddServerPropertiesVisualPanel extends JPanel {
                     
             domainPathLabel.setVisible(true);
             domainPathField.setVisible(true);
-//            browseButton.setVisible(true);
 
             hostField.setEditable(false);
-      //      portField.setEditable(false);
-            
-//            serverChanged();
-            
         }else{  // REMOTE
             
             domainLabel.setVisible(false);
@@ -196,13 +191,8 @@ public class AddServerPropertiesVisualPanel extends JPanel {
             
             domainPathLabel.setVisible(false);
             domainPathField.setVisible(false);
-//            browseButton.setVisible(false);
-            
-//            serverListField.setVisible(false);
-//            serverListLabel.setVisible(false);
-            
+
             hostField.setEditable(true);
-            portField.setEditable(true);
         }
         
         somethingChanged();
@@ -426,7 +416,6 @@ public class AddServerPropertiesVisualPanel extends JPanel {
         
         
         domainPathField.setEnabled(false);
-        portField.setEditable(false);
         
         userField.setVisible(false);
         userLabel.setVisible(false);

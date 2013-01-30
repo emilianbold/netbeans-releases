@@ -54,6 +54,7 @@ import com.sun.jdi.StackFrame;
 import com.sun.jdi.StringReference;
 import com.sun.jdi.ThreadGroupReference;
 import com.sun.jdi.ThreadReference;
+import com.sun.jdi.VMDisconnectedException;
 
 import com.sun.jdi.VirtualMachine;
 import com.sun.jdi.event.Event;
@@ -113,6 +114,7 @@ import org.netbeans.modules.debugger.jpda.jdi.StackFrameWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ThreadReferenceWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.TypeComponentWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.VMOutOfMemoryExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VirtualMachineWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.event.EventWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.request.BreakpointRequestWrapper;
@@ -188,6 +190,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer, BeanContext
     private VirtualMachine      vm;
 
     public final ReadWriteLock  accessLock = new ThreadReentrantReadWriteLock();
+    private final Object ownedMonitorsAndFramesSingleAccessLock = new Object();
 
     public JPDAThreadImpl (
         ThreadReference     threadReference,
@@ -253,6 +256,8 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer, BeanContext
         } catch (ObjectCollectedExceptionWrapper ex) {
             return null;
         } catch (VMDisconnectedExceptionWrapper ex) {
+            return null;
+        } catch (VMOutOfMemoryExceptionWrapper ex) {
             return null;
         } catch (InternalExceptionWrapper ex) {
             return null;
@@ -1288,7 +1293,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer, BeanContext
                 int tsc = ThreadReferenceWrapper.suspendCount(threadReference);
                 if (suspendCount != tsc) {
                     // Should not occur
-                    Exceptions.printStackTrace(new IllegalStateException("Different suspend counts! JPDA Thread = "+suspendCount+", thread "+threadReference+" = "+tsc));
+                    Exceptions.printStackTrace(new IllegalStateException("Different suspend counts! JPDA Thread = "+suspendCount+", thread "+threadReference+" = "+tsc+", thread's state: "+getThreadStateLog(threadReference)));
                     suspendCount = tsc;
                 }
                 // The thread needs to be only single-suspended, otherwise it can not invoke methods.
@@ -1297,6 +1302,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer, BeanContext
                 }
             } catch (InternalExceptionWrapper iew) {
             } catch (VMDisconnectedExceptionWrapper dew) {
+            } catch (VMDisconnectedException de) { // from ThreadReference.toString()
             } catch (ObjectCollectedExceptionWrapper oce) {
             } catch (IllegalThreadStateExceptionWrapper itse) {
             }
@@ -1747,13 +1753,17 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer, BeanContext
                 if (!(isSuspended() || suspendedNoFire) || getState() == ThreadReference.THREAD_STATUS_ZOMBIE) {
                     return Collections.emptyList();
                 }
-                List<com.sun.jdi.MonitorInfo> monitorInfos = ThreadReferenceWrapper.ownedMonitorsAndFrames0(threadReference);
-                if (monitorInfos != null && monitorInfos.size() > 0) {
-                    List<MonitorInfo> mis = new ArrayList<MonitorInfo>(monitorInfos.size());
-                    for (com.sun.jdi.MonitorInfo monitorInfo : monitorInfos) {
-                        mis.add(createMonitorInfo(monitorInfo));
+                synchronized (ownedMonitorsAndFramesSingleAccessLock) {
+                    // Prevent from inconsistencies coming from unsynchronized implementation of
+                    // com.sun.tools.jdi.ThreadReferenceImpl.ownedMonitorsAndFrames()
+                    List<com.sun.jdi.MonitorInfo> monitorInfos = ThreadReferenceWrapper.ownedMonitorsAndFrames0(threadReference);
+                    if (monitorInfos != null && monitorInfos.size() > 0) {
+                        List<MonitorInfo> mis = new ArrayList<MonitorInfo>(monitorInfos.size());
+                        for (com.sun.jdi.MonitorInfo monitorInfo : monitorInfos) {
+                            mis.add(createMonitorInfo(monitorInfo));
+                        }
+                        return Collections.unmodifiableList(mis);
                     }
-                    return Collections.unmodifiableList(mis);
                 }
             } catch (IncompatibleThreadStateException ex) {
                 Logger.getLogger(JPDAThreadImpl.class.getName()).log(Level.INFO, getThreadStateLog(), ex);

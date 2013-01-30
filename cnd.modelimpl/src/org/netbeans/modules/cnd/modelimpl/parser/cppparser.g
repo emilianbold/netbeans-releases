@@ -639,7 +639,8 @@ tokens {
 	//protected int finalQualifier() { return finalQualifier(1); }
 	//protected int finalQualifier(final int k) { /*TODO: implement*/ throw new NotImplementedException(); }
 
-	protected boolean isTypeName(String s) { /*TODO: implement*/ throw new NotImplementedException(); }
+	protected boolean isTypeName(CharSequence s) { /*TODO: implement*/ throw new NotImplementedException(); }
+        protected CharSequence getTokenText(Token token) { /*TODO: implement*/ throw new NotImplementedException(); }
 	// isClassName is used in CPPParserEx only
 	//protected boolean isClassName(String  s) { /*TODO: implement*/ throw new NotImplementedException(); }
 	//protected void end_of_stmt() {}
@@ -870,7 +871,6 @@ external_declaration_template { String s; K_and_R = false; boolean ctrName=false
 				printf("external_declaration_template_1b[%d]: Class template definition\n",
 					LT(1).getLine());
 			}
-                        {action.class_declaration(LT(1));}                           
 			declaration[declOther]
 			{ #external_declaration_template = #(#[CSM_TEMPLATE_CLASS_DECLARATION, "CSM_TEMPLATE_CLASS_DECLARATION"], #external_declaration_template); }
 		|
@@ -1060,13 +1060,14 @@ external_declaration {String s; K_and_R = false; boolean definition;StorageClass
 		|   cv_qualifier 
 		|   LITERAL_typedef
 		)* class_head) =>
+                {action.simple_declaration(LT(1));}
                 {action.class_declaration(LT(1));}
 		(LITERAL___extension__!)? declaration[declOther]
 		{ #external_declaration = #(#[CSM_CLASS_DECLARATION, "CSM_CLASS_DECLARATION"], #external_declaration); }
 
 	|	
                 //enum typedef )))	
-                (LITERAL_typedef LITERAL_enum (LITERAL_class | LITERAL_struct)? (IDENT)? (COLON ts = type_specifier[dsInvalid, false])? LCURLY)=> typedef_enum
+                (LITERAL_typedef LITERAL_enum (LITERAL_class | LITERAL_struct)? (IDENT)? (COLON ts = type_specifier[dsInvalid, false])? (type_attribute_specification)? LCURLY)=> typedef_enum
                 {  #external_declaration = #(#[CSM_GENERIC_DECLARATION, "CSM_GENERIC_DECLARATION"], #external_declaration); }
 /*    |
         // IZ#145071: forward declarations marked as error
@@ -1082,6 +1083,7 @@ external_declaration {String s; K_and_R = false; boolean definition;StorageClass
             )*
             LITERAL_enum (LITERAL_class | LITERAL_struct)? (qualified_id)? (COLON ts = type_specifier[dsInvalid, false])? LCURLY
         ) =>
+        {action.simple_declaration(LT(1));}
         {action.enum_declaration(LT(1));}
         (LITERAL___extension__!)?
             (   sc = storage_class_specifier
@@ -1091,6 +1093,7 @@ external_declaration {String s; K_and_R = false; boolean definition;StorageClass
         {if (statementTrace>=1) printf("external_declaration_3[%d]: Enum definition\n",LT(1).getLine());}
         enum_specifier (init_declarator_list[declOther])? 
         {action.end_enum_declaration(LT(1));}
+        {action.end_simple_declaration(LT(1));}
         SEMICOLON! //{end_of_stmt();}
         { #external_declaration = #(#[CSM_ENUM_DECLARATION, "CSM_ENUM_DECLARATION"], #external_declaration); }
     |
@@ -1101,6 +1104,7 @@ external_declaration {String s; K_and_R = false; boolean definition;StorageClass
             )*
             LITERAL_enum (LITERAL_class | LITERAL_struct)? (qualified_id)? (COLON ts = type_specifier[dsInvalid, false])? SEMICOLON
         ) =>
+        {action.simple_declaration(LT(1));}
         {action.enum_declaration(LT(1));}
         (LITERAL___extension__!)?
             (   sc = storage_class_specifier
@@ -1109,6 +1113,7 @@ external_declaration {String s; K_and_R = false; boolean definition;StorageClass
         {if (statementTrace>=1) printf("external_declaration_3[%d]: Enum definition\n",LT(1).getLine());}
         enum_specifier
         {action.end_enum_declaration(LT(1));}
+        {action.end_simple_declaration(LT(1));}
         SEMICOLON //{end_of_stmt();}
         { #external_declaration = #(#[CSM_ENUM_FWD_DECLARATION, "CSM_ENUM_FWD_DECLARATION"], #external_declaration); }
     |
@@ -1331,9 +1336,13 @@ decl_namespace
 namespace_alias_definition
 	{String qid; String name = "";}
 	:
-		LITERAL_namespace
+		lns:LITERAL_namespace
 		ns2:IDENT{_td = true;name=ns2.getText();declaratorID((name),qiType);}
-		ASSIGNEQUAL qid = qualified_id SEMICOLON!
+		lae:ASSIGNEQUAL 
+                {action.namespace_alias_definition(lns, ns2, lae);}
+                qid = qualified_id 
+                {action.end_namespace_alias_definition(LT(1));}
+                SEMICOLON!
 		{#namespace_alias_definition = #(#[CSM_NAMESPACE_ALIAS, name], #namespace_alias_definition);}
 	;
 
@@ -1458,6 +1467,7 @@ member_declaration
 		|   cv_qualifier 
 		|   LITERAL_typedef
 		)* class_head) =>
+                {action.simple_declaration(LT(1));}
                 {action.class_declaration(LT(1));}
 		{if (statementTrace>=1) 
 			printf("member_declaration_1[%d]: Class definition\n",
@@ -1468,6 +1478,7 @@ member_declaration
 	|  
 		// Enum definition (don't want to backtrack over this in other alts)
 		((storage_class_specifier)? LITERAL_enum (LITERAL_class | LITERAL_struct)? (qualified_id)? (COLON ts = type_specifier[dsInvalid, false])? LCURLY )=>
+                {action.simple_declaration(LT(1));}
                 {action.enum_declaration(LT(1));}
                 (sc = storage_class_specifier)?
 		{if (statementTrace>=1) 
@@ -1476,11 +1487,13 @@ member_declaration
 		}
 		enum_specifier (member_declarator_list)? 
                 {action.end_enum_declaration(LT(1));}
+                {action.end_simple_declaration(LT(1));}
                 SEMICOLON!	//{end_of_stmt();}
 		{ #member_declaration = #(#[CSM_ENUM_DECLARATION, "CSM_ENUM_DECLARATION"], #member_declaration); }
 	|
 		// Enum definition (don't want to backtrack over this in other alts)
 		((storage_class_specifier)? LITERAL_enum (LITERAL_class | LITERAL_struct)? (qualified_id)? (COLON ts = type_specifier[dsInvalid, false])? SEMICOLON )=>
+                {action.simple_declaration(LT(1));}
                 {action.enum_declaration(LT(1));}
                 (sc = storage_class_specifier)?
 		{if (statementTrace>=1)
@@ -1489,11 +1502,12 @@ member_declaration
 		}
 		enum_specifier
                 {action.end_enum_declaration(LT(1));}
+                {action.end_simple_declaration(LT(1));}
                 SEMICOLON	//{end_of_stmt();}
 		{ #member_declaration = #(#[CSM_ENUM_FWD_DECLARATION, "CSM_ENUM_FWD_DECLARATION"], #member_declaration); }
 	|	
                 //enum typedef )))	
-                (LITERAL_typedef LITERAL_enum (LITERAL_class | LITERAL_struct)? (IDENT)? (COLON ts = type_specifier[dsInvalid, false])? LCURLY)=> typedef_enum
+                (LITERAL_typedef LITERAL_enum (LITERAL_class | LITERAL_struct)? (IDENT)? (COLON ts = type_specifier[dsInvalid, false])? (type_attribute_specification)? LCURLY)=> typedef_enum
 		{ #member_declaration = #(#[CSM_FIELD, "CSM_FIELD"], #member_declaration); }
 	|
 		// Constructor declarator
@@ -1808,9 +1822,14 @@ declaration[int kind]
         {endDeclaration();}
     |
         {beginDeclaration();}
+        
         // LL 31/1/97: added (COMMA) ? below. This allows variables to
         // typedef'ed more than once. DW 18/08/03 ?
-        declaration_specifiers[true, false] ((COMMA!)? init_declarator_list[kind])?
+        {action.decl_specifiers(LT(1));}
+        declaration_specifiers[true, false] 
+        {action.end_decl_specifiers(LT(0));}
+
+        ((COMMA!)? init_declarator_list[kind])?
         (trailing_type)?
         ( EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
         | SEMICOLON )
@@ -1855,45 +1874,92 @@ declaration_specifiers [boolean allowTypedef, boolean noTypeId]
 }
 :
 (
-    (   ( (LITERAL_constexpr | LITERAL_static | literal_inline | LITERAL_friend)* LITERAL_auto declarator[declOther, 0]) => 
-        (LITERAL_constexpr | LITERAL_static | literal_inline | LITERAL_friend)*
+    // fix for unknown specifiers
+    unknown_pretype_declaration_specifiers
+
+    ((LITERAL_static IDENT (SEMICOLON | ASSIGNEQUAL | COMMA)) =>
+        sc = storage_class_specifier
     |
-        (   options {warnWhenFollowAmbig = false;} : sc = storage_class_specifier
-        |   tq = cv_qualifier 
-        |   literal_inline {ds = dsINLINE;}
-        |   LITERAL_virtual {ds = dsVIRTUAL;}
-        |   LITERAL_explicit {ds = dsEXPLICIT;}
-        |   LITERAL_final
-        |   LITERAL_enum
-        |   {if (statementTrace>=1) printf("declaration_specifiers_1[%d]: Typedef\n", LT(1).getLine());}                        
-            {allowTypedef}? LITERAL_typedef (options {greedy=true;} : LITERAL_typename)? {td=true;} 
-        |   LITERAL_typename
-        |   LITERAL_friend {fd=true;}
-        |   LITERAL_constexpr
-        |   literal_stdcall
-        |   literal_clrcall
-        |   (options {greedy=true;} : type_attribute_specification!)
-        )*
-    ) 
-    (
-        (options {greedy=true;} :type_attribute_specification)?
-        ts = type_specifier[ds, noTypeId]
-        // support for "A const*";
-        // need to catch postfix_cv_qualifier
-        (postfix_cv_qualifier)? 
-        (
-            (literal_inline {ds = dsINLINE;})
+        (   ( (LITERAL_constexpr | cv_qualifier | LITERAL_static | literal_inline | LITERAL_friend)* 
+              LITERAL_auto 
+              (postfix_cv_qualifier | LITERAL_constexpr)? 
+              (literal_inline | storage_class_specifier | LITERAL_virtual)*
+              declarator[declOther, 0]) => 
+            (LITERAL_constexpr | tq = cv_qualifier | LITERAL_static | literal_inline | LITERAL_friend)*
         |
-            (sc = storage_class_specifier)
-        )*
-        (options {greedy=true;} :type_attribute_specification)?
-//  |   LITERAL_typename	{td=true;}	direct_declarator 
-    |   literal_typeof LPAREN typeof_param RPAREN
+            (   options {warnWhenFollowAmbig = false;} : sc = storage_class_specifier
+            |   tq = cv_qualifier 
+            |   literal_inline {ds = dsINLINE;}
+            |   LITERAL__Noreturn
+            |   LITERAL_virtual {ds = dsVIRTUAL;}
+            |   LITERAL_explicit {ds = dsEXPLICIT;}
+            |   LITERAL_final
+            |   LITERAL_enum
+            |   {if (statementTrace>=1) printf("declaration_specifiers_1[%d]: Typedef\n", LT(1).getLine());}                        
+                {allowTypedef}? LITERAL_typedef (options {greedy=true;} : LITERAL_typename)? {td=true;} 
+            |   LITERAL_typename
+            |   LITERAL_friend {fd=true;}
+            |   LITERAL_constexpr
+            |   literal_stdcall
+            |   literal_clrcall
+            |   (options {greedy=true;} : type_attribute_specification!)
+            )*
+        ) 
+        (
+            (options {greedy=true;} :type_attribute_specification)?
+            ts = type_specifier[ds, noTypeId]
+            // support for "A const*";
+            // need to catch postfix_cv_qualifier
+            (postfix_cv_qualifier | LITERAL_constexpr)? 
+            (
+                (literal_inline {ds = dsINLINE;})
+            |
+                (sc = storage_class_specifier)
+            | 
+                LITERAL_virtual
+            )*
+            (options {greedy=true;} :type_attribute_specification)?
+
+            // fix for unknown specifiers
+            unknown_posttype_declaration_specifiers
+
+    //  |   LITERAL_typename	{td=true;}	direct_declarator 
+        |   literal_typeof LPAREN typeof_param RPAREN
+        )
     )
     ({allowTypedef}? LITERAL_typedef {td=true;})?
 )
 {declarationSpecifier(td, fd, sc, tq, ts, ds);}
 ;
+
+unknown_pretype_declaration_specifiers
+    :
+    unknown_pretype_declaration_specifiers_list
+    ((IDENT 
+        (
+            LITERAL_friend | LITERAL_typedef | LITERAL_virtual | LITERAL_explicit | LITERAL_final 
+        |   LITERAL_enum | LITERAL_typename | literal_stdcall | literal_clrcall
+        |   (postfix_cv_qualifier | LITERAL_constexpr | literal_inline | storage_class_specifier)* IDENT 
+            (postfix_cv_qualifier | LITERAL_constexpr | literal_inline | storage_class_specifier)* IDENT
+        )
+    ) => IDENT!)?
+    ;
+
+unknown_pretype_declaration_specifiers_list
+    :
+    ((IDENT IDENT IDENT) => IDENT! unknown_pretype_declaration_specifiers_list)?
+    ;
+
+unknown_posttype_declaration_specifiers
+    :
+    unknown_posttype_declaration_specifiers_list
+    ;
+
+unknown_posttype_declaration_specifiers_list 
+    :
+    ((IDENT IDENT) => IDENT! unknown_posttype_declaration_specifiers_list)?
+    ;
+
 
 protected
 typeof_param :
@@ -1951,11 +2017,15 @@ simple_type_specifier[boolean noTypeId] returns [/*TypeSpecifier*/int ts = tsInv
 	;
 
 builtin_cv_type_specifier[/*TypeSpecifier*/int old_ts] returns [/*TypeSpecifier*/int ts = old_ts]
-{TypeQualifier tq;}
+{TypeQualifier tq;StorageClass sc;}
     :
         (options{greedy = true;}: ts = builtin_type[ts])+
         ((cv_qualifier builtin_type[ts]) => 
         tq = cv_qualifier ts = builtin_cv_type_specifier[ts])?
+        ((storage_class_specifier builtin_type[ts]) => 
+        sc = storage_class_specifier ts = builtin_cv_type_specifier[ts])?
+        ((LITERAL_virtual builtin_type[ts]) => 
+        LITERAL_virtual ts = builtin_cv_type_specifier[ts])?
     ;
 
 builtin_type[/*TypeSpecifier*/int old_ts] returns [/*TypeSpecifier*/int ts = old_ts]
@@ -2028,6 +2098,7 @@ class_specifier[DeclSpecifier ds] returns [/*TypeSpecifier*/int ts = tsInvalid]
                 {enclosingClass = saveClass;}
                 {action.end_class_body(LT(1));}
                 {action.end_class_declaration(LT(1));}
+                {action.end_simple_declaration(LT(1));}
                 ( EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
                 | RCURLY )
             |
@@ -2042,6 +2113,7 @@ class_specifier[DeclSpecifier ds] returns [/*TypeSpecifier*/int ts = tsInvalid]
             {endClassDefinition();}
             {action.end_class_body(LT(1));}
             {action.end_class_declaration(LT(1));}
+            {action.end_simple_declaration(LT(1));}
             ( EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
             | RCURLY )
             {enclosingClass = saveClass;}
@@ -2083,6 +2155,7 @@ enum_specifier
         {action.enum_strongly_typed(LT(1));}
     )?
     (   (COLON ts = builtin_cv_type_specifier[ts])?
+        (type_attribute_specification)?
         LCURLY enumerator_list 
         ( EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
         | RCURLY )
@@ -2100,6 +2173,7 @@ enum_specifier
             )?
             (options {greedy=true;} :
                 {action.enum_body(LT(1));}
+                (type_attribute_specification)?
                 LCURLY enumerator_list 
                 {action.end_enum_body(LT(1));}
                 ( EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
@@ -2143,6 +2217,8 @@ qualified_id returns [String q = ""]
 	(  
 		id:IDENT	(options{warnWhenFollowAmbig = false;}:
 				 LESSTHAN template_argument_list GREATERTHAN)?
+                {action.simple_template_id_or_ident(id);}
+                //{action.using_directive(action.USING_DIRECTIVE__IDENT, id);}
 		{qitem.append(id.getText());}
 		|  
 		LITERAL_OPERATOR optor (options{warnWhenFollowAmbig = false;}:
@@ -2170,6 +2246,7 @@ unqualified_id returns [String q = ""]
 	(  
 		id:IDENT	(options{warnWhenFollowAmbig = false;}:
 				 LESSTHAN template_argument_list GREATERTHAN)?
+                {action.simple_template_id_or_ident(id);}
 		{qitem.append(id.getText());}
 		|  
 		LITERAL_OPERATOR optor (options{warnWhenFollowAmbig = false;}:
@@ -2367,15 +2444,21 @@ access_specifier
 	;
 
 member_declarator_list
-	:	member_declarator (ASSIGNEQUAL constant_expression)?
-		(COMMA member_declarator (ASSIGNEQUAL constant_expression)?)*
+	:	member_declarator
+		(COMMA member_declarator)*
 	;
 
 member_declarator
 	:	
 		((IDENT)? COLON constant_expression)=>(IDENT)? COLON constant_expression
 	|  
-		declarator[declOther, 0] (LITERAL_override | LITERAL_final | LITERAL_new)?
+		declarator[declOther, 0] 
+                (   LITERAL_override 
+                |   LITERAL_final 
+                |   LITERAL_new
+                |   ASSIGNEQUAL initializer
+                |   array_initializer
+                )?
 	;
 
 conversion_function_decl_or_def returns [boolean definition = false]
@@ -2485,17 +2568,17 @@ direct_declarator[int kind, int level]
                     }
                 |
                     (ELLIPSIS)? id = qualified_id
-                    {
-                         if (_td==true) {
-                            // todo: build tree in this case
-                            declaratorID(id,qiType);
-                         } else {
-                            #direct_declarator = #(#[CSM_VARIABLE_DECLARATION, "CSM_VARIABLE_DECLARATION"], #direct_declarator);
-                            declaratorID(id,qiVar);
-                         }
-                         is_address = false; is_pointer = false;
-                    }
-                )
+                        {
+                             if (_td==true) {
+                                // todo: build tree in this case
+                                declaratorID(id,qiType);
+                             } else {
+                                #direct_declarator = #(#[CSM_VARIABLE_DECLARATION, "CSM_VARIABLE_DECLARATION"], #direct_declarator);
+                                declaratorID(id,qiVar);
+                             }
+                             is_address = false; is_pointer = false;
+                        }
+                    )
                 (options {greedy=true;} :variable_attribute_specification)?
                 (asm_block!)?
                 (options {greedy=true;} :variable_attribute_specification)?
@@ -2585,7 +2668,7 @@ function_direct_declarator [boolean definition, boolean symTabCheck]
 		)
         // IZ#134182 : missed const in function parameter
         // we should add "const" to function only if it's not K&R style function
-        (   ((cv_qualifier)* (LITERAL_override | LITERAL_final | LITERAL_new)? (LCURLY | LITERAL_throw | RPAREN | SEMICOLON | ASSIGNEQUAL | EOF | literal_attribute | POINTERTO))
+        (   ((cv_qualifier)* (LITERAL_override | LITERAL_final | LITERAL_new)? (LCURLY | LITERAL_throw | LITERAL_noexcept | RPAREN | SEMICOLON | ASSIGNEQUAL | EOF | literal_attribute | POINTERTO))
             =>
             (options{warnWhenFollowAmbig = false;}: tq = cv_qualifier)*
         )?
@@ -2606,6 +2689,7 @@ trailing_type
         POINTERTO 
         (tq=cv_qualifier)*
         ts=trailing_type_specifier
+        (options {greedy=true;} : tq=cv_qualifier)*
         (options {greedy=true;} : ptr_operator)*
         (LSQUARE (constant_expression)? RSQUARE)*
     ;
@@ -2716,7 +2800,9 @@ ctor_declarator[boolean definition]
         (LESSTHAN template_argument_list GREATERTHAN)?
 	//{declaratorParameterList(definition);}
 	LPAREN (parameter_list[false])? RPAREN
+        (options {greedy=true;} : LITERAL_override | LITERAL_final | LITERAL_new)?
 	//{declaratorEndParameterList(definition);}
+        ((ASSIGNEQUAL OCTALINT) => ASSIGNEQUAL OCTALINT)?
 	(exception_specification)?
         // IZ 136239 : C++ grammar does not allow attributes after constructor
         (function_attribute_specification)?
@@ -2836,6 +2922,7 @@ dtor_declarator[boolean definition]
 	//{declaratorParameterList(definition);}
         // VV: /06/06/06 ~dtor(void) is valid construction
 	LPAREN (LITERAL_void)? RPAREN
+        (options {greedy=true;} : LITERAL_override | LITERAL_final | LITERAL_new)?
         //{declaratorEndParameterList(definition);}
         ((ASSIGNEQUAL OCTALINT) => ASSIGNEQUAL OCTALINT)?	
 	(exception_specification)?        
@@ -3154,10 +3241,11 @@ protected template_template_parameter
  */
 assigned_type_name
 	{/*TypeSpecifier*/int ts;
-         TypeQualifier tq;}
+         TypeQualifier tq;
+         DeclSpecifier ds = dsInvalid;}
 	:
             (options {greedy=true;}: tq=cv_qualifier)? (LITERAL_typename)?
-            ts = simple_type_specifier[false] (postfix_cv_qualifier)?
+            ts = type_specifier[ds, false] (postfix_cv_qualifier)?
             abstract_declarator
 	;
 
@@ -3186,7 +3274,7 @@ lazy_template_argument_list
 
 lazy_template_argument
     :
-        {(isTemplateTooDeep(1, 20))}? 
+        {(isTemplateTooDeep(1, 10))}? 
         (~(GREATERTHAN | LESSTHAN | RCURLY | LCURLY))* 
         (
             lazy_template 
@@ -3203,7 +3291,7 @@ lazy_template_argument
  */
 template_argument
     :
-        {(isTemplateTooDeep(1, 20))}? 
+        {(isTemplateTooDeep(1, 10))}? 
         (~(GREATERTHAN | LESSTHAN | RCURLY | LCURLY))* 
         (
             lazy_template 
@@ -3371,11 +3459,6 @@ statement
 			printf("statement_11[%d]: try_block\n", LT(1).getLine());
 		}	
                 try_block[false]
-	|
-                {if (statementTrace>=1) 
-			printf("statement_12[%d]: throw_statement\n", LT(1).getLine());
-		}	
-                throw_statement
 	|
                 {if (statementTrace>=1) 
 			printf("statement_13[%d]: asm_block\n", LT(1).getLine());
@@ -3638,22 +3721,27 @@ exception_declaration
  * to me means "statement"; it removes some ambiguity to put it in
  * as a statement also.
  */
-throw_statement
-	:	LITERAL_throw (assignment_expression) ? 
-        ( EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
-        | SEMICOLON) //{ end_of_stmt();}
-		{#throw_statement = #(#[CSM_THROW_STATEMENT, "CSM_THROW_STATEMENT"], #throw_statement);}
+throw_expression
+	:	LITERAL_throw (options {greedy=true;}: assignment_expression) ? 
 	;
 
 using_declaration
 	{String qid="";}
 	:	u:LITERAL_using
-		(LITERAL_namespace qid = qualified_id	// Using-directive
+		(ns:LITERAL_namespace 
+                    {action.using_directive(u, ns);}
+                    {if(LA(1) == SCOPE) {action.using_directive(action.USING_DIRECTIVE__SCOPE, LT(1));}} 
+                    qid = qualified_id	// Using-directive
+                    {action.end_using_directive(LT(0));}
 		    {#using_declaration = #[CSM_USING_DIRECTIVE, qid]; #using_declaration.addChild(#u);}
 		|
+                    {action.using_declaration(u);}
+                    {if(LA(1) == SCOPE) {action.using_declaration(action.USING_DECLARATION__SCOPE, LT(1));}} 
                     qid = unqualified_id				// Using-declaration
+                    {action.end_using_declaration(LT(1));}
 		    {#using_declaration = #[CSM_USING_DECLARATION, qid]; #using_declaration.addChild(#u);}
 		)
+                
 		SEMICOLON! //{end_of_stmt();}
 	;
 
@@ -3734,6 +3822,8 @@ assignment_expression
             (cast_array_initializer_head)=>cast_array_initializer
             |
             lazy_expression[false, false, 0]
+            |
+            throw_expression
         )
 	(options {greedy=true;}:	
             ( ASSIGNEQUAL              
@@ -3798,7 +3888,7 @@ lazy_expression[boolean inTemplateParams, boolean searchingGreaterthen, int temp
             |   LESSTHAN
             |   LESSTHANOREQUALTO
             |   GREATERTHANOREQUALTO
-            |   QUESTIONMARK (expression | LITERAL_throw (assignment_expression)? )? COLON (assignment_expression | LITERAL_throw (options {greedy=true;}: assignment_expression)?)
+            |   QUESTIONMARK (expression)? COLON (assignment_expression)
             |   SHIFTLEFT 
             |   SHIFTRIGHT
             |   PLUS 
@@ -4010,7 +4100,7 @@ balanceSquaresInExpression
 protected    
 balanceLessthanGreaterthanInExpression[int templateLevel]
     :
-        {(isTemplateTooDeep(templateLevel, 20))}? lazy_template
+        {(isTemplateTooDeep(templateLevel, 10))}? lazy_template
     |
         // IZ 167547 : 100% CPU core usage with C++ project.
         // This is check for too complicated tecmplates.
@@ -4056,7 +4146,7 @@ lazy_expression_predicate
     |   LESSTHAN
     |   LESSTHANOREQUALTO
     |   GREATERTHANOREQUALTO
-    |   QUESTIONMARK (expression | LITERAL_throw (assignment_expression)?) COLON (assignment_expression | LITERAL_throw (options {greedy=true;}:assignment_expression)?)
+    |   QUESTIONMARK (expression) COLON (assignment_expression)
     |   SHIFTLEFT 
     |   SHIFTRIGHT
     |   PLUS 
@@ -4209,6 +4299,7 @@ scope_override_part[int level] returns [String s = ""]
     }
     :
         id:IDENT (LESSTHAN template_argument_list GREATERTHAN)? SCOPE
+        {action.simple_template_id_or_ident(id);}
         {if(level == 0) {action.id(id);} }
         (LITERAL_template)? // to support "_Alloc::template rebind<char>::other"
         {

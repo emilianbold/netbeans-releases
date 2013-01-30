@@ -89,7 +89,7 @@ public class Html5Parser implements HtmlParser {
                 is = new InputSource(new MaskingChSReader(sourceCode, maskedAreas.positions(), maskedAreas.lens()));
             }
             
-            final ParseTreeBuilder treeBuilder = new ParseTreeBuilder(sourceCode);
+            final ParseTreeBuilder treeBuilder = new ParseTreeBuilder(sourceCode, lookup);
             final Tokenizer tokenizer = new ErrorReportingTokenizer(treeBuilder);
 
             Driver driver = new Driver(tokenizer);

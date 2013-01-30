@@ -187,7 +187,9 @@ public class ResizeGestureRecognizer implements AWTEventListener {
             return;
         }
         //#210162 - ignore when the mouse is over a dialog window
-        if( !WindowManager.getDefault().getMainWindow().equals( SwingUtilities.getWindowAncestor( evt.getComponent() ) ) ) {
+        Frame mainWindow = WindowManager.getDefault().getMainWindow();
+        if( !mainWindow.equals(evt.getComponent()) &&
+            !mainWindow.equals( SwingUtilities.getWindowAncestor( evt.getComponent() ) ) ) {
             return;
         }
         if (evt.getID() == MouseEvent.MOUSE_MOVED) {

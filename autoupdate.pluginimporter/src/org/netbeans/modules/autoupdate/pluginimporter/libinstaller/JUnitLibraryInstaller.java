@@ -172,7 +172,7 @@ public class JUnitLibraryInstaller {
         // download
         LOG.log(Level.FINE, "Try to download {0}", jUnitElement);
         ProgressHandle downloadHandle = ProgressHandleFactory.createHandle (download_handle());
-        Validator validator = oc.getSupport().doDownload(downloadHandle, true, useUserdirAsFallback);
+        Validator validator = oc.getSupport().doDownload(downloadHandle, null, useUserdirAsFallback);
         // install
         ProgressHandle validateHandle = ProgressHandleFactory.createHandle (validate_handle());
         Installer installer = oc.getSupport().doValidate(validator, validateHandle);

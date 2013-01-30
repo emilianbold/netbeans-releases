@@ -229,6 +229,11 @@ public class ElementJavadoc {
         return resolveElement(linkDoc, link);
     }
 
+    @Override
+    public String toString() {
+        return String.format("ElementJavadoc[url=%s, handle=%s]", docURL, handle);  //NOI18N
+    }
+
     private ElementJavadoc resolveElement(
             final ElementHandle<?> handle,
             final String link) {
@@ -835,9 +840,11 @@ public class ElementJavadoc {
             }
             len += appendType(sb, ((MethodDoc)mdoc).returnType(), false, false, false, ctx);
         }
-        String name = mdoc.name();
-        len += name.length();
-        sb.append(" <b>").append(name).append("</b>"); //NOI18N
+        if (mdoc.containingClass() != null) {
+            String name = mdoc.name();
+            len += name.length();
+            sb.append(" <b>").append(name).append("</b>"); //NOI18N
+        }
         if (!mdoc.isAnnotationTypeElement()) {
             sb.append('('); //NOI18N
             len++;

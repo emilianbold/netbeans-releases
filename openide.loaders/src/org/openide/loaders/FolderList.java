@@ -332,7 +332,10 @@ implements FileChangeListener, DataObject.Container {
         final RequestProcessor.Task[] COMP = new RequestProcessor.Task[1];
         synchronized (COMP) {
             comparatorTask = PROCESSOR.post (new Runnable () {
+                @Override
                 public void run () {
+                    List<DataObject> v = null;
+                    List<DataObject> r = null;
                     synchronized (COMP) {
                         if (previous != null) {
                             previous.waitFinished ();
@@ -343,30 +346,40 @@ implements FileChangeListener, DataObject.Container {
                             err.fine("changeComparator on " + folder + ": get old");
                         }
                         // the old children
-                        List<DataObject> v = getObjects(null);
+                        v = getObjects(null);
                         if (v.size () != 0) {
                             // the new children - also are stored to be returned next time from getChildrenList ()
                             order = null;
                             if (LOG) {
                                 err.fine("changeComparator: get new");
                             }
-                            List<DataObject> r = getObjects (null);
-                            if (LOG) {
-                                err.fine("changeComparator: fire change");
-                            }
-                            fireChildrenChange (r, v);
+                            r = getObjects (null);
                         }
                         synchronized (FolderList.this) {
                             // clean  the task if is my own not assigned by somebody else
                             if (comparatorTask == COMP[0]) {
                                 comparatorTask = null;
+                                err.fine("changeComparator: task set to null");
+                            } else {
+                                err.fine("changeComparator: task changed meanwhile");
+                                return;
                             }
+                        }
+                        if (r != null && v != null) {
+                            if (LOG) {
+                                err.fine("changeComparator: fire change");
+                            }
+                            fireChildrenChange (r, v);
                         }
                     }
                 }
             }, 0, Thread.MIN_PRIORITY);
             COMP[0] = comparatorTask;
         }
+    }
+    
+    final void assertNullComparator() {
+        assert comparatorTask == null;
     }
     
     /* -------------------------------------------------------------------- */
@@ -708,7 +721,7 @@ implements FileChangeListener, DataObject.Container {
                     map.put(fo, ref);
                 }
                 catch (DataObjectNotFoundException ex) {
-                    Logger.getLogger(FolderList.class.getName()).log(Level.WARNING, null, ex);
+                    err.log(Level.INFO, null, ex);
                 }
             }
             // add if accepted

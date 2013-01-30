@@ -49,14 +49,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.MissingResourceException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.text.BadLocationException;
 import org.netbeans.api.editor.guards.GuardedSection;
-import org.netbeans.modules.java.guards.GuardTag;
-import org.netbeans.modules.java.guards.SectionDescriptor;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -70,7 +70,24 @@ final class JavaGuardedReader {
     Pattern magicsAsRE;
     
     private static final int LONGEST_ITEM = 10;
-    
+
+    /**
+     * There are three possible ways how the comments defining the guarded
+     * sections can be processed during reading through the reader:
+     * 1. Keep the comments. They will be visible to the user in source editor.
+     * 2. Replace the comments with spaces to hide them from user but to preserve
+     *    overall length and positions.
+     * 3. Remove the comments completely.
+     * 
+     * Option #3 causes that offsets inside the editor differ from the offsets on disk,
+     * which then breaks many clients that create PositionRefs for a closed file and then
+     * use it for an opened file, and vice versa.
+     * 
+     * Default is #2.
+     */
+    private static boolean KEEP_GUARD_COMMENTS    // not final only for tests
+            = getPresetValue("KEEP_GUARD_COMMENTS", false); // NOI18N
+
     /** The list of the SectionsDesc. */
     private final LinkedList<SectionDescriptor> list;
 
@@ -197,9 +214,14 @@ final class JavaGuardedReader {
 //                        desc.name = new String(readBuff, i, toNl);
                         list.add(desc);
 //                    }
-                    i += toNl;
-                    Arrays.fill(charBuff,charBuffPtr,charBuffPtr+sectionSize,' ');
-                    charBuffPtr+=sectionSize;
+                    if (KEEP_GUARD_COMMENTS) { // keep guard comment (content unchanged)
+                        i -= match.length();
+                        charBuffPtr += MAGICLEN;
+                    } else {
+                        i += toNl;
+                        Arrays.fill(charBuff,charBuffPtr,charBuffPtr+sectionSize,' ');
+                        charBuffPtr+=sectionSize;
+                    }
                 }
             }
         }
@@ -242,7 +264,7 @@ final class JavaGuardedReader {
         } else {
             res = charBuff;
         }
-        return charBuff;
+        return res;
     }
 
     /** @return searching engine for magics */
@@ -363,4 +385,21 @@ final class JavaGuardedReader {
 //    static String magic(GuardTag tag) {
 //        return MAGIC_PREFIX + tag.name() + ':';
 //    }
+
+    private static boolean getPresetValue(String key, boolean defaultValue) {
+        try {
+            String s = NbBundle.getMessage(JavaGuardedReader.class, key);
+            return "true".equals(s.toLowerCase()); // NOI18N
+        } catch( MissingResourceException ex) { // ignore
+        }
+        return defaultValue;
+    }
+
+    static boolean getKeepGuardedComments() {
+        return KEEP_GUARD_COMMENTS;
+    }
+
+    static void setKeepGuardCommentsForTest(boolean keep) {
+        KEEP_GUARD_COMMENTS = keep;
+    }
 }

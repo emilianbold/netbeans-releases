@@ -119,7 +119,7 @@ public class FormEditorOperatorTest extends JellyTestCase {
         FormDesignerOperator designer = new FormDesignerOperator(SAMPLE_FRAME);
         new PaletteViewAction().perform();
         ComponentPaletteOperator palette = new ComponentPaletteOperator();
-        ComponentInspectorOperator inspector = new ComponentInspectorOperator();
+        ComponentInspectorOperator.invokeNavigator();
         // attach Palette to better position because components are not visible
         // when screen resolution is too low
         palette.attachTo(OutputOperator.invoke(), AttachWindowAction.RIGHT);

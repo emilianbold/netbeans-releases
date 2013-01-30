@@ -79,6 +79,10 @@ made subject to such option by the copyright holder.
                         <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.completion.cplusplus.hyperlink.CsmIncludeHyperlinkProvider"/>
                         <attr name="instanceOf" stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt"/>
                     </file>
+                    <file name="CsmDefineHyperlinkProvider.instance">
+                        <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.completion.cplusplus.hyperlink.CsmDefineHyperlinkProvider"/>
+                        <attr name="instanceOf" stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt"/>
+                    </file>
                 </folder>
                 
                 <folder name="CodeTemplateFilterFactories">
@@ -133,6 +137,10 @@ made subject to such option by the copyright holder.
                     </file>
                     <file name="CsmIncludeHyperlinkProvider.instance">
                         <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.completion.cplusplus.hyperlink.CsmIncludeHyperlinkProvider"/>
+                        <attr name="instanceOf" stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt"/>
+                    </file>
+                    <file name="CsmDefineHyperlinkProvider.instance">
+                        <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.completion.cplusplus.hyperlink.CsmDefineHyperlinkProvider"/>
                         <attr name="instanceOf" stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt"/>
                     </file>
                 </folder>
@@ -192,6 +200,10 @@ made subject to such option by the copyright holder.
                         <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.completion.cplusplus.hyperlink.CsmIncludeHyperlinkProvider"/>
                         <attr name="instanceOf" stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt"/>
                     </file>                    
+                    <file name="CsmDefineHyperlinkProvider.instance">
+                        <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.completion.cplusplus.hyperlink.CsmDefineHyperlinkProvider"/>
+                        <attr name="instanceOf" stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt"/>
+                    </file>
                 </folder>
                 
                 <folder name="CodeTemplateFilterFactories">

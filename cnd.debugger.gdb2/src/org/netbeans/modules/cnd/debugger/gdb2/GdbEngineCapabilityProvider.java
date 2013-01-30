@@ -66,8 +66,9 @@ public final class GdbEngineCapabilityProvider implements EngineCapabilityProvid
             switch (capability) {
                 case DERIVE_EXECUTABLE:
                 case RTC_SUPPORT:
-                case RUN_AUTOSTART:
                     return false;
+                case RUN_AUTOSTART:
+                    return true;
                 default:
                     return false;
             }
@@ -84,6 +85,9 @@ public final class GdbEngineCapabilityProvider implements EngineCapabilityProvid
     }
 
     public boolean isSupported(DebuggerDescriptor descriptor) {
+        if (descriptor == null) {
+            return false;
+        }
         final String id = descriptor.getID();
         if ("GNU".equalsIgnoreCase(id)) { // NOI18N
             return true;

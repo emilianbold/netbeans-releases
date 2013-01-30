@@ -42,7 +42,10 @@
 package org.netbeans.modules.openide.filesystems.declmime;
 
 import java.io.*;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import javax.annotation.processing.Processor;
 import javax.annotation.processing.RoundEnvironment;
@@ -109,6 +112,10 @@ public class MIMEResolverProcessor extends LayerGeneratingProcessor {
             f.stringvalue("ext." + (cnt++), ext); // NOI18N
         }
         f.position(r.position());
+        int ccnt = 0;
+        for (String chooser : r.showInFileChooser()) {
+            f.bundlevalue("fileChooser." + (ccnt++), chooser);
+        }
         f.bundlevalue("displayName", r.displayName()); // NOI18N
         f.write();
     }
@@ -120,13 +127,18 @@ public class MIMEResolverProcessor extends LayerGeneratingProcessor {
         File f = b.file("Services/MIMEResolver/" + getName(e).replace('.', '-') + "-Registration" + SUFFIX); // NOI18N
         f.methodvalue("instanceCreate", MIMEResolver.class.getName(), "create"); // NOI18N
         f.stringvalue("instanceClass", MIMEResolver.class.getName()); // NOI18N
-        f.serialvalue("bytes", generateInstanceResolver(fo, e)); // NOI18N
+        f.serialvalue("bytes", generateInstanceResolver(fo, e, f, r)); // NOI18N
         f.position(r.position());
+        int ccnt = 0;
+        for (String chooser : r.showInFileChooser()) {
+            f.bundlevalue("fileChooser." + (ccnt++), chooser);
+        }
         f.bundlevalue("displayName", r.displayName()); // NOI18N
         f.write();
     }
 
-    private byte[] generateInstanceResolver(FileObject fo, Element e) throws LayerGenerationException {
+    private byte[] generateInstanceResolver(FileObject fo, Element e, File f,
+            Registration r) throws LayerGenerationException {
         try {
             InputStream is = fo.openInputStream();
             org.openide.filesystems.FileObject tmp = FileUtil.createMemoryFileSystem().getRoot().createData("resolver.xml");
@@ -140,7 +152,9 @@ public class MIMEResolverProcessor extends LayerGeneratingProcessor {
             }
             os.close();
             is.close();
-            final byte[] almostResult = MIMEResolverImpl.toStream(MIMEResolverImpl.forDescriptor(tmp, false));
+            MIMEResolver resolver = MIMEResolverImpl.forDescriptor(tmp, false);
+            setFileChooserRelatedAttributes(r, resolver, f);
+            final byte[] almostResult = MIMEResolverImpl.toStream(resolver);
             // XXX: it would be slightly shorter to return the array directly,
             // but the XMLFileSystem insist on deserializing the value, it does
             // not support returning plain byte[]
@@ -191,5 +205,47 @@ public class MIMEResolverProcessor extends LayerGeneratingProcessor {
         } else {
             return getName(e.getEnclosingElement()) + '.' + e.getSimpleName();
         }
+    }
+
+    private Set<String> unq(String[] array) {
+        return unq(Arrays.asList(array));
+    }
+
+    private Set<String> unq(Collection collection) {
+        Set<String> s = new HashSet();
+        s.addAll(collection);
+        return s;
+    }
+
+    private void setFileChooserRelatedAttributes(Registration r,
+            MIMEResolver resolver, File f) {
+
+        if (r.showInFileChooser().length > 0) {
+            String[] types = MIMEResolverImpl.getMIMETypes(resolver);
+            List<String> exts = ((FilterInfo) resolver).getExtensions();
+            int cnt = 0;
+            for (String ext : unq(exts)) {
+                f.stringvalue("ext." + (cnt++), ext);              // NOI18N
+            }
+            int tcnt = 0;
+            for (String type : unq(types)) {
+                f.stringvalue("mimeType." + (tcnt++), type);       // NOI18N
+            }
+            int ncnt = 0;
+            for (String name : ((FilterInfo) resolver).getFileNames()) {
+                f.stringvalue("fileName." + (ncnt++), name);        //NOI18N
+            }
+        }
+    }
+
+    /**
+     * Interface of objects that provide information for construction of
+     * FileFilters.
+     */
+    interface FilterInfo {
+
+        List<String> getExtensions();
+
+        List<String> getFileNames();
     }
 }

@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.29
+#Version 1.36.1
 
 CLSS public abstract java.awt.AWTEvent
 cons public init(java.awt.Event)
@@ -614,6 +614,23 @@ CLSS public abstract interface !annotation java.lang.Deprecated
  anno 0 java.lang.annotation.Documented()
  anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
 intf java.lang.annotation.Annotation
+
+CLSS public abstract java.lang.Enum<%0 extends java.lang.Enum<{java.lang.Enum%0}>>
+cons protected init(java.lang.String,int)
+intf java.io.Serializable
+intf java.lang.Comparable<{java.lang.Enum%0}>
+meth protected final java.lang.Object clone() throws java.lang.CloneNotSupportedException
+meth protected final void finalize()
+meth public final boolean equals(java.lang.Object)
+meth public final int compareTo({java.lang.Enum%0})
+meth public final int hashCode()
+meth public final int ordinal()
+meth public final java.lang.Class<{java.lang.Enum%0}> getDeclaringClass()
+meth public final java.lang.String name()
+meth public java.lang.String toString()
+meth public static <%0 extends java.lang.Enum<{%%0}>> {%%0} valueOf(java.lang.Class<{%%0}>,java.lang.String)
+supr java.lang.Object
+hfds name,ordinal
 
 CLSS public java.lang.Object
 cons public init()
@@ -1565,6 +1582,7 @@ meth public org.netbeans.swing.popupswitcher.SwitcherTableItem getSelectedItem()
 meth public void changeSelection(int,int,boolean,boolean)
 meth public void paint(java.awt.Graphics)
 meth public void setFont(java.awt.Font)
+meth public void setSwitcherItems(org.netbeans.swing.popupswitcher.SwitcherTableItem[],int)
 meth public void updateUI()
 supr javax.swing.JTable
 hfds TABNAMES_HTML,background,ctx,foreground,needCalcRowHeight,nullIcon,prefSize,rendererBorder,selBackground,selForeground,showIcons
@@ -1839,6 +1857,7 @@ meth public abstract java.awt.Polygon getInsertTabIndication(int)
 meth public abstract java.awt.Rectangle getTabRect(int,java.awt.Rectangle)
 meth public abstract void registerShortcuts(javax.swing.JComponent)
 meth public abstract void unregisterShortcuts(javax.swing.JComponent)
+meth public final boolean isTabBusy(int)
 meth public java.awt.Image createImageOfTab(int)
 meth public javax.swing.Icon getButtonIcon(int,int)
 meth public void installUI(javax.swing.JComponent)
@@ -1852,8 +1871,7 @@ CLSS public org.netbeans.swing.tabcontrol.TabListPopupAction
 cons public init(org.netbeans.swing.tabcontrol.TabDisplayer)
 meth public void actionPerformed(java.awt.event.ActionEvent)
 supr javax.swing.AbstractAction
-hfds displayer,listListener
-hcls ActivatableTab
+hfds displayer
 
 CLSS public org.netbeans.swing.tabcontrol.TabbedContainer
 cons public init()
@@ -1967,6 +1985,7 @@ cons public init()
 intf org.netbeans.swing.tabcontrol.WinsysInfoForTabbed
 meth public boolean isModeSlidingEnabled()
 meth public boolean isSlidedOutContainer()
+meth public boolean isTopComponentBusy(org.openide.windows.TopComponent)
 meth public boolean isTopComponentClosingEnabled()
 meth public boolean isTopComponentClosingEnabled(org.openide.windows.TopComponent)
 meth public boolean isTopComponentMaximizationEnabled()
@@ -1976,6 +1995,60 @@ meth public boolean isTopComponentSlidingEnabled(org.openide.windows.TopComponen
 meth public static org.netbeans.swing.tabcontrol.WinsysInfoForTabbedContainer getDefault(org.netbeans.swing.tabcontrol.WinsysInfoForTabbed)
 supr java.lang.Object
 hcls DefaultWinsysInfoForTabbedContainer
+
+CLSS public abstract org.netbeans.swing.tabcontrol.customtabs.Tabbed
+cons public init()
+innr public abstract interface static Accessor
+meth public abstract boolean isTransparent()
+meth public abstract int getTabCount()
+meth public abstract int indexOf(java.awt.Component)
+meth public abstract int tabForCoordinate(java.awt.Point)
+meth public abstract java.awt.Component getComponent()
+meth public abstract java.awt.Image createImageOfTab(int)
+meth public abstract java.awt.Rectangle getTabBounds(int)
+meth public abstract java.awt.Rectangle getTabsArea()
+meth public abstract java.awt.Shape getIndicationForLocation(java.awt.Point,org.openide.windows.TopComponent,java.awt.Point,boolean)
+meth public abstract java.lang.Object getConstraintForLocation(java.awt.Point,boolean)
+meth public abstract javax.swing.Action[] getPopupActions(javax.swing.Action[],int)
+meth public abstract org.openide.windows.TopComponent getSelectedTopComponent()
+meth public abstract org.openide.windows.TopComponent getTopComponentAt(int)
+meth public abstract org.openide.windows.TopComponent[] getTopComponents()
+meth public abstract void addActionListener(java.awt.event.ActionListener)
+meth public abstract void addChangeListener(javax.swing.event.ChangeListener)
+meth public abstract void addTopComponent(java.lang.String,javax.swing.Icon,org.openide.windows.TopComponent,java.lang.String)
+meth public abstract void cancelRequestAttention(org.openide.windows.TopComponent)
+meth public abstract void insertComponent(java.lang.String,javax.swing.Icon,java.awt.Component,java.lang.String,int)
+meth public abstract void removeActionListener(java.awt.event.ActionListener)
+meth public abstract void removeChangeListener(javax.swing.event.ChangeListener)
+meth public abstract void removeComponent(java.awt.Component)
+meth public abstract void requestAttention(org.openide.windows.TopComponent)
+meth public abstract void setActive(boolean)
+meth public abstract void setIconAt(int,javax.swing.Icon)
+meth public abstract void setSelectedComponent(java.awt.Component)
+meth public abstract void setTitleAt(int,java.lang.String)
+meth public abstract void setToolTipTextAt(int,java.lang.String)
+meth public abstract void setTopComponents(org.openide.windows.TopComponent[],org.openide.windows.TopComponent)
+meth public abstract void setTransparent(boolean)
+meth public boolean isBusy(org.openide.windows.TopComponent)
+meth public void makeBusy(org.openide.windows.TopComponent,boolean)
+supr java.lang.Object
+
+CLSS public abstract interface static org.netbeans.swing.tabcontrol.customtabs.Tabbed$Accessor
+ outer org.netbeans.swing.tabcontrol.customtabs.Tabbed
+meth public abstract org.netbeans.swing.tabcontrol.customtabs.Tabbed getTabbed()
+
+CLSS public abstract interface org.netbeans.swing.tabcontrol.customtabs.TabbedComponentFactory
+meth public abstract org.netbeans.swing.tabcontrol.customtabs.Tabbed createTabbedComponent(org.netbeans.swing.tabcontrol.customtabs.TabbedType,org.netbeans.swing.tabcontrol.WinsysInfoForTabbedContainer)
+
+CLSS public abstract !enum org.netbeans.swing.tabcontrol.customtabs.TabbedType
+fld public final static org.netbeans.swing.tabcontrol.customtabs.TabbedType EDITOR
+fld public final static org.netbeans.swing.tabcontrol.customtabs.TabbedType SLIDING
+fld public final static org.netbeans.swing.tabcontrol.customtabs.TabbedType TOOLBAR
+fld public final static org.netbeans.swing.tabcontrol.customtabs.TabbedType VIEW
+meth public abstract int toInt()
+meth public static org.netbeans.swing.tabcontrol.customtabs.TabbedType valueOf(java.lang.String)
+meth public static org.netbeans.swing.tabcontrol.customtabs.TabbedType[] values()
+supr java.lang.Enum<org.netbeans.swing.tabcontrol.customtabs.TabbedType>
 
 CLSS public final org.netbeans.swing.tabcontrol.event.ArrayDiff
 meth public boolean equals(java.lang.Object)
@@ -2042,6 +2115,7 @@ meth protected boolean inCloseButton()
 meth protected final boolean isActive()
 meth protected final boolean isArmed()
 meth protected final boolean isAttention()
+meth protected final boolean isBusy()
 meth protected final boolean isClipLeft()
 meth protected final boolean isClipRight()
 meth protected final boolean isLeftmost()
@@ -2435,6 +2509,28 @@ meth public int getRepaintPolicy(int)
 meth public int getState(int)
 supr org.netbeans.swing.tabcontrol.plaf.TabState
 
+CLSS public abstract org.netbeans.swing.tabcontrol.plaf.BusyTabsSupport
+cons public init()
+innr public final static DefaultBusyTabsSupport
+meth protected abstract int getRepaintTimerIntervalMillis()
+meth protected abstract void tick()
+meth public abstract javax.swing.Icon getBusyIcon(boolean)
+meth public final void install(org.netbeans.swing.tabcontrol.customtabs.Tabbed,org.netbeans.swing.tabcontrol.TabDataModel)
+meth public final void makeTabBusy(org.netbeans.swing.tabcontrol.customtabs.Tabbed,int,boolean)
+meth public final void uninstall(org.netbeans.swing.tabcontrol.customtabs.Tabbed,org.netbeans.swing.tabcontrol.TabDataModel)
+meth public static org.netbeans.swing.tabcontrol.plaf.BusyTabsSupport getDefault()
+supr java.lang.Object
+hfds animationTimer,busyContainers,containers,modelListener
+
+CLSS public final static org.netbeans.swing.tabcontrol.plaf.BusyTabsSupport$DefaultBusyTabsSupport
+ outer org.netbeans.swing.tabcontrol.plaf.BusyTabsSupport
+cons public init()
+meth protected int getRepaintTimerIntervalMillis()
+meth protected void tick()
+meth public javax.swing.Icon getBusyIcon(boolean)
+supr org.netbeans.swing.tabcontrol.plaf.BusyTabsSupport
+hfds busyIconDefault,busyIconSelected
+
 CLSS public org.netbeans.swing.tabcontrol.plaf.ChicletWrapper
 cons public init()
 intf java.lang.Runnable
@@ -2791,6 +2887,7 @@ meth public abstract javax.swing.JComponent getRendererComponent(org.netbeans.sw
 meth public abstract void setShowCloseButton(boolean)
 
 CLSS public abstract org.netbeans.swing.tabcontrol.plaf.TabControlButton
+fld protected final org.netbeans.swing.tabcontrol.TabDisplayer displayer
 fld public final static int ID_CLOSE_BUTTON = 1
 fld public final static int ID_DROP_DOWN_BUTTON = 8
 fld public final static int ID_MAXIMIZE_BUTTON = 3
@@ -2821,7 +2918,7 @@ meth public javax.swing.Icon getRolloverIcon()
 meth public javax.swing.Icon getRolloverSelectedIcon()
 meth public void updateUI()
 supr javax.swing.JButton
-hfds buttonId,displayer,showBorder,superConstructorsCompleted
+hfds buttonId,showBorder,superConstructorsCompleted
 
 CLSS public org.netbeans.swing.tabcontrol.plaf.TabControlButtonFactory
 meth public static javax.swing.Icon getIcon(java.lang.String)
@@ -2862,6 +2959,7 @@ fld public final static int ARMED = 4
 fld public final static int ATTENTION = 16384
 fld public final static int BEFORE_ARMED = 32768
 fld public final static int BEFORE_SELECTED = 1024
+fld public final static int BUSY = 65536
 fld public final static int CHANGE_NONE_TO_TAB = 3
 fld public final static int CHANGE_TAB_TO_NONE = 2
 fld public final static int CHANGE_TAB_TO_SELF = 4

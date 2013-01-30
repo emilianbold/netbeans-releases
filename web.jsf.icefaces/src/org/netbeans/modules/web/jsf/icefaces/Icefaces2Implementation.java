@@ -42,16 +42,12 @@
 package org.netbeans.modules.web.jsf.icefaces;
 
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.j2ee.dd.api.common.InitParam;
@@ -63,7 +59,6 @@ import org.netbeans.modules.web.jsf.api.facesmodel.JSFVersion;
 import org.netbeans.modules.web.jsf.icefaces.ui.Icefaces2CustomizerPanelVisual;
 import org.netbeans.modules.web.jsf.spi.components.JsfComponentCustomizer;
 import org.netbeans.modules.web.jsf.spi.components.JsfComponentImplementation;
-import org.netbeans.spi.project.ant.AntArtifactProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
@@ -102,11 +97,22 @@ public class Icefaces2Implementation implements JsfComponentImplementation {
     // Constants for web.xml
     private static final String FACES_SAVING_METHOD = "javax.faces.STATE_SAVING_METHOD"; //NOI18N
     private static final String FACES_SKIP_COMMENTS = "javax.faces.FACELETS_SKIP_COMMENTS"; //NOI18N
-    private static final String icefacesPom ="http://anonsvn.icesoft.org//repo/maven2/releases/org/icefaces/icefaces/3.0.0/icefaces-3.0.0.pom"; //NOI18N
+
+    // ICEfaces Maven resources
+    private static final String MAVEN_DEP_CORE = "org.icefaces:icefaces:3.1.0:jar"; //NOI18N
+    private static final String MAVEN_DEP_ACE = "org.icefaces:icefaces-ace:3.1.0:jar"; //NOI18N
 
     @Override
     public String getName() {
         return ICEFACES_NAME;
+    }
+
+    @NbBundle.Messages({
+        "Icefaces2Implementation.icefaces.display.name=ICEfaces"
+    })
+    @Override
+    public String getDisplayName() {
+        return Bundle.Icefaces2Implementation_icefaces_display_name();
     }
 
     @Override
@@ -116,60 +122,8 @@ public class Icefaces2Implementation implements JsfComponentImplementation {
 
     @Override
     public Set<FileObject> extend(WebModule webModule, JsfComponentCustomizer jsfComponentCustomizer) {
-        // Add library to webmodule classpath
-        try {
-            List<Library> libraries = new ArrayList<Library>(1);
-            Library ifLibrary = null;
-
-            // get the ICEfaces library from customizer
-            if (jsfComponentCustomizer != null) {
-                Icefaces2CustomizerPanelVisual icefacesPanel =
-                        ((Icefaces2CustomizerPanelVisual) jsfComponentCustomizer.getComponent());
-                String chosenLibrary = icefacesPanel.getIcefacesLibrary();
-                ifLibrary = LibraryManager.getDefault().getLibrary(chosenLibrary);
-            }
-
-            // search for library stored in ICEfaces2 preferences
-            if (ifLibrary == null) {
-                Preferences preferences = getIcefacesPreferences();
-                ifLibrary = LibraryManager.getDefault().getLibrary(
-                        preferences.get(Icefaces2Implementation.PREF_LIBRARY_NAME, "")); //NOI18N
-            }
-
-            // otherwise search for any registered ICEfaces library in IDE
-            if (ifLibrary == null) {
-                ifLibrary = Icefaces2Customizer.getIcefacesLibraries().get(0);
-            }
-
-            if (ifLibrary != null) {
-                FileObject[] javaSources = webModule.getJavaSources();
-                Project project = FileOwnerQuery.getOwner(webModule.getDocumentBase());
-                AntArtifactProvider antArtifactProvider = project.getLookup().lookup(AntArtifactProvider.class);
-
-                // in cases of Maven, update library to contains maven-pom references if needed
-                if (antArtifactProvider == null) {
-                    List<URI> pomArtifacts;
-                    try {
-                        pomArtifacts = Arrays.asList(new URI(icefacesPom));
-                        ifLibrary = JsfComponentUtils.enhanceLibraryWithPomContent(ifLibrary, pomArtifacts);
-                    } catch (URISyntaxException ex) {
-                        LOGGER.log(Level.SEVERE, null, ex);
-                    }
-                }
-
-                libraries.add(ifLibrary);
-                ProjectClassPathModifier.addLibraries(
-                        libraries.toArray(new Library[1]),
-                        javaSources[0],
-                        ClassPath.COMPILE);
-            } else {
-                LOGGER.log(Level.SEVERE, "No ICEfaces library was found.");
-            }
-        } catch (IOException ex) {
-            LOGGER.log(Level.WARNING, "Exception during extending an web project", ex); //NOI18N
-        } catch (UnsupportedOperationException ex) {
-            LOGGER.log(Level.WARNING, "Exception during extending an web project", ex); //NOI18N
-        }
+        // Extend project classpath
+        extendClasspath(webModule, jsfComponentCustomizer);
 
         // Update web.xml DD if required
         try {
@@ -202,6 +156,60 @@ public class Icefaces2Implementation implements JsfComponentImplementation {
             LOGGER.log(Level.WARNING, "Exception during welcome page creation", ex); //NOI18N
         }
         return Collections.<FileObject>emptySet();
+    }
+
+    private static void extendClasspath(WebModule webModule, JsfComponentCustomizer jsfComponentCustomizer) {
+        try {
+            List<Library> libraries = new ArrayList<Library>(1);
+            Library ifLibrary = null;
+
+            // maven based projects
+            if (JsfComponentUtils.isMavenBased(webModule)) {
+                ifLibrary = getMavenLibrary();
+            } else {
+                // get the ICEfaces library from customizer
+                if (jsfComponentCustomizer != null) {
+                    Icefaces2CustomizerPanelVisual icefacesPanel =
+                            ((Icefaces2CustomizerPanelVisual) jsfComponentCustomizer.getComponent());
+                    String chosenLibrary = icefacesPanel.getIcefacesLibrary();
+                    ifLibrary = LibraryManager.getDefault().getLibrary(chosenLibrary);
+                }
+
+                // search for library stored in ICEfaces2 preferences
+                if (ifLibrary == null) {
+                    Preferences preferences = getIcefacesPreferences();
+                    ifLibrary = LibraryManager.getDefault().getLibrary(
+                            preferences.get(Icefaces2Implementation.PREF_LIBRARY_NAME, "")); //NOI18N
+                }
+
+                // otherwise search for any registered ICEfaces library in IDE
+                if (ifLibrary == null) {
+                    ifLibrary = Icefaces2Customizer.getIcefacesLibraries().get(0);
+                }
+            }
+
+            if (ifLibrary != null) {
+                libraries.add(ifLibrary);
+                FileObject[] javaSources = webModule.getJavaSources();
+                ProjectClassPathModifier.addLibraries(
+                        libraries.toArray(new Library[1]),
+                        javaSources[0],
+                        ClassPath.COMPILE);
+            } else {
+                LOGGER.log(Level.SEVERE, "No ICEfaces library was found."); //NOI18N
+            }
+        } catch (IOException ex) {
+            LOGGER.log(Level.WARNING, "Exception during extending an web project", ex); //NOI18N
+        } catch (UnsupportedOperationException ex) {
+            LOGGER.log(Level.WARNING, "Exception during extending an web project", ex); //NOI18N
+        }
+    }
+
+    private static Library getMavenLibrary() {
+        return JsfComponentUtils.createMavenDependencyLibrary(
+                ICEFACES_NAME + "-maven-lib", //NOI18N
+                new String[]{MAVEN_DEP_CORE, MAVEN_DEP_ACE},
+                new String[0]);
     }
 
     private static FileObject generateWelcomePage(WebModule webModule) throws IOException {
@@ -252,11 +260,14 @@ public class Icefaces2Implementation implements JsfComponentImplementation {
     @Override
     public void remove(WebModule webModule) {
         try {
-            List<Library> allRegisteredIcefaces2 = Icefaces2Customizer.getIcefacesLibraries();
-            ProjectClassPathModifier.removeLibraries(
-                    allRegisteredIcefaces2.toArray(new Library[allRegisteredIcefaces2.size()]),
-                    webModule.getJavaSources()[0],
-                    ClassPath.COMPILE);
+            List<Library> icefacesLibraries;
+            if (JsfComponentUtils.isMavenBased(webModule)) {
+                icefacesLibraries = Arrays.asList(getMavenLibrary());
+            } else {
+                icefacesLibraries = Icefaces2Customizer.getIcefacesLibraries();
+            }
+             ProjectClassPathModifier.removeLibraries(icefacesLibraries.toArray(
+                     new Library[icefacesLibraries.size()]), webModule.getJavaSources()[0], ClassPath.COMPILE);
         } catch (IOException ex) {
             LOGGER.log(Level.WARNING, "Exception during removing JSF suite from an web project", ex); //NOI18N
         } catch (UnsupportedOperationException ex) {

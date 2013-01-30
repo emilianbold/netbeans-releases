@@ -1,3 +1,2 @@
-Versioning              > CVS	       C
-                          Subversion   S
+Versioning              > Subversion   S
                           Mercurial    M

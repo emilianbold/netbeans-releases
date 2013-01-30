@@ -22,7 +22,7 @@ if [ -z "$jdkhome" ] ; then
 
     # read Java Preferences
     if [ -x "/usr/libexec/java_home" ]; then
-        jdkhome=`/usr/libexec/java_home`
+        jdkhome=`/usr/libexec/java_home --version 1.6+`
 
     # JDK1.7
     elif [ -f "/Library/Java/JavaVirtualMachines/1.7.0.jdk/Contents/Home/bin/java" ] ; then

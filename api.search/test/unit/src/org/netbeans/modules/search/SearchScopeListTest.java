@@ -160,7 +160,7 @@ public class SearchScopeListTest extends NbTestCase {
                 this.applicable = applicable;
                 if (applicable != oldVal) {
 
-                    listenersCopy = new HashSet(listeners);
+                    listenersCopy = new HashSet<ChangeListener>(listeners);
                 }
             }
             for (ChangeListener l : listenersCopy) {

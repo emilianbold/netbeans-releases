@@ -52,6 +52,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.prefs.Preferences;
 import javax.lang.model.element.Modifier;
 import javax.swing.text.Document;
 import org.netbeans.api.java.lexer.JavaTokenId;
@@ -61,7 +62,11 @@ import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.SourceUtilsTestUtil;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.internal.MemoryPreferencesFactory;
+import org.netbeans.modules.editor.indent.spi.CodeStylePreferences;
+import org.netbeans.modules.editor.indent.spi.CodeStylePreferences.Provider;
 import org.netbeans.modules.java.hints.spiimpl.TestUtilities;
+import org.netbeans.modules.java.source.parsing.JavacParser;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.DialogDescriptor;
@@ -72,6 +77,8 @@ import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.util.NbPreferences;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
@@ -83,12 +90,13 @@ public class IntroduceHintTest extends NbTestCase {
         super(testName);
     }
 
+    private static Preferences codeStylePrefs;//XXX: does not allow parallel test execution
+    
     @Override
     protected void setUp() throws Exception {
-        SourceUtilsTestUtil
-                .prepareTest(new String[0], new Object[0]);
-        super
-                .setUp();
+        SourceUtilsTestUtil.prepareTest(new String[0], new Object[0]);
+        super.setUp();
+        codeStylePrefs = NbPreferences.root().node("test/java/codestyle");
     }
 
 //    public static TestSuite suite() {
@@ -102,11 +110,9 @@ public class IntroduceHintTest extends NbTestCase {
 //    }
     @Override
     protected void tearDown() throws Exception {
-        super
-                .tearDown();
-        LifecycleManager
-                .getDefault()
-                .saveAll();
+        super.tearDown();
+        LifecycleManager.getDefault().saveAll();
+        codeStylePrefs = null;
     }
 
     public void testCorrectSelection1() throws Exception {
@@ -167,7 +173,7 @@ public class IntroduceHintTest extends NbTestCase {
 
     public void test142424() throws Exception {
         performFixTest("package test; public class Test {private static void bar(int i) {} public void test() {new Runnable() {public void run() {String foo = \"foo\";bar(|foo.length()|);}}.run();}}",
-                       "package test; public class Test {private static void bar(int i) {} public void test() {new Runnable() {public void run() {String foo = \"foo\";int length = foo.length(); bar( length);}}.run();}}",
+                       "package test; public class Test {private static void bar(int i) {} public void test() {new Runnable() {public void run() {String foo = \"foo\";int length = foo.length(); bar(length);}}.run();}}",
                        new DialogDisplayerImpl(null, false, false, true),
                        4, 0);
     }
@@ -343,6 +349,32 @@ public class IntroduceHintTest extends NbTestCase {
                        4, 0);
     }
 
+    public void testSwitchCase219714() throws Exception {
+        performFixTest("package test;\n" +
+                       "public class Test {\n" +
+                       "    public String method(String... args) {\n" +
+                       "        switch (args.length) {\n" +
+                       "            case 1:\n" +
+                       "                return |args[0]|;\n" +
+                       "        }\n" +
+                       "        return null;\n" +
+                       "    }\n" +
+                       "}\n",
+                       ("package test;\n" +
+                        "public class Test {\n" +
+                        "    public String method(String... args) {\n" +
+                        "        switch (args.length) {\n" +
+                        "            case 1:\n" +
+                        "                String name = args[0];\n" +
+                        "                return name;\n" +
+                        "        }\n" +
+                        "        return null;\n" +
+                        "    }\n" +
+                        "}\n").replaceAll("[ \t\n]+", " "),
+                       new DialogDisplayerImpl("name", true, false, true),
+                       4, 0);
+    }
+    
 //    public void testFix121420() throws Exception {
 //        performFixTest("package test; public class Test {public void test1() {|System.getProperty(\"\")|;} }",
 //                       "package test; public class Test {public void test1() { String name = System.getProperty(\"\");} }",
@@ -1780,6 +1812,49 @@ public class IntroduceHintTest extends NbTestCase {
                 .of(Modifier.PRIVATE), true),
                        1, 0);
     }
+    
+    public void test224512() throws Exception {
+        performFixTest("package test;\n" +
+                       "class Test {\n" +
+                       "    private static class Foo {}\n" +
+                       "    private static String[] t(String[] strings) {\n" +
+                       "        String[] result = null;\n" +
+                       "        if (strings != null) |{\n" +
+                       "            for (String str : strings) {\n" +
+                       "                result = new String[]{\n" +
+                       "                    str,\n" +
+                       "                    null\n" +
+                       "                };\n" +
+                       "                break;\n" +
+                       "            }\n" +
+                       "        }|\n" +
+                       "        return result;\n" +
+                       "    }\n" +
+                       "}",
+                       ("package test;\n" +
+                        "class Test {\n" +
+                        "    private static String[] name(String[] strings, String[] result) {\n" +
+                        "        for (String str : strings) {\n" +
+                        "            result = new String[]{\n" +
+                        "                str,\n" +
+                        "                null\n" +
+                        "            };\n" +
+                        "            break;\n" +
+                        "        }\n" +
+                        "        return result;\n" +
+                        "    }\n" +
+                        "    private static class Foo {}\n" +
+                        "    private static String[] t(String[] strings) {\n" +
+                        "        String[] result = null;\n" +
+                        "        if (strings != null) result = name(strings, result);\n" +
+                        "        return result;\n" +
+                        "    }\n" +
+                        "}")
+                .replaceAll("[ \t\n]+", " "),
+                       new DialogDisplayerImpl3("name", EnumSet
+                .of(Modifier.PRIVATE), true),
+                       1, 0);
+    }
 
     public void testConstantFix204373a() throws Exception {
         performFixTest("package test;\n" +
@@ -1930,7 +2005,175 @@ public class IntroduceHintTest extends NbTestCase {
                        new DialogDisplayerImpl2(null, IntroduceFieldPanel.INIT_FIELD, true, EnumSet.<Modifier>of(Modifier.PRIVATE), false, true),
                        5, 2);
     }
+    
+    public void testConstantFix208072a() throws Exception {
+        Preferences prefs = CodeStylePreferences.get((FileObject) null, JavacParser.MIME_TYPE).getPreferences();
+        prefs.put("classMemberInsertionPoint", "LAST_IN_CATEGORY");
+        performFixTest("package test;\n" +
+                       "import java.util.logging.Level;\n" +
+                       "import java.util.logging.Logger;\n" +
+                       "public class Test {\n" +
+                       "     private static final int II = |1 + 2 * 3|;\n" +
+                       "}\n",
+                       ("package test;\n" +
+                        "import java.util.logging.Level;\n" +
+                        "import java.util.logging.Logger;\n" +
+                        "public class Test {\n" +
+                       "     private static final int ZZ = 1 + 2 * 3;\n" +
+                       "     private static final int II = ZZ;\n" +
+                        "}\n").replaceAll("[ \t\n]+", " "),
+                       new DialogDisplayerImpl("ZZ", true, true, true, EnumSet.of(Modifier.PRIVATE)),
+                       1, 0);
+    }
+    
+    public void testConstantFix208072b() throws Exception {
+        Preferences prefs = CodeStylePreferences.get((FileObject) null, JavacParser.MIME_TYPE).getPreferences();
+        prefs.put("classMembersOrder", "STATIC_INIT;STATIC METHOD;INSTANCE_INIT;CONSTRUCTOR;METHOD;STATIC CLASS;CLASS;STATIC FIELD;FIELD");
+        prefs.put("classMemberInsertionPoint", "LAST_IN_CATEGORY");
+        performFixTest("package test;\n" +
+                       "import java.util.logging.Level;\n" +
+                       "import java.util.logging.Logger;\n" +
+                       "public class Test {\n" +
+                       "     static {\n" +
+                       "         II = |1 + 2 * 3|;\n" +
+                       "     }\n" +
+                       "     private static final int II;\n" +
+                       "}\n",
+                       ("package test;\n" +
+                        "import java.util.logging.Level;\n" +
+                        "import java.util.logging.Logger;\n" +
+                        "public class Test {\n" +
+                       "     private static final int ZZ = 1 + 2 * 3;\n" +
+                       "     static {\n" +
+                       "         II = ZZ;\n" +
+                       "     }\n" +
+                       "     private static final int II;\n" +
+                        "}\n").replaceAll("[ \t\n]+", " "),
+                       new DialogDisplayerImpl("ZZ", true, true, true, EnumSet.of(Modifier.PRIVATE)),
+                       5, 1);
+    }
+    
+    public void testConstantFix208072c() throws Exception {
+        Preferences prefs = CodeStylePreferences.get((FileObject) null, JavacParser.MIME_TYPE).getPreferences();
+        prefs.put("classMembersOrder", "STATIC_INIT;STATIC METHOD;INSTANCE_INIT;CONSTRUCTOR;METHOD;STATIC CLASS;CLASS;STATIC FIELD;FIELD");
+        prefs.put("classMemberInsertionPoint", "LAST_IN_CATEGORY");
+        performFixTest("package test;\n" +
+                       "import java.util.logging.Level;\n" +
+                       "import java.util.logging.Logger;\n" +
+                       "public class Test {\n" +
+                       "     {\n" +
+                       "         int ii = |1 + 2 * 3|;\n" +
+                       "     }\n" +
+                       "     private static final int II = 0;\n" +
+                       "}\n",
+                       ("package test;\n" +
+                        "import java.util.logging.Level;\n" +
+                        "import java.util.logging.Logger;\n" +
+                        "public class Test {\n" +
+                       "     {\n" +
+                       "         int ii = ZZ;\n" +
+                       "     }\n" +
+                       "     private static final int II = 0;\n" +
+                       "     private static final int ZZ = 1 + 2 * 3;\n" +
+                        "}\n").replaceAll("[ \t\n]+", " "),
+                       new DialogDisplayerImpl("ZZ", true, true, true, EnumSet.of(Modifier.PRIVATE)),
+                       5, 1);
+    }
+    
+    public void testConstantFix219771a() throws Exception {
+        performFixTest("package test;\n" +
+                       "public class Test {\n" +
+                       "    public void method() {\n" +
+                       "        System.out.println(\"C0 = \" + |C1 * 5|);\n" +
+                       "    }\n" +
+                       "    public static final int C1 = 100;\n" +
+                       "}\n",
+                       ("package test;\n" +
+                        "public class Test {\n" +
+                        "    public void method() {\n" +
+                        "        System.out.println(\"C0 = \" + C0);\n" +
+                        "    }\n" +
+                        "    public static final int C1 = 100;\n" +
+                        "    public static final int C0 = C1 * 5;\n" +
+                        "}\n").replaceAll("[ \t\n]+", " "),
+                       new DialogDisplayerImpl("C0", true, true, true, EnumSet.of(Modifier.PUBLIC)),
+                       5, 1);
+    }
+    
+    public void testConstantFix219771b() throws Exception {
+        performFixTest("package test;\n" +
+                       "public class Test {\n" +
+                       "    public void method() {\n" +
+                       "        System.out.println(\"C0 = \" + |C1 * 5|);\n" +
+                       "    }\n" +
+                       "    public final int C1 = 100;\n" +
+                       "}\n",
+                       ("package test;\n" +
+                        "public class Test {\n" +
+                        "    public void method() {\n" +
+                        "        System.out.println(\"C0 = \" + C0);\n" +
+                        "    }\n" +
+                        "    public final int C1 = 100;\n" +
+                        "    public final int C0 = C1 * 5;\n" +
+                        "}\n").replaceAll("[ \t\n]+", " "),
+                       new DialogDisplayerImpl2("C0", IntroduceFieldPanel.INIT_FIELD, true, EnumSet.of(Modifier.PUBLIC), true, true),
+                       4, 1);
+    }
+    
+    public void testConstantFix219771c() throws Exception {
+        Preferences prefs = CodeStylePreferences.get((FileObject) null, JavacParser.MIME_TYPE).getPreferences();
+        prefs.put("classMembersOrder", "STATIC_INIT;FIELD;STATIC METHOD;INSTANCE_INIT;CONSTRUCTOR;METHOD;STATIC CLASS;CLASS;STATIC FIELD");
+        prefs.put("classMemberInsertionPoint", "LAST_IN_CATEGORY");
+        performFixTest("package test;\n" +
+                       "public class Test {\n" +
+                       "    public void method() {\n" +
+                       "        System.out.println(\"C0 = \" + |C1 * 5|);\n" +
+                       "    }\n" +
+                       "    public static final int C1 = 100;\n" +
+                       "}\n",
+                       ("package test;\n" +
+                        "public class Test {\n" +
+                        "    public final int C0 = C1 * 5;\n" +
+                        "    public void method() {\n" +
+                        "        System.out.println(\"C0 = \" + C0);\n" +
+                        "    }\n" +
+                        "    public static final int C1 = 100;\n" +
+                        "}\n").replaceAll("[ \t\n]+", " "),
+                       new DialogDisplayerImpl2("C0", IntroduceFieldPanel.INIT_FIELD, true, EnumSet.of(Modifier.PUBLIC), true, true),
+                       5, 2);
+    }
+    
+    public void testFieldFix208072d() throws Exception {
+        Preferences prefs = CodeStylePreferences.get((FileObject) null, JavacParser.MIME_TYPE).getPreferences();
+        prefs.put("classMembersOrder", "STATIC_INIT;STATIC METHOD;INSTANCE_INIT;CONSTRUCTOR;METHOD;STATIC CLASS;CLASS;STATIC FIELD;FIELD");
+        prefs.put("classMemberInsertionPoint", "LAST_IN_CATEGORY");
+        performFixTest("package test;\n" +
+                       "import java.util.logging.Level;\n" +
+                       "import java.util.logging.Logger;\n" +
+                       "public class Test {\n" +
+                       "     static {\n" +
+                       "         int ii = |1 + 2 * 3|;\n" +
+                       "     }\n" +
+                       "     private static final int II = 0;\n" +
+                       "}\n",
+                       ("package test;\n" +
+                        "import java.util.logging.Level;\n" +
+                        "import java.util.logging.Logger;\n" +
+                        "public class Test {\n" +
+                       "     private static int ZZ = 1 + 2 * 3;\n" +
+                       "     static {\n" +
+                       "         int ii = ZZ;\n" +
+                       "     }\n" +
+                       "     private static final int II = 0;\n" +
+                        "}\n").replaceAll("[ \t\n]+", " "),
+                       new DialogDisplayerImpl2("ZZ", IntroduceFieldPanel.INIT_FIELD, false, EnumSet.<Modifier>of(Modifier.PRIVATE), false, true),
+                       5, 2);
+    }
 
+    public void testWhitespace216402() throws Exception {
+        performSimpleSelectionVerificationTest("package test; public class Test {public void test() {int y = 3; y =|  2   |; }}", true);
+    }
+    
     protected void prepareTest(String code) throws Exception {
         clearWorkDir();
 
@@ -2348,4 +2591,15 @@ public class IntroduceHintTest extends NbTestCase {
             throw new UnsupportedOperationException("Not supported yet.");
         }
     }
+    
+    @ServiceProvider(service=Provider.class)
+    public static final class PreferencesProvider implements Provider {
+        @Override public Preferences forFile(FileObject file, String mimeType) {
+            return codeStylePrefs;
+        }
+        @Override public Preferences forDocument(Document doc, String mimeType) {
+            return codeStylePrefs;
+        }
+    }
+
 }

@@ -507,14 +507,7 @@ public final class FindBugsPanel extends javax.swing.JPanel {
 
         if (seq != null) return seq;
 
-        StringBuilder result = new StringBuilder();
-
-        result.append(bp.getShortDescription())
-              .append(bp.getLongDescription())
-              .append(bp.getCategory())
-              .append(bp.getDetailPlainText());
-
-        filterText.put(bp, seq = result.toString());
+        filterText.put(bp, seq = RunFindBugs.computeFilterText(bp));
 
         return seq;
     }

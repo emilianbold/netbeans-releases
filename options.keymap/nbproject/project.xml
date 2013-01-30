@@ -50,12 +50,21 @@ made subject to such option by the copyright holder.
             <code-name-base>org.netbeans.modules.options.keymap</code-name-base>
             <module-dependencies>
                 <dependency>
+                    <code-name-base>org.netbeans.api.annotations.common</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.15</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.options.api</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.4</specification-version>
+                        <specification-version>1.29</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -94,7 +103,9 @@ made subject to such option by the copyright holder.
                     <code-name-base>org.openide.loaders</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
-                    <run-dependency/>
+                    <run-dependency>
+                        <specification-version>7.42</specification-version>
+                    </run-dependency>
                 </dependency>
                 <dependency>
                     <code-name-base>org.openide.nodes</code-name-base>
@@ -152,10 +163,12 @@ made subject to such option by the copyright holder.
                 </test-type>
             </test-dependencies>
             <friend-packages>
+                <friend>org.netbeans.core.output2</friend>
                 <friend>org.netbeans.modules.editor.macros</friend>
                 <friend>org.netbeans.modules.jumpto</friend>
                 <friend>org.netbeans.modules.jvi</friend>
                 <friend>org.netbeans.modules.options.editor</friend>
+                <friend>org.netbeans.modules.editor.settings.storage</friend>
                 <package>org.netbeans.core.options.keymap.api</package>
                 <package>org.netbeans.core.options.keymap.spi</package>
             </friend-packages>

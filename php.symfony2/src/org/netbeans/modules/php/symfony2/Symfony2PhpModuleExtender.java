@@ -52,7 +52,7 @@ import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.util.FileUtils;
-import org.netbeans.modules.php.spi.phpmodule.PhpModuleExtender;
+import org.netbeans.modules.php.spi.framework.PhpModuleExtender;
 import org.netbeans.modules.php.symfony2.options.Symfony2Options;
 import org.netbeans.modules.php.symfony2.ui.wizards.NewProjectConfigurationPanel;
 import org.openide.filesystems.FileObject;
@@ -154,7 +154,13 @@ public class Symfony2PhpModuleExtender extends PhpModuleExtender {
     }
 
     private void addSourceFile(Set<FileObject> files, PhpModule phpModule, String relativePath) {
-        FileObject fileObject = phpModule.getSourceDirectory().getFileObject(relativePath);
+        FileObject sourceDirectory = phpModule.getSourceDirectory();
+        if (sourceDirectory == null) {
+            // broken project
+            assert false : "Module extender for no sources of: " + phpModule.getName();
+            return;
+        }
+        FileObject fileObject = sourceDirectory.getFileObject(relativePath);
         if (fileObject != null) {
             files.add(fileObject);
         }

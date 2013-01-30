@@ -41,23 +41,27 @@
  */
 package org.netbeans.modules.css.lib.api;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import org.netbeans.modules.csl.api.Error;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.css.lib.AbstractParseTreeNode;
-import org.netbeans.modules.css.lib.api.model.Stylesheet;
+import org.netbeans.modules.css.lib.ErrorsProviderQuery;
 import org.netbeans.modules.parsing.api.Snapshot;
-import org.netbeans.modules.parsing.spi.Parser;
 
 /**
  *
  * @author marekfukala
  */
-public class CssParserResult extends Parser.Result {
+public class CssParserResult extends ParserResult {
 
     public static boolean IN_UNIT_TESTS = false;
     
     private AbstractParseTreeNode parseTree;
     private List<ProblemDescription> diagnostics;
-    private Stylesheet model;
+    
+    private Map properties;
     
     public CssParserResult(Snapshot snapshot, AbstractParseTreeNode parseTree, List<ProblemDescription> diagnostics) {
         super(snapshot);
@@ -68,11 +72,14 @@ public class CssParserResult extends Parser.Result {
 
     @Override
     protected void invalidate() {
-        if(IN_UNIT_TESTS) {
-            return ; //some simplification - do not invalidate the result in unit tests
-        }
-        parseTree = null;
-        diagnostics = null;
+        //as CSL features uses the parser result out of the parsing task,
+        //the invalidation needs to be disabled until fixed.
+        
+//        if(IN_UNIT_TESTS) {
+//            return ; //some simplification - do not invalidate the result in unit tests
+//        }
+//        parseTree = null;
+//        diagnostics = null;
     }
 
     public Node getParseTree() {
@@ -82,14 +89,32 @@ public class CssParserResult extends Parser.Result {
         return parseTree;
     }
     
-    public synchronized Stylesheet getModel() {
-        if(model == null) {
-            model = Stylesheet.create(this);
-        }
-        return model;
-    }
-    
-    public List<ProblemDescription> getDiagnostics() {
+    /**
+     * Gets lexer / parser diagnostics w/o additional issues 
+     * possibly added by {@link ExtendedDiagnosticsProvider}.
+     */
+    public List<ProblemDescription> getParserDiagnostics() {
         return diagnostics;
     }
+
+    @Override
+    public List<? extends Error> getDiagnostics() {
+        return ErrorsProviderQuery.getExtendedDiagnostics(this);
+    }
+    
+    public <T> T getProperty(Class<T> type) {
+        if(properties == null) {
+            return null;
+        } else {
+            return (T)properties.get(type);
+        }
+    }
+    
+    public <T> void setProperty(Class<T> type, T value) {
+        if(properties == null) {
+            properties = new HashMap();
+        }
+        properties.put(type, value);
+    }
+    
 }

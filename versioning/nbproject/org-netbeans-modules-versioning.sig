@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.27.0
+#Version 1.32.1
 
 CLSS public abstract interface java.io.Serializable
 
@@ -89,7 +89,64 @@ meth public java.util.Set<java.io.File> getRootFiles()
 meth public org.openide.util.Lookup getElements()
 meth public static org.netbeans.modules.versioning.spi.VCSContext forNodes(org.openide.nodes.Node[])
 supr java.lang.Object
-hfds LOG,computedFilesCached,contextCached,contextNodesCached,elements,exclusions,fileFilterCached,rootFiles,unfilteredRootFiles
+hfds computedFilesCached,delegate,exclusions,fileFilterCached,rootFiles,unfilteredRootFiles
+hcls ProxyFileFilter
+
+CLSS public abstract interface org.netbeans.modules.versioning.spi.VCSHistoryProvider
+innr public abstract interface static HistoryChangeListener
+innr public abstract interface static MessageEditProvider
+innr public abstract interface static ParentProvider
+innr public abstract interface static RevisionProvider
+innr public final static HistoryEntry
+innr public final static HistoryEvent
+meth public abstract javax.swing.Action createShowHistoryAction(java.io.File[])
+meth public abstract org.netbeans.modules.versioning.spi.VCSHistoryProvider$HistoryEntry[] getHistory(java.io.File[],java.util.Date)
+meth public abstract void addHistoryChangeListener(org.netbeans.modules.versioning.spi.VCSHistoryProvider$HistoryChangeListener)
+meth public abstract void removeHistoryChangeListener(org.netbeans.modules.versioning.spi.VCSHistoryProvider$HistoryChangeListener)
+
+CLSS public abstract interface static org.netbeans.modules.versioning.spi.VCSHistoryProvider$HistoryChangeListener
+ outer org.netbeans.modules.versioning.spi.VCSHistoryProvider
+meth public abstract void fireHistoryChanged(org.netbeans.modules.versioning.spi.VCSHistoryProvider$HistoryEvent)
+
+CLSS public final static org.netbeans.modules.versioning.spi.VCSHistoryProvider$HistoryEntry
+ outer org.netbeans.modules.versioning.spi.VCSHistoryProvider
+cons public init(java.io.File[],java.util.Date,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,javax.swing.Action[],org.netbeans.modules.versioning.spi.VCSHistoryProvider$RevisionProvider)
+cons public init(java.io.File[],java.util.Date,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,javax.swing.Action[],org.netbeans.modules.versioning.spi.VCSHistoryProvider$RevisionProvider,org.netbeans.modules.versioning.spi.VCSHistoryProvider$MessageEditProvider)
+cons public init(java.io.File[],java.util.Date,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,javax.swing.Action[],org.netbeans.modules.versioning.spi.VCSHistoryProvider$RevisionProvider,org.netbeans.modules.versioning.spi.VCSHistoryProvider$MessageEditProvider,org.netbeans.modules.versioning.spi.VCSHistoryProvider$ParentProvider)
+meth public boolean canEdit()
+meth public java.io.File[] getFiles()
+meth public java.lang.String getMessage()
+meth public java.lang.String getRevision()
+meth public java.lang.String getRevisionShort()
+meth public java.lang.String getUsername()
+meth public java.lang.String getUsernameShort()
+meth public java.util.Date getDateTime()
+meth public javax.swing.Action[] getActions()
+meth public org.netbeans.modules.versioning.spi.VCSHistoryProvider$HistoryEntry getParentEntry(java.io.File)
+meth public void getRevisionFile(java.io.File,java.io.File)
+meth public void setMessage(java.lang.String) throws java.io.IOException
+supr java.lang.Object
+hfds actions,dateTime,files,message,messageEditProvider,parentProvider,revision,revisionProvider,revisionShort,username,usernameShort
+
+CLSS public final static org.netbeans.modules.versioning.spi.VCSHistoryProvider$HistoryEvent
+ outer org.netbeans.modules.versioning.spi.VCSHistoryProvider
+cons public init(org.netbeans.modules.versioning.spi.VCSHistoryProvider,java.io.File[])
+meth public java.io.File[] getFiles()
+meth public org.netbeans.modules.versioning.spi.VCSHistoryProvider getSource()
+supr java.lang.Object
+hfds files,source
+
+CLSS public abstract interface static org.netbeans.modules.versioning.spi.VCSHistoryProvider$MessageEditProvider
+ outer org.netbeans.modules.versioning.spi.VCSHistoryProvider
+meth public abstract void setMessage(java.lang.String) throws java.io.IOException
+
+CLSS public abstract interface static org.netbeans.modules.versioning.spi.VCSHistoryProvider$ParentProvider
+ outer org.netbeans.modules.versioning.spi.VCSHistoryProvider
+meth public abstract org.netbeans.modules.versioning.spi.VCSHistoryProvider$HistoryEntry getParentEntry(java.io.File)
+
+CLSS public abstract interface static org.netbeans.modules.versioning.spi.VCSHistoryProvider$RevisionProvider
+ outer org.netbeans.modules.versioning.spi.VCSHistoryProvider
+meth public abstract void getRevisionFile(java.io.File,java.io.File)
 
 CLSS public abstract org.netbeans.modules.versioning.spi.VCSInterceptor
 cons protected init()
@@ -145,6 +202,7 @@ meth public final void addPropertyChangeListener(java.beans.PropertyChangeListen
 meth public final void removePropertyChangeListener(java.beans.PropertyChangeListener)
 meth public java.io.File getTopmostManagedAncestor(java.io.File)
 meth public org.netbeans.modules.versioning.spi.VCSAnnotator getVCSAnnotator()
+meth public org.netbeans.modules.versioning.spi.VCSHistoryProvider getVCSHistoryProvider()
 meth public org.netbeans.modules.versioning.spi.VCSInterceptor getVCSInterceptor()
 meth public org.netbeans.modules.versioning.spi.VCSVisibilityQuery getVisibilityQuery()
 meth public org.netbeans.spi.queries.CollocationQueryImplementation getCollocationQueryImplementation()

@@ -51,12 +51,12 @@ import java.net.URL;
 import java.text.Collator;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.*;
 import org.netbeans.api.autoupdate.*;
-import org.netbeans.api.autoupdate.OperationContainer.OperationInfo;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.autoupdate.ui.actions.Installer;
@@ -117,19 +117,6 @@ public class Utilities {
                     res.add(cat);
                     names.add(catName);
                 }
-                String licenseId = el == null ? null : el.getLicenseId();
-                if (licenseId != null) {
-                    if (licenseId.contains(",")) {
-                        if (getAcceptedLicenseIds().addAll(Arrays.asList(licenseId.split(",")))) {
-                            logger.fine("License ID - Yet another licenses " + licenseId + " was accepted during installation.");
-                        }
-
-                    } else {
-                        if (getAcceptedLicenseIds().add(licenseId)) {
-                            logger.fine("License ID - Yet another license " + licenseId + " was accepted during installation.");
-                        }
-                    }
-                }
             }
         }
         logger.log(Level.FINER, "makeInstalledCategories (" + units.size() + ") returns " + res.size());
@@ -138,7 +125,7 @@ public class Utilities {
     
     private static Set<String> getAcceptedLicenseIds() {
         if (acceptedLicenseIDs == null) {
-            loadAcceptedLicenseIDs(0);
+            initAcceptedLicenseIDs();
         }
         return acceptedLicenseIDs;
     }
@@ -159,8 +146,9 @@ public class Utilities {
     }
     
     public static void storeAcceptedLicenseIDs() {
+        assert ! SwingUtilities.isEventDispatchThread() : "Don't call in AWT queue";
         if (acceptedLicenseIDs == null) {
-            return ;
+            initAcceptedLicenseIDs();
         }
         StringBuilder sb = new StringBuilder();
         for(String licenseId : acceptedLicenseIDs) {
@@ -168,12 +156,22 @@ public class Utilities {
         }
         getPreferences().put(PLUGIN_MANAGER_ACCEPTED_LICENSE_IDS, sb.length() == 0 ? "" : sb.substring(0, sb.length() - 1));
         logger.fine("License IDs - Stored: " + (sb.length() == 0 ? "" : sb.substring(0, sb.length() - 1)));
-        acceptedLicenseIDs = null;
     }
     
-    public static void loadAcceptedLicenseIDs(int capacity) {
-        if (acceptedLicenseIDs == null) {
-            acceptedLicenseIDs = new HashSet<String> (capacity);
+    public static synchronized void initAcceptedLicenseIDs() {
+        assert ! SwingUtilities.isEventDispatchThread() : "Don't call in AWT queue";
+        if (acceptedLicenseIDs == null) {            
+            acceptedLicenseIDs = Collections.newSetFromMap(new ConcurrentHashMap<String, Boolean>());
+            for (UpdateUnit u : UpdateManager.getDefault().getUpdateUnits(UpdateManager.TYPE.MODULE)) {
+                UpdateElement el;
+                if ((el = u.getInstalled()) != null) {
+                    String id;
+                    if ((id = el.getLicenseId()) != null) {
+                        acceptedLicenseIDs.add(id);
+                    }
+                }
+            }
+            
         }
         String storedIds = getPreferences().get(PLUGIN_MANAGER_ACCEPTED_LICENSE_IDS, null);
         if (storedIds != null) {
@@ -193,14 +191,14 @@ public class Utilities {
                 return new ArrayList <UnitCategory>();
             }
         }
-        List<UnitCategory> res = new ArrayList<UnitCategory> ();
-        if(units.isEmpty()) {
-            return res;
+        Map<String, UnitCategory> categories = new HashMap<String, UnitCategory>();
+        if (units.isEmpty()) {
+            return Collections.emptyList();
         }
 
-        List<String> names = new ArrayList<String> ();
-        Set<UpdateUnit> coveredByVisible = new HashSet <UpdateUnit> ();
-        Map<UpdateUnit, List<UpdateElement>> coveredByVisibleMap = new HashMap <UpdateUnit, List<UpdateElement>> ();
+        Set<UpdateUnit> invisibleUnits = new HashSet <UpdateUnit> ();
+        
+        Map<UpdateUnit, Unit.CompoundUpdate> uu2compoundUnit = new HashMap<UpdateUnit, Unit.CompoundUpdate>();
 
         for (UpdateUnit u : units) {
             UpdateElement el = u.getInstalled ();
@@ -209,233 +207,65 @@ public class Utilities {
                 if (updates.isEmpty()) {
                     continue;
                 }
-                coveredByVisible.add(u);
-
-                OperationContainer<InstallSupport> container = OperationContainer.createForUpdate();
-                OperationInfo<InstallSupport> info = container.add(updates.get(0));
-                Set <UpdateElement> required = info.getRequiredElements();
-                for(UpdateElement ue : required){
-                    if(!ue.getUpdateUnit().isPending()) {
-                        coveredByVisible.add(ue.getUpdateUnit());
+                if (UpdateManager.TYPE.KIT_MODULE.equals(u.getType()) || isNbms) {
+                    String catName = el.getCategory();
+                    if (!categories.containsKey(catName)) {
+                        categories.put(catName, new UnitCategory(catName));
                     }
-                }
-                for(OperationInfo <InstallSupport> i : container.listAll()) {
-                    if(!i.getUpdateUnit().isPending()) {
-                        coveredByVisible.add((i.getUpdateUnit()));
-                    }
-                }
-                //coveredByVisibleMap.put(u,list);
-
-                String catName = el.getCategory();
-                if (names.contains (catName)) {
-                    UnitCategory cat = res.get (names.indexOf (catName));
-                    cat.addUnit (new Unit.Update (u, isNbms, catName));
-                } else {
-                    UnitCategory cat = new UnitCategory (catName);
-                    cat.addUnit (new Unit.Update (u, isNbms, catName));
-                    res.add (cat);
-                    names.add (catName);
-                }
-            }
-        }
-
-        // not covered by visible modules
-
-        Collection<UpdateUnit> allUnits = UpdateManager.getDefault ().getUpdateUnits (UpdateManager.TYPE.MODULE);
-        Set <UpdateUnit> otherUnits = new HashSet <UpdateUnit> ();
-        for(UpdateUnit u : allUnits) {
-            if(!coveredByVisible.contains(u) && 
-                    u.getAvailableUpdates().size() > 0 &&
-                    u.getInstalled()!=null &&
-                    !u.isPending() &&
-                    (u.getInstalled().isEnabled() ||
-                        OperationContainer.createForEnable().canBeAdded(u, u.getInstalled()))) { // just disabled, but can be enabled: i.e. not eager/autoload
-                otherUnits.add(u);
-            }
-        }
-
-        List<Unit.InternalUpdate> internals = new ArrayList <Unit.InternalUpdate>();
-        createVisibleModulesDependecyMap(units, coveredByVisibleMap);
-
-        Set <UpdateUnit> invisibleElementsWithoutVisibleParent = new HashSet <UpdateUnit> ();
-
-        if(otherUnits.size() > 0 && !isNbms) {
-            for(UpdateUnit uu : otherUnits) {
-                UpdateUnit u = getVisibleUnitForInvisibleModule(uu, coveredByVisibleMap);
-                if (u != null) {
-                    if (u.getInstalled() != null && !u.getInstalled().isEnabled()) {
-                        continue;
-                    }
-                    boolean exist = false;
-                    for(Unit.InternalUpdate internal : internals) {
-                        if(internal.getVisibleUnit() == u) {
-                            internal.getUpdateUnits().add(uu);
-                            exist = true;
-                        }
-                    }
-                    if(!exist) {
-                        //all already determined "internal" visible updates does not contain just found one
-                        String catName = u.getInstalled().getCategory();
-                        Unit.InternalUpdate iu = new Unit.InternalUpdate(u, catName, false);
-                        iu.getUpdateUnits().add(uu);
-                        internals.add(iu);
-                        UnitCategory cat = new UnitCategory(catName);
-                        res.add(cat);
-                        names.add(catName);
-                        cat.addUnit(iu);
+                    UnitCategory cat = categories.get(catName);
+                    if (isNbms) {
+                        cat.addUnit(new Unit.Update(u, isNbms, catName));
+                    } else {
+                        Unit.CompoundUpdate compUnit = new Unit.CompoundUpdate(u, catName);
+                        cat.addUnit(compUnit);
+                        logger.finest("Kit " + u + " makes compound unit " + compUnit);
+                        uu2compoundUnit.put(u, compUnit);
                     }
                 } else {
-                    // fallback, show module itself
-                    invisibleElementsWithoutVisibleParent.add(uu);
+                    invisibleUnits.add(u);
                 }
-            }            
+            }
         }
 
-        Map<UpdateUnit, List<UpdateElement>> coveredByInvisibleMap = new HashMap <UpdateUnit, List<UpdateElement>> ();
-        createVisibleModulesDependecyMap(invisibleElementsWithoutVisibleParent, coveredByInvisibleMap);
-
-        Set <UpdateUnit> coveredByInvisible = new HashSet <UpdateUnit>();
-        for (UpdateUnit invisibleUnit : invisibleElementsWithoutVisibleParent) {
-            boolean add = true;
-            UpdateElement update = invisibleUnit.getAvailableUpdates().get(0);
-            if (invisibleUnit.getInstalled() != null && !invisibleUnit.getInstalled().isEnabled()) {
-                continue;
-            }
-            for(UpdateUnit key : coveredByInvisibleMap.keySet()) {
-                if(key.equals(invisibleUnit)) {
-                    continue;
+        if (invisibleUnits.size() > 0 && !isNbms) {
+            for (UpdateUnit invisibleUnit : invisibleUnits) {
+                UpdateUnit visUnit = invisibleUnit.getVisibleAncestor();
+                if (visUnit == null || visUnit.getInstalled() == null) {
+                    // fallback for unit w/o visible ancestor
+                    visUnit = invisibleUnit;
                 }
-                if(coveredByInvisibleMap.get(key).contains(update) && !coveredByInvisible.contains(key)) {
-                    add = false;
-                    break;
+                UpdateElement visElement = visUnit.getInstalled();
+                logger.finer(invisibleUnit + " -> " + visUnit);
+                
+                // belongs to one of already visible unit
+                if (uu2compoundUnit.containsKey(visUnit)) {
+                    logger.finest(invisibleUnit + " belongs to " + visUnit);
+                // belongs to visible unit which is not listed yet
+                } else {
+                    String catName = visElement.getCategory();
+                    if (!categories.containsKey(catName)) {
+                        categories.put(catName, new UnitCategory(catName));
+                    }
+                    UnitCategory cat = categories.get(catName);
+                    Unit.CompoundUpdate compUnit = new Unit.CompoundUpdate(visUnit, catName);
+                    cat.addUnit(compUnit);
+                    logger.finest(visUnit + " makes new compound unit " + compUnit);
+                    uu2compoundUnit.put(visUnit, compUnit);
                 }
+                uu2compoundUnit.get(visUnit).getUpdateUnits().add(invisibleUnit);                
             }
             
-            if (add) {
-                String catName = update.getCategory();
-                UnitCategory cat;
-
-                if (names.contains(catName)) {
-                    cat = res.get(names.indexOf(catName));
-                } else {
-                    cat = new UnitCategory(catName);
-                    res.add(cat);
-                    names.add(catName);
-                }
-                cat.addUnit(new Unit.Update(invisibleUnit, isNbms, cat.getCategoryName()));
-            } else {
-                coveredByInvisible.add(invisibleUnit);
+            // mark all updates as marked
+            for (Unit.CompoundUpdate compoundUnit : new HashSet<Unit.CompoundUpdate>(uu2compoundUnit.values())) {
+                compoundUnit.initState();
             }
         }
 
-        for(Unit.InternalUpdate iu : internals) {
-            iu.initState();
-        }
-        logger.log(Level.FINE, "makeUpdateCategories (" + units.size () + ") returns " + res.size () + ", took " + (System.currentTimeMillis()-start) + " ms");
+        logger.log(Level.FINE, "makeUpdateCategories (" + units.size () + ") returns " + categories.size () + ", took " + (System.currentTimeMillis()-start) + " ms");
 
-        return res;
+        return new ArrayList<UnitCategory>(categories.values());
     };
 
-    public static HashMap<UpdateUnit, List<UpdateElement>> getVisibleModulesDependecyMap(Collection<UpdateUnit> allUnits) {
-        HashMap<UpdateUnit, List<UpdateElement>> result = new HashMap <UpdateUnit, List<UpdateElement>>();
-        createVisibleModulesDependecyMap(allUnits, result);
-        return result;
-    }
-
-    private static void createVisibleModulesDependecyMap(Collection<UpdateUnit> allUnits, Map <UpdateUnit, List<UpdateElement>> result) {
-        for (UpdateUnit u : allUnits) {
-            if (u.getInstalled() != null && !u.isPending() && !result.containsKey(u)) {
-
-                OperationContainer<InstallSupport> container = u.getAvailableUpdates().isEmpty() ? 
-                    OperationContainer.createForInternalUpdate() :
-                    OperationContainer.createForUpdate();
-                OperationInfo<InstallSupport> info = container.add(u, 
-                        u.getAvailableUpdates().isEmpty() ? u.getInstalled() : u.getAvailableUpdates().get(0));
-
-                List<UpdateElement> list = new ArrayList<UpdateElement>();
-
-                for (UpdateElement ur : info.getRequiredElements()) {
-                    if(!ur.getUpdateUnit().isPending()) {
-                        list.add(ur);
-                    }
-                }
-                for (OperationInfo<InstallSupport> in : container.listAll()) {
-                    UpdateUnit unit = in.getUpdateUnit();
-                    if (unit != u) {
-                        List<UpdateElement> updates = unit.getAvailableUpdates();
-                        if (updates.size() > 0 && !list.contains(updates.get(0))) {
-                            list.add(updates.get(0));
-                        }
-                    }
-                }
-                if(!list.isEmpty()) {
-                    result.put(u, list);
-                }
-            }
-        }        
-    }
-
-    public static UpdateUnit getVisibleUnitForInvisibleModule(UpdateUnit invisible, Map<UpdateUnit, List<UpdateElement>> map) {
-        List <UpdateUnit> candidates = new ArrayList<UpdateUnit>();
-
-        for(UpdateUnit unit : map.keySet()) {
-            for (UpdateElement ue : map.get(unit)) {
-                if (ue.getUpdateUnit().equals(invisible)) {
-                    logger.log(Level.FINEST,
-                            "... found candidate visible module " + unit.getCodeName() + " for invisible " + invisible.getCodeName());
-                    candidates.add(unit);
-                }
-            }
-        }
-
-        UpdateUnit result = null;
-        if(candidates.isEmpty()) {
-            logger.log(Level.FINEST,
-                    "Have not found visible module for invisible " + invisible.getCodeName());
-        } else {
-            
-            int overlap = 0;
-            UpdateUnit takeMe = null;
-            for(UpdateUnit tryMe : candidates) {
-                int o = getNameOverlapping(tryMe.getCodeName(), invisible.getCodeName());
-                if(o > overlap) {
-                    takeMe = tryMe;
-                    overlap = o;
-                }
-            }
-            if (takeMe != null) {
-                result = takeMe;
-            } else {
-                result = candidates.get(0);
-                for (UpdateUnit u : candidates) {
-                    if (u.getCodeName().endsWith(".kit")) {
-                        result = u;
-                        break;
-                    }
-                }
-            }
-            logger.log(Level.FINEST,
-                    "Found visible module " + candidates.get(0).getCodeName() + " for invisible " + invisible.getCodeName());
-        }
-
-        return result;
-    }
-    private static int getNameOverlapping(String cn1, String cn2) {
-        String[] cn1sp = cn1.split("\\.");
-        String[] cn2sp = cn2.split("\\.");
-
-        int length1 = cn1sp.length;
-        int length2 = cn2sp.length;
-        int min = Math.min(length1, length2);
-        int i;
-        for(i=0;i<min;i++) {
-            if(!cn1sp[i].equals(cn2sp[i])) {
-                break;
-            }
-        }
-        return (2 * i > min) ? i : 0;
-    }
-   
     public static long getTimeOfInitialization () {
         return getPreferences ().getLong (TIME_OF_MODEL_INITIALIZATION, 0);
     }

@@ -51,7 +51,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -66,9 +65,8 @@ import org.netbeans.modules.java.hints.providers.spi.HintMetadata;
 import org.netbeans.modules.java.hints.spiimpl.RulesManager;
 import org.netbeans.modules.java.hints.spiimpl.options.HintsSettings;
 import org.netbeans.spi.editor.hints.ErrorDescription;
-import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
-import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.java.hints.CustomizerProvider;
+import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.java.hints.Hint;
 import org.netbeans.spi.java.hints.HintContext;
 import org.netbeans.spi.java.hints.JavaFix;
@@ -137,9 +135,7 @@ public class ConvertToDiamondBulkHint {
                 }
             }
 
-            List<Fix> fixes = Arrays.asList(new FixImpl(ctx.getInfo(), ctx.getPath()).toEditorFix());
-            
-            return ErrorDescriptionFactory.createErrorDescription(ctx.getSeverity(), d.getMessage(null), fixes, ctx.getInfo().getFileObject(), (int) d.getStartPosition(), (int) d.getEndPosition());
+            return ErrorDescriptionFactory.forTree(ctx, clazz.getParentPath(), d.getMessage(null), new FixImpl(ctx.getInfo(), ctx.getPath()).toEditorFix());
         }
 
         return null;

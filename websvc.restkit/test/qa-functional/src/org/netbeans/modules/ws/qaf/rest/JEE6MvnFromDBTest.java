@@ -42,7 +42,6 @@
 package org.netbeans.modules.ws.qaf.rest;
 
 import junit.framework.Test;
-import org.netbeans.junit.NbModuleSuite;
 
 /**
  *
@@ -63,9 +62,9 @@ public class JEE6MvnFromDBTest extends MvnFromDBTest {
      * Creates suite from particular test cases. You can define order of testcases here.
      */
     public static Test suite() {
-        return NbModuleSuite.create(addServerTests(Server.GLASSFISH, NbModuleSuite.createConfiguration(JEE6MvnFromDBTest.class),
+        return createAllModulesServerSuite(Server.GLASSFISH, JEE6MvnFromDBTest.class,
                 "testFromDB", //NOI18N
                 "testRun", //NOI18N
-                "testUndeploy").enableModules(".*").clusters(".*")); //NOI18N
+                "testUndeploy"); //NOI18N
     }
 }

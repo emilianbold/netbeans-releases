@@ -93,4 +93,16 @@ public class PathUtils {
         }
         return null;
     }
+    
+    public static String getCwdPath(long pid, ExecutionEnvironment execEnv) {
+        if (pid > 0) {
+            String procdir = "/proc/" + Long.toString(pid); // NOI18N
+            String path = PathUtils.getPathFromSymlink(procdir + "/cwd", execEnv); // NOI18N
+
+            if (path != null && path.length() > 0) {
+                return path;
+            }
+        }
+        return null;
+    }
 }

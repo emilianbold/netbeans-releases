@@ -86,7 +86,7 @@ public class SvnHookImpl extends SvnHook {
         String author = logEntry.getAuthor();
         long revision = logEntry.getRevision();
         Date date = logEntry.getDate();
-        String message = logEntry.getMessage();
+        String message = context.getMessage();
         delegate.afterCommit(context.getFiles(), author, Long.toString(revision), date, message, "SVN", false);        
     }    
 

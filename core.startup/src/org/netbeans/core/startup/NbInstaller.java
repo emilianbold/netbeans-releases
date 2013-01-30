@@ -89,9 +89,11 @@ import org.openide.util.NbCollections;
 import org.openide.util.SharedClassObject;
 import org.openide.util.NbBundle;
 import org.openide.util.Task;
+import org.openide.util.TaskListener;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.InstanceContent;
 import org.xml.sax.SAXException;
+
 
 /** Concrete implementation of the module installation functionality.
  * This class can pay attention to the details of manifest format,
@@ -712,7 +714,13 @@ final class NbInstaller extends ModuleInstaller {
         return onStartStop.closing(modules);
     }
     
+    @Override
     public void close(List<Module> modules) {
+        closeAsync(modules).waitFinished();
+    }
+
+    @Override
+    public Task closeAsync(List<Module> modules) {
         Util.err.fine("close: " + modules);
         ev.log(Events.CLOSE);
         moduleList.shutDown();
@@ -737,11 +745,9 @@ final class NbInstaller extends ModuleInstaller {
                 }
             }
         }
-        for (Task t : waitFor) {
-            t.waitFinished();
-        }
+        waitFor.add(WarmUpSupport.waitTask());
+        return new ProxyTask(waitFor);
     }
-
     private static String cacheCnb;
     private static Set<Dependency> cacheDeps;
     @Override

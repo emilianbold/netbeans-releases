@@ -125,13 +125,18 @@ public class ServerProperties extends Properties implements Cloneable {
         // close the input stream?
         // should cache
         try {
-            load(new FileInputStream(amConfigFile.trim()));
-            setProperty(PROP_AM_CONFIG_FILE, amConfigFile);
-            setProperty(PROP_AS_ROOT, asRoot);
-            setProperty(PROP_ID, id);
-            setProperty(PROP_CONTEXT_ROOT, getContextRoot());
-            setProperty(PROP_HOST, host);
-            updateURLs();
+            FileInputStream fis = new FileInputStream(amConfigFile.trim());
+            try {
+                load(fis);
+                setProperty(PROP_AM_CONFIG_FILE, amConfigFile);
+                setProperty(PROP_AS_ROOT, asRoot);
+                setProperty(PROP_ID, id);
+                setProperty(PROP_CONTEXT_ROOT, getContextRoot());
+                setProperty(PROP_HOST, host);
+                updateURLs();
+            } finally {
+                fis.close();
+            }
         } catch (Exception ex) {
             throw new ConfiguratorException(NbBundle.getMessage(ServerProperties.class,
                     "TXT_InvalidAMConfigFile"));

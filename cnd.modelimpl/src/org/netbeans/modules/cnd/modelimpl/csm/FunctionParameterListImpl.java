@@ -43,6 +43,7 @@ package org.netbeans.modules.cnd.modelimpl.csm;
 
 import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
@@ -53,8 +54,10 @@ import org.netbeans.modules.cnd.api.model.CsmParameter;
 import org.netbeans.modules.cnd.api.model.CsmParameterList;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
+import org.netbeans.modules.cnd.modelimpl.csm.ParameterImpl.ParameterBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstRenderer;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
+import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase.ScopedDeclarationBuilder;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
@@ -138,6 +141,26 @@ public class FunctionParameterListImpl extends ParameterListImpl<CsmFunctionPara
         }
         return create(file, fileContent, lParen, rParen, paramList, krList, scope);
     }
+    
+    public static class FunctionParameterListBuilder extends ScopedDeclarationBuilder {
+                
+        private List<ParameterBuilder> parameterBuilsers = new ArrayList<ParameterBuilder>();
+        
+        public void addParameterBuilder(ParameterBuilder parameterBuilser) {
+            parameterBuilsers.add(parameterBuilser);
+        }
+
+        public FunctionParameterListImpl create() {
+            List<CsmParameter> parameters = new ArrayList<CsmParameter>();
+            for (ParameterBuilder parameterBuilder : parameterBuilsers) {
+                parameterBuilder.setScope(getScope());
+                parameters.add(parameterBuilder.create());
+            }
+            FunctionParameterListImpl list = new FunctionParameterListImpl(getFile(), getStartOffset(), getEndOffset(), parameters);
+            return list;
+        }
+    }      
+    
 
     ////////////////////////////////////////////////////////////////////////////
     // persistent

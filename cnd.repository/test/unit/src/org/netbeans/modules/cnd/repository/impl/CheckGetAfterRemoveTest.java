@@ -46,6 +46,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.netbeans.junit.NbTestSuite;
+import org.netbeans.modules.cnd.repository.api.RepositoryAccessor;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 
@@ -74,9 +75,12 @@ public class CheckGetAfterRemoveTest extends GetPutTestBase {
     }
 
     public void testGetAfterRemove() throws InterruptedException {
-        _test(new SmallKey("small_1"), new Value("small_obj_1"));
-        _test(new LargeKey("large_1"), new Value("large_obj_1"));
-
+        SmallKey smallKey = new SmallKey("small_1");
+        LargeKey largeKey = new LargeKey("large_1");
+        RepositoryAccessor.getRepository().openUnit(smallKey.getUnitId(), smallKey.getUnit());
+        RepositoryAccessor.getRepository().openUnit(largeKey.getUnitId(), smallKey.getUnit());
+        _test(smallKey, new Value("small_obj_1"));
+        _test(largeKey, new Value("large_obj_1"));
     }
     private final AtomicBoolean readFlag = new AtomicBoolean(false);
     private volatile CountDownLatch writeLatch;

@@ -70,7 +70,7 @@ public final class J2eeLibraryTypeProvider implements LibraryTypeProvider {
     /** Javadoc volume type */
     public static final String VOLUME_TYPE_JAVADOC = "javadoc";         //NOI18N
     
-    public static final String[] VOLUME_TYPES = new String[] {
+    static final String[] VOLUME_TYPES = new String[] {
         VOLUME_TYPE_CLASSPATH,
         VOLUME_TYPE_SRC,
         VOLUME_TYPE_JAVADOC

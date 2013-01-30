@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -43,37 +43,33 @@ package org.netbeans.modules.test.refactoring;
 
 import junit.framework.Test;
 import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jellytools.ProjectsTabOperator;
+import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jellytools.nodes.ProjectRootNode;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
-import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
-import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.modules.test.refactoring.actions.MovePopupAction;
-import org.netbeans.modules.test.refactoring.operators.MoveOperator;
+import org.netbeans.modules.test.refactoring.actions.RefactorMoveAction;
+import org.netbeans.modules.test.refactoring.operators.MoveClassDialogOperator;
 
 /**
  *
- * @author Jiri Prox Jiri.Prox@SUN.Com
+ * @author Jiri Prox Jiri.Prox@oracle.com, Marian.Mirilovic@oracle.com
  */
 public class MoveTest extends ModifyingRefactoring {
 
     private enum TargetDestination {
-
         SOURCE, TESTS
     }
 
     public MoveTest(String name) {
         super(name);
     }
+
     public static Test suite() {
-        return NbModuleSuite.create(
-                NbModuleSuite.createConfiguration(MoveTest.class).addTest(
-                "testMoveClass",
-                "testMoveToTest",
-                "testMoveToNewPackage"
-                ).enableModules(".*").clusters(".*"));
+        return JellyTestCase.emptyConfiguration().
+                addTest(MoveTest.class, "testMoveClass").
+                addTest(MoveTest.class, "testMoveToTest").
+                addTest(MoveTest.class, "testMoveToNewPackage").
+                suite();
     }
 
     public void testMoveClass() {
@@ -91,26 +87,16 @@ public class MoveTest extends ModifyingRefactoring {
     private void performMove(String fileName, String pkgName, String newPkg, boolean performInEditor, MoveTest.TargetDestination target) {
         if (performInEditor) {
             openSourceFile(pkgName, fileName);
-            new EventTool().waitNoEvent(1000);
             EditorOperator editor = new EditorOperator(fileName);
-            new EventTool().waitNoEvent(1000);
             editor.setCaretPosition(1, 1);
-            new EventTool().waitNoEvent(500);
-            editor.select(1, 1, 1);
-            new EventTool().waitNoEvent(1000);
-            editor.clickMouse();
-            new EventTool().waitNoEvent(1000);
-            new MovePopupAction().perform(editor);
+            new RefactorMoveAction().performPopup(editor);
         } else {
-            ProjectsTabOperator pto = ProjectsTabOperator.invoke();
-            ProjectRootNode prn = pto.getProjectRootNode(getProjectName());
-            SourcePackagesNode src = new SourcePackagesNode(prn);
-            Node node = new Node(src, pkgName + treeSeparator + fileName);
+            SourcePackagesNode src = new SourcePackagesNode(testProjectRootNode);
+            Node node = new Node(src, pkgName + TREE_SEPARATOR + fileName);
             node.select();
-            new EventTool().waitNoEvent(1000);
-            new MovePopupAction().perform(node);
+            new RefactorMoveAction().performPopup(node);
         }
-        MoveOperator mo = new MoveOperator();
+        MoveClassDialogOperator mo = new MoveClassDialogOperator();
         JComboBoxOperator location = mo.getLocationCombo();
         switch (target) {
             case SOURCE:
@@ -122,9 +108,7 @@ public class MoveTest extends ModifyingRefactoring {
         }
         mo.getPackageCombo().clearText();
         mo.getPackageCombo().typeText(newPkg);
-        mo.getPreview().push();
+        mo.preview();
         dumpRefactoringResults();
     }
-
-    
 }

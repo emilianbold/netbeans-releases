@@ -58,7 +58,7 @@ public class AccidentalAssignmentCustomizer extends javax.swing.JPanel {
     private final AccidentalAssignmentHint accidentalAssignmentHint;
     private final Preferences preferences;
 
-    /** Creates new form AccidentalAssignmentCustomizer */
+    /* Creates new form AccidentalAssignmentCustomizer */
     public AccidentalAssignmentCustomizer(Preferences preferences, AccidentalAssignmentHint accidentalAssignmentHint) {
         this.preferences = preferences;
         this.accidentalAssignmentHint = accidentalAssignmentHint;

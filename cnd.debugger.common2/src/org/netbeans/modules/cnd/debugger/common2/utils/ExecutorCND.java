@@ -126,6 +126,11 @@ import org.openide.util.Utilities;
             }
         }
     }
+    
+    @Override
+    public void interrupt() throws IOException {
+        interrupt(pid);
+    }
 
     public void interruptGroup() throws IOException {
 	try {
@@ -321,6 +326,10 @@ import org.openide.util.Utilities;
 
     public String readlink(long pid) {
         return PathUtils.getExePath(pid, exEnv);
+    }
+    
+    public String readDirLink(long pid) {
+        return PathUtils.getCwdPath(pid, exEnv);
     }
 
     public boolean is_64(String filep) {

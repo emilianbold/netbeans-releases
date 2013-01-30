@@ -144,7 +144,7 @@ public class PhpRenameRefactoringUI implements RefactoringUI, RefactoringUIBypas
 
     @Override
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(PhpRenameRefactoringUI.class);
+        return new HelpCtx("org.netbeans.modules.refactoring.php.rename.PhpRenameRefactoringUI");
     }
 
     @Override

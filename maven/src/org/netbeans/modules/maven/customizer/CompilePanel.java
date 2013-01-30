@@ -55,6 +55,7 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.ListCellRenderer;
 import javax.swing.plaf.UIResource;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.PlatformsCustomizer;
@@ -126,13 +127,13 @@ public class CompilePanel extends javax.swing.JPanel {
         initValues();
     }
 
-    private String valueToLabel(String value) {
+    private String valueToLabel(@NullAllowed String value) {
         for (int i = 0; i < VALUES.length; i++) {
             if (VALUES[i].equalsIgnoreCase(value)) {
                 return LABELS[i];
             }
         }
-        return LABELS[COS_APP];
+        return LABELS[getDefaultCOSValue()];
     }
 
     private String labelToValue(String label) {
@@ -141,7 +142,15 @@ public class CompilePanel extends javax.swing.JPanel {
                 return VALUES[i];
             }
         }
-        return VALUES[COS_APP];
+        return VALUES[getDefaultCOSValue()];
+    }
+    
+    private int getDefaultCOSValue() {
+        String packaging = handle.getProject().getPackaging();
+        if ("war".equals(packaging) || "ejb".equals(packaging) || "ear".equals(packaging)) {
+            return COS_APP;
+        }
+        return COS_NONE;
     }
 
     private void initValues() {
@@ -163,25 +172,22 @@ public class CompilePanel extends javax.swing.JPanel {
 
             @Override
             public String getDefaultValue() {
-                return LABELS[COS_APP];
+                return LABELS[getDefaultCOSValue()];
             }
 
             @Override
             public String getValue() {
                 String val = modifiedValue;
                 if (val == null) {
-                    Properties props = handle.getPOMModel().getProject().getProperties();
+                    val = handle.getRawAuxiliaryProperty(Constants.HINT_COMPILE_ON_SAVE, true);
+                }
+                if (val == null) {
+                    java.util.Properties props = handle.getProject().getProperties();
                     if (props != null) {
                         val = props.getProperty(Constants.HINT_COMPILE_ON_SAVE);
                     }
-                }
-                if (val == null) {
-                    val = handle.getRawAuxiliaryProperty(Constants.HINT_COMPILE_ON_SAVE, true);
-                }
-                if (val != null) {
-                    return valueToLabel(val);
-                }
-                return LABELS[COS_APP];
+                }             
+                return valueToLabel(val);
             }
 
             @Override
@@ -189,11 +195,11 @@ public class CompilePanel extends javax.swing.JPanel {
                 handle.removePOMModification(operation);
                 modifiedValue = null;
                 String value = labelToValue(label);
-                if (value != null && value.equals(VALUES[COS_APP])) {
+                if (value != null && value.equals(VALUES[getDefaultCOSValue()])) {
                     //just reset the value, no need to persist default.
                     value = null;
                 }
-                if (value == null || VALUES[COS_ALL].equals(value) || VALUES[COS_APP].equals(value)) {
+                if (VALUES[COS_ALL].equals(value) || VALUES[COS_APP].equals(value) || (value == null && getDefaultCOSValue() != COS_NONE)) {
                     if (!warningShown && DontShowAgainSettings.getDefault().showWarningAboutApplicationCoS()) {
                         WarnPanel panel = new WarnPanel(NbBundle.getMessage(CompilePanel.class, "HINT_ApplicationCoS"));
                         NotifyDescriptor dd = new NotifyDescriptor.Message(panel, NotifyDescriptor.PLAIN_MESSAGE);
@@ -206,8 +212,8 @@ public class CompilePanel extends javax.swing.JPanel {
                 }
 
                 boolean hasConfig = handle.getRawAuxiliaryProperty(Constants.HINT_COMPILE_ON_SAVE, true) != null;
-
-                if (handle.getProject().getProperties().containsKey(Constants.HINT_COMPILE_ON_SAVE)) {
+                org.netbeans.modules.maven.model.pom.Project p = handle.getPOMModel().getProject();
+                if (p.getProperties() != null && p.getProperties().getProperty(Constants.HINT_COMPILE_ON_SAVE) != null) {
                     modifiedValue = value;
                     handle.addPOMModification(operation);
                     if (hasConfig) {
@@ -402,20 +408,23 @@ public class CompilePanel extends javax.swing.JPanel {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(lblHint1, javax.swing.GroupLayout.DEFAULT_SIZE, 566, Short.MAX_VALUE)
-                    .addComponent(lblHint2, javax.swing.GroupLayout.PREFERRED_SIZE, 566, Short.MAX_VALUE)
-                    .addComponent(cbDebug)
-                    .addComponent(cbDeprecate)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(lblCompileOnSave)
                             .addComponent(lblJavaPlatform))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(comJavaPlatform, 0, 204, Short.MAX_VALUE)
-                            .addComponent(comCompileOnSave, 0, 204, Short.MAX_VALUE))
+                            .addComponent(comJavaPlatform, 0, 261, Short.MAX_VALUE)
+                            .addComponent(comCompileOnSave, 0, 261, Short.MAX_VALUE))
                         .addGap(16, 16, 16)
-                        .addComponent(btnMngPlatform)))
+                        .addComponent(btnMngPlatform))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(cbDebug)
+                            .addComponent(cbDeprecate)
+                            .addComponent(lblHint1)
+                            .addComponent(lblHint2))
+                        .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -437,7 +446,7 @@ public class CompilePanel extends javax.swing.JPanel {
                 .addComponent(cbDebug)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(cbDeprecate)
-                .addContainerGap(142, Short.MAX_VALUE))
+                .addContainerGap(149, Short.MAX_VALUE))
         );
 
         btnMngPlatform.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CompilePanel.class, "CompilePanel.btnMngPlatform.AccessibleContext.accessibleDescription")); // NOI18N

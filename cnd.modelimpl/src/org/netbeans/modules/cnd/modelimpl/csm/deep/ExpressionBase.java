@@ -57,6 +57,7 @@ import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstRenderer;
 import org.netbeans.modules.cnd.modelimpl.csm.core.CsmIdentifiable;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableBase;
+import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase.ScopedDeclarationBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
@@ -185,7 +186,32 @@ public final class ExpressionBase extends OffsetableBase implements CsmExpressio
     public CsmExpression getParent() {
         return null; //parent;
     }
- 
+
+    public interface ExpressionBuilderContainer {
+        public void addExpressionBuilder(ExpressionBuilder builder);
+    }
+    
+    public static class ExpressionBuilder extends ScopedDeclarationBuilder {
+
+        private int level = 0;
+        public void enterExpression() {
+            level++;
+        }
+        
+        public void leaveExpression() {
+            level--;
+        }
+        
+        public boolean isTopExpression() {
+            return level == 0;
+        }
+        
+        public ExpressionBase create() {
+            ExpressionBase expr = new ExpressionBase(getStartOffset(), getEndOffset(), getFile(), getScope());
+            return expr;
+        }
+    }         
+    
     ////////////////////////////////////////////////////////////////////////////
     // impl of SelfPersistent
     

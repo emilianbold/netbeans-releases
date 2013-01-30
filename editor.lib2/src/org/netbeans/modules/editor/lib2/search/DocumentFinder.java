@@ -122,8 +122,8 @@ public class DocumentFinder
             }catch(PatternSyntaxException pse){
                 if (!blocksFinder){
                     NotifyDescriptor msg = new NotifyDescriptor.Message(
-                            pse.getDescription(), NotifyDescriptor.ERROR_MESSAGE);
-                    msg.setTitle(NbBundle.getBundle(DocumentFinder.class).getString("pattern-error-dialog-title")); //NOI18N
+                            NbBundle.getMessage(DocumentFinder.class, "pattern-error-dialog-content") + "\n" + pse.getDescription(), NotifyDescriptor.ERROR_MESSAGE);
+                    msg.setTitle(NbBundle.getMessage(DocumentFinder.class, "pattern-error-dialog-title")); //NOI18N
                     DialogDisplayer.getDefault().notify(msg);
                 }
                 PatternCache.putPattern(text, matchCase, null);
@@ -338,9 +338,10 @@ public class DocumentFinder
     
     private static void notifyRegexpException(Exception ex) throws MissingResourceException {
         String additionalHint = ""; //NOI18N
-        if (ex instanceof IllegalArgumentException)
+        if (ex instanceof IllegalArgumentException) {
             additionalHint = "\n" + NbBundle.getBundle(DocumentFinder.class).getString("pattern-error-missing-escape-hint"); //NOI18N
-        NotifyDescriptor msg = new NotifyDescriptor.Message(
+        }
+        NotifyDescriptor msg = new NotifyDescriptor.Message(NbBundle.getMessage(DocumentFinder.class, "pattern-error-dialog-content") + "\n" +
                 ex.getLocalizedMessage() + additionalHint, NotifyDescriptor.ERROR_MESSAGE);
         
         msg.setTitle(NbBundle.getBundle(DocumentFinder.class).getString("pattern-error-dialog-title")); //NOI18N
@@ -658,8 +659,8 @@ public class DocumentFinder
                         stringInd++;
                         if (stringInd == chars.length) { // found whole string
                             if (offset == limitOffset) {
-                                int blkEnd = initOffset + 1;
-                                addBlock(blkEnd - stringInd, blkEnd);
+                                int blkEnd = initOffset + offset + 1;
+                                addBlock(blkEnd - chars.length, blkEnd);
                             } else {
                                 wordFound = true;
                             }
@@ -1222,7 +1223,7 @@ public class DocumentFinder
                     do {
                         initOffset++;
                     } while(initOffset < chars.length() && matcher.find(initOffset) && matcher.end() - matcher.start() == 0);
-                    if(matcher.end() - matcher.start() > 0)
+                    if(matcher.find(initOffset) && matcher.end() - matcher.start() > 0)
                         return find(initOffset,chars);
                     else
                         return -1;

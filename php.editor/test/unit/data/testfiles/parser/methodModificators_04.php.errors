@@ -1,9 +1,13 @@
-[[81,86]-Syntax error:
-expected: class] 81-86:Syntax error:
-expected: class
-[[81,86]-Syntax error:
-expected: exit, if, identifier, variable, echo, do, while, for, foreach, declare, switch, break, continue, function, const, return, try, throw, use, global, unset, isset, empty, class, interface, array, {, include, include_once, eval, require, require_once, print, ';', +, -, !, ~, ++, --, @, [, new, static, abstract, final, (, $] 81-86:Syntax error:
-expected: exit, if, identifier, variable, echo, do, while, for, foreach, declare, switch, break, continue, function, const, return, try, throw, use, global, unset, isset, empty, class, interface, array, {, include, include_once, eval, require, require_once, print, ';', +, -, !, ~, ++, --, @, [, new, static, abstract, final, (, $
-[[81,86]-Syntax error:
-expected: function, static, private, protected, public] 81-86:Syntax error:
-expected: function, static, private, protected, public
+[[54,62]-Syntax error
+ unexpected:	abstract
+ after:	final
+ expected:	function, static, private, protected, public] 54-62:Syntax error
+ unexpected:	abstract
+ after:	final
+ expected:	function, static, private, protected, public
+[[63,71]-POSSIBLE Syntax Error (check preceding valid syntax error)
+ unexpected:	function] 63-71:POSSIBLE Syntax Error (check preceding valid syntax error)
+ unexpected:	function
+[[88,89]-POSSIBLE Syntax Error (check preceding valid syntax error)
+ unexpected:	}] 88-89:POSSIBLE Syntax Error (check preceding valid syntax error)
+ unexpected:	}

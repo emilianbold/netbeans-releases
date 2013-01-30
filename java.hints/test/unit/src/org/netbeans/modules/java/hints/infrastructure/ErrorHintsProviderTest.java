@@ -254,4 +254,12 @@ public class ErrorHintsProviderTest extends NbTestCase {
             p.putBoolean(CompilerSettings.ENABLE_LINT_SERIAL, old);
         }
     }
+
+    public void testTestSpaceAfterDot218655() throws Exception {
+        performTest("TestSpaceAfterDot", false);
+    }
+    
+    public void testOverrideAnnotation() throws Exception {
+        performTest("TestOverrideAnnotation", false);
+    }
 }

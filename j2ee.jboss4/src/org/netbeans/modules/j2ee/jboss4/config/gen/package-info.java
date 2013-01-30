@@ -48,7 +48,8 @@
         validate=true,
         attrProp=true,
         removeUnreferencedNodes=true,
-        docRoot="jboss-client"
+        docRoot="jboss-client",
+        java5=true
     ),
     @Schema2Beans(
         schema="../../resources/jboss-service_4_0.dtd",
@@ -57,7 +58,8 @@
         validate=true,
         attrProp=true,
         removeUnreferencedNodes=true,
-        docRoot="server"
+        docRoot="server",
+        java5=true
     ),
     @Schema2Beans(
         schema="../../resources/jboss-ds_1_5.dtd",
@@ -66,7 +68,8 @@
         validate=true,
         attrProp=true,
         removeUnreferencedNodes=true,
-        docRoot="datasources"
+        docRoot="datasources",
+        java5=true
     ),
     @Schema2Beans(
         schema="../../resources/jboss_4_0.dtd",
@@ -75,7 +78,8 @@
         validate=true,
         attrProp=true,
         removeUnreferencedNodes=true,
-        docRoot="jboss"
+        docRoot="jboss",
+        java5=true
     ),
     @Schema2Beans(
         schema="../../resources/jboss-app_4_0.dtd",
@@ -84,7 +88,8 @@
         validate=true,
         attrProp=true,
         removeUnreferencedNodes=true,
-        docRoot="jboss-app"
+        docRoot="jboss-app",
+        java5=true
     ),
     @Schema2Beans(
         schema="../../resources/jboss-web_4_0.dtd",
@@ -93,7 +98,8 @@
         validate=true,
         attrProp=true,
         removeUnreferencedNodes=true,
-        docRoot="jboss-web"
+        docRoot="jboss-web",
+        java5=true
     )
 })
 package org.netbeans.modules.j2ee.jboss4.config.gen;

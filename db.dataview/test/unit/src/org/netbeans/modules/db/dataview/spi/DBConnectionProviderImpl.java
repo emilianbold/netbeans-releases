@@ -63,7 +63,7 @@ import org.openide.util.Exceptions;
 //@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.db.dataview.spi.DBConnectionProvider.class)
 public class DBConnectionProviderImpl implements DBConnectionProvider{
 
-/** Creates a new instance of DBConnectionProviderImpl */
+    /** Creates a new instance of DBConnectionProviderImpl */
     public DBConnectionProviderImpl() {
     }
     
@@ -80,6 +80,7 @@ public class DBConnectionProviderImpl implements DBConnectionProvider{
         return null;
     }
 
+    @Override
     public void closeConnection(Connection con) {
         try {
             if(con != null) {
@@ -98,6 +99,7 @@ public class DBConnectionProviderImpl implements DBConnectionProvider{
         }
     }
 
+    @Override
     public Connection getConnection(DatabaseConnection dbConn) {
         try {
             String driver = dbConn.getDriverClass();
@@ -110,13 +112,13 @@ public class DBConnectionProviderImpl implements DBConnectionProvider{
 
             TestCaseContext context = DbUtil.getContext();
             File[] jars = context.getJars();
-            ArrayList list = new java.util.ArrayList();
+            ArrayList<URL> list = new java.util.ArrayList<URL>();
             for (int i = 0; i < jars.length; i++) {
-                list.add((URL)jars[i].toURI().toURL());
+                list.add(jars[i].toURI().toURL());
             }
-            URL[] driverURLs = (URL[]) list.toArray(new URL[0]);
+            URL[] driverURLs = list.toArray(new URL[0]);
             URLClassLoader l = new URLClassLoader(driverURLs);
-            Class c = Class.forName(driver, true, l);
+            Class<?> c = Class.forName(driver, true, l);
             Driver drv = (Driver) c.newInstance();
             Connection con = drv.connect(url, prop);
             return con;

@@ -5,21 +5,24 @@ PACKAGE    ANS                             [PUBLIC]   null
 PACKAGE    Admin                           [PUBLIC]   null
 PACKAGE    AdminModule                     [PUBLIC]   null
 PACKAGE    App                             [PUBLIC]   null
-PACKAGE    Bar                             [PUBLIC]   null
+PACKAGE    Baz                             [PUBLIC]   null
 PACKAGE    Brite                           [PUBLIC]   null
 PACKAGE    CNS                             [PUBLIC]   null
 PACKAGE    Core                            [PUBLIC]   null
 PACKAGE    Data                            [PUBLIC]   null
 PACKAGE    Extra                           [PUBLIC]   null
 PACKAGE    ExtraThrow                      [PUBLIC]   null
-PACKAGE    Foo                             [PUBLIC]   null
+PACKAGE    First                           [PUBLIC]   null
+PACKAGE    Fom                             [PUBLIC]   null
 PACKAGE    FrontSpace                      [PUBLIC]   null
+PACKAGE    God                             [PUBLIC]   null
 PACKAGE    MC                              [PUBLIC]   null
 PACKAGE    MySpace                         [PUBLIC]   null
 PACKAGE    MySpaceThrow                    [PUBLIC]   null
 PACKAGE    Nette                           [PUBLIC]   null
 PACKAGE    Package1                        [PUBLIC]   null
 PACKAGE    Package2                        [PUBLIC]   null
+PACKAGE    Second                          [PUBLIC]   null
 PACKAGE    Shit                            [PUBLIC]   null
 PACKAGE    ShowMe                          [PUBLIC]   null
 PACKAGE    TC                              [PUBLIC]   null
@@ -42,7 +45,9 @@ PACKAGE    Test204925_08_P                 [PUBLIC]   null
 PACKAGE    Test_03                         [PUBLIC]   null
 PACKAGE    Testing                         [PUBLIC]   null
 PACKAGE    XUser                           [PUBLIC]   null
+PACKAGE    bar                             [PUBLIC]   null
 PACKAGE    delme                           [PUBLIC]   null
+PACKAGE    foo                             [PUBLIC]   null
 CLASS      Book                            [PUBLIC]   issue153707.php
 VARIABLE   ? $name                         [PUBLIC]   issue153707.php
 KEYWORD    Book $this->                               null
@@ -54,6 +59,8 @@ PACKAGE    Application                     [PUBLIC]   Nette
 PACKAGE    BNS                             [PUBLIC]   ANS
 PACKAGE    Bar                             [PUBLIC]   Foo
 PACKAGE    Base                            [PUBLIC]   Brite
+PACKAGE    Bat                             [PUBLIC]   Baz
+PACKAGE    Bom                             [PUBLIC]   Fom
 PACKAGE    Controller                      [PUBLIC]   Brite
 PACKAGE    Data                            [PUBLIC]   Shit
 PACKAGE    NNS                             [PUBLIC]   CNS
@@ -80,6 +87,8 @@ PACKAGE    e                               [PUBLIC]   Test204925_08_C\d
 PACKAGE    f                               [PUBLIC]   Test204925_06_C\d\e
 PACKAGE    f                               [PUBLIC]   Test204925_07_C\d\e
 PACKAGE    f                               [PUBLIC]   Test204925_08_C\d\e
+PACKAGE    lib                             [PUBLIC]   foo
+PACKAGE    url                             [PUBLIC]   foo\lib
 CLASS      A                               [PUBLIC]   Test197084.php
 CLASS      A                               [PUBLIC]   classConstructorOptionalParam.php
 CLASS      A                               [PUBLIC]   issue195232.php
@@ -92,6 +101,7 @@ CLASS      Admin                           [PUBLIC]   Admin
 CLASS      AdminPresenter                  [PUBLIC,   AdminModule
 CLASS      AliasedClassName                [PUBLIC]   Foo\Bar
 CLASS      AnonymousObject                 [PUBLIC]   anonymousObjectVariables.php
+CLASS      Another                         [PUBLIC]   test224549.php
 CLASS      ArraysCc                        [PUBLIC]   arrays.php
 CLASS      Author                          [PUBLIC]   mixedtypes.php
 CLASS      Author_1                        [PUBLIC]   mixedtypes_1.php
@@ -119,14 +129,19 @@ CLASS      Book_Abstract                   [PUBLIC,   test203332_01.php
 CLASS      Brejla                          [PUBLIC]   test211230.php
 CLASS      Buuu                            [PUBLIC]   ShowMe
 CLASS      C                               [PUBLIC]   test.php
+CLASS      CIface1                         [PUBLIC]   First
+CLASS      CIface2                         [PUBLIC]   Second
 CLASS      CallableClass                   [PUBLIC]   callableTypeHint.php
 CLASS      ChildClass                      [PUBLIC]   class_member_visibility.php
 CLASS      ChildInterface                  [PUBLIC]   interfaces.php
+CLASS      ClassName                       [PUBLIC]   Fom\Bom
 CLASS      ClassName                       [PUBLIC]   issue194300.php
 CLASS      ClassName123                    [PUBLIC]   issue209608.php
+CLASS      Cls1                            [PUBLIC]   First
 CLASS      Cls1                            [PUBLIC]   TestCase.php
 CLASS      Cls136188                       [PUBLIC]   issue136188.php
 CLASS      Cls149519                       [PUBLIC]   issue149519.php
+CLASS      Cls2                            [PUBLIC]   Second
 CLASS      Cls2                            [PUBLIC]   TestCase.php
 CLASS      Cls2DeclarationTest             [PUBLIC]   clsDeclaration.php
 CLASS      Cls2DeclarationTest             [PUBLIC]   clsDeclaration02.php
@@ -168,11 +183,13 @@ CLASS      ExceptionClassName              [PUBLIC]   issue207594.php
 CLASS      Foo                             [PUBLIC]   issue159970.php
 CLASS      Foo                             [PUBLIC]   issue191666.php
 CLASS      Foo                             [PUBLIC]   test203294.php
+CLASS      FooUrl                          [PUBLIC]   foo\lib\url
 CLASS      Foooo                           [PUBLIC]   test204104.php
 CLASS      Foooo                           [PUBLIC]   test204104_02.php
 CLASS      ForClsCtxCodeCompletion         [PUBLIC]   insideClass3.php
 CLASS      ForbiddenRequestException       [PUBLIC]   Nette\Application
 CLASS      FrontendBookTable               [PUBLIC]   Test_03
+CLASS      God                             [PUBLIC]   test221725.php
 CLASS      HTML                            [PUBLIC]   html.php
 CLASS      HTMLbase                        [PUBLIC]   htmlbase.php
 CLASS      Hello146648                     [PUBLIC]   issue146648.php
@@ -207,8 +224,10 @@ CLASS      MethodExample                   [PUBLIC]   test201870.php
 CLASS      Mine                            [PUBLIC]   tests144653.php
 CLASS      MockClass                       [PUBLIC]   MC
 CLASS      MyAbstractClass                 [PUBLIC,   issue200795.php
+CLASS      MyClass                         [PUBLIC]   MyClass.php
 CLASS      MyCls                           [PUBLIC]   anonymousObjectVariablesNs.php
 CLASS      MyIface                         [PUBLIC]   insideInterface.php
+CLASS      MyNewClass123                   [PUBLIC]   Foo
 CLASS      MyNonAbstractClass              [PUBLIC]   issue200795.php
 CLASS      MySecondIface                   [PUBLIC]   insideInterface.php
 CLASS      MyTable                         [PUBLIC]   MyTable.php
@@ -217,6 +236,7 @@ CLASS      NewClass                        [PUBLIC]   issue171232_01.php
 CLASS      NewClass                        [PUBLIC]   issue171232_02.php
 CLASS      ObjectTracker                   [PUBLIC]   test204908.php
 CLASS      Omg                             [PUBLIC]   test204104_05.php
+CLASS      OmgCls                          [PUBLIC]   declarations.php
 CLASS      Ondrej                          [PUBLIC]   test211230.php
 CLASS      PagePresenter                   [PUBLIC]   AdminModule
 CLASS      ParentClass                     [PUBLIC]   class_member_visibility.php
@@ -228,15 +248,18 @@ CLASS      Presenter                       [PUBLIC]   Nette\Application\UI
 CLASS      PresenterComponent              [PUBLIC]   Nette\Application\UI
 CLASS      Request                         [PUBLIC]   Brite\Base
 CLASS      SecuredPresenter                [PUBLIC]   AdminModule
+CLASS      SetFoo                          [PUBLIC]   test221725.php
 CLASS      SimpleObject                    [PUBLIC,   issue159970.php
 CLASS      SmartCompletion                 [PUBLIC]   issue201032.php
 CLASS      Strings                         [PUBLIC]   Nette\Utils
 CLASS      SubClass157534                  [PUBLIC]   issue157534.php
+CLASS      Super                           [PUBLIC]   declarations.php
 CLASS      SuperClass157534                [PUBLIC]   issue157534.php
 CLASS      SuperUser                       [PUBLIC]   XUser
 CLASS      System147427                    [PUBLIC]   issue147427.php
 CLASS      TaskList                        [PUBLIC]   TaskList.php
 CLASS      Test                            [PUBLIC]   issue142024.php
+CLASS      Test                            [PUBLIC]   test216119.php
 CLASS      Test1                           [PUBLIC]   test207188.php
 CLASS      Test141999                      [PUBLIC]   issue141999.php
 CLASS      Test142234                      [PUBLIC]   issue142234.php
@@ -288,6 +311,8 @@ CLASS      TestOptionalArgsClass           [PUBLIC]   optional_args.php
 CLASS      TraitedClass                    [PUBLIC]   traits.php
 CLASS      Types                           [PUBLIC]   Package1
 CLASS      TypesinPHPDoc                   [PUBLIC]   types_in_phpdoc.php
+CLASS      Url                             [PUBLIC]   foo\lib\url
+CLASS      UrlClient                       [PUBLIC]   God
 CLASS      UsageReturnTypeInOtherFile      [PUBLIC]   Usage.php
 CLASS      User                            [PUBLIC]   Core
 CLASS      User                            [PUBLIC]   Core
@@ -359,6 +384,7 @@ METHOD     bar()                           [PUBLIC]   issue141999.php
 METHOD     bar()                           [PUBLIC]   issue200178.php
 METHOD     bar(Test &$t)                   [PUBLIC]   issue142024.php
 METHOD     callableTypeHint(callable $arg  [PUBLIC]   callableTypeHint.php
+METHOD     cfnc2()                         [PUBLIC]   Second
 METHOD     f1(&$request1)                  [PUBLIC]   issue136092.php
 METHOD     f2(&$request2)                  [PUBLIC]   issue136092.php
 METHOD     fc142091(cls142091 $p)          [PUBLIC]   issue142091.php
@@ -367,6 +393,7 @@ METHOD     fn1(clsAVarAssignment $aParam)  [PUBLIC]   varAssignment.php
 METHOD     fn2(clsAVarAssignment $cParam)  [PUBLIC]   varAssignment.php
 METHOD     fn3(clsAVarAssignment &$aParam  [PUBLIC]   varAssignment.php
 METHOD     fn4(clsAVarAssignment &$cParam  [PUBLIC]   varAssignment.php
+METHOD     fnc1()                          [PUBLIC]   First
 METHOD     fnc163432()                     [PUBLIC]   test.php
 METHOD     fncA()                          [PUBLIC]   typeinference.php
 METHOD     fncB()                          [PUBLIC]   typeinference.php
@@ -419,6 +446,8 @@ VARIABLE   $argc                                      PHP Platform
 VARIABLE   $argv                                      PHP Platform
 VARIABLE   $http_response_header                      PHP Platform
 VARIABLE   $php_errormsg                              PHP Platform
+CONSTANT   CNST1 1                         [PUBLIC]   First
+CONSTANT   CNST2 2                         [PUBLIC]   Second
 CONSTANT   aaa 1                           [PUBLIC]   issue137033.php
 KEYWORD    abstract                                   null
 KEYWORD    and                                        null

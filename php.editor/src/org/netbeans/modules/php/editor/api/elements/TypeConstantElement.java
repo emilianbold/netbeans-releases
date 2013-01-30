@@ -49,7 +49,7 @@ import org.netbeans.modules.php.editor.api.PhpElementKind;
  * @author Radek Matous
  */
 public interface TypeConstantElement extends TypeMemberElement {
-    public final static PhpElementKind KIND = PhpElementKind.TYPE_CONSTANT;
+    PhpElementKind KIND = PhpElementKind.TYPE_CONSTANT;
     @CheckForNull
     String getValue();
 }

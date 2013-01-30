@@ -83,7 +83,7 @@ import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.Severity;
 import org.netbeans.modules.csl.spi.GsfUtilities;
-import org.netbeans.modules.groovy.editor.api.AstUtilities;
+import org.netbeans.modules.groovy.editor.api.ASTUtils;
 import org.netbeans.modules.groovy.editor.api.GroovyCompilerErrorID;
 import org.netbeans.modules.groovy.editor.api.GroovyUtils;
 import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
@@ -218,12 +218,12 @@ public class GroovyParser extends Parser {
                     if (sanitizing == Sanitize.ERROR_LINE) {
                         // groovy-only, this is not done in Ruby or JavaScript sanitization
                         // look backwards if there is unfinished line with trailing dot and remove that dot
-                        TokenSequence<? extends GroovyTokenId> ts = (context.document != null)
+                        TokenSequence<GroovyTokenId> ts = (context.document != null)
                                 ? LexUtilities.getPositionedSequence(context.document, offset)
                                 : null;
 
                         if (ts != null) {
-                            Token<? extends GroovyTokenId> token = LexUtilities.findPreviousNonWsNonComment(ts);
+                            Token<GroovyTokenId> token = LexUtilities.findPreviousNonWsNonComment(ts);
                             if (token.id() == GroovyTokenId.DOT) {
                                 int removeStart = ts.offset();
                                 int removeEnd = removeStart + 1;
@@ -525,7 +525,7 @@ public class GroovyParser extends Parser {
 
                     // FIXME parsing API
                     if (context.document != null) {
-                        offset = AstUtilities.getOffset(context.document, line, col);
+                        offset = ASTUtils.getOffset(context.document, line, col);
                     }
                     errorMessage = se.getMessage();
                     localizedMessage = se.getLocalizedMessage();
@@ -707,8 +707,8 @@ public class GroovyParser extends Parser {
                             int startOffset = 0;
                             int endOffset = 0;
                             if (context.document != null) {
-                                startOffset = AstUtilities.getOffset(context.document, startLine > 0 ? startLine : 1, startColumn > 0 ? startColumn : 1);
-                                endOffset = AstUtilities.getOffset(context.document, line > 0 ? line : 1, endColumn > 0 ? endColumn : 1);
+                                startOffset = ASTUtils.getOffset(context.document, startLine > 0 ? startLine : 1, startColumn > 0 ? startColumn : 1);
+                                endOffset = ASTUtils.getOffset(context.document, line > 0 ? line : 1, endColumn > 0 ? endColumn : 1);
                             }
                             notifyError(context, null, Severity.ERROR, ex.getMessage(), null, startOffset, endOffset, sanitizing);
                         }

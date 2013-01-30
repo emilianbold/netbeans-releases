@@ -165,6 +165,7 @@ public final class UpdateWithDependenciesAction extends AbstractSystemAction {
             contexts.add(ctx);
         }
 
+        //mkleint: see subprojectprovider for official contract, see #210465
         SubprojectProvider deps = (SubprojectProvider) project.getLookup().lookup(SubprojectProvider.class);
         if(deps != null) {
             Iterator it = deps.getSubprojects().iterator();

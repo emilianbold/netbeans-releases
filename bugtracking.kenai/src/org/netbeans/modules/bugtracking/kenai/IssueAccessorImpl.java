@@ -52,13 +52,14 @@ import org.netbeans.modules.bugtracking.jira.JiraUpdater;
 import org.netbeans.modules.bugtracking.kenai.spi.RecentIssue;
 import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.Repository;
-import org.netbeans.modules.bugtracking.api.Util;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.ui.spi.KenaiIssueAccessor;
-import org.openide.util.NbBundle;
+import org.netbeans.modules.kenai.ui.spi.KenaiIssueAccessor.IssueHandle;
 import org.openide.util.RequestProcessor;
+import static org.netbeans.modules.bugtracking.kenai.Bundle.*;
+import org.openide.util.NbBundle.Messages;
 
 /**
  *
@@ -74,6 +75,7 @@ public class IssueAccessorImpl extends KenaiIssueAccessor {
      * @param issueID Issue identifier
      */
     @Override
+    @Messages("LBL_GETTING_REPO=Contacting remote repository...")
     public void open(final KenaiProject project, final String issueID) {
 
         FakeJiraSupport support = FakeJiraSupport.get(project);
@@ -87,7 +89,7 @@ public class IssueAccessorImpl extends KenaiIssueAccessor {
             }
         }
 
-        final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(Issue.class, "LBL_GETTING_REPO"));
+        final ProgressHandle handle = ProgressHandleFactory.createHandle(LBL_GETTING_REPO());
         handle.start();
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {

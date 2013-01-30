@@ -61,7 +61,7 @@ public class ValuesAndUnitsModuleTest extends CssModuleTestBase {
         CssParserResult result = TestUtil.parse(code);
         
 //        TestUtil.dumpResult(result);
-        assertEquals(0, result.getDiagnostics().size());
+        assertEquals(1, result.getDiagnostics().size());
         
     }
     

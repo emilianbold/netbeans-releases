@@ -91,6 +91,9 @@ public class EntityResourceBeanModel {
     }
     
     void addEntityInfo( String fqn , EntityClassInfo info ){
+        if ( info == null ){
+            return;
+        }
         entityInfos.put( fqn , info );
     }
 }

@@ -44,11 +44,13 @@ package org.netbeans.modules.git.ui.history;
 
 import java.awt.EventQueue;
 import java.io.File;
+import java.util.List;
 import org.netbeans.modules.git.ui.actions.MultipleRepositoryAction;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionRegistration;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor.Task;
 
@@ -76,8 +78,43 @@ public class SearchHistoryAction extends MultipleRepositoryAction {
                 tc.open();
                 tc.requestActive();
                 if (roots != null && (roots.length == 1 && roots[0].isFile() || roots.length > 1 && Utils.shareCommonDataObject(roots))) {
-                    tc.search();
+                    tc.search(false);
                 }
+            }
+        });
+    }
+    
+    public static void openSearch (final File repository, final File root, final String contextName, final String commitId) {
+        final String title = NbBundle.getMessage(SearchHistoryTopComponent.class, "LBL_SearchHistoryTopComponent.title", contextName);
+        Mutex.EVENT.readAccess(new Runnable() {
+            @Override
+            public void run () {
+                SearchHistoryTopComponent tc = new SearchHistoryTopComponent(repository, new File[] { root });
+                tc.setDisplayName(title);
+                tc.open();
+                tc.requestActive();
+                tc.setSearchCommitId(commitId);
+                tc.search(true);
+            }
+        });
+    }
+    
+    public static void openSearch (final File repository, final File root, final String contextName, final int lineNumber) {
+        final String title = NbBundle.getMessage(SearchHistoryTopComponent.class, "LBL_SearchHistoryTopComponent.title", contextName);
+        EventQueue.invokeLater(new Runnable() {
+            @Override
+            public void run () {
+                SearchHistoryTopComponent tc = new SearchHistoryTopComponent(repository, root, new SearchHistoryTopComponent.DiffResultsViewFactory() {
+                    @Override
+                    DiffResultsView createDiffResultsView(SearchHistoryPanel panel, List<RepositoryRevision> results) {
+                        return new DiffResultsViewForLine(panel, results, lineNumber);
+                    }
+                });
+                tc.setDisplayName(title);
+                tc.open();
+                tc.requestActive();
+                tc.search(true);
+                tc.activateDiffView(true);
             }
         });
     }

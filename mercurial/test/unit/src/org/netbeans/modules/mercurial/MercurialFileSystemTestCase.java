@@ -58,6 +58,7 @@ import org.netbeans.modules.masterfs.filebasedfs.FileBasedFileSystem;
 import org.netbeans.modules.masterfs.filebasedfs.FileBasedURLMapper;
 import org.netbeans.modules.masterfs.filebasedfs.fileobjects.FileObjectFactory;
 import org.netbeans.modules.mercurial.util.HgCommand;
+import org.netbeans.modules.versioning.util.FileUtils;
 import org.openide.filesystems.*;
 
 /**
@@ -69,11 +70,13 @@ public class MercurialFileSystemTestCase extends FileSystemFactoryHid {
         super(test);
     }
     
+    @Override
     protected void setUp() throws Exception {
         super.setUp();
         MockServices.setServices(new Class[] {FileBasedURLMapper.class});                
     }
     
+    @Override
     protected void tearDown() throws Exception {
         super.tearDown();
     }
@@ -90,11 +93,7 @@ public class MercurialFileSystemTestCase extends FileSystemFactoryHid {
         suite.addTestSuite(URLMapperTestHidden.class);
         suite.addTestSuite(FileUtilTestHidden.class);                        
         suite.addTestSuite(FileUtilJavaIOFileHidden.class);                        
-        suite.addTestSuite(BaseFileObjectTestHid.class);                                
-       
-        // XXX fails
-//        suite.addTest(new FileUtilTestHidden("testIsParentOf"));                
-//        suite.addTest(new BaseFileObjectTestHid("testRootToFileObject"));                                
+        suite.addTestSuite(BaseFileObjectTestHid.class);
         return new MercurialFileSystemTestCase(suite);
     }
     
@@ -104,7 +103,10 @@ public class MercurialFileSystemTestCase extends FileSystemFactoryHid {
         return new File(workDirProperty);
     }
 
+    @Override
     protected FileSystem[] createFileSystem(String testName, String[] resources) throws IOException {
+        setupWorkdir();
+        setupUserdir();
         
         FileObject workFo = null;
         try {
@@ -135,8 +137,12 @@ public class MercurialFileSystemTestCase extends FileSystemFactoryHid {
         return new FileSystem[]{workFo.getFileSystem()};
     }
     
-    protected void destroyFileSystem(String testName) throws IOException {}    
+    @Override
+    protected void destroyFileSystem(String testName) throws IOException {
+        FileUtils.deleteRecursively(getWorkDir());
+    }    
 
+    @Override
     protected String getResourcePrefix(String testName, String[] resources) {
         return FileBasedFileSystem.getFileObject(getWorkDir()).getPath();
     }
@@ -176,5 +182,20 @@ public class MercurialFileSystemTestCase extends FileSystemFactoryHid {
             }
         }
         return false;
+    }
+
+    private void setupUserdir () {
+        File f = new File(getWorkDir().getParentFile(), "userdir");
+        FileUtils.deleteRecursively(f);
+        f.mkdirs();
+        System.setProperty("netbeans.user", f.getAbsolutePath());
+        // ensure test files are handled by LH
+        System.setProperty("netbeans.localhistory.historypath", getWorkDir().getAbsolutePath());
+    }
+
+    private void setupWorkdir () {
+        File wd = getWorkDir();
+        FileUtils.deleteRecursively(wd);
+        wd.mkdirs();
     }
 }

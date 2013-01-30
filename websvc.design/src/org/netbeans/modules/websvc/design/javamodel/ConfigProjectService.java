@@ -43,10 +43,12 @@
 package org.netbeans.modules.websvc.design.javamodel;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.Set;
 
 import org.apache.tools.ant.module.api.support.ActionUtils;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
@@ -85,10 +87,10 @@ class ConfigProjectService implements ProjectService {
      */
     @Override
     public void cleanup() throws java.io.IOException {
-        if (service == null || support == null) {
+        if (getService() == null || support == null) {
             return;
         }
-        String serviceName = service.getName();
+        String serviceName = getService().getName();
         if (serviceName != null) {
             FileObject localWsdlFolder = support.getLocalWsdlFolderForService(
                     serviceName, false);
@@ -147,9 +149,9 @@ class ConfigProjectService implements ProjectService {
             Boolean isJsr109 = getProject().getLookup().lookup(JaxWsModel.class)
                     .getJsr109();
             if (isJsr109 != null && !isJsr109.booleanValue()) {
-                if (service.getWsdlUrl() != null) {
+                if (getService().getWsdlUrl() != null) {
                     // if coming from wsdl
-                    serviceName = service.getServiceName();
+                    serviceName = getService().getServiceName();
                 }
                 support.removeNonJsr109Entries(serviceName);
             }
@@ -161,10 +163,13 @@ class ConfigProjectService implements ProjectService {
      */
     @Override
     public Collection<WSConfiguration> getConfigurations() {
+        if ( getService()== null){
+            return Collections.emptyList();
+        }
         Collection<WSConfiguration> configurations = new LinkedList<WSConfiguration>();
         for(WSConfigurationProvider provider : getConfigProviders()){
             WSConfiguration config = provider.getWSConfiguration(
-                    service, dataObject.getPrimaryFile());
+                    getService(), dataObject.getPrimaryFile());
             if ( config != null ){
                 configurations.add( config );
             }
@@ -177,7 +182,7 @@ class ConfigProjectService implements ProjectService {
      */
     @Override
     public String getWsdlUrl() {
-        return service.getWsdlUrl();
+        return getService().getWsdlUrl();
     }
     
     /* (non-Javadoc)
@@ -185,7 +190,7 @@ class ConfigProjectService implements ProjectService {
      */
     @Override
     public String getImplementationClass() {
-        return service.getImplementationClass();
+        return getService().getImplementationClass();
     }
     
     /* (non-Javadoc)
@@ -193,10 +198,25 @@ class ConfigProjectService implements ProjectService {
      */
     @Override
     public String getLocalWsdlFile() {
-        return service.getLocalWsdlFile();
+        return getService().getLocalWsdlFile();
     }
     
     Service getService(){
+        if ( service == null ){
+            Project project = getProject();
+            if(project==null) {
+                return null;
+            }
+            JaxWsModel model = project.getLookup().lookup(JaxWsModel.class);
+            ClassPath classPath = ClassPath.getClassPath(dataObject.getPrimaryFile(),
+                    ClassPath.SOURCE);
+            if (classPath == null) {
+                return null;
+            }
+            String implClass = classPath.getResourceName(dataObject.getPrimaryFile(), '.', false);
+            service = model.findServiceByImplementationClass(implClass);
+            return service;
+        }
         return service;
     }
     
@@ -209,7 +229,7 @@ class ConfigProjectService implements ProjectService {
     }
     
     private final JAXWSSupport support;
-    private final Service service;
+    private Service service;
     private final DataObject dataObject;
 
 }

@@ -44,15 +44,11 @@
 
 package org.netbeans.modules.welcome.content;
 
-import java.awt.BasicStroke;
 import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.Rectangle;
-import java.awt.Stroke;
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -66,12 +62,9 @@ public class ContentSection extends JPanel implements Constants {
 
     private static final int PANEL_MAX_WIDTH = 800;
     private boolean maxSize;
-    private boolean showSeparator;
-    private final static Stroke SEPARATOR_STROKE = new BasicStroke(1,
-            BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND, 1, new float[] {1.0f, 1.0f}, 0.0f);
 
-    public ContentSection( String title, JComponent content, boolean showSeparator, boolean maxSize ) {
-        this( content, showSeparator, maxSize, 0 );
+    public ContentSection( String title, JComponent content, boolean maxSize ) {
+        this( content, maxSize, 0 );
         JLabel lblTitle = new JLabel( title );
         lblTitle.setFont( SECTION_HEADER_FONT );
 
@@ -81,40 +74,26 @@ public class ContentSection extends JPanel implements Constants {
                 GridBagConstraints.WEST,GridBagConstraints.NONE,new Insets(6,0,0,0),0,0) );
     }
 
-    public ContentSection( JComponent titleComponent, JComponent content, boolean showSeparator, boolean maxSize ) {
-        this( content, showSeparator, maxSize, 8 );
+    public ContentSection( JComponent titleComponent, JComponent content, boolean maxSize ) {
+        this( content, maxSize, 8 );
         if( null != titleComponent ) {
             add( titleComponent, new GridBagConstraints(0,0,1,1,1.0,0.0,
                     GridBagConstraints.WEST,GridBagConstraints.HORIZONTAL,new Insets(0,0,15,0),0,0) );
         }
     }
 
-    public ContentSection( JComponent content, boolean showSeparator, boolean maxSize ) {
-        this( content, showSeparator, maxSize, 0 );
+    public ContentSection( JComponent content, boolean maxSize ) {
+        this( content, maxSize, 0 );
     }
 
-    private ContentSection( JComponent content, boolean showSeparator, boolean maxSize, int leftInsets ) {
+    private ContentSection( JComponent content, boolean maxSize, int leftInsets ) {
         super( new GridBagLayout() );
         setOpaque(false);
         this.maxSize = maxSize;
-        this.showSeparator = showSeparator;
         add( content, new GridBagConstraints(0,1,2,1,1.0,1.0,
                 GridBagConstraints.CENTER,GridBagConstraints.BOTH,new Insets(0,leftInsets,0,0),0,0) );
         
-        setBorder( BorderFactory.createEmptyBorder(35,35,15,35) );
-    }
-
-    @Override
-    protected void paintComponent(Graphics g) {
-        if( showSeparator ) {
-            int height = getHeight();
-            Graphics2D g2d = (Graphics2D) g;
-            Stroke oldStroke = g2d.getStroke();
-            g2d.setStroke(SEPARATOR_STROKE);
-            g.setColor( Utils.getColor( COLOR_SECTION_SEPARATOR ) );
-            g.drawLine( 0, 50, 0, height-35 );
-            g2d.setStroke(oldStroke);
-        }
+        setBorder( BorderFactory.createEmptyBorder(22,35,15,35) );
     }
 
     @Override

@@ -46,6 +46,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
+import java.net.PasswordAuthentication;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -54,6 +55,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.MissingResourceException;
 import java.util.Set;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -81,7 +83,9 @@ import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor.Task;
 
 /**
  *
@@ -131,20 +135,50 @@ public class CloneAction implements ActionListener, HelpCtx.Provider {
                         }
                     }
                 }
-            if(project != null) {
-                FileObject fo = project.getProjectDirectory();
-                File file = FileUtil.toFile(fo);
-                if(file != null) {
-                    if(Git.getInstance().isManaged(file) ) {
-                        cloneFromPath = file.getAbsolutePath();
+                if(project != null) {
+                    FileObject fo = project.getProjectDirectory();
+                    File file = FileUtil.toFile(fo);
+                    if(file != null) {
+                        if(Git.getInstance().isManaged(file) ) {
+                            cloneFromPath = Git.getInstance().getRepositoryRoot(file).getAbsolutePath();
+                        }
                     }
                 }
             }
         }
+        performClone(cloneFromPath, null);
+    }
+
+    public static void scanForProjects(File workingFolder, GitProgressSupport support) {
+        Map<Project, Set<Project>> checkedOutProjects = new HashMap<Project, Set<Project>>();
+        checkedOutProjects.put(null, new HashSet<Project>()); // initialize root project container
+        File normalizedWorkingFolder = FileUtil.normalizeFile(workingFolder);
+        FileObject fo = FileUtil.toFileObject(normalizedWorkingFolder);
+        if (fo == null || !fo.isFolder()) {
+            return;
+        } else {
+            ProjectUtilities.scanForProjects(fo, checkedOutProjects);
         }
-        CloneWizard wiz = new CloneWizard(cloneFromPath);
-        if (wiz.show()) {
-            
+        if (support != null && support.isCanceled()) {
+            return;
+        }
+        // open project selection
+        ProjectUtilities.openClonedOutProjects(checkedOutProjects, workingFolder);
+    }
+
+    private static void performClone(String url, PasswordAuthentication pa) throws MissingResourceException {
+        performClone(url, pa, false);
+    }
+    
+    public static File performClone(String url, PasswordAuthentication pa, boolean waitFinished) throws MissingResourceException {
+        final CloneWizard wiz = new CloneWizard(pa, url);
+        Boolean ok = Mutex.EVENT.readAccess(new Mutex.Action<Boolean>() {
+            @Override
+            public Boolean run () {
+                return wiz.show();
+            }
+        });
+        if (Boolean.TRUE.equals(ok)) {            
             final GitURI remoteUri = wiz.getRemoteURI();
             final File destination = wiz.getDestination();
             final String remoteName = wiz.getRemoteName();
@@ -210,26 +244,14 @@ public class CloneAction implements ActionListener, HelpCtx.Provider {
                     }
                 }
             };
-            supp.start(Git.getInstance().getRequestProcessor(destination), destination, NbBundle.getMessage(CloneAction.class, "LBL_CloneAction.progressName")); //NOI18N
+            Task task = supp.start(Git.getInstance().getRequestProcessor(destination), destination, NbBundle.getMessage(CloneAction.class, "LBL_CloneAction.progressName")); //NOI18N
+            if(waitFinished) {
+                task.waitFinished();
+            }
+            return destination;
         }
+        return null;
     }
-
-    public void scanForProjects(File workingFolder, GitProgressSupport support) {
-        Map<Project, Set<Project>> checkedOutProjects = new HashMap<Project, Set<Project>>();
-        checkedOutProjects.put(null, new HashSet<Project>()); // initialize root project container
-        File normalizedWorkingFolder = FileUtil.normalizeFile(workingFolder);
-        FileObject fo = FileUtil.toFileObject(normalizedWorkingFolder);
-        if (fo == null || !fo.isFolder()) {
-            return;
-        } else {
-            ProjectUtilities.scanForProjects(fo, checkedOutProjects);
-        }
-        if (support != null && support.isCanceled()) {
-            return;
-        }
-        // open project selection
-        ProjectUtilities.openClonedOutProjects(checkedOutProjects, workingFolder);
-    }    
     
     private static class CloneRemoteConfig {
         private String remoteName;

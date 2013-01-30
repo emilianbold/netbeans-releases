@@ -87,20 +87,14 @@ public final class ReplaceBar extends JPanel {
     private ReplaceBar(SearchBar searchBar) {
         setSearchBar(searchBar);
         addEscapeKeystrokeFocusBackTo(this);
-        
+
         setLayout(new BoxLayout(this, BoxLayout.LINE_AXIS));
         setFocusCycleRoot(true);
-        Color bgColor = getBackground();
-        bgColor = new Color(Math.max(0, bgColor.getRed() - 20),
-                Math.max(0, bgColor.getGreen() - 20),
-                Math.max(0, bgColor.getBlue() - 20));
-        setBackground(bgColor);
         setForeground(UIManager.getColor("textText")); //NOI18N
 
         // padding at the end of the toolbar
         add(Box.createHorizontalStrut(8)); //spacer in the beginnning of the toolbar
         SearchComboBox scb = new SearchComboBox();
-        scb.getEditor().getEditorComponent().setBackground(bgColor);
         replaceComboBox = scb;
         replaceComboBox.addPopupMenuListener(new ReplacePopupMenuListener());
         replaceTextField = scb.getEditorPane();
@@ -110,13 +104,11 @@ public final class ReplaceBar extends JPanel {
             @Override
             public void focusGained(FocusEvent e) {
                 getSearchBar().lostFocusOnTextField();
-                getSearchBar().getIncSearchTextField().select(0, 0);
-                replaceTextField.selectAll();
             }
         });
         addEnterKeystrokeReplaceTo(replaceTextField);
         addShiftEnterReplaceAllTo(replaceTextField);
-        
+
         replaceLabel = new JLabel();
         Mnemonics.setLocalizedText(replaceLabel, NbBundle.getMessage(ReplaceBar.class, "CTL_Replace")); // NOI18N
         replaceLabel.setLabelFor(replaceTextField);
@@ -128,7 +120,8 @@ public final class ReplaceBar extends JPanel {
         add(leftSeparator);
 
         replaceButton = new JButton();
-        Mnemonics.setLocalizedText(replaceButton, NbBundle.getMessage(ReplaceBar.class, "CTL_ReplaceNext"));
+        Mnemonics.setLocalizedText(replaceButton, NbBundle.getMessage(ReplaceBar.class, "CTL_ReplaceNext")); // NOI18N
+        replaceButton.setToolTipText(NbBundle.getMessage(ReplaceBar.class, "TOOLTIP_ReplaceText")); // NOI18N
         replaceButton.setMargin(BUTTON_INSETS);
         replaceButton.setEnabled(!getSearchBar().getIncSearchTextField().getText().isEmpty());
         replaceButton.addActionListener(new ActionListener() {
@@ -142,6 +135,7 @@ public final class ReplaceBar extends JPanel {
 
         replaceAllButton = new JButton();
         Mnemonics.setLocalizedText(replaceAllButton, NbBundle.getMessage(ReplaceBar.class, "CTL_ReplaceAll"));
+        replaceAllButton.setToolTipText(NbBundle.getMessage(ReplaceBar.class, "TOOLTIP_ReplaceText")); // NOI18N
         replaceAllButton.setMargin(BUTTON_INSETS);
         replaceAllButton.setEnabled(!getSearchBar().getIncSearchTextField().getText().isEmpty());
         replaceAllButton.addActionListener(new ActionListener() {
@@ -262,26 +256,23 @@ public final class ReplaceBar extends JPanel {
     private void addEscapeKeystrokeFocusBackTo(JPanel jpanel) {
         jpanel.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0, true),
                 "loose-focus"); // NOI18N
-        jpanel.getActionMap().put("loose-focus", new AbstractAction() {// NOI18N
+        jpanel.getActionMap().put("loose-focus", new AbstractAction() { // NOI18N
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (!popupMenuWasCanceled && !searchBar.isPopupMenuWasCanceled())
+                if (!popupMenuWasCanceled && !searchBar.isPopupMenuWasCanceled()) {
                     looseFocus();
-                else {
+                } else {
                     popupMenuWasCanceled = false;
                     searchBar.setPopupMenuWasCanceled(false);
                 }
-                    
+
             }
         });
     }
 
-    public JTextComponent getReplaceTextField() {
-        return replaceTextField;
-    }
-
     void updateReplaceComboBoxHistory(String incrementalSearchText) {
+        EditorFindSupport.getInstance().addToReplaceHistory(new EditorFindSupport.RP(incrementalSearchText, preserveCaseCheckBox.isSelected()));
         // Add the text to the top of the list
         for (int i = replaceComboBox.getItemCount() - 1; i >= 0; i--) {
             String item = (String) replaceComboBox.getItemAt(i);
@@ -324,7 +315,7 @@ public final class ReplaceBar extends JPanel {
 
     private void unchangeSearchBarToBeOnlySearchBar() {
         searchBar.getCloseButton().removeActionListener(getCloseButtonListener());
-        Mnemonics.setLocalizedText(searchBar.getFindLabel(), NbBundle.getMessage(SearchBar.class, "CTL_Find")); // NOI18N
+        Mnemonics.setLocalizedText(searchBar.getFindLabel(), NbBundle.getMessage(ReplaceBar.class, "CTL_Find")); // NOI18N
         Dimension oldDimensionForFindLabel = searchBar.getFindLabel().getUI().getMinimumSize(searchBar.getFindLabel());
         searchBar.getFindLabel().setMinimumSize(oldDimensionForFindLabel);
         searchBar.getFindLabel().setPreferredSize(oldDimensionForFindLabel);
@@ -338,7 +329,7 @@ public final class ReplaceBar extends JPanel {
 
     private void changeSearchBarToBePartOfReplaceBar() {
         searchBar.getCloseButton().addActionListener(getCloseButtonListener());
-        Mnemonics.setLocalizedText(searchBar.getFindLabel(), NbBundle.getMessage(SearchBar.class, "CTL_Replace_Find")); // NOI18N
+        Mnemonics.setLocalizedText(searchBar.getFindLabel(), NbBundle.getMessage(ReplaceBar.class, "CTL_Replace_Find")); // NOI18N
         Dimension newDimensionForFindLabel = new Dimension(replaceLabel.getPreferredSize().width, searchBar.getFindLabel().getPreferredSize().height);
         searchBar.getFindLabel().setMinimumSize(newDimensionForFindLabel);
         searchBar.getFindLabel().setPreferredSize(newDimensionForFindLabel);
@@ -363,9 +354,18 @@ public final class ReplaceBar extends JPanel {
     public void gainFocus() {
         if (!isVisible()) {
             changeSearchBarToBePartOfReplaceBar();
-            setVisible(true);
             SearchComboBoxEditor.changeToOneLineEditorPane((JEditorPane) replaceTextField);
             addEnterKeystrokeReplaceTo(replaceTextField);
+            String lastReplace = replaceTextField.getText();
+            MutableComboBoxModel comboBoxModelIncSearch = ((MutableComboBoxModel) replaceComboBox.getModel());
+            for (int i = comboBoxModelIncSearch.getSize() - 1; i >= 0; i--) {
+                comboBoxModelIncSearch.removeElementAt(i);
+            }
+            for (EditorFindSupport.RP rp : EditorFindSupport.getInstance().getReplaceHistory()) {
+                comboBoxModelIncSearch.addElement(rp.getReplaceExpression());
+            }
+            replaceTextField.setText(lastReplace);
+            setVisible(true);
         }
         searchBar.gainFocus();
         searchBar.getIncSearchTextField().requestFocusInWindow();

@@ -49,7 +49,9 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import javax.swing.AbstractAction;
@@ -149,7 +151,18 @@ public class BugtrackingRootNode extends AbstractNode {
 
         @Override
         protected boolean createKeys(List<RepositoryImpl> toPopulate) {
-            toPopulate.addAll(RepositoryRegistry.getInstance().getRepositories());
+            Collection<RepositoryImpl> repos = RepositoryRegistry.getInstance().getRepositories();
+            
+            // populate only mutable repositories -> those that the user can edit or delete
+            Iterator<RepositoryImpl> it = repos.iterator();
+            while(it.hasNext()) {
+                RepositoryImpl repo = it.next();
+                if(!repo.isMutable()) {
+                    it.remove();
+                }
+            }
+            
+            toPopulate.addAll(repos);
             Collections.sort(toPopulate, new RepositoryImplComparator());
             return true;
         }

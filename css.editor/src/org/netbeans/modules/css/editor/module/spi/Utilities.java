@@ -41,15 +41,9 @@
  */
 package org.netbeans.modules.css.editor.module.spi;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.EnumSet;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.ResourceBundle;
-import java.util.Set;
-import java.util.StringTokenizer;
+import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.csl.api.CompletionProposal;
 import org.netbeans.modules.csl.api.ElementKind;
@@ -57,12 +51,16 @@ import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.css.editor.Css3Utils;
 import org.netbeans.modules.css.editor.csl.CssElement;
 import org.netbeans.modules.css.editor.csl.CssPropertyElement;
-import org.netbeans.modules.css.editor.properties.parser.GrammarParser;
-import org.netbeans.modules.css.lib.api.Node;
-import org.netbeans.modules.css.lib.api.NodeType;
-import org.netbeans.modules.css.lib.api.NodeUtil;
-import org.netbeans.modules.css.lib.api.NodeVisitor;
+import org.netbeans.modules.css.editor.module.CssModuleSupport;
+import org.netbeans.modules.css.editor.module.PropertiesReader;
+import org.netbeans.modules.css.lib.api.*;
+import org.netbeans.modules.css.lib.api.properties.GrammarElement;
+import org.netbeans.modules.css.lib.api.properties.PropertyCategory;
+import org.netbeans.modules.css.lib.api.properties.PropertyDefinition;
 import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.web.common.api.LexerUtils;
+import org.netbeans.modules.web.common.api.Pair;
+import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
 /**
@@ -73,6 +71,12 @@ public class Utilities {
 
     private Utilities() {
     }
+    
+    /**
+     * Name of the meta property defining property category. 
+     * See description.txt in the o.n.m.css.editor.module.main.properties
+     */
+    public static final String CATEGORY_META_PROPERTY_NAME = "$category"; //NOI18N
     
     /**
      * Creates a generic mark occurrences node visitor for given node types. 
@@ -135,27 +139,27 @@ public class Utilities {
         return proposals;
     }
  
-    public static List<CompletionProposal> wrapProperties(Collection<Property> props, int anchor) {
+    public static List<CompletionProposal> wrapProperties(Collection<PropertyDefinition> props, int anchor) {
         return wrapProperties(props, anchor, 0);
     }
-    public static List<CompletionProposal> wrapProperties(Collection<Property> props, int anchor, int stripLen) {
+    public static List<CompletionProposal> wrapProperties(Collection<PropertyDefinition> props, int anchor, int stripLen) {
         List<CompletionProposal> proposals = new ArrayList<CompletionProposal>(props.size());
-        for (Property p : props) {
+        for (PropertyDefinition p : props) {
             //filter out non-public properties
-            if (!GrammarParser.isArtificialElementName(p.getName())) {
+            if (!GrammarElement.isArtificialElementName(p.getName())) {
                 CssElement handle = new CssPropertyElement(p);
                 String insertPrefix = stripLen == 0
                         ? p.getName()
                         : p.getName().substring(stripLen);
-                CompletionProposal proposal = CssCompletionItem.createPropertyNameCompletionItem(handle, p.getName(), insertPrefix, anchor, false);
+                CompletionProposal proposal = CssCompletionItem.createPropertyCompletionItem(handle, p, insertPrefix, anchor, false);
                 proposals.add(proposal);
-            }
+            } 
         }
         return proposals;
-    }
+    } 
     
     /**
-     * Utility method which creates a collection of PropertyDescriptor-s for 
+     * Utility method which creates a map of property name to PropertyDefinition for 
      * a properties file defining the css properties
      * 
      * the syntax of the file:
@@ -168,22 +172,42 @@ public class Utilities {
      * 
      * @param sourcePath - an absolute path to the resource properties file relative to the module base
      */
-    public static Collection<Property> parsePropertyDefinitionFile(String sourcePath, CssModule module) {
-        Collection<Property> properties = new ArrayList<Property>();
-        ResourceBundle bundle = NbBundle.getBundle(sourcePath);
+    public static Map<String, PropertyDefinition> parsePropertyDefinitionFile(String sourcePath, CssModule module) {
+        Map<String, PropertyDefinition> properties = new HashMap<String, PropertyDefinition>();
+        
+        //why not use NbBundle.getBundle()? - we need the items in the natural source order
+        Collection<Pair<String, String>> parseBundle = PropertiesReader.parseBundle(sourcePath);
 
-        Enumeration<String> keys = bundle.getKeys();
-        while (keys.hasMoreElements()) {
-            String name = keys.nextElement();
-            String value = bundle.getString(name);
+        PropertyCategory category = PropertyCategory.DEFAULT;
+        for(Pair<String, String> pair : parseBundle) {
+            String name = pair.getA();
+            String value = pair.getB();
+            
+            if(name.startsWith("$")) {
+                //property category
+                if(CATEGORY_META_PROPERTY_NAME.equalsIgnoreCase(name)) {
+                    try {
+                        category = PropertyCategory.valueOf(value.toUpperCase());
+                    } catch (IllegalArgumentException e) {
+                        Logger.getAnonymousLogger().log(Level.INFO, 
+                                String.format("Unknown property category name %s in %s properties definition file. Served by %s css module.", value, sourcePath, module.getSpecificationURL()),
+                                e);
+                    }
+                } else {
+                    //unknown meta property
+                    Logger.getAnonymousLogger().log(Level.INFO, null, 
+                            new IllegalArgumentException(String.format("Unknown meta property %s in %s properties definition file. Served by %s css module.", name, sourcePath, module.getSpecificationURL())));
+                }
+                
+            } else {
+                //parse bundle key - there might be more properties separated by semicolons
+                StringTokenizer nameTokenizer = new StringTokenizer(name, ";"); //NOI18N
 
-            //parse bundle key - there might be more properties separated by semicolons
-            StringTokenizer nameTokenizer = new StringTokenizer(name, ";"); //NOI18N
-
-            while (nameTokenizer.hasMoreTokens()) {
-                String parsed_name = nameTokenizer.nextToken().trim();
-                Property prop = new Property(parsed_name, value, module);
-                properties.add(prop);
+                while (nameTokenizer.hasMoreTokens()) {
+                    String parsed_name = nameTokenizer.nextToken().trim();
+                    PropertyDefinition prop = new PropertyDefinition(parsed_name, value, category, module);
+                    properties.put(parsed_name, prop);
+                }
             }
 
         }
@@ -191,4 +215,26 @@ public class Utilities {
         return properties;
     }
 
+    /**
+     * Resolves whether the given property value contains a vendor specific code.
+     * 
+     * Each property value can be divided into parts/tokens typically by whitespaces.
+     * Any of these tokens may contain a vendor specific code.
+     * 
+     * This method resolves whether the given property value token contains a vendor
+     * specific code. It tests if the property token starts with any of the registered
+     * browser specific prefixes.
+     * 
+     * Example: background-image: -webkit-linear-gradient(top, #0088cc, #0055cc);
+     * 
+     * The method will return true for the "-webkit-linear-gradient(top, #0088cc, #0055cc)" token.
+     * 
+     * @param file context file
+     * @param value the value of the resolved property
+     * @since 1.38
+     */
+    public static boolean isVendorSpecificPropertyValueToken(FileObject file, CharSequence value) {
+        return Css3Utils.isVendorSpecificPropertyValue(file, value);
+    }
+    
 }

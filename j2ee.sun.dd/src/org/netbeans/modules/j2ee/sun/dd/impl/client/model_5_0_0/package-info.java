@@ -48,8 +48,10 @@
     docRoot="sun-application-client",
     useInterfaces=true,
     validate=false,
-    attrProp=true
+    attrProp=true,
+    java5=true
 )
+@org.netbeans.api.annotations.common.SuppressWarnings("NM_SAME_SIMPLE_NAME_AS_INTERFACE") // justification="Generated implementation classes"
 package org.netbeans.modules.j2ee.sun.dd.impl.client.model_5_0_0;
 
 import org.netbeans.modules.schema2beans.Schema2Beans;

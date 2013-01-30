@@ -52,6 +52,7 @@ import groovyjarjarantlr.TokenStreamException;
 import java.io.IOException;
 import java.io.Reader;
 import java.util.ArrayList;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.codehaus.groovy.antlr.parser.GroovyRecognizer;
 import org.codehaus.groovy.antlr.parser.GroovyTokenTypes;
@@ -63,32 +64,31 @@ import org.netbeans.spi.lexer.TokenFactory;
 
 /**
  * Lexer based on old coyote groovy lexer.
- * 
+ *
  * @todo cannot call lexerInput.readText() in some test, because it goes wrong on some EOFs
  * @todo curly braces in expression in gstring should be resolved as STRING_LITERAL?
- * 
+ *
  * @author Mila Metelka
  * @author Martin Adamek
  */
 public final class GroovyLexer implements Lexer<GroovyTokenId> {
-    
+
     private static final Logger LOG = Logger.getLogger(GroovyLexer.class.getName());
-    
+
     private DelegateLexer scanner;
     private LexerInput lexerInput;
     private MyCharBuffer myCharBuffer;
     private TokenFactory<GroovyTokenId> tokenFactory;
     private final GroovyRecognizer parser;
-    
+
     public GroovyLexer(LexerRestartInfo<GroovyTokenId> info) {
-        this.scanner = new DelegateLexer((LexerSharedInputState)null);
+        this.scanner = new DelegateLexer(null);
         scanner.setWhitespaceIncluded(true);
         parser = GroovyRecognizer.make(scanner);
         restart(info);
     }
-    
+
     private void restart(LexerRestartInfo<GroovyTokenId> info) {
-        
         tokenFactory = info.tokenFactory();
         this.lexerInput = info.input();
 
@@ -114,7 +114,7 @@ public final class GroovyLexer implements Lexer<GroovyTokenId> {
 
     private Token<GroovyTokenId> createToken(int tokenIntId, int tokenLength) {
         GroovyTokenId id = getTokenId(tokenIntId);
-        LOG.finest("Creating token: " + id.name() + ", length: " + tokenLength);
+        LOG.log(Level.FINEST, "Creating token: {0}, length: {1}", new Object[]{id.name(), tokenLength});
         String fixedText = id.fixedText();
         return (fixedText != null) ? tokenFactory.getFlyweightToken(id, fixedText)
                                    : tokenFactory.createToken(id, tokenLength);
@@ -123,57 +123,57 @@ public final class GroovyLexer implements Lexer<GroovyTokenId> {
     // token index used in nextToken()
     private int index = 1;
 
+    @Override
     public Token<GroovyTokenId> nextToken() {
         LOG.finest("");
         try {
             groovyjarjarantlr.Token antlrToken = parser.LT(index++);
-            LOG.finest("Received token from antlr: " + antlrToken);
+            LOG.log(Level.FINEST, "Received token from antlr: {0}", antlrToken);
             if (antlrToken != null) {
                 int intId = antlrToken.getType();
 
                 int len = lexerInput.readLengthEOF() - myCharBuffer.getExtraCharCount();
-                if ( antlrToken.getText() != null ) {
-                    len = Math.max( len, antlrToken.getText().length() );
-                    LOG.finest("Counting length from " + lexerInput.readLengthEOF() + " and " + myCharBuffer.getExtraCharCount());
+                if (antlrToken.getText() != null) {
+                    len = Math.max(len, antlrToken.getText().length());
+                    LOG.log(Level.FINEST, "Counting length from {0} and {1}", new Object[]{lexerInput.readLengthEOF(), myCharBuffer.getExtraCharCount()});
                 }
-                LOG.finest("Length of token to create: " + len);
+                LOG.log(Level.FINEST, "Length of token to create: {0}", len);
 
-//                System.out.println("### nextToken [" + lexerInput.readText() + "], " + scanner.getInputState().guessing);
-                
                 switch (intId) {
                     case GroovyTokenTypes.STRING_CTOR_START:
                     case GroovyTokenTypes.STRING_CTOR_MIDDLE:
                     case GroovyTokenTypes.STRING_CTOR_END:
                         intId = GroovyTokenTypes.STRING_LITERAL;
                         break;
-                    case GroovyTokenTypes.EOF: 
+                    case GroovyTokenTypes.EOF:
                         if (lexerInput.readLength() > 0) {
                             return recovery();
                         }
                         return null;
                 }
-                
+
                 return createToken(intId, len);
 
-            } 
-            else { // antlrToken is null
+            } else {
                 LOG.finest("Antlr token was null");
                 int scannerTextTokenLength = scanner.getText().length();
-                if ( scannerTextTokenLength > 0 ) {
+                if (scannerTextTokenLength > 0) {
                     return createToken(GroovyTokenTypes.WS, scannerTextTokenLength);
                 }
                 return null;  // no more tokens from tokenManager
             }
         } catch (TokenStreamException e) {
-            LOG.finest("Caught exception: " + e);
+            LOG.log(Level.FINEST, "Caught exception: {0}", e);
             return recovery();
         }
     }
 
+    @Override
     public Object state() {
         return scanner.getState();
     }
 
+    @Override
     public void release() {
     }
 
@@ -190,30 +190,30 @@ public final class GroovyLexer implements Lexer<GroovyTokenId> {
         }
         return tokenLength > 0 ? createToken(GroovyTokenId.ERROR.ordinal(), tokenLength) : null;
     }
-    
+
     private static class MyCharBuffer extends CharBuffer {
         public MyCharBuffer(Reader reader) {
-            super( reader );
+            super(reader);
             queue = new MyCharQueue(1);
         }
-        
+
         public int getExtraCharCount() {
             syncConsume();
-            return ( (MyCharQueue) queue ).getNbrEntries() ;
+            return ((MyCharQueue) queue).getNbrEntries();
         }
 
-    }     
-    
+    }
+
     private static class MyCharQueue extends CharQueue {
         public MyCharQueue(int minSize) {
             super(minSize);
         }
-        
+
         public int getNbrEntries() {
             return nbrEntries;
         }
     }
-    
+
     private static class LexerInputReader extends Reader {
         private LexerInput input;
 
@@ -221,17 +221,19 @@ public final class GroovyLexer implements Lexer<GroovyTokenId> {
             this.input = input;
         }
 
+        @Override
         public int read(char[] buf, int off, int len) throws IOException {
             for (int i = 0; i < len; i++) {
                 int c = input.read();
                 if (c == LexerInput.EOF) {
                     return -1;
                 }
-                buf[i + off] = (char)c;
+                buf[i + off] = (char) c;
             }
             return len;
         }
 
+        @Override
         public void close() throws IOException {
         }
     }
@@ -245,30 +247,29 @@ public final class GroovyLexer implements Lexer<GroovyTokenId> {
         public DelegateLexer(LexerSharedInputState state) {
             super(state);
         }
-        
+
         public State getState() {
             if (stringCtorState > 0 || !parenLevelStack.isEmpty()) {
                 return new State(stringCtorState, parenLevelStack);
             }
             return null;
         }
-        
+
         public void setState(State d) {
             if (d != null) {
                 stringCtorState = d.stringCtorState;
                 parenLevelStack = new ArrayList(d.parenLevelStack);
             }
         }
-        
     }
-    
+
     /**
      * Holds state of lexer, which is needed to recover in incremental parsing
      * in expressions used in GStrings
      */
     @SuppressWarnings("unchecked")
     private static class State {
-        
+
         private final int stringCtorState;
         private final ArrayList parenLevelStack;
 
@@ -302,9 +303,8 @@ public final class GroovyLexer implements Lexer<GroovyTokenId> {
             hash = 67 * hash + (this.parenLevelStack != null ? this.parenLevelStack.hashCode() : 0);
             return hash;
         }
-        
     }
-    
+
     private GroovyTokenId getTokenId(int token) {
         switch (token) {
             case GroovyTokenTypes.ABSTRACT:

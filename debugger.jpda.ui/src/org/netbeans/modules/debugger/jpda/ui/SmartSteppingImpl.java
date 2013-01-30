@@ -130,12 +130,7 @@ PropertyChangeListener {
                 }
                 if (rootFO != null) {
                     java.io.File file = FileUtil.toFile(rootFO);
-                    String sourceRoot;
-                    try {
-                        sourceRoot = file.getCanonicalPath();
-                    } catch (IOException ex) {
-                        sourceRoot = file.getAbsolutePath();
-                    }
+                    String sourceRoot = file.getAbsolutePath();
 
                     String[] additionalSourceRoots = ectx.getAdditionalSourceRoots();
                     String[] originalSourceRoots = ectx.getOriginalSourceRoots();

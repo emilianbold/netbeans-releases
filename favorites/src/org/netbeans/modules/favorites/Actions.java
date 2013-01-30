@@ -383,28 +383,33 @@ public final class Actions extends Object {
             projectsTab.requestActive();
             //Try to locate newly added node and select it
             if (createdDO != null) {
-                Node [] nodes = projectsTab.getExplorerManager().getRootContext().getChildren().getNodes(true);
-                final Node [] toSelect = new Node[1];
-                boolean setSelected = false;
-                for (int i = 0; i < nodes.length; i++) {
-                    if (createdDO.getName().equals(nodes[i].getName())) {
-                        toSelect[0] = nodes[i];
-                        setSelected = true;
-                        break;
-                    }
-                }
-                if (setSelected) {
-                    SwingUtilities.invokeLater(new Runnable () {
-                        @Override
-                        public void run() {
-                            try {
-                                projectsTab.getExplorerManager().setExploredContextAndSelection(toSelect[0],toSelect);
-                            } catch (PropertyVetoException ex) {
-                                //Nothing to do
+                Tab.RP.post(new Runnable() {
+                    @Override
+                    public void run () {
+                        Node [] nodes = projectsTab.getExplorerManager().getRootContext().getChildren().getNodes(true);
+                        final Node [] toSelect = new Node[1];
+                        boolean setSelected = false;
+                        for (int i = 0; i < nodes.length; i++) {
+                            if (createdDO.getName().equals(nodes[i].getName())) {
+                                toSelect[0] = nodes[i];
+                                setSelected = true;
+                                break;
                             }
                         }
-                    });
-                }
+                        if (setSelected) {
+                            SwingUtilities.invokeLater(new Runnable () {
+                                @Override
+                                public void run() {
+                                    try {
+                                        projectsTab.getExplorerManager().setExploredContextAndSelection(toSelect[0],toSelect);
+                                    } catch (PropertyVetoException ex) {
+                                        //Nothing to do
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
             }
         }
 

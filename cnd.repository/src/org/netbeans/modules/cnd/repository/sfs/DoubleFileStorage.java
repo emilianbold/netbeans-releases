@@ -53,6 +53,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.testbench.Stats;
+import org.netbeans.modules.cnd.repository.relocate.api.UnitCodec;
+import org.netbeans.modules.cnd.utils.CndUtils;
 
 /**
  * Stores Persistent objects in two files;
@@ -62,16 +64,16 @@ import org.netbeans.modules.cnd.repository.testbench.Stats;
  *
  * @author Vladimir Kvashin
  */
-public class DoubleFileStorage extends FileStorage {
+public final class DoubleFileStorage extends FileStorage {
     
-    private Map<Key, Persistent> fickleMap = new HashMap<Key, Persistent>();
-    private File basePath;
+    private final Map<Key, Persistent> fickleMap = new HashMap<Key, Persistent>();
+    private final File basePath;
     
-    private IndexedStorageFile cache_0_dataFile;
-    private IndexedStorageFile cache_1_dataFile;
+    private final IndexedStorageFile cache_0_dataFile;
+    private final IndexedStorageFile cache_1_dataFile;
     
     private boolean defragmenting = false;
-    private AtomicBoolean cache_1_dataFileIsActive = new AtomicBoolean(false);
+    private final AtomicBoolean cache_1_dataFileIsActive = new AtomicBoolean(false);
 
     private boolean getFlag () {
         return cache_1_dataFileIsActive.get();
@@ -90,8 +92,8 @@ public class DoubleFileStorage extends FileStorage {
     }
     
     // package-local - for test purposes
-    public DoubleFileStorage(final File basePath) throws IOException {
-        this (basePath, false);
+    public DoubleFileStorage(final File basePath, UnitCodec unitCodec) throws IOException {
+        this (basePath, false, unitCodec);
     }
     /**
      * Creates a new <code>DoubleFileStorage</code> instance 
@@ -100,12 +102,12 @@ public class DoubleFileStorage extends FileStorage {
      * @param createCleanExistent    A flag if the storage should be created, not opened
      */
     // package-local - for test purposes
-    DoubleFileStorage (final File basePath, boolean createCleanExistent) throws IOException {
+    DoubleFileStorage (final File basePath, boolean createCleanExistent, UnitCodec unitCodec) throws IOException {
         this.basePath = basePath;
 
-        cache_0_dataFile = new IndexedStorageFile(basePath, "cache-0", createCleanExistent); // NOI18N
+        cache_0_dataFile = new IndexedStorageFile(basePath, "cache-0", createCleanExistent, unitCodec); // NOI18N
         
-        cache_1_dataFile = new IndexedStorageFile(basePath, "cache-1", createCleanExistent); // NOI18N
+        cache_1_dataFile = new IndexedStorageFile(basePath, "cache-1", createCleanExistent, unitCodec); // NOI18N
 
         if ((cache_0_dataFile.getDataFileUsedSize() == 0 ) &&
             (cache_1_dataFile.getDataFileUsedSize() == 0)) {
@@ -219,22 +221,26 @@ public class DoubleFileStorage extends FileStorage {
         
         int cnt = 0;
         boolean activeFlag = getFlag();        
-        Iterator<Key> it = getFileByFlag(!activeFlag).getKeySetIterator();
+        IndexedStorageFile activeFile = getFileByFlag(!activeFlag);
+        Iterator<Key> it = activeFile.getKeySetIterator();
 
         while( it.hasNext() ) {
             Key key = it.next();
             ChunkInfo chunk = getFileByFlag(!activeFlag).getChunkInfo(key);
-            int size = chunk.getSize();
-            long newOffset = getFileByFlag(activeFlag).getSize();
-            getFileByFlag(activeFlag).moveDataFromOtherFile(getFileByFlag(!activeFlag).getDataFile(), chunk.getOffset(), size, newOffset, key);
-	    getFileByFlag(!activeFlag).remove(key);
-            // it.remove(); // some of the implementations does not support removal
-            cnt++;
-            
-            if( (timeout > 0) && (cnt % 10 == 0) ) {
-                if( System.currentTimeMillis()-time >= timeout ) {
-                    needMoreTime = true;
-                    break;
+            CndUtils.assertNotNull(chunk, "Null chunk when defragmenting " + activeFile.getTraceString()); //NOI18N
+            if (chunk != null) {
+                int size = chunk.getSize();
+                long newOffset = getFileByFlag(activeFlag).getSize();
+                getFileByFlag(activeFlag).moveDataFromOtherFile(getFileByFlag(!activeFlag).getDataFile(), chunk.getOffset(), size, newOffset, key);
+                getFileByFlag(!activeFlag).remove(key);
+                // it.remove(); // some of the implementations does not support removal
+                cnt++;
+
+                if( (timeout > 0) && (cnt % 10 == 0) ) {
+                    if( System.currentTimeMillis()-time >= timeout ) {
+                        needMoreTime = true;
+                        break;
+                    }
                 }
             }
         }
@@ -297,5 +303,10 @@ public class DoubleFileStorage extends FileStorage {
     public int getObjectsCount() {
         boolean activeFlag = getFlag();
         return getFileByFlag(activeFlag).getObjectsCount() + getFileByFlag(!activeFlag).getObjectsCount();
+    }
+
+    @Override
+    public void debugDump(Key key) {
+        // not implemented so far
     }
 }

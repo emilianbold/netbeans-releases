@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.dlight.libs.common;
 
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
@@ -58,11 +59,13 @@ public class DLightLibsCommonLogger {
     
     /** for test purposes */
     private static volatile Exception lastAssertion;
+    private static final Set<StackElementArray> toStringStacks;
 
     static {
         assert (assertionsEnabled = true);
+        toStringStacks = assertionsEnabled ? StackElementArray.createSet() : null;
     }
-
+    
     public static Exception getLastAssertion() {
         return lastAssertion;
     }
@@ -110,14 +113,20 @@ public class DLightLibsCommonLogger {
         }
     }
 
-    public static void assertNonUiThread(String message) {
+    public static void assertNonUiThread(String message, Level level, boolean once) {
         if (assertionsEnabled && SwingUtilities.isEventDispatchThread()) {
-            instance.log(Level.SEVERE, message, lastAssertion = new Exception(message));
+            if (!once || StackElementArray.addStackIfNew(toStringStacks, 8)) {
+                instance.log(level, message, lastAssertion = new Exception(message));
+            }
         }
     }
-
+    
     public static void assertNonUiThread() {
-        assertNonUiThread("Should not be called from UI thread"); //NOI18N
+        assertNonUiThread("Should not be called from UI thread", Level.SEVERE, false); //NOI18N
+    }
+
+    public static void assertNonUiThreadOnce(Level level) {
+        assertNonUiThread("Should not be called from UI thread", level, true); //NOI18N
     }
 
     public static void finest(Exception exception) {

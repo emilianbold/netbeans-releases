@@ -51,6 +51,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -65,10 +66,11 @@ import org.netbeans.modules.cnd.discovery.api.ItemProperties;
 import org.netbeans.modules.cnd.discovery.api.SourceFileProperties;
 import org.netbeans.modules.cnd.dwarfdiscovery.provider.BaseDwarfProvider.GrepEntry;
 import org.netbeans.modules.cnd.dwarfdump.CompilationUnit;
-import org.netbeans.modules.cnd.dwarfdump.Dwarf;
+import org.netbeans.modules.cnd.dwarfdump.CompilationUnitInterface;
 import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfMacinfoEntry;
 import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfMacinfoTable;
 import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfStatementList;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.nativeexecution.api.util.LinkSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
@@ -77,7 +79,7 @@ import org.openide.util.Utilities;
  *
  * @author Alexander Simon
  */
-public class DwarfSource implements SourceFileProperties{
+public class DwarfSource extends RelocatableImpl implements SourceFileProperties {
     public static final Logger LOG = Logger.getLogger(DwarfSource.class.getName());
     private static final boolean CUT_LOCALHOST_NET_ADRESS = Boolean.getBoolean("cnd.dwarfdiscovery.cut.localhost.net.adress"); // NOI18N
     private static boolean ourGatherMacros = true;
@@ -87,27 +89,23 @@ public class DwarfSource implements SourceFileProperties{
     private static final String CYGWIN_PATH = ":/cygwin"; // NOI18N
     private String cygwinPath;
     
-    private String compilePath;
     private String sourceName;
-    private String fullName;
-    private ItemProperties.LanguageKind language;
-    private ItemProperties.LanguageStandard standard;
-    private List<String> userIncludes;
+    private final ItemProperties.LanguageKind language;
+    private final ItemProperties.LanguageStandard standard;
     private List<String> systemIncludes;
     private boolean haveSystemIncludes;
     private Map<String, String> userMacros;
     private List<String> undefinedMacros;
     private Map<String, String> systemMacros;
     private boolean haveSystemMacros;
-    private Set<String> includedFiles;
     private CompilerSettings normilizeProvider;
-    private Map<String,GrepEntry> grepBase;
+    private final Map<String,GrepEntry> grepBase;
     private String compilerName;
-    private CompileLineStorage storage;
+    private final CompileLineStorage storage;
     private int handler = -1;
     private final CompilerSettings compilerSettings;
     
-    DwarfSource(CompilationUnit cu, ItemProperties.LanguageKind lang, ItemProperties.LanguageStandard standard, CompilerSettings compilerSettings, Map<String,GrepEntry> grepBase, CompileLineStorage storage) throws IOException{
+    DwarfSource(CompilationUnitInterface cu, ItemProperties.LanguageKind lang, ItemProperties.LanguageStandard standard, CompilerSettings compilerSettings, Map<String,GrepEntry> grepBase, CompileLineStorage storage) throws IOException{
         language = lang;
         this.grepBase = grepBase;
         this.standard = standard;
@@ -117,7 +115,7 @@ public class DwarfSource implements SourceFileProperties{
         initSourceSettings(cu, lang);
     }
 
-    private void countFileName(CompilationUnit cu) throws IOException {
+    private void countFileName(CompilationUnitInterface cu) throws IOException {
         fullName = cu.getSourceFileAbsolutePath();
         fullName = fixFileName(fullName);
         //File file = new File(fullName);
@@ -203,39 +201,6 @@ public class DwarfSource implements SourceFileProperties{
         return fullName;
     }
 
-    void resetItemPath(String path) {
-        String newCompilePath = Dwarf.fileFinder(path, compilePath);
-        if (newCompilePath != null) {
-            compilePath = PathCache.getString(newCompilePath);
-        }
-        HashSet<String> newIncludedFiles = new HashSet<String>();
-        for(String incl : includedFiles) {
-            String newIncl = Dwarf.fileFinder(path, incl);
-            if (newIncl != null) {
-                newIncludedFiles.add(PathCache.getString(newIncl));
-            } else {
-                newIncludedFiles.add(incl);
-            }
-        }
-        includedFiles = newIncludedFiles;
-        List<String> newUserIncludes = new ArrayList<String>();
-        for(String incl : userIncludes) {
-            String newIncl = null;
-            if (incl.startsWith("/")) { //NOI18N
-                newIncl = Dwarf.fileFinder(path, incl);
-                if (newIncl != null) {
-                    newIncl = PathCache.getString(newIncl);
-                }
-            }
-            if (newIncl == null) {
-                newIncl = incl;
-            }
-            newUserIncludes.add(newIncl);
-        }
-        userIncludes = newUserIncludes;
-        fullName = PathCache.getString(path);
-    }
-    
     @Override
     public String getItemName() {
         return sourceName;
@@ -252,6 +217,9 @@ public class DwarfSource implements SourceFileProperties{
     }
     
     public Set<String> getIncludedFiles() {
+        if (false && ConfigurationDescriptorProvider.VCS_WRITE) {
+            return Collections.emptySet();
+        }
         return includedFiles;
     }
     
@@ -383,40 +351,47 @@ public class DwarfSource implements SourceFileProperties{
     }
     
 
-    static String extractCompilerName(CompilationUnit cu, ItemProperties.LanguageKind lang) throws IOException {
+    static String extractCompilerName(CompilationUnitInterface cui, ItemProperties.LanguageKind lang) throws IOException {
         String compilerName = null;
-        if (cu.getCompileOptions() == null) {
-            compilerName = cu.getProducer();
-        } else {
-            String compileOptions = cu.getCompileOptions();
-            int startIndex = compileOptions.indexOf("R="); // NOI18N
-            if (startIndex >=0 ) {
-                int endIndex = compileOptions.indexOf(";", startIndex); // NOI18N
-                if (endIndex >= 0) {
-                    compilerName = PathCache.getString(compileOptions.substring(startIndex+2, endIndex));
+        if (cui instanceof CompilationUnit) {
+            CompilationUnit cu = (CompilationUnit) cui;
+            if (cu.getCompileOptions() == null) {
+                compilerName = cu.getProducer();
+            } else {
+                String compileOptions = cu.getCompileOptions();
+                int startIndex = compileOptions.indexOf("R="); // NOI18N
+                if (startIndex >=0 ) {
+                    int endIndex = compileOptions.indexOf(";", startIndex); // NOI18N
+                    if (endIndex >= 0) {
+                        compilerName = PathCache.getString(compileOptions.substring(startIndex+2, endIndex));
+                    }
                 }
-            }
-            if (compilerName == null) {
-                if (lang == ItemProperties.LanguageKind.CPP) {
-                    compilerName = PathCache.getString("CC"); // NOI18N
-                } else if (lang == ItemProperties.LanguageKind.C) {
-                    compilerName = PathCache.getString("cc"); // NOI18N
-                } else if (lang == ItemProperties.LanguageKind.Fortran) {
-                    compilerName = PathCache.getString("fortran"); // NOI18N
-                } else {
-                    compilerName = PathCache.getString("unknown"); // NOI18N
-                }
+                if (compilerName == null) {
+                    if (lang == ItemProperties.LanguageKind.CPP) {
+                        compilerName = PathCache.getString("CC"); // NOI18N
+                    } else if (lang == ItemProperties.LanguageKind.C) {
+                        compilerName = PathCache.getString("cc"); // NOI18N
+                    } else if (lang == ItemProperties.LanguageKind.Fortran) {
+                        compilerName = PathCache.getString("fortran"); // NOI18N
+                    } else {
+                        compilerName = PathCache.getString("unknown"); // NOI18N
+                    }
 
+                }
             }
         }
         return compilerName;
     }
 
-    static boolean isSunStudioCompiler(CompilationUnit cu) throws IOException {
-        return cu.getCompileOptions() != null;
+    static boolean isSunStudioCompiler(CompilationUnitInterface cu) throws IOException {
+        if (cu instanceof CompilationUnit) {
+            return ((CompilationUnit)cu).getCompileOptions() != null;
+        } else {
+            return cu.getCommandLine() != null && !cu.getCommandLine().isEmpty();
+        }
     }
 
-    private void initSourceSettings(CompilationUnit cu, ItemProperties.LanguageKind lang) throws IOException{
+    private void initSourceSettings(CompilationUnitInterface cu, ItemProperties.LanguageKind lang) throws IOException{
         userIncludes = new ArrayList<String>();
         userMacros = new HashMap<String,String>();
         undefinedMacros = new ArrayList<String>();
@@ -445,17 +420,21 @@ public class DwarfSource implements SourceFileProperties{
         }
     }
     
-    public void process(CompilationUnit cu) throws IOException{
+    public void process(CompilationUnitInterface cu) throws IOException{
         String line = cu.getCommandLine();
         if (line != null && line.length()>0){
             if (storage != null) {
                 handler = storage.putCompileLine(line);
             }
             gatherLine(line);
-            gatherIncludedFiles(cu);
+            if (cu instanceof CompilationUnit) {
+                gatherIncludedFiles((CompilationUnit)cu);
+            }
         } else {
-            gatherMacros(cu);
-            gatherIncludes(cu);
+            if (cu instanceof CompilationUnit) {
+                gatherMacros((CompilationUnit)cu);
+                gatherIncludes((CompilationUnit)cu);
+            }
         }
     }
     

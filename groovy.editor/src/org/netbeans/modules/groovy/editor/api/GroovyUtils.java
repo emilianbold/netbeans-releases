@@ -83,6 +83,19 @@ public final class GroovyUtils {
         return Character.isJavaIdentifierPart(c) || (c == '$') ;
     }
 
+    /**
+     * Return substring after last dot.
+     * @param fqn fully qualified type name
+     * @return singe typename without package, or method without type
+     */
+    public static String stripPackage(String fqn) {
+        if (fqn.contains(".")) {
+            int idx = fqn.lastIndexOf(".");
+            fqn = fqn.substring(idx + 1);
+        }
+        return fqn.replace(";", "");
+    }
+
     public static boolean isRowWhite(String text, int offset) throws BadLocationException {
         try {
             // Search forwards

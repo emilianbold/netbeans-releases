@@ -66,14 +66,9 @@ import org.openide.util.Lookup;
  * @author Miloslav Metelka
  */
 public class FoldToolTip extends JPanel {
-
-    private JEditorPane foldPreviewPane;
-
     private int editorPaneWidth;
 
-    public FoldToolTip(JEditorPane editorPane, final JEditorPane foldPreviewPane) {
-        this.foldPreviewPane = foldPreviewPane;
-
+    public FoldToolTip(JEditorPane editorPane, final JEditorPane foldPreviewPane, Color borderColor) {
         setLayout(new BorderLayout());
         add(foldPreviewPane, BorderLayout.CENTER);
         putClientProperty("tooltip-type", "fold-preview"); // Checked in NbToolTip
@@ -108,8 +103,7 @@ public class FoldToolTip extends JPanel {
 
         editorPaneWidth = editorPane.getSize().width;
 
-        Color foreColor = this.foldPreviewPane.getForeground();
-        setBorder(new LineBorder(foreColor));
+        setBorder(new LineBorder(borderColor));
         setOpaque(true);
     }
     

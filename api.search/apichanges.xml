@@ -105,6 +105,74 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="ReplaceHistory">
+            <api name="api.search"/>
+            <summary>Added ReplacePattern and replace history to SearchHistory class</summary>
+            <version major="1" minor="1.8"/>
+            <date day="20" month="11" year="2012"/>
+            <author login="mkristofic"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Search History is extended for replace history.
+                </p>
+                <p> 
+                    New ReplacePattern is a wrap class for replace expression.
+                </p>
+            </description>
+            <class package="org.netbeans.api.search" name="ReplacePattern"/>
+            <class package="org.netbeans.api.search" name="SearchHistory"/>
+        </change>
+        
+        <change id="SearchResultsDisplayer-closed">
+            <api name="api.search"/>
+            <summary>Added method SearchResultsDisplayer.closed()</summary>
+            <version major="1" minor="1.5"/>
+            <date day="25" month="6" year="2012"/>
+            <author login="jhavlin"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    The new <code>SearchResultsDisplayer.closed()</code> is
+                    called when the results panel is closed by the user. It can
+                    be overriden to release all resouces held by the panel.
+                </p>
+                <p>
+                    Before this change, <code>HierarchyListener</code>s were
+                    used to detect detaching of search results panels. But it
+                    is quite complicated as the panels can be often detached and
+                    attached again when they are moved from a simple pane to a
+                    tabbed pane or vice versa.
+                </p>
+            </description>
+            <class package="org.netbeans.spi.search.provider" name="SearchResultsDisplayer"/>
+        </change>
+        <change id="UriSupport">
+            <api name="api.search"/>
+            <summary>Support for URI-based searching</summary>
+            <version major="1" minor="1.4"/>
+            <date day="27" month="4" year="2012"/>
+            <author login="jhavlin"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Previous versions of this API supported searching based on
+                    traversing of <code>FileObject</code>s only. In some cases
+                    (e.g. remote filesystems), working with
+                    <code>FileObjects</code> is too expensive and slow.
+                    This API change make it possible to work with
+                    <code>URI</code> objects as an alternative to
+                    <code>FileObjects</code>.
+                </p>
+            </description>
+            <class package="org.netbeans.api.search" name="SearchRoot"/>
+            <class package="org.netbeans.api.search.provider" name="FileNameMatcher"/>
+            <class package="org.netbeans.api.search.provider" name="SearchFilter"/>
+            <class package="org.netbeans.api.search.provider" name="SearchInfo"/>
+            <class package="org.netbeans.api.search.provider" name="SearchListener"/>
+            <class package="org.netbeans.spi.search" name="SearchFilterDefinition"/>
+            <class package="org.netbeans.spi.search" name="SearchInfoDefinition"/>
+        </change>
         <change id="SearchPatternController">
             <api name="api.search"/>
             <summary>Added class

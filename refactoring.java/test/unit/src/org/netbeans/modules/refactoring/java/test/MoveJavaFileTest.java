@@ -91,7 +91,9 @@ public class MoveJavaFileTest extends RefactoringTestBase {
                       new File("t/package-info.java", "package t;"),
                       new File("v/A.java", "package v; import t.u.B; public class A { public void foo() { int d = B.c; } }"),
                       new File("t/u/B.java", "package t.u; public class B { public static int c = 5; }"));
-        
+    }
+    
+    public void test168923a() throws Exception { // #168923 - [Move] refactoring a package doesn't update star imports [68cat]
         writeFilesAndWaitForScan(src,
                                  new File("t/package-info.java", "package t;"),
                                  new File("v/A.java", "package v; import u.*; import u.B; public class A { public void foo() { int d = B.c; } }"),
@@ -101,7 +103,9 @@ public class MoveJavaFileTest extends RefactoringTestBase {
                       new File("t/package-info.java", "package t;"),
                       new File("v/A.java", "package v; import t.B; public class A { public void foo() { int d = B.c; } }"),
                       new File("t/B.java", "package t; public class B { public static int c = 5; }"));
-        
+    }
+    
+    public void test168923b() throws Exception { // #168923 - [Move] refactoring a package doesn't update star imports [68cat]
          writeFilesAndWaitForScan(src,
                                  new File("t/package-info.java", "package t;"),
                                  new File("u/package-info.java", "package u;"),
@@ -113,7 +117,9 @@ public class MoveJavaFileTest extends RefactoringTestBase {
                       new File("u/package-info.java", "package u;"),
                       new File("v/A.java", "package v; import t.B; public class A { public void foo() { int d = B.c; } }"),
                       new File("t/B.java", "package t; public class B { public static int c = 5; }"));
-        
+    }
+    
+    public void test168923c() throws Exception { // #168923 - [Move] refactoring a package doesn't update star imports [68cat]
         writeFilesAndWaitForScan(src,
                                  new File("t/package-info.java", "package t;"),
                                  new File("A.java", "import u.*; import u.B; public class A { public void foo() { int d = B.c; } }"),
@@ -123,7 +129,9 @@ public class MoveJavaFileTest extends RefactoringTestBase {
                       new File("t/package-info.java", "package t;"),
                       new File("A.java", " import t.B; public class A { public void foo() { int d = B.c; } }"),
                       new File("t/B.java", "package t; public class B { public static int c = 5; }"));
-        
+    }
+    
+    public void test168923d() throws Exception { // #168923 - [Move] refactoring a package doesn't update star imports [68cat]
         writeFilesAndWaitForScan(src,
                                  new File("t/package-info.java", "package t;"),
                                  new File("A.java", "import t.*; public class A { public void foo() { int d = B.c; } }"),
@@ -133,7 +141,9 @@ public class MoveJavaFileTest extends RefactoringTestBase {
                       new File("t/package-info.java", "package t;"),
                       new File("A.java", "import t.B; import t.*; public class A { public void foo() { int d = B.c; } }"),
                       new File("t/B.java", "package t; public class B { public static int c = 5; }"));
-        
+    }
+    
+    public void test168923e() throws Exception { // #168923 - [Move] refactoring a package doesn't update star imports [68cat]
         writeFilesAndWaitForScan(src,
                                  new File("t/package-info.java", "package t;"),
                                  new File("v/A.java", "package v; import u.*; public class A { public void foo() { int d = 3; } }"),

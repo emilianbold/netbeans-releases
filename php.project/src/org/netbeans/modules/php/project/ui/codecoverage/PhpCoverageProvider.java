@@ -147,7 +147,7 @@ public final class PhpCoverageProvider implements CoverageProvider {
     }
 
     @Override
-    public void setEnabled(boolean on) {
+    public synchronized void setEnabled(boolean on) {
         if (enabled != null && on == enabled) {
             return;
         }

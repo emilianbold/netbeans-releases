@@ -60,6 +60,15 @@ import org.openide.util.lookup.ServiceProvider;
  */
 @ServiceProvider(service=LifecycleManager.class)
 public class ModuleLifecycleManager extends LifecycleManager {
+    public ModuleLifecycleManager() {
+        Runtime.getRuntime().addShutdownHook(new Thread("close modules") { // NOI18N
+            public @Override void run() {
+                if (System.getSecurityManager() instanceof TopSecurityManager) {
+                    LifecycleManager.getDefault().exit();
+                }
+            }
+        });
+    }
 
     public void saveAll() {
         // XXX #77210 would make it possible for some objects to be saved here
@@ -100,6 +109,17 @@ public class ModuleLifecycleManager extends LifecycleManager {
     }
 
     public @Override void markForRestart() throws UnsupportedOperationException {
+        markReadyForRestart();
+    }
+
+    /** Creates files that instruct the native launcher to perform restart as
+     * soon as the Java process finishes. 
+     * 
+     * @since 1.45
+     * @throws UnsupportedOperationException some environments (like WebStart)
+     *   do not support restart and may throw an exception to indicate that
+     */
+    static void markReadyForRestart() throws UnsupportedOperationException {
         if (!TopSecurityManager.class.getClassLoader().getClass().getName().endsWith(".Launcher$AppClassLoader")) {
             throw new UnsupportedOperationException("not running in regular module system, cannot restart"); // NOI18N
         }

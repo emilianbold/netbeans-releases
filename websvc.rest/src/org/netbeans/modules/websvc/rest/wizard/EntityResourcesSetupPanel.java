@@ -46,6 +46,8 @@ package org.netbeans.modules.websvc.rest.wizard;
 
 import java.awt.Component;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.swing.BoxLayout;
 import javax.swing.JPanel;
@@ -55,6 +57,8 @@ import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.source.ui.ScanDialog;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.j2ee.persistence.provider.InvalidPersistenceXmlException;
+import org.netbeans.modules.j2ee.persistence.wizard.unit.PersistenceUnitWizardPanel.TableGeneration;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.websvc.rest.model.api.RestApplication;
 import org.netbeans.modules.websvc.rest.spi.RestSupport;
@@ -102,6 +106,42 @@ public final class EntityResourcesSetupPanel extends AbstractPanel {
         return component.valid(wizardDescriptor);
     }
     
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.websvc.rest.wizard.AbstractPanel#readSettings(java.lang.Object)
+     */
+    @Override
+    public void readSettings( Object settings ) {
+        super.readSettings(settings);
+        if (wizardDescriptor
+                .getProperty(WizardProperties.CREATE_PERSISTENCE_UNIT) != null)
+        {
+            Project project = Templates.getProject(wizardDescriptor);
+            try {
+                org.netbeans.modules.j2ee.persistence.wizard.Util
+                        .createPersistenceUnitUsingWizard(project, null,
+                                TableGeneration.NONE);
+            }
+            catch (InvalidPersistenceXmlException e) {
+                Logger.getLogger(EntitySelectionPanel.class.getName()).log(
+                        Level.WARNING, null, e);
+            }
+        }
+    }
+    
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.websvc.rest.wizard.AbstractPanel#storeSettings(java.lang.Object)
+     */
+    @Override
+    public void storeSettings( Object settings ) {
+        super.storeSettings(settings);
+        if ( Util.getPersistenceUnit(wizardDescriptor, 
+                Templates.getProject(wizardDescriptor)) != null )
+        {
+            wizardDescriptor.putProperty(
+                    WizardProperties.CREATE_PERSISTENCE_UNIT,null);
+        }
+    }
+    
     static class FinishEntityPanel extends JPanel implements AbstractPanel.Settings, 
         SourcePanel
     {
@@ -115,6 +155,7 @@ public final class EntityResourcesSetupPanel extends AbstractPanel {
             jerseyPanel = new JerseyPanel( this );
             mainPanel.addChangeListener(jerseyPanel );
             add( jerseyPanel );
+            setName(name);
         }
 
         /* (non-Javadoc)
@@ -132,40 +173,33 @@ public final class EntityResourcesSetupPanel extends AbstractPanel {
         public void read( final WizardDescriptor wizard ) {
             mainPanel.read(wizard);
             Project project = Templates.getProject(wizard);
-            WebModule webModule = WebModule.getWebModule(project.getProjectDirectory());
-            Profile profile = webModule.getJ2eeProfile();
-            final RestSupport restSupport = project.getLookup().lookup(RestSupport.class);
-            boolean hasSpringSupport = restSupport!= null && restSupport.hasSpringSupport();
-            boolean isJee6 = Profile.JAVA_EE_6_WEB.equals(profile) || 
-                Profile.JAVA_EE_6_FULL.equals(profile);
+            final WebRestSupport restSupport = project.getLookup().
+                    lookup(WebRestSupport.class);
+            boolean hasSpringSupport = restSupport.hasSpringSupport();
+            boolean hasJaxRs = restSupport.hasJaxRsApi(); 
             if ( hasSpringSupport ){
                 wizard.putProperty( WizardProperties.USE_JERSEY, true);
             }
             if (jerseyPanel != null) {
-                if (!isJee6 || hasSpringSupport
+                if (!hasJaxRs || hasSpringSupport
                         || restSupport.isRestSupportOn())
                 {
                     remove(jerseyPanel);
                     jerseyPanel = null;
                 }
-                if (restSupport instanceof WebRestSupport) {
-                    ScanDialog.runWhenScanFinished(new Runnable() {
+                ScanDialog.runWhenScanFinished(new Runnable() {
 
-                        @Override
-                        public void run() {
-                            List<RestApplication> restApplications = ((WebRestSupport) restSupport)
-                                    .getRestApplications();
-                            boolean configured = restApplications != null
-                                    && !restApplications.isEmpty();
-                            configureJersey(configured, wizard);
-                        }
-                    }, NbBundle.getMessage(PatternResourcesSetupPanel.class,
-                            "LBL_SearchAppConfig")); // NOI18N
+                    @Override
+                    public void run() {
+                        List<RestApplication> restApplications = restSupport.
+                                getRestApplications();
+                        boolean configured = restApplications != null
+                                && !restApplications.isEmpty();
+                        configureJersey(configured, wizard);
+                    }
+                }, NbBundle.getMessage(PatternResourcesSetupPanel.class,
+                        "LBL_SearchAppConfig")); // NOI18N
 
-                }
-                else {
-                    jerseyPanel.read(wizard);
-                }
             }
         }
 

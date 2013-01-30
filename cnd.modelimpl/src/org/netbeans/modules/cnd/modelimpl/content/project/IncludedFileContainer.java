@@ -98,10 +98,11 @@ public final class IncludedFileContainer {
     }
 
     public void write(RepositoryDataOutput aStream) throws IOException {
-        aStream.writeInt(list.size());
+        List<Entry> aList = new ArrayList<Entry>(list);
+        aStream.writeInt(aList.size());
         UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
 //        KeyFactory keyFactory = KeyFactory.getDefaultFactory();
-        for (Entry entry : list) {
+        for (Entry entry : aList) {
             factory.writeUID(entry.prjUID, aStream);
             entry.getStorage().write(aStream);
 //            keyFactory.writeKey(entry.storageKey, aStream);
@@ -226,6 +227,12 @@ public final class IncludedFileContainer {
         return fileEntry;
     }
 
+    /*tests-only*/public void debugClearState() {
+        for (Entry entry : list) {
+            entry.storage.debugClearState();
+        }
+    }
+
     public final static class Storage extends ProjectComponent  {
 
         private FileEntry getFileEntry(CharSequence fileKey) {
@@ -281,14 +288,14 @@ public final class IncludedFileContainer {
         public Storage(RepositoryDataInput aStream) throws IOException {
             super(aStream);
             fileSystem = PersistentUtils.readFileSystem(aStream);
-            FileContainer.readStringToFileEntryMap(fileSystem, aStream, myFiles);
+            FileContainer.readStringToFileEntryMap(fileSystem, getIncludedUnitId(), aStream, myFiles);
         }
 
         @Override
         public void write(RepositoryDataOutput aStream) throws IOException {
             super.write(aStream);
             PersistentUtils.writeFileSystem(fileSystem, aStream);
-            FileContainer.writeStringToFileEntryMap(aStream, myFiles);
+            FileContainer.writeStringToFileEntryMap(getIncludedUnitId(), aStream, myFiles);
         }
 
         @Override
@@ -296,6 +303,21 @@ public final class IncludedFileContainer {
             return "Storage:" + getKey(); // NOI18N
         }
 
+        private void debugClearState() {
+            List<FileEntry> files;
+            files = new ArrayList<FileEntry>(myFiles.values());
+            for (FileEntry file : files) {
+                file.debugClearState();
+            }
+            put();
+        }
+
+        private int getIncludedUnitId() {
+            // see asserts in FileContainer.writeStringToFileEntryMap
+            if (true) return getUnitId();
+            IncludedFileStorageKey key = (IncludedFileStorageKey) getKey();
+            return key.getIncludedUnitIndex();
+        }
     }
     
     private static final class Entry {

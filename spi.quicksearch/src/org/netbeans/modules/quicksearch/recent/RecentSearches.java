@@ -42,20 +42,33 @@
 
 package org.netbeans.modules.quicksearch.recent;
 
+import java.awt.EventQueue;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.quicksearch.CategoryResult;
 import org.netbeans.modules.quicksearch.CommandEvaluator;
+import org.netbeans.modules.quicksearch.ProviderModel.Category;
 import org.netbeans.modules.quicksearch.ResultsModel;
 import org.netbeans.modules.quicksearch.ResultsModel.ItemResult;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.util.Cancellable;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
-
+import org.openide.util.RequestProcessor;
+import org.openide.util.Task;
 
 /**
  * Recent Searches items storage and its persistance
@@ -71,6 +84,10 @@ public class RecentSearches {
     private LinkedList<ItemResult> recent;
     private static RecentSearches instance;
     private static final char dateSep = ':';
+    private static final Pattern RECENT_PREFS_PATTERN =
+            Pattern.compile("^(.*):(\\d{8,})(?::(.*))?$");              //NOI18N
+    private static RequestProcessor RP =
+            new RequestProcessor(RecentSearches.class.getName(), 2);
 
     private RecentSearches() {
         recent = new LinkedList<ItemResult>();
@@ -131,7 +148,13 @@ public class RecentSearches {
         for (int i = 0; i < MAX_ITEMS; i++) {
             if (it.hasNext()) {
                 ItemResult td = it.next();
-                prefs().put(RECENT_SEARCHES + i, stripHTMLnames(td.getDisplayName()) + dateSep + td.getDate().getTime());
+                CategoryResult cr = td.getCategory();
+                Category category = cr == null ? null : cr.getCategory();
+                String categoryName = category == null ? null
+                        : stripHTMLnames(category.getDisplayName());
+                prefs().put(RECENT_SEARCHES + i, stripHTMLnames(td.getDisplayName())
+                        + dateSep + td.getDate().getTime()
+                        + (categoryName == null ? "" : dateSep + categoryName));
             } else {
                 prefs().put(RECENT_SEARCHES + i, "");
             }
@@ -141,12 +164,14 @@ public class RecentSearches {
     private void readRecentFromPrefs() {
         for (int i = 0; i < MAX_ITEMS; i++) {
             String item = prefs().get(RECENT_SEARCHES + i, "");
-            int semicolonPos = item.lastIndexOf(dateSep); // NOI18N
-            if (semicolonPos >= 0) {
+            Matcher m = RECENT_PREFS_PATTERN.matcher(item);
+            if (m.find()) {
                 try {
-                    final String name = item.substring(0, semicolonPos);
-                    final long time = Long.parseLong(item.substring(semicolonPos + 1));
-                    ItemResult incomplete = new ItemResult(null, new FakeAction(name), name, new Date(time));
+                    final String name = m.group(1);
+                    final long time = Long.parseLong(m.group(2));
+                    final String categ = m.group(3);
+                    ItemResult incomplete = new ItemResult(null,
+                            new FakeAction(name, categ), name, new Date(time));
                     recent.add(incomplete);
                 } catch (NumberFormatException nfe) {
                     Logger l = Logger.getLogger(RecentSearches.class.getName());
@@ -163,34 +188,113 @@ public class RecentSearches {
     public final class FakeAction implements Runnable {
 
         private String name; //display name to search for
+        private String category;
         private Runnable action; //remembered action
 
-        private FakeAction(String name) {
+        private FakeAction(String name, String category) {
             this.name = name;
+            this.category = category;
         }
 
+        @Override
         public void run() {
             if (action == null || action instanceof FakeAction) {
-                ResultsModel model = ResultsModel.getInstance();
-                CommandEvaluator.evaluate(stripHTMLandPackageNames(name), model);
+                RP.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        findAndRunAction();
+                    }
+                });
+            } else {
+                action.run();
+            }
+        }
+
+        /**
+         * Find action by display name and run it.
+         */
+        @NbBundle.Messages({
+            "LBL_SearchingRecentResult=Searching for a Quick Search Item",
+            "MSG_RecentResultNotFound=Recent Quick Search Item was not found."})
+        private void findAndRunAction() {
+            final AtomicBoolean cancelled = new AtomicBoolean(false);
+            ProgressHandle handle = ProgressHandleFactory.createHandle(
+                    Bundle.LBL_SearchingRecentResult(), new Cancellable() {
+                @Override
+                public boolean cancel() {
+                    cancelled.set(true);
+                    return true;
+                }
+            });
+            handle.start();
+            ResultsModel model = ResultsModel.getInstance();
+            Task evaluate = CommandEvaluator.evaluate(
+                    stripHTMLandPackageNames(name), model);
+            RP.post(evaluate);
+            int tries = 0;
+            boolean found = false;
+            while (tries++ < 30 && !cancelled.get()) {
+                if (checkActionWasFound(model, true)) {
+                    found = true;
+                    break;
+                } else if (evaluate.isFinished()) {
+                    found = checkActionWasFound(model, false);
+                    break;
+                }
+            }
+            handle.finish();
+            if (!found && !cancelled.get()) {
+                NotifyDescriptor nd = new NotifyDescriptor.Message(
+                        Bundle.MSG_RecentResultNotFound(),
+                        NotifyDescriptor.INFORMATION_MESSAGE);
+                DialogDisplayer.getDefault().notifyLater(nd);
+            }
+        }
+
+        /**
+         * Check if the correct action was found, and invoke it if so.
+         *
+         * @param model Model containing current search results.
+         * @param wait Wait one second before testing the results. It is useful
+         * if the search is still in progress.
+         */
+        private boolean checkActionWasFound(ResultsModel model, boolean wait) {
+            if (wait) {
                 try {
-                    Thread.sleep(350);
+                    Thread.sleep(1000);
                 } catch (InterruptedException ex) {
                     Exceptions.printStackTrace(ex);
                 }
-                int rSize = model.getSize();
-                for (int j = 0; j < rSize; j++) {
-                    ItemResult res = (ItemResult) model.getElementAt(j);
-                    if (stripHTMLnames(res.getDisplayName()).equals(stripHTMLnames(name))) {
-                        action = res.getAction();
-                        if (!(action instanceof FakeAction)) {
-                            action.run();
-                            break;
-                        }
+            }
+            int rSize = model.getSize();
+            for (int j = 0; j < rSize; j++) {
+                ItemResult res = (ItemResult) model.getElementAt(j);
+                if (nameMatches(res) && categoryMatches(res)) {
+                    action = res.getAction();
+                    if (!(action instanceof FakeAction)) {
+                        EventQueue.invokeLater(action);
+                        return true;
                     }
                 }
+            }
+            return false;
+        }
+
+        private boolean nameMatches(ItemResult res) {
+            return stripHTMLnames(res.getDisplayName()).equals(
+                    stripHTMLnames(name));
+        }
+
+        private boolean categoryMatches(ItemResult res) {
+            if (category == null) {
+                return true;
+            } else if (res.getCategory() == null
+                    || res.getCategory().getCategory() == null) {
+                return false;
             } else {
-                action.run();
+                return stripHTMLnames(
+                        res.getCategory().getCategory().getDisplayName()).equals(
+                        stripHTMLnames(category));
             }
         }
 

@@ -84,12 +84,13 @@ public class MavenSourceLevelImpl implements SourceLevelQueryImplementation2 {
         URI uri = Utilities.toURI(file);
         assert "file".equals(uri.getScheme());
         String goal = "compile"; //NOI18N
-        for (URI testuri : project.getLookup().lookup(NbMavenProjectImpl.class).getSourceRoots(true)) {
+        NbMavenProjectImpl nbprj = project.getLookup().lookup(NbMavenProjectImpl.class);
+        for (URI testuri : nbprj.getSourceRoots(true)) {
             if (uri.getPath().startsWith(testuri.getPath())) {
                 goal = "testCompile"; //NOI18N
             }
         }
-        for (URI testuri : project.getLookup().lookup(NbMavenProjectImpl.class).getGeneratedSourceRoots(true)) {
+        for (URI testuri : nbprj.getGeneratedSourceRoots(true)) {
             if (uri.getPath().startsWith(testuri.getPath())) {
                 goal = "testCompile"; //NOI18N
             }
@@ -97,12 +98,13 @@ public class MavenSourceLevelImpl implements SourceLevelQueryImplementation2 {
         String sourceLevel = PluginPropertyUtils.getPluginProperty(project, Constants.GROUP_APACHE_PLUGINS,  //NOI18N
                                                               Constants.PLUGIN_COMPILER,  //NOI18N
                                                               "source",  //NOI18N
-                                                              goal);
+                                                              goal,
+                                                              "maven.compiler.source");
         if (sourceLevel != null) {
             return sourceLevel;
         }
         String version = PluginPropertyUtils.getPluginVersion(
-                project.getLookup().lookup(NbMavenProjectImpl.class).getOriginalMavenProject(),
+                nbprj.getOriginalMavenProject(),
                 Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_COMPILER);
         if (version == null || new DefaultArtifactVersion(version).compareTo(new DefaultArtifactVersion("2.3")) >= 0) {
             return "1.5";

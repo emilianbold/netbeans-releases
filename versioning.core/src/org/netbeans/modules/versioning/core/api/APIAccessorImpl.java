@@ -66,11 +66,6 @@ class APIAccessorImpl extends APIAccessor {
     }
     
     @Override
-    public VCSFileProxy createFileProxy(File file, boolean isDirectory) {
-        return VCSFileProxy.createFileProxy(file, isDirectory);
-    }
-
-    @Override
     public VCSFileProxy createFileProxy(VCSFileProxy parent, String name, boolean isDirectory) {
         return VCSFileProxy.createFileProxy(parent, name, isDirectory);
     }

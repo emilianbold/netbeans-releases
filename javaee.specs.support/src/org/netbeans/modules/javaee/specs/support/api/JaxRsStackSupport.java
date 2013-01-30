@@ -138,4 +138,15 @@ public final class JaxRsStackSupport {
     public void configureCustomJersey( Project project ){
         impl.configureCustomJersey( project );
     }
+    
+    /**
+     * Checks whether class with <code>classFqn</code> FQN is bundled with
+     * JEE server distribution. This information allows to use classes for REST
+     * service configuration.  
+     * @param classFqn class FQN 
+     * @return true if JEE server bundled with <code>classFqn</code> 
+     */
+    public boolean isBundled(String classFqn ){
+        return impl.isBundled( classFqn );
+    }
 }

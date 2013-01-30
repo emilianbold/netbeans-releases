@@ -44,12 +44,15 @@ package org.netbeans.modules.php.editor.model.impl;
 
 import java.util.Collection;
 import java.util.Collections;
-import org.netbeans.modules.php.editor.model.*;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.editor.api.QualifiedName;
+import org.netbeans.modules.php.editor.model.ModelUtils;
+import org.netbeans.modules.php.editor.model.Scope;
+import org.netbeans.modules.php.editor.model.TypeScope;
+import org.netbeans.modules.php.editor.model.VariableScope;
 import org.netbeans.modules.php.editor.parser.astnodes.ArrayAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
 import org.openide.util.Union2;
@@ -61,12 +64,17 @@ import org.openide.util.Union2;
 class  AssignmentImpl<Container extends ModelElementImpl>  extends ScopeImpl {
     private Container container;
     //TODO: typeName should be list or array to keep mixed types
-    private Union2<String,Collection<? extends TypeScope>> typeName;
+    private Union2<String, Collection<? extends TypeScope>> typeName;
     private OffsetRange scopeRange;
     private boolean arrayAccess;
     private boolean conditionalBlock;
 
-    AssignmentImpl(Container container, Scope scope, OffsetRange scopeRange,OffsetRange nameRange, Assignment assignment,
+    AssignmentImpl(
+            Container container,
+            Scope scope,
+            OffsetRange scopeRange,
+            OffsetRange nameRange,
+            Assignment assignment,
             Map<String, AssignmentImpl> allAssignments) {
         this(container, scope, scopeRange, nameRange, VariousUtils.extractVariableTypeFromAssignment(assignment, allAssignments));
         if (assignment.getLeftHandSide() instanceof ArrayAccess) {
@@ -90,7 +98,7 @@ class  AssignmentImpl<Container extends ModelElementImpl>  extends ScopeImpl {
     }
 
     @CheckForNull
-    Union2<String,Collection<? extends TypeScope>> getTypeUnion() {
+    Union2<String, Collection<? extends TypeScope>> getTypeUnion() {
         return typeName;
     }
 
@@ -162,12 +170,11 @@ class  AssignmentImpl<Container extends ModelElementImpl>  extends ScopeImpl {
         if (tName != null) {
             //StackOverflow prevention
             if (canBeProcessed(tName)) {
-                types = VariousUtils.getType( (VariableScope) getInScope(),
-                        tName, getOffset(), false);
+                types = VariousUtils.getType((VariableScope) getInScope(), tName, getOffset(), false);
             }
         }
         if (types != null) {
-            if (types.isEmpty() && tName != null && !tName.contains(VariousUtils.PRE_OPERATION_TYPE_DELIMITER)) {//NOI18N
+            if (types.isEmpty() && tName != null && !tName.contains(VariousUtils.PRE_OPERATION_TYPE_DELIMITER)) { //NOI18N
                 return empty;
             }
             typeName = Union2.<String, Collection<? extends TypeScope>>createSecond(types);
@@ -189,12 +196,12 @@ class  AssignmentImpl<Container extends ModelElementImpl>  extends ScopeImpl {
 
     @Override
     public String getNormalizedName() {
-        return getClass().getName()+":"+ toString() + ":" + String.valueOf(getOffset());//NOI18N
+        return getClass().getName() + ":" + toString() + ":" + String.valueOf(getOffset()); //NOI18N
     }
 
     public boolean isArrayAccess() {
         final String tpName = typeNameFromUnion();
-        return arrayAccess || (tpName != null && tpName.equals("array"));//NOI18N
+        return arrayAccess || (tpName != null && tpName.equals("array")); //NOI18N
     }
 
     public void setAsArrayAccess(boolean arrayAccess) {

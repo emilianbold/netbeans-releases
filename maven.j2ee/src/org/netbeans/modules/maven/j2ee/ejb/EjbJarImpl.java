@@ -128,7 +128,7 @@ public class EjbJarImpl extends BaseEEModuleImpl implements EjbJarImplementation
         }
         String version = PluginPropertyUtils.getPluginProperty(project,
                 Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_EJB,
-                "ejbVersion", "ejb"); //NOI18N
+                "ejbVersion", "ejb", "ejb.ejbVersion"); //NOI18N
         if (version != null) {
             return version.trim();
         }

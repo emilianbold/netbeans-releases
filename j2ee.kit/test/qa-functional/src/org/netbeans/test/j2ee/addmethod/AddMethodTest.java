@@ -283,10 +283,12 @@ public class AddMethodTest extends AddMethodBase {
                 NbDialogOperator findTypeOper = new NbDialogOperator("Find Type");
                 new JTextFieldOperator(findTypeOper).setText(exceptions[i]);
                 // wait for list populated
-                JListOperator typesListOper = new JListOperator(findTypeOper, exceptions[i]);
+                JListOperator typesListOper = new JListOperator(findTypeOper);
                 if (exceptions[i].equals("Exception")) {
                     // need to select correct item between other matches
                     typesListOper.selectItem("Exception (java.lang)");
+                } else {
+                    typesListOper.selectItem(exceptions[i]);
                 }
                 findTypeOper.ok();
             }

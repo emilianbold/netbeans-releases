@@ -43,8 +43,10 @@
 package org.netbeans.modules.php.symfony.commands;
 
 import java.lang.ref.WeakReference;
+import org.netbeans.modules.php.api.executable.InvalidPhpExecutableException;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
-import org.netbeans.modules.php.spi.commands.FrameworkCommand;
+import org.netbeans.modules.php.api.util.UiUtils;
+import org.netbeans.modules.php.spi.framework.commands.FrameworkCommand;
 import org.netbeans.modules.php.symfony.SymfonyScript;
 
 /**
@@ -66,7 +68,12 @@ public class SymfonyCommand extends FrameworkCommand {
         if (module == null) {
             return ""; // NOI18N
         }
-        return SymfonyScript.getHelp(module, this);
+        try {
+            return SymfonyScript.forPhpModule(module, false).getHelp(module, getCommands());
+        } catch (InvalidPhpExecutableException ex) {
+            UiUtils.invalidScriptProvided(ex.getLocalizedMessage(), SymfonyScript.OPTIONS_SUB_PATH);
+        }
+        return ""; // NOI18N
     }
 
     @Override

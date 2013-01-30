@@ -46,7 +46,6 @@ package org.netbeans.modules.web.jsf.refactoring;
 
 
 import com.sun.source.tree.CompilationUnitTree;
-import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
 import java.io.IOException;
 import java.util.List;
@@ -57,19 +56,16 @@ import javax.lang.model.element.TypeElement;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
-import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.text.PositionBounds;
@@ -131,7 +127,10 @@ public class JSFRenamePlugin implements RefactoringPlugin {
                         return null;//it may happens for folders in php and similar projects, see #181611
                     }
                     FileObject root = classPath.findOwnerRoot(fileObject);
-                    String prefix = FileUtil.getRelativePath(root, fileObject.getParent()).replace('/','.');
+                    String relativePath = FileUtil.getRelativePath(root, fileObject.getParent());
+                    // change of the one of project source roots - issue #222730
+                    if (relativePath == null) { relativePath = ""; } //NOI18N
+                    String prefix = relativePath.replace('/','.'); //NOI18N
                     String oldName = (prefix.length() == 0 ? fileObject.getName() : prefix + "." + fileObject.getName());
                     // the new package name
                     String newName = (prefix.length() == 0 ? refactoring.getNewName() : prefix + "." + refactoring.getNewName());
@@ -150,7 +149,6 @@ public class JSFRenamePlugin implements RefactoringPlugin {
                                         CompilationUnitTree cut = co.getCompilationUnit();
                                         if(!cut.getTypeDecls().isEmpty()){
                                             treePathHandle = TreePathHandle.create(TreePath.getPath(cut, cut.getTypeDecls().get(0)), co);
-                                            refactoring.getContext().add(co);
                                         }
                                     }
                                 }, false);
@@ -175,23 +173,20 @@ public class JSFRenamePlugin implements RefactoringPlugin {
                 //renaming a class
                 Project project = FileOwnerQuery.getOwner(treePathHandle.getFileObject());
                 if (project != null){
-                    CompilationInfo info = JSFRefactoringUtils.getCompilationInfo(refactoring, treePathHandle.getFileObject());
-                    if (info != null) {
-                        Element resElement = treePathHandle.resolveElement(info);
-                        TypeElement type = (TypeElement) resElement;
-                        String oldFQN = type.getQualifiedName().toString();
-                        String newFQN = renameClass(oldFQN, refactoring.getNewName());
-                        List <Occurrences.OccurrenceItem> items = Occurrences.getAllOccurrences(project, oldFQN, newFQN);
-                        Modifications modification = new Modifications();
-                        for (Occurrences.OccurrenceItem item : items) {
-                           // refactoringElements.add(refactoring, new JSFConfigRenameClassElement(item));
-                            PositionBounds position = item.getChangePosition();
-                            Modifications.Difference difference = new Modifications.Difference(
-                                    Modifications.Difference.Kind.CHANGE, position.getBegin(),
-                                    position.getEnd(), oldFQN, newFQN, item.getChangeMessage());
-                            modification.addDifference(item.getFacesConfig(), difference);
-                            refactoringElements.add(refactoring, new DiffElement.ChangeFQCNElement(difference, item, modification));
-                        }
+                    Element resElement = JSFRefactoringUtils.resolveElement(refactoring, treePathHandle);
+                    TypeElement type = (TypeElement) resElement;
+                    String oldFQN = type.getQualifiedName().toString();
+                    String newFQN = renameClass(oldFQN, refactoring.getNewName());
+                    List <Occurrences.OccurrenceItem> items = Occurrences.getAllOccurrences(project, oldFQN, newFQN);
+                    Modifications modification = new Modifications();
+                    for (Occurrences.OccurrenceItem item : items) {
+                       // refactoringElements.add(refactoring, new JSFConfigRenameClassElement(item));
+                        PositionBounds position = item.getChangePosition();
+                        Modifications.Difference difference = new Modifications.Difference(
+                                Modifications.Difference.Kind.CHANGE, position.getBegin(),
+                                position.getEnd(), oldFQN, newFQN, item.getChangeMessage());
+                        modification.addDifference(item.getFacesConfig(), difference);
+                        refactoringElements.add(refactoring, new DiffElement.ChangeFQCNElement(difference, item, modification));
                     }
                 }
             }

@@ -78,9 +78,14 @@ public final class SearchHistory {
     /** Maximum items allowed in SearchPatternsList */
     private static final int MAX_SEARCH_PATTERNS_ITEMS = 10;
 
+    /** Limit for stored pattern length */
+    private static final int MAX_PATTERN_LENGTH = 16384; // 16 kB
+
     /** Shareable SearchPattern history. It is a List of SearchPatterns */
     private List<SearchPattern> searchPatternsList
             = new ArrayList<SearchPattern>(MAX_SEARCH_PATTERNS_ITEMS);
+    
+    private List<ReplacePattern> replacePatternsList = new ArrayList<ReplacePattern>(MAX_SEARCH_PATTERNS_ITEMS);
 
     /** Singleton instance */
     private static SearchHistory INSTANCE = null;
@@ -91,6 +96,7 @@ public final class SearchHistory {
      *  newValue - new selected pattern
      *  @deprecated just changes in history
      */
+    @Deprecated
     public final static String LAST_SELECTED = "last-selected"; //NOI18N
     
     /** Property name for adding pattern that was not in history
@@ -99,12 +105,21 @@ public final class SearchHistory {
      *  newValue - added pattern
      */
     public final static String ADD_TO_HISTORY = "add-to-history"; //NOI18N
+    
+    /** Property name for adding replace pattern that was not in history
+     *  Firing:
+     *  oldValue - null
+     *  newValue - added pattern
+     * @since 1.8
+     */
+    public final static String ADD_TO_REPLACE = "add-to-replace"; //NOI18N
 
     /** Preferences node for storing history info */
     private static Preferences prefs;
     /** Name of preferences node where we persist history */
     private static final String PREFS_NODE = "SearchHistory";  //NOI18N
     private static final String PROP_SEARCH_PATTERN_PREFIX = "search_";  //NOI18N
+    private static final String PROP_REPLACE_PATTERN_PREFIX = "replace_";  //NOI18N
 
     /** Creates a new instance of SearchHistory */
     private SearchHistory() {
@@ -125,9 +140,17 @@ public final class SearchHistory {
      */
     private void load () {
         for(int i=0; i < MAX_SEARCH_PATTERNS_ITEMS; i++){
-            SearchPattern pattern = SearchPattern.parseSearchPattern(prefs.get(PROP_SEARCH_PATTERN_PREFIX + i, null));
-            if (pattern != null)
+            SearchPattern pattern = SearchPattern.parsePattern(prefs.get(PROP_SEARCH_PATTERN_PREFIX + i, null));
+            if (pattern != null) {
                 searchPatternsList.add(pattern);
+            }
+        }
+        
+        for(int i=0; i < MAX_SEARCH_PATTERNS_ITEMS; i++){
+            ReplacePattern pattern = ReplacePattern.parsePattern(prefs.get(PROP_REPLACE_PATTERN_PREFIX + i, null));
+            if (pattern != null) {
+                replacePatternsList.add(pattern);
+            }
         }
     }
 
@@ -135,6 +158,7 @@ public final class SearchHistory {
      *  @deprecated Use <code>getSearchPatterns().get(0)</code>
      *  @return last selected SearchPattern 
      */
+    @Deprecated
     public SearchPattern getLastSelected(){
         return searchPatternsList.get(0);
     }
@@ -143,6 +167,7 @@ public final class SearchHistory {
      *  @deprecated Use only <code>add(SearchPattern pattern)</code>
      *  @param pattern last selected pattern
      */
+    @Deprecated
     public void setLastSelected(SearchPattern pattern){
         SearchPattern oldPattern = searchPatternsList.get(0);
         add(pattern);
@@ -175,8 +200,15 @@ public final class SearchHistory {
     }
 
     /** @return unmodifiable List of SearchPatterns */
-    public synchronized List<SearchPattern> getSearchPatterns(){
+    public List<SearchPattern> getSearchPatterns(){
         return Collections.unmodifiableList(searchPatternsList);
+    }
+    
+    /** @return unmodifiable List of ReplacePatterns
+     *  @since 1.8
+     */
+    public List<ReplacePattern> getReplacePatterns(){
+        return Collections.unmodifiableList(replacePatternsList);
     }
     
     /** Adds SearchPattern to SearchHistory
@@ -184,7 +216,8 @@ public final class SearchHistory {
      */
     public synchronized void add(SearchPattern pattern) { 
         if (pattern == null || pattern.getSearchExpression() == null || pattern.getSearchExpression().length() == 0
-                || (searchPatternsList.size() > 0 && pattern.equals(searchPatternsList.get(0)))) {
+                || (searchPatternsList.size() > 0 && pattern.equals(searchPatternsList.get(0))
+                || pattern.getSearchExpression().length() > MAX_PATTERN_LENGTH)) {
             return;
         }
         
@@ -205,6 +238,37 @@ public final class SearchHistory {
         }
         if (pcs != null) {
             pcs.firePropertyChange(ADD_TO_HISTORY, null, pattern);
+        }
+    }
+    
+    /** Adds ReplacePattern to ReplaceHistory
+     *  @param pattern the ReplacePattern to add
+     *  @since 1.8
+     */
+    public synchronized void addReplace(ReplacePattern pattern) { 
+        if (pattern == null || pattern.getReplaceExpression() == null || pattern.getReplaceExpression().length() == 0
+                || (replacePatternsList.size() > 0 && pattern.equals(replacePatternsList.get(0))
+                || pattern.getReplaceExpression().length() > MAX_PATTERN_LENGTH)) {
+            return;
+        }
+        
+        for (int i = 0; i < replacePatternsList.size(); i++) {
+            if (pattern.getReplaceExpression().equals(replacePatternsList.get(i).getReplaceExpression())) {
+                replacePatternsList.remove(i);
+                break;
+            }
+        }
+        
+        if (replacePatternsList.size() == MAX_SEARCH_PATTERNS_ITEMS){
+            replacePatternsList.remove(MAX_SEARCH_PATTERNS_ITEMS-1);
+        }
+        replacePatternsList.add(0, pattern);
+        
+        for(int i=0;i < replacePatternsList.size();i++){
+            prefs.put(PROP_REPLACE_PATTERN_PREFIX + i, replacePatternsList.get(i).toCanonicalString());
+        }
+        if (pcs != null) {
+            pcs.firePropertyChange(ADD_TO_REPLACE, null, pattern);
         }
     }
     

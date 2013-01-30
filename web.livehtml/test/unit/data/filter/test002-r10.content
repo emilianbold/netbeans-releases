@@ -1,0 +1,20 @@
+<!DOCTYPE html><html><head>
+        <script src="js/jquery-1.6.4.js"></script>
+        <script src="js/app.js"></script>
+        <script src="js/external-library.js"></script>
+        <title>Test page</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    </head>
+    <body>
+        <p><input id="addText" type="button" value="1"> - adds some text</p>
+        <p><input id="loadData" type="button" value="2"> - loads some data</p>
+        <p><input id="addText2" type="button" value="3"> - adds text multiple time as single stack trace - they could be grouped as single revision</p>
+        <p><input id="addText3" type="button" value="4"> - adds text multiple time; there will be single call 
+            from app.js and several calls from external-library.js and user wants to filter out changes done by external-library.js</p>
+        <p><input id="addText4" type="button" value="5"> - adds whitespaces - the could be filter out as they do not show in DOM based diff anyway</p>
+        <hr>
+        <div id="text"><span> text-1 </span><span> multi-2.0 </span><span> multi-2.1 </span><span> multi-2.2 </span><span> multi-2.3 </span><span> multi-2.4 </span></div>
+        <div id="data"></div>
+    
+
+</body></html>

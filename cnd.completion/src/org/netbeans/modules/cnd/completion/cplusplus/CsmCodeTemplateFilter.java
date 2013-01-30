@@ -42,6 +42,8 @@
 
 package org.netbeans.modules.cnd.completion.cplusplus;
 
+import java.util.concurrent.atomic.AtomicReference;
+import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
@@ -76,18 +78,25 @@ public class CsmCodeTemplateFilter implements CodeTemplateFilter {
         return enabled && (startOffset == endOffset) && isTemplateContext(template);
     }
 
-    private TokenId getID(JTextComponent component, int offset) {
-        TokenSequence<TokenId> ts = CndLexerUtilities.getCppTokenSequence(component, offset, true, false);
-        if (ts != null) {
-            if (ts.offset() <= offset) {
-                if (!ts.movePrevious()) {
-                    return CppTokenId.ERROR;
+    private TokenId getID(final JTextComponent component, final int offset) {
+        Document doc = component.getDocument();
+        final AtomicReference<TokenId> out = new AtomicReference<TokenId>(CppTokenId.ERROR);
+        doc.render(new Runnable() {
+
+            @Override
+            public void run() {
+                TokenSequence<TokenId> ts = CndLexerUtilities.getCppTokenSequence(component, offset, true, false);
+                if (ts != null) {
+                    if (ts.offset() <= offset) {
+                        if (!ts.movePrevious()) {
+                            return;
+                        }
+                    }
+                    out.set(ts.token().id());
                 }
             }
-            return ts.token().id();
-        } else {
-            return CppTokenId.ERROR;
-        }
+        });
+        return out.get();
     }
 
     private boolean isTemplateContext(CodeTemplate template) {

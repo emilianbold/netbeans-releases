@@ -39,13 +39,13 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.glassfish.common.ui;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.ServerSocket;
 import javax.swing.JFileChooser;
+import javax.swing.SpinnerNumberModel;
 import org.netbeans.modules.glassfish.common.GlassfishInstanceProvider;
 import org.netbeans.modules.glassfish.common.Util;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
@@ -55,10 +55,26 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
-public class VmCustomizer extends javax.swing.JPanel  {
+public class VmCustomizer extends javax.swing.JPanel {
+
+    /**
+     * Port limits: Minimal value. From {
+     *
+     * @see java.net.ServerSocket} constructor source code.
+     */
+    private static int PORT_MIN = 0x00;
+    /**
+     * Port limits: Maximal value. From {
+     *
+     * @see java.net.ServerSocket} constructor source code.
+     */
+    private static int PORT_MAX = 0xFFFF;
     GlassfishModule gm;
     JrePicker picker = null;
-    /** Creates new form VmCustomizer */
+
+    /**
+     * Creates new form VmCustomizer
+     */
     public VmCustomizer(GlassfishModule commonSupport) {
         gm = commonSupport;
         initComponents();
@@ -77,14 +93,12 @@ public class VmCustomizer extends javax.swing.JPanel  {
             // picker.initFromJava(gm.getInstanceProperties().get(GlassfishModule.JAVA_PLATFORM_ATTR));
         }
         String address = gm.getInstanceProperties().get(GlassfishModule.DEBUG_PORT);
-        if (null == address || "".equals(address)) {
+        SpinnerNumberModel addressModel = (SpinnerNumberModel) addressValue.getModel();
+        if (null == address || "0".equals(address) || "".equals(address)) {
             useUserDefinedAddress.setSelected(false);
-            addressValue.setEditable(false);
         } else {
             useUserDefinedAddress.setSelected(true);
-            addressValue.setEditable(true);
-            addressValue.setText(address);
-
+            setAddressValue(address);
         }
         if (Utilities.isWindows() && !gm.isRemote()) {
             useSharedMemRB.setSelected("true".equals(gm.getInstanceProperties().get(GlassfishModule.USE_SHARED_MEM_ATTR)));
@@ -103,6 +117,48 @@ public class VmCustomizer extends javax.swing.JPanel  {
         this.useSharedMemRB.setEnabled(isLocalDomain);
     }
 
+    /**
+     * Get value of number stored in
+     * <code>addressValue</code> field.
+     * <p/>
+     * @return Value of number stored in
+     * <code>addressValue</code> field.
+     */
+    private Number getAddressValue() {
+        return ((SpinnerNumberModel) addressValue.getModel()).getNumber();
+    }
+
+    /**
+     * Set value of number stored in
+     * <code>addressValue</code> field.
+     * <p/>
+     * Value will be set to <code>0</code> if there is any problem with
+     * retrieving integer value from <code>String</code> argument.
+     * <p/>
+     * @param number Value of number to be stored in
+     * <code>addressValue</code> field.
+     */
+    private void setAddressValue(String number) {
+        try {
+        addressValue.setValue(new Integer(number));
+        } catch (NumberFormatException nfe) {
+            addressValue.setValue(new Integer(0));
+        }
+    }
+
+    /**
+     * Set value of number stored in
+     * <code>addressValue</code> field.
+     * <p/>
+     * Value of <code>null</code> is stored as <code>0</code>.
+     * <p/>
+     * @param number Value of number to be stored in
+     * <code>addressValue</code> field.
+     */
+    private void setAddressValue(Integer number) {
+        addressValue.setValue(number != null ? number : new Integer(0));
+    }
+
     private void persistFields() {
         if (null == picker) {
             gm.setEnvironmentProperty(GlassfishModule.JAVA_PLATFORM_ATTR, javaExecutableField.getText(), true);
@@ -111,7 +167,7 @@ public class VmCustomizer extends javax.swing.JPanel  {
                 File f = new File(javaExecutableField.getText().trim());
                 if (f.exists() && f.canRead()) {
                     File dir = f.getParentFile().getParentFile();
-                    File dbdir = new File(dir,"db"); // NOI18N
+                    File dbdir = new File(dir, "db"); // NOI18N
                     if (dbdir.exists() && dbdir.isDirectory() && dbdir.canRead()) {
                         db.initialize(dbdir.getAbsolutePath());
                     }
@@ -122,9 +178,9 @@ public class VmCustomizer extends javax.swing.JPanel  {
             // get data out of the picker
             //gm.setEnvironmentProperty(GlassfishModule.JAVA_PLATFORM_ATTR, picker.getJava(), true);
         }
-        gm.setEnvironmentProperty(GlassfishModule.USE_SHARED_MEM_ATTR, Boolean.toString(useSharedMemRB.isSelected()),true);
-        gm.setEnvironmentProperty(GlassfishModule.USE_IDE_PROXY_FLAG, Boolean.toString(useIDEProxyInfo.isSelected()),true);
-        gm.setEnvironmentProperty(GlassfishModule.DEBUG_PORT, addressValue.getText().trim(),true);
+        gm.setEnvironmentProperty(GlassfishModule.USE_SHARED_MEM_ATTR, Boolean.toString(useSharedMemRB.isSelected()), true);
+        gm.setEnvironmentProperty(GlassfishModule.USE_IDE_PROXY_FLAG, Boolean.toString(useIDEProxyInfo.isSelected()), true);
+        gm.setEnvironmentProperty(GlassfishModule.DEBUG_PORT, getAddressValue().toString(), true);
     }
 
     @Override
@@ -139,10 +195,10 @@ public class VmCustomizer extends javax.swing.JPanel  {
         persistFields();
     }
 
-    /** This method is called from within the constructor to
-     * initialize the form.
-     * WARNING: Do NOT modify this code. The content of this method is
-     * always regenerated by the Form Editor.
+    /**
+     * This method is called from within the constructor to initialize the form.
+     * WARNING: Do NOT modify this code. The content of this method is always
+     * regenerated by the Form Editor.
      */
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
@@ -153,8 +209,8 @@ public class VmCustomizer extends javax.swing.JPanel  {
         useSocketRB = new javax.swing.JRadioButton();
         useSharedMemRB = new javax.swing.JRadioButton();
         useUserDefinedAddress = new javax.swing.JCheckBox();
-        addressValue = new javax.swing.JTextField();
         jLabel1 = new javax.swing.JLabel();
+        addressValue = new javax.swing.JSpinner();
         pickerPanel = new javax.swing.JPanel();
         javaInstallLabel = new javax.swing.JLabel();
         openDirectoryBrowser = new javax.swing.JButton();
@@ -178,10 +234,11 @@ public class VmCustomizer extends javax.swing.JPanel  {
             }
         });
 
-        addressValue.setText(org.openide.util.NbBundle.getMessage(VmCustomizer.class, "VmCustomizer.addressValue.text", new Object[] {})); // NOI18N
-
         jLabel1.setLabelFor(addressValue);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(VmCustomizer.class, "VmCustomizer.jLabel1.text")); // NOI18N
+
+        addressValue.setModel(new javax.swing.SpinnerNumberModel(0, 0, 65535, 1));
+        addressValue.setEditor(new javax.swing.JSpinner.NumberEditor(addressValue, "#####"));
 
         javax.swing.GroupLayout debugSettingsPanelLayout = new javax.swing.GroupLayout(debugSettingsPanel);
         debugSettingsPanel.setLayout(debugSettingsPanelLayout);
@@ -190,15 +247,18 @@ public class VmCustomizer extends javax.swing.JPanel  {
             .addGroup(debugSettingsPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(debugSettingsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(useSharedMemRB)
-                    .addComponent(useSocketRB)
+                    .addGroup(debugSettingsPanelLayout.createSequentialGroup()
+                        .addGroup(debugSettingsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(useSharedMemRB)
+                            .addComponent(useSocketRB))
+                        .addContainerGap(490, Short.MAX_VALUE))
                     .addGroup(debugSettingsPanelLayout.createSequentialGroup()
                         .addComponent(useUserDefinedAddress)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jLabel1)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(addressValue, javax.swing.GroupLayout.DEFAULT_SIZE, 479, Short.MAX_VALUE)))
-                .addContainerGap())
+                        .addComponent(addressValue, javax.swing.GroupLayout.PREFERRED_SIZE, 99, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(0, 0, Short.MAX_VALUE))))
         );
         debugSettingsPanelLayout.setVerticalGroup(
             debugSettingsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -209,16 +269,14 @@ public class VmCustomizer extends javax.swing.JPanel  {
                 .addGap(8, 8, 8)
                 .addGroup(debugSettingsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(useUserDefinedAddress)
-                    .addComponent(addressValue, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel1))
+                    .addComponent(jLabel1)
+                    .addComponent(addressValue, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
         );
 
         useSocketRB.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(VmCustomizer.class, "A11Y_DESC_UseSockets")); // NOI18N
         useSharedMemRB.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(VmCustomizer.class, "A11Y_DESC_SharedMem")); // NOI18N
         useUserDefinedAddress.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(VmCustomizer.class, "A11Y_DESC_UseSelectedAddress")); // NOI18N
-        addressValue.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(VmCustomizer.class, "VmCustomizer.addressValue")); // NOI18N
-        addressValue.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(VmCustomizer.class, "A11Y_DESC_DebugerAddress")); // NOI18N
         jLabel1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(VmCustomizer.class, "A11Y_DESC_AddressLabel")); // NOI18N
 
         javaInstallLabel.setLabelFor(javaExecutableField);
@@ -282,7 +340,7 @@ public class VmCustomizer extends javax.swing.JPanel  {
             .addGroup(layout.createSequentialGroup()
                 .addComponent(pickerPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(9, 9, 9)
-                .addComponent(debugSettingsPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 113, Short.MAX_VALUE)
+                .addComponent(debugSettingsPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(useIDEProxyInfo)
                 .addContainerGap())
@@ -301,13 +359,14 @@ public class VmCustomizer extends javax.swing.JPanel  {
         final String TESTNAME = File.separatorChar == '/' ? "java" : "java.exe";
         f.setFileFilter(new javax.swing.filechooser.FileFilter() {
 
+            @Override
             public boolean accept(File arg0) {
                 if (arg0.isDirectory()) {
                     return true;
                 }
                 if (arg0.getName().equalsIgnoreCase(TESTNAME)) {
                     if (gm.getInstanceProvider().equals(GlassfishInstanceProvider.getEe6())) {
-                            return Util.appearsToBeJdk6OrBetter(arg0);
+                        return Util.appearsToBeJdk6OrBetter(arg0);
                     }
                     return true;
                 }
@@ -318,7 +377,6 @@ public class VmCustomizer extends javax.swing.JPanel  {
             public String getDescription() {
                 return NbBundle.getMessage(VmCustomizer.class, "VmCustomizer.filechooser.description");
             }
-
         });
         int retVal = f.showOpenDialog(this);
         if (retVal == JFileChooser.APPROVE_OPTION) {
@@ -332,25 +390,21 @@ public class VmCustomizer extends javax.swing.JPanel  {
             addressValue.setEnabled(true);
             int debugPort = 9009;
             try {
-                    ServerSocket t = new ServerSocket(0);
-                    debugPort = t.getLocalPort();
-                    t.close();
+                ServerSocket t = new ServerSocket(0);
+                debugPort = t.getLocalPort();
+                t.close();
             } catch (IOException ioe) {
                 // I will ignore this nor now.
             }
-            addressValue.setText(Integer.toString(debugPort));
-            addressValue.setEditable(true);
+            setAddressValue(new Integer(debugPort));
         } else {
             // clear the field and disable it
-             addressValue.setEditable(false);
-             addressValue.setText("");
-             addressValue.setEnabled(false);
+            setAddressValue(new Integer(0));
+            addressValue.setEnabled(false);
         }
     }//GEN-LAST:event_toggleAddressUsage
-
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JTextField addressValue;
+    private javax.swing.JSpinner addressValue;
     private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.JPanel debugSettingsPanel;
     private javax.swing.JLabel jLabel1;
@@ -363,6 +417,4 @@ public class VmCustomizer extends javax.swing.JPanel  {
     private javax.swing.JRadioButton useSocketRB;
     private javax.swing.JCheckBox useUserDefinedAddress;
     // End of variables declaration//GEN-END:variables
-
-
 }

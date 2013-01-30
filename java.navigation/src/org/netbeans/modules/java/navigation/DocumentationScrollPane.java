@@ -52,6 +52,8 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -64,12 +66,14 @@ import javax.swing.text.EditorKit;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Keymap;
 import javax.swing.text.html.HTMLDocument;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.source.ui.ElementJavadoc;
 
 import org.netbeans.editor.*;
 
 import org.openide.awt.HtmlBrowser;
 import org.openide.awt.StatusDisplayer;
+import org.openide.filesystems.FileObject;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -105,8 +109,9 @@ public class DocumentationScrollPane extends JScrollPane {
     private List<ElementJavadoc> history = new ArrayList<ElementJavadoc>(5);
     private int currentHistoryIndex = -1;
     protected ElementJavadoc currentDocumentation = null;
+    private Reference<FileObject> currentFile;
     //@GuardedBy("this")
-    private RequestProcessor.Task task;
+    private RequestProcessor.Task task;    
     
     /** Creates a new instance of ScrollJavaDocPane */
     public DocumentationScrollPane( boolean keepDefaultBorder ) {
@@ -129,8 +134,19 @@ public class DocumentationScrollPane extends JScrollPane {
             setBorder( BorderFactory.createEmptyBorder() );
     }
     
-    public void setData(ElementJavadoc doc) {
+    void setData(
+        final FileObject owner,
+        final ElementJavadoc doc) {
+        assert SwingUtilities.isEventDispatchThread();
+        currentFile = owner == null ? null : new WeakReference<FileObject>(owner);
         setData(doc, true);
+    }
+
+    void clearContent(final FileObject owner) {
+        assert SwingUtilities.isEventDispatchThread();
+        if (owner != null && currentFile != null && owner.equals(currentFile.get())) {
+            setData(null, true);
+        }
     }
     
     private void setData(ElementJavadoc doc, boolean clearHistory) {

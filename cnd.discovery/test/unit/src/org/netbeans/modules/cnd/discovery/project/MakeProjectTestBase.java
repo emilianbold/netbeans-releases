@@ -77,7 +77,7 @@ import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
-import org.netbeans.modules.cnd.test.CndBaseTestCase;
+import org.netbeans.modules.cnd.modelimpl.test.ModelBasedTestCase;
 import org.netbeans.modules.cnd.test.CndCoreTestUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
@@ -87,7 +87,6 @@ import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.WizardDescriptor;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
@@ -96,7 +95,7 @@ import org.openide.util.Utilities;
  *
  * @author Alexander Simon
  */
-public abstract class MakeProjectTestBase extends CndBaseTestCase { //extends NbTestCase
+public abstract class MakeProjectTestBase extends ModelBasedTestCase { //extends NbTestCase
     protected static final String LOG_POSTFIX = ".discoveryLog";
     private static final boolean TRACE = true;
 
@@ -106,10 +105,11 @@ public abstract class MakeProjectTestBase extends CndBaseTestCase { //extends Nb
             System.setProperty("cnd.discovery.trace.projectimport", "true"); // NOI18N
         }
         //System.setProperty("org.netbeans.modules.cnd.makeproject.api.runprofiles", "true"); // NOI18N
+        System.setProperty("cnd.modelimpl.assert.notfound", "true");
         System.setProperty("cnd.mode.unittest", "true");
         System.setProperty("org.netbeans.modules.cnd.apt.level","OFF"); // NOI18N
         //System.setProperty("cnd.modelimpl.timing","true"); // NOI18N
-        System.setProperty(" parser.report.include.failures","true"); // NOI18N
+        System.setProperty("parser.report.include.failures","true"); // NOI18N
         //System.setProperty("cnd.modelimpl.timing.per.file.flat","true"); // NOI18N
         //System.setProperty("cnd.dump.native.file.item.paths","true"); // NOI18N
         Logger.getLogger("org.netbeans.modules.editor.settings.storage.Utils").setLevel(Level.SEVERE);
@@ -205,7 +205,7 @@ public abstract class MakeProjectTestBase extends CndBaseTestCase { //extends Nb
         return ExecutionEnvironmentFactory.getLocal();
     }
 
-    public void performTestProject(String URL, List<String> additionalScripts, boolean useSunCompilers, final String subFolder){
+    public void performTestProject(String URL, List<String> additionalScripts, boolean useSunCompilers, final String subFolder) throws Exception {
         Map<String, String> tools = findTools();
         CompilerSet def = CompilerSetManager.get(getEE()).getDefaultCompilerSet();
         if (useSunCompilers) {
@@ -460,7 +460,7 @@ public abstract class MakeProjectTestBase extends CndBaseTestCase { //extends Nb
         return res;
     }
 
-    protected void perform(CsmProject csmProject) {
+    protected void perform(CsmProject csmProject) throws Exception {
         try {
             Thread.sleep(1000);
         } catch (InterruptedException ex) {
@@ -493,6 +493,7 @@ public abstract class MakeProjectTestBase extends CndBaseTestCase { //extends Nb
                 }
             }
         }
+        assertNoExceptions();
         assertFalse("Model has unresolved include directives", hasInvalidFiles);
     }
 

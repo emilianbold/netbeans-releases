@@ -48,6 +48,7 @@ import java.awt.event.InputEvent;
 import java.text.MessageFormat;
 import java.util.EnumSet;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.prefs.Preferences;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
@@ -201,16 +202,14 @@ public abstract class CsmAbstractHyperlinkProvider implements HyperlinkProviderE
     }
 
     static TokenItem<TokenId> getToken(final Document doc, final int offset) {
-        if (doc instanceof AbstractDocument) {
-            ((AbstractDocument) doc).readLock();
-        }
-        try {
-            return CndTokenUtilities.getTokenCheckPrev(doc, offset);
-        } finally {
-            if (doc instanceof AbstractDocument) {
-                ((AbstractDocument) doc).readUnlock();
+        final AtomicReference<TokenItem<TokenId>> out = new AtomicReference<TokenItem<TokenId>>();
+        doc.render(new Runnable() {
+            @Override
+            public void run() {
+                out.set(CndTokenUtilities.getTokenCheckPrev(doc, offset));
             }
-        }
+        });
+        return out.get();
     }
 
     @Override
@@ -238,8 +237,12 @@ public abstract class CsmAbstractHyperlinkProvider implements HyperlinkProviderE
 
     protected abstract String getTooltipText(Document doc, TokenItem<TokenId> token, int offset, HyperlinkType type);
 
+    private static final int EXPANDED_TEXT_TOOLTIP_LIMIT = 2000;
     private String getMacroExpandedText(final Document doc, final int start, final int end) {
         String expandedText = CsmMacroExpansion.expand(doc, start, end);
+        if (expandedText.length() > EXPANDED_TEXT_TOOLTIP_LIMIT) {
+            expandedText = expandedText.substring(0, EXPANDED_TEXT_TOOLTIP_LIMIT) + " ..."; // NOI18N
+        }
         final StringBuilder docText = new StringBuilder();
         doc.render(new Runnable() {
 

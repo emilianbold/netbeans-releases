@@ -534,6 +534,15 @@ public abstract class WindowManager extends Object implements Serializable {
     protected void topComponentCancelRequestAttention(TopComponent tc) {
     }
 
+    /**
+     * Highlights the tab of the given TopComponent until user activates it.
+     * @param tc
+     * @param highlight True to highlight the tab, false to switch the highlight off.
+     * @since 6.58
+     */
+    protected void topComponentAttentionHighlight(TopComponent tc, boolean highlight) {
+    }
+
     /** Returns unique ID for specified <code>TopComponent</code>.
      * @param tc <code>TopComponent</code> the component for which is ID returned
      * @return unique <code>TopComponent</code> ID
@@ -706,6 +715,47 @@ public abstract class WindowManager extends Object implements Serializable {
     public void setRole( String roleName ) {
     }
     
+
+    /**
+     * Checks the minimized status of given TopComponent.
+     * @param tc
+     * @return True if the given TopComponent is minimized (slided-out), false
+     * otherwise.
+     * @since 6.57
+     */
+    public boolean isTopComponentMinimized( TopComponent tc ) {
+        return false;
+    }
+
+    /**
+     * Minimizes the given TopComponent.
+     * @param tc
+     * @param minimize True to minimize (slide-out) given TopComponent, false
+     * to pin it back to the main window.
+     * @since 6.57
+     */
+    public void setTopComponentMinimized(  TopComponent tc, boolean minimize ) {
+    }
+
+    /**
+     * Checks the floating status of given TopComponent.
+     * @return True if the given TopComponent is separated from the main window.
+     * @since 6.57
+     */
+    public boolean isTopComponentFloating( TopComponent tc ) {
+        return false;
+    }
+
+    /**
+     * Floats the given TopComponent or docks it back to the main window.
+     * @param tc
+     * @param floating True to separate the given TopComponent from the main window,
+     * false to dock it back to the main window.
+     * @since 6.57
+     */
+    public void setTopComponentFloating(  TopComponent tc, boolean floating ) {
+    }
+
     /**
      * @return The name of the current role or null if the default window system
      * layout is being used.

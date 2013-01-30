@@ -174,18 +174,23 @@ public class ListCompletionView extends JList {
     }
 
     public void up() {
-        if (getModel().getSize() > 0) {
-            setSelectedIndex(Math.max(getSelectedIndex() - 1, 0));
-            ensureIndexIsVisible(getSelectedIndex());
+        int size = getModel().getSize();
+        if (size > 0) {
+            int idx = (getSelectedIndex() - 1 + size) % size;
+            setSelectedIndex(idx);
+            ensureIndexIsVisible(idx);
             repaint();
         }
     }
 
     public void down() {
-        int lastInd = getModel().getSize() - 1;
-        if (lastInd >= 0) {
-            setSelectedIndex(Math.min(getSelectedIndex() + 1, lastInd));
-            ensureIndexIsVisible(getSelectedIndex());
+        int size = getModel().getSize();
+        if (size > 0) {
+            int idx = (getSelectedIndex() + 1) % size;
+            if (idx == size)
+                idx = 0;
+            setSelectedIndex(idx);
+            ensureIndexIsVisible(idx);
             validate();
         }
     }

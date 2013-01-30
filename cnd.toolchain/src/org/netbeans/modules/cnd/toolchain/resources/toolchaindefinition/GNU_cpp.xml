@@ -57,6 +57,18 @@ made subject to such option by the copyright holder.
             <macro stringvalue="__NO_INLINE__" flags="-fno-inline"/>
             <macro stringvalue="__EXCEPTIONS" flags="-fno-exceptions" hide="true"/>
             <macro stringvalue="__GXX_RTTI" flags="-fno-rtti" hide="true"/>
+            
+            <macro stringvalue="__GXX_EXPERIMENTAL_CXX0X__" flags="-std=c++0x"/>
+            <macro stringvalue="__STRICT_ANSI__" flags="-std=c++0x"/>
+            
+            <macro stringvalue="__GXX_EXPERIMENTAL_CXX0X__" flags="-std=c++11"/>
+            <macro stringvalue="__GXX_EXPERIMENTAL_CXX11__" flags="-std=c++11"/>
+            <macro stringvalue="__STRICT_ANSI__" flags="-std=c++11"/>
+            
+            <macro stringvalue="__GXX_EXPERIMENTAL_CXX0X__" flags="-std=gnu++0x"/>
+            
+            <macro stringvalue="__GXX_EXPERIMENTAL_CXX0X__" flags="-std=gnu++11"/>
+            <macro stringvalue="__GXX_EXPERIMENTAL_CXX11__" flags="-std=gnu++11"/>
         </system_macros>
         <user_include flags="-I"/>
         <user_macro flags="-D"/>

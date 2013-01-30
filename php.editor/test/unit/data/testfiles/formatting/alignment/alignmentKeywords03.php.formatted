@@ -3,7 +3,8 @@
 class Example
 {
 
-    public function ifExample($a, $b)
+    public
+            function ifExample($a, $b)
     {
         if (convert($a) > $b)
         {
@@ -19,14 +20,16 @@ class Example
         }
     }
 
-    public function forExample()
+    public
+            function forExample()
     {
         for ($i = 1; $i <= 10; $i++) {
             echo $i;
         }
     }
 
-    public function foreachEample()
+    public
+            function foreachEample()
     {
         $arr = array(1, 2, 3, 4);
         foreach ($arr as &$value) {
@@ -34,7 +37,8 @@ class Example
         }
     }
 
-    public function whileExample()
+    public
+            function whileExample()
     {
         $i = 1;
         while ($i <= 10)
@@ -43,7 +47,8 @@ class Example
         }
     }
 
-    public function doWhileExample($i)
+    public
+            function doWhileExample($i)
     {
         do
         {
@@ -52,7 +57,8 @@ class Example
         while ($i > 0);
     }
 
-    public function switchExample()
+    public
+            function switchExample()
     {
         switch ($i) {
             case 0:
@@ -64,7 +70,8 @@ class Example
         }
     }
 
-    public function tryExample()
+    public
+            function tryExample()
     {
         try
         {

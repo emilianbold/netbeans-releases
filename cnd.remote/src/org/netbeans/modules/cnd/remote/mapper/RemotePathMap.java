@@ -259,7 +259,7 @@ public abstract class RemotePathMap extends PathMap {
         if (invalidLocalPaths.isEmpty()) {
             return true;
         } else if (fixMissingPaths) {
-            if (CndUtils.isUnitTestMode()) {
+            if (CndUtils.isUnitTestMode() || CndUtils.isStandalone()) {
                 return false;
             }
             if (EditPathMapDialog.showMe(execEnv, invalidLocalPaths)) {

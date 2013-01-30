@@ -56,6 +56,7 @@ import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.code.Symbol.VarSymbol;
+import com.sun.tools.javac.code.Symtab;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.Types;
 import com.sun.tools.javac.comp.AttrContext;
@@ -64,7 +65,6 @@ import com.sun.tools.javac.comp.Env;
 import com.sun.tools.javac.main.JavaCompiler;
 import com.sun.tools.javac.model.LazyTreeLoader;
 import com.sun.tools.javac.tree.JCTree;
-import com.sun.tools.javac.tree.JCTree.JCBlock;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
@@ -91,6 +91,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.ChangedCharSetException;
@@ -178,7 +179,10 @@ public class TreeLoader extends LazyTreeLoader {
                             jti.analyze(jti.enter(jti.parse(jfo)));
                             if (persist) {
                                 if (canWrite(cpInfo)) {
-                                    dumpSymFile(ClasspathInfoAccessor.getINSTANCE().getFileManager(cpInfo), jti, clazz);
+                                    Env<AttrContext> env = Enter.instance(context).getEnv(clazz);
+                                    if (env != null && pruneTree(env.tree, Symtab.instance(context))) {
+                                        dumpSymFile(ClasspathInfoAccessor.getINSTANCE().getFileManager(cpInfo), jti, clazz);
+                                    }
                                 } else {
                                     final JavaFileObject cfo = clazz.classfile;
                                     final FileObject cFileObject = URLMapper.findFileObject(cfo.toUri().toURL());
@@ -276,19 +280,21 @@ public class TreeLoader extends LazyTreeLoader {
         this.partialReparse = false;
     }
 
-    public static void dumpSymFile(JavaFileManager jfm, JavacTaskImpl jti, ClassSymbol clazz) throws IOException {
-        Env<AttrContext> env = Enter.instance(jti.getContext()).getEnv(clazz);
-        if (env == null)
-            return;
+    public static boolean pruneTree(final JCTree tree, final Symtab syms) {
+        final AtomicBoolean ret = new AtomicBoolean(true);
         new TreeScanner() {
             @Override
             public void visitMethodDef(JCMethodDecl tree) {
                 super.visitMethodDef(tree);
+                if (tree.sym == null || tree.type == null || tree.type == syms.unknownType)
+                    ret.set(false);
                 tree.body = null;
             }
             @Override
             public void visitVarDef(JCVariableDecl tree) {
                 super.visitVarDef(tree);
+                if (tree.sym == null || tree.type == null || tree.type == syms.unknownType)
+                    ret.set(false);
                 tree.init = null;
             }
             @Override
@@ -310,8 +316,14 @@ public class TreeLoader extends LazyTreeLoader {
                         prev = l;
                     }
                 }
+                if (tree.sym == null || tree.type == null || tree.type == syms.unknownType)
+                    ret.set(false);
             }
-        }.scan(env.toplevel);
+        }.scan(tree);
+        return ret.get();
+    }
+    
+    public static void dumpSymFile(JavaFileManager jfm, JavacTaskImpl jti, ClassSymbol clazz) throws IOException {
         Log log = Log.instance(jti.getContext());
         JavaFileObject prevLogTo = log.useSource(null);
         boolean oldSuppress = log.suppressErrorsAndWarnings;
@@ -333,10 +345,21 @@ public class TreeLoader extends LazyTreeLoader {
                 return;
             }
             int index = surl.lastIndexOf(FileObjects.convertPackage2Folder(binaryName));
-            assert index > 0;
-            File classes = JavaIndex.getClassFolder(new URL(surl.substring(0, index)));
-            jfm.handleOption("output-root", Collections.singletonList(classes.getPath()).iterator()); //NOI18N
-            jti.generate(Collections.singletonList(clazz));
+            assert index > 0 : String.format("source: %s binary name: %s", surl, binaryName);   //NOI18N
+            if (index > 0) {
+                File classes = JavaIndex.getClassFolder(new URL(surl.substring(0, index)));
+                jfm.handleOption("output-root", Collections.singletonList(classes.getPath()).iterator()); //NOI18N
+                jti.generate(Collections.singletonList(clazz));
+            } else {
+                LOGGER.log(
+                   Level.INFO,
+                   "Invalid binary name when writing sym file for class: {0}, source: {1}, binary name {2}",    // NOI18N
+                   new Object[] {
+                       clazz.flatname,
+                       surl,
+                       binaryName
+                   });
+            }
         } catch (InvalidSourcePath isp) {
             LOGGER.log(Level.INFO, "InvalidSourcePath reported when writing sym file for class: {0}", clazz.flatname); // NOI18N
         } finally {

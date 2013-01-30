@@ -51,13 +51,14 @@ import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.spi.model.services.CodeModelProblemResolver;
 import org.netbeans.modules.cnd.spi.model.services.CodeModelProblemResolver.ParsingProblemDetector;
+import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
 
 
 /**
  * provides progress bar in status bar
  */
-final class ParsingProgress {
+final class ParsingProgress implements Cancellable {
     
     private final ProgressHandle handle;
     private int curWorkedUnits = 0;
@@ -67,8 +68,10 @@ final class ParsingProgress {
     private static final double ALL_WORK_DOUBLE = 10000.0;
     private static final int ALL_WORK_INT = 10000;
     private boolean started = false;
+    private boolean cancelled = false;
     private boolean determinate = false;
     private final ParsingProblemDetector problemDetector;
+    private final Cancellable cancelDelegate;
     
     /**  
      * Delay amount of milliseconds
@@ -91,11 +94,15 @@ final class ParsingProgress {
     /**
      * Constructs progress information for project
      */
-    public ParsingProgress(CsmProject project) {
+    public ParsingProgress(CsmProject project, Cancellable cancel) {
         String msg=NbBundle.getMessage(ModelSupport.class, "MSG_ParsingProgress", project.getName());
-        handle = ProgressHandleFactory.createHandle(msg);
-        CodeModelProblemResolver.getParsingProblemDetector(project);
         problemDetector = CodeModelProblemResolver.getParsingProblemDetector(project);
+        this.cancelDelegate = cancel;
+        if (cancel == null) {
+            handle = ProgressHandleFactory.createHandle(msg);
+        } else {
+            handle = ProgressHandleFactory.createHandle(msg, ParsingProgress.this);
+        }
     }
     
     /**
@@ -104,6 +111,9 @@ final class ParsingProgress {
      */
     public void start() {
         synchronized (handle) {
+            if (cancelled) {
+                return;
+            }
             if(!started) {
                 started = true;
                 handle.setInitialDelay(INITIAL_DELAY);
@@ -142,7 +152,7 @@ final class ParsingProgress {
      */
     public void nextCsmFile(CsmFile file) {
         synchronized (handle) {
-            if( ! started || !determinate) {
+            if( ! started || !determinate || cancelled) {
                 return;
             }
             if( curWorkedUnits < maxWorkUnits + addedAfterStartParsing) {
@@ -180,7 +190,7 @@ final class ParsingProgress {
      */
     public void switchToDeterminate(int maxWorkUnits) {
         synchronized (handle) {
-            if( ! started ) {
+            if( ! started || cancelled) {
                 return;
             }
             if (!determinate) {
@@ -191,6 +201,18 @@ final class ParsingProgress {
                 }
                 handle.switchToDeterminate(ALL_WORK_INT);
                 determinate = true;
+            }
+        }
+    }
+
+    @Override
+    public boolean cancel() {
+        synchronized (handle) {
+            cancelled = true;
+            if (cancelDelegate == null) {
+                return true;
+            } else {
+                return cancelDelegate.cancel();
             }
         }
     }

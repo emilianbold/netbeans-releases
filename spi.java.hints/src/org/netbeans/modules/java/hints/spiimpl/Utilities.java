@@ -155,12 +155,14 @@ import org.netbeans.modules.java.hints.providers.spi.ClassPathBasedHintProvider;
 import org.netbeans.modules.java.hints.providers.spi.HintDescription;
 import org.netbeans.modules.java.hints.providers.spi.Trigger.PatternDescription;
 import org.netbeans.modules.java.hints.spiimpl.JackpotTrees.CatchWildcard;
-import org.netbeans.modules.java.hints.spiimpl.JackpotTrees.ModifiersWildcard;
 import org.netbeans.modules.java.hints.spiimpl.JackpotTrees.VariableWildcard;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.netbeans.modules.java.source.builder.TreeFactory;
 import org.netbeans.lib.nbjavac.services.CancelService;
+import org.netbeans.lib.nbjavac.services.NBParserFactory;
 import org.netbeans.lib.nbjavac.services.NBParserFactory.NBEndPosParser;
+import org.netbeans.modules.java.hints.spiimpl.JackpotTrees.AnnotationWildcard;
+import org.netbeans.modules.java.hints.spiimpl.JackpotTrees.FakeBlock;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.pretty.ImportAnalysis2;
 import org.netbeans.modules.java.source.transform.ImmutableTreeTranslator;
@@ -379,15 +381,17 @@ public class Utilities {
             if (statements.size() == 1) {
                 currentPatternTree = statements.get(0);
             } else {
-                List<StatementTree> newStatements = new LinkedList<StatementTree>();
+                com.sun.tools.javac.util.List<JCStatement> newStatements = com.sun.tools.javac.util.List.<JCStatement>nil();
 
                 if (!statements.isEmpty() && !Utilities.isMultistatementWildcardTree(statements.get(0)))
-                    newStatements.add(make.ExpressionStatement(make.Identifier("$$1$")));
-                newStatements.addAll(statements);
+                    newStatements = newStatements.append((JCStatement) make.ExpressionStatement(make.Identifier("$$1$")));
+                for (StatementTree st : statements) {
+                    newStatements = newStatements.append((JCStatement) st);
+                }
                 if (!statements.isEmpty() && !Utilities.isMultistatementWildcardTree(statements.get(statements.size() - 1)))
-                    newStatements.add(make.ExpressionStatement(make.Identifier("$$2$")));
+                    newStatements = newStatements.append((JCStatement) make.ExpressionStatement(make.Identifier("$$2$")));
 
-                currentPatternTree = make.Block(newStatements, false);
+                currentPatternTree = new FakeBlock(0L, newStatements);
             }
 
             if (!currentPatternTreeErrors.isEmpty() || containsError(currentPatternTree)) {
@@ -560,7 +564,7 @@ public class Utilities {
             ParserFactory factory = ParserFactory.instance(context);
             ScannerFactory scannerFactory = ScannerFactory.instance(context);
             Names names = Names.instance(context);
-            Parser parser = new JackpotJavacParser(context, factory, scannerFactory.newScanner(buf, false), false, false, CancelService.instance(context), names);
+            Parser parser = new JackpotJavacParser(context, (NBParserFactory) factory, scannerFactory.newScanner(buf, false), false, false, CancelService.instance(context), names);
             if (parser instanceof JavacParser) {
                 if (pos != null)
                     pos[0] = new ParserSourcePositions((JavacParser)parser);
@@ -594,7 +598,7 @@ public class Utilities {
             ScannerFactory scannerFactory = ScannerFactory.instance(context);
             Names names = Names.instance(context);
             Scanner scanner = scannerFactory.newScanner(buf, false);
-            Parser parser = new JackpotJavacParser(context, factory, scanner, false, false, CancelService.instance(context), names);
+            Parser parser = new JackpotJavacParser(context, (NBParserFactory) factory, scanner, false, false, CancelService.instance(context), names);
             if (parser instanceof JavacParser) {
                 if (pos != null)
                     pos[0] = new ParserSourcePositions((JavacParser)parser);
@@ -1105,9 +1109,7 @@ public class Utilities {
         @Override
         public Void visitNewClass(NewClassTree node, Void p) {
             //XXX:
-            List<? extends ExpressionTree> arguments = node.getArguments();
-
-            if (!arguments.isEmpty() && arguments.get(0).getKind() == Kind.OTHER) {
+            if (node.getEnclosingExpression() != null) {
                 tree2Variable.put(node, make.Identifier("$" + currentVariableIndex++));
                 return null;
             }
@@ -1229,7 +1231,7 @@ public class Utilities {
     private static class JackpotJavacParser extends NBEndPosParser {
 
         private final Context ctx;
-        public JackpotJavacParser(Context ctx, ParserFactory fac,
+        public JackpotJavacParser(Context ctx, NBParserFactory fac,
                          Lexer S,
                          boolean keepDocComments,
                          boolean keepLineMap,
@@ -1248,8 +1250,12 @@ public class Utilities {
                     com.sun.tools.javac.util.Name name = S.name();
 
                     S.nextToken();
+                    
+                    JCModifiers result = super.modifiersOpt(partial);
+                    
+                    result.annotations = result.annotations.prepend(new AnnotationWildcard(name, F.Ident(name)));
 
-                    return new ModifiersWildcard(name, F.Ident(name));
+                    return result;
                 }
             }
 
@@ -1262,10 +1268,17 @@ public class Utilities {
 
                 if (ident.startsWith("$")) {
                     com.sun.tools.javac.util.Name name = S.name();
+                    int identPos = S.pos();
 
                     S.nextToken();
 
-                    return new VariableWildcard(ctx, name, F.Ident(name));
+                    if (S.token() == Token.COMMA || S.token() == Token.RPAREN) {
+                        return new VariableWildcard(ctx, name, F.Ident(name));
+                    }
+                    
+                    ((PushbackLexer) S).add(Token.IDENTIFIER, identPos, name);
+                    ((PushbackLexer) S).add(null, -1, null);
+                    S.nextToken();
                 }
             }
 
@@ -1556,23 +1569,7 @@ public class Utilities {
     }
 
     public static boolean isFakeBlock(Tree t) {
-        if (!(t instanceof BlockTree)) {
-            return false;
-        }
-
-        BlockTree bt = (BlockTree) t;
-
-        if (bt.getStatements().isEmpty()) {
-            return false;
-        }
-
-        CharSequence wildcardTreeName = Utilities.getWildcardTreeName(bt.getStatements().get(0));
-
-        if (wildcardTreeName == null) {
-            return false;
-        }
-
-        return wildcardTreeName.toString().startsWith("$$");
+        return t instanceof FakeBlock;
     }
 
     public static boolean isFakeClass(Tree t) {

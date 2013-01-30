@@ -101,6 +101,11 @@ public class PopupManager {
         then popup will be placed above cursor. */
     public static final Placement BelowPreferred = new Placement("BelowPreferred"); //NOI18N
     
+    /**
+     * Place the popup on a fixed point of the view, measured from top-left corner
+     */
+    public static final Placement FixedPoint = new Placement("TopLeft");
+    
     /** Place popup inside the scrollbar's viewport */
     public static final HorizontalBounds ViewPortBounds = new HorizontalBounds("ViewPort"); //NOI18N
     
@@ -197,7 +202,7 @@ public class PopupManager {
             if (bounds != null){
                 // Convert to layered pane's coordinates
 
-                if (horizontalBounds == ScrollBarBounds){
+                if (horizontalBounds == ScrollBarBounds && placement != FixedPoint){
                     bounds.x = 0;
                 }
 
@@ -288,7 +293,9 @@ public class PopupManager {
             Rectangle viewBounds = ((JViewport)viewParent).getViewRect();
 
             Rectangle translatedCursorBounds = (Rectangle)cursorBounds.clone();
-            translatedCursorBounds.translate(-viewBounds.x, -viewBounds.y);
+            if (placement != FixedPoint) {
+                translatedCursorBounds.translate(-viewBounds.x, -viewBounds.y);
+            }
 
             ret = computeBounds(popup, viewBounds.width, viewBounds.height,
                 translatedCursorBounds, placement, horizontalBounds);
@@ -416,12 +423,17 @@ public class PopupManager {
         }
         
         if (popupBounds != null) {
-            //place popup according to caret position and Placement
-            popupBounds.x = Math.min(cursorBounds.x, viewWidth - popupBounds.width);
+            if (placement == FixedPoint) {
+                popupBounds.x = cursorBounds.x;
+                popupBounds.y = cursorBounds.y;
+            } else {
+                //place popup according to caret position and Placement
+                popupBounds.x = Math.min(cursorBounds.x, viewWidth - popupBounds.width);
 
-            popupBounds.y = (placement == Above || placement == AbovePreferred)
-                ? (aboveCursorHeight - popupBounds.height)
-                : belowCursorY;
+                popupBounds.y = (placement == Above || placement == AbovePreferred)
+                    ? (aboveCursorHeight - popupBounds.height)
+                    : belowCursorY;
+            }
         }
 
         return popupBounds;

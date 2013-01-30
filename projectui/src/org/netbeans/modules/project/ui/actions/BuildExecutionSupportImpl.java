@@ -67,6 +67,7 @@ public class BuildExecutionSupportImpl implements BuildExecutionSupportImplement
         return Lookup.getDefault().lookup(BuildExecutionSupportImplementation.class);
     }
 
+    @Override
     public void registerFinishedItem(Item item) {
         synchronized (runningItems) {
             lastFinishedItem = item;
@@ -75,6 +76,7 @@ public class BuildExecutionSupportImpl implements BuildExecutionSupportImplement
         fireChange();
     }
 
+    @Override
     public void registerRunningItem(Item item) {
         synchronized (runningItems) {
             runningItems.add(item);
@@ -82,24 +84,28 @@ public class BuildExecutionSupportImpl implements BuildExecutionSupportImplement
         fireChange();
     }
 
+    @Override
     public void addChangeListener(ChangeListener listener) {
         synchronized (listeners) {
             listeners.add(listener);
         }
     }
 
+    @Override
     public void removeChangeListener(ChangeListener listener) {
         synchronized (listeners) {
             listeners.remove(listener);
         }
     }
 
+    @Override
     public BuildExecutionSupport.Item getLastItem() {
         synchronized (runningItems) {
             return lastFinishedItem;
         }
     }
 
+    @Override
     public List<BuildExecutionSupport.Item> getRunningItems() {
         List<BuildExecutionSupport.Item> items = new ArrayList<BuildExecutionSupport.Item>();
         synchronized (runningItems) {

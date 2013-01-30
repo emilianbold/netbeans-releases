@@ -81,11 +81,7 @@ public class JsfVariableContext implements Comparable {
     }
 
     public String getResolvedExpression() {
-        return new StringBuilder().append("#{").append(getResolvedType()).append('}').toString();
-    }
-
-    public String getResolvedType() {
-        return resolvedType;
+        return resolvedType == null ? null : new StringBuilder().append("#{").append(resolvedType).append('}').toString();
     }
 
     void setResolvedType(String type) {

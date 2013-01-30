@@ -241,8 +241,10 @@ public final class ViewUtils {
     public static String toString(Shape s) {
         if (s instanceof Rectangle2D) {
             return toString((Rectangle2D)s);
-        } else {
+        } else if (s != null) {
             return appendPath(new StringBuilder(200), 0, s.getPathIterator(null)).toString();
+        } else {
+            return "<NULL>"; // NOI18N
         }
     }
 
@@ -372,7 +374,7 @@ public final class ViewUtils {
         sb.append(toStringNameId(component));
         if (component instanceof JTextComponent) {
             JTextComponent textComponent = (JTextComponent) component;
-            sb.append(" doc: ").append(toString(textComponent.getDocument())); // NOI18N
+            sb.append("\n  doc: ").append(toString(textComponent.getDocument())); // NOI18N
         }
         return sb.toString();
     }
@@ -385,7 +387,7 @@ public final class ViewUtils {
         sb.append(toStringNameId(doc));
         sb.append(", Length=").append(doc.getLength()); // NOI18N
         sb.append(", Version=").append(DocumentUtilities.getDocumentVersion(doc)); // NOI18N
-        sb.append(", StreamDesc:"); // NOI18N
+        sb.append("\n    StreamDesc: "); // NOI18N
         Object streamDesc = doc.getProperty(Document.StreamDescriptionProperty);
         if (streamDesc != null) {
             sb.append(streamDesc);

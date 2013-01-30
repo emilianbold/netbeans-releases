@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -42,71 +42,50 @@
 package org.netbeans.modules.test.refactoring;
 
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import javax.swing.JLabel;
-import javax.swing.JTree;
-import javax.swing.tree.TreeModel;
-import junit.textui.TestRunner;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jemmy.EventTool;
-import org.netbeans.jemmy.operators.JButtonOperator;
-import org.netbeans.jemmy.operators.JToggleButtonOperator;
 import org.netbeans.modules.test.refactoring.actions.FindUsagesAction;
-import org.netbeans.modules.test.refactoring.actions.FindUsagesMenuAction;
-import org.netbeans.modules.test.refactoring.operators.FindUsagesClassOperator;
+import org.netbeans.modules.test.refactoring.operators.FindUsagesDialogOperator;
 import org.netbeans.modules.test.refactoring.operators.RefactoringResultOperator;
 
 /**
  *
- * @author Jiri Prox Jiri.Prox@Sun.COM
+ * @author Jiri.Prox@oracle.com, Marian.Mirilovic@oracle.com
  */
 public class FindUsagesTestCase extends RefactoringTestCase {
 
-    public static final String projectName = "RefactoringTest";
-    public static final int SEARCH_IN_COMMENTS = 1 << 0;
-    public static final int NOT_SEARCH_IN_COMMENTS = 1 << 1;
-    public static final int FIND_USAGES = 1 << 2;
-    public static final int FIND_DIRECT_SUBTYPES = 1 << 3;
-    public static final int FIND_ALL_SUBTYPES = 1 << 4;
-    public static final int FIND_OVERRIDING = 1 << 5;
-    public static final int FIND_OVERRIDING_AND_USAGES= 1 << 6;
-    public static final int SEARCH_IN_ALL_PROJ = 1 << 7;
-    public static final int SEARCH_ACTUAL_PROJ = 1 << 8;
-    public static final int FIND_USAGES_METHOD = 1 << 9;
-    public static final int NOT_FIND_USAGES_METHOD = 1 << 10;
-    public static final int NOT_SEARCH_FROM_BASECLASS = 1 << 11;
-    private static boolean browseChild = true;
+    protected static final int SEARCH_IN_COMMENTS = 1 << 0;
+    protected static final int NOT_SEARCH_IN_COMMENTS = 1 << 1;
+    protected static final int FIND_USAGES = 1 << 2;
+    protected static final int FIND_DIRECT_SUBTYPES_ONLY = 1 << 3;
+    protected static final int FIND_ALL_SUBTYPES = 1 << 4;
+    protected static final int FIND_OVERRIDING_METHODS = 1 << 5;
+    protected static final int FIND_USAGES_AND_OVERRIDING_METHODS = 1 << 6;
+    protected static final int SEARCH_IN_ALL_PROJ = 1 << 7;
+    protected static final int SEARCH_ACTUAL_PROJ = 1 << 8;
+//    protected static final int FIND_USAGES_METHOD = 1 << 9;
+//    protected static final int NOT_FIND_USAGES_METHOD = 1 << 10;
+    protected static final int NOT_SEARCH_FROM_BASECLASS = 1 << 11;
+    protected static boolean browseChild = true;
 
     public FindUsagesTestCase(String name) {
         super(name);
-    }
-
-    @Override
-    public String getProjectName() {
-        return projectName;
     }
 
     protected void findUsages(String packName, String fileName, int row, int col, int modifiers) {
         openSourceFile(packName, fileName);
         EditorOperator editor = new EditorOperator(fileName);
         editor.setCaretPosition(row, col);
-        new EventTool().waitNoEvent(500);
         editor.select(row, col, col);
-        new EventTool().waitNoEvent(1000);
-        new FindUsagesAction().perform(editor);
+        new FindUsagesAction().performPopup(editor);
         new EventTool().waitNoEvent(3000);
-        if(fileName.equals("FUClass")){
-            new EventTool().waitNoEvent(8000);
-        }
+
+        FindUsagesDialogOperator findUsagesClassOperator = new FindUsagesDialogOperator();
+        new EventTool().waitNoEvent(3000);
         
-        FindUsagesClassOperator findUsagesClassOperator = new FindUsagesClassOperator();
-        if(fileName.equals("FUClass")){
-            new EventTool().waitNoEvent(8000);
-        }
-        findUsagesClassOperator.getOpenInNewTab().setSelected(true);
+        findUsagesClassOperator.cbxOpenInNewTab().setSelected(true);
         if ((modifiers & SEARCH_IN_COMMENTS) != 0) {
             findUsagesClassOperator.getSearchInComments().setSelected(true);
         }
@@ -116,42 +95,31 @@ public class FindUsagesTestCase extends RefactoringTestCase {
         if ((modifiers & FIND_USAGES) != 0) {
             findUsagesClassOperator.getFindUsages().setSelected(true);
         }
-        if ((modifiers & FIND_USAGES_METHOD) != 0) {
-            findUsagesClassOperator.getFindUsages().setSelected(true);
-        }
-        if ((modifiers & NOT_FIND_USAGES_METHOD) != 0) {
-            findUsagesClassOperator.getFindUsages().setSelected(false);
-        }
         if ((modifiers & FIND_ALL_SUBTYPES) != 0) {
             findUsagesClassOperator.getFindAllSubtypes().setSelected(true);
         }
-        if ((modifiers & FIND_DIRECT_SUBTYPES) != 0) {
-            findUsagesClassOperator.getFindDirectSubtypes().setSelected(true);
+        if ((modifiers & FIND_DIRECT_SUBTYPES_ONLY) != 0) {
+            findUsagesClassOperator.getFindDirectSubtypesOnly().setSelected(true);
         }
-        if ((modifiers & FIND_OVERRIDING) != 0) {
-            findUsagesClassOperator.getFindOverridding().setSelected(true);
+        if ((modifiers & FIND_OVERRIDING_METHODS) != 0) {
+            findUsagesClassOperator.getFindOverriddingMethods().setSelected(true);
         }
-        if ((modifiers & FIND_OVERRIDING_AND_USAGES) != 0) {
-            findUsagesClassOperator.getFindMethodUsageAndOverriding().setSelected(true);
-        }
-        if ((modifiers & NOT_SEARCH_FROM_BASECLASS) != 0) {
-            findUsagesClassOperator.getFindFromBaseClass().setSelected(false);
+        if ((modifiers & FIND_USAGES_AND_OVERRIDING_METHODS) != 0) {
+            findUsagesClassOperator.getFindUsagesAndOverridingMethods().setSelected(true);
         }
         if ((modifiers & SEARCH_IN_ALL_PROJ) != 0) {
             findUsagesClassOperator.setScope(null);
         }
         if ((modifiers & SEARCH_ACTUAL_PROJ) != 0) {
-            findUsagesClassOperator.setScope(projectName);
+            findUsagesClassOperator.setScope(REFACTORING_TEST);
         }
 
-        findUsagesClassOperator.getFind().pushNoBlock();
-        new EventTool().waitNoEvent(2000);
+        findUsagesClassOperator.find();
+
+        new EventTool().waitNoEvent(8000);
         if (browseChild) {
             RefactoringResultOperator test = RefactoringResultOperator.getFindUsagesResult();
-            JTree tree = test.getPreviewTree();
-            TreeModel model = tree.getModel();
-            Object root = model.getRoot();
-            browseChildren(model, root, 0);
+            browseRoot(test.getPreviewTree());
         }
     }
 
@@ -168,10 +136,4 @@ public class FindUsagesTestCase extends RefactoringTestCase {
         }
     }
 
-    /**
-     * @param browseChild the browseChild to set
-     */
-    public static void setBrowseChild(boolean browseChild) {
-        FindUsagesTestCase.browseChild = browseChild;
-    }
 }

@@ -105,6 +105,22 @@ is the proper place.
 
     <!-- ACTUAL CHANGES BEGIN HERE: -->
     <changes>
+        <change id="CommonProjectUtils.createJavaLibraryImplementation">
+            <api name="java-api-common"/>
+            <summary>Added a helper method creating <code>LibraryImplementation3</code> for ant and maven projects.</summary>
+            <version major="1" minor="40"/>
+            <date day="5" month="9" year="2012"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Added a helper method creating default implementation of the <code>LibraryImplementation3</code>
+                    interface for both Ant and Maven projects.
+                </p>
+            </description>
+            <class package="org.netbeans.modules.java.api.common.util" name="CommonProjectUtils"/>
+            <issue number="217340"/>
+        </change>
         <change id="ClassPathModifierSupport-handleAntArtifacts">
             <api name="java-api-common"/>
             <summary>Added <code>ClassPathModifierSupport.handleAntArtifacts</code> correctly updating the build-impl.xml</summary>

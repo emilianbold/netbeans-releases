@@ -43,6 +43,7 @@
 package org.netbeans.modules.php.editor.model;
 
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.api.editor.PhpBaseElement;
@@ -56,6 +57,22 @@ import org.netbeans.modules.php.editor.parser.api.Utils;
  */
 public final class Model {
 
+    public enum Type {
+        COMMON {
+            @Override
+            public void process(Model model) {
+            }
+        },
+        EXTENDED {
+            @Override
+            public void process(Model model) {
+                model.getExtendedElements();
+            }
+        };
+
+        public abstract void process(Model model);
+    }
+
     private static final Logger LOGGER = Logger.getLogger(Model.class.getName());
 
     private ModelVisitor modelVisitor;
@@ -65,10 +82,6 @@ public final class Model {
     Model(PHPParseResult info) {
         this.info = info;
     }
-
-//    Model(FileObject fo) {
-//        ParserManager.
-//    }
 
     public List<PhpBaseElement>  getExtendedElements() {
         return getModelVisitor().extendedElements();
@@ -84,22 +97,18 @@ public final class Model {
         return visitor.getIndexScope();
     }
 
-    public OccurencesSupport getOccurencesSupport(final OffsetRange range) {
+    public synchronized OccurencesSupport getOccurencesSupport(final OffsetRange range) {
         final ModelVisitor visitor = getModelVisitor();
-        synchronized(this) {
-            if (occurencesSupport == null || !range.containsInclusive(occurencesSupport.offset)) {
-                occurencesSupport = new OccurencesSupport(visitor, range.getStart()+1);
-            }
+        if (occurencesSupport == null || !range.containsInclusive(occurencesSupport.offset)) {
+            occurencesSupport = new OccurencesSupport(visitor, range.getStart() + 1);
         }
         return occurencesSupport;
     }
 
-    public OccurencesSupport getOccurencesSupport(final int offset) {
+    public synchronized OccurencesSupport getOccurencesSupport(final int offset) {
         final ModelVisitor visitor = getModelVisitor();
-        synchronized(this) {
-            if (occurencesSupport == null || occurencesSupport.offset != offset) {
-                occurencesSupport = new OccurencesSupport(visitor, offset);
-            }
+        if (occurencesSupport == null || occurencesSupport.offset != offset) {
+            occurencesSupport = new OccurencesSupport(visitor, offset);
         }
         return occurencesSupport;
     }
@@ -128,9 +137,8 @@ public final class Model {
             modelVisitor = new ModelVisitor(info);
             modelVisitor.scan(Utils.getRoot(info));
             long end = System.currentTimeMillis();
-            LOGGER.fine("Building model took: " + (end - start));
-            }
-
+            LOGGER.log(Level.FINE, "Building model took: {0}", (end - start));
+        }
         return modelVisitor;
     }
 }

@@ -1,7 +1,7 @@
 Heap Summary
 Time Jun 16, 2006 11:46:11 AM
 Live instances 2208
-Live bytes 132489
+Live bytes 139369
 Total alloc instances -1
 Total alloc bytes -1
 Classes size 443
@@ -1110,7 +1110,7 @@ sun.cpu.isalist
    Field next of instance 0x6462e590
    Path to nearest GC root
     Next object java.lang.Class#224
- Id 0x6813a530 Class java.util.regex.Pattern$Node[] SuperClass java.lang.Object Instance size -1 Instance count 3 All Instances Size 48
+ Id 0x6813a530 Class java.util.regex.Pattern$Node[] SuperClass java.lang.Object Instance size -1 Instance count 3 All Instances Size 72
   Static Field name <classLoader> type object value 0
   Instance Id 0x6462d928 number 1 retained size 348
    References count 1
@@ -2674,7 +2674,7 @@ sun.cpu.isalist
    Field returnType of instance 0x64630d08
    Path to nearest GC root
     Null
- Id 0x6c96bd98 Class java.lang.Class[] SuperClass java.lang.Object Instance size -1 Instance count 8 All Instances Size 80
+ Id 0x6c96bd98 Class java.lang.Class[] SuperClass java.lang.Object Instance size -1 Instance count 8 All Instances Size 144
   Static Field name <classLoader> type object value 0
   Instance Id 0x64614fb0 number 1 retained size 0
    References count 2
@@ -2810,7 +2810,7 @@ sun.cpu.isalist
    References count 0
    Path to nearest GC root
     Null
- Id 0x6c96b578 Class java.lang.Object[] SuperClass java.lang.Object Instance size -1 Instance count 316 All Instances Size 10892
+ Id 0x6c96b578 Class java.lang.Object[] SuperClass java.lang.Object Instance size -1 Instance count 316 All Instances Size 13420
   Static Field name <classLoader> type object value 0
   Instance Id 0x646101a8 number 1 retained size 0
    References count 1
@@ -5417,7 +5417,7 @@ sun.cpu.isalist
    Element 0 of array 0x64610630
    Path to nearest GC root
     Next object java.lang.Thread#1
- Id 0x68131208 Class java.lang.ThreadGroup[] SuperClass java.lang.Object Instance size -1 Instance count 1 All Instances Size 24
+ Id 0x68131208 Class java.lang.ThreadGroup[] SuperClass java.lang.Object Instance size -1 Instance count 1 All Instances Size 32
   Static Field name <classLoader> type object value 0
   Instance Id 0x64610630 number 1 retained size 32
    References count 1
@@ -5623,7 +5623,7 @@ sun.cpu.isalist
    References count 1
    Element 3 of array 0x64610a38
    Path to nearest GC root
- Id 0x68131c30 Class java.lang.Thread[] SuperClass java.lang.Object Instance size -1 Instance count 2 All Instances Size 48
+ Id 0x68131c30 Class java.lang.Thread[] SuperClass java.lang.Object Instance size -1 Instance count 2 All Instances Size 64
   Static Field name <classLoader> type object value 0
   Instance Id 0x64610a38 number 1 retained size 32
    References count 1
@@ -9429,7 +9429,7 @@ sun.cpu.isalist
    References count 0
    Path to nearest GC root
     Null
- Id 0x68132170 Class java.lang.String[] SuperClass java.lang.Object Instance size -1 Instance count 49 All Instances Size 1380
+ Id 0x68132170 Class java.lang.String[] SuperClass java.lang.Object Instance size -1 Instance count 49 All Instances Size 1772
   Static Field name <classLoader> type object value 0
   Instance Id 0x64611b30 number 1 retained size 72
    References count 1
@@ -10551,7 +10551,7 @@ sun.cpu.isalist
    Field c of instance 0x64629380
    Path to nearest GC root
     Null
- Id 0x68133ae0 Class java.lang.reflect.Constructor[] SuperClass java.lang.Object Instance size -1 Instance count 4 All Instances Size 48
+ Id 0x68133ae0 Class java.lang.reflect.Constructor[] SuperClass java.lang.Object Instance size -1 Instance count 4 All Instances Size 80
   Static Field name <classLoader> type object value 0
   Instance Id 0x64614fa0 number 1 retained size 0
    References count 1
@@ -11317,7 +11317,7 @@ sun.cpu.isalist
    Element 9 of array 0x646268a0
    Path to nearest GC root
     Null
- Id 0x681338b0 Class java.lang.reflect.Field[] SuperClass java.lang.Object Instance size -1 Instance count 4 All Instances Size 156
+ Id 0x681338b0 Class java.lang.reflect.Field[] SuperClass java.lang.Object Instance size -1 Instance count 4 All Instances Size 188
   Static Field name <classLoader> type object value 0
   Instance Id 0x64614dc8 number 1 retained size 0
    References count 1
@@ -11937,7 +11937,7 @@ sun.cpu.isalist
    Element 3 of array 0x64610188
    Path to nearest GC root
     Null
- Id 0x68130a98 Class java.lang.OutOfMemoryError[] SuperClass java.lang.Object Instance size -1 Instance count 1 All Instances Size 24
+ Id 0x68130a98 Class java.lang.OutOfMemoryError[] SuperClass java.lang.Object Instance size -1 Instance count 1 All Instances Size 32
   Static Field name <classLoader> type object value 0
   Instance Id 0x64610188 number 1 retained size 0
    References count 0
@@ -11950,7 +11950,7 @@ sun.cpu.isalist
   Field name fileName type object
   Field name methodName type object
   Field name declaringClass type object
- Id 0x681313c0 Class java.lang.StackTraceElement[] SuperClass java.lang.Object Instance size -1 Instance count 1 All Instances Size 8
+ Id 0x681313c0 Class java.lang.StackTraceElement[] SuperClass java.lang.Object Instance size -1 Instance count 1 All Instances Size 16
   Static Field name <classLoader> type object value 0
   Instance Id 0x64610650 number 1 retained size 16
    References count 1
@@ -14541,7 +14541,7 @@ sun.cpu.isalist
    Path to nearest GC root
     Next object java.io.ObjectStreamField[]#8
     Next object java.lang.Class#407
- Id 0x68130e78 Class java.io.ObjectStreamField[] SuperClass java.lang.Object Instance size -1 Instance count 8 All Instances Size 104
+ Id 0x68130e78 Class java.io.ObjectStreamField[] SuperClass java.lang.Object Instance size -1 Instance count 8 All Instances Size 168
   Static Field name <classLoader> type object value 0
   Instance Id 0x64610588 number 1 retained size 16
    References count 1
@@ -15112,7 +15112,7 @@ sun.cpu.isalist
     Next object java.lang.Thread#1
  Id 0x6c97bc18 Class java.lang.annotation.Annotation SuperClass java.lang.Object Instance size 8 Instance count 0 All Instances Size 0
   Static Field name <classLoader> type object value 0
- Id 0x68131560 Class java.lang.annotation.Annotation[] SuperClass java.lang.Object Instance size -1 Instance count 4 All Instances Size 32
+ Id 0x68131560 Class java.lang.annotation.Annotation[] SuperClass java.lang.Object Instance size -1 Instance count 4 All Instances Size 64
   Static Field name <classLoader> type object value 0
   Instance Id 0x64610730 number 1 retained size 16
    References count 1
@@ -16054,7 +16054,7 @@ sun.cpu.isalist
     Next object java.util.concurrent.ConcurrentHashMap$Segment[]#1
     Next object java.util.concurrent.ConcurrentHashMap#1
     Next object java.lang.Class#221
- Id 0x6813a0c8 Class java.util.concurrent.ConcurrentHashMap$HashEntry[] SuperClass java.lang.Object Instance size -1 Instance count 32 All Instances Size 472
+ Id 0x6813a0c8 Class java.util.concurrent.ConcurrentHashMap$HashEntry[] SuperClass java.lang.Object Instance size -1 Instance count 32 All Instances Size 728
   Static Field name <classLoader> type object value 0
   Instance Id 0x64626be0 number 1 retained size 24
    References count 1
@@ -16842,7 +16842,7 @@ sun.cpu.isalist
     Next object java.util.concurrent.ConcurrentHashMap$Segment[]#2
     Next object java.util.concurrent.ConcurrentHashMap#2
     Next object java.lang.Class#341
- Id 0x68139c08 Class java.util.concurrent.ConcurrentHashMap$Segment[] SuperClass java.lang.Object Instance size -1 Instance count 2 All Instances Size 144
+ Id 0x68139c08 Class java.util.concurrent.ConcurrentHashMap$Segment[] SuperClass java.lang.Object Instance size -1 Instance count 2 All Instances Size 160
   Static Field name <classLoader> type object value 0
   Instance Id 0x64626508 number 1 retained size 1840
    References count 1
@@ -16954,7 +16954,7 @@ sun.cpu.isalist
     Next object java.util.HashMap$Entry[]#5
     Next object java.util.HashMap#3
     Next object java.lang.Class#222
- Id 0x68139658 Class java.io.File[] SuperClass java.lang.Object Instance size -1 Instance count 1 All Instances Size 16
+ Id 0x68139658 Class java.io.File[] SuperClass java.lang.Object Instance size -1 Instance count 1 All Instances Size 24
   Static Field name <classLoader> type object value 0
   Instance Id 0x64625928 number 1 retained size 80
    References count 1
@@ -17257,7 +17257,7 @@ sun.cpu.isalist
   Static Field name serialVersionUID type long value -3585440601605666277
   Static Field name <classLoader> type object value 0
   Field name type type object
- Id 0x6813b150 Class java.security.cert.Certificate[] SuperClass java.lang.Object Instance size -1 Instance count 1 All Instances Size 8
+ Id 0x6813b150 Class java.security.cert.Certificate[] SuperClass java.lang.Object Instance size -1 Instance count 1 All Instances Size 16
   Static Field name <classLoader> type object value 0
   Instance Id 0x64630cb8 number 1 retained size 16
    References count 2
@@ -18460,7 +18460,7 @@ sun.cpu.isalist
   Field name name type object
  Id 0x6ca06a98 Class java.security.Principal SuperClass java.lang.Object Instance size 8 Instance count 0 All Instances Size 0
   Static Field name <classLoader> type object value 0
- Id 0x6813af98 Class java.security.Principal[] SuperClass java.lang.Object Instance size -1 Instance count 1 All Instances Size 8
+ Id 0x6813af98 Class java.security.Principal[] SuperClass java.lang.Object Instance size -1 Instance count 1 All Instances Size 16
   Static Field name <classLoader> type object value 0
   Instance Id 0x64630c78 number 1 retained size 16
    References count 1
@@ -21304,7 +21304,7 @@ sun.cpu.isalist
     Next object java.util.Hashtable#5
     Next object sun.misc.Launcher$AppClassLoader#1
     Next object java.lang.Thread#1
- Id 0x68131de8 Class java.util.Hashtable$Entry[] SuperClass java.lang.Object Instance size -1 Instance count 12 All Instances Size 1768
+ Id 0x68131de8 Class java.util.Hashtable$Entry[] SuperClass java.lang.Object Instance size -1 Instance count 12 All Instances Size 1864
   Static Field name <classLoader> type object value 0
   Instance Id 0x64615860 number 1 retained size 8158
    References count 1
@@ -23899,7 +23899,7 @@ sun.cpu.isalist
     Next object java.util.HashSet#2
     Next object sun.misc.Launcher$AppClassLoader#1
     Next object java.lang.Thread#1
- Id 0x681318b8 Class java.util.HashMap$Entry[] SuperClass java.lang.Object Instance size -1 Instance count 26 All Instances Size 3280
+ Id 0x681318b8 Class java.util.HashMap$Entry[] SuperClass java.lang.Object Instance size -1 Instance count 26 All Instances Size 3488
   Static Field name <classLoader> type object value 0
   Instance Id 0x64610740 number 1 retained size 80
    References count 1
@@ -24515,7 +24515,7 @@ sun.cpu.isalist
     Next object java.lang.ThreadLocal$ThreadLocalMap$Entry[]#1
     Next object java.lang.ThreadLocal$ThreadLocalMap#1
     Next object java.lang.Thread#1
- Id 0x681340c0 Class java.lang.ThreadLocal$ThreadLocalMap$Entry[] SuperClass java.lang.Object Instance size -1 Instance count 1 All Instances Size 72
+ Id 0x681340c0 Class java.lang.ThreadLocal$ThreadLocalMap$Entry[] SuperClass java.lang.Object Instance size -1 Instance count 1 All Instances Size 80
   Static Field name <classLoader> type object value 0
   Instance Id 0x64615118 number 1 retained size 296
    References count 1
@@ -24536,7 +24536,7 @@ sun.cpu.isalist
    Field nextHashCode of Class java.lang.ThreadLocal
    Path to nearest GC root
     Next object java.lang.Class#353
- Id 0x6c9392a0 Class boolean[] SuperClass java.lang.Object Instance size -1 Instance count 5 All Instances Size 1320
+ Id 0x6c9392a0 Class boolean[] SuperClass java.lang.Object Instance size -1 Instance count 5 All Instances Size 1360
   Static Field name <classLoader> type object value 0
   Instance Id 0x6462d7f0 number 1 retained size 272
    References count 1
@@ -24614,7 +24614,7 @@ sun.cpu.isalist
     Next object java.util.regex.Pattern$Branch#1
     Next object java.util.regex.Pattern#1
     Next object java.lang.Class#394
- Id 0x6c939420 Class byte[] SuperClass java.lang.Object Instance size -1 Instance count 25 All Instances Size 26346
+ Id 0x6c939420 Class byte[] SuperClass java.lang.Object Instance size -1 Instance count 25 All Instances Size 26546
   Static Field name <classLoader> type object value 0
   Instance Id 0x64616908 number 1 retained size 144
    References count 1
@@ -24750,7 +24750,7 @@ sun.cpu.isalist
    References count 0
    Path to nearest GC root
     Null
- Id 0x6c939300 Class char[] SuperClass java.lang.Object Instance size -1 Instance count 305 All Instances Size 47510
+ Id 0x6c939300 Class char[] SuperClass java.lang.Object Instance size -1 Instance count 305 All Instances Size 49950
   Static Field name <classLoader> type object value 0
   Instance Id 0x64610018 number 1 retained size 0
    References count 1
@@ -27300,7 +27300,7 @@ sun.cpu.isalist
    Field value of instance 0x6813ae10
    Path to nearest GC root
     Null
- Id 0x6c9394e0 Class int[] SuperClass java.lang.Object Instance size -1 Instance count 19 All Instances Size 2456
+ Id 0x6c9394e0 Class int[] SuperClass java.lang.Object Instance size -1 Instance count 19 All Instances Size 2608
   Static Field name <classLoader> type object value 0
   Instance Id 0x64614f68 number 1 retained size 56
    References count 1
@@ -27385,7 +27385,7 @@ sun.cpu.isalist
    References count 0
    Path to nearest GC root
     Null
- Id 0x6c939480 Class short[] SuperClass java.lang.Object Instance size -1 Instance count 23 All Instances Size 816
+ Id 0x6c939480 Class short[] SuperClass java.lang.Object Instance size -1 Instance count 23 All Instances Size 1000
   Static Field name <classLoader> type object value 0
   Instance Id 0x64610250 number 1 retained size 0
    References count 1
@@ -27483,7 +27483,7 @@ sun.cpu.isalist
    References count 0
    Path to nearest GC root
     Null
- Id 0x6c939540 Class long[] SuperClass java.lang.Object Instance size -1 Instance count 2 All Instances Size 264
+ Id 0x6c939540 Class long[] SuperClass java.lang.Object Instance size -1 Instance count 2 All Instances Size 280
   Static Field name <classLoader> type object value 0
   Instance Id 0x64626388 number 1 retained size 48
    References count 1
@@ -27496,14 +27496,14 @@ sun.cpu.isalist
    Field long5pow of Class sun.misc.FloatingDecimal
    Path to nearest GC root
     Next object java.lang.Class#394
- Id 0x6c939360 Class float[] SuperClass java.lang.Object Instance size -1 Instance count 1 All Instances Size 52
+ Id 0x6c939360 Class float[] SuperClass java.lang.Object Instance size -1 Instance count 1 All Instances Size 60
   Static Field name <classLoader> type object value 0
   Instance Id 0x6462d4a0 number 1 retained size 60
    References count 1
    Field singleSmall10pow of Class sun.misc.FloatingDecimal
    Path to nearest GC root
     Next object java.lang.Class#394
- Id 0x6c9393c0 Class double[] SuperClass java.lang.Object Instance size -1 Instance count 3 All Instances Size 288
+ Id 0x6c9393c0 Class double[] SuperClass java.lang.Object Instance size -1 Instance count 3 All Instances Size 312
   Static Field name <classLoader> type object value 0
   Instance Id 0x6462d3d8 number 1 retained size 200
    References count 1
@@ -27521,407 +27521,407 @@ sun.cpu.isalist
    Path to nearest GC root
     Next object java.lang.Class#394
 GC roots 404
-Root kind sticky class Class java.lang.Class#424
-Root kind sticky class Class java.lang.Class#307
-Root kind sticky class Class java.lang.Class#268
-Root kind sticky class Class java.lang.Class#342
-Root kind sticky class Class java.lang.Class#313
-Root kind sticky class Class java.lang.Class#74
-Root kind sticky class Class java.lang.Class#332
-Root kind monitor used Class java.lang.ref.ReferenceQueue$Lock#4
-Root kind sticky class Class java.lang.Class#290
-Root kind sticky class Class java.lang.Class#191
-Root kind sticky class Class java.lang.Class#404
-Root kind sticky class Class java.lang.Class#391
-Root kind sticky class Class java.lang.Class#19
-Root kind sticky class Class java.lang.Class#16
-Root kind sticky class Class java.lang.Class#118
-Root kind sticky class Class java.lang.Class#341
-Root kind sticky class Class java.lang.Class#68
-Root kind sticky class Class java.lang.Class#270
-Root kind sticky class Class java.lang.Class#287
-Root kind sticky class Class java.lang.Class#202
-Root kind sticky class Class java.lang.Class#62
-Root kind sticky class Class java.lang.Class#280
-Root kind sticky class Class java.lang.Class#10
-Root kind sticky class Class java.lang.Class#363
-Root kind sticky class Class java.lang.Class#356
-Root kind sticky class Class java.lang.Class#369
-Root kind Java frame Class java.lang.ref.ReferenceQueue#2
-Root kind sticky class Class java.lang.Class#408
-Root kind sticky class Class java.lang.Class#69
-Root kind sticky class Class java.lang.Class#231
-Root kind sticky class Class java.lang.Class#211
-Root kind sticky class Class java.lang.Class#375
-Root kind sticky class Class java.lang.Class#4
-Root kind sticky class Class java.lang.Class#50
-Root kind sticky class Class java.lang.Class#54
-Root kind sticky class Class java.lang.Class#429
-Root kind sticky class Class java.lang.Class#281
-Root kind sticky class Class java.lang.Class#225
-Root kind sticky class Class java.lang.Class#204
-Root kind sticky class Class java.lang.Class#422
-Root kind sticky class Class java.lang.Class#88
-Root kind sticky class Class java.lang.Class#297
-Root kind sticky class Class java.lang.Class#72
-Root kind sticky class Class java.lang.Class#415
-Root kind sticky class Class java.lang.Class#377
-Root kind sticky class Class java.lang.Class#61
-Root kind sticky class Class java.lang.Class#325
-Root kind sticky class Class java.lang.Class#183
-Root kind sticky class Class java.lang.Class#395
-Root kind sticky class Class java.lang.Class#57
-Root kind sticky class Class java.lang.Class#275
-Root kind sticky class Class java.lang.Class#66
-Root kind sticky class Class java.lang.Class#371
-Root kind sticky class Class java.lang.Class#137
-Root kind sticky class Class java.lang.Class#224
-Root kind sticky class Class java.lang.Class#138
-Root kind sticky class Class java.lang.Class#47
-Root kind sticky class Class java.lang.Class#309
-Root kind sticky class Class java.lang.Class#151
-Root kind sticky class Class java.lang.Class#349
-Root kind sticky class Class java.lang.Class#208
-Root kind sticky class Class java.lang.Class#40
-Root kind sticky class Class java.lang.Class#361
-Root kind sticky class Class java.lang.Class#370
-Root kind sticky class Class java.lang.Class#98
-Root kind sticky class Class java.lang.Class#67
-Root kind sticky class Class java.lang.Class#8
-Root kind sticky class Class java.lang.Class#417
-Root kind sticky class Class java.lang.Class#197
-Root kind sticky class Class java.lang.Class#426
-Root kind sticky class Class java.lang.Class#420
-Root kind sticky class Class java.lang.Class#84
-Root kind sticky class Class java.lang.Class#37
-Root kind sticky class Class java.lang.Class#272
-Root kind sticky class Class java.lang.Class#259
-Root kind sticky class Class java.lang.Class#201
-Root kind sticky class Class java.lang.Class#107
-Root kind sticky class Class java.lang.Class#397
-Root kind sticky class Class java.lang.Class#343
-Root kind sticky class Class java.lang.Class#409
-Root kind sticky class Class java.lang.Class#221
-Root kind sticky class Class java.lang.Class#421
-Root kind sticky class Class java.lang.Class#106
-Root kind sticky class Class java.lang.Class#326
-Root kind sticky class Class java.lang.Class#42
-Root kind sticky class Class java.lang.Class#214
-Root kind sticky class Class java.lang.Class#205
-Root kind sticky class Class java.lang.Class#430
-Root kind sticky class Class java.lang.Class#359
-Root kind sticky class Class java.lang.Class#166
-Root kind sticky class Class java.lang.Class#24
-Root kind thread object Class java.lang.ref.Finalizer$FinalizerThread#1
-Root kind sticky class Class java.lang.Class#291
-Root kind sticky class Class java.lang.Class#198
-Root kind sticky class Class java.lang.Class#148
-Root kind sticky class Class java.lang.Class#316
-Root kind sticky class Class java.lang.Class#322
-Root kind sticky class Class java.lang.Class#357
-Root kind sticky class Class java.lang.Class#328
-Root kind sticky class Class java.lang.Class#5
-Root kind sticky class Class java.lang.Class#254
-Root kind sticky class Class java.lang.Class#228
-Root kind sticky class Class java.lang.Class#76
-Root kind sticky class Class java.lang.Class#331
-Root kind sticky class Class java.lang.Class#49
-Root kind sticky class Class java.lang.Class#315
-Root kind sticky class Class java.lang.Class#180
-Root kind sticky class Class java.lang.Class#3
-Root kind sticky class Class java.lang.Class#136
-Root kind sticky class Class java.lang.Class#383
-Root kind sticky class Class java.lang.Class#266
-Root kind sticky class Class java.lang.Class#141
-Root kind sticky class Class java.lang.Class#155
-Root kind sticky class Class java.lang.Class#22
-Root kind sticky class Class java.lang.Class#59
-Root kind sticky class Class java.lang.Class#310
-Root kind sticky class Class java.lang.Class#220
-Root kind sticky class Class java.lang.Class#82
-Root kind sticky class Class java.lang.Class#350
-Root kind sticky class Class java.lang.Class#232
-Root kind sticky class Class java.lang.Class#303
-Root kind sticky class Class java.lang.Class#235
-Root kind sticky class Class java.lang.Class#215
-Root kind sticky class Class java.lang.Class#210
-Root kind sticky class Class java.lang.Class#293
-Root kind thread object Class java.lang.Thread#1
-Root kind sticky class Class java.lang.Class#364
-Root kind sticky class Class java.lang.Class#25
-Root kind sticky class Class java.lang.Class#305
-Root kind sticky class Class java.lang.Class#162
-Root kind sticky class Class java.lang.Class#192
-Root kind sticky class Class java.lang.Class#94
-Root kind sticky class Class java.lang.Class#41
-Root kind sticky class Class java.lang.Class#111
-Root kind sticky class Class java.lang.Class#347
-Root kind sticky class Class java.lang.Class#103
-Root kind sticky class Class java.lang.Class#130
-Root kind sticky class Class java.lang.Class#1
-Root kind sticky class Class java.lang.Class#110
-Root kind sticky class Class java.lang.Class#376
-Root kind sticky class Class java.lang.Class#433
-Root kind sticky class Class java.lang.Class#295
-Root kind sticky class Class java.lang.Class#145
-Root kind sticky class Class java.lang.Class#246
-Root kind sticky class Class java.lang.Class#174
-Root kind sticky class Class java.lang.Class#21
-Root kind sticky class Class java.lang.Class#337
-Root kind sticky class Class java.lang.Class#308
-Root kind sticky class Class java.lang.Class#172
-Root kind sticky class Class java.lang.Class#390
-Root kind sticky class Class java.lang.Class#323
-Root kind sticky class Class java.lang.Class#15
-Root kind sticky class Class java.lang.Class#394
-Root kind sticky class Class java.lang.Class#320
-Root kind sticky class Class java.lang.Class#170
-Root kind sticky class Class java.lang.Class#243
-Root kind sticky class Class java.lang.Class#273
-Root kind sticky class Class java.lang.Class#258
-Root kind sticky class Class java.lang.Class#344
-Root kind sticky class Class java.lang.Class#196
-Root kind sticky class Class java.lang.Class#336
-Root kind sticky class Class java.lang.Class#263
-Root kind sticky class Class java.lang.Class#121
-Root kind sticky class Class java.lang.Class#39
-Root kind sticky class Class java.lang.Class#368
-Root kind sticky class Class java.lang.Class#70
-Root kind sticky class Class java.lang.Class#379
-Root kind sticky class Class java.lang.Class#340
-Root kind sticky class Class java.lang.Class#278
-Root kind sticky class Class java.lang.Class#152
-Root kind sticky class Class java.lang.Class#352
-Root kind sticky class Class java.lang.Class#28
-Root kind sticky class Class java.lang.Class#119
-Root kind sticky class Class java.lang.Class#365
-Root kind sticky class Class java.lang.Class#9
-Root kind sticky class Class java.lang.Class#410
-Root kind sticky class Class java.lang.Class#346
-Root kind sticky class Class java.lang.Class#188
-Root kind sticky class Class java.lang.Class#53
-Root kind sticky class Class java.lang.Class#413
-Root kind sticky class Class java.lang.Class#248
-Root kind sticky class Class java.lang.Class#319
-Root kind sticky class Class java.lang.Class#132
-Root kind sticky class Class java.lang.Class#333
-Root kind sticky class Class java.lang.Class#389
-Root kind sticky class Class java.lang.Class#302
-Root kind sticky class Class java.lang.Class#176
-Root kind sticky class Class java.lang.Class#249
-Root kind sticky class Class java.lang.Class#406
-Root kind sticky class Class java.lang.Class#327
-Root kind sticky class Class java.lang.Class#338
-Root kind sticky class Class java.lang.Class#182
-Root kind sticky class Class java.lang.Class#154
-Root kind sticky class Class java.lang.Class#144
-Root kind sticky class Class java.lang.Class#435
-Root kind sticky class Class java.lang.Class#330
-Root kind sticky class Class java.lang.Class#44
-Root kind sticky class Class java.lang.Class#20
-Root kind sticky class Class java.lang.Class#149
-Root kind sticky class Class java.lang.Class#227
-Root kind sticky class Class java.lang.Class#29
-Root kind sticky class Class java.lang.Class#95
-Root kind sticky class Class java.lang.Class#71
-Root kind sticky class Class java.lang.Class#85
-Root kind sticky class Class java.lang.Class#115
-Root kind sticky class Class java.lang.Class#43
-Root kind sticky class Class java.lang.Class#339
-Root kind sticky class Class java.lang.Class#185
-Root kind sticky class Class java.lang.Class#63
-Root kind sticky class Class java.lang.Class#200
-Root kind sticky class Class java.lang.Class#241
-Root kind sticky class Class java.lang.Class#105
-Root kind sticky class Class java.lang.Class#378
-Root kind sticky class Class java.lang.Class#298
-Root kind sticky class Class java.lang.Class#289
-Root kind sticky class Class java.lang.Class#279
-Root kind sticky class Class java.lang.Class#194
-Root kind sticky class Class java.lang.Class#230
-Root kind sticky class Class java.lang.Class#403
-Root kind sticky class Class java.lang.Class#55
-Root kind sticky class Class java.lang.Class#329
-Root kind sticky class Class java.lang.Class#157
-Root kind sticky class Class java.lang.Class#46
-Root kind sticky class Class java.lang.Class#90
-Root kind sticky class Class java.lang.Class#284
-Root kind sticky class Class java.lang.Class#173
 Root kind JNI global Class java.lang.String#41
-Root kind sticky class Class java.lang.Class#427
-Root kind sticky class Class java.lang.Class#81
-Root kind sticky class Class java.lang.Class#36
-Root kind sticky class Class java.lang.Class#314
-Root kind sticky class Class java.lang.Class#207
-Root kind sticky class Class java.lang.Class#277
-Root kind sticky class Class java.lang.Class#416
-Root kind sticky class Class java.lang.Class#124
-Root kind sticky class Class java.lang.Class#56
-Root kind sticky class Class java.lang.Class#425
-Root kind sticky class Class java.lang.Class#212
-Root kind sticky class Class java.lang.Class#129
-Root kind sticky class Class java.lang.Class#388
-Root kind sticky class Class java.lang.Class#312
-Root kind sticky class Class java.lang.Class#358
-Root kind sticky class Class java.lang.Class#6
-Root kind sticky class Class java.lang.Class#236
-Root kind sticky class Class java.lang.Class#153
-Root kind sticky class Class java.lang.Class#411
-Root kind sticky class Class java.lang.Class#116
-Root kind sticky class Class java.lang.Class#32
-Root kind sticky class Class java.lang.Class#140
-Root kind sticky class Class java.lang.Class#58
-Root kind sticky class Class java.lang.Class#120
-Root kind sticky class Class java.lang.Class#393
-Root kind sticky class Class java.lang.Class#380
-Root kind sticky class Class java.lang.Class#244
-Root kind sticky class Class java.lang.Class#251
-Root kind sticky class Class java.lang.Class#414
-Root kind sticky class Class java.lang.Class#294
-Root kind sticky class Class java.lang.Class#97
-Root kind sticky class Class java.lang.Class#348
-Root kind sticky class Class java.lang.Class#109
-Root kind sticky class Class java.lang.Class#381
-Root kind sticky class Class java.lang.Class#402
-Root kind sticky class Class java.lang.Class#423
-Root kind sticky class Class java.lang.Class#34
-Root kind sticky class Class java.lang.Class#60
-Root kind sticky class Class java.lang.Class#178
-Root kind sticky class Class java.lang.Class#428
-Root kind sticky class Class java.lang.Class#432
-Root kind sticky class Class java.lang.Class#14
-Root kind sticky class Class java.lang.Class#282
-Root kind sticky class Class java.lang.Class#384
-Root kind sticky class Class java.lang.Class#253
-Root kind sticky class Class java.lang.Class#288
-Root kind sticky class Class java.lang.Class#233
-Root kind sticky class Class java.lang.Class#142
-Root kind sticky class Class java.lang.Class#386
-Root kind sticky class Class java.lang.Class#374
-Root kind sticky class Class java.lang.Class#156
-Root kind sticky class Class java.lang.Class#135
-Root kind sticky class Class java.lang.Class#17
-Root kind sticky class Class java.lang.Class#218
-Root kind sticky class Class java.lang.Class#405
-Root kind sticky class Class java.lang.Class#238
-Root kind sticky class Class java.lang.Class#223
-Root kind sticky class Class java.lang.Class#219
-Root kind sticky class Class java.lang.Class#360
-Root kind sticky class Class java.lang.Class#167
-Root kind sticky class Class java.lang.Class#304
-Root kind sticky class Class java.lang.Class#299
-Root kind sticky class Class java.lang.Class#296
-Root kind sticky class Class java.lang.Class#187
-Root kind sticky class Class java.lang.Class#256
-Root kind sticky class Class java.lang.Class#12
-Root kind sticky class Class java.lang.Class#171
-Root kind sticky class Class java.lang.Class#13
-Root kind sticky class Class java.lang.Class#300
-Root kind sticky class Class java.lang.Class#260
-Root kind sticky class Class java.lang.Class#186
-Root kind sticky class Class java.lang.Class#261
-Root kind sticky class Class java.lang.Class#65
-Root kind sticky class Class java.lang.Class#33
-Root kind monitor used Class java.lang.ref.Reference$Lock#1
-Root kind sticky class Class java.lang.Class#372
-Root kind sticky class Class java.lang.Class#317
-Root kind sticky class Class java.lang.Class#75
-Root kind sticky class Class java.lang.Class#83
-Root kind sticky class Class java.lang.Class#195
-Root kind sticky class Class java.lang.Class#134
-Root kind thread object Class java.lang.ref.Reference$ReferenceHandler#1
-Root kind sticky class Class java.lang.Class#362
-Root kind sticky class Class java.lang.Class#321
-Root kind sticky class Class java.lang.Class#48
-Root kind sticky class Class java.lang.Class#113
-Root kind sticky class Class java.lang.Class#127
-Root kind thread object Class java.lang.Thread#5
-Root kind sticky class Class java.lang.Class#80
-Root kind sticky class Class java.lang.Class#123
-Root kind sticky class Class java.lang.Class#73
-Root kind sticky class Class java.lang.Class#143
-Root kind sticky class Class java.lang.Class#250
-Root kind sticky class Class java.lang.Class#79
-Root kind sticky class Class java.lang.Class#86
-Root kind sticky class Class java.lang.Class#177
-Root kind sticky class Class java.lang.Class#193
-Root kind sticky class Class java.lang.Class#161
+Root kind Java frame Class java.lang.ref.ReferenceQueue#2
 Root kind Java frame Class java.lang.String[]#49
-Root kind sticky class Class java.lang.Class#179
-Root kind sticky class Class java.lang.Class#318
-Root kind sticky class Class java.lang.Class#108
-Root kind sticky class Class java.lang.Class#189
-Root kind sticky class Class java.lang.Class#133
-Root kind sticky class Class java.lang.Class#401
-Root kind sticky class Class java.lang.Class#252
-Root kind sticky class Class java.lang.Class#240
-Root kind sticky class Class java.lang.Class#257
-Root kind sticky class Class java.lang.Class#407
-Root kind sticky class Class java.lang.Class#222
-Root kind sticky class Class java.lang.Class#234
-Root kind sticky class Class java.lang.Class#301
-Root kind sticky class Class java.lang.Class#78
+Root kind monitor used Class java.lang.ref.Reference$Lock#1
+Root kind monitor used Class java.lang.ref.ReferenceQueue$Lock#4
+Root kind sticky class Class java.lang.Class#435
+Root kind sticky class Class java.lang.Class#75
+Root kind sticky class Class java.lang.Class#231
+Root kind sticky class Class java.lang.Class#111
+Root kind sticky class Class java.lang.Class#185
 Root kind sticky class Class java.lang.Class#311
-Root kind sticky class Class java.lang.Class#146
-Root kind sticky class Class java.lang.Class#150
-Root kind sticky class Class java.lang.Class#112
-Root kind sticky class Class java.lang.Class#31
-Root kind sticky class Class java.lang.Class#181
-Root kind sticky class Class java.lang.Class#366
-Root kind sticky class Class java.lang.Class#335
-Root kind sticky class Class java.lang.Class#164
-Root kind sticky class Class java.lang.Class#199
-Root kind sticky class Class java.lang.Class#52
-Root kind sticky class Class java.lang.Class#229
-Root kind sticky class Class java.lang.Class#203
-Root kind sticky class Class java.lang.Class#147
-Root kind sticky class Class java.lang.Class#354
-Root kind sticky class Class java.lang.Class#431
-Root kind sticky class Class java.lang.Class#190
-Root kind sticky class Class java.lang.Class#23
-Root kind sticky class Class java.lang.Class#2
-Root kind sticky class Class java.lang.Class#184
-Root kind sticky class Class java.lang.Class#45
 Root kind sticky class Class java.lang.Class#11
-Root kind sticky class Class java.lang.Class#99
-Root kind sticky class Class java.lang.Class#51
-Root kind sticky class Class java.lang.Class#367
-Root kind sticky class Class java.lang.Class#92
-Root kind sticky class Class java.lang.Class#35
-Root kind sticky class Class java.lang.Class#102
-Root kind sticky class Class java.lang.Class#64
-Root kind sticky class Class java.lang.Class#400
-Root kind sticky class Class java.lang.Class#217
-Root kind sticky class Class java.lang.Class#209
-Root kind sticky class Class java.lang.Class#292
-Root kind sticky class Class java.lang.Class#286
-Root kind sticky class Class java.lang.Class#126
-Root kind sticky class Class java.lang.Class#353
-Root kind sticky class Class java.lang.Class#77
-Root kind sticky class Class java.lang.Class#398
-Root kind sticky class Class java.lang.Class#160
-Root kind sticky class Class java.lang.Class#247
-Root kind sticky class Class java.lang.Class#385
-Root kind sticky class Class java.lang.Class#226
-Root kind sticky class Class java.lang.Class#399
-Root kind sticky class Class java.lang.Class#418
-Root kind sticky class Class java.lang.Class#396
-Root kind sticky class Class java.lang.Class#38
-Root kind sticky class Class java.lang.Class#18
+Root kind sticky class Class java.lang.Class#420
+Root kind sticky class Class java.lang.Class#305
+Root kind sticky class Class java.lang.Class#379
+Root kind sticky class Class java.lang.Class#205
+Root kind sticky class Class java.lang.Class#19
+Root kind sticky class Class java.lang.Class#88
+Root kind sticky class Class java.lang.Class#138
+Root kind sticky class Class java.lang.Class#215
+Root kind sticky class Class java.lang.Class#130
+Root kind sticky class Class java.lang.Class#95
+Root kind sticky class Class java.lang.Class#241
+Root kind sticky class Class java.lang.Class#244
+Root kind sticky class Class java.lang.Class#238
+Root kind sticky class Class java.lang.Class#86
+Root kind sticky class Class java.lang.Class#94
 Root kind sticky class Class java.lang.Class#101
-Root kind sticky class Class java.lang.Class#104
-Root kind sticky class Class java.lang.Class#269
-Root kind thread object Class java.lang.Thread#2
-Root kind sticky class Class java.lang.Class#175
-Root kind sticky class Class java.lang.Class#334
+Root kind sticky class Class java.lang.Class#85
+Root kind sticky class Class java.lang.Class#99
+Root kind sticky class Class java.lang.Class#157
+Root kind sticky class Class java.lang.Class#98
+Root kind sticky class Class java.lang.Class#155
+Root kind sticky class Class java.lang.Class#154
+Root kind sticky class Class java.lang.Class#134
+Root kind sticky class Class java.lang.Class#129
+Root kind sticky class Class java.lang.Class#149
+Root kind sticky class Class java.lang.Class#152
+Root kind sticky class Class java.lang.Class#160
+Root kind sticky class Class java.lang.Class#148
+Root kind sticky class Class java.lang.Class#147
+Root kind sticky class Class java.lang.Class#167
+Root kind sticky class Class java.lang.Class#162
+Root kind sticky class Class java.lang.Class#166
+Root kind sticky class Class java.lang.Class#150
+Root kind sticky class Class java.lang.Class#116
+Root kind sticky class Class java.lang.Class#115
+Root kind sticky class Class java.lang.Class#113
+Root kind sticky class Class java.lang.Class#120
+Root kind sticky class Class java.lang.Class#119
+Root kind sticky class Class java.lang.Class#118
+Root kind sticky class Class java.lang.Class#350
+Root kind sticky class Class java.lang.Class#92
+Root kind sticky class Class java.lang.Class#354
+Root kind sticky class Class java.lang.Class#90
+Root kind sticky class Class java.lang.Class#257
+Root kind sticky class Class java.lang.Class#371
+Root kind sticky class Class java.lang.Class#143
+Root kind sticky class Class java.lang.Class#142
+Root kind sticky class Class java.lang.Class#124
+Root kind sticky class Class java.lang.Class#381
+Root kind sticky class Class java.lang.Class#127
+Root kind sticky class Class java.lang.Class#123
+Root kind sticky class Class java.lang.Class#121
+Root kind sticky class Class java.lang.Class#186
+Root kind sticky class Class java.lang.Class#385
+Root kind sticky class Class java.lang.Class#188
+Root kind sticky class Class java.lang.Class#386
+Root kind sticky class Class java.lang.Class#187
+Root kind sticky class Class java.lang.Class#190
+Root kind sticky class Class java.lang.Class#193
+Root kind sticky class Class java.lang.Class#384
+Root kind sticky class Class java.lang.Class#388
 Root kind sticky class Class java.lang.Class#387
-Root kind sticky class Class java.lang.Class#306
-Root kind sticky class Class java.lang.Class#265
-Root kind sticky class Class java.lang.Class#345
+Root kind sticky class Class java.lang.Class#192
+Root kind sticky class Class java.lang.Class#391
+Root kind sticky class Class java.lang.Class#252
+Root kind sticky class Class java.lang.Class#256
+Root kind sticky class Class java.lang.Class#389
 Root kind sticky class Class java.lang.Class#392
+Root kind sticky class Class java.lang.Class#141
+Root kind sticky class Class java.lang.Class#140
+Root kind sticky class Class java.lang.Class#393
+Root kind sticky class Class java.lang.Class#214
+Root kind sticky class Class java.lang.Class#126
+Root kind sticky class Class java.lang.Class#164
+Root kind sticky class Class java.lang.Class#177
+Root kind sticky class Class java.lang.Class#395
+Root kind sticky class Class java.lang.Class#176
+Root kind sticky class Class java.lang.Class#105
+Root kind sticky class Class java.lang.Class#104
+Root kind sticky class Class java.lang.Class#401
+Root kind sticky class Class java.lang.Class#103
+Root kind sticky class Class java.lang.Class#102
+Root kind sticky class Class java.lang.Class#109
+Root kind sticky class Class java.lang.Class#108
+Root kind sticky class Class java.lang.Class#107
+Root kind sticky class Class java.lang.Class#106
+Root kind sticky class Class java.lang.Class#153
+Root kind sticky class Class java.lang.Class#146
+Root kind sticky class Class java.lang.Class#212
+Root kind sticky class Class java.lang.Class#223
+Root kind sticky class Class java.lang.Class#220
+Root kind sticky class Class java.lang.Class#405
+Root kind sticky class Class java.lang.Class#322
+Root kind sticky class Class java.lang.Class#406
+Root kind sticky class Class java.lang.Class#309
+Root kind sticky class Class java.lang.Class#408
+Root kind sticky class Class java.lang.Class#356
+Root kind sticky class Class java.lang.Class#344
+Root kind sticky class Class java.lang.Class#410
+Root kind sticky class Class java.lang.Class#409
+Root kind sticky class Class java.lang.Class#251
+Root kind sticky class Class java.lang.Class#236
+Root kind sticky class Class java.lang.Class#254
+Root kind sticky class Class java.lang.Class#411
+Root kind sticky class Class java.lang.Class#248
+Root kind sticky class Class java.lang.Class#380
+Root kind sticky class Class java.lang.Class#413
+Root kind sticky class Class java.lang.Class#259
+Root kind sticky class Class java.lang.Class#281
+Root kind sticky class Class java.lang.Class#258
+Root kind sticky class Class java.lang.Class#343
+Root kind sticky class Class java.lang.Class#342
+Root kind sticky class Class java.lang.Class#347
+Root kind sticky class Class java.lang.Class#280
+Root kind sticky class Class java.lang.Class#370
+Root kind sticky class Class java.lang.Class#250
+Root kind sticky class Class java.lang.Class#374
+Root kind sticky class Class java.lang.Class#372
 Root kind sticky class Class java.lang.Class#419
-Root kind sticky class Class java.lang.Class#262
+Root kind sticky class Class java.lang.Class#425
+Root kind sticky class Class java.lang.Class#428
+Root kind sticky class Class java.lang.Class#426
+Root kind sticky class Class java.lang.Class#432
+Root kind sticky class Class java.lang.Class#429
+Root kind sticky class Class java.lang.Class#431
+Root kind sticky class Class java.lang.Class#430
+Root kind sticky class Class java.lang.Class#353
+Root kind sticky class Class java.lang.Class#219
+Root kind sticky class Class java.lang.Class#171
+Root kind sticky class Class java.lang.Class#1
+Root kind sticky class Class java.lang.Class#290
+Root kind sticky class Class java.lang.Class#218
+Root kind sticky class Class java.lang.Class#352
+Root kind sticky class Class java.lang.Class#433
+Root kind sticky class Class java.lang.Class#5
+Root kind sticky class Class java.lang.Class#423
+Root kind sticky class Class java.lang.Class#424
+Root kind sticky class Class java.lang.Class#278
+Root kind sticky class Class java.lang.Class#10
+Root kind sticky class Class java.lang.Class#9
+Root kind sticky class Class java.lang.Class#180
+Root kind sticky class Class java.lang.Class#189
+Root kind sticky class Class java.lang.Class#369
+Root kind sticky class Class java.lang.Class#253
+Root kind sticky class Class java.lang.Class#63
+Root kind sticky class Class java.lang.Class#38
+Root kind sticky class Class java.lang.Class#36
+Root kind sticky class Class java.lang.Class#35
+Root kind sticky class Class java.lang.Class#37
+Root kind sticky class Class java.lang.Class#39
+Root kind sticky class Class java.lang.Class#8
+Root kind sticky class Class java.lang.Class#64
+Root kind sticky class Class java.lang.Class#421
+Root kind sticky class Class java.lang.Class#65
+Root kind sticky class Class java.lang.Class#6
+Root kind sticky class Class java.lang.Class#68
+Root kind sticky class Class java.lang.Class#66
+Root kind sticky class Class java.lang.Class#67
+Root kind sticky class Class java.lang.Class#313
+Root kind sticky class Class java.lang.Class#70
+Root kind sticky class Class java.lang.Class#69
+Root kind sticky class Class java.lang.Class#137
+Root kind sticky class Class java.lang.Class#304
+Root kind sticky class Class java.lang.Class#71
+Root kind sticky class Class java.lang.Class#133
+Root kind sticky class Class java.lang.Class#303
+Root kind sticky class Class java.lang.Class#72
+Root kind sticky class Class java.lang.Class#300
+Root kind sticky class Class java.lang.Class#73
+Root kind sticky class Class java.lang.Class#74
+Root kind sticky class Class java.lang.Class#233
+Root kind sticky class Class java.lang.Class#243
+Root kind sticky class Class java.lang.Class#415
+Root kind sticky class Class java.lang.Class#76
+Root kind sticky class Class java.lang.Class#77
+Root kind sticky class Class java.lang.Class#306
+Root kind sticky class Class java.lang.Class#302
+Root kind sticky class Class java.lang.Class#78
+Root kind sticky class Class java.lang.Class#365
+Root kind sticky class Class java.lang.Class#79
+Root kind sticky class Class java.lang.Class#427
+Root kind sticky class Class java.lang.Class#422
+Root kind sticky class Class java.lang.Class#81
+Root kind sticky class Class java.lang.Class#80
+Root kind sticky class Class java.lang.Class#363
+Root kind sticky class Class java.lang.Class#308
+Root kind sticky class Class java.lang.Class#270
+Root kind sticky class Class java.lang.Class#112
+Root kind sticky class Class java.lang.Class#170
+Root kind sticky class Class java.lang.Class#172
+Root kind sticky class Class java.lang.Class#175
+Root kind sticky class Class java.lang.Class#174
+Root kind sticky class Class java.lang.Class#179
+Root kind sticky class Class java.lang.Class#210
+Root kind sticky class Class java.lang.Class#269
+Root kind sticky class Class java.lang.Class#4
+Root kind sticky class Class java.lang.Class#173
+Root kind sticky class Class java.lang.Class#97
+Root kind sticky class Class java.lang.Class#310
+Root kind sticky class Class java.lang.Class#182
+Root kind sticky class Class java.lang.Class#181
+Root kind sticky class Class java.lang.Class#145
+Root kind sticky class Class java.lang.Class#183
+Root kind sticky class Class java.lang.Class#3
+Root kind sticky class Class java.lang.Class#383
+Root kind sticky class Class java.lang.Class#307
+Root kind sticky class Class java.lang.Class#312
+Root kind sticky class Class java.lang.Class#144
+Root kind sticky class Class java.lang.Class#194
+Root kind sticky class Class java.lang.Class#286
+Root kind sticky class Class java.lang.Class#199
+Root kind sticky class Class java.lang.Class#198
+Root kind sticky class Class java.lang.Class#201
+Root kind sticky class Class java.lang.Class#202
+Root kind sticky class Class java.lang.Class#196
+Root kind sticky class Class java.lang.Class#329
+Root kind sticky class Class java.lang.Class#83
+Root kind sticky class Class java.lang.Class#217
+Root kind sticky class Class java.lang.Class#211
+Root kind sticky class Class java.lang.Class#222
+Root kind sticky class Class java.lang.Class#132
+Root kind sticky class Class java.lang.Class#136
+Root kind sticky class Class java.lang.Class#226
+Root kind sticky class Class java.lang.Class#225
+Root kind sticky class Class java.lang.Class#227
+Root kind sticky class Class java.lang.Class#247
+Root kind sticky class Class java.lang.Class#240
+Root kind sticky class Class java.lang.Class#197
+Root kind sticky class Class java.lang.Class#228
+Root kind sticky class Class java.lang.Class#404
 Root kind sticky class Class java.lang.Class#159
-Root kind sticky class Class java.lang.Class#169
+Root kind sticky class Class java.lang.Class#161
+Root kind sticky class Class java.lang.Class#273
+Root kind sticky class Class java.lang.Class#221
+Root kind sticky class Class java.lang.Class#230
+Root kind sticky class Class java.lang.Class#262
+Root kind sticky class Class java.lang.Class#282
+Root kind sticky class Class java.lang.Class#284
+Root kind sticky class Class java.lang.Class#266
+Root kind sticky class Class java.lang.Class#178
+Root kind sticky class Class java.lang.Class#289
+Root kind sticky class Class java.lang.Class#292
+Root kind sticky class Class java.lang.Class#291
+Root kind sticky class Class java.lang.Class#298
+Root kind sticky class Class java.lang.Class#263
+Root kind sticky class Class java.lang.Class#400
+Root kind sticky class Class java.lang.Class#261
+Root kind sticky class Class java.lang.Class#200
+Root kind sticky class Class java.lang.Class#314
+Root kind sticky class Class java.lang.Class#232
+Root kind sticky class Class java.lang.Class#417
+Root kind sticky class Class java.lang.Class#416
+Root kind sticky class Class java.lang.Class#414
+Root kind sticky class Class java.lang.Class#249
+Root kind sticky class Class java.lang.Class#288
+Root kind sticky class Class java.lang.Class#319
+Root kind sticky class Class java.lang.Class#195
+Root kind sticky class Class java.lang.Class#327
+Root kind sticky class Class java.lang.Class#272
+Root kind sticky class Class java.lang.Class#204
+Root kind sticky class Class java.lang.Class#316
+Root kind sticky class Class java.lang.Class#318
+Root kind sticky class Class java.lang.Class#317
+Root kind sticky class Class java.lang.Class#156
+Root kind sticky class Class java.lang.Class#287
+Root kind sticky class Class java.lang.Class#345
+Root kind sticky class Class java.lang.Class#277
+Root kind sticky class Class java.lang.Class#320
+Root kind sticky class Class java.lang.Class#246
 Root kind sticky class Class java.lang.Class#206
+Root kind sticky class Class java.lang.Class#367
+Root kind sticky class Class java.lang.Class#315
+Root kind sticky class Class java.lang.Class#357
+Root kind sticky class Class java.lang.Class#358
+Root kind sticky class Class java.lang.Class#360
+Root kind sticky class Class java.lang.Class#203
+Root kind sticky class Class java.lang.Class#375
+Root kind sticky class Class java.lang.Class#325
+Root kind sticky class Class java.lang.Class#377
+Root kind sticky class Class java.lang.Class#378
+Root kind sticky class Class java.lang.Class#376
+Root kind sticky class Class java.lang.Class#348
+Root kind sticky class Class java.lang.Class#349
+Root kind sticky class Class java.lang.Class#407
+Root kind sticky class Class java.lang.Class#323
+Root kind sticky class Class java.lang.Class#275
+Root kind sticky class Class java.lang.Class#110
+Root kind sticky class Class java.lang.Class#390
+Root kind sticky class Class java.lang.Class#151
+Root kind sticky class Class java.lang.Class#366
+Root kind sticky class Class java.lang.Class#234
+Root kind sticky class Class java.lang.Class#224
+Root kind sticky class Class java.lang.Class#29
+Root kind sticky class Class java.lang.Class#28
+Root kind sticky class Class java.lang.Class#25
+Root kind sticky class Class java.lang.Class#21
+Root kind sticky class Class java.lang.Class#62
+Root kind sticky class Class java.lang.Class#42
+Root kind sticky class Class java.lang.Class#51
+Root kind sticky class Class java.lang.Class#58
+Root kind sticky class Class java.lang.Class#55
+Root kind sticky class Class java.lang.Class#20
+Root kind sticky class Class java.lang.Class#61
+Root kind sticky class Class java.lang.Class#57
+Root kind sticky class Class java.lang.Class#54
+Root kind sticky class Class java.lang.Class#56
+Root kind sticky class Class java.lang.Class#60
+Root kind sticky class Class java.lang.Class#59
+Root kind sticky class Class java.lang.Class#41
+Root kind sticky class Class java.lang.Class#40
+Root kind sticky class Class java.lang.Class#44
+Root kind sticky class Class java.lang.Class#43
+Root kind sticky class Class java.lang.Class#46
+Root kind sticky class Class java.lang.Class#45
+Root kind sticky class Class java.lang.Class#48
+Root kind sticky class Class java.lang.Class#47
+Root kind sticky class Class java.lang.Class#50
+Root kind sticky class Class java.lang.Class#49
+Root kind sticky class Class java.lang.Class#53
+Root kind sticky class Class java.lang.Class#52
+Root kind sticky class Class java.lang.Class#22
+Root kind sticky class Class java.lang.Class#32
+Root kind sticky class Class java.lang.Class#15
+Root kind sticky class Class java.lang.Class#24
+Root kind sticky class Class java.lang.Class#33
+Root kind sticky class Class java.lang.Class#34
+Root kind sticky class Class java.lang.Class#17
+Root kind sticky class Class java.lang.Class#16
+Root kind sticky class Class java.lang.Class#12
+Root kind sticky class Class java.lang.Class#337
+Root kind sticky class Class java.lang.Class#335
 Root kind sticky class Class java.lang.Class#27
+Root kind sticky class Class java.lang.Class#23
+Root kind sticky class Class java.lang.Class#31
+Root kind sticky class Class java.lang.Class#13
+Root kind sticky class Class java.lang.Class#14
+Root kind sticky class Class java.lang.Class#18
+Root kind sticky class Class java.lang.Class#418
+Root kind sticky class Class java.lang.Class#260
+Root kind sticky class Class java.lang.Class#2
+Root kind sticky class Class java.lang.Class#169
+Root kind sticky class Class java.lang.Class#396
+Root kind sticky class Class java.lang.Class#398
+Root kind sticky class Class java.lang.Class#399
+Root kind sticky class Class java.lang.Class#82
+Root kind sticky class Class java.lang.Class#397
+Root kind sticky class Class java.lang.Class#403
+Root kind sticky class Class java.lang.Class#402
+Root kind sticky class Class java.lang.Class#191
+Root kind sticky class Class java.lang.Class#265
+Root kind sticky class Class java.lang.Class#268
+Root kind sticky class Class java.lang.Class#184
+Root kind sticky class Class java.lang.Class#338
+Root kind sticky class Class java.lang.Class#295
+Root kind sticky class Class java.lang.Class#332
+Root kind sticky class Class java.lang.Class#84
+Root kind sticky class Class java.lang.Class#294
+Root kind sticky class Class java.lang.Class#279
+Root kind sticky class Class java.lang.Class#209
+Root kind sticky class Class java.lang.Class#135
+Root kind sticky class Class java.lang.Class#208
+Root kind sticky class Class java.lang.Class#297
+Root kind sticky class Class java.lang.Class#207
+Root kind sticky class Class java.lang.Class#299
+Root kind sticky class Class java.lang.Class#293
+Root kind sticky class Class java.lang.Class#229
+Root kind sticky class Class java.lang.Class#334
+Root kind sticky class Class java.lang.Class#333
+Root kind sticky class Class java.lang.Class#336
+Root kind sticky class Class java.lang.Class#235
+Root kind sticky class Class java.lang.Class#296
+Root kind sticky class Class java.lang.Class#328
+Root kind sticky class Class java.lang.Class#326
+Root kind sticky class Class java.lang.Class#331
+Root kind sticky class Class java.lang.Class#330
+Root kind sticky class Class java.lang.Class#340
+Root kind sticky class Class java.lang.Class#341
+Root kind sticky class Class java.lang.Class#346
+Root kind sticky class Class java.lang.Class#394
+Root kind sticky class Class java.lang.Class#359
+Root kind sticky class Class java.lang.Class#361
+Root kind sticky class Class java.lang.Class#339
+Root kind sticky class Class java.lang.Class#362
+Root kind sticky class Class java.lang.Class#364
+Root kind sticky class Class java.lang.Class#368
+Root kind sticky class Class java.lang.Class#321
+Root kind sticky class Class java.lang.Class#301
+Root kind thread object Class java.lang.Thread#1
+Root kind thread object Class java.lang.ref.Reference$ReferenceHandler#1
+Root kind thread object Class java.lang.ref.Finalizer$FinalizerThread#1
+Root kind thread object Class java.lang.Thread#2
+Root kind thread object Class java.lang.Thread#5

@@ -44,8 +44,8 @@ package org.netbeans.modules.kenai.ui;
 
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
-import org.netbeans.modules.kenai.ui.spi.Dashboard;
-import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
+import org.netbeans.modules.kenai.ui.api.KenaiServer;
+import org.netbeans.modules.team.ui.spi.ProjectHandle;
 
 /**
  *
@@ -60,6 +60,6 @@ public class RemoveProjectAction extends AbstractAction {
     }
 
     public void actionPerformed(ActionEvent arg0) {
-        Dashboard.getDefault().removeProject(prj);
+        KenaiServer.getDashboard(prj).removeProject(prj);
     }
 }

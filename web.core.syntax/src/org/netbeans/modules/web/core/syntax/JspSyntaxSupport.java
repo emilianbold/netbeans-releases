@@ -775,7 +775,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport implements FileChangeList
     private static void initHelp(){
         if (helpMap == null){
             String url="";
-            File f = InstalledFileLocator.getDefault().locate("docs/jstl11-doc.zip", null, false); //NoI18N
+            File f = InstalledFileLocator.getDefault().locate("docs/jstl11-doc.zip", "org.netbeans.modules.web.core.syntax", false); //NoI18N
             if (f != null){
                 try {
                     URL urll = f.toURL();
@@ -804,7 +804,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport implements FileChangeList
             helpMap.put("http://java.sun.com/jsp/jstl/xml", url + "x/");
             helpMap.put("http://java.sun.com/jstl/xml", url + "x/");
             helpMap.put("http://java.sun.com/jstl/xml_rt", url + "x_rt/");
-            f = InstalledFileLocator.getDefault().locate("docs/jsf12-tlddoc.zip", null, false); //NoI18N
+            f = InstalledFileLocator.getDefault().locate("docs/jsf12-tlddoc.zip", "org.netbeans.modules.web.core.syntax", false); //NoI18N
             if (f != null){
                 try {
                     URL urll = f.toURL();
@@ -817,7 +817,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport implements FileChangeList
                     // nothing to do
                 }
             }
-            f = InstalledFileLocator.getDefault().locate("docs/struts-tags.zip", null, false);
+            f = InstalledFileLocator.getDefault().locate("docs/struts-tags.zip", "org.netbeans.modules.web.core.syntax", false);
             if (f != null){
                 try {
                     URL urll = f.toURL();
@@ -914,7 +914,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport implements FileChangeList
 
         if (standardJspTagDatas == null) {
             final String helpFiles = "docs/syntaxref20.zip"; //NoI18N
-            File f = InstalledFileLocator.getDefault().locate(helpFiles, null, true); //NoI18N
+            File f = InstalledFileLocator.getDefault().locate(helpFiles, "org.netbeans.modules.web.core.syntax", true); //NoI18N
             if (f != null){
                 try {
                     URL urll = f.toURL();

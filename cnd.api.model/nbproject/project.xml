@@ -40,12 +40,14 @@
             </module-dependencies>
             <friend-packages>
                 <friend>com.microchip.mplab.nbide.csmbridge</friend>
+                <friend>com.oracle.tools.ide.projectless.impl</friend>
                 <friend>com.sun.tools.cnd.accessor</friend>
                 <friend>com.sun.tools.discovery</friend>
                 <friend>com.sun.tools.dwarf.lwmodel</friend>
                 <friend>com.sun.tools.ide.analysis.analytics</friend>
                 <friend>com.sun.tools.ide.analysis.common</friend>
                 <friend>com.sun.tools.ide.analysis.discover</friend>
+                <friend>com.sun.tools.ide.analysis.parfait</friend>
                 <friend>com.sun.tools.ide.analysis.previse</friend>
                 <friend>com.sun.tools.ide.analysis.tha</friend>
                 <friend>com.sun.tools.ide.remote.projectui</friend>

@@ -56,6 +56,8 @@ import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.project.NativeProjectItemsListener;
+import org.netbeans.modules.cnd.debug.CndTraceFlags;
+import org.netbeans.modules.cnd.debug.DebugUtils;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.MIMENames;
@@ -301,8 +303,9 @@ public final class NativeProjectProvider {
 	    synchronized( listenersLock ) {
 		listenersCopy = new ArrayList<NativeProjectItemsListener>(listeners);
 	    }
+            List<NativeFileItem> list = Collections.singletonList(item);            
 	    for( NativeProjectItemsListener listener : listenersCopy ) {
-		listener.filePropertiesChanged(item);
+		listener.filesPropertiesChanged(list);
 	    }
         }
 
@@ -315,8 +318,9 @@ public final class NativeProjectProvider {
 	    synchronized( listenersLock ) {
 		listenersCopy = new ArrayList<NativeProjectItemsListener>(listeners);
 	    }
+            List<NativeFileItem> list = Collections.singletonList(item);
 	    for( NativeProjectItemsListener listener : listenersCopy ) {
-		listener.fileAdded(item);
+		listener.filesAdded(list);
 	    }
         }
 
@@ -478,7 +482,11 @@ public final class NativeProjectProvider {
 
         @Override
         public NativeFileItem.LanguageFlavor getLanguageFlavor() {
-            return NativeFileItem.LanguageFlavor.UNKNOWN;
+            if(DebugUtils.getBoolean("cnd.language.flavor.cpp11", false)) {
+                return NativeFileItem.LanguageFlavor.CPP11;
+            } else {
+                return NativeFileItem.LanguageFlavor.UNKNOWN;
+            }
         }
 
         @Override

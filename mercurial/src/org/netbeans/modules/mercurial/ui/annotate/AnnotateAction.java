@@ -147,16 +147,22 @@ public class AnnotateAction extends ContextAction {
                 return;
             }
             final JEditorPane currentPane = panes[0];
-            showAnnotations(currentPane, file, null);
+            showAnnotations(currentPane, file, null, true);
         }
     }
 
     public static void showAnnotations(JEditorPane currentPane, final File file, final String revision) {
+        showAnnotations(currentPane, file, revision, true);
+    }
+    
+    static void showAnnotations(JEditorPane currentPane, final File file, final String revision, boolean requestActive) {
         if (currentPane == null || file == null) {
             return;
         }
-        TopComponent tc = (TopComponent) SwingUtilities.getAncestorOfClass(TopComponent.class, currentPane);
-        tc.requestActive();
+        if (requestActive) {
+            TopComponent tc = (TopComponent) SwingUtilities.getAncestorOfClass(TopComponent.class, currentPane);
+            tc.requestActive();
+        }
 
         final AnnotationBar ab = AnnotationBarManager.showAnnotationBar(currentPane);
         ab.setAnnotationMessage(NbBundle.getMessage(AnnotateAction.class, "CTL_AnnotationSubstitute")); // NOI18N;

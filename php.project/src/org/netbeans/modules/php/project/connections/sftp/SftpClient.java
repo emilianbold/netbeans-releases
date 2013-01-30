@@ -104,6 +104,7 @@ public class SftpClient implements RemoteClient {
         }
     }
 
+    @NbBundle.Messages("SftpConfiguration.bug.knownHosts=<html><b>Error in SFTP library detected:</b><br><br>Your Known Hosts file is too big and will not be used.")
     private void init() throws RemoteException {
         if (sftpClient != null && sftpClient.isConnected()) {
             LOGGER.log(Level.FINE, "SFTP client already created and connected");
@@ -136,7 +137,13 @@ public class SftpClient implements RemoteClient {
             JSch.setLogger(sftpLogger);
             sftpSession = jsch.getSession(username, host, port);
             if (StringUtils.hasText(knownHostsFile)) {
-                jsch.setKnownHosts(knownHostsFile);
+                try {
+                    jsch.setKnownHosts(knownHostsFile);
+                } catch (JSchException ex) {
+                    // #220328
+                    LOGGER.log(Level.INFO, "Error in JSCH library", ex);
+                    DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(Bundle.SftpConfiguration_bug_knownHosts(), NotifyDescriptor.ERROR_MESSAGE));
+                }
             }
             if (StringUtils.hasText(identityFile)) {
                 jsch.addIdentity(identityFile);

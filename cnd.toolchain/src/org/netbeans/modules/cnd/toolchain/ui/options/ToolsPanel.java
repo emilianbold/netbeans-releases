@@ -58,6 +58,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.DefaultListCellRenderer;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -76,22 +77,24 @@ import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelModel;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelSupport;
 import org.netbeans.modules.cnd.toolchain.compilerset.CompilerSetImpl;
 import org.netbeans.modules.cnd.toolchain.compilerset.CompilerSetManagerImpl;
+import org.netbeans.modules.cnd.utils.ui.CndUIConstants;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
-import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 
 /** Display the "Tools Default" panel */
+@OptionsPanelController.Keywords(keywords={"#ToolsPanelKeywords"}, location=CndUIConstants.TOOLS_OPTIONS_CND_CATEGORY_ID, tabTitle= "#TAB_ToolsTab")
 public final class ToolsPanel extends JPanel implements ActionListener,
         ListSelectionListener, ItemListener {
 
@@ -111,17 +114,20 @@ public final class ToolsPanel extends JPanel implements ActionListener,
     private ValidState valid = ValidState.UNKNOWN;
     private ToolsPanelModel model = null;
     private boolean customizeDebugger;
-    private ExecutionEnvironment execEnv;
-    private CompilerSetManagerImpl csm;
+    private volatile ExecutionEnvironment execEnv;
+    private volatile CompilerSetManagerImpl csm;
     private CompilerSet currentCompilerSet;
-    private ToolsCacheManagerImpl tcm = (ToolsCacheManagerImpl) ToolsPanelSupport.getToolsCacheManager();
+    private final ToolsCacheManagerImpl tcm = (ToolsCacheManagerImpl) ToolsPanelSupport.getToolsCacheManager();
     private static final Logger log = Logger.getLogger("cnd.remote.logger"); // NOI18N
     private static final RequestProcessor RP = new RequestProcessor(ToolsPanel.class.getName(), 1);
+    //See Bug #215447
+    private static final boolean ENABLED_EDIT_HOST = true;
 
     /** Creates new form ToolsPanel */
     public ToolsPanel(String helpContext) {
         initComponents();
         setName("TAB_ToolsTab"); // NOI18N (used as a pattern...)
+        btEditDevHost.setVisible(ENABLED_EDIT_HOST);
         changed = false;
         currentCompilerSet = null;
         execEnv = ServerList.getDefaultRecord().getExecutionEnvironment();
@@ -161,7 +167,8 @@ public final class ToolsPanel extends JPanel implements ActionListener,
         } else {
             this.cbDevHost.setEnabled(false);
         }
-        btEditDevHost.setEnabled(show);
+        btEditDevHost.setEnabled(ENABLED_EDIT_HOST && show);
+        btEditDevHost.setVisible(ENABLED_EDIT_HOST);
         buttomPanel.setVisible(show);
         buttonPanel.setVisible(show);
         toolCollectionPanel.setVisible(show);
@@ -202,8 +209,15 @@ public final class ToolsPanel extends JPanel implements ActionListener,
 
         cbDevHost.addItemListener(this);
         cbDevHost.setEnabled(model.getEnableDevelopmentHostChange());
-        btEditDevHost.setEnabled(model.getEnableDevelopmentHostChange());
-        execEnv = getSelectedRecord().getExecutionEnvironment();
+        btEditDevHost.setEnabled(ENABLED_EDIT_HOST && model.getEnableDevelopmentHostChange());
+        btEditDevHost.setVisible(ENABLED_EDIT_HOST);
+        final ExecutionEnvironment anExecEnv = getSelectedRecord().getExecutionEnvironment();
+        if (!anExecEnv.equals(execEnv)) {
+            execEnv = anExecEnv;
+            model.setSelectedDevelopmentHost(execEnv);
+            update(true, null, null);
+            return;
+        }
         btVersions.setEnabled(false);
         initCustomizableDebugger();
 
@@ -929,7 +943,7 @@ public final class ToolsPanel extends JPanel implements ActionListener,
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 6);
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 0);
         add(cbDevHost, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(btEditDevHost, org.openide.util.NbBundle.getMessage(ToolsPanel.class, "Lbl_AddDevHost")); // NOI18N
@@ -937,7 +951,7 @@ public final class ToolsPanel extends JPanel implements ActionListener,
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
         add(btEditDevHost, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -980,23 +994,16 @@ private void btVersionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
     RP.post(new Runnable() {
 
-            @Override
+        @Override
         public void run() {
-            if (!ConnectionManager.getInstance().isConnectedTo(getSelectedRecord().getExecutionEnvironment())) {
-                try {
-                    ConnectionManager.getInstance().connectTo(getSelectedRecord().getExecutionEnvironment());
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                } catch (CancellationException ex) {
-                    // don't report CancellationException
-                }
-            }
+            final ExecutionEnvironment env = getSelectedRecord().getExecutionEnvironment();
             String versions = null;
-            if (ConnectionManager.getInstance().isConnectedTo(getSelectedRecord().getExecutionEnvironment())) {
+            if (ConnectionManager.getInstance().connect(env)) {
                 versions = getToolCollectionPanel().getVersion(set);
             }
             SwingUtilities.invokeLater(new Runnable() {
-                    @Override
+
+                @Override
                 public void run() {
                     btVersions.setEnabled(true);
                     setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
@@ -1024,13 +1031,31 @@ private void btVersionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
 
         @Override
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-            Component comp = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+            JLabel label = (JLabel)super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
             CompilerSetImpl cs = (CompilerSetImpl) value;
-            if (cs != null && cs.isDefault()) {
-                comp.setFont(comp.getFont().deriveFont(Font.BOLD));
+            boolean showToolTip = false;
+            if (!cs.isAutoGenerated()) {
+                label.setIcon(getUserDefinedIcon());
+                showToolTip = true;
             }
-            return comp;
+            if (cs.isDefault()) {
+                label.setFont(label.getFont().deriveFont(Font.BOLD));
+            }
+            if (showToolTip) {
+                String message = NbBundle.getMessage(ToolsPanel.class, "UserAddedToolCollection.tooltip.text", //NOI18N
+                        cs.getName());
+                label.setToolTipText(message);
+            } else {
+                label.setToolTipText(null);
+            }
+            label.setText(cs.getName());
+            return label;
         }
+        
+        private ImageIcon getUserDefinedIcon() {
+            return ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/toolchain/ui/compiler/key.png", false); //NOI18N
+        }
+        
     }
 
     private class MyDevHostListCellRenderer extends DefaultListCellRenderer {
@@ -1086,16 +1111,15 @@ private void btRestoreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
     Runnable longWork = new Runnable() {
         @Override
         public void run() {
-            CompilerSetManagerImpl newCsm = null;
             try {
                 HostInfoUtils.updateHostInfo(execEnv);
-                newCsm = tcm.restoreCompilerSets(csm);
+                CompilerSetManagerImpl newCsm = tcm.restoreCompilerSets(csm);
                 if (newCsm != null) {
                     csm = newCsm;
                     newCsmCreated.set(true);
                 }
             } catch (IOException ex) {
-                ex.printStackTrace();
+                ex.printStackTrace(System.err);
             } catch (InterruptedException ex) {
                 // don't report InterruptedException
             } finally {

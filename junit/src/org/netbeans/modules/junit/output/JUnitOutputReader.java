@@ -145,6 +145,12 @@ final class JUnitOutputReader {
     private State state = State.DEFAULT;
     private String testSuite;
 
+    private final String OUTPUT = "------------- Standard Output ---------------";//NOI18N
+    private final String ERROR = "------------- Standard Error -----------------";//NOI18N
+    private final String END = "------------- ---------------- ---------------";//NOI18N
+    private boolean outputStarted = false;
+    private boolean errorStarted = false;
+
     /** Creates a new instance of JUnitOutputReader */
     JUnitOutputReader(final AntSession session,
                       final AntSessionInfo sessionInfo,
@@ -306,6 +312,9 @@ final class JUnitOutputReader {
             // previous testsuite finished abnormally and state was not set correctly
             state = State.SUITE_FINISHED;
         }
+
+	handleMessage(msg, event.getLogLevel());
+
         switch (state){
             case TESTCASE_ISSUE:
             case SUITE_FINISHED:{
@@ -368,13 +377,13 @@ final class JUnitOutputReader {
                 }
             }
             case TESTCASE_STARTED: {
-                int posTestListener = msg.indexOf(TEST_LISTENER_PREFIX);
-                if (posTestListener != -1) {
-                    displayOutput(msg.substring(0, posTestListener), event.getLogLevel() == AntEvent.LOG_WARN);
-                    verboseMessageLogged(msg.substring(posTestListener));
-                } else {
-                    displayOutput(msg, event.getLogLevel() == AntEvent.LOG_WARN);
-                }
+		int posTestListener = msg.indexOf(TEST_LISTENER_PREFIX);
+		if (posTestListener != -1) {
+		    displayOutput(msg.substring(0, posTestListener), event.getLogLevel() == AntEvent.LOG_WARN);
+		    verboseMessageLogged(msg.substring(posTestListener));
+		} else {
+		    displayOutput(msg, event.getLogLevel() == AntEvent.LOG_WARN);
+		}
                 break;
             }
         }
@@ -617,7 +626,11 @@ final class JUnitOutputReader {
             switch(state){
                 case SUITE_STARTED:
                 case TESTCASE_STARTED:
-                    report.setAborted(true);
+		    if (report.getTotalTests() == report.getPassed() + report.getErrors() + report.getFailures()) {
+			Logger.getLogger(JUnitOutputReader.class.getName()).log(Level.WARNING, "Ensure that the output-stream is not closed.");
+		    } else {
+			report.setAborted(true);
+		    }
                 default:
                     manager.displayReport(testSession, report, true);
             }
@@ -698,19 +711,43 @@ final class JUnitOutputReader {
     }
 
     //------------------ UPDATE OF DISPLAY -------------------
+
+    private void handleMessage(String msg, int logLevel) {
+	if (msg.equals(END)) {
+	    if (outputStarted) {
+		outputStarted = false;
+	    } else if (errorStarted) {
+		errorStarted = false;
+	    }
+	}
+	if (outputStarted || errorStarted) {
+	    if (logLevel == AntEvent.LOG_INFO) {
+		displayOutput(msg, outputStarted ? false : true);
+	    }
+	}
+	if (msg.equals(OUTPUT)) {
+	    outputStarted = true;
+	}
+	if (msg.equals(ERROR)) {
+	    errorStarted = true;
+	}
+    }
     
     /**
      */
     private void displayOutput(final String text, final boolean error) {
-        manager.displayOutput(testSession,text, error);
-        if (state == State.TESTCASE_STARTED){
-            List<String> addedLines = new ArrayList<String>();
-            addedLines.add(text);
-            Testcase tc = testSession.getCurrentTestCase();
-            if (tc != null){
-                tc.addOutputLines(addedLines);
-            }
-        }
+	if (outputStarted || errorStarted) {
+	    manager.displayOutput(testSession, text, error);
+	} else {
+	    if (!error) {
+		List<String> addedLines = new ArrayList<String>();
+		addedLines.add(text);
+		Testcase tc = testSession.getCurrentTestCase();
+		if (tc != null) {
+		    tc.addOutputLines(addedLines);
+		}
+	    }
+	}
     }
     
     //--------------------------------------------------------

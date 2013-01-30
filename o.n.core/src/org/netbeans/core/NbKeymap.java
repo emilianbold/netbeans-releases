@@ -52,6 +52,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -209,64 +210,63 @@ public final class NbKeymap implements Keymap, Comparator<KeyStroke> {
             }
             Map<String,FileObject> id2Dir = new HashMap<String,FileObject>(); // #170677
             boolean processingProfile = false;
+
+            // #217497: as translation String > KeyStroke[] is not unique, we must process .removed based on String 
+            // externalized keystroke. Note that LHM will retain iteration order the same as was originally processing
+            // order of the folders, so replacing same KeyStroke[] with different externalization will still work.
+            Map<String, FileObject> activeShortcuts = new LinkedHashMap<String, FileObject>();
             for (FileObject dir : dirs) {
                 if (dir != null) {
                     for (FileObject def : dir.getChildren()) {
-                        if (def.isData()) {
-                            boolean removed = processingProfile && BINDING_REMOVED.equals(def.getExt());
-                            KeyStroke[] strokes = Utilities.stringToKeys(def.getName());
-                            if (strokes == null || strokes.length == 0) {
-                                LOG.log(Level.WARNING, "could not load parse name of " + def.getPath());
-                                continue;
-                            }
-                            Map<KeyStroke,Binding> binder = bindings;
-                            for (int i = 0; i < strokes.length - 1; i++) {
-                                Binding sub = binder.get(strokes[i]);
-                                if (sub != null && sub.nested == null) {
-                                    LOG.log(Level.WARNING, "conflict between " + sub.actionDefinition.getPath() + " and " + def.getPath());
-                                    sub = null;
-                                }
-                                if (sub == null) {
-                                    if (removed) {
-                                        // nothing more to remove now
-                                        break;
-                                    }
-                                    binder.put(strokes[i], sub = new Binding());
-                                }
-                                binder = sub.nested;
-                            }
-                            if (removed) {
-                                if (strokes.length == 1) {
-                                    // remove the recorded stroke so it is not found by keyStrokeForAction
-                                    id2Stroke.values().remove(strokes[0]);
-                                }
-                                
-                                KeyStroke stroke = strokes[strokes.length - 1];
-                                Binding b = binder.get(stroke);
-                                if (b.nested != null) {
-                                    Binding b2 = new Binding();
-                                    b2.nested.putAll(b.nested);
-                                    binder.put(stroke, b2);
-                                } else {
-                                    binder.remove(stroke);
-                                }
-                            } else {
-                                // XXX warn about conflicts here too:
-                                binder.put(strokes[strokes.length - 1], new Binding(def));
-                                if (strokes.length == 1) {
-                                    String id = idForFile(def);
-                                    KeyStroke former = id2Dir.put(id, dir) == dir ? id2Stroke.get(id) : null;
-                                    if (former == null || compare(former, strokes[0]) > 0) {
-                                        id2Stroke.put(id, strokes[0]);
-                                    }
-                                }
-                            }
-                        }
+                       if (def.isData()) {
+                           boolean removed = processingProfile && BINDING_REMOVED.equals(def.getExt());
+                           String fn = def.getName();
+                           
+                           if (removed) {
+                               activeShortcuts.remove(fn);
+                           } else {
+                               activeShortcuts.put(fn, def);
+                           }
+                       } 
                     }
                     dir.removeFileChangeListener(bindingsListener);
                     dir.addFileChangeListener(bindingsListener);
                 }
+                // the 1st iteration is Shortcuts/ the next are profiles
                 processingProfile = true;
+            }
+            
+            outer: for (FileObject def : activeShortcuts.values()) {
+                FileObject dir = def.getParent();
+                if (def.isData()) {
+                    KeyStroke[] strokes = Utilities.stringToKeys(def.getName());
+                    if (strokes == null || strokes.length == 0) {
+                        LOG.log(Level.WARNING, "could not load parse name of " + def.getPath());
+                        continue;
+                    }
+                    Map<KeyStroke,Binding> binder = bindings;
+                    for (int i = 0; i < strokes.length - 1; i++) {
+                        Binding sub = binder.get(strokes[i]);
+                        if (sub != null && sub.nested == null) {
+                            LOG.log(Level.WARNING, "conflict between " + sub.actionDefinition.getPath() + " and " + def.getPath());
+                            sub = null;
+                        }
+                        if (sub == null) {
+                            binder.put(strokes[i], sub = new Binding());
+                        }
+                        binder = sub.nested;
+                    }
+
+                    // XXX warn about conflicts here too:
+                    binder.put(strokes[strokes.length - 1], new Binding(def));
+                    if (strokes.length == 1) {
+                        String id = idForFile(def);
+                        KeyStroke former = id2Dir.put(id, dir) == dir ? id2Stroke.get(id) : null;
+                        if (former == null || compare(former, strokes[0]) > 0) {
+                            id2Stroke.put(id, strokes[0]);
+                        }
+                    }
+                }
             }
             if (refresh) {
                 // Update accelerators of existing actions after switching keymap.

@@ -44,6 +44,7 @@ package org.netbeans.modules.debugger.jpda.visual;
 import com.sun.jdi.ArrayReference;
 import com.sun.jdi.ArrayType;
 import com.sun.jdi.BooleanValue;
+import com.sun.jdi.ClassLoaderReference;
 import com.sun.jdi.ClassNotLoadedException;
 import com.sun.jdi.ClassObjectReference;
 import com.sun.jdi.ClassType;
@@ -52,7 +53,6 @@ import com.sun.jdi.IncompatibleThreadStateException;
 import com.sun.jdi.InvalidTypeException;
 import com.sun.jdi.InvocationException;
 import com.sun.jdi.Method;
-import com.sun.jdi.ObjectCollectedException;
 import com.sun.jdi.ObjectReference;
 import com.sun.jdi.ReferenceType;
 import com.sun.jdi.StackFrame;
@@ -68,7 +68,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -83,7 +82,6 @@ import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import org.netbeans.api.debugger.DebuggerManager;
-import org.netbeans.api.debugger.jpda.JPDAClassType;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.MethodBreakpoint;
@@ -112,8 +110,10 @@ import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VirtualMachineWrapper;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakSet;
+import org.openide.windows.InputOutput;
 
 /**
  *
@@ -153,93 +153,146 @@ public class RemoteServices {
         }
     }
     
+    private static ObjectReference getBootstrapClassLoader(ThreadReference tawt, VirtualMachine vm) throws InvalidTypeException, ClassNotLoadedException, IncompatibleThreadStateException, InvocationException, IOException, PropertyVetoException, InternalExceptionWrapper, VMDisconnectedExceptionWrapper, ObjectCollectedExceptionWrapper, UnsupportedOperationExceptionWrapper, ClassNotPreparedExceptionWrapper {
+        /* Run this code:
+            ClassLoader cl = ClassLoader.getSystemClassLoader();
+            ClassLoader bcl;
+            do {
+                bcl = cl;
+                cl = cl.getParent();
+            } while (cl != null);
+            return bcl;
+         */
+        ClassType classLoaderClass = getClass(vm, ClassLoader.class.getName());
+        Method getSystemClassLoader = ClassTypeWrapper.concreteMethodByName(classLoaderClass, "getSystemClassLoader", "()Ljava/lang/ClassLoader;");
+        ObjectReference cl = (ObjectReference) ClassTypeWrapper.invokeMethod(classLoaderClass, tawt, getSystemClassLoader, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
+        Method getParent = ClassTypeWrapper.concreteMethodByName(classLoaderClass, "getParent", "()Ljava/lang/ClassLoader;");
+        ObjectReference bcl;
+        do {
+            bcl = cl;
+            if ("sun.misc.Launcher$AppClassLoader".equals(cl.referenceType().name())) {     // NOI18N
+                break;
+            }
+            cl = (ObjectReference) ObjectReferenceWrapper.invokeMethod(cl, tawt, getParent, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
+        } while (cl != null);
+        return bcl;
+    }
+    
+    private static ObjectReference getContextClassLoader(ThreadReference tawt, VirtualMachine vm) throws InvalidTypeException, ClassNotLoadedException, IncompatibleThreadStateException, InvocationException, IOException, PropertyVetoException, InternalExceptionWrapper, VMDisconnectedExceptionWrapper, ObjectCollectedExceptionWrapper, UnsupportedOperationExceptionWrapper, ClassNotPreparedExceptionWrapper {
+        ReferenceType threadType = tawt.referenceType();
+        Method getContextCl = ClassTypeWrapper.concreteMethodByName((ClassType) threadType, "getContextClassLoader", "()Ljava/lang/ClassLoader;");
+        ObjectReference cl = (ObjectReference) ObjectReferenceWrapper.invokeMethod(tawt, tawt, getContextCl, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
+        ClassType classLoaderClass = null;
+        if (cl == null) {
+            classLoaderClass = getClass(vm, ClassLoader.class.getName());
+            Method getSystemClassLoader = ClassTypeWrapper.concreteMethodByName(classLoaderClass, "getSystemClassLoader", "()Ljava/lang/ClassLoader;");
+            cl = (ObjectReference) ClassTypeWrapper.invokeMethod(classLoaderClass, tawt, getSystemClassLoader, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
+        }
+        return cl;
+    }
+    
+    private static ObjectReference getQuantumTookitClassLoader(VirtualMachine vm) throws InternalExceptionWrapper, VMDisconnectedExceptionWrapper, ObjectCollectedExceptionWrapper {
+        ClassType classQuantumToolkit = getClass(vm, "com.sun.javafx.tk.quantum.QuantumToolkit");
+        if (classQuantumToolkit == null) {
+            return null;
+        }
+        ClassLoaderReference cl = ReferenceTypeWrapper.classLoader(classQuantumToolkit);
+        return cl;
+    }
+    
     public static ClassObjectReference uploadBasicClasses(JPDAThreadImpl t, ServiceType sType) throws InvalidTypeException, ClassNotLoadedException, IncompatibleThreadStateException, InvocationException, IOException, PropertyVetoException, InternalExceptionWrapper, VMDisconnectedExceptionWrapper, ObjectCollectedExceptionWrapper, UnsupportedOperationExceptionWrapper, ClassNotPreparedExceptionWrapper {
         ThreadReference tawt = t.getThreadReference();
         VirtualMachine vm = tawt.virtualMachine();
         
-        ReferenceType threadType = tawt.referenceType();
-        Method getContextCl = ClassTypeWrapper.concreteMethodByName((ClassType) threadType, "getContextClassLoader", "()Ljava/lang/ClassLoader;");
         t.notifyMethodInvoking();
         try {
-            ObjectReference cl = (ObjectReference) ObjectReferenceWrapper.invokeMethod(tawt, tawt, getContextCl, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
-            List<RemoteClass> remoteClasses = getRemoteClasses();
             ClassObjectReference basicClass = null;
-            for (RemoteClass rc : remoteClasses) {
-                String className = rc.name;
-                if (basicClass == null && className.indexOf('$') < 0 && className.endsWith("Service")) {
-                    if ((sType == ServiceType.AWT && className.contains("AWT")) ||
-                        (sType == ServiceType.FX && className.contains("FX"))) {
-                        List<ReferenceType> classesByName = VirtualMachineWrapper.classesByName(vm, className);
-                        if (!classesByName.isEmpty()) {
-                            basicClass = ReferenceTypeWrapper.classObject(classesByName.get(0));
-                        }
-                    }
-                    break;
-                }
-            }
-            // Suppose that when there's the basic class loaded, there are all.
-            if (basicClass == null) {  // Load the classes only if there's not the basic one.
-                ClassType classLoaderClass = null;
-                if (cl != null) {
-                    classLoaderClass = (ClassType) ObjectReferenceWrapper.referenceType(cl);
-                } else {
-                    classLoaderClass = getClass(vm, ClassLoader.class.getName());
-                    Method getSystemClassLoader = ClassTypeWrapper.concreteMethodByName(classLoaderClass, "getSystemClassLoader", "()Ljava/lang/ClassLoader;");
-                    cl = (ObjectReference) ClassTypeWrapper.invokeMethod(classLoaderClass, tawt, getSystemClassLoader, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
-                }
-
+            t.accessLock.writeLock().lock();
+            try {
+                List<RemoteClass> remoteClasses = getRemoteClasses();
                 for (RemoteClass rc : remoteClasses) {
                     String className = rc.name;
-                    if ((sType == ServiceType.AWT && className.contains("AWT")) ||
-                        (sType == ServiceType.FX && className.contains("FX"))) {
-                        ClassObjectReference theUploadedClass = null;
-                        ArrayReference byteArray = createTargetBytes(vm, rc.bytes);
-                        StringReference nameMirror = null;
-                        try {
-                            Method defineClass = ClassTypeWrapper.concreteMethodByName(classLoaderClass, "defineClass", "(Ljava/lang/String;[BII)Ljava/lang/Class;");
-                            boolean uploaded = false;
-                            while (!uploaded) {
-                                nameMirror = VirtualMachineWrapper.mirrorOf(vm, className);
-                                try {
-                                    ObjectReferenceWrapper.disableCollection(nameMirror);
-                                    uploaded = true;
-                                } catch (ObjectCollectedExceptionWrapper ocex) {
-                                    // Just collected, try again...
-                                }
+                    if (basicClass == null && className.indexOf('$') < 0 && className.endsWith("Service")) {
+                        if ((sType == ServiceType.AWT && className.contains("AWT")) ||
+                            (sType == ServiceType.FX && className.contains("FX"))) {
+                            List<ReferenceType> classesByName = VirtualMachineWrapper.classesByName(vm, className);
+                            if (!classesByName.isEmpty()) {
+                                basicClass = ReferenceTypeWrapper.classObject(classesByName.get(0));
                             }
-                            uploaded = false;
-                            while (!uploaded) {
-                                theUploadedClass = (ClassObjectReference) ObjectReferenceWrapper.invokeMethod(cl, tawt, defineClass, Arrays.asList(nameMirror, byteArray, vm.mirrorOf(0), vm.mirrorOf(rc.bytes.length)), ObjectReference.INVOKE_SINGLE_THREADED);
-                                if (basicClass == null && rc.name.indexOf('$') < 0 && rc.name.endsWith("Service")) {
+                        }
+                        break;
+                    }
+                }
+                // Suppose that when there's the basic class loaded, there are all.
+                if (basicClass == null) {  // Load the classes only if there's not the basic one.
+                    ObjectReference cl;
+                    if (sType == ServiceType.AWT) {
+                        cl = getBootstrapClassLoader(tawt, vm);
+                    } else {
+                        cl = getQuantumTookitClassLoader(vm);
+                        if (cl == null) {
+                            cl = getContextClassLoader(tawt, vm);
+                        }
+                    }
+                    ClassType classLoaderClass = (ClassType) ObjectReferenceWrapper.referenceType(cl);
+
+                    for (RemoteClass rc : remoteClasses) {
+                        String className = rc.name;
+                        if ((sType == ServiceType.AWT && className.contains("AWT")) ||
+                            (sType == ServiceType.FX && className.contains("FX"))) {
+                            ClassObjectReference theUploadedClass;
+                            ArrayReference byteArray = createTargetBytes(vm, rc.bytes);
+                            StringReference nameMirror = null;
+                            try {
+                                Method defineClass = ClassTypeWrapper.concreteMethodByName(classLoaderClass, "defineClass", "(Ljava/lang/String;[BII)Ljava/lang/Class;");
+                                boolean uploaded = false;
+                                while (!uploaded) {
+                                    nameMirror = VirtualMachineWrapper.mirrorOf(vm, className);
                                     try {
-                                        // Disable collection only of the basic class
-                                        ObjectReferenceWrapper.disableCollection(theUploadedClass);
-                                        basicClass = theUploadedClass;
+                                        ObjectReferenceWrapper.disableCollection(nameMirror);
                                         uploaded = true;
                                     } catch (ObjectCollectedExceptionWrapper ocex) {
                                         // Just collected, try again...
                                     }
-                                } else {
-                                    uploaded = true;
+                                }
+                                uploaded = false;
+                                while (!uploaded) {
+                                    theUploadedClass = (ClassObjectReference) ObjectReferenceWrapper.invokeMethod(cl, tawt, defineClass, Arrays.asList(nameMirror, byteArray, vm.mirrorOf(0), vm.mirrorOf(rc.bytes.length)), ObjectReference.INVOKE_SINGLE_THREADED);
+                                    if (basicClass == null && rc.name.indexOf('$') < 0 && rc.name.endsWith("Service")) {
+                                        try {
+                                            // Disable collection only of the basic class
+                                            ObjectReferenceWrapper.disableCollection(theUploadedClass);
+                                            basicClass = theUploadedClass;
+                                            uploaded = true;
+                                        } catch (ObjectCollectedExceptionWrapper ocex) {
+                                            // Just collected, try again...
+                                        }
+                                    } else {
+                                        uploaded = true;
+                                    }
+                                }
+                            } finally {
+                                ObjectReferenceWrapper.enableCollection(byteArray); // We can dispose it now
+                                if (nameMirror != null) {
+                                    ObjectReferenceWrapper.enableCollection(nameMirror);
                                 }
                             }
-                        } finally {
-                            ObjectReferenceWrapper.enableCollection(byteArray); // We can dispose it now
-                            if (nameMirror != null) {
-                                ObjectReferenceWrapper.enableCollection(nameMirror);
-                            }
                         }
+                        //Method resolveClass = classLoaderClass.concreteMethodByName("resolveClass", "(Ljava/lang/Class;)V");
+                        //systemClassLoader.invokeMethod(tawt, resolveClass, Arrays.asList(theUploadedClass), ObjectReference.INVOKE_SINGLE_THREADED);
                     }
-                    //Method resolveClass = classLoaderClass.concreteMethodByName("resolveClass", "(Ljava/lang/Class;)V");
-                    //systemClassLoader.invokeMethod(tawt, resolveClass, Arrays.asList(theUploadedClass), ObjectReference.INVOKE_SINGLE_THREADED);
                 }
+                if (basicClass != null) {
+                    // Initialize the class:
+                    ClassType theClass = getClass(vm, Class.class.getName());
+                    // Perhaps it's not 100% correct, we should be calling the new class' newInstance() method, not Class.newInstance() method.
+                    Method newInstance = ClassTypeWrapper.concreteMethodByName(theClass, "newInstance", "()Ljava/lang/Object;");
+                    ObjectReference newInstanceOfBasicClass = (ObjectReference) ObjectReferenceWrapper.invokeMethod(basicClass, tawt, newInstance, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
+                }
+            } finally {
+                t.accessLock.writeLock().unlock();
             }
             if (basicClass != null) {
-                // Initialize the class:
-                ClassType theClass = getClass(vm, Class.class.getName());
-                // Perhaps it's not 100% correct, we should be calling the new class' newInstance() method, not Class.newInstance() method.
-                Method newInstance = ClassTypeWrapper.concreteMethodByName(theClass, "newInstance", "()Ljava/lang/Object;");
-                ObjectReference newInstanceOfBasicClass = (ObjectReference) ObjectReferenceWrapper.invokeMethod(basicClass, tawt, newInstance, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
                 synchronized (remoteServiceClasses) {
                     remoteServiceClasses.put(t.getDebugger(), basicClass);
                     t.getDebugger().addPropertyChangeListener(new RemoteServiceDebuggerListener());
@@ -324,13 +377,12 @@ public class RemoteServices {
      */
     public static void runOnStoppedThread(JPDAThread thread, final Runnable run, ServiceType sType) throws PropertyVetoException {
         final JPDAThreadImpl t = (JPDAThreadImpl) thread;
-        boolean wasSuspended = true;
         
         Lock lock = t.accessLock.writeLock();
         lock.lock();
         try {
             ThreadReference threadReference = t.getThreadReference();
-            wasSuspended = t.isSuspended();
+            boolean wasSuspended = t.isSuspended();
             if (t.isSuspended() && !threadReference.isAtBreakpoint()) {
                 // TODO: Suspended, but will not be able to invoke methods
                 
@@ -449,7 +501,7 @@ public class RemoteServices {
     private static void retrieveAttachedListeners(JPDAThreadImpl thread,
                                                   ObjectReference component,
                                                   List<RemoteListener> rlisteners,
-                                                  boolean combineAllTypes) {
+                                                  final boolean combineAllTypes) {
         ThreadReference t = thread.getThreadReference();
         try {
             ReferenceType clazz = ObjectReferenceWrapper.referenceType(component);
@@ -604,10 +656,15 @@ public class RemoteServices {
                 ReferenceType rt = (ReferenceType) t;
                 String lname = ReferenceTypeWrapper.name(rt);
                 int i = lname.lastIndexOf('.');
-                if (i < 0) i = 0;
-                else i++;
+                if (i < 0) {
+                    i = 0;
+                } else {
+                    i++;
+                }
                 int ii = lname.lastIndexOf('$', i);
-                if (ii > i) i = ii + 1;
+                if (ii > i) {
+                    i = ii + 1;
+                }
                 //System.err.println("  getAttachableListeners() '"+name.substring(3)+"' should equal to '"+lname.substring(i)+"', lname = "+lname+", i = "+i);
                 if (!name.substring(3).equals(lname.substring(i))) {
                     // addXXXListener() method name does not match XXXListener simple class name.
@@ -934,8 +991,13 @@ public class RemoteServices {
                         public void run() {
                             try {
                                 if (attach) {
-                                    Method startHierarchyListenerMethod = ClassTypeWrapper.concreteMethodByName(serviceClass, "startHierarchyListener", "()V");
-                                    ClassTypeWrapper.invokeMethod(serviceClass, tr, startHierarchyListenerMethod, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
+                                    Method startHierarchyListenerMethod = ClassTypeWrapper.concreteMethodByName(serviceClass, "startHierarchyListener", "()Ljava/lang/String;");
+                                    Value res = ClassTypeWrapper.invokeMethod(serviceClass, tr, startHierarchyListenerMethod, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
+                                    if (res instanceof StringReference) {
+                                        String reason = ((StringReference) res).value();
+                                        InputOutput io = ((JPDAThreadImpl) t).getDebugger().getIO();
+                                        io.getErr().println(NbBundle.getMessage(VisualDebuggerListener.class, "MSG_NoTrackingOfComponentChanges", reason));
+                                    }
                                 } else {
                                     Method stopHierarchyListenerMethod = ClassTypeWrapper.concreteMethodByName(serviceClass, "stopHierarchyListener", "()V");
                                     ClassTypeWrapper.invokeMethod(serviceClass, tr, stopHierarchyListenerMethod, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
@@ -968,6 +1030,9 @@ public class RemoteServices {
                 break;
             }
         }
+        if (clazz == null && classList.size() > 0) {
+            clazz = classList.get(0);
+        }
         return (ClassType) clazz;
     }
     
@@ -991,15 +1056,19 @@ public class RemoteServices {
             List<RemoteClass> rcl = new ArrayList<RemoteClass>();
             while((ze = zin.getNextEntry()) != null) {
                 String fileName = ze.getName();
-                if (!fileName.endsWith(".class")) continue;
+                if (!fileName.endsWith(".class")) {
+                    continue;
+                }
                 String name = fileName.substring(0, fileName.length() - ".class".length());
                 int baseStart = name.lastIndexOf('/');
-                if (baseStart < 0) continue;
-                baseStart++;
+                if (baseStart < 0) {
+                    continue;
+                }
+                /*baseStart++;
                 int baseEnd = name.indexOf('$', baseStart);
                 if (baseEnd < 0) {
                     baseEnd = name.length();
-                }
+                }*/
                 RemoteClass rc = new RemoteClass();
                 rc.name = name.replace('/', '.');
                 int l = (int) ze.getSize();
@@ -1140,7 +1209,9 @@ public class RemoteServices {
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
             JPDAThreadImpl thread = this.t;
-            if (thread == null) return ;
+            if (thread == null) {
+                return ;
+            }
             if (JPDAThread.PROP_SUSPENDED.equals(evt.getPropertyName()) &&
                 !"methodInvoke".equals(evt.getPropagationId())) {               // NOI18N
                 

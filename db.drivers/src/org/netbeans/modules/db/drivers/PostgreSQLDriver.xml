@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE library PUBLIC "-//NetBeans//DTD Library Declaration 1.0//EN" "http://www.netbeans.org/dtds/library-declaration-1_0.dtd">
-<library version="1.0">
+<library version="3.0" xmlns="http://www.netbeans.org/ns/library-declaration/3">
     <name>PostgreSQLDriver</name>
     <type>j2se</type>
     <localizing-bundle>org.netbeans.modules.db.drivers.Bundle</localizing-bundle>
@@ -16,11 +15,11 @@
         <type>javadoc</type>            
         
     </volume>
-
-    <volume>
+    <properties>
         <!-- please check with mkleint@netbeans.org before/after updating this or "classpath" section -->
-        <type>maven-pom</type>
-        <resource>http://repo1.maven.org/maven2/postgresql/postgresql/9.1-901.jdbc4/postgresql-9.1-901.jdbc4.pom</resource>
-    </volume>
-
+        <property>
+            <name>maven-dependencies</name>
+            <value>postgresql:postgresql:9.1-901.jdbc4:jar</value>
+        </property>
+    </properties>
 </library>

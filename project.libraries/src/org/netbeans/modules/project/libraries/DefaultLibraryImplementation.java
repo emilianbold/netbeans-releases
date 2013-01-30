@@ -48,6 +48,7 @@ import java.net.URL;
 import java.util.*;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
+import java.text.MessageFormat;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
@@ -76,11 +77,15 @@ public final class DefaultLibraryImplementation implements LibraryImplementation
     /**
      * Create new LibraryImplementation supporting given <tt>library</tt>.
      */
-    public DefaultLibraryImplementation (String libraryType, String[] volumeTypes) {
-        assert libraryType != null && volumeTypes != null;
+    public DefaultLibraryImplementation (
+            @NonNull final String libraryType,
+            @NonNull final String[] volumeTypes) {
+        Parameters.notNull("libraryType", libraryType); //NOI18N
+        Parameters.notNull("volumeTypes", volumeTypes); //NOI18N
         this.libraryType = libraryType;
         this.contents = new HashMap<String,List<URL>>();
         for (String vtype : volumeTypes) {
+            Parameters.notNull("volumeTypes", vtype);   //NOI18N
             this.contents.put(vtype, Collections.<URL>emptyList());
         }
     }
@@ -106,8 +111,14 @@ public final class DefaultLibraryImplementation implements LibraryImplementation
     @Override
     public List<URL> getContent(String contentType) throws IllegalArgumentException {
         List<URL> content = contents.get(contentType);
-        if (content == null)
-            throw new IllegalArgumentException ();
+        if (content == null) {
+            throw new IllegalArgumentException (
+                    MessageFormat.format(
+                        "Volume: {0} is not support by this library. The only acceptable values are: {1}",  //NOI18N
+                        contentType,
+                        contents.keySet()
+                        ));
+        }
         return Collections.unmodifiableList (content);
     }
 
@@ -120,8 +131,12 @@ public final class DefaultLibraryImplementation implements LibraryImplementation
             this.contents.put(contentType, new ArrayList<URL>(path));
             this.firePropertyChange(PROP_CONTENT,null,null);
         } else {
-            throw new IllegalArgumentException ("Volume '"+contentType+
-                "' is not support by this library. The only acceptable values are: "+contents.keySet());
+            throw new IllegalArgumentException (
+                    MessageFormat.format(
+                        "Volume: {0} is not support by this library. The only acceptable values are: {1}",  //NOI18N
+                        contentType,
+                        contents.keySet()
+                        ));
         }
     }
 

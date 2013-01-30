@@ -43,7 +43,6 @@ package org.netbeans.modules.php.editor.actions;
 
 import java.util.Collection;
 import javax.swing.ImageIcon;
-import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.php.editor.api.PhpElementKind;
 import org.openide.util.ImageUtilities;
@@ -52,7 +51,7 @@ import org.openide.util.ImageUtilities;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class IconsUtils {
+public final class IconsUtils {
 
     private static final String PNG_EXTENSION = ".png"; //NOI18N
     private static final String GIF_EXTENSION = ".gif"; //NOI18N

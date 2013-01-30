@@ -163,17 +163,11 @@ public class MetadataUtilities {
             String catalog, String schemaPattern, String tableNamePattern,
             String[] types) throws SQLException {
         try {
-            System.out.println("Debug:");
-            System.out.println("getTables " + catalog + " " + schemaPattern);
             return dmd.getTables(catalog, schemaPattern, tableNamePattern,
                     types);
         } catch (SQLException e) {
-            System.out.println("Catch SQL Exception");
-            System.out.println("SQL Exception " + e);
             throw e;
         } catch (Throwable t) {
-            System.out.println("Catch Throwable");
-            System.out.println("Throwable" + t);
             throw new SQLException(t);
         }
     }

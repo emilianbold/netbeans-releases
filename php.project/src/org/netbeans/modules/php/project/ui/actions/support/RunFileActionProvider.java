@@ -46,15 +46,16 @@ import java.io.File;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import org.netbeans.api.extexecution.ExternalProcessBuilder;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.php.api.executable.InvalidPhpExecutableException;
+import org.netbeans.modules.php.api.executable.PhpInterpreter;
 import org.netbeans.modules.php.api.util.FileUtils;
+import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
-import org.openide.util.Utilities;
 import org.openide.util.lookup.ServiceProvider;
 
 // heavily inspired from ruby :)
@@ -123,35 +124,30 @@ public class RunFileActionProvider implements ActionProvider {
     }
 
     private void doRun(File file, RunFileArgs args, boolean debug) {
-        RunFileScriptProvider provider = new RunFileScriptProvider(file, args);
+        FileRunner fileRunner = createFileRunner(file, args);
+        if (fileRunner == null) {
+            return;
+        }
         if (debug) {
-            new DebugScript(provider).run();
+            fileRunner.debug();
         } else {
-            new RunScript(provider).run();
+            fileRunner.run();
         }
     }
 
-    private static final class RunFileScriptProvider extends DefaultScriptProvider {
-        private final RunFileArgs args;
-
-        public RunFileScriptProvider(File file, RunFileArgs args) {
-            super(file);
-            this.args = args;
+    private FileRunner createFileRunner(File file, RunFileArgs args) {
+        PhpInterpreter phpInterpreter;
+        try {
+            phpInterpreter = PhpInterpreter.getDefault();
+        } catch (InvalidPhpExecutableException ex) {
+            UiUtils.invalidScriptProvided(ex.getLocalizedMessage());
+            return null;
         }
-
-        @Override
-        public ExternalProcessBuilder getProcessBuilder() {
-            ExternalProcessBuilder builder = program.getProcessBuilder();
-            for (String param : Utilities.parseParameters(args.getPhpOpts())) {
-                builder = builder.addArgument(param);
-            }
-            builder = builder.addArgument(file.getAbsolutePath());
-            for (String param : Utilities.parseParameters(args.getRunArgs())) {
-                builder = builder.addArgument(param);
-            }
-            builder = builder.workingDirectory(new File(args.getWorkDir()));
-            return builder;
-        }
+        return new FileRunner(file)
+                .command(phpInterpreter.getInterpreter())
+                .workDir(args.getWorkDir())
+                .phpArgs(args.getPhpOpts())
+                .fileArgs(args.getRunArgs());
     }
 
     /**

@@ -41,7 +41,13 @@
  */
 package org.netbeans.modules.php.editor.parser;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import org.netbeans.modules.csl.api.ColoringAttributes;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.SemanticAnalyzer;
@@ -51,8 +57,33 @@ import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.api.QualifiedName;
+import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
+import org.netbeans.modules.php.editor.parser.astnodes.ArrayAccess;
+import org.netbeans.modules.php.editor.parser.astnodes.Block;
 import org.netbeans.modules.php.editor.parser.astnodes.BodyDeclaration.Modifier;
-import org.netbeans.modules.php.editor.parser.astnodes.*;
+import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.ConstantDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.Expression;
+import org.netbeans.modules.php.editor.parser.astnodes.FieldAccess;
+import org.netbeans.modules.php.editor.parser.astnodes.FieldsDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.FunctionName;
+import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
+import org.netbeans.modules.php.editor.parser.astnodes.InterfaceDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.MethodInvocation;
+import org.netbeans.modules.php.editor.parser.astnodes.NamespaceName;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTypeNode;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPVarComment;
+import org.netbeans.modules.php.editor.parser.astnodes.Program;
+import org.netbeans.modules.php.editor.parser.astnodes.StaticConstantAccess;
+import org.netbeans.modules.php.editor.parser.astnodes.StaticFieldAccess;
+import org.netbeans.modules.php.editor.parser.astnodes.StaticMethodInvocation;
+import org.netbeans.modules.php.editor.parser.astnodes.TraitDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.TraitMethodAliasDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.TypeDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.UseStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.UseStatementPart;
+import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultTreePathVisitor;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 
@@ -70,6 +101,7 @@ public class SemanticAnalysis extends SemanticAnalyzer {
     public static final EnumSet<ColoringAttributes> UNUSED_USES_SET = EnumSet.of(ColoringAttributes.UNUSED);
     private static final String NAMESPACE_SEPARATOR = "\\"; //NOI18N
 
+    // @GuarderBy("this")
     private boolean cancelled;
     private Map<OffsetRange, Set<ColoringAttributes>> semanticHighlights;
     private Set<UnusedOffsetRanges> unusedUsesOffsetRanges;
@@ -94,7 +126,7 @@ public class SemanticAnalysis extends SemanticAnalyzer {
     }
 
     @Override
-    public void cancel() {
+    public synchronized void cancel() {
         cancelled = true;
     }
 
@@ -156,9 +188,9 @@ public class SemanticAnalysis extends SemanticAnalyzer {
         Map<OffsetRange, Set<ColoringAttributes>> highlights;
         // for unused private fields: name, varible
         // if isused, then it's deleted from the list and marked as the field
-        private final Map<String, ASTNodeColoring> privateFieldsUsed;
+        private final Map<UnusedIdentifier, ASTNodeColoring> privateFieldsUnused;
         // for unsed private method: name, identifier
-        private final Map<String, ASTNodeColoring> privateMethod;
+        private final Map<UnusedIdentifier, ASTNodeColoring> privateUnusedMethods;
         // this is holder of blocks, which has to be scanned for usages in the class.
         private List<Block> needToScan = new ArrayList<Block>();
 
@@ -167,12 +199,14 @@ public class SemanticAnalysis extends SemanticAnalyzer {
         private final Snapshot snapshot;
 
         private final Map<String, UnusedOffsetRanges> unusedUsesOffsetRanges;
+        // last visited type declaration
+        private TypeDeclaration typeDeclaration;
 
         public SemanticHighlightVisitor(Map<OffsetRange, Set<ColoringAttributes>> highlights, Snapshot snapshot) {
             this.highlights = highlights;
-            privateFieldsUsed = new HashMap<String, ASTNodeColoring>();
+            privateFieldsUnused = new HashMap<UnusedIdentifier, ASTNodeColoring>();
             unusedUses = new HashMap<String, ASTNodeColoring>();
-            privateMethod = new HashMap<String, ASTNodeColoring>();
+            privateUnusedMethods = new HashMap<UnusedIdentifier, ASTNodeColoring>();
             unusedUsesOffsetRanges = new HashMap<String, UnusedOffsetRanges>();
             this.snapshot = snapshot;
         }
@@ -208,6 +242,8 @@ public class SemanticAnalysis extends SemanticAnalyzer {
             if (isCancelled()) {
                 return;
             }
+            addToPath(cldec);
+            this.typeDeclaration = cldec;
             scan(cldec.getSuperClass());
             scan(cldec.getInterfaes());
             Identifier name = cldec.getName();
@@ -221,27 +257,24 @@ public class SemanticAnalysis extends SemanticAnalyzer {
                     block.accept(this);
                 }
                 // are there unused private fields?
-                for (ASTNodeColoring item : privateFieldsUsed.values()) {
+                for (ASTNodeColoring item : privateFieldsUnused.values()) {
                     if (item.coloring.contains(ColoringAttributes.STATIC)) {
                         addOffsetRange(item.identifier, UNUSED_STATIC_FIELD_SET);
-                    }
-                    else {
+                    } else {
                         addOffsetRange(item.identifier, UNUSED_FIELD_SET);
                     }
 
                 }
 
                 // are there unused private methods?
-                for(ASTNodeColoring item : privateMethod.values()) {
+                for (ASTNodeColoring item : privateUnusedMethods.values()) {
                     if (item.coloring.contains(ColoringAttributes.STATIC)) {
                         addOffsetRange(item.identifier, UNUSED_STATIC_METHOD_SET);
-                    }
-                    else {
+                    } else {
                         addOffsetRange(item.identifier, UNUSED_METHOD_SET);
                     }
                 }
             }
-            super.visit(cldec);
         }
 
         @Override
@@ -258,9 +291,8 @@ public class SemanticAnalysis extends SemanticAnalyzer {
             String name = identifier.getName();
             // don't color private magic private method. methods which start __
             if (isPrivate && name != null && !name.startsWith("__")) {
-                privateMethod.put(identifier.getName(), new ASTNodeColoring(identifier, coloring));
-            }
-            else {
+                privateUnusedMethods.put(new UnusedIdentifier(identifier.getName(), typeDeclaration), new ASTNodeColoring(identifier, coloring));
+            } else {
                 // color now only non private method
                 addOffsetRange(identifier, coloring);
             }
@@ -285,17 +317,16 @@ public class SemanticAnalysis extends SemanticAnalyzer {
         public void visit(MethodInvocation node) {
             Identifier identifier = null;
             if (node.getMethod().getFunctionName().getName() instanceof Variable) {
-                Variable variable = (Variable)node.getMethod().getFunctionName().getName();
+                Variable variable = (Variable) node.getMethod().getFunctionName().getName();
                 if (variable.getName() instanceof Identifier) {
-                    identifier = (Identifier)variable.getName();
+                    identifier = (Identifier) variable.getName();
                 }
-            }
-            else if (node.getMethod().getFunctionName().getName() instanceof Identifier) {
-                identifier = (Identifier)node.getMethod().getFunctionName().getName();
+            } else if (node.getMethod().getFunctionName().getName() instanceof Identifier) {
+                identifier = (Identifier) node.getMethod().getFunctionName().getName();
             }
 
             if (identifier != null) {
-                ASTNodeColoring item = privateMethod.remove(identifier.getName());
+                ASTNodeColoring item = privateUnusedMethods.remove(new UnusedIdentifier(identifier.getName(), typeDeclaration));
                 if (item != null) {
                     addOffsetRange(item.identifier, item.coloring);
                 }
@@ -308,6 +339,7 @@ public class SemanticAnalysis extends SemanticAnalyzer {
             if (isCancelled()) {
                 return;
             }
+            typeDeclaration = node;
             Identifier name = node.getName();
             addOffsetRange(name, ColoringAttributes.CLASS_SET);
             super.visit(node);
@@ -318,6 +350,7 @@ public class SemanticAnalysis extends SemanticAnalyzer {
             if (isCancelled()) {
                 return;
             }
+            typeDeclaration = node;
             Identifier name = node.getName();
             addOffsetRange(name, ColoringAttributes.CLASS_SET);
             needToScan = new ArrayList<Block>();
@@ -351,7 +384,7 @@ public class SemanticAnalysis extends SemanticAnalyzer {
                 } else {
                     if (variable.getName() instanceof Identifier) {
                         Identifier identifier =  (Identifier) variable.getName();
-                        privateFieldsUsed.put(identifier.getName(), new ASTNodeColoring(identifier, coloring));
+                        privateFieldsUnused.put(new UnusedIdentifier(identifier.getName(), typeDeclaration), new ASTNodeColoring(identifier, coloring));
                     }
                 }
             }
@@ -367,6 +400,7 @@ public class SemanticAnalysis extends SemanticAnalyzer {
                 Expression expr = node.getField().getName();
                 (new FieldAccessVisitor(ColoringAttributes.FIELD_SET)).scan(expr);
             }
+            scan(node.getField());
             super.scan(node.getDispatcher());
         }
 
@@ -378,7 +412,7 @@ public class SemanticAnalysis extends SemanticAnalyzer {
             FunctionName fnName = node.getMethod().getFunctionName();
             if (fnName.getName() instanceof Identifier) {
                 String name = ((Identifier) fnName.getName()).getName();
-                ASTNodeColoring item = privateMethod.remove(name);
+                ASTNodeColoring item = privateUnusedMethods.remove(new UnusedIdentifier(name, typeDeclaration));
                 if (item != null) {
                     addOffsetRange(item.identifier, item.coloring);
                 }
@@ -402,7 +436,7 @@ public class SemanticAnalysis extends SemanticAnalyzer {
         public void visit(StaticFieldAccess node) {
             Expression expr = node.getField().getName();
             if (expr instanceof ArrayAccess) {
-                ArrayAccess arrayAccess = (ArrayAccess)expr;
+                ArrayAccess arrayAccess = (ArrayAccess) expr;
                 expr = arrayAccess.getName();
             }
             (new FieldAccessVisitor(ColoringAttributes.STATIC_FIELD_SET)).scan(expr);
@@ -414,10 +448,8 @@ public class SemanticAnalysis extends SemanticAnalyzer {
         public void visit(ConstantDeclaration node) {
             ASTNode parentNode = null;
             List<ASTNode> path = getPath();
-            synchronized (path) {
-                if (path != null && path.size() > 1) {
-                    parentNode = path.get(1);
-                }
+            if (path != null && path.size() > 1) {
+                parentNode = path.get(1);
             }
             if (parentNode instanceof ClassDeclaration || parentNode instanceof InterfaceDeclaration
                     || parentNode instanceof TraitDeclaration) {
@@ -546,13 +578,50 @@ public class SemanticAnalysis extends SemanticAnalyzer {
             @Override
             public void visit(Identifier identifier) {
                 //remove the field, because is used
-                ASTNodeColoring removed = privateFieldsUsed.remove(identifier.getName());
+                ASTNodeColoring removed = privateFieldsUnused.remove(new UnusedIdentifier(identifier.getName(), typeDeclaration));
                 if (removed != null) {
                     // if it was removed, marked as normal field
                     addOffsetRange(removed.identifier, removed.coloring);
                 }
                 addOffsetRange(identifier, coloring);
             }
+        }
+
+        private class UnusedIdentifier {
+            private final String name;
+            private final TypeDeclaration typeDeclaration;
+
+            public UnusedIdentifier(final String name, final TypeDeclaration classDeclaration) {
+                this.name = name;
+                this.typeDeclaration = classDeclaration;
+            }
+
+            @Override
+            public int hashCode() {
+                int hash = 5;
+                hash = 29 * hash + (this.name != null ? this.name.hashCode() : 0);
+                hash = 29 * hash + (this.typeDeclaration != null ? this.typeDeclaration.hashCode() : 0);
+                return hash;
+            }
+
+            @Override
+            public boolean equals(Object obj) {
+                if (obj == null) {
+                    return false;
+                }
+                if (getClass() != obj.getClass()) {
+                    return false;
+                }
+                final UnusedIdentifier other = (UnusedIdentifier) obj;
+                if ((this.name == null) ? (other.name != null) : !this.name.equals(other.name)) {
+                    return false;
+                }
+                if (this.typeDeclaration != other.typeDeclaration && (this.typeDeclaration == null || !this.typeDeclaration.equals(other.typeDeclaration))) {
+                    return false;
+                }
+                return true;
+            }
+
         }
     }
 }

@@ -283,9 +283,11 @@ public class HighlightsViewUtils {
                         TextHitInfo endHit = TextHitInfo.leading(renderEndOffset - textLayoutOffset);
                         renderPartAlloc = TextLayoutUtils.getRealAlloc(textLayout, textLayoutRect, startHit, endHit);
                         if (ViewHierarchyImpl.PAINT_LOG.isLoggable(Level.FINER)) {
-                            ViewHierarchyImpl.PAINT_LOG.finer("Hit<" + startHit.getCharIndex() + "," + endHit.getCharIndex() + // NOI18N
-                                ">, text='" + DocumentUtilities.getText(docView.getDocument()).subSequence( // NOI18N
-                                hiStartOffset, renderEndOffset) + "', alloc=" + ViewUtils.toString(renderPartAlloc)); // NOI18N
+                            ViewHierarchyImpl.PAINT_LOG.finer("      Fragment: hit<" + // NOI18N
+                                    startHit.getCharIndex() + "," + endHit.getCharIndex() + // NOI18N
+                                    ">, text='" + DocumentUtilities.getText(docView.getDocument()).subSequence( // NOI18N
+                                    hiStartOffset, renderEndOffset) + "', fAlloc=" + // NOI18N
+                                    ViewUtils.toString(renderPartAlloc.getBounds()) + '\n');
                         }
                     } else { // No text layout => Newline or TAB(s)
                         if (showNonPrintingChars == null) {

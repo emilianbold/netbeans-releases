@@ -41,7 +41,13 @@
  */
 package org.netbeans.modules.php.editor.actions;
 
-import java.util.*;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.LinkedList;
+import java.util.List;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.lexer.TokenSequence;
@@ -51,6 +57,7 @@ import org.netbeans.modules.csl.api.EditList;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.netbeans.modules.php.editor.actions.FixUsesAction.Options;
+import org.netbeans.modules.php.editor.actions.ImportData.ItemVariant;
 import org.netbeans.modules.php.editor.api.AliasedName;
 import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.indent.CodeStyle;
@@ -85,13 +92,18 @@ public class FixUsesPerformer {
     private static final String COLON = ","; //NOI18N
     private final PHPParseResult parserResult;
     private final ImportData importData;
-    private final String[] selections;
+    private final List<ItemVariant> selections;
     private final boolean removeUnusedUses;
     private final Options options;
     private EditList editList;
     private BaseDocument baseDocument;
 
-    public FixUsesPerformer(final PHPParseResult parserResult, final ImportData importData, final String[] selections, final boolean removeUnusedUses, final Options options) {
+    public FixUsesPerformer(
+            final PHPParseResult parserResult,
+            final ImportData importData,
+            final List<ItemVariant> selections,
+            final boolean removeUnusedUses,
+            final Options options) {
         this.parserResult = parserResult;
         this.importData = importData;
         this.selections = selections;
@@ -112,26 +124,36 @@ public class FixUsesPerformer {
 
     private void processSelections() {
         NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(parserResult.getModel().getFileScope(), importData.caretPosition);
+        assert namespaceScope != null;
         int startOffset = getOffset(baseDocument, namespaceScope);
         List<String> useParts = new ArrayList<String>();
         Collection<? extends UseScope> declaredUses = namespaceScope.getDeclaredUses();
         for (UseScope useElement : declaredUses) {
             processUseElement(useElement, useParts);
         }
-        for (int i = 0; i < selections.length; i++) {
-            String use = selections[i];
-            if (canBeUsed(use)) {
-                SanitizedUse sanitizedUse = new SanitizedUse(modifyUseName(use), i, selections, useParts, options);
+        for (int i = 0; i < selections.size(); i++) {
+            ItemVariant itemVariant = selections.get(i);
+            if (itemVariant.canBeUsed()) {
+                SanitizedUse sanitizedUse = new SanitizedUse(modifyUseName(itemVariant.getName()), useParts, createAliasStrategy(i, useParts, selections));
                 if (sanitizedUse.shouldBeUsed()) {
                     useParts.add(sanitizedUse.getSanitizedUsePart());
                 }
-                List<UsedNamespaceName> namesToModify = importData.usedNamespaceNames.get(i);
-                for (UsedNamespaceName usedNamespaceName : namesToModify) {
+                for (UsedNamespaceName usedNamespaceName : importData.getItems().get(i).getUsedNamespaceNames()) {
                     editList.replace(usedNamespaceName.getOffset(), usedNamespaceName.getReplaceLength(), sanitizedUse.getReplaceName(usedNamespaceName), false, 0);
                 }
             }
         }
         editList.replace(startOffset, 0, createInsertString(useParts), false, 0);
+    }
+
+    private AliasStrategy createAliasStrategy(final int selectionIndex, final List<String> existingUseParts, final List<ItemVariant> selections) {
+        AliasStrategy createAliasStrategy;
+        if (options.aliasesCapitalsOfNamespaces()) {
+            createAliasStrategy = new CapitalsStrategy(selectionIndex, existingUseParts, selections);
+        } else {
+            createAliasStrategy = new UnqualifiedNameStrategy(selectionIndex, existingUseParts, selections);
+        }
+        return createAliasStrategy;
     }
 
     private void processUseElement(final UseScope useElement, final List<String> useParts) {
@@ -206,10 +228,17 @@ public class FixUsesPerformer {
 
     private int getOffsetWithoutLeadingWhitespaces(final int startOffset) {
         int result = startOffset;
-        TokenSequence<PHPTokenId> ts = LexUtilities.getPHPTokenSequence(baseDocument, startOffset);
-        ts.move(startOffset);
-        while (ts.movePrevious() && ts.token().id().equals(PHPTokenId.WHITESPACE)) {
-            result = ts.offset();
+        baseDocument.readLock();
+        try {
+            TokenSequence<PHPTokenId> ts = LexUtilities.getPHPTokenSequence(baseDocument, startOffset);
+            if (ts != null) {
+                ts.move(startOffset);
+                while (ts.movePrevious() && ts.token().id().equals(PHPTokenId.WHITESPACE)) {
+                    result = ts.offset();
+                }
+            }
+        } finally {
+            baseDocument.readUnlock();
         }
         return result;
     }
@@ -234,43 +263,45 @@ public class FixUsesPerformer {
         return (offsetElement != null) ? offsetElement : namespaceScope;
     }
 
-    private static boolean canBeUsed(String use) {
-        // Filter out "Don't use type." message.
-        return use != null && !use.contains(SPACE);
+    private interface AliasStrategy {
+        String createAlias(final QualifiedName qualifiedName);
     }
 
-    private class SanitizedUse {
+    private abstract static class AliasStrategyImpl implements AliasStrategy {
 
-        private final String use;
-        private String alias;
+        private final int selectionIndex;
         private final List<String> existingUseParts;
-        private final Options options;
-        private final boolean shouldBeUsed;
+        private final List<ItemVariant> selections;
 
-        public SanitizedUse(final String use, final int selectionIndex, final String selections[], final List<String> existingUseParts, final Options options) {
-            this.use = use;
+        public AliasStrategyImpl(final int selectionIndex, final List<String> existingUseParts, final List<ItemVariant> selections) {
+            this.selectionIndex = selectionIndex;
             this.existingUseParts = existingUseParts;
-            this.options = options;
-            QualifiedName qualifiedName = QualifiedName.create(use);
-            String name = qualifiedName.getName();
-            String aliasedName = name;
-            if (!existingUseParts.contains(use)) {
-                int i = 1;
-                while (existSelectionWith(aliasedName, selectionIndex) || existUseWith(aliasedName)) {
-                    i++;
-                    aliasedName = createAlias(name, i);
-                    alias = aliasedName;
-                }
-                shouldBeUsed = true;
-            } else {
-                shouldBeUsed = false;
+            this.selections = selections;
+        }
+
+        @Override
+        public String createAlias(final QualifiedName qualifiedName) {
+            String result = "";
+            final String possibleAliasedName = getPossibleAliasName(qualifiedName);
+            String newAliasedName = possibleAliasedName;
+            int i = 1;
+            while (existSelectionWith(newAliasedName, selectionIndex) || existUseWith(newAliasedName)) {
+                i++;
+                newAliasedName = possibleAliasedName + i;
+                result = newAliasedName;
             }
+            return result.isEmpty() && mustHaveAlias(qualifiedName) ? possibleAliasedName : result;
+        }
+
+        private boolean mustHaveAlias(final QualifiedName qualifiedName) {
+            final String unqualifiedName = qualifiedName.getName();
+            return existSelectionWith(unqualifiedName, selectionIndex) || existUseWith(unqualifiedName);
         }
 
         private boolean existSelectionWith(final String name, final int selectionIndex) {
             boolean result = false;
-            for (int i = selectionIndex + 1; i < selections.length; i++) {
-                if (endsWithName(selections[i], name)) {
+            for (int i = selectionIndex + 1; i < selections.size(); i++) {
+                if (endsWithName(selections.get(i).getName(), name)) {
                     result = true;
                 }
             }
@@ -291,8 +322,55 @@ public class FixUsesPerformer {
             return usePart.endsWith(ImportDataCreator.NS_SEPARATOR + name);
         }
 
-        private String createAlias(final String name, final int index) {
-            return name + index;
+        protected abstract String getPossibleAliasName(final QualifiedName qualifiedName);
+
+    }
+
+    private static class CapitalsStrategy extends AliasStrategyImpl {
+
+        public CapitalsStrategy(int selectionIndex, List<String> existingUseParts, List<ItemVariant> selections) {
+            super(selectionIndex, existingUseParts, selections);
+        }
+
+        @Override
+        protected String getPossibleAliasName(final QualifiedName qualifiedName) {
+            final StringBuilder sb = new StringBuilder();
+            for (String segment : qualifiedName.getSegments()) {
+                sb.append(Character.toUpperCase(segment.charAt(0)));
+            }
+            return sb.toString();
+        }
+
+    }
+
+    private static class UnqualifiedNameStrategy extends AliasStrategyImpl {
+
+        public UnqualifiedNameStrategy(int selectionIndex, List<String> existingUseParts, List<ItemVariant> selections) {
+            super(selectionIndex, existingUseParts, selections);
+        }
+
+        @Override
+        protected String getPossibleAliasName(QualifiedName qualifiedName) {
+            return qualifiedName.getName();
+        }
+
+    }
+
+    private static class SanitizedUse {
+
+        private final String use;
+        private String alias;
+        private final boolean shouldBeUsed;
+
+        public SanitizedUse(final String use, final List<String> existingUseParts, final AliasStrategy createAliasStrategy) {
+            this.use = use;
+            QualifiedName qualifiedName = QualifiedName.create(use);
+            if (!existingUseParts.contains(use)) {
+                alias = createAliasStrategy.createAlias(qualifiedName);
+                shouldBeUsed = true;
+            } else {
+                shouldBeUsed = false;
+            }
         }
 
         public String getSanitizedUsePart() {
@@ -312,7 +390,7 @@ public class FixUsesPerformer {
         }
     }
 
-    private class UsePartsComparator implements Comparator<String> {
+    private static class UsePartsComparator implements Comparator<String>, Serializable {
 
         @Override
         public int compare(String o1, String o2) {
@@ -320,7 +398,7 @@ public class FixUsesPerformer {
         }
     }
 
-    private class ExistingUseStatementVisitor extends DefaultVisitor {
+    private static class ExistingUseStatementVisitor extends DefaultVisitor {
 
         private final List<OffsetRange> usedRanges = new LinkedList<OffsetRange>();
 

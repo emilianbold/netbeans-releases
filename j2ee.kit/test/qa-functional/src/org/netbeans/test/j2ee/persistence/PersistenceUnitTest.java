@@ -76,10 +76,10 @@ public class PersistenceUnitTest extends J2eeTestCase {
     }
 
     public static Test suite() {
-        NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(PersistenceUnitTest.class);
-        conf = addServerTests(Server.ANY, conf, "testOpenProject", "testPUProviders", "testPUDataSource");
-        conf = conf.enableModules(".*").clusters(".*");
-        return NbModuleSuite.create(conf);
+        return createAllModulesServerSuite(Server.ANY, PersistenceUnitTest.class,
+                "testOpenProject",
+                "testPUProviders",
+                "testPUDataSource");
     }
 
     private void cleanPersistenceUnits() {

@@ -225,7 +225,12 @@ public class AntActions {
             if(rmiPort == null) {
                Properties p = new Properties();
                File f = new File(configFile);
-               p.load(new FileInputStream(f));
+               FileInputStream fis = new FileInputStream(f);
+               try {
+                   p.load(fis);
+               } finally {
+                   fis.close();
+               }
                rmiPort = p.getProperty("com.sun.management.jmxremote.port");// NOI18N
             }
                 

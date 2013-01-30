@@ -42,11 +42,10 @@
 
 package org.netbeans.modules.java.hints.spiimpl.processor;
 
-import java.io.IOException;
 import java.lang.reflect.Array;
 import java.util.Map.Entry;
 import java.util.*;
-import java.util.logging.Level;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -60,11 +59,10 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.AbstractAnnotationValueVisitor6;
 import javax.lang.model.util.ElementFilter;
+import javax.lang.model.util.ElementScanner6;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.tools.Diagnostic.Kind;
-import javax.tools.FileObject;
-import javax.tools.StandardLocation;
 import org.openide.filesystems.annotations.LayerBuilder;
 import org.openide.filesystems.annotations.LayerBuilder.File;
 import org.openide.filesystems.annotations.LayerGeneratingProcessor;
@@ -102,7 +100,7 @@ public class JavaHintsAnnotationProcessor extends LayerGeneratingProcessor {
         "org.netbeans.spi.java.hints.BooleanOption"
     };
 
-    private void generateTypeList(String annotationName, RoundEnvironment roundEnv) {
+    private void generateTypeList(String annotationName, RoundEnvironment roundEnv) throws LayerGenerationException {
         TypeElement hint = processingEnv.getElementUtils().getTypeElement(annotationName);
 
         if (hint == null) return ;
@@ -166,6 +164,46 @@ public class JavaHintsAnnotationProcessor extends LayerGeneratingProcessor {
             }
 
             clazzFolder.write();
+            
+            final List<Entry<Element, AnnotationMirror>> candidates = new ArrayList<Entry<Element, AnnotationMirror>>();
+            
+            new ElementScanner6<Void, Void>() {
+                @Override public Void scan(Element e, Void p) {
+                    AnnotationMirror hintMirror = findAnnotation(e.getAnnotationMirrors(), "org.netbeans.spi.java.hints.Hint");
+            
+                    if (hintMirror != null) {
+                        candidates.add(new SimpleEntry<Element, AnnotationMirror>(e, hintMirror));
+                    }
+
+                    return super.scan(e, p);
+                }
+            }.scan(annotated, null);
+            File keywordsFile = layer(annotated)
+                               .file("OptionsDialog/Keywords/".concat(annotated.asType().toString()))
+                               .stringvalue("location", "Editor")
+                               .bundlevalue("tabTitle", "org.netbeans.modules.options.editor.Bundle", "CTL_Hints_DisplayName");
+            
+            for (Entry<Element, AnnotationMirror> e : candidates) {
+                AnnotationMirror hintMirror = e.getValue();
+                
+                String displayName = getAttributeValue(hintMirror, "displayName", String.class);
+                
+                if (displayName != null)
+                    keywordsFile = keywordsFile.bundlevalue("keywords-1", displayName);
+                
+                String description = getAttributeValue(hintMirror, "description", String.class);
+                
+                if (description != null)
+                    keywordsFile = keywordsFile.bundlevalue("keywords-2", description);
+                
+                int i = 3;
+                
+                for (String sw : getAttributeValue(hintMirror, "suppressWarnings", String[].class)) {
+                    keywordsFile = keywordsFile.stringvalue("keywords-" + i++, sw);
+                }
+            }
+            
+            keywordsFile.write();
         }
 
         for (String ann : TRIGGERS) {
@@ -228,10 +266,18 @@ public class JavaHintsAnnotationProcessor extends LayerGeneratingProcessor {
     private <T> T getAttributeValue(AnnotationMirror annotation, String attribute, Class<T> clazz) {
         if (clazz.isArray()) {
             Iterable<?> attributes = getAttributeValueInternal(annotation, attribute, Iterable.class);
+            
             Collection<Object> coll = new ArrayList<Object>();
+            Class<?> componentType = clazz.getComponentType();
 
-            for (Object internal : NbCollections.iterable(NbCollections.checkedIteratorByFilter(attributes.iterator(), clazz.getComponentType(), false))) {
-                coll.add(internal);
+            for (Object attr : attributes) {
+                if (attr instanceof AnnotationValue) {
+                    attr = ((AnnotationValue) attr).getValue();
+                }
+                
+                if (componentType.isAssignableFrom(attr.getClass())) {
+                    coll.add(componentType.cast(attr));
+                }
             }
 
             return clazz.cast(coll.toArray((Object[]) Array.newInstance(clazz.getComponentType(), 0)));

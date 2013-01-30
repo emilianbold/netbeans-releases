@@ -40,7 +40,6 @@
 package org.netbeans.modules.php.smarty;
 
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
-import org.netbeans.modules.php.api.phpmodule.PhpProgram;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.smarty.ui.options.SmartyOptions;
 import org.openide.filesystems.FileObject;
@@ -49,7 +48,7 @@ import org.openide.filesystems.FileObject;
 /**
  * @author Martin Fousek
  */
-public class SmartyFramework extends PhpProgram {
+public class SmartyFramework {
 
     public static final String OPTIONS_SUB_PATH = "Smarty"; // NOI18N
     public static final String BASE_CLASS_NAME = "Smarty"; // NOI18N
@@ -78,15 +77,10 @@ public class SmartyFramework extends PhpProgram {
      * Version of SMARTY templates.
      */
     private static Version smartyVersion = Version.SMARTY3;
-
-    public SmartyFramework() {
-        super(null);
-    }
-
-    @Override
-    public String validate() {
-        return null;
-    }
+    /**
+     * Toggle comment option. How to comment inside .tpl files.
+     */
+    private static ToggleCommentOption toggleCommentOption = ToggleCommentOption.SMARTY;
 
     /**
      * @return full IDE options Smarty path
@@ -102,6 +96,11 @@ public class SmartyFramework extends PhpProgram {
         return OPTIONS_SUB_PATH;
     }
 
+    /**
+     * Gets the close delimiter for the given file. In relation to the owning project and general settings.
+     * @param fileObject any FileObject, never {@code null}
+     * @return close delimiter of the project which is owning that file if any or global close delimiter from Options
+     */
     public static String getCloseDelimiter(FileObject fileObject) {
         PhpModule phpModule = PhpModule.forFileObject(fileObject);
         if (phpModule != null && !SmartyPhpModuleCustomizerExtender.getCustomCloseDelimiter(phpModule).isEmpty()) {
@@ -111,6 +110,11 @@ public class SmartyFramework extends PhpProgram {
         }
     }
 
+    /**
+     * Gets the open delimiter for the given file. In relation to the owning project and general settings.
+     * @param fileObject any FileObject, never {@code null}
+     * @return open delimiter of the project which is owning that file if any or global open delimiter from Options
+     */
     public static String getOpenDelimiter(FileObject fileObject) {
         PhpModule phpModule = PhpModule.forFileObject(fileObject);
         if (phpModule != null && !SmartyPhpModuleCustomizerExtender.getCustomOpenDelimiter(phpModule).isEmpty()) {
@@ -125,6 +129,14 @@ public class SmartyFramework extends PhpProgram {
             depthOfScanningForTpl = SmartyOptions.getInstance().getScanningDepth();
         }
         return depthOfScanningForTpl;
+    }
+
+    public static String getDelimiterDefaultOpen() {
+        return delimiterDefaultOpen;
+    }
+
+    public static String getDelimiterDefaultClose() {
+        return delimiterDefaultClose;
     }
 
     public static void setDelimiterDefaultClose(String delimiterDefaultClose) {
@@ -143,8 +155,17 @@ public class SmartyFramework extends PhpProgram {
         SmartyFramework.smartyVersion = version;
     }
 
+    public static void setToggleCommentOption(ToggleCommentOption toggleCommentOption) {
+        SmartyFramework.toggleCommentOption = toggleCommentOption;
+    }
+
     public enum Version {
         SMARTY3,
         SMARTY2;
+    }
+
+    public enum ToggleCommentOption {
+        SMARTY,
+        CONTEXT
     }
 }

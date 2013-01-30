@@ -52,6 +52,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import org.netbeans.modules.cnd.apt.impl.support.APTLiteLiteralToken;
 import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
@@ -117,6 +118,20 @@ public abstract class APTBaseLanguageFilter implements APTLanguageFilter {
     }
 
     protected Token onID(Token token) {
+        // literal token has new type inside already
+        if (token instanceof APTLiteLiteralToken) {
+            APTLiteLiteralToken literalToken = (APTLiteLiteralToken)token;
+            if (keywords.contains(literalToken.getLiteralType())) {
+                assert literalToken.getLiteralType() == filter.get(((APTToken)token).getTextID());
+                return new FilterLiteralToken((APTLiteLiteralToken)token);
+            } else {
+                return token;
+            }
+        }
+        return defaultWrap(token);
+    }
+    
+    protected final Token defaultWrap(Token token) {
         Integer newType = filter.get(((APTToken)token).getTextID());
         if (newType != null) {
             int ttype = newType.intValue();
@@ -287,5 +302,105 @@ public abstract class APTBaseLanguageFilter implements APTLanguageFilter {
             return null;
         }        
     }
+    
+    /**
+     * Special wrapper for literal tokens, they have new type inside already 
+     * so there is no need to have field for a new type
+     */
+    private static class FilterLiteralToken implements APTToken {
+        private final APTLiteLiteralToken origToken;
 
+        public FilterLiteralToken(APTLiteLiteralToken origToken) {
+            this.origToken = origToken;
+        }
+
+        public int getOffset() {
+            return origToken.getOffset();
+        }
+
+        public void setOffset(int o) {
+            origToken.setOffset(o);
+        }
+
+        public int getEndOffset() {
+            return origToken.getEndOffset();
+        }
+
+        public void setEndOffset(int o) {
+            origToken.setEndOffset(o);
+        }
+
+        public int getEndColumn() {
+            return origToken.getEndColumn();
+        }
+
+        public void setEndColumn(int c) {
+            origToken.setEndColumn(c);
+        }
+
+        public int getEndLine() {
+            return origToken.getEndLine();
+        }
+
+        public void setEndLine(int l) {
+            origToken.setEndLine(l);
+        }
+
+        public String getText() {
+            return origToken.getText();
+        }
+
+        public CharSequence getTextID() {
+            return origToken.getTextID();
+        }
+
+        public void setTextID(CharSequence id) {
+            origToken.setTextID(id);
+        }
+
+        public Object getProperty(Object key) {
+            return null;
+        }
+
+        public int getColumn() {
+            return origToken.getColumn();
+        }
+
+        public void setColumn(int c) {
+            origToken.setColumn(c);
+        }
+
+        public int getLine() {
+            return origToken.getLine();
+        }
+
+        public void setLine(int l) {
+            origToken.setLine(l);
+        }
+
+        public String getFilename() {
+            return origToken.getFilename();
+        }
+
+        public void setFilename(String name) {
+            origToken.setFilename(name);
+        }
+
+        public void setText(String t) {
+            origToken.setText(t);
+        }
+
+        public int getType() {
+            return origToken.getLiteralType();
+        }
+
+        public void setType(int t) {
+            throw new IllegalStateException("Not supported"); //NOI18N
+        }
+        
+        @Override
+        public String toString() {
+            return "FilterToken: " + APTUtils.getAPTTokenName(getType()) + ((origToken == null) ? "null" : origToken.toString()); // NOI18N
+        }
+    }
 }

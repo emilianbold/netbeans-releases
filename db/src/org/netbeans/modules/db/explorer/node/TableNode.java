@@ -44,6 +44,8 @@ package org.netbeans.modules.db.explorer.node;
 
 import java.awt.datatransfer.Transferable;
 import java.io.IOException;
+import java.util.Map;
+import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.db.explorer.DatabaseMetaDataTransfer;
@@ -56,7 +58,6 @@ import org.netbeans.lib.ddl.impl.Specification;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.explorer.DatabaseConnector;
 import org.netbeans.modules.db.explorer.DatabaseMetaDataTransferAccessor;
-import org.netbeans.modules.db.explorer.action.RefreshAction;
 import org.netbeans.modules.db.metadata.model.api.Action;
 import org.netbeans.modules.db.metadata.model.api.Metadata;
 import org.netbeans.modules.db.metadata.model.api.MetadataElementHandle;
@@ -70,7 +71,6 @@ import org.openide.nodes.PropertySupport;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.SystemAction;
 import org.openide.util.datatransfer.ExTransferable;
 
 /**
@@ -80,6 +80,8 @@ import org.openide.util.datatransfer.ExTransferable;
 public class TableNode extends BaseNode implements SchemaNameProvider {
     private static final String ICONBASE = "org/netbeans/modules/db/resources/table.gif"; // NOI18N
     private static final String FOLDER = "Table"; //NOI18N
+    private static final Map<Node, Object> NODES_TO_REFRESH =
+            new WeakHashMap<Node, Object>();
 
     /**
      * Create an instance of TableNode.
@@ -176,7 +178,7 @@ public class TableNode extends BaseNode implements SchemaNameProvider {
             Exceptions.printStackTrace(e);
         }
 
-        SystemAction.get(RefreshAction.class).performAction(new Node[] { getParentNode() });
+        setValue(BaseFilterNode.REFRESH_ANCESTOR_DISTANCE, new Integer(1));
     }
 
     @Override

@@ -823,14 +823,17 @@ public class FileUtils {
     public Properties loadResourcePropertiesFile(String filename) {
         System.out.println(filename);
         Properties prop = new Properties();
-        InputStream is = null;
-        try {
-            if (filename != null) {
-                is = getClass().getResourceAsStream(filename);
+        if (filename != null) {
+            try {
+                InputStream is = getClass().getResourceAsStream(filename);
+                try {
+                    prop.load(is);
+                } finally {
+                    is.close();
+                }
+            } catch (IOException ex) {
+                myLogger.log(Level.FINE, null, ex);
             }
-            prop.load(is);
-        } catch (IOException ex) {
-            myLogger.log(Level.FINE, null, ex);
         }
         System.out.println(prop);
         return prop;

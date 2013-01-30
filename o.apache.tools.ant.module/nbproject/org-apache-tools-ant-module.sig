@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 3.49.0
+#Version 3.57.1
 
 CLSS public java.beans.FeatureDescriptor
 cons public init()
@@ -179,6 +179,7 @@ meth public boolean isOverridden()
 meth public java.lang.String getName()
 meth public java.lang.String getQualifiedName()
 meth public java.lang.String toString()
+meth public org.apache.tools.ant.module.api.AntProjectCookie getOriginatingScript()
 meth public org.apache.tools.ant.module.api.AntProjectCookie getScript()
 meth public org.w3c.dom.Element getElement()
 supr java.lang.Object
@@ -257,6 +258,7 @@ meth public java.lang.Object getCustomData(org.apache.tools.ant.module.spi.AntLo
 meth public java.lang.String getDisplayName()
 meth public java.lang.String toString()
 meth public java.lang.String[] getOriginatingTargets()
+meth public java.util.Map<java.lang.String,java.lang.String> getProperties()
 meth public org.openide.windows.InputOutput getIO()
 meth public org.openide.windows.OutputListener createStandardHyperlink(java.net.URL,java.lang.String,int,int,int,int)
 meth public void consumeException(java.lang.Throwable)
@@ -365,12 +367,15 @@ CLSS public abstract interface static org.openide.nodes.Node$Cookie
  outer org.openide.nodes.Node
 
 CLSS public final org.openide.util.HelpCtx
-cons public init(java.lang.Class)
+cons public init(java.lang.Class<?>)
+ anno 0 java.lang.Deprecated()
 cons public init(java.lang.String)
 cons public init(java.net.URL)
  anno 0 java.lang.Deprecated()
 fld public final static org.openide.util.HelpCtx DEFAULT_HELP
+innr public abstract interface static Displayer
 innr public abstract interface static Provider
+meth public boolean display()
 meth public boolean equals(java.lang.Object)
 meth public int hashCode()
 meth public java.lang.String getHelpID()

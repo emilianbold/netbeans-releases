@@ -70,6 +70,7 @@ import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreeUtilities;
+import org.netbeans.modules.java.hints.providers.spi.HintMetadata;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.openide.util.Exceptions;
@@ -165,6 +166,10 @@ public class Hacks {
     }
 
     public static @CheckForNull TypeMirror parseFQNType(@NonNull CompilationInfo info, @NonNull String spec) {
+        if (spec.length() == 0) {
+            return null;
+        }
+        
         TypeElement jlObject = info.getElements().getTypeElement("java.lang.Object");
         
         //XXX:
@@ -206,5 +211,9 @@ public class Hacks {
         }
 
         return null;
+    }
+    
+    public static interface InspectAndTransformOpener {
+        public void openIAT(HintMetadata hm);
     }
 }

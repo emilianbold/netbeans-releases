@@ -61,7 +61,6 @@ import org.netbeans.api.extexecution.print.LineConvertor;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
-import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.makeproject.api.BuildActionsProvider.OutputStreamHandler;
@@ -101,6 +100,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler {
     // first is in determining the type of console for remote;
     // second is in canCancel
     private static final boolean RUN_REMOTE_IN_OUTPUT_WINDOW = false;
+    private static final RequestProcessor RP = new RequestProcessor("DefaultProjectActionHandler", 1); // NOI18N
 
     @Override
     public void init(ProjectActionEvent pae, ProjectActionEvent[] paes, Collection<OutputStreamHandler> outputHandlers) {
@@ -146,7 +146,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler {
         };
 
         if (SwingUtilities.isEventDispatchThread()) {
-            RequestProcessor.getDefault().post(executor);
+            RP.post(executor);
         } else {
             executor.run();
         }
@@ -175,6 +175,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler {
         boolean unbuffer = false;
         boolean runInInternalTerminal;
         boolean runInExternalTerminal;
+        boolean statusEx = false;
         String commandLine = null;
         CompilerSet cs;
 
@@ -183,9 +184,10 @@ public class DefaultProjectActionHandler implements ProjectActionHandler {
         // Used if not RUN. Also in case of QMake args are tweaked...
 
         if (actionType == ProjectActionEvent.PredefinedType.RUN) {
+            statusEx = true;
             runInInternalTerminal = consoleType == RunProfile.CONSOLE_TYPE_INTERNAL;
             runInExternalTerminal = consoleType == RunProfile.CONSOLE_TYPE_EXTERNAL;
-            if (pae.getProfile().getTerminalType() == null || pae.getProfile().getTerminalPath() == null) {
+            if (runInExternalTerminal && (pae.getProfile().getTerminalType() == null || pae.getProfile().getTerminalPath() == null)) {
                 String errmsg;
                 if (Utilities.isMac()) {
                     errmsg = getString("Err_NoTermFoundMacOSX");
@@ -194,6 +196,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler {
                 }
                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(errmsg));
                 consoleType = RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW;
+                runInExternalTerminal = runInInternalTerminal = false;
             }
 
             if (!conf.getDevelopmentHost().isLocalhost()) {
@@ -286,7 +289,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler {
 
         NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv).
                 setWorkingDirectory(workingDirectory).
-                unbufferOutput(unbuffer).
+                unbufferOutput(unbuffer).setStatusEx(statusEx).
                 addNativeProcessListener(processChangeListener);
 
         if (commandLine != null) {
@@ -298,7 +301,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler {
             }
             npb.setExecutable(exe).setArguments(args.toArray(new String[args.size()]));
         }
-
+        
         if (actionType == ProjectActionEvent.PredefinedType.BUILD || actionType == ProjectActionEvent.PredefinedType.BUILD_TESTS) {
             npb.redirectError();
         }
@@ -322,13 +325,21 @@ public class DefaultProjectActionHandler implements ProjectActionHandler {
             }
         }
 
+        boolean requestFocus = (actionType == PredefinedType.RUN
+                || actionType == PredefinedType.DEBUG
+                || actionType == PredefinedType.DEBUG_STEPINTO
+                || actionType == PredefinedType.DEBUG_TEST
+                || actionType == PredefinedType.DEBUG_STEPINTO_TEST
+                || actionType == PredefinedType.CUSTOM_ACTION);
+
         NativeExecutionDescriptor descr =
                 new NativeExecutionDescriptor().controllable(true).
                 frontWindow(true).
+                requestFocus(requestFocus).
                 inputVisible(showInput).
                 inputOutput(io).
                 outLineBased(!unbuffer).
-                showProgress(!CndUtils.isStandalone()).
+                showProgress(false).
                 postMessageDisplayer(new PostMessageDisplayer.Default(pae.getActionName())).
                 postExecution(processChangeListener).
                 errConvertorFactory(processChangeListener).
@@ -375,7 +386,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler {
 
     @Override
     public void cancel() {
-        RequestProcessor.getDefault().post(new Runnable() {
+        RP.post(new Runnable() {
 
             @Override
             public void run() {
@@ -457,6 +468,9 @@ public class DefaultProjectActionHandler implements ProjectActionHandler {
                     Exceptions.printStackTrace(ex);
                 }
                 outputListener = null;
+            }
+            if (lineConvertor instanceof ChangeListener) {
+                ((ChangeListener)lineConvertor).stateChanged(new ChangeEvent(this));
             }
         }
 

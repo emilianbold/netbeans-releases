@@ -44,9 +44,11 @@ package org.netbeans.modules.java.hints.spiimpl;
 
 import com.sun.source.tree.IfTree;
 import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.Scope;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
+import com.sun.source.tree.VariableTree;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreeScanner;
@@ -150,8 +152,7 @@ public class UtilitiesTest extends TestBase {
         String code = "$mods$ java.lang.String $name;";
         Tree result = Utilities.parseAndAttribute(info, code, s);
 
-//        String golden = "$mods$ java.lang.String $name";
-        String golden = "$mods$java.lang.String $name";
+        String golden = "$mods$ java.lang.String $name";
 
         assertEquals(golden.replaceAll("[ \n\r]+", " "), result.toString().replaceAll("[ \n\r]+", " ").trim());
     }
@@ -210,8 +211,7 @@ public class UtilitiesTest extends TestBase {
         String code = "$mods$ $type $name() { $r$; }";
         Tree result = Utilities.parseAndAttribute(info, code, s);
 
-//        String golden = "$mods$ java.lang.String $name";
-        String golden = "$mods$$type $name() { $r$; }";
+        String golden = "$mods$ $type $name() { $r$; }";
 
         assertEquals(golden.replaceAll("[ \n\r]+", " "), result.toString().replaceAll("[ \n\r]+", " ").trim());
     }
@@ -320,7 +320,7 @@ public class UtilitiesTest extends TestBase {
 
         assertTrue(result.getKind().name(), result.getKind() == Kind.CLASS);
 
-        String golden = /*"$mods$" + */" class $name extends java.util.LinkedList { $name() { super(); } $methods$ }";
+        String golden = " $mods$ class $name extends java.util.LinkedList { $name() { super(); } $methods$ }";
         assertEquals(golden.replaceAll("[ \n\r]+", " "), result.toString().replaceAll("[ \n\r]+", " "));
     }
 
@@ -397,7 +397,7 @@ public class UtilitiesTest extends TestBase {
 
         assertTrue(result.getKind().name(), result.getKind() == Kind.NEW_CLASS);
 
-        String golden = "new $type(){ () { super(); } $mods$$resultType $methodName($args$) { $statements$; } }";
+        String golden = "new $type(){ () { super(); } $mods$ $resultType $methodName($args$) { $statements$; } }";
         assertEquals(golden.replaceAll("[ \n\r]+", " "), result.toString().replaceAll("[ \n\r]+", " "));
 
         Collection<Diagnostic<? extends JavaFileObject>> errors = new LinkedList<Diagnostic<? extends JavaFileObject>>();
@@ -405,7 +405,7 @@ public class UtilitiesTest extends TestBase {
         result = Utilities.parseAndAttribute(info, "new $type() {\n $mods$ $resultType $methodName($args$) {\n $statements$;\n }\n }\n", null, errors);
         assertTrue(result.getKind().name(), result.getKind() == Kind.NEW_CLASS);
 
-        golden = "new $type(){ $mods$$resultType $methodName($args$) { $statements$; } }";
+        golden = "new $type(){ $mods$ $resultType $methodName($args$) { $statements$; } }";
         assertEquals(golden.replaceAll("[ \n\r]+", " "), result.toString().replaceAll("[ \n\r]+", " "));
         assertTrue(errors.toString(), errors.isEmpty());
     }
@@ -477,6 +477,32 @@ public class UtilitiesTest extends TestBase {
                         "    $after$;\n" +
                         "}";
         assertEquals(golden.replaceAll("[ \n\r]+", " "), result.toString().replaceAll("[ \n\r]+", " "));
+    }
+    
+    public void testMethodFormalParams() throws Exception {
+        prepareTest("test/Test.java", "package test; public class Test{}");
+
+        Scope s = Utilities.constructScope(info, Collections.<String, TypeMirror>emptyMap());
+        Tree result = Utilities.parseAndAttribute(info, "$mods$ $ret $name($pref$, $type $name, $suff$) throws $throws$ { $body$; }", s);
+
+        assertTrue(result.getKind().name(), result.getKind() == Kind.METHOD);
+
+        String golden = " $mods$ $ret $name($pref$, $type $name, $suff$) throws $throws$ { $body$; }";
+        assertEquals(golden.replaceAll("[ \n\r]+", " "), result.toString().replaceAll("[ \n\r]+", " "));
+    }
+    
+    public void testPartialModifiers() throws Exception {
+        prepareTest("test/Test.java", "package test; public class Test{}");
+
+        Scope s = Utilities.constructScope(info, Collections.<String, TypeMirror>emptyMap());
+        Tree result = Utilities.parseAndAttribute(info, "$mods$ @Deprecated public $type $name;", s);
+
+        assertTrue(result.getKind().name(), result.getKind() == Kind.VARIABLE);
+
+        ModifiersTree mods = ((VariableTree) result).getModifiers();
+        String golden = "$mods$,@Deprecated(), [public]";
+        
+        assertEquals(golden.replaceAll("[ \n\r]+", " "), mods.getAnnotations().toString() + ", " + mods.getFlags().toString());
     }
     
     public void testToHumanReadableTime() {

@@ -64,7 +64,7 @@ public class DebugFileCommand extends Command implements Displayable {
     }
 
     @Override
-    public void invokeAction(final Lookup context) {
+    public void invokeActionInternal(final Lookup context) {
         FileObject fileObj = CommandUtils.fileForContextOrSelectedNodes(context);
         if (isSeleniumFile(fileObj)) {
             // selenium
@@ -84,7 +84,7 @@ public class DebugFileCommand extends Command implements Displayable {
     }
 
     @Override
-    public boolean isActionEnabled(Lookup context) {
+    public boolean isActionEnabledInternal(Lookup context) {
         FileObject fileObj = CommandUtils.fileForContextOrSelectedNodes(context);
         if (isSeleniumFile(fileObj)) {
             // selenium

@@ -30,6 +30,7 @@
  */
 package org.netbeans.modules.java.source.matching;
 
+import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.ArrayTypeTree;
 import com.sun.source.tree.AssertTree;
@@ -69,6 +70,7 @@ import com.sun.source.tree.SynchronizedTree;
 import com.sun.source.tree.ThrowTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
+import com.sun.source.tree.TreeVisitor;
 import com.sun.source.tree.TryTree;
 import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.TypeParameterTree;
@@ -79,6 +81,7 @@ import com.sun.source.tree.WildcardTree;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreeScanner;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -92,6 +95,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -331,8 +335,15 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
         
         if (p != null && p.getLeaf().getKind() == Kind.IDENTIFIER) {
             treeName = ((IdentifierTree) p.getLeaf()).getName().toString();
-        } else if (p != null && p.getLeaf().getKind() == Kind.TYPE_PARAMETER) {
+        } else if (p != null && p.getLeaf().getKind() == Kind.TYPE_PARAMETER && ((TypeParameterTree) p.getLeaf()).getBounds().isEmpty()) {
             treeName = ((TypeParameterTree) p.getLeaf()).getName().toString();
+        } else if (p != null && p.getLeaf().getKind() == Kind.PARAMETERIZED_TYPE && (node.getKind() == Kind.IDENTIFIER || node.getKind() == Kind.MEMBER_SELECT)) {
+            ParameterizedTypeTree ptt = (ParameterizedTypeTree) p.getLeaf();
+            
+            if (ptt.getTypeArguments().size() == 1 && isMultistatementWildcardTree(ptt.getTypeArguments().get(0))) {
+                p = new TreePath(p, ptt.getType());
+                bindState.multiVariables.put(getWildcardTreeName(ptt.getTypeArguments().get(0)).toString(), Collections.<TreePath>emptyList());
+            }
         }
         
         if (treeName != null) {
@@ -814,7 +825,7 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
                 String currentName = node.getSimpleName().toString();
 
                 if (existingName != null) {
-                    if (!existingName.equals(name)) {
+                    if (!existingName.equals(currentName)) {
                         return false;
                     }
                 } else {
@@ -1048,7 +1059,7 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
             String currentName = node.getName().toString();
 
             if (existingName != null) {
-                if (!existingName.equals(name)) {
+                if (!existingName.equals(currentName)) {
                     return false;
                 }
             } else {
@@ -1081,11 +1092,91 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
             return super.visitModifiers(node, p);
 
         ModifiersTree t = (ModifiersTree) p.getLeaf();
+        List<AnnotationTree> annotations = new ArrayList<AnnotationTree>(t.getAnnotations());
+        IdentifierTree ident = !annotations.isEmpty() && annotations.get(0).getAnnotationType().getKind() == Kind.IDENTIFIER ? (IdentifierTree) annotations.get(0).getAnnotationType() : null;
 
+        if (ident != null && options.contains(Options.ALLOW_VARIABLES_IN_PATTERN)) {
+            annotations.remove(0);
+            
+            List<AnnotationTree> real = new ArrayList<AnnotationTree>(node.getAnnotations());
+            final Set<Modifier> flags = EnumSet.noneOf(Modifier.class);
+            
+            flags.addAll(node.getFlags());
+            
+            if (!flags.containsAll(t.getFlags())) return false;
+            
+            flags.removeAll(t.getFlags());
+            
+            for (Iterator<AnnotationTree> it = annotations.iterator(); it.hasNext();) {
+                AnnotationTree at = it.next();
+                boolean found = false;
+                
+                for (Iterator<AnnotationTree> it2 = real.iterator(); it2.hasNext();) {
+                    AnnotationTree r = it2.next();
+                    State orig = State.copyOf(bindState);
+                    
+                    if (doSuperScan(r, new TreePath(p, at)) == Boolean.TRUE) {
+                        it2.remove();
+                        it.remove();
+                        found = true;
+                        break;
+                    }
+                    
+                    bindState = orig;
+                }
+                
+                if (!found) return false;
+            }
+            
+            final boolean[] actualAnnotationsMask = new boolean[node.getAnnotations().size()];
+            int ai = 0;
+            
+            for (AnnotationTree at : node.getAnnotations()) {
+                actualAnnotationsMask[ai++] = real.contains(at);
+            }
+            
+            class CallableTreePath extends TreePath implements Callable<Object[]> {
+                public CallableTreePath(TreePath tp) {
+                    super(tp.getParentPath(), tp.getLeaf());
+                }
+                @Override public Object[] call() throws Exception {
+                    return new Object[] {
+                        flags,
+                        actualAnnotationsMask
+                    };
+                }
+            }
+            
+            String name = ident.getName().toString();
+            TreePath currentPath = new CallableTreePath(getCurrentPath());
+            TreePath original = bindState.variables.get(name);
+
+            if (original == null) {
+                bindState.variables.put(name, currentPath);
+                return true;
+            } else {
+                //XXX: not implemented yet...
+                return false;
+            }
+        }
+        
         if (!checkLists(node.getAnnotations(), t.getAnnotations(), p))
             return false;
 
         return node.getFlags().equals(t.getFlags());
+    }
+
+    @Override
+    public Boolean visitAnnotation(AnnotationTree node, TreePath p) {
+        if (p == null)
+            return super.visitAnnotation(node, p);
+
+        AnnotationTree t = (AnnotationTree) p.getLeaf();
+        
+        if (!checkLists(node.getArguments(), t.getArguments(), p))
+            return false;
+
+        return scan(node.getAnnotationType(), t.getAnnotationType(), p);
     }
 
     public Boolean visitNewArray(NewArrayTree node, TreePath p) {
@@ -1303,9 +1394,37 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
         return node.getPrimitiveTypeKind() == t.getPrimitiveTypeKind();
     }
 
-//    public Boolean visitTypeParameter(TypeParameterTree node, TreePath p) {
-//        throw new UnsupportedOperationException("Not supported yet.");
-//    }
+    public Boolean visitTypeParameter(TypeParameterTree node, TreePath p) {
+        if (p == null)
+            return super.visitTypeParameter(node, p);
+
+        TypeParameterTree t = (TypeParameterTree) p.getLeaf();
+
+        String name = t.getName().toString();
+
+        if (name.startsWith("$")) { //XXX: there should be a utility method for this check
+            String existingName = bindState.variables2Names.get(name);
+            String currentName = node.getName().toString();
+
+            if (existingName != null) {
+                if (!existingName.equals(currentName)) {
+                    return false;
+                }
+            } else {
+                //XXX: putting the variable into both variables and variable2Names.
+                //variables is needed by the declarative hints to support conditions like
+                //referencedIn($variable, $statements$):
+                //causes problems in JavaFix, see visitIdentifier there.
+                bindState.variables.put(name, getCurrentPath());
+                bindState.variables2Names.put(name, currentName);
+            }
+        } else {
+            if (!node.getName().contentEquals(name))
+                return false;
+        }
+        
+        return checkLists(node.getBounds(), t.getBounds(), p);
+    }
 
     public Boolean visitInstanceOf(InstanceOfTree node, TreePath p) {
         if (p == null)
@@ -1348,7 +1467,7 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
             String currentName = node.getName().toString();
 
             if (existingName != null) {
-                if (!existingName.equals(name)) {
+                if (!existingName.equals(currentName)) {
                     return false;
                 }
             } else {
@@ -1421,8 +1540,8 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
         VerifyResult matchingResult;
         
         if (!nodeEl.getModifiers().contains(Modifier.STATIC)) {
-            if ((nodeEl.getKind().isClass() || nodeEl.getKind().isInterface()) && info.getElementUtilities().enclosingTypeElement(nodeEl) == null) {
-                //top-level class:
+            if ((nodeEl.getKind().isClass() || nodeEl.getKind().isInterface())) {
+                //class:
                 matchingResult = VerifyResult.MATCH;
             } else {
                 matchingResult = VerifyResult.MATCH_CHECK_DEEPER;
@@ -1651,7 +1770,7 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
             }
         }
         
-        if (t.getKind() == Kind.TYPE_PARAMETER) {
+        if (t.getKind() == Kind.TYPE_PARAMETER && ((TypeParameterTree) t).getBounds().isEmpty()) {
             String name = ((TypeParameterTree) t).getName().toString();
 
             if (name.startsWith("$")) {

@@ -47,7 +47,19 @@ import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
-import org.netbeans.modules.php.editor.parser.astnodes.*;
+import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
+import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.Comment;
+import org.netbeans.modules.php.editor.parser.astnodes.FunctionName;
+import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocBlock;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocMethodTag;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTag;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTypeTag;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocVarTypeTag;
+import org.netbeans.modules.php.editor.parser.astnodes.Program;
+import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
+import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultTreePathVisitor;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 
@@ -55,7 +67,10 @@ import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
  * This is AST Utils class.
  * @author Petr Pisl
  */
-public class Utils {
+public final class Utils {
+
+    private Utils() {
+    }
 
     /**
      *
@@ -96,7 +111,7 @@ public class Utils {
             if (next instanceof FunctionName) {
                 FunctionName fnc = (FunctionName) next;
                 String functionName = CodeUtils.extractFunctionName(fnc);
-                if (functionName != null && "define".equalsIgnoreCase(functionName)) {//NOI18N
+                if (functionName != null && "define".equalsIgnoreCase(functionName)) { //NOI18N
                     isConstantDeclaration = true;
                 }
             }
@@ -201,7 +216,7 @@ public class Utils {
                 // probably no node was found except whole file.
                 // try to look for a documentation node
                 processComments((Program) node);
-            } else if (programNode instanceof Program) {
+            } else if (programNode != null) {
                 // we need to handle comment nodes too,
                 // but we need a program node for that
                 processComments((Program) programNode);
@@ -212,7 +227,7 @@ public class Utils {
         private void processComments(final Program program) {
             List<Comment> comments = program.getComments();
             for (Comment comment : comments) {
-                if (comment.getStartOffset() <= offset && offset <= comment.getEndOffset()){
+                if (comment.getStartOffset() <= offset && offset <= comment.getEndOffset()) {
                     scan(comment);
                 }
             }
@@ -307,7 +322,8 @@ public class Utils {
                     // node is in the range
                     nodes.add(node);
                 } else {
-                    if ((node.getStartOffset() < range.getStart() && range.getStart() < node.getEndOffset()) || (node.getStartOffset() < range.getEnd() && range.getEnd() < node.getEndOffset())) {
+                    if ((node.getStartOffset() < range.getStart() && range.getStart() < node.getEndOffset())
+                            || (node.getStartOffset() < range.getEnd() && range.getEnd() < node.getEndOffset())) {
                         // node is partialy in the range.
                         node.accept(this);
                     }
@@ -331,9 +347,9 @@ public class Utils {
         if (comment != null && (comment instanceof PHPDocBlock)) {
             PHPDocBlock phpDoc = (PHPDocBlock) comment;
             for (PHPDocTag tag : phpDoc.getTags()) {
-                if (tag.getKind() == PHPDocTag.Type.PROPERTY
-                        || tag.getKind() == PHPDocTag.Type.PROPERTY_READ
-                        || tag.getKind() == PHPDocTag.Type.PROPERTY_WRITE) {
+                if (tag.getKind().equals(PHPDocTag.Type.PROPERTY)
+                        || tag.getKind().equals(PHPDocTag.Type.PROPERTY_READ)
+                        || tag.getKind().equals(PHPDocTag.Type.PROPERTY_WRITE)) {
                     tags.add((PHPDocVarTypeTag) tag);
                 }
             }

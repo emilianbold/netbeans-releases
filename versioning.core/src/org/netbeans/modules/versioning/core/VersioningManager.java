@@ -203,6 +203,7 @@ public class VersioningManager implements PropertyChangeListener, ChangeListener
         @Override public String getMenuLabel() { throw new IllegalStateException(); }
         @Override public boolean accept(VCSContext ctx) { throw new IllegalStateException(); }
         @Override public VCSHistoryProvider getVCSHistoryProvider() {throw new IllegalStateException(); }
+        @Override public boolean isMetadataFile(VCSFileProxy file) { throw new IllegalStateException(); }
     };
     
     
@@ -253,9 +254,7 @@ public class VersioningManager implements PropertyChangeListener, ChangeListener
             }
         }
 
-        flushFileOwnerCache();
-        fireFileStatusChanged(null);
-        refreshAllAnnotations();
+        versionedRootsChanged();
     }
 
     private void fireFileStatusChanged(Set<VCSFileProxy> files) {
@@ -567,8 +566,10 @@ public class VersioningManager implements PropertyChangeListener, ChangeListener
     }
     
     public void versionedRootsChanged(VersioningSystem owner) {
+        flushCachedContext();
         flushFileOwnerCache();
         fireFileStatusChanged(null);
+        refreshAllAnnotations();
     }
     
     @Override
@@ -634,5 +635,9 @@ public class VersioningManager implements PropertyChangeListener, ChangeListener
 
     boolean isLocalHistory(VersioningSystem system) {
         return system == localHistory;
+    }
+
+    private void flushCachedContext () {
+        SPIAccessor.IMPL.flushCachedContext();
     }
 }

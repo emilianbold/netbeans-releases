@@ -336,8 +336,11 @@ public class Utils {
         try {
             if (primaryFile.exists() && !primaryFile.isDirectory()) {
                 FileInputStream in = new FileInputStream(primaryFile);
-                
-                resources = DDProvider.getDefault().getResourcesGraph(in);
+                try {
+                    resources = DDProvider.getDefault().getResourcesGraph(in);
+                } finally {
+                    in.close();
+                }
             }
         } catch (SAXException ex) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,ex);

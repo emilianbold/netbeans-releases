@@ -46,6 +46,7 @@ package org.openide.explorer.view;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -543,6 +544,11 @@ final class ViewTooltips extends MouseAdapter implements MouseMotionListener {
             Graphics2D g = nue.createGraphics();
             g.setColor (bg);
             g.fillRect (0, 0, d.width, d.height + 2);
+            if( jc instanceof Container && !jc.isValid() ) {
+                //#214739
+                jc.setSize( d.width, d.height );
+                jc.doLayout();
+            }
             SwingUtilities.paintComponent(g, jc, this, 0, 0, d.width, d.height + 2);
             g.dispose();
             setImage (nue);

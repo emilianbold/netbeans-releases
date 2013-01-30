@@ -51,10 +51,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.util.ArrayList;
-import java.util.Iterator;
 import javax.swing.*;
+import org.netbeans.modules.options.java.api.JavaOptions;
 import org.netbeans.modules.profiler.api.JavaPlatform;
+import org.netbeans.spi.options.OptionsPanelController;
 
 
 /**
@@ -104,8 +104,21 @@ import org.netbeans.modules.profiler.api.JavaPlatform;
     "ProfilerOptionsPanel_TakingSnapshotComboAccessDescr=Specifies what to do when taking the snapshot",
     "ProfilerOptionsPanel_OomeComboAccessDescr=Specifies action on OutOfMemoryError",
     "ProfilerOptionsPanel_HeapWalkerLabelText=HeapWalker:",
-    "ProfilerOptionsPanel_JavaPlatformComboAccessDescr=Java platform used for running the profiled application"
+    "ProfilerOptionsPanel_JavaPlatformComboAccessDescr=Java platform used for running the profiled application",
+    "ProfilerOptionsPanel_IfThreadsMonitoringEnabledHint=if threads monitoring is enabled",
+    "ProfilerOptionsPanel_KW_profiler=profiler",
+    "ProfilerOptionsPanel_KW_profile=profile",
+    "ProfilerOptionsPanel_KW_profiling=profiling",
+    "ProfilerOptionsPanel_KW_cpu=cpu",
+    "ProfilerOptionsPanel_KW_memory=memory",
+    "ProfilerOptionsPanel_KW_threads=threads",
+    "ProfilerOptionsPanel_KW_telemetry=telemetry"
 })
+@OptionsPanelController.Keywords(keywords={"#ProfilerOptionsPanel_KW_profiler",
+    "#ProfilerOptionsPanel_KW_profile", "#ProfilerOptionsPanel_KW_profiling",
+    "#ProfilerOptionsPanel_KW_cpu", "#ProfilerOptionsPanel_KW_memory",
+    "#ProfilerOptionsPanel_KW_threads", "#ProfilerOptionsPanel_KW_telemetry"},
+        location=JavaOptions.JAVA, tabTitle="org.netbeans.modules.profiler.options.Bundle#ProfilerOptionsCategory_Title")
 public final class ProfilerOptionsPanel extends JPanel implements ActionListener {
     //~ Inner Classes ------------------------------------------------------------------------------------------------------------
 
@@ -178,6 +191,7 @@ public final class ProfilerOptionsPanel extends JPanel implements ActionListener
 //    private JComboBox javaPlatformCombo;
     private JComboBox oomeCombo;
     private JComboBox openThreadsViewCombo;
+    private JLabel onlyThreadsEnabledLabel;
     private JComboBox takingSnapshotCombo;
     private JComboBox telemetryOverviewCombo;
     private JExtendedSpinner portNoSpinner;
@@ -598,6 +612,10 @@ public final class ProfilerOptionsPanel extends JPanel implements ActionListener
                 public Dimension getMinimumSize() {
                     return getPreferredSize();
                 }
+                protected void fireActionEvent() {
+                    onlyThreadsEnabledLabel.setVisible(
+                            !Bundle.ProfilerOptionsPanel_KeyOpenNever().equals(getSelectedItem()));
+                }
             };
         openThreadsViewLabel.setLabelFor(openThreadsViewCombo);
         openThreadsViewCombo.getAccessibleContext()
@@ -620,6 +638,16 @@ public final class ProfilerOptionsPanel extends JPanel implements ActionListener
         int maxHeight = Math.max(telemetryOverviewCombo.getPreferredSize().height, openThreadsViewCombo.getPreferredSize().height);
         telemetryOverviewCombo.setPreferredSize(new Dimension(maxWidth, maxHeight));
         openThreadsViewCombo.setPreferredSize(new Dimension(maxWidth, maxHeight));
+        
+        onlyThreadsEnabledLabel = new JLabel(Bundle.ProfilerOptionsPanel_IfThreadsMonitoringEnabledHint());
+        onlyThreadsEnabledLabel.setEnabled(false);
+        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridwidth = 4;
+        gridBagConstraints.insets = new Insets(5, 0, 0, 6);
+        gridBagConstraints.anchor = GridBagConstraints.WEST;
+        add(onlyThreadsEnabledLabel, gridBagConstraints);
 
         // liveResultsLabel
         JLabel liveResultsLabel = new JLabel(Bundle.ProfilerOptionsPanel_LiveResultsLabelText());
@@ -694,7 +722,7 @@ public final class ProfilerOptionsPanel extends JPanel implements ActionListener
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 8;
-        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.gridwidth = 3;
         gridBagConstraints.insets = new Insets(5, 10, 0, 6);
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         add(takingSnapshotCombo, gridBagConstraints);
@@ -731,6 +759,7 @@ public final class ProfilerOptionsPanel extends JPanel implements ActionListener
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 9;
+        gridBagConstraints.gridwidth = 3;
         gridBagConstraints.insets = new Insets(5, 10, 0, 6);
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         add(oomeCombo, gridBagConstraints);
@@ -781,11 +810,11 @@ public final class ProfilerOptionsPanel extends JPanel implements ActionListener
 
         // oomeDetectionPanel
         gridBagConstraints = new GridBagConstraints();
-        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridx = 4;
         gridBagConstraints.gridy = 9;
         gridBagConstraints.gridwidth = GridBagConstraints.REMAINDER;
         gridBagConstraints.insets = new Insets(5, 0, 0, 6);
-        gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
+        gridBagConstraints.anchor = GridBagConstraints.WEST;
         gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
         add(oomeDetectionPanel, gridBagConstraints);
 
@@ -829,6 +858,7 @@ public final class ProfilerOptionsPanel extends JPanel implements ActionListener
         resetConfirmationsArea.setEnabled(false);
         resetConfirmationsArea.setFont(UIManager.getFont("Label.font")); //NOI18N
         resetConfirmationsArea.setDisabledTextColor(UIManager.getColor("Label.foreground")); //NOI18N
+        resetConfirmationsArea.setBorder(BorderFactory.createEmptyBorder(4, 0, 4, 0));
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;

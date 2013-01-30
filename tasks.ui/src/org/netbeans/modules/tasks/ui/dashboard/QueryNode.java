@@ -56,6 +56,7 @@ import org.netbeans.modules.tasks.ui.actions.Actions.OpenQueryAction;
 import org.netbeans.modules.tasks.ui.settings.DashboardSettings;
 import org.netbeans.modules.tasks.ui.treelist.TreeLabel;
 import org.netbeans.modules.tasks.ui.treelist.TreeListNode;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -75,19 +76,18 @@ public class QueryNode extends TaskContainerNode implements Comparable<QueryNode
     public QueryNode(Query query, TreeListNode parent, boolean refresh) {
         super(refresh, true, parent, query.getDisplayName());
         this.query = query;
-        updateNodes();
         queryListener = new QueryListener();
-        query.addPropertyChangeListener(queryListener);
     }
 
     @Override
-    protected List<Issue> load() {
-        if (isRefresh()) {
-            query.refresh();
-            updateNodes();
-            setRefresh(false);
-        }
-        return new ArrayList<Issue>(query.getIssues());
+    void refreshTaskContainer() {
+        query.refresh();
+    }
+
+    @Override
+    protected void attach() {
+        super.attach();
+        query.addPropertyChangeListener(queryListener);
     }
 
     @Override
@@ -109,7 +109,13 @@ public class QueryNode extends TaskContainerNode implements Comparable<QueryNode
 
     @Override
     List<Issue> getTasks() {
-        return new ArrayList<Issue>(query.getIssues());
+        List<Issue> tasks = Collections.emptyList();
+        try {
+            tasks = new ArrayList<Issue>(query.getIssues());
+        } catch (Throwable throwable) {
+            handleError(throwable);
+        }
+        return tasks;
     }
 
     @Override
@@ -130,6 +136,11 @@ public class QueryNode extends TaskContainerNode implements Comparable<QueryNode
 
     @Override
     protected JComponent createComponent(List<Issue> data) {
+        if (isError()) {
+            setError(false);
+            return null;
+        }
+        updateNodes(data);
         panel = new JPanel(new GridBagLayout());
         panel.setOpaque(false);
         synchronized (LOCK) {
@@ -234,7 +245,12 @@ public class QueryNode extends TaskContainerNode implements Comparable<QueryNode
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
             if (evt.getPropertyName().equals(Query.EVENT_QUERY_ISSUES_CHANGED)) {
-                updateContent();
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        updateContent();
+                    }
+                });
             }
         }
     }

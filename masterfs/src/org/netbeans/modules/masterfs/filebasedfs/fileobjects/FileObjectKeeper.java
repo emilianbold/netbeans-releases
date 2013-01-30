@@ -70,6 +70,7 @@ final class FileObjectKeeper implements FileChangeListener {
     private static final Logger LOG = Logger.getLogger(FileObjectKeeper.class.getName());
     private static final Object TIME_STAMP_LOCK = new Object();
 
+    /** @GuardedBy("this") */
     private Set<FolderObj> kept;
     private Collection<FileChangeListener> listeners;
     private final FolderObj root;
@@ -118,6 +119,9 @@ final class FileObjectKeeper implements FileChangeListener {
              if (timeStamp > 0) {
                  timeStamp = -timeStamp;
              }
+             if (timeStamp == 0) {
+                 timeStamp = -2;
+             }
          }
 
          File file = Watcher.wrap(root.getFileName().getFile(), root);
@@ -139,7 +143,11 @@ final class FileObjectKeeper implements FileChangeListener {
                          BaseFileObj who = factory.getValidFileObject(f, Caller.GetChildern);
                          if (who != null) {
                              LOG.log(Level.FINE, "External change detected {0}", who);  //NOI18N
-                             who.fireFileChangedEvent(expected);
+                             if (who.isData()) {
+                                who.fireFileDataCreatedEvent(expected);
+                             } else {
+                                who.fireFileFolderCreatedEvent(expected);
+                             }
                           } else {
                              LOG.log(Level.FINE, "Cannot get valid FileObject. File probably removed: {0}", f);  //NOI18N
                           }
@@ -175,6 +183,7 @@ final class FileObjectKeeper implements FileChangeListener {
                 FolderObj folder = (FolderObj)fo;
                 folder.getKeeper(children);
                 folder.getChildren();
+                assert Thread.holdsLock(FileObjectKeeper.this);
                 k = kept;
                 if (k != null) {
                     k.add(folder);
@@ -188,7 +197,7 @@ final class FileObjectKeeper implements FileChangeListener {
     }
 
     private void listenToAll(Callable<?> stop, FileFilter filter) {
-        assert Thread.holdsLock(this);
+        assert Thread.holdsLock(FileObjectKeeper.this);
         assert kept == null : "Already listening to " + kept + " now requested for " + root;
         kept = new HashSet<FolderObj>();
         LinkedList<File> it = new LinkedList<File>();
@@ -228,7 +237,7 @@ final class FileObjectKeeper implements FileChangeListener {
     }
 
     private void listenNoMore() {
-        assert Thread.holdsLock(this);
+        assert Thread.holdsLock(FileObjectKeeper.this);
 
         listenTo(root, false, null);
         Set<FolderObj> k = kept;
@@ -265,11 +274,14 @@ final class FileObjectKeeper implements FileChangeListener {
                 }
             }
         }
-        if (arr == null || kept == null) {  //#178378 - ignore queued events when no more listening (kept == null)
-            return;
-        }
-        for (FileChangeListener l : arr) {
-            l.fileFolderCreated(fe);
+        synchronized (this) {
+            assert Thread.holdsLock(FileObjectKeeper.this);
+            if (arr == null || kept == null) {  //#178378 - ignore queued events when no more listening (kept == null)
+                return;
+            }
+            for (FileChangeListener l : arr) {
+                l.fileFolderCreated(fe);
+            }
         }
     }
 
@@ -307,6 +319,7 @@ final class FileObjectKeeper implements FileChangeListener {
         if (f instanceof FolderObj) {
             FolderObj obj = (FolderObj)f;
             synchronized (this) {
+                assert Thread.holdsLock(FileObjectKeeper.this);
                 if (kept != null) {
                     kept.remove(obj);
                 }
@@ -349,10 +362,11 @@ final class FileObjectKeeper implements FileChangeListener {
     }
 
     long childrenLastModified() {
-        return Math.abs(timeStamp);
+        return timeStamp == -2 ? 0 : Math.abs(timeStamp);
     }
 
-    boolean isOn() {
+    synchronized boolean isOn() {
+        assert Thread.holdsLock(FileObjectKeeper.this);
         if (kept != null) {
             return true;
         }

@@ -71,6 +71,9 @@ public class JUnitMethodRunnerProvider extends TestMethodRunnerProvider {
         SingleMethod sm = null;
         if (doc != null){
             JavaSource js = JavaSource.forDocument(doc);
+            if(js == null) {
+                return null;
+            }
             TestClassInfoTask task = new TestClassInfoTask(cursor);
             try {
                 Future<Void> f = js.runWhenScanFinished(task, true);
@@ -92,6 +95,14 @@ public class JUnitMethodRunnerProvider extends TestMethodRunnerProvider {
             if (ec != null) {
                 JEditorPane pane = NbDocument.findRecentEditorPane(ec);
                 if (pane != null) {
+		    String text = pane.getText();
+                    if (text != null) {  //NOI18N
+                        text = text.replaceAll("\n", "").replaceAll(" ", "");
+			if ((text.contains("@RunWith") || text.contains("@org.junit.runner.RunWith")) //NOI18N
+			    && text.contains("Parameterized.class)")) {  //NOI18N
+			    return false;
+			}
+                    }
                     SingleMethod sm = getTestMethod(pane.getDocument(), pane.getCaret().getDot());
                     if(sm != null) {
                         return true;

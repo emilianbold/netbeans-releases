@@ -53,6 +53,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.IOException;
 import java.io.Reader;
+import org.netbeans.core.output2.options.OutputOptions;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
@@ -73,8 +74,9 @@ import org.openide.windows.IOTab;
 class NbIO implements InputOutput, Lookup.Provider {
 
     private Boolean focusTaken = null;
-    private boolean closed = false;
+    private volatile boolean closed = false;
     private final String name;
+    private OutputOptions options = OutputOptions.getDefault().makeCopy();
     
     private Action[] actions;
 
@@ -100,11 +102,18 @@ class NbIO implements InputOutput, Lookup.Provider {
         this.name = name;
     }
     
+    @Override
     public void closeInputOutput() {
-        if (Controller.LOG) Controller.log("CLOSE INPUT OUTPUT CALLED FOR " + this);
-        if (out != null) {
-            if (Controller.LOG) Controller.log (" - Its output is non null, calling close() on " + out);
-            out.close();
+        if (Controller.LOG) {
+            Controller.log("CLOSE INPUT OUTPUT CALLED FOR " + this);    //NOI18N
+        }
+        synchronized (this) {
+            if (out != null) {
+                if (Controller.LOG) {
+                    Controller.log(" - Its output is non null, calling close() on " + out); //NOI18N
+                }
+                out.close();
+            }
         }
         post (this, IOEvent.CMD_CLOSE, true);
     }
@@ -121,21 +130,27 @@ class NbIO implements InputOutput, Lookup.Provider {
         return ((NbWriter) getOut()).getErr();
     }
 
-    NbWriter writer() {
+    synchronized NbWriter writer() {
         return out;
     }
 
     void dispose() {
-        if (Controller.LOG) Controller.log (this + ": IO " + getName() + " is being disposed");
-        if (out != null) {
-            if (Controller.LOG) Controller.log (this + ": Still has an OutWriter.  Disposing it");
-            out().dispose();
-            out = null;
-            if (in != null) {
-                in.eof();
-                in = null;
+        if (Controller.LOG) {
+            Controller.log(this + ": IO " + getName() + " is being disposed"); //NOI18N
+        }
+        synchronized (this) {
+            if (out != null) {
+                if (Controller.LOG) {
+                    Controller.log(this + ": Still has an OutWriter.  Disposing it"); //NOI18N
+                }
+                out().dispose();
+                out = null;
+                if (in != null) {
+                    in.eof();
+                    in = null;
+                }
+                focusTaken = null;
             }
-            focusTaken = null;
         }
         NbIOProvider.dispose(this);
     }
@@ -146,12 +161,12 @@ class NbIO implements InputOutput, Lookup.Provider {
                 OutWriter realout = new OutWriter(this);
                 out = new NbWriter(realout, this);
             }
+            return out;
         }
-        return out;
     }
     
     /** Called by the view when polling */
-    OutWriter out() {
+    synchronized OutWriter out() {
         return out == null ? null : out.out();
     }
 
@@ -171,7 +186,7 @@ class NbIO implements InputOutput, Lookup.Provider {
         return Boolean.TRUE.equals(focusTaken);
     }
     
-    boolean isStreamClosed() {
+    synchronized boolean isStreamClosed() {
         return out == null ? true : streamClosed;
     }
     
@@ -224,9 +239,11 @@ class NbIO implements InputOutput, Lookup.Provider {
         closed = false;
         streamClosed = false;
 
-        if (in != null) {
-            in.eof();
-            in.reuse();
+        synchronized (this) {
+            if (in != null) {
+                in.eof();
+                in.reuse();
+            }
         }
         post (this, IOEvent.CMD_RESET, true);
     }
@@ -256,12 +273,12 @@ class NbIO implements InputOutput, Lookup.Provider {
         return "NbIO@" + System.identityHashCode(this) + " " + getName();
     }
 
-    IOReader in() {
+    synchronized IOReader in() {
         return in;
     }
 
     private IOReader in = null;
-    public Reader getIn() {
+    public synchronized Reader getIn() {
         if (in == null) {
             in = new IOReader();
         }
@@ -277,7 +294,9 @@ class NbIO implements InputOutput, Lookup.Provider {
         if (lookup == null) {
             ioTab = new IOTabImpl();
             ioColors = new IOColorsImpl();
-            lookup = Lookups.fixed(ioTab, ioColors, new IOPositionImpl(), new IOColorLinesImpl(), new IOColorPrintImpl(), new IOSelectImpl());
+            lookup = Lookups.fixed(ioTab, ioColors, new IOPositionImpl(),
+                    new IOColorLinesImpl(), new IOColorPrintImpl(),
+                    new IOSelectImpl(), options);
         }
         return lookup;
     }
@@ -290,7 +309,9 @@ class NbIO implements InputOutput, Lookup.Provider {
 
         void reuse() {
              pristine = true;
-             inputClosed = false;
+             synchronized (lock) {
+                inputClosed = false;
+             }
         }
 
         private StringBuffer buffer() {
@@ -430,7 +451,7 @@ class NbIO implements InputOutput, Lookup.Provider {
     }
 
     Color getColor(IOColors.OutputType type) {
-        return ioColors != null ? ioColors.getColor(type) : AbstractLines.DEF_COLORS[type.ordinal()];
+        return ioColors != null ? ioColors.getColor(type) : AbstractLines.getDefColors()[type.ordinal()];
     }
 
     private class IOTabImpl extends IOTab {
@@ -491,7 +512,7 @@ class NbIO implements InputOutput, Lookup.Provider {
         protected void println(CharSequence text, OutputListener listener, boolean important, Color color) throws IOException {
             OutWriter out = out();
             if (out != null) {
-                out.print(text, listener, important, color, false, true);
+                out.print(text, listener, important, color, null, false, true);
             }
         }
     }
@@ -502,7 +523,7 @@ class NbIO implements InputOutput, Lookup.Provider {
         protected void print(CharSequence text, OutputListener listener, boolean important, Color color) throws IOException {
             OutWriter out = out();
             if (out != null) {
-                out.print(text, listener, important, color, false, false);
+                out.print(text, listener, important, color, null, false, false);
             }
         }
     }
@@ -521,7 +542,7 @@ class NbIO implements InputOutput, Lookup.Provider {
 
         @Override
         protected Color getColor(OutputType type) {
-            return clrs[type.ordinal()] != null ? clrs[type.ordinal()] : AbstractLines.DEF_COLORS[type.ordinal()];
+            return clrs[type.ordinal()] != null ? clrs[type.ordinal()] : options.getColorForType(type);
         }
 
         @Override
@@ -529,5 +550,20 @@ class NbIO implements InputOutput, Lookup.Provider {
             clrs[type.ordinal()] = color;
             post(NbIO.this, IOEvent.CMD_DEF_COLORS, type);
         }
+    }
+
+    /**
+     * Set option values. The object itself is not replaced, all registered
+     * listeners remains untouched.
+     */
+    void setOptions(OutputOptions options) {
+        this.options.assign(options);
+    }
+
+    /**
+     * Get Options object.
+     */
+    OutputOptions getOptions() {
+        return this.options;
     }
 }

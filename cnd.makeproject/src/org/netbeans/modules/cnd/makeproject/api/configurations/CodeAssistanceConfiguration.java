@@ -41,9 +41,13 @@
  */
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 
+import java.util.List;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.BooleanNodeProp;
+import org.netbeans.modules.cnd.makeproject.configurations.ui.StringListNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.StringNodeProp;
+import org.netbeans.modules.cnd.makeproject.ui.utils.TokenizerFactory;
 import org.openide.nodes.Sheet;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
@@ -53,6 +57,8 @@ import org.openide.util.NbBundle;
 public class CodeAssistanceConfiguration implements Cloneable {
     private MakeConfiguration makeConfiguration;
     private BooleanConfiguration buildAnalyzer;
+    private VectorConfiguration<String> transientMacros;
+    private VectorConfiguration<String> environmentVariables;
     private StringConfiguration tools;
     private static final String DEFAULT_TOOLS = "gcc:c++:g++:clang:clang++:icc:icpc:ifort:gfortran:g77:g90:g95:cc:CC:ffortran:f77:f90:f95"; //NOI18N
     
@@ -61,10 +67,13 @@ public class CodeAssistanceConfiguration implements Cloneable {
         this.makeConfiguration = makeConfiguration;
         buildAnalyzer = new BooleanConfiguration(true);
         tools = new StringConfiguration(tools, DEFAULT_TOOLS);
+        transientMacros = new VectorConfiguration<String>(null);
+        environmentVariables = new VectorConfiguration<String>(null);
     }
 
     public boolean getModified() {
-        return getBuildAnalyzer().getModified() || getTools().getModified();
+        return getBuildAnalyzer().getModified() || getTools().getModified() || 
+                getEnvironmentVariables().getModified() || getTransientMacros().getModified();
     }
 
     // MakeConfiguration
@@ -94,10 +103,41 @@ public class CodeAssistanceConfiguration implements Cloneable {
         return tools;
     }
 
+    /**
+     * @return the transientMacros
+     */
+    public VectorConfiguration<String> getTransientMacros() {
+        return transientMacros;
+    }
+
+    /**
+     * @param transientMacros the transientMacros to set
+     */
+    public void setTransientMacros(VectorConfiguration<String> transientMacros) {
+        this.transientMacros = transientMacros;
+    }
+
+    /**
+     * @return the environmentVariables
+     */
+    public VectorConfiguration<String> getEnvironmentVariables() {
+        return environmentVariables;
+    }
+
+    /**
+     * @param environmentVariables the environmentVariables to set
+     */
+    public void setEnvironmentVariables(VectorConfiguration<String> environmentVariables) {
+        this.environmentVariables = environmentVariables;
+    }
+
+
     // Clone and assign
     public void assign(CodeAssistanceConfiguration conf) {
         getBuildAnalyzer().assign(conf.getBuildAnalyzer());
         getTools().assign(conf.getTools());
+        getTransientMacros().assign(conf.getTransientMacros());
+        getEnvironmentVariables().assign(conf.getEnvironmentVariables());
     }
 
     @Override
@@ -105,6 +145,8 @@ public class CodeAssistanceConfiguration implements Cloneable {
         CodeAssistanceConfiguration clone = new CodeAssistanceConfiguration(getMakeConfiguration());
         clone.setBuildAnalyzer(getBuildAnalyzer().clone());
         clone.setTools(getTools().clone());
+        clone.setTransientMacros(getTransientMacros().clone());
+        clone.setEnvironmentVariables(getEnvironmentVariables().clone());
         return clone;
     }
 
@@ -116,7 +158,42 @@ public class CodeAssistanceConfiguration implements Cloneable {
         set.setDisplayName(getString("CodeAssistanceTxt"));
         set.setShortDescription(getString("CodeAssistanceHint"));
         set.put(new BooleanNodeProp(getBuildAnalyzer(), true, "BuildAnalyzer", getString("BuildAnalyzerTxt"), getString("BuildAnalyzerHint"))); // NOI18N
-        set.put(new StringNodeProp(getTools(), DEFAULT_TOOLS, "Tools", getString("ToolsTxt2"), getString("ToolsHint2"))); // NOI18N
+        if (System.getProperty("cnd.buildtrace.tools") != null) {
+            // hide node by default
+            set.put(new StringNodeProp(getTools(), DEFAULT_TOOLS, "Tools", getString("ToolsTxt2"), getString("ToolsHint2"))); // NOI18N
+        }
+        set.put(new StringListNodeProp(getTransientMacros(), null,
+                new String[]{"transient-macros", // NOI18N
+                             getString("TransientMacrosTxt"), // NOI18N
+                             getString("TransientMacrosHint"), // NOI18N
+                             getString("TransientMacrosLbl"), // NOI18N
+                             null}, true, new HelpCtx("transient-macros")){ // NOI18N
+            @Override
+            protected List<String> convertToList(String text) {
+                return TokenizerFactory.DEFAULT_CONVERTER.convertToList(text);
+            }
+
+            @Override
+            protected String convertToString(List<String> list) {
+                return TokenizerFactory.DEFAULT_CONVERTER.convertToString(list);
+            }
+        });
+        set.put(new StringListNodeProp(getEnvironmentVariables(), null,
+                new String[]{"environment-variables", // NOI18N
+                             getString("EnvironmentVariablesTxt"), // NOI18N
+                             getString("EnvironmentVariablesHint"), // NOI18N
+                             getString("EnvironmentVariablesLbl"), // NOI18N
+                             null}, true, new HelpCtx("environment-variables")){ // NOI18N
+            @Override
+            protected List<String> convertToList(String text) {
+                return TokenizerFactory.DEFAULT_CONVERTER.convertToList(text);
+            }
+
+            @Override
+            protected String convertToString(List<String> list) {
+                return TokenizerFactory.DEFAULT_CONVERTER.convertToString(list);
+            }
+        });
         sheet.put(set);
         return sheet;
     }
@@ -130,5 +207,4 @@ public class CodeAssistanceConfiguration implements Cloneable {
     public String toString() {
         return "{buildAnalyzer=" + buildAnalyzer + " tools=" + tools + '}'; // NOI18N
     }
-
 }

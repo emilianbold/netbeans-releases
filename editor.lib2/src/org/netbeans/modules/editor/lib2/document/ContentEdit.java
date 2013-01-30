@@ -42,9 +42,9 @@
 package org.netbeans.modules.editor.lib2.document;
 
 import javax.swing.UIManager;
-import javax.swing.undo.UndoableEdit;
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
+import javax.swing.undo.UndoableEdit;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 
 /**
@@ -212,13 +212,13 @@ public abstract class ContentEdit implements UndoableEdit {
         @Override
         public void undo() throws CannotUndoException {
             super.undo();
-            content.removeEdit(this);
+            content.removeEdit(this, "InsertEditUndo-");
         }
 
         @Override
         public void redo() throws CannotRedoException {
             super.redo();
-            content.insertEdit(this);
+            content.insertEdit(this, "InsertEditRedo-"); // NOI18N
         }
 
     }
@@ -237,13 +237,13 @@ public abstract class ContentEdit implements UndoableEdit {
         @Override
         public void undo() throws CannotUndoException {
             super.undo();
-            content.insertEdit(this);
+            content.insertEdit(this, "RemoveEditUndo-");
         }
 
         @Override
         public void redo() throws CannotRedoException {
             super.redo();
-            content.removeEdit(this);
+            content.removeEdit(this, "RemoveEditRedo-");
         }
 
     }

@@ -107,6 +107,7 @@ is the proper place.
         <apidef name="extexecution_api_startup">External Execution Startup Arguments API</apidef>
         <apidef name="extexecution_spi">External Execution SPI</apidef>
         <apidef name="extexecution_spi_destroy">External Execution Process Destroy SPI</apidef>
+        <apidef name="extexecution_spi_open">External Execution Open Handler SPI</apidef>
         <apidef name="extexecution_spi_startup">External Execution Startup Arguments SPI</apidef>
         <!-- etc. -->
     </apidefs>
@@ -115,6 +116,38 @@ is the proper place.
 
     <changes>
 
+        <change>
+            <api name="extexecution_spi"/>
+            <summary>Advice to throw UserQuestionException</summary>
+            <version major="1" minor="35"/>
+            <date day="21" month="9" year="2012"/>
+            <author login="jtulach"/>
+            <compatibility addition="yes"/>
+            <description>
+                Providers of <code>ProcessBuilderImplementation</code> are
+                advised to throw <code>UserQuestionException</code> in case
+                they need some interaction with user.
+            </description>
+            <class package="org.netbeans.spi.extexecution" name="ProcessBuilderImplementation"/>
+            <class package="org.netbeans.api.extexecution" name="ProcessBuilder"/>
+            <issue number="217874"/>
+        </change>
+        <change>
+            <api name="extexecution_spi_open"/>
+            <summary>SPI to allow to split the API and implementation</summary>
+            <version major="1" minor="33"/>
+            <date day="31" month="8" year="2012"/>
+            <author login="phejl"/>
+            <compatibility addition="yes"/>
+            <description>
+                This API/SPI allow splitting the extexecution to real API
+                and implementation classes.
+            </description>
+            <class package="org.netbeans.spi.extexecution.open" name="OptionOpenHandler"/>
+            <class package="org.netbeans.spi.extexecution.open" name="FileOpenHandler"/>
+            <class package="org.netbeans.spi.extexecution.open" name="HttpOpenHandler"/>
+            <issue number="216882"/>
+        </change>
         <change>
             <api name="extexecution_api_startup"/>
             <summary>SPI to allow extending process startup</summary>

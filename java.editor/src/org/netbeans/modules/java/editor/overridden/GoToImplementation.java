@@ -41,6 +41,10 @@
  */
 package org.netbeans.modules.java.editor.overridden;
 
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.Tree.Kind;
+import com.sun.source.util.TreePath;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
@@ -60,6 +64,7 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorActionRegistration;
 import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
@@ -107,51 +112,84 @@ public final class GoToImplementation extends BaseAction {
 
     public static void goToImpl(final JTextComponent c, final Document doc, final int caretPos, final AtomicBoolean cancel) {
         try {
-            JavaSource.forDocument(doc).runUserActionTask(new Task<CompilationController>() {
-                public void run(CompilationController parameter) throws Exception {
-                    if (cancel != null && cancel.get())
-                        return ;
-                    parameter.toPhase(Phase.RESOLVED);
-                    
-                    Context context = GoToSupport.resolveContext(parameter, doc, caretPos, false);
+            JavaSource js = JavaSource.forDocument(doc);
+            if (js != null) {
+                js.runUserActionTask(new Task<CompilationController>() {
+                    public void run(CompilationController parameter) throws Exception {
+                        if (cancel != null && cancel.get())
+                            return ;
+                        parameter.toPhase(Phase.RESOLVED);
 
-                    if (context == null || !SUPPORTED_ELEMENTS.contains(context.resolved.getKind())) {
-                        StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(GoToImplementation.class, "LBL_NoMethod"));
-                        return ;
-                    }
-
-                    Element el = context.resolved;
-
-                    TypeElement type = el.getKind() == ElementKind.METHOD ? (TypeElement) el.getEnclosingElement() : (TypeElement) el;
-                    final ExecutableElement method = el.getKind() == ElementKind.METHOD ? (ExecutableElement) el : null;
-
-                    Map<ElementHandle<? extends Element>, List<ElementDescription>> overriding = new ComputeOverriders(new AtomicBoolean()).process(parameter, type, method, true);
-
-                    final List<ElementDescription> overridingMethods = overriding != null ? overriding.get(ElementHandle.create(el)) : null;
-
-                    if (overridingMethods == null || overridingMethods.isEmpty()) {
-                        String key = el.getKind() == ElementKind.METHOD ? "LBL_NoOverridingMethod" : "LBL_NoOverridingType";
-
-                        StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(GoToImplementation.class, key));
-                        return;
-                    }
-                    
-                    final String caption = NbBundle.getMessage(GoToImplementation.class, method != null ? "LBL_ImplementorsOverridersMethod" : "LBL_ImplementorsOverridersClass");
-                    
-                    SwingUtilities.invokeLater(new Runnable() {
-                        @Override public void run() {
-                            try {
-                                Point p = new Point(c.modelToView(caretPos).getLocation());
-                                IsOverriddenAnnotationAction.mouseClicked(Collections.singletonMap(caption, overridingMethods), c, p);
-                            } catch (BadLocationException ex) {
-                                Exceptions.printStackTrace(ex);
-                            }
+                        Element el = resolveTarget(parameter, doc, caretPos);
+                        
+                        if (el == null) {
+                            StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(GoToImplementation.class, "LBL_NoMethod"));
+                            return ;
                         }
-                    });
-                }
-            }, true);
+                        
+                        TypeElement type = el.getKind() == ElementKind.METHOD ? (TypeElement) el.getEnclosingElement() : (TypeElement) el;
+                        final ExecutableElement method = el.getKind() == ElementKind.METHOD ? (ExecutableElement) el : null;
+
+                        Map<ElementHandle<? extends Element>, List<ElementDescription>> overriding = new ComputeOverriders(new AtomicBoolean()).process(parameter, type, method, true);
+
+                        final List<ElementDescription> overridingMethods = overriding != null ? overriding.get(ElementHandle.create(el)) : null;
+
+                        if (overridingMethods == null || overridingMethods.isEmpty()) {
+                            String key = el.getKind() == ElementKind.METHOD ? "LBL_NoOverridingMethod" : "LBL_NoOverridingType";
+
+                            StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(GoToImplementation.class, key));
+                            return;
+                        }
+
+                        final String caption = NbBundle.getMessage(GoToImplementation.class, method != null ? "LBL_ImplementorsOverridersMethod" : "LBL_ImplementorsOverridersClass");
+
+                        SwingUtilities.invokeLater(new Runnable() {
+                            @Override public void run() {
+                                try {
+                                    Point p = new Point(c.modelToView(caretPos).getLocation());
+                                    IsOverriddenAnnotationAction.mouseClicked(Collections.singletonMap(caption, overridingMethods), c, p);
+                                } catch (BadLocationException ex) {
+                                    Exceptions.printStackTrace(ex);
+                                }
+                            }
+                        });
+                    }
+                }, true);
+            }
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
+        }
+    }
+    
+    static Element resolveTarget(CompilationInfo info, Document doc, int caretPos) {
+        Context context = GoToSupport.resolveContext(info, doc, caretPos, false);
+
+        if (context == null) {
+            TreePath tp = info.getTreeUtilities().pathFor(caretPos);
+            
+            if (tp.getLeaf().getKind() == Kind.MODIFIERS) tp = tp.getParentPath();
+            
+            int[] elementNameSpan = null;
+            switch (tp.getLeaf().getKind()) {
+                case ANNOTATION_TYPE:
+                case CLASS:
+                case ENUM:
+                case INTERFACE:
+                    elementNameSpan = info.getTreeUtilities().findNameSpan((ClassTree) tp.getLeaf());
+                    break;
+                case METHOD:
+                    elementNameSpan = info.getTreeUtilities().findNameSpan((MethodTree) tp.getLeaf());
+                    break;
+            }
+            
+            if (elementNameSpan != null && caretPos <= elementNameSpan[1]) {
+                return info.getTrees().getElement(tp);
+            }
+            return null;
+        } else if (!SUPPORTED_ELEMENTS.contains(context.resolved.getKind())) {
+            return null;
+        } else {
+            return context.resolved;
         }
     }
 

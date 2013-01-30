@@ -276,9 +276,14 @@ public class JSFConfigUtilities {
             if (framework instanceof JSFFrameworkProvider) {
                 WebModule webModule = WebModule.getWebModule(fileObject);
 
-                ((JSFFrameworkProvider) framework).setCreateWelcome(createWelcomeFile);
-                WebModuleExtender extender = framework.createWebModuleExtender(webModule, ExtenderController.create());
-                result = extender.extend(webModule);
+                // this is quite corner case since the project doesn't contain document root and the project
+                // extending by framework can't do much of work then (since the extender gets just the webModule)
+                // ... so, don't extend it at all for now
+                if (webModule.getDocumentBase() != null) {
+                    ((JSFFrameworkProvider) framework).setCreateWelcome(createWelcomeFile);
+                    WebModuleExtender extender = framework.createWebModuleExtender(webModule, ExtenderController.create());
+                    result = extender.extend(webModule);
+                }
 
                 return result;
             }

@@ -46,15 +46,10 @@ package org.netbeans.modules.editor.bookmarks;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.Iterator;
-import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 
 import org.netbeans.api.editor.EditorRegistry;
-import org.netbeans.editor.AnnotationType;
-import org.netbeans.editor.AnnotationTypes;
-import org.netbeans.lib.editor.bookmarks.api.Bookmark;
 import org.netbeans.lib.editor.bookmarks.api.BookmarkList;
 import org.openide.modules.ModuleInstall;
 import org.openide.util.RequestProcessor;
@@ -71,40 +66,17 @@ class EditorBookmarksModule extends ModuleInstall {
     private static final String         DOCUMENT_TRACKER_PROP = "EditorBookmarksModule.DOCUMENT_TRACKER_PROP"; //NOI18N
     
     private BookmarksInitializer        bookmarksInitializer;
-    private PropertyChangeListener      annotationTypesListener;
 
+    @Override
     public void restored () {
-        BookmarksPersistence.get().initProjectsListening();
-
-        bookmarksInitializer = new BookmarksInitializer ();
+        if (bookmarksInitializer == null) {
+            bookmarksInitializer = new BookmarksInitializer ();
+        }
         RequestProcessor.getDefault().post(new Runnable () {
+            @Override
             public void run () {
-                final Iterator<? extends JTextComponent> it = 
-                    EditorRegistry.componentList ().iterator ();
-                if (!it.hasNext ())
-                    return ;
-                
-                AnnotationType type = AnnotationTypes.getTypes ().getType 
-                    (Bookmark.BOOKMARK_ANNOTATION_TYPE);
-                if (type == null) {
-                    // bookmark type was not added into AnnotationTypes yet, wait for event
-                    annotationTypesListener = new PropertyChangeListener () {
-                        public void propertyChange (PropertyChangeEvent evt) {
-                            AnnotationType type = AnnotationTypes.getTypes ().getType (Bookmark.BOOKMARK_ANNOTATION_TYPE);
-                            if (type != null) {
-                                AnnotationTypes.getTypes ().removePropertyChangeListener (annotationTypesListener);
-                                while (it.hasNext ()) {
-                                    JTextComponent jtc = (JTextComponent) it.next();
-                                    BookmarkList.get (jtc.getDocument ()); // Initialize the bookmark list
-                                }
-                            }
-                        }
-                    };
-                    AnnotationTypes.getTypes ().addPropertyChangeListener
-                        (annotationTypesListener);
-                } else {
-                    while (it.hasNext ())
-                        BookmarkList.get (it.next ().getDocument ()); // Initialize the bookmark list
+                for(JTextComponent c : EditorRegistry.componentList()) {
+                    BookmarkList.get(c.getDocument()); // Initialize the bookmark list
                 }
             }
         });
@@ -113,6 +85,7 @@ class EditorBookmarksModule extends ModuleInstall {
     /**
      * Called when all modules agreed with closing and the IDE will be closed.
      */
+    @Override
     public boolean closing () {
         // this used to be called from close(), but didn't save properly on JDK6,
         // no idea why, see #120880
@@ -123,6 +96,7 @@ class EditorBookmarksModule extends ModuleInstall {
     /**
      * Called when module is uninstalled.
      */
+    @Override
     public void uninstalled () {
         finish ();
     }
@@ -146,6 +120,7 @@ class EditorBookmarksModule extends ModuleInstall {
             documentListener = WeakListeners.propertyChange (this, null);
         }
 
+        @Override
         public void propertyChange (PropertyChangeEvent evt) {
             // event for the editors tracker
             if (evt.getSource () == EditorRegistry.class) {
@@ -174,7 +149,6 @@ class EditorBookmarksModule extends ModuleInstall {
                         BookmarkList.get (newDoc); // ask for the list to initialize it
                     }
                 }
-                return;
             }
         }
 

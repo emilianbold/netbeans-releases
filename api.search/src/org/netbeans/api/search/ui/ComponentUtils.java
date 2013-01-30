@@ -149,7 +149,7 @@ public class ComponentUtils {
      * @since api.search/1.1
      */
     public static @NonNull SearchPatternController adjustComboForSearchPattern(
-            @NonNull JComboBox comboBox) {
-        return new SearchPatternController(comboBox);
+            @NonNull JComboBox jComboBox) {
+        return new SearchPatternController(jComboBox);
     }
 }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -140,11 +140,11 @@ public class CrossDependencyTest extends NbmAdvancedTestCase {
 
         
         final Set <Dependency> broken1 = new HashSet <Dependency> ();
-        Set <UpdateElement> set1 = Utilities.findRequiredUpdateElements(ue1, col, broken1, true);
+        Set <UpdateElement> set1 = Utilities.findRequiredUpdateElements(ue1, col, broken1, true, null);
         LOG.info("required (1): " + set1);
         LOG.info("broken (1): " + broken1);
         final Set <Dependency> broken2 = new HashSet <Dependency> ();
-        Set <UpdateElement> set2 = Utilities.findRequiredUpdateElements(ue2, col, broken2, true);
+        Set <UpdateElement> set2 = Utilities.findRequiredUpdateElements(ue2, col, broken2, true, null);
         LOG.info("required (2): " + set2);
         LOG.info("broken (2): " + broken2);
     }

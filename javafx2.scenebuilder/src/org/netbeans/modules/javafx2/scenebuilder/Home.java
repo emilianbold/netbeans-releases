@@ -112,9 +112,15 @@ public class Home {
      * @return TRUE if the path property represents a valid SB installation folder
      */
     public boolean isValid() {
-        if (path == null) return false;
+        if (path == null) {
+            return false;
+        }
         File f = new File(path);
-        return f.exists() && f.isDirectory();
+        if(!f.exists() || !f.isDirectory()) {
+            return false;
+        }
+        f = new File(getLauncherPath());
+        return f.exists() && f.isFile();
     }
     
     @Override

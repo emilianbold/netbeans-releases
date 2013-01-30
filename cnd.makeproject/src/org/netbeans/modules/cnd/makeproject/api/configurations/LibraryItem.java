@@ -52,6 +52,7 @@ import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
 import org.netbeans.modules.cnd.makeproject.platform.Platform;
 import org.netbeans.modules.cnd.makeproject.platform.Platforms;
+import org.netbeans.modules.cnd.makeproject.platform.StdLibraries;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
@@ -225,15 +226,19 @@ public class LibraryItem implements Cloneable {
 	private final String[] libs;
 
 	public StdLibItem(String name, String displayName, String[] libs) {
-	    this.name = name;
-	    this.displayName = displayName;
-	    this.libs = libs;
-	    setType(STD_LIB_ITEM);
-	}
+            this.name = name;
+            this.displayName = displayName;
+            this.libs = libs;
+            setType(STD_LIB_ITEM);
+        }
 
-	public String getName() {
-	    return name;
-	}
+        public static StdLibItem getStandardItem(String id) {
+            return StdLibraries.getStandardLibary(id);
+        }
+
+        public String getName() {
+            return name;
+        }
 
 	public String getDisplayName() {
 	    return displayName;

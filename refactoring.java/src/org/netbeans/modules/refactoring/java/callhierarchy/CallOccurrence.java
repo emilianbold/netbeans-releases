@@ -87,7 +87,7 @@ final class CallOccurrence implements CallDescriptor {
 
     public static CallOccurrence createOccurrence(
             CompilationInfo javac, TreePath selection, Call parent) {
-        WhereUsedElement wue = WhereUsedElement.create(javac, selection);
+        WhereUsedElement wue = WhereUsedElement.create(javac, selection, false);
         CallOccurrence c = new CallOccurrence();
         c.occurrence = TreePathHandle.create(selection, javac);
         c.displayName = selection.getLeaf().toString();

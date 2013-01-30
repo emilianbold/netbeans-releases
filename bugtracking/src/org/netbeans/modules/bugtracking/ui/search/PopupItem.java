@@ -72,7 +72,9 @@ abstract class PopupItem {
         }
 
         public String highlite(String text, String displayText) {
-            if(text == null || text.trim().equals("")) return displayText;      // NOI18N
+            if(text == null || text.trim().equals("")) {
+                return displayText;
+            }      // NOI18N
             StringBuilder sb = new StringBuilder();
 
             text = TextUtils.escapeForHTMLLabel(text);

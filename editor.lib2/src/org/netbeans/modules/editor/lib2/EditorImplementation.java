@@ -49,7 +49,6 @@ import java.util.ResourceBundle;
 import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.text.JTextComponent;
-import org.netbeans.spi.editor.EditorImplementationProvider;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 

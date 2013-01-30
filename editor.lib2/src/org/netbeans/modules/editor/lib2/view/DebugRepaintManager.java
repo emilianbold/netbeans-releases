@@ -46,9 +46,10 @@ package org.netbeans.modules.editor.lib2.view;
 
 import java.awt.Rectangle;
 import java.util.Set;
-import java.util.logging.Logger;
+import java.util.logging.Level;
 import javax.swing.JComponent;
 import javax.swing.RepaintManager;
+import javax.swing.SwingUtilities;
 import org.openide.util.WeakSet;
 
 /**
@@ -65,28 +66,32 @@ final class DebugRepaintManager extends RepaintManager {
         if (RepaintManager.currentManager(component) != INSTANCE) {
             RepaintManager.setCurrentManager(INSTANCE);
         }
-        INSTANCE.addDebugComponent(component);
+        INSTANCE.addLogComponent(component);
     }
 
-    // -J-Dorg.netbeans.modules.editor.lib2.view.DebugRepaintManager.level=FINE
-    private static final Logger LOG = Logger.getLogger(DebugRepaintManager.class.getName());
-
-    private final Set<JComponent> debugComponents = new WeakSet<JComponent>();
+    private final Set<JComponent> logComponents = new WeakSet<JComponent>();
     
 
     private DebugRepaintManager() {
     }
 
-    public void addDebugComponent(JComponent component) {
-        debugComponents.add(component);
+    public void addLogComponent(JComponent component) {
+        logComponents.add(component);
     }
 
     @Override
     public void addDirtyRegion(JComponent c, int x, int y, int w, int h) {
-        if (debugComponents.contains(c)) {
-            LOG.fine("cREPAINT: " + ViewUtils.toString(new Rectangle(x, y, w, h)) + // NOI18N
-                    " c:" + ViewUtils.toString(c) + '\n'); // NOI18N
+        for (JComponent dc : logComponents) {
+            if (SwingUtilities.isDescendingFrom(dc, c)) {
+                String boundsMsg = ViewUtils.toString(new Rectangle(x, y, w, h));
+                ViewHierarchyImpl.REPAINT_LOG.log(Level.FINER,
+                        "Component-REPAINT: " + boundsMsg + // NOI18N
+                        " c:" + ViewUtils.toString(c), // NOI18N
+                        new Exception("Component-Repaint of " + boundsMsg + " cause:")); // NOI18N
+                break;
+            }
         }
+
         super.addDirtyRegion(c, x, y, w, h);
     }
 

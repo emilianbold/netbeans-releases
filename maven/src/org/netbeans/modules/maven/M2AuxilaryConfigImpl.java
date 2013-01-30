@@ -42,28 +42,30 @@
 
 package org.netbeans.modules.maven;
 
-import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.StringReader;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.AbstractAction;
-import javax.swing.Action;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import org.netbeans.api.annotations.common.NonNull;
 import static org.netbeans.modules.maven.Bundle.*;
-import org.netbeans.modules.maven.api.problem.ProblemReport;
 import org.netbeans.modules.maven.problems.ProblemReporterImpl;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
-import org.openide.cookies.EditCookie;
+import org.netbeans.spi.project.ui.ProjectProblemsProvider;
+import org.netbeans.spi.project.ui.ProjectProblemsProvider.ProjectProblem;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem.AtomicAction;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
@@ -71,6 +73,8 @@ import org.openide.xml.XMLUtil;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
@@ -94,16 +98,14 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
     private Document cachedDoc;
     private final Object configIOLock = new Object();
     private final FileObject projectDirectory;
-    private ProblemReporterImpl reporter;
-
-    /** intentionally left without reference to project instance
-        when using this constructor can only get values, never put or remove */
-    public M2AuxilaryConfigImpl(FileObject dir) {
-        this.projectDirectory = dir;
-    }
+    private ProblemProvider pp;
     
-    public M2AuxilaryConfigImpl(FileObject dir, ProblemReporterImpl impl) {
-        this(dir);
+    public M2AuxilaryConfigImpl(FileObject dir, boolean writable) {
+        this.projectDirectory = dir;
+        
+        if (writable) {
+            pp = new ProblemProvider();
+
         savingTask = RP.create(new Runnable() {
             public @Override void run() {
                 try {
@@ -135,15 +137,19 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
                         }
                     });
                 } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
+                    LOG.log(Level.INFO, "IO Error while saving " + projectDirectory.getFileObject(CONFIG_FILE_NAME), ex);
                 }
             }
         });
+        }
+    }
+    
+    public ProjectProblemsProvider getProblemProvider() {
+        return pp;
     }
 
     private Document loadConfig(FileObject config) throws IOException, SAXException {
         synchronized (configIOLock) {
-            //TODO shall be have some kind of caching here to prevent frequent IO?
             return XMLUtil.parse(new InputSource(config.toURL().toString()), false, true, null, null);
         }
     }
@@ -171,20 +177,30 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
     }
     @Messages({
         "TXT_Problem_Broken_Config=Broken nb-configuration.xml file.",
-        "# {0} - parser error message", "DESC_Problem_Broken_Config=The $project_basedir/nb-configuration.xml file cannot be parsed. "
+        "# {0} - parser error message", 
+        "DESC_Problem_Broken_Config=The $project_basedir/nb-configuration.xml file cannot be parsed. "
             + "The information contained in the file will be ignored until fixed. "
             + "This affects several features in the IDE that will not work properly as a result.\n\n "
-            + "The parsing exception follows:\n{0}"
+            + "The parsing exception follows:\n{0}",
+        "TXT_Problem_Broken_Config2=Duplicate entries found in nb-configuration.xml file.",
+        "DESC_Problem_Broken_Config2=The $project_basedir/nb-configuration.xml file contains some elements multiple times. "
+            + "That can happen when concurrent changes get merged by version control for example. The IDE however cannot decide which one to use. "
+            + "So until the problem is resolved manually, the affected configuration will be ignored."
     })
     private synchronized Element doGetConfigurationFragment(final String elementName, final String namespace, boolean shared) {
         if (shared) {
             //first check the document schedule for persistence
             if (scheduledDocument != null) {
-                Element el = XMLUtil.findElement(scheduledDocument.getDocumentElement(), elementName, namespace);
-                if (el != null) {
-                    el = (Element) el.cloneNode(true);
+                try {
+                    Element el = XMLUtil.findElement(scheduledDocument.getDocumentElement(), elementName, namespace);
+                    if (el != null) {
+                        el = (Element) el.cloneNode(true);
+                    }
+                    return el;
+                } catch (IllegalArgumentException iae) {
+                    //thrown from XmlUtil.findElement when more than 1 equal elements are present.
+                    LOG.log(Level.INFO, iae.getMessage(), iae);
                 }
-                return el;
             }
             final FileObject config = projectDirectory.getFileObject(CONFIG_FILE_NAME);
             if (config != null) {
@@ -193,23 +209,26 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
                     try {
                         Document doc = loadConfig(config);
                         cachedDoc = doc;
+                        if (pp != null) {
+                            pp.setProblem(null);
+                            findDuplicateElements(doc.getDocumentElement(), pp, config);
+                        }
                         return XMLUtil.findElement(doc.getDocumentElement(), elementName, namespace);
                     } catch (SAXException ex) {
-                        if (reporter != null) {
-                        if (!reporter.hasReportWithId(BROKEN_NBCONFIG)) {
-                            ProblemReport rep = new ProblemReport(ProblemReport.SEVERITY_MEDIUM,
-                                    TXT_Problem_Broken_Config(),
-                                    DESC_Problem_Broken_Config(ex.getMessage()),
-                                    new OpenConfigAction(config));
-                            rep.setId(BROKEN_NBCONFIG);
-                            reporter.addReport(rep);
-                        }
+                        if (pp != null) {
+                            pp.setProblem(ProjectProblem.createWarning(
+                                    TXT_Problem_Broken_Config(), 
+                                    DESC_Problem_Broken_Config(ex.getMessage()), 
+                                    new ProblemReporterImpl.MavenProblemResolver(ProblemReporterImpl.createOpenFileAction(config), BROKEN_NBCONFIG)));
                         }
                         LOG.log(Level.INFO, ex.getMessage(), ex);
                         cachedDoc = null;
                     } catch (IOException ex) {
-                        Exceptions.printStackTrace(ex);
+                        LOG.log(Level.INFO, "IO Error while loading " + config.getPath(), ex);
                         cachedDoc = null;
+                    } catch (IllegalArgumentException iae) {
+                        //thrown from XmlUtil.findElement when more than 1 equal elements are present.
+                        LOG.log(Level.INFO, iae.getMessage(), iae);
                     } finally {
                         timeStamp = config.lastModified();
                     }
@@ -217,7 +236,12 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
                 } else {
                     //reuse cached value if available;
                     if (cachedDoc != null) {
-                        return XMLUtil.findElement(cachedDoc.getDocumentElement(), elementName, namespace);
+                        try {
+                            return XMLUtil.findElement(cachedDoc.getDocumentElement(), elementName, namespace);
+                        } catch (IllegalArgumentException iae) {
+                            //thrown from XmlUtil.findElement when more than 1 equal elements are present.
+                            LOG.log(Level.INFO, iae.getMessage(), iae);
+                        }
                     }
                 }
             } else {
@@ -371,30 +395,6 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
         return true;
     }
 
-    static class OpenConfigAction extends AbstractAction {
-
-        private FileObject fo;
-
-        @Messages("TXT_OPEN_FILE=Open File")
-        OpenConfigAction(FileObject file) {
-            putValue(Action.NAME, TXT_OPEN_FILE());
-            fo = file;
-        }
-
-
-        public @Override void actionPerformed(ActionEvent e) {
-            if (fo != null) {
-                try {
-                    DataObject dobj = DataObject.find(fo);
-                    EditCookie edit = dobj.getLookup().lookup(EditCookie.class);
-                    edit.edit();
-                } catch (DataObjectNotFoundException ex) {
-                    LOG.log(Level.FINEST, "no dataobject for " + fo, ex);
-                }
-            }
-        }
-    }
-
     private Document createNewSharedDocument() throws DOMException {
         String element = "project-shared-configuration";
         Document doc = XMLUtil.createDocument(element, null, null, null);
@@ -404,5 +404,63 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
                 "therefore it is assumed to be part of version control checkout.\n" +
                 "Without this configuration present, some functionality in the IDE may be limited or fail altogether.\n"));
         return doc;
+    }
+    
+    static void findDuplicateElements(@NonNull Element parent, @NonNull ProblemProvider pp, FileObject config) {
+        NodeList l = parent.getChildNodes();
+        int nodeCount = l.getLength();
+        Set<String> known = new HashSet<String>();
+        for (int i = 0; i < nodeCount; i++) {
+            if (l.item(i).getNodeType() == Node.ELEMENT_NODE) {
+                Node node = l.item(i);
+                String localName = node.getLocalName();
+                localName = localName == null ? node.getNodeName() : localName;
+                String id = localName + "|" + node.getNamespaceURI();
+                if (!known.add(id)) {
+                    //we have a duplicate;
+                    pp.setProblem(ProjectProblem.createWarning(
+                                    TXT_Problem_Broken_Config2(), 
+                                    DESC_Problem_Broken_Config2(), 
+                                    new ProblemReporterImpl.MavenProblemResolver(ProblemReporterImpl.createOpenFileAction(config), BROKEN_NBCONFIG)));
+                }
+            }
+        }
+    }    
+    
+    private class ProblemProvider implements ProjectProblemsProvider {
+
+        private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+        private ProjectProblem pp;
+
+        public ProblemProvider() {
+        }
+        
+        void setProblem(ProjectProblem pp) {
+            this.pp = pp;
+            if (pp == null && this.pp == null) {
+                return; //ignore this case, dont' fire change..
+            }
+            pcs.firePropertyChange(ProjectProblemsProvider.PROP_PROBLEMS, null, null);
+        }
+        
+        @Override
+        public void addPropertyChangeListener(PropertyChangeListener listener) {
+            pcs.addPropertyChangeListener(listener);
+        }
+
+        @Override
+        public void removePropertyChangeListener(PropertyChangeListener listener) {
+            pcs.removePropertyChangeListener(listener);
+        }
+
+        @Override
+        public Collection<? extends ProjectProblem> getProblems() {
+            if (pp != null) {
+                return Collections.singleton(pp);
+            } else {
+                return Collections.emptyList();
+            }
+        }
+        
     }
 }

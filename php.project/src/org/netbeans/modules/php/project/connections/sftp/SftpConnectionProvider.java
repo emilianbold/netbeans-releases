@@ -46,6 +46,7 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+import org.netbeans.modules.php.api.validation.ValidationResult;
 import org.netbeans.modules.php.project.connections.ConfigManager;
 import org.netbeans.modules.php.project.connections.spi.RemoteClient;
 import org.netbeans.modules.php.project.connections.spi.RemoteConfiguration;
@@ -85,7 +86,7 @@ public final class SftpConnectionProvider implements RemoteConnectionProvider {
         TIMEOUT,
         KEEP_ALIVE_INTERVAL
     ));
-    private static final int DEFAULT_PORT = 22;
+    static final int DEFAULT_PORT = 22;
     static final int DEFAULT_TIMEOUT = 30;
     static final int DEFAULT_KEEP_ALIVE_INTERVAL = 30;
     private static final String DEFAULT_INITIAL_DIRECTORY = "/var/www"; // NOI18N
@@ -148,6 +149,15 @@ public final class SftpConnectionProvider implements RemoteConnectionProvider {
         }
         return null;
     }
+
+    @Override
+    public ValidationResult validate(RemoteConfiguration remoteConfiguration) {
+        if (remoteConfiguration instanceof SftpConfiguration) {
+            return new SftpConfigurationValidator().validate((SftpConfiguration) remoteConfiguration).getResult();
+        }
+        return null;
+    }
+
 
     private boolean accept(ConfigManager.Configuration configuration) {
         String type = configuration.getValue(TYPE);

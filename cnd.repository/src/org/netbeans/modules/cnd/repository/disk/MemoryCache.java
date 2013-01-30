@@ -45,6 +45,7 @@ package org.netbeans.modules.cnd.repository.disk;
 import java.lang.ref.Reference;
 import java.lang.ref.ReferenceQueue;
 import java.lang.ref.SoftReference;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -56,6 +57,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import org.netbeans.modules.cnd.debug.CndTraceFlags;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.util.Pair;
@@ -66,7 +68,12 @@ import org.netbeans.modules.cnd.utils.CndUtils;
  * @author Nickolay Dalmatov
  * @author Vladimir Kvashin
  */
-public final class MemoryCache {    
+public final class MemoryCache {
+    private static final boolean WEAK_REF = false && CndTraceFlags.WEAK_REFS_HOLDERS;
+    
+    // Use soft references only when we request an object
+    private static final boolean SOFT_REFS_ON_GET = true;
+    
     private static final boolean STATISTIC = false;
     private static final int DEFAULT_SLICE_CAPACITY;
     private static final int SLICE_SIZE;
@@ -84,14 +91,38 @@ public final class MemoryCache {
         }
     }
 
-    private static class SoftValue<T> extends SoftReference<T> {
+    private interface CacheValue {
+        Key getKey();
+    }
+
+    private static class SoftValue<T> extends SoftReference<T> implements CacheValue {
         private final Key key;
         private SoftValue(T k, Key key, ReferenceQueue<T> q) {
             super(k, q);
             this.key = key;
         }
+
+        @Override
+        public Key getKey() {
+            return key;
+        }
     }
-    
+
+    private static class WeakValue<T> extends WeakReference<T> implements CacheValue {
+
+        private final Key key;
+
+        private WeakValue(T k, Key key, ReferenceQueue<T> q) {
+            super(k, q);
+            this.key = key;
+        }
+
+        @Override
+        public Key getKey() {
+            return key;
+        }
+    }
+
     private static final class Slice {
         private final Map<Key, Object> storage = new HashMap<Key, Object>(DEFAULT_SLICE_CAPACITY);
         private final ReadWriteLock cacheLock = new ReentrantReadWriteLock();
@@ -122,6 +153,11 @@ public final class MemoryCache {
     // Cache statistics
     private int readCnt = 0;
     private int readHitCnt = 0;
+    private int hangs = 0;
+    private int puts = 0;
+    private int putIfAbs = 0;
+    private int switchToSoft = 0;
+    private int weakRefs = 0;
     
     public MemoryCache() {
         refQueueLock = new ReentrantLock();
@@ -129,6 +165,7 @@ public final class MemoryCache {
     }
     
     public void hang(Key key, Persistent obj) {
+        if (STATISTIC) {hangs++;}
         Slice s = cache.getSilce(key);
         s.w.lock();
         try {
@@ -139,8 +176,15 @@ public final class MemoryCache {
     }
     
     public void put(Key key, Persistent obj) {
+        if (STATISTIC) {puts++;}
         Slice s = cache.getSilce(key);
-        SoftValue<Persistent> value = new SoftValue<Persistent>(obj, key, refQueue);
+        Reference<Persistent> value;
+        if (SOFT_REFS_ON_GET || (WEAK_REF && key.getBehavior() != Key.Behavior.LargeAndMutable)) {
+            value = new WeakValue<Persistent>(obj, key, refQueue);
+            if (STATISTIC) {weakRefs++;}
+        } else {
+            value = new SoftValue<Persistent>(obj, key, refQueue);
+        }
         s.w.lock();
         try {
             s.storage.put(key, value);
@@ -157,6 +201,7 @@ public final class MemoryCache {
      *         <tt>null</tt> if there was no mapping for the key.
      */
     public Persistent putIfAbsent(Key key, Persistent obj) {
+        if (STATISTIC) {putIfAbs++;}
         Persistent prevPersistent = null;
         Slice s = cache.getSilce(key);
         s.w.lock();
@@ -173,7 +218,13 @@ public final class MemoryCache {
                 System.err.println("unexpected value " + old + " for key " + key);
             }
             if (prevPersistent == null) {
-                SoftValue<Persistent> value = new SoftValue<Persistent>(obj, key, refQueue);
+                Reference<Persistent> value;
+                if (WEAK_REF && key.getBehavior() != Key.Behavior.LargeAndMutable) {
+                    value = new WeakValue<Persistent>(obj, key, refQueue);
+                    if (STATISTIC) {weakRefs++;}
+                } else {
+                    value = new SoftValue<Persistent>(obj, key, refQueue);
+                }
                 // no previous value
                 // put new item into storage
                 s.storage.put(key, value);
@@ -202,6 +253,21 @@ public final class MemoryCache {
             return (Persistent) value;
         } else if (value instanceof Reference) {
             Persistent result = (Persistent) ((Reference) value).get();
+            if (SOFT_REFS_ON_GET && result != null && value instanceof WeakReference) {
+                // switch to soft reference
+                s.w.lock();
+                try {
+                    // check that there were no modifications
+                    Object freshValue = s.storage.get(key);
+                    if (freshValue == value) {
+                        value = new SoftValue<Persistent>(result, key, refQueue);
+                        s.storage.put(key, value);
+                        if (STATISTIC) {switchToSoft++;}
+                    }
+                } finally {
+                    s.w.unlock();
+                }
+            }
             if( STATISTIC && result != null ) {
                 readHitCnt++;
             }
@@ -267,10 +333,10 @@ public final class MemoryCache {
     private void processQueue() {
         if (refQueueLock.tryLock()) {
             try {
-                SoftValue sv;
-                while ((sv = (SoftValue) refQueue.poll()) != null) {
+                CacheValue sv;
+                while ((sv = (CacheValue) refQueue.poll()) != null) {
                     Object value;
-                    final Key key = sv.key;
+                    final Key key = sv.getKey();
                     if (key != null) {
                         Slice s = cache.getSilce(key);
                         s.w.lock();

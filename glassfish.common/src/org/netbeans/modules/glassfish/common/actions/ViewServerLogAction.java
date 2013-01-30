@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.glassfish.common.actions;
 
+import org.netbeans.modules.glassfish.common.CommonServerSupport;
 import org.netbeans.modules.glassfish.common.LogViewMgr;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
@@ -67,9 +68,9 @@ public class ViewServerLogAction extends NodeAction {
     @Override
     protected void performAction(Node[] nodes) {
         Lookup lookup = nodes[0].getLookup();
-        GlassfishModule commonSupport = lookup.lookup(GlassfishModule.class);
+        CommonServerSupport commonSupport = lookup.lookup(CommonServerSupport.class);
         if(commonSupport != null) {
-            LogViewMgr.displayOutput(commonSupport.getInstanceProperties(), lookup);
+            LogViewMgr.displayOutput(commonSupport.getInstance(), lookup);
         }
     }
     

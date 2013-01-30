@@ -88,6 +88,7 @@ Project, ProjectInformation, LogicalViewProvider, RecommendedTemplates {
         this.icon = icon;
     }
 
+    @Override
     public FileObject getProjectDirectory() {
         FileObject fo = URLMapper.findFileObject(url);
         if (fo == null) {
@@ -97,40 +98,50 @@ Project, ProjectInformation, LogicalViewProvider, RecommendedTemplates {
         return fo;
     }
 
+    @Override
     public Lookup getLookup() {
         return Lookups.fixed(this);
     }
 
+    @Override
     public String getName() {
         return displayName;
     }
 
+    @Override
     public String getDisplayName() {
         return displayName;
     }
 
+    @Override
     public Icon getIcon() {
         return icon.getIcon();
     }
 
+    @Override
     public Project getProject() {
         return this;
     }
 
+    @Override
     public void addPropertyChangeListener(PropertyChangeListener listener) {
     }
 
+    @Override
     public void removePropertyChangeListener(PropertyChangeListener listener) {
     }
 
+    @Override
     public Node createLogicalView() {
         return new ProjNode(Lookups.singleton(this));
     }
 
+    @Override
     public Node findPath(Node root, Object target) {
         return null;
     }
 
+    @Override
     public String[] getRecommendedTypes() {
         return new String[] { "simple-files" }; // NOI18N
     }

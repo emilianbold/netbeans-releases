@@ -42,13 +42,13 @@
 package org.netbeans.modules.maven.j2ee.utils;
 
 import java.awt.event.ActionEvent;
-import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.common.dd.DDHelper;
@@ -114,7 +114,7 @@ public class MavenProjectSupport {
             
         // We don't know anything which means we want to assign <No Server> value to the project
         } else if (instanceID == null && serverID == null) {
-            assignServer(project, instanceID, initContextPath);
+            assignServer(project, null, initContextPath);
 
         // We don't know server instance - inform user about that
         } else if (instanceID == null && serverID != null) {
@@ -216,7 +216,7 @@ public class MavenProjectSupport {
         NbMavenProject proj = project.getLookup().lookup(NbMavenProject.class);
         
         boolean isBundlePackaging = "bundle".equals(packaging); // NOI18N
-        boolean webAppDirExists = new File(proj.getWebAppDirectory()).exists();
+        boolean webAppDirExists = org.openide.util.Utilities.toFile(proj.getWebAppDirectory()).exists();
         
         if (isBundlePackaging && webAppDirExists) {
             return true;
@@ -353,17 +353,21 @@ public class MavenProjectSupport {
                 FileObject webInf = webModuleImpl.getWebInf();
                 if (webInf == null) {
                     webInf = webModuleImpl.createWebInf();
+                    if (webInf == null) {
+                        return;
+                    }
                 }
-                assert webInf != null;
                 
                 FileObject webXml = webModuleImpl.getDeploymentDescriptor();
                 if (webXml == null) {
                     AuxiliaryProperties props = project.getLookup().lookup(AuxiliaryProperties.class);
                     String j2eeVersion = props.get(MavenJavaEEConstants.HINT_J2EE_VERSION, false);
                     webXml = DDHelper.createWebXml(Profile.fromPropertiesString(j2eeVersion), webInf);
+    
+                    // this should never happend if valid j2eeVersion has been parsed - see also issue #214600
+                    assert webXml != null : "DDHelper wasn't able to create deployment descriptor for the J2EE version" + j2eeVersion + ", Profile.fromPropertiesString(j2eeVersion) returns: " + Profile.fromPropertiesString(j2eeVersion);
                 }
 
-                assert webXml != null; // this should never happend if there a valid j2eeVersion was parsed
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
@@ -436,26 +440,32 @@ public class MavenProjectSupport {
         
         @Override
         public void actionPerformed(ActionEvent e) {
-            final String newOne = ServerManager.showAddServerInstanceWizard();
-            final String serverType = newOne != null ? obtainServerID(newOne) : null;
-            Utilities.performPOMModelOperations(prj.getProjectDirectory().getFileObject("pom.xml"), Collections.singletonList(new ModelOperation<POMModel>() { //NOI18N
-                @Override public void performOperation(POMModel model) {
-                    if (newOne != null) {
-                        Properties props = model.getProject().getProperties();
-                        if (props == null) {
-                            props = model.getFactory().createProperties();
-                            model.getProject().setProperties(props);
+            SwingUtilities.invokeLater(new Runnable() {
+
+                @Override
+                public void run() {
+                    final String newOne = ServerManager.showAddServerInstanceWizard();
+                    final String serverType = newOne != null ? obtainServerID(newOne) : null;
+                    Utilities.performPOMModelOperations(prj.getProjectDirectory().getFileObject("pom.xml"), Collections.singletonList(new ModelOperation<POMModel>() { //NOI18N
+                        @Override public void performOperation(POMModel model) {
+                            if (newOne != null) {
+                                Properties props = model.getProject().getProperties();
+                                if (props == null) {
+                                    props = model.getFactory().createProperties();
+                                    model.getProject().setProperties(props);
+                                }
+                                props.setProperty(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER, serverType);
+                            } else {
+                                Properties props = model.getProject().getProperties();
+                                if (props != null) {
+                                    props.setProperty(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER, null);
+                                }
+                            }
                         }
-                        props.setProperty(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER, serverType);
-                    } else {
-                        Properties props = model.getProject().getProperties();
-                        if (props != null) {
-                            props.setProperty(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER, null);
-                        }
-                    }
+                    }));
+                    prj.getLookup().lookup(AuxiliaryProperties.class).put(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_ID, newOne, false);
                 }
-            }));
-            prj.getLookup().lookup(AuxiliaryProperties.class).put(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_ID, newOne, false);
+            });
         }
     }
 

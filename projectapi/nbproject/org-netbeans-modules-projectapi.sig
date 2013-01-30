@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.40
+#Version 1.46.1
 
 CLSS public java.lang.Object
 cons public init()
@@ -43,6 +43,7 @@ meth public abstract java.lang.annotation.ElementType[] value()
 
 CLSS public org.netbeans.api.project.FileOwnerQuery
 fld public final static int EXTERNAL_ALGORITHM_TRANSIENT = 0
+fld public final static org.netbeans.api.project.Project UNOWNED
 meth public static org.netbeans.api.project.Project getOwner(java.net.URI)
 meth public static org.netbeans.api.project.Project getOwner(org.openide.filesystems.FileObject)
 meth public static void markExternalOwner(java.net.URI,org.netbeans.api.project.Project,int)
@@ -131,6 +132,15 @@ meth public abstract org.netbeans.api.project.SourceGroup[] getSourceGroups(java
 meth public abstract void addChangeListener(javax.swing.event.ChangeListener)
 meth public abstract void removeChangeListener(javax.swing.event.ChangeListener)
 
+CLSS public abstract org.netbeans.spi.project.ActionProgress
+cons protected init()
+meth protected abstract void started()
+meth public abstract void finished(boolean)
+meth public static org.netbeans.spi.project.ActionProgress start(org.openide.util.Lookup)
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+supr java.lang.Object
+
 CLSS public abstract interface org.netbeans.spi.project.ActionProvider
 fld public final static java.lang.String COMMAND_BUILD = "build"
 fld public final static java.lang.String COMMAND_CLEAN = "clean"
@@ -142,6 +152,9 @@ fld public final static java.lang.String COMMAND_DEBUG_STEP_INTO = "debug.stepin
 fld public final static java.lang.String COMMAND_DEBUG_TEST_SINGLE = "debug.test.single"
 fld public final static java.lang.String COMMAND_DELETE = "delete"
 fld public final static java.lang.String COMMAND_MOVE = "move"
+fld public final static java.lang.String COMMAND_PROFILE = "profile"
+fld public final static java.lang.String COMMAND_PROFILE_SINGLE = "profile.single"
+fld public final static java.lang.String COMMAND_PROFILE_TEST_SINGLE = "profile.test.single"
 fld public final static java.lang.String COMMAND_REBUILD = "rebuild"
 fld public final static java.lang.String COMMAND_RENAME = "rename"
 fld public final static java.lang.String COMMAND_RUN = "run"
@@ -241,6 +254,7 @@ meth public abstract void customize()
 meth public abstract void removePropertyChangeListener(java.beans.PropertyChangeListener)
 meth public abstract void setActiveConfiguration({org.netbeans.spi.project.ProjectConfigurationProvider%0}) throws java.io.IOException
 meth public abstract {org.netbeans.spi.project.ProjectConfigurationProvider%0} getActiveConfiguration()
+ anno 0 org.netbeans.api.annotations.common.CheckForNull()
 
 CLSS public abstract interface org.netbeans.spi.project.ProjectFactory
 meth public abstract boolean isProject(org.openide.filesystems.FileObject)

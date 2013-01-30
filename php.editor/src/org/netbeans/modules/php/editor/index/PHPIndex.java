@@ -50,24 +50,23 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
+import org.openide.util.Utilities;
 
 /**
  *
  * @author Tomasz.Slota@Sun.COM
  */
-public class PHPIndex {
+public final class PHPIndex {
     private static final Logger LOG = Logger.getLogger(PHPIndex.class.getName());
 
-    /** Set property to true to find ALL functions regardless of file includes */
+    /** Set property to true to find ALL functions regardless of file includes. */
     //private static final boolean ALL_REACHABLE = Boolean.getBoolean("javascript.findall");
     public static final int ANY_ATTR = 0xFFFFFFFF;
     private static String clusterUrl = null;
     private static final String CLUSTER_URL = "cluster:"; // NOI18N
 
-    private static final String[] TOP_LEVEL_TERMS = new String[]{PHPIndexer.FIELD_BASE,
-        PHPIndexer.FIELD_CONST, PHPIndexer.FIELD_CLASS, PHPIndexer.FIELD_IFACE ,PHPIndexer.FIELD_VAR, PHPIndexer.FIELD_NAMESPACE};
-
-
+    private PHPIndex() {
+    }
 
     //public needed for tests (see org.netbeans.modules.php.editor.nav.TestBase):
     public static void setClusterUrl(String url) {
@@ -84,7 +83,7 @@ public class PHPIndex {
         return url;
     }
 
-    /** Get the FileObject corresponding to a URL returned from the index */
+    /** Get the FileObject corresponding to a URL returned from the index. */
     public static FileObject getFileObject(String urlStr) {
         try {
             if (urlStr.startsWith(CLUSTER_URL)) {
@@ -114,7 +113,7 @@ public class PHPIndex {
 
             try {
                 f = f.getCanonicalFile();
-                clusterUrl = f.toURI().toURL().toExternalForm();
+                clusterUrl = Utilities.toURI(f).toURL().toExternalForm();
             } catch (IOException ioe) {
                 Exceptions.printStackTrace(ioe);
             }

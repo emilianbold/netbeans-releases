@@ -185,6 +185,7 @@ public class WSCompletionProvider implements CompletionProvider {
                 case ASSIGNMENT:
                     createAssignmentResults(controller,env);
                     break;
+                default:
             }
         }
         
@@ -212,7 +213,9 @@ public class WSCompletionProvider implements CompletionProvider {
                     successfullyMoved = ts.moveNext(); // otherwise move to the token that "contains" the offset
                 
                 if (successfullyMoved && ts.offset() < offset) {
-                    prefix = ts.token().toString().substring(0, offset - ts.offset());
+                    String token = ts.token().text().toString();
+                    int length = Math.min( offset - ts.offset() , token.length());
+                    prefix = token.substring(0, length);
                     offset=ts.offset();
                     if (ts.token().id() == JavaTokenId.STRING_LITERAL && prefix.startsWith("\"")) { //NOI18N
                         prefix = prefix.substring(1);
@@ -246,7 +249,7 @@ public class WSCompletionProvider implements CompletionProvider {
                             if (var.getKind() == Kind.IDENTIFIER) {
                                 Name name = ((IdentifierTree)var).getName();
                                 if (!name.contentEquals("wsdlLocation") ||   //NOI18N 
-                                        jaxWsSupport!=null) 
+                                        jaxWsSupport==null) 
                                 {
                                     return;
                                 }
@@ -332,8 +335,7 @@ public class WSCompletionProvider implements CompletionProvider {
                                 hasErrors = true;
                                 return;
                             }
-                            if ( webParamEl!=null && controller.getTypes().
-                                            isSameType(el,webParamEl.asType())) 
+                            if ( controller.getTypes().isSameType(el,webParamEl.asType())) 
                             {
                                 for (String mode : BINDING_TYPES) {
                                     if (mode.startsWith(env.getPrefix())){ 
@@ -349,7 +351,7 @@ public class WSCompletionProvider implements CompletionProvider {
             }
         }
 
-        private class Env {
+        private static class Env {
             private int offset;
             private String prefix;
             private TreePath path;

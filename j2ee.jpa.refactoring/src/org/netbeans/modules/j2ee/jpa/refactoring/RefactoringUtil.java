@@ -68,11 +68,11 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
-import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Parameters;
+import org.openide.util.Utilities;
 
 /**
  * Utility methods needed in JPA refactoring, split from
@@ -131,13 +131,18 @@ public abstract class RefactoringUtil {
     // copied from o.n.m.java.refactoring.RetoucheUtils
     public static boolean isOnSourceClasspath(FileObject fo) {
         Project p = FileOwnerQuery.getOwner(fo);
-        if (p==null) return false;
+        if (p==null) {
+            return false;
+        }
         if (OpenProjects.getDefault().isProjectOpen(p)) {
             SourceGroup[] gr = ProjectUtils.getSources(p).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
             for (int j = 0; j < gr.length; j++) {
-                if (fo==gr[j].getRootFolder()) return true;
-                if (FileUtil.isParentOf(gr[j].getRootFolder(), fo))
+                if (fo==gr[j].getRootFolder()) {
                     return true;
+                }
+                if (FileUtil.isParentOf(gr[j].getRootFolder(), fo)) {
+                    return true;
+                }
             }
             return false;
         }
@@ -158,14 +163,17 @@ public abstract class RefactoringUtil {
         }
         final ClasspathInfo cpInfo = refactoring.getContext().lookup(ClasspathInfo.class);
         JavaSource source = JavaSource.create(cpInfo, new FileObject[]{handle.getFileObject()});
+        final CompilationInfo[] ci = {null};
         try{
             source.runUserActionTask(new CancellableTask<CompilationController>() {
                 
+                @Override
                 public void run(CompilationController co) throws Exception {
                     co.toPhase(JavaSource.Phase.RESOLVED);
-                    refactoring.getContext().add(co);
+                    ci[0]=co;
                 }
                 
+                @Override
                 public void cancel() {
                 }
                 
@@ -173,7 +181,7 @@ public abstract class RefactoringUtil {
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
-        return refactoring.getContext().lookup(CompilationInfo.class);
+        return ci[0];
     }
     
     /**
@@ -229,8 +237,10 @@ public abstract class RefactoringUtil {
         JavaSource source = JavaSource.forFileObject(refactoring.getRefactoringSource().lookup(FileObject.class));
         
         source.runUserActionTask(new CancellableTask<CompilationController>() {
+            @Override
             public void cancel() {
             }
+            @Override
             public void run(CompilationController co) throws Exception {
                 co.toPhase(JavaSource.Phase.RESOLVED);
                 CompilationUnitTree cut = co.getCompilationUnit();
@@ -256,9 +266,11 @@ public abstract class RefactoringUtil {
         JavaSource source = JavaSource.forFileObject(file);
         
         source.runUserActionTask(new CancellableTask<CompilationController>() {
+            @Override
             public void cancel() {
             }
             
+            @Override
             public void run(CompilationController info) throws Exception {
                 info.toPhase(JavaSource.Phase.RESOLVED);
                 
@@ -281,7 +293,7 @@ public abstract class RefactoringUtil {
     public static String getPackageName(URL url) {
         File f = null;
         try {
-            f = FileUtil.normalizeFile(new File(url.toURI()));
+            f = FileUtil.normalizeFile(Utilities.toFile(url.toURI()));
         } catch (URISyntaxException uRISyntaxException) {
             throw new IllegalArgumentException("Cannot create package name for url " + url);
         }
@@ -290,8 +302,9 @@ public abstract class RefactoringUtil {
         do {
             FileObject fo = FileUtil.toFileObject(f);
             if (fo != null) {
-                if ("".equals(suffix))
+                if ("".equals(suffix)) {
                     return getPackageName(fo);
+                }
                 String prefix = getPackageName(fo);
                 return prefix + ("".equals(prefix)?"":".") + suffix;
             }

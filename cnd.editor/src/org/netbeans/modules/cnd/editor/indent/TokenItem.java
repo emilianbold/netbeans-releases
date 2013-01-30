@@ -90,7 +90,8 @@ public final class TokenItem {
         prep.moveStart();
         while (prep.moveNext()) {
             if (!(prep.token().id() == CppTokenId.WHITESPACE ||
-                    prep.token().id() == CppTokenId.PREPROCESSOR_START)) {
+                    prep.token().id() == CppTokenId.PREPROCESSOR_START ||
+                    prep.token().id() == CppTokenId.PREPROCESSOR_START_ALT)) {
                 break;
             }
         }

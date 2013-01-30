@@ -50,4 +50,5 @@ import java.io.IOException;
  */
 public interface RepositoryDataOutput extends DataOutput {
     void writeCharSequenceUTF(CharSequence s) throws IOException;
+    void writeUnitId(int unitId) throws IOException;
 }

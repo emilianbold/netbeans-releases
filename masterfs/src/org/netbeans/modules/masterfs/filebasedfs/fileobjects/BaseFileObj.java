@@ -59,6 +59,8 @@ import org.openide.util.Mutex;
 
 import javax.swing.event.EventListenerList;
 import java.io.*;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Enumeration;
@@ -222,6 +224,9 @@ public abstract class BaseFileObj extends FileObject {
      
     @Override
     public FileObject copy(FileObject target, String name, String ext) throws IOException {
+        if (FileUtil.isParentOf(this, target)) {
+            FSException.io("EXC_CopyChild", this, target); // NOI18N                
+        }
         ProvidedExtensions extensions = getProvidedExtensions();
 
         File to = getToFile(target, name, ext);
@@ -259,6 +264,9 @@ public abstract class BaseFileObj extends FileObject {
 
     @Override
     public final FileObject move(FileLock lock, FileObject target, String name, String ext) throws IOException {
+        if (FileUtil.isParentOf(this, target)) {
+            FSException.io("EXC_MoveChild", this, target); // NOI18N                
+        }
         ProvidedExtensions extensions = getProvidedExtensions();
         File to = getToFile(target, name, ext);
 
@@ -289,6 +297,7 @@ public abstract class BaseFileObj extends FileObject {
         }
 
         FileUtil.copyAttributes(this, result);
+        Utils.reassignLkp(this, result);
         } catch (IOException ioe) {
             extensions.moveFailure(this, to);
             throw ioe;
@@ -302,8 +311,12 @@ public abstract class BaseFileObj extends FileObject {
     }
 
     private File getToFile(FileObject target, String name, String ext) {
-        File to = (target instanceof FolderObj) ? new File(((BaseFileObj) target).getFileName().getFile(), FileInfo.composeName(name, ext)) : new File(FileUtil.toFile(target), FileInfo.composeName(name, ext));
-        return to;
+        if (target instanceof FolderObj) {
+            final File tf = ((BaseFileObj) target).getFileName().getFile();
+            return new File(tf, FileInfo.composeName(name, ext));
+        }
+        final File tf = FileUtil.toFile(target);
+        return tf == null ? null : new File(tf, FileInfo.composeName(name, ext));
     }
     
     static void dumpFileInfo(final File f, Throwable ex) {
@@ -463,10 +476,14 @@ public abstract class BaseFileObj extends FileObject {
         }
         //TODO: RELOCK
         LockForFile.relock(file, file2Rename);
-
+        
+        afterRename();
+        
         fireFileRenamedEvent(originalName, originalExt);    
     }
 
+    protected void afterRename() {
+    }
 
     public final void rename(final FileLock lock, final String name, final String ext) throws IOException {
         FSCallable<Boolean> c = new FSCallable<Boolean>() {
@@ -879,6 +896,8 @@ public abstract class BaseFileObj extends FileObject {
         }
         assert newRoot != null;
         fileName = newRoot;
+        
+        afterRename();
     }
     
 

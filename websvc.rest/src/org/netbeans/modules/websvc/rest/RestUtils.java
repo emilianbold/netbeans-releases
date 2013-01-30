@@ -432,17 +432,19 @@ public class RestUtils {
                 return false;
             }
         }
-        WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
-        if (wm != null) {
-            Profile profile = wm.getJ2eeProfile();
-            if (Profile.JAVA_EE_6_WEB.equals(profile) || Profile.JAVA_EE_6_FULL.equals(profile)) {
-                SourceGroup[] sourceGroups = SourceGroupSupport.getJavaSourceGroups(project);
-                if (sourceGroups.length>0) {
-                    ClassPath cp = ClassPath.getClassPath(sourceGroups[0].getRootFolder(), ClassPath.COMPILE);
-                    if (cp.findResource("javax/ws/rs/ApplicationPath.class") != null && //NOI18M
-                            cp.findResource("javax/ws/rs/core/Application.class") != null) { //NOI18N
-                        return true;
-                    }
+        
+        if (isJavaEE6(project)) {
+            SourceGroup[] sourceGroups = SourceGroupSupport
+                    .getJavaSourceGroups(project);
+            if (sourceGroups.length > 0) {
+                ClassPath cp = ClassPath.getClassPath(
+                        sourceGroups[0].getRootFolder(), ClassPath.COMPILE);
+                if (cp!=null && cp.findResource(
+                        "javax/ws/rs/ApplicationPath.class") != null      // NOI18N
+                        && cp.findResource(
+                                "javax/ws/rs/core/Application.class") != null)// NOI18N
+                { 
+                    return true;
                 }
             }
         }
@@ -461,7 +463,7 @@ public class RestUtils {
             if (sourceGroups.length>0) {
                 ClassPath cp = ClassPath.getClassPath(sourceGroups[0].getRootFolder(), 
                         ClassPath.COMPILE);
-                if (cp.findResource(fqn) != null) { 
+                if (cp != null && cp.findResource(fqn) != null) { 
                     return true;
                 }
             }
@@ -474,6 +476,9 @@ public class RestUtils {
     {   
         FileObject appClass = GenerationUtils.createClass(packageFolder,name, null );
         JavaSource javaSource = JavaSource.forFileObject(appClass);
+        if ( javaSource == null ){
+            return;
+        }
         javaSource.runModificationTask( new Task<WorkingCopy>(){
 
             @Override
@@ -496,7 +501,11 @@ public class RestUtils {
         WebModule webModule = WebModule.getWebModule(project.getProjectDirectory());
         if (webModule != null) {
             Profile profile = webModule.getJ2eeProfile();
-            if (Profile.JAVA_EE_6_WEB == profile || Profile.JAVA_EE_6_FULL == profile) {
+            if (Profile.JAVA_EE_6_WEB == profile || 
+                    Profile.JAVA_EE_6_FULL == profile ||
+                        Profile.JAVA_EE_7_WEB == profile ||
+                                Profile.JAVA_EE_7_FULL == profile )
+            {
                 return true;
             }
         }

@@ -70,6 +70,7 @@ public final class UpdaterInternal {
         
         class Context implements UpdatingContext {
             private Map<File,Long> modified = new HashMap<File,Long>();
+            private String label;
             
             @Override
             public Collection<File> forInstall() {
@@ -83,7 +84,7 @@ public final class UpdaterInternal {
 
             @Override
             public void unpackingIsRunning () {
-                firePropertyChange (RUNNING, null, null);
+                firePropertyChange (RUNNING, null, label);
             }
 
             @Override
@@ -102,6 +103,7 @@ public final class UpdaterInternal {
 
             @Override
             public void setLabel(String string) {
+                label = string;
             }
 
             @Override

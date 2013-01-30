@@ -45,11 +45,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import org.netbeans.modules.csl.api.ElementHandle;
-import org.netbeans.modules.php.editor.model.ModelElement;
 import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.api.QualifiedNameKind;
 import org.netbeans.modules.php.editor.api.elements.FullyQualifiedElement;
 import org.netbeans.modules.php.editor.api.elements.TypeMemberElement;
+import org.netbeans.modules.php.editor.model.ModelElement;
 import org.netbeans.modules.php.editor.model.Scope;
 import org.netbeans.modules.php.editor.model.TypeScope;
 import org.netbeans.modules.php.editor.model.nodes.NamespaceDeclarationInfo;
@@ -127,7 +127,7 @@ public class NamespaceIndexFilter<T extends ElementHandle> {
         List<ModelElement> retval = new ArrayList<ModelElement>();
         String namespaneNameLCase = getNamespaceName().toLowerCase();
         String namespaneNameLCaseSlashed = namespaneNameLCase;
-        if (!namespaneNameLCaseSlashed.endsWith("\\")) {//NOI18N
+        if (!namespaneNameLCaseSlashed.endsWith("\\")) { //NOI18N
             namespaneNameLCaseSlashed += "\\";
         }
         for (ModelElement elem : originalElems) {
@@ -163,7 +163,7 @@ public class NamespaceIndexFilter<T extends ElementHandle> {
         Collection<T> retval = new ArrayList<T>();
         String namespaneNameLCase = getNamespaceName().toLowerCase();
         String namespaneNameLCaseSlashed = namespaneNameLCase;
-        if (!namespaneNameLCaseSlashed.endsWith("\\")) {//NOI18N
+        if (!namespaneNameLCaseSlashed.endsWith("\\")) { //NOI18N
             namespaneNameLCaseSlashed += "\\";
         }
         for (T elem : originalElems) {
@@ -175,8 +175,9 @@ public class NamespaceIndexFilter<T extends ElementHandle> {
                         continue;
                     }
                 }
-                String fqn = elem instanceof FullyQualifiedElement ? ((FullyQualifiedElement) elem).getFullyQualifiedName().toString() :
-                    ((TypeMemberElement) elem).getType().getFullyQualifiedName().toString();
+                String fqn = elem instanceof FullyQualifiedElement
+                        ? ((FullyQualifiedElement) elem).getFullyQualifiedName().toString()
+                        : ((TypeMemberElement) elem).getType().getFullyQualifiedName().toString();
                 final int indexOf = fqn.toLowerCase().indexOf(namespaneNameLCaseSlashed);
                 final boolean fullyQualified = getKind().isFullyQualified();
                 if (fullyQualified ? indexOf == 0 : indexOf != -1) {
@@ -192,7 +193,7 @@ public class NamespaceIndexFilter<T extends ElementHandle> {
                     }
                     retval.add(elem);
                 }
-            }else if (namespaneNameLCase.equals(NamespaceDeclarationInfo.DEFAULT_NAMESPACE_NAME)) {
+            } else if (namespaneNameLCase.equals(NamespaceDeclarationInfo.DEFAULT_NAMESPACE_NAME)) {
                 retval.add(elem);
             }
         }

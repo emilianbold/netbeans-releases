@@ -50,6 +50,7 @@ import java.io.*;
 import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
+import java.text.MessageFormat;
 import java.util.HashSet;
 import java.util.Set;
 import org.openide.util.Exceptions;
@@ -354,12 +355,13 @@ class FileMapStorage implements Storage {
                         ch.read(cont, mappedStart);
                         updateContents(cont);
                     }
-                } catch (IOException ioe) {
-                    Logger.getAnonymousLogger().info("Failed to read output file. Start:" + start + " bytes reqd=" + //NOI18N
-                        byteCount + " mapped range=" + mappedRange + //NOI18N
-                        " previous mapped range=" + prevMappedRange + //NOI18N
-                        " channel size: " + ch.size()); //NOI18N
-                    throw ioe;
+                } catch (Exception e) {
+                    String msg = MessageFormat.format(
+                            "Failed to read output file. Start:{0} bytes reqd={1}" //NOI18N
+                            + " mapped range={2} previous mapped range={3} " //NOI18N
+                            + "channel size: {4}", new Object[]{start, byteCount,
+                                mappedRange, prevMappedRange, ch.size()});
+                    throw new IOException(msg, e);
                 }
             }
             if (start - mappedStart > cont.limit() - byteCount) {

@@ -50,16 +50,21 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import javax.swing.event.ChangeEvent;
 import org.netbeans.modules.versioning.core.util.VCSSystemProvider.VersioningSystem;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.spi.VCSVisibilityQuery;
+import org.netbeans.spi.queries.VisibilityQueryChangeEvent;
 import org.netbeans.spi.queries.VisibilityQueryImplementation2;
 import org.openide.filesystems.FileObject;
 import org.openide.util.RequestProcessor;
+import org.openide.util.RequestProcessor.Task;
 
 /**
  * Delegates the work to the owner of files in query.
@@ -74,10 +79,12 @@ public class VcsVisibilityQueryImplementation implements VisibilityQueryImplemen
     private static VcsVisibilityQueryImplementation instance;
     private static RequestProcessor rp = new RequestProcessor(VcsVisibilityQueryImplementation.class.getName(), 1, false, false);
     private RequestProcessor.Task refreshTask = rp.create(new RefreshTask());
-    private RequestProcessor.Task vsChangedTask = rp.create(new VisibilityChangedTask());
+    private VisibilityChangedTask vsChangedTask = new VisibilityChangedTask();
     private final HashMap<VCSFileProxy, Boolean> refreshedFiles = new HashMap<VCSFileProxy, Boolean>(20);
     private static final int MAX_CACHE_SIZE = 500;
 
+    private static final Logger LOG = Logger.getLogger(VcsVisibilityQueryImplementation.class.getName());
+    
     public VcsVisibilityQueryImplementation() {
         instance = this;
     }
@@ -89,22 +96,37 @@ public class VcsVisibilityQueryImplementation implements VisibilityQueryImplemen
     public static void visibilityChanged() {
         if(instance != null) {
             // was touched from outside - lets fire the change
-            instance.fireVisibilityChanged();
+            instance.fireVisibilityChanged((FileObject[])null);
+        }
+    }
+    
+    public static void visibilityChanged(VCSFileProxy... files) {
+        if(instance != null) {
+            // was touched from outside - lets fire the change
+            instance.fireVisibilityChanged(files);
         }
     }
 
     @Override
     public boolean isVisible(File file) {
-        return isVisible(VCSFileProxy.createFileProxy(file));
+        boolean ret = true;
+        try {
+            ret = isVisible(VCSFileProxy.createFileProxy(file));
+            return ret;
+        } finally {
+            if((!ret && LOG.isLoggable(Level.FINER)) ||
+                LOG.isLoggable(Level.FINEST)) 
+            { 
+                LOG.log(Level.FINE, "VCS returned visibility {0} for {1}", new Object[] {ret, file}); // NOI18N
+            }
+        }
     }
     
     public boolean isVisible(VCSFileProxy file) {
         VersioningSystem[] systems = VersioningManager.getInstance().getVersioningSystems();
         for (VersioningSystem versioningSystem : systems) {
-            if(versioningSystem instanceof DelegatingVCS) {
-                if(((DelegatingVCS)versioningSystem).isMetadataFile(file)) {
-                    return false;
-                }
+            if(versioningSystem.isMetadataFile(file)) {
+                return false;
             }
         }
         if(isHiddenMetadata(file)) {
@@ -129,11 +151,21 @@ public class VcsVisibilityQueryImplementation implements VisibilityQueryImplemen
 
     @Override
     public boolean isVisible(FileObject fileObject) {
-        VCSFileProxy file = VCSFileProxy.createFileProxy(fileObject);
-        if(file == null) {
-            return true;
+        boolean ret = true;
+        try {
+            VCSFileProxy file = VCSFileProxy.createFileProxy(fileObject);
+            if(file == null) {
+                return true;
+            }
+            ret = isVisible(file);
+            return ret;
+        } finally {
+            if((!ret && LOG.isLoggable(Level.FINER)) ||
+                LOG.isLoggable(Level.FINEST)) 
+            { 
+                LOG.log(Level.FINE, "VCS returned visibility {0} for {1}", new Object[] {ret, fileObject}); // NOI18N
+            }
         }
-        return isVisible(file);
     }
 
     @Override
@@ -150,19 +182,40 @@ public class VcsVisibilityQueryImplementation implements VisibilityQueryImplemen
         listeners = newList;
     }
 
-    public void fireVisibilityChanged() {
+    private void fireVisibilityChanged(VCSFileProxy[] proxies) {
+        FileObject[] fileObjects = new FileObject[proxies.length];
+        for (int i = 0; i < proxies.length; i++) {
+            FileObject fo = proxies[i].toFileObject();
+            if(fo != null) {
+                fileObjects[i] = fo;
+            } else {
+                LOG.log(Level.WARNING, "VCS visibility did not fire because of {0} which returns no FileObject", proxies[i]); // NOI18N
+            }
+        }
+        fireVisibilityChanged(fileObjects);
+    }
+    
+    private void fireVisibilityChanged(FileObject[] files) {
         ChangeListener[] ls;
         synchronized(this) {
             ls = listeners.toArray(new ChangeListener[listeners.size()]);
         }
-        ChangeEvent event = new ChangeEvent(this);
+        ChangeEvent event = files == null ? new ChangeEvent(this) : new VisibilityQueryChangeEvent(this, files);
         for (ChangeListener l : ls) {
             l.stateChanged(event);
+        }
+        if(files != null && LOG.isLoggable(Level.FINE)) { 
+            StringBuilder sb = new StringBuilder();
+            for (FileObject fo : files) {
+                sb.append("\n\t");
+                sb.append(fo.toString());
+            }
+            LOG.log(Level.FINE, "VCS fired visibility change for: {0}", sb.toString()); // NOI18N
         }
     }
 
     private static final Pattern hgmetadataPattern = Pattern.compile(".*\\" + File.separatorChar + "(\\.)hg(\\" + File.separatorChar + ".*|$)"); // NOI18N
-    private static final Pattern cvsmetadataPattern = Pattern.compile(".*\\" + File.separatorChar + "CVS(\\" + File.separatorChar + ".*|$)");    
+    private static final Pattern cvsmetadataPattern = Pattern.compile(".*\\" + File.separatorChar + "CVS(\\" + File.separatorChar + ".*|$)"); // NOI18N     
     private static final Pattern gitmetadatapattern = Pattern.compile(".*\\" + File.separatorChar + "(\\.)git(\\" + File.separatorChar + ".*|$)"); // NOI18N
     
     // temporary hack to fix issue #195985
@@ -174,10 +227,36 @@ public class VcsVisibilityQueryImplementation implements VisibilityQueryImplemen
     }
 
     private class VisibilityChangedTask implements Runnable {
+        
+        private final List<VCSFileProxy> files = new LinkedList<VCSFileProxy>();
+        private Task task;
+
+        public VisibilityChangedTask() {}
+        
         @Override
         public void run() {
-            fireVisibilityChanged();
+            VCSFileProxy[] filesArray;
+            synchronized(files) {
+                filesArray = files.toArray(new VCSFileProxy[files.size()]);
+                files.clear();
+            }
+            fireVisibilityChanged(filesArray);            
         }
+        
+        void schedule(VCSFileProxy file) {
+            synchronized(files) {
+                files.add(file);
+            }
+            getTask().schedule(1000);
+        }
+        
+        private synchronized Task getTask() {
+            if(task == null) {
+                task = rp.create(this);
+            }
+            return task;
+        }
+        
     }
     
     private class RefreshTask implements Runnable {
@@ -215,7 +294,7 @@ public class VcsVisibilityQueryImplementation implements VisibilityQueryImplemen
                 }
             }
             if (originalValue != visible) {
-                vsChangedTask.schedule(1000);
+                vsChangedTask.schedule(file);
             }
             refreshTask.schedule(0);
         }

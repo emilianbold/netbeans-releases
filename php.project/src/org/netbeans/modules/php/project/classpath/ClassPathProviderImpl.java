@@ -50,8 +50,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.Map;
-import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
@@ -94,8 +95,8 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PhpSource
     private final SourceRoots tests;
     private final SourceRoots selenium;
 
-    // GuardedBy(dirCache) - if new item is added to this map, do not forget to update propertyChange() method as well
-    private final Map<String, List<FileObject>> dirCache = new HashMap<String, List<FileObject>>();
+    // if new item is added to this map, do not forget to update propertyChange() method as well
+    private final ConcurrentMap<String, List<FileObject>> dirCache = new ConcurrentHashMap<String, List<FileObject>>();
     // GuardedBy(cache)
     private final Map<ClassPathCache, ClassPath> cache = new EnumMap<ClassPathCache, ClassPath>(ClassPathCache.class);
 
@@ -117,25 +118,24 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PhpSource
     }
 
     private List<FileObject> getDirs(String propname) {
-        synchronized (dirCache) {
-            List<FileObject> dirs = dirCache.get(propname);
-            if (!checkDirs(dirs)) {
-                String prop = evaluator.getProperty(propname);
-                if (prop == null) {
-                    return Collections.<FileObject>emptyList();
-                }
-                String[] paths = PropertyUtils.tokenizePath(prop);
-                dirs = new ArrayList<FileObject>(paths.length);
-                for (String path : paths) {
-                    FileObject resolvedFile = helper.resolveFileObject(path);
-                    if (resolvedFile != null) {
-                        dirs.add(resolvedFile);
-                    }
-                }
-                dirCache.put(propname, dirs);
+        List<FileObject> dirs = dirCache.get(propname);
+        if (!checkDirs(dirs)) {
+            // #217861 - it is ok if directories are counted more times...
+            String prop = evaluator.getProperty(propname);
+            if (prop == null) {
+                return Collections.<FileObject>emptyList();
             }
-            return dirs;
+            String[] paths = PropertyUtils.tokenizePath(prop);
+            dirs = new ArrayList<FileObject>(paths.length);
+            for (String path : paths) {
+                FileObject resolvedFile = helper.resolveFileObject(path);
+                if (resolvedFile != null) {
+                    dirs.add(resolvedFile);
+                }
+            }
+            dirCache.put(propname, dirs);
         }
+        return dirs;
     }
 
     private boolean checkDirs(List<FileObject> dirs) {
@@ -154,21 +154,11 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PhpSource
         return getDirs(PhpProjectProperties.INCLUDE_PATH);
     }
 
+    // #221036 - order of the directories is from the "nearest"
+    // (if one has project on the (global) include path -> SOURCE should be returned, not INCLUDE)
     @Override
     public FileType getFileType(FileObject file) {
         Parameters.notNull("file", file);
-
-        for (FileObject dir : CommonPhpSourcePath.getInternalPath()) {
-            if (dir != null && (dir.equals(file) || FileUtil.isParentOf(dir, file))) {
-                return FileType.INTERNAL;
-            }
-        }
-
-        for (FileObject dir : getPlatformPath()) {
-            if (dir.equals(file) || FileUtil.isParentOf(dir, file)) {
-                return FileType.INCLUDE;
-            }
-        }
 
         // first check tests because test directory can be underneath sources directory
         for (FileObject root : tests.getRoots()) {
@@ -190,6 +180,19 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PhpSource
                 return FileType.SOURCE;
             }
         }
+
+        for (FileObject dir : getPlatformPath()) {
+            if (dir.equals(file) || FileUtil.isParentOf(dir, file)) {
+                return FileType.INCLUDE;
+            }
+        }
+
+        for (FileObject dir : CommonPhpSourcePath.getInternalPath()) {
+            if (dir != null && (dir.equals(file) || FileUtil.isParentOf(dir, file))) {
+                return FileType.INTERNAL;
+            }
+        }
+
         return FileType.UNKNOWN;
     }
 
@@ -291,10 +294,6 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PhpSource
      */
     public ClassPath[] getProjectClassPaths(String type) {
         if (PhpSourcePath.BOOT_CP.equals(type)) {
-            // because of global include path, we need to ensure that it is known for property evaluator
-            //  (=> need to be written in global properties, do it just once, just before getting BOOT class path)
-            PhpOptions.getInstance().getPhpGlobalIncludePath();
-
             return new ClassPath[] {getBootClassPath()};
         } else if (PhpSourcePath.SOURCE_CP.equals(type)) {
             return new ClassPath[] {
@@ -310,9 +309,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PhpSource
     public void propertyChange(PropertyChangeEvent evt) {
         String propertyName = evt.getPropertyName();
         if (PhpProjectProperties.INCLUDE_PATH.equals(propertyName)) {
-            synchronized (dirCache) {
-                dirCache.remove(propertyName);
-            }
+            dirCache.remove(propertyName);
         }
     }
 }

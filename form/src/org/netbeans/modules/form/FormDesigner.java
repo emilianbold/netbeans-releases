@@ -2536,6 +2536,7 @@ public class FormDesigner {
             int prevType = 0;
             ComponentContainer prevContainer = null;
             boolean updateDone = false;
+            boolean updateLayoutDesignerSelection = false;
 
             for (int i=0; i < events.length; i++) {
                 FormModelEvent ev = events[i];
@@ -2546,14 +2547,20 @@ public class FormDesigner {
                     || type == FormModelEvent.CONTAINER_LAYOUT_CHANGED
                     || type == FormModelEvent.COMPONENT_LAYOUT_CHANGED)
                 {
+                    RADVisualContainer visualMetaCont = (RADVisualContainer) metacont;
                     if ((prevType != FormModelEvent.CONTAINER_LAYOUT_EXCHANGED
                          && prevType != FormModelEvent.CONTAINER_LAYOUT_CHANGED
                          && prevType != FormModelEvent.COMPONENT_LAYOUT_CHANGED)
                         || prevContainer != metacont)
                     {
-                        replicator.updateContainerLayout((RADVisualContainer)
-                                                         metacont);
+                        replicator.updateContainerLayout(visualMetaCont);
                         updateDone = true;
+                    }
+                    if (type == FormModelEvent.CONTAINER_LAYOUT_EXCHANGED
+                            && visualMetaCont.getLayoutSupport() == null
+                            && getSelectedComponents().contains(visualMetaCont)) {
+                        // switched to free design, update selection in LayoutDesigner
+                        updateLayoutDesignerSelection = true;
                     }
                 }
                 else if (type == FormModelEvent.COMPONENT_ADDED) {
@@ -2598,11 +2605,12 @@ public class FormDesigner {
                 else if (type == FormModelEvent.COMPONENT_PROPERTY_CHANGED) {
                     RADProperty eventProperty = ev.getComponentProperty();
                     RADComponent eventComponent = ev.getComponent();
-                    
-                    replicator.updateComponentProperty(eventProperty);
-                    updateConnectedProperties(eventProperty, eventComponent);
-                    if (layoutDesigner != null && formModel.isCompoundEditInProgress()) {
-                        layoutDesigner.componentDefaultSizeChanged(eventComponent.getId());
+                    if (eventProperty != null) { // bug #220513, don't update anything e.g. for a11y properties
+                        replicator.updateComponentProperty(eventProperty);
+                        updateConnectedProperties(eventProperty, eventComponent);
+                        if (layoutDesigner != null && formModel.isCompoundEditInProgress()) {
+                            layoutDesigner.componentDefaultSizeChanged(eventComponent.getId());
+                        }
                     }
                     
                     updateDone = true;
@@ -2636,6 +2644,9 @@ public class FormDesigner {
                     getLayoutDesigner().externalSizeChangeHappened();
                 }
                 updateComponentLayer(true);
+                if (updateLayoutDesignerSelection) {
+                    updateLayoutDesigner();
+                }
             }
         }
         

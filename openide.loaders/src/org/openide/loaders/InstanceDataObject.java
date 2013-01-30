@@ -161,7 +161,7 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
     }
 
     /** used for synchronization instead of the IDO object */
-    private final Object IDO_LOCK = new Object();
+    private static final Object IDO_LOCK = new Object();
     /** Get the lock of the IDO object. Do not synchronize on the IDO object
      * directly to prevent deadlocks.
      */
@@ -828,11 +828,15 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
         return delegateIC.instanceOf (type);
     }
 
-    /*
-    * @return an object to work with
-    * @exception IOException an I/O error occured
-    * @exception ClassNotFoundException the class has not been found
-    */
+    /* Obtains the instance represented by the underlying file. The instance
+     * is held in a weak cache and thus subsequent calls to this method are
+     * likely to return the same instance (until it get garbage collected
+     * or the content of the file on disk changes).
+     * 
+     * @return an object to work with
+     * @exception IOException an I/O error occured
+     * @exception ClassNotFoundException the class has not been found
+     */
     public Object instanceCreate ()
     throws IOException, ClassNotFoundException {
         InstanceCookie delegateIC = delegateIC ();

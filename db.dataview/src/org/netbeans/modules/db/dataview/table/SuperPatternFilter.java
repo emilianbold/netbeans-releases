@@ -45,28 +45,26 @@ package org.netbeans.modules.db.dataview.table;
  *
  * @author ahimanikya
  */
-import java.util.ArrayList;
-import java.util.List;
 import java.util.regex.Pattern;
-import org.jdesktop.swingx.decorator.Filter;
+import javax.swing.RowFilter;
+import javax.swing.table.TableModel;
 import static org.netbeans.modules.db.dataview.table.SuperPatternFilter.MODE.LITERAL_FIND;
 
-public class SuperPatternFilter extends Filter {
+public class SuperPatternFilter extends RowFilter<TableModel, Integer> {
 
-    private List<Integer> toPrevious;
     Pattern pattern;
     String filterStr = "";
     MODE mode;
     private static final String UNKOWN_MODE = "unknown mode";
+    private final int col;
 
     public static enum MODE {
-
         LITERAL_FIND, REGEX_FIND, LITERAL_MATCH, REGEX_MATCH
     }
 
     @SuppressWarnings("OverridableMethodCallInConstructor")
     public SuperPatternFilter(final int col) {
-        super(col);
+        this.col = col;
         setFilterStr(null, LITERAL_FIND);
     }
 
@@ -97,43 +95,17 @@ public class SuperPatternFilter extends Filter {
             default:
                 throw new RuntimeException(UNKOWN_MODE);
         }
-        refresh();
     }
 
-    @Override
-    protected void reset() {
-        toPrevious.clear();
-        final int inputSize = getInputSize();
-        fromPrevious = new int[inputSize];
-        for (int i = 0; i < inputSize; i++) {
-            fromPrevious[i] = -1;
+    public boolean include(RowFilter.Entry<? extends TableModel,? extends Integer> entry) {
+        return testValue(entry.getValue(col));
         }
-    }
 
-    @Override
-    protected void filter() {
-        final int inputSize = getInputSize();
-        int current = 0;
-        for (int i = 0; i < inputSize; i++) {
-            if (test(i)) {
-                toPrevious.add(i);
-                fromPrevious[i] = current++;
-            }
-        }
-    }
-
-    public boolean test(final int row) {
-        final int colIdx = getColumnIndex();
-        if (!adapter.isTestable(colIdx)) {
+    protected boolean testValue(final Object value) {
+        if (value == null) {
             return false;
         }
-        return testValue((String) getInputValue(row, colIdx));
-    }
-
-    boolean testValue(final String valueStr) {
-        if (valueStr == null) {
-            return false;
-        }
+        final String valueStr = value.toString();
         switch (mode) {
             case LITERAL_FIND:
                 if (filterStr == null || filterStr.length() == 0) {
@@ -155,21 +127,4 @@ public class SuperPatternFilter extends Filter {
                 throw new RuntimeException(UNKOWN_MODE);
         }
     }
-
-    @Override
-    public int getSize() {
-        return toPrevious.size();
     }
-
-    @Override
-    protected int mapTowardModel(final int row) {
-        return toPrevious.get(row);
-    }
-
-    @Override
-    protected void init() {
-        toPrevious = new ArrayList<Integer>();
-    }
-}
-
-

@@ -82,6 +82,7 @@ public class ProjectTemplatePanel implements WizardDescriptor.Panel<WizardDescri
     public ProjectTemplatePanel() {
     }
     
+    @Override
     public void readSettings(WizardDescriptor settings) {
         this.wizard = settings;
         panel.setWizardDescriptor(wizard);
@@ -126,6 +127,7 @@ public class ProjectTemplatePanel implements WizardDescriptor.Panel<WizardDescri
         wd.putProperty("NewProjectWizard_Title", null); // NOI18N
     }
     
+    @Override
     public void storeSettings(WizardDescriptor settings) {
         TemplateWizard wd = (TemplateWizard) settings;
         
@@ -158,22 +160,27 @@ public class ProjectTemplatePanel implements WizardDescriptor.Panel<WizardDescri
         }
     }
     
+    @Override
     public void addChangeListener(ChangeListener l) {
         changeSupport.addChangeListener(l);
     }
     
+    @Override
     public void removeChangeListener(ChangeListener l) {
         changeSupport.removeChangeListener(l);
     }
     
+    @Override
     public boolean isValid() {
         return ((TemplatesPanelGUI)this.getComponent()).getSelectedTemplate() != null;
     }
     
+    @Override
     public HelpCtx getHelp() {
         return new HelpCtx( ProjectTemplatePanel.class );
     }
     
+    @Override
     public synchronized Component getComponent() {        
         if (this.panel == null) {
             TemplatesPanelGUI.Builder firer = new Builder();
@@ -206,14 +213,17 @@ public class ProjectTemplatePanel implements WizardDescriptor.Panel<WizardDescri
             this.root = folder;
         }
         
+        @Override
         protected void addNotify () {
             setKeys(root.getChildren());
         }
         
+        @Override
         protected void removeNotify () {
             this.setKeys(new DataObject[0]);
         }
         
+        @Override
         protected Node[] createNodes(DataObject dobj) {
             if (dobj instanceof DataFolder) {
                 DataFolder folder = (DataFolder) dobj;
@@ -247,14 +257,17 @@ public class ProjectTemplatePanel implements WizardDescriptor.Panel<WizardDescri
             this.folder = folder;
         }
         
+        @Override
         protected void addNotify () {
             this.setKeys (this.folder.getChildren ());
         }
         
+        @Override
         protected void removeNotify () {
             this.setKeys(new DataObject[0]);
         }
         
+        @Override
         protected Node[] createNodes(DataObject dobj) {
             if (dobj.isTemplate()) {
                 return new Node[] {
@@ -273,10 +286,12 @@ public class ProjectTemplatePanel implements WizardDescriptor.Panel<WizardDescri
         private String category;
         private String template;
 
+        @Override
         public void construct () {
             panel.warmUp (this.templatesFolder);
         }
         
+        @Override
         public void finished () {
             Cursor cursor = null;
             try {
@@ -308,25 +323,30 @@ public class ProjectTemplatePanel implements WizardDescriptor.Panel<WizardDescri
     
     private class Builder implements TemplatesPanelGUI.Builder {
 
+        @Override
         public org.openide.nodes.Children createCategoriesChildren (DataFolder folder) {
             assert folder != null : "Folder cannot be null.";  //NOI18N
             return new CategoriesChildren (folder);
         }
 
+        @Override
         public org.openide.nodes.Children createTemplatesChildren(DataFolder folder) {
             return new TemplateChildren (folder);
         }
 
 
+        @Override
         public String getCategoriesName() {
             return NbBundle.getMessage(ProjectTemplatePanel.class,"CTL_Categories");
         }
 
 
+        @Override
         public String getTemplatesName() {
             return NbBundle.getMessage(ProjectTemplatePanel.class,"CTL_Projects");
         }
 
+        @Override
         public void fireChange() {
             changeSupport.fireChange();
         }

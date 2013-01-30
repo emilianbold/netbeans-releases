@@ -41,10 +41,10 @@
  */
 package org.netbeans.modules.php.doctrine2.annotations.odm;
 
-import org.netbeans.modules.php.spi.annotations.PhpAnnotationTag;
+import org.netbeans.modules.php.spi.annotation.AnnotationCompletionTag;
 import org.openide.util.NbBundle;
 
-public class NotSavedTag extends PhpAnnotationTag {
+public class NotSavedTag extends AnnotationCompletionTag {
 
     public NotSavedTag() {
         super("NotSaved", // NOI18N

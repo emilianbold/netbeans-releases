@@ -191,6 +191,8 @@ public class EjbRefactoringFactory implements RefactoringPluginFactory{
                         }
                     }
                 }
+                //mkleint: see subprojectprovider for official contract, maybe classpath should be checked instead? see #210465
+                //in this case J2eeApplicationprovider might provide the same results though.
                 Object obj = project.getLookup().lookup(SubprojectProvider.class);
                 if ((obj != null) && (obj instanceof SubprojectProvider)) {
                     Set subprojects = ((SubprojectProvider) obj).getSubprojects();

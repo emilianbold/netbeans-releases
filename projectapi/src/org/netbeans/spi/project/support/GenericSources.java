@@ -85,6 +85,7 @@ public class GenericSources {
             this.p = p;
         }
         
+        @Override
         public SourceGroup[] getSourceGroups(String type) {
             if (type.equals(Sources.TYPE_GENERIC)) {
                 return new SourceGroup[] {
@@ -97,8 +98,10 @@ public class GenericSources {
             }
         }
         
+        @Override
         public void addChangeListener(ChangeListener listener) {}
         
+        @Override
         public void removeChangeListener(ChangeListener listener) {}
         
     }
@@ -141,18 +144,22 @@ public class GenericSources {
             this.openedIcon = openedIcon;
         }
         
+        @Override
         public FileObject getRootFolder() {
             return rootFolder;
         }
         
+        @Override
         public String getName() {
             return name;
         }
         
+        @Override
         public String getDisplayName() {
             return displayName;
         }
         
+        @Override
         public Icon getIcon(boolean opened) {
             return opened ? icon : openedIcon;
         }
@@ -172,14 +179,17 @@ public class GenericSources {
             return SharabilityQuery.getSharability(file) != SharabilityQuery.Sharability.NOT_SHARABLE;
         }
         
+        @Override
         public void addPropertyChangeListener(PropertyChangeListener l) {
             // XXX should react to ProjectInformation changes
         }
         
+        @Override
         public void removePropertyChangeListener(PropertyChangeListener l) {
             // XXX
         }
         
+        @Override
         public String toString() {
             return "GenericSources.Group[name=" + name + ",rootFolder=" + rootFolder + "]"; // NOI18N
         }

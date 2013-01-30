@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.33
+#Version 1.37.1
 
 CLSS public abstract interface java.beans.PropertyChangeListener
 intf java.util.EventListener
@@ -97,7 +97,7 @@ meth public void destroy()
 meth public void removeActionsManagerListener(java.lang.String,org.netbeans.api.debugger.ActionsManagerListener)
 meth public void removeActionsManagerListener(org.netbeans.api.debugger.ActionsManagerListener)
 supr java.lang.Object
-hfds actionListener,actionProviders,actionProvidersLock,aps,destroy,doiingDo,lazyListeners,listener,listeners,listerersLoaded,lookup
+hfds actionListener,actionProviders,actionProvidersInitialized,actionProvidersLock,aps,destroy,doiingDo,lazyListeners,listener,listeners,listerersLoaded,lookup
 hcls AsynchActionTask,MyActionListener
 
 CLSS public org.netbeans.api.debugger.ActionsManagerAdapter
@@ -131,20 +131,29 @@ meth protected void firePropertyChange(java.lang.String,java.lang.Object,java.la
 meth public abstract boolean isEnabled()
 meth public abstract void disable()
 meth public abstract void enable()
+meth public boolean canHaveDependentBreakpoints()
 meth public final int getHitCountFilter()
 meth public final java.lang.String getValidityMessage()
 meth public final org.netbeans.api.debugger.Breakpoint$HIT_COUNT_FILTERING_STYLE getHitCountFilteringStyle()
 meth public final org.netbeans.api.debugger.Breakpoint$VALIDITY getValidity()
 meth public final void setHitCountFilter(int,org.netbeans.api.debugger.Breakpoint$HIT_COUNT_FILTERING_STYLE)
 meth public java.lang.String getGroupName()
+meth public java.util.Set<org.netbeans.api.debugger.Breakpoint> getBreakpointsToDisable()
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+meth public java.util.Set<org.netbeans.api.debugger.Breakpoint> getBreakpointsToEnable()
+ anno 0 org.netbeans.api.annotations.common.NonNull()
 meth public org.netbeans.api.debugger.Breakpoint$GroupProperties getGroupProperties()
 meth public void addPropertyChangeListener(java.beans.PropertyChangeListener)
 meth public void addPropertyChangeListener(java.lang.String,java.beans.PropertyChangeListener)
 meth public void removePropertyChangeListener(java.beans.PropertyChangeListener)
 meth public void removePropertyChangeListener(java.lang.String,java.beans.PropertyChangeListener)
+meth public void setBreakpointsToDisable(java.util.Set<org.netbeans.api.debugger.Breakpoint>)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+meth public void setBreakpointsToEnable(java.util.Set<org.netbeans.api.debugger.Breakpoint>)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
 meth public void setGroupName(java.lang.String)
 supr java.lang.Object
-hfds groupName,hitCountFilter,hitCountFilteringStyle,pcs,validity,validityMessage
+hfds breakpointsToDisable,breakpointsToEnable,groupName,hitCountFilter,hitCountFilteringStyle,pcs,validity,validityMessage
 
 CLSS public abstract static org.netbeans.api.debugger.Breakpoint$GroupProperties
  outer org.netbeans.api.debugger.Breakpoint
@@ -358,15 +367,18 @@ supr java.lang.Object
 hfds currentDebuggerEngine,currentLanguage,engines,enginesLookups,languages,locationName,lookup,name,pcs,privateLookup
 
 CLSS public final org.netbeans.api.debugger.Watch
+fld public final static java.lang.String PROP_ENABLED = "enabled"
 fld public final static java.lang.String PROP_EXPRESSION = "expression"
 fld public final static java.lang.String PROP_VALUE = "value"
+meth public boolean isEnabled()
 meth public java.lang.String getExpression()
 meth public void addPropertyChangeListener(java.beans.PropertyChangeListener)
 meth public void remove()
 meth public void removePropertyChangeListener(java.beans.PropertyChangeListener)
+meth public void setEnabled(boolean)
 meth public void setExpression(java.lang.String)
 supr java.lang.Object
-hfds expression,pcs
+hfds enabled,expression,pcs
 
 CLSS public abstract org.netbeans.spi.debugger.ActionsProvider
 cons public init()

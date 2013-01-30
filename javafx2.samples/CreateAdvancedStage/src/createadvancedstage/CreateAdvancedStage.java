@@ -54,9 +54,9 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
 /**
- * A sample with a control that creates an undecorated stage that is centered on
+ * A sample with a control that creates a transparent stage that is centered on
  * your desktop. You can drag the stage with your mouse or use the scene
- * controls to minimize or close it. With an undecorated stage, you must add
+ * controls to minimize or close it. With a transparent stage, you must add
  * your own event handlers to perform these actions.
  *
  * @see javafx.stage.Stage
@@ -81,12 +81,12 @@ public class CreateAdvancedStage extends Application {
             @Override public void handle(ActionEvent t) {
                 // INITIALISATION OF THE STAGE/SCENE
                 
-                //create stage which has set stage style undecorated
-                final Stage stage = new Stage(StageStyle.UNDECORATED);
+                //create stage which has set stage style transparent
+                final Stage stage = new Stage(StageStyle.TRANSPARENT);
                 //create root node of scene, i.e. group
                 Group rootGroup = new Group();
                 //create scene with set width, height and color
-                Scene scene = new Scene(rootGroup, 200, 200, Color.BLACK);
+                Scene scene = new Scene(rootGroup, 200, 200, Color.TRANSPARENT);
                 //set scene to stage
                 stage.setScene(scene);
                 //center stage on screen
@@ -115,19 +115,16 @@ public class CreateAdvancedStage extends Application {
 
                 //when screen is dragged, translate it accordingly
                 rootGroup.setOnMouseDragged(new EventHandler<MouseEvent>() {
-
                     public void handle(MouseEvent me) {
                         stage.setX(me.getScreenX() - initX);
                         stage.setY(me.getScreenY() - initY);
                     }
                 });
 
-                
                 // CREATE MIN AND CLOSE BUTTONS
                 //create button for closing application
-                Button close = new Button("close me");
+                Button close = new Button("Close me");
                 close.setOnAction(new EventHandler<ActionEvent>() {
-
                     public void handle(ActionEvent event) {
                         //in case we would like to close whole demo
                         //javafx.application.Platform.exit();
@@ -138,7 +135,7 @@ public class CreateAdvancedStage extends Application {
                 });
 
                 //create button for minimalising application
-                Button min = new Button("minimalise me");
+                Button min = new Button("Minimize me");
                 min.setOnAction(new EventHandler<ActionEvent>() {
                     public void handle(ActionEvent event) {
                         stage.setIconified(true);

@@ -366,18 +366,20 @@ public class AddServerLocationVisualPanel extends javax.swing.JPanel implements 
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(hk2HomeLabel)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(downloadButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(agreeCheckBox)
                         .addGap(2, 2, 2)
-                        .addComponent(readlicenseButton))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addComponent(hk2HomeTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 443, Short.MAX_VALUE)
+                        .addComponent(readlicenseButton, javax.swing.GroupLayout.DEFAULT_SIZE, 230, Short.MAX_VALUE))
+                    .addComponent(downloadStatusLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(hk2HomeLabel)
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(hk2HomeTextField)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(browseButton))
-                    .addComponent(downloadStatusLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 552, Short.MAX_VALUE))
+                        .addComponent(browseButton)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -407,7 +409,7 @@ public class AddServerLocationVisualPanel extends javax.swing.JPanel implements 
 private void readlicenseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_readlicenseButtonActionPerformed
         try {
             URLDisplayer.getDefault().showURL(
-                    new URL("https://glassfish.dev.java.net/public/CDDL+GPL.html")); //NOI18N
+                    new URL("http://glassfish.java.net/public/CDDL+GPL.html")); //NOI18N
         } catch (Exception ex){
             Logger.getLogger("glassfish").log(Level.INFO, ex.getLocalizedMessage(), ex);
         }

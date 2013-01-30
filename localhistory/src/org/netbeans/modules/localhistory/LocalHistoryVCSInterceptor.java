@@ -45,7 +45,9 @@ package org.netbeans.modules.localhistory;
 
 import java.util.HashMap;
 import java.io.File;
+import java.io.IOException;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
@@ -103,6 +105,7 @@ class LocalHistoryVCSInterceptor extends VCSInterceptor {
     // ==================================================================================================
     // DELETE
     // ==================================================================================================
+    
     @Override
     public boolean beforeDelete(File file) {
         LOG.log(Level.FINE, "beforeDelete {0}", file); // NOI18N
@@ -118,6 +121,9 @@ class LocalHistoryVCSInterceptor extends VCSInterceptor {
     @Override
     public void afterDelete(File file) {
         LOG.log(Level.FINE, "afterDelete {0}", file); // NOI18N
+        if(!accept(file)) {
+            return;
+        } 
         if(!toBeDeleted.remove(file)) {
             // do nothing if the file wasn't marked
             // as to be deleted
@@ -147,7 +153,7 @@ class LocalHistoryVCSInterceptor extends VCSInterceptor {
         if(!accept(from)) {
             return false;
         }
-
+        getStore().waitForProcessedStoring(from, "beforeMove"); // NOI18N
         // moving a package comes either like
         // - create(to) and delete(from)
         // - or the files from the package come like move(from, to)
@@ -160,6 +166,9 @@ class LocalHistoryVCSInterceptor extends VCSInterceptor {
     @Override
     public void afterMove(File from, File to) {
         LOG.log(Level.FINE, "afterMove {0} to {1}", new Object[] {from, to}); // NOI18N
+        if(!accept(from)) {
+            return;
+        } 
         String key = to.getAbsolutePath();
         if(getMoveHandlerMap().containsKey(key)) {
             StorageMoveHandler handler = getMoveHandlerMap().get(key);
@@ -174,19 +183,36 @@ class LocalHistoryVCSInterceptor extends VCSInterceptor {
     }
 
     // ==================================================================================================
+    // COPY
+    // ==================================================================================================
+    
+    @Override
+    public boolean beforeCopy(File from, File to) {
+        getStore().waitForProcessedStoring(from, "beforeCopy"); // NOI18N
+        return super.beforeCopy(from, to); 
+    }
+    
+    // ==================================================================================================
     // CREATE
     // ==================================================================================================
 
     @Override
     public boolean beforeCreate(File file, boolean isDirectory) {
         LOG.log(Level.FINE, "beforeCreate {0}", file); // NOI18N
+        if(!accept(file)) {
+            return false;
+        } 
         toBeCreated.add(file);
+        getStore().waitForProcessedStoring(file, "beforeCreate"); // NOI18N
         return false;
     }
 
     @Override
     public void afterCreate(File file) {
         LOG.log(Level.FINE, "afterCreate {0}", file); // NOI18N
+        if(!accept(file)) {
+            return;
+        } 
         if(LocalHistory.getInstance().isManagedByParent(file) == null) {
             // XXX: the VCS interceptor doesn't filter afterCreate because
             // of a workaround for caching problems in other VCS systems. 
@@ -237,12 +263,18 @@ class LocalHistoryVCSInterceptor extends VCSInterceptor {
         LOG.log(Level.FINE, "afterChange {0}", file); // NOI18N
         // just in case
         wasJustCreated.remove(file);
+        if(!accept(file)) {
+            return;
+        } 
         LocalHistory.getInstance().touch(file);
     }
 
     @Override
     public void beforeEdit(File file) {
         LOG.log(Level.FINE, "beforeEdit {0}", file); // NOI18N
+        if(!accept(file)) {
+            return;
+        } 
         getStore().fileChange(file, file.lastModified());
     }
     

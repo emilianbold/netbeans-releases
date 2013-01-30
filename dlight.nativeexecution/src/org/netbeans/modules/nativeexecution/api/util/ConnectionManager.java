@@ -66,10 +66,14 @@ import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.jsch.JSchChannelsSupport;
 import org.netbeans.modules.nativeexecution.jsch.JSchConnectionTask;
 import org.netbeans.modules.nativeexecution.support.Authentication;
+import org.netbeans.modules.nativeexecution.support.HostConfigurationPanel;
 import org.netbeans.modules.nativeexecution.support.Logger;
 import org.netbeans.modules.nativeexecution.support.NativeTaskExecutorService;
-import org.netbeans.modules.nativeexecution.support.ui.AuthenticationSettingsPanel;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.awt.StatusDisplayer;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 
 /**
@@ -77,7 +81,7 @@ import org.openide.util.NbPreferences;
  * @author ak119685
  */
 public final class ConnectionManager {
-    
+
     public static class CancellationException extends Exception {
 
         public CancellationException() {
@@ -101,6 +105,7 @@ public final class ConnectionManager {
     private final ConcurrentHashMap<ExecutionEnvironment, JSchConnectionTask> connectionTasks =
             new ConcurrentHashMap<ExecutionEnvironment, JSchConnectionTask>();
     private static final boolean UNIT_TEST_MODE = Boolean.getBoolean("nativeexecution.mode.unittest"); // NOI18N
+    private final ConnectionContinuation DEFAULT_CC;
 
     private final AbstractList<ExecutionEnvironment> recentConnections = new ArrayList<ExecutionEnvironment>();
 
@@ -133,6 +138,27 @@ public final class ConnectionManager {
                 }
             });
         }
+
+        DEFAULT_CC = new ConnectionContinuation() {
+
+            @Override
+            public void connectionEstablished(ExecutionEnvironment env) {
+                StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(ConnectionManager.class, "ConnectionManager.status.established", env.getDisplayName())); // NOI18N
+            }
+
+            @Override
+            public void connectionCancelled(ExecutionEnvironment env) {
+                StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(ConnectionManager.class, "ConnectionManager.status.cancelled", env.getDisplayName())); // NOI18N
+            }
+
+            @Override
+            public void connectionFailed(ExecutionEnvironment env, IOException ex) {
+                String message = NbBundle.getMessage(ConnectionManager.class, "ConnectionManager.status.failed", env.getDisplayName(), ex.getLocalizedMessage()); // NOI18N
+                StatusDisplayer.getDefault().setStatusText(message);
+                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
+            }
+        };
+
         restoreRecentConnectionsList();        
     }
 
@@ -228,6 +254,62 @@ public final class ConnectionManager {
     private static final int RETRY_MAX = 10;
 
     /**
+     * A request to initiate a connection with an ExecutionEnvironment.
+     *
+     * This method doesn't throw exceptions. Instead it uses
+     * <tt>ConnectionContinuation</tt> for reporting resulting status. This
+     * method does nothing if connection is already established.
+     *
+     * @param env - environment to initiate connection with
+     * @param continuation - implementation of <tt>ConnectionContinuation</tt>
+     * to handle resulting status. No status is reported if continuation is
+     * <tt>null</tt>.
+     * @return <tt>true</tt> if host is connected when return from the method.
+     * @see connect(ExecutionEnvironment)
+     */
+    private boolean connect(final ExecutionEnvironment env, final ConnectionContinuation continuation) {
+        boolean connected = isConnectedTo(env);
+
+        if (connected) {
+            return true;
+        }
+
+        try {
+            connectTo(env);
+        } catch (IOException ex) {
+            if (continuation != null) {
+                continuation.connectionFailed(env, ex);
+            }
+            return false;
+        } catch (CancellationException ex) {
+            if (continuation != null) {
+                continuation.connectionCancelled(env);
+            }
+            return false;
+        }
+
+        connected = isConnectedTo(env);
+        if (connected && continuation != null) {
+            continuation.connectionEstablished(env);
+        }
+        return connected;
+    }
+
+    /**
+     * A request to initiate a connection with an ExecutionEnvironment.
+     *
+     * This method doesn't throw exceptions. Instead it reports the resulting
+     * status in status bar. In case of IOException a error dialog is displayed.
+     * This method does nothing if connection is already established.
+     *
+     * @param env - environment to initiate connection with
+     * @return <tt>true</tt> if host is connected when return from the method.
+     */
+    public boolean connect(final ExecutionEnvironment env) {
+        return connect(env, DEFAULT_CC);
+    }
+
+    /**
      *
      * @param env <tt>ExecutionEnvironment</tt> to connect to.
      * @throws IOException
@@ -283,7 +365,7 @@ public final class ConnectionManager {
 
     private void initiateConnection(final ExecutionEnvironment env, final JSch jsch) throws IOException, CancellationException {
         JSchConnectionTask connectionTask = connectionTasks.get(env);
-        
+
         try {
             if (connectionTask == null) {
                 JSchConnectionTask newTask = new JSchConnectionTask(jsch, env);
@@ -318,7 +400,7 @@ public final class ConnectionManager {
                         if (problem.cause instanceof Error) {
                             log.log(Level.INFO, "Error when connecting " + env, problem.cause); //NOI18N
                         }
-                        throw new IOException(env.getDisplayName() + ": " + problem.type.name(), problem.cause); // NOI18N
+                        throw new IOException(problem.type.name(), problem.cause);
                 }
             }
             
@@ -403,9 +485,7 @@ public final class ConnectionManager {
     }
 
     public ValidateablePanel getConfigurationPanel(ExecutionEnvironment env) {
-        Authentication auth = Authentication.getFor(env);
-        AuthenticationSettingsPanel panel = new AuthenticationSettingsPanel(auth, env != null);
-        return panel;
+        return new HostConfigurationPanel(env);
     }
 
     /**
@@ -533,5 +613,14 @@ public final class ConnectionManager {
                 }
             }
         }
+    }
+
+    private interface ConnectionContinuation {
+
+        void connectionEstablished(ExecutionEnvironment env);
+
+        void connectionCancelled(ExecutionEnvironment env);
+
+        void connectionFailed(ExecutionEnvironment env, IOException ex);
     }
 }

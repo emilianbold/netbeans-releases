@@ -204,13 +204,21 @@ public final class SystemUtils {
     }
     
     public static ExecutionResults executeCommand(String... command) throws IOException {
-        return executeCommand(null, command);
+        return executeCommand(null, null, null, command);
+    }
+    
+    public static ExecutionResults executeCommand(File workingDirectory, String... command) throws IOException {
+        return executeCommand(null, null, workingDirectory, command);
     }
     
     @SuppressWarnings({"SleepWhileInLoop", "empty-statement"})
-    public static ExecutionResults executeCommand(File workingDirectory, String... command) throws IOException {
+    public static ExecutionResults executeCommand(Progress progress, String[] supportedPrefixes, File workingDirectory, String... command) throws IOException {
         // construct the initial log message
         String commandString = StringUtils.asString(command, StringUtils.SPACE);
+
+        if (supportedPrefixes == null) {
+            supportedPrefixes = new String[0];
+        }
         
         if (workingDirectory == null) {
             workingDirectory = getCurrentDirectory();
@@ -258,7 +266,13 @@ public final class SystemUtils {
             if (string.length() > 0) {
                 BufferedReader reader = new BufferedReader(new StringReader(string));
                 for (String line = reader.readLine(); line != null; line = reader.readLine()) {
+                    if (progress != null) {
+                        if (! line.trim().isEmpty()) {
+                            progress.setDetail(line);
+                        }
+                    }
                     LogManager.log(ErrorLevel.MESSAGE, "[stdout]: " + line);
+                    endTime = System.currentTimeMillis() + MAX_EXECUTION_TIME;
                 }
                 
                 processStdOut.append(string);
@@ -268,7 +282,18 @@ public final class SystemUtils {
             if (string.length() > 0) {
                 BufferedReader reader = new BufferedReader(new StringReader(string));
                 for (String line = reader.readLine(); line != null; line = reader.readLine()) {
+                    if (progress != null) {
+                        line = line.trim();
+                        if (! line.isEmpty()) {
+                            for (String prefix : supportedPrefixes) {
+                                if (line.startsWith(prefix)) {
+                                    progress.setDetail(line.substring(prefix.length()));
+                                }
+                            }
+                        }
+                    }
                     LogManager.log(ErrorLevel.MESSAGE, "[stderr]: " + line);
+                    endTime = System.currentTimeMillis() + MAX_EXECUTION_TIME;
                 }
                 
                 processStdErr.append(string);
@@ -589,7 +614,7 @@ public final class SystemUtils {
     
     /////////////////////////////////////////////////////////////////////////////////
     // Constants
-    public static final long MAX_EXECUTION_TIME = 600000;
+    public static final long MAX_EXECUTION_TIME = 10 * 60 * 1000;
     
     public static final int MAX_DELAY = 50; // NOMAGI
     public static final int INITIAL_DELAY = 5; // NOMAGI

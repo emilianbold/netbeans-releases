@@ -50,6 +50,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -58,6 +59,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.PasswordManager;
+import org.netbeans.modules.nativeexecution.api.util.RemoteStatistics;
 import org.netbeans.modules.nativeexecution.support.Logger;
 import org.netbeans.modules.nativeexecution.support.RemoteUserInfo;
 import org.openide.util.Cancellable;
@@ -217,7 +219,6 @@ public final class JSchChannelsSupport {
         final AtomicBoolean cancelled = new AtomicBoolean(false);
 
         ConnectingProgressHandle.startHandle(env, new Cancellable() {
-
             @Override
             public boolean cancel() {
                 cancelled.set(true);
@@ -241,6 +242,10 @@ public final class JSchChannelsSupport {
                         newSession.setConfig("compression_level", "9"); // NOI18N
                     }
 
+                    if (RemoteStatistics.COLLECT_STATISTICS) {
+                        newSession.setSocketFactory(MeasurableSocketFactory.getInstance());
+                    }
+
                     newSession.connect(JSCH_CONNECTION_TIMEOUT);
                     break;
                 } catch (JSchException ex) {
@@ -249,6 +254,8 @@ public final class JSchChannelsSupport {
                     } else {
                         throw ex;
                     }
+                } catch (CancellationException cex) {
+                    cancelled.set(true);
                 }
             }
 

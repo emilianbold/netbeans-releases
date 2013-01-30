@@ -68,7 +68,7 @@ import org.netbeans.modules.php.project.connections.ConfigManager;
 import org.netbeans.modules.php.project.connections.ConfigManager.Configuration;
 import org.netbeans.modules.php.project.ui.PathUiSupport;
 import org.netbeans.modules.php.project.util.PhpProjectUtils;
-import org.netbeans.modules.php.spi.phpmodule.PhpModuleCustomizerExtender;
+import org.netbeans.modules.php.spi.framework.PhpModuleCustomizerExtender;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
@@ -131,7 +131,7 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
 
     public static final String DEBUG_PATH_MAPPING_SEPARATOR = "||NB||"; // NOI18N
 
-    public static final String[] CFG_PROPS = new String[] {
+    private static final String[] CFG_PROPS = new String[] {
         URL,
         INDEX_FILE,
         ARGS,
@@ -273,7 +273,7 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
 
     @Override
     public String[] getConfigProperties() {
-        return CFG_PROPS;
+        return CFG_PROPS.clone();
     }
 
     @Override
@@ -546,6 +546,44 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
         }
     }
 
+    /**
+     * Add or replace project and/or private properties of the given project.
+     * @param project project to be saved
+     * @param projectProperties project properties to be added (replaced) to the current project properties
+     * @param privateProperties private properties to be added (replaced) to the current private properties
+     */
+    public static void save(final PhpProject project, final Map<String, String> projectProperties, final Map<String, String> privateProperties) {
+        assert !projectProperties.isEmpty() || !privateProperties.isEmpty() : "Neither project nor private properties to be saved";
+        try {
+            // store properties
+            ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+                @Override
+                public Void run() throws IOException {
+                    AntProjectHelper helper = project.getHelper();
+
+                    mergeProperties(helper, AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties);
+                    mergeProperties(helper, AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProperties);
+
+                    ProjectManager.getDefault().saveProject(project);
+                    return null;
+                }
+
+                private void mergeProperties(AntProjectHelper helper, String path, Map<String, String> properties) {
+                    if (properties.isEmpty()) {
+                        return;
+                    }
+                    EditableProperties currentProperties = helper.getProperties(path);
+                    for (Map.Entry<String, String> entry : properties.entrySet()) {
+                        currentProperties.put(entry.getKey(), entry.getValue());
+                    }
+                    helper.putProperties(path, currentProperties);
+                }
+            });
+        } catch (MutexException e) {
+            Exceptions.printStackTrace((IOException) e.getException());
+        }
+    }
+
     void saveProperties() throws IOException {
         AntProjectHelper helper = project.getHelper();
 
@@ -665,10 +703,10 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
 
     void saveCustomizerExtenders() {
         if (customizerExtenders != null) {
-            final EnumSet<PhpModule.Change> changes = EnumSet.noneOf(PhpModule.Change.class);
+            final EnumSet<PhpModuleCustomizerExtender.Change> changes = EnumSet.noneOf(PhpModuleCustomizerExtender.Change.class);
             final PhpModule phpModule = project.getPhpModule();
             for (PhpModuleCustomizerExtender customizerExtender : customizerExtenders) {
-                EnumSet<PhpModule.Change> change = customizerExtender.save(phpModule);
+                EnumSet<PhpModuleCustomizerExtender.Change> change = customizerExtender.save(phpModule);
                 if (change != null) {
                     changes.addAll(change);
                 }
@@ -679,7 +717,7 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
                 RP.execute(new Runnable() {
                     @Override
                     public void run() {
-                        for (PhpModule.Change change : changes) {
+                        for (PhpModuleCustomizerExtender.Change change : changes) {
                             switch (change) {
                                 case SOURCES_CHANGE:
                                     project.getSourceRoots().fireChange();

@@ -46,9 +46,13 @@ import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.bugtracking.IssueImpl;
 import org.netbeans.modules.bugtracking.QueryImpl;
 import org.netbeans.modules.bugtracking.RepositoryImpl;
+import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
+import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 
 /**
  *
@@ -58,7 +62,7 @@ public final class Repository {
     /**
      * A query from this repository was saved or removed
      */
-    public final static String EVENT_QUERY_LIST_CHANGED = "bugtracking.repository.queries.changed"; // NOI18N
+    public final static String EVENT_QUERY_LIST_CHANGED = RepositoryProvider.EVENT_QUERY_LIST_CHANGED;
 
     /**
      * RepositoryProvider's attributes have changed, e.g. name, url, etc.
@@ -70,6 +74,7 @@ public final class Repository {
     public static final String ATTRIBUTE_URL = "repository.attribute.url"; //NOI18N
     public static final String ATTRIBUTE_DISPLAY_NAME = "repository.attribute.displayName"; //NOI18N
 
+    private final static Logger LOG = Logger.getLogger("org.netbeans.modules.bugtracking.Repository"); // NOI18N
     
     static {
         APIAccessorImpl.createAccesor();
@@ -79,6 +84,9 @@ public final class Repository {
 
     <R, Q, I> Repository(RepositoryImpl<R, Q, I> impl) {
         this.impl = impl;
+        if(LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "created repository {0} - repository: {1} - impl: {2}", new Object[]{getDisplayName(), this, impl}); // NOI18N
+        }
     }
 
     /**
@@ -140,11 +148,29 @@ public final class Repository {
     }
 
     /**
+     * Determines if this repository can be deleted or changed by the user.
+     * 
+     * @return <code>true</code> if this repository can be deleted or changed by 
+     *         the user. Otherwise <code>false</code>.
+     */
+    public boolean isMutable() {
+        return impl.isMutable();
+    }
+    
+    /**
      * Removes this repository
      */
     public void remove() {
         impl.remove();
     }
+    
+    /**
+     * Opens the modal edit repository dialog.<br>
+     * Blocks until the dialog isn't closed. 
+     */
+    public void edit() { 
+        BugtrackingUtil.editRepository(this);
+    }    
 
     /**
      * Registers a PropertyChangeListener 

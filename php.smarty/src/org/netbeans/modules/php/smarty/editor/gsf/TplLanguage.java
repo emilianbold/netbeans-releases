@@ -48,6 +48,7 @@ import org.netbeans.modules.csl.spi.LanguageRegistration;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.php.smarty.editor.TplDataLoader;
 import org.netbeans.modules.php.smarty.editor.lexer.TplTopTokenId;
+import org.netbeans.modules.php.smarty.editor.parser.TplParser;
 
 @LanguageRegistration(mimeType=TplDataLoader.MIME_TYPE, useCustomEditorKit=true) //NOI18N
 public class TplLanguage extends DefaultLanguageConfig {
@@ -88,7 +89,7 @@ public class TplLanguage extends DefaultLanguageConfig {
 
     @Override
     public Parser getParser() {
-        return new TplGSFParser();
+        return new TplParser();
     }
 
     @Override

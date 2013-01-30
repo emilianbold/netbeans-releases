@@ -54,19 +54,16 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
+import javax.swing.SwingUtilities;
 import org.netbeans.core.ui.SwingBrowser;
+import org.openide.awt.HtmlBrowser;
 import org.openide.awt.HtmlBrowser.Factory;
 import org.openide.awt.HtmlBrowser.Impl;
 import org.openide.awt.HtmlBrowser.URLDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
-import org.openide.util.Exceptions;
-import org.openide.util.Lookup;
-import org.openide.util.LookupEvent;
-import org.openide.util.LookupListener;
-import org.openide.util.Mutex;
+import org.openide.util.*;
 import org.openide.util.lookup.ServiceProvider;
-import org.openide.windows.TopComponent;
 
 /**
  * Implementation of URL displayer, which shows documents in the configured web browser.
@@ -74,29 +71,63 @@ import org.openide.windows.TopComponent;
 @ServiceProvider(service=URLDisplayer.class)
 public final class NbURLDisplayer extends URLDisplayer {
 
+    private static final RequestProcessor RP = new RequestProcessor( "URLDisplayer" ); //NOI18N
+
     private NbBrowser htmlViewer;
 
+    @Override
     public void showURL(final URL u) {
-        Mutex.EVENT.readAccess(new Runnable() {
+        RP.post( new Runnable() {
+            @Override
             public void run() {
-                if (htmlViewer == null) {
-                    htmlViewer = new NbBrowser();
-                }
-                htmlViewer.showUrl(u);
+                //warm the browser up to avoid waiting for Lookups
+                warmBrowserUp( false );
+                SwingUtilities.invokeLater( new Runnable() {
+                    @Override
+                    public void run() {
+                        if (htmlViewer == null) {
+                            htmlViewer = new NbBrowser();
+                        }
+                        htmlViewer.showUrl(u);
+                    }
+                });
             }
         });
     }
 
     @Override
     public void showURLExternal(final URL u) {
-        Mutex.EVENT.readAccess(new Runnable() {
+        RP.post( new Runnable() {
+            @Override
             public void run() {
-                if (htmlViewer == null) {
-                    htmlViewer = new NbBrowser();
-                }
-                htmlViewer.showUrlExternal(u);
+                //warm the browser up to avoid waiting for Lookups
+                warmBrowserUp( true );
+                SwingUtilities.invokeLater( new Runnable() {
+                    @Override
+                    public void run() {
+                        if (htmlViewer == null) {
+                            htmlViewer = new NbBrowser();
+                        }
+                        htmlViewer.showUrlExternal(u);
+                    }
+                });
             }
         });
+    }
+
+    //#220880 - ask for browser Lookup outside the EDT
+    private void warmBrowserUp( boolean externalBrowser ) {
+        if( externalBrowser && (null == htmlViewer || null == htmlViewer.externalBrowser)
+                || !externalBrowser && (null == htmlViewer || null == htmlViewer.brComp) ) {
+
+            Factory browserFactory = externalBrowser ? IDESettings.getExternalWWWBrowser() : IDESettings.getWWWBrowser();
+            if( null != browserFactory ) {
+                HtmlBrowser.Impl browserImpl = browserFactory.createHtmlBrowserImpl();
+                if( null != browserImpl ) {
+                    browserImpl.getLookup();
+                }
+            }
+        }
     }
 
     /**
@@ -120,21 +151,41 @@ public final class NbURLDisplayer extends URLDisplayer {
         }
 
         public NbBrowser() {
+            setListener();
+        }
+
+        /** Show URL in browser
+         * @param url URL to be shown
+         */
+        private void showUrl(URL url) {
+            if( null == brComp )
+                brComp = createDefaultBrowser();
+            brComp.setURLAndOpen(url);
+        }
+
+        /**
+         * Show URL in an external browser.
+         * @param url URL to show
+         */
+        private void showUrlExternal(URL url) {
+            if( null == externalBrowser )
+                externalBrowser = createExternalBrowser();
+            externalBrowser.setURLAndOpen(url);
+        }
+
+        private HtmlBrowserComponent createDefaultBrowser() {
             Factory browser = IDESettings.getWWWBrowser();
             if (browser == null) {
                 // Fallback.
                 browser = new SwingBrowser();
             }
-            // try if an internal browser is set and possibly try to reuse an
-            // existing component
-            if (browser.createHtmlBrowserImpl().getComponent() != null) {
-                brComp = findOpenedBrowserComponent();
-            }
-            if (brComp == null) {
-                brComp = new HtmlBrowserComponent(browser, true, true);
-                brComp.putClientProperty("TabPolicy", "HideWhenAlone"); // NOI18N
-            }
-            browser = IDESettings.getExternalWWWBrowser();
+            HtmlBrowserComponent res = new HtmlBrowserComponent(browser, true, true);
+            res.putClientProperty("TabPolicy", "HideWhenAlone"); // NOI18N
+            return res;
+        }
+
+        private HtmlBrowserComponent createExternalBrowser() {
+            Factory browser = IDESettings.getExternalWWWBrowser();
             if (browser == null) {
                 Desktop desktop = Desktop.isDesktopSupported() ? Desktop.getDesktop() : null;
                 if (desktop != null && desktop.isSupported(Desktop.Action.BROWSE)) {
@@ -144,36 +195,7 @@ public final class NbURLDisplayer extends URLDisplayer {
                     browser = new SwingBrowser();
                 }
             }
-            externalBrowser = new HtmlBrowserComponent(browser, true, true);
-            setListener();
-        }
-
-        /**
-         * Tries to find already opened <code>HtmlBrowserComponent</code>. In
-         * the case of success returns the instance, null otherwise.
-         */
-        private HtmlBrowserComponent findOpenedBrowserComponent() {
-            for (TopComponent tc : TopComponent.getRegistry().getOpened()) {
-                if (tc instanceof HtmlBrowserComponent) {
-                    return (HtmlBrowserComponent) tc;
-                }
-            }
-            return null;
-        }
-
-        /** Show URL in browser
-         * @param url URL to be shown
-         */
-        private void showUrl(URL url) {
-            brComp.setURLAndOpen(url);
-        }
-
-        /**
-         * Show URL in an external browser.
-         * @param url URL to show
-         */
-        private void showUrlExternal(URL url) {
-            externalBrowser.setURLAndOpen(url);
+            return new HtmlBrowserComponent(browser, true, true);
         }
 
         /**
@@ -193,6 +215,7 @@ public final class NbURLDisplayer extends URLDisplayer {
                                 IDESettings.getPreferences().removePreferenceChangeListener(idePCL);
                                 idePCL = null;
                                 brComp = null;
+                                externalBrowser = null;
                             }
                         }
                     }

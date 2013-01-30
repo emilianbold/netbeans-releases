@@ -47,6 +47,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -54,6 +55,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.libs.git.GitException;
@@ -144,9 +146,17 @@ public final class Git {
     void getOriginalFile (File workingCopy, File originalFile) {
         File repository = getRepositoryRoot(workingCopy);
         if (repository != null) {
+            GitClient client = null;
             try {
-                GitClient client = getClient(repository);
-                if (!client.catFile(workingCopy, GitUtils.HEAD, new FileOutputStream(originalFile), GitUtils.NULL_PROGRESS_MONITOR)) {
+                client = getClient(repository);
+                FileOutputStream fos = new FileOutputStream(originalFile);
+                boolean ok;                
+                try {
+                    ok = client.catFile(workingCopy, GitUtils.HEAD, fos, GitUtils.NULL_PROGRESS_MONITOR);
+                } finally {
+                    fos.close();
+                }
+                if (!ok) {
                     originalFile.delete();
                 }
             } catch (java.io.FileNotFoundException ex) {
@@ -158,6 +168,12 @@ public final class Git {
             } catch (GitException ex) {
                 LOG.log(Level.INFO, "Error retrieving file", ex); //NOI18N
                 originalFile.delete();
+            } catch (IOException ex) {
+                LOG.log(Level.INFO, "IO exception", ex); //NOI18N
+            } finally {
+                if (client != null) {
+                    client.release();
+                }
             }
         }
     }
@@ -249,11 +265,14 @@ public final class Git {
     }
 
     /**
-     * Refreshes cached modification timestamp of the repository's metadata
-     * @param repository owner of the metadata to refresh
+     * Runs a given callable and disable listening for external repository events for the time the callable is running.
+     * Refreshes cached modification timestamp of metadata for the given git repository after.
+     * @param callable code to run
+     * @param repository
+     * @param commandName name of the git command if available
      */
-    public void refreshWorkingCopyTimestamp (File repository) {
-        getVCSInterceptor().refreshMetadataTimestamp(repository);
+    public <T> T runWithoutExternalEvents(File repository, String commandName, Callable<T> callable) throws Exception {
+        return getVCSInterceptor().runWithoutExternalEvents(repository, commandName, callable);
     }
 
     /**
@@ -302,6 +321,9 @@ public final class Git {
                 LOG.log(Level.FINE, " found managed parent {0}", new Object[] { file });
                 done.clear();   // all folders added before must be removed, they ARE in fact managed by git
                 topmost =  file;
+                if (topmost.getParentFile() == null) {
+                    LOG.log(Level.WARNING, "found managed root folder {0}", file); //NOI18N
+                }
             } else {
                 LOG.log(Level.FINE, " found unversioned {0}", new Object[] { file });
                 if(file.exists()) { // could be created later ...

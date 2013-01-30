@@ -177,21 +177,24 @@ public class RefactoringUtil {
      * @return the new fully qualified name for the class being refactored.
      */
     public static String constructNewName(FileObject javaFile, RenameRefactoring rename){
-        
-        String fqn = JavaIdentifiers.getQualifiedName(javaFile);
+        final String fqn = JavaIdentifiers.getQualifiedName(javaFile);
         
         if (isPackage(rename)){
             return rename.getNewName() + "." + JavaIdentifiers.unqualify(fqn);
         }
         
-        FileObject folder = rename.getRefactoringSource().lookup(FileObject.class);
-        ClassPath classPath = ClassPath.getClassPath(folder, ClassPath.SOURCE);
-        FileObject root = classPath.findOwnerRoot(folder);
+        final FileObject folder = rename.getRefactoringSource().lookup(FileObject.class);
+        final ClassPath classPath = ClassPath.getClassPath(folder, ClassPath.SOURCE);
+        if (classPath == null) {
+            return "";
+        }
         
-        String prefix = FileUtil.getRelativePath(root, folder.getParent()).replace('/','.');
-        String oldName = buildName(prefix, folder.getName());
-        String newName = buildName(prefix, rename.getNewName());
-        int oldNameIndex = fqn.lastIndexOf(oldName) + oldName.length();
+        final FileObject root = classPath.findOwnerRoot(folder);
+        final String prefix = FileUtil.getRelativePath(root, folder.getParent()).replace('/','.');
+        final String oldName = buildName(prefix, folder.getName());
+        final String newName = buildName(prefix, rename.getNewName());
+        final int oldNameIndex = fqn.lastIndexOf(oldName) + oldName.length();
+
         return newName + fqn.substring(oldNameIndex, fqn.length());
         
     }

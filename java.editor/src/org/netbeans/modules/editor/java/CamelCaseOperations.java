@@ -64,8 +64,27 @@ import org.openide.util.Exceptions;
 
     static int nextCamelCasePosition(JTextComponent textComponent) throws BadLocationException {
         // get current caret position
-        int offset = textComponent.getCaretPosition();
-        Document doc = textComponent.getDocument();
+        final int offset = textComponent.getCaretPosition();
+        final Document doc = textComponent.getDocument();
+        final int[] retOffset = new int[1];
+        final BadLocationException[] retExc = new BadLocationException[1];
+        doc.render(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    retOffset[0] = nextCamelCasePositionImpl(doc, offset);
+                } catch (BadLocationException ex) {
+                    retExc[0] = ex;
+                }
+            }
+        });
+        if (retExc[0] != null) {
+            throw retExc[0];
+        }
+        return retOffset[0];
+    }
+
+    static int nextCamelCasePositionImpl(Document doc, int offset) throws BadLocationException {
         TokenHierarchy<Document> th = doc != null ? TokenHierarchy.get(doc) : null;
         List<TokenSequence<?>> embeddedSequences = th != null ? th.embeddedTokenSequences(offset, false) : null;
         TokenSequence<?> seq = embeddedSequences != null ? embeddedSequences.get(embeddedSequences.size() - 1) : null;
@@ -106,13 +125,32 @@ import org.openide.util.Exceptions;
         }
 
         // not an identifier - simply return next word offset
-        return Utilities.getNextWord(textComponent, offset);
+        return Utilities.getNextWord((BaseDocument)doc, offset);
     }
 
     static int previousCamelCasePosition(JTextComponent textComponent) throws BadLocationException {
         // get current caret position
-        int offset = textComponent.getCaretPosition();
-        Document doc = textComponent.getDocument();
+        final int offset = textComponent.getCaretPosition();
+        final Document doc = textComponent.getDocument();
+        final int[] retOffset = new int[1];
+        final BadLocationException[] retExc = new BadLocationException[1];
+        doc.render(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    retOffset[0] = previousCamelCasePositionImpl(doc, offset);
+                } catch (BadLocationException ex) {
+                    retExc[0] = ex;
+                }
+            }
+        });
+        if (retExc[0] != null) {
+            throw retExc[0];
+        }
+        return retOffset[0];
+    }
+
+    static int previousCamelCasePositionImpl(Document doc, int offset) throws BadLocationException {
         TokenHierarchy<Document> th = doc != null ? TokenHierarchy.get(doc) : null;
         List<TokenSequence<?>> embeddedSequences = th != null ? th.embeddedTokenSequences(offset, false) : null;
         TokenSequence<?> seq = embeddedSequences != null && embeddedSequences.size() > 0 ? embeddedSequences.get(embeddedSequences.size() - 1) : null;
@@ -175,7 +213,7 @@ import org.openide.util.Exceptions;
         }
 
         // not an identifier - simply return previous word offset
-        return Utilities.getPreviousWord(textComponent, offset);
+        return Utilities.getPreviousWord((BaseDocument)doc, offset);
     }
 
 }

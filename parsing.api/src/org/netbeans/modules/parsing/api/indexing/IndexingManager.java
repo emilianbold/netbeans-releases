@@ -46,6 +46,8 @@ import java.io.File;
 import java.net.URL;
 import java.util.Collection;
 import java.util.concurrent.Callable;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.parsing.impl.Utilities;
@@ -63,6 +65,8 @@ import org.openide.util.Parameters;
  * @since 1.6
  */
 public final class IndexingManager {
+
+    private static final Logger LOG = Logger.getLogger(IndexingManager.class.getName());
 
     // -----------------------------------------------------------------------
     // public implementation
@@ -279,6 +283,10 @@ public final class IndexingManager {
      */
     public void refreshAllIndices(String indexerName) {
         if (indexerName != null) {
+            LOG.log(
+                Level.FINEST,
+                "Request to refresh indexer: {0} in all roots.",    //NOI18N
+                indexerName);
             RepositoryUpdater.getDefault().addIndexingJob(
                     indexerName,
                     LogContext.create(LogContext.EventType.MANAGER, null));
@@ -408,6 +416,9 @@ public final class IndexingManager {
             final boolean wait,
             final boolean logStatistics,
             @NullAllowed Object... filesOrFileObjects) {
+        LOG.log(
+            Level.FINEST,
+            "Request to refresh all indexes"); //NOI18N
         RepositoryUpdater.getDefault().refreshAll(
             fullRescan,
             wait,
@@ -424,6 +435,10 @@ public final class IndexingManager {
             final boolean wait,
             final boolean forceRefresh,
             final boolean steady){
+        LOG.log(
+            Level.FINEST,
+            "Request to add indexing job for root: {0}", //NOI18N
+            rootUrl);
         RepositoryUpdater.getDefault().addIndexingJob(
             rootUrl,
             fileUrls,

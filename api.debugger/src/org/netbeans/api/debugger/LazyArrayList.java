@@ -165,6 +165,10 @@ class LazyArrayList<T> extends ArrayList<T> {
             return super.get(index);
         }
     }
+    
+    protected T getRaw(int index) {
+        return super.get(index);
+    }
 
     /** Gets the instance or LazyEntry */
     public Object getEntry(int index) {

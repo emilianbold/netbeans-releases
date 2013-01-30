@@ -45,15 +45,20 @@
 package org.netbeans.modules.cnd.modelimpl.csm;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import org.netbeans.modules.cnd.antlr.collections.AST;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceAlias;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
+import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmQualifiedNamedElement;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmUID;
+import org.netbeans.modules.cnd.api.model.CsmVisibility;
+import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase;
@@ -115,6 +120,14 @@ public final class NamespaceAliasImpl extends OffsetableDeclarationBase<CsmNames
             namespace = QualifiedNameCache.getManager().getString(sb.toString());
         }
     }
+    
+    private NamespaceAliasImpl(CharSequence alias, CharSequence namespace, CharSequence rawName, CsmScope scope, CsmFile file, int startOffset, int endOffset) {
+        super(file, startOffset, endOffset);
+        _setScope(scope);
+        this.rawName = rawName;
+        this.alias = alias;
+        this.namespace = namespace;
+    }    
 
     public static NamespaceAliasImpl create(AST ast, CsmFile file, CsmScope scope, boolean global) {
         NamespaceAliasImpl namespaceAliasImpl = new NamespaceAliasImpl(ast, file, scope);
@@ -217,6 +230,133 @@ public final class NamespaceAliasImpl extends OffsetableDeclarationBase<CsmNames
             ((MutableDeclarationsContainer) scope).removeDeclaration(this);
         }
     }
+    
+    
+    
+    public static class NamespaceAliasBuilder implements CsmObjectBuilder {
+        
+        private CharSequence name;// = CharSequences.empty();
+        private CharSequence namespaceName;// = CharSequences.empty();
+        private int nameStartOffset;
+        private int nameEndOffset;
+        private CsmDeclaration.Kind kind = CsmDeclaration.Kind.CLASS;
+        private CsmFile file;
+        private final FileContent fileContent;
+        private int startOffset;
+        private int endOffset;
+        CsmVisibility visibility;
+        private CsmObjectBuilder parent;
+
+        private CsmScope scope;
+        private NamespaceAliasImpl instance;
+        private List<CsmOffsetableDeclaration> declarations = new ArrayList<CsmOffsetableDeclaration>();
+
+        public NamespaceAliasBuilder(FileContent fileContent) {
+            assert fileContent != null;
+            this.fileContent = fileContent;
+        }
+        
+        public void setKind(Kind kind) {
+            this.kind = kind;
+        }
+        
+        public void setName(CharSequence name, int startOffset, int endOffset) {
+            if(this.name == null) {
+                this.name = name;
+                this.nameStartOffset = startOffset;
+                this.nameEndOffset = endOffset;
+            }
+        }
+
+        public void setNamespaceName(CharSequence namespaceName) {
+            this.namespaceName = namespaceName;
+        }
+        
+        public void setVisibility(CsmVisibility visibility) {
+            this.visibility = visibility;
+        }
+        
+        public CharSequence getName() {
+            return name;
+        }
+        
+        public void setFile(CsmFile file) {
+            this.file = file;
+        }
+        
+        public void setEndOffset(int endOffset) {
+            this.endOffset = endOffset;
+        }
+
+        public void setStartOffset(int startOffset) {
+            this.startOffset = startOffset;
+        }
+
+        public void setParent(CsmObjectBuilder parent) {
+            this.parent = parent;
+        }
+
+        public void addDeclaration(CsmOffsetableDeclaration decl) {
+            this.declarations.add(decl);
+        }
+        
+        private NamespaceAliasImpl getNamespaceAliasInstance() {
+            if(instance != null) {
+                return instance;
+            }
+            MutableDeclarationsContainer container = null;
+            if (parent == null) {
+                container = fileContent;
+            } else {
+                if(parent instanceof NamespaceDefinitionImpl.NamespaceBuilder) {
+                    container = ((NamespaceDefinitionImpl.NamespaceBuilder)parent).getNamespaceDefinitionInstance();
+                }
+            }
+            if(container != null && name != null) {
+                CsmOffsetableDeclaration decl = container.findExistingDeclaration(startOffset, name, kind);
+                if (decl != null && NamespaceAliasImpl.class.equals(decl.getClass())) {
+                    instance = (NamespaceAliasImpl) decl;
+                }
+            }
+            return instance;
+        }
+        
+        public void setScope(CsmScope scope) {
+            assert scope != null;
+            this.scope = scope;
+        }
+        
+        public CsmScope getScope() {
+            if(scope != null) {
+                return scope;
+            }
+            if (parent == null) {
+                scope = (NamespaceImpl) file.getProject().getGlobalNamespace();
+            } else {
+                if(parent instanceof NamespaceDefinitionImpl.NamespaceBuilder) {
+                    scope = ((NamespaceDefinitionImpl.NamespaceBuilder)parent).getNamespace();
+                }
+            }
+            return scope;
+        }
+        
+        public NamespaceAliasImpl create() {
+            NamespaceAliasImpl using = getNamespaceAliasInstance();
+            CsmScope s = getScope();
+            if (using == null && s != null && name != null && getScope() != null) {
+                using = new NamespaceAliasImpl(name, namespaceName, name, scope, file, startOffset, endOffset);
+                if(parent != null) {
+                    ((NamespaceDefinitionImpl.NamespaceBuilder)parent).addDeclaration(using);
+                } else {
+                    fileContent.addDeclaration(using);
+                }
+            }
+            if(getScope() instanceof CsmNamespace) {
+                ((NamespaceImpl)getScope()).addDeclaration(using);
+            }
+            return using;
+        }
+    }      
     
     ////////////////////////////////////////////////////////////////////////////
     // iml of SelfPersistent

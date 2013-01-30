@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -59,7 +59,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JButton;
 import javax.swing.SwingUtilities;
-import org.netbeans.api.autoupdate.InstallSupport;
 import org.netbeans.api.autoupdate.OperationContainer;
 import org.netbeans.api.autoupdate.OperationContainer.OperationInfo;
 import org.netbeans.api.autoupdate.OperationException;
@@ -265,84 +264,56 @@ public abstract class OperationWizardModel {
 
     public Set<UpdateElement> getAllVisibleUpdateElements () {
         Set <UpdateElement> visible = new HashSet <UpdateElement> ();
-        visible.addAll(getPrimaryVisibleUpdateElements(true));
+        visible.addAll(getPrimaryVisibleUpdateElements());
         visible.addAll(getRequiredVisibleUpdateElements());
         return visible;
     }
-    public Set<UpdateElement> getPrimaryVisibleUpdateElements (boolean checkInternalUpdates) {
+    public Set<UpdateElement> getPrimaryVisibleUpdateElements() {
         Set <UpdateElement> primary = getPrimaryUpdateElements();
-        Set <UpdateElement> visible = getVisibleUpdateElements(primary, false, getOperation(), checkInternalUpdates);
+        Set <UpdateElement> visible = getVisibleUpdateElements(primary, false, getOperation());
         return visible;
     }
     public Set<UpdateElement> getRequiredVisibleUpdateElements () {
         Set <UpdateElement> required = getRequiredUpdateElements();
-        Set <UpdateElement> visible = getVisibleUpdateElements(required, true, getOperation(), false);
+        Set <UpdateElement> visible = getVisibleUpdateElements(required, true, getOperation());
         return visible;
     }
 
-    private static Set<UpdateElement> getVisibleUpdateElements (Set<UpdateElement> all, boolean canBeEmpty, OperationType operationType, boolean checkInternalUpdates) {
+    private static Set<UpdateElement> getVisibleUpdateElements (Set<UpdateElement> all, boolean canBeEmpty, OperationType operationType) {
         if (Utilities.modulesOnly () || OperationType.LOCAL_DOWNLOAD == operationType) {
             return all;
-        } else {
-            Set<UpdateElement> visible = new HashSet<UpdateElement> ();
-            Set<UpdateUnit> visibleUnits = new HashSet<UpdateUnit> ();
-            Set<UpdateElement> invisible = new HashSet<UpdateElement> ();
+        } else if (OperationType.UPDATE == operationType) {
+            Set<UpdateElement> visible = new HashSet<UpdateElement>();
+            Set<UpdateUnit> visibleUnits = new HashSet<UpdateUnit>();
             for (UpdateElement el : all) {
-                if (UpdateManager.TYPE.KIT_MODULE == el.getUpdateUnit ().getType () ||
-                        (OperationType.UPDATE == operationType &&
-                        Utilities.getFirstClassModules().contains(el.getCodeName()))) {
-                    visible.add (el);
+                if (visibleUnits.contains(el.getUpdateUnit())) {
+                    continue;
+                }
+                if (UpdateManager.TYPE.KIT_MODULE == el.getUpdateUnit().getType()) {
+                    visible.add(el);
                     visibleUnits.add(el.getUpdateUnit());
                 } else {
-                    invisible.add(el);
+                    UpdateUnit visibleAncestor = el.getUpdateUnit().getVisibleAncestor();
+                    if (visibleAncestor != null) {
+                        visibleUnits.add(visibleAncestor);
+                        visible.add(visibleAncestor.getInstalled());
+                    } else {
+                        // a fallback
+                        visible.add(el);
+                        visibleUnits.add(el.getUpdateUnit());
+                    }
                 }
             }
-            if (OperationType.UPDATE == operationType && checkInternalUpdates) {
-                //filter out eager invisible modules, which are covered by visible
-                List<UpdateElement> realInvisible = new ArrayList<UpdateElement>(invisible);
-                for (UpdateElement v : visible) {
-                    OperationContainer<InstallSupport> container = null;
-                    if (v.getUpdateUnit().getInstalled() == null) {
-                        container = OperationContainer.createForInstall();
-                    } else if(!v.getUpdateUnit().getAvailableUpdates().isEmpty() && !v.getUpdateUnit().isPending()) {
-                        container = OperationContainer.createForUpdate();
-                    } else {
-                        //already installed, end of operation sequence
-                    }
-                    if(container!=null) {
-                        container.add(v);
-                        for (OperationInfo<InstallSupport> info : container.listAll()) {
-                            realInvisible.remove(info.getUpdateElement());
-                        }
-                    }
-                }
-                //filter out eager invisible modules, which are covered by other invisible
-                for (UpdateElement v : invisible) {
-                    OperationContainer<InstallSupport> container = OperationContainer.createForUpdate();
-                    if (v.getUpdateUnit().getInstalled() != null && !v.getUpdateUnit().isPending()) {
-                        container.add(v);
-                        for (OperationInfo<InstallSupport> info : container.listAll()) {
-                            if (info.getUpdateElement() != v) {
-                                realInvisible.remove(info.getUpdateElement());
-                            }
-                        }
-                    }
-                }
-
-
-                if (!realInvisible.isEmpty()) {
-                    HashMap<UpdateUnit, List<UpdateElement>> map = Utilities.getVisibleModulesDependecyMap(UpdateManager.getDefault().getUpdateUnits(Utilities.getUnitTypes()));
-                    //HashMap <UpdateUnit, List<UpdateElement>> map = Utilities.getVisibleModulesDependecyMap(visibleUnits);
-                    for (UpdateElement el : realInvisible) {
-                        if (el.getUpdateUnit().getInstalled() != null) {
-                            UpdateUnit visibleUU = Utilities.getVisibleUnitForInvisibleModule(el.getUpdateUnit(), map);
-                            if (visibleUU != null && !Utilities.getFirstClassModules().contains(el.getCodeName())) {
-                                visible.add(visibleUU.getInstalled());
-                            } else {
-                                visible.add(el);
-                            }
-                        }                    
-                    }
+            if (visible.isEmpty () && ! canBeEmpty) {
+                // in Downloaded tab may become all NBMs are hidden
+                visible = all;
+            }
+            return visible;
+        } else {
+            Set<UpdateElement> visible = new HashSet<UpdateElement> ();
+            for (UpdateElement el : all) {
+                if (UpdateManager.TYPE.KIT_MODULE == el.getUpdateUnit ().getType ()) {
+                    visible.add (el);
                 }
             }
             if (visible.isEmpty () && ! canBeEmpty) {
@@ -362,6 +333,7 @@ public abstract class OperationWizardModel {
     public void modifyOptionsForFailed (final WizardDescriptor wd) {
         recognizeButtons (wd);
         SwingUtilities.invokeLater (new Runnable () {
+            @Override
             public void run () {
                 wd.setOptions (new JButton [] { getOriginalCancel (wd) });
             }
@@ -405,6 +377,7 @@ public abstract class OperationWizardModel {
             final JButton b = getOriginalFinish (wd);
             Mnemonics.setLocalizedText (b, getBundle ("InstallUnitWizardModel_Buttons_Close"));
             SwingUtilities.invokeLater (new Runnable () {
+                @Override
                 public void run () {
                     wd.setOptions (new JButton [] {b});
                 }
@@ -474,6 +447,7 @@ public abstract class OperationWizardModel {
             }
         }
         SwingUtilities.invokeLater (new Runnable () {
+            @Override
             public void run () {
                 wd.setOptions (newOptionsL.toArray ());
             }
@@ -527,6 +501,7 @@ public abstract class OperationWizardModel {
             }
         }
         SwingUtilities.invokeLater (new Runnable () {
+            @Override
             public void run () {
                 wd.setOptions (newOptionsL.toArray ());
             }

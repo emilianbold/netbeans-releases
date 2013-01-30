@@ -53,8 +53,6 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.lang.ref.Reference;
-import java.lang.ref.WeakReference;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
@@ -91,7 +89,6 @@ import javax.swing.text.View;
 import org.netbeans.api.editor.EditorActionNames;
 import org.netbeans.api.editor.EditorActionRegistration;
 import org.netbeans.api.editor.EditorActionRegistrations;
-import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.editor.fold.Fold;
 import org.netbeans.api.editor.fold.FoldHierarchy;
 import org.netbeans.api.editor.fold.FoldUtilities;
@@ -101,9 +98,9 @@ import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.lib.editor.util.swing.PositionRegion;
 import org.netbeans.modules.editor.indent.api.Indent;
 import org.netbeans.modules.editor.indent.api.Reformat;
+import org.netbeans.modules.editor.lib.NavigationHistory;
 import org.netbeans.modules.editor.lib2.RectangularSelectionUtils;
 import org.netbeans.modules.editor.lib2.search.EditorFindSupport;
-import org.netbeans.modules.editor.lib2.typinghooks.TypedBreakInterceptorsManager;
 import org.netbeans.modules.editor.lib2.view.DocumentView;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.ImageUtilities;
@@ -433,6 +430,7 @@ public class ActionFactory {
             super(MAGIC_POSITION_RESET | ABBREV_RESET | UNDO_MERGE_RESET | WORD_MATCH_RESET);
         }
 
+        @Override
         public void actionPerformed (final ActionEvent evt, final JTextComponent target) {
             if (target != null) {
                 if (!target.isEditable() || !target.isEnabled()) {
@@ -445,6 +443,7 @@ public class ActionFactory {
                     return;
                 }
                 doc.runAtomicAsUser (new Runnable () {
+                    @Override
                     public void run () {
                         DocumentUtilities.setTypingModification(doc, true);
                         try {
@@ -472,10 +471,8 @@ public class ActionFactory {
                             if (zeroBaseStartLineNumber == -1) {
                                 // could not get line number
                                 target.getToolkit().beep();
-                                return;
                             } else if (zeroBaseStartLineNumber == 0) {
                                 // already first line
-                                return;
                             } else {
                                 try {
                                     // get line text
@@ -496,7 +493,11 @@ public class ActionFactory {
                                     doc.insertString(previousLineStartOffset, linesText, null);
                                     
                                     // remove the line
-                                    doc.remove(startLineStartOffset + linesText.length(), Math.min(doc.getLength(),endLineEndOffset) - startLineStartOffset);
+                                    if (endLineEndOffset + linesText.length() > doc.getLength()) {
+                                        removeLineByLine(doc, startLineStartOffset + linesText.length() - 1, endLineEndOffset - startLineStartOffset);
+                                    } else {
+                                        removeLineByLine(doc, startLineStartOffset + linesText.length(), endLineEndOffset - startLineStartOffset);
+                                    }
                                     
                                     if (selection) {
                                         // select moved lines
@@ -533,6 +534,7 @@ public class ActionFactory {
             super(MAGIC_POSITION_RESET | ABBREV_RESET | UNDO_MERGE_RESET | WORD_MATCH_RESET);
         }
 
+        @Override
         public void actionPerformed (final ActionEvent evt, final JTextComponent target) {
             if (target != null) {
                 if (!target.isEditable() || !target.isEnabled()) {
@@ -545,6 +547,7 @@ public class ActionFactory {
                     return;
                 }
                 doc.runAtomicAsUser (new Runnable () {
+                    @Override
                     public void run () {
                         DocumentUtilities.setTypingModification(doc, true);
                         try {
@@ -572,33 +575,35 @@ public class ActionFactory {
                             if (zeroBaseEndLineNumber == -1) {
                                 // could not get line number
                                 target.getToolkit().beep();
-                                return;
-                            } else if (zeroBaseEndLineNumber >= (rootElement.getElementCount() - 2)) {
-                                // already last or penultimate line (due to a getLength() bug)
-                                return;
                             } else {
                                 try {
                                     // get line text
                                     Element startLineElement = rootElement.getElement(zeroBaseStartLineNumber);
                                     int startLineStartOffset = startLineElement.getStartOffset();
+                                    
 
                                     Element endLineElement = rootElement.getElement(zeroBaseEndLineNumber);
                                     int endLineEndOffset = endLineElement.getEndOffset();
+                                    if (endLineEndOffset > doc.getLength()) {
+                                        return;
+                                    }
 
                                     String linesText = doc.getText(startLineStartOffset, (endLineEndOffset - startLineStartOffset));
 
                                     Element nextLineElement = rootElement.getElement(zeroBaseEndLineNumber + 1);
-                                    int nextLineStartOffset = nextLineElement.getStartOffset();
                                     int nextLineEndOffset = nextLineElement.getEndOffset();
 
                                     int column = start - startLineStartOffset;
 
                                     // insert it after next line
-                                    doc.insertString(nextLineEndOffset, linesText, null);
+                                    if (nextLineEndOffset > doc.getLength()) {
+                                        doc.insertString(doc.getLength(), "\n" + linesText.substring(0, linesText.length()-1), null);
+                                    } else {
+                                        doc.insertString(nextLineEndOffset, linesText, null);
+                                    }
 
                                     // remove original line
-                                    doc.remove(startLineStartOffset, (endLineEndOffset - startLineStartOffset));
-
+                                    removeLineByLine(doc, startLineStartOffset, (endLineEndOffset - startLineStartOffset));
                                     if (selection) {
                                         // select moved lines
                                         if (backwardSelection) {
@@ -610,7 +615,7 @@ public class ActionFactory {
                                         }
                                     } else {
                                         // set caret position
-                                        target.setCaretPosition(Math.min(doc.getLength() - 1, nextLineEndOffset + column - (endLineEndOffset - startLineStartOffset)));
+                                        target.setCaretPosition(Math.min(doc.getLength(), nextLineEndOffset + column - (endLineEndOffset - startLineStartOffset)));
                                     }
                                 } catch (BadLocationException ex) {
                                     target.getToolkit().beep();
@@ -622,6 +627,31 @@ public class ActionFactory {
                     }
                 });
             }
+        }
+    }
+    
+    static void removeLineByLine(Document doc, int startPosition, int length) throws BadLocationException {
+        String text = doc.getText(startPosition, length);
+        BadLocationException ble = null;
+        int notDeleted = 0;
+        int deleted = 0;
+        int line = 0;
+        while(true) {
+            line = text.indexOf('\n', line+1);
+            if (line == -1) {
+                break;
+            }
+            try {
+                doc.remove(startPosition + notDeleted, line + 1 - deleted - notDeleted);
+                deleted = line + 1 - notDeleted;
+            } catch (BadLocationException blee) {
+                ble = blee;
+                notDeleted = line + 1 - deleted;
+            }
+        }
+        doc.remove(startPosition + notDeleted, length - deleted - notDeleted);
+        if (ble != null) {
+            throw ble;
         }
     }
     
@@ -683,6 +713,11 @@ public class ActionFactory {
 
                                     int column = start - startLineStartOffset;
 
+                                    try {
+                                        NavigationHistory.getEdits().markWaypoint(target, startLineStartOffset, false, true);
+                                    } catch (BadLocationException e) {
+                                        LOG.log(Level.WARNING, "Can't add position to the history of edits.", e); //NOI18N
+                                    }
                                     // insert it
                                     doc.insertString(startLineStartOffset, linesText, null);
 
@@ -723,7 +758,7 @@ public class ActionFactory {
 
         public void actionPerformed (final ActionEvent evt, final JTextComponent target) {
             if (target != null) {
-                if (!target.isEditable() || !target.isEnabled()) {
+                if (!target.isEditable() || !target.isEnabled() || Boolean.TRUE.equals(target.getClientProperty("AsTextField"))) {
                     target.getToolkit().beep();
                     return;
                 }
@@ -770,6 +805,15 @@ public class ActionFactory {
 
                                     int column = start - startLineStartOffset;
 
+                                    try {
+                                        if (endLineEndOffset == doc.getLength() + 1) {
+                                            NavigationHistory.getEdits().markWaypoint(target, endLineEndOffset - 1, false, true);
+                                        } else {
+                                            NavigationHistory.getEdits().markWaypoint(target, endLineEndOffset, false, true);
+                                        }
+                                    } catch (BadLocationException e) {
+                                        LOG.log(Level.WARNING, "Can't add position to the history of edits.", e); //NOI18N
+                                    }
                                     // insert it after next line
                                     if (endLineEndOffset == doc.getLength() + 1) { // extra newline at doc end (not included in doc-len)
                                         assert (linesText.charAt(linesText.length() - 1) == '\n');
@@ -1162,11 +1206,24 @@ public class ActionFactory {
                 if (eui.getComponent().getClientProperty("AsTextField") == null)  { //NOI18N
                     EditorFindSupport.getInstance().setFocusedTextComponent(eui.getComponent());
                 }
+                openFindIfNecessary(eui, evt);
                 EditorFindSupport.getInstance().find(null, false);
             }
         }
     }
+    
+    private static void openFindIfNecessary(EditorUI eui, ActionEvent evt) {
+        Object findWhat = EditorFindSupport.getInstance().getFindProperty(EditorFindSupport.FIND_WHAT);
+        if (findWhat == null || !(findWhat instanceof String) || ((String) findWhat).isEmpty()) {
 
+            Action findAction = ((BaseKit) eui.getComponent().getUI().getEditorKit(
+                    eui.getComponent())).getActionByName("find");
+            if (findAction != null) {
+                findAction.actionPerformed(evt);
+            }
+        }
+    }
+    
     @EditorActionRegistration(name = BaseKit.findPreviousAction,
             iconResource = "org/netbeans/modules/editor/resources/find_previous.png") // NOI18N
     public static class FindPreviousAction extends LocalBaseAction {
@@ -1184,6 +1241,7 @@ public class ActionFactory {
                 if (eui.getComponent().getClientProperty("AsTextField") == null)  { //NOI18N
                     EditorFindSupport.getInstance().setFocusedTextComponent(eui.getComponent());
                 }
+                openFindIfNecessary(eui, evt);
                 EditorFindSupport.getInstance().find(null, true);
             }
         }
@@ -1208,7 +1266,7 @@ public class ActionFactory {
                 EditorFindSupport findSupport = EditorFindSupport.getInstance();
                 Caret caret = target.getCaret();
                 int dotPos = caret.getDot();
-                HashMap props = new HashMap(findSupport.getFindProperties());
+                HashMap props = new HashMap(findSupport.createDefaultFindProperties());
                 String searchWord = null;
                 boolean revert = false;
                 Boolean originalValue = null;
@@ -1250,13 +1308,20 @@ public class ActionFactory {
                         revertMap.put(EditorFindSupport.FIND_WHOLE_WORDS, originalValue != null ? originalValue : Boolean.FALSE);
                         props.put(EditorFindSupport.REVERT_MAP, revertMap);
                     }
+                    
+                    props.put(EditorFindSupport.FIND_BLOCK_SEARCH, Boolean.FALSE);
+                    props.put(EditorFindSupport.FIND_BLOCK_SEARCH_START, null);
+                    props.put(EditorFindSupport.FIND_BLOCK_SEARCH_END, null);
 
                     EditorUI eui = org.netbeans.editor.Utilities.getEditorUI(target);
                     if (eui.getComponent().getClientProperty("AsTextField") == null) { //NOI18N
                         findSupport.setFocusedTextComponent(eui.getComponent());
                     }
                     findSupport.putFindProperties(props);
-                    findSupport.find(null, false);
+                    if (findSupport.find(null, false)) {
+                        findSupport.addToHistory(new EditorFindSupport.SPW((String) props.get(EditorFindSupport.FIND_WHAT),
+                                (Boolean) props.get(EditorFindSupport.FIND_WHOLE_WORDS), (Boolean) props.get(EditorFindSupport.FIND_MATCH_CASE), (Boolean) props.get(EditorFindSupport.FIND_REG_EXP)));
+                    }
                 }
             }
         }
@@ -1298,7 +1363,7 @@ public class ActionFactory {
 
         @Override
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
-            if (target != null) {
+            if (target != null && !Boolean.TRUE.equals(target.getClientProperty("AsTextField"))) {
                 boolean newRectSel = !RectangularSelectionUtils.isRectangularSelection(target);
                 RectangularSelectionUtils.setRectangularSelection(target, newRectSel);
             }
@@ -1688,7 +1753,7 @@ public class ActionFactory {
                                     } else {
                                         reformat.reformat(pos, stopPos);
                                     }
-                                    pos = pos + Math.max(stopPosition.getOffset() - pos, 1);
+                                    pos = stopPosition.getOffset() + 1;
 
                                     if (gdoc != null) { // adjust to end of current block
                                         pos = gdoc.getGuardedBlockChain().adjustToBlockEnd(pos);
@@ -2359,7 +2424,8 @@ public class ActionFactory {
     }
     
     /** Collapse a fold. Depends on the current caret position. */
-    @EditorActionRegistration(name = BaseKit.collapseFoldAction)
+    @EditorActionRegistration(name = BaseKit.collapseFoldAction,
+            menuText = "#" + BaseKit.collapseFoldAction + "_menu_text")
     public static class CollapseFold extends LocalBaseAction {
         public CollapseFold(){
         }
@@ -2407,7 +2473,8 @@ public class ActionFactory {
     }
     
     /** Expand a fold. Depends on the current caret position. */
-    @EditorActionRegistration(name = BaseKit.expandFoldAction)
+    @EditorActionRegistration(name = BaseKit.expandFoldAction,
+            menuText = "#" + BaseKit.expandFoldAction + "_menu_text")
     public static class ExpandFold extends LocalBaseAction {
         public ExpandFold(){
         }
@@ -2440,7 +2507,8 @@ public class ActionFactory {
     }
     
     /** Collapse all existing folds in the document. */
-    @EditorActionRegistration(name = BaseKit.collapseAllFoldsAction)
+    @EditorActionRegistration(name = BaseKit.collapseAllFoldsAction,
+            menuText = "#" + BaseKit.collapseAllFoldsAction + "_menu_text")
     public static class CollapseAllFolds extends LocalBaseAction {
         public CollapseAllFolds(){
         }
@@ -2453,7 +2521,8 @@ public class ActionFactory {
     }
 
     /** Expand all existing folds in the document. */
-    @EditorActionRegistration(name = BaseKit.expandAllFoldsAction)
+    @EditorActionRegistration(name = BaseKit.expandAllFoldsAction,
+            menuText = "#" + BaseKit.expandAllFoldsAction + "_menu_text")
     public static class ExpandAllFolds extends LocalBaseAction {
         public ExpandAllFolds(){
         }

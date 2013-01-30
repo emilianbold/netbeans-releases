@@ -496,6 +496,15 @@ public class DatabaseConnectionConvertor implements Environment.Provider, Instan
         
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
+            // TODO: Fix properties - these five properties should by folded
+            // into one
+            if (evt.getPropertyName().equals("connected") //NOI18N
+                    || evt.getPropertyName().equals("connectionComplete")//NOI18N
+                    || evt.getPropertyName().equals("connecting") //NOI18N
+                    || evt.getPropertyName().equals("disconnected") //NOI18N
+                    || evt.getPropertyName().equals("failed")) { //NOI18N
+                return;
+            }
             synchronized (this) {
                 if (saveTask == null)
                     saveTask = RP.create(this);

@@ -78,6 +78,8 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import static org.netbeans.modules.maven.options.Bundle.*;
+import org.netbeans.modules.options.java.api.JavaOptions;
+import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.NbBundle.Messages;
 
 /**
@@ -85,6 +87,7 @@ import org.openide.util.NbBundle.Messages;
  * are written to the settings file, some into the Netbeans settings..
  * @author  mkleint
  */
+@OptionsPanelController.Keywords(keywords={"maven"}, location=JavaOptions.JAVA, tabTitle= "#TIT_Maven_Category")
 public class SettingsPanel extends javax.swing.JPanel {
     private static final String SEPARATOR = "SEPARATOR";
     private static final String BUNDLED_RUNTIME_VERSION =
@@ -376,7 +379,7 @@ public class SettingsPanel extends javax.swing.JPanel {
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jLabel1)
                             .addComponent(btnGoals))
-                        .addContainerGap())
+                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createSequentialGroup()
@@ -414,7 +417,6 @@ public class SettingsPanel extends javax.swing.JPanel {
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(btnIndex))
                             .addGroup(layout.createSequentialGroup()
-                                .addGap(0, 0, 0)
                                 .addComponent(cbSkipTests)
                                 .addGap(0, 0, Short.MAX_VALUE)))
                         .addContainerGap())))
@@ -443,7 +445,7 @@ public class SettingsPanel extends javax.swing.JPanel {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jLabel1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(lblBinaries)
                     .addComponent(comBinaries, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)

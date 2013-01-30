@@ -54,9 +54,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.*;
 import org.netbeans.core.windows.actions.ActionUtils;
+import org.netbeans.core.windows.options.WinSysPrefs;
 import org.netbeans.core.windows.persistence.PersistenceManager;
 import org.netbeans.core.windows.view.dnd.TopComponentDraggable;
 import org.netbeans.core.windows.view.ui.MainWindow;
+import org.netbeans.swing.tabcontrol.plaf.BusyTabsSupport;
 import org.openide.nodes.Node;
 import org.openide.util.*;
 import org.openide.windows.*;
@@ -134,6 +136,7 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
             }
             defaultInstance = this;
         }
+        busyIconWarmUp();
     }
     
     /** Singleton accessor, returns instance of window manager implementation */
@@ -147,16 +150,29 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
     
     @Override
     public void topComponentRequestAttention(TopComponent tc) {
-        ModeImpl mode = (ModeImpl) findMode(tc);
-        
-        central.topComponentRequestAttention(mode, tc);
+        if( tc.isOpened() ) {
+            ModeImpl mode = (ModeImpl) findMode(tc);
+
+            central.topComponentRequestAttention(mode, tc);
+        }
     }
 
     @Override
     public void topComponentCancelRequestAttention(TopComponent tc) {
-        ModeImpl mode = (ModeImpl) findMode(tc);
-        
-        central.topComponentCancelRequestAttention(mode, tc);
+        if( tc.isOpened() ) {
+            ModeImpl mode = (ModeImpl) findMode(tc);
+
+            central.topComponentCancelRequestAttention(mode, tc);
+        }
+    }
+
+    @Override
+    public void topComponentAttentionHighlight(TopComponent tc, boolean highlight) {
+        if( tc.isOpened() ) {
+            ModeImpl mode = (ModeImpl) findMode(tc);
+
+            central.topComponentAttentionHighlight(mode, tc, highlight);
+        }
     }
 
     /////////////////////////
@@ -457,6 +473,13 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
             exclusive = new Exclusive();
         }
         return exclusive;
+    }
+
+    private void toggleUseNativeFileChooser() {
+        if( null == System.getProperty("nb.native.filechooser") ) { //NOI18N
+            boolean useNativeFileChooser = WinSysPrefs.HANDLER.getBoolean(WinSysPrefs.MAXIMIZE_NATIVE_LAF, false);
+            System.setProperty("nb.native.filechooser", useNativeFileChooser ? "true" : "false"); //NOI18N
+        }
     }
     
     private static class WrapMode implements Mode {
@@ -910,6 +933,7 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
             } else {
                 FloatingWindowTransparencyManager.getDefault().start();
             }
+            toggleUseNativeFileChooser();
         } else {
             getExclusive().stop();
             exclusivesCompleted = false;
@@ -1057,7 +1081,9 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
      * @param minimized 
      * @since 2.32
      */
+    @Override
     public void setTopComponentMinimized( TopComponent tc, boolean minimized ) {
+        assertEventDispatchThread();
         central.setTopComponentMinimized( tc, minimized );
     }
     
@@ -1067,7 +1093,9 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
      * @return 
      * @since 2.32
      */
+    @Override
     public boolean isTopComponentMinimized( TopComponent tc ) {
+        assertEventDispatchThread();
         return central.isTopComponentMinimized( tc );
     }
 
@@ -1454,6 +1482,24 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
         }
     }
 
+    /**
+     * #220599
+     */
+    private void busyIconWarmUp() {
+        invokeWhenUIReady( new Runnable() {
+
+            @Override
+            public void run() {
+                RequestProcessor.getDefault().post( new Runnable() {
+
+                    @Override
+                    public void run() {
+                        BusyTabsSupport.getDefault().getBusyIcon( false );
+                    }
+                });
+            }
+        });
+    }
 
     /** Handles exclusive invocation of Runnables.
      */
@@ -2017,7 +2063,41 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
         }
         return false;
     }
-    
+
+    /**
+     * Checks the floating status of given TopComponent.
+     * @return True if the given TopComponent is separated from the main window.
+     * @since 2.51
+     */
+    @Override
+    public boolean isTopComponentFloating( TopComponent tc ) {
+        assertEventDispatchThread();
+        return !isDocked( tc );
+    }
+
+    /**
+     * Floats the given TopComponent or docks it back to the main window.
+     * @param tc
+     * @param floating True to separate the given TopComponent from the main window,
+     * false to dock it back to the main window.
+     * @since 2.51
+     */
+    @Override
+    public void setTopComponentFloating(  TopComponent tc, boolean floating ) {
+        assertEventDispatchThread();
+        boolean isFloating = !isDocked( tc );
+        if( isFloating == floating )
+            return;
+        ModeImpl mode = (ModeImpl)findMode( tc );
+        if( null == mode )
+            throw new IllegalStateException( "Cannot find Mode for TopComponent: " + tc );
+        if( floating ) {
+            userUndockedTopComponent( tc, mode );
+        } else {
+            userDockedTopComponent( tc, mode );
+        }
+    }
+
     /**
      * An empty TopComponent needed for deselectEditorTopComponents()
      */

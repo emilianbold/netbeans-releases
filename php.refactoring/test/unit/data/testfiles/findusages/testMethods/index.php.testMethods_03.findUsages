@@ -1,0 +1,9 @@
+Display text: <font color=#000000>public static function </font><b>stMethod</b><font color=#000000>() {}</font>
+File name: index.php
+Name: stMethod
+Position: BEGIN: 60 END: 68
+
+Display text: <font color=#000000>Foo::</font><b>stMethod</b><font color=#000000>();</font>
+File name: index.php
+Name: stMethod
+Position: BEGIN: 200 END: 208

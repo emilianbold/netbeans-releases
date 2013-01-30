@@ -120,8 +120,9 @@ public abstract class SingleRepositoryAction extends GitAction {
                 @Override
                 public void run () {
                     Set<String> urls = new HashSet<String>();
+                    GitClient client = null;
                     try {
-                        GitClient client = Git.getInstance().getClient(repositoryRoot);
+                        client = Git.getInstance().getClient(repositoryRoot);
                         Map<String, GitRemoteConfig> cfgs = client.getRemotes(GitUtils.NULL_PROGRESS_MONITOR);
                         for (Map.Entry<String, GitRemoteConfig> e : cfgs.entrySet()) {
                             GitRemoteConfig cfg = e.getValue();
@@ -133,6 +134,10 @@ public abstract class SingleRepositoryAction extends GitAction {
                         }
                     } catch (GitException ex) {
                         // not interested
+                    } finally {
+                        if (client != null) {
+                            client.release();
+                        }
                     }
                     for (String url : urls) {
                         if (!url.trim().isEmpty()) {

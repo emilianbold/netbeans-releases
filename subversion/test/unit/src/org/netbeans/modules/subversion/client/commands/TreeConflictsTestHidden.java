@@ -176,7 +176,7 @@ public class TreeConflictsTestHidden extends AbstractCommandTestCase {
 
         c.update(wc2, SVNRevision.HEAD, true);
         assertStatus(fcopy2, true, SVNStatusKind.REPLACED);
-        assertStatus(f2, true, isCommandLine() ? SVNStatusKind.MISSING : SVNStatusKind.NONE);
+        assertStatus(f2, true, isJavahl() ? SVNStatusKind.NONE : SVNStatusKind.MISSING);
 
         c.resolved(f2);
         assertStatus(f2, false, SVNStatusKind.UNVERSIONED);
@@ -215,7 +215,7 @@ public class TreeConflictsTestHidden extends AbstractCommandTestCase {
         assertFalse(folder2.exists());
         assertTrue(folderCopy2.exists());
         assertStatus(folderCopy2, true, SVNStatusKind.REPLACED);
-        assertStatus(folder2, true, isCommandLine() ? SVNStatusKind.MISSING : SVNStatusKind.NONE);
+        assertStatus(folder2, true, isJavahl() ? SVNStatusKind.NONE : SVNStatusKind.MISSING);
 
         c.resolved(folder2);
         assertStatus(folder2, false, SVNStatusKind.UNVERSIONED);

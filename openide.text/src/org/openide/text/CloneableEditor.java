@@ -405,6 +405,10 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
                 throw new IllegalStateException("Wrong phase: " + phase + " for " + support);
             }
             
+            if (phase >= 3) {
+                CloneableEditor.this.doInitialize = null;
+            }
+            
             long howLong = System.currentTimeMillis() - now;
             if (TIMER.isLoggable(Level.FINE)) {
                 String thread = SwingUtilities.isEventDispatchThread() ? "AWT" : "RP"; // NOI18N

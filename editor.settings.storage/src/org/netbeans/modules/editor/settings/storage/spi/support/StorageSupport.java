@@ -43,24 +43,20 @@
  */
 package org.netbeans.modules.editor.settings.storage.spi.support;
 
-import java.awt.event.InputEvent;
-import java.awt.event.KeyEvent;
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
-import java.util.StringTokenizer;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.KeyStroke;
+import org.netbeans.core.options.keymap.api.KeyStrokeUtils;
 import org.netbeans.modules.editor.settings.storage.*;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Utilities;
 
+/**
+ * @deprecated Functionality of this Support can be obtained either from {@link KeyStrokeUtils} or from {@link Utilities}.
+ */
+@Deprecated
 public final class StorageSupport {
 
     private static final Logger LOG = Logger.getLogger(StorageSupport.class.getName());
@@ -92,22 +88,19 @@ public final class StorageSupport {
      * 
      * @return The textual representation of <code>KeyStroke</code>s passed in.
      * @since 1.16
+     * @deprecated Use {@link KeyStrokeUtils#getKeyStrokesAsText} or {@link Utilities#keyToString(javax.swing.KeyStroke[], java.lang.String, boolean)}
      */
     public static String keyStrokesToString(Collection<? extends KeyStroke> keys, boolean emacsStyle) {
+        if (!emacsStyle) {
+            return KeyStrokeUtils.getKeyStrokesAsText(keys.toArray(new KeyStroke[keys.size()]), " "); // NOI18N
+        }
         StringBuilder sb = new StringBuilder();
 
         for (Iterator<? extends KeyStroke> it = keys.iterator(); it.hasNext(); ) {
             KeyStroke keyStroke = it.next();
-            if (emacsStyle) {
-                sb.append(Utilities.keyToString(keyStroke, true));
-                if (it.hasNext()) {
-                    sb.append('$'); //NOI18N
-                }
-            } else {
-                sb.append(keyStrokeToHumanReadableString(keyStroke));
-                if (it.hasNext()) {
-                    sb.append(' '); //NOI18N
-                }
+            sb.append(Utilities.keyToString(keyStroke, true));
+            if (it.hasNext()) {
+                sb.append('$'); //NOI18N
             }
         }
 
@@ -127,140 +120,17 @@ public final class StorageSupport {
      * @return The <code>KeyStroke</code>s that were represented by the <code>key</code>
      *   text or <code>null</code> if the textual representation was malformed.
      * @since 1.16
+     * @deprecated use {@link KeyStrokeUtils#getKeyStrokes(java.lang.String)} or {@link Utilities#stringToKeys(java.lang.String)}.
+     * Note the differences in delimiter used by the two methods.
      */
     public static KeyStroke[] stringToKeyStrokes(String key, boolean emacsStyle) {
         assert key != null : "The parameter key must not be null"; //NOI18N
+
+        if (emacsStyle) {
+            return Utilities.stringToKeys(key.replaceAll("\\$", " "));
+        }
         
-        List<KeyStroke> result = new ArrayList<KeyStroke>();
-        String delimiter = emacsStyle ? "$" : " "; //NOI18N
-        
-        for(StringTokenizer st = new StringTokenizer(key, delimiter); st.hasMoreTokens();) { //NOI18N
-            String ks = st.nextToken().trim();
-            KeyStroke keyStroke;
-            
-            if (emacsStyle) {
-                keyStroke = Utilities.stringToKey(ks);
-            } else {
-                keyStroke = humanReadableStringToKeyStroke(ks);
-            }
-            
-            if (keyStroke != null) {
-                result.add(keyStroke);
-            } else {
-                if (LOG.isLoggable(Level.FINE)) {
-                    LOG.fine("Invalid keystroke string: '" + ks + "'"); //NOI18N
-                }
-                
-                return null;
-            }
-        }
-
-        return result.toArray(new KeyStroke[result.size()]);
-    }
-    
-    // Important: keep in sync with Keymap Options Utils class until Keymap
-    // defines API for this translation
-
-    private static final String EMACS_CTRL = "Ctrl+"; //NOI18N
-    private static final String EMACS_ALT = "Alt+"; //NOI18N
-    private static final String EMACS_SHIFT = "Shift+"; //NOI18N
-    private static final String EMACS_META = "Meta+"; //NOI18N
-    
-    /**
-     * Platform - dependent value for Alt or Meta presentation
-     */
-    private static final String STRING_META; // NOI18N
-    private static final String STRING_ALT; // NOI18N
-    
-    static {
-        if (Utilities.isMac()) {
-            STRING_META = KeyEvent.getKeyText(KeyEvent.VK_ALT).concat("+");
-            STRING_ALT = KeyEvent.getKeyText(KeyEvent.VK_ALT).concat("+");
-        } else {
-            STRING_META = EMACS_META;
-            STRING_ALT = EMACS_ALT;
-        }
-    }
-    
-    private static KeyStroke humanReadableStringToKeyStroke(String keyStroke) {
-        int modifiers = 0;
-        while (true) {
-            if (keyStroke.startsWith(EMACS_CTRL)) {
-                modifiers |= InputEvent.CTRL_DOWN_MASK;
-                keyStroke = keyStroke.substring(EMACS_CTRL.length());
-            } else if (keyStroke.startsWith(EMACS_ALT)) {
-                modifiers |= InputEvent.ALT_DOWN_MASK;
-                keyStroke = keyStroke.substring(EMACS_ALT.length());
-            } else if (keyStroke.startsWith(EMACS_SHIFT)) {
-                modifiers |= InputEvent.SHIFT_DOWN_MASK;
-                keyStroke = keyStroke.substring(EMACS_SHIFT.length());
-            } else if (keyStroke.startsWith(EMACS_META)) {
-                modifiers |= InputEvent.META_DOWN_MASK;
-                keyStroke = keyStroke.substring(EMACS_META.length());
-            } else if (keyStroke.startsWith(STRING_ALT)) {
-                modifiers |= InputEvent.ALT_DOWN_MASK;
-                keyStroke = keyStroke.substring(STRING_ALT.length());
-            } else if (keyStroke.startsWith(STRING_META)) {
-                modifiers |= InputEvent.META_DOWN_MASK;
-                keyStroke = keyStroke.substring(STRING_META.length());
-            } else {
-                break;
-            }
-        }
-        KeyStroke ks = Utilities.stringToKey(keyStroke);
-        if (ks != null) {
-            return KeyStroke.getKeyStroke(ks.getKeyCode(), modifiers);
-        } else {// probably a VK_* key
-            Integer keyCode = getName2Keycode().get(keyStroke);
-            return keyCode != null ? KeyStroke.getKeyStroke(keyCode, modifiers) : null;
-        }
-    }
-
-    private static synchronized Map<String, Integer> getName2Keycode() {
-        if (names != null) {
-            return names;
-        } else {
-            Field[] fields = KeyEvent.class.getDeclaredFields();
-            names = new HashMap<String, Integer>(fields.length * 4 / 3 + 5, 0.75f);
-
-            for (Field f : fields) {
-                if (Modifier.isStatic(f.getModifiers())) {
-                    try {
-                        int numb = f.getInt(null);
-                        names.put(KeyEvent.getKeyText(numb), numb);
-                    } catch (IllegalArgumentException ex) {
-                    } catch (IllegalAccessException ex) {
-                    }
-                }
-            }
-            return names;
-        }
-    }
-
-    private static String keyStrokeToHumanReadableString(KeyStroke keyStroke) {
-        int modifiers = keyStroke.getModifiers();
-        StringBuilder sb = new StringBuilder();
-        if ((modifiers & InputEvent.CTRL_DOWN_MASK) > 0) {
-            sb.append(EMACS_CTRL);
-        }
-        if ((modifiers & InputEvent.ALT_DOWN_MASK) > 0) {
-            sb.append(STRING_ALT);
-        }
-        if ((modifiers & InputEvent.SHIFT_DOWN_MASK) > 0) {
-            sb.append(EMACS_SHIFT);
-        }
-        if ((modifiers & InputEvent.META_DOWN_MASK) > 0) {
-            sb.append(STRING_META);
-        }
-        if (keyStroke.getKeyCode() != KeyEvent.VK_SHIFT &&
-                keyStroke.getKeyCode() != KeyEvent.VK_CONTROL &&
-                keyStroke.getKeyCode() != KeyEvent.VK_META &&
-                keyStroke.getKeyCode() != KeyEvent.VK_ALT &&
-                keyStroke.getKeyCode() != KeyEvent.VK_ALT_GRAPH
-        ) {
-            sb.append(Utilities.keyToString(KeyStroke.getKeyStroke(keyStroke.getKeyCode(), 0)));
-        }
-        return sb.toString();
+        return KeyStrokeUtils.getKeyStrokes(key);
     }
     
 }

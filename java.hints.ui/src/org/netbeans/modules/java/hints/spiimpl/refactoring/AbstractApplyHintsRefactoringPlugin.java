@@ -57,7 +57,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.ModificationResult.Difference;
@@ -73,7 +76,10 @@ import org.netbeans.spi.java.hints.HintContext.MessageKind;
 import org.netbeans.modules.java.hints.providers.spi.HintDescription;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
+import org.netbeans.modules.refactoring.api.ProgressEvent;
+import org.netbeans.modules.refactoring.api.ProgressListener;
 import org.netbeans.modules.refactoring.java.spi.JavaRefactoringPlugin;
+import org.netbeans.modules.refactoring.spi.ProgressProvider;
 import org.netbeans.modules.refactoring.spi.ProgressProviderAdapter;
 import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
@@ -95,6 +101,11 @@ import org.openide.util.Lookup;
 public abstract class AbstractApplyHintsRefactoringPlugin extends ProgressProviderAdapter implements RefactoringPlugin, ProgressHandleAbstraction {
 
     private final AbstractRefactoring refactoring;
+    private Comparator<FileObject> FILE_COMPARATOR = new Comparator<FileObject>() {
+        @Override public int compare(FileObject o1, FileObject o2) {
+            return o1.getPath().compareTo(o2.getPath());
+        }
+    };
     protected final AtomicBoolean cancel = new AtomicBoolean();
 
     protected AbstractApplyHintsRefactoringPlugin(AbstractRefactoring refactoring) {
@@ -124,12 +135,12 @@ public abstract class AbstractApplyHintsRefactoringPlugin extends ProgressProvid
         BatchResult candidates = BatchSearch.findOccurrences(pattern, scope, w);
         Collection<RefactoringElementImplementation> fileChanges = new ArrayList<RefactoringElementImplementation>();
         Collection<MessageImpl> problems = new LinkedList<MessageImpl>(candidates.problems);
-        Map<JavaFix, ModificationResult> changesPerFix = new HashMap<JavaFix, ModificationResult>();
+        Map<JavaFix, ModificationResult> changesPerFix = new IdentityHashMap<JavaFix, ModificationResult>();
         Collection<? extends ModificationResult> res = BatchUtilities.applyFixes(candidates, w, cancel, fileChanges, changesPerFix, problems);
         Set<ModificationResult> enabled = Collections.newSetFromMap(new IdentityHashMap<ModificationResult, Boolean>());
         Map<FileObject, Map<JavaFix, ModificationResult>> file2Fixes2Changes = new HashMap<FileObject, Map<JavaFix, ModificationResult>>();
         Map<FileObject, Set<FileObject>> affectedFiles = new HashMap<FileObject, Set<FileObject>>();
-        Map<FileObject, List<RefactoringElementImplementation>> file2Changes = new HashMap<FileObject, List<RefactoringElementImplementation>>();
+        Map<FileObject, List<RefactoringElementImplementation>> file2Changes = new TreeMap<FileObject, List<RefactoringElementImplementation>>(FILE_COMPARATOR);
         
         for (Entry<JavaFix, ModificationResult> changesPerFixEntry : changesPerFix.entrySet()) {
             enabled.add(changesPerFixEntry.getValue());
@@ -146,7 +157,7 @@ public abstract class AbstractApplyHintsRefactoringPlugin extends ProgressProvid
                 Map<JavaFix, ModificationResult> perFile = file2Fixes2Changes.get(file);
                 
                 if (perFile == null) {
-                    file2Fixes2Changes.put(file, perFile = new HashMap<JavaFix, ModificationResult>());
+                    file2Fixes2Changes.put(file, perFile = new IdentityHashMap<JavaFix, ModificationResult>());
                 }
                 
                 perFile.put(changesPerFixEntry.getKey(), changesPerFixEntry.getValue());
@@ -183,6 +194,7 @@ public abstract class AbstractApplyHintsRefactoringPlugin extends ProgressProvid
     }
 
     protected final void prepareElements(BatchResult candidates, ProgressHandleWrapper w, final RefactoringElementsBag refactoringElements, final boolean verify, List<MessageImpl> problems) {
+        final Map<FileObject, Collection<RefactoringElementImplementation>> file2Changes = new TreeMap<FileObject, Collection<RefactoringElementImplementation>>(FILE_COMPARATOR);
         if (verify) {
             BatchSearch.getVerifiedSpans(candidates, w, new BatchSearch.VerifiedSpansCallBack() {
                 public void groupStarted() {}
@@ -192,13 +204,13 @@ public abstract class AbstractApplyHintsRefactoringPlugin extends ProgressProvid
                     for (ErrorDescription ed : hints) {
                         spans.add(ed.getRange());
                     }
-
-                    refactoringElements.addAll(refactoring, Utilities.createRefactoringElementImplementation(r.getResolvedFile(), spans, verify));
+                    
+                    file2Changes.put(r.getResolvedFile(), Utilities.createRefactoringElementImplementation(r.getResolvedFile(), spans, verify));
                     return true;
                 }
                 public void groupFinished() {}
                 public void cannotVerifySpan(Resource r) {
-                    refactoringElements.addAll(refactoring, Utilities.createRefactoringElementImplementation(r.getResolvedFile(), prepareSpansFor(r), verify));
+                    file2Changes.put(r.getResolvedFile(), Utilities.createRefactoringElementImplementation(r.getResolvedFile(), prepareSpansFor(r), verify));
                 }
             }, problems, cancel);
         } else {
@@ -215,10 +227,14 @@ public abstract class AbstractApplyHintsRefactoringPlugin extends ProgressProvid
                 inner.startNextPart(it.size());
 
                 for (Resource r : it) {
-                    refactoringElements.addAll(refactoring, Utilities.createRefactoringElementImplementation(r.getResolvedFile(), prepareSpansFor(r), verify));
+                    file2Changes.put(r.getResolvedFile(), Utilities.createRefactoringElementImplementation(r.getResolvedFile(), prepareSpansFor(r), verify));
                     inner.tick();
                 }
             }
+        }
+        
+        for (Collection<RefactoringElementImplementation> res : file2Changes.values()) {
+            refactoringElements.addAll(refactoring, res);
         }
     }
 
@@ -324,7 +340,7 @@ public abstract class AbstractApplyHintsRefactoringPlugin extends ProgressProvid
         }
     }
     
-    private static final class DelegatingTransaction implements Transaction {
+    private static final class DelegatingTransaction implements Transaction, ProgressProvider {
 
         private final Set<ModificationResult> enabled;
         private final Map<FileObject, Map<JavaFix, ModificationResult>> file2Fixes2Changes;
@@ -332,12 +348,31 @@ public abstract class AbstractApplyHintsRefactoringPlugin extends ProgressProvid
         private final Collection<? extends ModificationResult> completeModificationResult;
         
         private Transaction delegate;
+        private ProgressSupport progressSupport;
+        private final ProgressListener listener;
 
         public DelegatingTransaction(Set<ModificationResult> enabled, Map<FileObject, Map<JavaFix, ModificationResult>> file2Fixes2Changes, Map<FileObject, Set<FileObject>> affectedFiles, Collection<? extends ModificationResult> completeModificationResult) {
             this.enabled = enabled;
             this.file2Fixes2Changes = file2Fixes2Changes;
             this.affectedFiles = affectedFiles;
             this.completeModificationResult = completeModificationResult;
+            listener = new ProgressListener() {
+
+                    @Override
+                    public void start(ProgressEvent event) {
+                        fireProgressListenerStart(event.getOperationType(), event.getCount());
+                    }
+
+                    @Override
+                    public void step(ProgressEvent event) {
+                        fireProgressListenerStep(event.getCount());
+                    }
+
+                    @Override
+                    public void stop(ProgressEvent event) {
+                        fireProgressListenerStop();
+                    }
+                };
         }
         
         @Override
@@ -396,14 +431,201 @@ public abstract class AbstractApplyHintsRefactoringPlugin extends ProgressProvid
                 
                 delegate = JavaRefactoringPlugin.createTransaction(new LinkedList<ModificationResult>(real));
             }
-            
-            delegate.commit();
+            if(delegate instanceof ProgressProvider) {
+                ProgressProvider progressProvider = (ProgressProvider) delegate;
+                progressProvider.addProgressListener(listener);
+            }
+            try {
+                delegate.commit();
+            } finally {
+                if(delegate instanceof ProgressProvider) {
+                    ProgressProvider progressProvider = (ProgressProvider) delegate;
+                    progressProvider.removeProgressListener(listener);
+                }
+            }
         }
 
         @Override
         public synchronized void rollback() {
             delegate.rollback();
         }
-        
+
+        /**
+         * Registers ProgressListener to receive events.
+         *
+         * @param listener The listener to register.
+         *
+         */
+        @Override
+        public synchronized void addProgressListener(ProgressListener listener) {
+            if (progressSupport == null) {
+                progressSupport = new ProgressSupport();
+            }
+            progressSupport.addProgressListener(listener);
+        }
+
+        /**
+         * Removes ProgressListener from the list of listeners.
+         *
+         * @param listener The listener to remove.
+         *
+         */
+        @Override
+        public synchronized void removeProgressListener(ProgressListener listener) {
+            if (progressSupport != null) {
+                progressSupport.removeProgressListener(listener);
+            }
+        }
+
+        private void fireProgressListenerStart(int type, int count) {
+            if (progressSupport != null) {
+                progressSupport.fireProgressListenerStart(this, type, count);
+            }
+        }
+
+        private void fireProgressListenerStep(int count) {
+            if (progressSupport != null) {
+                progressSupport.fireProgressListenerStep(this, count);
+            }
+        }
+
+        private void fireProgressListenerStop() {
+            if (progressSupport != null) {
+                progressSupport.fireProgressListenerStop(this);
+            }
+        }
+
+        /**
+         * Support class for progress notifications.
+         * Copy of org.netbeans.modules.refactoring.api.impl.ProgressSupport
+         * @author Martin Matula, Jan Becicka
+         */
+        public final class ProgressSupport {
+
+            /**
+             * Utility field holding list of ProgressListeners.
+             */
+            private final List<ProgressListener> progressListenerList = new ArrayList<ProgressListener>();
+            private int counter;
+            private boolean deterministic;
+
+            public boolean isEmpty() {
+                return progressListenerList.isEmpty();
+            }
+
+            public synchronized void addProgressListener(ProgressListener listener) {
+                progressListenerList.add(listener);
+            }
+
+            /**
+             * Removes ProgressListener from the list of listeners.
+             *
+             * @param listener The listener to remove.
+             *
+             */
+            public synchronized void removeProgressListener(ProgressListener listener) {
+                progressListenerList.remove(listener);
+            }
+
+            /**
+             * Notifies all registered listeners about the event.
+             *
+             * @param type Type of operation that is starting.
+             * @param count Number of steps the operation consists of.
+             *
+             */
+            public void fireProgressListenerStart(Object source, int type, int count) {
+                counter = -1;
+                deterministic = count > 0;
+                ProgressEvent event = new ProgressEvent(source, ProgressEvent.START, type, count);
+                ProgressListener[] listeners = getListenersCopy();
+                for (ProgressListener listener : listeners) {
+                    try {
+                        listener.start(event);
+                    } catch (RuntimeException e) {
+                        log(e);
+                    }
+                }
+            }
+
+            /**
+             * Notifies all registered listeners about the event.
+             *
+             * @param type Type of operation that is starting.
+             * @param count Number of steps the operation consists of.
+             *
+             */
+            public void fireProgressListenerStart(int type, int count) {
+                fireProgressListenerStart(this, type, count);
+            }
+
+            /**
+             * Notifies all registered listeners about the event.
+             */
+            public void fireProgressListenerStep(Object source, int count) {
+                if (deterministic) {
+                    if (count < 0) {
+                        deterministic = false;
+                    }
+                    counter = count;
+                } else {
+                    if (count > 0) {
+                        deterministic = true;
+                        counter = -1;
+                    } else {
+                        counter = count;
+                    }
+                }
+                ProgressEvent event = new ProgressEvent(source, ProgressEvent.STEP, 0, count);
+                ProgressListener[] listeners = getListenersCopy();
+                for (ProgressListener listener : listeners) {
+                    try {
+                        listener.step(event);
+                    } catch (RuntimeException e) {
+                        log(e);
+                    }
+                }
+            }
+
+            /**
+             * Notifies all registered listeners about the event.
+             */
+            public void fireProgressListenerStep(Object source) {
+                if (deterministic) {
+                    ++counter;
+                }
+                fireProgressListenerStep(source, counter);
+            }
+
+            /**
+             * Notifies all registered listeners about the event.
+             */
+            public void fireProgressListenerStop(Object source) {
+                ProgressEvent event = new ProgressEvent(source, ProgressEvent.STOP);
+                ProgressListener[] listeners = getListenersCopy();
+                for (ProgressListener listener : listeners) {
+                    try {
+                        listener.stop(event);
+                    } catch (RuntimeException e) {
+                        log(e);
+                    }
+                }
+            }
+
+            /**
+             * Notifies all registered listeners about the event.
+             */
+            public void fireProgressListenerStop() {
+                fireProgressListenerStop(this);
+            }
+
+            private synchronized ProgressListener[] getListenersCopy() {
+                return progressListenerList.toArray(new ProgressListener[progressListenerList.size()]);
+            }
+
+            private void log(Exception e) {
+                Logger.getLogger(ProgressSupport.class.getName()).log(Level.INFO, e.getMessage(), e);
+            }
+        }
     }
 }

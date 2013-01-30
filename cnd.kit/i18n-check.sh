@@ -1,4 +1,9 @@
 #!/bin/sh -x
+
+#
+# Copyright (c) 2009, 2012, Oracle and/or its affiliates. All rights reserved.
+#
+
 WORKSPACE=$1
 LOG=$2
 MAILTO=$3

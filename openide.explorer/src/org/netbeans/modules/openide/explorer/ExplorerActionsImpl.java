@@ -58,6 +58,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -162,15 +163,6 @@ public final class ExplorerActionsImpl {
         // Sets action state updater and registers listening on manager and
         // exclipboard.
         actionStateUpdater = new ActionStateUpdater(manager);
-
-        Clipboard c = getClipboard();
-        if (c != null) {
-            c.addFlavorListener(
-                WeakListeners.create(
-                    FlavorListener.class, actionStateUpdater, c
-                )
-            );
-        }
         actionStateUpdater.schedule();
     }
 
@@ -206,11 +198,15 @@ public final class ExplorerActionsImpl {
      */
     final void updateActions(boolean updatePasteAction) {
         assert !EventQueue.isDispatchThread();
-        if (manager == null) {
+        ExplorerManager m;
+        synchronized (this) {
+            m = manager;
+        }
+        if (m == null) {
             return;
         }
 
-        Node[] path = manager.getSelectedNodes();
+        Node[] path = m.getSelectedNodes();
 
         int i;
         int k = (path != null) ? path.length : 0;
@@ -518,13 +514,16 @@ public final class ExplorerActionsImpl {
             synchronized (this) {
                 this.pasteTypes = arr;
             }
-
+            LOG.log(Level.FINER, "setPasteTypes for {0}", Arrays.toString(arr));
             toEnabled(arr != null);
         }
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            PasteType[] arr = this.pasteTypes;
+            PasteType[] arr;
+            synchronized (this) {
+                arr = this.pasteTypes;
+            }
             if (arr != null && arr.length > 0) {
                 try {
                     arr[0].paste();
@@ -539,8 +538,34 @@ public final class ExplorerActionsImpl {
         @Override
         public Object getValue(String s) {
             if ("delegates".equals(s)) { // NOI18N
-
-                return pasteTypes;
+                String prev = "";
+                if (LOG.isLoggable(Level.FINE)) {
+                    synchronized (this) {
+                        prev = Arrays.toString(pasteTypes);
+                    }
+                }
+                ActionStateUpdater asu = actionStateUpdater;
+                if (asu != null) {
+                    asu.update();
+                }
+                if (LOG.isLoggable(Level.FINE)) {
+                    String now;
+                    synchronized (this) {
+                        now = Arrays.toString(pasteTypes);
+                    }
+                    if (now == null) {
+                        now = "";
+                    }
+                    if (prev.equals(now)) {
+                        LOG.log(Level.FINER, "getDelegates {0}", now);
+                    } else {
+                        LOG.log(Level.FINE, "Delegates updated. Before: {0}", prev);
+                        LOG.log(Level.FINE, "Delegates updated. After : {0}", now);
+                    }
+                }
+                synchronized (this) {
+                    return pasteTypes;
+                }
             }
 
             return super.getValue(s);
@@ -734,6 +759,7 @@ public final class ExplorerActionsImpl {
     private class ActionStateUpdater implements PropertyChangeListener, FlavorListener, Runnable {
         private final RequestProcessor.Task timer;
         private final PropertyChangeListener weakL;
+        private FlavorListener flavL;
         private Transferable trans;
 
         ActionStateUpdater(ExplorerManager m) {
@@ -765,9 +791,22 @@ public final class ExplorerActionsImpl {
             if (EventQueue.isDispatchThread()) {
                 syncActions();
             } else {
+                updateActions(false);
+                EventQueue.invokeLater(this);
+                registerListener();
                 updateTrans();
                 updateActions(true);
                 EventQueue.invokeLater(this);
+            }
+        }
+        
+        private void registerListener() {
+            if (flavL == null) {
+                Clipboard c = getClipboard();
+                if (c != null) {
+                    flavL = WeakListeners.create(FlavorListener.class, this, c);
+                    c.addFlavorListener(flavL);
+                }
             }
         }
 
@@ -788,7 +827,15 @@ public final class ExplorerActionsImpl {
 
         /** Updates actions states now if there is pending event. */
         public void update() {
-            timer.waitFinished();
+            if (EventQueue.isDispatchThread()) {
+                try {
+                    timer.waitFinished(100);
+                } catch (InterruptedException ex) {
+                    LOG.log(Level.FINE, null, ex);
+                }
+            } else {
+                timer.waitFinished();
+            }
         }
 
         private void schedule() {

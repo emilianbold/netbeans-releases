@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.maven.customizer;
 import javax.swing.JComponent;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.api.customizer.ModelHandle2;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
@@ -68,7 +69,8 @@ public class BasicPanelProvider implements ProjectCustomizer.CompositeCategoryPr
     @Override
     public JComponent createComponent(Category category, Lookup context) {
         ModelHandle2 handle = context.lookup(ModelHandle2.class);
-        return new BasicInfoPanel(handle, category);
+        Project prj = context.lookup(Project.class);
+        return new BasicInfoPanel(handle, category, prj);
     }
     
 }

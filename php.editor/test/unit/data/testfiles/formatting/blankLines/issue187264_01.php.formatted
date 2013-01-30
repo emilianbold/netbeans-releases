@@ -24,8 +24,7 @@ if ($test == true) { // comment 2
     echo 'foo';
 }
 
-if ($test == true
-        && $bla) { // comment 2
+if ($test == true && $bla) { // comment 2
     echo 'foo';
 }
 

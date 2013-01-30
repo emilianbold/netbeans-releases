@@ -96,6 +96,8 @@ import static org.netbeans.modules.java.hints.declarative.DeclarativeHintTokenId
  */
 public class DeclarativeHintsParser {
 
+    public static boolean disableCustomCode = false;
+    
     //used by tests:
     static Class<?>[] auxConditionClasses;
 
@@ -160,8 +162,13 @@ public class DeclarativeHintsParser {
         
         while (nextToken()) {
             if (id() == JAVA_BLOCK) {
+                if (disableCustomCode) {
+                    int pos = token().offset(null);
+                    errors.add(ErrorDescriptionFactory.createErrorDescription(Severity.ERROR, "Custom code not allowed", file, pos, pos + 2));
+                    break;
+                }
                 String text = token().text().toString();
-                text = text.substring(2, text.length() - 2);
+                text = text.substring(2, text.endsWith("?>") ? text.length() - 2 : text.length());
                 int[] span = new int[] {token().offset(null) + 2, token().offset(null) + token().length() - 2};
                 if (importsBlockCode == null && !wasFirstRule) {
                     importsBlockCode = text;
@@ -424,11 +431,16 @@ public class DeclarativeHintsParser {
                     return ;
                 }
 
+                MethodInvocationTree mit = (MethodInvocationTree) et;
+                
+                if (mit.getMethodSelect().getKind() != Kind.IDENTIFIER) {
+                    //XXX: report an error
+                    return ;
+                }
+
                 Scope s = Hacks.constructScope(parameter, "javax.lang.model.SourceVersion", "javax.lang.model.element.Modifier", "javax.lang.model.element.ElementKind");
 
                 parameter.getTreeUtilities().attributeTree(et, s);
-
-                MethodInvocationTree mit = (MethodInvocationTree) et;
 
                 methodName[0] = ((IdentifierTree) mit.getMethodSelect()).getName().toString();
 

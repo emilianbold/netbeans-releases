@@ -260,7 +260,7 @@ public class DataView {
             public void run() {
                 if (dataViewUI != null) {
                     if (dataViewUI.getParent() != null) {
-                        dataViewUI.getParent().setVisible(false);
+                        dataViewUI.getParent().remove(dataViewUI);
                     }
                     dataViewUI.removeAll();
                     dataViewUI.repaint();

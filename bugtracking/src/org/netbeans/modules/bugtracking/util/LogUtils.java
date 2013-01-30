@@ -110,7 +110,7 @@ public final class LogUtils {
         }
         // log Kenai usage
         if (KenaiUtil.isKenai(repository)) {
-            KenaiUtil.logKenaiUsage("ISSUE_TRACKING", btType); // NOI18N
+            KenaiUtil.logKenaiUsage(repository.getUrl(), "ISSUE_TRACKING", btType); //NOI18N
         }
         if (operation == null) {
             return;
@@ -154,6 +154,9 @@ public final class LogUtils {
         }
         if (clsName.contains(".jira.")) { // NOI18N
             return "Jira"; // NOI18N
+        }
+        if (clsName.contains(".ods.")) { // NOI18N
+            return "ODS"; //NOI18N
         }
         return null;
     }

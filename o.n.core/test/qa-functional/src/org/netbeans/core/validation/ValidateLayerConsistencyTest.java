@@ -74,12 +74,18 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.Action;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.netbeans.core.startup.layers.LayerCacheManager;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.Log;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -100,6 +106,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 /** Checks consistency of System File System contents.
  */
@@ -107,6 +114,7 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
 
     static {
         System.setProperty("java.awt.headless", "true");
+        System.setProperty("org.openide.util.lookup.level", "FINE");
     }
 
     private static final String SFS_LB = "SystemFileSystem.localizingBundle";
@@ -763,7 +771,7 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
         bcm.store(bcm.createEmptyFileSystem(), urls, os);
         assertNoErrors("No errors or warnings during layer parsing", h.errors);
     }
-    
+
     private static class TestHandler extends Handler {
         List<String> errors = new ArrayList<String>();
         
@@ -924,24 +932,30 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
         List<String> warnings = new ArrayList<String>();
         FileObject[] keymaps = FileUtil.getConfigFile("Keymaps").getChildren();
         Map<String,Integer> definitionCountById = new HashMap<String,Integer>();
+        assertTrue("Too many keymaps for too little bitfield", keymaps.length < 31);
+        int keymapFlag = 1;
         for (FileObject keymap : keymaps) {
             for (FileObject shortcut : keymap.getChildren()) {
                 DataObject d = DataObject.find(shortcut);
                 if (d instanceof DataShadow) {
                     String id = ((DataShadow) d).getOriginal().getPrimaryFile().getPath();
                     Integer prior = definitionCountById.get(id);
-                    definitionCountById.put(id, prior == null ? 1 : prior + 1);
+                    // a single keymap may provide alternative shortcuts for a given action. Count just once
+                    // per keymap.
+                    definitionCountById.put(id, prior == null ? keymapFlag : prior | keymapFlag);
                 } else if (!d.getPrimaryFile().hasExt("shadow") && !d.getPrimaryFile().hasExt("removed")) {
                     warnings.add("Anomalous file " + d);
                 } // else #172453: BrokenDataShadow, OK
             }
+            keymapFlag <<= 1;
         }
+        int expected = (1 << keymaps.length) - 1;
         for (FileObject shortcut : FileUtil.getConfigFile("Shortcuts").getChildren()) {
             DataObject d = DataObject.find(shortcut);
             if (d instanceof DataShadow) {
                 String id = ((DataShadow) d).getOriginal().getPrimaryFile().getPath();
                 if (!org.openide.util.Utilities.isMac() && // Would fail on Mac due to applemenu module
-                        Integer.valueOf(keymaps.length).equals(definitionCountById.get(id)))
+                        Integer.valueOf(expected).equals(definitionCountById.get(id)))
                 {
                     String layers = Arrays.toString((URL[]) d.getPrimaryFile().getAttribute("layers"));
                     warnings.add(d.getPrimaryFile().getPath() + " " + layers + " useless since " + id + " is bound (somehow) in all keymaps");
@@ -957,52 +971,6 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
         assertNoErrors("Some shortcuts were overridden by keymaps", warnings);
     }
     
-    public void testNbinstHost() throws Exception {
-        TestHandler handler = new TestHandler();
-        Logger.getLogger("org.netbeans.core.startup.InstalledFileLocatorImpl").addHandler(handler);
-        FileObject libs = FileUtil.getConfigFile("org-netbeans-api-project-libraries/Libraries");
-        if (libs != null) {
-            for (FileObject lib : libs.getChildren()) {
-                Document doc = XMLUtil.parse(new InputSource(lib.toURL().toString()), false, true, XMLUtil.defaultErrorHandler(), EntityCatalog.getDefault());
-                NodeList nl = doc.getElementsByTagName("resource");
-                for (int i = 0; i < nl.getLength(); i++) {
-                    Element resource = (Element) nl.item(i);
-                    validateNbinstURL(new URL(XMLUtil.findText(resource)), handler, lib);
-                }
-            }
-        }
-        for (FileObject f : NbCollections.iterable(FileUtil.getConfigRoot().getChildren(true))) {
-            for (String attr : NbCollections.iterable(f.getAttributes())) {
-                if (attr.equals("instanceCreate")) {
-                    continue; // e.g. on Services/Hidden/org-netbeans-lib-jakarta_oro-antlibrary.instance prints stack trace
-                }
-                Object val = f.getAttribute(attr);
-                if (val instanceof URL) {
-                    validateNbinstURL((URL) val, handler, f);
-                }
-            }
-        }
-        assertNoErrors("No improper nbinst URLs", handler.errors());
-    }
-    private void validateNbinstURL(URL u, TestHandler handler, FileObject f) {
-        URL u2 = FileUtil.getArchiveFile(u);
-        if (u2 != null) {
-            u = u2;
-        }
-        if ("nbinst".equals(u.getProtocol())) {
-            List<String> errors = handler.errors();
-            try {
-                int len = errors.size();
-                u.openStream().close();
-                if (errors.size() == len + 1) {
-                    errors.set(len, f.getPath() + ": " + errors.get(len));
-                }
-            } catch (IOException x) {
-                errors.add(f.getPath() + ": cannot open " + u + ": " + x);
-            }
-        }
-    }
-
     /* XXX too many failures for now, some spurious; use regex, or look for unloc files/folders with loc siblings?
     public void testLocalizedFolderNames() throws Exception {
         List<String> warnings = new ArrayList<String>();
@@ -1038,7 +1006,6 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
     }
     */
 
-    /* XXX currently fails
     public void testTemplates() throws Exception { // #167205
         List<String> warnings = new ArrayList<String>();
         for (FileObject f : NbCollections.iterable(FileUtil.getConfigFile("Templates").getData(true))) {
@@ -1055,13 +1022,16 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
                 continue; // same
             }
             String path = f.getPath();
-            if (path.equals("Templates/Other/file")) {
+            if (path.equals("Templates/Other/file") ||
+                path.equals("Templates/Other/group.group")) {
+                
+                // If there're more files like this, consider adding an API
+                // to mark them as intentionally non-editable
                 continue; // intentionally empty and uneditable
             }
             warnings.add(path + " is empty but has no iterator and will therefore not be editable");
         }
         assertNoErrors("Problems in templates", warnings);
     }
-    */
 
 }

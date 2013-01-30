@@ -77,7 +77,7 @@ import org.openide.windows.TopComponent;
     persistenceType=TopComponent.PERSISTENCE_NEVER,
     preferredID=HibernateCfgDataObject.DESIGN_VIEW_ID,
     displayName="#LBL_Design",
-    position=2560
+    position=2540
 )
 public class HibernateCfgToolBarMVElement extends ToolBarMultiViewElement {
 

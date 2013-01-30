@@ -88,7 +88,9 @@ public final class ConfigurationFactoryImpl implements ConfigurationFactory {
         }
         
         private Result convert(oracle.cloud.scanning.api.config.Result r) {
-            return new Result(r.isAllowed(), r.getMessage());
+            return new Result(r.isAllowed(), 
+                    r.getSeverity() == oracle.cloud.scanning.api.config.Result.ResultSeverity.WARNING,
+                    r.getMessage());
         }
         
     }

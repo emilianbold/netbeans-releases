@@ -43,31 +43,25 @@
 package org.netbeans.modules.php.project;
 
 import java.beans.PropertyChangeListener;
-import org.netbeans.modules.php.api.phpmodule.PhpInterpreter;
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import javax.swing.event.ChangeListener;
-import org.netbeans.api.project.ProjectManager;
-import org.netbeans.modules.php.api.phpmodule.PhpProgram.InvalidPhpProgramException;
+import org.netbeans.api.progress.ProgressUtils;
+import org.netbeans.modules.php.api.executable.InvalidPhpExecutableException;
+import org.netbeans.modules.php.api.executable.PhpInterpreter;
+import org.netbeans.modules.php.api.util.Pair;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.api.PhpLanguageProperties;
+import org.netbeans.modules.php.project.api.PhpOptions;
 import org.netbeans.modules.php.project.ui.BrowseTestSources;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
-import org.netbeans.modules.php.api.util.Pair;
-import org.netbeans.modules.php.project.api.PhpOptions;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
-import org.openide.util.Mutex;
-import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 
 /**
  * Helper class for getting <b>all</b> the properties of a PHP project.
@@ -76,9 +70,26 @@ import org.openide.util.RequestProcessor;
  * @author Tomas Mysik
  */
 public final class ProjectPropertiesSupport {
-    private static final RequestProcessor RP = new RequestProcessor(ProjectPropertiesSupport.class);
 
     private ProjectPropertiesSupport() {
+    }
+
+    // XXX use it everywhere!
+    /**
+     * Produce a machine-independent relativized version of a filename from a dir.
+     * If path cannot be relative, the full path of the given file is returned.
+     * @param dir base directory
+     * @param file file to be relativized
+     * @return relativized version of a filename from a dir or full path of the given file if the path cannot be relativized
+     * @see PropertyUtils#relativizeFile(File, File)
+     */
+    public static String relativizeFile(File dir, File file) {
+        String relativePath = PropertyUtils.relativizeFile(dir, file);
+        if (relativePath == null) {
+            // path cannot be relativized => use absolute path (any VCS can be hardly use, of course)
+            relativePath = file.getAbsolutePath();
+        }
+        return relativePath;
     }
 
     /**
@@ -134,7 +145,6 @@ public final class ProjectPropertiesSupport {
                 File tests = new File(panel.getTestSources());
                 assert tests.isDirectory();
                 testsDirectory = FileUtil.toFileObject(tests);
-                project.setTestsDirectory(testsDirectory);
                 saveTestSources(project, PhpProjectProperties.TEST_SRC_DIR, tests);
             }
         }
@@ -155,7 +165,6 @@ public final class ProjectPropertiesSupport {
                 File selenium = new File(panel.getTestSources());
                 assert selenium.isDirectory();
                 seleniumDirectory = FileUtil.toFileObject(selenium);
-                project.setSeleniumDirectory(seleniumDirectory);
                 saveTestSources(project, PhpProjectProperties.SELENIUM_SRC_DIR, selenium);
             }
         }
@@ -171,21 +180,24 @@ public final class ProjectPropertiesSupport {
     }
 
     public static File getSourceSubdirectory(PhpProject project, String subdirectoryPath) {
-        FileObject sources = project.getSourcesDirectory();
-        File sourcesDir = FileUtil.toFile(sources);
+        return getSubdirectory(project, project.getSourcesDirectory(), subdirectoryPath);
+    }
+
+    public static File getSubdirectory(PhpProject project, FileObject rootDirectory, String subdirectoryPath) {
+        File rootDir = FileUtil.toFile(rootDirectory);
         if (!StringUtils.hasText(subdirectoryPath)) {
-            return sourcesDir;
+            return rootDir;
         }
         // first try to resolve fileobject
-        FileObject fo = sources.getFileObject(subdirectoryPath);
+        FileObject fo = rootDirectory.getFileObject(subdirectoryPath);
         if (fo != null) {
             return FileUtil.toFile(fo);
         }
         // fallback for OS specific paths (should be changed everywhere, my fault, sorry)
-        return PropertyUtils.resolveFile(FileUtil.toFile(sources), subdirectoryPath);
+        return PropertyUtils.resolveFile(FileUtil.toFile(rootDirectory), subdirectoryPath);
     }
 
-    public static PhpInterpreter getValidPhpInterpreter(PhpProject project) throws InvalidPhpProgramException {
+    public static PhpInterpreter getValidPhpInterpreter(PhpProject project) throws InvalidPhpExecutableException {
         String interpreter = project.getEvaluator().getProperty(PhpProjectProperties.INTERPRETER);
         if (StringUtils.hasText(interpreter)) {
             return PhpInterpreter.getCustom(interpreter);
@@ -521,37 +533,22 @@ public final class ProjectPropertiesSupport {
         return project.getHelper().resolveFile(file);
     }
 
+    @NbBundle.Messages("ProjectPropertiesSupport.project.metadata.saving=Saving project metadata...")
     private static void saveTestSources(final PhpProject project, final String propertyName, final File testDir) {
-        RP.post(new Runnable() {
+        ProgressUtils.showProgressDialogAndRun(new Runnable() {
             @Override
             public void run() {
-                try {
-                    // store properties
-                    ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
-                        @Override
-                        public Void run() throws IOException {
-                            AntProjectHelper helper = project.getHelper();
-
-                            // relativize path
-                            File projectDirectory = FileUtil.toFile(helper.getProjectDirectory());
-                            String testPath = PropertyUtils.relativizeFile(projectDirectory, testDir);
-                            if (testPath == null) {
-                                // path cannot be relativized => use absolute path (any VCS can be hardly use, of course)
-                                testPath = testDir.getAbsolutePath();
-                            }
-
-                            EditableProperties projectProperties = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                            projectProperties.put(propertyName, testPath);
-                            helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties);
-
-                            ProjectManager.getDefault().saveProject(project);
-                            return null;
-                        }
-                    });
-                } catch (MutexException e) {
-                    Exceptions.printStackTrace((IOException) e.getException());
+                // XXX reference helper
+                // relativize text path
+                File projectDirectory = FileUtil.toFile(project.getProjectDirectory());
+                String testPath = PropertyUtils.relativizeFile(projectDirectory, testDir);
+                if (testPath == null) {
+                    // path cannot be relativized => use absolute path (any VCS can be hardly use, of course)
+                    testPath = testDir.getAbsolutePath();
                 }
+                PhpProjectProperties.save(project, Collections.singletonMap(propertyName, testPath), Collections.<String, String>emptyMap());
             }
-        });
+        }, Bundle.ProjectPropertiesSupport_project_metadata_saving());
     }
+
 }

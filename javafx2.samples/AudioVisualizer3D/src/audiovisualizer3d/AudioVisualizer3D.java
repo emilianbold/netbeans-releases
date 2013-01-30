@@ -54,9 +54,13 @@ import javafx.stage.Stage;
  * the depthBuffer argument set to true, and the root node must have depthTest
  * set to true.
  *
- * @see javafx.scene.transform.Rotate
- * @see javafx.scene.paint.Color
+ * @see javafx.scene.media.AudioSpectrumListener
+ * @see javafx.scene.media.MediaPlayer
  * @see javafx.scene.shape.RectangleBuilder
+ * @see javafx.scene.paint.Color
+ * @see javafx.scene.Group
+ * @see javafx.scene.transform.Rotate
+ * @see javafx.scene.transform.Scale
  */
 public class AudioVisualizer3D extends Application implements AudioSpectrumListener {
 

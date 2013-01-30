@@ -63,36 +63,51 @@ public class LineInfo {
     }
 
     LineInfo(Lines parent, int end) {
-        this(parent, end, false, null, null, false);
+        this(parent, end, false, null, null, null, false);
     }
 
-    LineInfo(Lines parent, int end, boolean err, OutputListener l, Color c, boolean important) {
+    LineInfo(Lines parent, int end, boolean err, OutputListener l, Color c, Color b, boolean important) {
         this.parent = parent;
-        addSegment(end, err, l, c, important);
+        addSegment(end, err, l, c, b, important);
     }
 
     int getEnd() {
         return segments.isEmpty() ? 0 : segments.get(segments.size() - 1).getEnd();
     }
 
-    void addSegment(int end, boolean err, OutputListener l, Color c, boolean important) {
+    void addSegment(int end, boolean err, OutputListener l, Color c, Color b, boolean important) {
         Segment s = null;
         if (!segments.isEmpty()) {
             s = segments.get(segments.size() - 1);
-            if (s.isErr() == err && s.getListener() == l && (s.getCustomColor() == c || (c != null && c.equals(s.getCustomColor())))) {
+            if (s.isErr() == err && s.getListener() == l && hasColors(s, c, b)) {
                 // the same type of segment, prolong last one
                 s.end = end;
                 return;
             }
         }
+        boolean isColor = c != null || b != null;
         if (l != null) {
-            s = c != null ? new ColorListenerSegment(end, l, important, c) : new ListenerSegment(end, l, important);
+            s = isColor ? new ColorListenerSegment(end, l, important, c, b) : new ListenerSegment(end, l, important);
         } else if (err) {
-            s = c != null ? new ColorErrSegment(end, c) : new ErrSegment(end);
+            s = isColor ? new ColorErrSegment(end, c, b) : new ErrSegment(end);
         } else {
-            s = c != null ? new ColorSegment(end, c) : new Segment(end);
+            s = isColor ? new ColorSegment(end, c, b) : new Segment(end);
         }
         segments.add(s);
+    }
+
+    private boolean hasColors(Segment s, Color c, Color b) {
+        return hasForeground(s, c) && hasBackground(s, b);
+    }
+
+    private boolean hasForeground(Segment s, Color c) {
+        return (s.getCustomColor() == c
+                || (c != null && c.equals(s.getCustomColor())));
+    }
+
+    private boolean hasBackground(Segment s, Color b) {
+        return (s.getCustomBackground() == b
+                || (b != null && b.equals(s.getCustomBackground())));
     }
 
     OutputListener getListenerAfter(int pos, int[] range) {
@@ -201,15 +216,21 @@ public class LineInfo {
         Color getCustomColor() {
             return null;
         }
+
+        Color getCustomBackground() {
+            return null;
+        }
     }
 
     private class ColorSegment extends Segment {
 
         final Color color;
+        final Color background;
 
-        public ColorSegment(int end, Color color) {
+        public ColorSegment(int end, Color color, Color background) {
             super(end);
-            this.color = color;
+            this.color = color == null ? super.getColor() : color;
+            this.background = background;
         }
 
         @Override
@@ -220,6 +241,11 @@ public class LineInfo {
         @Override
         Color getCustomColor() {
             return color;
+        }
+
+        @Override
+        Color getCustomBackground() {
+            return background;
         }
     }
 
@@ -243,10 +269,12 @@ public class LineInfo {
     private class ColorErrSegment extends ErrSegment {
 
         final Color color;
+        final Color background;
 
-        public ColorErrSegment(int end, Color color) {
+        public ColorErrSegment(int end, Color color, Color background) {
             super(end);
-            this.color = color;
+            this.color = color == null ? super.getColor() : color;
+            this.background = background;
         }
 
         @Override
@@ -257,6 +285,11 @@ public class LineInfo {
         @Override
         Color getCustomColor() {
             return color;
+        }
+
+        @Override
+        Color getCustomBackground() {
+            return background;
         }
     }
 
@@ -286,10 +319,12 @@ public class LineInfo {
     private class ColorListenerSegment extends ListenerSegment {
 
         final Color color;
+        final Color background;
 
-        public ColorListenerSegment(int end, OutputListener l, boolean important, Color color) {
+        public ColorListenerSegment(int end, OutputListener l, boolean important, Color color, Color background) {
             super(end, l, important);
-            this.color = color;
+            this.color = color == null ? super.getColor() : color;
+            this.background = background;
         }
 
         @Override
@@ -300,6 +335,11 @@ public class LineInfo {
         @Override
         Color getCustomColor() {
             return color;
+        }
+
+        @Override
+        Color getCustomBackground() {
+            return background;
         }
     }
 }

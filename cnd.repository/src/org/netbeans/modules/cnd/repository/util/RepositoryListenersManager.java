@@ -84,12 +84,12 @@ public class RepositoryListenersManager {
         }
     }
     
-    public boolean fireUnitOpenedEvent(final CharSequence unitName){
+    public boolean fireUnitOpenedEvent(final int unitId, final CharSequence unitName){
         boolean toOpen = true;
         try {
             rwLock.readLock().lock();
             if (theListener != null) {
-                toOpen =  theListener.unitOpened(unitName);
+                toOpen =  theListener.unitOpened(unitId, unitName);
             }
         } finally {
             rwLock.readLock().unlock();
@@ -98,22 +98,22 @@ public class RepositoryListenersManager {
         return toOpen;
     }
     
-    public void fireUnitClosedEvent(final CharSequence unitName) {
+    public void fireUnitClosedEvent(final int unitId, final CharSequence unitName) {
         try {
             rwLock.readLock().lock();
             if (theListener != null) {
-                theListener.unitClosed(unitName);
+                theListener.unitClosed(unitId, unitName);
             }
         } finally {
             rwLock.readLock().unlock();
         }
     }
     
-    public void fireAnException(final CharSequence unitName, final RepositoryException exception) {
+    public void fireAnException(int unitId, final CharSequence unitName, final RepositoryException exception) {
         try {
             rwLock.readLock().lock();
             if (theListener != null) {
-                theListener.anExceptionHappened(unitName, exception);
+                theListener.anExceptionHappened(unitId, unitName, exception);
             } else {
                 if (exception.getCause() != null) {
                     exception.getCause().printStackTrace(System.err);

@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.maven.hyperlinks;
 
-import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collections;
@@ -58,6 +57,7 @@ import org.netbeans.api.editor.mimelookup.MimeRegistrations;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.api.lexer.TokenUtilities;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.xml.lexer.XMLTokenId;
@@ -65,6 +65,7 @@ import org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkType;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.maven.api.Constants;
+import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.PluginPropertyUtils;
 import org.netbeans.modules.maven.grammar.POMDataObject;
@@ -72,10 +73,12 @@ import org.openide.awt.HtmlBrowser;
 import org.openide.cookies.EditCookie;
 import org.openide.cookies.LineCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.Line;
+import org.openide.util.NbBundle.Messages;
+import static org.netbeans.modules.maven.hyperlinks.Bundle.*;
+import org.netbeans.modules.maven.spi.nodes.NodeUtils;
 
 /**
  * adds hyperlinking support to pom.xml files..
@@ -186,25 +189,18 @@ public class HyperlinkProviderImpl implements HyperlinkProviderExt {
             if (fo != null && getPath(fo, text) != null) {
                 xml.movePrevious();
                 token = xml.token();
-                if (token != null && token.id() == XMLTokenId.TAG && token.text().equals(">")) {//NOI18N
+                if (token != null && token.id().equals(XMLTokenId.TAG) && TokenUtilities.equals(token.text(), ">")) {//NOI18N
                     xml.movePrevious();
                     token = xml.token();
-                    if (token != null && token.id() == XMLTokenId.TAG && token.text().equals("<module")) {//NOI18N
-                        text = text + "/pom.xml"; //NOI18N
+                    if (token != null && token.id().equals(XMLTokenId.TAG) && TokenUtilities.equals(token.text(), "<module")) {//NOI18N
+                        if (!text.endsWith("/pom.xml")) {
+                            text = text + "/pom.xml"; //NOI18N
+                        }
                     }
                 }
                 if (getPath(fo, text) != null) {
                     FileObject file = getPath(fo, text);
-                    DataObject dobj;
-                    try {
-                        dobj = DataObject.find(file);
-                        EditCookie edit = dobj.getLookup().lookup(EditCookie.class);
-                        if (edit != null) {
-                            edit.edit();
-                        }
-                    } catch (DataObjectNotFoundException ex) {
-                        LOG.log(Level.FINE, "Cannot find dataobject", ex);
-                    }
+                    NodeUtils.openPomFile(file);
                 }
             }
             // urls get opened..
@@ -215,11 +211,11 @@ public class HyperlinkProviderImpl implements HyperlinkProviderExt {
                     String urlText = text;
                     if (urlText.contains("${")) {//NOI18N
                         //special case, need to evaluate expression
-                        NbMavenProject nbprj = getNbMavenProject(doc);
+                        Project nbprj = getProject(doc);
                         if (nbprj != null) {
                             Object exRes;
                             try {
-                                exRes = PluginPropertyUtils.createEvaluator(nbprj.getMavenProject()).evaluate(urlText);
+                                exRes = PluginPropertyUtils.createEvaluator(nbprj).evaluate(urlText);
                                 if (exRes != null) {
                                     urlText = exRes.toString();
                                 }
@@ -271,6 +267,11 @@ public class HyperlinkProviderImpl implements HyperlinkProviderExt {
 
 
     @Override
+    @Messages({
+        "# {0} - property name",
+        "# {1} - resolved value", 
+        "Hint_prop_resolution={0} resolves to ''{1}''\nNavigate to definition.", 
+        "Hint_prop_cannot=Cannot resolve expression\nNavigates to definition."})
     public String getTooltipText(Document doc, int offset, HyperlinkType type) {
 
         TokenHierarchy th = TokenHierarchy.get(doc);
@@ -292,31 +293,31 @@ public class HyperlinkProviderImpl implements HyperlinkProviderExt {
             if (tup != null) {
                String prop = tup.value.substring("${".length(), tup.value.length() - 1); //remove the brackets
                 try {
-                    NbMavenProject nbprj = getNbMavenProject(doc);
+                    Project nbprj = getProject(doc);
                     if (nbprj != null) {
-                        Object exRes = PluginPropertyUtils.createEvaluator(nbprj.getMavenProject()).evaluate(tup.value);
+                        Object exRes = PluginPropertyUtils.createEvaluator(nbprj).evaluate(tup.value);
                         if (exRes != null) {
-                            return prop + " resolves to '" + exRes + "'\nNavigate to definition.";
+                            return Hint_prop_resolution(prop, exRes);
                         } else {
                         }
                     } else {
                         //pom file in repository or settings file.
                     }
                 } catch (ExpressionEvaluationException ex) {
-                    return "Cannot resolve expression\nNavigates to definition.";
+                    return Hint_prop_cannot();
                 }
             }  
         }
         return null;
     }
     
-    private void openAtSource(InputLocation location) {
+    public static void openAtSource(InputLocation location) {
         InputSource source = location.getSource();
         if (source != null && source.getLocation() != null) {
-            FileObject fobj = FileUtil.toFileObject(FileUtil.normalizeFile(new File(source.getLocation())));
+            FileObject fobj = FileUtilities.convertStringToFileObject(source.getLocation());
             if (fobj != null) {
                 try {
-                    DataObject dobj = DataObject.find(fobj);
+                    DataObject dobj = DataObject.find(NodeUtils.readOnlyLocalRepositoryFile(fobj));
                     EditCookie edit = dobj.getLookup().lookup(EditCookie.class);
                     if (edit != null) {
                         edit.edit();
@@ -376,16 +377,20 @@ public class HyperlinkProviderImpl implements HyperlinkProviderExt {
     }
     
     private NbMavenProject getNbMavenProject(Document doc) {
-        DataObject dobj = NbEditorUtilities.getDataObject(doc);
-        if (dobj != null) {
-            Project prj = FileOwnerQuery.getOwner(dobj.getPrimaryFile());
-            if (prj != null) {
-                return prj.getLookup().lookup(NbMavenProject.class);
-            }
+        Project prj = getProject(doc);
+        if (prj != null) {
+            return prj.getLookup().lookup(NbMavenProject.class);
         }
         return null;
-    } 
-    
+    }
+
+    private Project getProject(Document doc) {
+        DataObject dobj = NbEditorUtilities.getDataObject(doc);
+        if (dobj != null) {
+            return FileOwnerQuery.getOwner(dobj.getPrimaryFile());
+        }
+        return null;
+    }
     private FileObject getPath(FileObject parent, String path) {
         // TODO more substitutions necessary probably..
         if (path.startsWith("${basedir}/")) { //NOI18N

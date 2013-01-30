@@ -42,6 +42,7 @@
 package org.netbeans.modules.search.ui;
 
 import java.awt.Dimension;
+import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
@@ -63,6 +64,7 @@ import org.netbeans.spi.search.provider.SearchComposition;
 import org.netbeans.spi.search.provider.SearchProvider;
 import org.netbeans.spi.search.provider.SearchProvider.Presenter;
 import org.netbeans.swing.outline.Outline;
+import org.openide.awt.ToolbarWithOverflow;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerUtils;
 import org.openide.explorer.view.OutlineView;
@@ -106,7 +108,7 @@ public abstract class AbstractSearchResultsPanel extends javax.swing.JPanel
             "org/netbeans/modules/search/res/collapseTree.png";         //NOI18N
 
     private ExplorerManager explorerManager;
-    private SearchComposition searchComposition;
+    private SearchComposition<?> searchComposition;
     protected JButton btnStopRefresh = new JButton();
     protected JButton btnPrev = new JButton();
     protected JButton btnNext = new JButton();
@@ -118,7 +120,7 @@ public abstract class AbstractSearchResultsPanel extends javax.swing.JPanel
     /**
      * Creates new form AbstractSearchResultsPanel
      */
-    public AbstractSearchResultsPanel(SearchComposition searchComposition,
+    public AbstractSearchResultsPanel(SearchComposition<?> searchComposition,
             SearchProvider.Presenter searchProviderPresenter) {
         this.searchComposition = searchComposition;
         this.searchProviderPresenter = searchProviderPresenter;
@@ -141,7 +143,7 @@ public abstract class AbstractSearchResultsPanel extends javax.swing.JPanel
     private void initComponents() {
 
         jPanel1 = new javax.swing.JPanel();
-        toolBar = new javax.swing.JToolBar();
+        toolBar = new ToolbarWithOverflow();
         contentPanel = new javax.swing.JPanel();
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
@@ -182,7 +184,6 @@ public abstract class AbstractSearchResultsPanel extends javax.swing.JPanel
     private void initToolbar() {
 
         toolBar.setRollover(true);
-        toolBar.setFloatable(false);
 
         initStopRefreshButton();
         toolBar.add(btnStopRefresh);
@@ -192,6 +193,10 @@ public abstract class AbstractSearchResultsPanel extends javax.swing.JPanel
         toolBar.add(btnNext);
         initExpandButton();
         toolBar.add(btnExpand);
+
+        toolBar.setMinimumSize(new Dimension(
+                (int) toolBar.getMinimumSize().getWidth(),
+                (int) btnStopRefresh.getMinimumSize().getHeight()));
     }
 
     private void initStopRefreshButton() throws MissingResourceException {
@@ -264,7 +269,7 @@ public abstract class AbstractSearchResultsPanel extends javax.swing.JPanel
         return contentPanel;
     }
 
-    protected SearchComposition getSearchComposition() {
+    protected SearchComposition<?> getSearchComposition() {
         return searchComposition;
     }
 
@@ -411,7 +416,12 @@ public abstract class AbstractSearchResultsPanel extends javax.swing.JPanel
                     public void propertyChange(PropertyChangeEvent evt) {
                         if (evt.getPropertyName().equals(
                                 "selectedNodes")) {                     //NOI18N
-                            updateShiftButtons();
+                            EventQueue.invokeLater(new Runnable() {    //#218680
+                                @Override
+                                public void run() {
+                                    updateShiftButtons();
+                                }
+                            });
                         }
                     }
                 });
@@ -429,9 +439,7 @@ public abstract class AbstractSearchResultsPanel extends javax.swing.JPanel
     private void shift(int direction) {
 
         Node next = findShiftNode(direction, getOutlineView(), true);
-        if (next == null) {
-            return;
-        } else {
+        if (next != null) {
             try {
                 getExplorerManager().setSelectedNodes(new Node[]{next});
                 onDetailShift(next);
@@ -637,6 +645,7 @@ public abstract class AbstractSearchResultsPanel extends javax.swing.JPanel
             this.direction = direction;
         }
 
+        @Override
         public void actionPerformed(java.awt.event.ActionEvent actionEvent) {
             shift(direction);
         }

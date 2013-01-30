@@ -47,6 +47,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -66,7 +67,6 @@ import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.api.toolchain.Tool;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.AllOptionsProvider;
-import org.netbeans.modules.cnd.makeproject.spi.configurations.ConfigurationRequirementProvider;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.IncludePathExpansionProvider;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.UserOptionsProvider;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
@@ -76,16 +76,23 @@ import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.MIMESupport;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.dlight.libs.common.InvalidFileObjectSupport;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory;
+import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory.MacroExpander;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 public final class Item implements NativeFileItem, PropertyChangeListener {
-    private static final Logger logger = Logger.getLogger("makeproject.folder"); // NOI18N
+    private static final Logger LOG = Logger.getLogger("makeproject.folder"); // NOI18N
 
     private final String path;
     private Folder folder;
@@ -111,6 +118,20 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
 
     public static Item createInFileSystem(FileSystem fileSystem, String path) {
         return new Item(fileSystem, path);
+    }
+
+    public static Item createDetachedViewItem(FileSystem fileSystem, String path) {
+        CndUtils.assertNonUiThread();
+        Item out = new Item(fileSystem, path);
+        // This method is executed in not EDT and first call to getDataObject() is quite expensive operation.
+        // If we call this method here then result will be calculated and cached. So cached version will be
+        // used in createNodes and won't freeze EDT.
+        // See Bug 221962 - [73cat] 3.s - Blocked by cnd.makeproject.ui.LogicalViewChildren.createNodes().
+        DataObject dobj = out.getDataObject();
+        // detach resources to prevent memory leaks
+        out.detachFrom(dobj);
+        CndUtils.assertTrueInConsole(out.lastDataObject == dobj, "data object should stay the same ", out.lastDataObject);
+        return out;
     }
 
     // XXX:fullRemote deprecate and remove!
@@ -229,14 +250,8 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
         // leave folder if it is remove
         if (folder == null) { // Item is removed, let's clean up.
             synchronized (this) {
-                if (lastDataObject != null) {
-                    lastDataObject.removePropertyChangeListener(this);
-                    NativeFileItemSet set = lastDataObject.getLookup().lookup(NativeFileItemSet.class);
-                    if (set != null) {
-                        set.remove(this);
-                    }
-                    lastDataObject = null;
-                }
+                detachFrom(lastDataObject);
+                lastDataObject = null;
             }
         } else {
             this.folder = folder;
@@ -325,7 +340,7 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
             }
         }
         if (file == null) {
-            logger.log(Level.SEVERE, "Can not resolve file {0}", getAbsPath());
+            LOG.log(Level.SEVERE, "Can not resolve file {0}", getAbsPath());
         }
     }
 
@@ -403,7 +418,7 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
         FileObject fo = getFileObjectImpl();
         if (fo == null) {
             String p = (normalizedPath != null) ? normalizedPath : getAbsPath();
-            return InvalidFileObjectSupport.getInvalidFileObject(fileSystem, normalizedPath);
+            return InvalidFileObjectSupport.getInvalidFileObject(fileSystem, p);
         }
         return fo;
     }
@@ -452,36 +467,43 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
             } catch (DataObjectNotFoundException e) {
                 // that's normal, for example, "myfile.xyz" won't have data object
                 // ErrorManager.getDefault().notify(e);
-                logger.log(Level.FINE, "Can not find data object", e); //NOI18N
+                LOG.log(Level.FINE, "Can not find data object", e); //NOI18N
             }
         }
         synchronized (this) {
             if (dataObject != lastDataObject) {
                 // DataObject can change without notification. We need to track this
                 // and properly attach/detach listeners.
-                if (lastDataObject != null) {
-                    lastDataObject.removePropertyChangeListener(this);
-                    NativeFileItemSet set = lastDataObject.getLookup().lookup(NativeFileItemSet.class);
-                    if (set != null) {
-                        set.remove(this);
-                    }                    
-                }
-                if (dataObject != null) {
-                    dataObject.addPropertyChangeListener(this);
-                    NativeFileItemSet set = dataObject.getLookup().lookup(NativeFileItemSet.class);
-                    if (set != null) {
-                        set.add(this);
-                    }                    
-                }
-                lastDataObject = dataObject;
+                detachFrom(lastDataObject);
+                attachTo(dataObject);
             }
         }
         return dataObject;
     }
-
-    public final void onClose() {
-        DataObject dao = lastDataObject;
+    
+    private void attachTo(DataObject dataObject) {
+        if (dataObject != null) {
+            LOG.log(Level.FINEST, "attaching {0} to {1}", new Object[]{System.identityHashCode(this), dataObject});
+            dataObject.removePropertyChangeListener(this);
+            dataObject.addPropertyChangeListener(this);
+            NativeFileItemSet set = dataObject.getLookup().lookup(NativeFileItemSet.class);
+            if (set != null) {
+                set.add(this);
+            }
+        }
+        lastDataObject = dataObject;
+    }
+    
+    public final void onOpen() {
+        synchronized (this) {
+            // attach only if was initialized
+            attachTo(lastDataObject);
+        }
+    }
+    
+    private void detachFrom(DataObject dao) {
         if (dao != null) {
+            LOG.log(Level.FINEST, "detaching {0} from {1}", new Object[]{System.identityHashCode(this), dao});
             dao.removePropertyChangeListener(this);
             NativeFileItemSet set = dao.getLookup().lookup(NativeFileItemSet.class);
             if (set != null) {
@@ -490,24 +512,36 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
         }
     }
     
+    public final void onClose() {
+        synchronized (this) {
+            // detach but leave object reference for further possible reopen
+            detachFrom(lastDataObject);
+        }
+    }
+    
     public final String getMIMEType() {
-        DataObject dataObject = getDataObject();
-        FileObject fo = dataObject == null ? null : dataObject.getPrimaryFile();
-        if (fo == null) {
-            fo = getFileObjectImpl();
+        // use file object of this item
+        return getMIMETypeImpl(this.getDataObject(), this);
+    }
+    
+    private static String getMIMETypeImpl(DataObject dataObject, Item item) {
+        FileObject fobj = dataObject == null ? null : dataObject.getPrimaryFile();
+        if (fobj == null) {
+            fobj = item.getFileObjectImpl();
         }
         String mimeType;
-        if (fo == null || ! fo.isValid()) {
-            mimeType = MIMESupport.getKnownSourceFileMIMETypeByExtension(getName());
+        if (fobj == null || ! fobj.isValid()) {
+            mimeType = MIMESupport.getKnownSourceFileMIMETypeByExtension(item.getName());
         } else {
-            mimeType = MIMESupport.getSourceFileMIMEType(fo);
+            mimeType = MIMESupport.getSourceFileMIMEType(fobj);
         }
         return mimeType;
     }
 
-    public PredefinedToolKind getDefaultTool() {
+    /*package*/ static PredefinedToolKind getDefaultToolForItem(DataObject dataObject, Item item) {
         PredefinedToolKind tool;
-        String mimeType = getMIMEType();
+        // use mime type of passed data object
+        String mimeType = getMIMETypeImpl(dataObject, item);
         if (MIMENames.C_MIME_TYPE.equals(mimeType)) {
 //            DataObject dataObject = getDataObject();
 //            FileObject fo = dataObject == null ? null : dataObject.getPrimaryFile();
@@ -515,7 +549,7 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
 //            if (fo != null && "pc".equals(fo.getExt())) { //NOI18N
 //                tool = PredefinedToolKind.CustomTool;
 //            } else {
-                tool = PredefinedToolKind.CCompiler;
+            tool = PredefinedToolKind.CCompiler;
 //            }
         } else if (MIMENames.HEADER_MIME_TYPE.equals(mimeType)) {
             tool = PredefinedToolKind.CustomTool;
@@ -524,10 +558,12 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
         } else if (MIMENames.FORTRAN_MIME_TYPE.equals(mimeType)) {
             tool = PredefinedToolKind.FortranCompiler;
         } else if (MIMENames.ASM_MIME_TYPE.equals(mimeType)) {
-            DataObject dataObject = getDataObject();
-            FileObject fo = dataObject == null ? null : dataObject.getPrimaryFile();
+            FileObject fobj = dataObject == null ? null : dataObject.getPrimaryFile();
+            if (fobj == null) {
+                fobj = item.getFileObjectImpl();
+            }
             // Do not use assembler for .il files
-            if (fo != null && "il".equals(fo.getExt())) { //NOI18N
+            if (fobj != null && "il".equals(fobj.getExt())) { //NOI18N
                 tool = PredefinedToolKind.CustomTool;
             } else {
                 tool = PredefinedToolKind.Assembler;
@@ -537,9 +573,10 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
         }
         return tool;
     }
-
-    public boolean canHaveConfiguration() {
-        return ConfigurationRequirementProvider.askAllProviders(this);
+    
+    public PredefinedToolKind getDefaultTool() {
+        // use data object of this item
+        return getDefaultToolForItem(this.getDataObject(), this);
     }
 
     private MakeConfigurationDescriptor getMakeConfigurationDescriptor() {
@@ -610,23 +647,36 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
         BasicCompilerConfiguration compilerConfiguration = itemConfiguration.getCompilerConfiguration();
         if (compilerConfiguration instanceof CCCCompilerConfiguration) {
             // Get include paths from project/file
-            List<String> vec2 = new ArrayList<String>();
             CCCCompilerConfiguration cccCompilerConfiguration = (CCCCompilerConfiguration) compilerConfiguration;
             CCCCompilerConfiguration master = (CCCCompilerConfiguration) cccCompilerConfiguration.getMaster();
+            List<List<String>> list = new ArrayList<List<String>>();
             while (master != null && cccCompilerConfiguration.getInheritIncludes().getValue()) {
-                vec2.addAll(master.getIncludeDirectories().getValue());
+                list.add(master.getIncludeDirectories().getValue());
                 if (master.getInheritIncludes().getValue()) {
                     master = (CCCCompilerConfiguration) master.getMaster();
                 } else {
                     master = null;
                 }
             }
+            List<String> vec2 = new ArrayList<String>();
+            for(int i = list.size() - 1; i >= 0; i--) {
+                vec2.addAll(list.get(i));
+            }
             vec2.addAll(cccCompilerConfiguration.getIncludeDirectories().getValue());
+            ExecutionEnvironment env = compiler.getExecutionEnvironment();            
+            MacroConverter macroConverter = null;
             // Convert all paths to absolute paths
-            FileSystem compilerFS = FileSystemProvider.getFileSystem(compiler.getExecutionEnvironment());
+            FileSystem compilerFS = FileSystemProvider.getFileSystem(env);
             FileSystem projectFS = fileSystem;
             List<FSPath> result = new ArrayList<FSPath>();            
             for (String p : vec2) {
+                if (p.contains("$")) { // NOI18N
+                    // macro based path
+                    if (macroConverter == null) {
+                        macroConverter = new MacroConverter(env);
+                    }
+                    p = macroConverter.expand(p);
+                }
                 String absPath = CndPathUtilitities.toAbsolutePath(getFolder().getConfigurationDescriptor().getBaseDirFileObject(), p);
                 result.add(new FSPath(projectFS, absPath));
             }
@@ -765,7 +815,6 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
             } else {
                 key = macro;
                 value = null;
-                res.put(macro,null);
             }
             if (!res.containsKey(key) || override) {
                 res.put(key, value);
@@ -903,11 +952,39 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
         return true;
     }
 
+    /*package*/ int getCRC() {
+        int res = 0;
+        for(FSPath aPath : getUserIncludePaths()) {
+            res += 37 * aPath.getPath().hashCode();
+        }
+        for(String macro: getUserMacroDefinitions()) {
+            res += 37 * macro.hashCode();
+        }
+        for(FSPath aPath : getSystemIncludePaths()) {
+            res += 37 * aPath.getPath().hashCode();
+        }
+        for(String macro: getSystemMacroDefinitions()) {
+            res += 37 * macro.hashCode();
+        }
+        res += 37 * getLanguage().hashCode();
+        res += 37 * getLanguageFlavor().hashCode();
+        return res;
+    }
+    
     @Override
     public String toString() {
         return path;
     }
     private static final SpiAccessor SPI_ACCESSOR = new SpiAccessor();
+
+    public boolean hasImportantAttributes() {
+        for (ItemConfiguration conf : getItemConfigurations()) {
+            if (conf != null && !conf.isDefaultConfiguration() ) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     private static final class SpiAccessor {
 
@@ -986,6 +1063,32 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
                 includes = provider.expandIncludePaths(includes, compilerOptions, compiler, makeConfiguration);
             }
             return includes;
+        }
+    }
+    
+    private static final class MacroConverter {
+        private MacroExpander expander = null;
+        private Map<String, String> envVariables = Collections.emptyMap();
+
+        public MacroConverter(ExecutionEnvironment env) {
+            try {
+                HostInfo hostInfo = HostInfoUtils.getHostInfo(env);
+                this.envVariables = hostInfo.getEnvironment();
+                this.expander = MacroExpanderFactory.getExpander(env);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (CancellationException ex) {
+                Exceptions.printStackTrace(ex);
+            }            
+        }
+        
+        public String expand(String in) {
+            try {
+                return expander != null ? expander.expandMacros(in, envVariables) : in;
+            } catch (ParseException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            return in;
         }
     }
 }

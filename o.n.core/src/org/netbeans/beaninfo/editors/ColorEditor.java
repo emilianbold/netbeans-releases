@@ -338,6 +338,9 @@ public final class ColorEditor implements PropertyEditor, XMLPropertyEditor {
         int palette = 0;
         Color color = null;
 
+        if ((index = getIndex(awtGenerate, text)) >= 0) {
+            text = getAWTColorNames()[index];
+        }
         if((index = getIndex(getAWTColorNames(), text)) >= 0) {
             palette = AWT_PALETTE;
             color = awtColors[index];
@@ -734,8 +737,9 @@ public final class ColorEditor implements PropertyEditor, XMLPropertyEditor {
         public void updateChooser () {
             SuperColor sc = ce.getSuperColor ();
             
-            if (sc != null && palette == sc.getPalette ()) {
-                int i = getIndex (names, sc.getID ());
+            String id;
+            if (sc != null && palette == sc.getPalette () && (id = sc.getID()) != null && names != null) {
+                int i = getIndex (names, id);
                 list.setSelectedIndex (i);
             } else 
                 list.clearSelection ();

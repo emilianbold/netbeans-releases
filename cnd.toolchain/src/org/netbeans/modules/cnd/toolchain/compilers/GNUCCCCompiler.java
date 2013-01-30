@@ -47,7 +47,10 @@ import java.io.IOException;
 import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
 import org.netbeans.modules.cnd.api.toolchain.ToolKind;
 import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.CompilerDescriptor;
+import static org.netbeans.modules.cnd.toolchain.compilers.CCCCompiler.addUnique;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
@@ -93,7 +96,11 @@ import org.openide.util.NbBundle;
             }  else {
                 errormsg = NbBundle.getMessage(getClass(), "CANT_FIND_REMOTE_COMPILER", getPath(), getExecutionEnvironment().getDisplayName()); // NOI18N
             }
-            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(errormsg, NotifyDescriptor.ERROR_MESSAGE));
+            if (CndUtils.isStandalone()) {
+                System.err.println(errormsg);
+            } else {
+                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(errormsg, NotifyDescriptor.ERROR_MESSAGE));
+            }
         }
         completePredefinedMacros(res);
         return res;
@@ -113,10 +120,16 @@ import org.openide.util.NbBundle;
         CompilerDescriptor compiler = getDescriptor();
         if (compiler != null && compiler.getRemoveIncludeOutputPrefix() != null) {
             String remove = compiler.getRemoveIncludeOutputPrefix();
-            if (line.toLowerCase().startsWith(getIncludeFilePathPrefix().toLowerCase())) {
+            String lline = line.toLowerCase();
+            if (lline.startsWith(getIncludeFilePathPrefix().toLowerCase())) {
                 line = line.substring(getIncludeFilePathPrefix().length());
-            } else if (line.toLowerCase().startsWith(remove)) {
-                line = line.substring(remove.length());
+            } else {
+                String wpath = WindowsSupport.getInstance().convertToShellPath(getIncludeFilePathPrefix().toLowerCase());
+                if (wpath != null && lline.startsWith(wpath)) {
+                    line = line.substring(wpath.length());
+                } else if (lline.startsWith(remove)) {
+                    line = line.substring(remove.length());
+                }
             }
         }
         return line;
@@ -157,18 +170,24 @@ import org.openide.util.NbBundle;
                    }
                    continue;
                }
-               parseUserMacros(line, pair.systemPreprocessorSymbolsList);
                if (line.startsWith("#define ")) { // NOI18N
-                   int i = line.indexOf(' ', 8);
-                   if (i > 0) {
-                       String token = line.substring(8, i) + "=" + line.substring(i+1); // NOI18N
+                   String[] macro = CCCCompiler.getMacro(line.substring(8).trim());
+                   if (CCCCompiler.isValidMacroName(macro[0])) {
+                       String token;
+                       if (macro[1] != null) {
+                            token = macro[0] + "=" + macro[1]; // NOI18N
+                       } else {
+                           token = macro[0];
+                       }
                        addUnique(pair.systemPreprocessorSymbolsList, token);
                    }
+               } else {
+                   parseUserMacros(line, pair.systemPreprocessorSymbolsList);
                }
            }
            reader.close();
        } catch (IOException ioe) {
            ErrorManager.getDefault().notify(ErrorManager.WARNING, ioe); // FIXUP
        }
-   }
+   }   
 }

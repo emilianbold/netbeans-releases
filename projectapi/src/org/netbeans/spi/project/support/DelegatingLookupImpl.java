@@ -65,7 +65,7 @@ class DelegatingLookupImpl extends ProxyLookup implements LookupListener, Change
     private static final Logger LOG = Logger.getLogger(DelegatingLookupImpl.class.getName());
 
     private final Lookup baseLookup;
-    private final String path;
+    private final String pathDescriptor;
     private final UnmergedLookup unmergedLookup = new UnmergedLookup();
     private final Map<LookupMerger<?>,Object> mergerResults = new HashMap<LookupMerger<?>,Object>();
     private final Lookup.Result<LookupProvider> providerResult;
@@ -80,14 +80,14 @@ class DelegatingLookupImpl extends ProxyLookup implements LookupListener, Change
     private final List<Lookup.Result<?>> results = new ArrayList<Lookup.Result<?>>();
 
     @SuppressWarnings("LeakingThisInConstructor")
-    DelegatingLookupImpl(Lookup base, Lookup providerLookup, String path) {
+    DelegatingLookupImpl(Lookup base, Lookup providerLookup, String pathDescriptor) {
         assert base != null;
         baseLookup = base;
-        this.path = path;
+        this.pathDescriptor = pathDescriptor;
         providerResult = providerLookup.lookupResult(LookupProvider.class);
         metaMergers = providerLookup.lookupResult(MetaLookupMerger.class);
         metaMergerListener = WeakListeners.change(this, null);
-        assert isAllJustLookupProviders(providerLookup) : "Layer content at " + path + " contains other than LookupProvider instances! See messages.log file for more details.";
+        assert isAllJustLookupProviders(providerLookup) : "Layer content at " + pathDescriptor + " contains other than LookupProvider instances! See messages.log file for more details.";
         doDelegate();
         providerListener = new LookupListener() {
             @Override public void resultChanged(LookupEvent ev) {
@@ -159,7 +159,7 @@ class DelegatingLookupImpl extends ProxyLookup implements LookupListener, Change
             for (LookupMerger<?> lm : allMergers) {
                 Class<?> c = lm.getMergeableClass();
                 if (filteredClasses.contains(c)) {
-                    LOG.log(Level.WARNING, "Two LookupMerger instances for {0} among {1} in {2}. Only first one will be used", new Object[] {c, allMergers, path});
+                    LOG.log(Level.WARNING, "Two LookupMerger instances for {0} among {1} in {2}. Only first one will be used", new Object[] {c, allMergers, pathDescriptor});
                     continue;
                 }
                 filteredClasses.add(c);

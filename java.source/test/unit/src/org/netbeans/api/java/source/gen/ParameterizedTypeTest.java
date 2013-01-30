@@ -54,6 +54,7 @@ import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.*;
 import org.netbeans.junit.NbTestSuite;
 import static org.netbeans.api.java.source.JavaSource.*;
+import org.netbeans.modules.java.source.save.CasualDiff;
 
 /**
  *
@@ -73,6 +74,12 @@ public class ParameterizedTypeTest extends GeneratorTestMDRCompat {
 //        suite.addTest(new ParameterizedTypeTest("testChangeToDiamond"));
 //        suite.addTest(new ParameterizedTypeTest("test185306"));
         return suite;
+    }
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        CasualDiff.noInvalidCopyTos = true;
     }
 
     public void test115176TestCase() throws Exception {
@@ -290,6 +297,80 @@ public class ParameterizedTypeTest extends GeneratorTestMDRCompat {
                 Tree tp = type.getTypeArguments().get(0);
 
                 workingCopy.rewrite(type.getTypeArguments().get(0), make.Wildcard(Kind.UNBOUNDED_WILDCARD, null));
+            }
+
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    public void test221154a() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package hierbas.del.litoral;\n" +
+            "import java.util.List;\n" +
+            "public class Test {\n" +
+            "    private List<Integer> o = null;\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "import java.util.List;\n" +
+            "public class Test {\n" +
+            "    private List<?> o = null;\n" +
+            "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree classTree = (ClassTree) cut.getTypeDecls().get(0);
+                VariableTree var = (VariableTree) classTree.getMembers().get(1);
+                ParameterizedTypeTree type = (ParameterizedTypeTree) var.getType();
+
+                workingCopy.rewrite(type.getTypeArguments().get(0), make.Wildcard(Kind.UNBOUNDED_WILDCARD, null));
+            }
+
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    public void test221154b() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package hierbas.del.litoral;\n" +
+            "import java.util.List;\n" +
+            "public class Test {\n" +
+            "    private List<?> o = null;\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "import java.util.List;\n" +
+            "public class Test {\n" +
+            "    private List<? extends Integer> o = null;\n" +
+            "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree classTree = (ClassTree) cut.getTypeDecls().get(0);
+                VariableTree var = (VariableTree) classTree.getMembers().get(1);
+                ParameterizedTypeTree type = (ParameterizedTypeTree) var.getType();
+
+                workingCopy.rewrite(type.getTypeArguments().get(0), make.Wildcard(Kind.EXTENDS_WILDCARD, make.Identifier("Integer")));
             }
 
         };

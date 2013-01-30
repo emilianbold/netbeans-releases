@@ -46,7 +46,6 @@ import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.modules.cnd.api.project.NativeProjectType;
 import org.netbeans.modules.cnd.makeproject.MakeBasedProjectFactorySingleton;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
-import org.netbeans.spi.project.CacheDirectoryProvider;
 import org.netbeans.spi.project.ProjectState;
 import org.netbeans.spi.queries.SharabilityQueryImplementation2;
 import org.openide.filesystems.FileObject;
@@ -148,13 +147,6 @@ public interface MakeProjectHelper {
      * @return an auxiliary configuration provider object suitable for the project lookup
      */
     AuxiliaryConfiguration createAuxiliaryConfiguration();
-
-    /**
-     * Create an object permitting this project to expose a cache directory.
-     * Would be placed into the project's lookup.
-     * @return a cache directory provider object suitable for the project lookup
-     */
-    CacheDirectoryProvider createCacheDirectoryProvider();
 
     /**
      * Create an implementation of the file sharability query.

@@ -50,7 +50,10 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.StringTokenizer;
+import java.util.WeakHashMap;
+import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.css.editor.csl.CssLanguage;
 import org.netbeans.modules.css.indexing.CssIndexer;
@@ -62,10 +65,14 @@ import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.modules.web.common.api.FileReference;
 import org.netbeans.modules.web.common.api.WebUtils;
 import org.openide.filesystems.FileObject;
+import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
 
 /**
  * An instance of the indexer which can be held until the source roots are valid.
+ * 
+ * TODO: Release the cached value of css index once any of the underlying data 
+ * models changes (mainly the classpath).
  * 
  * @author mfukala@netbeans.org
  */
@@ -73,14 +80,48 @@ public class CssIndex {
 
     private static final Logger LOGGER = Logger.getLogger(CssIndex.class.getSimpleName());
 
+    private static final Map<Project, CssIndex> INDEXES = new WeakHashMap<Project, CssIndex>();
+    
+     /**
+     * Creates a new instance of {@link CssIndex}.
+     * 
+     * @param project The project for which you want to get the index for.
+     * @return non null instance of the {@link CssIndex}
+     * @throws IOException 
+     */
     public static CssIndex create(Project project) throws IOException {
         return new CssIndex(project);
     }
+    
+    /**
+     * Gets an instance of {@link CssIndex}. The instance may be cached.
+     * 
+     * @since 1.34
+     * @param project The project for which you want to get the index for.
+     * @return non null instance of the {@link CssIndex}
+     * @throws IOException 
+     */
+    public static CssIndex get(Project project) throws IOException {
+        if(project == null) {
+            throw new NullPointerException();
+        }
+        synchronized (INDEXES) {
+            CssIndex index = INDEXES.get(project);
+            if(index == null) {
+                index = create(project);
+                INDEXES.put(project, index);
+            } 
+            return index;
+        }
+    }
+    
     private final QuerySupport querySupport;
     private final Collection<FileObject> sourceRoots;
     
     private AllDependenciesMaps allDepsCache;
     private long allDepsCache_hashCode;
+    
+    private ChangeSupport changeSupport;
 
     /** Creates a new instance of JsfIndex */
     private CssIndex(Project project) throws IOException {
@@ -90,6 +131,32 @@ public class CssIndex {
                 Collections.<String>emptyList(),
                 Collections.<String>emptyList());
         this.querySupport = QuerySupport.forRoots(CssIndexer.Factory.NAME, CssIndexer.Factory.VERSION, sourceRoots.toArray(new FileObject[]{}));        
+        this.changeSupport = new ChangeSupport(this);
+    }
+    
+    /**
+     * Adds a {@link ChangeListener} so one may listen on changes in the index.
+     * 
+     * @since 1.34
+     */
+    public void addChangeListener(ChangeListener l) {
+        changeSupport.addChangeListener(l);
+    }
+
+     /**
+     * Removes the {@link ChangeListener}.
+     * 
+     * @since 1.34
+     */
+    public void removeChangeListener(ChangeListener l) {
+        changeSupport.removeChangeListener(l);
+    }
+    
+    // TODO: should not be in the API; for now it is OK; need to talk to Marek
+    // whether this approach to notification of changes makes any sense or should
+    // be done completely differently
+    public void notifyChange() {
+        changeSupport.fireChange();
     }
 
     /**
@@ -312,6 +379,11 @@ public class CssIndex {
         return Collections.emptyList();
     }
 
+    /**
+     * Get all stylesheets from the project.
+     * 
+     * @return 
+     */
     public Collection<FileObject> getAllIndexedFiles() {
         try {
             Collection<? extends IndexResult> results = querySupport.query(CssIndexer.CSS_CONTENT_KEY, "", QuerySupport.Kind.PREFIX, CssIndexer.CSS_CONTENT_KEY);
@@ -356,20 +428,60 @@ public class CssIndex {
      * @throws IOException
      */
     public AllDependenciesMaps getAllDependencies() throws IOException {
+        if(LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.log(Level.FINE, "getAllDependencies", new Throwable());
+        }
         long freshAllDeps_hashCode = CssIndexer.getImportsHashCodeForRoots(sourceRoots);
+        StringBuilder sb = new StringBuilder();
+        for(FileObject sr : sourceRoots) {
+            sb.append(sr.getPath());
+            sb.append(',');
+        }
+        
+        LOGGER.log(Level.FINE, "Fresh deps hash code for roots {0} is {1}", new Object[]{sb.toString(), freshAllDeps_hashCode});
+        
         if(allDepsCache != null) {
+            LOGGER.fine("allDepsCache is NOT null");
             //verify whether the cache is still valid
             if(allDepsCache_hashCode == freshAllDeps_hashCode) {
-                LOGGER.fine("Refreshing dependencies maps cache");
+                LOGGER.fine("Returning cached dependencies.");
                 return allDepsCache;
             }
         } else {
-            LOGGER.fine("Creating dependencies maps cache");
+            LOGGER.fine("allDepsCache is null");
         }
         
         //not cached or invalidated
         allDepsCache = createAllDependencies();
         allDepsCache_hashCode = freshAllDeps_hashCode;
+        LOGGER.log(Level.FINE, "Created new dependencties map with with hashcode {0}", allDepsCache_hashCode);
+        
+        if(LOGGER.isLoggable(Level.FINE)) {
+            StringBuilder deps = new StringBuilder();
+            deps.append("dest2source:\n");
+            for(FileObject dest : allDepsCache.dest2source.keySet()) {
+                Collection<FileReference> source = allDepsCache.dest2source.get(dest);
+                deps.append(dest.getNameExt());
+                deps.append("->");
+                for(FileReference fref : source) {
+                    deps.append(fref.source().getNameExt());
+                    deps.append(',');
+                }
+                deps.append('\n');
+            }
+            deps.append("source2dest:\n");
+            for(FileObject source : allDepsCache.source2dest.keySet()) {
+                Collection<FileReference> dest = allDepsCache.source2dest.get(source);
+                deps.append(source.getNameExt());
+                deps.append("->");
+                for(FileReference fref : dest) {
+                    deps.append(fref.target().getNameExt());
+                    deps.append(',');
+                }
+                deps.append('\n');
+            }
+            LOGGER.log(Level.FINE, deps.toString());
+        }
         
         return allDepsCache;
     }

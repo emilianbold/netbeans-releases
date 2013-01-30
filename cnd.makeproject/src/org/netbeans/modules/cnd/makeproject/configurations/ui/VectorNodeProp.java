@@ -45,10 +45,8 @@ package org.netbeans.modules.cnd.makeproject.configurations.ui;
 
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorSupport;
-import java.io.File;
-import java.util.StringTokenizer;
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BooleanConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.VectorConfiguration;
 import org.netbeans.modules.cnd.makeproject.ui.utils.DirectoryChooserPanel;
@@ -58,7 +56,7 @@ import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.nodes.PropertySupport;
 import org.openide.util.HelpCtx;
 
-public class VectorNodeProp extends PropertySupport<List> {
+abstract public class VectorNodeProp extends PropertySupport<List> {
 
     private VectorConfiguration<String> vectorConfiguration;
     private BooleanConfiguration inheritValues;
@@ -119,13 +117,9 @@ public class VectorNodeProp extends PropertySupport<List> {
         return new DirectoriesEditor(clone);
     }
 
-    /*
-    public Object getValue(String attributeName) {
-    if (attributeName.equals("canEditAsText")) // NOI18N
-    return Boolean.FALSE;
-    return super.getValue(attributeName);
-    }
-     */
+    abstract protected List<String> convertToList(String text);
+    abstract protected String convertToString(List<String> list);
+
     private class DirectoriesEditor extends PropertyEditorSupport implements ExPropertyEditor {
 
         private List<String> value;
@@ -134,29 +128,14 @@ public class VectorNodeProp extends PropertySupport<List> {
         public DirectoriesEditor(List<String> value) {
             this.value = value;
         }
-
         @Override
         public void setAsText(String text) {
-            List<String> newList = new ArrayList<String>();
-            StringTokenizer st = new StringTokenizer(text, File.pathSeparator); // NOI18N
-            while (st.hasMoreTokens()) {
-                newList.add(st.nextToken());
-            }
-            super.setValue(newList);
+            setValue(VectorNodeProp.this.convertToList(text.trim()));
         }
 
         @Override
         public String getAsText() {
-            boolean addSep = false;
-            StringBuilder ret = new StringBuilder();
-            for (int i = 0; i < value.size(); i++) {
-                if (addSep) {
-                    ret.append(File.pathSeparator);
-                }
-                ret.append(value.get(i));
-                addSep = true;
-            }
-            return ret.toString();
+            return VectorNodeProp.this.convertToString(value);
         }
 
         @Override

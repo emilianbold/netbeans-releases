@@ -187,6 +187,7 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
     private static final String FIXED_SCALE_TOOLTIP = messages.getString("ThreadsPanel_FixedScaleToolTip"); // NOI18N
     private static final String SCALE_TO_FIT_TOOLTIP = messages.getString("ThreadsPanel_ScaleToFitToolTip"); // NOI18N
     private static final String THREADS_MONITORING_DISABLED_MSG = messages.getString("ThreadsPanel_ThreadsMonitoringDisabledMsg"); // NOI18N
+    private static final String THREADS_MONITORING_DISABLED_TOOLTIP = messages.getString("ThreadsPanel_ThreadsMonitoringDisabledTooltip"); // NOI18N
     private static final String NO_PROFILING_MSG = messages.getString("ThreadsPanel_NoProfilingMsg"); // NOI18N
     private static final String THREADS_COLUMN_NAME = messages.getString("ThreadsPanel_ThreadsColumnName"); // NOI18N
     private static final String TIMELINE_COLUMN_NAME = messages.getString("ThreadsPanel_TimelineColumnName"); // NOI18N
@@ -325,7 +326,7 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
         table.setSelectionForeground(UIConstants.TABLE_SELECTION_FOREGROUND_COLOR);
         table.setShowGrid(false);
         table.setRowMargin(0);
-        table.setRowHeight(23);
+        table.setRowHeight(UIUtils.getDefaultRowHeight() + 4);
 
         DefaultTableCellRenderer defaultHeaderRenderer = new DefaultTableCellRenderer() {
             public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus,
@@ -366,7 +367,6 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
         scrollPanel.setLayout(new BorderLayout());
         scrollPanel.setBackground(Color.WHITE);
 
-        buttonsToolBar.addSeparator();
         buttonsToolBar.add(zoomInButton);
         buttonsToolBar.add(zoomOutButton);
         buttonsToolBar.add(scaleToFitButton);
@@ -391,6 +391,7 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
         monitorLegend.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 0));
 
         JPanel legendPanel = new JPanel(new FlowLayout(FlowLayout.TRAILING, 7, 8));
+        legendPanel.setOpaque(false);
         legendPanel.add(runningLegend);
         legendPanel.add(sleepingLegend);
 
@@ -403,6 +404,7 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
 
         //legendPanel.add(unknownLegend);
         JPanel bottomPanel = new JPanel(new BorderLayout());
+        UIUtils.decorateProfilerPanel(bottomPanel);
         bottomPanel.add(UIUtils.createHorizontalLine(bottomPanel.getBackground()), BorderLayout.NORTH);
         bottomPanel.add(legendPanel, BorderLayout.EAST);
 
@@ -430,6 +432,7 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
         notificationPanel = new JPanel(new FlowLayout(FlowLayout.LEADING, 0, 15));
         notificationPanel.setBorder(dataPanel.getBorder());
         notificationPanel.setBackground(table.getBackground());
+        UIUtils.decorateProfilerPanel(notificationPanel);
 
         Border myRolloverBorder = new CompoundBorder(new FlatToolBar.FlatRolloverButtonBorder(Color.GRAY, Color.LIGHT_GRAY),
                                                      new FlatToolBar.FlatMarginBorder());
@@ -439,6 +442,7 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
         enableThreadsMonitoringLabel1.setForeground(Color.DARK_GRAY);
 
         enableThreadsMonitoringButton = new JButton(Icons.getIcon(ProfilerIcons.VIEW_THREADS_32));
+        enableThreadsMonitoringButton.setToolTipText(THREADS_MONITORING_DISABLED_TOOLTIP);
         enableThreadsMonitoringButton.setContentAreaFilled(false);
         enableThreadsMonitoringButton.setMargin(new Insets(3, 3, 3, 3));
         enableThreadsMonitoringButton.setVerticalTextPosition(SwingConstants.BOTTOM);
@@ -670,6 +674,7 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
         Component actionButton = buttonsToolBar.add(saveViewAction);
         buttonsToolBar.remove(actionButton);
         buttonsToolBar.add(actionButton, 0);
+        buttonsToolBar.add(new JToolBar.Separator(), 1);
     }
 
     // ---------------------------------------------------------------------------------------

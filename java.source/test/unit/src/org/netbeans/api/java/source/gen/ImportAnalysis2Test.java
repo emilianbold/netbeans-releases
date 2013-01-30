@@ -60,9 +60,13 @@ import java.util.Collections;
 
 import java.util.EnumSet;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.prefs.Preferences;
 import java.util.regex.Pattern;
 import javax.lang.model.element.Modifier;
+
+import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.GeneratorUtilities;
@@ -247,6 +251,8 @@ public class ImportAnalysis2Test extends GeneratorTestMDRCompat {
             "}\n";
 
         JavaSource src = getJavaSource(testFile);
+        Preferences preferences = MimeLookup.getLookup(JavaTokenId.language().mimeType()).lookup(Preferences.class);
+        preferences.putBoolean("importInnerClasses", true);
         Task<WorkingCopy> task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
@@ -266,6 +272,7 @@ public class ImportAnalysis2Test extends GeneratorTestMDRCompat {
 
         };
         src.runModificationTask(task).commit();
+        preferences.remove("importInnerClasses");
         String res = TestUtilities.copyFileToString(testFile);
         System.err.println(res);
         assertEquals(golden, res);
@@ -713,10 +720,12 @@ public class ImportAnalysis2Test extends GeneratorTestMDRCompat {
             "\n" +
             "public abstract class Test implements Entry, Map {\n" +
             "}\n";
-        final TransactionContext ctx = TransactionContext.beginStandardTransaction(true, Utilities.toURI(getWorkDir()).toURL());
+        final TransactionContext ctx = TransactionContext.beginStandardTransaction(Utilities.toURI(getWorkDir()).toURL(), true, true);
         try {
             ClasspathInfo cpInfo = ClasspathInfoAccessor.getINSTANCE().create (ClassPathSupport.createClassPath(System.getProperty("sun.boot.class.path")), ClassPath.EMPTY, ClassPathSupport.createClassPath(getSourcePath()), null, true, false, false, true);
             JavaSource src = JavaSource.create(cpInfo, FileUtil.toFileObject(testFile));
+            Preferences preferences = MimeLookup.getLookup(JavaTokenId.language().mimeType()).lookup(Preferences.class);
+            preferences.putBoolean("importInnerClasses", true);
             Task<WorkingCopy> task = new Task<WorkingCopy>() {
                 public void run(WorkingCopy workingCopy) throws IOException {
                     workingCopy.toPhase(Phase.RESOLVED);
@@ -728,6 +737,7 @@ public class ImportAnalysis2Test extends GeneratorTestMDRCompat {
 
             };
             src.runModificationTask(task).commit();
+            preferences.remove("importInnerClasses");
             String res = TestUtilities.copyFileToString(testFile);
             System.err.println(res);
             assertEquals(golden, res);
@@ -756,7 +766,7 @@ public class ImportAnalysis2Test extends GeneratorTestMDRCompat {
             "public abstract class Entry implements Map.Entry, Map {\n" +
             "}\n";
 
-        final TransactionContext ctx = TransactionContext.beginStandardTransaction(true, Utilities.toURI(getWorkDir()).toURL());
+        final TransactionContext ctx = TransactionContext.beginStandardTransaction(Utilities.toURI(getWorkDir()).toURL(), true, true);
         try {
             ClasspathInfo cpInfo = ClasspathInfoAccessor.getINSTANCE().create (ClassPathSupport.createClassPath(System.getProperty("sun.boot.class.path")), ClassPath.EMPTY, ClassPathSupport.createClassPath(getSourcePath()), null, true, false, false, true);
             JavaSource src = JavaSource.create(cpInfo, FileUtil.toFileObject(testFile));
@@ -832,6 +842,101 @@ public class ImportAnalysis2Test extends GeneratorTestMDRCompat {
         assertEquals(golden, res);
     }
 
+    public void testStringQualIdentClashWithRemovedClass1() throws Exception {
+        clearWorkDir();
+        testFile = new File(getWorkDir(), "hierbas/del/litoral/Test.java");
+        assertTrue(testFile.getParentFile().mkdirs());
+        TestUtilities.copyStringToFile(testFile,
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "class B {\n" +
+            "}\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "import foo.A.B;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    B l;\n" +
+            "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        Preferences preferences = MimeLookup.getLookup(JavaTokenId.language().mimeType()).lookup(Preferences.class);
+        preferences.putBoolean("importInnerClasses", true);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree B = make.Class(make.Modifiers(EnumSet.noneOf(Modifier.class)), "B", Collections.<TypeParameterTree>emptyList(), null, Collections.<Tree>emptyList(), Collections.<Tree>emptyList());
+                ClassTree nueClass = make.Class(make.Modifiers(EnumSet.noneOf(Modifier.class)), "A", Collections.<TypeParameterTree>emptyList(), null, Collections.<Tree>emptyList(), Arrays.asList(B));
+                CompilationUnitTree nueCUT = make.CompilationUnit(FileUtil.toFileObject(getWorkDir()), "foo/A.java", Collections.<ImportTree>emptyList(), Collections.singletonList(nueClass));
+                workingCopy.rewrite(null, nueCUT);
+                CompilationUnitTree node = workingCopy.getCompilationUnit();
+                ClassTree clazz = (ClassTree) node.getTypeDecls().get(0);
+                VariableTree vt1 = make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), "l", make.QualIdent("foo.A.B"), null);
+                workingCopy.rewrite(clazz, make.addClassMember(make.removeClassMember(clazz, 1), vt1));
+            }
+
+        };
+        src.runModificationTask(task).commit();
+        preferences.remove("importInnerClasses");
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    public void testStringQualIdentClashWithRemovedClass2() throws Exception {
+        clearWorkDir();
+        testFile = new File(getWorkDir(), "hierbas/del/litoral/Test.java");
+        assertTrue(testFile.getParentFile().mkdirs());
+        TestUtilities.copyStringToFile(testFile,
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "}\n" +
+            "class B {\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "import foo.A.B;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    B l;\n" +
+            "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        Preferences preferences = MimeLookup.getLookup(JavaTokenId.language().mimeType()).lookup(Preferences.class);
+        preferences.putBoolean("importInnerClasses", true);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree B = make.Class(make.Modifiers(EnumSet.noneOf(Modifier.class)), "B", Collections.<TypeParameterTree>emptyList(), null, Collections.<Tree>emptyList(), Collections.<Tree>emptyList());
+                ClassTree nueClass = make.Class(make.Modifiers(EnumSet.noneOf(Modifier.class)), "A", Collections.<TypeParameterTree>emptyList(), null, Collections.<Tree>emptyList(), Arrays.asList(B));
+                CompilationUnitTree nueCUT = make.CompilationUnit(FileUtil.toFileObject(getWorkDir()), "foo/A.java", Collections.<ImportTree>emptyList(), Collections.singletonList(nueClass));
+                workingCopy.rewrite(null, nueCUT);
+                CompilationUnitTree node = workingCopy.getCompilationUnit();
+                ClassTree clazz = (ClassTree) node.getTypeDecls().get(0);
+                VariableTree vt1 = make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), "l", make.QualIdent("foo.A.B"), null);
+                workingCopy.rewrite(clazz, make.addClassMember(clazz, vt1));
+                workingCopy.rewrite(node, make.removeCompUnitTypeDecl(node, 1));
+            }
+
+        };
+        src.runModificationTask(task).commit();
+        preferences.remove("importInnerClasses");
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+ 
     String getGoldenPckg() {
         return "";
     }

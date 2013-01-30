@@ -327,7 +327,7 @@ public abstract class DeclarationContainer extends ProjectComponent implements P
         }
         result = UIDCsmConverter.UIDtoDeclaration(uid);
         if (uid != null && result == null) {
-            DiagnosticExceptoins.register(new IllegalStateException("no declaration for UID " + uid)); // NOI18N
+            DiagnosticExceptoins.registerIllegalRepositoryStateException("no declaration for UID ", uid); // NOI18N
         }
         return result;
     }

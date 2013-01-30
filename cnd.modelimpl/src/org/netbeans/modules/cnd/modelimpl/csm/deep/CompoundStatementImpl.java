@@ -66,6 +66,10 @@ public class CompoundStatementImpl extends StatementBase implements CsmCompoundS
         super(ast, file, scope);
     }
 
+    protected CompoundStatementImpl(CsmScope scope, CsmFile file, int start, int end) {
+        super(file, start, end, scope);        
+    }
+    
     public static CompoundStatementImpl create(AST ast, CsmFile file, CsmScope scope) {
         CompoundStatementImpl stmt = new CompoundStatementImpl(ast, file, scope);
         stmt.init(ast);
@@ -86,6 +90,10 @@ public class CompoundStatementImpl extends StatementBase implements CsmCompoundS
         return statements;
     }
 
+    public void setStatements(List<CsmStatement> statements) {
+        this.statements = statements;
+    }
+    
     @Override
     public void dispose() {
         super.dispose();
@@ -120,6 +128,36 @@ public class CompoundStatementImpl extends StatementBase implements CsmCompoundS
         return out;
     }
 
+    public static class CompoundStatementBuilder extends StatementBuilder implements StatementBuilderContainer {
+
+        private List<StatementBuilder> statements = new ArrayList<StatementBuilder>();
+        
+        @Override
+        public void addStatementBuilder(StatementBuilder statement) {
+            statements.add(statement);
+        }
+
+        protected List<StatementBuilder> getStatements() {
+            return statements;
+        }
+        
+        @Override
+        public CompoundStatementImpl create() {
+            CompoundStatementImpl stmt = new CompoundStatementImpl(getScope(), getFile(), getStartOffset(), getEndOffset());
+            List<CsmStatement> stmts = new ArrayList<CsmStatement>();
+            for (StatementBuilder statementBuilder : statements) {
+                statementBuilder.setScope(stmt);
+                stmts.add(statementBuilder.create());
+            }
+            if(stmts.isEmpty()) {
+                stmt.statements = Collections.<CsmStatement>emptyList();
+            } else {
+                stmt.statements = stmts;
+            }
+            return stmt;
+        }
+    }      
+    
     @Override
     public void write(RepositoryDataOutput output) throws IOException {
         // HAVE TO BE ONLY DELEGATION INTO SUPER

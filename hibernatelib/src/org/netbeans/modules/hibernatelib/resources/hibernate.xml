@@ -44,8 +44,7 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-<!DOCTYPE library PUBLIC "-//NetBeans//DTD Library Declaration 1.0//EN" "http://www.netbeans.org/dtds/library-declaration-1_0.dtd">
-<library version="1.0">
+<library version="3.0" xmlns="http://www.netbeans.org/ns/library-declaration/3">
     <name>hibernate-support</name>
     <type>j2se</type>
     <localizing-bundle>org/netbeans/modules/hibernatelib/resources/Bundle</localizing-bundle>
@@ -78,11 +77,16 @@ made subject to such option by the copyright holder.
         <resource>jar:nbinst:///docs/hibernate-3.2.5-src.zip!/</resource>
     </volume>
     -->
-    <volume>
-        <type>maven-pom</type>
-        <resource>http://repo1.maven.org/maven2/org/hibernate/hibernate/3.2.5.ga/hibernate-3.2.5.ga.pom</resource>
-        <resource>http://repo1.maven.org/maven2/org/hibernate/hibernate-entitymanager/3.3.2.GA/hibernate-entitymanager-3.3.2.GA.pom</resource>
-        <resource>http://repo1.maven.org/maven2/javax/sql/jdbc-stdext/2.0/jdbc-stdext-2.0.pom</resource>
-        <resource>http://repo1.maven.org/maven2/javax/transaction/jta/1.0.1B/jta-1.0.1B.pom</resource>
-    </volume>
+    <properties>
+        <!-- please check with mkleint@netbeans.org before/after updating this or "classpath" section -->
+        <property>
+            <name>maven-dependencies</name>
+            <value>
+                org.hibernate:hibernate:3.2.5.ga:jar
+                org.hibernate:hibernate-entitymanager:3.3.2.GA:jar
+                javax.sql:jdbc-stdext:2.0:jar
+                javax.transaction:jta:1.0.1B:jar
+            </value>
+        </property>
+    </properties>
 </library>

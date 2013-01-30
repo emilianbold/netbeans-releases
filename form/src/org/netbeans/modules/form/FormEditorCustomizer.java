@@ -59,6 +59,7 @@ import java.util.logging.Logger;
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.awt.Mnemonics;
 import org.openide.explorer.propertysheet.PropertyPanel;
 import org.openide.nodes.PropertySupport;
@@ -70,6 +71,7 @@ import org.openide.util.NbBundle;
  *
  * @author Jan Stola, Jan Jancura
  */
+@OptionsPanelController.Keywords(keywords={"#KW_FormOptions"}, location="Java", tabTitle= "#Form_Editor")
 public final class FormEditorCustomizer extends JPanel implements  ActionListener, ChangeListener {
     private JCheckBox cbFold = new JCheckBox ();
     private JCheckBox cbAssistant = new JCheckBox();
@@ -299,17 +301,13 @@ public final class FormEditorCustomizer extends JPanel implements  ActionListene
     }
 
     private void brandVisibility(String key, Component... components) {
-        try {
-            String value = NbBundle.getMessage(FormEditorCustomizer.class, "OPTIONS_"+key+"_HIDDEN"); // NOI18N
-            if ("true".equals(value)) { // NOI18N
-                for (Component comp : components) {
-                    if (brandedInvisibleComponents == null) {
-                        brandedInvisibleComponents = new HashSet();
-                    }
-                    brandedInvisibleComponents.add(comp);
+        if (FormUtils.getPresetValue("OPTIONS_"+key+"_HIDDEN", false)) { // NOI18N
+            for (Component comp : components) {
+                if (brandedInvisibleComponents == null) {
+                    brandedInvisibleComponents = new HashSet();
                 }
+                brandedInvisibleComponents.add(comp);
             }
-        } catch (MissingResourceException ex) {
         }
     }
 

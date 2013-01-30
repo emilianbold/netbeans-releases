@@ -52,6 +52,7 @@ import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import javax.lang.model.SourceVersion;
@@ -135,6 +136,8 @@ public class JavaCompletionProvider implements CompletionProvider {
     }
     
     static final class JavaCompletionQuery extends AsyncCompletionQuery {
+        
+        static final AtomicBoolean javadocBreak = new AtomicBoolean();
         
         private static final String ERROR = "<error>"; //NOI18N
         private static final String INIT = "<init>"; //NOI18N
@@ -308,6 +311,11 @@ public class JavaCompletionProvider implements CompletionProvider {
                             if (documentation instanceof JavaCompletionDoc) {
                                 while (!isTaskCancelled()) {
                                     try {
+                                        if (javadocBreak.getAndSet(false)) {
+                                            Completion c = Completion.get();
+                                            c.hideDocumentation();
+                                            c.showDocumentation();
+                                        }
                                         ((JavaCompletionDoc)documentation).getFutureText().get(250, TimeUnit.MILLISECONDS);
                                         resultSet.setDocumentation(documentation);
                                         break;
@@ -331,27 +339,37 @@ public class JavaCompletionProvider implements CompletionProvider {
         @Override
         protected boolean canFilter(JTextComponent component) {
             filterPrefix = null;
-            int newOffset = component.getSelectionStart();
+            final int newOffset = component.getSelectionStart();
+            final Document doc = component.getDocument();
             if ((queryType & COMPLETION_QUERY_TYPE) != 0) {
-                int offset = Math.min(anchorOffset, caretOffset);
+                final int offset = Math.min(anchorOffset, caretOffset);
                 if (offset > -1) {
                     if (newOffset < offset)
                         return true;
                     if (newOffset >= caretOffset) {
                         try {
-                            TokenSequence<JavaTokenId> ts = SourceUtils.getJavaTokenSequence(TokenHierarchy.get(component.getDocument()), offset);
-                            if (ts != null && ts.move(offset) == 0 && ts.moveNext()) {
-                                int len = newOffset - offset;
-                                if (len >= 0 && (ts.token().id() == JavaTokenId.IDENTIFIER ||
-                                        ts.token().id().primaryCategory().startsWith("keyword") || //NOI18N
-                                        ts.token().id().primaryCategory().startsWith("string") || //NOI18N
-                                        ts.token().id().primaryCategory().equals("literal")) //NOI18N
-                                        && ts.token().length() >= len) { //TODO: Use isKeyword(...) when available
-                                    filterPrefix = ts.token().text().toString().substring(0, len);
-                                }
+                            final int len = newOffset - offset;
+                            if (len == 0) {
+                                filterPrefix = EMPTY;
+                            } else if (len > 0) {
+                                doc.render(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        TokenSequence<JavaTokenId> ts = SourceUtils.getJavaTokenSequence(TokenHierarchy.get(doc), offset);
+                                        if (ts != null && ts.move(offset) == 0 && ts.moveNext()) {
+                                            if ((ts.token().id() == JavaTokenId.IDENTIFIER ||
+                                                    ts.token().id().primaryCategory().startsWith("keyword") || //NOI18N
+                                                    ts.token().id().primaryCategory().startsWith("string") || //NOI18N
+                                                    ts.token().id().primaryCategory().equals("literal")) //NOI18N
+                                                    && ts.token().length() >= len) { //TODO: Use isKeyword(...) when available
+                                                filterPrefix = ts.token().text().toString().substring(0, len);
+                                            }
+                                        }
+                                    }
+                                });
                             }
                             if (filterPrefix == null) {
-                                String prefix = component.getDocument().getText(offset, newOffset - offset);
+                                String prefix = doc.getText(offset, newOffset - offset);
                                 if (prefix.length() > 0 && Utilities.getJavaCompletionAutoPopupTriggers().indexOf(prefix.charAt(prefix.length() - 1)) >= 0)
                                     return false;
                             } else if (filterPrefix.length() == 0) {
@@ -367,9 +385,9 @@ public class JavaCompletionProvider implements CompletionProvider {
                     if (newOffset == caretOffset)
                         filterPrefix = EMPTY;
                     else if (newOffset - caretOffset > 0)
-                        filterPrefix = component.getDocument().getText(caretOffset, newOffset - caretOffset);
+                        filterPrefix = doc.getText(caretOffset, newOffset - caretOffset);
                     else if (newOffset - caretOffset < 0)
-                        filterPrefix = newOffset > toolTipOffset ? component.getDocument().getText(newOffset, caretOffset - newOffset) : null;
+                        filterPrefix = newOffset > toolTipOffset ? doc.getText(newOffset, caretOffset - newOffset) : null;
                 } catch (BadLocationException ex) {}
                 return (filterPrefix != null && filterPrefix.indexOf(',') == -1 && filterPrefix.indexOf('(') == -1 && filterPrefix.indexOf(')') == -1); // NOI18N
             }
@@ -557,7 +575,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             }
         }
         
-        private void resolveDocumentation(CompilationController controller) throws IOException {            
+        private void resolveDocumentation(CompilationController controller) throws IOException {
             controller.toPhase(Phase.RESOLVED);
             Element el = null;
             if (element != null) {
@@ -581,7 +599,15 @@ public class JavaCompletionProvider implements CompletionProvider {
                 case METHOD:
                     documentation = JavaCompletionDoc.create(controller, el, new Callable<Boolean>() {
                         public Boolean call() {
-                            return isTaskCancelled();
+                            if (isTaskCancelled()) {
+                                return true;
+                            }
+                            if (javadocBreak.getAndSet(false)) {
+                                Completion c = Completion.get();
+                                c.hideDocumentation();
+                                c.showDocumentation();
+                            }
+                            return false;
                         }
                     });
                 }
@@ -995,76 +1021,73 @@ public class JavaCompletionProvider implements CompletionProvider {
             SourcePositions sourcePositions = env.getSourcePositions();
             CompilationUnitTree root = env.getRoot();
             int startPos = (int)sourcePositions.getStartPosition(root, mth);
-            Tree retType = mth.getReturnType();
-            if (retType == null) {
-                int modPos = (int)sourcePositions.getEndPosition(root, mth.getModifiers());
-                if (modPos > startPos)
-                    startPos = modPos;
-                TokenSequence<JavaTokenId> last = findLastNonWhitespaceToken(env, startPos, offset);
-                if (last == null) {
-                    addMemberModifiers(env, mth.getModifiers().getFlags(), false);
-                    addTypes(env, EnumSet.of(CLASS, INTERFACE, ENUM, ANNOTATION_TYPE, TYPE_PARAMETER), null);
-                    return;
-                }
-            } else {
-                if (offset <= sourcePositions.getStartPosition(root, retType)) {
-                    addMemberModifiers(env, mth.getModifiers().getFlags(), false);
-                    addTypes(env, EnumSet.of(CLASS, INTERFACE, ENUM, ANNOTATION_TYPE, TYPE_PARAMETER), null);
-                    return;
-                }
-                startPos = (int)sourcePositions.getEndPosition(root, retType) + 1;
-            }
-            Tree last = null;
+            Tree lastTree = null;
+            int state = 0;
             for (Tree thr: mth.getThrows()) {
                 int thrPos = (int)sourcePositions.getEndPosition(root, thr);
                 if (thrPos == Diagnostic.NOPOS || offset <= thrPos)
                     break;
-                last = thr;
+                lastTree = thr;
                 startPos = thrPos;
+                state = 4;
             }
-            if (last != null) {
-                TokenSequence<JavaTokenId> lastToken = findLastNonWhitespaceToken(env, startPos, offset);
-                if (lastToken != null && lastToken.token().id() == JavaTokenId.COMMA) {
-                    if (queryType == COMPLETION_QUERY_TYPE && mth.getBody() != null) {
-                        controller.toPhase(Phase.RESOLVED);
-                        Set<TypeMirror> exs = controller.getTreeUtilities().getUncaughtExceptions(new TreePath(path, mth.getBody()));
-                        Trees trees = controller.getTrees();
-                        Types types = controller.getTypes();
-                        for (ExpressionTree thr : mth.getThrows()) {
-                            TypeMirror t = trees.getTypeMirror(new TreePath(path, thr));
-                            for (Iterator<TypeMirror> it = exs.iterator(); it.hasNext();)
-                                if (types.isSubtype(it.next(), t))
-                                    it.remove();
-                            if (thr == last)
-                                break;
-                        }
-                        Elements elements = controller.getElements();
-                        for (TypeMirror ex : exs)
-                            if (ex.getKind() == TypeKind.DECLARED && startsWith(env, ((DeclaredType)ex).asElement().getSimpleName().toString()) && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(((DeclaredType)ex).asElement())))
-                                results.add(JavaCompletionItem.createTypeItem(env.getController(), (TypeElement)((DeclaredType)ex).asElement(), (DeclaredType)ex, anchorOffset, env.getReferencesCount(), elements.isDeprecated(((DeclaredType)ex).asElement()), false, false, false, true, false, env.getWhiteList()));
-                    }
-                    TypeElement te = controller.getElements().getTypeElement("java.lang.Throwable"); //NOI18N
-                    if (te != null)
-                        addTypes(env, EnumSet.of(CLASS, INTERFACE, TYPE_PARAMETER), controller.getTypes().getDeclaredType(te));
+            if (lastTree == null) {
+                for (VariableTree param : mth.getParameters()) {
+                    int parPos = (int)sourcePositions.getEndPosition(root, param);
+                    if (parPos == Diagnostic.NOPOS || offset <= parPos)
+                        break;
+                    lastTree = param;
+                    startPos = parPos;
+                    state = 3;
                 }
-                return;
             }
-            for (VariableTree param : mth.getParameters()) {
-                int parPos = (int)sourcePositions.getEndPosition(root, param);
-                if (parPos == Diagnostic.NOPOS || offset <= parPos)
-                    break;
-                last = param;
-                startPos = parPos;
+            if (lastTree == null) {
+                Tree retType = mth.getReturnType();
+                if (retType != null) {
+                    int retPos = (int)sourcePositions.getEndPosition(root, retType);
+                    if (retPos != Diagnostic.NOPOS && offset > retPos) {
+                        lastTree = retType;
+                        startPos = retPos;
+                        state = 2;
+                    }
+                }
             }
-            String headerText = controller.getText().substring(startPos, offset);
-            int parStart = headerText.indexOf('('); //NOI18N
-            if (parStart < 0 && last != null)
-                parStart = 0;
-            if (parStart >= 0) {
-                int parEnd = headerText.indexOf(')', parStart); //NOI18N
-                if (parEnd >= parStart) {
-                    headerText = headerText.substring(parEnd + 1).trim();
-                    if (THROWS_KEYWORD.equals(headerText)) {
+            if (lastTree == null) {
+                for (TypeParameterTree tp : mth.getTypeParameters()) {
+                    int tpPos = (int)sourcePositions.getEndPosition(root, tp);
+                    if (tpPos == Diagnostic.NOPOS || offset <= tpPos)
+                        break;
+                    lastTree = tp;
+                    startPos = tpPos;
+                    state = 1;
+                }
+            }
+            if (lastTree == null) {
+                Tree mods = mth.getModifiers();
+                if (mods != null) {
+                    int modsPos = (int)sourcePositions.getEndPosition(root, mods);
+                    if (modsPos != Diagnostic.NOPOS && offset > modsPos) {
+                        lastTree = mods;
+                        startPos = modsPos;
+                    }
+                }
+            }
+            TokenSequence<JavaTokenId> lastToken = findLastNonWhitespaceToken(env, startPos, offset);
+            if (lastToken != null) {
+                switch (lastToken.token().id()) {
+                    case LPAREN:
+                        addMemberModifiers(env, Collections.<Modifier>emptySet(), true);
+                        addTypes(env, EnumSet.of(CLASS, INTERFACE, ENUM, ANNOTATION_TYPE, TYPE_PARAMETER), null);
+                        break;
+                    case RPAREN:
+                        Tree mthParent = path.getParentPath().getLeaf();
+                        if (TreeUtilities.CLASS_TREE_KINDS.contains(mthParent.getKind()) && controller.getTreeUtilities().isAnnotation((ClassTree)mthParent)) {
+                            addKeyword(env, DEFAULT_KEYWORD, SPACE, false);
+                        } else {
+                            addKeyword(env, THROWS_KEYWORD, SPACE, false);
+                        }
+                        break;
+                    case THROWS:
                         if (queryType == COMPLETION_QUERY_TYPE && mth.getBody() != null) {
                             controller.toPhase(Phase.RESOLVED);
                             Set<TypeMirror> exs = controller.getTreeUtilities().getUncaughtExceptions(new TreePath(path, mth.getBody()));
@@ -1076,25 +1099,64 @@ public class JavaCompletionProvider implements CompletionProvider {
                         TypeElement te = controller.getElements().getTypeElement("java.lang.Throwable"); //NOI18N
                         if (te != null)
                             addTypes(env, EnumSet.of(CLASS, INTERFACE, TYPE_PARAMETER), controller.getTypes().getDeclaredType(te));
-                    } else if (DEFAULT_KEYWORD.equals(headerText)) {
+                        break;
+                    case DEFAULT:
                         addLocalConstantsAndTypes(env);
-                    } else {
-                        Tree mthParent = path.getParentPath().getLeaf();
-                        if (TreeUtilities.CLASS_TREE_KINDS.contains(mthParent.getKind()) && controller.getTreeUtilities().isAnnotation((ClassTree)mthParent)) {
-                            addKeyword(env, DEFAULT_KEYWORD, SPACE, false);
-                        } else {
-                            addKeyword(env, THROWS_KEYWORD, SPACE, false);
-                        }
-                    }
-                } else {
-                    headerText = headerText.substring(parStart).trim();
-                    if ("(".equals(headerText) || ",".equals(headerText)) { //NOI18N
-                        addMemberModifiers(env, Collections.<Modifier>emptySet(), true);
+                        break;
+                    case GT:
+                    case GTGT:
+                    case GTGTGT:
+                        addPrimitiveTypeKeywords(env);
+                        addKeyword(env, VOID_KEYWORD, SPACE, false);
                         addTypes(env, EnumSet.of(CLASS, INTERFACE, ENUM, ANNOTATION_TYPE, TYPE_PARAMETER), null);
-                    }
+                        break;
+                    case COMMA:
+                        switch (state) {
+                            case 3:
+                                addMemberModifiers(env, Collections.<Modifier>emptySet(), true);
+                                addTypes(env, EnumSet.of(CLASS, INTERFACE, ENUM, ANNOTATION_TYPE, TYPE_PARAMETER), null);
+                                break;
+                            case 4:
+                                if (queryType == COMPLETION_QUERY_TYPE && mth.getBody() != null) {
+                                    controller.toPhase(Phase.RESOLVED);
+                                    Set<TypeMirror> exs = controller.getTreeUtilities().getUncaughtExceptions(new TreePath(path, mth.getBody()));
+                                    Trees trees = controller.getTrees();
+                                    Types types = controller.getTypes();
+                                    for (ExpressionTree thr : mth.getThrows()) {
+                                        TypeMirror t = trees.getTypeMirror(new TreePath(path, thr));
+                                        for (Iterator<TypeMirror> it = exs.iterator(); it.hasNext();)
+                                            if (types.isSubtype(it.next(), t))
+                                                it.remove();
+                                        if (thr == lastTree)
+                                            break;
+                                    }
+                                    Elements elements = controller.getElements();
+                                    for (TypeMirror ex : exs)
+                                        if (ex.getKind() == TypeKind.DECLARED && startsWith(env, ((DeclaredType)ex).asElement().getSimpleName().toString()) && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(((DeclaredType)ex).asElement())))
+                                            results.add(JavaCompletionItem.createTypeItem(env.getController(), (TypeElement)((DeclaredType)ex).asElement(), (DeclaredType)ex, anchorOffset, env.getReferencesCount(), elements.isDeprecated(((DeclaredType)ex).asElement()), false, false, false, true, false, env.getWhiteList()));
+                                }
+                                te = controller.getElements().getTypeElement("java.lang.Throwable"); //NOI18N
+                                if (te != null)
+                                    addTypes(env, EnumSet.of(CLASS, INTERFACE, TYPE_PARAMETER), controller.getTypes().getDeclaredType(te));
+                                break;
+                        }
+                        break;
                 }
-            } else if (retType != null && headerText.trim().length() == 0) {
-                insideExpression(env, new TreePath(path, retType));
+                return;
+            }
+            switch (state) {
+                case 0:
+                    addMemberModifiers(env, mth.getModifiers().getFlags(), false);
+                    addTypes(env, EnumSet.of(CLASS, INTERFACE, ENUM, ANNOTATION_TYPE, TYPE_PARAMETER), null);
+                    break;
+                case 1:
+                    if (((TypeParameterTree)lastTree).getBounds().isEmpty()) {
+                        addKeyword(env, EXTENDS_KEYWORD, SPACE, false);
+                    }
+                    break;
+                case 2:
+                    insideExpression(env, new TreePath(path, lastTree));
+                    break;
             }
         }
         
@@ -1481,6 +1543,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                     case DOUBLE_LITERAL:
                     case FLOAT_LITERAL:
                     case FLOAT_LITERAL_INVALID:
+                    case LONG_LITERAL:
                     case ELLIPSIS:
                         if (ts.offset() != expEndPos || ts.token().text().charAt(0) != '.')
                             break;
@@ -2059,6 +2122,26 @@ public class JavaCompletionProvider implements CompletionProvider {
                     lastCase = t;
                 }
                 if (lastCase != null) {
+                    StatementTree last = null;
+                    for(StatementTree stat : lastCase.getStatements()) {
+                        int pos = (int)sourcePositions.getStartPosition(root, stat);
+                        if (pos == Diagnostic.NOPOS || offset <= pos)
+                            break;
+                        last = stat;
+                    }
+                    if (last != null) {
+                        if (last.getKind() == Tree.Kind.TRY) {
+                            if (((TryTree)last).getFinallyBlock() == null) {
+                                addKeyword(env, CATCH_KEYWORD, null, false);
+                                addKeyword(env, FINALLY_KEYWORD, null, false);
+                                if (((TryTree)last).getCatches().size() == 0)
+                                    return;
+                            }
+                        } else if (last.getKind() == Tree.Kind.IF) {
+                            if (((IfTree)last).getElseStatement() == null)
+                                addKeyword(env, ELSE_KEYWORD, null, false);
+                        }
+                    }
                     localResult(env);
                     addKeywordsForBlock(env);
                 } else {
@@ -2725,13 +2808,14 @@ public class JavaCompletionProvider implements CompletionProvider {
                         if (st.getKind() == TypeKind.DECLARED) {
                             final DeclaredType type = (DeclaredType)st;
                             final TypeElement element = (TypeElement)type.asElement();
-                            if (withinScope(env, element))
+                            final boolean withinScope = withinScope(env, element);
+                            if (withinScope && scope.getEnclosingClass() == element)
                                 continue;
                             final boolean isStatic = element.getKind().isClass() || element.getKind().isInterface();
                             final Set<? extends TypeMirror> finalSmartTypes = smartTypes;
                             ElementUtilities.ElementAcceptor acceptor = new ElementUtilities.ElementAcceptor() {
                                 public boolean accept(Element e, TypeMirror t) {
-                                    return (!isStatic || e.getModifiers().contains(STATIC)) &&
+                                    return ((!withinScope && (!isStatic || e.getModifiers().contains(STATIC))) || withinScope && e.getSimpleName().contentEquals(THIS_KEYWORD)) &&
                                             startsWith(env, e.getSimpleName().toString()) &&
                                             tu.isAccessible(scope, e, t) &&
                                             (e.getKind().isField() && isOfSmartType(env, ((VariableElement)e).asType(), finalSmartTypes) || e.getKind() == METHOD && isOfSmartType(env, ((ExecutableElement)e).getReturnType(), finalSmartTypes));
@@ -2749,7 +2833,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             final boolean enclStatic = enclClass != null && enclClass.getModifiers().contains(Modifier.STATIC);
             final boolean ctxStatic = enclClass != null && (tu.isStaticContext(scope) || (env.getPath().getLeaf().getKind() == Tree.Kind.BLOCK && ((BlockTree)env.getPath().getLeaf()).isStatic()));
             final Collection<? extends Element> illegalForwardRefs = env.getForwardReferences();
-            final ExecutableElement method = scope.getEnclosingMethod();
+            final ExecutableElement method = scope.getEnclosingMethod() != null && scope.getEnclosingMethod().getEnclosingElement() == enclClass ? scope.getEnclosingMethod() : null;
             ElementUtilities.ElementAcceptor acceptor = new ElementUtilities.ElementAcceptor() {
                 public boolean accept(Element e, TypeMirror t) {
                     boolean isStatic = ctxStatic || (t != null && t.getKind() == TypeKind.DECLARED && ((DeclaredType)t).asElement() != enclClass && enclStatic);
@@ -2797,7 +2881,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                     case FIELD:
                         String name = e.getSimpleName().toString();
                         if (THIS_KEYWORD.equals(name) || SUPER_KEYWORD.equals(name)) {
-                            results.add(JavaCompletionItem.createKeywordItem(name, null, anchorOffset, false));
+                            results.add(JavaCompletionItem.createKeywordItem(name, null, anchorOffset, isOfSmartType(env, e.asType(), smartTypes)));
                         } else {
                             TypeMirror tm = asMemberOf(e, enclClass != null ? enclClass.asType() : null, types);
                             results.add(JavaCompletionItem.createVariableItem(env.getController(), (VariableElement)e, tm, anchorOffset, null, env.getScope().getEnclosingClass() != e.getEnclosingElement(), elements.isDeprecated(e), isOfSmartType(env, tm, smartTypes), env.assignToVarPos(), env.getWhiteList()));
@@ -3029,7 +3113,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                     case PARAMETER:
                         String name = e.getSimpleName().toString();
                         if (THIS_KEYWORD.equals(name) || CLASS_KEYWORD.equals(name) || SUPER_KEYWORD.equals(name)) {
-                            results.add(JavaCompletionItem.createKeywordItem(name, null, anchorOffset, false));
+                            results.add(JavaCompletionItem.createKeywordItem(name, null, anchorOffset, isOfSmartType(env, e.asType(), smartTypes)));
                         } else {
                             TypeMirror tm = type.getKind() == TypeKind.DECLARED ? types.asMemberOf((DeclaredType)type, e) : e.asType();
                             results.add(JavaCompletionItem.createVariableItem(env.getController(), (VariableElement)e, tm, anchorOffset, autoImport ? env.getReferencesCount() : null, typeElem != e.getEnclosingElement(), elements.isDeprecated(e), isOfSmartType(env, tm, smartTypes), env.assignToVarPos(), env.getWhiteList()));
@@ -3122,8 +3206,9 @@ public class JavaCompletionProvider implements CompletionProvider {
         private void addPackages(Env env, String fqnPrefix, boolean inPkgStmt) {
             if (fqnPrefix == null)
                 fqnPrefix = EMPTY;
+            String prefix = env.getPrefix() != null ? fqnPrefix + env.getPrefix() : null;
             for (String pkgName : env.getController().getClasspathInfo().getClassIndex().getPackageNames(fqnPrefix, true, EnumSet.allOf(ClassIndex.SearchScope.class)))
-                if (startsWith(env, pkgName) && !Utilities.isExcluded(pkgName + ".")) //NOI18N
+                if (startsWith(env, pkgName, prefix) && !Utilities.isExcluded(pkgName + ".")) //NOI18N
                     results.add(JavaCompletionItem.createPackageItem(pkgName, anchorOffset, inPkgStmt));
         }
         
@@ -4052,7 +4137,7 @@ public class JavaCompletionProvider implements CompletionProvider {
         private Set<? extends TypeMirror> getSmartTypes(Env env) throws IOException {
             int offset = env.getOffset();
             final CompilationController controller = env.getController();
-            TreePath path = env.getPath();
+            TreePath path = controller.getTreeUtilities().pathFor(offset);
             Tree lastTree = null;
             int dim = 0;
             while(path != null) {
@@ -4173,7 +4258,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                             sourcePositions = env.getSourcePositions();
                             root = env.getRoot();
                             text = null;
-                            if (efl.getVariable() == null) {
+                            if (efl.getVariable() == null || sourcePositions.getEndPosition(root, efl.getVariable()) > offset) {
                                 text = controller.getText().substring((int)sourcePositions.getStartPosition(root, efl), offset).trim();
                                 int idx = text.indexOf('('); //NOI18N
                                 if (idx >= 0)
@@ -4225,6 +4310,9 @@ public class JavaCompletionProvider implements CompletionProvider {
                             }
                             Tree mid = mi.getMethodSelect();
                             path = new TreePath(path, mid);
+                            TypeMirror typeMirror = controller.getTrees().getTypeMirror(path);
+                            final ExecutableType midTM = typeMirror != null && typeMirror.getKind() == TypeKind.EXECUTABLE ? (ExecutableType)typeMirror : null;
+                            final ExecutableElement midEl = midTM == null ? null : (ExecutableElement)controller.getTrees().getElement(path);
                             switch (mid.getKind()) {
                                 case MEMBER_SELECT: {
                                     String name = ((MemberSelectTree)mid).getIdentifier().toString();
@@ -4244,7 +4332,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                                                 return e.getKind() == METHOD && (!isStatic || e.getModifiers().contains(STATIC)) && tu.isAccessible(scope, e, isSuperCall && enclType != null ? enclType : t);
                                             }
                                         };
-                                        return getMatchingArgumentTypes(tm, controller.getElementUtilities().getMembers(tm, acceptor), name, args, targs, controller.getTypes(), controller.getTypeUtilities());
+                                        return getMatchingArgumentTypes(tm, controller.getElementUtilities().getMembers(tm, acceptor), name, args, targs, midEl, midTM, controller.getTypes(), controller.getTypeUtilities());
                                     }
                                     return null;
                                 }
@@ -4261,18 +4349,18 @@ public class JavaCompletionProvider implements CompletionProvider {
                                             }
                                         };
                                         TypeMirror superclass = enclClass.getSuperclass();
-                                        return getMatchingArgumentTypes(superclass, controller.getElementUtilities().getMembers(superclass, acceptor), INIT, args, targs, controller.getTypes(), controller.getTypeUtilities());
+                                        return getMatchingArgumentTypes(superclass, controller.getElementUtilities().getMembers(superclass, acceptor), INIT, args, targs, midEl, midTM, controller.getTypes(), controller.getTypeUtilities());
                                     }
                                     ElementUtilities.ElementAcceptor acceptor = new ElementUtilities.ElementAcceptor() {
                                         public boolean accept(Element e, TypeMirror t) {
                                             return e.getKind() == METHOD && (!isStatic || e.getModifiers().contains(STATIC)) && tu.isAccessible(scope, e, t);
                                         }
                                     };
-                                    return getMatchingArgumentTypes(enclClass != null ? enclClass.asType() : null, controller.getElementUtilities().getLocalMembersAndVars(scope, acceptor), THIS_KEYWORD.equals(name) ? INIT : name, args, targs, controller.getTypes(), controller.getTypeUtilities());
+                                    return getMatchingArgumentTypes(enclClass != null ? enclClass.asType() : null, controller.getElementUtilities().getLocalMembersAndVars(scope, acceptor), THIS_KEYWORD.equals(name) ? INIT : name, args, targs, midEl, midTM, controller.getTypes(), controller.getTypeUtilities());
                                     }
                                 }
                             }
-                        return null;
+                        break;
                     case NEW_CLASS:
                         NewClassTree nc = (NewClassTree)tree;
                         sourcePositions = env.getSourcePositions();
@@ -4300,6 +4388,10 @@ public class JavaCompletionProvider implements CompletionProvider {
                                     targs[j++] = ta;
                                 }
                             }
+                            Element elem = controller.getTrees().getElement(path);
+                            ExecutableElement ncElem = elem != null && elem.getKind() == CONSTRUCTOR ? (ExecutableElement)elem : null;
+                            TypeMirror ncTM = ncElem != null ? ncElem.asType() : null;
+                            ExecutableType ncType = ncTM != null && ncTM.getKind() == TypeKind.EXECUTABLE ? (ExecutableType)ncTM : null;
                             Tree mid = nc.getIdentifier();
                             path = new TreePath(path, mid);
                             TypeMirror tm = trees.getTypeMirror(path);
@@ -4317,11 +4409,11 @@ public class JavaCompletionProvider implements CompletionProvider {
                                         return e.getKind() == CONSTRUCTOR && (tu.isAccessible(scope, e, t) || isAnonymous && e.getModifiers().contains(PROTECTED));
                                     }
                                 };
-                                return getMatchingArgumentTypes(tm, controller.getElementUtilities().getMembers(tm, acceptor), INIT, args, targs, controller.getTypes(), controller.getTypeUtilities());
+                                return getMatchingArgumentTypes(tm, controller.getElementUtilities().getMembers(tm, acceptor), INIT, args, targs, ncElem, ncType, controller.getTypes(), controller.getTypeUtilities());
                             }
                             return null;
                         }
-                        return null;
+                        break;
                     case NEW_ARRAY:
                         NewArrayTree nat = (NewArrayTree)tree;
                         Tree arrayType = nat.getType();
@@ -4332,6 +4424,9 @@ public class JavaCompletionProvider implements CompletionProvider {
                         sourcePositions = env.getSourcePositions();
                         root = env.getRoot();
                         int typeEndPos = (int)sourcePositions.getEndPosition(root, arrayType);
+                        if (typeEndPos > offset) {
+                            break;
+                        }
                         text = controller.getText().substring(typeEndPos, offset);
                         if (text.indexOf('{') >= 0) {
                             type = controller.getTrees().getTypeMirror(new TreePath(path, arrayType));
@@ -4391,19 +4486,33 @@ public class JavaCompletionProvider implements CompletionProvider {
                     case AND_ASSIGNMENT:
                     case XOR_ASSIGNMENT:
                     case OR_ASSIGNMENT:
-                    case PREFIX_INCREMENT:
-                    case PREFIX_DECREMENT:
-                    case BITWISE_COMPLEMENT:
-                    case LEFT_SHIFT:
-                    case RIGHT_SHIFT:
-                    case UNSIGNED_RIGHT_SHIFT:
                     case LEFT_SHIFT_ASSIGNMENT:
                     case RIGHT_SHIFT_ASSIGNMENT:
                     case UNSIGNED_RIGHT_SHIFT_ASSIGNMENT:
+                        CompoundAssignmentTree cat = (CompoundAssignmentTree)tree;
+                        pos = (int)env.getSourcePositions().getEndPosition(env.getRoot(), cat.getVariable());
+                        if (offset <= pos)
+                            break;
+                        ret = new HashSet<TypeMirror>();
+                        types = controller.getTypes();
+                        ret.add(types.getPrimitiveType(TypeKind.BYTE));
+                        ret.add(types.getPrimitiveType(TypeKind.CHAR));
+                        ret.add(types.getPrimitiveType(TypeKind.INT));
+                        ret.add(types.getPrimitiveType(TypeKind.LONG));
+                        ret.add(types.getPrimitiveType(TypeKind.SHORT));
+                        return ret;
+                    case LEFT_SHIFT:
+                    case RIGHT_SHIFT:
+                    case UNSIGNED_RIGHT_SHIFT:
                     case AND:                        
                     case OR:
                     case XOR:
                     case REMAINDER:
+                        BinaryTree bt = (BinaryTree)tree;
+                        pos = (int)env.getSourcePositions().getEndPosition(env.getRoot(), bt.getLeftOperand());
+                        if (offset <= pos)
+                            break;
+                    case BITWISE_COMPLEMENT:
                         ret = new HashSet<TypeMirror>();
                         types = controller.getTypes();
                         ret.add(types.getPrimitiveType(TypeKind.BYTE));
@@ -4414,10 +4523,19 @@ public class JavaCompletionProvider implements CompletionProvider {
                         return ret;
                     case CONDITIONAL_AND:
                     case CONDITIONAL_OR:
+                        bt = (BinaryTree)tree;
+                        pos = (int)env.getSourcePositions().getEndPosition(env.getRoot(), bt.getLeftOperand());
+                        if (offset <= pos)
+                            break;
                     case LOGICAL_COMPLEMENT:
                         return Collections.singleton(controller.getTypes().getPrimitiveType(TypeKind.BOOLEAN));
                     case PLUS:
-                        BinaryTree bt = (BinaryTree)tree;
+                    case EQUAL_TO:
+                    case NOT_EQUAL_TO:
+                        bt = (BinaryTree)tree;
+                        pos = (int)env.getSourcePositions().getEndPosition(env.getRoot(), bt.getLeftOperand());
+                        if (offset <= pos)
+                            break;
                         TypeMirror tm = controller.getTrees().getTypeMirror(new TreePath(path, bt.getLeftOperand()));
                         if (tm == null)
                             return null;
@@ -4435,7 +4553,10 @@ public class JavaCompletionProvider implements CompletionProvider {
                         }
                         return Collections.singleton(tm);
                     case PLUS_ASSIGNMENT:
-                        CompoundAssignmentTree cat = (CompoundAssignmentTree)tree;
+                        cat = (CompoundAssignmentTree)tree;
+                        pos = (int)env.getSourcePositions().getEndPosition(env.getRoot(), cat.getVariable());
+                        if (offset <= pos)
+                            break;
                         tm = controller.getTrees().getTypeMirror(new TreePath(path, cat.getVariable()));
                         if (tm == null)
                             return null;
@@ -4455,15 +4576,33 @@ public class JavaCompletionProvider implements CompletionProvider {
                     case MULTIPLY_ASSIGNMENT:
                     case DIVIDE_ASSIGNMENT:
                     case MINUS_ASSIGNMENT:
+                        cat = (CompoundAssignmentTree)tree;
+                        pos = (int)env.getSourcePositions().getEndPosition(env.getRoot(), cat.getVariable());
+                        if (offset <= pos)
+                            break;
+                        ret = new HashSet<TypeMirror>();
+                        types = controller.getTypes();
+                        ret.add(types.getPrimitiveType(TypeKind.BYTE));
+                        ret.add(types.getPrimitiveType(TypeKind.CHAR));
+                        ret.add(types.getPrimitiveType(TypeKind.DOUBLE));
+                        ret.add(types.getPrimitiveType(TypeKind.FLOAT));
+                        ret.add(types.getPrimitiveType(TypeKind.INT));
+                        ret.add(types.getPrimitiveType(TypeKind.LONG));
+                        ret.add(types.getPrimitiveType(TypeKind.SHORT));
+                        return ret;
                     case DIVIDE:
-                    case EQUAL_TO:
                     case GREATER_THAN:
                     case GREATER_THAN_EQUAL:
                     case LESS_THAN:
                     case LESS_THAN_EQUAL:
                     case MINUS:
                     case MULTIPLY:
-                    case NOT_EQUAL_TO:
+                        bt = (BinaryTree)tree;
+                        pos = (int)env.getSourcePositions().getEndPosition(env.getRoot(), bt.getLeftOperand());
+                        if (offset <= pos)
+                            break;
+                    case PREFIX_INCREMENT:
+                    case PREFIX_DECREMENT:
                     case UNARY_PLUS:
                     case UNARY_MINUS:
                         ret = new HashSet<TypeMirror>();
@@ -4483,11 +4622,6 @@ public class JavaCompletionProvider implements CompletionProvider {
                             if (text.endsWith(")")) //NOI18N
                                 return null;
                         }
-                        break;
-                    case TYPE_CAST:
-                        TypeCastTree tct = (TypeCastTree)tree;
-                        if (env.getSourcePositions().getEndPosition(env.getRoot(), tct.getType()) <= offset)
-                            return null;
                         break;
                 }
                 lastTree = tree;
@@ -4670,7 +4804,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             return ret.isEmpty() ? null : ret;
         }
         
-        private Set<TypeMirror> getMatchingArgumentTypes(TypeMirror type, Iterable<? extends Element> elements, String name, TypeMirror[] argTypes, TypeMirror[] typeArgTypes, Types types, TypeUtilities tu) {
+        private Set<TypeMirror> getMatchingArgumentTypes(TypeMirror type, Iterable<? extends Element> elements, String name, TypeMirror[] argTypes, TypeMirror[] typeArgTypes, ExecutableElement prototypeSym, ExecutableType prototype, Types types, TypeUtilities tu) {
             Set<TypeMirror> ret = new HashSet<TypeMirror>();
             for (Element e : elements) {
                 if ((e.getKind() == CONSTRUCTOR || e.getKind() == METHOD) && name.contentEquals(e.getSimpleName())) {
@@ -4679,7 +4813,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                     boolean varArgs = ((ExecutableElement)e).isVarArgs();
                     if (!varArgs && (parSize <= argTypes.length))
                         continue;
-                    ExecutableType meth = (ExecutableType)asMemberOf(e, type, types);
+                    ExecutableType meth = e == prototypeSym && prototype != null ? prototype : (ExecutableType)asMemberOf(e, type, types);
                     Iterator<? extends TypeMirror> parIt = meth.getParameterTypes().iterator();
                     TypeMirror param = null;
                     for (int i = 0; i <= argTypes.length; i++) {
@@ -4695,7 +4829,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                                 toAdd = param;
                             if (varArgs && !parIt.hasNext() && param.getKind() == TypeKind.ARRAY)
                                 toAdd = ((ArrayType)param).getComponentType();
-                            if (toAdd != null && ret.add(toAdd)) {
+                            if (toAdd != null && ret.add(toAdd) && toAdd.getKind() != TypeKind.TYPEVAR) {
                                 TypeMirror toRemove = null;
                                 for (TypeMirror tm : ret) {
                                     if (tm != toAdd) {
@@ -4819,13 +4953,14 @@ public class JavaCompletionProvider implements CompletionProvider {
                             ts.token().id().primaryCategory().startsWith("string") || //NOI18N
                             ts.token().id().primaryCategory().equals("literal")) //NOI18N
                         { //TODO: Use isKeyword(...) when available
-                            prefix = ts.token().toString().substring(0, len);
+                            prefix = ts.token().text().toString().substring(0, len);
                             offset = ts.offset();
                         } else if ((ts.token().id() == JavaTokenId.DOUBLE_LITERAL
                                 || ts.token().id() == JavaTokenId.FLOAT_LITERAL
-                                || ts.token().id() == JavaTokenId.FLOAT_LITERAL_INVALID)
+                                || ts.token().id() == JavaTokenId.FLOAT_LITERAL_INVALID
+                                || ts.token().id() == JavaTokenId.LONG_LITERAL)
                                 && ts.token().text().charAt(0) == '.') {
-                            prefix = ts.token().toString().substring(1, len);
+                            prefix = ts.token().text().toString().substring(1, len);
                             offset = ts.offset() + 1;
                         }
                     }
@@ -5208,6 +5343,7 @@ public class JavaCompletionProvider implements CompletionProvider {
 
             public Set<? extends TypeMirror> getSmartTypes() throws IOException {
                 if (smartTypes == null) {
+                    controller.toPhase(Phase.RESOLVED);
                     smartTypes = JavaCompletionQuery.this.getSmartTypes(this);
                     if(smartTypes != null) {
                         Iterator<? extends TypeMirror> it = smartTypes.iterator();

@@ -71,7 +71,7 @@ public class RepositoryCacheMap<K,V>  {
     private final TreeMap<K, RepositoryCacheValue<V>>   keyToValue;
     private final TreeMap<RepositoryCacheValue<V>, K>   valueToKey;
     
-    private AtomicInteger capacity;
+    private final int capacity;
     private static final int DEFAULT_CAPACITY  = 20;
     private static AtomicInteger currentBornStamp = new AtomicInteger(0);
     
@@ -142,6 +142,11 @@ public class RepositoryCacheMap<K,V>  {
             }
         }
 
+        @Override
+        public String toString() {
+            return "RepositoryCacheValue {" + value + ", frq=" + frequency + ", nwBrn=" + newBorn + ", stmp=" + bornStamp + '}'; // NOI18N
+        }
+
     }
     
     
@@ -151,7 +156,7 @@ public class RepositoryCacheMap<K,V>  {
     public RepositoryCacheMap(final int capacity) {
         keyToValue      = new TreeMap<K, RepositoryCacheValue<V>>();
         valueToKey      = new TreeMap<RepositoryCacheValue<V>, K>();
-        this.capacity   = new AtomicInteger((capacity >0)?capacity:DEFAULT_CAPACITY);
+        this.capacity   = (capacity > 0) ? capacity : DEFAULT_CAPACITY;
     }
 
     public V get(final K key) {
@@ -172,9 +177,7 @@ public class RepositoryCacheMap<K,V>  {
             softAssert(!(keyToValue.size() < valueToKey.size()), "valueToKeyStorage contains more elements than keyToValueStorage key=" + key); //NOI18N
             softAssert(!(keyToValue.size() > valueToKey.size()), "keyToValueStorage contains more elements than valueToKeyStorage"); //NOI18N
 
-            // FIXUP: zero check is a workaround for #119805 NoSuchElementException on start IDE with opened projects
-            // take this inot acct when rewriting this class according to #120673(Rewrite repository files cache synchronization)
-            if (capacity.intValue() == 0 || keyToValue.size() < capacity.intValue()) {
+            if (keyToValue.size() < capacity) {
                 RepositoryCacheValue<V> oldValue = keyToValue.put(key, entry);
                 softAssert(oldValue == null, "Value replacement in RepositoryCacheMap key=" + key); //NOI18N
                 valueToKey.put(entry, key);
@@ -197,7 +200,7 @@ public class RepositoryCacheMap<K,V>  {
         return null;
     }
     
-    public V remove(Object key) {
+    public V remove(K key) {
         RepositoryCacheValue<V> entry = keyToValue.remove(key);
         if (entry != null) {
             valueToKey.remove(entry);

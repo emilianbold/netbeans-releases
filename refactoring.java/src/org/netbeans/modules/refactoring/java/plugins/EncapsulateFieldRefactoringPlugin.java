@@ -310,7 +310,7 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
                 if (ElementKind.METHOD == elm.getKind()) {
                     ExecutableElement m = (ExecutableElement) elm;
                     if (name.contentEquals(m.getSimpleName())
-                            && compareParams(params, m.getParameters())
+                            && compareParams(javac, params, m.getParameters())
                             && isAccessible(javac, clazz, m)) {
                         return m;
                     }
@@ -341,7 +341,7 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
                 if (ElementKind.METHOD == elm.getKind()) {
                     ExecutableElement m = (ExecutableElement) elm;
                     if (name.contentEquals(m.getSimpleName())
-                            && compareParams(params, m.getParameters())
+                            && compareParams(javac, params, m.getParameters())
                             && RefactoringUtils.isWeakerAccess(elm.getModifiers(), methodModifiers)) {
                         String msg = NbBundle.getMessage(
                         EncapsulateFieldRefactoringPlugin.class,
@@ -374,11 +374,14 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
         return utils.getPackageOf(elm) == utils.getPackageOf(clazz);
     }
 
-    private static boolean compareParams(List<? extends VariableElement> params1, List<? extends VariableElement> params2) {
+    private static boolean compareParams(CompilationInfo javac, List<? extends VariableElement> params1, List<? extends VariableElement> params2) {
+        Types types = javac.getTypes();
         if (params1.size() == params2.size()) {
             Iterator<? extends VariableElement> it1 = params1.iterator();
             for (VariableElement ve : params2) {
-                if (ve.asType() != it1.next().asType()) {
+                TypeMirror veType = types.erasure(ve.asType());
+                TypeMirror asType = types.erasure(it1.next().asType());
+                if (veType != asType) {
                     return false;
                 }
             }
@@ -1001,7 +1004,7 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
             setterBody.append("{");//NOI18N
 
             if (propertyChange != null || vetoableChange != null) {
-                setterBody.append(field.asType().toString()).append(" ").append(oldName).append(" = ").append(fieldName).append(";");//NOI18N
+                setterBody.append(field.asType().toString()).append(" ").append(oldName).append(" = ").append(longName).append(";");//NOI18N
             }
             if (vetoableChange != null) {
                 setterBody.append(vetoableChange.getName()).append(".fireVetoableChange(").append(propName.getName()).append(", ").append(oldName).append(", ").append(fieldName).append(");");//NOI18N

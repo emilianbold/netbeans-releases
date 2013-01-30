@@ -147,7 +147,15 @@ public class ListenerPanel implements WizardDescriptor.Panel {
             wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,org.openide.util.NbBundle.getMessage(ListenerPanel.class, "MSG_noResourceInClassPath", resource));
             return false;
         }
+
+        WebModule module = WebModule.getWebModule(project.getProjectDirectory());
+        if (createElementInDD() && (module == null || module.getWebInf() == null)) {
+            wizard.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE,org.openide.util.NbBundle.getMessage(ListenerPanel.class, "MSG_noWebInfDirectory", resource)); //NOI18N
+            return true;
+        }
+
         wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, ""); //NOI18N
+        wizard.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE, ""); //NOI18N
         return true;
     } 
     
@@ -199,7 +207,7 @@ public class ListenerPanel implements WizardDescriptor.Panel {
     boolean isRequestListener() {return component.isRequestListener();}
     
     boolean isRequestAttrListener() {return component.isRequestAttrListener();}
-    
+
     boolean isListenerSelected() {
         return isContextListener() || isContextAttrListener() ||
             isSessionListener() || isSessionAttrListener() || 

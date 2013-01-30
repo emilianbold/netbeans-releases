@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.32
+#Version 1.36.1
 
 CLSS public java.lang.Object
 cons public init()
@@ -25,7 +25,9 @@ supr java.lang.Object
 CLSS public final org.netbeans.api.project.libraries.Library
 fld public final static java.lang.String PROP_CONTENT = "content"
 fld public final static java.lang.String PROP_DESCRIPTION = "description"
+fld public final static java.lang.String PROP_DISPLAY_NAME = "displayName"
 fld public final static java.lang.String PROP_NAME = "name"
+fld public final static java.lang.String PROP_PROPERTIES = "properties"
 meth public boolean equals(java.lang.Object)
 meth public int hashCode()
 meth public java.lang.String getDescription()
@@ -35,6 +37,8 @@ meth public java.lang.String getType()
 meth public java.lang.String toString()
 meth public java.util.List<java.net.URI> getURIContent(java.lang.String)
 meth public java.util.List<java.net.URL> getContent(java.lang.String)
+meth public java.util.Map<java.lang.String,java.lang.String> getProperties()
+ anno 0 org.netbeans.api.annotations.common.NonNull()
 meth public org.netbeans.api.project.libraries.LibraryManager getManager()
 meth public void addPropertyChangeListener(java.beans.PropertyChangeListener)
 meth public void removePropertyChangeListener(java.beans.PropertyChangeListener)
@@ -77,6 +81,13 @@ meth public org.netbeans.api.project.libraries.Library createLibrary(java.lang.S
  anno 3 org.netbeans.api.annotations.common.NullAllowed()
  anno 4 org.netbeans.api.annotations.common.NullAllowed()
  anno 5 org.netbeans.api.annotations.common.NonNull()
+meth public org.netbeans.api.project.libraries.Library createLibrary(java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.util.Map<java.lang.String,java.util.List<java.net.URL>>,java.util.Map<java.lang.String,java.lang.String>) throws java.io.IOException
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+ anno 2 org.netbeans.api.annotations.common.NonNull()
+ anno 3 org.netbeans.api.annotations.common.NullAllowed()
+ anno 4 org.netbeans.api.annotations.common.NullAllowed()
+ anno 5 org.netbeans.api.annotations.common.NonNull()
+ anno 6 org.netbeans.api.annotations.common.NonNull()
 meth public org.netbeans.api.project.libraries.Library createLibrary(java.lang.String,java.lang.String,java.util.Map<java.lang.String,java.util.List<java.net.URL>>) throws java.io.IOException
 meth public org.netbeans.api.project.libraries.Library createURILibrary(java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.util.Map<java.lang.String,java.util.List<java.net.URI>>) throws java.io.IOException
  anno 1 org.netbeans.api.annotations.common.NonNull()
@@ -84,6 +95,13 @@ meth public org.netbeans.api.project.libraries.Library createURILibrary(java.lan
  anno 3 org.netbeans.api.annotations.common.NullAllowed()
  anno 4 org.netbeans.api.annotations.common.NullAllowed()
  anno 5 org.netbeans.api.annotations.common.NonNull()
+meth public org.netbeans.api.project.libraries.Library createURILibrary(java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.util.Map<java.lang.String,java.util.List<java.net.URI>>,java.util.Map<java.lang.String,java.lang.String>) throws java.io.IOException
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+ anno 2 org.netbeans.api.annotations.common.NonNull()
+ anno 3 org.netbeans.api.annotations.common.NullAllowed()
+ anno 4 org.netbeans.api.annotations.common.NullAllowed()
+ anno 5 org.netbeans.api.annotations.common.NonNull()
+ anno 6 org.netbeans.api.annotations.common.NonNull()
 meth public org.netbeans.api.project.libraries.Library createURILibrary(java.lang.String,java.lang.String,java.util.Map<java.lang.String,java.util.List<java.net.URI>>) throws java.io.IOException
 meth public org.netbeans.api.project.libraries.Library getLibrary(java.lang.String)
 meth public org.netbeans.api.project.libraries.Library[] getLibraries()
@@ -145,6 +163,14 @@ CLSS public abstract interface org.netbeans.spi.project.libraries.LibraryImpleme
 intf org.netbeans.spi.project.libraries.LibraryImplementation
 meth public abstract java.util.List<java.net.URI> getURIContent(java.lang.String)
 meth public abstract void setURIContent(java.lang.String,java.util.List<java.net.URI>)
+
+CLSS public abstract interface org.netbeans.spi.project.libraries.LibraryImplementation3
+fld public final static java.lang.String PROP_PROPERTIES = "properties"
+intf org.netbeans.spi.project.libraries.NamedLibraryImplementation
+meth public abstract java.util.Map<java.lang.String,java.lang.String> getProperties()
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+meth public abstract void setProperties(java.util.Map<java.lang.String,java.lang.String>)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
 
 CLSS public abstract interface org.netbeans.spi.project.libraries.LibraryProvider<%0 extends org.netbeans.spi.project.libraries.LibraryImplementation>
 fld public final static java.lang.String PROP_LIBRARIES = "libraries"

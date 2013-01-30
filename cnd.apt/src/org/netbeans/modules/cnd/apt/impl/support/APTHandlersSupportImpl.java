@@ -176,7 +176,7 @@ public class APTHandlersSupportImpl {
 
     public static LinkedList<APTIncludeHandler.IncludeInfo> extractIncludeStack(APTPreprocHandler.State state) {
         assert state != null;
-        List<APTIncludeHandler.IncludeInfo> inclStack = getIncludeStack(((APTPreprocHandlerImpl.StateImpl)state).inclState);
+        Collection<APTIncludeHandler.IncludeInfo> inclStack = getIncludeStack(((APTPreprocHandlerImpl.StateImpl)state).inclState);
         // return copy to prevent modification of frozen state objects
         return inclStack == null ? new LinkedList<APTIncludeHandler.IncludeInfo>() : new LinkedList<APTIncludeHandler.IncludeInfo>(inclStack);
     }
@@ -196,7 +196,7 @@ public class APTHandlersSupportImpl {
 	return (state == null) ? null : ((APTIncludeHandlerImpl.StateImpl) state).getStartEntry();
     }
     
-    private static LinkedList<APTIncludeHandler.IncludeInfo> getIncludeStack(APTIncludeHandler.State inclState) {
+    private static Collection<APTIncludeHandler.IncludeInfo> getIncludeStack(APTIncludeHandler.State inclState) {
         return inclState == null ? null : ((APTIncludeHandlerImpl.StateImpl)inclState).getIncludeStack();
     }
     

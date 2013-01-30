@@ -89,7 +89,7 @@ public class PersistenceLibrarySupport {
     public static final String VOLUME_TYPE_SRC = "src";       //NOI18N
     public static final String VOLUME_TYPE_JAVADOC = "javadoc";       //NOI18N
     public static final String LIBRARY_TYPE = "j2se";       //NOI18N
-    public static final String[] VOLUME_TYPES = new String[]{
+    static final String[] VOLUME_TYPES = new String[]{
         VOLUME_TYPE_CLASSPATH,
         VOLUME_TYPE_SRC,
         VOLUME_TYPE_JAVADOC,};
@@ -373,6 +373,9 @@ public class PersistenceLibrarySupport {
     private static List<ProviderLibrary> createLibraries(String providerClass) {
         List<ProviderLibrary> providerLibs = new ArrayList<ProviderLibrary>();
         for (Library each : LibraryManager.getDefault().getLibraries()) {
+            if (!"j2se".equals(each.getType())) { // NOI18N
+                continue;
+            }
             ClassPath cp = getLibraryClassPath(each);
             Provider provider = extractProvider(cp, providerClass);
             if (provider != null && containsClass(cp, "javax.persistence.EntityManager")) { //NOI18N

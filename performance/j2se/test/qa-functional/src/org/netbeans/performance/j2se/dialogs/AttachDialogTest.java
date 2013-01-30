@@ -44,16 +44,15 @@
 
 package org.netbeans.performance.j2se.dialogs;
 
-import org.netbeans.modules.performance.utilities.PerformanceTestCase;
-import org.netbeans.performance.j2se.setup.J2SESetup;
-
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JMenuBarOperator;
-import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.junit.NbTestSuite;
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
+import org.netbeans.performance.j2se.setup.J2SEBaseSetup;
 
 /**
  * Test of View Attach dialog
@@ -78,9 +77,9 @@ public class AttachDialogTest extends PerformanceTestCase {
 
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(J2SESetup.class)
-             .addTest(AttachDialogTest.class)
-             .enableModules(".*").clusters(".*")));
+        suite.addTest(NbModuleSuite.createConfiguration(J2SEBaseSetup.class)
+                .addTest(AttachDialogTest.class)
+                .enableModules(".*").clusters("ide").suite());
         return suite;
     }
 

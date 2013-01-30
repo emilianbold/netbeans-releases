@@ -398,10 +398,10 @@ public class DocumentsDlg extends JPanel implements PropertyChangeListener, Expl
             null
         );
         Dialog dlg = DialogDisplayer.getDefault().createDialog(dlgDesc);
+        dlg.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(DocumentsDlg.class, "ACSD_DocumentsDialog"));
         if( dlg instanceof JDialog ) {
             HelpCtx.setHelpIDString(((JDialog)dlg).getRootPane(), documentsPanel.getHelpCtx().getHelpID());
         }
-        dlg.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(DocumentsDlg.class, "ACSD_DocumentsDialog"));
         getDefault().updateNodes();
         dlg.setVisible(true);
         getDefault().clearNodes();

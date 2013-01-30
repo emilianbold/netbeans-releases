@@ -43,6 +43,7 @@
  */
 package org.netbeans.spi.search.impl;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -51,7 +52,6 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.api.search.SearchRoot;
 import org.netbeans.api.search.SearchScopeOptions;
-import org.netbeans.api.search.provider.SearchInfo;
 import org.netbeans.api.search.provider.SearchListener;
 import org.netbeans.api.search.provider.impl.*;
 import org.netbeans.spi.search.SearchInfoDefinition;
@@ -108,17 +108,53 @@ public class CompoundSearchInfoDefinition extends SearchInfoDefinition {
             return Collections.<FileObject>emptyList().iterator();
         }
 
-        List<SearchInfo> searchableElements =
-                new ArrayList<SearchInfo>(elements.length);
+        List<SearchInfoDefinition> searchableElements =
+                new ArrayList<SearchInfoDefinition>(elements.length);
         for (SearchInfoDefinition element : elements) {
             if (element.canSearch()) {
-                searchableElements.add(new DelegatingSearchInfo(element));
+                searchableElements.add(element);
             }
         }
-        return new CompoundSearchIterator(
+        return new AbstractCompoundIterator<SearchInfoDefinition, FileObject>(
                 searchableElements.toArray(
-                new SearchInfo[searchableElements.size()]),
-                options, listener, terminated);
+                new SearchInfoDefinition[searchableElements.size()]),
+                options, listener, terminated) {
+            @Override
+            protected Iterator<FileObject> getIteratorFor(
+                    SearchInfoDefinition element, SearchScopeOptions options,
+                    SearchListener listener, AtomicBoolean terminated) {
+                return element.filesToSearch(options, listener, terminated);
+            }
+        };
+    }
+
+    /**
+     */
+    @Override
+    public Iterator<URI> urisToSearch(SearchScopeOptions options,
+            SearchListener listener, AtomicBoolean terminated) {
+        if (elements == null) {
+            return Collections.<URI>emptyList().iterator();
+        }
+
+        List<SearchInfoDefinition> searchableElements =
+                new ArrayList<SearchInfoDefinition>(elements.length);
+        for (SearchInfoDefinition element : elements) {
+            if (element.canSearch()) {
+                searchableElements.add(element);
+            }
+        }
+        return new AbstractCompoundIterator<SearchInfoDefinition, URI>(
+                searchableElements.toArray(
+                new SearchInfoDefinition[searchableElements.size()]),
+                options, listener, terminated) {
+            @Override
+            protected Iterator<URI> getIteratorFor(
+                    SearchInfoDefinition element, SearchScopeOptions options,
+                    SearchListener listener, AtomicBoolean terminated) {
+                return element.urisToSearch(options, listener, terminated);
+            }
+        };
     }
 
     @Override

@@ -95,11 +95,16 @@ public class ParseManifest extends Task {
             throw new BuildException("Must specify parameter 'attribute'.");
         }
         try {
-            Manifest mf = new Manifest(new BufferedInputStream(new FileInputStream(manifest)));
-            String attr = mf.getMainAttributes().getValue(attribute);
-            if (attr == null)
-                return;
-            getProject().setProperty(property, attr);
+            BufferedInputStream is = new BufferedInputStream(new FileInputStream(manifest));
+            try {
+                Manifest mf = new Manifest(is);
+                String attr = mf.getMainAttributes().getValue(attribute);
+                if (attr == null)
+                    return;
+                getProject().setProperty(property, attr);
+            } finally {
+                is.close();
+            }
         } catch (Exception x) {
             throw new BuildException("Reading manifest " + manifest + ": " + x, x, getLocation());
         }

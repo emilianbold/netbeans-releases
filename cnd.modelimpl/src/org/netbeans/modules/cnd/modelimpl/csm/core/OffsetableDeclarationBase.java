@@ -47,19 +47,32 @@ package org.netbeans.modules.cnd.modelimpl.csm.core;
 import java.io.IOException;
 import java.util.List;
 import org.netbeans.modules.cnd.antlr.collections.AST;
+import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmTemplate;
 import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
+import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.modelimpl.csm.BuiltinTypes;
+import org.netbeans.modules.cnd.modelimpl.csm.CsmObjectBuilder;
+import org.netbeans.modules.cnd.modelimpl.csm.NamespaceDefinitionImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.NamespaceDefinitionImpl.NamespaceBuilder;
+import org.netbeans.modules.cnd.modelimpl.csm.NamespaceImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.TemplateDescriptor;
 import org.netbeans.modules.cnd.modelimpl.csm.TemplateUtils;
+import org.netbeans.modules.cnd.modelimpl.csm.TypeFactory;
+import org.netbeans.modules.cnd.modelimpl.csm.TypeFactory.TypeBuilder;
+import org.netbeans.modules.cnd.modelimpl.csm.deep.CompoundStatementImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.deep.ExpressionBase.ExpressionBuilder;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
+import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
@@ -240,7 +253,322 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
         }
         return null;
     }
+    
+    public static abstract class ScopedDeclarationBuilder extends OffsetableIdentifiableBuilder {
 
+        private boolean global = true;
+        private CsmObjectBuilder parent;
+        private CsmScope scope;
+
+        public ScopedDeclarationBuilder() {
+        }
+        
+        protected ScopedDeclarationBuilder(ScopedDeclarationBuilder builder) {
+            super(builder);
+            global = builder.global;
+            parent = builder.parent;
+            scope = builder.scope;
+        }        
+        
+        public void setScope(CsmScope scope) {
+            this.scope = scope;
+        }
+        
+        public void setParent(CsmObjectBuilder parent) {
+            this.parent = parent;
+        }        
+
+        public CsmObjectBuilder getParent() {
+            return parent;
+        }
+        
+        public CsmScope getScope() {
+            if(scope != null) {
+                return scope;
+            }
+            if(parent instanceof NamespaceDefinitionImpl.NamespaceBuilder) {
+                scope = ((NamespaceDefinitionImpl.NamespaceBuilder)parent).getNamespace();
+            } else {
+                scope = (NamespaceImpl) getFile().getProject().getGlobalNamespace();
+            }
+            return scope;
+        }
+        
+        protected void addDeclaration(CsmOffsetableDeclaration decl) {
+            if(parent != null) {
+                if(parent instanceof NamespaceBuilder) {
+                    ((NamespaceBuilder)parent).addDeclaration(decl);
+                }          
+            } else {
+                getFileContent().addDeclaration(decl);
+            }                
+            if(getScope() instanceof CsmNamespace) {
+                ((NamespaceImpl)getScope()).addDeclaration(decl);
+            }
+        }        
+
+        public boolean isGlobal() {
+            return global && !(scope instanceof CompoundStatementImpl);
+        }
+
+        public void setLocal() {
+            this.global = false;
+        }
+        
+        @Override
+        public CharSequence getName() {
+            String[] split = super.getName().toString().split("::"); // NOI18N
+            return NameCache.getManager().getString(split[split.length - 1]);
+        }
+        
+        public CharSequence[] getScopeNames() {
+            if(super.getName() != null) {
+                String[] split = super.getName().toString().split("::"); // NOI18N
+                CharSequence[] res = new CharSequence[split.length - 1];
+                for (int i = 0; i < res.length; i++) {
+                    res[i] =  NameCache.getManager().getString(split[i]);
+                }
+                return res;
+            } else {
+                return new CharSequence[0];
+            }
+        }
+    }
+    
+    public static class SimpleDeclarationBuilder extends ScopedDeclarationBuilder {
+        
+        private boolean typedefSpecifier = false;
+        private boolean friendSpecifier = false;
+        private boolean typeSpecifier = false;
+        private boolean inDeclSpecifiers = false;
+        private DeclaratorBuilder declaratorBuilder;
+        private TypeBuilder typeBuilder;
+        private CsmObjectBuilder parametersListBuilder;
+        private TemplateDescriptor.TemplateDescriptorBuilder templateDescriptorBuilder;
+        private ExpressionBuilder initializerBuilder;
+        
+        private boolean _static = false;
+        private boolean _extern = false;
+        private boolean _const = false;
+
+        private boolean constructor = false;
+        private boolean destructor = false;
+
+        public SimpleDeclarationBuilder() {
+        }
+        
+        protected SimpleDeclarationBuilder(SimpleDeclarationBuilder builder) {
+            super(builder);
+            typedefSpecifier = builder.typeSpecifier;
+            friendSpecifier = builder.friendSpecifier;
+            typeSpecifier = builder.typeSpecifier;
+            inDeclSpecifiers = builder.inDeclSpecifiers;
+            
+            declaratorBuilder = builder.declaratorBuilder;
+            typeBuilder = builder.typeBuilder;
+            parametersListBuilder = builder.parametersListBuilder;
+            templateDescriptorBuilder = builder.templateDescriptorBuilder;
+            initializerBuilder = builder.initializerBuilder;
+
+            _static = builder._static;
+            _extern = builder._extern;
+            _const = builder._const;
+
+            constructor = builder.constructor;
+            destructor = builder.destructor;
+        }
+        
+        public void setInitializerBuilder(ExpressionBuilder initializerBuilder) {
+            this.initializerBuilder = initializerBuilder;
+        }
+
+        public ExpressionBuilder getInitializerBuilder() {
+            return initializerBuilder;
+        }
+        
+        public void setConstructor() {
+            this.constructor = true;
+        }
+
+        public void setDestructor() {
+            this.destructor = true;
+        }
+
+        public boolean isConstructor() {
+            return constructor;
+        }
+
+        public boolean isDestructor() {
+            return destructor;
+        }
+
+        public void setFriend() {
+            friendSpecifier = true;
+        }
+                
+        public boolean isFriend() {
+            return friendSpecifier;
+        }
+        
+        public void setStatic() {
+            this._static = true;
+        }
+
+        public void setExtern() {
+            this._extern = true;
+        }
+
+        public void setConst() {
+            this._const = true;
+        }
+
+        public boolean isStatic() {
+            return _static;
+        }
+
+        public boolean isExtern() {
+            return _extern;
+        }
+
+        public boolean isConst() {
+            return _const;
+        }
+
+        
+        public void setTypedefSpecifier() {
+            this.typedefSpecifier = true;
+            if(typeBuilder != null) {
+                typeBuilder.setTypedef();
+            }            
+        }
+
+        public boolean hasTypedefSpecifier() {
+            return typedefSpecifier;
+        }
+
+        public void setTypeSpecifier() {
+            this.typeSpecifier = true;
+        }
+
+        public boolean hasTypeSpecifier() {
+            return typeSpecifier && inDeclSpecifiers;
+        }
+        
+        public void declSpecifiers() {
+            inDeclSpecifiers = true;
+        }
+
+        public void endDeclSpecifiers() {
+            inDeclSpecifiers = false;
+        }
+        
+        public boolean isInDeclSpecifiers() {
+            return inDeclSpecifiers;
+        }
+
+        public void setDeclaratorBuilder(DeclaratorBuilder declaratorBuilder) {
+            this.declaratorBuilder = declaratorBuilder;
+        }
+
+        public void setTemplateDescriptorBuilder(TemplateDescriptor.TemplateDescriptorBuilder templateDescriptorBuilder) {
+            this.templateDescriptorBuilder = templateDescriptorBuilder;
+            if(templateDescriptorBuilder != null) {
+                setStartOffset(templateDescriptorBuilder.getStartOffset());
+            }
+        }
+
+        public TemplateDescriptor.TemplateDescriptorBuilder getTemplateDescriptorBuilder() {
+            return templateDescriptorBuilder;
+        }
+        
+        public TemplateDescriptor getTemplateDescriptor() {
+            TemplateDescriptor td = null;
+            if(getTemplateDescriptorBuilder() != null) {
+                getTemplateDescriptorBuilder().setScope(getScope());
+                td = getTemplateDescriptorBuilder().create();
+            }
+            return td;
+        }
+        
+        public void setTypeBuilder(TypeBuilder typeBuilder) {
+            this.typeBuilder = typeBuilder;
+        }
+
+        public TypeBuilder getTypeBuilder() {
+            return typeBuilder;
+        }
+        
+        
+        public DeclaratorBuilder getDeclaratorBuilder() {
+            return declaratorBuilder;
+        }
+
+        public void setParametersListBuilder(CsmObjectBuilder parametersListBuilder) {
+            this.parametersListBuilder = parametersListBuilder;
+        }
+
+        public CsmObjectBuilder getParametersListBuilder() {
+            return parametersListBuilder;
+        }
+        
+        public boolean isFunction() {
+            return parametersListBuilder != null;
+        }
+        
+        protected CsmType getType() {
+            CsmType type = null;
+            if (getTypeBuilder() != null) {
+                getTypeBuilder().setScope(getScope());
+                type = getTypeBuilder().create();
+            }
+            if (type == null) {
+                type = TypeFactory.createSimpleType(BuiltinTypes.getBuiltIn("int"), getFile(), getStartOffset(), getStartOffset()); // NOI18N
+            }
+            return type;
+        }
+        
+        public CsmDeclaration create() {
+            throw new UnsupportedOperationException("Should not be used."); // NOI18N
+        }
+        
+    }
+    
+    public static class DeclaratorBuilder implements CsmObjectBuilder {
+
+        private int level = 0;
+        private CharSequence name;
+        private NameBuilder nameBuilder;
+        
+        public void setName(CharSequence name) {
+            this.name = name;
+        }
+
+        public CharSequence getName() {
+            return name;
+        }
+        
+        public void enterDeclarator() {
+            level++;
+        }
+        
+        public void leaveDeclarator() {
+            level--;
+        }
+        
+        public boolean isTopDeclarator() {
+            return level == 0;
+        }
+
+        public NameBuilder getNameBuilder() {
+            return nameBuilder;
+        }
+
+        public void setNameBuilder(NameBuilder nameBuilder) {
+            this.nameBuilder = nameBuilder;
+        }
+        
+    }    
+    
     ////////////////////////////////////////////////////////////////////////////
     // impl of SelfPersistent
     
@@ -264,7 +592,11 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
         if (!super.equals(obj)){
             return false;
         }
-        return getName().equals(((OffsetableDeclarationBase<?>)obj).getName());
+        final OffsetableDeclarationBase<?> other = (OffsetableDeclarationBase<?>)obj;
+        if (!this.getKind().equals(other.getKind())) {
+            return false;
+        }
+        return getName().equals(other.getName());
     }
 
     @Override

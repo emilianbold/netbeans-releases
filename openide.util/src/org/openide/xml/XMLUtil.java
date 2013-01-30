@@ -148,7 +148,16 @@ public final class XMLUtil extends Object {
     throws SAXException {
         SAXParserFactory factory = saxes[validate ? 0 : 1][namespaceAware ? 0 : 1];
         if (factory == null) {
-            factory = SAXParserFactory.newInstance();
+            try {
+                factory = SAXParserFactory.newInstance();
+            } catch (FactoryConfigurationError err) {
+                Exceptions.attachMessage(
+                    err, 
+                    "Info about thread context classloader: " + // NOI18N
+                    Thread.currentThread().getContextClassLoader()
+                );
+                throw err;
+            }
             factory.setValidating(validate);
             factory.setNamespaceAware(namespaceAware);
             saxes[validate ? 0 : 1][namespaceAware ? 0 : 1] = factory;

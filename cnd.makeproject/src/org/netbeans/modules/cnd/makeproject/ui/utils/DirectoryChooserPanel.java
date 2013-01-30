@@ -43,19 +43,20 @@
  */
 package org.netbeans.modules.cnd.makeproject.ui.utils;
 
-import org.netbeans.modules.cnd.utils.ui.ListEditorPanel;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyEditorSupport;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JFileChooser;
+import javax.swing.UIManager;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
-import org.netbeans.modules.cnd.makeproject.api.configurations.BooleanConfiguration;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
 import org.netbeans.modules.cnd.makeproject.api.ProjectSupport;
+import org.netbeans.modules.cnd.makeproject.api.configurations.BooleanConfiguration;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.FSPath;
+import org.netbeans.modules.cnd.utils.ui.ListEditorPanel;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.DialogDisplayer;
@@ -88,8 +89,10 @@ public class DirectoryChooserPanel extends javax.swing.JPanel implements HelpCtx
         gridBagConstraints.weighty = 1.0;
         listPanel.add(myListEditorPanel, gridBagConstraints);
         if (inheritValues != null) {
-            inheritTextArea.setBackground(inheritPanel.getBackground());
-            inheritTextArea.setText(inheritText);
+            inheritEditorPane.setFont(UIManager.getFont("Label.font")); //NOI18N
+            inheritEditorPane.setBackground(inheritPanel.getBackground());
+            inheritEditorPane.setText(inheritText);
+            inheritEditorPane.setCaretPosition(0);
             setPreferredSize(new java.awt.Dimension(450, 330));
             inheritCheckBox.setSelected(inheritValues.getValue());
         } else {
@@ -142,11 +145,11 @@ public class DirectoryChooserPanel extends javax.swing.JPanel implements HelpCtx
 
         listPanel = new javax.swing.JPanel();
         inheritPanel = new javax.swing.JPanel();
-        scrollPanel = new javax.swing.JScrollPane();
         panel = new javax.swing.JPanel();
         inheritLabel = new javax.swing.JLabel();
-        inheritTextArea = new javax.swing.JTextArea();
         inheritCheckBox = new javax.swing.JCheckBox();
+        scrollPane = new javax.swing.JScrollPane();
+        inheritEditorPane = new javax.swing.JEditorPane();
 
         setPreferredSize(new java.awt.Dimension(323, 223));
         setLayout(new java.awt.GridBagLayout());
@@ -162,31 +165,16 @@ public class DirectoryChooserPanel extends javax.swing.JPanel implements HelpCtx
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 12);
         add(listPanel, gridBagConstraints);
 
-        inheritPanel.setLayout(new java.awt.GridBagLayout());
-
-        scrollPanel.setBorder(null);
+        inheritPanel.setLayout(new java.awt.BorderLayout());
 
         panel.setLayout(new java.awt.GridBagLayout());
 
-        inheritLabel.setLabelFor(inheritTextArea);
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/utils/Bundle"); // NOI18N
         inheritLabel.setText(bundle.getString("INHERITED_VALUES_LBL")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
         panel.add(inheritLabel, gridBagConstraints);
-
-        inheritTextArea.setEditable(false);
-        inheritTextArea.setLineWrap(true);
-        inheritTextArea.setWrapStyleWord(true);
-        inheritTextArea.setBorder(javax.swing.BorderFactory.createEtchedBorder());
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        panel.add(inheritTextArea, gridBagConstraints);
 
         inheritCheckBox.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(inheritCheckBox, bundle.getString("INHERIT_CHECKBOX_LBL")); // NOI18N
@@ -197,18 +185,25 @@ public class DirectoryChooserPanel extends javax.swing.JPanel implements HelpCtx
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
         panel.add(inheritCheckBox, gridBagConstraints);
 
-        scrollPanel.setViewportView(panel);
+        scrollPane.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+
+        inheritEditorPane.setEditable(false);
+        scrollPane.setViewportView(inheritEditorPane);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        inheritPanel.add(scrollPanel, gridBagConstraints);
+        panel.add(scrollPane, gridBagConstraints);
+
+        inheritPanel.add(panel, java.awt.BorderLayout.CENTER);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -312,18 +307,18 @@ public class DirectoryChooserPanel extends javax.swing.JPanel implements HelpCtx
             if (notifyDescriptor.getValue() != NotifyDescriptor.OK_OPTION) {
                 return;
             }
-            String newS = notifyDescriptor.getInputText();
+            String newS = notifyDescriptor.getInputText().trim();
             replaceElement(o, newS, i);
         }
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox inheritCheckBox;
+    private javax.swing.JEditorPane inheritEditorPane;
     private javax.swing.JLabel inheritLabel;
     private javax.swing.JPanel inheritPanel;
-    private javax.swing.JTextArea inheritTextArea;
     private javax.swing.JPanel listPanel;
     private javax.swing.JPanel panel;
-    private javax.swing.JScrollPane scrollPanel;
+    private javax.swing.JScrollPane scrollPane;
     // End of variables declaration//GEN-END:variables
 
     private static String getString(String key) {

@@ -39,17 +39,18 @@
 package org.netbeans.modules.php.smarty.editor.completion;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Locale;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.php.smarty.SmartyFramework;
 import org.netbeans.modules.php.smarty.editor.completion.entries.SmartyCodeCompletionOffer;
 import org.netbeans.modules.php.smarty.editor.lexer.TplTopTokenId;
 import org.netbeans.modules.php.smarty.editor.utlis.LexerUtils;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
 /**
@@ -64,7 +65,7 @@ public class CodeCompletionUtils {
     public static String getTextPrefix(Document doc, int offset) {
         int readLength = (COMPLETION_MAX_FILTER_LENGHT > offset) ? offset : COMPLETION_MAX_FILTER_LENGHT;
         try {
-            int lastWS = getLastWS(doc.getText(offset - readLength, readLength), SmartyFramework.getOpenDelimiter(NbEditorUtilities.getFileObject(doc)));
+            int lastWS = getLastWS(doc.getText(offset - readLength, readLength), getDocumentOpenDelimiter(doc));
             return doc.getText(offset - lastWS, lastWS);
         } catch (BadLocationException ex) {
             Exceptions.printStackTrace(ex);
@@ -142,12 +143,12 @@ public class CodeCompletionUtils {
         
         tokenSequence.move(possition - 1);
         tokenSequence.movePrevious(); tokenSequence.moveNext();
-        
-        return tokenSequence.token().toString().equals(SmartyFramework.OPEN_DELIMITER);
+
+        return CharSequenceUtilities.textEquals(SmartyFramework.OPEN_DELIMITER, tokenSequence.token().text());
     }
 
     static ArrayList<String> afterSmartyCommand(Document doc, int offset) {
-        String openDelimiter = SmartyFramework.getOpenDelimiter(NbEditorUtilities.getFileObject(doc));
+        String openDelimiter = getDocumentOpenDelimiter(doc);
         // search for command one position back - waits at least for space after command
         int updatedOffset = offset;
         try {
@@ -186,5 +187,14 @@ public class CodeCompletionUtils {
             }
         }
         return availableItems;
+    }
+
+    private static String getDocumentOpenDelimiter(Document doc) {
+        FileObject fileObject = NbEditorUtilities.getFileObject(doc);
+        if (fileObject == null) {
+            return SmartyFramework.getDelimiterDefaultOpen();
+        } else {
+            return SmartyFramework.getOpenDelimiter(fileObject);
+        }
     }
 }

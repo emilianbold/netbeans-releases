@@ -49,10 +49,12 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import org.netbeans.modules.cnd.repository.api.DatabaseTable;
+import org.netbeans.modules.cnd.repository.impl.BaseRepository;
 import org.netbeans.modules.cnd.repository.sfs.FileStorage;
 import org.netbeans.modules.cnd.repository.spi.DatabaseStorage;
 import org.netbeans.modules.cnd.repository.spi.DatabaseStorage.Provider;
 import org.netbeans.modules.cnd.repository.spi.Key;
+import org.netbeans.modules.cnd.repository.spi.Key.Behavior;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.util.Pair;
 import org.netbeans.modules.cnd.utils.CndUtils;
@@ -70,24 +72,34 @@ public final class UnitImpl implements Unit {
     private final Collection<DatabaseStorage> dbStorages = new ArrayList<DatabaseStorage>();
     private final CharSequence unitName;
     private final MemoryCache cache;
+    private final BaseRepository repository;
+    private final int id;
     
-    public UnitImpl(int unitId, final CharSequence unitName) throws IOException {
+    public UnitImpl(int id, final CharSequence unitName, BaseRepository repository) throws IOException {
+        this.id = id;
         assert unitName != null;
         this.unitName = unitName;
-        File homeDir = new File(StorageAllocator.getInstance().getUnitStorageName(unitName));
-        singleFileStorage = FileStorage.create(homeDir);
-        multyFileStorage = new MultyFileStorage(getName());
+        assert repository != null;
+        this.repository = repository;
+        File homeDir = new File(repository.getStorageAllocator().getUnitStorageName(unitName));
+        singleFileStorage = FileStorage.create(homeDir, repository);
+        multyFileStorage = new MultyFileStorage(repository.getFilesAccessStrategy(), getName());
         Collection<? extends Provider> providers = Lookup.getDefault().lookupAll(DatabaseStorage.Provider.class);
         
         for (Provider provider : providers) {
-            DatabaseStorage storage = provider.create(unitId, homeDir);
+            DatabaseStorage storage = provider.create(id, homeDir);
             if (storage != null) {
                 dbStorages.add(storage);
             }
         }
         cache = new MemoryCache();
     }
-    
+
+    @Override
+    public int getId() {
+        return id;
+    }
+
     private Storage getDiskStorage(Key key) {
         assert key != null;
         assert getName().equals(key.getUnit());
@@ -110,7 +122,7 @@ public final class UnitImpl implements Unit {
 
     @Override
     public String toString() {
-        return "UnitImpl{" + unitName + '}'; // NOI18N
+        return "UnitImpl{" + id + ' ' + unitName + '}'; // NOI18N
     }
 
     @Override
@@ -225,6 +237,13 @@ public final class UnitImpl implements Unit {
     @Override
     public void debugDistribution() {
         cache.printDistribution();
+    }
+
+    @Override
+    public void debugDump(Key key) {
+        assert key != null;
+        System.err.printf("\n== Unit debug dump for key %s. Unit name: \"%s\" unit id: %d  \n", key, unitName, id); //NOI18N
+        getDiskStorage(key).debugDump(key);
     }
 
     private static void traceKey(String msg, Key key) {

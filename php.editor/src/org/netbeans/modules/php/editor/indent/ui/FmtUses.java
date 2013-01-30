@@ -42,12 +42,12 @@
 package org.netbeans.modules.php.editor.indent.ui;
 
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.options.editor.spi.PreferencesCustomizer;
+import org.netbeans.modules.php.editor.indent.FmtOptions;
 import org.netbeans.modules.php.editor.indent.FmtOptions.CategorySupport;
 import static org.netbeans.modules.php.editor.indent.FmtOptions.CategorySupport.OPTION_ID;
-import static org.netbeans.modules.php.editor.indent.FmtOptions.preferFullyQualifiedNames;
-import static org.netbeans.modules.php.editor.indent.FmtOptions.preferMultipleUseStatementsCombined;
-import static org.netbeans.modules.php.editor.indent.FmtOptions.startUseWithNamespaceSeparator;
 
 /**
  *
@@ -55,14 +55,14 @@ import static org.netbeans.modules.php.editor.indent.FmtOptions.startUseWithName
  */
 public class FmtUses extends javax.swing.JPanel {
 
-    /**
-     * Creates new form FmtUses
-     */
+    private static final Logger LOGGER = Logger.getLogger(FmtUses.class.getName());
+
     public FmtUses() {
         initComponents();
-        preferFullyQualifiedNamesCheckBox.putClientProperty(OPTION_ID, preferFullyQualifiedNames);
-        preferMultipleUseStatementsCombinedCheckBox.putClientProperty(OPTION_ID, preferMultipleUseStatementsCombined);
-        startUseWithNamespaceSeparatorCheckBox.putClientProperty(OPTION_ID, startUseWithNamespaceSeparator);
+        preferFullyQualifiedNamesCheckBox.putClientProperty(OPTION_ID, FmtOptions.PREFER_FULLY_QUALIFIED_NAMES);
+        preferMultipleUseStatementsCombinedCheckBox.putClientProperty(OPTION_ID, FmtOptions.PREFER_MULTIPLE_USE_STATEMENTS_COMBINED);
+        startUseWithNamespaceSeparatorCheckBox.putClientProperty(OPTION_ID, FmtOptions.START_USE_WITH_NAMESPACE_SEPARATOR);
+        aliasesCapitalsOfNamespacesCheckBox.putClientProperty(OPTION_ID, FmtOptions.ALIASES_CAPITALS_OF_NAMESPACES);
     }
 
     public static PreferencesCustomizer.Factory getController() {
@@ -70,7 +70,7 @@ public class FmtUses extends javax.swing.JPanel {
         try {
             preview = Utils.loadPreviewText(FmtUses.class.getClassLoader().getResourceAsStream("org/netbeans/modules/php/editor/indent/ui/Uses.php"));
         } catch (IOException ex) {
-            // TODO log it
+            LOGGER.log(Level.WARNING, null, ex);
         }
         return new CategorySupport.Factory("uses", FmtUses.class, preview);
     }
@@ -87,6 +87,7 @@ public class FmtUses extends javax.swing.JPanel {
         preferFullyQualifiedNamesCheckBox = new javax.swing.JCheckBox();
         preferMultipleUseStatementsCombinedCheckBox = new javax.swing.JCheckBox();
         startUseWithNamespaceSeparatorCheckBox = new javax.swing.JCheckBox();
+        aliasesCapitalsOfNamespacesCheckBox = new javax.swing.JCheckBox();
 
         setName(org.openide.util.NbBundle.getMessage(FmtUses.class, "LBL_Uses")); // NOI18N
         setOpaque(false);
@@ -100,6 +101,9 @@ public class FmtUses extends javax.swing.JPanel {
         startUseWithNamespaceSeparatorCheckBox.setMnemonic('S');
         startUseWithNamespaceSeparatorCheckBox.setText(org.openide.util.NbBundle.getMessage(FmtUses.class, "FmtUses.startUseWithNamespaceSeparatorCheckBox.text")); // NOI18N
 
+        aliasesCapitalsOfNamespacesCheckBox.setMnemonic('g');
+        aliasesCapitalsOfNamespacesCheckBox.setText(org.openide.util.NbBundle.getMessage(FmtUses.class, "FmtUses.aliasesCapitalsOfNamespacesCheckBox.text")); // NOI18N
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -109,7 +113,8 @@ public class FmtUses extends javax.swing.JPanel {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(preferFullyQualifiedNamesCheckBox)
                     .addComponent(preferMultipleUseStatementsCombinedCheckBox)
-                    .addComponent(startUseWithNamespaceSeparatorCheckBox))
+                    .addComponent(startUseWithNamespaceSeparatorCheckBox)
+                    .addComponent(aliasesCapitalsOfNamespacesCheckBox))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
@@ -121,10 +126,13 @@ public class FmtUses extends javax.swing.JPanel {
                 .addComponent(preferMultipleUseStatementsCombinedCheckBox)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(startUseWithNamespaceSeparatorCheckBox)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(aliasesCapitalsOfNamespacesCheckBox)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JCheckBox aliasesCapitalsOfNamespacesCheckBox;
     private javax.swing.JCheckBox preferFullyQualifiedNamesCheckBox;
     private javax.swing.JCheckBox preferMultipleUseStatementsCombinedCheckBox;
     private javax.swing.JCheckBox startUseWithNamespaceSeparatorCheckBox;

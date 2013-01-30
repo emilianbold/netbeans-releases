@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.20
+#Version 1.23.1
 
 CLSS public java.lang.Object
 cons public init()
@@ -14,6 +14,32 @@ meth public final void wait(long) throws java.lang.InterruptedException
 meth public final void wait(long,int) throws java.lang.InterruptedException
 meth public int hashCode()
 meth public java.lang.String toString()
+
+CLSS public abstract interface java.lang.annotation.Annotation
+meth public abstract boolean equals(java.lang.Object)
+meth public abstract int hashCode()
+meth public abstract java.lang.Class<? extends java.lang.annotation.Annotation> annotationType()
+meth public abstract java.lang.String toString()
+
+CLSS public abstract interface !annotation java.lang.annotation.Documented
+ anno 0 java.lang.annotation.Documented()
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[ANNOTATION_TYPE])
+intf java.lang.annotation.Annotation
+
+CLSS public abstract interface !annotation java.lang.annotation.Retention
+ anno 0 java.lang.annotation.Documented()
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[ANNOTATION_TYPE])
+intf java.lang.annotation.Annotation
+meth public abstract java.lang.annotation.RetentionPolicy value()
+
+CLSS public abstract interface !annotation java.lang.annotation.Target
+ anno 0 java.lang.annotation.Documented()
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[ANNOTATION_TYPE])
+intf java.lang.annotation.Annotation
+meth public abstract java.lang.annotation.ElementType[] value()
 
 CLSS public abstract interface org.netbeans.spi.navigator.NavigatorDisplayer
 fld public final static java.lang.String PROP_PANEL_SELECTION = "navigatorPanelSelection"
@@ -40,12 +66,30 @@ fld public final static int LOOKUP_HINTS_ONLY = 1
 meth public abstract int getPanelsPolicy()
 
 CLSS public abstract interface org.netbeans.spi.navigator.NavigatorPanel
+innr public abstract interface static !annotation Registration
+innr public abstract interface static !annotation Registrations
 meth public abstract java.lang.String getDisplayHint()
 meth public abstract java.lang.String getDisplayName()
 meth public abstract javax.swing.JComponent getComponent()
 meth public abstract org.openide.util.Lookup getLookup()
 meth public abstract void panelActivated(org.openide.util.Lookup)
 meth public abstract void panelDeactivated()
+
+CLSS public abstract interface static !annotation org.netbeans.spi.navigator.NavigatorPanel$Registration
+ outer org.netbeans.spi.navigator.NavigatorPanel
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=SOURCE)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[TYPE, METHOD])
+intf java.lang.annotation.Annotation
+meth public abstract !hasdefault int position()
+meth public abstract java.lang.String displayName()
+meth public abstract java.lang.String mimeType()
+
+CLSS public abstract interface static !annotation org.netbeans.spi.navigator.NavigatorPanel$Registrations
+ outer org.netbeans.spi.navigator.NavigatorPanel
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=SOURCE)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[TYPE, METHOD])
+intf java.lang.annotation.Annotation
+meth public abstract org.netbeans.spi.navigator.NavigatorPanel$Registration[] value()
 
 CLSS public abstract interface org.netbeans.spi.navigator.NavigatorPanelWithUndo
 intf org.netbeans.spi.navigator.NavigatorPanel

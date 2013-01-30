@@ -78,6 +78,7 @@ import org.openide.util.lookup.implspi.ActiveQueue;
  * @since 1.9
  */
 public class AbstractLookup extends Lookup implements Serializable {
+    static final Logger LOG = Logger.getLogger(AbstractLookup.class.getName());
     static final long serialVersionUID = 5L;
 
     /** lock for initialization of the maps of lookups */
@@ -535,7 +536,7 @@ public class AbstractLookup extends Lookup implements Serializable {
                 try {
                     l.resultChanged(ev);
                 } catch (RuntimeException x) {
-                    Logger.getLogger(AbstractLookup.class.getName()).log(Level.WARNING, null, x);
+                    LOG.log(Level.WARNING, null, x);
                 }
             }
         }
@@ -697,6 +698,7 @@ public class AbstractLookup extends Lookup implements Serializable {
             return t.cleanUpResult(template) == null;
         } finally {
             exitStorage();
+            Thread.yield();
         }
     }
 
@@ -953,7 +955,7 @@ public class AbstractLookup extends Lookup implements Serializable {
                 return;
             }
 
-            setReferences(2, c.toArray(new Pair[0]));
+            setReferences(2, c.toArray(new Pair[c.size()]));
         }
         
         private void setReferences(int index, Object value) {

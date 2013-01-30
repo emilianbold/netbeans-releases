@@ -46,27 +46,38 @@ package org.netbeans.modules.hudson;
 
 import java.util.prefs.BackingStoreException;
 import org.netbeans.modules.hudson.impl.HudsonManagerImpl;
-import org.openide.modules.ModuleInstall;
+import org.openide.modules.OnStop;
 import org.openide.util.Exceptions;
 import org.openide.util.NbPreferences;
-import org.openide.windows.WindowManager;
+import org.openide.windows.OnShowing;
 
-public class Installer extends ModuleInstall implements Runnable {
+@OnShowing
+public class Installer implements Runnable {
     
-    public @Override void restored() {
+    @Override public void run() {
         if (active()) {
-            WindowManager.getDefault().invokeWhenUIReady(this);
+            doRun();
         }
     }
-    
-    public void run() {
+
+    /** split into different method to make sure JVM does not try to load HudsonManagerImpl if inactive */
+    private void doRun() {
         HudsonManagerImpl.getDefault().getInstances();
     }
 
-    public @Override void uninstalled() {
-        if (active()) {
+    @OnStop // XXX really needed?
+    public static class Uninstaller implements Runnable {
+
+        @Override public void run() {
+            if (active()) {
+                doRun();
+            }
+        }
+
+        private void doRun() {
             HudsonManagerImpl.getDefault().terminate();
         }
+
     }
 
     /** #159810: avoid loading anything further unless this module is known to be in use */

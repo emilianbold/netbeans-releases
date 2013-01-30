@@ -45,19 +45,25 @@ package org.netbeans.modules.php.editor.codegen;
 import org.netbeans.modules.php.editor.api.PhpElementKind;
 
 /**
- *        Jul 20, 20082:13:40 PM
+ *
  * @author Petr Pisl
  */
 public class Property {
 
-    final private String name;
-    final private int modifier;
+    private final String name;
+    private final int modifier;
     private boolean selected;
+    private final String type;
 
-    public Property(String name, int modifier) {
+    public Property(final String name, final int modifier, final String type) {
         this.name = name;
         this.modifier = modifier;
+        this.type = type;
         selected = false;
+    }
+
+    public Property(String name, int modifier) {
+        this(name, modifier, ""); //NOI18N
     }
 
     public int getModifier() {
@@ -66,6 +72,14 @@ public class Property {
 
     public String getName() {
         return name;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public String getTypeForTemplate() {
+        return getType() + " "; //NOI18N
     }
 
     public boolean isSelected() {

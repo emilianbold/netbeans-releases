@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.css.editor.csl;
 
-import org.netbeans.modules.css.editor.api.CssCslParserResult;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.text.Document;
 import org.netbeans.modules.csl.api.DeclarationFinder;
@@ -51,6 +50,7 @@ import org.netbeans.modules.css.editor.module.CssModuleSupport;
 import org.netbeans.modules.css.editor.module.spi.EditorFeatureContext;
 import org.netbeans.modules.css.editor.module.spi.FeatureCancel;
 import org.netbeans.modules.css.editor.module.spi.FutureParamTask;
+import org.netbeans.modules.css.lib.api.CssParserResult;
 import org.netbeans.modules.web.common.api.Pair;
 
 /**
@@ -69,8 +69,8 @@ public class CssDeclarationFinder implements DeclarationFinder {
     public DeclarationLocation findDeclaration(ParserResult info, int caretOffset) {
         FutureParamTask<DeclarationLocation, EditorFeatureContext> task = taskRef.getAndSet(null);
         if(task != null) {
-            CssCslParserResult wrapper = (CssCslParserResult)info;
-            return task.run(new EditorFeatureContext(wrapper.getWrappedCssParserResult(), caretOffset));
+            CssParserResult wrapper = (CssParserResult)info;
+            return task.run(new EditorFeatureContext(wrapper, caretOffset));
         }
         
         return DeclarationLocation.NONE;

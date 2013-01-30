@@ -831,7 +831,7 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
                 // dispose temporary folder and place itself instead of it
                 // call of changePrimaryFile and dispose must be in this order
                 // to silently change DataFolders in the DataObjectPool
-                item.changePrimaryFile (newFile);
+                changeItemByFolder(item().changePrimaryFile (newFile));
                 newFolder.dispose ();
                 list = reassignList (newFile, true);
             }

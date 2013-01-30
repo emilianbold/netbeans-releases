@@ -58,6 +58,7 @@ import javax.swing.AbstractButton;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.KeyStroke;
+import org.netbeans.core.options.keymap.api.KeyStrokeUtils;
 import org.netbeans.core.options.keymap.api.ShortcutAction;
 import org.netbeans.core.options.keymap.api.ShortcutsFinder;
 import org.openide.awt.Mnemonics;
@@ -210,10 +211,7 @@ public class ShortcutsDialog extends javax.swing.JPanel {
             }
 
             public void keyPressed (KeyEvent e) {
-                KeyStroke keyStroke = KeyStroke.getKeyStroke (
-                    e.getKeyCode (),
-                    e.getModifiers ()
-                );
+                KeyStroke keyStroke = ShortcutListener.createKeyStroke(e);
                 
                 boolean add = e.getKeyCode () != KeyEvent.VK_SHIFT &&
                               e.getKeyCode () != KeyEvent.VK_CONTROL &&
@@ -273,7 +271,7 @@ public class ShortcutsDialog extends javax.swing.JPanel {
             }
             
             private void addKeyStroke (KeyStroke keyStroke, boolean add) {
-                String k = Utils.getKeyStrokeAsText (keyStroke);
+                String k = KeyStrokeUtils.getKeyStrokeAsText (keyStroke);
                 if (key.equals ("")) { //NOI18N
                     getTfShortcut().setText (k);
                     if (add) key = k;

@@ -54,6 +54,7 @@ public final class CndUIConstants {
     // CND options IDs
     public static final String TOOLS_OPTIONS_CND_CATEGORY_ID="CPlusPlus"; // NOI18N
     public static final String TOOLS_OPTIONS_CND_HIGHLIGHTING_ID="HighlightingTab"; // NOI18N
+    public static final String TOOLS_OPTIONS_CND_DEBUGGER_ID="DebuggerAdvancedOption"; // NOI18N
     public static final String TOOLS_OPTIONS_CND_TOOLS_ID="ToolsTab"; // NOI18N
     public static final String TOOLS_OPTIONS_CND_OTHER_ID="OtherOptionsTab"; // NOI18N
     public static final String TOOLS_OPTIONS_CND_CODE_ASSISTANCE_ID="CodeAssistanceTab"; // NOI18N
@@ -63,6 +64,7 @@ public final class CndUIConstants {
 
     // CND options paths. Can be used with OptionsDisplayer.getDefault().open(path)
     public static final String TOOLS_OPTIONS_CND_HIGHLIGHTING_PATH = TOOLS_OPTIONS_CND_CATEGORY_ID + DELIM + TOOLS_OPTIONS_CND_HIGHLIGHTING_ID;
+    public static final String TOOLS_OPTIONS_CND_DEBUGGER_PATH = TOOLS_OPTIONS_CND_CATEGORY_ID + DELIM + TOOLS_OPTIONS_CND_DEBUGGER_ID;
     public static final String TOOLS_OPTIONS_CND_TOOLS_PATH = TOOLS_OPTIONS_CND_CATEGORY_ID + DELIM + TOOLS_OPTIONS_CND_TOOLS_ID;
     public static final String TOOLS_OPTIONS_CND_OTHER_PATH = TOOLS_OPTIONS_CND_CATEGORY_ID + DELIM + TOOLS_OPTIONS_CND_OTHER_ID;
     public static final String TOOLS_OPTIONS_CND_CODE_ASSISTANCE_PATH = TOOLS_OPTIONS_CND_CATEGORY_ID + DELIM + TOOLS_OPTIONS_CND_CODE_ASSISTANCE_ID;

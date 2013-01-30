@@ -46,8 +46,10 @@ import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -77,6 +79,7 @@ import org.netbeans.modules.git.ui.repository.RepositoryInfo;
 import org.netbeans.modules.versioning.util.IndexingBridge;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.util.NetworkSettings;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -87,6 +90,9 @@ public final class GitClient {
     private final org.netbeans.libs.git.GitClient delegate;
     private final GitProgressSupport progressSupport;
     private final boolean handleAuthenticationIssues;
+    private static final int CLEANUP_TIME = 15000;
+    private static final List<org.netbeans.libs.git.GitClient> unusedClients = new LinkedList<org.netbeans.libs.git.GitClient>();
+    private static RequestProcessor.Task cleanTask = Git.getInstance().getRequestProcessor().create(new CleanTask());
     
     /**
      * Set of commands that do not need to run under repository lock
@@ -194,12 +200,15 @@ public final class GitClient {
             ));
     private static final Logger LOG = Logger.getLogger(GitClient.class.getName());
     private final File repositoryRoot;
+    private boolean released;
+    private final ThreadLocal<Boolean> indexingBridgeDisabled;
 
     public GitClient (File repository, GitProgressSupport progressSupport, boolean handleAuthenticationIssues) throws GitException {
         this.repositoryRoot = repository;
         delegate = GitRepository.getInstance(repository).createClient();
         this.progressSupport = progressSupport;
         this.handleAuthenticationIssues = handleAuthenticationIssues;
+        this.indexingBridgeDisabled = new ThreadLocal<Boolean>();
     }
     
     public void add (final File[] roots, final ProgressMonitor monitor) throws GitException {
@@ -586,6 +595,20 @@ public final class GitClient {
             }
         }, "push"); //NOI18N
     }
+    
+    /**
+     * Schedule cleanup of git repository used by this client
+     */
+    public void release () {
+        synchronized (unusedClients) {
+            if (released) {
+                return;
+            }
+            unusedClients.add(delegate);
+            released = true;
+        }
+        cleanTask.schedule(CLEANUP_TIME);
+    }
 
     public void remove (final File[] roots, final boolean cached, final ProgressMonitor monitor) throws GitException {
         new CommandInvoker().runMethod(new Callable<Void>() {
@@ -681,10 +704,33 @@ public final class GitClient {
             }
         }, "unignore"); //NOI18N
     }
+
+    public void setIndexingBridgeDisabled (boolean disabled) {
+        indexingBridgeDisabled.set(disabled);
+    }
+
+    private static class CleanTask implements Runnable {
+
+        @Override
+        public void run () {
+            Set<org.netbeans.libs.git.GitClient> toRelease;
+            synchronized (unusedClients) {
+                toRelease = new HashSet<org.netbeans.libs.git.GitClient>(unusedClients);
+                unusedClients.clear();
+            }
+            for (org.netbeans.libs.git.GitClient unusuedClient : toRelease) {
+                unusuedClient.release();
+            }
+        }
+        
+    }
     
     private final class CommandInvoker {
         
         private <T> T runMethod (Callable<T> callable, String methodName) throws GitException {
+            if (released) {
+                throw new IllegalStateException("Client already released.");
+            }
             return runMethod(callable, methodName, new File[0]);
         }
 
@@ -725,48 +771,54 @@ public final class GitClient {
         }
         
         private <T> T runMethodIntern (final Callable<T> toRun, final String methodName, final File[] roots) throws Throwable {
-            try {
-                Utils.logVCSClientEvent("GIT", "JAVALIB"); //NOI18N
-                Callable<T> callable = new Callable<T>() {
-                    @Override
-                    public T call() throws Exception {
-                        boolean refreshIndexTimestamp = modifiesWorkingTree(methodName);
-                        boolean repositoryInfoRefreshNeeded = NEED_REPOSITORY_REFRESH_COMMANDS.contains(methodName);
-                        long t = 0;
-                        if (LOG.isLoggable(Level.FINE)) {
-                            t = System.currentTimeMillis();
-                            LOG.log(Level.FINE, "Starting a git command: [{0}] on repository [{1}]", new Object[] { methodName, repositoryRoot.getAbsolutePath() }); //NOI18N
-                        }
-                        try {
-                            if (withoutAuthenticator(methodName)) {
-                                return NetworkSettings.suppressAuthenticationDialog(toRun);
-                            } else {
-                                return toRun.call();
-                            }
-                        } catch (Exception ex) {
-                            if ((progressSupport == null || !progressSupport.isCanceled()) && new GitClientExceptionHandler(GitClient.this, handleAuthenticationIssues).handleException(ex)) {
-                                return this.call();
-                            } else {
-                                throw (Exception) ex;
-                            }
-                        } finally {
+            Utils.logVCSClientEvent("GIT", "JAVALIB"); //NOI18N
+            boolean refreshIndexTimestamp = modifiesWorkingTree(methodName);
+            Callable<T> callable = new Callable<T>() {
+                @Override
+                public T call() throws Exception {
+                    Callable<T> callable = new Callable<T>() {
+                        @Override
+                        public T call() throws Exception {
+                            boolean repositoryInfoRefreshNeeded = NEED_REPOSITORY_REFRESH_COMMANDS.contains(methodName);
+                            long t = 0;
                             if (LOG.isLoggable(Level.FINE)) {
-                                LOG.log(Level.FINE, "Git command finished: [{0}] on repository [{1}], lasted {2} ms", new Object[] { methodName, repositoryRoot.getAbsolutePath(), System.currentTimeMillis() - t}); //NOI18N
+                                t = System.currentTimeMillis();
+                                LOG.log(Level.FINE, "Starting a git command: [{0}] on repository [{1}]", new Object[] { methodName, repositoryRoot.getAbsolutePath() }); //NOI18N
                             }
-                            if (refreshIndexTimestamp) {
-                                LOG.log(Level.FINER, "Refreshing index timestamp after: {0} on {1}", new Object[] { methodName, repositoryRoot.getAbsolutePath() }); //NOI18N
-                                Git.getInstance().refreshWorkingCopyTimestamp(repositoryRoot);
-                            }
-                            if (repositoryInfoRefreshNeeded) {
-                                LOG.log(Level.FINER, "Refreshing repository info after: {0} on {1}", new Object[] { methodName, repositoryRoot.getAbsolutePath() }); //NOI18N
-                                RepositoryInfo.refreshAsync(repositoryRoot);
+                            try {
+                                if (withoutAuthenticator(methodName)) {
+                                    return NetworkSettings.suppressAuthenticationDialog(toRun);
+                                } else {
+                                    return toRun.call();
+                                }
+                            } catch (Exception ex) {
+                                if ((progressSupport == null || !progressSupport.isCanceled()) && new GitClientExceptionHandler(GitClient.this, handleAuthenticationIssues).handleException(ex)) {
+                                    return this.call();
+                                } else {
+                                    throw ex;
+                                }
+                            } finally {
+                                if (LOG.isLoggable(Level.FINE)) {
+                                    LOG.log(Level.FINE, "Git command finished: [{0}] on repository [{1}], lasted {2} ms", new Object[] { methodName, repositoryRoot.getAbsolutePath(), System.currentTimeMillis() - t}); //NOI18N
+                                }
+                                if (repositoryInfoRefreshNeeded) {
+                                    LOG.log(Level.FINER, "Refreshing repository info after: {0} on {1}", new Object[] { methodName, repositoryRoot.getAbsolutePath() }); //NOI18N
+                                    RepositoryInfo.refreshAsync(repositoryRoot);
+                                }
                             }
                         }
+                    };
+                    if (!Boolean.TRUE.equals(indexingBridgeDisabled.get()) && runsWithBlockedIndexing(methodName)) {
+                        LOG.log(Level.FINER, "Running command in indexing bridge: {0} on {1}", new Object[] { methodName, repositoryRoot.getAbsolutePath() }); //NOI18N
+                        return IndexingBridge.getInstance().runWithoutIndexing(callable, roots.length > 0 ? roots : new File[] { repositoryRoot });
+                    } else {
+                        return callable.call();
                     }
-                };
-                if (runsWithBlockedIndexing(methodName)) {
-                    LOG.log(Level.FINER, "Running command in indexing bridge: {0} on {1}", new Object[] { methodName, repositoryRoot.getAbsolutePath() }); //NOI18N
-                    return IndexingBridge.getInstance().runWithoutIndexing(callable, roots.length > 0 ? roots : new File[] { repositoryRoot });
+                }
+            };
+            try {
+                if (refreshIndexTimestamp) {
+                    return Git.getInstance().runWithoutExternalEvents(repositoryRoot, methodName, callable);
                 } else {
                     return callable.call();
                 }

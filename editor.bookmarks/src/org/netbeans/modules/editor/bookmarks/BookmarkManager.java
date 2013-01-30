@@ -45,20 +45,22 @@
 package org.netbeans.modules.editor.bookmarks;
 
 import java.net.URI;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 import javax.swing.text.Document;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.openide.filesystems.FileObject;
+import org.openide.util.NbBundle;
 
 /**
  * Services to update or save bookmarks to persistent format.
@@ -79,7 +81,7 @@ public class BookmarkManager {
      * <br/>
      * Once the bookmarks exist in the map they will be written to project's private.xml upon project close.
      */
-    private final Map<URI,ProjectBookmarks> project2Bookmarks =
+    private final Map<URI,ProjectBookmarks> projectURI2Bookmarks =
             new HashMap<URI,ProjectBookmarks> ();
     
     private List<BookmarkManagerListener> listenerList = new CopyOnWriteArrayList<BookmarkManagerListener>();
@@ -88,9 +90,17 @@ public class BookmarkManager {
     
     private int lockDepth;
     
-    private List<BookmarkChange> transactionChanges;
+    private Map<URI,ProjectBookmarksChange> transactionChanges;
+    
+    /**
+     * Whether transaction changes change the structure of nodes.
+     */
+    private boolean structureChange;
+    
+    private boolean firingChange;
     
     private BookmarkManager() {
+        resetTransactionChanges();
     }
     
     synchronized BookmarkManager lock() {
@@ -105,7 +115,6 @@ public class BookmarkManager {
             }
             locker = currentThread;
             lockDepth = 1;
-            transactionChanges = new ArrayList<BookmarkChange>();
         } catch (InterruptedException e) {
             throw new Error("Interrupted lock attempt.");
         }
@@ -121,31 +130,31 @@ public class BookmarkManager {
             locker = null;
             lockDepth = 0;
             if (!transactionChanges.isEmpty()) {
-                fireChange(transactionChanges);
+                fireChange();
             }
-            transactionChanges = null;
             notifyAll();
         }
     }
     
-    public List<ProjectBookmarks> allLoadedProjectBookmarks() {
-        return new ArrayList<ProjectBookmarks>(project2Bookmarks.values());
+    private void resetTransactionChanges() {
+        transactionChanges = new HashMap<URI, ProjectBookmarksChange>();
+        structureChange = false;
+    }
+    
+    public List<ProjectBookmarks> activeProjectBookmarks() {
+        return new ArrayList<ProjectBookmarks>(projectURI2Bookmarks.values());
     }
     
     /**
      * Load bookmarks for the given projects (if not loaded yet).
      */
-    void ensureProjectBookmarksLoaded(List<Project> projects) {
-        for (Project project : projects) {
-            // Force project's bookmarks loading
-            getProjectBookmarks(project, true, false);
-        }
+    public void keepOpenProjectsBookmarksLoaded() {
+        BookmarksPersistence.get().keepOpenProjectsBookmarksLoaded();
     }
     
     public BookmarkInfo findBookmarkByNameOrKey(String nameOrKey, boolean byKey) {
-        for (ProjectBookmarks projectBookmarks : allLoadedProjectBookmarks()) {
-            for (URL url : projectBookmarks.allURLs()) {
-                FileBookmarks fileBookmarks = projectBookmarks.get(url);
+        for (ProjectBookmarks projectBookmarks : activeProjectBookmarks()) {
+            for (FileBookmarks fileBookmarks : projectBookmarks.getFileBookmarks()) {
                 for (BookmarkInfo info : fileBookmarks.getBookmarks()) {
                     if (nameOrKey.equals(info.getName())) {
                         return info;
@@ -164,39 +173,87 @@ public class BookmarkManager {
         listenerList.remove(l);
     }
     
-    void fireChange(List<BookmarkChange> changes) {
-        BookmarkManagerEvent evt = new BookmarkManagerEvent(this, changes);
-        for (BookmarkManagerListener l : listenerList) {
-            l.bookmarksChanged(evt);
+    void fireChange() {
+        BookmarkManagerEvent evt = new BookmarkManagerEvent(this, transactionChanges, structureChange);
+        resetTransactionChanges();
+        firingChange = true;
+        try {
+            for (BookmarkManagerListener l : listenerList) {
+                l.bookmarksChanged(evt);
+            }
+        } finally {
+            firingChange = false;
         }
     }
 
+    public ProjectBookmarks[] getSortedActiveProjectBookmarks() {
+        List<ProjectBookmarks> sortedProjectBookmarks = new ArrayList<ProjectBookmarks>(projectURI2Bookmarks.values());
+        for (Iterator<ProjectBookmarks> it = sortedProjectBookmarks.iterator(); it.hasNext();) {
+            ProjectBookmarks projectBookmarks = it.next();
+            if (projectBookmarks.containsAnyBookmarks()) {
+                URI prjURI = projectBookmarks.getProjectURI();
+                Project prj = BookmarkUtils.findProject(prjURI);
+                String projectDisplayName = (prj != null)
+                        ? ProjectUtils.getInformation(prj).getDisplayName()
+                        : NbBundle.getMessage(BookmarkManager.class, "LBL_NullProjectDisplayName");
+                projectBookmarks.setProjectDisplayName(projectDisplayName);
+            } else {
+                it.remove();
+            }
+        }
+        Collections.sort(sortedProjectBookmarks, new Comparator<ProjectBookmarks>() {
+            @Override
+            public int compare(ProjectBookmarks pb1, ProjectBookmarks pb2) {
+                return pb1.getProjectDisplayName().compareTo(pb2.getProjectDisplayName());
+            }
+        });
+        return sortedProjectBookmarks.toArray(new ProjectBookmarks[sortedProjectBookmarks.size()]);
+    }
+        
     /**
-     * Get all fileobjects that contain bookmarks located in the given project.
+     * Get all file objects that contain bookmarks located in the given project.
      * 
      * @param prj 
      */
-    public FileObject[] getSortedFileObjects(ProjectBookmarks projectBookmarks) {
-        List<FileObject> foList;
+    public FileBookmarks[] getSortedFileBookmarks(ProjectBookmarks projectBookmarks) {
+        List<FileBookmarks> fbList;
         if (projectBookmarks != null) {
-            Collection<FileBookmarks> allFileBookmarks = projectBookmarks.allFileBookmarks();
-            foList = new ArrayList<FileObject>(allFileBookmarks.size());
+            Collection<FileBookmarks> allFileBookmarks = projectBookmarks.getFileBookmarks();
+            fbList = new ArrayList<FileBookmarks>(allFileBookmarks.size());
             for (FileBookmarks fileBookmarks : allFileBookmarks) {
-                FileObject fo = fileBookmarks.getFileObject();
-                if (fo != null && fileBookmarks.containsAnyBookmarks()) {
-                    foList.add(fo);
+                if (fileBookmarks.containsAnyBookmarks()) {
+                    fbList.add(fileBookmarks);
                 } // else: could be obsolete URL of a removed file
             }
-            Collections.sort(foList, new Comparator<FileObject>() {
+            Collections.sort(fbList, new Comparator<FileBookmarks>() {
                 @Override
-                public int compare(FileObject fo1, FileObject fo2) {
+                public int compare(FileBookmarks fb1, FileBookmarks fb2) {
+                    FileObject fo1 = fb1.getFileObject();
+                    FileObject fo2 = fb2.getFileObject();
+                    if (fo1 == null) {
+                        return (fo2 == null) ? 0 : -1;
+                    }
+                    if (fo2 == null) {
+                        return 1;
+                    }
                     return fo1.getNameExt().compareTo(fo2.getNameExt());
                 }
             });
         } else {
-            foList = Collections.emptyList();
+            fbList = Collections.emptyList();
         }
-        return foList.toArray(new FileObject[foList.size()]);
+        return fbList.toArray(new FileBookmarks[fbList.size()]);
+    }
+        
+    public BookmarkInfo[] getSortedBookmarks(FileBookmarks fileBookmarks) {
+        List<BookmarkInfo> sortedBookmarks = new ArrayList<BookmarkInfo>(fileBookmarks.getBookmarks());
+        Collections.sort(sortedBookmarks, new Comparator<BookmarkInfo>() {
+            @Override
+            public int compare(BookmarkInfo b1, BookmarkInfo b2) {
+                return b1.getCurrentLineIndex() - b2.getCurrentLineIndex();
+            }
+        });
+        return sortedBookmarks.toArray(new BookmarkInfo[sortedBookmarks.size()]);
     }
         
     /**
@@ -205,24 +262,17 @@ public class BookmarkManager {
      * @param document non-null document for which the bookmarks should be loaded.
      */
     public FileBookmarks getFileBookmarks(Document document) {
-        FileBookmarks fileBookmarks = null;
         ProjectBookmarks projectBookmarks = getProjectBookmarks(document);
         if (projectBookmarks != null) {
-            if (projectBookmarks != null) {
-                FileObject fo = NbEditorUtilities.getFileObject (document); // fo should be non-null
-                URL url = fo.toURL();
-                fileBookmarks = projectBookmarks.get(url);
-                if (fileBookmarks == null) {
-                    fileBookmarks = new FileBookmarks(projectBookmarks, url, fo, Collections.<BookmarkInfo>emptyList());
-                    projectBookmarks.add(fileBookmarks);
-                }
-            }
+            FileObject fo = NbEditorUtilities.getFileObject(document); // fo should be non-null
+            URI relativeURI = BookmarkUtils.getRelativeURI(projectBookmarks, fo.toURI());
+            return getOrAddFileBookmarks(projectBookmarks, relativeURI);
         }
-        return fileBookmarks;
+        return null;
     }
 
     public ProjectBookmarks getProjectBookmarks(Document document) {
-        FileObject fo = NbEditorUtilities.getFileObject (document);
+        FileObject fo = NbEditorUtilities.getFileObject(document);
         return getProjectBookmarks(fo);
     }
     
@@ -236,94 +286,142 @@ public class BookmarkManager {
     }
     
     public ProjectBookmarks getProjectBookmarks(Project project, boolean load, boolean forceCreation) {
-        return getProjectBookmarks(project, BookmarkUtils.toURI(project), load, forceCreation);
+        URI projectURI = (project != null) ? project.getProjectDirectory().toURI() : null;
+        return getProjectBookmarks(project, projectURI, load, forceCreation);
     }
 
-    public ProjectBookmarks getProjectBookmarks(Project project, URI projectURI,
+    ProjectBookmarks getProjectBookmarks(final Project project, URI projectURI,
             boolean load, boolean forceCreation)
     {
         ProjectBookmarks projectBookmarks;
-        projectBookmarks = project2Bookmarks.get(projectURI);
-        if (projectBookmarks == null) {
-            if (load) {
-                if (project != null) {
-                    projectBookmarks = BookmarksPersistence.get().loadProjectBookmarks(project);
-                } else { // Bookmarks not belonging to any project
-                    projectBookmarks = new ProjectBookmarks(null);
+        projectBookmarks = projectURI2Bookmarks.get(projectURI);
+        if (projectBookmarks == null && forceCreation) {
+            projectBookmarks = new ProjectBookmarks(projectURI);
+            projectURI2Bookmarks.put(projectURI, projectBookmarks);
+        }
+
+        if (load && projectBookmarks != null && !projectBookmarks.isLoadingScheduled()) {
+            projectBookmarks.markLoadScheduled();
+            final ProjectBookmarks finalProjectBookmarks = projectBookmarks;
+            BookmarkUtils.postTask(new Runnable() {
+                @Override
+                public void run() {
+                    BookmarksPersistence.get().loadProjectBookmarks(finalProjectBookmarks, project);
                 }
-                if (projectBookmarks != null) {
-                    BookmarkChange change = new BookmarkChange(projectBookmarks.getProjectURI(), null);
-                    change.markAdded();
-                }
-            }
-            if (projectBookmarks == null && forceCreation) {
-                projectBookmarks = new ProjectBookmarks(projectURI);
-            }
-            if (projectBookmarks != null) {
-                project2Bookmarks.put(projectURI, projectBookmarks);
-                BookmarkChange change = new BookmarkChange(projectURI);
-                change.markAdded();
-                transactionChanges.add(change);
-            }
+            });
         }
         return projectBookmarks;
     }
     
-    public void removeProjectBookmarks(ProjectBookmarks projectBookmarks) {
-        project2Bookmarks.remove(projectBookmarks.getProjectURI());
-        projectBookmarks.markRemoved();
-        BookmarkChange change = new BookmarkChange(projectBookmarks.getProjectURI());
-        change.markRemoved();
-        transactionChanges.add(change);
+    private ProjectBookmarksChange getProjectBookmarksChange(ProjectBookmarks projectBookmarks) {
+        ProjectBookmarksChange change = transactionChanges.get(projectBookmarks.getProjectURI());
+        if (change == null) {
+            change = new ProjectBookmarksChange(projectBookmarks);
+            transactionChanges.put(projectBookmarks.getProjectURI(), change);
+        }
+        return change;
     }
     
-    public void addBookmarkNotify(BookmarkInfo bookmark) {
-        BookmarkChange change = new BookmarkChange(bookmark);
+    private FileBookmarksChange getFileBookmarksChange(FileBookmarks fileBookmarks) {
+        ProjectBookmarksChange prjChange = getProjectBookmarksChange(fileBookmarks.getProjectBookmarks());
+        FileBookmarksChange change = prjChange.getFileBookmarksChange(fileBookmarks.getRelativeURI());
+        if (change == null) {
+            change = new FileBookmarksChange(fileBookmarks);
+            prjChange.addChange(change);
+        }
+        return change;
+    }
+    
+    private BookmarkChange getBookmarkChange(BookmarkInfo bookmark) {
+        FileBookmarksChange fileChange = getFileBookmarksChange(bookmark.getFileBookmarks());
+        BookmarkChange change = fileChange.getBookmarkChange(bookmark);
+        if (change == null) {
+            change = new BookmarkChange(bookmark);
+            fileChange.addChange(change);
+        }
+        return change;
+    }
+    
+    public void releaseProjectBookmarks(ProjectBookmarks projectBookmarks) {
+        projectURI2Bookmarks.remove(projectBookmarks.getProjectURI());
+        getProjectBookmarksChange(projectBookmarks).markReleased();
+        structureChange = true;
+    }
+    
+    /**
+     * Add a new bookmark was added to file bookmarks.
+     */
+    public FileBookmarks getOrAddFileBookmarks(ProjectBookmarks projectBookmarks, URI relativeURI) {
+        FileBookmarks fileBookmarks = projectBookmarks.getFileBookmarks(relativeURI);
+        if (fileBookmarks == null) {
+            checkModDuringFire();
+            fileBookmarks = new FileBookmarks(projectBookmarks, relativeURI);
+            projectBookmarks.add(fileBookmarks);
+            fileBookmarks.getProjectBookmarks().setModified(true);
+            structureChange = true;
+        }
+        return fileBookmarks;
+    }
+    
+    /**
+     * Add a new bookmark was added to file bookmarks.
+     */
+    public void addBookmark(FileBookmarks fileBookmarks, BookmarkInfo bookmark) {
+        checkModDuringFire();
+        fileBookmarks.add(bookmark);
+        BookmarkChange change = getBookmarkChange(bookmark);
         change.markAdded();
-        transactionChanges.add(change);
+        bookmark.getFileBookmarks().getProjectBookmarks().setModified(true);
+        structureChange = true;
     }
     
     public void removeBookmarks(List<BookmarkInfo> bookmarks) {
+        checkModDuringFire();
         for (BookmarkInfo bookmark : bookmarks) {
-            BookmarkChange change = new BookmarkChange(bookmark);
             FileBookmarks fileBookmarks = bookmark.getFileBookmarks();
-            if (fileBookmarks.remove(bookmark)) {
-                change.markRemoved();
-                transactionChanges.add(change);
-            }
+            fileBookmarks.remove(bookmark);
+            BookmarkChange change = getBookmarkChange(bookmark);
+            change.markRemoved();
+            bookmark.getFileBookmarks().getProjectBookmarks().setModified(true);
+            structureChange = true;
+        }
+    }
+    
+    private void checkModDuringFire() {
+        if (firingChange) {
+            throw new IllegalStateException("Modification during change firing"); // NOI18N
         }
     }
     
     public void updateLineIndex(BookmarkInfo bookmark, int lineIndex) {
         if (bookmark.getLineIndex() != lineIndex) {
-            BookmarkChange change = new BookmarkChange(bookmark);
+            BookmarkChange change = getBookmarkChange(bookmark);
             bookmark.setLineIndex(lineIndex); // Also calls setCurrentLineIndex()
+            bookmark.getFileBookmarks().getProjectBookmarks().setModified(true);
             change.markLineIndexChanged();
-            transactionChanges.add(change);
         }
     }
     
     public void updateNameOrKey(BookmarkInfo bookmark, boolean nameChanged, boolean keyChanged) {
-        BookmarkChange change = new BookmarkChange(bookmark);
+        BookmarkChange change = getBookmarkChange(bookmark);
         if (nameChanged) {
             change.markNameChanged();
+            bookmark.getFileBookmarks().getProjectBookmarks().setModified(true);
         }
         if (keyChanged) {
             change.markKeyChanged();
+            bookmark.getFileBookmarks().getProjectBookmarks().setModified(true);
         }
-        transactionChanges.add(change);
     }
     
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder(200);
-        for (ProjectBookmarks projectBookmarks : allLoadedProjectBookmarks()) {
+        for (ProjectBookmarks projectBookmarks : activeProjectBookmarks()) {
             sb.append("Project ").append(projectBookmarks.getProjectURI()).append('\n');
-            for (URL url : projectBookmarks.allURLs()) {
-                sb.append("    ").append(url).append("\n");
-                for (BookmarkInfo info : projectBookmarks.get(url).getBookmarks()) {
-                    sb.append("        ").append(info).append('\n');
-                }
+            for (FileBookmarks fileBookmarks : projectBookmarks.getFileBookmarks()) {
+                sb.append("    ");
+                fileBookmarks.appendInfo(sb, 4);
             }
         }
         return sb.toString();

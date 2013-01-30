@@ -44,18 +44,35 @@
 
 package org.netbeans.modules.mercurial.options;
 
+import java.awt.EventQueue;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import org.netbeans.modules.mercurial.HgModuleConfig;
 
 import javax.swing.event.DocumentListener;
 import javax.swing.event.DocumentEvent;
+import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.mercurial.Mercurial;
+import org.openide.util.NbBundle;
+import static org.netbeans.modules.mercurial.options.Bundle.*;
+import org.netbeans.spi.options.OptionsPanelController;
 
+@OptionsPanelController.Keywords(keywords={"hg", "mercurial", "#MercurialPanel.kw1", "#MercurialPanel.kw2", "#MercurialPanel.kw3"},
+        location=OptionsDisplayer.ADVANCED, tabTitle="#CTL_OptionsPanel.title")
+@NbBundle.Messages({
+    "CTL_OptionsPanel.title=Versioning",
+    "MercurialPanel.kw1=status labels",
+    "MercurialPanel.kw2=extensions",
+    "MercurialPanel.kw3=exclude from commit"
+})
 final class MercurialPanel extends javax.swing.JPanel {
     
     private final MercurialOptionsPanelController controller;
     private final DocumentListener listener;
     private String initialUserName;
+    private String[] keywords;
     
     MercurialPanel(MercurialOptionsPanelController controller) {
         this.controller = controller;
@@ -79,6 +96,18 @@ final class MercurialPanel extends javax.swing.JPanel {
         super.removeNotify();
     }
 
+    Collection<String> getKeywords () {
+        if (keywords == null) {
+            keywords = new String[] {
+                "HG",
+                "MERCURIAL",
+                Bundle.MercurialPanel_kw1().toUpperCase(),
+                Bundle.MercurialPanel_kw2().toUpperCase(),
+                Bundle.MercurialPanel_kw3().toUpperCase()
+            };
+        }
+        return Collections.unmodifiableList(Arrays.asList(keywords));
+    }
 
         
     /** This method is called from within the constructor to
@@ -270,9 +299,12 @@ final class MercurialPanel extends javax.swing.JPanel {
 }//GEN-LAST:event_excludeNewFilesActionPerformed
     
     private void nameChange() {
-        controller.changed();
+        if (userNameTextField.isEnabled()) {
+            controller.changed();
+        }
     }
 
+    @NbBundle.Messages("CTL_UsernameLoading=Loading...")
     void load() {
         // TODO read settings and initialize GUI
         // Example:
@@ -281,8 +313,21 @@ final class MercurialPanel extends javax.swing.JPanel {
         // someCheckBox.setSelected(NbPreferences.forModule(MercurialPanel.class).getBoolean("someFlag", false)); // NOI18N
         // or:
         // someTextField.setText(SomeSystemOption.getDefault().getSomeStringProperty());
-        initialUserName = HgModuleConfig.getDefault().getSysUserName();
-        userNameTextField.setText(initialUserName);
+        userNameTextField.setEnabled(false);
+        userNameTextField.setText(CTL_UsernameLoading());
+        Mercurial.getInstance().getParallelRequestProcessor().post(new Runnable() {
+            @Override
+            public void run () {
+                initialUserName = HgModuleConfig.getDefault().getSysUserName();
+                EventQueue.invokeLater(new Runnable() {
+                    @Override
+                    public void run () {
+                        userNameTextField.setText(initialUserName);
+                        userNameTextField.setEnabled(true);
+                    }
+                });
+            }
+        });
         executablePathTextField.setText(HgModuleConfig.getDefault().getExecutableBinaryPath());
         exportFilenameTextField.setText(HgModuleConfig.getDefault().getExportFilename());
         annotationTextField.setText(HgModuleConfig.getDefault().getAnnotationFormat());
@@ -300,7 +345,7 @@ final class MercurialPanel extends javax.swing.JPanel {
         // NbPreferences.forModule(MercurialPanel.class).putBoolean("someFlag", someCheckBox.isSelected()); // NOI18N
         // or:
         // SomeSystemOption.getDefault().setSomeStringProperty(someTextField.getText());
-        if(!initialUserName.equals(userNameTextField.getText())) {
+        if(userNameTextField.isEnabled() && !initialUserName.equals(userNameTextField.getText())) {
             try {
                 HgModuleConfig.getDefault().setUserName(userNameTextField.getText());
             } catch (IOException ex) {

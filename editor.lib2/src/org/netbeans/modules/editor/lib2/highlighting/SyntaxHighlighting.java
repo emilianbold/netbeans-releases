@@ -48,7 +48,6 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
@@ -771,8 +770,23 @@ implements TokenHierarchyListener, ChangeListener {
         boolean moveNextToken(int limitStartOffset, int limitEndOffset) {
             if (ts.moveNext()) {
                 Token<T> token = ts.token();
-                tokenOffset = ts.offset();
-                tokenEndOffset = tokenOffset + token.length();
+                int nextTokenOffset = ts.offset();
+                if (nextTokenOffset < 0) {
+                    LOG.info("Invalid token offset=" + nextTokenOffset + " < 0. TokenSequence:\n" + ts); // NOI18N
+                    return false;
+                }
+                int nextTokenLength = token.length();
+                if (nextTokenOffset < 0) {
+                    LOG.info("Invalid token length=" + nextTokenLength + " < 0. TokenSequence:\n" + ts); // NOI18N
+                    return false;
+                }
+                if (nextTokenOffset >= tokenEndOffset || nextTokenLength >= 0) {
+                    tokenOffset = nextTokenOffset;
+                    tokenEndOffset = tokenOffset + nextTokenLength;
+                } else {
+                    // Become robust against an invalid lexer's output by returning "no more tokens" here
+                    return false;
+                }
                 if (tokenEndOffset <= limitStartOffset) {
                     // Must move the sequence forward by bin-search
                     ts.move(limitStartOffset);
@@ -809,6 +823,7 @@ implements TokenHierarchyListener, ChangeListener {
                 }
                 return true;
             } else {
+                tokenOffset = tokenEndOffset;
                 return false;
             }
         }

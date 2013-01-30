@@ -63,6 +63,7 @@ import org.openide.filesystems.FileRenameEvent;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -88,6 +89,9 @@ public class ServiceModel {
     private FileChangeListener fcl;
     private List<ServiceChangeListener> serviceChangeListeners
             = new ArrayList<ServiceChangeListener>();
+    
+    private static final RequestProcessor FILE_CHANGE_RP = 
+            new RequestProcessor(ServiceModel.class);
     
     /** Creates a new instance of ServiceModel */
     private ServiceModel(FileObject implementationClass, boolean populate) {
@@ -347,22 +351,32 @@ public class ServiceModel {
         /** Fired when a file is changed.
         * @param fe the event describing context where action has taken place
         */
-        public void fileChanged(FileEvent fe) {
+        @Override
+        public void fileChanged(final FileEvent fe) {
             
-            FileObject implClass = fe.getFile();
-            ServiceModel newModel = new ServiceModel(implClass,true);
-            ServiceModel.this.mergeModel(newModel);
+            Runnable runnable = new Runnable() {
+                
+                @Override
+                public void run() {
+                    FileObject implClass = fe.getFile();
+                    ServiceModel newModel = new ServiceModel(implClass,true);
+                    ServiceModel.this.mergeModel(newModel);
+                }
+            };
+            FILE_CHANGE_RP.post(runnable);
         }
         
         /** Fired when a file is deleted.
         * @param fe the event describing context where action has taken place
         */
+        @Override
         public void fileDeleted(FileEvent fe) {
         }
          /** Fired when a file is renamed.
         * @param fe the event describing context where action has taken place
         *           and the original name and extension.
         */
+        @Override
         public void fileRenamed(FileRenameEvent fe) {
         }
     }

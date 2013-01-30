@@ -46,12 +46,12 @@ package org.netbeans.modules.cnd.modelimpl.csm.core;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.cnd.api.model.CsmFile;
@@ -66,7 +66,6 @@ import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.netbeans.modules.cnd.utils.CndUtils;
-import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.cnd.utils.ui.NamedOption;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.NbBundle;
@@ -80,7 +79,7 @@ import org.openide.util.lookup.ServiceProvider;
  */
 public final class ProjectImpl extends ProjectBase {
 
-    private ProjectImpl(ModelImpl model, FileSystem fs, Object platformProject, String name) {
+    private ProjectImpl(ModelImpl model, FileSystem fs, NativeProject platformProject, String name) {
         super(model, fs, platformProject, name);
     // RepositoryUtils.put(this);
     }
@@ -89,7 +88,7 @@ public final class ProjectImpl extends ProjectBase {
         return createInstance(model, platformProject.getFileSystem(), platformProject, name);
     }
 
-    private static ProjectImpl createInstance(ModelImpl model, FileSystem fs, Object platformProject, String name) {
+    private static ProjectImpl createInstance(ModelImpl model, FileSystem fs, NativeProject platformProject, String name) {
         ProjectBase instance = null;
         if (TraceFlags.PERSISTENT_REPOSITORY) {
             try {
@@ -100,6 +99,13 @@ public final class ProjectImpl extends ProjectBase {
                 cleanRepository(fs, platformProject, false);
                 DiagnosticExceptoins.register(e);
             }
+        }
+        if (instance != null && !(instance instanceof ProjectImpl)) {
+            DiagnosticExceptoins.register(new IllegalStateException(
+                    "Expected " + ProjectImpl.class.getName() + //NOI18N
+                    " but restored from repository " + instance.getClass().getName())); //NOI18N
+            cleanRepository(fs, platformProject, false);
+            instance = null;
         }
         if (instance == null) {
             instance = new ProjectImpl(model, fs, platformProject, name);
@@ -190,114 +196,27 @@ public final class ProjectImpl extends ProjectBase {
     }
 
     @Override
-    public void onFilePropertyChanged(NativeFileItem nativeFile) {
-        if (TraceFlags.DEBUG) {
-            Diagnostic.trace("------------------------- onFilePropertyChanged " + nativeFile.getName()); //NOI18N
-        }
-        DeepReparsingUtils.reparseOnPropertyChanged(Collections.singletonList(nativeFile), this, false);
-    }
-
-    @Override
-    public void onFilePropertyChanged(List<NativeFileItem> items, boolean invalidateLibs) {
-        if (items.size() > 0) {
-            DeepReparsingUtils.reparseOnPropertyChanged(items, this, invalidateLibs);
-        }
-    }
-
-    @Override
-    public void onFileImplRemoved(Collection<FileImpl> files) {
+    public void onFileImplRemoved(Collection<FileImpl> physicallyRemoved, Collection<FileImpl> excluded) {
         try {
             synchronized (editedFiles) {
-                for (FileImpl impl : files) {
-                    EditingTask task = editedFiles.remove(impl);
-                    if (task != null) {
-                        task.cancelTask();
+                if (!editedFiles.isEmpty()) {
+                    Set<FileImpl> files = new HashSet<FileImpl>(physicallyRemoved);
+                    files.addAll(excluded);
+                    for (FileImpl impl : files) {
+                        ProjectImpl.EditingTask task = editedFiles.remove(impl);
+                        if (task != null) {
+                            task.cancelTask();
+                        }
                     }
                 }
             }
-            LinkedList<FileImpl> toReparse = new LinkedList<FileImpl>();
-            for (FileImpl impl : files) {
-                if (impl != null) {
-                    NativeFileItem removedNativeFileItem = removeNativeFileItem(impl.getUID());
-                    // this is analogue of synchronization if method was called from different threads,
-                    // because removeNativeFileItem is thread safe and removes only once
-                    if (removedNativeFileItem != null) {
-                        toReparse.addLast(impl);
-                        impl.dispose();
-                        removeFile(impl.getAbsolutePath());
-                        final FileBuffer buf = impl.getBuffer();
-                        APTDriver.invalidateAPT(buf);
-                        APTFileCacheManager.getInstance(buf.getFileSystem()).invalidate(buf.getAbsolutePath());
-                        ParserQueue.instance().remove(impl);
-                    }
-                }
-            }
-            DeepReparsingUtils.reparseOnRemoved(toReparse, this);
         } finally {
-            Notificator.instance().flush();
+            super.onFileImplRemoved(physicallyRemoved, excluded);
         }
     }
 
     @Override
-    public void onFileRemoved(List<NativeFileItem> items) {
-        try {
-            ParserQueue.instance().onStartAddingProjectFiles(this);
-            List<FileImpl> toReparse = new ArrayList<FileImpl>();
-            for (NativeFileItem item : items) {
-                FileImpl impl = getFile(item.getAbsolutePath(), false);
-                if (impl != null) {
-                    toReparse.add(impl);
-                }
-            }
-            onFileImplRemoved(toReparse);
-        } finally {
-            ParserQueue.instance().onEndAddingProjectFiles(this);
-        }
-    }
-
-    @Override
-    public void onFileAdded(NativeFileItem nativeFile) {
-        onFileAddedImpl(nativeFile, true);
-    }
-
-    private NativeFileItem onFileAddedImpl(NativeFileItem nativeFile, boolean deepReparse) {
-        if (Utils.acceptNativeItem(nativeFile)) {
-            CndFileUtils.clearFileExistenceCache();
-            try {
-                //Notificator.instance().startTransaction();
-                createIfNeed(nativeFile, isSourceFile(nativeFile));
-                return nativeFile;
-            } finally {
-                //Notificator.instance().endTransaction();
-                Notificator.instance().flush();
-                if (deepReparse) {
-                    DeepReparsingUtils.reparseOnAdded(Collections.singletonList(nativeFile), this);
-                }
-            }
-        }
-        return null;
-    }
-
-    @Override
-    public void onFileAdded(List<NativeFileItem> items) {
-        try {
-            ParserQueue.instance().onStartAddingProjectFiles(this);
-            List<NativeFileItem> toReparse = new ArrayList<NativeFileItem>();
-            for (NativeFileItem item : items) {
-                NativeFileItem done = onFileAddedImpl(item, false);
-                if (done != null) {
-                    toReparse.add(done);
-                }
-            }
-            DeepReparsingUtils.reparseOnAdded(toReparse, this);
-        } finally {
-            ParserQueue.instance().onEndAddingProjectFiles(this);
-        }
-    }
-
-    protected 
-    @Override
-    void ensureChangedFilesEnqueued() {
+    protected void ensureChangedFilesEnqueued() {
         List<FileImpl> addToParse = new ArrayList<FileImpl>();
         synchronized (editedFiles) {
             super.ensureChangedFilesEnqueued();
@@ -457,7 +376,7 @@ public final class ProjectImpl extends ProjectBase {
         // we don't need this since ProjectBase persists fqn
         //UIDObjectFactory aFactory = UIDObjectFactory.getDefaultFactory();
         //aFactory.writeUID(getUID(), aStream);
-        LibraryManager.getInstance().writeProjectLibraries(getUID(), aStream);
+        LibraryManager.getInstance(this).writeProjectLibraries(getUID(), aStream);
     }
 
     public ProjectImpl(RepositoryDataInput input) throws IOException {
@@ -466,7 +385,7 @@ public final class ProjectImpl extends ProjectBase {
         //UIDObjectFactory aFactory = UIDObjectFactory.getDefaultFactory();
         //CsmUID uid = aFactory.readUID(input);
         //LibraryManager.getInsatnce().read(uid, input);
-        LibraryManager.getInstance().readProjectLibraries(getUID(), input);
+        LibraryManager.getInstance(this).readProjectLibraries(getUID(), input);
     //nativeFiles = new NativeFileContainer();
     }
 

@@ -86,7 +86,7 @@ public class RemotePkgConfigTestCase extends MakeProjectTestBase {
     }
 
     @Test
-    public void testPkgConfig() {
+    public void testPkgConfig() throws Exception {
         performTestProject("http://pkgconfig.freedesktop.org/releases/pkg-config-0.25.tar.gz", null, true, "");
     }
 

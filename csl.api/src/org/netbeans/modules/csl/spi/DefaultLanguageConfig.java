@@ -50,13 +50,13 @@ import org.netbeans.modules.csl.api.DeclarationFinder;
 import org.netbeans.modules.csl.api.Formatter;
 import org.netbeans.modules.csl.api.GsfLanguage;
 import org.netbeans.modules.csl.api.HintsProvider;
+import org.netbeans.modules.csl.api.IndexSearcher;
 import org.netbeans.modules.csl.api.InstantRenamer;
 import org.netbeans.modules.csl.api.KeystrokeHandler;
 import org.netbeans.modules.csl.api.OccurrencesFinder;
+import org.netbeans.modules.csl.api.OverridingMethods;
 import org.netbeans.modules.csl.api.SemanticAnalyzer;
 import org.netbeans.modules.csl.api.StructureScanner;
-import org.netbeans.modules.csl.api.IndexSearcher;
-import org.netbeans.modules.csl.api.OverridingMethods;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory;
 
@@ -77,30 +77,38 @@ public abstract class DefaultLanguageConfig implements GsfLanguage {
         return null;
     }
 
+    @Override
     public String getLineCommentPrefix() {
         return null;
     }
 
+    @Override
     public boolean isIdentifierChar(char c) {
         return Character.isJavaIdentifierPart(c);
     }
 
+    @Override
     public abstract Language getLexerLanguage();
 
+    @Override
     public abstract String getDisplayName();
 
+    @Override
     public String getPreferredExtension() {
         return null;
     }
 
+    @Override
     public Set<String> getBinaryLibraryPathIds() {
         return null;
     }
 
+    @Override
     public Set<String> getLibraryPathIds() {
         return null;
     }
 
+    @Override
     public Set<String> getSourcePathIds() {
         return null;
     }
@@ -292,5 +300,5 @@ public abstract class DefaultLanguageConfig implements GsfLanguage {
     public OverridingMethods getOverridingMethods() {
         return null;
     }
-
+    
 }

@@ -24,10 +24,7 @@ Microsystems, Inc. All Rights Reserved.
     
     <import file="${basedir}/build.pro"/>
     <property file="${basedir}/Bundle.properties"/>
-    <condition property="ml.suffix" value="-ml" else="">
-        <istrue value="${mlbuild}"/>
-    </condition>      
-            
+
     <target name="build-glassfish-pkg" >
         <echo message="Building ${glassfish-title} into ${basedir}/glassfish"/>
         <ant dir="glassfish"/>      
@@ -67,8 +64,8 @@ Microsystems, Inc. All Rights Reserved.
     </target>
     
     <target name="clean">
-        <delete dir="${basedir}/build"/>
-        <delete dir="${basedir}/dist"/>
+        <delete dir="${basedir}/build" failonerror="no"/>
+        <delete dir="${basedir}/dist" failonerror="no"/>
         <ant dir="${basedir}/glassfish" target="clean"/>
         <ant dir="${basedir}/sjsas" target="clean"/>
         <ant dir="${basedir}/glassfish-v3" target="clean"/>
@@ -77,17 +74,17 @@ Microsystems, Inc. All Rights Reserved.
         <!--<ant dir="${basedir}/openesb" target="clean"/>-->
         <ant dir="${basedir}/netBeans/baseide" target="clean"/>
         <!--<delete dir="${basedir}/netBeans/soa/build"/>-->
-        <delete dir="${basedir}/netBeans/ruby/build"/>
-        <delete dir="${basedir}/netBeans/cpp/build"/>
-        <delete dir="${basedir}/netBeans/javase/build"/>
+        <delete dir="${basedir}/netBeans/ruby/build" failonerror="no"/>
+        <delete dir="${basedir}/netBeans/cpp/build" failonerror="no"/>
+        <delete dir="${basedir}/netBeans/javase/build" failonerror="no"/>
         <delete dir="${basedir}/netBeans/javafx/build" failonerror="no"/>
-        <delete dir="${basedir}/netBeans/javaee/build"/>     
-        <delete dir="${basedir}/netBeans/groovy/build"/>
-        <delete dir="${basedir}/netBeans/php/build"/> 
-        <delete dir="${basedir}/netBeans/javame/build"/> 
-        <delete dir="${basedir}/netBeans/webcommon/build"/>
-        <delete dir="${basedir}/netBeans/ergonomics/build"/>
-        <delete dir="${basedir}/tools/classes"/>           
+        <delete dir="${basedir}/netBeans/javaee/build" failonerror="no"/>
+        <delete dir="${basedir}/netBeans/groovy/build" failonerror="no"/>
+        <delete dir="${basedir}/netBeans/php/build" failonerror="no"/>
+        <delete dir="${basedir}/netBeans/javame/build" failonerror="no"/>
+        <delete dir="${basedir}/netBeans/webcommon/build" failonerror="no"/>
+        <delete dir="${basedir}/netBeans/ergonomics/build" failonerror="no"/>
+        <delete dir="${basedir}/tools/classes" failonerror="no"/>
     </target>
     
     <target name="init">    
@@ -113,41 +110,6 @@ Microsystems, Inc. All Rights Reserved.
         </condition>
     </target>        
 
-
-    <target name="prepare-javame-sdk-zip" unless="do.build.jdk">
-        <mkdir dir="build"/> 
-        <get src="${javame_sdk30_bits_location}"         dest="${common.name}${ml.suffix}-mobility-sdk.zip"/>
-        <get src="${javame_sdk30_bits_update_location}"  dest="${common.name}${ml.suffix}-mobility-sdk-update.zip"/>
-
-        <mkdir dir="${basedir}/javametmpdir/mobility/Java_ME_platform_SDK_3.0"/>
-        <exec executable="sh" failonerror="yes">
-            <arg value="-c"/>
-            <arg value="unzip -o -d ${basedir}/javametmpdir/mobility/Java_ME_platform_SDK_3.0 ${common.name}${ml.suffix}-mobility-sdk.zip"/>
-        </exec>
-        <exec executable="sh" failonerror="yes">
-            <arg value="-c"/>
-            <arg value="unzip -o -d ${basedir}/javametmpdir/mobility/Java_ME_platform_SDK_3.0 ${common.name}${ml.suffix}-mobility-sdk-update.zip"/>
-        </exec>
-        <delete file="${common.name}${ml.suffix}-mobility-sdk.zip"/>
-        <delete file="${common.name}${ml.suffix}-mobility-sdk-update.zip"/>
-
-        <!-- see netBeans/javame/pkg/scripts/postflight for more info on this -->
-        <exec executable="sh" failonerror="yes">
-            <arg value="-c"/>
-            <arg value="cd ${basedir}/javametmpdir/mobility/Java_ME_platform_SDK_3.0 ; mv Updater.app Updaterapp ; mv device-manager.app device-managerapp"/>
-        </exec>
-
-        <mkdir dir="${basedir}/javametmpdir/mobility/config/emulator-descriptor-inst"/>
-        <get src="${javame_sdk30_xml_location}"   dest="${basedir}/javametmpdir/mobility/config/emulator-descriptor-inst/Java_TM__Platform_Micro_Edition_SDK_3_0.xml"/>
-
-        <exec executable="sh" failonerror="yes" dir="${basedir}/javametmpdir">
-            <arg value="-c"/>
-            <arg value="zip -r -1 ${common.name}${ml.suffix}-mobility-mac.zip *"/>
-        </exec>      
-        <delete dir="${basedir}/javametmpdir"/>
-    </target>
-
-
     <target name="init-clusters">
         <property name="main.clusters" value="
                                          cnd(cpp), dlight(cpp),
@@ -156,7 +118,7 @@ Microsystems, Inc. All Rights Reserved.
                                          php(php), 
                                          enterprise(javaee), 
                                          webcommon(webcommon),
-                                         mobility(javame), mobility-mac(javame),
+                                         mobility(javame),
                                          ergonomics(ergonomics),
                                          ide(baseide), nb-etc(baseide), platform(baseide)
                                          "/>
@@ -177,7 +139,7 @@ Microsystems, Inc. All Rights Reserved.
         
     </target>
 
-    <target name="unzip-nb" description="Unzip clusters to modules" depends="init-clusters,prepare-javame-sdk-zip">
+    <target name="unzip-nb" description="Unzip clusters to modules" depends="init-clusters">
         <for-each list="${clusters}" separator="," property="cluster.name"  propertyArg="module.name">
             <ant target="unzip-cluster"/>                           
             <exec executable="sh" failonerror="no">
@@ -193,7 +155,7 @@ Microsystems, Inc. All Rights Reserved.
         <mkdir dir="${basedir}/netBeans/${module.name}/build/netbeans"/>
         <exec executable="sh" failonerror="yes">
             <arg value="-c"/>
-            <arg value="unzip -o -d ${basedir}/netBeans/${module.name}/build/netbeans ${common.name}${ml.suffix}-${cluster.name}.zip"/>
+            <arg value="unzip -o -d ${basedir}/netBeans/${module.name}/build/netbeans ${common.name}-${cluster.name}.zip"/>
         </exec>    
     </target>
     
@@ -231,7 +193,7 @@ Microsystems, Inc. All Rights Reserved.
         <ant target="size-pack-module">
             <property name="module.name" value="baseide"/>
             <property name="module.builddir" value="${basedir}/netBeans/baseide/build"/>
-        </ant>            
+        </ant>
         <ant dir="${basedir}/netBeans/baseide"/>          
         <ant target="build-modules"/>       
     </target>
@@ -342,7 +304,7 @@ Microsystems, Inc. All Rights Reserved.
         <for-each list="${bundles}" separator="," property="bundle.type"  propertyArg="packages">
             <delete dir="${basedir}/dist_dmg"/>                          
             <ant target="build-dmg">
-                 <property name="dmg.name" value="${dmg.prefix.name}${ml.suffix}${bundle.type}-macosx"/>  
+                 <property name="dmg.name" value="${dmg.prefix.name}${bundle.type}-macosx"/>  
                  <property name="mpkg.name" value="${mpkg.name_nb}"/>
                  <property name="background.name" value="bgimage.tif"/>
                  <property name="license.file" value="${basedir}/dmg/Resources/license.txt"/>                                  
@@ -355,7 +317,7 @@ Microsystems, Inc. All Rights Reserved.
         <for-each list="${bundles}" separator="," property="bundle.type"  propertyArg="packages">
             <delete dir="${basedir}/dist_dmg"/>                          
             <ant target="build-dmg">
-                 <property name="dmg.name" value="${jdk.bundle.files.prefix}-${jdk.bundle.files.suffix}-macosx-x64${ml.suffix}"/>
+                 <property name="dmg.name" value="${jdk.bundle.files.prefix}-${jdk.bundle.files.suffix}-macosx-x64"/>
                  <property name="mpkg.name" value="${mpkg.name_nb}${mpkg.prefix_nb_jdk}${mpkg.version_jdk}"/>
                  <property name="background.name" value="background-jdk.tif"/>
             </ant>     
@@ -371,38 +333,19 @@ Microsystems, Inc. All Rights Reserved.
             <fileset dir="${basedir}/dmg/Resources/" includes="*.html"/>
         </copy>
        
-        <condition property="nb.locales.nonzero.length">
-            <and>
-                <isset property="nb.locales"/>
-                <length string="${nb.locales}" when="greater" length="0"/>
-            </and>
-        </condition>   
-        <condition property="locales" value=",${nb.locales}" else="">
-            <and>
-                <istrue value="${mlbuild}"/>
-                <istrue value="${nb.locales.nonzero.length}"/>
-            </and>   
-        </condition>
         <echo message="locales are: ${locales}"/>        
         
-        <condition property="do.copy.translated.files">
-            <istrue value="${mlbuild}"/>
-        </condition>        
-        <ant target="copy-translated-files"/> 
+        <copy todir="${resources.full.dir}" flatten="true" includeEmptyDirs="false" failonerror="false">                    
+            <fileset dir="${translatedfiles.src}"> 
+                <include name="**/mac/newbuild/**"/>
+            </fileset>
+        </copy>               
         
         <for-each list="${locales}" separator="," property="locale">
             <ant target="build-lproj-dir"/>                           
         </for-each>            
         <delete dir="${resources.full.dir}"/>
     </target> 
-       
-    <target name="copy-translated-files" if="do.copy.translated.files">         
-        <copy todir="${resources.full.dir}" flatten="true" includeEmptyDirs="false" failonerror="false">                    
-            <fileset dir="${translatedfiles.src}"> 
-                <include name="**/mac/newbuild/**"/>
-            </fileset>
-        </copy>               
-    </target>        
        
     <target name="init-locale-propeties">
         <echo message="Init locale properties for locale: ${locale}"/>
@@ -603,8 +546,15 @@ Microsystems, Inc. All Rights Reserved.
         <exec executable="sh" failonerror="yes">
             <arg value="-c"/>
             <arg value="cp -RPf ${packages} '${mpkg.file}'/Contents/Packages"/>
-        </exec>                                            
+        </exec>
         
+        <condition property="do.sign-app">
+            <not>
+                <equals arg1="${signing_identity}" arg2="0"/>
+            </not>
+        </condition>
+        <antcall target="sign-installer"/>
+
         <condition property="output.dir" value="${output.jdk7.dir}" else="">
 	     <equals arg1="${build.jdk7}" arg2="1"/>
         </condition>
@@ -614,5 +564,17 @@ Microsystems, Inc. All Rights Reserved.
           <arg value="sh dmg/createdmg.sh '${dmg.name}'.dmg '${mpkg.name}' '${output.dir}'"/>
         </exec>  
         <delete dir="dist_dmg"/>
-    </target>             
-</project>          
+    </target>
+
+    <target name="sign-installer" description="Sign an OS X Installer product archive '${mpkg.name}'" if="do.sign-app">
+        <echo message="Sign an OS X Installer '${mpkg.file}'"/>
+        <property name="signed.mpkg.file" value="${basedir}/dist_dmg/signed-${mpkg.name}.mpkg"/>   
+        <exec executable="sh" failonerror="yes">
+            <arg value="-cv"/>
+            <arg value="productsign --sign '${signing_identity}' '${mpkg.file}' '${signed.mpkg.file}'"/>
+        </exec>
+        <move file="${signed.mpkg.file}" tofile="${mpkg.file}" failonerror="no"/>
+        <delete file="${signed.mpkg.file}" failonerror="no"/>
+    </target>
+    
+</project>

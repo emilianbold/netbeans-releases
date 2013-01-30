@@ -44,14 +44,24 @@
 
 package org.netbeans.modules.websvc.rest.wizard;
 
+import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Container;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Point;
+import java.awt.Window;
+import java.awt.event.HierarchyEvent;
+import java.awt.event.HierarchyListener;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.BoxLayout;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
+import javax.swing.event.AncestorEvent;
+import javax.swing.event.AncestorListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.j2ee.core.Profile;
@@ -148,11 +158,64 @@ final class PatternResourcesSetupPanel extends AbstractPanel {
                     assert false;
             }
             setLayout( new BoxLayout(this, BoxLayout.Y_AXIS));
-            add( panel );
+            add( panel);
             mainPanel = (AbstractPanel.Settings)panel;
             jerseyPanel = new JerseyPanel( this );
             mainPanel.addChangeListener(jerseyPanel );
             add( jerseyPanel );
+            // Fix for BZ#214951 - Hidden Text Box during REST endpoint creation
+            addHierarchyListener( new HierarchyListener(){
+
+                @Override
+                public void hierarchyChanged( HierarchyEvent e ) {
+                    final HierarchyListener listener = this; 
+                    SwingUtilities.invokeLater( new Runnable() {
+                        
+                        @Override
+                        public void run() {
+                            double height = 0;
+                            Component[] components = getComponents();
+                            for (Component component : components) {
+                                if ( component instanceof SingletonSetupPanelVisual ){
+                                    double renderedHeight = 
+                                            ((SingletonSetupPanelVisual)component).
+                                                getRenderedHeight();
+                                    height+=renderedHeight;
+                                    resize(component, renderedHeight);
+                                }
+                                else if (component instanceof ContainerItemSetupPanelVisual ){
+                                    double renderedHeight = 
+                                            ((ContainerItemSetupPanelVisual)component).
+                                                getRenderedHeight();
+                                    height+=renderedHeight;
+                                    resize(component, renderedHeight);
+                                } 
+                                else if ( component instanceof JerseyPanel ){
+                                    double renderedHeight = 
+                                            ((JerseyPanel)component).
+                                                getRenderedHeight();
+                                    height+=renderedHeight;
+                                    resize(component, renderedHeight);
+                                }
+                            }
+                            Dimension dim = getSize();
+                            int newHeight = (int)height;
+                            if ( dim.height < newHeight ) {
+                                setPreferredSize( new Dimension( dim.width, newHeight ));
+                                Window window = SwingUtilities.
+                                        getWindowAncestor(PatternPanel.this);
+                                if ( window!= null ){
+                                    window.pack();
+                                }
+                            }
+                            removeHierarchyListener(listener);
+                        }
+
+                    });   
+                     
+              }
+                
+            });
         }
         
         @Override
@@ -164,41 +227,35 @@ final class PatternResourcesSetupPanel extends AbstractPanel {
         public void read(final WizardDescriptor wizard) {
             mainPanel.read(wizard);
             Project project = Templates.getProject(wizard);
-            WebModule webModule = WebModule.getWebModule(project.getProjectDirectory());
-            Profile profile = webModule.getJ2eeProfile();
-            final RestSupport restSupport = project.getLookup().lookup(RestSupport.class);
-            boolean hasSpringSupport = restSupport!= null && restSupport.hasSpringSupport();
-            boolean isJee6 = Profile.JAVA_EE_6_WEB.equals(profile) || 
-                Profile.JAVA_EE_6_FULL.equals(profile);
+            final WebRestSupport restSupport = project.getLookup().
+                    lookup(WebRestSupport.class);
+            boolean hasSpringSupport = restSupport.hasSpringSupport();
+            boolean hasJaxRs = restSupport.hasJaxRsApi();
             if ( hasSpringSupport ){
                 wizard.putProperty( WizardProperties.USE_JERSEY, true);
             }
             if (jerseyPanel != null) {
-                if (!isJee6 || hasSpringSupport
+                if (!hasJaxRs || hasSpringSupport
                         || restSupport.isRestSupportOn())
                 {
                     remove(jerseyPanel);
                     jerseyPanel = null;
                 }
-                if (restSupport instanceof WebRestSupport) {
-                    ScanDialog.runWhenScanFinished(new Runnable() {
+                ScanDialog.runWhenScanFinished(new Runnable() {
 
-                        @Override
-                        public void run() {
-                            List<RestApplication> restApplications = ((WebRestSupport) restSupport)
-                                    .getRestApplications();
-                            boolean configured = restApplications != null
-                                    && !restApplications.isEmpty();
-                            configureJersey(configured, wizard);
-                        }
-                    }, NbBundle.getMessage(PatternResourcesSetupPanel.class,
-                            "LBL_SearchAppConfig")); // NOI18N
+                    @Override
+                    public void run() {
+                        List<RestApplication> restApplications = restSupport.
+                                getRestApplications();
+                        boolean configured = restApplications != null
+                                && !restApplications.isEmpty();
+                        configureJersey(configured, wizard);
+                    }
+                }, NbBundle.getMessage(PatternResourcesSetupPanel.class,
+                        "LBL_SearchAppConfig")); // NOI18N
 
-                }
-                else {
-                    jerseyPanel.read(wizard);
-                }
             }
+            
         }
 
         @Override
@@ -228,6 +285,15 @@ final class PatternResourcesSetupPanel extends AbstractPanel {
             }
         }
         
+        private void resize( Component component, double height )
+        {
+            Dimension size = component.getSize();
+            if ( size.height < height ){
+                component.setPreferredSize(
+                        new Dimension(size.width, (int)height));
+            }
+        }
+        
         private boolean hasJerseyPanel(){
             return jerseyPanel != null;
         }
@@ -245,7 +311,7 @@ final class PatternResourcesSetupPanel extends AbstractPanel {
                 jerseyPanel.read(wizard);
             }
         }
-
+        
         private AbstractPanel.Settings mainPanel;    
         private JerseyPanel jerseyPanel;
     }

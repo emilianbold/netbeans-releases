@@ -506,6 +506,7 @@ public class MainTest extends NbTestCase {
 
         theClassPath += classPathEntryFromURL(org.netbeans.modules.schema2beans.BaseBean.class);
         theClassPath += File.pathSeparator + classPathEntryFromURL(org.openide.filesystems.FileObject.class);
+        theClassPath += File.pathSeparator + classPathEntryFromURL(org.openide.util.Lookup.class);
         //theClassPath += File.pathSeparator + classPathEntryFromURL(javax.xml.namespace.QName.class);
         //theClassPath += File.pathSeparator + classPathEntryFromURL(org.w3c.dom.Node.class);
         //theClassPath += File.pathSeparator + classPathEntryFromURL(javax.xml.parsers.DocumentBuilderFactory.newInstance().getClass());

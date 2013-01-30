@@ -218,6 +218,8 @@
                 </dependency>
             </module-dependencies>
             <friend-packages>
+                <friend>com.sun.tools.ide.analysis.parfait</friend>
+                <friend>com.sun.tools.ide.analysis.previse</friend>
                 <friend>org.netbeans.modules.android.lint</friend>
                 <friend>org.netbeans.modules.android.lint72</friend>
                 <friend>org.netbeans.modules.findbugs</friend>
@@ -226,6 +228,7 @@
                 <friend>org.netbeans.modules.java.hints.ui</friend>
                 <friend>org.netbeans.modules.latex.hints</friend>
                 <friend>org.netbeans.spi.java.hints</friend>
+                <package>org.netbeans.modules.analysis.api</package>
                 <package>org.netbeans.modules.analysis.spi</package>
             </friend-packages>
         </data>

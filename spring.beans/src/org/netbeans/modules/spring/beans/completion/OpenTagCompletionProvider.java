@@ -71,43 +71,48 @@ import org.openide.util.Exceptions;
  *
  * @author alexeybutenko
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.schema.completion.spi.CompletionModelProvider.class)
-public class OpenTagCompletionProvider extends CompletionModelProvider{
+@org.openide.util.lookup.ServiceProvider(service = CompletionModelProvider.class)
+public class OpenTagCompletionProvider extends CompletionModelProvider {
 
     private static final Logger LOGGER = Logger.getLogger(OpenTagCompletionProvider.class.getSimpleName());
-
     private Map<String, String> declaredNamespaces;
+
     /**
-     * Create CompletionModel from SpringBinaryIndexer
-     * @param context
+     * Create CompletionModel from SpringBinaryIndexer.
+     * @param context CompletionContext
      * @return list of created CompletionModel items
      */
     @Override
     public List<CompletionModel> getModels(CompletionContext context) {
-
-        if (!context.getCompletionType().equals(CompletionContext.CompletionType.COMPLETION_TYPE_ELEMENT))
-            return Collections.EMPTY_LIST;
+        if (!context.getCompletionType().equals(CompletionContext.CompletionType.COMPLETION_TYPE_ELEMENT)) {
+            return Collections.<CompletionModel>emptyList();
+        }
 
         BaseDocument doc = context.getBaseDocument();
         String mime = (String) doc.getProperty(BaseDocument.MIME_TYPE_PROP);
         if (!SpringConstants.CONFIG_MIME_TYPE.equals(mime)) {
-            return Collections.EMPTY_LIST;
+            return Collections.<CompletionModel>emptyList();
         }
 
-        List <CompletionModel> models =  new ArrayList<CompletionModel>();
+        List<CompletionModel> models =  new ArrayList<CompletionModel>();
         FileObject primaryFile = context.getPrimaryFile();
         ClassPath cp = ClassPath.getClassPath(primaryFile, ClassPath.COMPILE);
         if (cp == null) {
-            return Collections.EMPTY_LIST;
+            return Collections.<CompletionModel>emptyList();
         }
-        FileObject resource = cp.findResource(SpringUtilities.SPRING_CLASS_NAME.replace('.', '/')+".class");    //NOI18N
-        if ( resource != null ) {
+        FileObject resource = cp.findResource(SpringUtilities.SPRING_CLASS_NAME.replace('.', '/') + ".class"); //NOI18N
+        if (resource != null) {
             FileObject ownerRoot = cp.findOwnerRoot(resource);
             String version = findVersion(ownerRoot);
-            LOGGER.log(Level.FINE, "Spring jars version="+version); //NOI18N
+            if (version == null) {
+                LOGGER.log(Level.WARNING, "Unknown version of Spring jars: ownerRoot={0}", ownerRoot);
+                return Collections.<CompletionModel>emptyList();
+            }
+            LOGGER.log(Level.FINE, "Spring jars version={0}", version); //NOI18N
 
-            if (declaredNamespaces == null)
+            if (declaredNamespaces == null) {
                 declaredNamespaces = context.getDeclaredNamespaces();
+            }
             Map<String, FileObject> map = new SpringIndex(primaryFile).getAllSpringLibraryDescriptors();
 
             for (String namespace: map.keySet()) {
@@ -125,20 +130,20 @@ public class OpenTagCompletionProvider extends CompletionModelProvider{
             usedPrefixes.clear();
             return models;
         } else {
-            return Collections.EMPTY_LIST;
+            return Collections.<CompletionModel>emptyList();
         }
 
     }
 
     private String parseVersion(FileObject file) {
         String version = file.getName();
-        version = version.substring(version.lastIndexOf("-")+1);
+        version = version.substring(version.lastIndexOf("-") + 1); //NOI18N
         return version;
     }
 
     private String findVersion(FileObject ownerRoot) {
         try {
-            if (ownerRoot !=null) { //NOI18N
+            if (ownerRoot != null) { //NOI18N
                 if (ownerRoot.getFileSystem() instanceof JarFileSystem) {
                     JarFileSystem jarFileSystem = (JarFileSystem) ownerRoot.getFileSystem();
                     return SpringUtilities.getImplementationVersion(jarFileSystem);
@@ -153,7 +158,7 @@ public class OpenTagCompletionProvider extends CompletionModelProvider{
     private Set<String> usedPrefixes = new HashSet<String>();
 
     private String generatePrefix(String namespace) {
-        String prefix = namespace.substring(namespace.lastIndexOf("/")+1).toLowerCase();
+        String prefix = namespace.substring(namespace.lastIndexOf("/") + 1).toLowerCase();
         int i = 1;
         String newPrefix = prefix;
         while (usedPrefixes.contains(newPrefix)) {
@@ -163,16 +168,15 @@ public class OpenTagCompletionProvider extends CompletionModelProvider{
         return newPrefix;
     }
 
-    public class OpenTagCompletionModel extends CompletionModel {
+    public final class OpenTagCompletionModel extends CompletionModel {
         private final String prefix;
         private final SchemaModel model;
 
         public OpenTagCompletionModel(String prefix, SchemaModel model) {
             this.prefix = prefix;
             this.model = model;
-            LOGGER.log(Level.FINE, "Created model: "+prefix+":"+getTargetNamespace());  //NOI18N
+            LOGGER.log(Level.FINE, "Created model: {0}:{1}", new Object[]{prefix, getTargetNamespace()});  //NOI18N
         }
-
 
         @Override
         public String getSuggestedPrefix() {

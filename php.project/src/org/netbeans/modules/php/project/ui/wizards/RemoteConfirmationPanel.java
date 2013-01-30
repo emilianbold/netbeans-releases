@@ -87,7 +87,7 @@ public class RemoteConfirmationPanel implements WizardDescriptor.Panel<WizardDes
     private volatile RemoteClient remoteClient;
 
     public RemoteConfirmationPanel(String[] steps) {
-        this.steps = steps;
+        this.steps = steps.clone();
     }
 
     String[] getSteps() {

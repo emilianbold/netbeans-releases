@@ -42,14 +42,17 @@
 
 package org.netbeans.modules.bugtracking.kenai.spi;
 
+import org.netbeans.modules.bugtracking.kenai.KenaiRepositories;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.net.PasswordAuthentication;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
@@ -58,7 +61,6 @@ import org.netbeans.modules.bugtracking.*;
 import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.Query;
 import org.netbeans.modules.bugtracking.api.Repository;
-import org.netbeans.modules.bugtracking.issuetable.Filter;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiBugtrackingConnector.BugtrackingType;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.ui.issue.IssueAction;
@@ -74,8 +76,19 @@ import org.openide.nodes.Node;
  */
 public class KenaiUtil {
 
-    public static KenaiAccessor getKenaiAccessor() {
-        return BugtrackingManager.getInstance().getKenaiAccessor();
+    public static KenaiAccessor[] getKenaiAccessors() {
+        return BugtrackingManager.getInstance().getKenaiAccessors();
+    }
+
+    public static KenaiAccessor getKenaiAccessor (String url) {
+        KenaiAccessor accessor = null;
+        for (KenaiAccessor ka : getKenaiAccessors()) {
+            if (ka.isOwner(url)) {
+                accessor = ka;
+                break;
+            }
+        }
+        return accessor;
     }
 
     /**
@@ -92,8 +105,12 @@ public class KenaiUtil {
      * @see KenaiAccessor#isLoggedIn(java.lang.String)
      */
     public static boolean isLoggedIn(String url) {
-        KenaiAccessor ka = getKenaiAccessor();
-        return ka != null ? ka.isLoggedIn(url) : false;
+        for (KenaiAccessor ka : getKenaiAccessors()) {
+            if (ka.isLoggedIn(url)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -103,26 +120,21 @@ public class KenaiUtil {
      * @return
      */
     public static boolean isKenai(Repository repo) {
-        return APIAccessor.IMPL.getImpl(repo).getLookup().lookup(KenaiProject.class) != null;
+        return getKenaiProject(repo) != null;
     }
 
     /**
      * @see KenaiAccessor#getPasswordAuthentication(java.lang.String, boolean)
      */
     public static PasswordAuthentication getPasswordAuthentication(String url, boolean forceLogin) {
-        KenaiAccessor ka = getKenaiAccessor();
-        return ka != null ? ka.getPasswordAuthentication(url, forceLogin) : null;
+        for (KenaiAccessor ka : getKenaiAccessors()) {
+            PasswordAuthentication pa = ka.getPasswordAuthentication(url, forceLogin);
+            if (pa != null) {
+                return pa;
+            }
+        }
+        return null;
     }
-
-    /**
-     * Opens the kenai login dialog.
-     * @return true if login successfull, otherwise false
-     */
-    public static boolean showLogin() {
-        KenaiAccessor ka = getKenaiAccessor();
-        return ka != null ? ka.showLogin() : false;
-    }
-
 
     /**
      * Returns a RepositoryProvider coresponding to the given kenai url and a name. The url
@@ -172,10 +184,31 @@ public class KenaiUtil {
      * @see KenaiRepositories#getRepositories()
      */
     public static Collection<Repository> getRepositories(boolean pingOpenProjects) {
-        Collection<RepositoryImpl> impls = KenaiRepositories.getInstance().getRepositories(pingOpenProjects);
+        return getRepositories(pingOpenProjects, false);
+    }
+    
+    /**
+     * @see KenaiRepositories#getRepositories()
+     */
+    public static Collection<Repository> getRepositories(boolean pingOpenProjects, boolean onlyDashboardOpenProjects) {
+        Collection<RepositoryImpl> impls = KenaiRepositories.getInstance().getRepositories(pingOpenProjects, onlyDashboardOpenProjects);
         List<Repository> ret = new ArrayList<Repository>(impls.size());
         for (RepositoryImpl impl : impls) {
             ret.add(impl.getRepository());
+        }
+        return ret;
+    }
+    
+    /**
+     * @see KenaiRepositories#getRepositories()
+     */
+    public static Collection<Repository> getRepositories(String connectorId, boolean pingOpenProjects, boolean onlyDashboardOpenProjects) {
+        Collection<RepositoryImpl> impls = KenaiRepositories.getInstance().getRepositories(pingOpenProjects, onlyDashboardOpenProjects);
+        List<Repository> ret = new ArrayList<Repository>(impls.size());
+        for (RepositoryImpl impl : impls) {
+            if(connectorId.equals(impl.getConnectorId())) {
+                ret.add(impl.getRepository());
+            }
         }
         return ret;
     }
@@ -184,13 +217,17 @@ public class KenaiUtil {
      * @see KenaiAccessor#getProjectMembers(org.netbeans.modules.bugtracking.kenai.spi.KenaiProject)
      */
     public static Collection<RepositoryUser> getProjectMembers(KenaiProject kp) {
-        KenaiAccessor ka = getKenaiAccessor();
-        try {
-            return ka != null ? ka.getProjectMembers(kp) : Collections.EMPTY_LIST;
-        } catch (IOException ex) {
-            BugtrackingManager.LOG.log(Level.WARNING, null, ex);
-            return Collections.EMPTY_LIST;
+        for (KenaiAccessor ka : getKenaiAccessors()) {
+            try {
+                Collection<RepositoryUser> projectMembers = ka.getProjectMembers(kp);
+                if (projectMembers != null) {
+                    return projectMembers;
+                }
+            } catch (IOException ex) {
+                BugtrackingManager.LOG.log(Level.WARNING, null, ex);
+            }
         }
+        return Collections.EMPTY_LIST;
     }
 
     public static String getChatLink(String id) {
@@ -211,15 +248,20 @@ public class KenaiUtil {
      * @see KenaiAccessor#isNetbeansKenaiRegistered()
      */
     public static boolean isNetbeansKenaiRegistered() {
-        KenaiAccessor ka = getKenaiAccessor();
-        return ka != null ? ka.isNetbeansKenaiRegistered() : false;
+        for (KenaiAccessor ka : getKenaiAccessors()) {
+            if (ka.isNetbeansKenaiRegistered()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
      * @see KenaiAccessor#createUserWidget(java.lang.String, java.lang.String, java.lang.String)
+     * @return may return null
      */
-    public static JLabel createUserWidget(String userName, String host, String chatMessage) {
-        KenaiAccessor ka = getKenaiAccessor();
+    public static JLabel createUserWidget (String url, String userName, String host, String chatMessage) {
+        KenaiAccessor ka = getKenaiAccessor(url);
         assert ka != null; 
         return ka.createUserWidget(userName, host, chatMessage);
     }
@@ -228,23 +270,33 @@ public class KenaiUtil {
      * @see KenaiAccessor#getOwnerInfo(org.openide.nodes.Node)
      */
     public static OwnerInfo getOwnerInfo(Node node) {
-        KenaiAccessor ka = getKenaiAccessor();
-        return ka != null ? ka.getOwnerInfo(node) : null;
+        for (KenaiAccessor ka : getKenaiAccessors()) {
+            OwnerInfo ownerInfo = ka.getOwnerInfo(node);
+            if (ownerInfo != null) {
+                return ownerInfo;
+            }
+        }
+        return null;
     }
 
     /**
      * @see KenaiAccessor#getOwnerInfo(java.io.File)
      */
     public static OwnerInfo getOwnerInfo(File file) {
-        KenaiAccessor ka = getKenaiAccessor();
-        return ka != null ? ka.getOwnerInfo(file) : null;
+        for (KenaiAccessor ka : getKenaiAccessors()) {
+            OwnerInfo ownerInfo = ka.getOwnerInfo(file);
+            if (ownerInfo != null) {
+                return ownerInfo;
+            }
+        }
+        return null;
     }
 
     /**
      * @see KenaiAccessor#logKenaiUsage(java.lang.Object[])
      */
-    public static void logKenaiUsage(Object... parameters) {
-        KenaiAccessor ka = getKenaiAccessor();
+    public static void logKenaiUsage(String url, Object... parameters) {
+        KenaiAccessor ka = getKenaiAccessor(url);
         if(ka != null) {
             ka.logKenaiUsage(parameters);
         }
@@ -254,24 +306,37 @@ public class KenaiUtil {
      * @see KenaiAccessor#getKenaiProjectForRepository(java.lang.String)
      */
     public static KenaiProject getKenaiProjectForRepository(String repositoryUrl) throws IOException {
-        KenaiAccessor ka = getKenaiAccessor();
-        return ka != null? ka.getKenaiProjectForRepository(repositoryUrl) : null;
+        for (KenaiAccessor ka : getKenaiAccessors()) {
+            KenaiProject kp = ka.getKenaiProjectForRepository(repositoryUrl);
+            if (kp != null) {
+                return kp;
+            }
+        }
+        return null;
     }
 
     /**
      * @see KenaiAccessor#getKenaiProject(java.lang.String, java.lang.String)
      */
     public static KenaiProject getKenaiProject(String url, String projectName) throws IOException {
-        KenaiAccessor ka = getKenaiAccessor();
-        return ka != null? ka.getKenaiProject(url, projectName) : null;
+        for (KenaiAccessor ka : getKenaiAccessors()) {
+            KenaiProject kp = ka.getKenaiProject(url, projectName);
+            if (kp != null) {
+                return kp;
+            }
+        }
+        return null;
     }
 
     /**
      * @see KenaiAccessor#getDashboardProjects() 
      */
-    public static KenaiProject[] getDashboardProjects() {
-        KenaiAccessor ka = getKenaiAccessor();
-        return ka != null? ka.getDashboardProjects() : new KenaiProject[0];
+    public static KenaiProject[] getDashboardProjects(boolean onlyOpened) {
+        List<KenaiProject> projs = new LinkedList<KenaiProject>();
+        for (KenaiAccessor ka : getKenaiAccessors()) {
+            projs.addAll(Arrays.asList(ka.getDashboardProjects(onlyOpened)));
+        }
+        return projs.toArray(new KenaiProject[projs.size()]);
     }
 
     public static Repository findNBRepository() {

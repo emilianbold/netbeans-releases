@@ -106,7 +106,7 @@ public class J2eeModuleFactory {
         if (impl == null) {
             throw new NullPointerException();
         }
-        return J2eeApplicationAccessor.DEFAULT.createJ2eeApplication(impl);
+        return J2eeApplicationAccessor.getDefault().createJ2eeApplication(impl);
     }
 
     /**
@@ -120,6 +120,6 @@ public class J2eeModuleFactory {
         if (impl == null) {
             throw new NullPointerException();
         }
-        return J2eeApplicationAccessor.DEFAULT.createJ2eeApplication(impl);
+        return J2eeApplicationAccessor.getDefault().createJ2eeApplication(impl);
     }
 }

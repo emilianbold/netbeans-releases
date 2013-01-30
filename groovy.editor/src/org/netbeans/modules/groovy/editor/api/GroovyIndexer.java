@@ -120,8 +120,8 @@ public class GroovyIndexer extends EmbeddingIndexer {
             indexerFirstRun = indexerThisStartTime;
         }
 
-        GroovyParserResult r = (GroovyParserResult) AstUtilities.getParseResult(parserResult);
-        ASTNode root = AstUtilities.getRoot(r);
+        GroovyParserResult r = (GroovyParserResult) ASTUtils.getParseResult(parserResult);
+        ASTNode root = ASTUtils.getRoot(r);
 
         if (root == null) {
             return;
@@ -366,7 +366,7 @@ public class GroovyIndexer extends EmbeddingIndexer {
         private void indexMethod(ASTMethod child, IndexDocument document) {
 
             MethodNode childNode = (MethodNode) child.getNode();
-            StringBuilder sb = new StringBuilder(AstUtilities.getDefSignature(childNode));
+            StringBuilder sb = new StringBuilder(ASTUtils.getDefSignature(childNode));
 
             sb.append(';').append(org.netbeans.modules.groovy.editor.java.Utilities.translateClassLoaderTypeName(
                     childNode.getReturnType().getName()));

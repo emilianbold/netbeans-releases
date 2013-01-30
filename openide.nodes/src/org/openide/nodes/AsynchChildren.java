@@ -173,6 +173,7 @@ final class AsynchChildren <T> extends Children.Keys <Object> implements
             setKeys (Collections.<T>emptyList());
             return;
         }
+        final int minimalCount = getNodesCount();
         List <T> keys = new LinkedList <T> () {
             @Override public boolean add(T e) {
                 if (cancelled || Thread.interrupted()) {
@@ -185,7 +186,9 @@ final class AsynchChildren <T> extends Children.Keys <Object> implements
                     newKeys.add(n);
                 }
                 newKeys.removeAll(Collections.singleton(null)); // #206958
-                setKeys(newKeys);
+                if (newKeys.size() > minimalCount) {
+                    setKeys(newKeys);
+                }
                 return true;
             }
             // #206556 Y02 - could override other mutator methods if ever needed

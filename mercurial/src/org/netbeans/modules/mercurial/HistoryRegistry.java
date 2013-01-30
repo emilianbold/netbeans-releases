@@ -70,7 +70,7 @@ public class HistoryRegistry {
     // package private for test purposes
     static final String PERSISTED_DATA_VERSION = "1.0";
     
-    private Map<File, List<HgLogMessage>> logs = new HashMap<File, List<HgLogMessage>>();
+    private Map<File, List<HgLogMessage>> logs = Collections.synchronizedMap(new HashMap<File, List<HgLogMessage>>());
     // let's keep only 100 items in memory
     private Map<String, List<HgLogMessageChangedPath>> changesets = Collections.synchronizedMap(new LinkedHashMap<String, List<HgLogMessageChangedPath>>() {
 
@@ -125,7 +125,7 @@ public class HistoryRegistry {
         return history == null || history.length == 0 ? null : history[0];
     }
     
-    public synchronized File getHistoryFile(final File repository, final File originalFile, final String revision, final boolean dryTry) {
+    public File getHistoryFile(final File repository, final File originalFile, final String revision, final boolean dryTry) {
         long t = System.currentTimeMillis();
         String originalPath = HgUtils.getRelativePath(originalFile);
         try {

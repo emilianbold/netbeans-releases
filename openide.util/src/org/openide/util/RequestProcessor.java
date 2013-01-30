@@ -499,9 +499,11 @@ public final class RequestProcessor implements ScheduledExecutorService {
     */
     public boolean isRequestProcessorThread() {
         Thread c = Thread.currentThread();
-        synchronized (processorLock) {
-            return c instanceof Processor && processors.contains((Processor) c);
+        if (c instanceof Processor) {
+            Processor p = (Processor)c;
+            return p.procesing == this;
         }
+        return false;
     }
 
     /** Stops processing of runnables processor.
@@ -1894,10 +1896,12 @@ outer:  do {
 
         /** Waiting lock */
         private final Object lock = new Object();
+        private RequestProcessor procesing;
 
         public Processor() {
             super(TOP_GROUP.getTopLevelThreadGroup(), "Inactive RequestProcessor thread"); // NOI18N
             setDaemon(true);
+            assert !Thread.holdsLock(pool); // new Thread may lead to huge classloading
         }
 
         /** Provide an inactive Processor instance. It will return either
@@ -1907,20 +1911,26 @@ outer:  do {
          * @return inactive Processor
          */
         static Processor get() {
-            synchronized (pool) {
-                if (pool.isEmpty()) {
-                    Processor proc = new Processor();
-                    proc.idle = false;
-                    proc.start();
+            Processor newP = null;
+            for (;;) {
+                synchronized (pool) {
+                    if (pool.isEmpty()) {
+                        if (newP != null) {
+                            Processor proc = newP;
+                            proc.idle = false;
+                            proc.start();
 
-                    return proc;
-                } else {
-                    assert checkAccess(TOP_GROUP.getTopLevelThreadGroup());
-                    Processor proc = pool.pop();
-                    proc.idle = false;
+                            return proc;
+                        }
+                    } else {
+                        assert checkAccess(TOP_GROUP.getTopLevelThreadGroup());
+                        Processor proc = pool.pop();
+                        proc.idle = false;
 
-                    return proc;
+                        return proc;
+                    }
                 }
+                newP = new Processor();
             }
         }
         private static boolean checkAccess(ThreadGroup g) throws SecurityException {
@@ -2010,7 +2020,12 @@ outer:  do {
                 boolean loggable = em.isLoggable(Level.FINE);
 
                 if (loggable) {
-                    em.log(Level.FINE, "Begining work {0}", getName()); // NOI18N
+                    try {
+                        procesing = current;
+                        em.log(Level.FINE, "Begining work {0}", getName()); // NOI18N
+                    } finally {
+                        procesing = null;
+                    }
                 }
 
                 // while we have something to do
@@ -2025,6 +2040,7 @@ outer:  do {
                     setPrio(todo.getPriority());
 
                     try {
+                        procesing = current;
                         if (loggable) {
                             em.log(Level.FINE, "  Executing {0}", todo); // NOI18N
                         }
@@ -2049,6 +2065,7 @@ outer:  do {
                     } catch (Throwable t) {
                         doNotify(todo, t);
                     } finally {
+                        procesing = null;
                         unregisterParallel(todo, current);
                     }
 
@@ -2063,7 +2080,12 @@ outer:  do {
                 }
 
                 if (loggable) {
-                    em.log(Level.FINE, "Work finished {0}", getName()); // NOI18N
+                    try {
+                        procesing = current;
+                        em.log(Level.FINE, "Work finished {0}", getName()); // NOI18N
+                    } finally {
+                        procesing = null;
+                    }
                 }
             }
         }

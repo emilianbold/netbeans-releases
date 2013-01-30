@@ -49,6 +49,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
@@ -188,8 +189,13 @@ public class Arch extends Task implements ErrorHandler, EntityResolver, URIResol
             builder.setEntityResolver(this);
 
             if (generateTemplate) {
-                q = builder.parse(Arch.class.getResourceAsStream("Arch-api-questions.xml"));
-                qSource = new DOMSource (q);
+                InputStream resource = Arch.class.getResourceAsStream("Arch-api-questions.xml");
+                try {
+                    q = builder.parse(resource);
+                    qSource = new DOMSource (q);
+                } finally {
+                    resource.close();
+                }
             } else {
                 q = builder.parse (questionsFile);
 				qSource = new DOMSource (q);

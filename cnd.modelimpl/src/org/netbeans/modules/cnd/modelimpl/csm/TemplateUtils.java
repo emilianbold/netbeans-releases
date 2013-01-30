@@ -65,6 +65,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableBase;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.ExpressionStatementImpl;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
+import org.openide.util.CharSequences;
 
 /**
  * Common functions related with templates.
@@ -375,9 +376,9 @@ public class TemplateUtils {
             if (CsmKindUtilities.isTemplate(scope)) {
                 List<CsmTemplateParameter> params = ((CsmTemplate)scope).getTemplateParameters();
                 if (!params.isEmpty()) {
-                    String classifierText = ((TypeImpl)type).getClassifierText().toString();
+                    CharSequence classifierText = ((TypeImpl)type).getClassifierText();
                     for (CsmTemplateParameter param : params) {
-                        if (param.getName().toString().equals(classifierText)) {
+                        if (CharSequences.comparator().compare(param.getName(), classifierText) == 0) {
                             return new TemplateParameterTypeImpl(type, param);
                         }
                     }

@@ -48,7 +48,9 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.*;
 import java.lang.ref.Reference;
+import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -136,10 +138,10 @@ public class DefaultClassPathProvider implements ClassPathProvider {
         // returns null).
         try {
             URL externalURL = URLMapper.findURL(file, URLMapper.EXTERNAL);
-            if ( externalURL == null || !externalURL.equals(file.getURL())) {
+            if ( externalURL == null || !externalURL.toURI().equals(file.toURI())) {
                 return null;
             }
-        } catch (FileStateInvalidException fsi) {
+        } catch (URISyntaxException fsi) {
             return null;
         }
         if (JAVA_EXT.equalsIgnoreCase(file.getExt()) || file.isFolder()) {  //Workaround: Editor asks for package root
@@ -154,7 +156,7 @@ public class DefaultClassPathProvider implements ClassPathProvider {
                     ClassPath cp = null;
                     if (this.compiledClassPath == null || (cp = this.compiledClassPath.get()) == null) {
                         cp = ClassPathFactory.createClassPath(new CompileClassPathImpl ());
-                        this.compiledClassPath = new WeakReference<ClassPath> (cp);
+                        this.compiledClassPath = new SoftReference<ClassPath> (cp);
                     }
                     return cp;
                 }
@@ -615,53 +617,24 @@ public class DefaultClassPathProvider implements ClassPathProvider {
                 Set<URL> roots = new HashSet<URL> ();
                 //Add compile classpath
                 Set<ClassPath> paths = regs.getPaths (ClassPath.COMPILE);
-                for (Iterator<ClassPath> it = paths.iterator(); it.hasNext();) {
-                    ClassPath cp =  it.next();
+                for (ClassPath cp : paths) {
                     try {
                         for (ClassPath.Entry entry : cp.entries()) {
                             roots.add (entry.getURL());
                         }
                     } catch (RecursionException e) {/*Recover from recursion*/}
                 }
-                //Add entries from Exec CP which has sources on Sources CP and are not on the Compile CP
-                Set<ClassPath> sources = regs.getPaths(ClassPath.SOURCE);
-                Set<URL> sroots = new HashSet<URL> ();
-                for (Iterator<ClassPath> it = sources.iterator(); it.hasNext();) {
-                    ClassPath cp = it.next();
-                    try {
-                        for (Iterator<ClassPath.Entry> eit = cp.entries().iterator(); eit.hasNext();) {
-                            ClassPath.Entry entry = eit.next();
-                            sroots.add (entry.getURL());
-                        }
-                    } catch (RecursionException e) {/*Recover from recursion*/}
-                }
+                //Add entries from Exec CP which are not on the Compile CP
                 Set<ClassPath> exec = regs.getPaths(ClassPath.EXECUTE);
-                for (Iterator<ClassPath> it = exec.iterator(); it.hasNext();) {
-                    ClassPath cp = it.next ();
+                for (ClassPath cp : exec) {
                     try {
-                        for (Iterator<ClassPath.Entry> eit = cp.entries().iterator(); eit.hasNext();) {
-                            ClassPath.Entry entry = eit.next ();
-                            Result result = SourceForBinaryQuery.findSourceRoots(entry.getURL());
-                            FileObject[] fos = result.getRoots();
-                            for (int i=0; i< fos.length; i++) {
-                                if (fos[i] == null)
-                                    ErrorManager.getDefault().notify (
-                                        new NullPointerException (result + " returns null root for " + entry.getURL())
-                                    );
-                                else
-                                    try {
-                                        if (sroots.contains(fos[i].getURL())) {
-                                            roots.add (entry.getURL());
-                                        }
-                                    } catch (FileStateInvalidException e) {
-                                        ErrorManager.getDefault().notify(e);
-                                    }
-                            }
+                        for (ClassPath.Entry entry : cp.entries()) {
+                            roots.add (entry.getURL());
                         }
                     } catch (RecursionException e) {/*Recover from recursion*/}
                 }
-                for (Iterator it = roots.iterator(); it.hasNext();) {
-                    l.add (ClassPathSupport.createResource((URL)it.next()));
+                for (URL  root : roots) {
+                    l.add (ClassPathSupport.createResource(root));
                 }
             } finally {
                 active.remove();

@@ -66,14 +66,14 @@ public class ConstantDeclarationInfo extends ClassConstantDeclarationInfo {
             String value = null;
             for (final Expression expression : constantDeclaration.getInitializers()) {
                 if (expression instanceof Scalar) {
-                    value = ((Scalar)expression).getStringValue();
+                    value = ((Scalar) expression).getStringValue();
                     break;
                 }
                 if (expression instanceof UnaryOperation) {
                     UnaryOperation up = (UnaryOperation) expression;
                     if (up.getOperator() == UnaryOperation.Operator.MINUS
                             && up.getExpression() instanceof Scalar) {
-                        value = "-" + ((Scalar)up.getExpression()).getStringValue();
+                        value = "-" + ((Scalar) up.getExpression()).getStringValue();
                         break;
                     }
                 }

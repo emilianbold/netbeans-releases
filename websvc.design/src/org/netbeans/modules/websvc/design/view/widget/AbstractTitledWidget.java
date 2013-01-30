@@ -75,7 +75,7 @@ public abstract class AbstractTitledWidget extends Widget implements ExpandableW
     
     private Color borderColor = BORDER_COLOR;
     private int radius = RADIUS;
-    private int hgap = RADIUS;
+    //private int hgap = RADIUS;
     private int cgap = RADIUS;
     private int depth = radius/3;
     
@@ -108,7 +108,7 @@ public abstract class AbstractTitledWidget extends Widget implements ExpandableW
         super(scene);
         this.radius = radius;
         this.borderColor = color;
-        this.hgap = hgap;
+        //this.hgap = hgap;
         this.cgap = cgap;
         depth = radius/3;
         setLayout(LayoutFactory.createVerticalFlowLayout(LayoutFactory.SerialAlignment.JUSTIFY, 0));
@@ -160,6 +160,7 @@ public abstract class AbstractTitledWidget extends Widget implements ExpandableW
         return expander;
     }
     
+    @org.netbeans.api.annotations.common.SuppressWarnings(" NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE")
     protected final void paintWidget() {
         Rectangle bounds = getClientArea();
         Graphics2D g = getGraphics();

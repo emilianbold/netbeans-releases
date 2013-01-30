@@ -103,7 +103,7 @@ build-tests: .build-tests-post
 # run tests
 test: .test-post
 
-.test-pre:
+.test-pre: build-tests
 # Add your pre 'test' code here...
 
 .test-post: .test-impl

@@ -137,7 +137,7 @@ public final class OperationSupport {
                 impl = OperationSupportImpl.forDirectUninstall ();
                 break;
             case UPDATE:
-                impl = OperationSupportImpl.forUpdate ();
+                impl = OperationSupportImpl.forInstall();
                 break;
             case ENABLE:
                 impl = OperationSupportImpl.forEnable ();
@@ -155,7 +155,7 @@ public final class OperationSupport {
                 impl = OperationSupportImpl.forCustomUninstall ();
                 break;
             case INTERNAL_UPDATE:
-                impl = OperationSupportImpl.forInternalUpdate ();
+                impl = OperationSupportImpl.forInstall();
                 break;
             default:
                 assert false : "Unknown OperationSupport for type " + type;

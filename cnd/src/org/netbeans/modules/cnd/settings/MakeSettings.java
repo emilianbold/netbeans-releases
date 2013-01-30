@@ -43,9 +43,9 @@
  */
 package org.netbeans.modules.cnd.settings;
 
-import java.beans.PropertyEditorManager;
 import java.io.File;
 import java.util.ResourceBundle;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.HelpCtx;
@@ -76,7 +76,6 @@ public class MakeSettings extends SharedClassObject {
     protected void initialize() {
 
         super.initialize();
-        registerPropertyEditors();
 
         setReuseOutput(false);
         setSaveAll(true);
@@ -104,15 +103,6 @@ public class MakeSettings extends SharedClassObject {
             bundle = NbBundle.getBundle(MakeSettings.class);
         }
         return bundle.getString(s);
-    }
-
-    private void registerPropertyEditors() {
-        String[] searchPath = PropertyEditorManager.getEditorSearchPath();
-        String[] newSP = new String[searchPath.length + 1];
-        System.arraycopy(searchPath, 0, newSP, 0, searchPath.length);
-
-        newSP[searchPath.length] = "org.netbeans.modules.cnd.builds"; // NOI18N
-        PropertyEditorManager.setEditorSearchPath(newSP);
     }
 
     /**
@@ -143,8 +133,12 @@ public class MakeSettings extends SharedClassObject {
                 putProperty(PROP_DEFAULT_BUILD_DIR, dir, true);
             }
         } else {
-            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                    getString("MSG_RelBuildPath")));    //NOI18N
+            String message = getString("MSG_RelBuildPath"); //NOI18N
+            if (CndUtils.isStandalone()) {
+                System.err.println(message);
+            } else {
+                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message));
+            }
         }
     }
 

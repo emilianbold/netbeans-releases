@@ -1,4 +1,4 @@
-<?xml version="1.1" encoding="UTF-8" ?>
+<?xml version="1.0" encoding="UTF-8" ?>
 
 <Form version="1.3" maxVersion="1.3" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <AuxValues>
@@ -121,6 +121,9 @@
           <StringArray count="0"/>
         </Property>
       </Properties>
+      <AuxValues>
+        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new ColorComboBox();"/>
+      </AuxValues>
     </Component>
     <Component class="javax.swing.JComboBox" name="cbBackground">
       <Properties>
@@ -128,6 +131,9 @@
           <StringArray count="0"/>
         </Property>
       </Properties>
+      <AuxValues>
+        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new ColorComboBox();"/>
+      </AuxValues>
     </Component>
     <Component class="javax.swing.JComboBox" name="cbWaveUnderlined">
       <Properties>
@@ -135,6 +141,9 @@
           <StringArray count="0"/>
         </Property>
       </Properties>
+      <AuxValues>
+        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new ColorComboBox();"/>
+      </AuxValues>
     </Component>
   </SubComponents>
 </Form>

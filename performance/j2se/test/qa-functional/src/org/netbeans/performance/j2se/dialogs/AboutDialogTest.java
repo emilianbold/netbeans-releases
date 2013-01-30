@@ -44,15 +44,14 @@
 
 package org.netbeans.performance.j2se.dialogs;
 
-import org.netbeans.modules.performance.utilities.PerformanceTestCase;
-import org.netbeans.performance.j2se.setup.J2SESetup;
-
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.MainWindowOperator;
-import org.netbeans.jemmy.operators.JMenuBarOperator;
 import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.junit.NbTestSuite;
+import org.netbeans.jemmy.operators.JMenuBarOperator;
 import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.junit.NbTestSuite;
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
+import org.netbeans.performance.j2se.setup.J2SEBaseSetup;
 
 /**
  * Test of About dialog.
@@ -77,9 +76,9 @@ public class AboutDialogTest extends PerformanceTestCase {
 
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(J2SESetup.class)
-             .addTest(AboutDialogTest.class)
-             .enableModules(".*").clusters(".*")));
+        suite.addTest(NbModuleSuite.createConfiguration(J2SEBaseSetup.class)
+                .addTest(AboutDialogTest.class)
+                .enableModules(".*").clusters("ide").suite());
         return suite;
     }
 
@@ -98,7 +97,10 @@ public class AboutDialogTest extends PerformanceTestCase {
     }
     
     public ComponentOperator open(){
-        new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenuNoBlock(MENU,"|");
+        JMenuBarOperator jmbo = new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar());
+        jmbo.pushMenu("help"); //NOI18N
+        jmbo.closeSubmenus();
+        jmbo.pushMenuNoBlock(MENU);
         return new org.netbeans.jellytools.NbDialogOperator(ABOUT);
     }
     

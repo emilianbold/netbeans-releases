@@ -48,6 +48,7 @@
 
 package org.netbeans.modules.kenai.ui;
 
+import org.netbeans.modules.team.ui.common.URLDisplayerAction;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -68,8 +69,8 @@ import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.SwingConstants;
 import org.netbeans.modules.kenai.api.KenaiException;
-import org.netbeans.modules.kenai.ui.dashboard.ColorManager;
-import org.netbeans.modules.kenai.ui.dashboard.LinkButton;
+import org.netbeans.modules.team.ui.common.ColorManager;
+import org.netbeans.modules.team.ui.common.LinkButton;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;

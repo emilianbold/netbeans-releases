@@ -23,8 +23,8 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Component id="pBodyPanel" alignment="0" pref="24" max="32767" attributes="0"/>
-          <Component id="spPanelHeader" alignment="1" pref="24" max="32767" attributes="0"/>
+          <Component id="pBodyPanel" alignment="0" pref="390" max="32767" attributes="0"/>
+          <Component id="spPanelHeader" alignment="1" pref="390" max="32767" attributes="0"/>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">
@@ -32,7 +32,7 @@
           <Group type="102" alignment="0" attributes="0">
               <Component id="spPanelHeader" min="-2" pref="78" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="pBodyPanel" max="32767" attributes="0"/>
+              <Component id="pBodyPanel" pref="249" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>

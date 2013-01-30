@@ -98,6 +98,14 @@ public class FileUtilTest extends NbTestCase {
         assertTrue("Can create capital file", A.createNewFile());
         assertEquals("Normalizes to capital case", A.getAbsolutePath(), FileUtil.normalizeFile(A).getAbsolutePath());
     }
+    public void testNormalizationQuotations() throws IOException {
+        clearWorkDir();
+        
+        File f1 = FileUtil.normalizeFile(new File("\""));
+        File f2 = FileUtil.normalizeFile(f1);
+        
+        assertEquals(f1, f2);
+    }
 
     public void testWrongNormalization() throws Exception {
         CharSequence log = Log.enable("org.openide.filesystems", Level.WARNING);

@@ -180,24 +180,51 @@ public class SwingLayoutUtils {
      * correct group size then. Simplest case of two buttons:
      *   par(jButton1_resizing_or_trailing,
      *       seq(jButton2_fixed, default_cont_gap_resizing))
+     * It leads to incorrect (bigger) size of the default container gap which
+     * may show up either as jButton1_resizing_or_trailing goes several pixels
+     * out of the container boundaries, or the gap is simply bigger then it
+     * should be (if the growth can be compensated somewhere left of the
+     * parallel group).
      * @param seq the sequence to check
      * @return the undesirable resizing container gap at the end of the sequence
      *         that should not be used, null if everything's ok
      */
     public static LayoutInterval getUnsupportedResizingContainerGap(LayoutInterval seq) {
-        if (seq.isSequential() && seq.getSubIntervalCount() > 1 && seq.getParent() != null) {
-            LayoutInterval gap = seq.getSubInterval(seq.getSubIntervalCount()-1);
-            if (gap.getPreferredSize() == LayoutConstants.NOT_EXPLICITLY_DEFINED && gap.getMaximumSize() == Short.MAX_VALUE
-                    && LayoutInterval.getNeighbor(seq, LayoutConstants.TRAILING, false, true, false) == null) {
-                for (Iterator<LayoutInterval> it=seq.getParent().getSubIntervals(); it.hasNext(); ) {
-                    LayoutInterval sub = it.next();
-                    if (sub != seq && LayoutInterval.isAlignedAtBorder(sub, LayoutConstants.TRAILING)
-                            && (!sub.isSequential() || (sub.getSubIntervalCount() > 0 && !sub.getSubInterval(sub.getSubIntervalCount()-1).isEmptySpace()))) {
-                        return gap;
-                    }
-                }
+        int count = seq.getSubIntervalCount();
+        if (!seq.isSequential() || count <= 1 || seq.getParent() == null) {
+            return null; // not even a valid sequence (basic check)
+        }
+        LayoutInterval gap = seq.getSubInterval(count-1);
+        if (gap.getPreferredSize() != LayoutConstants.NOT_EXPLICITLY_DEFINED || gap.getMaximumSize() != Short.MAX_VALUE
+                || LayoutInterval.getNeighbor(seq, LayoutConstants.TRAILING, false, true, false) != null) {
+            return null; // not a resizing container gap
+        }
+        LayoutInterval otherGap = seq.getSubInterval(0);
+        if (otherGap.isEmptySpace() && LayoutInterval.wantResize(otherGap)) {
+            return null; // there's a leading gap resizing - not a problem
+        }
+        // search for parallel sibling aligned at trailing edge with the gap
+        boolean parallelSibling = false;
+        for (Iterator<LayoutInterval> it=seq.getParent().getSubIntervals(); it.hasNext(); ) {
+            LayoutInterval sub = it.next();
+            if (sub != seq && LayoutInterval.isAlignedAtBorder(sub, LayoutConstants.TRAILING)
+                    && (!sub.isSequential() || (sub.getSubIntervalCount() > 0 && !sub.getSubInterval(sub.getSubIntervalCount()-1).isEmptySpace()))) {
+                parallelSibling = true;
+                break;
             }
         }
-        return null;
+        if (!parallelSibling) {
+            return null;
+        }
+        // check if there is anything left of the whole parallel group
+        LayoutInterval neighbor = LayoutInterval.getNeighbor(seq.getParent(), LayoutConstants.LEADING, false, true, false);
+        if (neighbor == null
+                || (neighbor.isEmptySpace() && !LayoutInterval.canResize(neighbor)
+                    && neighbor.getPreferredSize() == LayoutConstants.NOT_EXPLICITLY_DEFINED
+                    && LayoutInterval.getNeighbor(neighbor, LayoutConstants.LEADING, false, true, false) == null)) {
+            return null; // nothing or just a fixed default container gap next to the group, not a problem
+        }
+
+        return gap;
     }
 }

@@ -4,7 +4,7 @@
 
     <folder name="Editors">
         <folder name="text">
-            <folder name="x-css">    
+            <folder name="css">    
                 <file name="language.instance">
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.css.lib.api.CssTokenId.language"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.api.lexer.Language"/>

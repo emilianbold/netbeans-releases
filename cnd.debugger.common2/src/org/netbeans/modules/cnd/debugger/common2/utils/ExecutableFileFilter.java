@@ -62,7 +62,7 @@ import javax.swing.plaf.basic.BasicFileChooserUI;
 import org.openide.filesystems.*;
 
 import org.netbeans.modules.cnd.debugger.common2.utils.IpeUtils;
-
+@Deprecated
 public class ExecutableFileFilter extends javax.swing.filechooser.FileFilter {
 	
     public ExecutableFileFilter() {

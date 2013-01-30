@@ -1,0 +1,5 @@
+$lock.lock();
+$whatever$;
+$lock.unlock();
+:: $lock instanceof java.util.concurrent.locks.Lock
+;;

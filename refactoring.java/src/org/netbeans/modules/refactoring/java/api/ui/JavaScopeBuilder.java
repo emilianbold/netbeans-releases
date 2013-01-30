@@ -45,7 +45,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.modules.refactoring.api.Scope;
-import org.netbeans.modules.refactoring.java.ui.CustomScopePanel;
+import org.netbeans.modules.refactoring.java.ui.scope.CustomScopePanel;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.HelpCtx;

@@ -77,9 +77,6 @@ public final class NbJavaSettingsInitializer {
             JavaLayerTokenContext.context
         });
     }
-//    public static IndentEngine getIndentEngine() {
-//        return new JavaIndentEngine();
-//    }
     
     private NbJavaSettingsInitializer() {
     }

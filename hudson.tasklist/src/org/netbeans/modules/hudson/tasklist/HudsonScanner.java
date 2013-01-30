@@ -86,6 +86,7 @@ public class HudsonScanner extends PushTaskScanner implements Runnable {
 
     @Override public void setScope(TaskScanningScope scope, Callback callback) {
         try {
+            // XXX make Installer.active into API
             if (!NbPreferences.root().nodeExists("org/netbeans/modules/hudson/instances")) {
                 return; // avoid loading any more classes
             }

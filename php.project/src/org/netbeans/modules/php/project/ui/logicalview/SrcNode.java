@@ -48,12 +48,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
-import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
 import org.netbeans.modules.php.project.ui.actions.DebugFileCommand;
 import org.netbeans.modules.php.project.ui.actions.DownloadCommand;
 import org.netbeans.modules.php.project.ui.actions.RunFileCommand;
@@ -61,14 +61,15 @@ import org.netbeans.modules.php.project.ui.actions.RunTestCommand;
 import org.netbeans.modules.php.project.ui.actions.RunTestsCommand;
 import org.netbeans.modules.php.project.ui.actions.SyncCommand;
 import org.netbeans.modules.php.project.ui.actions.UploadCommand;
+import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
 import org.netbeans.modules.php.project.ui.customizer.CompositePanelProviderImpl;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.netbeans.spi.project.ui.support.FileSensitiveActions;
 import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
 import org.openide.actions.FileSystemAction;
 import org.openide.actions.FindAction;
-import org.openide.actions.ToolsAction;
 import org.openide.actions.PasteAction;
+import org.openide.actions.ToolsAction;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataFilter;
 import org.openide.loaders.DataFolder;
@@ -83,6 +84,7 @@ import org.openide.util.lookup.ProxyLookup;
  *
  * @author Radek Matous
  */
+@org.netbeans.api.annotations.common.SuppressWarnings("EQ_DOESNT_OVERRIDE_EQUALS")
 public class SrcNode extends FilterNode {
     static final Image PACKAGE_BADGE = ImageUtilities.loadImage(
             "org/netbeans/modules/php/project/ui/resources/packageBadge.gif"); // NOI18N
@@ -99,8 +101,13 @@ public class SrcNode extends FilterNode {
         this(project, folder, new FilterNode(folder.getNodeDelegate(), folder.createNodeChildren(filter)), name, isTest);
     }
 
-    private SrcNode(PhpProject project, DataFolder folder, FilterNode node, String name, boolean isTest) {
-        super(node, new FolderChildren(project, node, isTest), new ProxyLookup(folder.getNodeDelegate().getLookup()));
+    private SrcNode(final PhpProject project, DataFolder folder, final FilterNode node, String name, final boolean isTest) {
+        super(node, org.openide.nodes.Children.createLazy(new Callable<org.openide.nodes.Children>() {
+            @Override
+            public org.openide.nodes.Children call() throws Exception {
+                return new FolderChildren(project, node, isTest);
+            }
+        }), new ProxyLookup(folder.getNodeDelegate().getLookup()));
 
         this.project = project;
         this.isTest = isTest;
@@ -189,7 +196,7 @@ public class SrcNode extends FilterNode {
     /**
      * Children for node that represents folder (SrcNode or PackageNode)
      */
-    private static class FolderChildren extends FilterNode.Children {
+    static class FolderChildren extends FilterNode.Children {
         // common actions for both PackageNode and ObjectNode (equals has to be the same)
         private final PhpProject project;
         private final boolean isTest;
@@ -220,6 +227,7 @@ public class SrcNode extends FilterNode {
         }
     }
 
+    @org.netbeans.api.annotations.common.SuppressWarnings("EQ_DOESNT_OVERRIDE_EQUALS")
     private static final class PackageNode extends FilterNode {
 
         private final PhpProject project;
@@ -253,7 +261,8 @@ public class SrcNode extends FilterNode {
             List<Action> actions = new ArrayList<Action>();
             actions.addAll(Arrays.asList(getOriginal().getActions(context)));
             Action[] commonActions = getCommonActions();
-            int idx = actions.indexOf(SystemAction.get(PasteAction.class));
+            // find first separator and add actions there
+            int idx = actions.indexOf(null);
             for (int i = 0; i < commonActions.length; i++) {
                 if (idx >= 0 && idx + commonActions.length < actions.size()) {
                     //put on the proper place after paste
@@ -269,8 +278,8 @@ public class SrcNode extends FilterNode {
         @Override
         public Image getIcon(int type) {
             FileObject folder = getOriginal().getLookup().lookup(FileObject.class);
-            if (ProjectPropertiesSupport.getWebRootDirectory(project).equals(folder)
-                    && !ProjectPropertiesSupport.getSourcesDirectory(project).equals(folder)) {
+            if (folder.equals(ProjectPropertiesSupport.getWebRootDirectory(project))
+                    && !folder.equals(ProjectPropertiesSupport.getSourcesDirectory(project))) {
                 return ImageUtilities.mergeImages(super.getIcon(type), WEB_ROOT_BADGE, 7, 7);
             }
             return super.getIcon(type);
@@ -279,8 +288,8 @@ public class SrcNode extends FilterNode {
         @Override
         public Image getOpenedIcon(int type) {
             FileObject folder = getOriginal().getLookup().lookup(FileObject.class);
-            if (ProjectPropertiesSupport.getWebRootDirectory(project).equals(folder)
-                    && !ProjectPropertiesSupport.getSourcesDirectory(project).equals(folder)) {
+            if (folder.equals(ProjectPropertiesSupport.getWebRootDirectory(project))
+                    && !folder.equals(ProjectPropertiesSupport.getSourcesDirectory(project))) {
                 return ImageUtilities.mergeImages(super.getOpenedIcon(type), WEB_ROOT_BADGE, 7, 7);
             }
             return super.getOpenedIcon(type);
@@ -289,18 +298,20 @@ public class SrcNode extends FilterNode {
         private Action[] getCommonActions() {
             if (isTest) {
                 return new Action[] {
+                    ProjectSensitiveActions.projectCommandAction(RunTestsCommand.ID, RunTestsCommand.DISPLAY_NAME, null),
                     null,
-                    ProjectSensitiveActions.projectCommandAction(RunTestsCommand.ID, RunTestsCommand.DISPLAY_NAME, null)
                 };
             }
             // remove sync action
-            Action[] actions = new Action[COMMON_ACTIONS.length - 1];
+            Action[] actions = new Action[COMMON_ACTIONS.length];
             System.arraycopy(COMMON_ACTIONS, 0, actions, 0, COMMON_ACTIONS.length - 1);
+            actions[actions.length - 1] = null;
             return actions;
         }
 
     }
 
+    @org.netbeans.api.annotations.common.SuppressWarnings("EQ_DOESNT_OVERRIDE_EQUALS")
     private static final class ObjectNode extends FilterNode {
         private final Node originalNode;
         private final boolean isTest;
@@ -315,7 +326,8 @@ public class SrcNode extends FilterNode {
         public Action[] getActions(boolean context) {
             List<Action> actions = new ArrayList<Action>();
             actions.addAll(Arrays.asList(getOriginal().getActions(context)));
-            int idx = actions.indexOf(SystemAction.get(PasteAction.class));
+            // find first separator and add actions there
+            int idx = actions.indexOf(null);
             Action[] toAdd = getCommonActions();
             for (int i = 0; i < toAdd.length; i++) {
                 if (idx >= 0 && idx + toAdd.length < actions.size()) {
@@ -357,6 +369,7 @@ public class SrcNode extends FilterNode {
             if (!isTest) {
                 actions.addAll(Arrays.asList(COMMON_ACTIONS));
             }
+            actions.add(null);
 
             return actions.toArray(new Action[actions.size()]);
         }

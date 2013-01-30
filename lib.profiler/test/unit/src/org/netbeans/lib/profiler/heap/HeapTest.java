@@ -56,7 +56,11 @@ import java.io.PrintStream;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.text.DateFormat;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
 import java.util.TimeZone;
@@ -183,7 +187,7 @@ public class HeapTest {
     public void testGetSummary() {
         System.out.println("getSummary");
         HeapSummary result = heap.getSummary();
-        assertEquals(132489,result.getTotalLiveBytes());
+        assertEquals(139369,result.getTotalLiveBytes());
         assertEquals(2208,result.getTotalLiveInstances());
     }
 
@@ -193,7 +197,6 @@ public class HeapTest {
     @Test
     public void testGetSystemProperties() {
         System.out.println("getSystemProperties");
-        Properties expResult = null;
         Properties result = heap.getSystemProperties();
         assertEquals("2.4.18-openmosix4", result.getProperty("os.version"));
     }
@@ -211,6 +214,20 @@ public class HeapTest {
         assertEquals(25056, i2.getRetainedSize());
     }
     
+    /**
+     * Test of getRetainedSizeByClass method, of class JavaClass.
+     */
+    @Test
+    public void testGetRetainedSizeByClass() {
+        System.out.println("getRetainedSizeByClass");
+        JavaClass string = heap.getJavaClassByName(String.class.getName());
+        JavaClass hashMap = heap.getJavaClassByName(HashMap.class.getName());
+        JavaClass array = heap.getJavaClassByName(ArrayList.class.getName());
+        
+        assertEquals(18044, string.getRetainedSizeByClass());
+        assertEquals(11315, hashMap.getRetainedSizeByClass());
+        assertEquals(566, array.getRetainedSizeByClass());
+    }
     
     @Test
     public void testHeapDumpLog() throws IOException, URISyntaxException {
@@ -316,6 +333,7 @@ public class HeapTest {
             }
         }
         Collection roots = heap.getGCRoots();
+        roots = sortGCRoots(roots);
         out.println("GC roots "+roots.size());
         
         for(Object g : roots) {
@@ -342,5 +360,28 @@ public class HeapTest {
             line = reader.readLine();
         }
         assertEquals("File "+goledFile.getAbsolutePath()+" and "+outFile.getAbsolutePath()+" differs on line "+goldenReader.getLineNumber(), goldenLine, line);
+    }
+
+    private Collection sortGCRoots(Collection roots) {
+        List r = new ArrayList(roots);
+        Collections.sort(r, new Comparator() {
+
+            @Override
+            public int compare(Object o1, Object o2) {
+                GCRoot r1 = (GCRoot)o1;
+                GCRoot r2 = (GCRoot)o2;
+                int kind = r1.getKind().compareTo(r2.getKind());
+                
+                if (kind != 0) {
+                    return kind;
+                }
+                
+                long x = r1.getInstance().getInstanceId();
+                long y = r2.getInstance().getInstanceId();                
+                return (x < y) ? -1 : ((x == y) ? 0 : 1);
+            }
+            
+        });
+        return r;
     }
 }

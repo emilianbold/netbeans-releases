@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.versioning.util;
 
+import java.awt.Container;
 import java.awt.Cursor;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -232,6 +233,10 @@ public class VCSHyperlinkSupport {
 
         @Override
         public void computeBounds(JTextPane textPane) {
+            computeBounds(textPane, null);
+        }
+        
+        public void computeBounds(JTextPane textPane, BoundsTranslator translator) {
             Rectangle tpBounds = textPane.getBounds();
             TextUI tui = textPane.getUI();
             this.bounds = new Rectangle[length];
@@ -240,6 +245,10 @@ public class VCSHyperlinkSupport {
                     Rectangle startr = tui.modelToView(textPane, docstart[i], Position.Bias.Forward).getBounds();
                     Rectangle endr = tui.modelToView(textPane, docend[i], Position.Bias.Backward).getBounds();
                     this.bounds[i] = new Rectangle(tpBounds.x + startr.x, startr.y, endr.x - startr.x, startr.height);
+                    //NOTE the textPane is positioned within a parent panel so the origin has to be modified too
+                    if (null != translator) {
+                        translator.correctTranslation(textPane, this.bounds[i]);
+                    }
                 } catch (BadLocationException ex) { }
             }
         }
@@ -305,6 +314,10 @@ public class VCSHyperlinkSupport {
 
         @Override
         public void computeBounds(JTextPane textPane) {
+            computeBounds(textPane, null);
+        }
+        
+        public void computeBounds(JTextPane textPane, BoundsTranslator translator) {
             Rectangle tpBounds = textPane.getBounds();
             TextUI tui = textPane.getUI();
             this.bounds = new Rectangle();
@@ -315,6 +328,10 @@ public class VCSHyperlinkSupport {
                     endr.x += kenaiUser.getIcon().getIconWidth();
                 }
                 this.bounds = new Rectangle(tpBounds.x + startr.x, startr.y, endr.x - startr.x, startr.height);
+                
+                if (null != translator) {
+                    translator.correctTranslation(textPane, this.bounds);
+                }
             } catch (BadLocationException ex) {
                 Exceptions.printStackTrace(ex);
             }
@@ -359,6 +376,15 @@ public class VCSHyperlinkSupport {
             sd.insertString(sd.getLength(), " ", style);
             sd.insertString(sd.getLength(), " ", iconStyle);
         }
+    }
+
+    public static interface BoundsTranslator {
+        /**
+         * Corrects the bounding rectangle of nested textpanes.
+         * @param startComponent
+         * @param r 
+         */
+        public void correctTranslation (final Container startComponent, final Rectangle r);
     }
 }
 

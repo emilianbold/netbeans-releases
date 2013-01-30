@@ -9,17 +9,31 @@ End cursor position = 47
 [.a2[class^="start"]:|, active, .a2[class^="start"]:active, 102]
 active
 after
+armed
 before
+bottom
+cancel
+cell-selection
 checked
+collapsed
 default
+determinate
 disabled
+editable
 empty
 enabled
+even
+expanded
+filled
 first-child
 first-letter
 first-line
 first-of-type
+fitToHeight
+fitToWidth
 focus
+focused
+horizontal
 hover
 in-range
 indeterminate
@@ -27,21 +41,36 @@ invalid
 lang
 last-child
 last-of-type
+left
 link
+multiline
+not
 nth-child
 nth-last-child
 nth-last-of-type
 nth-of-type
+odd
 only-child
 only-of-type
+openvertically
 optional
 out-of-range
+pannable
+pressed
 read-only
 read-write
+readonly
 required
+right
 root
+row-selection
+selected
+show-mnemonic
+showing
 target
+top
 valid
+vertical
 visited
 End cursor position = 129
 [.a2[class^="start"]::|, after, .a2[class^="start"]::after, 169]
@@ -402,6 +431,7 @@ display anything
 display block
 display compact
 display inherit
+display initial
 display inline
 display inline-block
 display inline-table
@@ -425,6 +455,7 @@ display table-row-group
 End cursor position = 278
 [color: |, color navy, color: navy, 330]
 color color chooser
+color hash_color_code
 color activeborder
 color activecaption
 color aliceblue
@@ -493,7 +524,6 @@ color graytext
 color green
 color greenyellow
 color grey
-color hash_color_code
 color highlight
 color highlighttext
 color honeydew
@@ -507,6 +537,8 @@ color indianred
 color indigo
 color infobackground
 color infotext
+color inherit
+color initial
 color ivory
 color khaki
 color lavender
@@ -609,156 +641,266 @@ color yellow
 color yellowgreen
 End cursor position = 342
 [-web|, -webkit-animation, -webkit-animation: , 394]
--webkit-animation
--webkit-animation-delay
--webkit-animation-direction
--webkit-animation-duration
--webkit-animation-fill-mode
--webkit-animation-iteration-co
--webkit-animation-name
--webkit-animation-play-state
--webkit-animation-timing-funct
--webkit-appearance
--webkit-backface-visibility
--webkit-background-clip
--webkit-background-composite
--webkit-background-origin
--webkit-background-size
--webkit-border-bottom-left-rad
--webkit-border-bottom-right-ra
--webkit-border-horizontal-spac
--webkit-border-image
--webkit-border-radius
--webkit-border-top-left-radius
--webkit-border-top-right-radiu
--webkit-border-vertical-spacin
--webkit-box-align
--webkit-box-direction
--webkit-box-flex
--webkit-box-flex-group
--webkit-box-lines
--webkit-box-ordinal-group
--webkit-box-orient
--webkit-box-pack
--webkit-box-reflect
--webkit-box-shadow
--webkit-box-sizing
--webkit-column-break-after
--webkit-column-break-before
--webkit-column-break-inside
--webkit-column-count
--webkit-column-gap
--webkit-column-rule
--webkit-column-rule-color
--webkit-column-rule-style
--webkit-column-rule-width
--webkit-column-width
--webkit-columns
--webkit-dashboard-region
--webkit-line-break
--webkit-margin-bottom-collapse
--webkit-margin-collapse
--webkit-margin-start
--webkit-margin-top-collapse
--webkit-marquee
--webkit-marquee-direction
--webkit-marquee-increment
--webkit-marquee-repetition
--webkit-marquee-speed
--webkit-marquee-style
--webkit-mask
--webkit-mask-attachment
--webkit-mask-box-image
--webkit-mask-clip
--webkit-mask-composite
--webkit-mask-image
--webkit-mask-origin
--webkit-mask-position
--webkit-mask-position-x
--webkit-mask-position-y
--webkit-mask-repeat
--webkit-mask-size
--webkit-nbsp-mode
--webkit-padding-start
--webkit-perspective
--webkit-perspective-origin
--webkit-rtl-ordering
--webkit-tap-highlight-color
--webkit-text-fill-color
--webkit-text-security
--webkit-text-size-adjust
--webkit-text-stroke
--webkit-text-stroke-color
--webkit-text-stroke-width
--webkit-touch-callout
--webkit-transform
--webkit-transform-origin
--webkit-transform-origin-x
--webkit-transform-origin-y
--webkit-transform-origin-z
--webkit-transform-style
--webkit-transition
--webkit-transition-delay
--webkit-transition-duration
--webkit-transition-property
--webkit-transition-timing-func
--webkit-user-drag
--webkit-user-modify
--webkit-user-select
+Chrome -webkit-animation
+Chrome -webkit-animation
+Chrome -webkit-animation-delay
+Chrome -webkit-animation-delay
+Chrome -webkit-animation-direc
+Chrome -webkit-animation-direc
+Chrome -webkit-animation-durat
+Chrome -webkit-animation-durat
+Chrome -webkit-animation-fill-
+Chrome -webkit-animation-fill-
+Chrome -webkit-animation-itera
+Chrome -webkit-animation-itera
+Chrome -webkit-animation-name
+Chrome -webkit-animation-name
+Chrome -webkit-animation-play-
+Chrome -webkit-animation-play-
+Chrome -webkit-animation-timin
+Chrome -webkit-animation-timin
+Chrome -webkit-appearance
+Chrome -webkit-appearance
+Chrome -webkit-backface-visibi
+Chrome -webkit-backface-visibi
+Chrome -webkit-background-clip
+Chrome -webkit-background-clip
+Chrome -webkit-background-comp
+Chrome -webkit-background-comp
+Chrome -webkit-background-orig
+Chrome -webkit-background-orig
+Chrome -webkit-background-size
+Chrome -webkit-background-size
+Chrome -webkit-border-bottom-l
+Chrome -webkit-border-bottom-l
+Chrome -webkit-border-bottom-r
+Chrome -webkit-border-bottom-r
+Chrome -webkit-border-horizont
+Chrome -webkit-border-horizont
+Chrome -webkit-border-image
+Chrome -webkit-border-image
+Chrome -webkit-border-radius
+Chrome -webkit-border-radius
+Chrome -webkit-border-top-left
+Chrome -webkit-border-top-left
+Chrome -webkit-border-top-righ
+Chrome -webkit-border-top-righ
+Chrome -webkit-border-vertical
+Chrome -webkit-border-vertical
+Chrome -webkit-box-align
+Chrome -webkit-box-align
+Chrome -webkit-box-direction
+Chrome -webkit-box-direction
+Chrome -webkit-box-flex
+Chrome -webkit-box-flex
+Chrome -webkit-box-flex-group
+Chrome -webkit-box-flex-group
+Chrome -webkit-box-lines
+Chrome -webkit-box-lines
+Chrome -webkit-box-ordinal-gro
+Chrome -webkit-box-ordinal-gro
+Chrome -webkit-box-orient
+Chrome -webkit-box-orient
+Chrome -webkit-box-pack
+Chrome -webkit-box-pack
+Chrome -webkit-box-reflect
+Chrome -webkit-box-reflect
+Chrome -webkit-box-shadow
+Chrome -webkit-box-shadow
+Chrome -webkit-box-sizing
+Chrome -webkit-box-sizing
+Chrome -webkit-column-break-af
+Chrome -webkit-column-break-af
+Chrome -webkit-column-break-be
+Chrome -webkit-column-break-be
+Chrome -webkit-column-break-in
+Chrome -webkit-column-break-in
+Chrome -webkit-column-count
+Chrome -webkit-column-count
+Chrome -webkit-column-gap
+Chrome -webkit-column-gap
+Chrome -webkit-column-rule
+Chrome -webkit-column-rule
+Chrome -webkit-column-rule-col
+Chrome -webkit-column-rule-col
+Chrome -webkit-column-rule-sty
+Chrome -webkit-column-rule-sty
+Chrome -webkit-column-rule-wid
+Chrome -webkit-column-rule-wid
+Chrome -webkit-column-width
+Chrome -webkit-column-width
+Chrome -webkit-columns
+Chrome -webkit-columns
+Chrome -webkit-dashboard-regio
+Chrome -webkit-dashboard-regio
+Chrome -webkit-line-break
+Chrome -webkit-line-break
+Chrome -webkit-margin-bottom-c
+Chrome -webkit-margin-bottom-c
+Chrome -webkit-margin-collapse
+Chrome -webkit-margin-collapse
+Chrome -webkit-margin-start
+Chrome -webkit-margin-start
+Chrome -webkit-margin-top-coll
+Chrome -webkit-margin-top-coll
+Chrome -webkit-marquee
+Chrome -webkit-marquee
+Chrome -webkit-marquee-directi
+Chrome -webkit-marquee-directi
+Chrome -webkit-marquee-increme
+Chrome -webkit-marquee-increme
+Chrome -webkit-marquee-repetit
+Chrome -webkit-marquee-repetit
+Chrome -webkit-marquee-speed
+Chrome -webkit-marquee-speed
+Chrome -webkit-marquee-style
+Chrome -webkit-marquee-style
+Chrome -webkit-mask
+Chrome -webkit-mask
+Chrome -webkit-mask-attachment
+Chrome -webkit-mask-attachment
+Chrome -webkit-mask-box-image
+Chrome -webkit-mask-box-image
+Chrome -webkit-mask-clip
+Chrome -webkit-mask-clip
+Chrome -webkit-mask-composite
+Chrome -webkit-mask-composite
+Chrome -webkit-mask-image
+Chrome -webkit-mask-image
+Chrome -webkit-mask-origin
+Chrome -webkit-mask-origin
+Chrome -webkit-mask-position
+Chrome -webkit-mask-position
+Chrome -webkit-mask-position-x
+Chrome -webkit-mask-position-x
+Chrome -webkit-mask-position-y
+Chrome -webkit-mask-position-y
+Chrome -webkit-mask-repeat
+Chrome -webkit-mask-repeat
+Chrome -webkit-mask-size
+Chrome -webkit-mask-size
+Chrome -webkit-nbsp-mode
+Chrome -webkit-nbsp-mode
+Chrome -webkit-padding-start
+Chrome -webkit-padding-start
+Chrome -webkit-perspective
+Chrome -webkit-perspective
+Chrome -webkit-perspective-ori
+Chrome -webkit-perspective-ori
+Chrome -webkit-rtl-ordering
+Chrome -webkit-rtl-ordering
+Chrome -webkit-tap-highlight-c
+Chrome -webkit-tap-highlight-c
+Chrome -webkit-text-fill-color
+Chrome -webkit-text-fill-color
+Chrome -webkit-text-security
+Chrome -webkit-text-security
+Chrome -webkit-text-size-adjus
+Chrome -webkit-text-size-adjus
+Chrome -webkit-text-stroke
+Chrome -webkit-text-stroke
+Chrome -webkit-text-stroke-col
+Chrome -webkit-text-stroke-col
+Chrome -webkit-text-stroke-wid
+Chrome -webkit-text-stroke-wid
+Chrome -webkit-touch-callout
+Chrome -webkit-touch-callout
+Chrome -webkit-transform
+Chrome -webkit-transform
+Chrome -webkit-transform-origi
+Chrome -webkit-transform-origi
+Chrome -webkit-transform-origi
+Chrome -webkit-transform-origi
+Chrome -webkit-transform-origi
+Chrome -webkit-transform-origi
+Chrome -webkit-transform-origi
+Chrome -webkit-transform-origi
+Chrome -webkit-transform-style
+Chrome -webkit-transform-style
+Chrome -webkit-transition
+Chrome -webkit-transition
+Chrome -webkit-transition-dela
+Chrome -webkit-transition-dela
+Chrome -webkit-transition-dura
+Chrome -webkit-transition-dura
+Chrome -webkit-transition-prop
+Chrome -webkit-transition-prop
+Chrome -webkit-transition-timi
+Chrome -webkit-transition-timi
+Chrome -webkit-user-drag
+Chrome -webkit-user-drag
+Chrome -webkit-user-modify
+Chrome -webkit-user-modify
+Chrome -webkit-user-select
+Chrome -webkit-user-select
 End cursor position = 413
 [box-|, box-shadow, box-shadow: , 434]
-box-decoration-break
-box-shadow
-box-sizing
+Box box-decoration-break
+Box box-shadow
+User interface box-sizing
 End cursor position = 446
 [border-|, border-radius, border-radius: , 483]
-border-bottom
-border-bottom-color
-border-bottom-left-radius
-border-bottom-right-radius
-border-bottom-style
-border-bottom-width
-border-collapse
-border-color
-border-image
-border-image-outset
-border-image-repeat
-border-image-slice
-border-image-source
-border-image-width
-border-left
-border-left-color
-border-left-style
-border-left-width
-border-radius
-border-right
-border-right-color
-border-right-style
-border-right-width
-border-spacing
-border-style
-border-top
-border-top-color
-border-top-left-radius
-border-top-right-radius
-border-top-style
-border-top-width
-border-width
+Box border-bottom
+Box border-bottom-color
+Box border-bottom-left-radius
+Box border-bottom-right-radius
+Box border-bottom-style
+Box border-bottom-width
+Default border-collapse
+Box border-color
+Box border-image
+Box border-image-outset
+Box border-image-repeat
+Box border-image-slice
+Box border-image-source
+Box border-image-width
+Box border-left
+Box border-left-color
+Box border-left-style
+Box border-left-width
+Box border-radius
+Box border-right
+Box border-right-color
+Box border-right-style
+Box border-right-width
+Default border-spacing
+Box border-style
+Box border-top
+Box border-top-color
+Box border-top-left-radius
+Box border-top-right-radius
+Box border-top-style
+Box border-top-width
+Box border-width
 End cursor position = 498
 [div:not(:|){}, hover, div:not(:hover){}, 534]
 active
 after
+armed
 before
+bottom
+cancel
+cell-selection
 checked
+collapsed
 default
+determinate
 disabled
+editable
 empty
 enabled
+even
+expanded
+filled
 first-child
 first-letter
 first-line
 first-of-type
+fitToHeight
+fitToWidth
 focus
+focused
+horizontal
 hover
 in-range
 indeterminate
@@ -766,20 +908,35 @@ invalid
 lang
 last-child
 last-of-type
+left
 link
+multiline
+not
 nth-child
 nth-last-child
 nth-last-of-type
 nth-of-type
+odd
 only-child
 only-of-type
+openvertically
 optional
 out-of-range
+pannable
+pressed
 read-only
 read-write
+readonly
 required
+right
 root
+row-selection
+selected
+show-mnemonic
+showing
 target
+top
 valid
+vertical
 visited
 End cursor position = 549

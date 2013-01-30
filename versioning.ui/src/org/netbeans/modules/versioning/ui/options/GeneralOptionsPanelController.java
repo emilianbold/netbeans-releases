@@ -46,12 +46,16 @@ package org.netbeans.modules.versioning.ui.options;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import javax.swing.JComponent;
+import org.netbeans.modules.versioning.util.VCSOptionsKeywordsProvider;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 
-final class GeneralOptionsPanelController extends OptionsPanelController {
+final class GeneralOptionsPanelController extends OptionsPanelController implements VCSOptionsKeywordsProvider {
     
     private GeneralOptionsPanel panel;
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
@@ -106,6 +110,13 @@ final class GeneralOptionsPanelController extends OptionsPanelController {
     public void removePropertyChangeListener(PropertyChangeListener l) {
         pcs.removePropertyChangeListener(l);
     }            
+
+    @Override
+    public boolean acceptKeywords (List<String> keywords) {
+        Set<String> allKeywords = new HashSet<String>(panel.getKeywords());
+        allKeywords.retainAll(keywords);
+        return !allKeywords.isEmpty();
+    }
 
     private Boolean validateFields() {
         

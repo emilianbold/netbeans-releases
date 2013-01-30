@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -75,13 +75,14 @@ BUNDLE_LONG_NAMES[2] = "C/C++";
 BUNDLE_LONG_NAMES[3] = "PHP";
 BUNDLE_LONG_NAMES[4] = "All";
 
-var RELEASE_NOTES_LINK  = "http://netbeans.org/community/releases/72/relnotes.html";
-var INSTALL_NOTES_LINK  = "http://netbeans.org/community/releases/72/install.html";
+var RELEASE_NOTES_LINK  = "http://netbeans.org/community/releases/73/relnotes.html";
+var INSTALL_NOTES_LINK  = "http://netbeans.org/community/releases/73/install.html";
 
 var LEGAL_INFO_HEADER = "Important Legal Information:";
 
 var CDDL_GPLV2_LINK = "http://netbeans.org/cddl-gplv2.html";
-var LICENSE_3RD_PARTY_LINK = "http://www.netbeans.info/downloads/licence/netbeans-3rd-party.txt";
+var LICENSE_FILES_LINK = "http://netbeans.org/about/legal/product-licences.html";
 
-var LEGAL_INFO_MESSAGE = "NetBeans Community Distributions are available under a Dual License consisting of the <a href=\"{0}\">Common Development and Distribution License (CDDL) v1.0 and GNU General Public License (GPL) v2</a>. See the <a href=\"{1}\">third-party readme</a> for external components included in NetBeans and their associated licenses.";
+var LEGAL_INFO_MESSAGE = "NetBeans Community Distributions are available under a Dual License consisting of the <a href=\"{0}\">Common Development and Distribution License (CDDL) v1.0 and GNU General Public License (GPL) v2</a>. Such distributions include additional components under separate licenses identified in the <a href=\"{1}\">License file</a>. See the <a href=\"{2}\">Third Party License file</a> for external components included in NetBeans and their associated licenses.";
+
 var LEGAL_WARNING_MESSAGE = "<b>WARNING:</b> These builds are still under development and could contain defects that lead to data loss. They are meant for evaluation of new features. As always, be sure to back up your changes if you use these builds on your production code.";

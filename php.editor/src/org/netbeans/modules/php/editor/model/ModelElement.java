@@ -42,10 +42,10 @@
 
 package org.netbeans.modules.php.editor.model;
 
-import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.api.elements.PhpElement;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Union2;
@@ -54,11 +54,13 @@ import org.openide.util.Union2;
  * @author Radek Matous
  */
 public interface ModelElement extends PhpElement {
+
     @CheckForNull
     String getIndexSignature();
-    public Union2<String, FileObject> getFile();
+    Union2<String, FileObject> getFile();
     Scope getInScope();
     ElementHandle getPHPElement();
     OffsetRange getNameRange();
     QualifiedName getNamespaceName();
+
 }

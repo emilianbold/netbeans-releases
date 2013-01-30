@@ -41,9 +41,12 @@
  */
 package org.netbeans.modules.php.project.ui.actions;
 
+import java.util.logging.Logger;
 import org.netbeans.modules.php.project.PhpProject;
+import org.netbeans.modules.php.project.PhpProjectValidator;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.phpunit.PhpUnit;
+import org.netbeans.modules.php.project.ui.Utils;
 import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
 import org.netbeans.modules.php.project.ui.actions.support.ConfigAction;
 import org.openide.filesystems.FileObject;
@@ -54,6 +57,8 @@ import org.openide.util.Lookup;
  */
 public abstract class Command {
 
+    protected final Logger logger = Logger.getLogger(getClass().getName());
+
     private final PhpProject project;
 
     public Command(PhpProject project) {
@@ -63,9 +68,25 @@ public abstract class Command {
 
     public abstract String getCommandId();
 
-    public abstract void invokeAction(Lookup context);
+    public abstract boolean isActionEnabledInternal(Lookup context);
 
-    public abstract boolean isActionEnabled(Lookup context);
+    public abstract void invokeActionInternal(Lookup context);
+
+    public final boolean isActionEnabled(Lookup context) {
+        if (PhpProjectValidator.isFatallyBroken(project)) {
+            // will be handled in invokeAction(), see below
+            return true;
+        }
+        return isActionEnabledInternal(context);
+    }
+
+    public final void invokeAction(Lookup context) {
+        if (PhpProjectValidator.isFatallyBroken(project)) {
+            Utils.warnInvalidSourcesDirectory(project);
+            return;
+        }
+        invokeActionInternal(context);
+    }
 
     public boolean asyncCallRequired() {
         return true;

@@ -82,18 +82,21 @@ import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.TypeElement;
 import javax.swing.JLabel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
+import org.netbeans.api.annotations.common.NonNull;
 
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.runner.JavaRunner;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.modules.j2ee.common.project.WhiteListUpdater;
 import org.netbeans.modules.j2ee.common.project.ui.J2EEProjectProperties;
 import org.netbeans.modules.java.api.common.project.BaseActionProvider;
@@ -112,17 +115,22 @@ import org.netbeans.modules.websvc.api.webservices.WsCompileEditorSupport;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.java.project.classpath.support.ProjectClassPathSupport;
+import org.netbeans.spi.project.ActionProvider;
+import org.netbeans.spi.project.LookupProvider;
+import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.SingleMethod;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.DialogDescriptor;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle.Messages;
+import org.openide.util.Parameters;
 
 /** Action provider of the Web project. This is the place where to do
  * strange things to Web actions. E.g. compile-single.
  */
-class WebActionProvider extends BaseActionProvider {
+public class WebActionProvider extends BaseActionProvider {
 
     // property definitions
     private static final String DIRECTORY_DEPLOYMENT_SUPPORTED = "directory.deployment.supported"; // NOI18N
@@ -255,7 +263,7 @@ class WebActionProvider extends BaseActionProvider {
 
     @Override
     public String[] getSupportedActions() {
-        return supportedActions;
+        return supportedActions.clone();
     }
 
     @Override
@@ -296,6 +304,9 @@ class WebActionProvider extends BaseActionProvider {
         return runServlet(p, javaFile, "LBL_RunAction", COMMAND_DEBUG_SINGLE.equals(command), COMMAND_PROFILE_SINGLE.equals(command), targetNames);
     }
 
+    @Messages({
+        "WebActionProvider.lbl.running.action=Running file..."
+    })
     @Override
     public String[] getTargetNames(String command, Lookup context, Properties p, boolean doJavaChecks) throws IllegalArgumentException {
         if (command.equals(COMMAND_RUN_SINGLE) ||command.equals(COMMAND_RUN) ||
@@ -340,33 +351,16 @@ class WebActionProvider extends BaseActionProvider {
                 if (!compile) {
                     setAllPropertiesForSingleJSPCompilation(p, files);
                 }
-
-                String requestParams = RequestParametersQuery.getFileAndParameters(files[0]);
-                if (requestParams != null) {
-                    p.setProperty("client.urlPart", requestParams); //NOI18N
-                    p.setProperty(BaseActionProvider.PROPERTY_RUN_SINGLE_ON_SERVER, "yes");
-                    return targetNames;
-                } else {
-                    return null;
-                }
+                AtomicBoolean completeAction = new AtomicBoolean(false);
+                ProgressUtils.showProgressDialogAndRun(new RunSingleJspFileAction(files[0], p, completeAction), Bundle.WebActionProvider_lbl_running_action());
+                return completeAction.get() ? targetNames : null;
             } else {
                 // run HTML file
                 FileObject[] htmlFiles = findHtml(context);
                 if ((htmlFiles != null) && (htmlFiles.length > 0)) {
-                    String requestParams = RequestParametersQuery.getFileAndParameters(htmlFiles[0]);
-                    if (requestParams == null) {
-                        requestParams = FileUtil.getRelativePath(WebModule.getWebModule(htmlFiles[0]).getDocumentBase(), htmlFiles[0]); // NOI18N
-                        if (requestParams != null) {
-                            requestParams = "/" + requestParams.replace(" ", "%20"); // NOI18N
-                        }
-                    }
-                    if (requestParams != null) {
-                        p.setProperty("client.urlPart", requestParams); //NOI18N
-                        p.setProperty(BaseActionProvider.PROPERTY_RUN_SINGLE_ON_SERVER, "yes"); // NOI18N
-                        return targetNames;
-                    } else {
-                        return null;
-                    }
+                    AtomicBoolean completeAction = new AtomicBoolean(false);
+                    ProgressUtils.showProgressDialogAndRun(new RunSingleHtmlFileAction(htmlFiles[0], p, completeAction), Bundle.WebActionProvider_lbl_running_action());
+                    return completeAction.get() ? targetNames : null;
                 }
             }
         } else if (command.equals(COMMAND_RUN) || command.equals(WebProjectConstants.COMMAND_REDEPLOY)) {
@@ -642,10 +636,6 @@ class WebActionProvider extends BaseActionProvider {
         }
 
         String name = Utils.getServletName(wm.getDocumentBase(), jsp);
-        if (name == null) {
-            return;
-        }
-
         String filePath = name.substring(0, name.lastIndexOf('.')).replace('.', '/');
 
         String fileClass = dir + '/' + filePath + ".class"; //NOI18N
@@ -891,7 +881,11 @@ class WebActionProvider extends BaseActionProvider {
     }
 
     private boolean isSelectedServer() {
-        String instance = getAntProjectHelper().getStandardPropertyEvaluator().getProperty(WebProjectProperties.J2EE_SERVER_INSTANCE);
+        final PropertyEvaluator eval = getAntProjectHelper().getStandardPropertyEvaluator();
+        if ("false".equals(eval.getProperty(WebProjectProperties.J2EE_SERVER_CHECK))) { // NOI18N
+            return true;
+        }
+        String instance = eval.getProperty(WebProjectProperties.J2EE_SERVER_INSTANCE);
         if (instance != null) {
             J2eeModuleProvider jmp = (J2eeModuleProvider) getProject().getLookup().lookup(J2eeModuleProvider.class);
             String sdi = jmp.getServerInstanceID();
@@ -905,7 +899,7 @@ class WebActionProvider extends BaseActionProvider {
 
 // if there is some server instance of the type which was used
 // previously do not ask and use it
-        String serverType = getAntProjectHelper().getStandardPropertyEvaluator().getProperty(WebProjectProperties.J2EE_SERVER_TYPE);
+        String serverType = eval.getProperty(WebProjectProperties.J2EE_SERVER_TYPE);
         if (serverType != null) {
             String instanceID = J2EEProjectProperties.getMatchingInstance(serverType, J2eeModule.Type.WAR, ((WebProject) getProject()).getAPIWebModule().getJ2eeProfile());
             if (instanceID != null) {
@@ -1046,5 +1040,62 @@ class WebActionProvider extends BaseActionProvider {
         public void antTargetInvocationStarted(String command, Lookup context) {
             Deployment.getDefault().suspendDeployOnSave(provider);
         }
+    }
+
+    private static class RunSingleJspFileAction implements Runnable {
+
+        protected final AtomicBoolean run;
+        protected final FileObject fileObject;
+        protected final Properties properties;
+
+        protected RunSingleJspFileAction(FileObject fileObject, Properties properties, AtomicBoolean completeAction) {
+            this.fileObject = fileObject;
+            this.properties = properties;
+            this.run = completeAction;
+        }
+
+        @Override
+        public void run() {
+            String requestParams = RequestParametersQuery.getFileAndParameters(fileObject);
+            if (requestParams != null) {
+                setStatus(properties, requestParams);
+            }
+        }
+
+        protected void setStatus(Properties p, String requestParams) {
+            properties.setProperty("client.urlPart", requestParams); //NOI18N
+            properties.setProperty(BaseActionProvider.PROPERTY_RUN_SINGLE_ON_SERVER, "yes");
+            run.set(true);
+        }
+    }
+
+    private static class RunSingleHtmlFileAction extends RunSingleJspFileAction {
+
+        public RunSingleHtmlFileAction(FileObject fileObject, Properties properties, AtomicBoolean completeAction) {
+            super(fileObject, properties, completeAction);
+        }
+
+        @Override
+        public void run() {
+            super.run();
+            if (!run.get()) {
+                String requestParams = FileUtil.getRelativePath(WebModule.getWebModule(fileObject).getDocumentBase(),fileObject);
+                if (requestParams != null) {
+                    requestParams = "/" + requestParams.replace(" ", "%20"); //NOI18N
+                    setStatus(properties, requestParams);
+                }
+            }
+        }
+    }
+
+    @ProjectServiceProvider(
+            service = ActionProvider.class,
+            projectTypes = {@LookupProvider.Registration.ProjectType(id = "org-netbeans-modules-web-project", position=1)})
+    public static WebActionProvider create(@NonNull final Lookup lkp) {
+        Parameters.notNull("lkp", lkp); //NOI18N
+        final WebProject project = lkp.lookup(WebProject.class);
+        final WebActionProvider webActionProvider = new WebActionProvider(project, project.getUpdateHelper(), project.evaluator());
+        webActionProvider.startFSListener();
+        return webActionProvider;
     }
 }

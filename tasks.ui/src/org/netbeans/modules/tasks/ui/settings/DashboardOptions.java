@@ -251,8 +251,8 @@ public class DashboardOptions extends javax.swing.JPanel implements DocumentList
     void applyChanges() {
         final DashboardSettings settings = DashboardSettings.getInstance();
         boolean autoSync = cbSync.isSelected();
-        settings.setAutoSync(autoSync);
-        settings.setAutoSyncValue(Integer.parseInt(txtSync.getText().trim()));
+        settings.setAutoSync(autoSync, false);
+        settings.setAutoSyncValue(Integer.parseInt(txtSync.getText().trim()), true);
 
         boolean tasksLimit = cbLimit.isSelected();
         settings.setTasksLimit(tasksLimit, false);

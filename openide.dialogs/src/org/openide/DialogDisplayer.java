@@ -63,6 +63,7 @@ import java.util.Set;
 import javax.swing.*;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 
 
 /** Permits dialogs to be displayed.
@@ -218,16 +219,16 @@ public abstract class DialogDisplayer {
                 boolean defcap;
 
                 if (option == NotifyDescriptor.OK_OPTION) {
-                    text = "OK"; // XXX I18N
+                    text = NbBundle.getMessage(DialogDisplayer.class, "CTL_OK");
                     defcap = true;
                 } else if (option == NotifyDescriptor.CANCEL_OPTION) {
-                    text = "Cancel"; // XXX I18N
+                    text = NbBundle.getMessage(DialogDisplayer.class, "CTL_CANCEL");
                     defcap = false;
                 } else if (option == NotifyDescriptor.YES_OPTION) {
-                    text = "Yes"; // XXX I18N
+                    text = NbBundle.getMessage(DialogDisplayer.class, "CTL_YES");
                     defcap = true;
                 } else if (option == NotifyDescriptor.NO_OPTION) {
-                    text = "No"; // XXX I18N
+                    text = NbBundle.getMessage(DialogDisplayer.class, "CTL_NO");
                     defcap = false;
                 } else if (option == NotifyDescriptor.CLOSED_OPTION) {
                     throw new IllegalArgumentException();
@@ -572,15 +573,15 @@ public abstract class DialogDisplayer {
             if (msg != null && msg.trim().length() > 0) {
                 switch (msgType) {
                     case StandardDialog.MSG_TYPE_ERROR:
-                        prepareMessage(dialog.notificationLine, ImageUtilities.loadImageIcon("org/netbeans/modules/dialogs/error.gif", false),
+                        prepareMessage(dialog.notificationLine, ImageUtilities.loadImageIcon("org/netbeans/modules/dialogs/error.gif", false), //NOI18N
                             dialog.nbErrorForeground);
                         break;
                     case StandardDialog.MSG_TYPE_WARNING:
-                        prepareMessage(dialog.notificationLine, ImageUtilities.loadImageIcon("org/netbeans/modules/dialogs/warning.gif", false),
+                        prepareMessage(dialog.notificationLine, ImageUtilities.loadImageIcon("org/netbeans/modules/dialogs/warning.gif", false), //NOI18N
                             dialog.nbWarningForeground);
                         break;
                     case StandardDialog.MSG_TYPE_INFO:
-                        prepareMessage(dialog.notificationLine, ImageUtilities.loadImageIcon("org/netbeans/modules/dialogs/info.png", false),
+                        prepareMessage(dialog.notificationLine, ImageUtilities.loadImageIcon("org/netbeans/modules/dialogs/info.png", false), //NOI18N
                             dialog.nbInfoForeground);
                         break;
                     default:
@@ -609,7 +610,7 @@ public abstract class DialogDisplayer {
             @Override
             public Dimension getPreferredSize() {
                 Dimension preferredSize = super.getPreferredSize();
-                assert ESTIMATED_HEIGHT == ImageUtilities.loadImage ("org/netbeans/modules/dialogs/warning.gif").getHeight (null) : "Use only 16px icon.";
+                assert ESTIMATED_HEIGHT == ImageUtilities.loadImage ("org/netbeans/modules/dialogs/warning.gif").getHeight (null) : "Use only 16px icon."; //NOI18N
                 preferredSize.height = Math.max (ESTIMATED_HEIGHT, preferredSize.height);
                 return preferredSize;
             }

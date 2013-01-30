@@ -48,9 +48,12 @@ import java.io.IOException;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.nio.charset.Charset;
+import java.util.zip.Adler32;
+import java.util.zip.Checksum;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.cnd.apt.support.APTFileBuffer;
+import org.netbeans.modules.cnd.apt.utils.APTSerializeUtils;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
@@ -71,12 +74,14 @@ import org.openide.util.Exceptions;
 public abstract class AbstractFileBuffer implements FileBuffer {
     private final CharSequence absPath;
     private final FileSystem fileSystem;
+    private Reference<FileObject> fileObject;
     private Reference<Line2Offset> lines = new WeakReference<Line2Offset>(null);
     private final BufferType bufType;
 
     protected AbstractFileBuffer(FileObject fileObject) {
         this.absPath = FilePathCache.getManager().getString(CndFileUtils.normalizePath(fileObject));
         this.fileSystem = getFileSystem(fileObject);
+        this.fileObject = new WeakReference<FileObject>(fileObject);
         this.bufType = MIMENames.isCppOrCOrFortran(fileObject.getMIMEType()) ? APTFileBuffer.BufferType.START_FILE : APTFileBuffer.BufferType.INCLUDED;
 // remote link file objects are just lightweight delegating wrappers, so they have multiple instances
 //        if (CndUtils.isDebugMode()) {
@@ -136,9 +141,24 @@ public abstract class AbstractFileBuffer implements FileBuffer {
 
     @Override
     public FileObject getFileObject() {
-        FileObject result = CndFileUtils.toFileObject(fileSystem, absPath);
-        if (result == null) {
-            result = InvalidFileObjectSupport.getInvalidFileObject(fileSystem, absPath);
+        FileObject result;
+        synchronized(this) {
+            result = fileObject.get();
+            if (result == null) {
+                result = CndFileUtils.toFileObject(fileSystem, absPath);
+                if (result == null) {
+                    result = InvalidFileObjectSupport.getInvalidFileObject(fileSystem, absPath);
+                }
+                fileObject = new WeakReference<FileObject>(result);
+            } else {
+                if (!result.isValid()) {
+                    result = CndFileUtils.toFileObject(fileSystem, absPath);
+                    if (result == null) {
+                        result = InvalidFileObjectSupport.getInvalidFileObject(fileSystem, absPath);
+                    }
+                    fileObject = new WeakReference<FileObject>(result);
+                }
+            }
         }
         return result;
     }
@@ -147,17 +167,18 @@ public abstract class AbstractFileBuffer implements FileBuffer {
     // impl of SelfPersistent
 
     // final is important here - see PersistentUtils.writeBuffer/readBuffer
-    public final void write(RepositoryDataOutput output) throws IOException {
+    public final void write(RepositoryDataOutput output, int unitId) throws IOException {
         assert this.absPath != null;
-        PersistentUtils.writeUTF(absPath, output);
+        APTSerializeUtils.writeFileNameIndex(absPath, output, unitId);
         PersistentUtils.writeFileSystem(fileSystem, output);        
         output.writeByte((byte) bufType.ordinal());
     }  
     
-    protected AbstractFileBuffer(RepositoryDataInput input) throws IOException {
-        this.absPath = PersistentUtils.readUTF(input, FilePathCache.getManager());
+    protected AbstractFileBuffer(RepositoryDataInput input, int unitId) throws IOException {
+        this.absPath = APTSerializeUtils.readFileNameIndex(input, FilePathCache.getManager(), unitId);
         this.fileSystem = PersistentUtils.readFileSystem(input);
         assert this.absPath != null;
+        fileObject = new WeakReference<FileObject>(null);
         bufType = BufferType.values()[input.readByte()];
     }
 
@@ -189,5 +210,25 @@ public abstract class AbstractFileBuffer implements FileBuffer {
         if (aLines != null) {
             aLines.clear();
         }
+    }
+
+    @Override
+    public long getCRC() {        
+        try {
+            Checksum checksum = new Adler32();
+            char[] chars = getCharBuffer();
+            for (char c : chars) {
+                checksum.update(c);
+            }
+            return checksum.getValue();
+        } catch (IOException ex) {
+            ex.printStackTrace(System.err);
+            return -1; // Adler never returns negative values
+        }
+    }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + ' ' + fileSystem.getDisplayName() + ' ' + absPath; //NOI18N
     }
 }

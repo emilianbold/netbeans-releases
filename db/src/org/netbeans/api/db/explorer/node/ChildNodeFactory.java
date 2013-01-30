@@ -44,6 +44,7 @@ package org.netbeans.api.db.explorer.node;
 
 import java.util.Collection;
 import java.util.List;
+import org.netbeans.modules.db.explorer.node.BaseFilterNode;
 import org.netbeans.modules.db.explorer.node.NodeRegistry;
 import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Node;
@@ -95,7 +96,7 @@ public class ChildNodeFactory extends ChildFactory<Lookup> {
             return new Node[] {  };
         }
         else {
-            return new Node[] { childNode };
+            return new Node[]{new BaseFilterNode(childNode)}; // clone - #221817
         }
     }
 

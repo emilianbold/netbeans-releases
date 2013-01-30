@@ -378,7 +378,7 @@ public class DwarfDiscoveryTest  extends NbTestCase {
 
     private void readBinary(String path, String ... sources) {
         AnalyzeExecutable provider = new AnalyzeExecutable();
-        File dataDir = getDataDir();
+        final File dataDir = getDataDir();
         String objFileName = dataDir.getAbsolutePath()+path;
         assertTrue(new File(objFileName).exists());
         provider.getProperty(AnalyzeExecutable.EXECUTABLE_KEY).setValue(objFileName);
@@ -401,7 +401,7 @@ public class DwarfDiscoveryTest  extends NbTestCase {
 
             @Override
             public String getSourceRoot() {
-                throw new UnsupportedOperationException("Not supported yet.");
+                return null;
             }
 
             @Override

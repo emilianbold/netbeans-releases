@@ -69,6 +69,7 @@ import org.netbeans.modules.cnd.classview.model.ClassNode;
 import org.netbeans.modules.cnd.classview.model.EnumNode;
 import org.netbeans.modules.cnd.classview.model.GlobalFuncNode;
 import org.netbeans.modules.cnd.classview.model.GlobalVarNode;
+import org.netbeans.modules.cnd.classview.model.ProjectLibsNode;
 import org.netbeans.modules.cnd.classview.model.NamespaceNode;
 import org.netbeans.modules.cnd.classview.model.ObjectNode;
 import org.netbeans.modules.cnd.classview.model.TypedefNode;
@@ -153,6 +154,10 @@ public class NamespaceKeyArray extends HostKeyArray implements UpdatebleHost, Cs
                 if (key != null) {
                     res.put(key, new SortedName(0, "", 0)); // NOI18N
                 }
+            }
+            if (isRootNamespase) {
+                PersistentKey key = PersistentKey.createLibsKey(getProject());
+                res.put(key, new SortedName(0, "", 0)); // NOI18N
             }
         } catch (AssertionError ex){
             ex.printStackTrace();
@@ -272,7 +277,11 @@ public class NamespaceKeyArray extends HostKeyArray implements UpdatebleHost, Cs
                     CsmNamespace ns = (CsmNamespace) o;
                     node = new NamespaceNode(ns, new NamespaceKeyArray(updater, ns));
                 } else if (o instanceof CsmProject) {
-                    node = CVUtil.createLoadingNode();
+                    if (key.isProjectLibs()) {
+                        node = new ProjectLibsNode((CsmProject) o, updater);
+                    } else {
+                        node = CVUtil.createLoadingNode();
+                    }
                 } else {
                     CsmOffsetableDeclaration decl = (CsmOffsetableDeclaration) o;
                     if (decl != null && canCreateNode(decl)) {

@@ -73,6 +73,7 @@ import org.openide.windows.InputOutput;
 /**
  * @author Radek Matous
  */
+@org.netbeans.api.annotations.common.SuppressWarnings("NP_BOOLEAN_RETURN_NULL")
 final class RemoteOperationFactory extends FileOperationFactory {
     private static final Logger LOGGER = Logger.getLogger(RemoteOperationFactory.class.getName());
 

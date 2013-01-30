@@ -338,6 +338,39 @@ public class ProvidedExtensionsTest extends NbTestCase {
         fo.refresh();
         assertEquals(1, iListener.implsCreatedExternallyCalls);
     }
+    
+    public void testCreatedDeleteBrokenLinkExternally () throws Exception {
+        FileObject fo = FileUtil.toFileObject(getWorkDir());
+        FileObject[] children = fo.getChildren(); // scan folder
+
+        FileObject folder = fo.createFolder("folder");
+        iListener.clear();
+        assertEquals(0, iListener.implsCreatedExternallyCalls);
+        File f = new File(FileUtil.toFile(fo), "wlock");
+        ProcessBuilder pb = new ProcessBuilder().directory(f.getParentFile()).command(new String[] { "ln", "-s", "doesnotexist", f.getName() });
+        pb.start().waitFor();
+        assertEquals(0, iListener.implsCreatedExternallyCalls);
+        fo.refresh();
+        assertEquals(1, iListener.implsCreatedExternallyCalls);
+        iListener.clear();
+        f.delete();
+        assertEquals(0, iListener.implsDeletedExternallyCalls);
+        fo.refresh();
+        assertEquals(1, iListener.implsDeletedExternallyCalls);
+        
+        // let's try once more, now it starts failing
+        pb = new ProcessBuilder().directory(f.getParentFile()).command(new String[] { "ln", "-s", "doesnotexist", f.getName() });
+        pb.start().waitFor();
+        iListener.clear();
+        assertEquals(0, iListener.implsCreatedExternallyCalls);
+        fo.refresh();
+        assertEquals(1, iListener.implsCreatedExternallyCalls);
+        iListener.clear();
+        f.delete();
+        assertEquals(0, iListener.implsDeletedExternallyCalls);
+        fo.refresh();
+        assertEquals(1, iListener.implsDeletedExternallyCalls);
+    }
 
     public void testDeletedExternally() throws IOException {
         FileObject fo = FileUtil.toFileObject(getWorkDir());
@@ -661,6 +694,7 @@ public class ProvidedExtensionsTest extends NbTestCase {
         private static File refreshCallForDir;
         private static long refreshCallRetValue;
         private static List<File> refreshCallToAdd;
+        private int copyImplCalls;
         private int implsMoveCalls;
         private int moveImplCalls;
         private int implsRenameCalls;
@@ -684,12 +718,14 @@ public class ProvidedExtensionsTest extends NbTestCase {
         private static  boolean implsMoveRetVal = true;
         private static boolean implsRenameRetVal = true;
         private static boolean implsDeleteRetVal = false;
+        private static boolean implsCopyRetVal = false;
 
         private static int cnt;
         
         public static FileLock lock;
         private final AnnotationProvider provider;
         private IOException throwFromLock;
+        private int implsCopyCalls;
 
         public ProvidedExtensionsImpl() {
             this(null, false);
@@ -784,6 +820,7 @@ public class ProvidedExtensionsTest extends NbTestCase {
         }
 
         public void beforeMove(FileObject fo, File to) {
+            to.getClass();
             assertLock();
             beforeMoveCalls++;
         }
@@ -792,26 +829,31 @@ public class ProvidedExtensionsTest extends NbTestCase {
         }    
 
         public void moveSuccess(FileObject fo, File to) {
+            to.getClass();
             assertLock();
             moveSuccessCalls++;
         }
 
         public void moveFailure(FileObject fo, File to) {
+            to.getClass();
             assertLock();
             moveFailureCalls++;
         }
 
         public void beforeCopy(FileObject fo, File to) {
+            to.getClass();
             assertLock();
             beforeCopyCalls++;
         }
 
         public void copySuccess(FileObject fo, File to) {
+            to.getClass();
             assertLock();
             copySuccessCalls++;
         }
 
         public void copyFailure(FileObject fo, File to) {
+            to.getClass();
             assertLock();
             copyFailureCalls++;
         }
@@ -876,8 +918,9 @@ public class ProvidedExtensionsTest extends NbTestCase {
         
         @Override
         public ProvidedExtensions.IOHandler getMoveHandler(final File from, final File to) {
+            to.getClass();
             implsMoveCalls++;
-            return (!isImplsMoveRetVal()) ? null : new ProvidedExtensions.IOHandler(){
+            return (!isImplsMoveRetVal() || to == null) ? null : new ProvidedExtensions.IOHandler(){
                 public void handle() throws IOException {
                     moveImplCalls++;
                     if (to.exists()) {
@@ -902,6 +945,38 @@ public class ProvidedExtensionsTest extends NbTestCase {
                     }
                     
                     assertFalse(from.exists());
+                    assertTrue(to.exists());
+                }
+            };
+        }
+        
+        @Override
+        public ProvidedExtensions.IOHandler getCopyHandler(final File from, final File to) {
+            to.getClass();
+            if (from.isDirectory()) {
+                return null;
+            }
+            implsCopyCalls++;
+            return (!isImplsCopyRetVal() || to == null) ? null : new ProvidedExtensions.IOHandler(){
+                @Override
+                public void handle() throws IOException {
+                    copyImplCalls++;
+                    if (to.exists()) {
+                        throw new IOException();
+                    }
+                    assertTrue(from.exists());
+                    assertFalse(to.exists());
+                    
+                    assertFalse(from.equals(to));
+                    InputStream inputStream = new FileInputStream(from);
+                    OutputStream outputStream = new FileOutputStream(to);
+                    try {
+                        FileUtil.copy(inputStream, outputStream);
+                    } finally {
+                        if (inputStream != null) inputStream.close();
+                        if (outputStream != null) outputStream.close();
+                    }
+                    assertTrue(from.exists());
                     assertTrue(to.exists());
                 }
             };
@@ -937,6 +1012,13 @@ public class ProvidedExtensionsTest extends NbTestCase {
 
         public static void setImplsDeleteRetVal(boolean implsDeleteRetVal) {
             ProvidedExtensionsImpl.implsDeleteRetVal = implsDeleteRetVal;
+        }
+
+        public static boolean isImplsCopyRetVal() {
+            return ProvidedExtensionsImpl.implsCopyRetVal;
+        }
+        public static void setImplsCopyRetVal(boolean v) {
+            ProvidedExtensionsImpl.implsCopyRetVal = v;
         }
     }
 }

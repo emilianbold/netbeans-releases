@@ -58,6 +58,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.concurrent.Future;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ui.ProjectGroup;
+import org.netbeans.api.project.ui.ProjectGroupChangeListener;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.kenai.api.Kenai;
@@ -252,6 +254,21 @@ public class VCSKenaiSupportImplTest extends NbTestCase {
 
         public void setMainProject(Project project) {
             throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public ProjectGroup getActiveProjectGroupAPI() {
+            return null;
+        }
+
+        @Override
+        public void addProjectGroupChangeListenerAPI(ProjectGroupChangeListener listener) {
+            
+        }
+
+        @Override
+        public void removeProjectGroupChangeListenerAPI(ProjectGroupChangeListener listener) {
+            
         }
 
     }

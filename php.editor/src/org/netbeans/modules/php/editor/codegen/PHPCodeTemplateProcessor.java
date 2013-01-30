@@ -42,8 +42,12 @@
 
 package org.netbeans.modules.php.editor.codegen;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map.Entry;
-import java.util.*;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -62,7 +66,11 @@ import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.php.api.util.StringUtils;
-import org.netbeans.modules.php.editor.model.*;
+import org.netbeans.modules.php.editor.model.Model;
+import org.netbeans.modules.php.editor.model.ModelUtils;
+import org.netbeans.modules.php.editor.model.TypeScope;
+import org.netbeans.modules.php.editor.model.VariableName;
+import org.netbeans.modules.php.editor.model.VariableScope;
 import org.netbeans.modules.php.editor.nav.NavUtils;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
@@ -78,9 +86,9 @@ import org.openide.util.RequestProcessor;
  */
 public class PHPCodeTemplateProcessor implements CodeTemplateProcessor {
 
-    private final static String NEW_VAR_NAME = "newVarName"; // NOI18N
-    private final static String VARIABLE_FROM_NEXT_ASSIGNMENT_NAME = "variableFromNextAssignmentName"; //NOI18N
-    private final static String VARIABLE_FROM_NEXT_ASSIGNMENT_TYPE = "variableFromNextAssignmentType"; //NOI18N
+    private static final String NEW_VAR_NAME = "newVarName"; // NOI18N
+    private static final String VARIABLE_FROM_NEXT_ASSIGNMENT_NAME = "variableFromNextAssignmentName"; //NOI18N
+    private static final String VARIABLE_FROM_NEXT_ASSIGNMENT_TYPE = "variableFromNextAssignmentType"; //NOI18N
     private static final String VARIABLE_FROM_PREVIOUS_ASSIGNMENT = "variableFromPreviousAssignment"; //NOI18N
     private static final String INSTANCE_OF = "instanceof"; //NOI18N
     private static final RequestProcessor RP = new RequestProcessor(PHPCodeTemplateProcessor.class);
@@ -254,7 +262,7 @@ public class PHPCodeTemplateProcessor implements CodeTemplateProcessor {
         }
         final int caretOffset = request.getComponent().getCaretPosition();
         int suffix = 0;
-        final String[] nue = { null };
+        final String[] nue = {null};
         synchronized (this) {
             for (;;) {
                 nue[0] = proposed + (suffix > 0 ? String.valueOf(suffix) : "");

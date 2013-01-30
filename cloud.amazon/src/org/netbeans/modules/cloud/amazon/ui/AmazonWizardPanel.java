@@ -68,6 +68,7 @@ public class AmazonWizardPanel implements WizardDescriptor.AsynchronousValidatin
 
     public static final String KEY_ID = "access-key-id"; // String
     public static final String KEY = "secret-access-key"; // String
+    public static final String REGION = "region"; // String
     
     private ChangeSupport listeners;
     private AmazonWizardComponent component;
@@ -111,6 +112,7 @@ public class AmazonWizardPanel implements WizardDescriptor.AsynchronousValidatin
             settings.putProperty(KEY_ID, component.getKeyId());
             settings.putProperty(KEY, component.getKey());
             settings.putProperty(CloudResourcesWizardPanel.PROP_SERVER_RESOURCES, servers);
+            settings.putProperty(REGION, component.getRegionUrl());
         }
     }
     
@@ -156,7 +158,7 @@ public class AmazonWizardPanel implements WizardDescriptor.AsynchronousValidatin
     public void validate() throws WizardValidationException {
         try {
             servers = new ArrayList<ServerResourceDescriptor>();
-            AmazonInstance ai = new AmazonInstance("temporary", component.getKeyId(), component.getKey());
+            AmazonInstance ai = new AmazonInstance("temporary", component.getKeyId(), component.getKey(), component.getRegionUrl());
             try {
                 ai.testConnection();
             } catch (AmazonClientException ex) {

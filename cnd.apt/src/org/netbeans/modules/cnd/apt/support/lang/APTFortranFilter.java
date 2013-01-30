@@ -258,7 +258,7 @@ final class APTFortranFilter extends APTBaseLanguageFilter {
 
     @Override
     protected Token onID(Token token) {
-        Token ret = super.onID(token);
+        Token ret = defaultWrap(token);
         if(ret.getType() == APTTokenTypes.IDENT) {
             ret = new FilterToken((APTToken)ret, APTTokenTypes.T_IDENT);
         }

@@ -507,9 +507,9 @@ public class CopyFinderTest extends NbTestCase {
 
     public void testVariableIsFullPattern1() throws Exception {
         performVariablesTest("package test; public class Test { private int a; {System.err.println(a);} }",
-                             "$v{int}",
+                             "$0{int}",
                              new Pair[] {
-                                 new Pair<String, int[]>("$v", new int[] {100 - 31, 101 - 31}),
+                                 new Pair<String, int[]>("$0", new int[] {100 - 31, 101 - 31}),
                              },
                              new Pair[] {
                              },
@@ -519,9 +519,9 @@ public class CopyFinderTest extends NbTestCase {
 
     public void testVariableIsFullPattern2() throws Exception {
         performVariablesTest("package test; public class Test { private int a; {System.err.println(a);} }",
-                             "$v{int}",
+                             "$0{int}",
                              new Pair[] {
-                                 new Pair<String, int[]>("$v", new int[] {100 - 31, 101 - 31}),
+                                 new Pair<String, int[]>("$0", new int[] {100 - 31, 101 - 31}),
                              },
                              new Pair[] {
                              },
@@ -752,7 +752,7 @@ public class CopyFinderTest extends NbTestCase {
 
     public void testCorrectSite3() throws Exception {
         performVariablesTest("package test; public abstract class Test implements java.util.concurrent.locks.Condition { public void test() { new Runnable() { public void run() { wait(); } } } }",
-                             "$s{java.util.concurrent.locks.Condition}.wait()",
+                             "$0{java.util.concurrent.locks.Condition}.wait()",
                              new Pair[0],// {new Pair<String, int[]>("$s", new int[] {-1, -1})},
                              new Pair[0],
                              new Pair[0]);
@@ -760,7 +760,7 @@ public class CopyFinderTest extends NbTestCase {
 
     public void testCorrectSite4() throws Exception {
         performVariablesTest("package test; public class Test { public void test() { foo.stop(); } }",
-                             "$s{java.lang.Thread}.stop()",
+                             "$0{java.lang.Thread}.stop()",
                              new Pair[0],
                              new Pair[0],
                              new Pair[0],
@@ -900,8 +900,8 @@ public class CopyFinderTest extends NbTestCase {
                              "     }\n" +
                              "     public enum E {A, B, C, D, E, F;}\n" +
                              "}\n",
-                             "switch ($v{test.Test.E}) { case $c1$ case D: $stmts$; case $c2$ }",
-                             new Pair[] {new Pair<String, int[]>("$v", new int[] {79, 80})},
+                             "switch ($0{test.Test.E}) { case $c1$ case D: $stmts$; case $c2$ }",
+                             new Pair[] {new Pair<String, int[]>("$0", new int[] {79, 80})},
                              new Pair[] {
                                 new Pair<String, int[]>("$stmts$", new int[] { 156, 178, 179, 185 }),
                                 new Pair<String, int[]>("$c1$", new int[] { 97, 134 }),
@@ -1094,6 +1094,95 @@ public class CopyFinderTest extends NbTestCase {
                              true);
     }
     
+    public void testTypeParameters1() throws Exception {
+        performVariablesTest("package test; public class Test { private <A extends String> void aa() { } }",
+                             "$mods$ <$tp extends $bound&$obounds$> $ret $name($args$) { $body$; }",
+                             new Pair[] {
+                                new Pair<String, int[]>("$ret", new int[] {61, 65}),
+                                new Pair<String, int[]>("$mods$", new int[] {34, 41}),
+                                new Pair<String, int[]>("$tp", new int[] {43, 59}),
+                                new Pair<String, int[]>("$bound", new int[] {53, 59}),
+                             },
+                             new Pair[] {
+                                new Pair<String, int[]>("$obounds$", new int[] {}),
+                             },
+                             new Pair[] {
+                                 new Pair<String, String>("$name", "aa"),
+                                 new Pair<String, String>("$tp", "A")
+                             },
+                             false,
+                             true);
+    }
+    
+    public void testPartialModifiers1() throws Exception {
+        performVariablesTest("package test; public class Test { @Deprecated @Override private void aa() { } }",
+                             "$mods$ @Deprecated private $ret $name() { $body$; }",
+                             new Pair[] {
+                                new Pair<String, int[]>("$ret", new int[] {64, 68}),
+                                new Pair<String, int[]>("$mods$", new int[] {34, 63}),
+                             },
+                             new Pair[] {
+                             },
+                             new Pair[] {
+                                 new Pair<String, String>("$name", "aa"),
+                             },
+                             false,
+                             true);
+    }
+    
+    public void testPartialModifiers2() throws Exception {
+        performVariablesTest("package test; public class Test { @Override private void aa() { } }",
+                             "$mods$ @Deprecated private $ret $name() { $body$; }",
+                             new Pair[0],
+                             new Pair[0],
+                             new Pair[0],
+                             true,
+                             true);
+    }
+    
+    public void testNonStaticInnerClassesMatch() throws Exception {
+        performVariablesTest("package test; import test.Test.Inner; public class Test { public class Inner { } } class Other { { Inner i = null; } }",
+                             "test.Test.Inner $i = $init$;",
+                             new Pair[] {
+                                 new Pair<String, int[]>("$i", new int[] {99, 114}),
+                                 new Pair<String, int[]>("$init$", new int[] {109, 113})
+                             },
+                             new Pair[0],
+                             new Pair[] {
+                                 new Pair<String, String>("$i", "i")
+                             },
+                             false,
+                             true);
+    }
+    
+    public void testNewClassTypeParams222066a() throws Exception {
+        performVariablesTest("package test; public class Test { private Object aa() { return new java.util.ArrayList(1); } }",
+                             "new java.util.ArrayList<$whatever$>($param)",
+                             new Pair[] {
+                                 new Pair<String, int[]>("$param", new int[] {87, 88})
+                             },
+                             new Pair[] {
+                                 new Pair<String, int[]>("$whatever$", new int[0])
+                             },
+                             new Pair[0],
+                             false,
+                             false);
+    }
+    
+    public void testNewClassTypeParams222066b() throws Exception {
+        performVariablesTest("package test; import java.util.ArrayList; public class Test { private Object aa() { return new ArrayList(1); } }",
+                             "new java.util.ArrayList<$whatever$>($param)",
+                             new Pair[] {
+                                 new Pair<String, int[]>("$param", new int[] {105, 106})
+                             },
+                             new Pair[] {
+                                 new Pair<String, int[]>("$whatever$", new int[0])
+                             },
+                             new Pair[0],
+                             false,
+                             false);
+    }
+    
     protected void prepareTest(String code) throws Exception {
         prepareTest(code, -1);
     }
@@ -1266,9 +1355,9 @@ public class CopyFinderTest extends NbTestCase {
         if (useBulkSearch) {
             result = new HashMap<TreePath, VariableAssignments>();
 
-            BulkPattern bulkPattern = BulkSearch.getDefault().create(info, patternCode);
+            BulkPattern bulkPattern = BulkSearch.getDefault().create(info, new AtomicBoolean(), patternCode);
 
-            for (Entry<String, Collection<TreePath>> e : BulkSearch.getDefault().match(info, new TreePath(info.getCompilationUnit()), bulkPattern).entrySet()) {
+            for (Entry<String, Collection<TreePath>> e : BulkSearch.getDefault().match(info, new AtomicBoolean(), new TreePath(info.getCompilationUnit()), bulkPattern).entrySet()) {
                 for (TreePath tp : e.getValue()) {
                     VariableAssignments vars = computeVariables(info, patternPath, tp, new AtomicBoolean(), MatchingTestAccessor.getVariable2Type(patternObj));
 

@@ -1,7 +1,7 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+/**
+ * Copyright (c) 2009, 2012, Oracle and/or its affiliates. All rights reserved.
  */
+
 package org.netbeans.modules.cnd.remote.projectui.wizard.cnd;
 
 import java.beans.PropertyChangeEvent;
@@ -54,6 +54,7 @@ public class CreateProjectFromBinary implements PropertyChangeListener {
     private final boolean sourcesUsed;
     private final String libraries;
     private final IteratorExtension.ProjectKind kind;
+    private final IteratorExtension extension = Lookup.getDefault().lookup(IteratorExtension.class);
     
     private Project lastSelectedProject;
     
@@ -244,7 +245,6 @@ public class CreateProjectFromBinary implements PropertyChangeListener {
     }
     
     private void fillConfiguration() {
-        IteratorExtension extension = Lookup.getDefault().lookup(IteratorExtension.class);
         if (extension != null) {
             extension.discoverHeadersByModel(lastSelectedProject);
         }

@@ -69,19 +69,19 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
-import org.netbeans.modules.csl.api.CodeCompletionHandler.QueryType;
 import org.netbeans.modules.csl.api.*;
+import org.netbeans.modules.csl.api.CodeCompletionHandler.QueryType;
 import org.netbeans.modules.csl.spi.DefaultCompletionResult;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.groovy.editor.api.AstPath;
-import org.netbeans.modules.groovy.editor.api.AstUtilities;
-import org.netbeans.modules.groovy.editor.api.NbUtilities;
+import org.netbeans.modules.groovy.editor.api.ASTUtils;
 import org.netbeans.modules.groovy.editor.api.completion.impl.ProposalsCollector;
 import org.netbeans.modules.groovy.editor.api.completion.util.CompletionRequest;
 import org.netbeans.modules.groovy.editor.api.completion.util.ContextHelper;
 import org.netbeans.modules.groovy.editor.api.elements.ast.ASTMethod;
 import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
 import org.netbeans.modules.groovy.editor.api.lexer.LexUtilities;
+import org.netbeans.modules.groovy.editor.api.GroovyUtils;
 import org.netbeans.modules.groovy.support.api.GroovySettings;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -126,7 +126,7 @@ public class CompletionHandler implements CodeCompletionHandler {
         String prefix = context.getPrefix();
 
         final int lexOffset = context.getCaretOffset();
-        final int astOffset = AstUtilities.getAstOffset(info, lexOffset);
+        final int astOffset = ASTUtils.getAstOffset(info, lexOffset);
 
         LOG.log(Level.FINEST, "complete(...), prefix      : {0}", prefix); // NOI18N
         LOG.log(Level.FINEST, "complete(...), lexOffset   : {0}", lexOffset); // NOI18N
@@ -259,13 +259,13 @@ public class CompletionHandler implements CodeCompletionHandler {
     }
 
     boolean checkForPackageStatement(final CompletionRequest request) {
-        TokenSequence<?> ts = LexUtilities.getGroovyTokenSequence(request.doc, 1);
+        TokenSequence<GroovyTokenId> ts = LexUtilities.getGroovyTokenSequence(request.doc, 1);
 
         if (ts != null) {
             ts.move(1);
 
             while (ts.isValid() && ts.moveNext() && ts.offset() < request.doc.getLength()) {
-                Token<? extends GroovyTokenId> t = (Token<? extends GroovyTokenId>) ts.token();
+                Token<GroovyTokenId> t = ts.token();
 
                 if (t.id() == GroovyTokenId.LITERAL_package) {
                     return true;
@@ -297,7 +297,7 @@ public class CompletionHandler implements CodeCompletionHandler {
     private AstPath getPathFromInfo(final int caretOffset, final ParserResult info) {
         assert info != null;
 
-        ASTNode root = AstUtilities.getRoot(info);
+        ASTNode root = ASTUtils.getRoot(info);
 
         // If we don't get a valid root-node from a valid CompilationInfo,
         // there's not much we can do. cf. # 150929
@@ -353,7 +353,7 @@ public class CompletionHandler implements CodeCompletionHandler {
                     }
 
                     if (tm.getKind() == TypeKind.DECLARED || tm.getKind() == TypeKind.ARRAY) {
-                        sb.append(NbUtilities.stripPackage(tm.toString()));
+                        sb.append(GroovyUtils.stripPackage(tm.toString()));
                     } else {
                         sb.append(tm.toString());
                     }
@@ -465,7 +465,7 @@ public class CompletionHandler implements CodeCompletionHandler {
                 if (forURL) {
                     sb.append(typeName);
                 } else {
-                    sb.append(NbUtilities.stripPackage(typeName));
+                    sb.append(GroovyUtils.stripPackage(typeName));
                 }
 
                 i = semicolon;
@@ -649,7 +649,7 @@ public class CompletionHandler implements CodeCompletionHandler {
 
             if (ael != null) {
 
-                List<ASTNode> children = AstUtilities.children(ael);
+                List<ASTNode> children = ASTUtils.children(ael);
 
                 // populate list with *all* parameters, but let index and offset
                 // point to a specific parameter.
@@ -659,7 +659,7 @@ public class CompletionHandler implements CodeCompletionHandler {
                 int offset = -1;
 
                 for (ASTNode node : children) {
-                    OffsetRange range = AstUtilities.getRange(node, doc);
+                    OffsetRange range = ASTUtils.getRange(node, doc);
                     paramList.add(node.getText());
 
                     if (range.containsInclusive(caretOffset)) {

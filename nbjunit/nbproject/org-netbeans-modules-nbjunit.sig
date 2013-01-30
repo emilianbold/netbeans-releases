@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.72
+#Version 1.75.1
 
 CLSS public java.io.IOException
 cons public init()
@@ -475,7 +475,7 @@ meth public void run(junit.framework.TestResult)
 meth public void runBare() throws java.lang.Throwable
 meth public void setFilter(org.netbeans.junit.Filter)
 supr junit.framework.TestCase
-hfds filter,lastTestMethod,logStreamTable,radix,systemOutPSWrapper,time,usedPaths,workDirPath
+hfds filter,lastTestMethod,logStreamTable,radix,systemOutPSWrapper,time,usedPaths,vmDeadline,workDirPath
 hcls WFOS
 
 CLSS public org.netbeans.junit.NbTestDecorator

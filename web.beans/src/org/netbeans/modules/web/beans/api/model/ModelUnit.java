@@ -43,6 +43,8 @@
  */
 package org.netbeans.modules.web.beans.api.model;
 
+import java.net.URISyntaxException;
+
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.openide.filesystems.FileObject;
@@ -109,10 +111,17 @@ public class ModelUnit {
             return false;
         }
         for (int i = 0; i < cp1.entries().size(); i++) {
-            if (!cp1.entries().get(i).getURL().equals(
-                    cp2.entries().get(i).getURL())) 
-            {
-                return false;
+            try {
+                if (!cp1.entries().get(i).getURL().toURI()
+                        .equals(cp2.entries().get(i).getURL().toURI()))
+                {
+                    return false;
+                }
+            }
+            catch (URISyntaxException e) {
+                if ( !cp1.entries().get(i).equals(cp2.entries().get(i)) ){
+                    return false;
+                }
             }
         }
         return true;

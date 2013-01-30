@@ -68,17 +68,17 @@ public class ProblemNotificationController {
         Preferences prefs = instance.prefs().node("notifications"); // NOI18N
         for (HudsonJob job : instance.getJobs()) {
             if (!job.isSalient()) {
-                LOG.log(Level.FINER, "{0} is not being watched", job);
+                LOG.log(Level.FINEST, "{0} is not being watched", job);
                 continue;
             }
             int build = job.getLastCompletedBuild();
             if (prefs.getInt(job.getName(), 0) >= build) {
-                LOG.log(Level.FINER, "{0} was already notified", job);
+                LOG.log(Level.FINEST, "{0} was already notified", job);
                 continue;
             }
             ProblemNotification n;
             Color color = job.getColor();
-            LOG.log(Level.FINER, "{0} has status {1}", new Object[] {job, color});
+            LOG.log(Level.FINEST, "{0} has status {1}", new Object[] {job, color});
             switch (color) {
             case red:
             case red_anime:
@@ -115,4 +115,10 @@ public class ProblemNotificationController {
         }
     }
 
+    public synchronized void clearNotifications() {
+        for (ProblemNotification problemNotification : notifications) {
+            problemNotification.remove();
+        }
+        notifications.clear();
+    }
 }

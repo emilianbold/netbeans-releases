@@ -41,14 +41,14 @@
  */
 package org.netbeans.modules.php.apigen.annotations;
 
-import org.netbeans.modules.php.spi.annotations.PhpAnnotationTag;
+import org.netbeans.modules.php.spi.annotation.AnnotationCompletionTag;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class ReturnTag extends PhpAnnotationTag {
+public class ReturnTag extends AnnotationCompletionTag {
 
     public ReturnTag() {
         super("return", "@return ${type} ${Description}", //NOI18N

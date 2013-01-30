@@ -90,17 +90,21 @@ import org.netbeans.modules.cnd.apt.support.APTIncludeHandler;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.debug.CndTraceFlags;
+import org.netbeans.modules.cnd.indexing.api.CndTextIndexKey;
 import org.netbeans.modules.cnd.modelimpl.content.file.FakeIncludePair;
 import org.netbeans.modules.cnd.modelimpl.content.file.FileContentSignature;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
+import org.netbeans.modules.cnd.modelimpl.parser.apt.APTIndexingWalker;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.APTParseFileWalker;
 import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
 import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider.ParserError;
 import org.netbeans.modules.cnd.modelimpl.platform.FileBufferDoc;
 import org.netbeans.modules.cnd.modelimpl.platform.FileBufferDoc.ChangedSegment;
+import org.netbeans.modules.cnd.modelimpl.repository.KeyUtilities;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.trace.TraceUtils;
+import org.netbeans.modules.cnd.modelimpl.uid.KeyBasedUID;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
@@ -154,6 +158,8 @@ public final class FileImpl implements CsmFile,
     public static final int HEADER_FILE = 4;
     private static volatile AtomicLong parseCount = new AtomicLong(1);
 
+    private Collection<ParserError> parsingErrors;
+    
     public static void incParseCount() {
         parseCount.incrementAndGet();
     }
@@ -198,9 +204,13 @@ public final class FileImpl implements CsmFile,
      */
     private final ReentrantReadWriteLock projectLock = new ReentrantReadWriteLock();
     private int lastParseTime;
-
+    
     FileContentSignature getSignature() {
         return FileContentSignature.create(this);
+    }
+
+    /*tests-only*/void debugInvalidate() {
+        this.state = State.INITIAL;
     }
 
     public static enum State {
@@ -234,7 +244,11 @@ public final class FileImpl implements CsmFile,
     private FileSnapshot fileSnapshot;
     private final Object snapShotLock = new Object();
 
+    private volatile boolean disposed = false; // convert to flag field as soon as new flags appear
+
     private long lastParsed = Long.MIN_VALUE;
+    private long lastParsedCRC;
+
     /** Cache the hash code */
     private int hash = 0; // Default to 0
     private Reference<List<CsmReference>> lastMacroUsages = null;
@@ -250,6 +264,7 @@ public final class FileImpl implements CsmFile,
         state = State.INITIAL;
         parsingState = ParsingState.NOT_BEING_PARSED;
         this.projectUID = UIDCsmConverter.projectToUID(project);
+        assert (projectUID instanceof KeyBasedUID); // this fact is used in write() and getInitId()
         this.fileBuffer = fileBuffer;
         
         hasBrokenIncludes = new AtomicBoolean(false);
@@ -521,6 +536,12 @@ public final class FileImpl implements CsmFile,
                         // probably file was removed
                         return;
                     }
+                    
+                    if (CndTraceFlags.TEXT_INDEX) {
+                        APTIndexingWalker aptIndexingWalker = new APTIndexingWalker(fullAPT, getTextIndexKey(), getProjectImpl(true).getCacheLocation());
+                        aptIndexingWalker.index();
+                    }
+                    
                     switch (curState) {
                         case PARSED: // even if it was parsed, but there was entry in queue with handler => need additional parse
                         case INITIAL:
@@ -759,26 +780,30 @@ public final class FileImpl implements CsmFile,
     int getLastParseTime(){
         return lastParseTime;
     }
-
+    
     public boolean validate() {
         synchronized (changeStateLock) {
             if (state == State.PARSED) {
                 long lastModified = getBuffer().lastModified();
-                if (lastModified != lastParsed) {
-                    if (TraceFlags.TRACE_VALIDATION || TraceFlags.TRACE_191307_BUG) {
-                        System.err.printf("VALIDATED %s\n\t lastModified=%d\n\t   lastParsed=%d\n", getAbsolutePath(), lastModified, lastParsed);
+                // using "==" when comparison disallows offline index: in most cases timestamps differ
+                if (TraceFlags.USE_CURR_PARSE_TIME ? (lastModified > lastParsed) : (lastModified != lastParsed)) {
+                    if (lastParsedCRC != getBuffer().getCRC()) {
+                        if (TraceFlags.TRACE_VALIDATION || TraceFlags.TRACE_191307_BUG) {
+                            System.err.printf("VALIDATED %s\n\t lastModified=%d\n\t   lastParsed=%d\n", getAbsolutePath(), lastModified, lastParsed);
+                        }
+                        if (reportParse || logState || TraceFlags.DEBUG) {
+                            System.err.printf("#validate changing to MODIFIED %s is %s with current state %s %s\n", getAbsolutePath(), fileType, state, parsingState); // NOI18N
+                        }
+                        state = State.MODIFIED;
+                        postMarkedAsModified();
+                        return false;
                     }
-                    if (reportParse || logState || TraceFlags.DEBUG) {
-                        System.err.printf("#validate changing to MODIFIED %s is %s with current state %s %s\n", getAbsolutePath(), fileType, state, parsingState); // NOI18N
-                    }
-                    state = State.MODIFIED;
-                    postMarkedAsModified();
-                    return false;
                 }
             }
             return true;
         }
     }
+
     private static final class ChangeStateLock {}
     private final Object changeStateLock = new ChangeStateLock();
 
@@ -903,6 +928,7 @@ public final class FileImpl implements CsmFile,
 
     @Override
     public void dispose() {
+        disposed = true;
         onDispose();
         Notificator.instance().registerRemovedFile(this);
         disposeAll(true);
@@ -1295,10 +1321,10 @@ public final class FileImpl implements CsmFile,
             
             if (tokenStream != null) {
                 if(TraceFlags.CPP_PARSER_NEW_GRAMMAR) {
-                    CsmParser parser = CsmParserProvider.createParser(this);
-                    parser.init(null, tokenStream, null);
-                    parser.setErrorDelegate(delegate);
-                    parser.parse(CsmParser.ConstructionKind.TRANSLATION_UNIT);
+                    CsmProject project = getProject();
+                    if(parsingErrors != null) {
+                        result.addAll(parsingErrors);
+                    }
                     return new ParserBasedTokenBuffer(null);
                 } else {
                     CPPParserEx parser = CPPParserEx.getInstance(this, tokenStream, flags);
@@ -1376,6 +1402,20 @@ public final class FileImpl implements CsmFile,
             assert parser != null : "no parser for " + this;
 
             parser.init(this, filteredTokenStream, parseParams.callback);
+            if(TraceFlags.CPP_PARSER_NEW_GRAMMAR) {
+                if(parsingErrors == null) {
+                    parsingErrors = new ArrayList<ParserError>();
+                }
+                parsingErrors.clear();
+                CsmParserProvider.ParserErrorDelegate delegate = new CsmParserProvider.ParserErrorDelegate() {
+                    @Override
+                    public void onError(ParserError e) {
+                        parsingErrors.add(e);
+                    }
+                };
+                parser.setErrorDelegate(delegate);
+            }
+            
             parseResult = parser.parse(parseParams.lazyCompound ? CsmParser.ConstructionKind.TRANSLATION_UNIT : CsmParser.ConstructionKind.TRANSLATION_UNIT_WITH_COMPOUND);
             FilePreprocessorConditionState pcState = pcBuilder.build();
             if (false) {
@@ -1403,6 +1443,11 @@ public final class FileImpl implements CsmFile,
         }
         clearStateCache();
         lastParsed = fileBuffer.lastModified();
+        lastParsedCRC = fileBuffer.getCRC();
+        // using file time as parse time disallows offline index: in most cases timestamps differ
+        if (TraceFlags.USE_CURR_PARSE_TIME) {
+            lastParsed = Math.max(System.currentTimeMillis(), fileBuffer.lastModified());
+        }
         lastMacroUsages = null;
         if (TraceFlags.TRACE_VALIDATION) {
             System.err.printf("PARSED    %s \n\tlastModified=%d\n\t  lastParsed=%d  diff=%d\n",
@@ -1648,6 +1693,9 @@ public final class FileImpl implements CsmFile,
 
     @Override
     public boolean isValid() {
+        if (disposed) {
+            return false;
+        }
         CsmProject project = _getProject(false);
         return project != null && project.isValid();
     }
@@ -1866,6 +1914,18 @@ public final class FileImpl implements CsmFile,
         return uid;
     }
     private CsmUID<CsmFile> uid = null;
+    
+    CndTextIndexKey getTextIndexKey() {
+        return new CndTextIndexKey(getUnitId(), getFileId());
+    }
+    
+    public int getFileId() {
+        return KeyUtilities.getProjectFileIndex(((KeyBasedUID)getUID()).getKey());
+    }
+
+    public int getUnitId() {
+        return ((KeyBasedUID)projectUID).getKey().getUnitId();
+    }
 
     ////////////////////////////////////////////////////////////////////////////
     // impl of persistent
@@ -1877,8 +1937,7 @@ public final class FileImpl implements CsmFile,
         if (TraceFlags.TRACE_CPU_CPP && getAbsolutePath().toString().endsWith("cpu.cc")) { // NOI18N
             new Exception("cpu.cc file@" + System.identityHashCode(this) + " of prjUID@" + System.identityHashCode(this.projectUID) + this.projectUID).printStackTrace(System.err); // NOI18N
         }
-        PersistentUtils.writeBuffer(this.fileBuffer, output);
-
+        PersistentUtils.writeBuffer(this.fileBuffer, output, getUnitId());
         output.writeBoolean(hasBrokenIncludes.get());
         currentFileContent.write(output);
 
@@ -1886,16 +1945,13 @@ public final class FileImpl implements CsmFile,
 
         output.writeLong(lastParsed);
         output.writeInt(lastParseTime);
+        output.writeLong(lastParsedCRC);
         State curState = state;
         if (curState != State.PARSED && curState != State.INITIAL) {
             if (TraceFlags.TIMING) {
-                System.err.printf("file is written in intermediate state %s, switching to PARSED: %s \n", curState, getAbsolutePath());
-                //if (CndUtils.isDebugMode() && !firstDump) {
-                //    firstDump = true;
-                //    CndUtils.threadsDump();
-                //}
+                System.err.printf("file is written in intermediate state %s, switching to INITIAL: %s \n", curState, getAbsolutePath());
             }
-            curState = State.PARSED;
+            curState = State.INITIAL;
         }
         output.writeByte(curState.ordinal());
     }
@@ -1910,7 +1966,7 @@ public final class FileImpl implements CsmFile,
         assert this.projectUID != null;
         this.projectRef = null;
 
-        this.fileBuffer = PersistentUtils.readBuffer(input);
+        this.fileBuffer = PersistentUtils.readBuffer(input, getUnitId());
 
         hasBrokenIncludes = new AtomicBoolean(input.readBoolean());
         currentFileContent = new FileContent(this, this._getProject(false), input);
@@ -1920,6 +1976,7 @@ public final class FileImpl implements CsmFile,
         assert fileBuffer != null;
         lastParsed = input.readLong();
         lastParseTime = input.readInt();
+        lastParsedCRC = input.readLong();
         state = State.values()[input.readByte()];
         parsingState = ParsingState.NOT_BEING_PARSED;
     }

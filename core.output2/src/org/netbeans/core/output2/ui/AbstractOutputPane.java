@@ -53,9 +53,13 @@ import javax.swing.event.DocumentListener;
 import javax.swing.text.*;
 import java.awt.*;
 import java.awt.event.*;
-import org.netbeans.core.output2.Controller;
+import org.netbeans.core.output2.Lines;
 import org.netbeans.core.output2.OutputDocument;
+import org.netbeans.core.output2.options.OutputOptions;
 import org.openide.util.Exceptions;
+import org.openide.windows.InputOutput;
+import org.openide.windows.OutputEvent;
+import org.openide.windows.OutputListener;
 
 /**
  * A scroll pane containing an editor pane, with special handling of the caret
@@ -251,7 +255,7 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
         addMouseListener(this);
 
         getCaret().addChangeListener(this);
-        textView.setFont(isWrapped() ? Controller.getDefault().getCurrentFontMS() : Controller.getDefault().getCurrentFont()); //NOI18N
+        textView.setFont(OutputOptions.getDefault().getFont(isWrapped()));
         setBorder (BorderFactory.createEmptyBorder());
         setViewportBorder (BorderFactory.createEmptyBorder());
         
@@ -470,6 +474,8 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
     
     protected abstract void lineClicked (int line, int pos);
     
+    protected abstract void enterPressed();
+
     protected abstract void postPopupMenu (Point p, Component src);
     
     public final int getCaretLine() {
@@ -596,6 +602,12 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
     }
 
     public void mouseClicked(MouseEvent e) {
+        if (e.isAltDown() || e.isAltGraphDown() || e.isControlDown()
+                && SwingUtilities.isMiddleMouseButton(e)) {
+            int currentSize = getViewFont().getSize();
+            int defaultSize = OutputOptions.getDefaultFont().getSize();
+            changeFontSizeBy(defaultSize - currentSize);
+        }
     }
 
     public void mouseEntered(MouseEvent e) {
@@ -723,6 +735,9 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
             case KeyEvent.VK_PAGE_DOWN:
                 unlockScroll();
                 break;
+            case KeyEvent.VK_ENTER:
+                enterPressed();
+                break;
         }
     }
 
@@ -735,7 +750,7 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
     protected abstract void changeFontSizeBy(int change);
 
     public final void mouseWheelMoved(MouseWheelEvent e) {
-        if (e.isControlDown()) {
+        if (e.isAltDown() || e.isAltGraphDown() || e.isControlDown()) {
             int change = -e.getWheelRotation();
             changeFontSizeBy(change);
             e.consume();

@@ -90,6 +90,58 @@ public class Method1Test extends GeneratorTestMDRCompat {
         super.setUp();
         testFile = getFile(getSourceDir(), getSourcePckg() + "MethodTest1.java");
     }
+    
+    public void test220617() throws Exception {
+        String test =
+                "class Test {\n" +
+                "    private pl|us(int x, int y) {\n" +
+                "        return x + y;\n" +
+                "    }\n" +
+                "    void m2() {\n" +
+                "        plus(/*foo*/ 1, /*bar*/ plus(2, 3));\n" +
+                "    }\n" +
+                "}";
+        String golden =
+                "class Test {\n" +
+                "    private int plus(int x, int y) {\n" +
+                "        return x + y;\n" +
+                "    }\n" +
+                "    void m2() {\n" +
+                "        plus(/*foo*/ 1, /*bar*/ plus(2, 3));\n" +
+                "    }\n" +
+                "}";
+        testFile = new File(getWorkDir(), "Test.java");
+        final int indexA = test.indexOf("|");
+        assertTrue(indexA != -1);
+        TestUtilities.copyStringToFile(testFile, test.replace("|", ""));
+        JavaSource src = getJavaSource(testFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            @Override
+            public void run(WorkingCopy copy) throws Exception {
+                if (copy.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {
+                    return;
+                }
+                TreePath tp = copy.getTreeUtilities().pathFor(indexA);
+                Tree node = tp.getLeaf();
+                assertEquals(Kind.METHOD, node.getKind());
+                TreeMaker make = copy.getTreeMaker();
+                MethodTree oldMethod = (MethodTree) node;
+                MethodTree modified = make.Method(oldMethod.getModifiers(),
+                        oldMethod.getName(),
+                        make.Type("int"),
+                        oldMethod.getTypeParameters(),
+                        oldMethod.getParameters(),
+                        oldMethod.getThrows(),
+                        oldMethod.getBody(),
+                        (ExpressionTree)oldMethod.getDefaultValue());
+                copy.rewrite(node, modified);
+            }
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        assertEquals(golden, res);
+    }
 
     /**
      * Changes the modifiers on method. Removes public modifier, sets static

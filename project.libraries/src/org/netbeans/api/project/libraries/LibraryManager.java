@@ -349,7 +349,9 @@ public final class LibraryManager {
             }
             impl = ltp.createLibrary();
             impl.setName(name);
+            impl.setDescription(description);
             Util.setDisplayName(impl, displayName);
+            Util.setProperties(impl, properties);
             for (Map.Entry<String,List<URL>> entry : contents.entrySet()) {
                 impl.setContent(entry.getKey(), entry.getValue());
             }
@@ -360,7 +362,9 @@ public final class LibraryManager {
                 cont.put(entry.getKey(), LibrariesModel.convertURLsToURIs(entry.getValue()));
             }
             impl = LibraryAccessor.createLibrary(alp, type, name, area, cont);
+            impl.setDescription(description);
             Util.setDisplayName(impl, displayName);
+            Util.setProperties(impl, properties);
         }
         return new Library(impl, this);
     }

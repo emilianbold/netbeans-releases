@@ -66,11 +66,27 @@ public interface JsfComponentImplementation {
 
     /**
      * Returns the name of this JSF component library.
+     * <p>
+     * <b>This name mustn't be localized since it's used for logging and could appear in configuration files (like in
+     * the pom.xml files of the user project). For localized name used {@link #getDisplayName()} instead.</b>
      *
      * @return the name; never {@code null}.
+     * @see #getDisplayName()
      */
     @NonNull
-    public String getName();
+    String getName();
+
+    /**
+     * Gets display name of the JSF suite.
+     * <p>
+     * Display name can be localized and it will appear in the wizards and project customizers.
+     *
+     * @return display name of the JSF component library, never {@code null}
+     * @see #getName()
+     * @since 1.44
+     */
+    @NonNull
+    String getDisplayName();
 
     /**
      * Returns the description of this JSF component library.
@@ -78,7 +94,7 @@ public interface JsfComponentImplementation {
      * @return the description.
      */
     @NonNull
-    public String getDescription();
+    String getDescription();
 
     /**
      * Called to extend the given web module and JSF framework with the JSF
@@ -90,7 +106,7 @@ public interface JsfComponentImplementation {
      * @return the set of newly created files in the web module which should be opened.
      */
     @NonNull
-    public Set<FileObject> extend(@NonNull WebModule webModule, @NullAllowed JsfComponentCustomizer jsfComponentCustomizer);
+    Set<FileObject> extend(@NonNull WebModule webModule, @NullAllowed JsfComponentCustomizer jsfComponentCustomizer);
 
     /**
      * Returns for which versions is the JSF component library designed.
@@ -101,7 +117,7 @@ public interface JsfComponentImplementation {
      * @return set of {@link JSFVersion} suitable for this JSF component library
      */
     @NonNull
-    public Set<JSFVersion> getJsfVersion();
+    Set<JSFVersion> getJsfVersion();
 
     /**
      * Finds out if a given web module has already been extended with this JSF component library.
@@ -112,7 +128,7 @@ public interface JsfComponentImplementation {
      * @return {@code true} if the web module has already been extended with this JSF suite,
      * {@code false} otherwise.
      */
-    public boolean isInWebModule(@NonNull WebModule webModule);
+    boolean isInWebModule(@NonNull WebModule webModule);
 
     /**
      * Returns a new {@link JsfComponentCustomizer} for this JSF component
@@ -126,13 +142,13 @@ public interface JsfComponentImplementation {
      * @return a new customizer; can be {@code null} if the JSF suite doesn't
      * support that and no extending panel should be offered.
      */
-    public JsfComponentCustomizer createJsfComponentCustomizer(@NullAllowed WebModule webModule);
+    JsfComponentCustomizer createJsfComponentCustomizer(@NullAllowed WebModule webModule);
 
     /**
      * Performs actions needed for removal JSF component library form the web module.
      *
      * @param webModule the web module from which should be JSF component library removed; never null.
      */
-    public void remove(@NonNull WebModule webModule);
+    void remove(@NonNull WebModule webModule);
 
 }

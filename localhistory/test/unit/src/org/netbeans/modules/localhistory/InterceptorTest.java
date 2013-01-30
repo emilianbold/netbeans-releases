@@ -38,13 +38,28 @@
 package org.netbeans.modules.localhistory;
 
 import java.io.*;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
+import org.netbeans.editor.ActionFactory;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.localhistory.store.LocalHistoryStore;
+import org.netbeans.modules.localhistory.store.LocalHistoryStoreFactory;
 import org.netbeans.modules.localhistory.store.StoreEntry;
 import org.netbeans.modules.versioning.core.VersioningManager;
+import org.netbeans.modules.versioning.core.spi.VCSInterceptor;
 import org.netbeans.modules.versioning.masterfs.VersioningAnnotationProvider;
+import org.netbeans.modules.versioning.util.VersioningListener;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -151,7 +166,7 @@ public class InterceptorTest extends NbTestCase {
 
         // change file and block the storing for some time right after the msg gets intercepted
         FileObject fo = FileUtil.toFileObject(f);
-        LogHandler lhBocked = new LogHandler("beforeChange for file " + f + " was blocked.", LogHandler.Compare.STARTS_WITH);
+        LogHandler lhBocked = new LogHandler("beforeChange for file " + f + " was blocked", LogHandler.Compare.STARTS_WITH);
         
         long BLOCK_TIME = 5000;
         LogHandler lh = new LogHandler("finnished copy file " + f, LogHandler.Compare.STARTS_WITH);
@@ -179,7 +194,7 @@ public class InterceptorTest extends NbTestCase {
 
         // change file and block the storing for some time right after the msg gets intercepted
         FileObject fo = FileUtil.toFileObject(f);
-        LogHandler lhBocked = new LogHandler("beforeDelete for file " + f + " was blocked.", LogHandler.Compare.STARTS_WITH);
+        LogHandler lhBocked = new LogHandler("beforeDelete for file " + f + " was blocked", LogHandler.Compare.STARTS_WITH);
         
         long BLOCK_TIME = 5000;
         LogHandler lh = new LogHandler("finnished copy file " + f, LogHandler.Compare.STARTS_WITH);
@@ -214,7 +229,7 @@ public class InterceptorTest extends NbTestCase {
         System.setProperty("netbeans.t9y.localhistory.release-lock.timeout", "" + LOCK_TIME);
         LogHandler fileStoreBlock = new LogHandler("finnished copy file " + f, LogHandler.Compare.STARTS_WITH);
         fileStoreBlock.block(BLOCK_TIME); 
-        LogHandler beforeDeleteBlock = new LogHandler("beforeDelete for file " + f + " was blocked.", LogHandler.Compare.STARTS_WITH);
+        LogHandler beforeDeleteBlock = new LogHandler("beforeDelete for file " + f + " was blocked", LogHandler.Compare.STARTS_WITH);
         
         long t = System.currentTimeMillis();
         fo.delete();
@@ -233,6 +248,96 @@ public class InterceptorTest extends NbTestCase {
         assertNotNull(entry);
         assertEntry(entry, "1");
     }
+
+    /**
+     * methods that aren't implemented in {@link LocalHistoryVCSInterceptor}
+     */
+    private static final Set<String> INTERCEPTOR_COMPLETE_WHITELIST = new HashSet<String>(Arrays.asList(
+        "isMutable",
+        "getAttribute",
+        "doDelete",
+        "doMove",
+        "doCopy",
+        "doCreate",
+        "afterCopy",
+        "refreshRecursively"));
+    
+    /**
+     * files that are implemented in LocalHistoryVCSInterceptor,
+     * but do not have to call {@link LocalHistoryStore.waitForProcessedStoring}
+     */
+    private static final Set<String> WAIT_FOR_STORING_WHITELIST = new HashSet<String>(Arrays.asList(
+        "beforeEdit",
+        "afterChange",
+        "afterDelete",
+        "afterMove",
+        "afterCreate"));
+    
+    /**
+     * Test whether all important methods are overriden and 
+     * if they block in case of an currently running async copying into storage.
+     * 
+     * @throws IOException
+     */
+    public void testTestInterceptorComplete() throws IOException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException, InvocationTargetException {
+        setupTestStore();
+        
+        Set<String> testInterceptorMethods = new HashSet<String>();
+        Method[]  methods = LocalHistoryVCSInterceptor.class.getDeclaredMethods();
+        for (Method method : methods) {
+            if((method.getModifiers() & Modifier.PUBLIC) != 0) {
+                
+                System.out.println(" tested interceptor method: " + method.getName());
+                
+                if(INTERCEPTOR_COMPLETE_WHITELIST.contains(method.getName())) {
+                    fail("method " + method.getName() + " is on whitelist but also iplemented in LocalHistoryVCSInterceptor");
+                }
+                        
+                testInterceptorMethods.add(method.getName());
+                
+                LocalHistoryVCSInterceptor i = new LocalHistoryVCSInterceptor();
+                Class<?>[] params = method.getParameterTypes();
+                if(params.length == 1 && params[0] == File.class) {
+                    method.invoke(i, new File(method.getName()));
+                } else if(params.length == 2 && params[0] == File.class && params[1] == File.class) {
+                    method.invoke(i, new File(method.getName()), new File(method.getName() + ".2"));
+                } else if(params.length == 2 && params[0] == File.class && params[1] == String.class) {
+                    method.invoke(i, new File(method.getName()), "");
+                } else if(params.length == 2 && params[0] == File.class && params[1] == boolean.class) {
+                    method.invoke(i, new File(method.getName()), false);
+                } else if(params.length == 3 && params[0] == File.class && params[1] == long.class && params[2] == List.class) {
+                    method.invoke(i, new File(method.getName()), -1, Collections.EMPTY_LIST);
+                } else {
+                    fail("not yet handled method " + method.getName() + " with parameters: " + Arrays.asList(params));
+                }
+            }
+        }
+        
+        methods = VCSInterceptor.class.getDeclaredMethods();
+        for (Method method : methods) {
+            if((method.getModifiers() & Modifier.PUBLIC) != 0) {
+                System.out.println(" vcsinterceptor method: " + method.getName());
+                if(!INTERCEPTOR_COMPLETE_WHITELIST.contains(method.getName()) && 
+                   !testInterceptorMethods.contains(method.getName())) 
+                {
+                    fail("" + LocalHistoryVCSInterceptor.class.getName() + " should override method " + method.getName());
+                }
+                
+                if(!INTERCEPTOR_COMPLETE_WHITELIST.contains(method.getName()) &&
+                   !WAIT_FOR_STORING_WHITELIST.contains(method.getName()) && 
+                   !TestLocalHistoryStore.instance.didWaitFor.contains(method.getName())) 
+                {
+                    fail(" interceptor method " + method.getName() + " DID NOT call waitForProcessedStoring !!! Either implement it or add it to the whitelist.");
+                }
+            }
+        }
+        
+        for(String m : WAIT_FOR_STORING_WHITELIST) {
+            if(TestLocalHistoryStore.instance.didWaitFor.contains(m)) {
+                fail("method " + m + " is in whitelist but it blocked anyway. Fix either the whitelist or the method implementation.");
+            }
+        }
+    }  
     
     private void write(File f, String txt) throws IOException {
         FileWriter fw = new FileWriter(f);
@@ -283,6 +388,54 @@ public class InterceptorTest extends NbTestCase {
         }
         assertEquals(txt, sb.toString());
     }
+
+    private void setupTestStore() throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
+        Class<LocalHistory> c = LocalHistory.class;
+        Field f = c.getDeclaredField("store");
+        f.setAccessible(true);
+        f.set(LocalHistory.getInstance(), new TestLocalHistoryStore());
+    }
     
-    
+    private static class TestLocalHistoryStore implements LocalHistoryStore {
+        static TestLocalHistoryStore instance;
+
+        public TestLocalHistoryStore() {
+            instance = this;
+        }
+        
+        List<String> didWaitFor = new LinkedList<String>();
+        
+        @Override
+        public void waitForProcessedStoring(File file, String caller) {
+            didWaitFor.add(file.getName());
+        }
+        @Override
+        public void fileCreate(File file, long ts) { }
+        @Override
+        public void fileDelete(File file, long ts) { }
+        @Override
+        public void fileCreateFromMove(File fromFile, File toFile, long ts) { }
+        @Override
+        public void fileDeleteFromMove(File fromFile, File toFile, long ts) { }
+        @Override
+        public void fileChange(File file, long ts) { }
+        @Override
+        public StoreEntry setLabel(File file, long ts, String label) { return null; }
+        @Override
+        public void addVersioningListener(VersioningListener l) { }
+        @Override
+        public void removeVersioningListener(VersioningListener l) { }
+        @Override
+        public StoreEntry[] getStoreEntries(File file) { return new StoreEntry[0]; }
+        @Override
+        public StoreEntry getStoreEntry(File file, long ts) { return null; }
+        @Override
+        public StoreEntry[] getFolderState(File root, File[] files, long ts) { return new StoreEntry[0]; }
+        @Override
+        public StoreEntry[] getDeletedFiles(File root) { return new StoreEntry[0]; }
+        @Override
+        public void deleteEntry(File file, long ts) { }
+        @Override
+        public void cleanUp(long ttl) { }
+    }
 }

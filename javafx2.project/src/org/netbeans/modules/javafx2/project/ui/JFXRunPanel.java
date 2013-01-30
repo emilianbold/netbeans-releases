@@ -81,6 +81,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.extbrowser.ExtWebBrowser;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
+import org.netbeans.modules.javafx2.project.JFXProjectConfigurations;
 import org.netbeans.modules.javafx2.project.JFXProjectProperties;
 import org.netbeans.modules.javafx2.project.JFXProjectProperties.PropertiesTableModel;
 import org.netbeans.modules.javafx2.project.JFXProjectUtils;
@@ -1082,7 +1083,7 @@ private void buttonWebPageActionPerformed(java.awt.event.ActionEvent evt) {//GEN
 
 private void buttonParamsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonParamsActionPerformed
     List<Map<String, String>> props = configs.getActiveParamsTransparent();
-    TableModel appParametersTableModel = new JFXProjectProperties.PropertiesTableModel(props, JFXProjectProperties.APP_PARAM_SUFFIXES, appParamsColumnNames);
+    TableModel appParametersTableModel = new JFXProjectProperties.PropertiesTableModel(props, JFXProjectConfigurations.APP_PARAM_SUFFIXES, appParamsColumnNames);
     JPanel panel = new JFXApplicationParametersPanel((PropertiesTableModel) appParametersTableModel);
     DialogDescriptor dialogDesc = new DialogDescriptor(panel, NbBundle.getMessage(JFXRunPanel.class, "TITLE_ApplicationParameters"), true, null);
     Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDesc);

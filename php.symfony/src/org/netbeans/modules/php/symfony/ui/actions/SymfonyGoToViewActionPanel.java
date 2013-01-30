@@ -180,7 +180,7 @@ public class SymfonyGoToViewActionPanel extends javax.swing.JPanel implements Fo
     public void focusLost(FocusEvent arg0) {
     }
     
-    private class SymfonyViewItem {
+    private static class SymfonyViewItem {
         
         private FileObject view;
         

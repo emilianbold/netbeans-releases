@@ -62,14 +62,13 @@ import org.netbeans.api.java.source.Task;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.modules.csl.api.CompletionProposal;
 import org.netbeans.modules.groovy.editor.api.GroovyIndex;
-import org.netbeans.modules.groovy.editor.api.GroovyUtils;
-import org.netbeans.modules.groovy.editor.api.NbUtilities;
 import org.netbeans.modules.groovy.editor.api.completion.CompletionItem;
 import org.netbeans.modules.groovy.editor.api.completion.util.CamelCaseUtil;
 import org.netbeans.modules.groovy.editor.api.completion.util.CompletionRequest;
 import org.netbeans.modules.groovy.editor.api.completion.util.ContextHelper;
 import org.netbeans.modules.groovy.editor.api.elements.index.IndexedClass;
 import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
+import org.netbeans.modules.groovy.editor.api.GroovyUtils;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.openide.filesystems.FileObject;
 
@@ -329,7 +328,7 @@ public class TypesCompletion extends BaseCompletion {
             return;
         }
 
-        String typeName = NbUtilities.stripPackage(type.getName());
+        String typeName = GroovyUtils.stripPackage(type.getName());
 
         // If we are in situation: "String s = new String|" we don't want to show
         // String type as a option - we want to show String constructors + types

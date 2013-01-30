@@ -89,20 +89,24 @@ class SvnSearchView implements ComponentListener {
         return pane;
     }
 
+    @Override
     public void componentResized(ComponentEvent e) {
         int [] selection = resultsList.getSelectedIndices();
         resultsList.setModel(new SvnSearchListModel());
         resultsList.setSelectedIndices(selection);
     }
 
+    @Override
     public void componentHidden(ComponentEvent e) {
         // not interested
     }
 
+    @Override
     public void componentMoved(ComponentEvent e) {
         // not interested
     }
 
+    @Override
     public void componentShown(ComponentEvent e) {
         // not interested
     }
@@ -134,6 +138,7 @@ class SvnSearchView implements ComponentListener {
 
     private class SvnSearchListModel extends AbstractListModel {
 
+        @Override
         public int getSize() {
             if(lm == null) {
                 return 0;
@@ -141,6 +146,7 @@ class SvnSearchView implements ComponentListener {
             return lm.length;
         }
 
+        @Override
         public Object getElementAt(int index) {
             return lm[index];
         }
@@ -185,6 +191,9 @@ class SvnSearchView implements ComponentListener {
             setLayout(new BorderLayout());
             add(textPane);
             textPane.setBorder(null);
+            //fix for nimbus laf
+            textPane.setOpaque(false);
+            textPane.setBackground(new Color(0, 0, 0, 0));
         }
 
         public Color darker(Color c) {
@@ -193,6 +202,7 @@ class SvnSearchView implements ComponentListener {
                  Math.max((int)(c.getBlue() * DARKEN_FACTOR), 0));
         }
 
+        @Override
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             if(value instanceof ISVNLogMessage) {
                 ISVNLogMessage message = (ISVNLogMessage) value;
@@ -200,11 +210,11 @@ class SvnSearchView implements ComponentListener {
 
                 Style style;
                 if (isSelected) {
-                    textPane.setBackground(selectionBackground); // NOI18N
+                    setBackground(selectionBackground);
                     style = selectedStyle;
                 } else {
                     Color c = UIManager.getColor("List.background"); // NOI18N
-                    textPane.setBackground((index & 1) == 0 ? c : darker(c));
+                    setBackground((index & 1) == 0 ? c : darker(c));
                     style = normalStyle;
                 }
 
@@ -216,6 +226,7 @@ class SvnSearchView implements ComponentListener {
                     sd.insertString(sd.getLength(), FIELDS_SEPARATOR + message.getAuthor(), null);
                     sd.insertString(sd.getLength(), FIELDS_SEPARATOR +  defaultFormat.format(message.getDate()), null);
                     sd.insertString(sd.getLength(), "\n" + message.getMessage(), null); // NOI18N
+                    sd.setCharacterAttributes(0, Integer.MAX_VALUE, style, false);
                 } catch (BadLocationException e) {
                     Subversion.LOG.log(Level.SEVERE, null, e);
                 }

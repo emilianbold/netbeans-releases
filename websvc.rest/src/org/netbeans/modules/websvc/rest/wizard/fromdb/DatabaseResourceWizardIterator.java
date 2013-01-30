@@ -143,7 +143,7 @@ public final class DatabaseResourceWizardIterator implements WizardDescriptor.In
         FileObject configFilesFolder = PersistenceLocation.getLocation(project);
         helper = new RelatedCMPHelper(project, configFilesFolder, generator);
         wizard.putProperty(PROP_HELPER, helper);
-        wizard.putProperty(PROP_CMP, new Boolean(false));
+        wizard.putProperty(PROP_CMP, false);
 
         // Moved to getPanels()
         //String wizardBundleKey = "Templates/Persistence/RelatedCMP"; // NOI18N
@@ -296,6 +296,9 @@ public final class DatabaseResourceWizardIterator implements WizardDescriptor.In
             final RestSupport restSupport = project.getLookup().lookup(RestSupport.class);
             String restAppPackage = null;
             String restAppClass = null;
+            
+            handle.progress(NbBundle.getMessage(EntityResourcesIterator.class,
+                    "MSG_EnableRestSupport"));                  // NOI18N     
             
             if( restSupport instanceof WebRestSupport) {
                 Object useJersey = wizard.getProperty(WizardProperties.USE_JERSEY);
@@ -558,7 +561,8 @@ public final class DatabaseResourceWizardIterator implements WizardDescriptor.In
 
                     JComponent jc = (JComponent) c;
                     // Sets step number of a component
-                    jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, new Integer(i));
+                    jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, 
+                            i);
                     // Sets steps names for a panel
                     jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps);
                     // Turn on subtitle creation on each step
@@ -626,17 +630,18 @@ public final class DatabaseResourceWizardIterator implements WizardDescriptor.In
             beforeSteps = (String[]) prop;
         }
 
-        if (beforeSteps == null) {
-            beforeSteps = new String[0];
+        String[] res;
+        byte start=0;
+        if ( beforeSteps == null || beforeSteps.length == 0 ){
+            res = new String[panels.length];
         }
-
-        String[] res = new String[(beforeSteps.length - 1) + panels.length];
-        for (int i = 0; i < res.length; i++) {
-            if (i < (beforeSteps.length - 1)) {
-                res[i] = beforeSteps[i];
-            } else {
-                res[i] = panels[i - beforeSteps.length + 1].getComponent().getName();
-            }
+        else {
+            res = new String[panels.length+1];
+            res[0]= beforeSteps[0];
+            start =1;
+        }
+        for (int i = start; i < res.length; i++) {
+            res[i] = panels[i-start].getComponent().getName();
         }
         return res;
     }

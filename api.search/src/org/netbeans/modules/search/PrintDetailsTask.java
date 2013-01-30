@@ -199,7 +199,7 @@ public final class PrintDetailsTask implements Runnable {
     private void callDisplayerFromAWT(final String methodName) {
         try {
             final Method method = SearchDisplayer.class
-                                  .getDeclaredMethod(methodName, new Class[0]);
+                    .getDeclaredMethod(methodName, new Class<?>[0]);
             Runnable runnable = new Runnable() {
                 @Override
                 public void run() {

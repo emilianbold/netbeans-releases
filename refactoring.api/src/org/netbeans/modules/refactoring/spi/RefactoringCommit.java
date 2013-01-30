@@ -49,8 +49,11 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.modules.refactoring.api.ProgressEvent;
+import org.netbeans.modules.refactoring.api.ProgressListener;
 import org.netbeans.modules.refactoring.api.impl.CannotRedoRefactoring;
 import org.netbeans.modules.refactoring.api.impl.CannotUndoRefactoring;
+import org.netbeans.modules.refactoring.api.impl.ProgressSupport;
 import org.netbeans.modules.refactoring.spi.BackupFacility2.Handle;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
@@ -64,10 +67,10 @@ import org.openide.util.Exceptions;
  * @author Jan Becicka
  * @since 1.23
  */
-
- public final class RefactoringCommit implements Transaction {
+ public final class RefactoringCommit implements Transaction, ProgressProvider {
  
      private static final Logger LOG = Logger.getLogger(RefactoringCommit.class.getName());
+     private ProgressSupport progressSupport;
  
      /**
       * FileObjects modified by this Transaction
@@ -127,6 +130,7 @@ import org.openide.util.Exceptions;
     
     @Override
     public void commit() {
+        fireProgressListenerStart(ProgressEvent.START, results.size());
         try {
             if (commited) {
                 for (BackupFacility2.Handle id:ids) {
@@ -153,12 +157,14 @@ import org.openide.util.Exceptions;
                     }
 
                     openNewFiles(result.getNewFiles());
+                    fireProgressListenerStep();
                 }
             }
         
         } catch (IOException ex) {
             throw new RuntimeException(ex);
         }
+        fireProgressListenerStop();
     }
     
      private boolean newFilesStored = false;
@@ -192,6 +198,51 @@ import org.openide.util.Exceptions;
                     LOG.log(Level.INFO, ex.getMessage(), ex);
                 }
             }
+        }
+    }
+
+     /**
+      * Registers ProgressListener to receive events.
+      *
+      * @param listener The listener to register.
+      * @since 1.33
+      */
+     @Override
+     public synchronized void addProgressListener(ProgressListener listener) {
+         if (progressSupport == null) {
+             progressSupport = new ProgressSupport();
+         }
+         progressSupport.addProgressListener(listener);
+     }
+
+     /**
+      * Removes ProgressListener from the list of listeners.
+      *
+      * @param listener The listener to remove.
+      * @since 1.33
+      */
+     @Override
+     public synchronized void removeProgressListener(ProgressListener listener) {
+         if (progressSupport != null) {
+             progressSupport.removeProgressListener(listener);
+         }
+     }
+    
+    private void fireProgressListenerStart(int type, int count) {
+        if (progressSupport != null) {
+            progressSupport.fireProgressListenerStart(this, type, count);
+        }
+    }
+    
+    private void fireProgressListenerStep() {
+        if (progressSupport != null) {
+            progressSupport.fireProgressListenerStep(this);
+        }
+    }
+    
+    private void fireProgressListenerStop() {
+        if (progressSupport != null) {
+            progressSupport.fireProgressListenerStop(this);
         }
     }
 }

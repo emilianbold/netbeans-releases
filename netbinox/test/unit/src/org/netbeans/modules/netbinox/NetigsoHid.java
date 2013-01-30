@@ -68,6 +68,8 @@ import org.openide.filesystems.FileUtil;
  * @author Jaroslav Tulach
  */
 public class NetigsoHid extends SetupHid {
+    File simpleModule;
+    
     public NetigsoHid(String name) {
         super(name);
     }
@@ -79,7 +81,7 @@ public class NetigsoHid extends SetupHid {
         data = new File(getDataDir(), "jars");
         jars = new File(getWorkDir(), "jars");
         jars.mkdirs();
-        File simpleModule = createTestJAR("simple-module", null);
+        simpleModule = createTestJAR("simple-module", null);
         File dependsOnSimpleModule = createTestJAR("depends-on-simple-module", null, simpleModule);
 
         File ud = new File(getWorkDir(), "ud");
@@ -91,7 +93,7 @@ public class NetigsoHid extends SetupHid {
     protected void tearDown() throws Exception {
         super.tearDown();
     }
-    private File createTestJAR(String name, String srcdir, File... classpath) throws IOException {
+    File createTestJAR(String name, String srcdir, File... classpath) throws IOException {
         return createTestJAR(data, jars, name, srcdir, classpath);
     }
 
@@ -101,7 +103,10 @@ public class NetigsoHid extends SetupHid {
     }
 
     protected static File changeManifest(File dir, File orig, String manifest) throws IOException {
-        File f = new File(dir, orig.getName());
+        return changeManifest(dir, orig.getName(), orig, manifest);
+    }
+    protected static File changeManifest(File dir, String newName, File orig, String manifest) throws IOException {
+        File f = new File(dir, newName);
         Manifest mf = new Manifest(new ByteArrayInputStream(manifest.getBytes("utf-8")));
         mf.getMainAttributes().putValue("Manifest-Version", "1.0");
         JarOutputStream os = new JarOutputStream(new FileOutputStream(f), mf);

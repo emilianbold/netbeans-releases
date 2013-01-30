@@ -47,6 +47,7 @@ package org.netbeans.modules.editor;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Shape;
+import java.awt.event.MouseEvent;
 import javax.swing.JComponent;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -155,6 +156,9 @@ public class NbToolTip extends FileChangeAdapter {
             }
             Lookup l = Lookups.forPath("Editors/" + mimeType + "/ToolTips");  //NOI18N
             Collection<? extends Annotation> res = l.lookupAll(Annotation.class);
+            if (res.contains(null)) {
+                throw new IllegalStateException("Lookup returning null instance: " + l); // NOI18N
+            }
             annos = res.toArray(new Annotation[res.size()]);
             synchronized (NbToolTip.class) {
                 tipAnnotations = annos;
@@ -171,9 +175,13 @@ public class NbToolTip extends FileChangeAdapter {
         if (tts == null) {
             return; // no tooltip support, no tooltips
         }
-        
+        MouseEvent lastMouseEvent = tts.getLastMouseEvent();
+        if (lastMouseEvent == null) {
+            // no mouse event, shouldn't be invoked at all, see defect #215520
+            return;
+        }
         BaseDocument doc = Utilities.getDocument(target);
-        Point p = tts.getLastMouseEvent().getPoint();
+        Point p = lastMouseEvent.getPoint();
         doc.readLock();
         try {
             // Calls View.getTooltipText, which usually does nothing. CollapsedView.getTooltipText

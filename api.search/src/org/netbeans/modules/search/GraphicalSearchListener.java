@@ -42,6 +42,7 @@
 package org.netbeans.modules.search;
 
 import java.lang.reflect.InvocationTargetException;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -68,7 +69,7 @@ import org.openide.util.NbBundle;
  *
  * @author jhavlin
  */
-class GraphicalSearchListener<R> extends SearchListener {
+class GraphicalSearchListener extends SearchListener {
 
     private static final int INFO_EVENT_LIMIT = 100;
     private static final Logger LOG = Logger.getLogger(
@@ -81,7 +82,7 @@ class GraphicalSearchListener<R> extends SearchListener {
     /**
      * Underlying search composition.
      */
-    private SearchComposition<R> searchComposition;
+    private SearchComposition<?> searchComposition;
     /**
      * Progress handle instance.
      */
@@ -96,7 +97,7 @@ class GraphicalSearchListener<R> extends SearchListener {
     private RootInfoNode rootInfoNode;
     private EventChildren eventChildren;
 
-    public GraphicalSearchListener(SearchComposition<R> searchComposition,
+    public GraphicalSearchListener(SearchComposition<?> searchComposition,
             ResultViewPanel resultViewPanel) {
         this.searchComposition = searchComposition;
         this.resultViewPanel = resultViewPanel;
@@ -217,8 +218,14 @@ class GraphicalSearchListener<R> extends SearchListener {
     @Override
     public void fileSkipped(FileObject fileObject,
             SearchFilterDefinition filter, String message) {
+        fileSkipped(fileObject.toURI(), filter, message);
+    }
+
+    @Override
+    public void fileSkipped(URI uri, SearchFilterDefinition filter,
+            String message) {
         LOG.log(Level.FINE, "{0} skipped {1} {2}", new Object[]{ //NOI18N
-                    fileObject.getPath(),
+                    uri.toString(),
                     filter != null ? filter.getClass().getName() : "", //NOI18N
                     message != null ? message : ""});                   //NOI18N
     }
@@ -378,7 +385,7 @@ class GraphicalSearchListener<R> extends SearchListener {
                     return "path";                                      //NOI18N
                 }
             };
-            final Property[] properties = new Property[]{pathProperty};
+            final Property<?>[] properties = new Property<?>[]{pathProperty};
             PropertySet[] sets = new PropertySet[1];
             sets[0] = new PropertySet() {
                 @Override

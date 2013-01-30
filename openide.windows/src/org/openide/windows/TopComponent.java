@@ -945,6 +945,21 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
         );
     }
 
+    /**
+     * Permanently highlights this TopComponent's tab until user activates it.
+     * @param highlight True to highlight the tab, false to switch the highlight off.
+     * @since 6.58
+     * @see #requestAttention(boolean)
+     */
+    public final void setAttentionHighlight( final boolean highlight ) {
+        Mutex.EVENT.readAccess( new Runnable() {
+            @Override
+            public void run() {
+                WindowManager.getDefault().topComponentAttentionHighlight( TopComponent.this, highlight );
+            }
+        });
+    }
+
     /** Set the name of this top component.
     * The default implementation just notifies the window manager.
     * @param name the new display name
@@ -1355,7 +1370,12 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
     }
 
     /** Associates the provided lookup with the component. So it will
-     * be returned from {@link #getLookup} method.
+     * be returned from {@link #getLookup} method. When used, make sure
+     * the provided {@link Lookup} contains objects needed by other subsystems.
+     * For example, if {@link Actions#callback(java.lang.String, javax.swing.Action, boolean, java.lang.String, java.lang.String, boolean) callback actions}
+     * are about to search their actions in this {@link TopComponent},
+     * it is good idea to include {@link #getActionMap() this.getActionMap()} in
+     * the lookup.
      *
      * @param lookup the lookup to associate
      * @exception IllegalStateException if there already is a lookup registered

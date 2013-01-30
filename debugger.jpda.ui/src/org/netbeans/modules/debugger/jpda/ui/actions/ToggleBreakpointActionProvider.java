@@ -79,6 +79,7 @@ import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.debugger.jpda.ui.EditorContextBridge;
+import org.netbeans.modules.debugger.jpda.ui.JavaUtils;
 import org.netbeans.spi.debugger.ActionsProvider;
 import org.netbeans.spi.debugger.ActionsProviderSupport;
 import org.openide.ErrorManager;
@@ -265,8 +266,9 @@ implements PropertyChangeListener {
         }
 
         final int[] result = new int[] {lineNumber};
+        final Future<Void> scanFinished;
         try {
-            js.runUserActionTask(new CancellableTask<CompilationController>() {
+            scanFinished = JavaUtils.runWhenScanFinishedReallyLazy(js, new CancellableTask<CompilationController>() {
                 public void cancel() {
                 }
                 public void run(CompilationController ci) throws Exception {
@@ -347,6 +349,20 @@ implements PropertyChangeListener {
                     }
                 }
             }, true);
+            if (!scanFinished.isDone()) {
+                if (java.awt.EventQueue.isDispatchThread()) {
+                    return lineNumber;
+                } else {
+                    try {
+                        scanFinished.get();
+                    } catch (InterruptedException iex) {
+                        return lineNumber;
+                    } catch (java.util.concurrent.ExecutionException eex) {
+                        ErrorManager.getDefault().notify(eex);
+                        return lineNumber;
+                    }
+                }
+            }
         } catch (IOException ioex) {
             ErrorManager.getDefault().notify(ioex);
             return lineNumber;

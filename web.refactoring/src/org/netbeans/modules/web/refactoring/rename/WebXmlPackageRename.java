@@ -69,10 +69,18 @@ public class WebXmlPackageRename extends BaseWebXmlRename{
                 continue;
             }
             String oldName = JavaIdentifiers.getQualifiedName(each);
+            // #222734 -- skip files outside source packages
+            if (oldName == null) {
+                continue;
+            }
             
             // #153294 - additional check before refactoring starts
             if ( JavaIdentifiers.isValidPackageName( oldName )){
                 String newName = RefactoringUtil.constructNewName(each, rename);
+                if (newName == null || "".equals(newName)) {
+                    result.add(new RenameItem(new Problem(true, NbBundle.getMessage(WebXmlPackageRename.class, "TXT_ErrProblemWhenRenaming", oldName))));
+                }
+
                 result.add(new RenameItem(newName, oldName));
             }
             else {

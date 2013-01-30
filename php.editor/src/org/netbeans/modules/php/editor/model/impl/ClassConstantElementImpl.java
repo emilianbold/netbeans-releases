@@ -41,11 +41,11 @@
  */
 package org.netbeans.modules.php.editor.model.impl;
 
-import org.netbeans.modules.php.editor.model.ClassConstantElement;
 import org.netbeans.modules.php.editor.api.PhpElementKind;
 import org.netbeans.modules.php.editor.api.PhpModifiers;
 import org.netbeans.modules.php.editor.api.elements.TypeConstantElement;
 import org.netbeans.modules.php.editor.index.Signature;
+import org.netbeans.modules.php.editor.model.ClassConstantElement;
 import org.netbeans.modules.php.editor.model.Scope;
 import org.netbeans.modules.php.editor.model.TypeScope;
 import org.netbeans.modules.php.editor.model.nodes.ClassConstantDeclarationInfo;
@@ -75,7 +75,7 @@ class ClassConstantElementImpl extends ModelElementImpl implements ClassConstant
 
     @Override
     public String getNormalizedName() {
-        return typeName+super.getNormalizedName();
+        return typeName + super.getNormalizedName();
     }
 
     @Override
@@ -84,7 +84,7 @@ class ClassConstantElementImpl extends ModelElementImpl implements ClassConstant
         sb.append(getName().toLowerCase()).append(Signature.ITEM_DELIMITER);
         sb.append(getName()).append(Signature.ITEM_DELIMITER);
         sb.append(getOffset()).append(Signature.ITEM_DELIMITER);
-        sb.append(getValue() != null ? Signature.encodeItem(getValue()) : "?").append(Signature.ITEM_DELIMITER);//NOI18N
+        sb.append(getValue() != null ? Signature.encodeItem(getValue()) : "?").append(Signature.ITEM_DELIMITER); //NOI18N
         return sb.toString();
     }
 

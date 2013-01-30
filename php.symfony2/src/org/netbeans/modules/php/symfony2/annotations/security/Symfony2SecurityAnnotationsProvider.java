@@ -44,12 +44,12 @@ package org.netbeans.modules.php.symfony2.annotations.security;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import org.netbeans.modules.php.spi.annotations.PhpAnnotationTag;
-import org.netbeans.modules.php.spi.annotations.PhpAnnotationsProvider;
+import org.netbeans.modules.php.spi.annotation.AnnotationCompletionTag;
+import org.netbeans.modules.php.spi.annotation.AnnotationCompletionTagProvider;
 import org.openide.util.NbBundle;
 
 // http://symfony.com/doc/2.0/bundles/JMSSecurityExtraBundle/index.html#annotations
-public final class Symfony2SecurityAnnotationsProvider extends PhpAnnotationsProvider {
+public final class Symfony2SecurityAnnotationsProvider extends AnnotationCompletionTagProvider {
 
     @NbBundle.Messages("Symfony2SecurityAnnotationsProvider.name=Symfony2 Security")
     public Symfony2SecurityAnnotationsProvider() {
@@ -59,23 +59,23 @@ public final class Symfony2SecurityAnnotationsProvider extends PhpAnnotationsPro
     }
 
     @Override
-    public List<PhpAnnotationTag> getFunctionAnnotations() {
+    public List<AnnotationCompletionTag> getFunctionAnnotations() {
         return Collections.emptyList();
     }
 
     @Override
-    public List<PhpAnnotationTag> getTypeAnnotations() {
+    public List<AnnotationCompletionTag> getTypeAnnotations() {
         return Collections.emptyList();
     }
 
     @Override
-    public List<PhpAnnotationTag> getFieldAnnotations() {
+    public List<AnnotationCompletionTag> getFieldAnnotations() {
         return Collections.emptyList();
     }
 
     @Override
-    public List<PhpAnnotationTag> getMethodAnnotations() {
-        return Arrays.<PhpAnnotationTag>asList(
+    public List<AnnotationCompletionTag> getMethodAnnotations() {
+        return Arrays.<AnnotationCompletionTag>asList(
                 new PreAuthorizeTag(),
                 new SecureTag(),
                 new SecureParamTag(),

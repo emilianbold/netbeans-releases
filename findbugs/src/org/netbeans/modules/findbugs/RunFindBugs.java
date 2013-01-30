@@ -60,6 +60,7 @@ import edu.umd.cs.findbugs.FindBugs2;
 import edu.umd.cs.findbugs.FindBugsProgress;
 import edu.umd.cs.findbugs.MethodAnnotation;
 import edu.umd.cs.findbugs.PackageMemberAnnotation;
+import edu.umd.cs.findbugs.Priorities;
 import edu.umd.cs.findbugs.Project;
 import edu.umd.cs.findbugs.SourceLineAnnotation;
 import edu.umd.cs.findbugs.config.UserPreferences;
@@ -87,6 +88,7 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.util.ElementFilter;
+import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -104,6 +106,8 @@ import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.java.source.support.CancellableTreePathScanner;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.queries.FileEncodingQuery;
+import org.netbeans.modules.analysis.api.CodeAnalysis;
+import org.netbeans.modules.analysis.spi.Analyzer.WarningDescription;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.EnhancedFix;
 import org.netbeans.spi.editor.hints.ErrorDescription;
@@ -119,6 +123,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.NbPreferences;
 
@@ -184,8 +189,8 @@ public class RunFindBugs {
                 }                
             };
 
-            r.setPriorityThreshold(Integer.MAX_VALUE);
-            r.setRankThreshold(Integer.MAX_VALUE);
+            r.setPriorityThreshold(Priorities.LOW_PRIORITY);
+            r.setRankThreshold(20);
 
             FindBugs2 engine = new FindBugs2();
 
@@ -432,6 +437,7 @@ public class RunFindBugs {
             Fix topLevelFix = new TopLevelConfigureFix(bugId, bugDN);
             ErrorDescriptionFactory.attachSubfixes(topLevelFix, Arrays.asList(new DisableConfigure(bugId, bugDN, true),
                                                                               new DisableConfigure(bugId, bugDN, false),
+                                                                              new InspectFix(WarningDescription.create(RunFindBugs.PREFIX_FINDBUGS + bugId, bugDN, null, null)),
                                                                               new SuppressWarningsFix(sourceFile, bugId, line, span != null ? span[0] : -1)));
             fixes = Collections.singletonList(topLevelFix);
         } else {
@@ -449,12 +455,14 @@ public class RunFindBugs {
         for (DetectorFactory df : dfc.getFactories()) {
             boolean enable = false;
 
-            for (BugPattern bp : df.getReportedBugPatterns()) {
-                BugCategory c = dfc.getBugCategory(bp.getCategory());
+            if (!df.isHidden()) {
+                for (BugPattern bp : df.getReportedBugPatterns()) {
+                    BugCategory c = dfc.getBugCategory(bp.getCategory());
 
-                if (c.isHidden()) continue;
+                    if (c.isHidden()) continue;
 
-                enable |= settings.getBoolean(bp.getType(), !defaultsToDisabled && prefs.isDetectorEnabled(df));
+                    enable |= settings.getBoolean(bp.getType(), !defaultsToDisabled && prefs.isDetectorEnabled(df));
+                }
             }
 
             atLeastOneEnabled |= enable;
@@ -557,6 +565,7 @@ public class RunFindBugs {
                     case '\n':
                         if (wascr) {
                             wascr = false;
+                            currentOffset--;
                             break;
                         }
                         lineLengthsTemp.add(currentOffset);
@@ -596,6 +605,17 @@ public class RunFindBugs {
         return lineOffsets;
     }
 
+    public static String computeFilterText(BugPattern bp) {
+        StringBuilder result = new StringBuilder();
+
+        result.append(bp.getShortDescription())
+              .append(bp.getLongDescription())
+              .append(bp.getCategory())
+              .append(bp.getDetailPlainText());
+
+        return result.toString();
+    }
+    
     interface SigFilesValidator {
         public boolean validate(Iterable<? extends FileObject> files);
     }
@@ -752,7 +772,7 @@ public class RunFindBugs {
                             mods = ((MethodTree) leaf).getModifiers();
                             break;
                         case VARIABLE:
-                            mods = ((MethodTree) leaf).getModifiers();
+                            mods = ((VariableTree) leaf).getModifiers();
                             break;
                         default:
                             throw new IllegalStateException(leaf.getKind().name());
@@ -764,6 +784,58 @@ public class RunFindBugs {
 
             return null;
         }
+
+    }
+    
+    private static class InspectFix implements Fix {
+        private final @NonNull WarningDescription wd;
+
+        InspectFix(WarningDescription wd) {
+            this.wd = wd;
+        }
+
+        @Override
+        @Messages({
+            "DN_Inspect=Run Inspect on..."
+        })
+        public String getText() {
+            return Bundle.DN_Inspect();
+        }
+
+        @Override
+        public ChangeInfo implement() throws Exception {
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    CodeAnalysis.open(wd);
+                }
+            });
+            
+            return null;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (this.getClass() != obj.getClass()) {
+                return false;
+            }
+            final InspectFix other = (InspectFix) obj;
+            if (this.wd != other.wd && (this.wd == null || !this.wd.equals(other.wd))) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            hash = 43 * hash + (this.wd != null ? this.wd.hashCode() : 0);
+            return hash;
+        }
+
 
     }
 }

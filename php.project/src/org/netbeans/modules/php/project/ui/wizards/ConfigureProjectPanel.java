@@ -60,6 +60,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.FileEncodingQuery;
+import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.api.PhpLanguageProperties.PhpVersion;
 import org.netbeans.modules.php.project.environment.PhpEnvironment;
 import org.netbeans.modules.php.project.ui.Utils;
@@ -96,7 +97,7 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
     private volatile boolean canceled;
 
     public ConfigureProjectPanel(String[] steps, NewPhpProjectWizardIterator.WizardType wizardType) {
-        this.steps = steps;
+        this.steps = steps.clone();
         this.wizardType = wizardType;
     }
 
@@ -214,7 +215,7 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
      */
     public File getProjectFolderFile() {
         String projectFolder = configureProjectPanelVisual.getProjectFolder();
-        if (projectFolder.length() == 0) {
+        if (!StringUtils.hasText(projectFolder)) {
             return null;
         }
         return new File(projectFolder);
@@ -486,6 +487,7 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
         return prj != null || foundButBroken;
     }
 
+    @NbBundle.Messages("ConfigureProjectPanel.error.sources.homeDir=Sources cannot be your home directory.")
     private String validateSources(boolean children) {
         String err = null;
         LocalServer localServer = configureProjectPanelVisual.getSourcesLocation();
@@ -495,6 +497,10 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
         if (sourcesLocation.trim().length() == 0
                 || !Utils.isValidFileName(sources)) {
             return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_IllegalSourcesName");
+        }
+
+        if (isHomeDir(sources)) {
+            return Bundle.ConfigureProjectPanel_error_sources_homeDir();
         }
 
         err = Utils.validateProjectDirectory(sourcesLocation, "Sources", true, true); // NOI18N
@@ -535,6 +541,10 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
         }
 
         return null;
+    }
+
+    private boolean isHomeDir(File folder) {
+        return folder.equals(new File(System.getProperty("user.home"))); // NOI18N
     }
 
     // #131023

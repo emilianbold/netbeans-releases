@@ -74,7 +74,7 @@ import org.openide.windows.WindowManager;
 final class TimableEventQueue extends EventQueue 
 implements Runnable {
     private static final Logger LOG = Logger.getLogger(TimableEventQueue.class.getName());
-    static final RequestProcessor RP = new RequestProcessor("Timeable Event Queue Watch Dog", 1, false); // NOI18N
+    static final RequestProcessor RP = new RequestProcessor("Timeable Event Queue Watch Dog", 1, false, false); // NOI18N
     private static final int QUANTUM;
     private static final int REPORT;
     static {
@@ -110,6 +110,7 @@ implements Runnable {
             }
         }, true);
         WAIT_CURSOR_CHECKER.setPriority(Thread.MIN_PRIORITY);
+        ignoreTill = System.currentTimeMillis() + PAUSE;
     }
 
     static void initialize() {

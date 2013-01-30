@@ -58,6 +58,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.Icon;
@@ -67,6 +70,8 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.api.project.ui.ProjectGroup;
+import org.netbeans.api.project.ui.ProjectGroupChangeListener;
 import org.netbeans.spi.project.ui.support.BuildExecutionSupport.Item;
 import org.netbeans.spi.project.ui.support.FileActionPerformer;
 import org.netbeans.spi.project.ui.support.ProjectActionPerformer;
@@ -84,6 +89,7 @@ import org.openide.util.RequestProcessor;
  */
 public class Utilities {
 
+    private static final Logger LOG = Logger.getLogger(Utilities.class.getName());
     private static final Map<ProjectCustomizer.Category,CategoryChangeSupport> CATEGORIES = new HashMap<ProjectCustomizer.Category,CategoryChangeSupport>();
 
     private Utilities() {}
@@ -253,8 +259,43 @@ public class Utilities {
             @Override public void removePropertyChangeListenerAPI(PropertyChangeListener listener) {
                 pcs.removePropertyChangeListener(listener);
             }
+
+            @Override
+            public void addProjectGroupChangeListenerAPI(ProjectGroupChangeListener listener) {
+            }
+
+            @Override
+            public void removeProjectGroupChangeListenerAPI(ProjectGroupChangeListener listener) {
+            }
+
+            @Override
+            public ProjectGroup getActiveProjectGroupAPI() {
+                return null;
+            }
         };
     }
+    
+    @org.netbeans.api.annotations.common.SuppressWarnings("MS_SHOULD_BE_FINAL")
+    public static ProjectGroupAccessor ACCESSOR = null;
+
+    static {
+        // invokes static initializer of ModelHandle.class
+        // that will assign value to the ACCESSOR field above
+        Class<?> c = ProjectGroup.class;
+        try {
+            Class.forName(c.getName(), true, c.getClassLoader());
+        } catch (Exception ex) {
+            LOG.log(Level.SEVERE, "very wrong, very wrong, yes indeed", ex);
+        }
+    }
+
+    public static abstract class ProjectGroupAccessor {
+
+        public abstract ProjectGroup createGroup(String name, Preferences prefs);
+
+    }
+    
+    
     
     public static CategoryChangeSupport getCategoryChangeSupport(ProjectCustomizer.Category category) {
         CategoryChangeSupport cw = Utilities.CATEGORIES.get(category);

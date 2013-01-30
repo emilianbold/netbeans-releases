@@ -38,19 +38,10 @@
 package org.netbeans.jellytools;
 
 import junit.framework.Test;
-import org.netbeans.jellytools.actions.BuildJavaProjectActionTest;
-import org.netbeans.jellytools.actions.CleanJavaProjectActionTest;
-import org.netbeans.jellytools.actions.CompileJavaActionTest;
-import org.netbeans.jellytools.modules.debugger.actions.DebugJavaFileActionTest;
 import org.netbeans.jellytools.modules.form.FormEditorOperatorTest;
 import org.netbeans.jellytools.modules.form.properties.editors.MethodPickerOperatorTest;
 import org.netbeans.jellytools.modules.form.properties.editors.ParametersPickerOperatorTest;
 import org.netbeans.jellytools.modules.form.properties.editors.PropertyPickerOperatorTest;
-import org.netbeans.jellytools.nodes.ClassNodeTest;
-import org.netbeans.jellytools.nodes.FormNodeTest;
-import org.netbeans.jellytools.nodes.JavaNodeTest;
-import org.netbeans.jellytools.nodes.JavaProjectRootNodeTest;
-import org.netbeans.junit.NbModuleSuite;
 
 /**
  * Run all tests in the same instance of the IDE.
@@ -60,21 +51,17 @@ import org.netbeans.junit.NbModuleSuite;
 public class JellytoolsJavaSuite {
 
     public static Test suite() {
-        return NbModuleSuite.emptyConfiguration().
+        return JellyTestCase.emptyConfiguration().
+                addTest(NewFileWizardOperatorTest.class, NewFileWizardOperatorTest.tests).
                 addTest(NewJavaFileNameLocationStepOperatorTest.class, NewJavaFileNameLocationStepOperatorTest.tests).
                 addTest(NewJavaProjectNameLocationStepOperatorTest.class, NewJavaProjectNameLocationStepOperatorTest.tests).
-                addTest(BuildJavaProjectActionTest.class).
-                addTest(CleanJavaProjectActionTest.class).
-                addTest(CompileJavaActionTest.class, CompileJavaActionTest.tests).
-                addTest(DebugJavaFileActionTest.class).
+                addTest(NewProjectWizardOperatorTest.class, NewProjectWizardOperatorTest.tests).
+                addTest(OutlineOperatorTest.class, OutlineOperatorTest.tests).
+                addTest(TopComponentOperatorTest.class, TopComponentOperatorTest.tests).
                 addTest(FormEditorOperatorTest.class, FormEditorOperatorTest.tests).
                 addTest(MethodPickerOperatorTest.class, MethodPickerOperatorTest.tests).
                 addTest(ParametersPickerOperatorTest.class, ParametersPickerOperatorTest.tests).
                 addTest(PropertyPickerOperatorTest.class, PropertyPickerOperatorTest.tests).
-                addTest(ClassNodeTest.class, ClassNodeTest.tests).
-                addTest(FormNodeTest.class, FormNodeTest.tests).
-                addTest(JavaNodeTest.class, JavaNodeTest.tests).
-                addTest(JavaProjectRootNodeTest.class, JavaProjectRootNodeTest.tests).
                 suite();
     }
 }

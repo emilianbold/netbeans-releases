@@ -58,6 +58,7 @@ import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.NbPreferences;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 
 /**
@@ -67,16 +68,12 @@ import org.openide.util.Utilities;
  * @author S. Aubrecht
  */
 public final class DefaultSettings implements Settings, ModelListener, CategoryListener {
+
+    private static final RequestProcessor RP = new RequestProcessor( "PaletteSettings", 1 ); //NOI18N
     
     private static final String NODE_ATTR_PREFIX = "psa_";
     
     private static final String NULL_VALUE = "null";
-    
-    private static final String XML_ROOT = "root";
-    private static final String XML_CATEGORY = "category";
-    private static final String XML_ITEM = "item";
-    
-    private static final String XML_ATTR_NAME = "name";
     
     private static final String[] KNOWN_PROPERTIES = new String[] {
         NODE_ATTR_PREFIX + PaletteController.ATTR_ICON_SIZE,
@@ -85,17 +82,12 @@ public final class DefaultSettings implements Settings, ModelListener, CategoryL
         NODE_ATTR_PREFIX + PaletteController.ATTR_SHOW_ITEM_NAMES
     };
     
-    private static final int ICON_SIZE_ATTR_INDEX = 0;
-    private static final int IS_EXPANDED_ATTR_INDEX = 1;
-    private static final int IS_VISIBLE_ATTR_INDEX = 2;
-    private static final int SHOW_ITEM_NAMES_ATTR_INDEX = 3;
-    
     private Model model;
     private PropertyChangeSupport propertySupport = new PropertyChangeSupport( this );
     
     private String prefsName;
     
-    private static Logger ERR = Logger.getLogger("org.netbeans.modules.palette"); // NOI18N
+    private static final Logger ERR = Logger.getLogger("org.netbeans.modules.palette"); // NOI18N
     
     public DefaultSettings( Model model ) {
         this.model = model;
@@ -125,29 +117,43 @@ public final class DefaultSettings implements Settings, ModelListener, CategoryL
         return NbPreferences.forModule( DefaultSettings.class ).node( "CommonPaletteSettings" ).node( prefsName ); //NOI18N
     }
 
+    @Override
     public void addPropertyChangeListener( PropertyChangeListener l ) {
         propertySupport.addPropertyChangeListener( l );
     }
 
+    @Override
     public void removePropertyChangeListener( PropertyChangeListener l ) {
         propertySupport.removePropertyChangeListener( l );
     }
 
+    @Override
     public boolean isVisible(Item item) {
+        return _isVisible( item );
+    }
+
+    private static boolean _isVisible(Item item) {
         Node node = getNode( item.getLookup() );
         return get( node, PaletteController.ATTR_IS_VISIBLE, true );
     }
 
+    @Override
     public void setVisible(Item item, boolean visible ) {
         Node node = getNode( item.getLookup() );
         set( node, PaletteController.ATTR_IS_VISIBLE, visible, true );
     }
 
+    @Override
     public boolean isVisible( Category category ) {
+        return _isVisible( category );
+    }
+    
+    private static boolean _isVisible( Category category ) {
         Node node = getNode( category.getLookup() );
         return get( node, PaletteController.ATTR_IS_VISIBLE, true );
     }
 
+    @Override
     public void setVisible( Category category, boolean visible ) {
         Node node = getNode( category.getLookup() );
         set( node, PaletteController.ATTR_IS_VISIBLE, visible, true );
@@ -161,46 +167,64 @@ public final class DefaultSettings implements Settings, ModelListener, CategoryL
         set( node, PaletteController.ATTR_IS_VISIBLE, visible, true );
     }
 
+    @Override
     public boolean isExpanded( Category category ) {
+        return _isExpanded( category );
+    }
+    
+    private static boolean _isExpanded( Category category ) {
         Node node = getNode( category.getLookup() );
         return get( node, PaletteController.ATTR_IS_EXPANDED, false );
     }
 
+    @Override
     public void setExpanded( Category category, boolean expanded ) {
         Node node = getNode( category.getLookup() );
         set( node, PaletteController.ATTR_IS_EXPANDED, expanded, false );
     }
 
+    @Override
     public int getIconSize() {
+        return _getIconSize( model );
+    }
+
+    private static int _getIconSize( Model model ) {
         Node node = getNode( model.getRoot() );
         return get( node, PaletteController.ATTR_ICON_SIZE, BeanInfo.ICON_COLOR_16x16 );
     }
 
+    @Override
     public void setIconSize( int iconSize ) {
         Node node = getNode( model.getRoot() );
         set( node, PaletteController.ATTR_ICON_SIZE, iconSize, BeanInfo.ICON_COLOR_16x16 );
     }
 
+    @Override
     public void setShowItemNames( boolean showNames ) {
         Node node = getNode( model.getRoot() );
         set( node, PaletteController.ATTR_SHOW_ITEM_NAMES, showNames, true );
     }
 
+    @Override
     public boolean getShowItemNames() {
+        return _getShowItemNames( model );
+    }
+
+    private static boolean _getShowItemNames( Model model ) {
         Node node = getNode( model.getRoot() );
         return get( node, PaletteController.ATTR_SHOW_ITEM_NAMES, true );
     }
     
-    private Node getNode( Lookup lkp ) {
+    private static Node getNode( Lookup lkp ) {
         return (Node)lkp.lookup( Node.class );
     }
     
-    private boolean get( Node node, String attrName, boolean defaultValue ) {
+    private static boolean get( Node node, String attrName, boolean defaultValue ) {
         Object value = get( node, attrName, Boolean.valueOf( defaultValue ) );
         return null == value ? defaultValue : Boolean.valueOf( value.toString() ).booleanValue();
     }
 
-    private int get( Node node, String attrName, int defaultValue ) {
+    private static int get( Node node, String attrName, int defaultValue ) {
         Object value = get( node, attrName, Integer.valueOf( defaultValue ) );
         try {
             if( null != value )
@@ -211,7 +235,7 @@ public final class DefaultSettings implements Settings, ModelListener, CategoryL
         return defaultValue;
     }
     
-    private Object get( Node node, String attrName, Object defaultValue ) {
+    private static Object get( Node node, String attrName, Object defaultValue ) {
         Object res = null;
         if( null != node ) {
             res = node.getValue( NODE_ATTR_PREFIX+attrName );
@@ -225,7 +249,7 @@ public final class DefaultSettings implements Settings, ModelListener, CategoryL
         return res;
     }
     
-    private Object getNodeDefaultValue( Node node, String attrName ) {
+    private static Object getNodeDefaultValue( Node node, String attrName ) {
         Object res = node.getValue( attrName );
         if( null == res ) {
             DataObject dobj = (DataObject)node.getCookie( DataObject.class );
@@ -256,10 +280,12 @@ public final class DefaultSettings implements Settings, ModelListener, CategoryL
         propertySupport.firePropertyChange( attrName, oldValue, newValue );
     }
 
+    @Override
     public void categoryModified( Category src ) {
         store();
     }
     
+    @Override
     public void categoriesRemoved( Category[] removedCategories ) {
         for( int i=0; i<removedCategories.length; i++ ) {
             removedCategories[i].removeCategoryListener( this );
@@ -267,6 +293,7 @@ public final class DefaultSettings implements Settings, ModelListener, CategoryL
         store();
     }
 
+    @Override
     public void categoriesAdded( Category[] addedCategories ) {
         for( int i=0; i<addedCategories.length; i++ ) {
             addedCategories[i].addCategoryListener( this );
@@ -274,10 +301,12 @@ public final class DefaultSettings implements Settings, ModelListener, CategoryL
         store();
     }
 
+    @Override
     public void propertyChange(java.beans.PropertyChangeEvent evt) {
         //not interested
     }
 
+    @Override
     public void categoriesReordered() {
         //not interested
     }
@@ -307,29 +336,42 @@ public final class DefaultSettings implements Settings, ModelListener, CategoryL
         if( isLoading )
             return;
         Preferences pref = getPreferences();
-        try {
-            pref.clear();
-        } catch( BackingStoreException bsE ) {
-            ERR.log( Level.INFO, Utils.getBundleString("Err_StoreSettings"), bsE ); //NOI18N
-        }
-        pref.putInt( PaletteController.ATTR_ICON_SIZE, getIconSize() );
-        pref.putBoolean( PaletteController.ATTR_SHOW_ITEM_NAMES, getShowItemNames() );
-
-        for( Category category : model.getCategories() ) {
-            pref.putBoolean( category.getName()+'-'+PaletteController.ATTR_IS_VISIBLE, isVisible( category ) );
-            pref.putBoolean( category.getName()+'-'+PaletteController.ATTR_IS_EXPANDED, isExpanded( category ) );
-            
-            for( Item item : category.getItems() ) {
-                pref.putBoolean( category.getName()+'-'+item.getName()+'-'+PaletteController.ATTR_IS_VISIBLE, isVisible( item ) );
-            }
-        }
+        
+        _store( pref, model );
     }
 
+    private static void _store( final Preferences pref, final Model model ) {
+        RP.post( new Runnable() {
+
+            @Override
+            public void run() {
+                try {
+                    pref.clear();
+                } catch( BackingStoreException bsE ) {
+                    ERR.log( Level.INFO, Utils.getBundleString("Err_StoreSettings"), bsE ); //NOI18N
+                }
+                pref.putInt( PaletteController.ATTR_ICON_SIZE, _getIconSize(model) );
+                pref.putBoolean( PaletteController.ATTR_SHOW_ITEM_NAMES, _getShowItemNames(model) );
+
+                for( Category category : model.getCategories() ) {
+                    pref.putBoolean( category.getName()+'-'+PaletteController.ATTR_IS_VISIBLE, _isVisible( category ) );
+                    pref.putBoolean( category.getName()+'-'+PaletteController.ATTR_IS_EXPANDED, _isExpanded( category ) );
+
+                    for( Item item : category.getItems() ) {
+                        pref.putBoolean( category.getName()+'-'+item.getName()+'-'+PaletteController.ATTR_IS_VISIBLE, _isVisible( item ) );
+                    }
+                }
+            }
+        });
+    }
+
+    @Override
     public int getItemWidth() {
         Node node = getNode( model.getRoot() );
         return get( node, PaletteController.ATTR_ITEM_WIDTH, -1 );
     }
 
+    @Override
     public void reset() {
         Node root = (Node)model.getRoot().lookup( Node.class );
         clearAttributes( root );

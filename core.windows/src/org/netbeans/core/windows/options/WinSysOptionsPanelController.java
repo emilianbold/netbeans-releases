@@ -53,7 +53,6 @@ import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 
 @OptionsPanelController.SubRegistration(
-    id="Appearance",
     displayName="#AdvancedOption_DisplayName_WinSys",
     keywords="#KW_WindowOptions",
     keywordsCategory="Advanced/Windows"
@@ -99,7 +98,7 @@ public final class WinSysOptionsPanelController extends OptionsPanelController {
 
     @Override
     public HelpCtx getHelpCtx() {
-        return null; // new HelpCtx("...ID") if you have a help set
+        return new HelpCtx( "org.netbeans.core.windows.options.WinSysOptionsPanelController" ); //NOI18N
     }
 
     @Override

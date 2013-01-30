@@ -47,7 +47,7 @@ import java.beans.PropertyChangeSupport;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.php.api.phpmodule.PhpProgram.InvalidPhpProgramException;
+import org.netbeans.modules.php.project.deprecated.PhpProgram.InvalidPhpProgramException;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.project.phpunit.PhpUnit;
 import org.netbeans.modules.php.project.phpunit.PhpUnitSkelGen;
@@ -62,7 +62,7 @@ import org.openide.util.Lookup;
 @OptionsPanelController.SubRegistration(
     location=UiUtils.OPTIONS_PATH,
     id=PhpUnit.OPTIONS_SUB_PATH,
-    displayName="#LBL_OptionsName",
+    displayName="#LBL_PHPUnitOptionsName",
 //    toolTip="#LBL_OptionsTooltip"
     position=150
 )

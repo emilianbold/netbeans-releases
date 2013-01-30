@@ -109,6 +109,40 @@ is the proper place.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
   <changes>
+      <change id="lazymenu.properties">
+          <api name="awt"/>
+          <summary>Control what client properties pulldown menus have</summary>
+          <version major="7" minor="44"/>
+          <date day="21" month="12" year="2012"/>
+          <author login="jtulach"/>
+          <compatibility addition="yes"/>
+          <description>
+             <p>Layer declaration of a menu can influence what client properties
+                 the actual <a href="@JDK@/javax/swing/JMenu.html">JMenu</a> 
+                 instances will have. More 
+                 <a href="architecture-summary.html#layer-Menu">details</a>.
+              </p>
+          </description>
+          <class package="org.openide.awt" name="MenuBar"/>
+          <issue number="222138"/>
+      </change>      
+       <change id="DataShadow.findOriginal">
+          <api name="loaders"/>
+          <summary>
+              Introduced <code>DataShadow.findOriginal</code> which extracts the original file from
+              a FileObject representing a shadow/link.
+          </summary>
+          <version major="7" minor="42"/>
+          <date day="23" month="11" year="2012"/>
+          <author login="sdedic"/>
+          <compatibility addition="yes"/>
+          <description>
+              Target FileObject can be obtained, instead of DataObject. The target may be invalid,
+              or otherwise unsuitable for DataObject creation. Use this method to just dereference
+              the shadow file.
+          </description>
+          <class package="org.openide.loaders" name="DataShadow"/>
+      </change>
       <change id="DataObjec.Registration">
           <api name="loaders"/>
           <summary>Introduced <code>DataObject.Registration</code> and <code>DataObject.Registrations</code></summary>

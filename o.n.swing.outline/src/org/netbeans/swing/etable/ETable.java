@@ -50,6 +50,7 @@ import java.awt.Container;
 import java.awt.ContainerOrderFocusTraversalPolicy;
 import java.awt.Event;
 import java.awt.EventQueue;
+import java.awt.FocusTraversalPolicy;
 import java.awt.KeyboardFocusManager;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -586,13 +587,14 @@ public class ETable extends JTable {
     }
 
     /**
-     * Overriden to use ETableColumns instead of the original TableColumns.
+     * Overridden to use ETableColumns instead of the original TableColumns.
      * @see javax.swing.JTable#createDefaultColumnModel()
      */
     @Override
     public void createDefaultColumnsFromModel() {
         TableModel model = getModel();
         if (model != null) {
+            firePropertyChange("createdDefaultColumnsFromModel", null, null);
             TableColumnModel colModel = getColumnModel();
             int modelColumnCount = model.getColumnCount();
             List<TableColumn> oldHiddenColumns = null;
@@ -669,8 +671,8 @@ public class ETable extends JTable {
                     }
                 }
             }
-            while (colModel.getColumnCount() > 0) {
-                colModel.removeColumn(colModel.getColumn(0));
+            for (int cc = colModel.getColumnCount(); cc > 0; ) {
+                colModel.removeColumn(colModel.getColumn(--cc));
             }
             if (colModel instanceof ETableColumnModel) {
                 ETableColumnModel etcm = (ETableColumnModel)colModel;
@@ -705,6 +707,7 @@ public class ETable extends JTable {
                     }
                 }
             }
+            firePropertyChange("createdDefaultColumnsFromModel", null, newColumns);
         }
     }
 
@@ -2761,6 +2764,7 @@ public class ETable extends JTable {
             try {
                 Container con = ETable.this.getFocusCycleRootAncestor();
                 if (con != null) {
+                    /*
                     Component target = ETable.this;
                     if (getParent() instanceof JViewport) {
                         target = getParent().getParent();
@@ -2768,6 +2772,7 @@ public class ETable extends JTable {
                             target = ETable.this;
                         }
                     }
+                    */
 
                     EventObject eo = EventQueue.getCurrentEvent();
                     boolean backward = false;
@@ -2779,19 +2784,33 @@ public class ETable extends JTable {
                             KeyEvent.SHIFT_DOWN_MASK) != 0;
                     }
 
-                    Component to = backward ? 
-                        con.getFocusTraversalPolicy().getComponentAfter(
-                        con, ETable.this) 
-                        : con.getFocusTraversalPolicy().getComponentAfter(
-                        con, ETable.this);
+                    Component c = ETable.this;
+                    Component to;
+                    Container parentWithFTP = null;
+                    do {
+                        FocusTraversalPolicy ftp = con.getFocusTraversalPolicy();
+                        to = backward ? ftp.getComponentBefore(con, c)
+                                      : ftp.getComponentAfter(con, c);
 
-                        
-                    if (to == ETable.this) {
-                        to = backward ? 
-                            con.getFocusTraversalPolicy().getFirstComponent(con) : 
-                            con.getFocusTraversalPolicy().getLastComponent(con);
+
+                        if (to == ETable.this) {
+                            to = backward ? ftp.getFirstComponent(con)
+                                          : ftp.getLastComponent(con);
+                        }
+                        if (to == ETable.this) {
+                            parentWithFTP = con.getParent();
+                            if (parentWithFTP != null) {
+                                parentWithFTP = parentWithFTP.getFocusCycleRootAncestor();
+                            }
+                            if (parentWithFTP != null) {
+                                c = con;
+                                con = parentWithFTP;
+                            }
+                        }
+                    } while (to == ETable.this && parentWithFTP != null);
+                    if (to != null) {
+                        to.requestFocus();
                     }
-                    to.requestFocus();
                 }
             } finally {
                 setFocusCycleRoot(true);

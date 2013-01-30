@@ -45,6 +45,8 @@
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 
 import java.beans.PropertyEditor;
+import java.util.ArrayList;
+import java.util.List;
 import org.netbeans.modules.cnd.api.project.NativeFileItem.LanguageFlavor;
 import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
@@ -169,12 +171,12 @@ public class CCompilerConfiguration extends CCCCompilerConfiguration implements 
     // Interface OptionsProvider
     @Override
     public String getOptions(AbstractCompiler compiler) {
-        String options = "$(COMPILE.c) "; // NOI18N
-        options += getAllOptions2(compiler) + " "; // NOI18N
-        options += getCommandLineConfiguration().getValue() + " "; // NOI18N
-        return CppUtils.reformatWhitespaces(options);
+        StringBuilder options = new StringBuilder("$(COMPILE.c) "); // NOI18N
+        options.append(getAllOptions2(compiler)).append(' '); // NOI18N
+        options.append(getCommandLineOptions(true));
+        return CppUtils.reformatWhitespaces(options.toString());
     }
-    
+
     public String getCFlagsBasic(AbstractCompiler compiler) {
         String options = ""; // NOI18N
         options += compiler.getMTLevelOptions(getMTLevel().getValue()) + " "; // NOI18N
@@ -246,16 +248,20 @@ public class CCompilerConfiguration extends CCCCompilerConfiguration implements 
     public String getPreprocessorOptions(CompilerSet cs) {
         CCompilerConfiguration master = (CCompilerConfiguration)getMaster();
         OptionToString visitor = new OptionToString(null, getUserMacroFlag(cs));
-        StringBuilder options = new StringBuilder(getPreprocessorConfiguration().toString(visitor));
-        options.append(' '); // NOI18N
+        List<CCompilerConfiguration> list = new ArrayList<CCompilerConfiguration>();
+        list.add(this);
         while (master != null && getInheritPreprocessor().getValue()) {
-            options.append(master.getPreprocessorConfiguration().toString(visitor));
-            options.append(' '); // NOI18N
+            list.add(master);
             if (master.getInheritPreprocessor().getValue()) {
                 master = (CCompilerConfiguration) master.getMaster();
             } else {
                 master = null;
             }
+        }
+        StringBuilder options = new StringBuilder();
+        for(int i = list.size() - 1; i >= 0; i--) {
+            options.append(list.get(i).getPreprocessorConfiguration().toString(visitor));
+            options.append(' '); // NOI18N
         }
         return options.toString();
     }
@@ -265,14 +271,18 @@ public class CCompilerConfiguration extends CCCCompilerConfiguration implements 
         OptionToString visitor = new OptionToString(cs, getUserIncludeFlag(cs));
         StringBuilder options = new StringBuilder(getIncludeDirectories().toString(visitor));
         options.append(' '); // NOI18N
+        List<CCompilerConfiguration> list = new ArrayList<CCompilerConfiguration>();
         while (master != null && getInheritIncludes().getValue()) {
-            options.append(master.getIncludeDirectories().toString(visitor));
-            options.append(' '); // NOI18N
+            list.add(master);
             if (master.getInheritIncludes().getValue()) {
                 master = (CCompilerConfiguration) master.getMaster();
             } else {
                 master = null;
             }
+        }
+        for(int i = list.size() - 1; i >= 0; i--) {
+            options.append(list.get(i).getIncludeDirectories().toString(visitor));
+            options.append(' '); // NOI18N
         }
         return options.toString();
     } 
@@ -316,37 +326,38 @@ public class CCompilerConfiguration extends CCCCompilerConfiguration implements 
                 }
          
         };        
-        Sheet.Set set0 = getSet();
+        Sheet.Set set0 = getSet(null, folder, item);
         sheet.put(set0);
-        if (conf.isCompileConfiguration() && folder == null) {
-            Sheet.Set bset = getBasicSet();
-            sheet.put(bset);
-            bset.put(standardProp);
-            if (compilerSet != null && compilerSet.getCompilerFlavor().isSunStudioCompiler()) { // FIXUP: should be moved to SunCCompiler
-                Sheet.Set set2 = new Sheet.Set();
-                set2.setName("OtherOptions"); // NOI18N
-                set2.setDisplayName(getString("OtherOptionsTxt"));
-                set2.setShortDescription(getString("OtherOptionsHint"));
-                set2.put(new IntNodeProp(getMTLevel(), getMaster() != null ? false : true, "MultithreadingLevel", getString("MultithreadingLevelTxt"), getString("MultithreadingLevelHint"))); // NOI18N
-                // The option is not needed anymore as C Standard option is introduced. More information is in Bug 209177.
-                //set2.put(new IntNodeProp(getStandardsEvolution(), getMaster() != null ? false : true, "StandardsEvolution", getString("StandardsEvolutionTxt"), getString("StandardsEvolutionHint"))); // NOI18N
-                set2.put(new IntNodeProp(getLanguageExt(), getMaster() != null ? false : true, "LanguageExtensions", getString("LanguageExtensionsTxt"), getString("LanguageExtensionsHint"))); // NOI18N
-                sheet.put(set2);
+        if (conf.isCompileConfiguration()) {
+            if (folder == null) {
+                Sheet.Set bset = getBasicSet();
+                sheet.put(bset);
+                bset.put(standardProp);
+                if (compilerSet != null && compilerSet.getCompilerFlavor().isSunStudioCompiler()) { // FIXUP: should be moved to SunCCompiler
+                    Sheet.Set set2 = new Sheet.Set();
+                    set2.setName("OtherOptions"); // NOI18N
+                    set2.setDisplayName(getString("OtherOptionsTxt"));
+                    set2.setShortDescription(getString("OtherOptionsHint"));
+                    set2.put(new IntNodeProp(getMTLevel(), getMaster() != null ? false : true, "MultithreadingLevel", getString("MultithreadingLevelTxt"), getString("MultithreadingLevelHint"))); // NOI18N
+                    // The option is not needed anymore as C Standard option is introduced. More information is in Bug 209177.
+                    //set2.put(new IntNodeProp(getStandardsEvolution(), getMaster() != null ? false : true, "StandardsEvolution", getString("StandardsEvolutionTxt"), getString("StandardsEvolutionHint"))); // NOI18N
+                    set2.put(new IntNodeProp(getLanguageExt(), getMaster() != null ? false : true, "LanguageExtensions", getString("LanguageExtensionsTxt"), getString("LanguageExtensionsHint"))); // NOI18N
+                    sheet.put(set2);
+                }
+                if (getMaster() != null) {
+                    sheet.put(getInputSet());
+                }
+                Sheet.Set set4 = new Sheet.Set();
+                set4.setName("Tool"); // NOI18N
+                set4.setDisplayName(getString("ToolTxt1"));
+                set4.setShortDescription(getString("ToolHint1"));
+                if (cCompiler != null) {
+                    set4.put(new StringNodeProp(getTool(), cCompiler.getName(), false, "Tool", getString("ToolTxt2"), getString("ToolHint2"))); // NOI18N
+                }
+                sheet.put(set4);
             }
-            if (getMaster() != null) {
-                sheet.put(getInputSet());
-            }
-            Sheet.Set set4 = new Sheet.Set();
-            set4.setName("Tool"); // NOI18N
-            set4.setDisplayName(getString("ToolTxt1"));
-            set4.setShortDescription(getString("ToolHint1"));
-            if (cCompiler != null) {
-                set4.put(new StringNodeProp(getTool(), cCompiler.getName(), false, "Tool", getString("ToolTxt2"), getString("ToolHint2"))); // NOI18N
-            }
-            sheet.put(set4);
             
-            String[] texts = new String[] {getString("AdditionalOptionsTxt1"), getString("AdditionalOptionsHint"), getString("AdditionalOptionsTxt2"), getString("AllOptionsTxt")};
-
+            String[] texts = new String[]{getString("AdditionalOptionsTxt1"), getString("AdditionalOptionsHint"), getString("AdditionalOptionsTxt2"), getString("AllOptionsTxt")};
             Sheet.Set set2 = new Sheet.Set();
             set2.setName("CommandLine"); // NOI18N
             set2.setDisplayName(getString("CommandLineTxt"));
@@ -355,7 +366,6 @@ public class CCompilerConfiguration extends CCCCompilerConfiguration implements 
                 set2.put(new OptionsNodeProp(getCommandLineConfiguration(), null, this, cCompiler, null, texts));
             }
             sheet.put(set2);
-        
         } else if (conf.getConfigurationType().getValue() == MakeConfiguration.TYPE_MAKEFILE && item != null && cCompiler != null) {
             AllOptionsProvider options = CompileOptionsProvider.getDefault().getOptions(item);
             if (options != null) {
@@ -366,7 +376,7 @@ public class CCompilerConfiguration extends CCCCompilerConfiguration implements 
                         set0.put(new StringRONodeProp(getString("CommandLineTxt"), getString("CommandLineHint"), compileLine.substring(hasPath+1)));
                         set0.put(new StringRONodeProp(getString("CompileFolderTxt"), getString("CompileFolderHint"), compileLine.substring(0, hasPath)));
                     } else {
-                        set0.put(new StringRONodeProp(getString("CommandLineTxt"), getString("CommandLineHint"), compileLine.substring(hasPath)));
+                        set0.put(new StringRONodeProp(getString("CommandLineTxt"), getString("CommandLineHint"), compileLine));
                     }
                 }
             }

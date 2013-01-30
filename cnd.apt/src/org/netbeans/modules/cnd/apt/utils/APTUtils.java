@@ -57,10 +57,13 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.apt.impl.structure.APTDefineNode;
+import org.netbeans.modules.cnd.apt.impl.structure.APTNodeBuilder;
 import org.netbeans.modules.cnd.apt.impl.support.APTLiteConstTextToken;
 import org.netbeans.modules.cnd.apt.support.APTBaseToken;
 import org.netbeans.modules.cnd.apt.impl.support.APTCommentToken;
 import org.netbeans.modules.cnd.apt.impl.support.APTConstTextToken;
+import org.netbeans.modules.cnd.apt.impl.support.APTLiteIdToken;
+import org.netbeans.modules.cnd.apt.impl.support.APTLiteLiteralToken;
 import org.netbeans.modules.cnd.apt.impl.support.APTMacroParamExpansion;
 import org.netbeans.modules.cnd.apt.impl.support.APTTestToken;
 import org.netbeans.modules.cnd.apt.impl.support.MacroExpandedToken;
@@ -79,6 +82,7 @@ import org.netbeans.modules.cnd.apt.support.APTTokenAbstact;
 import org.netbeans.modules.cnd.apt.support.APTTokenStreamBuilder;
 import org.netbeans.modules.cnd.apt.support.IncludeDirEntry;
 import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.util.CharSequences;
 
 /**
@@ -108,8 +112,16 @@ public class APTUtils {
         }
     }
 
-    public static String getFileOnceMacroName(APTFile apt) {
-        return "\"" + apt.getPath().toString() + "\""; //NOI18N
+    public static CharSequence getFileOnceMacroName(APTFile apt) {
+        // use Unix like separators to be the same on Win/Unix
+        String path = apt.getPath().toString().replace("\\", "/");//NOI18N
+        if (CndUtils.isUnitTestMode()) {
+            String TEST_DATA_DIR = "/unit/data/";//NOI18N
+            int idx = path.indexOf(TEST_DATA_DIR);
+            assert idx > 0 : "no " + TEST_DATA_DIR + " prefix in " + path;
+            path = path.substring(idx + TEST_DATA_DIR.length());
+        }
+        return CharSequences.create("\"" + path + "\""); //NOI18N
     }
 
     public static String getAPTTokenName(int type) {
@@ -177,14 +189,14 @@ public class APTUtils {
     }
 
     public static void setTokenText(APTToken _token, char buf[], int start, int count) {
-        if (_token instanceof APTBaseToken) {
+        if (_token instanceof APTBaseToken || _token instanceof APTLiteIdToken) {
             _token.setTextID(CharSequences.create(buf, start, count));
         } else if (_token instanceof APTCommentToken) {
             // no need to set text in comment token, but set text len
             ((APTCommentToken)_token).setTextLength(count);
         } else if (_token instanceof APTConstTextToken) {
             // no need to set text in const token
-        } else if (_token instanceof APTLiteConstTextToken) {
+        } else if (_token instanceof APTLiteConstTextToken || _token instanceof APTLiteLiteralToken) {
             // no need to set text in const token
         } else {
             System.err.printf("unexpected token %s while assigning text %s", _token, new String(buf, start, count));
@@ -194,10 +206,10 @@ public class APTUtils {
 
     private static final String DEFINE_PREFIX = "#define "; // NOI18N
 
-    public static APTDefine createAPTDefineOnce(String filePath) {
+    public static APTDefine createAPTDefineOnce(CharSequence filePath) {
         APTDefineNode defNode = null;
-        filePath = DEFINE_PREFIX + filePath;
-        TokenStream stream = APTTokenStreamBuilder.buildTokenStream(filePath, APTLanguageSupport.UNKNOWN);
+        String text = DEFINE_PREFIX + filePath;
+        TokenStream stream = APTTokenStreamBuilder.buildTokenStream(text, APTLanguageSupport.UNKNOWN);
         try {
             APTToken next = (APTToken) stream.nextToken();
             // use define node to initialize #define directive from stream
@@ -210,13 +222,13 @@ public class APTUtils {
     }
 
     public static APTDefine createAPTDefine(String macroText) {
-        APTDefineNode defNode = null;
+        APTNodeBuilder nodeBuilder = null;
         macroText = DEFINE_PREFIX + macroText;
         TokenStream stream = APTTokenStreamBuilder.buildTokenStream(macroText, APTLanguageSupport.UNKNOWN);
         try {
             APTToken next = (APTToken) stream.nextToken();
             // use define node to initialize #define directive from stream
-            defNode = new APTDefineNode(next);
+            nodeBuilder = new APTDefineNode.Builder(next);
             boolean look4Equal = true;
             do {
                 next = (APTToken) stream.nextToken();
@@ -225,21 +237,26 @@ public class APTUtils {
                     look4Equal = false;
                     next = (APTToken) stream.nextToken();
                 }
-            } while (defNode.accept(null, next));
+            } while (nodeBuilder.accept(null, next));
             // special check for macros without values, we must set it to be 1
-            if (defNode.getBody().isEmpty() && look4Equal) {
-                defNode.accept(null, APTUtils.DEF_MACRO_BODY);
+            if (((APTDefineNode)nodeBuilder.getNode()).getBody().isEmpty() && look4Equal) {
+                nodeBuilder.accept(null, APTUtils.DEF_MACRO_BODY);
             }
         } catch (TokenStreamException ex) {
             APTUtils.LOG.log(Level.SEVERE, "error on lexing macros {0}\n\t{1}", new Object[]{macroText, ex.getMessage()});
         }
-        return defNode;
+        return (APTDefineNode)nodeBuilder.getNode();
     }
 
-    public static APTToken createAPTToken(int type, int startOffset, int endOffset, int startColumn, int startLine, int endColumn, int endLine) {
+    public static APTToken createAPTToken(int type, int startOffset, int endOffset, 
+            int startColumn, int startLine, int endColumn, int endLine, int literalType) {
         // TODO: optimize factory
         if (APTLiteConstTextToken.isApplicable(type, startOffset, startColumn, startLine)){
             return new APTLiteConstTextToken(type, startOffset, startColumn, startLine);
+        } else if (APTLiteLiteralToken.isApplicable(type, startOffset, startColumn, startLine, literalType)){
+            return new APTLiteLiteralToken(startOffset, startColumn, startLine, literalType);
+        } else if (APTLiteIdToken.isApplicable(type, startOffset, startColumn, startLine)){
+            return new APTLiteIdToken(startOffset, startColumn, startLine);
         }
         APTToken out = createAPTToken(type);
         out.setType(type);

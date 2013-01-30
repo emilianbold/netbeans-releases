@@ -132,8 +132,10 @@ public class DocumentationScrollPane extends JScrollPane {
     }
     
     private void setData(ElementJavadoc doc, boolean clearHistory) {
-        if ( doc == null || clearHistory ) {
-            history = new ArrayList<ElementJavadoc>(5);
+        synchronized (this) {
+            if ( doc == null || clearHistory ) {
+                history = new ArrayList<ElementJavadoc>(5);
+            }
         }
         setDocumentation(doc);
         if( null != doc )
@@ -387,7 +389,7 @@ public class DocumentationScrollPane extends JScrollPane {
         return bgColor;
     }
     
-    private class BrowserButton extends JButton {
+    private static class BrowserButton extends JButton {
         private static final long serialVersionUID = 3572084819036272122L;
 
         public BrowserButton(Icon icon){
@@ -401,7 +403,7 @@ public class DocumentationScrollPane extends JScrollPane {
         }
     }
 
-    private class MouseEventListener extends MouseAdapter {        
+    private static class MouseEventListener extends MouseAdapter {        
         private JButton button;
         
         MouseEventListener(JButton button) {

@@ -180,10 +180,12 @@ public class AbstractGitTestCase extends NbTestCase {
 
         if (createLocalClone()) {
             GitRepository fact = GitRepository.getInstance(wc);
-            fact.createClient().init(NULL_PROGRESS_MONITOR);
+            GitClient client = fact.createClient();
+            client.init(NULL_PROGRESS_MONITOR);
             Field f = GitRepository.class.getDeclaredField("gitRepository");
             f.setAccessible(true);
             localRepository = (JGitRepository) f.get(fact);
+            client.release();
         }
     }
 

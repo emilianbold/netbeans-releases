@@ -90,6 +90,11 @@ public final class FileUtilities {
         return null;
     }
     
+    /**
+     * converts a string representing a path to a normalized File instance
+     * @param str
+     * @return 
+     */
     public static @NullUnknown File convertStringToFile(@NullAllowed String str) {
         if (str != null) {
             File fil = new File(str);

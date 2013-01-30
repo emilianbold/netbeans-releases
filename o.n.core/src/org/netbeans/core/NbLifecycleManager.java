@@ -44,36 +44,43 @@
 
 package org.netbeans.core;
 
+import java.awt.EventQueue;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.CLIHandler;
-import org.netbeans.TopSecurityManager;
-import org.netbeans.core.startup.CLIOptions;
-import org.netbeans.core.startup.ModuleLifecycleManager;
-import org.netbeans.core.startup.layers.SessionManager;
+import javax.swing.JDialog;
+import javax.swing.JFrame;
+import org.netbeans.core.startup.ModuleSystem;
 import org.openide.DialogDisplayer;
 import org.openide.LifecycleManager;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.SaveCookie;
 import org.openide.loaders.DataObject;
-import org.openide.util.Exceptions;
-import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
-import org.openide.util.Task;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
  * Default implementation of the lifecycle manager interface that knows
  * how to save all modified DataObject's, and to exit the IDE safely.
  */
-@ServiceProvider(service=LifecycleManager.class, supersedes="org.netbeans.core.startup.ModuleLifecycleManager")
+@ServiceProvider(
+    service=LifecycleManager.class, 
+    supersedes="org.netbeans.core.startup.ModuleLifecycleManager"
+)
 public final class NbLifecycleManager extends LifecycleManager {
-
+    static final Logger LOG = Logger.getLogger(NbLifecycleManager.class.getName());
+    
+    /** @GuardedBy("NbLifecycleManager.class") */
+    private static CountDownLatch onExit;
+    private volatile JDialog dialog;
+    private volatile boolean isExitOnEventQueue;
+    
+    @Override
     public void saveAll() {
         ArrayList<DataObject> bad = new ArrayList<DataObject>();
         DataObject[] modifs = DataObject.getRegistry().getModified();
@@ -105,115 +112,116 @@ public final class NbLifecycleManager extends LifecycleManager {
         StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(NbLifecycleManager.class, "MSG_AllSaved"));
     }
 
+    @Override
     public void exit() {
         // #37160 So there is avoided potential clash between hiding GUI in AWT
         // and accessing AWTTreeLock from saving routines (winsys).
-        Mutex.EVENT.readAccess(DO_EXIT);
+        exit(0);
     }
-
-    public void exit(int status) {
-        ExitActions action = new ExitActions(0, status);
-        Mutex.EVENT.readAccess(action);
-    }
-
-    private static class ExitActions implements Runnable {
-        private final int type;
-        private final int status;
-        ExitActions(int type) {
-            this.type = type;
-            this.status = 0;
-        }
-
-        ExitActions(int type, int status) {
-            this.type = type;
-            this.status = status;
-        }
-
-        public void run() {
-            switch (type) {
-                case 0:
-                    doExit(status);
-                    break;
-                case 1:
-                    CLIHandler.stopServer();
-                    final WindowSystem windowSystem = Lookup.getDefault().lookup(WindowSystem.class);
-                    boolean gui = CLIOptions.isGui();
-                    if (windowSystem != null && gui) {
-                        windowSystem.hide();
-                        windowSystem.save();
-                    }
-                    if (Boolean.getBoolean("netbeans.close.when.invisible")) {
-                        // hook to permit perf testing of time to *apparently* shut down
-                        TopSecurityManager.exit(status);
-                    }
-                    break;
-                case 2:
-                    if (!Boolean.getBoolean("netbeans.close.no.exit")) { // NOI18N
-                        TopSecurityManager.exit(status);
-                    }
-                    break;
-                default:
-                    throw new IllegalStateException("Type: " + type); // NOI18N
+    
+    private boolean blockForExit(CountDownLatch[] arr) {
+        synchronized (NbLifecycleManager.class) {
+            if (onExit != null) {
+                arr[0] = onExit;
+                LOG.log(Level.FINE, "blockForExit, already counting down {0}", onExit);
+                return true;
             }
-        }
-    } // end of ExitActions
-
-    private static boolean doingExit=false;
-    private static final Runnable DO_EXIT = new ExitActions(0);
-
-    /**
-     * @return True if the IDE is shutting down.
-     */
-    public static boolean isExiting() {
-        return doingExit;
-    }
-
-    private static void doExit(int status) {
-        if (doingExit) {
-            return ;
-        }
-        doingExit = true;
-        // save all open files
-        try {
-            if ( System.getProperty ("netbeans.close") != null || ExitDialog.showDialog() ) {
-                if (org.netbeans.core.startup.Main.getModuleSystem().shutDown(new ExitActions(1, status))) {
-                    try {
-                        try {
-                            NbLoaderPool.store();
-                        } catch (IOException ioe) {
-                            Logger.getLogger(NbLifecycleManager.class.getName()).log(Level.WARNING, null, ioe);
-                        }
-//#46940 -saving just once..
-//                        // save window system, [PENDING] remove this after the winsys will
-//                        // persist its state automaticaly
-//                        if (windowSystem != null) {
-//                            windowSystem.save();
-//                        }
-                        SessionManager.getDefault().close();
-                    } catch (ThreadDeath td) {
-                        throw td;
-                    } catch (Throwable t) {
-                        // Do not let problems here prevent system shutdown. The module
-                        // system is down; the IDE cannot be used further.
-                        Exceptions.printStackTrace(t);
+            arr[0] = onExit = new CountDownLatch(1) {
+                @Override
+                public void countDown() {
+                    super.countDown();
+                    JDialog d = dialog;
+                    LOG.log(Level.FINE, "countDown for {0}, hiding {1}", new Object[] { this, d });
+                    if (d != null) {
+                        d.setVisible(false);
                     }
-                    // #37231 Someone (e.g. Jemmy) can install its own EventQueue and then
-                    // exit is dispatched through that proprietary queue and it
-                    // can be refused by security check. So, we need to replan
-                    // to RequestProcessor to avoid security problems.
-                    Task exitTask = new Task(new ExitActions(2, status));
-                    RequestProcessor.getDefault().post(exitTask);
-                    exitTask.waitFinished();
+                }
+            };
+            LOG.log(Level.FINE, "blockForExit, new {0}", onExit);
+            return false;
+        }
+    }
+    
+    private void finishExitState(CountDownLatch[] cdl, boolean clean) {
+        LOG.log(Level.FINE, "finishExitState {0} clean: {1}", new Object[]{Thread.currentThread(), clean});
+        if (EventQueue.isDispatchThread()) {
+            boolean prev = isExitOnEventQueue;
+            if (!prev) {
+                isExitOnEventQueue = true;
+                try {
+                    LOG.log(Level.FINE, "waiting in EDT: {0} own: {1}", new Object[]{onExit, cdl[0]});
+                    if (cdl[0].await(5, TimeUnit.SECONDS)) {
+                        LOG.fine("wait is over, return");
+                        return;
+                    }
+                } catch (InterruptedException ex) {
+                    LOG.log(Level.FINE, null, ex);
                 }
             }
-        } finally {
-            doingExit = false;
+            JDialog d = new JDialog((JFrame)null, true);
+            d.setUndecorated(true);
+            d.setLocation(544300, 544300);
+            d.setSize(0, 0);
+            try {
+                dialog = d;
+                LOG.log(Level.FINE, "Showing dialog: {0}", d);
+                d.setVisible(true);
+            } finally {
+                LOG.log(Level.FINE, "Disposing dialog: {0}", dialog);
+                dialog = null;
+                isExitOnEventQueue = prev;
+            }
         }
+        LOG.log(Level.FINE, "About to block on {0}", cdl[0]);
+        try {
+            cdl[0].await();
+        } catch (InterruptedException ex) {
+            LOG.log(Level.FINE, null, ex);
+        } finally {
+            if (clean) {
+                LOG.log(Level.FINE, "Cleaning {0} own {1}", new Object[] { onExit, cdl[0] });
+                synchronized (NbLifecycleManager.class) {
+                    assert cdl[0] == onExit;
+                    onExit = null;
+                }
+            }
+        }
+        LOG.fine("End of finishExitState");
+    }
+    
+    @Override
+    public void exit(int status) {
+        LOG.log(Level.FINE, "Initiating exit with status {0}", status);
+        if (EventQueue.isDispatchThread()) {
+            if (isExitOnEventQueue) {
+                LOG.log(Level.FINE, "Already in process of exiting {0}, return", isExitOnEventQueue);
+                return;
+            } else {
+                isExitOnEventQueue = true;
+            }
+        }
+        try {
+            CountDownLatch[] cdl = { null };
+            if (blockForExit(cdl)) {
+                finishExitState(cdl, false);
+                return;
+            }
+            NbLifeExit action = new NbLifeExit(0, status, cdl[0]);
+            Mutex.EVENT.readAccess(action);
+            finishExitState(cdl, true);
+        } finally {
+            if (EventQueue.isDispatchThread()) {
+                isExitOnEventQueue = false;
+            }
+        }
+    }
+    
+    public static boolean isExiting() {
+        return onExit != null;
     }
 
     @Override
     public void markForRestart() throws UnsupportedOperationException {
-        new ModuleLifecycleManager().markForRestart();
+        ModuleSystem.markForRestart();
     }
-
 }

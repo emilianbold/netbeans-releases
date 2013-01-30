@@ -114,12 +114,17 @@ public class CommitAction extends SingleRepositoryAction {
             public void run() {
                 
                 GitUser user = null;
+                GitClient client = null;
                 try {
-                    GitClient client = Git.getInstance().getClient(repository);
+                    client = Git.getInstance().getClient(repository);
                     user = client.getUser();
                 } catch (GitException ex) {
                     GitClientExceptionHandler.notifyException(ex, true);
                     return;
+                } finally {
+                    if (client != null) {
+                        client.release();
+                    }
                 }
                 
                 GitCommitPanel panel = state == GitRepositoryState.MERGING_RESOLVED
@@ -326,11 +331,16 @@ public class CommitAction extends SingleRepositoryAction {
             commitPermitted = false;
             Map<File, GitStatus> conflicts = Collections.emptyMap();
             if (state.equals(GitRepositoryState.MERGING)) {
+                GitClient client = null;
                 try {
-                    GitClient client = Git.getInstance().getClient(repository);
+                    client = Git.getInstance().getClient(repository);
                     conflicts = client.getConflicts(new File[] { repository }, GitUtils.NULL_PROGRESS_MONITOR);
                 } catch (GitException ex) {
                     LOG.log(Level.INFO, null, ex);
+                } finally {
+                    if (client != null) {
+                        client.release();
+                    }
                 }
             }
             NotifyDescriptor nd;

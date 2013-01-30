@@ -49,6 +49,8 @@ import java.awt.GraphicsEnvironment;
 import java.awt.Rectangle;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.prefs.Preferences;
 import org.openide.util.Utilities;
 
@@ -99,11 +101,15 @@ public class DialogBoundsPreserver implements WindowListener {
     }    
 
     private boolean checkBounds(Rectangle r) {
-        Rectangle screen = getScreenBounds();
-        return r.getX() >= 0 && r.getX() < screen.getWidth() && 
-               r.getY() >= 0 && r.getY() < screen.getHeight() &&
-               r.getWidth() <= screen.getWidth() - r.getX() && 
-               r.getHeight() <= screen.getHeight() - r.getY();                 
+        Rectangle[] screens = getScreenBounds();
+        for (Rectangle screen : screens) {
+            if (r.getX() >= screen.getX() && r.getY() >= screen.getY()
+                    && r.getX() + r.getWidth() < screen.getX() + screen.getWidth()
+                    && r.getY() + r.getHeight() < screen.getY() + screen.getHeight()) {
+                return true;
+            }
+        }
+        return false;
     }   
 
     private void setDialogBounds(Rectangle r) {        
@@ -132,14 +138,14 @@ public class DialogBoundsPreserver implements WindowListener {
         return null;                
     }
 
-    private Rectangle getScreenBounds() {
-        Rectangle screen = new Rectangle();
+    private Rectangle[] getScreenBounds() {
         GraphicsDevice[] gds = GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices();
+        List<Rectangle> rects = new ArrayList<Rectangle>(gds.length);
         for (GraphicsDevice gd : gds) {
             GraphicsConfiguration gc = gd.getDefaultConfiguration();
-            screen = screen.union(Utilities.getUsableScreenBounds(gc));
+            rects.add(Utilities.getUsableScreenBounds(gc));
         }
-        return screen;
+        return rects.toArray(new Rectangle[rects.size()]);
     }
     
 }

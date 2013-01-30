@@ -169,8 +169,16 @@ made subject to such option by the copyright holder.
         </folder>        
 
         <folder name="Other">
-            <!-- #208919: cannot merely override favorites module entry, since generated entry in NewFileIterator is a file, not a folder. -->
-            <file name="Folder_hidden"/>
+            <folder name="Folder">
+                <attr name="template" boolvalue="true"/>
+                <attr
+                    bundlevalue="org.netbeans.modules.project.ui.Bundle#folderIterator" name="displayName"/>
+                <attr name="iconBase" stringvalue="org/openide/loaders/defaultFolder.gif"/>
+                <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/project/ui/templatesFolder.html"/>
+                <attr
+                    methodvalue="org.netbeans.modules.project.ui.NewFileIterator.folderIterator" name="instantiatingIterator"/>
+                <attr name="templateCategory" stringvalue="simple-files"/>                
+            </folder>
         </folder>
 
         <!-- Licenses folder -->

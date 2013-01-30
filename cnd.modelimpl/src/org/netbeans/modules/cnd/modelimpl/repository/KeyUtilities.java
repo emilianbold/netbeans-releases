@@ -53,10 +53,12 @@ import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmParameterList;
 import org.netbeans.modules.cnd.api.model.CsmVisibility;
 import org.netbeans.modules.cnd.api.project.NativeProject;
+import org.netbeans.modules.cnd.apt.utils.APTSerializeUtils;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
+import org.netbeans.modules.cnd.repository.api.CacheLocation;
 import org.netbeans.modules.cnd.repository.spi.Key;
 
 /**
@@ -64,7 +66,7 @@ import org.netbeans.modules.cnd.repository.spi.Key;
  * @author Vladimir Voskresensky
  */
 public class KeyUtilities {
-    public static int NON_INITIALIZED = Integer.MIN_VALUE + 1;
+    public static final int NON_INITIALIZED = Integer.MIN_VALUE + 1;
 
     /** Creates a new instance of KeyUtils */
     private KeyUtilities() {
@@ -80,16 +82,18 @@ public class KeyUtilities {
         return new NamespaceKey(ns);
     }
 
-    public static Key createProjectKey(ProjectBase project) {
-        return createProjectKey(project.getUniqueName());
-    }
-
-    public static Key createProjectKey(CharSequence projectQualifiedName) {
-        return new ProjectKey(projectQualifiedName);
+    public static Key createProjectKey(CharSequence projectQualifiedName, CacheLocation cacheLocation) {
+        return new ProjectKey(KeyUtilities.getUnitId(projectQualifiedName, cacheLocation));
     }
 
     public static Key createProjectKey(NativeProject nativeProject) {
-        return createProjectKey(ProjectBase.getUniqueName(nativeProject));
+        return new ProjectKey(KeyUtilities.getUnitId(
+                ProjectBase.getUniqueName(nativeProject),
+                ProjectBase.getCacheLocation(nativeProject)));
+    }
+
+    public static Key createProjectKey(ProjectBase project) {
+        return new ProjectKey(project.getUnitId());
     }
 
     public static Key createOffsetableDeclarationKey(OffsetableDeclarationBase<?> obj) {
@@ -97,11 +101,24 @@ public class KeyUtilities {
         return new OffsetableDeclarationKey(obj);
     }
 
+    public static Key createOffsetableDeclarationKey(FileImpl containingFile, int startOffset, String kind, CharSequence name) {
+        assert containingFile != null;
+        assert name != null;
+        assert kind != null;
+        return new OffsetableDeclarationKey(containingFile, startOffset, kind, name);
+    }
+    
     public static Key createUnnamedOffsetableDeclarationKey(OffsetableDeclarationBase<?> obj, int index) {
         assert obj != null;
         return new OffsetableDeclarationKey(obj, index);
     }
 
+    public static Key createUnnamedOffsetableDeclarationKey(FileImpl containingFile, int startOffset, String kind, int index) {
+        assert containingFile != null;
+        assert kind != null;
+        return new OffsetableDeclarationKey(containingFile, startOffset, kind, Integer.toString(index));
+    }
+    
     public static Key createMacroKey(CsmMacro macro) {
         assert macro != null;
         return new MacroKey(macro);
@@ -129,28 +146,32 @@ public class KeyUtilities {
     
     ////////////////////////////////////////////////////////////////////////////
 
-    public static int getUnitId(CharSequence unitName) {
-        return RepositoryUtils.getUnitId(unitName);
+    /**
+     * @param cacheLocation can be null, in this case standard location 
+     * ${userdir}/var/cache/cnd/model will be used
+     */
+    public static int getUnitId(CharSequence unitName, CacheLocation cacheLocation) {
+        return APTSerializeUtils.getUnitId(unitName, cacheLocation);
     }
 
     public static CharSequence getUnitName(int unitIndex) {
-        return RepositoryUtils.getUnitName(unitIndex);
+        return APTSerializeUtils.getUnitName(unitIndex);
     }
 
     public static CharSequence getUnitNameSafe(int unitIndex) {
-        return RepositoryUtils.getUnitNameSafe(unitIndex);
+        return APTSerializeUtils.getUnitNameSafe(unitIndex);
     }
 
     public static int getFileIdByName(final int unitId, final CharSequence fileName) {
-        return RepositoryUtils.getFileIdByName(unitId, fileName);
+        return APTSerializeUtils.getFileIdByName(unitId, fileName);
     }
 
     public static CharSequence getFileNameById(final int unitId, final int fileId) {
-        return RepositoryUtils.getFileNameById(unitId, fileId);
+        return APTSerializeUtils.getFileNameById(unitId, fileId);
     }
 
     public static CharSequence getFileNameByIdSafe(final int unitId, final int fileId) {
-        return RepositoryUtils.getFileNameByIdSafe(unitId, fileId);
+        return APTSerializeUtils.getFileNameByIdSafe(unitId, fileId);
     }
 
     public static CsmDeclaration.Kind getKeyKind(Key key) {

@@ -47,6 +47,8 @@ package org.netbeans.api.debugger;
 import java.beans.*;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 
 import org.netbeans.spi.debugger.ActionsProvider;
@@ -120,6 +122,7 @@ public final class ActionsManager {
      *  @since 1.29 */
     public static final Object              ACTION_EVALUATE = "evaluate";
 
+    private static final Logger logger = Logger.getLogger(ActionsManager.class.getName());
 
     // variables ...............................................................
     
@@ -133,6 +136,7 @@ public final class ActionsManager {
     private boolean                 doiingDo = false;
     private boolean                 destroy = false;
     private List<? extends ActionsProvider> aps;
+    private PropertyChangeListener  providersChangeListener;
     
     /**
      * Create a new instance of ActionManager.
@@ -141,6 +145,7 @@ public final class ActionsManager {
      */
     ActionsManager (Lookup lookup) {
         this.lookup = lookup;
+        logger.log(Level.FINE, "new ActionsManager({0}) = {1}", new Object[] { lookup, this });
     }
     
     
@@ -171,7 +176,9 @@ public final class ActionsManager {
             fireActionDone (action);
         }
         doiingDo = false;
-        if (destroy) destroyIn ();
+        if (destroy) {
+            destroyIn ();
+        }
     }
     
     /**
@@ -222,7 +229,9 @@ public final class ActionsManager {
                                 task.actionDone();
                                 fireActionDone (action);
                                 doiingDo = false;
-                                if (destroy) destroyIn ();
+                                if (destroy) {
+                                    destroyIn ();
+                                }
                             }
                         }
                     }
@@ -235,7 +244,9 @@ public final class ActionsManager {
         }
         if (!posted) {
             doiingDo = false;
-            if (destroy) destroyIn ();
+            if (destroy) {
+                destroyIn ();
+            }
             task.actionDone();
         }
         return task;
@@ -287,7 +298,9 @@ public final class ActionsManager {
      * Stops listening on all actions, stops firing events.
      */
     public void destroy () {
-        if (!doiingDo) destroyIn ();
+        if (!doiingDo) {
+            destroyIn ();
+        }
         destroy = true;
     }
 
@@ -344,7 +357,9 @@ public final class ActionsManager {
     ) {
         synchronized (listeners) {
             List<ActionsManagerListener> ls = listeners.get (propertyName);
-            if (ls == null) return;
+            if (ls == null) {
+                return;
+            }
             ls.remove(l);
             if (ls.isEmpty()) {
                 listeners.remove(propertyName);
@@ -477,25 +492,50 @@ public final class ActionsManager {
     
     private void registerActionsProviders(List<? extends ActionsProvider> aps) {
         synchronized (aps) {
+            if (logger.isLoggable(Level.INFO)) {
+                StringBuilder sb = new StringBuilder(this.toString());
+                boolean isNull = false;
+                sb.append(".registerActionsProviders:");
+                for (ActionsProvider ap : aps) {
+                    sb.append("\n  ");
+                    if (ap != null) {
+                        sb.append(ap.toString());
+                    } else {
+                        sb.append("NULL element in list " + Integer.toHexString(aps.hashCode())); // NOI18N
+                        isNull = true;
+                    }
+                }
+                sb.append("\n");
+                if (isNull) {
+                    logger.info(sb.toString());
+                } else {
+                    logger.fine(sb.toString());
+                }
+            }
             for (ActionsProvider ap : aps) {
-                Iterator ii = ap.getActions ().iterator ();
-                while (ii.hasNext ())
-                    registerActionsProvider (ii.next (), ap);
+                if (ap != null) {
+                    for (Object action : ap.getActions ()) {
+                        registerActionsProvider (action, ap);
+                    }
+                }
             }
         }
     }
 
     private void initActionImpls () {
         aps = lookup.lookup(null, ActionsProvider.class);
-        ((Customizer) aps).addPropertyChangeListener(new PropertyChangeListener() {
+        providersChangeListener = new PropertyChangeListener() {
                 @Override
                 public void propertyChange(PropertyChangeEvent evt) {
+                    logger.log(Level.FINE, "{0} Providers lookup changed, aps = {1}", new Object[] { this, aps });
                     synchronized (actionProvidersLock) {
                         actionProviders.clear();
                     }
                     registerActionsProviders(aps);
                 }
-        });
+        };
+        logger.log(Level.FINE, "{0}.initActionImpls(): Add ProvidersChangeListener to {1}", new Object[] { this, aps });
+        ((Customizer) aps).addPropertyChangeListener(providersChangeListener);
         registerActionsProviders(aps);
         synchronized (actionProvidersInitialized) {
             actionProvidersInitialized.set(true);
@@ -507,7 +547,9 @@ public final class ActionsManager {
     private List lazyListeners;
     
     private synchronized void initListeners () {
-        if (listerersLoaded) return;
+        if (listerersLoaded) {
+            return;
+        }
         listerersLoaded = true;
         lazyListeners = lookup.lookup (null, LazyActionsManagerListener.class);
         int i, k = lazyListeners.size ();
@@ -531,6 +573,8 @@ public final class ActionsManager {
     }
     
     private void destroyIn () {
+        ((Customizer) aps).removePropertyChangeListener(providersChangeListener);
+        logger.log(Level.FINE, "{0}.destroyIn(): ProvidersChangeListener removed from {1}", new Object[] { this, aps });
         synchronized (this) {
             if (lazyListeners != null) {
                 int i, k = lazyListeners.size ();
@@ -547,8 +591,9 @@ public final class ActionsManager {
                         continue;
                     }
                     int j, jj = props.length;
-                    for (j = 0; j < jj; j++)
+                    for (j = 0; j < jj; j++) {
                         removeActionsManagerListener (props [j], l);
+                    }
                     l.destroy ();
                 }
                 lazyListeners = new ArrayList ();

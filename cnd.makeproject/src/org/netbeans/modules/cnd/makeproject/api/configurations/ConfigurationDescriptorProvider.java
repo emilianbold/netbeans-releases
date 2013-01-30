@@ -45,6 +45,7 @@ package org.netbeans.modules.cnd.makeproject.api.configurations;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -56,8 +57,8 @@ import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor.State;
-import org.netbeans.modules.cnd.makeproject.platform.Platforms;
 import org.netbeans.modules.cnd.makeproject.configurations.ConfigurationXMLReader;
+import org.netbeans.modules.cnd.makeproject.platform.Platforms;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.ui.UIGesturesSupport;
 import org.netbeans.modules.dlight.util.usagetracking.SunStudioUserCounter;
@@ -70,7 +71,8 @@ import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 
 public class ConfigurationDescriptorProvider {
-
+    public static final boolean VCS_WRITE = true; // Boolean.getBoolean("cnd.make.vcs.write");//org.netbeans.modules.cnd.makeproject.configurations.CommonConfigurationXMLCodec.VCS_WRITE;
+    
     public static final String USG_PROJECT_CONFIG_CND = "USG_PROJECT_CONFIG_CND"; // NOI18N
     public static final String USG_PROJECT_OPEN_CND = "USG_PROJECT_OPEN_CND"; // NOI18N
     public static final String USG_PROJECT_CREATE_CND = "USG_PROJECT_CREATE_CND"; // NOI18N
@@ -82,8 +84,9 @@ public class ConfigurationDescriptorProvider {
     private volatile MakeConfigurationDescriptor projectDescriptor = null;
     private volatile boolean hasTried = false;
     private String relativeOffset = null;
-    private List<FileObject> trackedFiles;
-    private volatile boolean needReload;
+    private final FileChangeListener configFilesListener = new ConfigurationXMLChangeListener();
+    private final List<FileObject> trackedConfigFiles = new ArrayList(2);
+    private volatile boolean needReload;   
 
     // for unit tests only
     public ConfigurationDescriptorProvider(FileObject projectDirectory) {
@@ -122,32 +125,6 @@ public class ConfigurationDescriptorProvider {
                     // infinite recursion.
                     needReload = false;
 
-                    if (trackedFiles == null) {
-                        FileChangeListener fcl = new ConfigurationXMLChangeListener();
-                        List<FileObject> files = new ArrayList<FileObject>(2);
-                        boolean first = true;
-                        for (String path : new String[]{
-                                    "nbproject/configurations.xml", //NOI18N
-                                    "nbproject/private/configurations.xml"}) { //NOI18N
-                            FileObject fo = projectDirectory.getFileObject(path);
-                            if (fo != null) {
-                                fo.addFileChangeListener(fcl);
-                                // We have to store tracked files somewhere.
-                                // Otherwise they will be GCed, and we won't get notifications.
-                                files.add(fo);
-                            } else {
-                                if (first) {
-                                    // prevent reading configurations before project cration
-                                    CndUtils.threadsDump();
-                                    new Exception("Attempt to read project before creation. Not found file " + projectDirectory.getPath() + "/" + path).printStackTrace(System.err); // NOI18N
-                                    return null;
-                                }
-                            }
-                            first = false;
-                        }
-                        trackedFiles = files;
-                    }
-
                     ConfigurationXMLReader reader = new ConfigurationXMLReader(project, projectDirectory);
 
                     //                        if (waitReading && SwingUtilities.isEventDispatchThread()) {
@@ -159,6 +136,7 @@ public class ConfigurationDescriptorProvider {
                     //                            // return null;
                     //                        }
                     try {
+                        SnapShot delta = startModifications();
                         MakeConfigurationDescriptor newDescriptor = reader.read(relativeOffset);
                         LOGGER.log(Level.FINE, "End of reading project descriptor for project {0} in ConfigurationDescriptorProvider@{1}", // NOI18N
                                 new Object[]{projectDirectory.getNameExt(), System.identityHashCode(this)});
@@ -175,9 +153,8 @@ public class ConfigurationDescriptorProvider {
                             if (newDescriptor != null) {
                                 newDescriptor.setProject(project);
                                 newDescriptor.waitInitTask();
-                                Delta delta = getDelta(newDescriptor);
                                 projectDescriptor.assign(newDescriptor);
-                                projectDescriptor.checkForChangedItems(delta);
+                                endModifications(delta, true, LOGGER);
                                 LOGGER.log(Level.FINE, "Reassigned project descriptor MakeConfigurationDescriptor@{0} for project {1} in ConfigurationDescriptorProvider@{2}", // NOI18N
                                         new Object[]{System.identityHashCode(projectDescriptor), projectDirectory.getNameExt(), System.identityHashCode(this)});
                             } else {
@@ -200,46 +177,26 @@ public class ConfigurationDescriptorProvider {
         return projectDescriptor;
     }
 
-    private Delta getDelta(MakeConfigurationDescriptor newDescriptor) {
-        Item[] oldItems = projectDescriptor.getProjectItems();
-        Map<String, Item> oldMap = new HashMap<String, Item>();
-        Set<Item> oldSet = new HashSet<Item>();
-        for (Item item : oldItems) {
-            oldMap.put(item.getAbsolutePath(), item);
-            oldSet.add(item);
+    public SnapShot startModifications() {
+        if (projectDescriptor != null) {
+            return new Delta(projectDescriptor);
         }
-        Delta delta = new Delta();
-        Item[] newItems = newDescriptor.getProjectItems();
-        for (Item item : newItems) {
-            Item oldItem = oldMap.get(item.getAbsolutePath());
-            if (oldItem == null) {
-                delta.added.add(item);
-            } else {
-                oldSet.remove(oldItem);
-                if (item.isExcluded() && oldItem.isExcluded()) {
-                    // no changes
-                    delta.replaced.add(item);
-                } else if (item.isExcluded() && !oldItem.isExcluded()) {
-                    delta.exluded.add(item);
-                } else if (!item.isExcluded() && oldItem.isExcluded()) {
-                    delta.included.add(item);
-                } else {
-                    // compare item properties
-                    if (!(item.getUserIncludePaths().equals(oldItem.getUserIncludePaths())
-                            && item.getUserMacroDefinitions().equals(oldItem.getUserMacroDefinitions()))) {
-                        delta.changed.add(item);
-                    } else {
-                        delta.replaced.add(item);
-                    }
-                }
-            }
-        }
-        for (Item item : oldSet) {
-            delta.deleted.add(item);
-        }
-        return delta;
+        return null;
     }
 
+    public void endModifications(SnapShot snapShot, boolean sendChangeEvent, Logger logger) {
+        if (snapShot instanceof Delta) {
+            Delta delta = (Delta) snapShot;
+            if (sendChangeEvent && projectDescriptor != null) {
+                delta.computeDelta(projectDescriptor);
+                if (logger != null) {
+                    delta.printStatistic(logger);
+                }
+                projectDescriptor.checkForChangedItems(delta);
+            }
+        }
+    }
+    
     public boolean gotDescriptor() {
         return projectDescriptor != null && projectDescriptor.getState() != State.READING;
     }
@@ -438,6 +395,70 @@ public class ConfigurationDescriptorProvider {
         return strSize;
     }
 
+    public void closed() {
+        detachConfigurationFilesListener();
+        MakeConfigurationDescriptor descr = getConfigurationDescriptor();
+        if (descr != null) {
+            descr.closed();
+        }
+    }
+
+    public void opened() {
+        MakeConfigurationDescriptor descr = getConfigurationDescriptor(true);
+        if (descr != null) {
+            descr.opened();
+        }
+        attachConfigurationFilesListener();
+    }
+
+    private void attachConfigurationFilesListener() {
+        synchronized (trackedConfigFiles) {
+            initTrackedConfigFiles();
+            if (trackedConfigFiles.size() == 2) {
+                for (FileObject fileObject : trackedConfigFiles) {
+                    fileObject.addFileChangeListener(configFilesListener);
+                    LOGGER.log(Level.FINE, "attached config file {2} listener for project {0} in ConfigurationDescriptorProvider@{1}", new Object[]{projectDirectory, System.identityHashCode(this), fileObject}); // NOI18N
+                }
+            }
+        }
+    }
+    
+    private void detachConfigurationFilesListener() {
+        synchronized (trackedConfigFiles) {
+            for (FileObject fileObject : trackedConfigFiles) {
+                fileObject.removeFileChangeListener(configFilesListener);
+                LOGGER.log(Level.FINE, "detached config file {2} listener for project {0} in ConfigurationDescriptorProvider@{1}", new Object[]{projectDirectory, System.identityHashCode(this), fileObject}); // NOI18N
+            }
+        }
+    }
+
+    private void initTrackedConfigFiles() {
+        assert Thread.holdsLock(trackedConfigFiles);
+        if (trackedConfigFiles.size() != 2) {
+            LOGGER.log(Level.FINE, "(re)initializing config files {2} for project {0} in ConfigurationDescriptorProvider@{1}", new Object[]{projectDirectory, System.identityHashCode(this), trackedConfigFiles}); // NOI18N
+            trackedConfigFiles.clear();
+            boolean first = true;
+            for (String path : new String[]{
+                        MakeConfiguration.NBPROJECT_FOLDER + '/' + MakeConfiguration.CONFIGURATIONS_XML, //NOI18N
+                        MakeConfiguration.NBPROJECT_PRIVATE_FOLDER + '/' + MakeConfiguration.CONFIGURATIONS_XML}) { //NOI18N
+                FileObject fo = projectDirectory.getFileObject(path);
+                if (fo != null) {
+                    // We have to store tracked files somewhere.
+                    // Otherwise they will be GCed, and we won't get notifications.
+                    trackedConfigFiles.add(fo);
+                } else {
+                    if (first) {
+                        // prevent reading configurations before project cration
+                        CndUtils.threadsDump();
+                        new Exception("Attempt to read project before creation. Not found file " + projectDirectory.getPath() + "/" + path).printStackTrace(System.err); // NOI18N
+                    }
+                }
+                first = false;
+            }
+            LOGGER.log(Level.FINE, "initialized config files {2} for project {0} in ConfigurationDescriptorProvider@{1}", new Object[]{projectDirectory, System.identityHashCode(this), trackedConfigFiles}); // NOI18N
+        }
+    }
+            
     /**
      * This listener will be notified about updates of files
      * <code>nbproject/configurations.xml</code> and
@@ -499,17 +520,126 @@ public class ConfigurationDescriptorProvider {
         }
     }
 
-    public static final class Delta {
+    public interface SnapShot {
+    }
+    
+    public static final class Delta implements SnapShot {
 
-        public List<Item> included = new ArrayList<Item>(); // marked as included
-        public List<Item> added = new ArrayList<Item>(); // added in project
-        public List<Item> exluded = new ArrayList<Item>(); // marked as excluded
-        public List<Item> deleted = new ArrayList<Item>(); // deleted from project items
-        public List<Item> changed = new ArrayList<Item>(); // changed properties
-        public List<Item> replaced = new ArrayList<Item>(); // properties were not changed (from code model point of view) but instance was replaced
+        private final Map<String, Pair> oldState = new HashMap<String, Pair>();
+        private final List<Item> included = new ArrayList<Item>();
+        private final List<Item> added = new ArrayList<Item>(); 
+        private final List<Item> excluded = new ArrayList<Item>(); 
+        private final List<Item> deleted = new ArrayList<Item>(); 
+        private final List<Item> changed = new ArrayList<Item>(); 
+        private final List<Item> replaced = new ArrayList<Item>(); 
 
+        private Delta(MakeConfigurationDescriptor oldDescriptor) {
+            if (oldDescriptor != null) {
+                for(Item item : oldDescriptor.getProjectItems()) {
+                    oldState.put(item.getAbsolutePath(), new Pair(item, item.getCRC(), item.isExcluded()));
+                }
+            }
+        }
+        
+        private void computeDelta(MakeConfigurationDescriptor newDescriptor) {
+            Set<Item> oldSet = new HashSet<Item>();
+            for (Map.Entry<String, Delta.Pair> entry : oldState.entrySet()) {
+                oldSet.add(entry.getValue().item);
+            }
+            Item[] newItems = newDescriptor.getProjectItems();
+            for (Item item : newItems) {
+                Delta.Pair pair = oldState.get(item.getAbsolutePath());
+                if (pair == null) {
+                    added.add(item);
+                } else {
+                    oldSet.remove(pair.item);
+                    if (item.isExcluded() && pair.excluded) {
+                        // no changes
+                        replaced.add(item);
+                    } else if (item.isExcluded() && !pair.excluded) {
+                        excluded.add(item);
+                    } else if (!item.isExcluded() && pair.excluded) {
+                        included.add(item);
+                    } else {
+                        // compare item properties
+                        if (item.getCRC() != pair.crc) {
+                            changed.add(item);
+                        } else {
+                            if (pair.item != item) {
+                                replaced.add(item);
+                            }
+                        }
+                    }
+                }
+            }
+            for (Item item : oldSet) {
+                deleted.add(item);
+            }
+            oldState.clear();
+        }
+        
+        public void printStatistic(Logger logger) {
+            if (logger.isLoggable(Level.INFO)) {
+                logger.log(Level.INFO, "Configuration updated:\n\t{0} deleted items\n\t{1} added items\n\t{2} changed items",
+                        new Object[]{deleted.size()+excluded.size(), added.size()+included.size(), changed.size()});
+            }
+        }
+        
         public boolean isEmpty() {
-            return included.isEmpty() && added.isEmpty() && exluded.isEmpty() && deleted.isEmpty() && changed.isEmpty();
+            return included.isEmpty() && added.isEmpty() && excluded.isEmpty() && deleted.isEmpty() && changed.isEmpty();
+        }
+
+        /**
+         * marked as included items
+         */
+        public List<Item> getIncluded() {
+            return Collections.unmodifiableList(included);
+        }
+
+        /**
+         * added in project items
+         */
+        public List<Item> getAdded() {
+            return Collections.unmodifiableList(added);
+        }
+
+        /**
+         * marked as excluded items
+         */
+        public List<Item> getExcluded() {
+            return Collections.unmodifiableList(excluded);
+        }
+
+        /**
+         * deleted from project items
+         */
+        public List<Item> getDeleted() {
+            return Collections.unmodifiableList(deleted);
+        }
+
+        /**
+         * items with changed properties
+         */
+        public List<Item> getChanged() {
+            return Collections.unmodifiableList(changed);
+        }
+
+        /**
+         * Items which properties were not changed (from code model point of view) but instances were replaced
+         */
+        public List<Item> getReplaced() {
+            return Collections.unmodifiableList(replaced);
+        }
+        
+        private static final class Pair {
+            final int crc;
+            final boolean excluded;
+            final Item item;
+            private Pair(Item item, int crc, boolean excluded) {
+                this.crc = crc;
+                this.excluded = excluded;
+                this.item = item;
+            }
         }
     }
 }

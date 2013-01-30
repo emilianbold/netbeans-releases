@@ -78,6 +78,7 @@ public class RunWhenScanFinishedSupportTest extends NbTestCase {
     
     private Source src;
     private TestHandler handler;
+    private Logger log;
     
     public RunWhenScanFinishedSupportTest(final String name) {
         super(name);
@@ -102,7 +103,7 @@ public class RunWhenScanFinishedSupportTest extends NbTestCase {
             });
         }
         handler = new TestHandler();
-        final Logger log = Logger.getLogger(RunWhenScanFinishedSupport.class.getName());
+        log = Logger.getLogger(RunWhenScanFinishedSupport.class.getName());
         log.setLevel(Level.FINE);
         log.addHandler(handler);
     }
@@ -110,7 +111,6 @@ public class RunWhenScanFinishedSupportTest extends NbTestCase {
     @Override
     protected void tearDown() throws Exception {
         super.tearDown();
-        final Logger log = Logger.getLogger(RunWhenScanFinishedSupport.class.getName());
         log.removeHandler(handler);
     }
     
@@ -276,7 +276,7 @@ public class RunWhenScanFinishedSupportTest extends NbTestCase {
         }
 
         @Override
-        public void publish(LogRecord record) {
+        public void publish(LogRecord record) {            
             final String message = record.getMessage();
             final Object param = record.getParameters()[0];
             for (Iterator<Pair<Pair<String, Object>, CountDownLatch>> it = condition.iterator(); it.hasNext();) {

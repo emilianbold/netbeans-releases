@@ -75,7 +75,7 @@ public class ConstantDeclaration extends Statement {
 
     public ConstantDeclaration(int start, int end, List variablesAndDefaults) {
         super(start, end);
-        if (variablesAndDefaults == null || variablesAndDefaults == null || variablesAndDefaults.size() == 0) {
+        if (variablesAndDefaults == null || variablesAndDefaults.isEmpty()) {
             throw new IllegalArgumentException();
         }
 

@@ -550,6 +550,20 @@ public final class CodeStyle {
         return preferences.getInt(blankLinesAfterAnonymousClassHeader, getDefaultAsInt(blankLinesAfterAnonymousClassHeader));
     }
 
+    /**
+     * @since 0.106
+     */
+    public int getBlankLinesBeforeClassClosingBrace() {
+        return preferences.getInt(blankLinesBeforeClassClosingBrace, getDefaultAsInt(blankLinesBeforeClassClosingBrace));
+    }
+
+    /**
+     * @since 0.106
+     */
+    public int getBlankLinesBeforeAnonymousClassClosingBrace() {
+        return preferences.getInt(blankLinesBeforeAnonymousClosingBrace, getDefaultAsInt(blankLinesBeforeAnonymousClosingBrace));
+    }
+
     public int getBlankLinesBeforeFields() {
         return preferences.getInt(blankLinesBeforeFields, getDefaultAsInt(blankLinesBeforeFields));
     }

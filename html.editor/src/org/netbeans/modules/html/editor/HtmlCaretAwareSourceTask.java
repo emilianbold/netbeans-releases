@@ -43,23 +43,22 @@
  */
 package org.netbeans.modules.html.editor;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.text.Document;
+import org.netbeans.api.editor.mimelookup.MimeRegistration;
+import org.netbeans.api.editor.mimelookup.MimeRegistrations;
+import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.parsing.api.Snapshot;
-import org.netbeans.modules.parsing.spi.Parser.Result;
+import org.netbeans.modules.parsing.spi.ParserResultTask;
 import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.modules.parsing.spi.SchedulerTask;
-import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
-import org.netbeans.modules.parsing.spi.ParserResultTask;
 import org.netbeans.modules.parsing.spi.TaskFactory;
 
 /**
- * 
+ *
  * @author Marek Fukala
  */
 public final class HtmlCaretAwareSourceTask extends ParserResultTask<HtmlParserResult> {
@@ -67,28 +66,21 @@ public final class HtmlCaretAwareSourceTask extends ParserResultTask<HtmlParserR
     private static final Logger LOGGER = Logger.getLogger(HtmlCaretAwareSourceTask.class.getSimpleName());
     private static final boolean LOG = LOGGER.isLoggable(Level.INFO);
 
+    @MimeRegistrations({
+        @MimeRegistration(mimeType="text/html", service=TaskFactory.class),
+        @MimeRegistration(mimeType="text/xhtml", service=TaskFactory.class)
+    })
     public static class Factory extends TaskFactory {
 
         @Override
         public Collection<? extends SchedulerTask> create(Snapshot snapshot) {
             String mimeType = snapshot.getMimeType();
-            if(mimeType.equals("text/html")) { //NOI18N
+            if (mimeType.equals("text/html")) { //NOI18N
                 return Collections.singletonList(new HtmlCaretAwareSourceTask());
             } else {
                 return Collections.emptyList();
             }
         }
-    }
-
-    private static final String SOURCE_DOCUMENT_PROPERTY_NAME = Source.class.getName();
-
-    public static synchronized Source forDocument(Document doc) {
-        Source source = (Source) doc.getProperty(SOURCE_DOCUMENT_PROPERTY_NAME);
-        if (source == null) {
-            source = new Source();
-            doc.putProperty(SOURCE_DOCUMENT_PROPERTY_NAME, source);
-        }
-        return source;
     }
 
     @Override
@@ -108,35 +100,8 @@ public final class HtmlCaretAwareSourceTask extends ParserResultTask<HtmlParserR
 
     @Override
     public void run(HtmlParserResult result, SchedulerEvent event) {
-        Document doc = result.getSnapshot().getSource().getDocument(false);
-        if(doc != null) {
-            forDocument(doc).parsed(result, event);
-        }
+        HtmlElementProperties.parsed(result, event);
     }
 
-    public static class Source {
-
-        private Collection<SourceListener> listeners = new ArrayList<SourceListener>();
-
-        protected void parsed(Result ci, SchedulerEvent event) {
-            //distribute to clients
-            for (SourceListener listener : listeners) {
-                listener.parsed(ci, event);
-            }
-        }
-
-        public void addChangeListener(SourceListener l) {
-            listeners.add(l);
-        }
-
-        public void removeChangeListener(SourceListener l) {
-            listeners.remove(l);
-        }
-    }
-
-    public static interface SourceListener {
-
-        public void parsed(Result info, SchedulerEvent event);
-    }
 }
 

@@ -45,6 +45,7 @@ package org.netbeans.modules.uihandler;
 
 import java.awt.Color;
 import java.awt.Cursor;
+import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.LinkedList;
@@ -60,6 +61,7 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
+import org.openide.awt.HtmlRenderer;
 import org.openide.awt.Notification;
 import org.openide.awt.NotificationDisplayer;
 import org.openide.awt.NotificationDisplayer.Priority;
@@ -79,6 +81,12 @@ class SlownessReporter {
     private static final String UI_ACTION_KEY_PRESS = "UI_ACTION_KEY_PRESS";    //NOI18N
     private static final String DELEGATE_PATTERN = "delegate=.*@";         // NOI18N
     static final long LATEST_ACTION_LIMIT = 1000;//ms
+    private static final int PRIORITY;
+    static {
+        int defPrio = 20000;
+        assert (defPrio = 10000) > 0;
+        PRIORITY = Integer.getInteger("org.netbeans.modules.uihandler.SlownessReporter.priority", defPrio);
+    } // NOI18N
     private static final int CLEAR = Integer.getInteger("org.netbeans.modules.uihandler.SlownessReporter.clear", 60000); // NOI18N
     private static final RequestProcessor IO_RP = new RequestProcessor(SlownessReporter.class);
     
@@ -165,9 +173,8 @@ class SlownessReporter {
 
         NotifySnapshot(SlownessData data) {
             this.data = data;
-            NotificationDisplayer.Priority priority = Priority.SILENT;
-            // in dev builds use higher priority
-            assert (priority = Priority.LOW) != null;
+            NotificationDisplayer.Priority priority = data.getTime() > PRIORITY ?
+                Priority.LOW : Priority.SILENT;
             String message = NbBundle.getMessage(NotifySnapshot.class, data.getSlownessType());
             note = NotificationDisplayer.getDefault().notify(
                     message,
@@ -204,8 +211,7 @@ class SlownessReporter {
         }
 
         private JButton createDetails(String text) {
-            text = "<html><u>" + text; //NOI18N
-            JButton btn = new JButton(text);
+            JButton btn = new HtmlButton(text);
             btn.setFocusable(false);
             btn.setBorder(BorderFactory.createEmptyBorder());
             btn.setBorderPainted(false);
@@ -221,6 +227,22 @@ class SlownessReporter {
         @Override
         public void run() {
             Installer.displaySummary("ERROR_URL", true, false, true, data); // NOI18N
+        }
+
+        private static class HtmlButton extends JButton {
+            
+            public HtmlButton(String text) {
+                super(text);
+            }
+            
+            @Override
+            protected void paintComponent(Graphics g) {
+                HtmlRenderer.renderString("<html><u>" + getText() + "</u></html>",  // NOI18N
+                        g, 0, getBaseline(Integer.MAX_VALUE, getFont().getSize()),
+                        Integer.MAX_VALUE, getFont().getSize(),
+                        getFont(), getForeground(), HtmlRenderer.STYLE_CLIP, true);
+            }
+
         }
     }
 }

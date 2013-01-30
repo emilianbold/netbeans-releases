@@ -41,22 +41,36 @@
  */
 package org.netbeans.modules.nativeexecution;
 
-import java.io.*;
-import java.util.ArrayList;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InterruptedIOException;
+import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.concurrent.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
+import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcess.State;
-import org.netbeans.modules.nativeexecution.api.*;
-import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
+import org.netbeans.modules.nativeexecution.api.NativeProcessChangeEvent;
+import org.netbeans.modules.nativeexecution.api.ProcessInfo;
+import org.netbeans.modules.nativeexecution.api.ProcessInfoProvider;
+import org.netbeans.modules.nativeexecution.api.ProcessStatusEx;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.Signal;
+import org.netbeans.modules.nativeexecution.signals.SignalSupport;
 import org.netbeans.modules.nativeexecution.spi.ProcessInfoProviderFactory;
 import org.netbeans.modules.nativeexecution.support.Logger;
 import org.netbeans.modules.nativeexecution.support.NativeTaskExecutorService;
@@ -64,14 +78,18 @@ import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
-public abstract class AbstractNativeProcess extends NativeProcess {
+public abstract class AbstractNativeProcess extends NativeProcess implements ExProcessInfoProvider {
 
     protected final static java.util.logging.Logger LOG = Logger.getInstance();
     private final static Integer PID_TIMEOUT =
             Integer.valueOf(System.getProperty(
             "dlight.nativeexecutor.pidtimeout", "70")); // NOI18N
+    private final static Integer SIGKILL_TIMEOUT =
+            Integer.valueOf(System.getProperty(
+            "dlight.nativeexecutor.forcekill.timeout", "5")); // NOI18N
     protected final NativeProcessInfo info;
     protected final HostInfo hostInfo;
+    private final ConcurrentHashMap<String, String> processInfo =  new ConcurrentHashMap<String, String>();
     protected long creation_ts = -1;
     private final String id;
     private final ExecutionEnvironment execEnv;
@@ -83,7 +101,7 @@ public abstract class AbstractNativeProcess extends NativeProcess {
     private volatile boolean isInterrupted;
     private final AtomicBoolean cancelledFlag = new AtomicBoolean(false);
     private Future<ProcessInfoProvider> infoProviderSearchTask;
-    private Future<Integer> waitTask = null;
+    private volatile Future<Integer> waitTask = null;
     private final Object resultLock = new Object();
     private Integer result = null;
     private InputStream inputStream;
@@ -121,11 +139,7 @@ public abstract class AbstractNativeProcess extends NativeProcess {
 //            Exceptions.printStackTrace(ex);
         }
         hostInfo = hinfo;
-
-        Collection<ChangeListener> ll = info.getListeners();
-        listeners = (ll == null || ll.isEmpty()) ? null
-                : Collections.unmodifiableList(
-                new ArrayList<ChangeListener>(ll));
+        listeners = info.getListenersSnapshot();
     }
 
     public final NativeProcess createAndStart() {
@@ -170,12 +184,28 @@ public abstract class AbstractNativeProcess extends NativeProcess {
             setResult(-2);
             setState(State.ERROR);
             destroy();
-            LOG.log(Level.INFO, loc("NativeProcess.exceptionOccured.text", ex.getMessage()), ex); // NOI18N
+            LOG.log(Level.FINE, loc("NativeProcess.exceptionOccured.text", ex.getMessage()), ex); // NOI18N
             String msg = (ex.getMessage() == null ? ex.toString() : ex.getMessage());
-            errorStream = new ByteArrayInputStream((msg + "\n").getBytes()); // NOI18N
+            if (info.isRedirectError()) {
+                inputStream = new ByteArrayInputStream((msg + "\n").getBytes()); // NOI18N
+            } else {
+                errorStream = new ByteArrayInputStream((msg + "\n").getBytes()); // NOI18N
+            }
         }
 
         return this;
+    }
+    
+    protected String getProcessInfo(String key) {
+        return processInfo.get(key);
+    }
+    
+    protected void addProcessInfo(String info) {
+        int spos = info.indexOf('=');
+        if (spos < 0) {
+            throw new IllegalArgumentException("info must be in format NAME=VALUE - was " + info); // NOI18N
+        }
+        processInfo.put(info.substring(0, spos), info.substring(spos + 1));
     }
 
     private void setResult(int exitCode) {
@@ -220,22 +250,23 @@ public abstract class AbstractNativeProcess extends NativeProcess {
     }
 
     /**
-     * To be implemented by a successor.
-     * It must implement the specific termination of the underlaying system
-     * process on this method call.
-     * It is guaranteed that this method is called only once.
-     * Implementation should not (but may) wait for the actual terminaltion
-     * before returning from the call.
-     * If destroyImpl() returnes and process's waitFor() still not exited during 
-     * specified (by return value) seconds (i.e. process was not actually
-     * terminated), then a SIGKILL is send to the process.
+     * To be implemented by a successor. It must implement the specific
+     * termination of the underlying system process on this method call. It is
+     * guaranteed that this method is called only once. Implementation should
+     * not (but may) wait for the actual termination before returning from the
+     * call. If destroyImpl() returns and process's waitFor() still not exited
+     * during specified (by return value) seconds (i.e. process was not actually
+     * terminated), then a SIGTERM is send to the process.
      *
-     * Default implementation just returns 0. So SIGKILL is send immediately to
+     * Default implementation just returns 0. So SIGTERM is send immediately to
      * force-terminate the process.
      *
+     * SIGKILL is send if after SIGTERM process is still alive for
+     * "dlight.nativeexecutor.forcekill.timeout".
+     *
      * @return number of seconds to wait before doing an attempt to
-     * force-terminate the process with the SIGKILL signal (signal is send only
-     * if process was not finished by that time).
+     * force-terminate the process with the SIGTERM (and SIGKILL) signal (signal
+     * is send only if process was not finished by that time).
      */
     protected int destroyImpl() {
         return 0;
@@ -271,12 +302,13 @@ public abstract class AbstractNativeProcess extends NativeProcess {
     }
 
     /**
-     * Terminates the underlaying system process. The system process represented
+     * Terminates the underlying system process. The system process represented
      * by this <code>AbstractNativeProcess</code> object is forcibly terminated.
      *
      * Returning from the call of this method does not mean that the process was
      * already terminated.
      *
+     * May block caller thread for significant time
      */
     @Override
     public final void destroy() {
@@ -286,39 +318,54 @@ public abstract class AbstractNativeProcess extends NativeProcess {
 
         final int timeToWait = destroyImpl();
 
-        if (pid > 0 && waitTask != null && !waitTask.isDone()) {
-            Future<Integer> killTask = null;
+        if (waitTask == null) {
+            // this could be in a case if exception occured during the process
+            // creation ...
+            return;
+        }
 
-            if (timeToWait > 0) {
-                // Submit an asynchronious task that will send SIGKILL if
-                // process is still here after returned timeout...
-                final Callable<Integer> waitForTermination = new Callable<Integer>() {
+        try {
+            waitTask.get(timeToWait, TimeUnit.SECONDS);
+            return;
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+        } catch (ExecutionException ex) {
+        } catch (TimeoutException ex) {
+        }
 
-                    @Override
-                    public Integer call() throws Exception {
-                        try {
-                            return waitTask.get(timeToWait, TimeUnit.SECONDS);
-                        } catch (TimeoutException ex) {
-                            // Process didn't gone.. Kill it!
-                            return CommonTasksSupport.sendSignal(execEnv, pid, Signal.SIGKILL, null).get();
-                        }
-                    }
-                };
+        try {
+            exitValue();
+            // No exception means successful termination
+            return;
+        } catch (IllegalThreadStateException ex) {
+        }
 
-                killTask = NativeTaskExecutorService.submit(waitForTermination,
-                        "Waiting " + timeToWait + " seconds for process " + id + " to terminate..."); // NOI18N
-            } else {
-                killTask = CommonTasksSupport.sendSignal(execEnv, pid, Signal.SIGKILL, null);
-            }
+        try {
+            SignalSupport.signalProcess(execEnv, pid, Signal.SIGTERM);
+        } catch (UnsupportedOperationException ex) {
+            // ignore ...
+        }
 
-            if (killTask != null) {
-                try {
-                    killTask.get();
-                } catch (InterruptedException ex) {
-                } catch (ExecutionException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            }
+        try {
+            waitTask.get(SIGKILL_TIMEOUT, TimeUnit.SECONDS);
+            return;
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+        } catch (ExecutionException ex) {
+        } catch (TimeoutException ex) {
+        }
+
+        try {
+            exitValue();
+            // No exception means successful termination
+            return;
+        } catch (IllegalThreadStateException ex) {
+        }
+
+        try {
+            SignalSupport.signalProcess(execEnv, pid, Signal.SIGKILL);
+        } catch (UnsupportedOperationException ex) {
+            // ignore ...
         }
     }
 
@@ -403,6 +450,16 @@ public abstract class AbstractNativeProcess extends NativeProcess {
         }
     }
 
+    @Override
+    public ProcessStatusEx getExitStatusEx() {
+        exitValue();
+        return null;
+    }
+    
+    protected final void finishing() {
+        setState(State.FINISHING);
+    }
+
     private void setState(State state) {
         synchronized (stateLock) {
             if (this.state == state) {
@@ -411,7 +468,7 @@ public abstract class AbstractNativeProcess extends NativeProcess {
 
             /*
              * Process has determinated order of states it can be set to:
-             * INITIAL ---> STARTING  ---> RUNNING  ---> FINISHED
+             * INITIAL ---> STARTING  ---> RUNNING  ---> FINISHING ---> FINISHED
              *          |-> CANCELLED  |-> CENCELLED |-> CANCELLED
              *          |-> ERROR      |-> ERROR     |-> ERROR
              *
@@ -433,21 +490,25 @@ public abstract class AbstractNativeProcess extends NativeProcess {
 
                 if (!isInterrupted()) {
                     if (LOG.isLoggable(Level.FINEST)) {
-                        LOG.finest(String.format("%s: State changed: %s -> %s", // NOI18N
-                                this.toString(), this.state, state));
+                        LOG.finest(String.format("%s [%d]: State changed: %s -> %s", // NOI18N
+                                this.toString(), this.pid, this.state, state));
                     }
                 }
 
                 this.state = state;
 
-                if (listeners == null) {
-                    return;
-                }
+                if (!listeners.isEmpty()) {
+                    final ChangeEvent event = new NativeProcessChangeEvent(this, state, pid);
 
-                final ChangeEvent event = new NativeProcessChangeEvent(this, state, pid);
+                    for (ChangeListener l : listeners) {
+                        l.stateChanged(event);
+                    }
 
-                for (ChangeListener l : listeners) {
-                    l.stateChanged(event);
+                    if (this.state == State.CANCELLED
+                            || this.state == State.ERROR
+                            || this.state == State.FINISHED) {
+                        listeners.clear();
+                    }
                 }
             } finally {
                 if (isInterrupted()) {
@@ -457,9 +518,13 @@ public abstract class AbstractNativeProcess extends NativeProcess {
         }
     }
 
+    protected final void setPID(final int pid) {
+        this.pid = pid;
+    }
+    
     // To be called from successors' constructor only...
     protected final void readPID(final InputStream is) throws IOException {
-        int c = -1;
+        int c;
         pid = 0;
 
         while (!isInterrupted()) {
@@ -471,6 +536,11 @@ public abstract class AbstractNativeProcess extends NativeProcess {
                 break;
             }
         }
+    }
+
+    @Override
+    public String getTTY() {
+        return getProcessInfo("TTY"); // NOI18N
     }
 
     @Override

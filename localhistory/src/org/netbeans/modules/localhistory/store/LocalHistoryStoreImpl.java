@@ -1205,6 +1205,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
             s = proccessedFiles.get(file);
         }
         if(s != null) {
+            long l = System.currentTimeMillis();
             try {
                 long t9Timeout = getT9LockReleaseTimeOut();
                 long timeout = t9Timeout >= 0 ? t9Timeout : LOCK_TIMEOUT;
@@ -1223,7 +1224,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
             } catch (InterruptedException ex) {
                 // nothing
             }
-            LOG.log(Level.FINER, "{0} for file {1} was blocked.", new Object[] {caller, file}); // NOI18N
+            LOG.log(Level.FINER, "{0} for file {1} was blocked {2} millis.", new Object[] {caller, file, System.currentTimeMillis() - l}); // NOI18N
         }
     }
 

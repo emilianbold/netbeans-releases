@@ -73,6 +73,7 @@ public class SchemaTypeMappingType implements org.netbeans.modules.schema2beansd
 	private boolean _isSet_Bean = false;
 	private boolean _CanBeEmpty;
 	private boolean _isSet_CanBeEmpty = false;
+	private static final java.util.logging.Logger _logger = java.util.logging.Logger.getLogger("org.netbeans.modules.schema2beansdev.beangraph.SchemaTypeMappingType");
 
 	/**
 	 * Normal starting point constructor.
@@ -191,7 +192,23 @@ public class SchemaTypeMappingType implements org.netbeans.modules.schema2beansd
 			out.write(":");
 		}
 		out.write(nodeName);
+		writeNodeAttributes(out, nodeName, namespace, indent, namespaceMap);
 		out.write(">\n");
+		writeNodeChildren(out, nodeName, namespace, indent, namespaceMap);
+		out.write(indent);
+		out.write("</");
+		if (namespace != null) {
+			out.write((String)namespaceMap.get(namespace));
+			out.write(":");
+		}
+		out.write(nodeName);
+		out.write(">\n");
+	}
+
+	protected void writeNodeAttributes(java.io.Writer out, String nodeName, String namespace, String indent, java.util.Map namespaceMap) throws java.io.IOException {
+	}
+
+	protected void writeNodeChildren(java.io.Writer out, String nodeName, String namespace, String indent, java.util.Map namespaceMap) throws java.io.IOException {
 		String nextIndent = indent + "	";
 		if (_SchemaTypeNamespace != null) {
 			out.write(nextIndent);
@@ -235,14 +252,6 @@ public class SchemaTypeMappingType implements org.netbeans.modules.schema2beansd
 			out.write(_CanBeEmpty ? "true" : "false");
 			out.write("</can-be-empty>\n");	// NOI18N
 		}
-		out.write(indent);
-		out.write("</");
-		if (namespace != null) {
-			out.write((String)namespaceMap.get(namespace));
-			out.write(":");
-		}
-		out.write(nodeName);
-		out.write(">\n");
 	}
 
 	public void readNode(org.w3c.dom.Node node) {
@@ -268,49 +277,73 @@ public class SchemaTypeMappingType implements org.netbeans.modules.schema2beansd
 					namespacePrefixes.put(attrNSPrefix, attr.getValue());
 				}
 			}
+			readNodeAttributes(node, namespacePrefixes, attrs);
 		}
+		readNodeChildren(node, namespacePrefixes);
+	}
+
+	protected void readNodeAttributes(org.w3c.dom.Node node, java.util.Map namespacePrefixes, org.w3c.dom.NamedNodeMap attrs) {
+		org.w3c.dom.Attr attr;
+		java.lang.String attrValue;
+	}
+
+	protected void readNodeChildren(org.w3c.dom.Node node, java.util.Map namespacePrefixes) {
 		org.w3c.dom.NodeList children = node.getChildNodes();
 		for (int i = 0, size = children.getLength(); i < size; ++i) {
 			org.w3c.dom.Node childNode = children.item(i);
+			if (!(childNode instanceof org.w3c.dom.Element)) {
+				continue;
+			}
 			String childNodeName = (childNode.getLocalName() == null ? childNode.getNodeName().intern() : childNode.getLocalName().intern());
 			String childNodeValue = "";
 			if (childNode.getFirstChild() != null) {
 				childNodeValue = childNode.getFirstChild().getNodeValue();
 			}
-			if (childNodeName == "schema-type-namespace") {
-				_SchemaTypeNamespace = childNodeValue;
-			}
-			else if (childNodeName == "schema-type-name") {
-				_SchemaTypeName = childNodeValue;
-			}
-			else if (childNodeName == "java-type") {
-				_JavaType = childNodeValue;
-			}
-			else if (childNodeName == "root") {
-				if (childNode.getFirstChild() == null)
-					_Root = true;
-				else
-					_Root = java.lang.Boolean.valueOf(childNodeValue).booleanValue();
-				_isSet_Root = true;
-			}
-			else if (childNodeName == "bean") {
-				if (childNode.getFirstChild() == null)
-					_Bean = true;
-				else
-					_Bean = java.lang.Boolean.valueOf(childNodeValue).booleanValue();
-				_isSet_Bean = true;
-			}
-			else if (childNodeName == "can-be-empty") {
-				if (childNode.getFirstChild() == null)
-					_CanBeEmpty = true;
-				else
-					_CanBeEmpty = java.lang.Boolean.valueOf(childNodeValue).booleanValue();
-				_isSet_CanBeEmpty = true;
-			}
-			else {
-				// Found extra unrecognized childNode
+			boolean recognized = readNodeChild(childNode, childNodeName, childNodeValue, namespacePrefixes);
+			if (!recognized) {
+				if (childNode instanceof org.w3c.dom.Element) {
+					_logger.info("Found extra unrecognized childNode '"+childNodeName+"'");
+				}
 			}
 		}
+	}
+
+	protected boolean readNodeChild(org.w3c.dom.Node childNode, String childNodeName, String childNodeValue, java.util.Map namespacePrefixes) {
+		// assert childNodeName == childNodeName.intern()
+		if ("schema-type-namespace".equals(childNodeName)) {
+			_SchemaTypeNamespace = childNodeValue;
+		}
+		else if ("schema-type-name".equals(childNodeName)) {
+			_SchemaTypeName = childNodeValue;
+		}
+		else if ("java-type".equals(childNodeName)) {
+			_JavaType = childNodeValue;
+		}
+		else if ("root".equals(childNodeName)) {
+			if (childNode.getFirstChild() == null)
+				_Root = true;
+			else
+				_Root = ("true".equalsIgnoreCase(childNodeValue) || "1".equals(childNodeValue));
+			_isSet_Root = true;
+		}
+		else if ("bean".equals(childNodeName)) {
+			if (childNode.getFirstChild() == null)
+				_Bean = true;
+			else
+				_Bean = ("true".equalsIgnoreCase(childNodeValue) || "1".equals(childNodeValue));
+			_isSet_Bean = true;
+		}
+		else if ("can-be-empty".equals(childNodeName)) {
+			if (childNode.getFirstChild() == null)
+				_CanBeEmpty = true;
+			else
+				_CanBeEmpty = ("true".equalsIgnoreCase(childNodeValue) || "1".equals(childNodeValue));
+			_isSet_CanBeEmpty = true;
+		}
+		else {
+			return false;
+		}
+		return true;
 	}
 
 	public void validate() throws org.netbeans.modules.schema2beansdev.beangraph.BeanGraph.ValidateException {
@@ -333,34 +366,34 @@ public class SchemaTypeMappingType implements org.netbeans.modules.schema2beansd
 	public void changePropertyByName(String name, Object value) {
 		if (name == null) return;
 		name = name.intern();
-		if (name == "schemaTypeNamespace")
+		if ("schemaTypeNamespace".equals(name))
 			setSchemaTypeNamespace((java.lang.String)value);
-		else if (name == "schemaTypeName")
+		else if ("schemaTypeName".equals(name))
 			setSchemaTypeName((java.lang.String)value);
-		else if (name == "javaType")
+		else if ("javaType".equals(name))
 			setJavaType((java.lang.String)value);
-		else if (name == "root")
+		else if ("root".equals(name))
 			setRoot(((java.lang.Boolean)value).booleanValue());
-		else if (name == "bean")
+		else if ("bean".equals(name))
 			setBean(((java.lang.Boolean)value).booleanValue());
-		else if (name == "canBeEmpty")
+		else if ("canBeEmpty".equals(name))
 			setCanBeEmpty(((java.lang.Boolean)value).booleanValue());
 		else
 			throw new IllegalArgumentException(name+" is not a valid property name for SchemaTypeMappingType");
 	}
 
 	public Object fetchPropertyByName(String name) {
-		if (name == "schemaTypeNamespace")
+		if ("schemaTypeNamespace".equals(name))
 			return getSchemaTypeNamespace();
-		if (name == "schemaTypeName")
+		if ("schemaTypeName".equals(name))
 			return getSchemaTypeName();
-		if (name == "javaType")
+		if ("javaType".equals(name))
 			return getJavaType();
-		if (name == "root")
+		if ("root".equals(name))
 			return (isRoot() ? java.lang.Boolean.TRUE : java.lang.Boolean.FALSE);
-		if (name == "bean")
+		if ("bean".equals(name))
 			return (isBean() ? java.lang.Boolean.TRUE : java.lang.Boolean.FALSE);
-		if (name == "canBeEmpty")
+		if ("canBeEmpty".equals(name))
 			return (isCanBeEmpty() ? java.lang.Boolean.TRUE : java.lang.Boolean.FALSE);
 		throw new IllegalArgumentException(name+" is not a valid property name for SchemaTypeMappingType");
 	}
@@ -388,42 +421,6 @@ public class SchemaTypeMappingType implements org.netbeans.modules.schema2beansd
 	 * @return null if not found
 	 */
 	public String nameChild(Object childObj, boolean returnConstName, boolean returnSchemaName, boolean returnXPathName) {
-		if (childObj instanceof java.lang.String) {
-			java.lang.String child = (java.lang.String) childObj;
-			if (child == _SchemaTypeNamespace) {
-				if (returnConstName) {
-					return SCHEMA_TYPE_NAMESPACE;
-				} else if (returnSchemaName) {
-					return "schema-type-namespace";
-				} else if (returnXPathName) {
-					return "schema-type-namespace";
-				} else {
-					return "SchemaTypeNamespace";
-				}
-			}
-			if (child == _SchemaTypeName) {
-				if (returnConstName) {
-					return SCHEMA_TYPE_NAME;
-				} else if (returnSchemaName) {
-					return "schema-type-name";
-				} else if (returnXPathName) {
-					return "schema-type-name";
-				} else {
-					return "SchemaTypeName";
-				}
-			}
-			if (child == _JavaType) {
-				if (returnConstName) {
-					return JAVA_TYPE;
-				} else if (returnSchemaName) {
-					return "java-type";
-				} else if (returnXPathName) {
-					return "java-type";
-				} else {
-					return "JavaType";
-				}
-			}
-		}
 		if (childObj instanceof java.lang.Boolean) {
 			java.lang.Boolean child = (java.lang.Boolean) childObj;
 			if (((java.lang.Boolean)child).booleanValue() == _Root) {
@@ -457,6 +454,42 @@ public class SchemaTypeMappingType implements org.netbeans.modules.schema2beansd
 					return "can-be-empty";
 				} else {
 					return "CanBeEmpty";
+				}
+			}
+		}
+		if (childObj instanceof java.lang.String) {
+			java.lang.String child = (java.lang.String) childObj;
+			if (child.equals(_SchemaTypeNamespace)) {
+				if (returnConstName) {
+					return SCHEMA_TYPE_NAMESPACE;
+				} else if (returnSchemaName) {
+					return "schema-type-namespace";
+				} else if (returnXPathName) {
+					return "schema-type-namespace";
+				} else {
+					return "SchemaTypeNamespace";
+				}
+			}
+			if (child.equals(_SchemaTypeName)) {
+				if (returnConstName) {
+					return SCHEMA_TYPE_NAME;
+				} else if (returnSchemaName) {
+					return "schema-type-name";
+				} else if (returnXPathName) {
+					return "schema-type-name";
+				} else {
+					return "SchemaTypeName";
+				}
+			}
+			if (child.equals(_JavaType)) {
+				if (returnConstName) {
+					return JAVA_TYPE;
+				} else if (returnSchemaName) {
+					return "java-type";
+				} else if (returnXPathName) {
+					return "java-type";
+				} else {
+					return "JavaType";
 				}
 			}
 		}

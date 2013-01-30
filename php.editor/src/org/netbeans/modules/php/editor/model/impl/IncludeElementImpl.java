@@ -43,9 +43,8 @@
 package org.netbeans.modules.php.editor.model.impl;
 
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.php.editor.api.ElementQuery;
-import org.netbeans.modules.php.editor.model.IncludeElement;
 import org.netbeans.modules.php.editor.api.PhpModifiers;
+import org.netbeans.modules.php.editor.model.IncludeElement;
 import org.netbeans.modules.php.editor.model.Scope;
 import org.netbeans.modules.php.editor.model.nodes.IncludeInfo;
 import org.openide.filesystems.FileObject;
@@ -58,8 +57,15 @@ import org.openide.util.Union2;
 class IncludeElementImpl extends ModelElementImpl implements IncludeElement {
     private String fileName;
     private OffsetRange referenceSpanRange;
+
     IncludeElementImpl(Scope inScope, IncludeInfo info) {
-        super(inScope, "include", Union2.<String, FileObject>createSecond(inScope.getFileObject()),new OffsetRange(0, 0), info.getPhpElementKind(), PhpModifiers.noModifiers());
+        super(
+                inScope,
+                "include", //NOI18N
+                Union2.<String, FileObject>createSecond(inScope.getFileObject()),
+                new OffsetRange(0, 0),
+                info.getPhpElementKind(),
+                PhpModifiers.noModifiers());
         this.fileName = info.getFileName();
         this.referenceSpanRange = info.getRange();
     }
@@ -77,6 +83,6 @@ class IncludeElementImpl extends ModelElementImpl implements IncludeElement {
 
     @Override
     public String getNormalizedName() {
-        return getName()+String.valueOf(getOffset());
+        return getName() + String.valueOf(getOffset());
     }
 }

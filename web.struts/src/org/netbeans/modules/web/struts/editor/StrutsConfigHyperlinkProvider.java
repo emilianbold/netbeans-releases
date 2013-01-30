@@ -323,7 +323,7 @@ public class StrutsConfigHyperlinkProvider implements HyperlinkProvider {
                     && token.getImage().equals(startSection))){
                 token = token.getNext();
             }
-            if (token.getImage().equals(startSection)){
+            if (token != null && token.getImage().equals(startSection)){
                 //find out, whether the section is empty
                 token = token.getNext();
                 while (token != null

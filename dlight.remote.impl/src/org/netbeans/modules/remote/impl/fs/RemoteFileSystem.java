@@ -74,6 +74,8 @@ import org.netbeans.modules.remote.api.ui.ConnectionNotifier;
 import org.netbeans.modules.remote.impl.RemoteLogger;
 import org.netbeans.modules.remote.impl.fileoperations.spi.AnnotationProvider;
 import org.netbeans.modules.remote.impl.fileoperations.spi.FileOperationsProvider;
+import org.netbeans.modules.remote.impl.fileoperations.spi.FilesystemInterceptorProvider;
+import org.netbeans.modules.remote.impl.fileoperations.spi.FilesystemInterceptorProvider.FilesystemInterceptor;
 import org.netbeans.modules.remote.spi.FileSystemCacheProvider;
 import org.netbeans.modules.remote.spi.FileSystemProvider.FileSystemProblemListener;
 import org.openide.filesystems.*;
@@ -93,6 +95,7 @@ import org.openide.windows.WindowManager;
 public final class RemoteFileSystem extends FileSystem implements ConnectionListener {
 
     private static final SystemAction[] NO_SYSTEM_ACTIONS = new SystemAction[]{};
+    private static final boolean ATTR_STATS = Boolean.getBoolean("remote.attr.stats");
     
     public static final String ATTRIBUTES_FILE_NAME = ".rfs_attr"; // NOI18N
     public static final String CACHE_FILE_NAME = ".rfs_cache"; // NOI18N
@@ -188,6 +191,7 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
                 fo.connectionChanged();
             }
         }
+        if (ATTR_STATS) { dumpAttrStat(); }
     }
     
     /*package*/ ExecutionEnvironment getExecutionEnvironment() {
@@ -378,6 +382,65 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
         } else {
             file.fireFileAttributeChangedEvent(file.getListeners(), new FileAttributeEvent(file.getOwnerFileObject(), file.getOwnerFileObject(), attrName, oldValue, value));
         }
+        logAttrName(attrName, true);
+    }
+
+    private static class AttrStat {
+        public final String name;
+        public int readCount = 0;
+        public int writeCount = 0;
+        public StackTraceElement[] firstReadStack;
+        public StackTraceElement[] firstWriteStack;
+        public AttrStat(String name) {
+            this.name = name;
+        }
+    }
+
+    private static final Map<String, AttrStat> attrStats = new TreeMap<String, AttrStat> ();
+
+    private static void logAttrName(String name, boolean write) {
+        synchronized(attrStats) {
+            AttrStat stat  = attrStats.get(name);
+            if (stat == null) {
+                stat = new AttrStat(name);
+                attrStats.put(name, stat);
+            }
+            if (write) {
+                if (stat.writeCount++ == 0) {
+                    stat.firstWriteStack = Thread.currentThread().getStackTrace();
+                }
+            } else {
+                if (stat.readCount++ == 0) {
+                    stat.firstReadStack = Thread.currentThread().getStackTrace();
+                }
+            }
+        }
+        System.out.printf("%sAttribute %s\n", write ? "set" : "get", name); // NOI18N
+    }
+
+    /*package*/ void dumpAttrStat() {
+        Map<String, AttrStat> toDump = null;
+        synchronized(attrStats) {
+            toDump= new TreeMap<String, AttrStat>(attrStats);
+        }
+        System.out.printf("\n\nDumping attributes statistics (%d elements)\n\n", toDump.size()); // NOI18N
+        for (Map.Entry<String, AttrStat> entry : toDump.entrySet()) {
+            //String name = entry.getKey();
+            AttrStat stat = entry.getValue();
+            System.out.printf("%s %d %d\n", stat.name, stat.readCount, stat.writeCount); // NOI18N
+            if (stat.firstReadStack != null) {
+                System.out.printf("\t%s first read stack:\n", stat.name); // NOI18N
+                for (StackTraceElement e : stat.firstReadStack) {
+                    System.out.printf("\t\t%s\n", e); // NOI18N
+                }
+            }
+            if (stat.firstWriteStack != null) {
+                System.out.printf("\t%s first write stack:\n", stat.name); // NOI18N
+                for (StackTraceElement e : stat.firstWriteStack) {
+                    System.out.printf("\t\t%s\n", e); // NOI18N
+                }
+            }
+        }
     }
 
     private File getAttrFile(RemoteFileObjectBase parent) {
@@ -391,7 +454,9 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
             // root
             parent = file;
         }
-        if (attrName.equals(READONLY_ATTRIBUTES)) {
+        if (attrName.equals(FileObject.DEFAULT_LINE_SEPARATOR_ATTR)) {
+            return "\n"; // NOI18N
+        } else if (attrName.equals(READONLY_ATTRIBUTES)) {
             return Boolean.FALSE;
         } else if (attrName.equals("isRemoteAndSlow")) { // NOI18N
             return Boolean.TRUE;
@@ -402,8 +467,15 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
         } else if (attrName.equals("ExistsParentNoPublicAPI")) { //NOI18N
             return true;
         } else if (attrName.startsWith("ProvidedExtensions")) { //NOI18N
-            return null;
+            // #158600 - delegate to ProvidedExtensions if attrName starts with ProvidedExtensions prefix
+            if (RemoteFileObjectBase.USE_VCS) {
+                FilesystemInterceptor interceptor = FilesystemInterceptorProvider.getDefault().getFilesystemInterceptor(this);
+                if (interceptor != null) {
+                    return interceptor.getAttribute(FilesystemInterceptorProvider.toFileProxy(file.getOwnerFileObject()), attrName);
+                }
+            }
         }
+        if (ATTR_STATS) { logAttrName(attrName, false); }
         File attr = getAttrFile(parent);
         Properties table = readProperties(attr);
         return decodeValue(table.getProperty(translateAttributeName(file, attrName)));
@@ -605,6 +677,59 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
             }
             CommonTasksSupport.rmFile(execEnv, filename, null);
         }
+    }
+    
+    private RemoteFileObjectBase vcsSafeGetFileObject(String path) {
+        return factory.getCachedFileObject(path);
+        //RemoteFileObject fo = findResource(path);
+        //return (fo == null) ? null : fo.getImplementor();
+    }
+    
+    public Boolean vcsSafeIsDirectory(String path) {
+        path = PathUtilities.normalizeUnixPath(path);
+        RemoteFileObjectBase fo = vcsSafeGetFileObject(path);
+        if (fo == null) {
+            return null;
+        } else {
+            return fo.isFolder() ? Boolean.TRUE : Boolean.FALSE;
+        }            
+    }
+
+    public Boolean vcsSafeIsFile(String path) {
+        path = PathUtilities.normalizeUnixPath(path);
+        RemoteFileObjectBase fo = vcsSafeGetFileObject(path);
+        if (fo == null) {
+            return null;
+        } else {
+            switch(fo.getType()) {
+                // TODO: should we change isData() instead?
+                case Regular:
+                    return true;
+                case SymbolicLink:
+                    return fo.isData() ? Boolean.TRUE : Boolean.FALSE;
+                default:
+                    return false;
+            }            
+        }            
+    }
+
+    public Boolean vcsSafeExists(String path) {
+        path = PathUtilities.normalizeUnixPath(path);
+        RemoteFileObjectBase fo = vcsSafeGetFileObject(path);
+        if (fo == null) {
+            String parentPath = PathUtilities.getDirName(path);            
+            if (parentPath != null) {
+                RemoteFileObjectBase parentFO = vcsSafeGetFileObject(parentPath);
+                if (parentFO != null) {
+                    String childNameExt = PathUtilities.getBaseName(path);
+                    RemoteFileObject childFO = parentFO.getFileObject(childNameExt);
+                    return (childFO != null && childFO.isValid()) ? Boolean.TRUE : Boolean.FALSE;
+                }
+            }
+            return null;
+        } else {
+            return fo.isValid() ? Boolean.TRUE : Boolean.FALSE;
+        }            
     }
 
     private final class StatusImpl implements FileSystem.HtmlStatus, LookupListener, FileStatusListener {

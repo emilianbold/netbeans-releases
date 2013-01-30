@@ -5,7 +5,7 @@ Files                       F
 Classes                     C
 Favorites                   i
 Services                    S
-Tasks                       k
+Action Items
 Palette                     t
 Properties                  r
 Output                  >   O
@@ -14,16 +14,14 @@ Debugging               >   b
 Profiling               >   g
 Versioning              >   V
 Other                   >   h
+Web                     >   W
 Editor                      E
 Processes                   P
 =========================
-Close Window                C
-Maximize Window             z
-Undock Window               U
+Configure Window        >   W
+Reset Windows               W
 =========================
-Clone Document              l
+Close Window                C
 Close All Documents         A
 Close Other Documents       m
 Documents...                D
-=========================
-Reset Windows               W

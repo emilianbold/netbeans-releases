@@ -80,6 +80,7 @@ import javax.tools.Diagnostic.Kind;
 import javax.tools.JavaFileObject;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.AnnotationProcessingQuery;
 import org.netbeans.api.java.source.ClassIndex;
@@ -89,6 +90,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.java.JavaDataLoader;
 import org.netbeans.modules.java.source.ElementHandleAccessor;
+import org.netbeans.modules.java.source.JBrowseModule;
 import org.netbeans.modules.java.source.JavaSourceTaskFactoryManager;
 import org.netbeans.modules.java.source.parsing.FileManagerTransaction;
 import org.netbeans.modules.java.source.parsing.FileObjects;
@@ -128,11 +130,13 @@ import org.openide.util.Utilities;
  */
 public class JavaCustomIndexer extends CustomIndexer {
 
-            static final boolean NO_ONE_PASS_COMPILE_WORKER = Boolean.getBoolean(JavaCustomIndexer.class.getName() + ".no.one.pass.compile.worker");
+            static       boolean NO_ONE_PASS_COMPILE_WORKER = Boolean.getBoolean(JavaCustomIndexer.class.getName() + ".no.one.pass.compile.worker");
     private static final String SOURCE_PATH = "sourcePath"; //NOI18N
     private static final Pattern ANONYMOUS = Pattern.compile("\\$[0-9]"); //NOI18N
     private static final ClassPath EMPTY = ClassPathSupport.createClassPath(new URL[0]);
     private static final int TRESHOLD = 500;
+    @StaticResource
+    private static final String WARNING_ICON = "org/netbeans/modules/java/source/resources/icons/warning.png";  //NOI18N
 
     @Override
     protected void index(final Iterable<? extends Indexable> files, final Context context) {
@@ -262,7 +266,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                             rootName);
                         NotificationDisplayer.getDefault().notify(
                             NbBundle.getMessage(JavaCustomIndexer.class, "TITLE_LowMemory"),
-                            ImageUtilities.loadImageIcon("org/netbeans/modules/java/resources/error.png", false),
+                            ImageUtilities.loadImageIcon(WARNING_ICON, false),
                             NbBundle.getMessage(JavaCustomIndexer.class, "MSG_LowMemory", rootName),
                             new ActionListener() {
                                 @Override
@@ -275,7 +279,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                                     }
                                 }
                             },
-                            NotificationDisplayer.Priority.HIGH);
+                            NotificationDisplayer.Priority.NORMAL);
                     }
                     
                 } finally {
@@ -313,14 +317,25 @@ public class JavaCustomIndexer extends CustomIndexer {
                         context.addSupplementaryFiles(entry.getKey(), entry.getValue());
                     }
                 }
-                javaContext.store();
+                try {
+                    javaContext.store();
+                } catch (JavaParsingContext.BrokenIndexException bi) {
+                    JavaIndex.LOG.log(
+                        Level.WARNING,
+                        "Broken index for root: {0} reason {1}, recovering.",  //NOI18N
+                        new Object[] {
+                            context.getRootURI()
+                        });
+                    final PersistentIndexTransaction piTx = txCtx.get(PersistentIndexTransaction.class);
+                    piTx.setBroken();
+                }
                 ciTx.addedTypes(context.getRootURI(), _at);
                 ciTx.removedTypes(context.getRootURI(), _rt);
                 ciTx.changedTypes(context.getRootURI(), compileResult.addedTypes);
                 if (!context.checkForEditorModifications()) { // #152222
                     ciTx.addedCacheFiles(context.getRootURI(), compileResult.createdFiles);
                     ciTx.removedCacheFiles(context.getRootURI(), removedFiles);
-                }
+                }                
             }
         } catch (IOException ioe) {
             Exceptions.printStackTrace(ioe);
@@ -364,14 +379,15 @@ public class JavaCustomIndexer extends CustomIndexer {
         File root = null;
         if (!context.checkForEditorModifications() && "file".equals(indexable.getURL().getProtocol()) && (root = FileUtil.toFile(context.getRoot())) != null) { //NOI18N
             try {
-                File file = Utilities.toFile(indexable.getURL().toURI());
-                return new CompileTuple(FileObjects.fileFileObject(file, root, javaContext.getJavaFileFilter(), javaContext.getEncoding()), indexable);
+                return new CompileTuple(
+                    FileObjects.fileFileObject(
+                        indexable,
+                        root,
+                        javaContext.getJavaFileFilter(),
+                        javaContext.getEncoding()),
+                    indexable);
             } catch (Exception ex) {
-            } catch (AssertionError ae) {
-                //Add more debug messages
-                throw Exceptions.attachMessage(ae, "Root FileObject: " + FileUtil.getFileDisplayName(context.getRoot()) +   //NOI18N
-                                                   " Indexable URL: " + indexable.getURL() +    //NOI18N
-                                                   " Normalized root: " + FileUtil.normalizeFile(root).getAbsolutePath());  //NOI18N
+                //pass
             }
         }
         FileObject fo = URLMapper.findFileObject(indexable.getURL());
@@ -403,7 +419,20 @@ public class JavaCustomIndexer extends CustomIndexer {
                 for (Map.Entry<URL, Set<URL>> entry : findDependent(context.getRootURI(), removedTypes, false).entrySet()) {
                     context.addSupplementaryFiles(entry.getKey(), entry.getValue());
                 }
-                javaContext.store();
+                try {
+                    javaContext.store();
+                } catch (JavaParsingContext.BrokenIndexException bi) {
+                    JavaIndex.LOG.log(
+                        Level.WARNING,
+                        "Broken index for root: {0} reason: {1}, recovering.",  //NOI18N
+                        new Object[] {
+                            context.getRootURI(),
+                            bi.getMessage()
+                        });
+                    final PersistentIndexTransaction piTx = txCtx.get(PersistentIndexTransaction.class);
+                    assert piTx != null;
+                    piTx.setBroken();
+                }
                 ciTx.removedCacheFiles(context.getRootURI(), removedFiles);
                 ciTx.removedTypes(context.getRootURI(), removedTypes);
             } finally {
@@ -478,15 +507,23 @@ public class JavaCustomIndexer extends CustomIndexer {
                 if (javaContext.getFQNs().remove(FileObjects.getBinaryName(file, classFolder), relURLPair.second)) {
                     String fileName = file.getName();
                     fileName = fileName.substring(0, fileName.lastIndexOf('.'));
-                    final String[] patterns = new String[]{fileName + '.', fileName + '$'}; //NOI18N
+                    final String[][] patterns = new String[][]{
+                        new String[]{fileName + '.', "", FileObjects.SIG, FileObjects.RS, FileObjects.RAPT, FileObjects.RX},    //NOI18N
+                        new String[]{fileName + '$', null, FileObjects.SIG}                                                       //NOI18N
+                    };
                     File parent = file.getParentFile();
                     FilenameFilter filter = new FilenameFilter() {
 
                         @Override
                         public boolean accept(File dir, String name) {
-                            for (int i = 0; i < patterns.length; i++) {
-                                if (name.startsWith(patterns[i])) {
-                                    return true;
+                            for (final String[] pattern : patterns) {
+                                if (name.startsWith(pattern[0])) {
+                                    final String ext = FileObjects.getExtension(name);
+                                    for (int i = 2; i< pattern.length; i++) {
+                                        if (pattern[i].equals(ext) && (pattern[1] == null || name.length() == pattern[0].length() + pattern[i].length())) {
+                                            return true;
+                                        }
+                                    }
                                 }
                             }
                             return false;
@@ -576,17 +613,15 @@ public class JavaCustomIndexer extends CustomIndexer {
         return result;
     }
 
-    static boolean addAptGenerated(
+    static void addAptGenerated(
             @NonNull final Context context,
             @NonNull JavaParsingContext javaContext,
             @NonNull final CompileTuple source,
             @NonNull final Set<javax.tools.FileObject> aptGenerated) throws IOException {
-        boolean ret = false;
         final Set<javax.tools.FileObject> genSources = javaContext.getProcessorGeneratedFiles().getGeneratedSources(source.indexable.getURL());
         if (genSources != null) {
-            ret |= aptGenerated.addAll(genSources);
+            aptGenerated.addAll(genSources);
         }
-        return ret;
     }
 
     static void setErrors(Context context, CompileTuple active, DiagnosticListenerImpl errors) {
@@ -895,7 +930,7 @@ public class JavaCustomIndexer extends CustomIndexer {
         @Override
         public boolean scanStarted(final Context context) {
             JavaIndex.LOG.log(Level.FINE, "scan started for root ({0})", context.getRootURI()); //NOI18N
-            TransactionContext.beginStandardTransaction(true, context.getRootURI());
+            TransactionContext.beginStandardTransaction(context.getRootURI(), true, context.isAllFilesIndexing());
             boolean vote = true;
             try {
                 final ClassIndexImpl uq = ClassIndexManager.getDefault().createUsagesQuery(context.getRootURI(), true);
@@ -943,29 +978,17 @@ public class JavaCustomIndexer extends CustomIndexer {
         }        
 
         @Override
-        public void scanFinished(final Context context) {
+        public void scanFinished(final Context context) {            
+            final TransactionContext txCtx = TransactionContext.get();
+            assert txCtx != null;
             try {
-                final ClassIndexImpl uq = ClassIndexManager.getDefault().getUsagesQuery(context.getRootURI(), false);
-                if (uq == null) {
-                    //Closing
-                    return;
-                }
-                if (uq.getState() == ClassIndexImpl.State.NEW) {
-                    if (uq.getType() != ClassIndexImpl.Type.SOURCE) {
-                        JavaIndex.setAttribute(context.getRootURI(), ClassIndexManager.PROP_SOURCE_ROOT, Boolean.TRUE.toString());
-                    }
-                    uq.setState(ClassIndexImpl.State.INITIALIZED);
-                }
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            } finally {
-                final TransactionContext txCtx = TransactionContext.get();
-                assert txCtx != null;
-                try {
+                if (context.isCancelled()) {
+                    txCtx.rollBack();
+                } else {
                     txCtx.commit();
-                } catch (IOException ioe) {
-                    Exceptions.printStackTrace(ioe);
                 }
+            } catch (IOException ioe) {
+                Exceptions.printStackTrace(ioe);
             }
         }
         
@@ -993,6 +1016,9 @@ public class JavaCustomIndexer extends CustomIndexer {
                 try {
                     final Set<URL> toRefresh = new HashSet<URL>();
                     for (URL removedRoot : removedRoots) {
+                        if (JBrowseModule.isClosed()) {
+                            return;
+                        }
                         cim.removeRoot(removedRoot);
                         ffl.stopListeningOn(removedRoot);
                         final FileObject root = URLMapper.findFileObject(removedRoot);
@@ -1004,7 +1030,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                     }
                     for (URL removedRoot : removedRoots) {
                         toRefresh.remove(removedRoot);
-                    }
+                    }                    
                     for (URL url : toRefresh) {
                         IndexingManager.getDefault().refreshIndex(url, null, true);
                     }
@@ -1013,7 +1039,11 @@ public class JavaCustomIndexer extends CustomIndexer {
                 }
             } finally {
                 try {
-                    txCtx.commit();
+                    if (JBrowseModule.isClosed()) {
+                        txCtx.rollBack();
+                    } else {
+                        txCtx.commit();
+                    }
                 } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);
                 }

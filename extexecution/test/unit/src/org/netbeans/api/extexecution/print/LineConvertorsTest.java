@@ -42,18 +42,18 @@
 
 package org.netbeans.api.extexecution.print;
 
-import org.netbeans.api.extexecution.print.ConvertedLine;
-import org.netbeans.api.extexecution.print.LineConvertors;
-import org.netbeans.api.extexecution.print.LineConvertor;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.spi.extexecution.open.HttpOpenHandler;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Lookup;
 import org.openide.windows.InputOutput;
 import org.openide.windows.OutputEvent;
-import org.openide.windows.OutputListener;
 
 /**
  *
@@ -203,6 +203,32 @@ public class LineConvertorsTest extends NbTestCase {
         for (ConvertedLine line : lines) {
             assertNotNull(line.getListener());
         }
+    }
+
+    public void testHttpOpenHandler() throws MalformedURLException {
+        LineConvertor convertor = LineConvertors.httpUrl();
+
+        List<ConvertedLine> lines = new ArrayList<ConvertedLine>();
+        assertNull(convertor.convert("nourl1"));
+        lines.addAll(convertor.convert("NetBeans site: http://www.netbeans.org"));
+        lines.addAll(convertor.convert("https://www.netbeans.org"));
+
+        assertEquals(2, lines.size());
+        assertEquals("NetBeans site: http://www.netbeans.org", lines.get(0).getText());
+        assertEquals("https://www.netbeans.org", lines.get(1).getText());
+
+        for (ConvertedLine line : lines) {
+            assertNotNull(line.getListener());
+            line.getListener().outputLineAction(null);
+        }
+
+        HttpOpenHandler handler = Lookup.getDefault().lookup(HttpOpenHandler.class);
+        assertTrue(handler instanceof TestHttpOpenHandler);
+
+        List<URL> opened = ((TestHttpOpenHandler) handler).getOpened();
+        assertEquals(2, opened.size());
+        assertEquals(new URL("http://www.netbeans.org"), opened.get(0));
+        assertEquals(new URL("https://www.netbeans.org"), opened.get(1));
     }
 
     private static <T> void assertEquals(List<T> expected, List<T> value) {

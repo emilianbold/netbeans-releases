@@ -43,16 +43,22 @@ package org.netbeans.modules.web.primefaces;
 
 import java.net.URL;
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
-import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.web.jsf.spi.components.JsfComponentCustomizer;
 import org.netbeans.modules.web.primefaces.ui.PrimefacesCustomizerPanel;
 import org.openide.util.ChangeSupport;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
+import org.openide.util.Mutex;
+import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  * Customizer of PrimeFaces JSF component library suites.
@@ -61,8 +67,11 @@ import org.openide.util.HelpCtx;
  */
 public class PrimefacesCustomizer implements JsfComponentCustomizer {
 
+    private static final RequestProcessor RP = new RequestProcessor(PrimefacesCustomizer.class);
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     private PrimefacesCustomizerPanel panel;
+    private Future<Boolean> result = null;
+    private boolean fixedLibrary = false;
 
     @Override
     public void addChangeListener(ChangeListener listener) {
@@ -81,7 +90,7 @@ public class PrimefacesCustomizer implements JsfComponentCustomizer {
 
     private synchronized PrimefacesCustomizerPanel getPanel() {
         if (panel == null) {
-            panel = new PrimefacesCustomizerPanel(new PrimefacesPanelChangeListener());
+            panel = new PrimefacesCustomizerPanel(this);
         }
         return panel;
     }
@@ -94,22 +103,59 @@ public class PrimefacesCustomizer implements JsfComponentCustomizer {
             return true;
         }
 
-        for (Library library : LibraryManager.getDefault().getLibraries()) {
-            if (!"j2se".equals(library.getType())) { //NOI18N
-                continue;
-            }
+        synchronized (this) {
+            if (result == null) {
+                result = RP.submit(new Callable<Boolean>() {
+                    @Override
+                    public Boolean call() throws Exception {
+                        for (Library library : LibraryManager.getDefault().getLibraries()) {
+                            if (!"j2se".equals(library.getType())) { //NOI18N
+                                continue;
+                            }
 
-            List<URL> content = library.getContent("classpath"); //NOI18N
-            if (PrimefacesImplementation.isValidPrimefacesLibrary(content)) {
-                return true;
+                            List<URL> content = library.getContent("classpath"); //NOI18N
+                            if (PrimefacesImplementation.isValidPrimefacesLibrary(content)) {
+                                refreshParentValidation();
+                                return true;
+                            }
+                        }
+                        refreshParentValidation();
+                        return false;
+                    }
+
+                    private void refreshParentValidation() {
+                        // refresh validation of the parent panel
+                        Mutex.EVENT.readAccess(new Runnable() {
+                            @Override
+                            public void run() {
+                                fireChange();
+                            }
+                        });
+                    }
+                });
+            } else if (!result.isDone()) {
+                return false;
+            } else {
+                try {
+                    return result.get() || fixedLibrary;
+                } catch (InterruptedException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (ExecutionException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
             }
         }
-
         return false;
     }
 
+    @NbBundle.Messages({
+        "PrimefacesCustomizer.err.searching.primefaces.library=Searching valid Primefaces library. Please wait..."
+    })
     @Override
     public String getErrorMessage() {
+        if ((result == null && !isValid()) || (result != null && !result.isDone())) {
+            return Bundle.PrimefacesCustomizer_err_searching_primefaces_library();
+        }
         return getPanel().getErrorMessage();
     }
 
@@ -132,13 +178,15 @@ public class PrimefacesCustomizer implements JsfComponentCustomizer {
     }
 
     /**
-     * Listener for listening changes on the {@link PrimefacesCustomizerPanel).
+     * Sets to true when the library troubles were fixed.
+     * @param fixed whether the library was really fixed
      */
-    private class PrimefacesPanelChangeListener implements ChangeListener {
+    public void setFixedLibrary(boolean fixed) {
+        fixedLibrary = fixed;
+    }
 
-        @Override
-        public void stateChanged(ChangeEvent e) {
-            changeSupport.fireChange();
-        }
+    /** Fire event that validation should be redone. */
+    public void fireChange() {
+        changeSupport.fireChange();
     }
 }

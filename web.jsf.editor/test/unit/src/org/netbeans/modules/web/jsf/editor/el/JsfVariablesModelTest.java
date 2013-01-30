@@ -183,5 +183,12 @@ public class JsfVariablesModelTest extends TestBaseForTestProject {
 
     }
 
+    public void testExpression_parse() {
+        JsfVariablesModel.Expression.parse("");
+        JsfVariablesModel.Expression.parse("#");
+        JsfVariablesModel.Expression.parse("#{");
+        JsfVariablesModel.Expression.parse("#{ddd");
+        JsfVariablesModel.Expression.parse("#{ddd}");
+    }
    
 }

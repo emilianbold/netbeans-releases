@@ -46,6 +46,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import org.codehaus.groovy.ast.ASTNode;
+import org.codehaus.groovy.ast.AnnotationNode;
 import org.codehaus.groovy.ast.ConstructorNode;
 import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.Parameter;
@@ -70,8 +71,7 @@ public class ASTMethod extends ASTElement implements IMethodElement {
     // We need this variant to drag the Class to which this Method belongs with us.
     // This is used in the CodeCompleter complete/document pair.
     
-    public ASTMethod(GroovyParserResult info, ASTNode node,
-            Class clz, MetaMethod method, boolean GDK) {
+    public ASTMethod(GroovyParserResult info, ASTNode node, Class clz, MetaMethod method, boolean GDK) {
 
         super(info, node);
         this.clz = clz;
@@ -92,15 +92,13 @@ public class ASTMethod extends ASTElement implements IMethodElement {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public List<String> getParameters() {
         if (parameters == null) {
             parameters = new ArrayList<String>();
-            for (Parameter parameter : ((MethodNode)node).getParameters()) {
+            for (Parameter parameter : ((MethodNode) node).getParameters()) {
                 parameters.add(parameter.getName());
             }
         }
-
         return parameters;
     }
 
@@ -108,11 +106,11 @@ public class ASTMethod extends ASTElement implements IMethodElement {
     public String getSignature() {
         if (methodSignature == null) {
             StringBuilder builder = new StringBuilder(super.getSignature());
-            Parameter[] params = ((MethodNode) node).getParameters();
-            if (params.length > 0) {
+            List<String> params = getParameters();
+            if (params.size() > 0) {
                 builder.append("("); // NOI18N
-                for (Parameter parameter : params) {
-                    builder.append(parameter.getType().getName());
+                for (String parameter : params) {
+                    builder.append(parameter);
                     builder.append(","); // NOI18N
                 }
                 builder.setLength(builder.length() - 1);
@@ -136,7 +134,6 @@ public class ASTMethod extends ASTElement implements IMethodElement {
                 name = node.toString();
             }
         }
-
         return name;
     }
 
@@ -148,22 +145,18 @@ public class ASTMethod extends ASTElement implements IMethodElement {
     public ElementKind getKind() {
         if (node instanceof ConstructorNode) {
             return ElementKind.CONSTRUCTOR;
-        } else {
+        } else if (node instanceof MethodNode) {
             return ElementKind.METHOD;
+        } else {
+            return ElementKind.OTHER;
         }
     }
 
-    /**
-     * @todo Compute answer
-     */
     @Override
     public boolean isTopLevel() {
         return false;
     }
 
-    /**
-     * @todo Compute answer
-     */
     @Override
     public boolean isInherited() {
         return false;
@@ -171,7 +164,13 @@ public class ASTMethod extends ASTElement implements IMethodElement {
 
     @Override
     public boolean isDeprecated() {
-        // XXX TODO: When wrapping java objects I guess these functions -could- be deprecated, right?
+        if (node instanceof MethodNode) {
+            for (AnnotationNode annotation : ((MethodNode) node).getAnnotations()) {
+                if (Deprecated.class.getName().equals(annotation.getClassNode().getName())) { // NOI18N
+                    return true;
+                }
+            }
+        }
         return false;
     }
 }

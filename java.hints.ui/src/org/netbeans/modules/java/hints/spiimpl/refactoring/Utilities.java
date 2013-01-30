@@ -276,6 +276,8 @@ public class Utilities {
         assert SwingUtilities.isEventDispatchThread();
         if (SourceUtils.isScanInProgress()) {
             final ActionPerformer ap = new ActionPerformer(runnable);
+            //100ms is workaround for 127536
+            final RequestProcessor.Task waitTask = RP.post(ap, 100);
             ActionListener listener = new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     ap.cancel();
@@ -287,10 +289,7 @@ public class Utilities {
             DialogDescriptor dd = new DialogDescriptor(label, actionName, true, new Object[]{getString("LBL_CancelAction", new Object[]{actionName})}, null, 0, null, listener);
             waitDialog = DialogDisplayer.getDefault().createDialog(dd);
             waitDialog.pack();
-            //100ms is workaround for 127536
-            waitTask = RP.post(ap, 100);
             waitDialog.setVisible(true);
-            waitTask = null;
             waitDialog = null;
             return ap.hasBeenCancelled();
         } else {
@@ -300,7 +299,6 @@ public class Utilities {
     }
     
     private static Dialog waitDialog = null;
-    private static RequestProcessor.Task waitTask = null;
     
     private static String getString(String key) {
         return NbBundle.getMessage(Utilities.class, key);

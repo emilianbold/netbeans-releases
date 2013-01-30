@@ -52,12 +52,10 @@ import org.netbeans.modules.maven.api.PluginPropertyUtils;
 import org.netbeans.modules.maven.api.problem.ProblemReport;
 import org.netbeans.modules.maven.api.problem.ProblemReporter;
 import org.netbeans.modules.maven.spi.queries.ForeignClassBundler;
-import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import static org.netbeans.modules.maven.osgi.Bundle.*;
 
-@ProjectServiceProvider(service=ForeignClassBundler.class, projectType="org-netbeans-modules-maven/" + NbMavenProject.TYPE_OSGI)
 @NbBundle.Messages({
     "PRBL_Name=Export-Package/Private-Package contains packages from dependencies",
     "PRBL_DESC=When the final bundle jar contains classes not originating in current project, NetBeans internal compiler cannot use the sources of the project. Then changes done in project's source code only appears in depending projects when project is recompiled. Also applies to features like Refactoring which will not be able to find usages in depending projects."
@@ -95,9 +93,9 @@ public class ForeignClassBundlerImpl implements ForeignClassBundler { // #179521
             return true;
         }
         MavenProject mp = nbmp.getMavenProject();
-        Properties props = PluginPropertyUtils.getPluginPropertyParameter(mp, "org.apache.felix", "maven-bundle-plugin", "instructions", "bundle");
+        Properties props = PluginPropertyUtils.getPluginPropertyParameter(project, "org.apache.felix", "maven-bundle-plugin", "instructions", "bundle");
         if (props != null) {
-            String embed = props.getProperty("Embed-Dependency"); //TODO should we parse it somehow?
+            //String embed = props.getProperty("Embed-Dependency"); //TODO should we parse it somehow?
             //are embedded ones a problem? not on CP I guess
 //            if (embed != null && embed.contains("inline=true")) {
 //                return false;

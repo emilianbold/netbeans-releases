@@ -91,7 +91,7 @@ import org.openide.util.Exceptions;
                 HostInfo hinfo = HostInfoUtils.getHostInfo(executionEnvironment);
                 pb.setExecutable(hinfo.getShell()).setArguments("-s"); // NOI18N
                 process = pb.call();
-                process.getOutputStream().write(ToolchainScriptGenerator.generateScript(null).getBytes());
+                process.getOutputStream().write(ToolchainScriptGenerator.generateScript(null, hinfo).getBytes());
                 process.getOutputStream().close();
 
                 List<String> lines = ProcessUtils.readProcessOutput(process);

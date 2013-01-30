@@ -168,6 +168,8 @@ public class Generate {
         ThreadReferenceExceptions.put("forceEarlyReturn", new LinkedHashSet<Class>(Arrays.asList(
                 new Class[] { com.sun.jdi.NativeMethodException.class,
                               com.sun.jdi.InvalidStackFrameException.class })));
+        ThreadReferenceExceptions.put("threadGroup", new LinkedHashSet<Class>(Arrays.asList(
+                new Class[] { com.sun.jdi.VMOutOfMemoryException.class })));
         EXCEPTIONS_BY_METHODS.put(com.sun.jdi.ThreadReference.class.getName(), ThreadReferenceExceptions);
 
         Map<String, Set<Class>> StackFrameExceptions = new LinkedHashMap<String, Set<Class>>();
@@ -1142,6 +1144,18 @@ public class Generate {
                                   "                throw new "+com.sun.jdi.IncompatibleThreadStateException.class.getName()+"(npex.getMessage());\n"+
                                   "            }\n";
                 return catchNPE;
+            }
+            if (methodName.equals("resume")) {
+                String catchJDWPException = "            try {\n"+
+                                            "    "+exec+
+                                            "            } catch ("+com.sun.jdi.InternalException.class.getName()+" iex) {\n"+
+                                            "                if (iex.errorCode() == 13) { // THREAD_NOT_SUSPENDED\n"+
+                                            "                    // Ignore, as we're resuming the thread.\n"+
+                                            "                } else {\n"+
+                                            "                    throw iex; // re-throw the original\n"+
+                                            "                }\n"+
+                                            "            }\n";
+                return catchJDWPException;
             }
         }
         if (com.sun.jdi.ReferenceType.class.getName().equals(className) && methodName.equals("constantPool")) {

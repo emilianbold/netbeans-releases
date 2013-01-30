@@ -43,6 +43,7 @@
  */
 package org.netbeans.spi.search.impl;
 
+import java.net.URI;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.queries.VisibilityQuery;

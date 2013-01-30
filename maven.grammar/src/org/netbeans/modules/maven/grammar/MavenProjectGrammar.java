@@ -59,6 +59,7 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.jar.JarEntry;
@@ -69,6 +70,8 @@ import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.repository.metadata.Metadata;
 import org.apache.maven.artifact.repository.metadata.Versioning;
 import org.apache.maven.artifact.repository.metadata.io.xpp3.MetadataXpp3Reader;
+import org.apache.maven.model.PluginManagement;
+import org.apache.maven.model.Plugin;
 import org.codehaus.plexus.util.StringUtils;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.jdom.Document;
@@ -76,6 +79,9 @@ import org.jdom.Element;
 import org.jdom.JDOMException;
 import org.jdom.filter.Filter;
 import org.jdom.input.SAXBuilder;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.embedder.MavenEmbedder;
 import org.netbeans.modules.maven.grammar.spi.AbstractSchemaBasedGrammar;
@@ -129,12 +135,13 @@ public class MavenProjectGrammar extends AbstractSchemaBasedGrammar {
     private final Object VERSION_LOCK = new Object();
     private final Object CLASSIFIER_LOCK = new Object();
     private static RequestProcessor RP = new RequestProcessor(MavenProjectGrammar.class.getName(), 3);
+    private final Project owner;
 
 
-    public MavenProjectGrammar(GrammarEnvironment env) {
+    MavenProjectGrammar(GrammarEnvironment env, Project owner) {
         super(env);
+        this.owner = owner;
         groupTask = RP.create(new GroupTask());
-        
     }
     
     @Override
@@ -204,6 +211,32 @@ public class MavenProjectGrammar extends AbstractSchemaBasedGrammar {
         ArtifactInfoHolder holder = findArtifactInfo(previous);
         if (holder.getGroupId() == null) {
             holder.setGroupId("org.apache.maven.plugins"); //NOI18N
+        }
+        if (holder.getVersion() != null && holder.getVersion().contains("${")) {
+            //cannot do anything with unresolved value, clear and hope for the best
+            holder.setVersion(null);
+        }
+        if (holder.getVersion() == null && holder.getGroupId() != null && holder.getArtifactId() != null) {
+            NbMavenProject prj = owner.getLookup().lookup(NbMavenProject.class);
+            if (prj != null) {
+                for (Plugin a : prj.getMavenProject().getBuildPlugins()) {
+                    if (holder.getGroupId().equals(a.getGroupId()) && holder.getArtifactId().equals(a.getArtifactId())) {
+                        holder.setVersion(a.getVersion());
+                        break;
+                    } 
+                }
+                if (holder.getVersion() == null) {
+                    PluginManagement man = prj.getMavenProject().getPluginManagement();
+                    if (man != null) {
+                        for (Plugin p : man.getPlugins()) {
+                            if (holder.getGroupId().equals(p.getGroupId()) && holder.getArtifactId().equals(p.getArtifactId())) {
+                                holder.setVersion(p.getVersion());
+                                break;
+                            } 
+                        }
+                    }
+                }
+            }
         }
         if (checkLocalRepo && (holder.getVersion() == null || "LATEST".equals(holder.getVersion()) || "RELEASE".equals(holder.getVersion()))  //NOI18N
                 && holder.getArtifactId() != null && holder.getGroupId() != null) { //NOI18N
@@ -300,6 +333,45 @@ public class MavenProjectGrammar extends AbstractSchemaBasedGrammar {
 
     @Override
     protected Enumeration<GrammarResult> getDynamicValueCompletion(String path, HintContext virtualTextCtx, Element el) {
+        if (virtualTextCtx.getCurrentPrefix().length() > 0) {
+            String prefix = virtualTextCtx.getCurrentPrefix();
+            if (prefix.lastIndexOf("${") > prefix.lastIndexOf("}")) {
+                String propPrefix = prefix.substring(prefix.lastIndexOf("${") + 2);
+                FileObject fo = getEnvironment().getFileObject();
+                if (fo != null) {
+                    List<String> set = new ArrayList<String>();
+                    set.add("basedir");
+                    set.add("project.build.finalName");
+                    set.add("project.version");
+                    set.add("project.groupId");
+                    Project p;
+                    try {
+                        p = ProjectManager.getDefault().findProject(fo.getParent());
+                        if (p != null) {
+                            NbMavenProject nbprj = p.getLookup().lookup(NbMavenProject.class);
+                            if (nbprj != null) {
+                                Properties props = nbprj.getMavenProject().getProperties();
+                                if (props != null) {
+                                    set.addAll(props.stringPropertyNames());
+                                }
+                            }
+                        }
+                    } catch (IOException ex) {
+                        //Exceptions.printStackTrace(ex);
+                    } catch (IllegalArgumentException ex) {
+                        //Exceptions.printStackTrace(ex);
+                    }
+                    Collection<GrammarResult> elems = new ArrayList<GrammarResult>();
+                    Collections.sort(set);
+                    for (String pr : set) {
+                        if (pr.startsWith(propPrefix)) {
+                            elems.add(new ExpressionValueTextElement(pr, propPrefix));
+                        }
+                    }
+                    return Collections.enumeration(elems);
+                }
+            }
+        }
         if (path.endsWith("executions/execution/goals/goal")) { //NOI18N
             Node previous;
             // HACK.. if currentPrefix is zero length, the context is th element, otherwise it's the content inside

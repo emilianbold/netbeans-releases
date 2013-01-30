@@ -162,7 +162,7 @@ public interface CodeCompletionHandler {
     /**
      * Compute the set of applicable templates for a given text selection
      */
-    @NonNull
+    @CheckForNull
     Set<String> getApplicableTemplates(@NonNull Document doc, int selectionBegin, int selectionEnd);
     
     /**

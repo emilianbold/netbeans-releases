@@ -42,10 +42,12 @@
 
 package org.netbeans.modules.cloud.amazon.ui;
 
+import java.util.ArrayList;
+import java.util.List;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.cloud.amazon.AmazonInstance;
-import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
@@ -54,20 +56,35 @@ import org.openide.util.NbBundle;
 public class AmazonWizardComponent extends javax.swing.JPanel implements DocumentListener {
 
     private AmazonWizardPanel panel;
+    private List<Region> regions;
     
     /** Creates new form AmazonWizardComponent */
     public AmazonWizardComponent(AmazonWizardPanel panel, AmazonInstance ai) {
         this.panel = panel;
         initComponents();
+        initRegions();
+        jRegionComboBox.setModel(new DefaultComboBoxModel(regions.toArray()));
         setName(NbBundle.getBundle(AmazonWizardComponent.class).getString("LBL_Name")); // NOI18N
         if (ai != null) {
             accessKey.setText(ai.getKeyId());
             secret.setText(ai.getKey());
             accessKey.setEditable(false);
             secret.setEditable(false);
+            jRegionComboBox.setEnabled(false);
+            jRegionComboBox.setSelectedItem(findRegion(ai.getRegionURL()));
         }
         accessKey.getDocument().addDocumentListener(this);
         secret.getDocument().addDocumentListener(this);
+    }
+    
+    private void initRegions() {
+        regions = new ArrayList<Region>();
+        regions.add(new Region("US East (Northern Virginia) Region", "elasticbeanstalk.us-east-1.amazonaws.com"));
+        regions.add(new Region("US West (Northern California) Region", "elasticbeanstalk.us-west-1.amazonaws.com"));
+        regions.add(new Region("US West (Oregon) Region", "elasticbeanstalk.us-west-2.amazonaws.com"));
+        regions.add(new Region("EU (Ireland) Region", "elasticbeanstalk.eu-west-1.amazonaws.com"));
+        regions.add(new Region("Asia Pacific (Singapore) Region", "elasticbeanstalk.ap-southeast-1.amazonaws.com"));
+        regions.add(new Region("Asia Pacific (Tokyo) Region", "elasticbeanstalk.ap-northeast-1.amazonaws.com"));
     }
 
     /** This method is called from within the constructor to
@@ -83,6 +100,8 @@ public class AmazonWizardComponent extends javax.swing.JPanel implements Documen
         accessKey = new javax.swing.JTextField();
         jLabel2 = new javax.swing.JLabel();
         secret = new javax.swing.JPasswordField();
+        jLabel3 = new javax.swing.JLabel();
+        jRegionComboBox = new javax.swing.JComboBox();
 
         jLabel1.setText(org.openide.util.NbBundle.getMessage(AmazonWizardComponent.class, "AmazonWizardComponent.jLabel1.text")); // NOI18N
 
@@ -92,6 +111,8 @@ public class AmazonWizardComponent extends javax.swing.JPanel implements Documen
 
         secret.setText(org.openide.util.NbBundle.getMessage(AmazonWizardComponent.class, "AmazonWizardComponent.secret.text")); // NOI18N
 
+        jLabel3.setText(org.openide.util.NbBundle.getMessage(AmazonWizardComponent.class, "AmazonWizardComponent.jLabel3.text")); // NOI18N
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -99,29 +120,37 @@ public class AmazonWizardComponent extends javax.swing.JPanel implements Documen
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jLabel2)
-                    .addComponent(jLabel1))
+                    .addComponent(jLabel1)
+                    .addComponent(jLabel3))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(secret, javax.swing.GroupLayout.DEFAULT_SIZE, 173, Short.MAX_VALUE)
-                    .addComponent(accessKey, javax.swing.GroupLayout.DEFAULT_SIZE, 173, Short.MAX_VALUE)))
+                    .addComponent(accessKey, javax.swing.GroupLayout.DEFAULT_SIZE, 173, Short.MAX_VALUE)
+                    .addComponent(jRegionComboBox, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel1)
-                    .addComponent(accessKey, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jLabel3)
+                    .addComponent(jRegionComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(accessKey, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel1))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel2)
                     .addComponent(secret, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(72, Short.MAX_VALUE))
+                .addContainerGap(39, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextField accessKey;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JComboBox jRegionComboBox;
     private javax.swing.JPasswordField secret;
     // End of variables declaration//GEN-END:variables
 
@@ -133,6 +162,10 @@ public class AmazonWizardComponent extends javax.swing.JPanel implements Documen
         return String.valueOf(secret.getPassword());
     }
 
+    public String getRegionUrl() {
+        return ((Region)jRegionComboBox.getSelectedItem()).getUrl();
+    }
+    
     @Override
     public void insertUpdate(DocumentEvent e) {
         if (panel != null) {
@@ -152,5 +185,39 @@ public class AmazonWizardComponent extends javax.swing.JPanel implements Documen
         if (panel != null) {
             panel.fireChange();
         }
+    }
+
+    private Object findRegion(String regionURL) {
+        for (Region r : regions) {
+            if (r.getUrl().equals(regionURL)) {
+                return r;
+            }
+        }
+        return regions.get(0);
+    }
+    
+    private static class Region {
+        private String name;
+        private String url;
+
+        public Region(String name, String url) {
+            this.name = name;
+            this.url = url;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public String getUrl() {
+            return url;
+        }
+
+        @Override
+        public String toString() {
+            return name;
+        }
+
+        
     }
 }

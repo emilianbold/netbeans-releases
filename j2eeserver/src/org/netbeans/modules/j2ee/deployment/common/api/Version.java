@@ -57,6 +57,11 @@ import org.openide.util.Parameters;
  * @since 1.68
  */
 // TODO add JBoss notation parsing MAJOR.MINOR.MICRO.QUALIFIER
+
+// TODO: I copied this class to org.netbeans.modules.web.common.api.Version
+//       so that it can be reused in other places. Perhaps it should be deprecated
+//       here in favor of web.common one???
+
 public final class Version {
 
     private static final Pattern JSR277_PATTERN = Pattern.compile(
@@ -225,6 +230,7 @@ public final class Version {
      * notation the versions are equal only if the version strings exactly
      * matches.
      */
+    @org.netbeans.api.annotations.common.SuppressWarnings("RC_REF_COMPARISON")
     @Override
     public boolean equals(Object obj) {
         if (obj == null) {
@@ -276,7 +282,7 @@ public final class Version {
 
         // standard
         int hash = 7;
-        hash = 97 * hash + (this.majorNumber != null ? this.majorNumber.hashCode() : 0);
+        hash = 97 * hash + this.majorNumber.hashCode();
         hash = 97 * hash + (this.minorNumber != null ? this.minorNumber.hashCode() : 0);
         hash = 97 * hash + (this.microNumber != null ? this.microNumber.hashCode() : 0);
         hash = 97 * hash + (this.updateNumber != null ? this.updateNumber.hashCode() : 0);

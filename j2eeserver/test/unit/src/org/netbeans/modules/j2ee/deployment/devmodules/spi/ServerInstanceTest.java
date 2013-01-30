@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.j2ee.deployment.devmodules.spi;
 
+import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
@@ -77,6 +78,16 @@ public class ServerInstanceTest extends ServerRegistryTestBase {
         ServerRegistry registry = ServerRegistry.getInstance();
         registry.removeServerInstance(URL);
         super.tearDown();
+    }
+
+    public void testServerInstanceGC() {
+        ServerRegistry registry = ServerRegistry.getInstance();
+
+        WeakReference<org.netbeans.modules.j2ee.deployment.impl.ServerInstance> instance =
+                new WeakReference<org.netbeans.modules.j2ee.deployment.impl.ServerInstance>(registry.getServerInstance(URL));
+        registry.removeServerInstance(URL);
+
+        assertGC("The instance for " + URL + " has not been collected", instance);
     }
 
     public void testGetDisplayName() throws InstanceRemovedException {

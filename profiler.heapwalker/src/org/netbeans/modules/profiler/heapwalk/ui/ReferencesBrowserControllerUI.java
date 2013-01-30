@@ -183,8 +183,7 @@ public class ReferencesBrowserControllerUI extends JTitledPanel {
                 int row = fieldsListTable.rowAtPoint(e.getPoint());
                 if (e.getX() >= fieldsListTable.getTree().getRowBounds(row).x -
                                 fieldsListTable.getTreeCellOffsetX() && row != -1) {
-                    HeapWalkerNode node = (HeapWalkerNode) fieldsListTable.getTree().
-                            getPathForRow(row).getLastPathComponent();
+                    HeapWalkerNode node = getSelectedNode(row);
                     if (node instanceof HeapWalkerInstanceNode)
                             performDefaultAction();
                 }
@@ -460,7 +459,7 @@ public class ReferencesBrowserControllerUI extends JTitledPanel {
                     BrowserUtils.performTask(new Runnable() {
                         public void run() {
                             final int retainedSizesState = referencesBrowserController.getReferencesControllerHandler().
-                                    getHeapFragmentWalker().computeRetainedSizes(false);
+                                    getHeapFragmentWalker().computeRetainedSizes(false, true);
                             SwingUtilities.invokeLater(new Runnable() {
                                 public void run() {
                                     if (retainedSizesState != HeapFragmentWalker.RETAINED_SIZES_COMPUTED) {
@@ -573,7 +572,7 @@ public class ReferencesBrowserControllerUI extends JTitledPanel {
                     int row = fieldsListTable.getSelectedRow();
 
                     if (row != -1) {
-                        HeapWalkerNode node = (HeapWalkerNode) fieldsListTable.getTree().getPathForRow(row).getLastPathComponent();
+                        HeapWalkerNode node = getSelectedNode(row);
 
                         if (node instanceof InstanceNode) {
                             InstanceNode instanceNode = (InstanceNode) node;
@@ -592,7 +591,7 @@ public class ReferencesBrowserControllerUI extends JTitledPanel {
                     int row = fieldsListTable.getSelectedRow();
 
                     if (row != -1) {
-                        HeapWalkerNode node = (HeapWalkerNode) fieldsListTable.getTree().getPathForRow(row).getLastPathComponent();
+                        HeapWalkerNode node = getSelectedNode(row);
 
                         if (node instanceof HeapWalkerInstanceNode && ((HeapWalkerInstanceNode) node).isLoop()) {
                             selectNode(((HeapWalkerInstanceNode) node).getLoopTo());
@@ -620,12 +619,8 @@ public class ReferencesBrowserControllerUI extends JTitledPanel {
                         int row = fieldsListTable.getSelectedRow();
 
                         if (row != -1) {
-                            HeapWalkerNode node = (HeapWalkerNode) fieldsListTable.getTree().getPathForRow(row).getLastPathComponent();
-                            String className = node.getType();
-
-                            while (className.endsWith("[]")) {
-                                className = className.substring(0, className.length() - 2); // NOI18N
-                            }
+                            HeapWalkerNode node = getSelectedNode(row);
+                            String className = BrowserUtils.getArrayBaseType(node.getType());
                             Lookup.Provider p = referencesBrowserController.getReferencesControllerHandler().getHeapFragmentWalker().getHeapDumpProject();
                             GoToSource.openSource(p, className, null, null);
                         }
@@ -639,7 +634,7 @@ public class ReferencesBrowserControllerUI extends JTitledPanel {
                     int row = fieldsListTable.getSelectedRow();
 
                     if (row != -1) {
-                        HeapWalkerNode node = (HeapWalkerNode) fieldsListTable.getTree().getPathForRow(row).getLastPathComponent();
+                        HeapWalkerNode node = getSelectedNode(row);
                         if (node instanceof HeapWalkerInstanceNode) {
                             Instance instance = ((HeapWalkerInstanceNode)node).getInstance();
                             referencesBrowserController.showInThreads(instance);
@@ -830,7 +825,7 @@ public class ReferencesBrowserControllerUI extends JTitledPanel {
         int row = fieldsListTable.getSelectedRow();
 
         if (row != -1) {
-            HeapWalkerNode node = (HeapWalkerNode) fieldsListTable.getTree().getPathForRow(row).getLastPathComponent();
+            HeapWalkerNode node = getSelectedNode(row);
 
             if (node instanceof HeapWalkerInstanceNode) {
                 referencesBrowserController.createNavigationHistoryPoint();
@@ -858,8 +853,34 @@ public class ReferencesBrowserControllerUI extends JTitledPanel {
         headerPopup.show(cornerButton, cornerButton.getWidth() - headerPopup.getPreferredSize().width, cornerButton.getHeight());
     }
 
+    public HeapWalkerNode getSelectedNode(int row) {
+        return (HeapWalkerNode) fieldsListTable.getTree().getPathForRow(row).getLastPathComponent();
+    }
+    
+    public void showRootGCRoot() {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                final HeapWalkerNode node = getSelectedNode(0);
+                if (node != null && isComputed(node) /*&& (node instanceof InstanceNode)*/) {
+                    referencesBrowserController.navigateToNearestGCRoot((InstanceNode)node);
+                } else {
+                    BrowserUtils.performTask(new Runnable() {
+                        public void run() {
+                            showRootGCRoot();
+                        }
+                    }, 100);
+                }
+            }
+        });
+    }
+    
+    private boolean isComputed(HeapWalkerNode node) {
+        return node instanceof HeapWalkerInstanceNode && (!node.currentlyHasChildren() ||
+               node.getNChildren() != 1 || !HeapWalkerNodeFactory.isMessageNode(node.getChild(0)));
+    }
+
     private void showPopupMenu(int row, int x, int y) {
-        HeapWalkerNode node = (HeapWalkerNode) fieldsListTable.getTree().getPathForRow(row).getLastPathComponent();
+        HeapWalkerNode node = getSelectedNode(row);
 
         if (node instanceof HeapWalkerInstanceNode && ((HeapWalkerInstanceNode) node).isLoop()) {
             showLoopOriginItem.setVisible(true);
@@ -877,9 +898,17 @@ public class ReferencesBrowserControllerUI extends JTitledPanel {
         }
 
 //        showClassItem.setEnabled(node instanceof HeapWalkerInstanceNode || node instanceof ClassNode);
-        showGcRootItem.setEnabled(node instanceof HeapWalkerInstanceNode && (!node.currentlyHasChildren() ||
-                (node.getNChildren() != 1 || !HeapWalkerNodeFactory.isMessageNode(node.getChild(0))))); // #124306
-        if (showSourceItem != null) showSourceItem.setEnabled(node instanceof HeapWalkerInstanceNode);
+        showGcRootItem.setEnabled(isComputed(node)); // #124306
+        if (showSourceItem != null) {
+            String className = null;
+            if (node instanceof HeapWalkerInstanceNode) {
+                HeapWalkerInstanceNode instanceNode = (HeapWalkerInstanceNode)node;
+                if(instanceNode.hasInstance()) {
+                    className = instanceNode.getInstance().getJavaClass().getName();
+                }
+            }
+            showSourceItem.setEnabled(className != null && !BrowserUtils.isPrimitiveType(BrowserUtils.getArrayBaseType(className)));
+        }
         showInThreadsItem.setEnabled(false);
         if (node instanceof HeapWalkerInstanceNode) {
             Instance rootInstance = ((HeapWalkerInstanceNode)node).getInstance();

@@ -4,11 +4,12 @@ verifyClassName=
 verifyClassPath=
 doVerify=0
 
-if [ -n "$2" ] && [ -n "$3" ] ; then
-   verifyClassName="$2"
-   verifyClassPath="$3"
-   doVerify=1
-fi
+#it slows down building
+#if [ -n "$2" ] && [ -n "$3" ] ; then
+#   verifyClassName="$2"
+#   verifyClassPath="$3"
+#   doVerify=1
+#fi
 
 javaPath="/System/Library/Frameworks/JavaVM.framework/Versions/1.6/Home"
 unpackCommand="$javaPath/bin/unpack200"

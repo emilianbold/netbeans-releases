@@ -50,7 +50,11 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.search.MatchingObject;
 import org.netbeans.modules.search.ResultModel;
+import org.netbeans.modules.search.ResultModelTest;
 import org.netbeans.modules.search.SearchTestUtils;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -88,6 +92,21 @@ public class MatchingObjectNodeTest extends NbTestCase {
         rm.close();
         assertTrue("Display name change event has not been fired!", //NOI18N
                 s.tryAcquire(10, TimeUnit.SECONDS));
+    }
+
+    /**
+     * Test for bug 217984.
+     */
+    public void testCreateNodeForInvalidDataObject() throws IOException {
+        ResultModel rm = SearchTestUtils.createResultModelWithOneMatch();
+        MatchingObject mo = rm.getMatchingObjects().get(0);
+        DataObject dob = mo.getDataObject();
+        FileObject fob = mo.getFileObject();
+        Node original = dob.getNodeDelegate();
+        fob.delete();
+        // No exception should be thrown from the constructor.
+        Node n = new MatchingObjectNode(original, Children.LEAF, mo, false);
+        assertEquals("test.txt", n.getDisplayName());
     }
 
     /**

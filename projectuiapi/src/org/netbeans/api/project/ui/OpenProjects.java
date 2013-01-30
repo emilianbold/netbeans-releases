@@ -49,6 +49,8 @@ import java.util.Arrays;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.project.uiapi.OpenProjectsTrampoline;
 import org.netbeans.modules.project.uiapi.Utilities;
@@ -293,6 +295,33 @@ public final class OpenProjects {
      */
     public void removePropertyChangeListener( PropertyChangeListener listener ) {
         trampoline.removePropertyChangeListenerAPI( listener );
+    }
+    
+    /**
+     * return the currently action project group
+     * @return can be null if no group is active
+     * @since 1.61
+     */
+    public @CheckForNull ProjectGroup getActiveProjectGroup() {
+        return trampoline.getActiveProjectGroupAPI();
+}
+    
+    /**
+     * add listener to changes in active project group
+     * @param listener 
+     * @since 1.61
+     */
+    public void addProjectGroupChangeListener( @NonNull ProjectGroupChangeListener listener) {
+        trampoline.addProjectGroupChangeListenerAPI(listener);
+    }
+    
+    /**
+     * remove listener to changes in active project group
+     * @param listener 
+     * @since 1.61
+     */
+    public void removeProjectGroupChangeListener( @NonNull ProjectGroupChangeListener listener) {
+        trampoline.removeProjectGroupChangeListenerAPI(listener);
     }
     
 }

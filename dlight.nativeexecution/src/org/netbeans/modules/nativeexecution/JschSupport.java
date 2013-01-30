@@ -91,12 +91,11 @@ public final class JschSupport {
 
                 echannel.setCommand(command);
                 echannel.setXForwarding(params == null ? false : params.x11forward);
+                InputStream is = echannel.getInputStream();
+                InputStream es = echannel.getErrStream();
+                OutputStream os = new ProtectedOutputStream(echannel, echannel.getOutputStream());
                 echannel.connect(JSCH_CONNECTION_TIMEOUT);
-
-                return new ChannelStreams(echannel,
-                        echannel.getInputStream(),
-                        echannel.getErrStream(),
-                        echannel.getOutputStream());
+                return new ChannelStreams(echannel, is, es, os);
             }
 
             @Override
@@ -120,12 +119,11 @@ public final class JschSupport {
                 }
 
                 shell.setPty(false);
+                InputStream is = shell.getInputStream();
+                InputStream es = new ByteArrayInputStream(new byte[0]);
+                OutputStream os = shell.getOutputStream();
                 shell.connect(JSCH_CONNECTION_TIMEOUT);
-
-                return new ChannelStreams(shell,
-                        shell.getInputStream(),
-                        new ByteArrayInputStream(new byte[0]),
-                        shell.getOutputStream());
+                return new ChannelStreams(shell, is, es, os);
             }
 
             @Override
@@ -202,5 +200,54 @@ public final class JschSupport {
     private static interface JSchWorker<T> {
 
         T call() throws InterruptedException, IOException, JSchException;
+    }
+
+    private static class ProtectedOutputStream extends OutputStream {
+
+        private final ChannelExec channel;
+        private final OutputStream stream;
+
+        private ProtectedOutputStream(ChannelExec channel, OutputStream stream) {
+            this.stream = stream;
+            this.channel = channel;
+        }
+
+        @Override
+        public void write(int b) throws IOException {
+            checkAlive();
+            stream.write(b);
+        }
+
+        @Override
+        public void write(byte[] b) throws IOException {
+            checkAlive();
+            stream.write(b);
+        }
+
+        @Override
+        public void write(byte[] b, int off, int len) throws IOException {
+            checkAlive();
+            stream.write(b, off, len);
+        }
+
+        @Override
+        public void flush() throws IOException {
+            checkAlive();
+            stream.flush();
+        }
+
+        @Override
+        public void close() throws IOException {
+            if (!channel.isConnected()) {
+                return;
+            }
+            stream.close();
+        }
+
+        private void checkAlive() throws IOException {
+            if (!channel.isConnected()) {
+                throw new IOException("Channel is already closed"); // NOI18N
+            }
+        }
     }
 }

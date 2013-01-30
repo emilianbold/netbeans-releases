@@ -43,13 +43,21 @@
 
 package org.netbeans.modules.quicksearch;
 
+import java.awt.Cursor;
 import java.awt.Dimension;
+import java.awt.EventQueue;
 import java.awt.FontMetrics;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionAdapter;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 import javax.swing.JComponent;
 import javax.swing.JLayeredPane;
 import javax.swing.JList;
@@ -61,6 +69,7 @@ import javax.swing.event.ListDataListener;
 import org.netbeans.modules.quicksearch.recent.RecentSearches;
 import org.netbeans.modules.quicksearch.ResultsModel.ItemResult;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Task;
 import org.openide.util.TaskListener;
@@ -72,6 +81,8 @@ import org.openide.util.TaskListener;
 public class QuickSearchPopup extends javax.swing.JPanel 
         implements ListDataListener, ActionListener, TaskListener, Runnable {
 
+    private static final String CUSTOM_WIDTH = "customWidth";           //NOI18N
+    private static final int RESIZE_AREA_WIDTH = 5;
     private AbstractQuickSearchComboBar comboBar;
 
     private ResultsModel rModel;
@@ -87,13 +98,19 @@ public class QuickSearchPopup extends javax.swing.JPanel
 
     private int catWidth;
     private int resultWidth;
+    private int customWidth = -1;
+    private boolean canResize = false;
     private Task evalTask;
+    private Task saveTask;
     private static final RequestProcessor RP = new RequestProcessor(QuickSearchPopup.class);
     private static final RequestProcessor evaluatorRP = new RequestProcessor(QuickSearchPopup.class + ".evaluator"); //NOI18N
+    private static final Logger LOG = Logger.getLogger(QuickSearchPopup.class.getName());
 
     public QuickSearchPopup (AbstractQuickSearchComboBar comboBar) {
         this.comboBar = comboBar;
         initComponents();
+        loadSettings();
+        makeResizable();
         rModel = ResultsModel.getInstance();
         jList1.setModel(rModel);
         jList1.setCellRenderer(new SearchResultRender(this));
@@ -218,8 +235,14 @@ public class QuickSearchPopup extends javax.swing.JPanel
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 jList1MouseClicked(evt);
             }
+            public void mousePressed(java.awt.event.MouseEvent evt) {
+                jList1MousePressed(evt);
+            }
         });
         jList1.addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
+            public void mouseDragged(java.awt.event.MouseEvent evt) {
+                jList1MouseDragged(evt);
+            }
             public void mouseMoved(java.awt.event.MouseEvent evt) {
                 jList1MouseMoved(evt);
             }
@@ -272,6 +295,13 @@ public class QuickSearchPopup extends javax.swing.JPanel
     }// </editor-fold>//GEN-END:initComponents
 
 private void jList1MouseMoved(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jList1MouseMoved
+    // toggle resize/default cursor
+    if (evt.getX() < RESIZE_AREA_WIDTH) {
+        QuickSearchPopup.this.setCursor(Cursor.getPredefinedCursor(
+                Cursor.W_RESIZE_CURSOR));
+    } else {
+        QuickSearchPopup.this.setCursor(Cursor.getDefaultCursor());
+    }
     // selection follows mouse move
     Point loc = evt.getPoint();
     int index = jList1.locationToIndex(loc);
@@ -294,6 +324,13 @@ private void jList1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:even
 
 }//GEN-LAST:event_jList1MouseClicked
 
+    private void jList1MouseDragged(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jList1MouseDragged
+        QuickSearchPopup.this.processMouseMotionEvent(evt);
+    }//GEN-LAST:event_jList1MouseDragged
+
+    private void jList1MousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jList1MousePressed
+        QuickSearchPopup.this.processMouseEvent(evt);
+    }//GEN-LAST:event_jList1MousePressed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel hintLabel;
@@ -325,6 +362,10 @@ private void jList1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:even
      * Updates size and visibility of this panel according to model content
      */
     public void updatePopup (boolean isInProgress) {
+        updatePopup(isInProgress, true);
+    }
+
+    private void updatePopup (boolean isInProgress, boolean canRetry) {
         int modelSize = rModel.getSize();
         if (modelSize > 0 && jList1.getSelectedIndex()<0) {
             jList1.setSelectedIndex(0);
@@ -342,7 +383,13 @@ private void jList1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:even
 
         boolean statusVisible = updateStatusPanel(isInProgress);
 
-        computePopupBounds(popupBounds, lPane, modelSize);
+        try {
+            computePopupBounds(popupBounds, lPane, modelSize);
+        } catch (Exception e) { //sometimes the hack in computePopupBounds fails
+            LOG.log(canRetry ? Level.INFO : Level.SEVERE, null, e);
+            retryUpdatePopup(canRetry, isInProgress);
+            return;
+        }
         setBounds(popupBounds);
 
         // popup visibility constraints
@@ -364,6 +411,23 @@ private void jList1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:even
         // needed on JDK 1.5.x to repaint correctly
         revalidate();
     }
+
+    /**
+     * Retry to update popup if something went wrong, but only if it is allowed.
+     * See bug 205356.
+     */
+    private void retryUpdatePopup(boolean canRetry,
+            final boolean isInProgress) {
+        if (canRetry) {
+            EventQueue.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    updatePopup(isInProgress, false); // do not retry again
+                }
+            });
+        }
+    }
+
     private boolean explicitlyInvoked = false;
     /** User actually pressed Ctrl-I; display popup even just for Recent Searches. */
     void explicitlyInvoked() {
@@ -381,7 +445,17 @@ private void jList1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:even
         if (resultWidth <= 0) {
             resultWidth = computeWidth(jList1, 42, 50);
         }
-        return resultWidth;
+        if (customWidth > 0) {
+            return Math.max(resultWidth, customWidth);
+        } else {
+            return resultWidth;
+        }
+    }
+
+    public int getPopupWidth() {
+        int maxWidth = this.getParent() == null
+                ? Integer.MAX_VALUE : this.getParent().getWidth() - 10;
+        return Math.min(getCategoryWidth() + getResultWidth() + 3, maxWidth);
     }
 
     /** Implementation of TaskListener, listen to when providers are finished
@@ -404,7 +478,7 @@ private void jList1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:even
 
     private void computePopupBounds (Rectangle result, JLayeredPane lPane, int modelSize) {
         Dimension cSize = comboBar.getSize();
-        int width = getCategoryWidth() + getResultWidth() + 3;
+        int width = getPopupWidth();
         Point location = new Point(cSize.width - width - 1, comboBar.getBottomLineY() - 1);
         if (SwingUtilities.getWindowAncestor(comboBar) != null) {
             location = SwingUtilities.convertPoint(comboBar, location, lPane);
@@ -485,4 +559,59 @@ private void jList1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:even
                 comboBar.getKeyStroke()));
     }
 
+    /**
+     * Register listeners that make this pop-up resizable.
+     */
+    private void makeResizable() {
+        this.addMouseMotionListener(new MouseMotionAdapter() {
+            @Override
+            public void mouseDragged(MouseEvent e) {
+                if (canResize) {
+                    customWidth = getResultWidth() - e.getX();
+                    run();
+                    saveSettings();
+                }
+            }
+        });
+        this.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) {
+                canResize = e.getX() < RESIZE_AREA_WIDTH;
+            }
+        });
+    }
+
+    /**
+     * Load settings from preferences file.
+     */
+    private void loadSettings() {
+        RP.post(new Runnable() {
+            @Override
+            public void run() {
+                Preferences p = NbPreferences.forModule(QuickSearchPopup.class);
+                customWidth = p.getInt(CUSTOM_WIDTH, -1);
+            }
+        });
+    }
+
+    /**
+     * Save settings to preferences file. Do nothing if this operation is
+     * already scheduled.
+     */
+    private synchronized void saveSettings() {
+        if (saveTask == null) {
+            saveTask = RP.create(new Runnable() {
+                @Override
+                public void run() {
+                    Preferences p = NbPreferences.forModule(
+                            QuickSearchPopup.class);
+                    p.putInt(CUSTOM_WIDTH, customWidth);
+                    synchronized (QuickSearchPopup.this) {
+                        saveTask = null;
+                    }
+                }
+            });
+            RP.post(saveTask, 1000);
+        }
+    }
 }

@@ -75,7 +75,7 @@ import org.codehaus.groovy.ast.stmt.BlockStatement;
 import org.codehaus.groovy.ast.stmt.ExpressionStatement;
 import org.codehaus.groovy.ast.stmt.Statement;
 import org.codehaus.groovy.control.ResolveVisitor;
-import org.netbeans.modules.groovy.editor.api.AstUtilities;
+import org.netbeans.modules.groovy.editor.api.ASTUtils;
 import org.netbeans.modules.groovy.editor.api.elements.ast.ASTRoot;
 import org.netbeans.modules.java.preprocessorbridge.spi.VirtualSourceProvider;
 import org.netbeans.modules.parsing.api.ParserManager;
@@ -108,7 +108,7 @@ public class GroovyVirtualSourceProvider implements VirtualSourceProvider {
         FileObject rootFO = FileUtil.toFileObject(sourceRoot);
         Iterator<File> it = files.iterator();
         while (it.hasNext()) {
-            File file = it.next();
+            File file = FileUtil.normalizeFile(it.next());
             List<ClassNode> classNodes = getClassNodes(file);
             if (classNodes.isEmpty()) {
                 // source is probably broken and there is no AST
@@ -157,7 +157,7 @@ public class GroovyVirtualSourceProvider implements VirtualSourceProvider {
                     ParserManager.parse(Collections.singleton(source), new UserTask() {
                         @Override
                         public void run(ResultIterator resultIterator) throws Exception {
-                            GroovyParserResult result = AstUtilities.getParseResult(resultIterator.getParserResult());
+                            GroovyParserResult result = ASTUtils.getParseResult(resultIterator.getParserResult());
 
                             ASTRoot astRootElement = result.getRootElement();
                             if (astRootElement != null) {

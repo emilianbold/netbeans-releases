@@ -47,7 +47,7 @@ made subject to such option by the copyright holder.
 <filesystem>
 
     <folder name="OptionsExport">
-        <folder name="Advanced">
+        <folder name="Java">
             <file name="AntShortcuts"> <!-- #167803 -->
                 <attr name="displayName" bundlevalue="org.apache.tools.ant.module.resources.Bundle#OptionsExport.displayName"/>
                 <attr name="include" stringvalue="config/(Actions/Build/.*[.]xml|(Menu|Toolbars|Shortcuts)/.*[.]shadow)"/>

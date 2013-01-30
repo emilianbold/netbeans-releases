@@ -48,7 +48,6 @@ import java.awt.Component;
 import org.netbeans.modules.options.colors.spi.FontsColorsController;
 import org.netbeans.modules.options.colors.ColorModel;
 import org.openide.util.LookupEvent;
-import org.openide.util.NbBundle;
 
 import javax.swing.text.AttributeSet;
 import javax.swing.text.SimpleAttributeSet;
@@ -60,20 +59,23 @@ import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.awt.Color;
 import java.awt.EventQueue;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeEvent;
 import java.util.*;
 import org.netbeans.api.editor.settings.EditorStyleConstants;
+import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.versioning.util.OptionsPanelColorProvider;
+import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.Lookup;
 import org.openide.util.LookupListener;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.WeakListeners;
 
 /**
  * 
  * @author Maros Sandor, Ondra Vrabec
  */
-public class AnnotationColorsPanel extends javax.swing.JPanel implements ActionListener, FontsColorsController, PropertyChangeListener {
+@OptionsPanelController.Keywords(keywords={"versioning", "#KW_AnnotationColorsPanel"}, location=OptionsDisplayer.FONTSANDCOLORS, tabTitle="#CTL_AnnotationColorsPanel.tabName")
+@Messages({ "CTL_AnnotationColorsPanel.title=&Versioning", "CTL_AnnotationColorsPanel.tabName=Versioning" })
+public class AnnotationColorsPanel extends javax.swing.JPanel implements ActionListener, FontsColorsController {
 
     private boolean listen;
     private final HashMap<OptionsPanelColorProvider, VersioningSystemColors>  vcsColors;
@@ -84,7 +86,7 @@ public class AnnotationColorsPanel extends javax.swing.JPanel implements ActionL
     public AnnotationColorsPanel() {
         initComponents ();
 
-        setName(NbBundle.getMessage(this.getClass(), "CTL_AnnotationColorsPanel.title")); //NOI18N
+        setName(Bundle.CTL_AnnotationColorsPanel_title());
 
         result = Lookup.getDefault().lookupResult(OptionsPanelColorProvider.class);
         vcsColors = new HashMap<OptionsPanelColorProvider, VersioningSystemColors> ();
@@ -103,7 +105,6 @@ public class AnnotationColorsPanel extends javax.swing.JPanel implements ActionL
         ));
         initSystems();
 
-        ColorComboBox.init (cbBackground);
         lCategories.setSelectionMode (ListSelectionModel.SINGLE_SELECTION);
         lCategories.setVisibleRowCount (6);
         lCategories.addListSelectionListener (new ListSelectionListener() {
@@ -115,7 +116,6 @@ public class AnnotationColorsPanel extends javax.swing.JPanel implements ActionL
         lCategories.setCellRenderer (new CategoryRenderer());
         cbBackground.addActionListener (this);
         btnResetToDefaults.addActionListener (this);
-        ((JComponent)cbBackground.getEditor()).addPropertyChangeListener (this);
         versioningSystemsList.setCellRenderer(new DefaultListCellRenderer() {
             @Override
             public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
@@ -145,14 +145,6 @@ public class AnnotationColorsPanel extends javax.swing.JPanel implements ActionL
             refreshUI();
         } else {
             updateData();
-            changed = true;
-        }
-    }
-    
-    public void propertyChange (PropertyChangeEvent evt) {
-        if (!listen) return;
-        if (ColorComboBox.PROP_COLOR.equals(evt.getPropertyName())) {
-            updateData ();
             changed = true;
         }
     }
@@ -198,7 +190,7 @@ public class AnnotationColorsPanel extends javax.swing.JPanel implements ActionL
         if (versioningSystemsList.getSelectedValue() == null) return;
         int index = lCategories.getSelectedIndex();
         if (index < 0) return;
-        Color color = ColorComboBox.getColor(cbBackground);
+        Color color = cbBackground.getSelectedColor();
         VersioningSystemColors colors = vcsColors.get((OptionsPanelColorProvider)versioningSystemsList.getSelectedValue());
         colors.setColor(index, color);
     }
@@ -219,7 +211,7 @@ public class AnnotationColorsPanel extends javax.swing.JPanel implements ActionL
         
         listen = false;
         // set values
-        ColorComboBox.setColor(cbBackground, (Color) category.getAttribute(StyleConstants.Background));
+        cbBackground.setSelectedColor((Color) category.getAttribute(StyleConstants.Background));
         listen = true;
     }
     
@@ -250,16 +242,11 @@ public class AnnotationColorsPanel extends javax.swing.JPanel implements ActionL
         jScrollPane1 = new javax.swing.JScrollPane();
         lCategories = new javax.swing.JList();
         jLabel3 = new javax.swing.JLabel();
-        cbBackground = new javax.swing.JComboBox();
         btnResetToDefaults = new javax.swing.JButton();
+        cbBackground = new org.openide.awt.ColorComboBox();
 
         versioningSystemsList.setModel(new DefaultListModel());
         versioningSystemsList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
-        versioningSystemsList.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
-            public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
-                versioningSystemsListValueChanged(evt);
-            }
-        });
         jScrollPane2.setViewportView(versioningSystemsList);
 
         jLabel2.setLabelFor(versioningSystemsList);
@@ -284,17 +271,17 @@ public class AnnotationColorsPanel extends javax.swing.JPanel implements ActionL
             .addGroup(containerPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(containerPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel1)
                     .addGroup(containerPanelLayout.createSequentialGroup()
-                        .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 511, Short.MAX_VALUE)
+                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(20, 20, 20)
                         .addGroup(containerPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(btnResetToDefaults)
                             .addGroup(containerPanelLayout.createSequentialGroup()
                                 .addComponent(jLabel3)
-                                .addGap(12, 12, 12)
-                                .addComponent(cbBackground, javax.swing.GroupLayout.PREFERRED_SIZE, 215, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addComponent(btnResetToDefaults))))
-                .addContainerGap())
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(cbBackground, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                    .addComponent(jLabel1))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         containerPanelLayout.setVerticalGroup(
             containerPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -338,15 +325,10 @@ public class AnnotationColorsPanel extends javax.swing.JPanel implements ActionL
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
-
-    private void versioningSystemsListValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_versioningSystemsListValueChanged
-        
-}//GEN-LAST:event_versioningSystemsListValueChanged
-    
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnResetToDefaults;
-    private javax.swing.JComboBox cbBackground;
+    private org.openide.awt.ColorComboBox cbBackground;
     private javax.swing.JPanel containerPanel;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;

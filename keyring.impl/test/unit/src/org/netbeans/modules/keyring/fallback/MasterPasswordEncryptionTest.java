@@ -67,8 +67,15 @@ public class MasterPasswordEncryptionTest extends NbTestCase {
         doTestEncryption("some extra secret pass phrase", "something pretty long here for whatever reason...");
         // Acc. to PBEKeySpec, using PKCS #5 (not #12) only ASCII is supported for master passwords:
         doTestEncryption("muj heslo", "hezky česky");
+        // Some extra chars
+        doTestEncryption("muj heslo", "!§$%&/()=?\\}][{+*#~");
         doTestEncryption("muj heslo", "ॐ");
+        // Test fr all characters
+        for (char c = 0; c < Character.MAX_VALUE; ++c) {
+            doTestEncryption("muj heslo", Character.toString(c));
+        }
     }
+    
     private void doTestEncryption(String masterPassword, String password) throws Exception {
         MasterPasswordEncryption p = new MasterPasswordEncryption();
         assertTrue(p.enabled());

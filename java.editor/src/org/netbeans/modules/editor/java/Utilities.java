@@ -47,6 +47,7 @@ package org.netbeans.modules.editor.java;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.EnhancedForLoopTree;
+import com.sun.source.tree.ErroneousTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
@@ -60,6 +61,7 @@ import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 import com.sun.source.util.Trees;
+import com.sun.source.util.TreeScanner;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -75,6 +77,7 @@ import javax.lang.model.util.*;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.annotations.common.NonNull;
 
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.settings.SimpleValueNames;
@@ -391,13 +394,13 @@ public final class Utilities {
             case DOUBLE_LITERAL:
             case FLOAT_LITERAL:
             case FLOAT_LITERAL_INVALID:
+            case LONG_LITERAL:
                 if (ts.token().text().charAt(0) == '.')
                     break;
             case CHAR_LITERAL:
             case INT_LITERAL:
             case INVALID_COMMENT_END:
             case JAVADOC_COMMENT:
-            case LONG_LITERAL:
             case LINE_COMMENT:
             case BLOCK_COMMENT:
                 return false;
@@ -573,6 +576,24 @@ public final class Utilities {
             }
         }.scan(info.getCompilationUnit(), null);
         return ret;                
+    }
+    
+    public static boolean containErrors(Tree tree) {
+        final AtomicBoolean containsErrors = new AtomicBoolean();
+        new TreeScanner<Void, Void>() {
+            public Void visitErroneous(ErroneousTree node, Void p) {
+                containsErrors.set(true);
+                return null;
+            }
+            
+            public Void scan(Tree node, Void p) {
+                if (containsErrors.get()) {
+                    return null;
+                }
+                return super.scan(node, p);
+            }
+        }.scan(tree, null);
+        return containsErrors.get();
     }
 
     private static List<String> varNamesForType(TypeMirror type, Types types, Elements elements, String prefix) {
@@ -859,17 +880,20 @@ public final class Utilities {
     }
     
     private static TypeMirror resolveCapturedTypeInt(CompilationInfo info, TypeMirror tm) {
+        if (tm == null) return tm;
+        
         TypeMirror orig = SourceUtils.resolveCapturedType(tm);
 
         if (orig != null) {
-            if (orig.getKind() == TypeKind.WILDCARD) {
-                TypeMirror extendsBound = ((WildcardType) orig).getExtendsBound();
-                TypeMirror rct = SourceUtils.resolveCapturedType(extendsBound != null ? extendsBound : ((WildcardType) orig).getSuperBound());
-                if (rct != null) {
-                    return rct;
-                }
+            tm = orig;
+        }
+        
+        if (tm.getKind() == TypeKind.WILDCARD) {
+            TypeMirror extendsBound = ((WildcardType) tm).getExtendsBound();
+            TypeMirror rct = resolveCapturedTypeInt(info, extendsBound != null ? extendsBound : ((WildcardType) tm).getSuperBound());
+            if (rct != null) {
+                return rct.getKind() == TypeKind.WILDCARD ? rct : info.getTypes().getWildcardType(extendsBound != null ? rct : null, extendsBound == null ? rct : null);
             }
-            return orig;
         }
         
         if (tm.getKind() == TypeKind.DECLARED) {
@@ -900,7 +924,7 @@ public final class Utilities {
     /**
      * @since 2.12
      */
-    public static ExecutableElement fuzzyResolveMethodInvocation(CompilationInfo info, TreePath path, TypeMirror[] proposed, int[] index) {
+    public static @NonNull List<ExecutableElement> fuzzyResolveMethodInvocation(CompilationInfo info, TreePath path, List<TypeMirror> proposed, int[] index) {
         assert path.getLeaf().getKind() == Kind.METHOD_INVOCATION || path.getLeaf().getKind() == Kind.NEW_CLASS;
         
         if (path.getLeaf().getKind() == Kind.METHOD_INVOCATION) {
@@ -931,7 +955,7 @@ public final class Utilities {
             }
 
             if (on == null || on.getKind() != TypeKind.DECLARED) {
-                return null;
+                return Collections.emptyList();
             }
             
             return resolveMethod(info, actualTypes, (DeclaredType) on, false, false, methodName, proposed, index);
@@ -949,13 +973,13 @@ public final class Utilities {
             TypeMirror on = info.getTrees().getTypeMirror(new TreePath(path, nct.getIdentifier()));
             
             if (on == null || on.getKind() != TypeKind.DECLARED) {
-                return null;
+                return Collections.emptyList();
             }
             
             return resolveMethod(info, actualTypes, (DeclaredType) on, false, true, null, proposed, index);
         }
         
-        return null;
+        return Collections.emptyList();
     }
 
     private static Iterable<ExecutableElement> execsIn(CompilationInfo info, TypeElement e, boolean constr, String name) {
@@ -974,8 +998,8 @@ public final class Utilities {
         return result;
     }
     
-    private static ExecutableElement resolveMethod(CompilationInfo info, List<TypeMirror> foundTypes, DeclaredType on, boolean statik, boolean constr, String name, TypeMirror[] candidateType, int[] index) {
-        ExecutableElement found = null;
+    private static List<ExecutableElement> resolveMethod(CompilationInfo info, List<TypeMirror> foundTypes, DeclaredType on, boolean statik, boolean constr, String name, List<TypeMirror> candidateTypes, int[] index) {
+        List<ExecutableElement> found = new LinkedList<ExecutableElement>();
         
         OUTER:
         for (ExecutableElement ee : execsIn(info, (TypeElement) on.asElement(), constr, name)) {
@@ -1009,14 +1033,24 @@ public final class Utilities {
                 }
 
                 if (mismatchFound) {
-                    if (candidateType[0] == null) {
-                        candidateType[0] = innerCandidate;
+                    if (candidateTypes.isEmpty()) {
                         index[0] = innerIndex;
-                        found = ee;
+                        candidateTypes.add(innerCandidate);
+                        found.add(ee);
                     } else {
                         //see testFuzzyResolveConstructor2:
-                        if (index[0] != innerIndex || !info.getTypes().isSameType(candidateType[0], innerCandidate)) {
-                            return null;
+                        if (index[0] == innerIndex) {
+                            boolean add = true;
+                            for (TypeMirror tm : candidateTypes) {
+                                if (info.getTypes().isSameType(tm, innerCandidate)) {
+                                    add = false;
+                                    break;
+                                }
+                            }
+                            if (add) {
+                                candidateTypes.add(innerCandidate);
+                                found.add(ee);
+                            }
                         }
                     }
                 }

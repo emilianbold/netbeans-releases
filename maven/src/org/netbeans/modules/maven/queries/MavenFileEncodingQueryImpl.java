@@ -84,28 +84,21 @@ public class MavenFileEncodingQueryImpl extends  FileEncodingQueryImplementation
             return Charset.defaultCharset();
         }
         try {
-            String defEnc = mp.getProperties().getProperty(Constants.ENCODING_PROP);
             //TODO instead of SD
             FileObject src = FileUtilities.convertStringToFileObject(mp.getBuild().getSourceDirectory());
             if (src != null && (src.equals(file) || FileUtil.isParentOf(src, file))) {
                 String compileEnc = PluginPropertyUtils.getPluginProperty(project,
-                        Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_COMPILER, ENCODING_PARAM, "compile"); //NOI18N;
+                        Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_COMPILER, ENCODING_PARAM, "compile", Constants.ENCODING_PROP); //NOI18N;
                 if (compileEnc != null && compileEnc.indexOf("${") == -1) { //NOI18N - guard against unresolved values.
                     return Charset.forName(compileEnc);
-                }
-                if (defEnc != null) {
-                    return Charset.forName(defEnc);
                 }
             }
             FileObject testsrc = FileUtilities.convertStringToFileObject(mp.getBuild().getTestSourceDirectory());
             if (testsrc != null && (testsrc.equals(file) || FileUtil.isParentOf(testsrc, file))) {
                 String testcompileEnc = PluginPropertyUtils.getPluginProperty(project,
-                        Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_COMPILER, ENCODING_PARAM, "testCompile"); //NOI18N
+                        Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_COMPILER, ENCODING_PARAM, "testCompile", Constants.ENCODING_PROP); //NOI18N
                 if (testcompileEnc != null && testcompileEnc.indexOf("${") == -1) {//NOI18N - guard against unresolved values.
                     return Charset.forName(testcompileEnc);
-                }
-                if (defEnc != null) {
-                    return Charset.forName(defEnc);
                 }
             }
             //possibly more complicated with resources, one can have explicit declarations in the
@@ -114,12 +107,9 @@ public class MavenFileEncodingQueryImpl extends  FileEncodingQueryImplementation
             try {
                 if (isWithin(impl.getResources(false), file)) {
                     String resourceEnc = PluginPropertyUtils.getPluginProperty(project,
-                            Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_RESOURCES, ENCODING_PARAM, "resources"); //NOI18N
+                            Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_RESOURCES, ENCODING_PARAM, "resources", Constants.ENCODING_PROP); //NOI18N
                     if (resourceEnc != null && resourceEnc.indexOf("${") == -1) {//NOI18N - guard against unresolved values.
                         return Charset.forName(resourceEnc);
-                    }
-                    if (defEnc != null) {
-                        return Charset.forName(defEnc);
                     }
                 }
 
@@ -130,12 +120,9 @@ public class MavenFileEncodingQueryImpl extends  FileEncodingQueryImplementation
             try {
                 if (isWithin(impl.getResources(true), file)) {
                     String testresourceEnc = PluginPropertyUtils.getPluginProperty(project,
-                            Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_RESOURCES, ENCODING_PARAM, "testResources"); //NOI18N
+                            Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_RESOURCES, ENCODING_PARAM, "testResources", Constants.ENCODING_PROP); //NOI18N
                     if (testresourceEnc != null && testresourceEnc.indexOf("${") == -1) {//NOI18N - guard against unresolved values.
                         return Charset.forName(testresourceEnc);
-                    }
-                    if (defEnc != null) {
-                        return Charset.forName(defEnc);
                     }
                 }
             } catch (MalformedURLException malformedURLException) {
@@ -145,18 +132,15 @@ public class MavenFileEncodingQueryImpl extends  FileEncodingQueryImplementation
             try {
                 if (isWithin(new URI[]{impl.getSiteDirectory()}, file)) {
                     String siteEnc = PluginPropertyUtils.getPluginProperty(project,
-                            Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_SITE, "inputEncoding", "site"); //NOI18N
+                            Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_SITE, "inputEncoding", "site", Constants.ENCODING_PROP); //NOI18N
                     if (siteEnc != null && siteEnc.indexOf("${") == -1) {//NOI18N - guard against unresolved values.
                         return Charset.forName(siteEnc);
-                    }
-                    if (defEnc != null) {
-                        return Charset.forName(defEnc);
                     }
                 }
             } catch (MalformedURLException malformedURLException) {
                 Exceptions.printStackTrace(malformedURLException);
             }
-
+            String defEnc = mp.getProperties().getProperty(Constants.ENCODING_PROP);
             if (defEnc != null) {
                 return Charset.forName(defEnc);
             }

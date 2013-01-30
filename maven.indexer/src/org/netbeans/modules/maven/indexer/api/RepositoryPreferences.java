@@ -83,7 +83,6 @@ public final class RepositoryPreferences {
 
     private static RepositoryPreferences instance;
 
-    private static final String KEY_TYPE = "provider";//NOI18N
     private static final String KEY_DISPLAY_NAME = "name";//NOI18N
     private static final String KEY_PATH = "path";//NOI18N
     private static final String KEY_INDEX_URL = "index";//NOI18N
@@ -254,7 +253,7 @@ public final class RepositoryPreferences {
             List<RepositoryInfo> semiTreed = new ArrayList<RepositoryInfo>();
             for (RepositoryInfo in: toRet) {
                 if (in.getMirrorStrategy() == RepositoryInfo.MirrorStrategy.ALL || in.getMirrorStrategy() == RepositoryInfo.MirrorStrategy.NON_WILDCARD) {
-                    RepositoryInfo processed = getMirrorInfo(in, in.getMirrorStrategy() == RepositoryInfo.MirrorStrategy.ALL ? selectorWithGroups : selectorWithoutGroups, semiTreed);
+                    RepositoryInfo processed = getMirrorInfo(in, in.getMirrorStrategy() == RepositoryInfo.MirrorStrategy.ALL ? selectorWithGroups : selectorWithoutGroups);
                     boolean isMirror = true;
                     if (processed == null) {
                         isMirror = false;
@@ -277,10 +276,10 @@ public final class RepositoryPreferences {
     }
     
     /**
-     * if the repository has a mirror, then create a repositoryinfo object for it or find an existing one in the current list..
+     * if the repository has a mirror, then create a repositoryinfo object for it..
      */
     
-    private RepositoryInfo getMirrorInfo(RepositoryInfo info, MirrorSelector selector, List<RepositoryInfo> infos) {
+    private RepositoryInfo getMirrorInfo(RepositoryInfo info, MirrorSelector selector) {
         RemoteRepository original = new RemoteRepository(info.getId(), /* XXX do we even support any other layout?*/"default", info.getRepositoryUrl());
         RemoteRepository mirror = selector.getMirror(original);
         if (mirror != null) {

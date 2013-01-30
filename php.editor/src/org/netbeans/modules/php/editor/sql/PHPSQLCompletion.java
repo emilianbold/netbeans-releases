@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.php.editor.sql;
 
-import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
@@ -64,14 +63,14 @@ import org.openide.text.NbDocument;
  * @author Andrei Badea, David Van Couvering
  */
 public class PHPSQLCompletion implements CompletionProvider {
-
-    private static final Logger LOGGER = Logger.getLogger(PHPSQLCompletion.class.getName());
     private static final Boolean NO_COMPLETION = Boolean.getBoolean("netbeans.php.nosqlcompletion"); // NOI18N
 
+    @Override
     public CompletionTask createTask(int queryType, JTextComponent component) {
         return new AsyncCompletionTask(new Query(), component);
     }
 
+    @Override
     public int getAutoQueryTypes(JTextComponent component, String typedText) {
         return 0;
     }
@@ -101,7 +100,7 @@ public class PHPSQLCompletion implements CompletionProvider {
             context = context.setOffset(stmt.sourceToGeneratedPos(caretOffset));
 
             DatabaseConnection dbconn = DatabaseConnectionSupport.getDatabaseConnection(document, true);
-            if (dbconn == null ) {
+            if (dbconn == null) {
                 resultSet.addItem(new SelectConnectionItem(document));
             } else {
                 context = context.setDatabaseConnection(dbconn);
@@ -116,10 +115,12 @@ public class PHPSQLCompletion implements CompletionProvider {
 
         static class SQLSubstitutionHandler implements SubstitutionHandler {
             final PHPSQLStatement statement;
+
             public SQLSubstitutionHandler(PHPSQLStatement statement) {
                 this.statement = statement;
             }
 
+            @Override
             public void substituteText(JTextComponent component, int offset, final String text) {
                 final int caretOffset = component.getSelectionEnd();
                 final int sourceOffset = statement.generatedToSourcePos(offset);
@@ -127,6 +128,7 @@ public class PHPSQLCompletion implements CompletionProvider {
                 try {
                     NbDocument.runAtomicAsUser(document, new Runnable() {
 
+                        @Override
                         public void run() {
                             try {
                                 int documentOffset = sourceOffset;
@@ -141,6 +143,5 @@ public class PHPSQLCompletion implements CompletionProvider {
             }
         }
     }
-
 
 }

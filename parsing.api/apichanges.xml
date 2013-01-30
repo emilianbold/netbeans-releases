@@ -110,6 +110,23 @@ is the proper place.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
   <changes>
+  <change id="EmbeddingProvider.Registration">
+      <api name="ParsingAPI"/>
+      <summary>Added <code>EmbeddingProvider.Registration</code> annotation to register <code>EmbeddingProvider</code>s.</summary>
+      <version major="1" minor="57"/>
+      <date day="16" month="9" year="2012"/>
+      <author login="tzezula"/>
+      <compatibility source="compatible" binary="compatible" semantic="compatible" deletion="no" addition="yes" modification="no"/>
+      <description>
+          <p>
+               Added <code>EmbeddingProvider.Registration</code> annotation to register <code>EmbeddingProvider</code>s.
+               The registration provides a mime type of a generated embedding which allows the infrastructure to correctly
+               handle embedded indexes.
+          </p>
+      </description>
+      <class package="org.netbeans.modules.parsing.spi" name="EmbeddingProvider"/>
+      <issue number="218148"/>
+  </change>
   <change id="SuspendStatus">
       <api name="ParsingAPI"/>
       <summary>Added <code>SuspendStatus</code> service which can be used by indexers to find out if

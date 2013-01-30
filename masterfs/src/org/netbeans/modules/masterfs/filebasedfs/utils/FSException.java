@@ -97,7 +97,7 @@ public final class FSException extends IOException {
             format = NbBundle.getBundle("org.netbeans.modules.masterfs.filebasedfs.Bundle", java.util.Locale.getDefault(), FileObjectFactory.class.getClassLoader()).getString(res);//NOI18N                        
         } catch (MissingResourceException mex) {
             if (format == null) {
-                NbBundle.getBundle("org.openide.filesystems.Bundle", java.util.Locale.getDefault(), FileSystem.class.getClassLoader()).getString(res);//NOI18N    
+                format = NbBundle.getBundle("org.openide.filesystems.Bundle", java.util.Locale.getDefault(), FileSystem.class.getClassLoader()).getString(res);//NOI18N    
             }
         }
                 

@@ -125,6 +125,7 @@ import org.openide.util.RequestProcessor;
 /**
  * Panel for remote synchronization.
  */
+@org.netbeans.api.annotations.common.SuppressWarnings("SE_BAD_FIELD_STORE")
 public final class SyncPanel extends JPanel implements HelpCtx.Provider {
 
     private static final long serialVersionUID = 1674646546545121L;
@@ -771,7 +772,6 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
         if (selectedItems.size() == 1) {
             return selectedItems.get(0);
         }
-        assert false : "Any row should be selected";
         return null;
     }
 
@@ -1441,7 +1441,7 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
 
     }
 
-    private final class HeaderRenderer implements TableCellRenderer {
+    private static final class HeaderRenderer implements TableCellRenderer {
 
         private static final long serialVersionUID = -6517698451435465L;
 
@@ -1533,6 +1533,19 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             JLabel rendererComponent = (JLabel) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
             SyncItem.Operation operation = (SyncItem.Operation) value;
+            // #218341
+            if (operation == null) {
+                String expected;
+                try {
+                    expected = displayedItems.get(itemTable.convertRowIndexToModel(row)).getOperation().toString();
+                } catch (Exception ex) {
+                    LOGGER.log(Level.INFO, null, ex);
+                    expected = "???"; // NOI18N
+                }
+                LOGGER.log(Level.WARNING, "Unexpected null value for operation (row: {0}, column: {1}, expected: {2})", new Object[] {row, column, expected});
+                // fallback to NOOP
+                operation = SyncItem.Operation.NOOP;
+            }
             rendererComponent.setIcon(operation.getIcon(!remotePathFirst));
             if (OPERATIONS.contains(operation)) {
                 rendererComponent.setToolTipText(Bundle.SyncPanel_operation_tooltip(operation.getTitle()));
@@ -1721,7 +1734,8 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
 
     }
 
-    private final class SyncItemImageIconComparator implements Comparator<ImageIcon> {
+    @org.netbeans.api.annotations.common.SuppressWarnings("SE_COMPARATOR_SHOULD_BE_SERIALIZABLE")
+    private static final class SyncItemImageIconComparator implements Comparator<ImageIcon> {
 
         @Override
         public int compare(ImageIcon icon1, ImageIcon icon2) {

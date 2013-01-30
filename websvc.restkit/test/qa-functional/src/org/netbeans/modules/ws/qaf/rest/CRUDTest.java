@@ -56,8 +56,6 @@ import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.*;
-import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.modules.ws.qaf.utilities.RestWizardOperator;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -116,9 +114,6 @@ public class CRUDTest extends RestTestBase {
         String fromDbLabel = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.persistence.wizard.fromdb.Bundle", "Templates/Persistence/RelatedCMP");
         createNewFile(getProject(), persistenceLabel, fromDbLabel);
         WizardOperator wo = prepareEntityClasses(new WizardOperator(fromDbLabel), getProjectType().isAntBasedProject());
-        //Finish
-        //new JButtonOperator(wo, 7).pushNoBlock();
-        //only finish the wizard
         wo.finish();
         String generationTitle = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.persistence.wizard.fromdb.Bundle", "TXT_EntityClassesGeneration");
         waitDialogClosed(generationTitle);
@@ -128,7 +123,7 @@ public class CRUDTest extends RestTestBase {
         //RESTful Web Services from Entity Classes
         String restLabel = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.wizard.Bundle", "Templates/WebServices/RestServicesFromEntities");
         createNewWSFile(getProject(), restLabel);
-        wo = new RestWizardOperator(restLabel);
+        wo = new WizardOperator(restLabel);
         //have to wait until "retrieving message dissapers (see also issue 122802)
         new EventTool().waitNoEvent(2500);
         //Add All >>
@@ -145,7 +140,9 @@ public class CRUDTest extends RestTestBase {
             jcbo.clearText();
             jcbo.typeText(getRestPackage() + ".controller"); //NOI18N
         }
-        wo.finish();
+        wo.btFinish().requestFocus();
+        wo.btFinish().pushNoBlock();
+        closeResourcesConfDialog();
         waitForGenerationProgress();
 
         Set<File> files = getFiles(getRestPackage() + ".service"); //NOI18N
@@ -384,12 +381,12 @@ public class CRUDTest extends RestTestBase {
      * testcases here.
      */
     public static Test suite() {
-        return addServerTests(Server.GLASSFISH, NbModuleSuite.createConfiguration(CRUDTest.class),
+        return createAllModulesServerSuite(Server.GLASSFISH, CRUDTest.class,
                 "testRfE", //NOI18N
                 "testPropAccess", //NOI18N
                 "testDeploy", //NOI18N
                 "testCreateRestClient", //NOI18N
                 "testUndeploy" //NOI18N
-                ).enableModules(".*").clusters(".*").suite(); //NOI18N
+                ); //NOI18N
     }
 }

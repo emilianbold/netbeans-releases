@@ -61,11 +61,11 @@ made subject to such option by the copyright holder.
             </folder>
         </folder>
     </folder>
-    <folder name="Loaders">
+  <!--<folder name="Loaders">
         <folder name="text">
             <folder name="x-php5">
                 <folder name="Actions">
-                    <!--
+
                     <file name="RefactoringAll.instance">
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.popupSubmenuAction"/>
                         <attr name="position" intvalue="1800"/>
@@ -74,13 +74,9 @@ made subject to such option by the copyright holder.
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="1900"/>
                     </file>
-                    -->
-                    <file name="RefactoringWhereUsed.shadow">
-                        <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-api-ui-WhereUsedAction.instance"/>
-                        <attr name="position" intvalue="1700"/>
-                    </file>
+
                 </folder>
             </folder>
         </folder>
-    </folder>
+    </folder> -->
 </filesystem>

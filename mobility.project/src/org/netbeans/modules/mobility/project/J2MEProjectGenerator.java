@@ -1165,7 +1165,7 @@ public class J2MEProjectGenerator {
                     }
                     final DataFolder helloFolder = DataFolder.findFolder(hello);
                     FileObject foTemplate = FileUtil.getConfigFile("Templates/MIDP/HelloMIDlet.java"); //NOI18N
-                    if (foTemplate == null || platform.profile.startsWith(IMLET_PROFILE_PREFIX)) {
+                    if (foTemplate == null || (platform.profile != null && platform.profile.startsWith(IMLET_PROFILE_PREFIX)) ) {
                         foTemplate = FileUtil.getConfigFile("Templates/MIDP/Midlet.java"); //NOI18N
                     }
                     if (foTemplate != null) {
@@ -1176,7 +1176,7 @@ public class J2MEProjectGenerator {
                             if (name.endsWith(".java")) {
                                 name = name.substring(0, name.length() - 5);
                             }
-                            if(platform.profile.startsWith(IMLET_PROFILE_PREFIX)) {
+                            if(platform.profile != null && platform.profile.startsWith(IMLET_PROFILE_PREFIX)) {
                                 name = "IMlet"; // NOI18N
                             }
                             DataObject fromTemplate = template.createFromTemplate(helloFolder, name);

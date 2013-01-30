@@ -345,7 +345,9 @@ implements PropertyChangeListener, FileSystem.AtomicAction {
     
     /** called by ScheduledRequest in order to perform the request */
     public void run() throws IOException {
-        saver.writeDown();
+	if(saver != null) {
+	    saver.writeDown();
+	}
     }
     
     /** scheduled request to store setting */

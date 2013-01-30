@@ -327,8 +327,11 @@ public class HistoryProvider implements VCSHistoryProvider {
         }
         @Override
         public String getName() {
-            HistoryEntry he = getHistoryEntry();
-            return NbBundle.getMessage(SearchHistoryAction.class, "CTL_SummaryView_RollbackTo", he.getRevisionShort());
+            String rev = getRevisionShort();
+            if(rev == null) {
+                rev = ""; // NOI18N
+            }
+            return NbBundle.getMessage(SearchHistoryAction.class, "CTL_SummaryView_RollbackTo", rev); // NOI18N
         }
         @Override
         public HelpCtx getHelpCtx() {

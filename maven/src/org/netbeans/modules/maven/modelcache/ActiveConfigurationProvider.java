@@ -53,7 +53,7 @@ import org.openide.filesystems.FileObject;
  *
  * @author mkleint
  */
-public class ActiveConfigurationProvider {
+final class ActiveConfigurationProvider {
     private final AuxiliaryConfiguration aux;
     private final FileObject projectDirectory;
 

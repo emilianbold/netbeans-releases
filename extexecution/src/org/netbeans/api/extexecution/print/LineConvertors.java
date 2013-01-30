@@ -54,11 +54,15 @@ import java.util.regex.Pattern;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
-import org.netbeans.modules.extexecution.print.FindFileListener;
-import org.openide.awt.HtmlBrowser;
+import org.netbeans.modules.extexecution.open.DefaultFileOpenHandler;
+import org.netbeans.modules.extexecution.open.DefaultHttpOpenHandler;
+import org.netbeans.modules.extexecution.print.FileListener;
+import org.netbeans.modules.extexecution.print.UrlListener;
+import org.netbeans.spi.extexecution.open.FileOpenHandler;
+import org.netbeans.spi.extexecution.open.HttpOpenHandler;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Lookup;
 import org.openide.util.Parameters;
-import org.openide.windows.OutputEvent;
 import org.openide.windows.OutputListener;
 
 /**
@@ -69,6 +73,10 @@ import org.openide.windows.OutputListener;
 public final class LineConvertors {
 
     private static final Logger LOGGER = Logger.getLogger(LineConvertors.class.getName());
+
+    private static final DefaultFileOpenHandler DEFAULT_FILE_HANDLER = new DefaultFileOpenHandler();
+    
+    private static final DefaultHttpOpenHandler DEFAULT_HTTP_HANDLER = new DefaultHttpOpenHandler();
 
     private LineConvertors() {
         super();
@@ -135,6 +143,7 @@ public final class LineConvertors {
      *             if negative line number is not parsed
      * @return the convertor searching for lines matching the patterns,
      *             considering matched lines as being files (names or paths)
+     * @see FileOpenHandler
      */
     @NonNull
     public static LineConvertor filePattern(@NullAllowed FileLocator fileLocator, @NonNull Pattern linePattern,
@@ -162,6 +171,7 @@ public final class LineConvertors {
      *
      * @return the convertor parsing the line and searching for
      *             <code>http</code> or <code>https</code> URL
+     * @see HttpOpenHandler
      */
     @NonNull
     public static LineConvertor httpUrl() {
@@ -214,6 +224,8 @@ public final class LineConvertors {
 
     private static class FilePatternConvertor implements LineConvertor {
 
+        private final FileOpenHandler handler;
+
         private final FileLocator locator;
 
         private final Pattern linePattern;
@@ -231,6 +243,13 @@ public final class LineConvertors {
 
         public FilePatternConvertor(FileLocator locator, Pattern linePattern,
                 Pattern filePattern, int fileGroup, int lineGroup) {
+
+            FileOpenHandler candidate = Lookup.getDefault().lookup(FileOpenHandler.class);
+            if (candidate != null) {
+                handler = candidate;
+            } else {
+                handler = DEFAULT_FILE_HANDLER;
+            }
 
             this.locator = locator;
             this.linePattern = linePattern;
@@ -279,7 +298,8 @@ public final class LineConvertors {
                 }
 
                 return Collections.<ConvertedLine>singletonList(
-                        ConvertedLine.forText(line, new FindFileListener(file, lineno, locator)));
+                        ConvertedLine.forText(line,
+                        new FileListener(file, lineno, locator, handler)));
             }
 
             return null;
@@ -290,10 +310,18 @@ public final class LineConvertors {
 
         private final Pattern pattern = Pattern.compile(".*(((http)|(https))://\\S+)(\\s.*|$)"); // NOI18N
 
+        private final HttpOpenHandler handler;
+
         public HttpUrlConvertor() {
-            super();
+            HttpOpenHandler candidate = Lookup.getDefault().lookup(HttpOpenHandler.class);
+            if (candidate != null) {
+                handler = candidate;
+            } else {
+                handler = DEFAULT_HTTP_HANDLER;
+            }
         }
 
+        @Override
         public List<ConvertedLine> convert(String line) {
             Matcher matcher = pattern.matcher(line);
             if (matcher.matches()) {
@@ -301,7 +329,7 @@ public final class LineConvertors {
                 try {
                     URL url = new URL(stringUrl);
                     return Collections.<ConvertedLine>singletonList(
-                            ConvertedLine.forText(line, new UrlOutputListener(url)));
+                            ConvertedLine.forText(line, new UrlListener(url, handler)));
                 } catch (MalformedURLException ex) {
                     // return null
                 }
@@ -310,26 +338,5 @@ public final class LineConvertors {
             return null;
         }
 
-    }
-
-    private static class UrlOutputListener implements OutputListener {
-
-        private final URL url;
-
-        public UrlOutputListener(URL url) {
-            this.url = url;
-        }
-
-        public void outputLineAction(OutputEvent ev) {
-            HtmlBrowser.URLDisplayer.getDefault().showURL(url);
-        }
-
-        public void outputLineCleared(OutputEvent ev) {
-            // noop
-        }
-
-        public void outputLineSelected(OutputEvent ev) {
-            // noop
-        }
     }
 }

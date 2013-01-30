@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -64,8 +64,8 @@ build_info.BOUNCER_URL = "http://services.netbeans.org/bouncer/index.php";
 build_info.USE_HTML_ZIP_LISTING = 1;
 
 build_info.add_download_tabs = function() {
-	add_download_tab("7.1.2", "http://netbeans.org/downloads/7.1.2");
-	add_download_tab("7.2");
+	add_download_tab("7.2.1", "http://netbeans.org/downloads/");
+        add_download_tab("7.3 RC1");
 	add_download_tab(DEVELOPMENT_TITLE ,DEVELOPMENT_BUILDS_LINK);
 	add_download_tab(ARCHIVE_TITLE,ARCHIVE_BUILDS_LINK);
 }

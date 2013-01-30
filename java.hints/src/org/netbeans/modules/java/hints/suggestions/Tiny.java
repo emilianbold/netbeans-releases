@@ -316,7 +316,11 @@ public class Tiny {
         if (lm.getLineNumber(caret) != lm.getLineNumber(switchStart)) return null;
         
         TreePath expression = ctx.getVariables().get("$expression");
-        TypeElement enumType = (TypeElement) ctx.getInfo().getTypes().asElement(ctx.getInfo().getTrees().getTypeMirror(expression));
+        Element possibleEnumElement = ctx.getInfo().getTypes().asElement(ctx.getInfo().getTrees().getTypeMirror(expression));
+        
+        if (possibleEnumElement == null || !possibleEnumElement.getKind().isClass()) return null;
+        
+        TypeElement enumType = (TypeElement) possibleEnumElement;
         List<VariableElement> enumConstants = new ArrayList<VariableElement>(enumType.getEnclosedElements().size());
         for (Element e : enumType.getEnclosedElements()) {
             if (e.getKind() == ElementKind.ENUM_CONSTANT) {

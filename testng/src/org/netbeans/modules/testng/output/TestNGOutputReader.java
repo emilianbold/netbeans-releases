@@ -123,10 +123,15 @@ final class TestNGOutputReader {
     private String parameters;
     private String values;
     private String duration;
+    private int msDuration;
     private boolean failedInConfigurationMethod;
-    private boolean failedInAfterClassMethod;
-    private boolean failedInBeforeClassMethod;
+    private boolean failedInAfterClass;
+    private boolean failedInBeforeClass;
+    private boolean failedInAfterMethod;
+    private boolean failedInBeforeMethod;
     private boolean canAddToStackTrace;
+    private long currentTime;
+    private String currentSuitename;
 
     /**
      * Creates a new instance of TestNGOutputReader
@@ -203,6 +208,7 @@ final class TestNGOutputReader {
     private void handleInvocationCount(int invocationCount) {
         double actual = (double) (invocationCount - passedWithErrorsFailure) / (double) invocationCount;
         double expected = (double) successPercentage / 100.0;
+	duration = Integer.toString(msDuration);
         if (actual == 100) {
             testFinished("PASSED", suiteName, testCase, parameters, values, duration);
         } else if (actual < expected) {
@@ -234,9 +240,12 @@ final class TestNGOutputReader {
         if (in.startsWith("RUNNING: ")) {
             passedWithErrorsFailure = 0;
             successPercentage = -1;
+	    msDuration = 0;
             descriptionInPassedWithErrors = false;
-            failedInAfterClassMethod = false;
-            failedInBeforeClassMethod = false;
+            failedInAfterClass = false;
+            failedInBeforeClass = false;
+            failedInAfterMethod = false;
+            failedInBeforeMethod = false;
             failedInConfigurationMethod = false;
             canAddToStackTrace = true;
             Matcher m = Pattern.compile(RegexpUtils.RUNNING_SUITE_REGEX).matcher(in);
@@ -251,7 +260,7 @@ final class TestNGOutputReader {
         if (in.equals("===============================================")) {
             suiteSummary = !suiteSummary;
 
-            if(txt.size() > 0 && failedInAfterClassMethod) {
+            if(txt.size() > 0 && failedInAfterClass) {
                 testStarted(suiteName, testCase, parameters, values);
                 addStackTrace(txt);
                 txt.clear();
@@ -296,7 +305,15 @@ final class TestNGOutputReader {
         }
         //test
         if (in.startsWith("INVOKING: ")) {
-            if(failedInBeforeClassMethod) {
+	    if(txt.size() > 0 && failedInBeforeMethod) {
+		testStarted(suiteName, testCase, parameters, values);
+		addStackTrace(txt);
+		txt.clear();
+		testFinished("FAILED", suiteName, testCase, parameters, values, duration);
+	    }
+            failedInAfterMethod = false;
+            failedInBeforeMethod = false;
+	    if(failedInBeforeClass) {
                 return;
             }
             if(failedInConfigurationMethod) {
@@ -331,7 +348,24 @@ final class TestNGOutputReader {
             if (m.matches()) {
                 if(successPercentage == -1) {
                     testFinished("PASSED", m.group(1), m.group(2), m.group(4), m.group(6), m.group(8));
-                }
+                } else {
+		    int currentInvocation;
+		    int invocationCount;
+		    int dur;
+
+		    try {
+			dur = Integer.parseInt(m.group(8));
+			currentInvocation = Integer.parseInt(m.group(10));
+			invocationCount = Integer.parseInt(m.group(11));
+			msDuration += dur;
+		    } catch (NumberFormatException ex) {
+			return;
+		    }
+		    if (currentInvocation == invocationCount) {
+			testFinished("PASSED", m.group(1), m.group(2), m.group(4), m.group(6), Integer.toString(msDuration));
+			successPercentage = -1;
+		    }
+		}
             } else {
                 Matcher m2 = Pattern.compile(RegexpUtils.TEST_REGEX_2).matcher(in);
                 if (m2.matches()) {
@@ -348,6 +382,7 @@ final class TestNGOutputReader {
                 passedWithErrorsFailure++;
                 int currentInvocation;
                 int invocationCount;
+		int dur;
 
                 suiteName = m.group(1);
                 testCase = m.group(2);
@@ -356,14 +391,17 @@ final class TestNGOutputReader {
                 duration = m.group(8);
 
                 try{
+		    dur = Integer.parseInt(duration);
                     currentInvocation = Integer.parseInt(m.group(10));
                     invocationCount = Integer.parseInt(m.group(11));
+		    msDuration += dur;
                 } catch(NumberFormatException ex) {
                     descriptionInPassedWithErrors = true;
                     return;
                 }
                 if (currentInvocation == invocationCount) {
                     handleInvocationCount(invocationCount);
+		    successPercentage = -1;
                 }
             } else {
                 Matcher m2 = Pattern.compile(RegexpUtils.TEST_REGEX_2).matcher(in);
@@ -377,18 +415,13 @@ final class TestNGOutputReader {
         }
 
         if (in.startsWith("SKIPPED: ")) {
-            if (failedInBeforeClassMethod) {
-                return;
-            }
             if (m.matches()) {
                 if(failedInConfigurationMethod) {
                     if (txt.size() > 0) {
                         addStackTrace(txt);
                     }
-                    testFinished("FAILED", m.group(1), m.group(2), m.group(4), m.group(6), m.group(8));
-                } else {
-                    testFinished("SKIPPED", m.group(1), m.group(2), m.group(4), m.group(6), m.group(8));
                 }
+		testFinished("SKIPPED", m.group(1), m.group(2), m.group(4), m.group(6), m.group(8));
             } else {
                 Matcher m2 = Pattern.compile(RegexpUtils.TEST_REGEX_2).matcher(in);
                 if (m2.matches()) {
@@ -402,7 +435,26 @@ final class TestNGOutputReader {
 
         if (in.startsWith("FAILED: ")) {
             if (m.matches()) {
-                testFinished("FAILED", m.group(1), m.group(2), m.group(4), m.group(6), m.group(8));
+                if(successPercentage == -1) {
+                    testFinished("FAILED", m.group(1), m.group(2), m.group(4), m.group(6), m.group(8));
+                } else {
+		    int currentInvocation;
+		    int invocationCount;
+		    int dur;
+
+		    try {
+			dur = Integer.parseInt(m.group(8));
+			currentInvocation = Integer.parseInt(m.group(10));
+			invocationCount = Integer.parseInt(m.group(11));
+			msDuration += dur;
+		    } catch (NumberFormatException ex) {
+			return;
+		    }
+		    if (currentInvocation == invocationCount) {
+			testFinished("FAILED", m.group(1), m.group(2), m.group(4), m.group(6), Integer.toString(msDuration));
+			successPercentage = -1;
+		    }
+		}
             } else {
                 Matcher m2 = Pattern.compile(RegexpUtils.TEST_REGEX_2).matcher(in);
                 if (m2.matches()) {
@@ -424,13 +476,19 @@ final class TestNGOutputReader {
                 duration = m.group(8);
             }
             if (in.contains(" - @AfterClass")) {
-                failedInAfterClassMethod = true;
+                failedInAfterClass = true;
                 if (txt.size() > 0) {
                     addStackTrace(txt);
                 }
             }
             if (in.contains(" - @BeforeClass")) {
-                failedInBeforeClassMethod = true;
+                failedInBeforeClass = true;
+            }
+            if (in.contains(" - @AfterMethod")) {
+                failedInAfterMethod = true;
+            }
+            if (in.contains(" - @BeforeMethod")) {
+                failedInBeforeMethod = true;
             }
             failedInConfigurationMethod = true;
             // clear previous stacktrace of FAILED test method as we have a more serious problem in setUp/tearDown methods
@@ -438,17 +496,22 @@ final class TestNGOutputReader {
             return;
         }
         if (in.startsWith("SKIPPED CONFIGURATION: ")) {
-            if(!failedInBeforeClassMethod) {
-                addStackTrace(txt);
-            }
-            if (failedInBeforeClassMethod) {
-                if (txt.size() > 0) {
-                    testStarted(suiteName, testCase, parameters, values);
-                    addStackTrace(txt);
-                    txt.clear();
-                    testFinished("FAILED", suiteName, testCase, parameters, values, duration);
-                }
-            }
+            if (failedInAfterMethod && txt.size() > 0) {
+		testStarted(suiteName, testCase, parameters, values);
+		addStackTrace(txt);
+		txt.clear();
+		testFinished("FAILED", suiteName, testCase, parameters, values, duration);
+	    }
+            if (!failedInBeforeClass && txt.size() > 0) {
+		addStackTrace(txt);
+		txt.clear();
+	    }
+            if (failedInBeforeClass && txt.size() > 0) {
+		testStarted(suiteName, testCase, parameters, values);
+		addStackTrace(txt);
+		txt.clear();
+		testFinished("FAILED", suiteName, testCase, parameters, values, duration);
+	    }
             return;
         }
         if (in.startsWith("PASSED CONFIGURATION: ")) {
@@ -459,10 +522,16 @@ final class TestNGOutputReader {
             return;
         }
         if (in.contains(" CONFIGURATION: ")) {
-//            if (txt.size() > 0) {
-//                addStackTrace(txt);
-//                txt.clear();
-//            }
+	    if(txt.size() > 0 && failedInAfterClass) {
+                testStarted(suiteName, testCase, parameters, values);
+                addStackTrace(txt);
+                txt.clear();
+                testFinished("FAILED", suiteName, testCase, parameters, values, duration);
+            }
+            if (txt.size() > 0) {
+                addStackTrace(txt);
+                txt.clear();
+            }
             return;
         }
 
@@ -473,7 +542,7 @@ final class TestNGOutputReader {
                 addDescription(in.trim());
             } else if (in.trim().length() > 0) {
                 //we have a stacktrace
-                if(canAddToStackTrace || failedInAfterClassMethod || failedInBeforeClassMethod) {
+                if(canAddToStackTrace || failedInConfigurationMethod) {
                     txt.add(in);
                 }
             }
@@ -809,6 +878,7 @@ final class TestNGOutputReader {
     }
 
     private void suiteStarted(String name, int expectedTCases, String config) {
+        name = testSession.getSuiteName(name);
         TestSuite suite = new TestNGTestSuite(name, testSession, expectedTCases, config);
         testSession.addSuite(suite);
         testSession.setCurrentSuite(name);
@@ -818,6 +888,7 @@ final class TestNGOutputReader {
     }
 
     private void suiteFinished(SuiteStats stats) {
+        stats.name = testSession.getCurrentSuite().getName();
         testSession.setCurrentSuite(stats.name);
         TestNGTestSuite s = (TestNGTestSuite) testSession.getCurrentSuite();
         s.setElapsedTime(elapsedTime);
@@ -829,15 +900,13 @@ final class TestNGOutputReader {
     }
 
     private void testStarted(String suiteName, String testCase, String parameters, String values) {
+        suiteName = testSession.getCurrentSuite().getName();
         testSession.setCurrentSuite(suiteName);
         TestNGTestcase tc = ((TestNGTestSuite) ((TestNGTestSession) testSession).getCurrentSuite()).getTestCase(testCase, values);
         if (tc == null) {
             tc = new TestNGTestcase(testCase, parameters, values, testSession);
             testSession.addTestCase(tc);
             manager.testStarted(testSession);
-            Report r = reports.get(suiteName);
-            r.update(testSession.getReport(0));
-            manager.displayReport(testSession, r, false);
         } else {
             tc.addValues(values);
             //TODO: increment test case time
@@ -845,6 +914,7 @@ final class TestNGOutputReader {
     }
 
     private void testFinished(String st, String suiteName, String testCase, String parameters, String values, String duration) {
+        suiteName = testSession.getCurrentSuite().getName();
         testSession.setCurrentSuite(suiteName);
         TestNGTestcase tc = ((TestNGTestSuite) ((TestNGTestSession) testSession).getCurrentSuite()).getTestCase(testCase, values);
         if (tc == null) {
@@ -869,9 +939,16 @@ final class TestNGOutputReader {
         }
         tc.setTimeMillis(dur);
         elapsedTime += dur;
-        Report r = reports.get(suiteName);
-        r.update(testSession.getReport(dur));
-        manager.displayReport(testSession, r, false);
+	if("FAILED".equals(st)) {
+	    currentTime = dur;
+	    currentSuitename = suiteName;
+	} else {
+	    currentTime = -1;
+	    currentSuitename = null;
+	    Report r = reports.get(suiteName);
+	    r.update(testSession.getReport(dur));
+	    manager.displayReport(testSession, r, false);
+	}
     }
 
     private String getMessage(String msg) {
@@ -907,5 +984,11 @@ final class TestNGOutputReader {
         }
         t.setStackTrace(txt.toArray(new String[txt.size()]));
         testSession.getCurrentTestCase().setTrouble(t);
+
+	if (currentTime != -1 && currentSuitename != null) {
+	    Report r = reports.get(currentSuitename);
+	    r.update(testSession.getReport(currentTime));
+	    manager.displayReport(testSession, r, false);
+	}
     }
 }

@@ -55,6 +55,7 @@ import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.tools.ant.module.api.support.ActionUtils;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
@@ -75,6 +76,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.Parameters;
 import org.openide.util.Utilities;
 
 /**
@@ -86,6 +88,8 @@ public class J2SEProjectOperations implements DeleteOperationImplementation, Cop
     private static final Logger LOG = Logger.getLogger(J2SEProjectOperations.class.getName());
     
     private final J2SEProject project;
+
+    private final UpdateProjectImpl updateProject;
     
     //RELY: Valid only on original project after the notifyMoving or notifyCopying was called
     private final Map<String,String> privatePropsToRestore = new HashMap<String,String>();
@@ -100,9 +104,13 @@ public class J2SEProjectOperations implements DeleteOperationImplementation, Cop
     //RELY: Valid only on original project after the notifyMoving or notifyCopying was called
     private FileSystem configs;
     
-    public J2SEProjectOperations(final J2SEProject project) {
-        assert project != null;
+    public J2SEProjectOperations(
+            @NonNull final J2SEProject project,
+            @NonNull final UpdateProjectImpl updateProject) {
+        Parameters.notNull("project", project); //NOI18N
+        Parameters.notNull("updateProject", updateProject); //NOI18N
         this.project = project;
+        this.updateProject = updateProject;
     }
     
     private static void addFile(FileObject projectDirectory, String fileName, List<FileObject> result) {
@@ -195,7 +203,9 @@ public class J2SEProjectOperations implements DeleteOperationImplementation, Cop
         fixPrivateProperties(origOperations);
         fixDistJarProperty (nueName);
         fixApplicationTitle(nueName);
-        project.getReferenceHelper().fixReferences(originalPath);        
+        project.getReferenceHelper().fixReferences(originalPath);
+        //In case of copying project, the copy should be updated to a new version without notifying user.
+        updateProject.setTransparentUpdate(true);
         project.setName(nueName);
         restoreConfigurations(origOperations);
     }

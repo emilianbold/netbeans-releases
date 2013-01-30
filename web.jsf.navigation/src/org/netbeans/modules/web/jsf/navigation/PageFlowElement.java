@@ -98,7 +98,7 @@ public class PageFlowElement extends CloneableEditor implements MultiViewElement
     }
 
     public JComponent getVisualRepresentation() {
-        return tc;
+        return getTopComponent();
     }
 
     public JComponent getToolbarRepresentation() {
@@ -108,7 +108,7 @@ public class PageFlowElement extends CloneableEditor implements MultiViewElement
         return toolbar;
     }
 
-    private PageFlowView getTopComponent() {
+    private synchronized PageFlowView getTopComponent() {
         if (tc == null) {
             tc = new PageFlowView(this, context);
         }
@@ -116,7 +116,7 @@ public class PageFlowElement extends CloneableEditor implements MultiViewElement
     }
 
     public Action[] getActions() {
-        Action[] a = tc.getActions();
+        Action[] a = getTopComponent().getActions();
 
         try {
             ClassLoader l = Lookup.getDefault().lookup(ClassLoader.class);
@@ -140,11 +140,11 @@ public class PageFlowElement extends CloneableEditor implements MultiViewElement
 
     @Override
     public Lookup getLookup() {
-        return tc.getLookup();
+        return getTopComponent().getLookup();
     }
 
     public void componentOpened() {
-        tc.registerListeners();
+        getTopComponent().registerListeners();
 //            tc.startBackgroundPinAddingProcess();
         LOG.finest("PageFlowEditor componentOpened");
     }
@@ -154,7 +154,7 @@ public class PageFlowElement extends CloneableEditor implements MultiViewElement
         final FileObject storageFile = PageFlowView.getStorageFile(context.getFacesConfigFile());
 
         if (storageFile != null && storageFile.isValid()) {
-            tc.serializeNodeLocations(storageFile);
+            getTopComponent().serializeNodeLocations(storageFile);
         } else {
             DialogDescriptor dialog;
             if (storageFile != null) {
@@ -171,19 +171,23 @@ public class PageFlowElement extends CloneableEditor implements MultiViewElement
             d.setVisible(true);
         }
 
-        tc.unregstierListeners();
-        PageFlowToolbarUtilities.removePageFlowView(tc);
+        getTopComponent().unregstierListeners();
+        PageFlowToolbarUtilities.removePageFlowView(getTopComponent());
         // tc.clearGraph();
-        tc.destroyScene();
+        getTopComponent().destroyScene();
         toolbar = null;
         tc = null;
 
         LOG.finest("PageFlowEditor componentClosed took: " + (System.currentTimeMillis() - time) + " ms");
     }
 
+    @Override
     public void componentShowing() {
-        LOG.finest("PageFlowEditor componentShowing");
-        tc.getPageFlowController().flushGraphIfDirty();
+        // page flow not initialized yet
+        if (getTopComponent().getPageFlowController() == null) {
+            return;
+        }
+        getTopComponent().getPageFlowController().flushGraphIfDirty();
     }
 
     public void componentHidden() {
@@ -193,7 +197,7 @@ public class PageFlowElement extends CloneableEditor implements MultiViewElement
     public void componentActivated() {
         //tc.requestFocusInWindow();
         LOG.finest("PageFlowView componentActivated");
-        tc.requestActive();
+        getTopComponent().requestActive();
     }
 
     public void componentDeactivated() {
@@ -240,7 +244,7 @@ public class PageFlowElement extends CloneableEditor implements MultiViewElement
     }
 
     private void writeObject(java.io.ObjectOutputStream out) throws IOException {
-        tc.serializeNodeLocations(PageFlowView.getStorageFile(context.getFacesConfigFile()));
+        getTopComponent().serializeNodeLocations(PageFlowView.getStorageFile(context.getFacesConfigFile()));
         out.writeObject(context);
         LOG.finest("writeObject");
     }

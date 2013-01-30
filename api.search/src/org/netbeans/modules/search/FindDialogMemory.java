@@ -63,8 +63,6 @@ public final class FindDialogMemory {
 
     /** maximum count of stored file name patterns */
     private static final int maxFileNamePatternCount = 10;
-    /** maximum count of stored replacement expressions */
-    private static final int maxReplExprCount = 10;
 
     /** singleton instance of this class */
     private static FindDialogMemory singleton;
@@ -74,11 +72,6 @@ public final class FindDialogMemory {
      * (initially {@code null})
      */
     private List<String> fileNamePatterns;
-    /**
-     * storage of last used replacement expressions
-     * (initially {@code null})
-     */
-    private List<String> replExpressions;
 
     /**
      * Storage of last used Whole Words option.
@@ -154,12 +147,15 @@ public final class FindDialogMemory {
     private String resultsColumnWidths;
     private String resultsColumnWidthsDetails;
     private String resultsColumnWidthsReplacing;
+    private int replaceResultsDivider;
 
     /** Tree or flat result view mode. */
     private String resultsViewMode;
 
     /** Last selected search provider. */
     private String provider;
+
+    private boolean openInNewTab;
 
     /** Preferences node for storing history info */
     private static Preferences prefs;
@@ -183,8 +179,10 @@ public final class FindDialogMemory {
     private static final String PROP_RESULTS_COLUMN_WIDTHS = "results_column_widths"; //NOI18N
     private static final String PROP_RESULTS_COLUMN_WIDTHS_DETAILS = "results_column_widths_details"; //NOI18N
     private static final String PROP_RESULTS_COLUMN_WIDTHS_REPLACING = "results_column_widths_replacing"; //NOI18N
+    private static final String PROP_REPLACE_RESULTS_DIVIDER = "replace_results_divider"; //NOI18N
     private static final String PROP_RESULTS_VIEW_MODE = "results_view_mode"; //NOI18N
     private static final String PROP_PROVIDER = "provider"; //NOI18N
+    private static final String PROP_OPEN_IN_NEW_TAB = "open_in_new_tab"; //NOI18N
     /** Creates a new instance of FindDialogMemory */
     private FindDialogMemory() {
         prefs = NbPreferences.forModule(FindDialogMemory.class).node(PREFS_NODE);
@@ -224,18 +222,17 @@ public final class FindDialogMemory {
                 "100:-1:-1:-1:-1:|0:");                                 //NOI18N
         resultsColumnWidthsReplacing = prefs.get(PROP_RESULTS_COLUMN_WIDTHS_REPLACING,
                 "100:-1:-1:-1:-1:|0:");                                 //NOI18N
+        replaceResultsDivider = prefs.getInt(PROP_REPLACE_RESULTS_DIVIDER, -1);
         resultsViewMode = prefs.get(PROP_RESULTS_VIEW_MODE, null);
         provider = prefs.get(PROP_PROVIDER, null);
+        openInNewTab = prefs.getBoolean(PROP_OPEN_IN_NEW_TAB, true);
         fileNamePatterns = new ArrayList<String>(maxFileNamePatternCount);
-        replExpressions = new ArrayList<String>(maxReplExprCount);
-        ignoreList = new ArrayList();
+        ignoreList = new ArrayList<String>();
         for(int i=0; i < maxFileNamePatternCount; i++){
             String fileNamePattern = prefs.get(PROP_FILENAME_PATTERN_PREFIX + i, null);
-            if (fileNamePattern != null)
+            if (fileNamePattern != null) {
                 fileNamePatterns.add(fileNamePattern);
-            String replacePattern = prefs.get(PROP_REPLACE_PATTERN_PREFIX + i, null);
-            if (replacePattern != null)
-                replExpressions.add(replacePattern);
+            }
         }
         int i = 0;
         while (true) {
@@ -284,44 +281,6 @@ public final class FindDialogMemory {
      */
     public List<String> getFileNamePatterns() {
         return (fileNamePatterns != null) ? fileNamePatterns
-                                          : Collections.<String>emptyList();
-    }
-
-    /**
-     * Stores a replacement expression.
-     * If the number of replacement expressions would exceed the maximum
-     * number of replacement expressions that can be stored, the oldest
-     * expression is removed prior to storing the new expression.
-     * 
-     * @param  expression  replacement expression to be stored
-     */
-    void storeReplacementExpression(String expression) {
-        int index = replExpressions.indexOf(expression);
-        if (index != -1) {
-            if (index == replExpressions.size() - 1) {
-                return;
-            }
-
-            replExpressions.remove(index);
-        } else if (replExpressions.size() == maxReplExprCount) {
-            replExpressions.remove(0);
-        }
-        replExpressions.add(expression);
-
-        for(int i=0;i < replExpressions.size();i++){
-            prefs.put(PROP_REPLACE_PATTERN_PREFIX + i, replExpressions.get(i));
-        }
-    }
-
-    /**
-     * Returns last used replacement expressions in order
-     * from the oldest ones to the most recently used ones.
-     *
-     * @return  list of last used replacement expressions, or an empty list
-     *          if no replacement expressions are stored
-     */
-    List<String> getReplacementExpressions() {
-        return (replExpressions != null) ? replExpressions
                                           : Collections.<String>emptyList();
     }
 
@@ -496,6 +455,15 @@ public final class FindDialogMemory {
                 resultsColumnWidthsReplacing);
     }
 
+    public int getReplaceResultsDivider() {
+        return replaceResultsDivider;
+    }
+
+    public void setReplaceResultsDivider(int splitDividerLocation) {
+        this.replaceResultsDivider = splitDividerLocation;
+        prefs.putDouble(PROP_REPLACE_RESULTS_DIVIDER, splitDividerLocation);
+    }
+
     public String getResultsViewMode() {
         return resultsViewMode;
     }
@@ -512,5 +480,14 @@ public final class FindDialogMemory {
     public void setProvider(String provider) {
         this.provider = provider;
         prefs.put(PROP_PROVIDER, provider);
+    }
+
+    public boolean isOpenInNewTab() {
+        return openInNewTab;
+    }
+
+    public void setOpenInNewTab(boolean openInNewTab) {
+        this.openInNewTab = openInNewTab;
+        prefs.putBoolean(PROP_OPEN_IN_NEW_TAB, openInNewTab);
     }
 }

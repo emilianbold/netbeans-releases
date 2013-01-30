@@ -53,7 +53,6 @@ import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
@@ -86,7 +85,7 @@ import org.openide.util.NbBundle;
  *
  * @author sp153251
  */
-@MimeRegistration(mimeType = "text/x-java", service = CompletionProvider.class, position = 400)//NOI18N
+@MimeRegistration(mimeType = "text/x-java", service = CompletionProvider.class, position = 400)///,//NOI18N
 public class JPACodeCompletionProvider implements CompletionProvider {
 
     @Override
@@ -107,14 +106,10 @@ public class JPACodeCompletionProvider implements CompletionProvider {
         private ArrayList<CompletionContextResolver> resolvers;
         private List<JPACompletionItem> results;
         private byte hasAdditionalItems = 0; //no additional items
-        private CompletionDocumentation documentation;
         private int anchorOffset;
-        private int toolTipOffset;
         private JTextComponent component;
         private int queryType;
         private int caretOffset;
-        private String filterPrefix;
-        private ElementHandle element;
         private boolean hasTask;
 
         public JPACodeCompletionQuery(int queryType, JTextComponent component, int caretOffset, boolean hasTask) {
@@ -140,7 +135,6 @@ public class JPACodeCompletionProvider implements CompletionProvider {
                     //if (queryType == TOOLTIP_QUERY_TYPE || Utilities.isJavaContext(component, caretOffset)) 
                     {
                         results = null;
-                        documentation = null;
                         anchorOffset = -1;
                         Source source = Source.create(doc);
                         if (source != null) {
@@ -185,13 +179,8 @@ public class JPACodeCompletionProvider implements CompletionProvider {
             try {
                 if ((queryType & COMPLETION_QUERY_TYPE) != 0) {
                     if (results != null) {
-                        if (filterPrefix != null) {
-                            resultSet.addAllItems(getFilteredData(results, filterPrefix));
-                            resultSet.setHasAdditionalItems(hasAdditionalItems > 0);
-                        } else {
-                            Completion.get().hideDocumentation();
-                            Completion.get().hideCompletion();
-                        }
+                        Completion.get().hideDocumentation();
+                        Completion.get().hideCompletion();
                     }
                 }
                 resultSet.setAnchorOffset(anchorOffset);
@@ -303,7 +292,6 @@ public class JPACodeCompletionProvider implements CompletionProvider {
             return null;
         }
         boolean complQuery = (queryType & COMPLETION_QUERY_TYPE) != 0;
-        String prefix = null;
         if (offset > 0) {
             if (complQuery) {
                 TokenSequence<JavaTokenId> ts = controller.getTokenHierarchy().tokenSequence(JavaTokenId.language());
@@ -317,7 +305,6 @@ public class JPACodeCompletionProvider implements CompletionProvider {
                         ts.token().id().primaryCategory().startsWith("string") || //NOI18N
                         ts.token().id().primaryCategory().equals("literal")) //NOI18N
                         && ts.token().length() >= len) { //TODO: Use isKeyword(...) when available
-                    prefix = ts.token().toString().substring(0, len);
                     offset = ts.offset();
                 }
             } else if (queryType == DOCUMENTATION_QUERY_TYPE) {
@@ -476,7 +463,7 @@ public class JPACodeCompletionProvider implements CompletionProvider {
                     Exceptions.printStackTrace(ex);
                 }
                 //skip all annotations between the CC offset and the completed member
-                if (el.getKind() == ElementKind.ANNOTATION_TYPE) {
+                if (el!=null && el.getKind() == ElementKind.ANNOTATION_TYPE) {
                     //parse to find NN end
                     CCParser.CC parsed = nnp.parseAnnotation(ts.offset() + 1);
                     if (parsed != null) {
@@ -561,7 +548,7 @@ public class JPACodeCompletionProvider implements CompletionProvider {
             if (mname != null) {
                 Token<JavaTokenId> literalToComplete = null;
                 Token<JavaTokenId> titk = ts.token();
-                JavaTokenId id = titk.id();
+                JavaTokenId id;
                 do {
                     id = titk.id();
                     //ignore whitespaces
@@ -592,7 +579,7 @@ public class JPACodeCompletionProvider implements CompletionProvider {
                     titk = ts.token();//get next token
 
                 } while (titk != null);
-                methodName = this.CCParser.new MD(mname, literalToComplete != null ? literalToComplete.text().toString() : null, literalToComplete != null ? literalToComplete.offset(getController().getTokenHierarchy()) : getCompletionOffset(), true, true);
+                methodName = new CCParser.MD(mname, literalToComplete != null ? literalToComplete.text().toString() : null, literalToComplete != null ? literalToComplete.offset(getController().getTokenHierarchy()) : getCompletionOffset(), true, true);
             }
         }
 

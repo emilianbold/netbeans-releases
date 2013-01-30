@@ -41,20 +41,20 @@
  */
 package org.netbeans.modules.nativeexecution.api.util;
 
-import java.util.Map;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
 import org.openide.util.Utilities;
-import static org.junit.Assert.*;
 
-public class WindowsSupportTest {
+public class WindowsSupportTest extends NativeExecutionBaseTestCase {
 
     private final boolean isWindows;
 
-    public WindowsSupportTest() {
+    public WindowsSupportTest(String name) {
+        super(name);
         isWindows = Utilities.isWindows();
     }
 
@@ -80,10 +80,12 @@ public class WindowsSupportTest {
     }
 
     @Before
+    @Override
     public void setUp() {
     }
 
     @After
+    @Override
     public void tearDown() {
     }
 

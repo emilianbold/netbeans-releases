@@ -52,13 +52,14 @@ import org.openide.windows.InputOutput;
  *
  * @see ExecutionDescriptor
  * @see NativeExecutionService
- * 
+ *
  * @author ak119685
  */
 public final class NativeExecutionDescriptor {
 
     boolean controllable;
     boolean frontWindow;
+    boolean requestFocus;
     boolean inputVisible;
     InputOutput inputOutput;
     boolean outLineBased;
@@ -141,6 +142,11 @@ public final class NativeExecutionDescriptor {
 
     public NativeExecutionDescriptor postMessageDisplayer(PostMessageDisplayer postMessageDisplayer) {
         this.postMessageDisplayer = postMessageDisplayer;
+        return this;
+    }
+
+    public NativeExecutionDescriptor requestFocus(boolean requestFocus) {
+        this.requestFocus = requestFocus;
         return this;
     }
 }

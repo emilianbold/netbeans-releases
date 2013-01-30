@@ -84,8 +84,7 @@ public class EBGeneralAndClassPanelTest extends J2eeTestCase {
     }
 
     public static Test suite() {
-        NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(EBGeneralAndClassPanelTest.class);
-        conf = addServerTests(conf,
+        return createAllModulesServerSuite(Server.ANY, EBGeneralAndClassPanelTest.class,
                 "testOpenProject",
                 "testEntityNodeName",
                 "testEntityName",
@@ -106,8 +105,6 @@ public class EBGeneralAndClassPanelTest extends J2eeTestCase {
                 //"testEnableRemoteI",
                 //"testDisableRemoteI",
                 "testRemoteHomeIName");
-        conf = conf.enableModules(".*").clusters(".*");
-        return NbModuleSuite.create(conf);
     }
 
     @Override

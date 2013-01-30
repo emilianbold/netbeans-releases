@@ -1,0 +1,5 @@
+Code completion result for source line:
+document.createTextNode("null").replaceWholeText("flajfda").le|ngth;
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
+------------------------------------
+FIELD      length                          [PUBLIC]   stub_DOM_CharacterData.js

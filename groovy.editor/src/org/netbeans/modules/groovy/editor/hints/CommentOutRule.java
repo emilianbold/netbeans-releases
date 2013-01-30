@@ -44,7 +44,7 @@ import org.netbeans.modules.csl.api.HintSeverity;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.groovy.editor.api.AstUtilities;
+import org.netbeans.modules.groovy.editor.api.ASTUtils;
 import org.netbeans.modules.groovy.editor.hints.infrastructure.GroovyRuleContext;
 import org.netbeans.modules.groovy.editor.hints.infrastructure.GroovySelectionRule;
 import org.openide.util.NbBundle;
@@ -78,7 +78,7 @@ public class CommentOutRule extends GroovySelectionRule {
             return;
         }
 
-        ASTNode root = AstUtilities.getRoot(info);
+        ASTNode root = ASTUtils.getRoot(info);
 
         if (root == null) {
             return;

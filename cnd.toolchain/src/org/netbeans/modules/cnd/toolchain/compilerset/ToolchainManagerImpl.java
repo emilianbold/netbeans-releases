@@ -98,7 +98,7 @@ public final class ToolchainManagerImpl {
     private static final Logger LOG = Logger.getLogger(ToolchainManagerImpl.class.getName());
     public static final boolean TRACE = Boolean.getBoolean("cnd.toolchain.personality.trace"); // NOI18N
     private static final boolean CREATE_SHADOW = Boolean.getBoolean("cnd.toolchain.personality.create_shadow"); // NOI18N
-    private static final String SHADOW_KEY = "toolchain_shadow"; // NOI18N
+    public static final String SHADOW_KEY = "toolchain_shadow"; // NOI18N
     public static final String ROOT_FOLDER = "CND"; // NOI18N
     public static final String SHADOW_FOLDER = "ToolChain"; // NOI18N
     public static final String TOOLCHAIN_FOLDER = "ToolChains"; // NOI18N
@@ -296,7 +296,7 @@ public final class ToolchainManagerImpl {
     private boolean read(InputStream inputStream, CompilerVendor v, Map<String, String> cache) {
         SAXParserFactory spf = SAXParserFactory.newInstance();
         spf.setValidating(false);
-        XMLReader xmlReader = null;
+        XMLReader xmlReader;
         try {
             SAXParser saxParser = spf.newSAXParser();
             xmlReader = saxParser.getXMLReader();
@@ -336,11 +336,17 @@ public final class ToolchainManagerImpl {
      */
     /*test*/public void writeToolchains() throws IOException {
         FileObject folder = FileUtil.getConfigFile(ROOT_FOLDER);
-        folder = folder.createFolder(SHADOW_FOLDER);
-        if (folder != null && folder.isFolder()) {
+        FileObject shadow = folder.getFileObject(SHADOW_FOLDER);
+        if (shadow == null) {
+            shadow = folder.createFolder(SHADOW_FOLDER);
+        }
+        if (shadow != null && shadow.isFolder()) {
             for (ToolchainDescriptor descriptor : descriptors) {
                 String name = descriptor.getFileName();
-                FileObject file = folder.createData(name);
+                FileObject file = shadow.getFileObject(name);
+                if (file == null) {
+                    file = shadow.createData(name);
+                }
                 writeDescriptor(descriptor, file);
                 ToolchainDescriptorImpl impl = (ToolchainDescriptorImpl) descriptor;
                 file.setAttribute("position", Integer.valueOf(impl.v.position)); // NOI18N
@@ -367,6 +373,12 @@ public final class ToolchainManagerImpl {
         }
         if (!descriptor.isAutoDetected()) {
             element.setAttribute("auto_detected", "false"); // NOI18N
+        }
+        if (descriptor.getAliases().length > 0) {
+            element.setAttribute("aliases", unsplit(descriptor.getAliases())); // NOI18N
+        }
+        if (descriptor.getSubsitute() != null) {
+            element.setAttribute("subtitute", descriptor.getSubsitute()); // NOI18N
         }
         root.appendChild(element);
         if (descriptor.getUpdateCenterUrl() != null && descriptor.getModuleID() != null) {
@@ -493,6 +505,18 @@ public final class ToolchainManagerImpl {
             writeDebugger(doc, element, debugger);
             root.appendChild(element);
         }
+        QMakeDescriptor qmake = descriptor.getQMake();
+        if (qmake != null) {
+            element = doc.createElement("qmake"); // NOI18N
+            writeQMake(doc, element, qmake);
+            root.appendChild(element);
+        }
+        CMakeDescriptor cmake = descriptor.getCMake();
+        if (cmake != null) {
+            element = doc.createElement("cmake"); // NOI18N
+            writeCMake(doc, element, cmake);
+            root.appendChild(element);
+        }
         try {
             FileLock lock = file.lock();
             try {
@@ -538,6 +562,12 @@ public final class ToolchainManagerImpl {
             if (compiler.getVersionPattern() != null) {
                 e.setAttribute("pattern", compiler.getVersionPattern()); // NOI18N
             }
+            if (compiler.getFingerPrintFlags() != null) {
+                e.setAttribute("fingerprint_flags", compiler.getFingerPrintFlags()); // NOI18N
+            }
+            if (compiler.getFingerPrintPattern() != null) {
+                e.setAttribute("fingerprint_pattern", compiler.getFingerPrintPattern()); // NOI18N
+            }
             element.appendChild(e);
         }
         writeAlternativePath(doc, element, compiler);
@@ -558,11 +588,6 @@ public final class ToolchainManagerImpl {
             if (compiler.getRemoveIncludeOutputPrefix() != null) {
                 e.setAttribute("remove_in_output", compiler.getRemoveIncludeOutputPrefix()); // NOI18N
             }
-            element.appendChild(e);
-        }
-        if (compiler.getUserIncludeFlag() != null) {
-            e = doc.createElement("user_include"); // NOI18N
-            e.setAttribute("flags", compiler.getUserIncludeFlag()); // NOI18N
             element.appendChild(e);
         }
         if (compiler.getMacroFlags() != null ||
@@ -589,6 +614,11 @@ public final class ToolchainManagerImpl {
                     e.appendChild(ee);
                 }
             }
+        }
+        if (compiler.getUserIncludeFlag() != null) {
+            e = doc.createElement("user_include"); // NOI18N
+            e.setAttribute("flags", compiler.getUserIncludeFlag()); // NOI18N
+            element.appendChild(e);
         }
         if (compiler.getUserMacroFlag() != null) {
             e = doc.createElement("user_macro"); // NOI18N
@@ -1005,6 +1035,50 @@ public final class ToolchainManagerImpl {
         writeAlternativePath(doc, element, debugger);
     }
 
+    private void writeQMake(Document doc, Element element, QMakeDescriptor qmake) {
+        Element c;
+        c = doc.createElement("tool"); // NOI18N
+        c.setAttribute("name", unsplit(qmake.getNames())); // NOI18N
+        if (qmake.skipSearch()) {
+            c.setAttribute("skip", "true"); // NOI18N
+        }
+        element.appendChild(c);
+        if (qmake.getVersionFlags() != null ||
+                qmake.getVersionPattern() != null) {
+            c = doc.createElement("version"); // NOI18N
+            if (qmake.getVersionFlags() != null) {
+                c.setAttribute("flags", qmake.getVersionFlags()); // NOI18N
+            }
+            if (qmake.getVersionPattern() != null) {
+                c.setAttribute("pattern", qmake.getVersionPattern()); // NOI18N
+            }
+            element.appendChild(c);
+        }
+        writeAlternativePath(doc, element, qmake);
+    }
+
+    private void writeCMake(Document doc, Element element, CMakeDescriptor cmake) {
+        Element c;
+        c = doc.createElement("tool"); // NOI18N
+        c.setAttribute("name", unsplit(cmake.getNames())); // NOI18N
+        if (cmake.skipSearch()) {
+            c.setAttribute("skip", "true"); // NOI18N
+        }
+        element.appendChild(c);
+        if (cmake.getVersionFlags() != null ||
+                cmake.getVersionPattern() != null) {
+            c = doc.createElement("version"); // NOI18N
+            if (cmake.getVersionFlags() != null) {
+                c.setAttribute("flags", cmake.getVersionFlags()); // NOI18N
+            }
+            if (cmake.getVersionPattern() != null) {
+                c.setAttribute("pattern", cmake.getVersionPattern()); // NOI18N
+            }
+            element.appendChild(c);
+        }
+        writeAlternativePath(doc, element, cmake);
+    }
+
     private void writeAlternativePath(Document doc, Element element, ToolDescriptor tool){
         AlternativePath[] paths = tool.getAlternativePath();
         if (paths != null) {
@@ -1030,7 +1104,7 @@ public final class ToolchainManagerImpl {
     }
 
     /**
-     * class package-local for testin only
+     * class package-local for testing only
      */
     static final class CompilerVendor {
 
@@ -1045,6 +1119,8 @@ public final class ToolchainManagerImpl {
         String ucName;
         String upgrage;
         String module;
+        String aliases;
+        String substitute;
         boolean isAbstract;
         boolean isAutoDetected;
         String driveLetterPrefix;
@@ -1089,6 +1165,8 @@ public final class ToolchainManagerImpl {
         String name;
         String versionFlags;
         String versionPattern;
+        String fingerprintFlags;
+        String fingerprintPattern;
         boolean skipSearch;
         List<AlternativePath> alternativePath;
     }
@@ -1515,6 +1593,8 @@ public final class ToolchainManagerImpl {
                 v.qmakespec = getValue(attributes, "qmakespec"); // NOI18N
                 v.isAbstract = "true".equals(getValue(attributes, "abstract"));// NOI18N
                 v.isAutoDetected = !"false".equals(getValue(attributes, "auto_detected"));// NOI18N
+                v.aliases = getValue(attributes, "aliases"); // NOI18N
+                v.substitute = getValue(attributes, "substitute"); // NOI18N
                 return;
             } else if (path.endsWith(".platforms")) { // NOI18N
                 v.platforms = getValue(attributes, "stringvalue"); // NOI18N
@@ -1730,6 +1810,8 @@ public final class ToolchainManagerImpl {
             } else if (path.endsWith(".version")) { // NOI18N
                 c.versionPattern = getValue(attributes, "pattern"); // NOI18N
                 c.versionFlags = getValue(attributes, "flags"); // NOI18N
+                c.fingerprintFlags = getValue(attributes, "fingerprint_flags"); // NOI18N
+                c.fingerprintPattern = getValue(attributes, "fingerprint_pattern"); // NOI18N
                 return;
             } else if (path.endsWith(".alternative_path")) { // NOI18NBaseFolders
                 c.alternativePath = new ArrayList<AlternativePath>();
@@ -2087,6 +2169,19 @@ public final class ToolchainManagerImpl {
         }
 
         @Override
+        public String[] getAliases() {
+            if (v.aliases != null && v.aliases.length() > 0) {
+                return v.aliases.split(","); // NOI18N
+            }
+            return new String[]{};
+        }
+
+        @Override
+        public String getSubsitute() {
+            return v.substitute;
+        }
+
+        @Override
         public String getDriveLetterPrefix() {
             return v.driveLetterPrefix;
         }
@@ -2268,6 +2363,16 @@ public final class ToolchainManagerImpl {
         @Override
         public String getVersionPattern() {
             return tool.versionPattern;
+        }
+
+        @Override
+        public String getFingerPrintFlags() {
+            return tool.fingerprintFlags;
+        }
+
+        @Override
+        public String getFingerPrintPattern() {
+            return tool.fingerprintPattern;
         }
 
         @Override

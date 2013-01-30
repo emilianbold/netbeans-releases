@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -55,8 +55,6 @@ public class UnitCategory {
     final String name;
     boolean isExpanded = true;
     List<Unit> units = new ArrayList<Unit> ();
-    private boolean isVisible;
-    private String filter;
 
     /** Creates a new instance of UpdateCategory */
     public UnitCategory (String name) {
@@ -69,41 +67,6 @@ public class UnitCategory {
         this.name = name;
         this.units.addAll (units);
         this.isExpanded = isExpanded;
-    }
-
-    public final boolean isVisible(final String filter) {
-        assert filter != null;
-        assert getCategoryName () != null;        
-        if (this.filter != null && this.filter.equals(filter)) {
-            return isVisible;
-        } else {
-            this.filter = filter;
-            isVisible = filter.length() == 0 || getCategoryName().toLowerCase().contains(filter);
-            if (!isVisible) {
-                List<Unit> allUnits = getUnits();
-                for (Unit unit : allUnits) {
-                    if (unit.isVisible(filter)) {
-                        isVisible = true;
-                        break;
-                    }
-                }
-            }
-        }
-        return  isVisible;
-    }
-
-    public List<Unit> getVisibleUnits (String filter, boolean orMarked) {
-        boolean categoryFilterMatch = filter.length() == 0 || getCategoryName ().toLowerCase().contains(filter);
-        List<Unit> allUnits = getUnits ();
-        List<Unit> visibleUnits = (categoryFilterMatch) ? new ArrayList<Unit> (allUnits) : new ArrayList<Unit>();
-        if (!categoryFilterMatch) {
-            for (Unit unit : allUnits) {
-                if (unit.isVisible(filter) || (orMarked && unit.isMarked())) {
-                    visibleUnits.add(unit);
-                }
-            }        
-        }
-        return visibleUnits;
     }
 
     public List<Unit> getMarkedUnits() {
@@ -150,23 +113,6 @@ public class UnitCategory {
     
     void toggleExpanded () {
         this.isExpanded = ! isExpanded;
-
-//        Preferences prefs = NbPreferences.forModule( FoldingTaskListModel.class );
-//        prefs.putBoolean( "expanded_"+tg.getName(), isExpanded );
-//
-//        int firstRow = 0;
-//        int groupIndex = groups.indexOf( this );
-//        for( int i=0; i<groupIndex; i++ ) {
-//            firstRow += groups.get( i ).getRowCount();
-//        }
-//        int lastRow = firstRow + getTaskCount();
-//        firstRow += 1;
-//
-//        if( isExpanded )
-//            fireTableRowsInserted( firstRow, lastRow );
-//        else
-//            fireTableRowsDeleted( firstRow, lastRow );
-//        fireTableCellUpdated( firstRow-1, COL_GROUP );
     }
 
     @Override

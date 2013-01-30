@@ -82,6 +82,8 @@ public class MakefileConfiguration implements Cloneable {
     private StringConfiguration cleanCommand;
     private StringConfiguration output;
     
+    private static final RequestProcessor RP = new RequestProcessor("MakeConfiguration", 1); // NOI18N
+    
     // Constructors
     public MakefileConfiguration(MakeConfiguration makeConfiguration) {
         this.makeConfiguration = makeConfiguration;
@@ -425,7 +427,7 @@ public class MakefileConfiguration implements Cloneable {
                 }
             }
         };
-        RequestProcessor.getDefault().post(determineFiltersRunner);
+        RP.post(determineFiltersRunner);
     }
 
     private JFileChooser createElfPanel(String seed, final PropertyEditorSupport editor, PropertyEnv propenv) {

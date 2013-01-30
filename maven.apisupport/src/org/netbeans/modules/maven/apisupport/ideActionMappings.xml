@@ -87,6 +87,9 @@ made subject to such option by the copyright holder.
         <goals>
             <goal>package</goal>
         </goals>
+        <properties>
+            <maven.test.skip>true</maven.test.skip>
+        </properties>
     </action>
 
 </actions>

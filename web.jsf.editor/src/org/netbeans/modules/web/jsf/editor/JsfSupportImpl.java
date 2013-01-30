@@ -46,6 +46,8 @@ import java.beans.PropertyChangeListener;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
@@ -55,10 +57,8 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.web.api.webmodule.WebModule;
-import org.netbeans.modules.web.beans.api.model.ModelUnit;
+import org.netbeans.modules.web.beans.MetaModelSupport;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
-import org.netbeans.modules.web.beans.api.model.WebBeansModelFactory;
-import org.netbeans.modules.web.beans.api.model.support.WebBeansModelSupport;
 import org.netbeans.modules.web.jsf.editor.facelets.AbstractFaceletsLibrary;
 import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibrarySupport;
 import org.netbeans.modules.web.jsf.editor.index.JsfIndex;
@@ -78,6 +78,8 @@ import org.openide.util.lookup.InstanceContent;
  */
 public class JsfSupportImpl implements JsfSupport {
 
+	private static final Logger LOG = Logger.getLogger(JsfSupportImpl.class.getSimpleName());
+    
     public static JsfSupportImpl findFor(Source source) {
         return getOwnImplementation(JsfSupportProvider.get(source));
     }
@@ -99,9 +101,22 @@ public class JsfSupportImpl implements JsfSupport {
     static JsfSupportImpl findForProject(Project project) {
         WebModule webModule = WebModule.getWebModule(project.getProjectDirectory());
         if(webModule != null) {
+            // #217213 - prevent NPE:
+            if (webModule.getDocumentBase() == null) {
+                LOG.log(Level.INFO, "project '"+project+ // NOI18N
+                        "' does not have valid documentBase"); // NOI18N
+                return null;
+            }
             //web project
             ClassPath sourceCP = ClassPath.getClassPath(webModule.getDocumentBase(), ClassPath.SOURCE);
             ClassPath compileCP = ClassPath.getClassPath(webModule.getDocumentBase(), ClassPath.COMPILE);
+            // #217213 - prevent NPE; not sure what's causing it:
+            if (compileCP == null) {
+                LOG.log(Level.INFO, "project '"+project+ // NOI18N
+                        "' does not have compilation classpath; documentBase="+ // NOI18N
+                        webModule.getDocumentBase());
+                return null;
+            }
             ClassPath executeCP = ClassPath.getClassPath(webModule.getDocumentBase(), ClassPath.EXECUTE);
             ClassPath bootCP = ClassPath.getClassPath(webModule.getDocumentBase(), ClassPath.BOOT);
             
@@ -133,6 +148,7 @@ public class JsfSupportImpl implements JsfSupport {
         //no jsf support for this project
         return null;
     }
+
     
     private FaceletsLibrarySupport faceletsLibrarySupport;
     private Project project;
@@ -142,7 +158,7 @@ public class JsfSupportImpl implements JsfSupport {
     private MetadataModel<WebBeansModel> webBeansModel;
     private Lookup lookup;
 
-     private JsfSupportImpl(Project project, WebModule wm, ClassPath sourceClassPath, ClassPath compileClassPath, ClassPath executeClassPath, ClassPath bootClassPath) {
+    private JsfSupportImpl(Project project, WebModule wm, ClassPath sourceClassPath, ClassPath compileClassPath, ClassPath executeClassPath, ClassPath bootClassPath) {
         this.project = project;
         this.wm = wm;
         this.sourceClassPath = sourceClassPath;
@@ -161,12 +177,8 @@ public class JsfSupportImpl implements JsfSupport {
                 }
             }
         });
-        //register html extension
-        //TODO this should be done declaratively via layer
-        JsfHtmlExtension.activate();
 
-        ModelUnit modelUnit = WebBeansModelSupport.getModelUnit(wm != null ? getFileObject(wm) : project.getProjectDirectory());
-        webBeansModel = WebBeansModelFactory.getMetaModel(modelUnit);
+        webBeansModel = new MetaModelSupport(project).getMetaModel();
 
         //init lookup
         //TODO do it lazy so it creates the web beans model lazily once looked up
@@ -238,28 +250,4 @@ public class JsfSupportImpl implements JsfSupport {
         return wm != null ? wm.getDocumentBase() : project.getProjectDirectory();
     }
 
-    private static FileObject getFileObject(WebModule module) {
-        FileObject fileObject = module.getDocumentBase();
-        if (fileObject != null) {
-            return fileObject;
-        }
-        fileObject = module.getDeploymentDescriptor();
-        if (fileObject != null) {
-            return fileObject;
-        }
-        fileObject = module.getWebInf();
-        if (fileObject != null) {
-            return fileObject;
-        }
-        FileObject[] fileObjects = module.getJavaSources();
-        if (fileObjects != null) {
-            for (FileObject source : fileObjects) {
-                if (source != null) {
-                    return source;
-                }
-            }
-        }
-        return null;
-    }
-    
 }

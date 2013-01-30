@@ -57,15 +57,11 @@ import com.sun.jdi.ThreadReference;
 import com.sun.jdi.VMDisconnectedException;
 import com.sun.jdi.Value;
 import com.sun.jdi.VirtualMachine;
-import com.sun.jdi.event.Event;
-import com.sun.jdi.event.MethodEntryEvent;
-import com.sun.jdi.event.WatchpointEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -81,19 +77,13 @@ import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
-import org.netbeans.api.debugger.DebuggerManagerListener;
 import org.netbeans.api.debugger.LazyDebuggerManagerListener;
 import org.netbeans.api.debugger.Properties;
-import org.netbeans.api.debugger.jpda.CallStackFrame;
-import org.netbeans.api.debugger.jpda.FieldBreakpoint;
-import org.netbeans.api.debugger.jpda.JPDAClassType;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.MethodBreakpoint;
-import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.api.debugger.jpda.event.JPDABreakpointEvent;
 import org.netbeans.api.debugger.jpda.event.JPDABreakpointListener;
-import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.expr.InvocationExceptionTranslated;
 import org.netbeans.modules.debugger.jpda.expr.JDIVariable;
 import org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper;
@@ -112,7 +102,9 @@ import org.netbeans.modules.debugger.jpda.visual.breakpoints.AWTComponentBreakpo
 import org.netbeans.modules.debugger.jpda.visual.ui.ScreenshotComponent;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.windows.InputOutput;
 
 /**
  *
@@ -130,7 +122,7 @@ public class VisualDebuggerListener extends DebuggerManagerAdapter {
     private static final String PROPERTIES_TCC = "TrackComponentChanges";  // NOI18N
     private static final String PROPERTIES_UPLOAD_AGENT = "UploadAgent";  // NOI18N
     
-    private Collection<Breakpoint> helperComponentBreakpoints = new ArrayList<Breakpoint>();
+    private final Map<DebuggerEngine, Collection<Breakpoint>> helperComponentBreakpointsMap = new HashMap<DebuggerEngine, Collection<Breakpoint>>();
     private final Properties properties;
     private volatile Boolean isTrackComponentChanges = null;
     
@@ -165,8 +157,12 @@ public class VisualDebuggerListener extends DebuggerManagerAdapter {
     public void engineAdded(DebuggerEngine engine) {
         // Create a BP in AWT and when hit, inject the remote service.
         final JPDADebugger debugger = engine.lookupFirst(null, JPDADebugger.class);
+        if (debugger == null) {
+            return ;
+        }
         boolean uploadAgent = properties.getBoolean(PROPERTIES_UPLOAD_AGENT, true);
         logger.log(Level.FINE, "engineAdded({0}), debugger = {1}, uploadAgent = {2}", new Object[]{engine, debugger, uploadAgent});
+        Collection<Breakpoint> helperComponentBreakpoints = new ArrayList<Breakpoint>();
         if (debugger != null && uploadAgent) {
             final AtomicBoolean inited = new AtomicBoolean(false);
             final MethodBreakpoint[] mb = new MethodBreakpoint[2];
@@ -241,6 +237,9 @@ public class VisualDebuggerListener extends DebuggerManagerAdapter {
             }
             
         }
+        synchronized (helperComponentBreakpointsMap) {
+            helperComponentBreakpointsMap.put(engine, helperComponentBreakpoints);
+        }
     }
 
     private void initDebuggerRemoteService(JPDAThread thread, RemoteServices.ServiceType sType) {
@@ -288,6 +287,7 @@ public class VisualDebuggerListener extends DebuggerManagerAdapter {
             
             ClassType serviceClass = (ClassType) ClassObjectReferenceWrapper.reflectedType(cor);//RemoteServices.getClass(vm, "org.netbeans.modules.debugger.jpda.visual.remote.RemoteService");
 
+            InvocationExceptionTranslated iextr = null;
             Method startMethod = ClassTypeWrapper.concreteMethodByName(serviceClass, "startAccessLoop", "()V");
             try {
                 t.notifyMethodInvoking();
@@ -295,17 +295,36 @@ public class VisualDebuggerListener extends DebuggerManagerAdapter {
                 boolean trackComponentChanges = properties.getBoolean(PROPERTIES_TCC, true);
                 isTrackComponentChanges = trackComponentChanges;
                 if (trackComponentChanges && RemoteAWTScreenshot.FAST_SNAPSHOT_RETRIEVAL) {
-                    Method startHierarchyListenerMethod = ClassTypeWrapper.concreteMethodByName(serviceClass, "startHierarchyListener", "()V");
+                    Method startHierarchyListenerMethod = ClassTypeWrapper.concreteMethodByName(serviceClass, "startHierarchyListener", "()Ljava/lang/String;");
                     if (startHierarchyListenerMethod != null) {
-                        ClassTypeWrapper.invokeMethod(serviceClass, tr, startHierarchyListenerMethod, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
+                        Value res = ClassTypeWrapper.invokeMethod(serviceClass, tr, startHierarchyListenerMethod, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
+                        if (res instanceof StringReference) {
+                            String reason = ((StringReference) res).value();
+                            InputOutput io = t.getDebugger().getIO();
+                            io.getErr().println(NbBundle.getMessage(VisualDebuggerListener.class, "MSG_NoTrackingOfComponentChanges", reason));
+                            //System.err.println("isHierarchyListenerAdded = false, reason = "+reason);
+                        } else {
+                            //System.err.println("isHierarchyListenerAdded = "+true);
+                        }
                     }
                 }
-            } catch (VMDisconnectedExceptionWrapper vmd) {                
+            } catch (VMDisconnectedExceptionWrapper vmd) {
+            } catch (InvocationException iex) {
+                iextr = new InvocationExceptionTranslated(iex, t.getDebugger());
+                Exceptions.printStackTrace(iex);
             } catch (Exception ex) {
                 Exceptions.printStackTrace(ex);
             } finally {
                 t.notifyMethodInvokeDone();
                 ObjectReferenceWrapper.enableCollection(cor); // While AWTAccessLoop is running, it should not be collected.
+            }
+            if (iextr != null) {
+                iextr.setPreferredThread(t);
+                iextr.getMessage();
+                iextr.getLocalizedMessage();
+                iextr.getCause();
+                iextr.getStackTrace();
+                Exceptions.printStackTrace(iextr);
             }
         } catch (InternalExceptionWrapper iex) {
         } catch (ClassNotPreparedExceptionWrapper cnpex) {
@@ -332,16 +351,21 @@ public class VisualDebuggerListener extends DebuggerManagerAdapter {
     public void engineRemoved(DebuggerEngine engine) {
         ScreenshotComponent.closeScreenshots(engine);
         JPDADebugger debugger = engine.lookupFirst(null, JPDADebugger.class);
-        logger.fine("engineRemoved("+engine+"), debugger = "+debugger);
-        if (debugger != null) {
-            stopDebuggerRemoteService(debugger);
+        if (debugger == null) {
+            return ;
         }
-        if (!helperComponentBreakpoints.isEmpty()) {
+        logger.log(Level.FINE, "engineRemoved({0}), debugger = {1}", new Object[]{engine, debugger});
+        stopDebuggerRemoteService(debugger);
+        Collection<Breakpoint> helperComponentBreakpoints;
+        synchronized (helperComponentBreakpointsMap) {
+            helperComponentBreakpoints = helperComponentBreakpointsMap.remove(engine);
+        }
+        if (helperComponentBreakpoints != null && !helperComponentBreakpoints.isEmpty()) {
             Iterator<Breakpoint> it = helperComponentBreakpoints.iterator();
             while (it.hasNext()) {
                 DebuggerManager.getDebuggerManager().removeBreakpoint(it.next());
-                it.remove();
             }
+            helperComponentBreakpoints.clear();
         }
         synchronized (componentsAndStackTraces) {
             componentsAndStackTraces.remove(debugger);

@@ -398,6 +398,7 @@ public class ChildrenKeysTest extends NbTestCase {
 
     }
 
+    @RandomlyFails // NB-Core-Build #8615, #9022, #9163, #9332, #9370
     public void testGCWhenGetNodesTrue() throws Exception {
 
 
@@ -610,40 +611,44 @@ public class ChildrenKeysTest extends NbTestCase {
         Node root = createNode(k);
         
         Node[] n = root.getChildren().getNodes ();
+        LOG.log(Level.INFO, "root nodes created {0}", Arrays.toString(n));
         
         n = k.getNodes ();
+        LOG.log(Level.INFO, "k nodes created {0}", Arrays.toString(n));
+        
         assertEquals ("1 left", 1, n.length);
         assertEquals("Once add notify", 1, k.addNotify);
         
         WeakReference ref = new WeakReference (n[0]);
+        LOG.log(Level.INFO, "about to null reference to n[0]: {0}", ref.get());
         n = null;
         assertGC ("Node can be gced", ref);
+        LOG.log(Level.INFO, "reference to n[0]: {0}", ref.get());
 
         for (int i = 0; i < 10; i++) {
+            LOG.log(Level.INFO, "round {0} of GCing. k's removeNotify: {1}", new Object[]{i, k.removeNotify});
             if (k.removeNotify == 1) {
                 break;
             }
-            try {
-                ref = new WeakReference(root.getChildren().getEntrySupport());
-                assertGC("Stimulate GC activity", ref);
-            } catch (AssertionFailedError err) {
-                // OK, entry support cannot be GCed
-                continue;
-            }
-            fail("assertGC shall fail before");
+            ref = new WeakReference(root.getChildren().getEntrySupport());
+            assertNotGC("Stimulate GC activity", ref);
         }
 
-        assertEquals("Remove notify is being called", 1, k.removeNotify);
+        assertEquals("Remove notify is being called, support: " + root.getChildren().getEntrySupport(), 1, k.removeNotify);
 
         n = root.getChildren().getNodes();
+        LOG.log(Level.INFO, "new root nodes created {0}", Arrays.toString(n));
         assertEquals("Still remains one", 1, n.length);
         assertEquals("Name A", "A", n[0].getName());
 
+        LOG.log(Level.INFO, "about to countDown on k's latch}");
         k.slowRemoveNotify.countDown();
         waitActiveReferenceQueue();
+        LOG.log(Level.INFO, "waitActiveReferenceQueue is over");
 
         for (int i = 0; i < 5; i++) {
             n = root.getChildren().getNodes();
+            LOG.log(Level.INFO, "round {0} verify root nodes: {1}", new Object[]{i, Arrays.toString(n)});
             assertEquals("Still one node", 1, n.length);
             assertEquals("Still named right", "A", n[0].getName());
             Thread.sleep(100);
@@ -2463,6 +2468,12 @@ public class ChildrenKeysTest extends NbTestCase {
         K ch2 = new K(lazy(), "c", "d");
         addNotifyForbidden.set(true);
         root.setChildren(ch2);
+    }
+
+    private static void assertNotGC(String msg, Reference ref) {
+        System.gc();
+        System.runFinalization();
+        assertNotNull(msg, ref);
     }
     
     /** Sample keys.

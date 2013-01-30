@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -96,10 +96,16 @@ public class AutoupdateCatalogFactory {
             err.log(Level.WARNING, "{0}: url_key attribute deprecated in favor of url", fo.getPath());
             String remoteBundleName = (String) fo.getAttribute("SystemFileSystem.localizingBundle"); // NOI18N
             assert remoteBundleName != null : "remoteBundleName should found in fo: " + fo;
-            ResourceBundle bundle = NbBundle.getBundle(remoteBundleName);
             String localizedValue = null;
+            ResourceBundle bundle = null;
             try {
-                localizedValue = bundle.getString (sKey);
+                if (remoteBundleName == null) {
+                    err.log(Level.WARNING, "Cannot find Bundle to read 'url_key' attribute {0}, trying use the 'url_key' itself...", sKey);
+                    localizedValue = sKey;
+                } else {
+                    bundle = NbBundle.getBundle(remoteBundleName);
+                    localizedValue = bundle.getString (sKey);
+                }
                 url = new URL (localizedValue);
             } catch (MissingResourceException mre) {
                 assert false : bundle + " should contain key " + sKey;
@@ -187,7 +193,7 @@ public class AutoupdateCatalogFactory {
             }
         }
         if (displayName == null) {
-            displayName = NbBundle.getBundle (AutoupdateCatalogFactory.class).getString ("CTL_CatalogUpdatesProviderFactory_DefaultName");
+            displayName = NbBundle.getMessage (AutoupdateCatalogFactory.class, "CTL_CatalogUpdatesProviderFactory_DefaultName");
         }
         
         return displayName;
@@ -211,7 +217,7 @@ public class AutoupdateCatalogFactory {
                 Logger.getLogger(AutoupdateCatalogFactory.class.getName()).fine("Property PROP_IDE_IDENTITY hasn't been initialized yet."); // NOI18N
                 id = "";
             }
-            String prefix = NbBundle.getBundle (AutoupdateCatalogFactory.class).getString ("URL_Prefix_Hash_Code"); // NOI18N
+            String prefix = NbBundle.getMessage (AutoupdateCatalogFactory.class, "URL_Prefix_Hash_Code"); // NOI18N
             System.setProperty (IDE_HASH_CODE, "".equals (id) ? prefix + "0" : prefix + id); // NOI18N
             //catching strange IDs like
             //unique=-n+NB0c15fdc4f-2182-40c3-b6d8-ae09ef28922a_526df012-fe24-4849-b343-b4d77b11f6e6

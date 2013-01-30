@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 2.15
+#Version 2.22.1
 
 CLSS public abstract interface java.io.Serializable
 
@@ -45,6 +45,32 @@ meth public void setStackTrace(java.lang.StackTraceElement[])
 supr java.lang.Object
 hfds backtrace,cause,detailMessage,serialVersionUID,stackTrace
 
+CLSS public abstract interface java.lang.annotation.Annotation
+meth public abstract boolean equals(java.lang.Object)
+meth public abstract int hashCode()
+meth public abstract java.lang.Class<? extends java.lang.annotation.Annotation> annotationType()
+meth public abstract java.lang.String toString()
+
+CLSS public abstract interface !annotation java.lang.annotation.Documented
+ anno 0 java.lang.annotation.Documented()
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[ANNOTATION_TYPE])
+intf java.lang.annotation.Annotation
+
+CLSS public abstract interface !annotation java.lang.annotation.Retention
+ anno 0 java.lang.annotation.Documented()
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[ANNOTATION_TYPE])
+intf java.lang.annotation.Annotation
+meth public abstract java.lang.annotation.RetentionPolicy value()
+
+CLSS public abstract interface !annotation java.lang.annotation.Target
+ anno 0 java.lang.annotation.Documented()
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[ANNOTATION_TYPE])
+intf java.lang.annotation.Annotation
+meth public abstract java.lang.annotation.ElementType[] value()
+
 CLSS public final org.netbeans.api.sendopts.CommandException
 cons public init(int)
 cons public init(int,java.lang.String)
@@ -54,20 +80,41 @@ supr java.lang.Exception
 hfds exitCode,locMsg
 
 CLSS public final org.netbeans.api.sendopts.CommandLine
+meth public !varargs static org.netbeans.api.sendopts.CommandLine create(java.lang.Class<?>[])
 meth public !varargs void process(java.lang.String[]) throws org.netbeans.api.sendopts.CommandException
 meth public static org.netbeans.api.sendopts.CommandLine getDefault()
 meth public void process(java.lang.String[],java.io.InputStream,java.io.OutputStream,java.io.OutputStream,java.io.File) throws org.netbeans.api.sendopts.CommandException
 meth public void usage(java.io.PrintWriter)
 supr java.lang.Object
-hfds ERROR_BASE
+hfds ERROR_BASE,processors
+
+CLSS public abstract interface !annotation org.netbeans.spi.sendopts.Arg
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[FIELD])
+intf java.lang.annotation.Annotation
+meth public abstract !hasdefault boolean implicit()
+meth public abstract !hasdefault char shortName()
+meth public abstract !hasdefault java.lang.String defaultValue()
+meth public abstract java.lang.String longName()
+
+CLSS public abstract interface org.netbeans.spi.sendopts.ArgsProcessor
+meth public abstract void process(org.netbeans.spi.sendopts.Env) throws org.netbeans.api.sendopts.CommandException
+
+CLSS public abstract interface !annotation org.netbeans.spi.sendopts.Description
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[FIELD])
+intf java.lang.annotation.Annotation
+meth public abstract !hasdefault java.lang.String displayName()
+meth public abstract java.lang.String shortDescription()
 
 CLSS public final org.netbeans.spi.sendopts.Env
 meth public java.io.File getCurrentDirectory()
 meth public java.io.InputStream getInputStream()
 meth public java.io.PrintStream getErrorStream()
 meth public java.io.PrintStream getOutputStream()
+meth public void usage()
 supr java.lang.Object
-hfds currentDir,err,is,os
+hfds cmd,currentDir,err,is,os
 
 CLSS public final org.netbeans.spi.sendopts.Option
 fld public final static char NO_SHORT_NAME = '\uffff'

@@ -332,7 +332,6 @@ public class ExportShortcutsAction {
                     generateShadowsToXML (layersBridge, sb, categoryToActions, "        ");
                 XMLStorage.generateFolderEnd (sb, "folder", "    ");
             XMLStorage.generateFolderEnd (sb, "filesystem", "");
-            System.out.println(sb.toString ());
             fw.write (sb.toString ());
         } catch (IOException e) {
             ErrorManager.getDefault ().notify (e);
@@ -376,7 +375,6 @@ public class ExportShortcutsAction {
             }
             
             XMLStorage.generateFolderEnd (sb, "bindings", "");
-            System.out.println(sb.toString ());
             fw.write (sb.toString ());
         } catch (IOException e) {
             ErrorManager.getDefault ().notify (e);

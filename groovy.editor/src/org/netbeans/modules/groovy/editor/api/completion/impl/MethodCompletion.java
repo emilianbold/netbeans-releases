@@ -56,9 +56,6 @@ import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.modules.csl.api.CompletionProposal;
-import org.netbeans.modules.groovy.editor.api.AstPath;
-import org.netbeans.modules.groovy.editor.api.GroovyUtils;
-import org.netbeans.modules.groovy.editor.api.NbUtilities;
 import org.netbeans.modules.groovy.editor.api.completion.CaretLocation;
 import org.netbeans.modules.groovy.editor.api.completion.CompletionItem;
 import org.netbeans.modules.groovy.editor.api.completion.CompletionItem.ConstructorItem;
@@ -67,6 +64,7 @@ import org.netbeans.modules.groovy.editor.api.completion.MethodSignature;
 import org.netbeans.modules.groovy.editor.api.completion.util.CompletionRequest;
 import org.netbeans.modules.groovy.editor.api.completion.util.ContextHelper;
 import org.netbeans.modules.groovy.editor.completion.CompleteElementHandler;
+import org.netbeans.modules.groovy.editor.api.GroovyUtils;
 
 /**
  * Complete the methods invokable on a class.
@@ -151,7 +149,7 @@ public class MethodCompletion extends BaseCompletion {
             }
         }
 
-        Map<MethodSignature, ? extends CompletionItem> result = CompleteElementHandler
+        Map<MethodSignature, CompletionItem> result = CompleteElementHandler
                 .forCompilationInfo(request.info)
                     .getMethods(ContextHelper.getSurroundingClassNode(request), request.declaringClass, request.prefix, anchor,
                     request.dotContext != null && request.dotContext.isMethodsOnly());
@@ -372,7 +370,7 @@ public class MethodCompletion extends BaseCompletion {
                     String name = fullName;
 
                     if (tm.getKind() == javax.lang.model.type.TypeKind.DECLARED) {
-                        name = NbUtilities.stripPackage(fullName);
+                        name = GroovyUtils.stripPackage(fullName);
                     }
 
                     // todo: this needs to be replaced with values from the JavaDoc
@@ -413,7 +411,7 @@ public class MethodCompletion extends BaseCompletion {
                     }
 
                     if (tm.getKind() == TypeKind.DECLARED || tm.getKind() == TypeKind.ARRAY) {
-                        sb.append(NbUtilities.stripPackage(tm.toString()));
+                        sb.append(GroovyUtils.stripPackage(tm.toString()));
                     } else {
                         sb.append(tm.toString());
                     }

@@ -46,6 +46,7 @@ package org.netbeans.modules.cnd.discovery.wizard.api.support;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -63,12 +64,14 @@ import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.api.toolchain.ToolchainManager;
 import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.PredefinedMacro;
 import org.netbeans.modules.cnd.discovery.api.ItemProperties;
+import org.netbeans.modules.cnd.discovery.projectimport.ImportProject;
 import org.netbeans.modules.cnd.makeproject.api.ProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BasicCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BooleanConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CCCCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider.SnapShot;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.FolderConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
@@ -90,9 +93,11 @@ public class ProjectBridge {
     private final String baseFolder;
     private final FileSystem baseFolderFileSystem;
     private final MakeConfigurationDescriptor makeConfigurationDescriptor;
+    private boolean startedModification;
     private Project project;
     private Set<Project> resultSet = new HashSet<Project>();
     private Map<String,Item> canonicalItems;
+    private SnapShot delta;
     
     public ProjectBridge(Project project) {
         this.project = project;
@@ -107,9 +112,17 @@ public class ProjectBridge {
         }
         baseFolder = CndFileUtils.normalizePath(project.getProjectDirectory());
     }
-
+    
     public boolean isValid(){
         return makeConfigurationDescriptor != null;
+    }
+    
+    public void startModifications() {
+        ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
+        if (pdp != null) {
+            delta = pdp.startModifications();
+            startedModification = true;
+        }
     }
     
     public ProjectBridge(String baseFolder) throws IOException{
@@ -179,7 +192,7 @@ public class ProjectBridge {
      * Check needed header extensions and store list in the NB/project properties.
      * @param needAdd list of needed extensions of header files.
      */
-    public void checkForNewExtensions(Set<String> needAdd){
+    public boolean checkForNewExtensions(Set<String> needAdd){
         Set<String> extensions = new HashSet<String>();
         for(String name : needAdd){
             int i = name.replace('\\', '/').lastIndexOf('/');
@@ -194,21 +207,21 @@ public class ProjectBridge {
                 }
             }
         }
-        Set<Item> old = new HashSet<Item>();
-        for(Item item : getAllSources()) {
-            old.add(item);
-        }
+        Set<Item> old = new HashSet<Item>(Arrays.asList(getAllSources()));
         if (extensions.contains("xml")) { //NOI18N
             assert false : "Extension '.xml' cannot be a header extension"; //NOI18N
             extensions.remove("xml"); //NOI18N
         }
+        boolean isChanged = false;
         if (makeConfigurationDescriptor.addAdditionalHeaderExtensions(extensions)) {
             for(Item item : getAllSources()) {
                 if (!old.contains(item)) {
                     ProjectBridge.setExclude(item,true);
+                    isChanged = true;
                 }
             }
         }
+        return isChanged;
     }
 
     private Item findByCanonicalName(String path){
@@ -254,8 +267,8 @@ public class ProjectBridge {
                 } else {
                     path = compilePath + CndFileUtils.getFileSeparatorChar(baseFolderFileSystem) + path;
                 }
-                path = CndFileUtils.normalizeAbsolutePath(baseFolderFileSystem, path);
             }
+            path = CndFileUtils.normalizeAbsolutePath(baseFolderFileSystem, path);
             set.add(getRelativepath(path));
         }
         if (isDifferentCompilePath(filePath, compilePath)){
@@ -416,7 +429,12 @@ public class ProjectBridge {
     }
     
     public Set<Project> getResult(){
-        makeConfigurationDescriptor.checkForChangedItems(project, null, null);
+        if (startedModification) {
+            ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
+            pdp.endModifications(delta, startedModification, ImportProject.logger);
+        } else {
+            makeConfigurationDescriptor.checkForChangedItems(project, null, null);
+        }
         return resultSet;
     }
         
@@ -582,90 +600,133 @@ public class ProjectBridge {
         return itemConfiguration;
     }
     
-    public static void setSourceTool(Item item, ItemProperties.LanguageKind lang, ItemProperties.LanguageStandard languageStandard, boolean isIncrementalMode){
+    public static boolean setSourceTool(Item item, ItemProperties.LanguageKind lang, ItemProperties.LanguageStandard languageStandard, boolean isIncrementalMode){
         ItemConfiguration itemConfiguration = getOrCreateItemConfiguration(item);
         if (itemConfiguration == null) {
-            return;
+            return false;
         }
+        boolean isChanged = false;
         switch (lang) {
             case C:
                 if (itemConfiguration.getTool() != PredefinedToolKind.CCompiler) {
                     itemConfiguration.setTool(PredefinedToolKind.CCompiler);
+                    isChanged = true;
                 }
                 break;
             case CPP:
                 if (itemConfiguration.getTool() != PredefinedToolKind.CCCompiler) {
                     itemConfiguration.setTool(PredefinedToolKind.CCCompiler);
+                    isChanged = true;
                 }
                 break;
             case Fortran:
                 if (itemConfiguration.getTool() != PredefinedToolKind.FortranCompiler) {
                     itemConfiguration.setTool(PredefinedToolKind.FortranCompiler);
+                    isChanged = true;
                 }
                 break;
         }
-        setSourceStandard(item, languageStandard, isIncrementalMode);
+        isChanged |= setSourceStandard(item, languageStandard, isIncrementalMode);
+        return isChanged;
     }
 
     
-    public static void setSourceStandard(Item item, ItemProperties.LanguageStandard languageStandard, boolean isIncrementalMode) {
+    public static boolean setSourceStandard(Item item, ItemProperties.LanguageStandard languageStandard, boolean isIncrementalMode) {
         if (languageStandard == null) {
-            return;
+            return false;
         }
         ItemConfiguration itemConfiguration = getOrCreateItemConfiguration(item);
         if (itemConfiguration == null) {
-            return;
+            return false;
         }
+        boolean isChanged = false;
         if (itemConfiguration.getTool() == PredefinedToolKind.CCompiler) {
             switch (languageStandard) {
                 case C:
-                    itemConfiguration.setLanguageFlavor(LanguageFlavor.C);
+                    if (itemConfiguration.getLanguageFlavor() != LanguageFlavor.C) {
+                        itemConfiguration.setLanguageFlavor(LanguageFlavor.C);
+                        isChanged = true;
+                    }
                     break;
                 case C89:
-                    itemConfiguration.setLanguageFlavor(LanguageFlavor.C89);
+                    if (itemConfiguration.getLanguageFlavor() != LanguageFlavor.C89) {
+                        itemConfiguration.setLanguageFlavor(LanguageFlavor.C89);
+                        isChanged = true;
+                    }
                     break;
                 case C99:
-                    itemConfiguration.setLanguageFlavor(LanguageFlavor.C99);
+                    if (itemConfiguration.getLanguageFlavor() != LanguageFlavor.C99) {
+                        itemConfiguration.setLanguageFlavor(LanguageFlavor.C99);
+                        isChanged = true;
+                    }
                     break;
                 case Unknown:
                     if (!isIncrementalMode) {
-                        itemConfiguration.setLanguageFlavor(LanguageFlavor.UNKNOWN);
+                        if (itemConfiguration.getLanguageFlavor() != LanguageFlavor.UNKNOWN) {
+                            itemConfiguration.setLanguageFlavor(LanguageFlavor.UNKNOWN);
+                            isChanged = true;
+                        }
                     }
                     break;
                 case Default:
-                    itemConfiguration.setLanguageFlavor(LanguageFlavor.DEFAULT);
+                    if (itemConfiguration.getLanguageFlavor() != LanguageFlavor.DEFAULT) {
+                        itemConfiguration.setLanguageFlavor(LanguageFlavor.DEFAULT);
+                        isChanged = true;
+                    }
                     break;
             }
         } else if (itemConfiguration.getTool() == PredefinedToolKind.CCCompiler) {
             switch (languageStandard) {
                 case CPP:
-                    itemConfiguration.setLanguageFlavor(LanguageFlavor.CPP);
+                    if (itemConfiguration.getLanguageFlavor() != LanguageFlavor.CPP) {
+                        itemConfiguration.setLanguageFlavor(LanguageFlavor.CPP);
+                        isChanged = true;
+                    }
                     break;
                 case CPP11:
-                    itemConfiguration.setLanguageFlavor(LanguageFlavor.CPP11);
+                    if (itemConfiguration.getLanguageFlavor() != LanguageFlavor.CPP11) {
+                        itemConfiguration.setLanguageFlavor(LanguageFlavor.CPP11);
+                        isChanged = true;
+                    }
                     break;
                 case Unknown:
                     if (!isIncrementalMode) {
-                        itemConfiguration.setLanguageFlavor(LanguageFlavor.UNKNOWN);
+                        if (itemConfiguration.getLanguageFlavor() != LanguageFlavor.UNKNOWN) {
+                            itemConfiguration.setLanguageFlavor(LanguageFlavor.UNKNOWN);
+                            isChanged = true;
+                        }
                     }
                     break;
                 case Default:
-                    itemConfiguration.setLanguageFlavor(LanguageFlavor.DEFAULT);
+                    if (itemConfiguration.getLanguageFlavor() != LanguageFlavor.DEFAULT) {
+                        itemConfiguration.setLanguageFlavor(LanguageFlavor.DEFAULT);
+                        isChanged = true;
+                    }
                     break;
             }
         } else if (itemConfiguration.getTool() == PredefinedToolKind.FortranCompiler) {
             switch (languageStandard) {
                 case F77:
-                    itemConfiguration.setLanguageFlavor(LanguageFlavor.F77);
+                    if (itemConfiguration.getLanguageFlavor() != LanguageFlavor.F77) {
+                        itemConfiguration.setLanguageFlavor(LanguageFlavor.F77);
+                        isChanged = true;
+                    }
                     break;
                 case F90:
-                    itemConfiguration.setLanguageFlavor(LanguageFlavor.F90);
+                    if (itemConfiguration.getLanguageFlavor() != LanguageFlavor.F90) {
+                        itemConfiguration.setLanguageFlavor(LanguageFlavor.F90);
+                        isChanged = true;
+                    }
                     break;
                 case F95:
-                    itemConfiguration.setLanguageFlavor(LanguageFlavor.F95);
+                    if (itemConfiguration.getLanguageFlavor() != LanguageFlavor.F95) {
+                        itemConfiguration.setLanguageFlavor(LanguageFlavor.F95);
+                        isChanged = true;
+                    }
                     break;
             }
         }
+        return isChanged;
     }
 
     
@@ -708,11 +769,12 @@ public class ProjectBridge {
         }
     }
 
-    public static void fixFileMacros(Map<String,String> macros, Item item) {
+    public static boolean fixFileMacros(Map<String,String> macros, Item item) {
         ItemConfiguration itemConfiguration = getOrCreateItemConfiguration(item);
         if (itemConfiguration == null || !itemConfiguration.isCompilerToolConfiguration()) {
-            return;
+            return false;
         }
+        boolean isChanged = false;
         BasicCompilerConfiguration compilerConfiguration = itemConfiguration.getCompilerConfiguration();
         if (compilerConfiguration instanceof CCCCompilerConfiguration) {
             Set<String> set = new HashSet<String>(item.getUserMacroDefinitions());
@@ -736,11 +798,15 @@ public class ProjectBridge {
                     find = set.contains(entry.getKey());
                 }
                 if (!find) {
+                    isChanged = true;
                     list.add(s);
                 }
             }
-            cccCompilerConfiguration.getPreprocessorConfiguration().setValue(list);
+            if (isChanged) {
+                cccCompilerConfiguration.getPreprocessorConfiguration().setValue(list);
+            }
         }
+        return isChanged;
     }
 
     private Map<String, String> cache = new HashMap<String, String>();
@@ -757,7 +823,7 @@ public class ProjectBridge {
         cache.clear();
     }
     
-    private CompilerSet getCompilerSet(){
+    public CompilerSet getCompilerSet(){
         MakeConfiguration makeConfiguration = makeConfigurationDescriptor.getActiveConfiguration();
         return makeConfiguration.getCompilerSet().getCompilerSet();
     }
@@ -771,11 +837,19 @@ public class ProjectBridge {
     }
 
     public CompilerFlavor getCompilerFlavor(){
-        return getCompilerSet().getCompilerFlavor();
+        final CompilerSet compilerSet = getCompilerSet();
+        if (compilerSet != null) {
+            return compilerSet.getCompilerFlavor();
+        }
+        return null;
     }
 
     public String getCompilerDirectory(){
-        return getCompilerSet().getDirectory();
+        final CompilerSet compilerSet = getCompilerSet();
+        if (compilerSet != null) {
+            return getCompilerSet().getDirectory();
+        }
+        return null;
     }
     
     private List<String> systemIncludePathsC;
@@ -791,13 +865,17 @@ public class ProjectBridge {
             systemIncludePaths = new ArrayList<String>();
             CompilerSet compilerSet = getCompilerSet();
             AbstractCompiler compiler;
-            if (isCPP) {
-                compiler = (AbstractCompiler)compilerSet.getTool(PredefinedToolKind.CCCompiler);
-            } else {
-                compiler = (AbstractCompiler)compilerSet.getTool(PredefinedToolKind.CCompiler);
-            }
-            for(String path :compiler.getSystemIncludeDirectories()){
-                systemIncludePaths.add(fixWindowsPath(path));
+            if (compilerSet != null) {
+                if (isCPP) {
+                    compiler = (AbstractCompiler)compilerSet.getTool(PredefinedToolKind.CCCompiler);
+                } else {
+                    compiler = (AbstractCompiler)compilerSet.getTool(PredefinedToolKind.CCompiler);
+                }
+                if (compiler != null) {
+                    for(String path :compiler.getSystemIncludeDirectories()){
+                        systemIncludePaths.add(fixWindowsPath(path));
+                    }
+                }
             }
             if (isCPP) {
                 systemIncludePathsCpp = systemIncludePaths;
@@ -820,24 +898,26 @@ public class ProjectBridge {
         if (macros == null) {
             macros = new HashMap<String,List<String>>();
             CompilerSet compilerSet = getCompilerSet();
+            if (compilerSet != null) {
             AbstractCompiler compiler;
-            if (isCPP) {
-                compiler = (AbstractCompiler)compilerSet.getTool(PredefinedToolKind.CCCompiler);
-            } else {
-                compiler = (AbstractCompiler)compilerSet.getTool(PredefinedToolKind.CCompiler);
-            }
-            if (compiler != null && compiler.getDescriptor() != null) {
-                final List<PredefinedMacro> predefinedMacros = compiler.getDescriptor().getPredefinedMacros();
-                if (predefinedMacros != null) {
-                    for(ToolchainManager.PredefinedMacro macro : predefinedMacros){
-                        if (macro.getFlags() != null) {
-                            if (!macro.isHidden()) {
-                                List<String> list = macros.get(macro.getFlags());
-                                if (list == null) {
-                                    list = new ArrayList<String>();
-                                    macros.put(macro.getFlags(), list);
+                if (isCPP) {
+                    compiler = (AbstractCompiler)compilerSet.getTool(PredefinedToolKind.CCCompiler);
+                } else {
+                    compiler = (AbstractCompiler)compilerSet.getTool(PredefinedToolKind.CCompiler);
+                }
+                if (compiler != null && compiler.getDescriptor() != null) {
+                    final List<PredefinedMacro> predefinedMacros = compiler.getDescriptor().getPredefinedMacros();
+                    if (predefinedMacros != null) {
+                        for(ToolchainManager.PredefinedMacro macro : predefinedMacros){
+                            if (macro.getFlags() != null) {
+                                if (!macro.isHidden()) {
+                                    List<String> list = macros.get(macro.getFlags());
+                                    if (list == null) {
+                                        list = new ArrayList<String>();
+                                        macros.put(macro.getFlags(), list);
+                                    }
+                                    list.add(macro.getMacro());
                                 }
-                                list.add(macro.getMacro());
                             }
                         }
                     }
@@ -865,24 +945,26 @@ public class ProjectBridge {
         if (macros == null) {
             macros = new HashMap<String,List<String>>();
             CompilerSet compilerSet = getCompilerSet();
-            AbstractCompiler compiler;
-            if (isCPP) {
-                compiler = (AbstractCompiler)compilerSet.getTool(PredefinedToolKind.CCCompiler);
-            } else {
-                compiler = (AbstractCompiler)compilerSet.getTool(PredefinedToolKind.CCompiler);
-            }
-            if (compiler != null && compiler.getDescriptor() != null) {
-                final List<PredefinedMacro> predefinedMacros = compiler.getDescriptor().getPredefinedMacros();
-                if (predefinedMacros != null) {
-                    for(ToolchainManager.PredefinedMacro macro : predefinedMacros){
-                        if (macro.getFlags() != null) {
-                            if (macro.isHidden()) {
-                                List<String> list = macros.get(macro.getFlags());
-                                if (list == null) {
-                                    list = new ArrayList<String>();
-                                    macros.put(macro.getFlags(), list);
+            if (compilerSet != null) {
+                AbstractCompiler compiler;
+                if (isCPP) {
+                    compiler = (AbstractCompiler)compilerSet.getTool(PredefinedToolKind.CCCompiler);
+                } else {
+                    compiler = (AbstractCompiler)compilerSet.getTool(PredefinedToolKind.CCompiler);
+                }
+                if (compiler != null && compiler.getDescriptor() != null) {
+                    final List<PredefinedMacro> predefinedMacros = compiler.getDescriptor().getPredefinedMacros();
+                    if (predefinedMacros != null) {
+                        for(ToolchainManager.PredefinedMacro macro : predefinedMacros){
+                            if (macro.getFlags() != null) {
+                                if (macro.isHidden()) {
+                                    List<String> list = macros.get(macro.getFlags());
+                                    if (list == null) {
+                                        list = new ArrayList<String>();
+                                        macros.put(macro.getFlags(), list);
+                                    }
+                                    list.add(macro.getMacro());
                                 }
-                                list.add(macro.getMacro());
                             }
                         }
                     }
@@ -924,19 +1006,23 @@ public class ProjectBridge {
         if (systemMacroDefinitions == null) {
             systemMacroDefinitions = new HashMap<String,String>();
             CompilerSet compilerSet = getCompilerSet();
-            AbstractCompiler compiler;
-            if (isCPP) {
-                compiler = (AbstractCompiler)compilerSet.getTool(PredefinedToolKind.CCCompiler);
-            } else {
-                compiler = (AbstractCompiler)compilerSet.getTool(PredefinedToolKind.CCompiler);
-            }
-            for(Object o :compiler.getSystemPreprocessorSymbols()){
-                String macro = (String)o;
-                int i = macro.indexOf('=');
-                if (i>0){
-                    systemMacroDefinitions.put(macro.substring(0,i), macro.substring(i+1).trim());
+            if (compilerSet != null) {
+                AbstractCompiler compiler;
+                if (isCPP) {
+                    compiler = (AbstractCompiler)compilerSet.getTool(PredefinedToolKind.CCCompiler);
                 } else {
-                    systemMacroDefinitions.put(macro, null);
+                    compiler = (AbstractCompiler)compilerSet.getTool(PredefinedToolKind.CCompiler);
+                }
+                if (compiler != null) {
+                    for(Object o :compiler.getSystemPreprocessorSymbols()){
+                        String macro = (String)o;
+                        int i = macro.indexOf('=');
+                        if (i>0){
+                            systemMacroDefinitions.put(macro.substring(0,i), macro.substring(i+1).trim());
+                        } else {
+                            systemMacroDefinitions.put(macro, null);
+                        }
+                    }
                 }
             }
             if (isCPP) {

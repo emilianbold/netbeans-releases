@@ -33,10 +33,10 @@ package org.netbeans.modules.cnd.refactoring.hints.infrastructure;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.TextAction;
+import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.modules.cnd.refactoring.api.CsmContext;
 import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
 import org.netbeans.modules.cnd.utils.MIMENames;
@@ -48,7 +48,6 @@ import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 import org.openide.windows.TopComponent;
-import org.openide.text.CloneableEditorSupport;
 
 /**
  * based on org.netbeans.modules.java.hints.infrastructure.HintAction
@@ -60,7 +59,7 @@ public abstract class HintAction extends TextAction implements PropertyChangeLis
         super(null);
         putValue("noIconInMenu", Boolean.TRUE); //NOI18N
 
-        TopComponent.getRegistry().addPropertyChangeListener(WeakListeners.propertyChange(this, TopComponent.getRegistry()));
+        TopComponent.getRegistry().addPropertyChangeListener(WeakListeners.propertyChange(HintAction.this, TopComponent.getRegistry()));
     }
 
     private void updateEnabled() {
@@ -118,13 +117,7 @@ public abstract class HintAction extends TextAction implements PropertyChangeLis
     protected abstract void perform(CsmContext context);
 
     private Document getCurrentDocument(int[] span) {
-        TopComponent tc = TopComponent.getRegistry().getActivated();
-        JTextComponent pane = null;
-
-        //XXX check if inside AWT?
-        if (SwingUtilities.isEventDispatchThread() && (tc instanceof CloneableEditorSupport.Pane)) {
-            pane = ((CloneableEditorSupport.Pane) tc).getEditorPane();
-        }
+        JTextComponent pane = EditorRegistry.lastFocusedComponent();
 
         if (pane == null) {
             return null;

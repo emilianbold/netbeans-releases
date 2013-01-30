@@ -162,12 +162,16 @@ import org.openide.windows.WindowManager;
  */
 public final class NativeDebuggerManager extends DebuggerManagerAdapter {
     private final static boolean standalone = "on".equals(System.getProperty("spro.dbxtool")); // NOI18N
+    private static final boolean pl = "on".equals(System.getProperty("PL_MODE")); // NOI18N;
 
     private NativeDebugger currentDebugger;
     private InputOutput io;
 
     // Keep a strong reference to 'changeListener' so it doesn't get GC'ed
     private ChangeListener changeListener;
+    
+    // request processor for various Native Debugger needs
+    private static final RequestProcessor RP = new RequestProcessor("Native Debugger Request Processor", 10); //NOI18N
 
     private NativeDebuggerManager() {
 
@@ -206,6 +210,10 @@ public final class NativeDebuggerManager extends DebuggerManagerAdapter {
             get().shutDown();
             get().saveGlobalState();
         }
+    }
+    
+    public static RequestProcessor getRequestProcessor() {
+        return RP;
     }
     
     /**
@@ -389,27 +397,32 @@ public final class NativeDebuggerManager extends DebuggerManagerAdapter {
     /**
      * Convert Set to List of String filenames and call notifyUnsavedFiles()
      */
-    private void notifyUnsavedFiles(NativeDebugger debugger, Set<DataObject> set) {
-        List<String> filesNames = new ArrayList<String>();
-        for (DataObject dao : set) {
-            FileObject fo = dao.getPrimaryFile();
-            if (fo != null) {
-                File f = FileUtil.toFile(fo);
-                if (f != null) { // can be for memoryFS files
-                    try {
-                        filesNames.add(f.getCanonicalPath());
-                    // DEBUG System.out.println("\t" + f.getCanonicalPath());
-                    } catch (Exception ex) {
-                        filesNames.add(f.getPath());
-                    // DEBUG System.out.println("\t" + f.getPath());
+    private void notifyUnsavedFiles(final NativeDebugger debugger, final Set<DataObject> set) {
+        RP.submit(new Runnable() {
+            @Override
+            public void run() {
+                List<String> filesNames = new ArrayList<String>();
+                for (DataObject dao : set) {
+                    FileObject fo = dao.getPrimaryFile();
+                    if (fo != null) {
+                        File f = FileUtil.toFile(fo);
+                        if (f != null) { // can be for memoryFS files
+                            try {
+                                filesNames.add(f.getCanonicalPath());
+                                // DEBUG System.out.println("\t" + f.getCanonicalPath());
+                            } catch (Exception ex) {
+                                filesNames.add(f.getPath());
+                                // DEBUG System.out.println("\t" + f.getPath());
+                            }
+                        }
+                    } else {
+                        // DEBUG System.out.println("\tno FO");
                     }
                 }
-            } else {
-                // DEBUG System.out.println("\tno FO");
+                // DEBUG System.out.println();
+                notifyUnsavedFiles(debugger, filesNames);
             }
-        }
-        // DEBUG System.out.println();
-        notifyUnsavedFiles(debugger, filesNames);
+        });
     }
 
     /**
@@ -459,6 +472,10 @@ public final class NativeDebuggerManager extends DebuggerManagerAdapter {
 
     public static boolean isStandalone() {
         return standalone;
+    }
+    
+    public static boolean isPL() {
+       return pl;
     }
 
     /**
@@ -975,7 +992,7 @@ public final class NativeDebuggerManager extends DebuggerManagerAdapter {
         // See "./README.startup"
 
         if (isAsyncStart()) {
-            RequestProcessor.getDefault().post(new Runnable() {
+            getRequestProcessor().post(new Runnable() {
 
                 public void run() {
                     delegate().startDebugging(di);
@@ -1019,7 +1036,7 @@ public final class NativeDebuggerManager extends DebuggerManagerAdapter {
      */
     private static DebugTargetList debugtargetlist = null;
 
-    public void debugTarget(DebugTarget debugtarget, boolean runFirst, boolean use32bitEngine) {
+    public void debugTarget(DebugTarget debugtarget, boolean runFirst, boolean use32bitEngine, InputOutput io) {
         Configuration conf = debugtarget.getConfig();
         String execPath = debugtarget.getExecutable();
         NativeDebuggerInfo ndi = makeNativeDebuggerInfo(debugtarget.getEngine());
@@ -1032,17 +1049,18 @@ public final class NativeDebuggerManager extends DebuggerManagerAdapter {
         if (execPath != null) {
             ((MakeConfiguration) conf).getMakefileConfiguration().getOutput().setValue(execPath);
         }
-
+        
 
         ndi.setTarget(execPath);
         ndi.setHostName(debugtarget.getHostName());
         ndi.setConfiguration(conf);
         ndi.set32bitEngine(use32bitEngine);
+        ndi.setInputOutput(io);
 
         if (runFirst) {
             ndi.setAction(RUN);
         } else {
-            if (isStandalone() || !DebuggerOption.RUN_AUTOSTART.isEnabled(globalOptions())) {
+            if (isStandalone() || isPL() || !DebuggerOption.RUN_AUTOSTART.isEnabled(globalOptions())) {
                 ndi.setAction(LOAD);
             } else {
                 ndi.setAction(this.getAction());
@@ -1054,6 +1072,10 @@ public final class NativeDebuggerManager extends DebuggerManagerAdapter {
         } else {
             startDebugger(Start.NEW, ndi);
         }
+    }
+    
+    public void debugTarget(DebugTarget debugtarget, boolean runFirst, boolean use32bitEngine) {
+        debugTarget(debugtarget, runFirst, use32bitEngine, null);
     }
 
     private static final Preferences prefs =
@@ -1212,6 +1234,10 @@ public final class NativeDebuggerManager extends DebuggerManagerAdapter {
                 execPath = executor.readlink(dt.getPid());
             }
             ndi.setTarget(execPath);
+        }
+        
+        if (dt.getProjectMode() == DebugTarget.ProjectMode.NO_PROJECT) {
+            conf.getProfile().setRunDirectory(executor.readDirLink(dt.getPid()));
         }
 
 	// CR 6997426, cause gdb problem IZ 193248

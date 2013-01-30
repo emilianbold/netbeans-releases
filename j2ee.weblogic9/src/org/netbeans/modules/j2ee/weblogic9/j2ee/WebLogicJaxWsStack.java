@@ -58,13 +58,11 @@ import org.netbeans.modules.websvc.wsstack.spi.WSStackImplementation;
  * @author ads
  */
 public class WebLogicJaxWsStack implements WSStackImplementation<JaxWs> {
+
+    private final String version;
+    private final JaxWs jaxWs;
     
-    private File serverHome;
-    private String version;
-    private JaxWs jaxWs;
-    
-    public WebLogicJaxWsStack(File serverHome) {
-        this.serverHome = serverHome;
+    public WebLogicJaxWsStack() {
         version = "2.1.4";
         jaxWs = new JaxWs(getUriDescriptor());
     }

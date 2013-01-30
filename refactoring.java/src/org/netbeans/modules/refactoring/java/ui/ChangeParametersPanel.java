@@ -104,7 +104,6 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
     
     private static Action editAction = null;
     private Action returnTypeAction;
-    private Doc javadocDoc;
     
     private static final String[] modifierNames = {
         "public", // NOI18N
@@ -188,9 +187,10 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
                         final String returnType = e.getReturnType().toString();
                         
                         MethodTree methodTree = (MethodTree) refactoredObj.resolve(info).getLeaf();
+                        final long methodStart = info.getTreeUtilities().findNameSpan(methodTree)[0];
                         Tree tree = methodTree.getReturnType();
-                        final long start = info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), tree);
-                        final long end = info.getTrees().getSourcePositions().getEndPosition(info.getCompilationUnit(), tree);
+                        final long start = tree == null ? methodStart -1 : info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), tree);
+                        final long end = tree == null ? methodStart -1 : info.getTrees().getSourcePositions().getEndPosition(info.getCompilationUnit(), tree);
                         
                         final FileObject fileObject = refactoredObj.getFileObject();
                         DataObject dob = DataObject.find(fileObject);
@@ -198,7 +198,7 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
                                 Document.StreamDescriptionProperty,
                                 dob);
                        
-                        javadocDoc = info.getElementUtilities().javaDocFor(e);
+                        Doc javadocDoc = info.getElementUtilities().javaDocFor(e);
                         if(javadocDoc.commentText() == null || javadocDoc.getRawCommentText().equals("")) {
                             chkGenJavadoc.setEnabled(true);
                             chkGenJavadoc.setVisible(true);

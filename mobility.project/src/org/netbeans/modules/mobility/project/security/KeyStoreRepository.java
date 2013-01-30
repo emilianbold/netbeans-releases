@@ -59,16 +59,19 @@ import java.security.cert.Certificate;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeSupport;
+import java.lang.reflect.Method;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.mobility.project.security.KeyStoreRepository.KeyStoreBean.KeyAliasBean;
 import org.openide.util.Lookup;
 import org.openide.filesystems.FileUtil;
-import sun.security.tools.KeyTool;
 
 /**
  * @author ps121858, David Kaspar
  */
 public class KeyStoreRepository implements java.io.Externalizable, PropertyChangeListener {
     
+    private static final Logger LOG = Logger.getLogger(KeyStoreRepository.class.getName());
     public static boolean rememberPasswords = true;
     
     public static final String PROP_KEYSTORE_ADDED = "keystore_added"; //NOI18N
@@ -472,7 +475,21 @@ public class KeyStoreRepository implements java.io.Externalizable, PropertyChang
                 getPassword(), "-keypass", keyPass, "-storetype", getType(),"-validity", String.valueOf(validity)};//NOI18N
             
             try {
-                KeyTool.main(as);
+                Class<?> keyTool;
+                
+                try {
+                    keyTool = Class.forName("sun.security.tools.KeyTool");
+                } catch (ClassNotFoundException ex) {
+                    try {
+                        keyTool = Class.forName("sun.security.tools.keytool.Main");
+                    } catch (ClassNotFoundException ex2) {
+                        LOG.log(Level.WARNING, "No KeyTool found.");
+                        return null;
+                    }
+                }
+                
+                Method main = keyTool.getDeclaredMethod("main", String[].class);
+                main.invoke(null, (Object)as);
             } catch (Exception se) { /*catch System.exit */
                 return null;
             }

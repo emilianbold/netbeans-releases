@@ -46,6 +46,7 @@ package org.netbeans.modules.nativeexecution.api.util;
  * @author ak119685
  */
 public enum Signal {
+    // IDs are taken from signal_iso.h on Solaris
 
     NULL(0),
     SIGHUP(1),
@@ -53,6 +54,7 @@ public enum Signal {
     SIGQUIT(3),
     SIGILL(4),
     SIGTRAP(5),
+    SIGIOT(6),
     SIGABRT(6),
     SIGEMT(7),
     SIGFPE(8),
@@ -65,11 +67,13 @@ public enum Signal {
     SIGTERM(15),
     SIGUSR1(16),
     SIGUSR2(17),
+    SIGCLD(18),
     SIGCHLD(18),
     SIGPWR(19),
     SIGWINCH(20),
     SIGURG(21),
     SIGPOLL(22),
+    SIGIO(22),
     SIGSTOP(23),
     SIGTSTP(24),
     SIGCONT(25),
@@ -78,6 +82,7 @@ public enum Signal {
     SIGVTALRM(28),
     SIGPROF(29),
     SIGXCPU(30),
+    SIGXFSZ(31),
     SIGWAITING(32),
     SIGLWP(33),
     SIGFREEZE(34),
@@ -85,14 +90,21 @@ public enum Signal {
     SIGCANCEL(36),
     SIGLOST(37),
     SIGXRES(38),
-    SIGJVM1(39);
+    SIGJVM1(39),
+    SIGJVM2(40);
     private final int id;
 
     private Signal(int id) {
         this.id = id;
     }
 
-    /*package*/ int getID() {
+    /*
+     * Signal ID is system dependent and could differ from system to system;
+     * It's better to use signal names (as NbKillUtility does)
+     *
+     * package-visible
+     */
+    int getID() {
         return id;
     }
 }

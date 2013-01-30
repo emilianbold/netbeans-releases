@@ -51,6 +51,7 @@ import java.util.List;
 import java.util.logging.Level;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.DeclaredType;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Position;
@@ -107,7 +108,18 @@ public class ExposeBusinessMethod implements Fix {
                 }
                 ClassTree clazzTree = workingCopy.getTrees().getTree(targetClass);
                 TreeMaker make = workingCopy.getTreeMaker();
-                MethodTree newMethod = make.Method(originalMethod, null);
+                //generate the method:
+                MethodTree newMethod = GeneratorUtilities.get(workingCopy).createMethod((DeclaredType) targetClass.asType(), originalMethod);
+                //clear method body:
+                newMethod = make.Method(newMethod.getModifiers(),
+                                        newMethod.getName(),
+                                        newMethod.getReturnType(),
+                                        newMethod.getTypeParameters(),
+                                        newMethod.getParameters(),
+                                        newMethod.getThrows(),
+                                        null,
+                                        null,
+                                        originalMethod.isVarArgs());
                 GeneratorUtilities generator = GeneratorUtilities.get(workingCopy);
                 ClassTree newClass = generator.insertClassMember(clazzTree, newMethod);
 
@@ -118,6 +130,12 @@ public class ExposeBusinessMethod implements Fix {
         ClasspathInfo cpInfo = ClasspathInfo.create(fileObject);
         FileObject targetFileObject = SourceUtils.getFile(targetClassHandle, cpInfo);
 
+        // target file can't be found, don't offer the fix
+        if (targetFileObject == null) {
+            EJBProblemFinder.LOG.log(Level.WARNING,
+                    "ExposeBusinessMethod not offered: targetFile={0} not found", targetClassHandle.getQualifiedName());
+            return null;
+        }
         JavaSource javaSource = JavaSource.create(cpInfo, fileObject, targetFileObject);
 
         try {

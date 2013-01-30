@@ -103,6 +103,8 @@ public abstract class BasicScrollingTabDisplayerUI extends BasicTabDisplayerUI {
 
     @Override
     public void makeTabVisible (int tab) {
+        if( tab < 0 ) //#219681 - nobody has set the selected tab yet
+            return;
         if (scroll().makeVisible(tab, getTabsAreaWidth())) {
             getTabsVisibleArea(scratch);
             displayer.repaint(scratch.x, scratch.y, scratch.width, scratch.height);
@@ -190,6 +192,7 @@ public abstract class BasicScrollingTabDisplayerUI extends BasicTabDisplayerUI {
             btnScrollLeft.setBounds( width, 0, prefDim.width, prefDim.height );
             width += prefDim.width;
             height = prefDim.height;
+            width += getScrollButtonPadding();
 
             //create scroll-right button
             a = scroll().getForwardAction();
@@ -232,6 +235,10 @@ public abstract class BasicScrollingTabDisplayerUI extends BasicTabDisplayerUI {
             controlButtons = buttonsPanel;
         }
         return controlButtons;
+    }
+
+    int getScrollButtonPadding() {
+        return 0;
     }
     
     @Override

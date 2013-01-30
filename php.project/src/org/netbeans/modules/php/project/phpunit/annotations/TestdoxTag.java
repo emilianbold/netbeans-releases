@@ -41,9 +41,9 @@
  */
 package org.netbeans.modules.php.project.phpunit.annotations;
 
-import org.netbeans.modules.php.spi.annotations.PhpAnnotationTag;
+import org.netbeans.modules.php.spi.annotation.AnnotationCompletionTag;
 
-public class TestdoxTag extends PhpAnnotationTag {
+public class TestdoxTag extends AnnotationCompletionTag {
 
     public TestdoxTag() {
         super("testdox", // NOI18N

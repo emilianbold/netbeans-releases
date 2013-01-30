@@ -57,15 +57,12 @@ import org.netbeans.modules.php.editor.parser.astnodes.NamespaceName;
 import org.openide.util.Parameters;
 
 /**
- * immutable
+ * immutable.
  * @author Radek Matous
  */
-public class QualifiedName {
+public final class QualifiedName {
     private final QualifiedNameKind kind;
     private final LinkedList<String> segments;
-
-
-//
 
     public String getName() {
         return toName().toString();
@@ -92,7 +89,7 @@ public class QualifiedName {
     }
 
     private static QualifiedName getRemainingName(final QualifiedName fullName, final QualifiedName fragmentName, boolean prefixRequired, boolean isOverlapingRequired) {
-        QualifiedName retval = null;
+        QualifiedName retval;
         List<String> fullSegments = new ArrayList<String>(fullName.getSegments());
         List<String> fragmentSegments = new ArrayList<String>(fragmentName.getSegments());
         if (prefixRequired) {
@@ -143,14 +140,14 @@ public class QualifiedName {
                 return createUnqualifiedNameInClassContext(namespaceName.getSegments().get(0).getName(), clsScope);
             }
         }
-        return create(expression) ;
+        return create(expression);
     }
     @CheckForNull
     public static QualifiedName create(Expression expression) {
         if (expression instanceof NamespaceName) {
-            return create((NamespaceName)expression);
+            return create((NamespaceName) expression);
         } else if (expression instanceof Identifier) {
-            return createUnqualifiedName((Identifier)expression);
+            return createUnqualifiedName((Identifier) expression);
         }
         return null;
     }
@@ -172,9 +169,9 @@ public class QualifiedName {
     public static QualifiedName createUnqualifiedNameInClassContext(String name, ClassScope clsScope) {
         //TODO: everywhere should be used NameKindMatcher or something like this
         if (clsScope != null) {
-            if ("self".equals(name)) {//NOI18N
+            if ("self".equals(name)) { //NOI18N
                 name = clsScope.getName();
-            } else if ("parent".equals(name)) {//NOI18N
+            } else if ("parent".equals(name)) { //NOI18N
                 String superClsName = ModelUtils.getFirst(clsScope.getSuperClassNames());
                 if (superClsName != null) {
                   name = superClsName;
@@ -194,18 +191,18 @@ public class QualifiedName {
     }
     public static QualifiedName createFullyQualified(String name, String namespaceName) {
         List<String> list = new ArrayList<String>();
-        if (name.startsWith("\\") || name.endsWith("\\")) {//NOI18N
+        if (name.startsWith("\\") || name.endsWith("\\")) { //NOI18N
             throw new IllegalArgumentException();
         }
         if (namespaceName != null && namespaceName.trim().length() > 0) {
-            if (namespaceName.startsWith("\\") || namespaceName.endsWith("\\")) {//NOI18N
+            if (namespaceName.startsWith("\\") || namespaceName.endsWith("\\")) { //NOI18N
                 throw new IllegalArgumentException();
             }
-            final String[] segments =  namespaceName.split("\\\\");//NOI18N
+            final String[] segments =  namespaceName.split("\\\\"); //NOI18N
             list.addAll(Arrays.asList(segments));
         }
         list.add(name);
-        return new QualifiedName(true,list);
+        return new QualifiedName(true, list);
 
     }
     public static QualifiedName create(String name) {
@@ -215,15 +212,15 @@ public class QualifiedName {
         } else if (kind.isFullyQualified()) {
             name = name.substring(1);
         }
-        final String[] segments =  name.split("\\\\");//NOI18N
-        List<String> list = null;
+        final String[] segments =  name.split("\\\\"); //NOI18N
+        List<String> list;
         if (name.endsWith(NamespaceDeclarationInfo.NAMESPACE_SEPARATOR)) {
             list = new ArrayList<String>(Arrays.asList(segments));
-            list.add("");//NOI18N
+            list.add(""); //NOI18N
         } else {
             list = Arrays.asList(segments);
         }
-        return new QualifiedName(kind.isFullyQualified(),list);
+        return new QualifiedName(kind.isFullyQualified(), list);
     }
     private QualifiedName(NamespaceName namespaceName) {
         this.kind = QualifiedNameKind.resolveKind(namespaceName);
@@ -238,8 +235,7 @@ public class QualifiedName {
         assert kind.isUnqualified();
     }
     private QualifiedName(boolean isFullyQualified, List<String> segments) {
-        this.segments = new LinkedList<String>(segments.isEmpty() ?
-            Collections.singleton(NamespaceDeclarationInfo.DEFAULT_NAMESPACE_NAME) : segments);
+        this.segments = new LinkedList<String>(segments.isEmpty() ? Collections.singleton(NamespaceDeclarationInfo.DEFAULT_NAMESPACE_NAME) : segments);
         this.kind = isFullyQualified ? QualifiedNameKind.FULLYQUALIFIED : QualifiedNameKind.resolveKind(this.segments);
     }
     public LinkedList<String> getSegments() {
@@ -259,17 +255,17 @@ public class QualifiedName {
         return toString(segments.size() - 1);
     }
 
-    public String toString(int numberOfSegments){
-        if (numberOfSegments >= segments.size()){
+    public String toString(int numberOfSegments) {
+        if (numberOfSegments >= segments.size()) {
             throw new IllegalArgumentException("n >= segments.size()");
         }
 
         StringBuilder sb = new StringBuilder();
         QualifiedNameKind k = getKind();
-        for (int i = 0; i <= numberOfSegments; i ++) {
+        for (int i = 0; i <= numberOfSegments; i++) {
             String oneSegment = segments.get(i);
             if (sb.length() > 0 || (k != null && k.isFullyQualified())) {
-                sb.append("\\");//NOI18N
+                sb.append("\\"); //NOI18N
             }
             sb.append(oneSegment);
         }
@@ -295,12 +291,12 @@ public class QualifiedName {
     }
     @CheckForNull
     public QualifiedName toFullyQualified(QualifiedName namespaceName) {
-        Parameters.notNull("namespaceName", namespaceName);//NOI18N
+        Parameters.notNull("namespaceName", namespaceName); //NOI18N
         return namespaceName.append(this, true);
     }
     @CheckForNull
     public QualifiedName toFullyQualified(NamespaceScope namespaceScope) {
-        Parameters.notNull("namespaceScope", namespaceScope);//NOI18N
+        Parameters.notNull("namespaceScope", namespaceScope); //NOI18N
         return (getKind().isFullyQualified()) ? this : namespaceScope.getQualifiedName().append(this).toFullyQualified();
     }
     public QualifiedName toName() {

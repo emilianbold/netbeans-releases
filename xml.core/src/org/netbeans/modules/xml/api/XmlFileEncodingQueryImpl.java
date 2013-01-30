@@ -226,7 +226,7 @@ public final class XmlFileEncodingQueryImpl extends FileEncodingQueryImplementat
         public XMLDecoder (Charset cs) {
             super (cs,1,2);
         }
-
+        
         protected CoderResult decodeLoop(ByteBuffer in, CharBuffer out) {
             if (buffer == null) {                
                 assert decoder != null;
@@ -304,6 +304,11 @@ public final class XmlFileEncodingQueryImpl extends FileEncodingQueryImplementat
                 return r;
             }
             else {
+                if (buffer.remaining() > 0) {
+                    remainder = buffer;
+                    buffer = null;
+                    return r;
+                }
                 buffer = null;
                 if (in == null) {
                     return r;

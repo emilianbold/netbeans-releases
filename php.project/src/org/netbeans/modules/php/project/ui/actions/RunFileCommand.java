@@ -63,7 +63,7 @@ public class RunFileCommand extends Command implements Displayable {
     }
 
     @Override
-    public void invokeAction(Lookup context) {
+    public void invokeActionInternal(Lookup context) {
         FileObject fileObj = CommandUtils.fileForContextOrSelectedNodes(context);
         if (isSeleniumFile(fileObj)) {
             // selenium
@@ -83,7 +83,7 @@ public class RunFileCommand extends Command implements Displayable {
     }
 
     @Override
-    public boolean isActionEnabled(Lookup context) {
+    public boolean isActionEnabledInternal(Lookup context) {
         FileObject fileObj = CommandUtils.fileForContextOrSelectedNodes(context);
         if (isSeleniumFile(fileObj)) {
             // selenium

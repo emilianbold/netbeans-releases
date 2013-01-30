@@ -49,6 +49,83 @@ made subject to such option by the copyright holder.
         <apidef name="filesystems">Filesystems API</apidef>
     </apidefs>
     <changes>
+        <change id="MultiFileObject.revealEntriesAttribute">
+            <api name="filesystems"/>
+            <summary>Allowed to reveal deleted files, or original files overriden by writable layer</summary>
+            <version major="8" minor="5"/>
+            <date year="2012" month="11" day="23"/>
+            <author login="sdedic"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Files which have been deleted can be obtained by <code>folder.getAttribute("revealEntries")</code>.
+                    See <a href="@TOP@org/openide/filesystems/MultiFileSystem.html">MultiFileSystem
+                    </a> javadoc for details
+                </p>
+                <p>
+                    <b>Warning:</b> stability of this feature is <b>development</b>
+                </p>
+            </description>
+            <!--<class package="org.openide.filesystems" name="MultiFileObject"/>-->
+        </change>
+        <change id="FileChooserBuilder-setAcceptAllFileFilterUsed">
+            <api name="filesystems"/>
+            <summary>New method FileChooserBuilder.setAcceptAllFileFilterUsed.</summary>
+            <version major="8" minor="3"/>
+            <date year="2012" month="10" day="30"/>
+            <author login="tmysik"/>
+            <compatibility addition="yes" deprecation="no"/>
+            <description>
+                <p>
+                    Added <a href="@TOP@org/openide/filesystems/FileChooserBuilder.html#setAcceptAllFileFilterUsed(boolean)">
+                    new method</a> to <code>FileChooserBuilder</code> that determines whether the <code>AcceptAll FileFilter</code>
+                    should be used in the created file chooser.
+                </p>
+            </description>
+            <class package="org.openide.filesystems" name="FileChooserBuilder"/>
+            <issue number="220401"/>
+        </change>
+        <change id="FileChooserBuilder-addDefaultFileFilters">
+            <api name="filesystems"/>
+            <summary>New method FileChooserBuilder.addDefaultFileFilters and accompanying annotations.</summary>
+            <version major="8" minor="1"/>
+            <date year="2012" month="8" day="29"/>
+            <author login="jhavlin"/>
+            <compatibility addition="yes" deprecation="no"/>
+            <description>
+                <p>
+                    Added <a href="@TOP@org/openide/filesystems/FileChooserBuilder.html#addDefaultFileFilters()">
+                    new method</a> to <code>FileChooserBuilder</code> that adds all default
+                    <code>FileFilter</code>s to created file chooser.
+                </p>
+                <p>
+                    Default filters are registered using new parameters in annotations
+                    <a href="@TOP@org/openide/filesystems/MIMEResolver.Registration.html#showInFileChooser()">MimeResolver.Registration</a>
+                    and <a href="@TOP@org/openide/filesystems/MIMEResolver.ExtensionRegistration.html#showInFileChooser()">MimeResolver.ExtensionRegistration</a>.
+                </p>
+            </description>
+            <class package="org.openide.filesystems" name="FileChooserBuilder"/>
+            <class package="org.openide.filesystems" name="MIMEResolver"/>
+            <issue number="209998"/>
+        </change>
+        <change id="fileobject-lookup">
+            <api name="filesystems"/>
+            <summary>FileObject has getLookup()</summary>
+            <version major="8" minor="0"/>
+            <date year="2012" month="8" day="22"/>
+            <author login="jtulach"/>
+            <compatibility addition="yes" deprecation="no"/>
+            <description>
+                <p>
+                    <code>FileObject</code> now implements <code>Lookup.Provider</code>
+                    and thus has new
+                    <a href="@TOP@org/openide/filesystems/FileObject.html#getLookup()">
+                    getLookup</a>() method.
+                </p>
+            </description>
+            <class package="org.openide.filesystems" name="FileObject"/>
+            <issue number="209231"/>
+        </change>
         <change id="recursive-listener-with-filter">
             <api name="filesystems"/>
             <summary>addRecursiveListener with a filter</summary>

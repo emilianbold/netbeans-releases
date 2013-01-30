@@ -59,6 +59,7 @@ import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.Icon;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.projectapi.AuxiliaryConfigBasedPreferencesProvider;
 import org.netbeans.modules.projectapi.AuxiliaryConfigImpl;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
@@ -159,6 +160,7 @@ public class ProjectUtils {
      */
     public static boolean hasSubprojectCycles(final Project master, final Project candidate) {
         return ProjectManager.mutex().readAccess(new Mutex.Action<Boolean>() {
+            @Override
             public Boolean run() {
                 return visit(new HashMap<Project,Boolean>(), master, master, candidate);
             }
@@ -233,28 +235,43 @@ public class ProjectUtils {
             this.p = p;
         }
         
+        @Override
         public String getName() {
-            return p.getProjectDirectory().toURL().toExternalForm();
+            return getProjectDirectory().toURL().toExternalForm();
         }
         
+        @Override
         public String getDisplayName() {
-            return p.getProjectDirectory().getNameExt();
+            return getProjectDirectory().getNameExt();
         }
         
+        @Override
         public Icon getIcon() {
             return ImageUtilities.loadImageIcon("org/netbeans/modules/projectapi/resources/empty.gif", false); // NOI18N
         }
         
+        @Override
         public void addPropertyChangeListener(PropertyChangeListener listener) {
             // never changes
         }
         
+        @Override
         public void removePropertyChangeListener(PropertyChangeListener listener) {
             // never changes
         }
         
+        @Override
         public Project getProject() {
             return p;
+        }
+
+        @NonNull
+        private FileObject getProjectDirectory() {
+            final FileObject pd = p.getProjectDirectory();
+            if (pd == null) {
+                throw new IllegalStateException(String.format("Project: %s returned null project directory.", p));  //NOI18N
+            }
+            return pd;
         }
         
     }
@@ -307,8 +324,12 @@ public class ProjectUtils {
                 return;
             }
             Image _icon = ImageUtilities.icon2Image(original);
-            for (ProjectIconAnnotator pa : annotatorResult.allInstances()) {
-                _icon = pa.annotateIcon(getProject(), _icon, false);
+            final Project prj = getProject();
+            assert prj != null : "ProjectIformation.getProject() == null for " + pinfo;    //NOI18N
+            if (prj != null) {
+                for (ProjectIconAnnotator pa : annotatorResult.allInstances()) {
+                    _icon = pa.annotateIcon(prj, _icon, false);
+                }
             }
             Icon old = icon;
             icon = ImageUtilities.image2Icon(_icon);

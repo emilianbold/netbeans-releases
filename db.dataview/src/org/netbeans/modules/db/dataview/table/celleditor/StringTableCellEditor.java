@@ -43,10 +43,14 @@ package org.netbeans.modules.db.dataview.table.celleditor;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.Insets;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.HierarchyEvent;
+import java.awt.event.HierarchyListener;
 import java.awt.event.KeyEvent;
 import javax.swing.Action;
 import javax.swing.ActionMap;
@@ -63,6 +67,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.table.TableCellEditor;
 import org.jdesktop.swingx.JXButton;
 import org.jdesktop.swingx.JXPanel;
+import org.netbeans.modules.db.dataview.table.ResultSetTableCellEditor;
 import org.openide.windows.WindowManager;
 
 public class StringTableCellEditor extends ResultSetTableCellEditor implements TableCellEditor, ActionListener {
@@ -112,7 +117,7 @@ public class StringTableCellEditor extends ResultSetTableCellEditor implements T
             }
         };
         panel.add(c);
-        if (isGtk) {
+        if (suppressEditorBorder) {
             c.setBorder(BorderFactory.createEmptyBorder());
         }
         panel.add(customEditorButton, BorderLayout.EAST);
@@ -132,7 +137,7 @@ public class StringTableCellEditor extends ResultSetTableCellEditor implements T
     }
 
     protected void editCell(JTable table, int row, int column) {
-        JTextArea textArea = new JTextArea(10, 50);
+        JTextArea textArea = new JTextArea(20, 80);
         Object value = table.getValueAt(row, column);
         if (value != null) {
             textArea.setText(value.toString());
@@ -140,6 +145,7 @@ public class StringTableCellEditor extends ResultSetTableCellEditor implements T
             textArea.setEditable(editable);
         }
         JScrollPane pane = new JScrollPane(textArea);
+        pane.addHierarchyListener(new MakeResizableListener(pane));
         Component parent = WindowManager.getDefault().getMainWindow();
 
         if (editable) {
@@ -149,6 +155,30 @@ public class StringTableCellEditor extends ResultSetTableCellEditor implements T
             }
         } else {
             JOptionPane.showMessageDialog(parent, pane, table.getColumnName(column), JOptionPane.PLAIN_MESSAGE, null);
+        }
+    }
+
+    /**
+     * Hack to make JOptionPane resizable.
+     * https://blogs.oracle.com/scblog/entry/tip_making_joptionpane_dialog_resizable
+     */
+    static class MakeResizableListener implements HierarchyListener {
+
+        private Component pane;
+
+        public MakeResizableListener(Component pane) {
+            this.pane = pane;
+        }
+
+        @Override
+        public void hierarchyChanged(HierarchyEvent e) {
+            Window window = SwingUtilities.getWindowAncestor(pane);
+            if (window instanceof Dialog) {
+                Dialog dialog = (Dialog) window;
+                if (!dialog.isResizable()) {
+                    dialog.setResizable(true);
+                }
+            }
         }
     }
 }

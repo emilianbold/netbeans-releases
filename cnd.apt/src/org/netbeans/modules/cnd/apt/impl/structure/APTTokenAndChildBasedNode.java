@@ -53,7 +53,7 @@ import org.netbeans.modules.cnd.apt.support.APTToken;
  * @author Vladimir Voskresensky
  */
 public abstract class APTTokenAndChildBasedNode extends APTTokenBasedNode 
-                                                implements Serializable {
+                                                implements APTNodeBuilder, Serializable {
     private static final long serialVersionUID = 1564950303841807099L;
     transient private APT child;
     
@@ -89,4 +89,8 @@ public abstract class APTTokenAndChildBasedNode extends APTTokenBasedNode
         this.child = child;
     }
     
+    @Override
+    public APTBaseNode getNode() {
+        return this;
+    }
 }

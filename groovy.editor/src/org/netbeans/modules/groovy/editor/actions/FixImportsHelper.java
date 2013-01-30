@@ -60,7 +60,6 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.csl.api.EditList;
 import org.netbeans.modules.groovy.editor.api.GroovyIndex;
-import org.netbeans.modules.groovy.editor.api.NbUtilities;
 import org.netbeans.modules.groovy.editor.api.elements.index.IndexedClass;
 import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
 import org.netbeans.modules.groovy.editor.api.lexer.LexUtilities;
@@ -84,7 +83,7 @@ public class FixImportsHelper {
 
         List<ImportCandidate> result = new ArrayList<ImportCandidate>();
         
-        ClasspathInfo pathInfo = NbUtilities.getClasspathInfoForFileObject(fo);
+        ClasspathInfo pathInfo = getClasspathInfoForFileObject(fo);
         
         if(pathInfo == null){
             LOG.log(Level.FINEST, "Problem getting ClasspathInfo");
@@ -127,6 +126,17 @@ public class FixImportsHelper {
         return result;
     }
 
+    private static ClasspathInfo getClasspathInfoForFileObject ( FileObject fo) {
+        ClassPath bootPath = ClassPath.getClassPath(fo, ClassPath.BOOT);
+        ClassPath compilePath = ClassPath.getClassPath(fo, ClassPath.COMPILE);
+        ClassPath srcPath = ClassPath.getClassPath(fo, ClassPath.SOURCE);
+
+        if (bootPath == null || compilePath == null || srcPath == null) {
+            return null;
+        }
+        return ClasspathInfo.create(bootPath, compilePath, srcPath);
+    }
+
     private static void addAsImportCandidate(String missingClass, String fqnName, ElementKind kind, List<ImportCandidate> result) {
         int level = getImportanceLevel(fqnName);
         Icon icon = ElementIcons.getElementIcon(kind, null);
@@ -166,7 +176,7 @@ public class FixImportsHelper {
     }
 
     private static int getImportPosition(BaseDocument doc) {
-        TokenSequence<?> ts = LexUtilities.getGroovyTokenSequence(doc, 1);
+        TokenSequence<GroovyTokenId> ts = LexUtilities.getGroovyTokenSequence(doc, 1);
 
         int importEnd = -1;
         int packageOffset = -1;

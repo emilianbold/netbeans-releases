@@ -82,7 +82,7 @@ public class MavenAnnotationProcessingQueryImpl implements AnnotationProcessingQ
                 if (version != null && new ComparableVersion(version).compareTo(new ComparableVersion("2.2")) < 0) {
                     return EnumSet.noneOf(Trigger.class);
                 }
-                String compilerArgument = PluginPropertyUtils.getPluginProperty(prj, Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_COMPILER, "compilerArgument", tests() ? "testCompile" : "compile");
+                String compilerArgument = PluginPropertyUtils.getPluginProperty(prj, Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_COMPILER, "compilerArgument", tests() ? "testCompile" : "compile", null);
                 if ("-proc:none".equals(compilerArgument)) {
                     return EnumSet.noneOf(Trigger.class);
                 }
@@ -94,12 +94,12 @@ public class MavenAnnotationProcessingQueryImpl implements AnnotationProcessingQ
             }
             public @Override URL sourceOutputDirectory() {
                 boolean tests = tests();
-                String generatedSourcesDirectory = PluginPropertyUtils.getPluginProperty(prj, Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_COMPILER, "generatedSourcesDirectory", tests ? "testCompile" : "compile");
+                String generatedSourcesDirectory = PluginPropertyUtils.getPluginProperty(prj, Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_COMPILER, "generatedSourcesDirectory", tests ? "testCompile" : "compile", null);
                 if (generatedSourcesDirectory == null) {
                     generatedSourcesDirectory = tests ? /* XXX MCOMPILER-167 */"${project.build.directory}/generated-sources/test-annotations" : "${project.build.directory}/generated-sources/annotations";
                 }
                 try {
-                    return FileUtil.urlForArchiveOrDir(new File((String) PluginPropertyUtils.createEvaluator(prj.getLookup().lookup(NbMavenProject.class).getMavenProject()).evaluate(generatedSourcesDirectory)));
+                    return FileUtil.urlForArchiveOrDir(new File((String) PluginPropertyUtils.createEvaluator(prj).evaluate(generatedSourcesDirectory)));
                 } catch (ExpressionEvaluationException ex) {
                     return null;
                 }
@@ -118,7 +118,7 @@ public class MavenAnnotationProcessingQueryImpl implements AnnotationProcessingQ
                         }
                     }
                 }
-                String compilerArgument = PluginPropertyUtils.getPluginProperty(prj, Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_COMPILER, "compilerArgument", goal);
+                String compilerArgument = PluginPropertyUtils.getPluginProperty(prj, Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_COMPILER, "compilerArgument", goal, null);
                 if (compilerArgument != null && compilerArgument.startsWith("-A")) {
                     int idx = compilerArgument.indexOf('=');
                     if (idx != -1) {

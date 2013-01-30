@@ -105,7 +105,7 @@ public class TitleNode extends LeafNode {
     }
 
     void setProgressVisible(final boolean visible) {
-        if (lblProgress != null) {
+        if (panel != null) {
             SwingUtilities.invokeLater(new Runnable() {
                 @Override
                 public void run() {

@@ -57,7 +57,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 
 /**
- * Access to facelet library descriptors in bundled web.jsf20 library's jsf-impl.jar
+ * Access to facelet library descriptors in bundled web.jsf20 library's javax.faces.jar
  * Also provides some useful methods for getting default library's displayname or
  * default prefix.
  *
@@ -82,7 +82,7 @@ public class DefaultFaceletLibraries {
 
     private void init() {
         File jsfImplJar = InstalledFileLocator.getDefault().locate(
-                "modules/ext/jsf-2_1/jsf-impl.jar", //NOI18N
+                "modules/ext/jsf-2_1/javax.faces.jar", //NOI18N
                 "org.netbeans.modules.web.jsf20", false); //NOI18N
         assert jsfImplJar != null;
 
@@ -111,7 +111,7 @@ public class DefaultFaceletLibraries {
                 librariesDescriptors.put(descritor.getNamespace(), descritor);
             } catch (LibraryDescriptorException ex) {
                 Logger.global.log(Level.WARNING, "Error parsing facelets library " +
-                        FileUtil.getFileDisplayName(lfo) + " in jsf-impl.jar from bundled web.jsf20 library", ex);
+                        FileUtil.getFileDisplayName(lfo) + " in javax.faces.jar from bundled web.jsf20 library", ex);
             }
         }
 

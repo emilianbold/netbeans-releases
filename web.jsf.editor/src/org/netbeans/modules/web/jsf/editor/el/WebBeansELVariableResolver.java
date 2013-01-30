@@ -41,16 +41,22 @@
  */
 package org.netbeans.modules.web.jsf.editor.el;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
+import javax.lang.model.element.Element;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.parsing.api.Snapshot;
-import org.netbeans.modules.web.beans.api.model.support.WebBeansModelSupport;
-import org.netbeans.modules.web.beans.api.model.support.WebBeansModelSupport.WebBean;
+import org.netbeans.modules.web.beans.api.model.WebBeansModel;
 import org.netbeans.modules.web.el.spi.ELVariableResolver;
 import org.netbeans.modules.web.el.spi.ResolverContext;
 import org.netbeans.modules.web.jsf.editor.JsfSupportImpl;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 import org.openide.util.lookup.ServiceProvider;
 
 // TODO web.beans would be a better module for this, but
@@ -117,10 +123,60 @@ public final class WebBeansELVariableResolver implements ELVariableResolver {
             return Collections.<WebBean>emptyList();
         } else {
             if (context.getContent(CONTENT_NAME) == null) {
-                context.setContent(CONTENT_NAME, WebBeansModelSupport.getNamedBeans(jsfSupport.getWebBeansModel()));
+                context.setContent(CONTENT_NAME, getNamedBeans(jsfSupport.getWebBeansModel()));
             }
             return (List<WebBean>) context.getContent(CONTENT_NAME);
         }
     }
 
+    private static List<WebBean> getNamedBeans(MetadataModel<WebBeansModel> webBeansModel) {
+        try {
+            return webBeansModel.runReadAction(new MetadataModelAction<WebBeansModel, List<WebBean>>() {
+
+                @Override
+                public List<WebBean> run(WebBeansModel metadata) throws Exception {
+                    List<Element> namedElements = metadata.getNamedElements();
+                    List<WebBean> webBeans = new LinkedList<WebBean>();
+                    for (Element e : namedElements) {
+                        //filter out null elements - probably a WebBeansModel bug,
+                        //happens under some circumstances when renaming/deleting beans
+                        if (e != null) {
+                            webBeans.add(new WebBean(e, metadata.getName(e)));
+                        }
+                    }
+                    return webBeans;
+                }
+            });
+        } catch (MetadataModelException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+
+        return Collections.emptyList();
+    }
+
+     private static final class WebBean {
+
+        private Element element;
+        private String name;
+
+        private WebBean(Element element, String name) {
+            this.element = element;
+            this.name = name;
+        }
+
+        private Element getElement() {
+            return element;
+        }
+
+        public String getBeanClassName() {
+            return getElement().asType().toString();
+        }
+
+        public String getName() {
+            return name;
+        }
+    }
+     
 }

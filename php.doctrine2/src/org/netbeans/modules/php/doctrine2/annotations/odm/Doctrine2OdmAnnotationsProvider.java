@@ -44,12 +44,12 @@ package org.netbeans.modules.php.doctrine2.annotations.odm;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import org.netbeans.modules.php.spi.annotations.PhpAnnotationTag;
-import org.netbeans.modules.php.spi.annotations.PhpAnnotationsProvider;
+import org.netbeans.modules.php.spi.annotation.AnnotationCompletionTag;
+import org.netbeans.modules.php.spi.annotation.AnnotationCompletionTagProvider;
 import org.openide.util.NbBundle;
 
 // http://docs.doctrine-project.org/projects/doctrine-mongodb-odm/en/latest/reference/annotations-reference.html
-public final class Doctrine2OdmAnnotationsProvider extends PhpAnnotationsProvider {
+public final class Doctrine2OdmAnnotationsProvider extends AnnotationCompletionTagProvider {
 
     @NbBundle.Messages("Doctrine2OdmAnnotationsProvider.name=Doctrine2 ODM")
     public Doctrine2OdmAnnotationsProvider() {
@@ -59,13 +59,13 @@ public final class Doctrine2OdmAnnotationsProvider extends PhpAnnotationsProvide
     }
 
     @Override
-    public List<PhpAnnotationTag> getFunctionAnnotations() {
+    public List<AnnotationCompletionTag> getFunctionAnnotations() {
         return Collections.emptyList();
     }
 
     @Override
-    public List<PhpAnnotationTag> getTypeAnnotations() {
-        return Arrays.<PhpAnnotationTag>asList(
+    public List<AnnotationCompletionTag> getTypeAnnotations() {
+        return Arrays.<AnnotationCompletionTag>asList(
                 new DiscriminatorFieldTag(),
                 new DiscriminatorMapTag(),
                 new DocumentTag(),
@@ -76,8 +76,8 @@ public final class Doctrine2OdmAnnotationsProvider extends PhpAnnotationsProvide
     }
 
     @Override
-    public List<PhpAnnotationTag> getFieldAnnotations() {
-        return Arrays.<PhpAnnotationTag>asList(
+    public List<AnnotationCompletionTag> getFieldAnnotations() {
+        return Arrays.<AnnotationCompletionTag>asList(
                 new AlsoLoadTag(),
                 new BinTag(),
                 new BinCustomTag(),
@@ -108,8 +108,8 @@ public final class Doctrine2OdmAnnotationsProvider extends PhpAnnotationsProvide
     }
 
     @Override
-    public List<PhpAnnotationTag> getMethodAnnotations() {
-        return Arrays.<PhpAnnotationTag>asList(
+    public List<AnnotationCompletionTag> getMethodAnnotations() {
+        return Arrays.<AnnotationCompletionTag>asList(
                 new PreLoadTag(),
                 new PostLoadTag(),
                 new PostPersistTag(),

@@ -10,4 +10,9 @@
             </xml-rule>
         </resolver>
     </file>
+    <file>
+        <ext name="bnm"/>
+        <name name="importantName" substring="true" ignorecase="false" />
+        <resolver mime="text/x-bnm"/>
+    </file>
 </MIME-resolver>

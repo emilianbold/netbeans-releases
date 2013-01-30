@@ -140,7 +140,9 @@ public class QuickSearchPopup extends javax.swing.JPanel
         int selection = jList1.getSelectedIndex();
         ListModel model = jList1.getModel();
         Object item = model.getElementAt(selection);
-        if(item == null) return;
+        if(item == null) {
+            return;
+        }
         if(item instanceof PopupItem.IssueItem) {
             IssueImpl issue = ((PopupItem.IssueItem) item).getIssue();
             if (issue != null) {
@@ -213,12 +215,14 @@ public class QuickSearchPopup extends javax.swing.JPanel
 
     /** implementation of ActionListener, called by timer,
      * actually runs search */
+    @Override
     public void actionPerformed(ActionEvent e) {
         updateTimer.stop();
         // search only if we are not cancelled already
         if (comboBar.isTextFieldFocusOwner()) {
             // start waiting on all providers execution
             runTask(new Runnable() {
+                @Override
                 public void run() {
                     searchLocalIssues();
                 }
@@ -466,14 +470,17 @@ private void jList1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:even
 
     /*** impl of reactions to results data change */
 
+    @Override
     public void intervalAdded(ListDataEvent e) {
         updatePopup();
     }
 
+    @Override
     public void intervalRemoved(ListDataEvent e) {
         updatePopup();
     }
 
+    @Override
     public void contentsChanged(ListDataEvent e) {
         updatePopup();
     }
@@ -520,6 +527,7 @@ private void jList1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:even
     /** Implementation of TaskListener, listen to when providers are finished
      * with their searching work
      */
+    @Override
     public void taskFinished(Task task) {
         evalTask = null;
         // update UI in ED thread
@@ -531,6 +539,7 @@ private void jList1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:even
     }
 
     /** Runnable implementation, updates popup */
+    @Override
     public void run() {
         updatePopup();
     }
@@ -555,7 +564,9 @@ private void jList1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:even
 
         preferredSize.width = comboBar.getIssueComponent().getWidth();
         preferredSize.height += statusPanel.getPreferredSize().height + 3;
-        if(preferredSize.height > 150) preferredSize.height = 150;
+        if(preferredSize.height > 150) {
+            preferredSize.height = 150;
+        }
 
         result.setSize(preferredSize);
     }
@@ -610,6 +621,7 @@ private void jList1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:even
         @Override
         void invoke() {
             runTask(new Runnable() {
+                @Override
                 public void run() {
                     clearModel();
 

@@ -63,15 +63,15 @@ import org.openide.util.Parameters;
 public final class ClassIndexEventsTransaction extends TransactionContext.Service {
 
     private final boolean source;
-    private final Set<URL> removedRoots;
-    private final Collection<ElementHandle<TypeElement>> addedTypes;
-    private final Collection<ElementHandle<TypeElement>> removedTypes;
-    private final Collection<ElementHandle<TypeElement>> changedTypes;
-    private final Collection<File> addedFiles;
-    private final Collection<File> removedFiles;
+    private Set<URL> removedRoots;
+    private Collection<ElementHandle<TypeElement>> addedTypes;
+    private Collection<ElementHandle<TypeElement>> removedTypes;
+    private Collection<ElementHandle<TypeElement>> changedTypes;
+    private Collection<File> addedFiles;
+    private Collection<File> removedFiles;
     private URL addedRoot;
     private URL changesInRoot;
-    private boolean commited;
+    private boolean closed;
 
     private ClassIndexEventsTransaction(final boolean src) {
         source = src;
@@ -90,6 +90,7 @@ public final class ClassIndexEventsTransaction extends TransactionContext.Servic
      * @param root the added root.
      */
     public void rootAdded(@NonNull final URL root) {
+        checkClosedTx();
         assert root != null;
         assert addedRoot == null;
         assert changesInRoot == null || changesInRoot.equals(root);
@@ -102,6 +103,7 @@ public final class ClassIndexEventsTransaction extends TransactionContext.Servic
      * @param root the removed root.
      */
     public void rootRemoved(@NonNull final URL root) {
+        checkClosedTx();
         assert root != null;
         removedRoots.add(root);
     }
@@ -115,6 +117,7 @@ public final class ClassIndexEventsTransaction extends TransactionContext.Servic
     public void addedTypes(
         @NonNull final URL root,
         @NonNull final Collection<? extends ElementHandle<TypeElement>> added) {
+        checkClosedTx();
         assert root != null;
         assert added != null;
         assert changesInRoot == null || changesInRoot.equals(root);
@@ -132,6 +135,7 @@ public final class ClassIndexEventsTransaction extends TransactionContext.Servic
     public void removedTypes(
         @NonNull final URL root,
         @NonNull final Collection<? extends ElementHandle<TypeElement>> removed) {
+        checkClosedTx();
         assert root != null;
         assert removed != null;
         assert changesInRoot == null || changesInRoot.equals(root);
@@ -149,6 +153,7 @@ public final class ClassIndexEventsTransaction extends TransactionContext.Servic
     public void changedTypes(
         @NonNull final URL root,
         @NonNull final Collection<? extends ElementHandle<TypeElement>> changed) {
+        checkClosedTx();
         assert root != null;
         assert changed != null;
         assert changesInRoot == null || changesInRoot.equals(root);
@@ -168,6 +173,7 @@ public final class ClassIndexEventsTransaction extends TransactionContext.Servic
     public void addedCacheFiles(
         @NonNull final URL root,
         @NonNull final Collection<? extends File> files) throws IllegalStateException {
+        checkClosedTx();
         Parameters.notNull("root", root); //NOI18N
         Parameters.notNull("files", files); //NOI18N
         if (!source) {
@@ -190,6 +196,7 @@ public final class ClassIndexEventsTransaction extends TransactionContext.Servic
     public void removedCacheFiles(
         @NonNull final URL root,
         @NonNull final Collection<? extends File> files) throws IllegalStateException {
+        checkClosedTx();
         Parameters.notNull("root", root);   //NOI18N
         Parameters.notNull("files", files); //NOI18N
         if (!source) {
@@ -203,36 +210,64 @@ public final class ClassIndexEventsTransaction extends TransactionContext.Servic
 
     @Override
     protected void commit() throws IOException {
-        if (commited) {
-            throw new IllegalStateException("Already commited transaction");    //NOI18N
-        }
-        commited = true;
+        closeTx();
         try {
-            if (!addedFiles.isEmpty() || !removedFiles.isEmpty()) {
-                assert changesInRoot != null;
-                BuildArtifactMapperImpl.classCacheUpdated(
-                    changesInRoot,
-                    JavaIndex.getClassFolder(changesInRoot),
-                    removedFiles,
-                    addedFiles,
-                    false);
+            try {
+                if (!addedFiles.isEmpty() || !removedFiles.isEmpty()) {
+                    assert changesInRoot != null;
+                    BuildArtifactMapperImpl.classCacheUpdated(
+                        changesInRoot,
+                        JavaIndex.getClassFolder(changesInRoot),
+                        Collections.unmodifiableCollection(removedFiles),
+                        Collections.unmodifiableCollection(addedFiles),
+                        false);
+                }
+            } finally {
+                final ClassIndexManager ciManager = ClassIndexManager.getDefault();
+                ciManager.fire(
+                    addedRoot == null ? Collections.<URL>emptySet() : Collections.<URL>singleton(addedRoot),
+                    Collections.unmodifiableSet(removedRoots));
+                final ClassIndexImpl ci = changesInRoot == null ?
+                    null:
+                    ciManager.getUsagesQuery(changesInRoot, false);
+                if (ci != null) {
+                    ci.typesEvent(
+                        Collections.unmodifiableCollection(addedTypes),
+                        Collections.unmodifiableCollection(removedTypes),
+                        Collections.unmodifiableCollection(changedTypes));
+                }
             }
         } finally {
-            final ClassIndexManager ciManager = ClassIndexManager.getDefault();
-            ciManager.fire(
-                addedRoot == null ? Collections.<URL>emptySet() : Collections.<URL>singleton(addedRoot),
-                removedRoots);
-            final ClassIndexImpl ci = changesInRoot == null ?
-                null:
-                ciManager.getUsagesQuery(changesInRoot, false);
-            if (ci != null) {
-                ci.typesEvent(addedTypes, removedTypes, changedTypes);
-            }
+            clear();
         }
     }
 
     @Override
     protected void rollBack() throws IOException {
+        closeTx();
+        clear();
+    }
+
+    private void clear() {
+        addedRoot = null;
+        changesInRoot = null;
+        removedRoots = null;
+        addedTypes = null;
+        removedTypes = null;
+        changedTypes = null;
+        addedFiles = null;
+        removedFiles = null;
+    }
+
+    private void checkClosedTx() {
+        if (closed) {
+            throw new IllegalStateException("Already commited or rolled back transaction.");    //NOI18N
+        }
+    }
+
+    private void closeTx() {
+        checkClosedTx();
+        closed = true;
     }
 
     /**

@@ -12,39 +12,27 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.html.navigator</code-name-base>
+                    <run-dependency>
+                        <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.languages.apacheconf</code-name-base>
                     <run-dependency>
-                        <specification-version>1.0</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.languages.ini</code-name-base>
-                    <run-dependency>
-                        <specification-version>1.0</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.languages.neon</code-name-base>
-                    <run-dependency>
-                        <specification-version>1.0</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.php.apigen</code-name-base>
-                    <run-dependency>
-                        <specification-version>1.0</specification-version>
+                        <specification-version>1.6</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.php.dbgp</code-name-base>
                     <run-dependency>
-                        <specification-version>1.18</specification-version>
+                        <specification-version>1.23</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.php.editor</code-name-base>
                     <run-dependency>
-                        <specification-version>1.21.0</specification-version>
+                        <specification-version>1.28.0</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -54,9 +42,15 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.php.phpdoc.documentation</code-name-base>
+                    <run-dependency>
+                        <specification-version>0.11</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.php.project</code-name-base>
                     <run-dependency>
-                        <specification-version>2.46</specification-version>
+                        <specification-version>2.54</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -69,18 +63,6 @@
                     <code-name-base>org.netbeans.modules.php.samples</code-name-base>
                     <run-dependency>
                         <specification-version>1.14</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.websvc.saas.codegen.php</code-name-base>
-                    <run-dependency>
-                        <specification-version>1.2</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.websvc.saas.kit</code-name-base>
-                    <run-dependency>
-                        <specification-version>1.1</specification-version>
                     </run-dependency>
                 </dependency>
             </module-dependencies>

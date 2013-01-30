@@ -49,8 +49,10 @@
     attrProp=true,
     removeUnreferencedNodes=true,
     docRoot="weblogic-ejb-jar",
-    mddFile="../../resources/weblogic-ejb-jar_10_3_0.mdd"
+    mddFile="../../resources/weblogic-ejb-jar_10_3_0.mdd",
+    java5=true
 )
+@org.netbeans.api.annotations.common.SuppressWarnings("NM_SAME_SIMPLE_NAME_AS_INTERFACE") // justification="Generated implementation classes"
 package org.netbeans.modules.j2ee.weblogic9.dd.ejb1030;
 
 import org.netbeans.modules.schema2beans.Schema2Beans;

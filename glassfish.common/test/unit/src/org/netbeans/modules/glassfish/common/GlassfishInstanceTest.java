@@ -66,15 +66,26 @@ public class GlassfishInstanceTest {
         String domainName = "";
         int httpPort = 0;
         int adminPort = 0;
+        String userName = "";
+        String password = "";
+        String target = "";
         String url = "";
-        String uriFragment = "";
         GlassfishInstanceProvider gip = null;
         GlassfishInstance expResult = null;
-        GlassfishInstance result = GlassfishInstance.create(displayName, installRoot, glassfishRoot, domainsDir, domainName, httpPort, adminPort, "foo:localhost:port", uriFragment, GlassfishInstanceProvider.getEe6());
+        GlassfishInstance result = GlassfishInstance.create(displayName,
+                installRoot, glassfishRoot, domainsDir, domainName,
+                httpPort, adminPort, userName, password, target,
+                "foo:localhost:port", GlassfishInstanceProvider.getEe6());
         assert result != null : "got a null";
-        GlassfishInstance result2 = GlassfishInstance.create(displayName, installRoot, glassfishRoot, domainsDir, domainName, httpPort, adminPort,  "foo:localhost:port", uriFragment, GlassfishInstanceProvider.getEe6());
+        GlassfishInstance result2 = GlassfishInstance.create(displayName,
+                installRoot, glassfishRoot, domainsDir, domainName,
+                httpPort, adminPort, userName, password, target,
+                "foo:localhost:port", GlassfishInstanceProvider.getEe6());
         assert result.equals(result2);
-        result2 = GlassfishInstance.create(displayName, installRoot, glassfishRoot, domainsDir, domainName, httpPort, adminPort,  "foo:127.0.0.1:port", uriFragment, GlassfishInstanceProvider.getEe6());
+        result2 = GlassfishInstance.create(displayName, installRoot,
+                glassfishRoot, domainsDir, domainName,
+                httpPort, adminPort, userName, password, target,
+                "foo:127.0.0.1:port", GlassfishInstanceProvider.getEe6());
         assert result.equals(result2);
     }
 

@@ -79,14 +79,17 @@ public class SetCurrentThreadFromHistoryAction extends AbstractAction implements
         putValue(NAME, NbBundle.getMessage(ThreadsHistoryAction.class, "CTL_ThreadsHistoryAction"));
     }
 
+    @Override
     public void actionPerformed(ActionEvent e) {
         new ThreadsHistoryAction().actionPerformed(e);
     }
 
+    @Override
     public JMenuItem getMenuPresenter() {
         final JMenuItem item = new JMenuItem();
         Mnemonics.setLocalizedText(item, NbBundle.getMessage(SetCurrentThreadFromHistoryAction.class, "CTL_SetCurrentThreadFromHistoryAction"));
         item.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 showWindow();
             }
@@ -117,6 +120,7 @@ public class SetCurrentThreadFromHistoryAction extends AbstractAction implements
         return item;
     }
 
+    @Override
     public JMenuItem getPopupPresenter() {
         return getMenuPresenter();
     }

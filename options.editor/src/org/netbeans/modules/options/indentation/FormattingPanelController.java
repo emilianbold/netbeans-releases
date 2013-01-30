@@ -66,6 +66,7 @@ import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.SimpleValueNames;
+import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.editor.settings.storage.api.EditorSettings;
 import org.netbeans.modules.editor.settings.storage.api.EditorSettingsStorage;
 import org.netbeans.modules.editor.settings.storage.spi.TypedValue;
@@ -87,7 +88,7 @@ import org.openide.util.WeakListeners;
     keywords="org.netbeans.modules.options.editor.Bundle#KW_Formatting",
     keywordsCategory="Editor/Formatting",
     position=200,
-    location="Editor"
+    location=OptionsDisplayer.EDITOR
 )
 public final class FormattingPanelController extends OptionsPanelController {
 

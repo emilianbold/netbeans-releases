@@ -48,7 +48,7 @@ package org.netbeans.modules.db.dataview.meta;
  * 
  * @author Ahimanikya Satapathy
  */
-public final class DBColumn extends DBObject<DBTable> implements Comparable {
+public final class DBColumn extends DBObject<DBTable> implements Comparable<DBColumn> {
 
     public static final int POSITION_UNKNOWN = Integer.MIN_VALUE;
     private boolean foreignKey;
@@ -81,25 +81,24 @@ public final class DBColumn extends DBObject<DBTable> implements Comparable {
         editable = (!table.getName().equals("") && !isGenerated);
     }
 
-    public int compareTo(Object refObj) {
-        if (refObj == null) {
+    @Override
+    public int compareTo(DBColumn refColumn) {
+        if (refColumn == null) {
             return -1;
         }
 
-        if (refObj == this) {
+        if (refColumn == this) {
             return 0;
         }
 
         String myName = getDisplayName();
         myName = (myName == null) ? columnName : myName;
 
-        String refName = null;
-        if (!(refObj instanceof DBColumn)) {
+        if (!(refColumn instanceof DBColumn)) {
             return -1;
         }
 
-        DBColumn refColumn = (DBColumn) refObj;
-        refName = refColumn.getName();
+        String refName = refColumn.getName();
 
         // compare primary keys
         if (this.isPrimaryKey() && !refColumn.isPrimaryKey()) {

@@ -1,19 +1,14 @@
 | Tools |                      T (mnemonics)
 =========
-Analyze Javadoc                J [dynamic]
-Create JUnit Tests...          U [dynamic]
-Add to Favorites               A [dynamic]
 Add to Palette...              e [dynamic]
 Internationalization       >   z
 ============================
 Java Platforms                 J
 NetBeans Platforms             N
-Ruby Platforms                 u
-Variables                      V
-Libraries                      L
-Component Libraries            C
-Ruby Gems                      R
+Ant Variables                  V
+Ant Libraries                  L
 Servers                        S
+Cloud Providers                C
 Mobility Deployment            m
 Keystores                      K
 Templates                      T

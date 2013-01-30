@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.html.parser;
 
+import java.util.Properties;
 import org.netbeans.modules.html.parser.model.HtmlTagProvider;
 import java.io.File;
 import java.io.IOException;
@@ -76,6 +77,9 @@ import org.netbeans.modules.html.editor.lib.api.model.*;
 import org.netbeans.modules.html.parser.model.ElementDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
 import org.xml.sax.SAXException;
 
 /**
@@ -1054,7 +1058,7 @@ public class Html5ParserTest extends NbTestCase {
     //Bug 213332 - IllegalStateException: A bug #212445 just happended for source text " scrollbar-arrow-color:"black"; } </STYLE> <TITLE>Cyprus :: Larnaca</TITLE></HEAD> <BOD". Please report a new bug or r 
     //http://netbeans.org/bugzilla/show_bug.cgi?id=213332
     public void testIssue213332() throws ParseException {
-        ParseTreeBuilder.setLoggerLevel(Level.ALL);
+//        ParseTreeBuilder.setLoggerLevel(Level.ALL);
         
         String code = "<html><head><style type=text/css></style></head></html>";
         //             012345678901234567890123456789012345678901234567890123456789
@@ -1077,18 +1081,73 @@ public class Html5ParserTest extends NbTestCase {
         
     }
     
-    //Bug 211792 
+    public void testTextNodes() throws ParseException {
+//        ParseTreeBuilder.setLoggerLevel(Level.ALL);
+        String code = "<html>\n"
+                + "<head>\n"
+                + "<title>hello</title>\n"
+                + "</head>\n"
+                + "<body>\n"
+                + "<div>text1</div>\n"
+                + "<p>text2\n"
+                + "<p>text3\n"
+                + "</body>\n"
+                + "</html>\n";
+        //             0123456789012
+        
+        HtmlSource source = new HtmlSource(code);
+        InstanceContent ic = new InstanceContent();
+        Properties props = new Properties();
+        props.setProperty("add_text_nodes", "true");
+        ic.add(props);
+        Lookup l = new AbstractLookup(ic);
+        HtmlParseResult result = new Html5Parser().parse(source, HtmlVersion.HTML5, l);
+        
+        Node root = result.root();
+//        ElementUtils.dumpTree(root);
+        
+        Node title = ElementUtils.query(root, "html/head/title");
+        Collection<Element> elements =  title.children(ElementType.TEXT);
+        assertNotNull(elements);
+        assertEquals(1, elements.size());
+        
+        Element text = elements.iterator().next();
+        assertNotNull(text);
+        assertEquals(ElementType.TEXT, text.type());
+        assertEquals("hello", text.image().toString());
+    }
+    
+    public void testNoTextNodesByDefault() throws ParseException {
+//        ParseTreeBuilder.setLoggerLevel(Level.ALL);
+        String code = "<html>\n"
+                + "<head>\n"
+                + "<title>hello</title>\n"
+                + "</head>\n"
+                + "<body>\n"
+                + "<div>text1</div>\n"
+                + "<p>text2\n"
+                + "<p>text3\n"
+                + "</body>\n"
+                + "</html>\n";
+        //             0123456789012
+        Node root = parse(code).root();
+//        ElementUtils.dumpTree(root);
+        
+        Node title = ElementUtils.query(root, "html/head/title");
+        Collection<Element> elements =  title.children(ElementType.TEXT);
+        assertNotNull(elements);
+        assertEquals(0, elements.size());
+    }
+    
+     //Bug 211792 
     //http://netbeans.org/bugzilla/show_bug.cgi?id=211792
     public void testIssue211792() throws ParseException {
-        ParseTreeBuilder.setLoggerLevel(Level.ALL);
-        
+//        ParseTreeBuilder.setLoggerLevel(Level.ALL);
         String code = "<a href=\"\"</p>";
         //             01234567 8 901234
         //             0         1         
         Node root = parse(code).root();
-        
 //        ElementUtils.dumpTree(root);
-
         OpenTag a = ElementUtils.query(root, "html/body/a");
         assertNotNull(a);
         
@@ -1123,6 +1182,7 @@ public class Html5ParserTest extends NbTestCase {
         assertEquals("", href.unquotedValue().toString());
         
     }
+    
     
     //fails
 //     //Bug 194037 - AssertionError at nu.validator.htmlparser.impl.TreeBuilder.endTag
@@ -1185,6 +1245,33 @@ public class Html5ParserTest extends NbTestCase {
 //        return null;
 //    }
     
+    
+    //Bug 218027 - case sensitive for HTML tags
+    public void testIssue218027() throws ParseException {
+//        ParseTreeBuilder.setLoggerLevel(Level.ALL);
+        String code = "<html><body><TABLE></table></body></html>";
+        //             01234567 8 901234
+        //             0         1         
+        Node root = parse(code).root();
+//        ElementUtils.dumpTree(root);
+        OpenTag a = ElementUtils.query(root, "html/body/TABLE");
+        assertNotNull(a);
+        assertNotNull(a.matchingCloseTag());
+    }
+    
+    //Bug 218629 - Wrong syntax coloring in HTML for non-english text 
+    public void testIssue218629() throws ParseException {
+//        ParseTreeBuilder.setLoggerLevel(Level.ALL);
+        String code = "<div>שלום עולם</div>";
+        //             012345678901234567890
+        //             0         1         
+        Node root = parse(code).root();
+        ElementUtils.dumpTree(root);
+        OpenTag a = ElementUtils.query(root, "html/body/div");
+        assertNotNull(a);
+        assertNotNull(a.matchingCloseTag());
+    }
+    
     private void assertNodeOffsets(final Node root) {
         //assert semantic ends are set
         ElementVisitor check = new ElementVisitor() {
@@ -1212,6 +1299,23 @@ public class Html5ParserTest extends NbTestCase {
                     ElementUtils.dumpTree(root);
                     throw ae;
                 }
+                
+                //validate attributes
+                for(Attribute a : openTag.attributes()) {
+                    assertNotNull(a);
+                    assertNotNull(a.name());
+                    assertTrue(a.nameOffset() > openTag.from());
+                    
+                    if(a.value() != null) {
+                        assertTrue(a.valueOffset() > a.nameOffset() + a.name().length());
+                        
+                        if(!(a.valueOffset() < root.to())) {
+                            System.out.println("error");
+                        }
+                        assertTrue(a.valueOffset() < root.to());
+                    }
+                }
+                
             }
         };
 

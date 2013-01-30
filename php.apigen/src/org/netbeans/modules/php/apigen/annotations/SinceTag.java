@@ -41,14 +41,14 @@
  */
 package org.netbeans.modules.php.apigen.annotations;
 
-import org.netbeans.modules.php.spi.annotations.PhpAnnotationTag;
+import org.netbeans.modules.php.spi.annotation.AnnotationCompletionTag;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class SinceTag extends PhpAnnotationTag {
+public class SinceTag extends AnnotationCompletionTag {
 
     public SinceTag() {
         super("since", "@since ${version}", //NOI18N

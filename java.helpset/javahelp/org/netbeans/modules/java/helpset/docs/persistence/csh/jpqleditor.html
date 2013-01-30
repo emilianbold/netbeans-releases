@@ -1,0 +1,59 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ * Copyright © 1997, 2012, Oracle and/or its affiliates. All rights reserved.
+ * Use is subject to license terms.
+-->
+<html>
+
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+
+        <title>JPQL Query Editor</title>
+
+        <link rel="StyleSheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+    <body>
+
+        <h2>JPQL Query Editor</h2>
+        <p><small><a href="#seealso">See Also</a></small></p>
+        <p>You can use the JPQL Query Editor to write and execute JPQL queries within the IDE and view the results of the query.
+        The query editor supports code completion for JPQL keywords and for managed entities
+        in your application.</p>
+            
+            
+        <p>You open the JPQL Query Editor by right-clicking the <tt>persistence.xml</tt> file
+        in the Projects window or Files window and then choosing Run JPQL Query in the popup menu.
+        The Persistence Unit dropdown list in the toolbar of the JPQL Query Editor contains the persistence units that are specified in <tt>persistence.xml</tt>.
+        To run a query, type the query in the text area of the query editor, select a
+        persistence unit in the dropdown list and click the Run JPQL Query button in the toolbar
+        (&nbsp;<img src="../../images/run_hql_query_16.png" alt="Run JPQL">&nbsp;).</p>
+        <p>When you run a JPQL query, the query is run against the database that is specified 
+        in the persistence unit that is selected in the dropdown list.
+        The results of the query appear in the Result pane in the lower half of the JPQL Query Editor.</p>
+        
+        <p><strong>Notes.</strong></p>
+       <ul class="note">
+           <li>You need to build the project before you can run the JPQL query.</li>
+           <li>The drivers for the database that is specified in the persistence unit must be on the project classpath.</li>
+           <li>If you are using EclipseLink as the persistence provider you can click the SQL tab to view the 
+             SQL query that corresponds to the JPQL query. </li>
+    </ul>
+       
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="../general/persistence_about.html">About Java Persistence</a></dd>
+            <dd><a href="../general/persistence_aboutunit.html">About Persistence Units</a></dd>
+            <dd><a href="../general/persistence_unit.html">Creating a Persistence Unit</a></dd>
+            <dd><a href="../general/persistence_aboutentitymanager.html">About Entity Managers</a></dd>
+            
+        </dl>
+        
+        <hr><small><a href="../../credits.html">Legal Notices</a></small> 
+        <table border="0" cellpadding="50">
+            <tr><td>&nbsp;</td></tr>
+        </table>
+</body>
+
+</html>
+
+

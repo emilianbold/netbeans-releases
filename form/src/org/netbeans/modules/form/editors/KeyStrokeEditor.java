@@ -55,6 +55,7 @@ import org.netbeans.modules.form.NamedPropertyEditor;
 
 import org.openide.awt.Mnemonics;
 import org.openide.explorer.propertysheet.editors.XMLPropertyEditor;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -488,7 +489,7 @@ public class KeyStrokeEditor extends PropertyEditorSupport
                         && keycode != KeyEvent.VK_ALT
                         && keycode != KeyEvent.VK_SHIFT
                         && keycode != KeyEvent.VK_META) {
-                        KeyStroke key = KeyStroke.getKeyStroke(keycode, e.getModifiers());
+                        KeyStroke key = createKeyStroke(e);
                         setKeyStroke(key);
                     }
                     e.consume();
@@ -496,4 +497,43 @@ public class KeyStrokeEditor extends PropertyEditorSupport
             }
         }
     }
+
+    // --- see defect #217279
+    // JDK-specific translation of KeyEvent to KeyStroke, method is only available
+    // in JDK 1.7+
+    private static final Method keyEvent_getExtendedKeyCode;
+    
+    static {
+        Class eventClass = KeyEvent.class;
+        Method m = null;
+        try {
+            m = eventClass.getMethod("getExtendedKeyCode"); // NOI18N
+        } catch (NoSuchMethodException ex) {
+            // expected, JDK < 1.7
+        } catch (SecurityException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        keyEvent_getExtendedKeyCode = m;
+    }
+    
+    static KeyStroke createKeyStroke(KeyEvent e) {
+        int code = e.getKeyCode();
+        if (keyEvent_getExtendedKeyCode != null) {
+            try {
+                int ecode = (int)(Integer)keyEvent_getExtendedKeyCode.invoke(e);
+                if (ecode != KeyEvent.VK_UNDEFINED) {
+                    code = ecode;
+                }
+            } catch (IllegalAccessException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (IllegalArgumentException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (InvocationTargetException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        return KeyStroke.getKeyStroke(code, e.getModifiers());
+    }
+    // --- end defect #217279
+    
 }

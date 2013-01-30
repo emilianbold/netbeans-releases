@@ -41,6 +41,7 @@
  */
 package org.netbeans.api.search.provider.impl;
 
+import java.net.URI;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -74,5 +75,13 @@ public class EmptySearchInfo extends SearchInfo {
             AtomicBoolean terminated) {
 
         return Collections.<FileObject>emptyList().iterator();
+    }
+
+    @Override
+    public Iterator<URI> createUrisToSearchIterator(
+            SearchScopeOptions options, SearchListener listener,
+            AtomicBoolean terminated) {
+
+        return Collections.<URI>emptyList().iterator();
     }
 }

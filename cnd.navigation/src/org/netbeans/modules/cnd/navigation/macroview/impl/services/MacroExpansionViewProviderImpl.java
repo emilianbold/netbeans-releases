@@ -71,6 +71,7 @@ import org.netbeans.modules.cnd.navigation.macroview.MacroExpansionViewUtils;
 import org.netbeans.modules.cnd.spi.model.services.CsmMacroExpansionViewProvider;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  * Service that provides UI for macro expansion.
@@ -79,6 +80,8 @@ import org.openide.util.NbBundle;
  */
 @org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.cnd.spi.model.services.CsmMacroExpansionViewProvider.class)
 public class MacroExpansionViewProviderImpl implements CsmMacroExpansionViewProvider {
+    
+    private static final RequestProcessor RP = new RequestProcessor("MacroExpansionViewProviderImpl", 1); // NOI18N
 
     /**
      * Expands document on specified position and shows Macro Expansion View panel.
@@ -87,55 +90,64 @@ public class MacroExpansionViewProviderImpl implements CsmMacroExpansionViewProv
      * @param offset - offset in document
      */
     @Override
-    public void showMacroExpansionView(Document doc, int offset) {
+    public void showMacroExpansionView(Document doc, final int offset) {
         final Document mainDoc = doc;
         if (mainDoc == null) {
             return;
         }
-        final CsmFile csmFile = CsmUtilities.getCsmFile(mainDoc, true, false);
-        if (csmFile == null) {
-            return;
-        }
-
-        // Get ofsets
-        int startOffset = 0;
-        int endOffset = mainDoc.getLength();
-        if (MacroExpansionTopComponent.isLocalContext()) {
-            CsmScope scope = ContextUtils.findInnerFileScope(csmFile, offset);
-            if (CsmKindUtilities.isOffsetable(scope)) {
-                startOffset = ((CsmOffsetable) scope).getStartOffset();
-                endOffset = ((CsmOffsetable) scope).getEndOffset();
-            }
-        }
-
-        // Init expanded context field
-        final Document expandedContextDoc = MacroExpansionViewUtils.createExpandedContextDocument(mainDoc, csmFile);
-        if (expandedContextDoc == null) {
-            return;
-        }
-        final int expansionsNumber = CsmMacroExpansion.expand(mainDoc, startOffset, endOffset, expandedContextDoc);
-        MacroExpansionViewUtils.setOffset(expandedContextDoc, startOffset, endOffset);
-        MacroExpansionViewUtils.saveDocumentAndMarkAsReadOnly(expandedContextDoc);
-
-        // Open view
-        Runnable openView = new Runnable() {
+        
+        // Create view
+        Runnable createExpansionView = new Runnable() {
 
             @Override
             public void run() {
-                MacroExpansionTopComponent view = MacroExpansionTopComponent.findInstance();
-                if (!view.isOpened()) {
-                    view.open();
+                final CsmFile csmFile = CsmUtilities.getCsmFile(mainDoc, true, false);
+                if (csmFile == null) {
+                    return;
                 }
-                view.setDocuments(expandedContextDoc);
-                view.requestActive();
-                view.setDisplayName(NbBundle.getMessage(MacroExpansionTopComponent.class, "CTL_MacroExpansionViewTitle", MacroExpansionViewUtils.getDocumentName(mainDoc))); // NOI18N
-                view.setStatusBarText(NbBundle.getMessage(MacroExpansionTopComponent.class, "CTL_MacroExpansionStatusBarLine", expansionsNumber)); // NOI18N
+
+                // Get ofsets
+                int startOffset = 0;
+                int endOffset = mainDoc.getLength();
+                if (MacroExpansionTopComponent.isLocalContext()) {
+                    CsmScope scope = ContextUtils.findInnerFileScope(csmFile, offset);
+                    if (CsmKindUtilities.isOffsetable(scope)) {
+                        startOffset = ((CsmOffsetable) scope).getStartOffset();
+                        endOffset = ((CsmOffsetable) scope).getEndOffset();
+                    }
+                }
+
+                // Init expanded context field
+                final Document expandedContextDoc = MacroExpansionViewUtils.createExpandedContextDocument(mainDoc, csmFile);
+                if (expandedContextDoc == null) {
+                    return;
+                }
+                final int expansionsNumber = CsmMacroExpansion.expand(mainDoc, startOffset, endOffset, expandedContextDoc);
+                MacroExpansionViewUtils.setOffset(expandedContextDoc, startOffset, endOffset);
+                MacroExpansionViewUtils.saveDocumentAndMarkAsReadOnly(expandedContextDoc);
+
+                // Open view
+                Runnable openView = new Runnable() {
+
+                    @Override
+                    public void run() {
+                        MacroExpansionTopComponent view = MacroExpansionTopComponent.findInstance();
+                        if (!view.isOpened()) {
+                            view.open();
+                        }
+                        view.setDocuments(expandedContextDoc);
+                        view.requestActive();
+                        view.setDisplayName(NbBundle.getMessage(MacroExpansionTopComponent.class, "CTL_MacroExpansionViewTitle", MacroExpansionViewUtils.getDocumentName(mainDoc))); // NOI18N
+                        view.setStatusBarText(NbBundle.getMessage(MacroExpansionTopComponent.class, "CTL_MacroExpansionStatusBarLine", expansionsNumber)); // NOI18N
+                    }
+                };
+                if (SwingUtilities.isEventDispatchThread()) {
+                    openView.run();
+                } else {
+                    SwingUtilities.invokeLater(openView);
+                }
             }
         };
-        if (SwingUtilities.isEventDispatchThread()) {
-            openView.run();
-        } else {
-            SwingUtilities.invokeLater(openView);
-        }
+        RP.execute(createExpansionView);
     }
 }

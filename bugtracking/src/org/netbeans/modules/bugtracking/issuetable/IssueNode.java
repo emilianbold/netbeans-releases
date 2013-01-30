@@ -48,6 +48,7 @@ import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCacheUtils;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.lang.reflect.InvocationTargetException;
 import java.util.logging.Level;
 import org.openide.nodes.*;
 import org.openide.util.lookup.Lookups;
@@ -228,6 +229,9 @@ public abstract class IssueNode<I> extends AbstractNode {
         public int compareTo(IssueNode<I>.IssueProperty<T> o) {
             return toString().compareTo(o.toString());
         }
+        
+        @Override
+        public abstract T getValue() throws IllegalAccessException, InvocationTargetException;        
     }
 
     // XXX the same for id

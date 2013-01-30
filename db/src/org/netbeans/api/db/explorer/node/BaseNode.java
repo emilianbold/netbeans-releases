@@ -42,6 +42,9 @@
 
 package org.netbeans.api.db.explorer.node;
 
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -61,6 +64,7 @@ import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.datatransfer.ExTransferable;
 
 /**
  * This is the base class for all database explorer nodes.  It takes care of setting
@@ -401,7 +405,19 @@ public abstract class BaseNode extends AbstractNode {
 
     @Override
     public boolean canCopy() {
-        return false;
+        return true;
     }
 
+    @Override
+    public Transferable clipboardCopy() throws IOException {
+        Transferable deflt = super.clipboardCopy();
+        ExTransferable added = ExTransferable.create(deflt);
+        added.put(new ExTransferable.Single(DataFlavor.stringFlavor) {
+            @Override
+            protected Object getData() {
+                return getDisplayName();
+            }
+        });
+        return added;
+    }
 }

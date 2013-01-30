@@ -108,6 +108,7 @@ import org.netbeans.modules.mercurial.ui.branch.HgBranch;
 import org.netbeans.modules.mercurial.ui.commit.CommitOptions;
 import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
 import org.netbeans.modules.mercurial.ui.log.HgLogMessage.HgRevision;
+import org.netbeans.modules.versioning.diff.DiffUtils;
 import org.netbeans.modules.versioning.util.FileSelector;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -153,6 +154,7 @@ public class HgUtils {
     public static final String HG_CHECK_REPOSITORY_DEFAULT_TIMEOUT = "5";
     public static final int HG_CHECK_REPOSITORY_DEFAULT_ROUNDS = 50;
     public static final String HG_FOLDER_NAME = ".hg";                 //NOI18N
+    public static final String WLOCK_FILE = "wlock"; //NOI18N
     private static int repositoryValidityCheckRounds = 0;
     public static String PREFIX_VERSIONING_MERCURIAL_URL = "versioning.mercurial.url."; //NOI18N
 
@@ -1293,15 +1295,38 @@ itor tabs #66700).
         return remotePath;
     }
 
-    public static void openInRevision (final File originalFile, final int lineNumber, final HgRevision revision, boolean showAnnotations) throws IOException {
+    public static void openInRevision (File fileRevision1, HgRevision revision1, int lineNumber, 
+            File fileToOpen, HgRevision revisionToOpen, boolean showAnnotations) throws IOException {
+        File file = org.netbeans.modules.mercurial.VersionsCache.getInstance().getFileRevision(fileRevision1, revision1);
+        if (file == null) { // can be null if the file does not exist or is empty in the given revision
+            file = File.createTempFile("tmp", "-" + fileRevision1.getName()); //NOI18N
+            file.deleteOnExit();
+        }
+        fileRevision1 = file;
+        
+        file = org.netbeans.modules.mercurial.VersionsCache.getInstance().getFileRevision(fileToOpen, revisionToOpen);
+        if (file == null) { // can be null if the file does not exist or is empty in the given revision
+            file = File.createTempFile("tmp", "-" + fileToOpen.getName()); //NOI18N
+            file.deleteOnExit();
+        }
+        int matchingLine = DiffUtils.getMatchingLine(fileRevision1, file, lineNumber);
+        
+        openFile(file, fileToOpen, matchingLine, revisionToOpen, showAnnotations);
+    }
+    
+    public static void openInRevision (File originalFile, int lineNumber, HgRevision revision, boolean showAnnotations) throws IOException {
         File file = org.netbeans.modules.mercurial.VersionsCache.getInstance().getFileRevision(originalFile, revision);
 
         if (file == null) { // can be null if the file does not exist or is empty in the given revision
             file = File.createTempFile("tmp", "-" + originalFile.getName()); //NOI18N
             file.deleteOnExit();
         }
+        openFile(file, originalFile, lineNumber, revision, showAnnotations);
+    }
 
-        final FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(file));
+    private static void openFile (File fileToOpen, final File originalFile, final int lineNumber,
+            final HgRevision revision, boolean showAnnotations) throws IOException {
+        final FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(fileToOpen));
         EditorCookie ec = null;
         org.openide.cookies.OpenCookie oc = null;
         try {
@@ -1363,7 +1388,11 @@ itor tabs #66700).
 
     public static boolean isRepositoryLocked (File repository) {
         String[] locks = getHgFolderForRoot(repository).list();
-        return locks != null && Arrays.asList(locks).contains("wlock"); //NOI18N
+        return locks != null && Arrays.asList(locks).contains(WLOCK_FILE);
+    }
+
+    public static boolean contains (Collection<File> roots, File file) {
+        return contains(roots.toArray(new File[roots.size()]), file);
     }
 
     public static boolean contains (File[] roots, File file) {

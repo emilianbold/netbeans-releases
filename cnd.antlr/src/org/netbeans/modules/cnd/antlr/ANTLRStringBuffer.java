@@ -1,5 +1,7 @@
 package org.netbeans.modules.cnd.antlr;
 
+import java.util.Arrays;
+
 /* ANTLR Translator Generator
  * Project led by Terence Parr at http://www.cs.usfca.edu
  * Software rights: http://www.antlr.org/license.html
@@ -31,11 +33,7 @@ public class ANTLRStringBuffer {
                 newSize *= 2;
             }
             // Allocate new array and copy buffer
-            char[] newBuffer = new char[newSize];
-            for (int i = 0; i < length; i++) {
-                newBuffer[i] = buffer[i];
-            }
-            buffer = newBuffer;
+            buffer = Arrays.copyOf(buffer, newSize);
         }
         buffer[length] = c;
         length++;

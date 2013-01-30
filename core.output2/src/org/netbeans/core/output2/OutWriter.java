@@ -52,6 +52,8 @@ import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.channels.ClosedByInterruptException;
 import java.util.Collection;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.openide.util.Exceptions;
@@ -63,6 +65,8 @@ import org.openide.util.Utilities;
  * @author  Tim Boudreau
  */
 class OutWriter extends PrintWriter {
+    private static final Logger LOG =
+            Logger.getLogger(OutWriter.class.getName());
     /** A flag indicating an io exception occurred */
     private boolean trouble = false;
 
@@ -442,6 +446,9 @@ class OutWriter extends PrintWriter {
                 if (c == '\t') {
                     charBuff.put(c);
                     int tabLength = WrappedTextView.TAB_SIZE - ((this.lineCharLengthWithTabs + lineCLVT) % WrappedTextView.TAB_SIZE);
+                    LOG.log(Level.FINEST, "Going to add tab: charOffset = {0}, i = {1}, off = {2}," //NOI18N
+                            + "tabLength = {3}, tabIndex = {4}", //NOI18N
+                            new Object[]{charOffset, i, off, tabLength, charOffset + (i - off)}); // #201450
                     lines.addTabAt(charOffset + (i - off), tabLength);
                     lineCLVT += tabLength;
                 } else if (c == '\b') {
@@ -509,10 +516,10 @@ class OutWriter extends PrintWriter {
     }
 
     public synchronized void println(String s, OutputListener l, boolean important) {
-        print(s, l, important, null, false, true);
+        print(s, l, important, null, null, false, true);
     }
 
-    synchronized void print(CharSequence s, OutputListener l, boolean important, Color c, boolean err, boolean addLS) {
+    synchronized void print(CharSequence s, OutputListener l, boolean important, Color c, Color b, boolean err, boolean addLS) {
         if (c == null) {
             if (l == null && printANSI(s, important, err, addLS)) {
                 return;
@@ -525,10 +532,12 @@ class OutWriter extends PrintWriter {
         if (addLS) {
             println();
         }
-        lines.updateLinesInfo(s, lastLine, lastPos, l, important, err, c);
+        lines.updateLinesInfo(s, lastLine, lastPos, l, important, err, c, b);
     }
     private Color ansiColor;
+    private Color ansiBackground;
     private int ansiColorCode;
+    private int ansiBackgroundCode = 9;
     private boolean ansiBright;
     private boolean ansiFaint;
     private static final Pattern ANSI_CSI_SGR = Pattern.compile("\u001B\\[(\\d+(;\\d+)*)?m"); // XXX or x9B for single-char CSI?
@@ -568,7 +577,7 @@ class OutWriter extends PrintWriter {
         while (m.find()) {
             int esc = m.start();
             if (esc > text) {
-                print(s.subSequence(text, esc), null, important, ansiColor, err, false);
+                print(s.subSequence(text, esc), null, important, ansiColor, ansiBackground, err, false);
             }
             text = m.end();
             String paramsS = m.group(1);
@@ -577,6 +586,7 @@ class OutWriter extends PrintWriter {
             }
             if (paramsS == null) { // like ["0"]
                 ansiColorCode = 0;
+                ansiBackgroundCode = 9;
                 ansiBright = false;
                 ansiFaint = false;
             } else {
@@ -584,6 +594,7 @@ class OutWriter extends PrintWriter {
                     int code = Integer.parseInt(param);
                     if (code == 0) { // Reset / Normal
                         ansiColorCode = 0;
+                        ansiBackgroundCode = 9; // default
                         ansiBright = false;
                         ansiFaint = false;
                     } else if (code == 1) { // Bright (increased intensity) or Bold
@@ -601,12 +612,20 @@ class OutWriter extends PrintWriter {
                         ansiColorCode = code - 30;
                     } else if (code == 39) { // Default text color
                         ansiColorCode = 0;
+                    } else if (code >= 40 && code <= 47) { // Set background
+                        ansiBackgroundCode = code - 40;
+                    } else if (code == 49) { // Set background
+                        ansiBackgroundCode = 9; // default color
                     }
                 }
             }
             assert ansiColorCode >= 0 && ansiColorCode <= 7;
+            assert ansiBackgroundCode >= 0 && ansiBackgroundCode <= 9;
             assert !(ansiBright && ansiFaint);
-            ansiColor = COLORS[ansiColorCode + (ansiBright ? 8 : 0)];
+            Color setColor = COLORS[ansiColorCode + (ansiBright ? 8 : 0)];
+            ansiBackground = ansiBackgroundCode == 9 ? null
+                    : COLORS[ansiBackgroundCode];
+            ansiColor = fixTextColor(setColor, ansiBackground);
             if (ansiFaint && ansiColor != null) {
                 ansiColor = ansiColor.darker();
             }
@@ -616,7 +635,7 @@ class OutWriter extends PrintWriter {
             return false;
         }
         if (text < len) { // final segment
-            print(s.subSequence(text, len), null, important, ansiColor, err, addLS);
+            print(s.subSequence(text, len), null, important, ansiColor, ansiBackground, err, addLS);
         } else if (addLS) { // line ended w/ control seq
             println();
         }
@@ -675,5 +694,36 @@ class OutWriter extends PrintWriter {
         protected void handleException (Exception e) {
             OutWriter.this.handleException(e);
         }
+    }
+
+    /**
+     * Fix foreground color if it is not readable on the background.
+     */
+    private static Color fixTextColor(Color textColor, Color background) {
+        if (background == null && textColor != null
+                && textColor.equals(Color.WHITE)) {
+            return Color.BLACK;
+        } else if (textColor != null && background != null
+                && colorDiff(textColor, background) < 10) {
+            if (colorDiff(textColor, Color.WHITE)
+                    > colorDiff(textColor, Color.BLACK)) {
+                return Color.WHITE;
+            } else {
+                return Color.BLACK;
+            }
+        } else {
+            return textColor;
+        }
+    }
+
+    /**
+     * Difference of two colors. The bigger number, the more different the two
+     * colors are.
+     */
+    private static int colorDiff(Color c1, Color c2) {
+        int redDiff = Math.abs(c1.getRed() - c2.getRed());
+        int greenDiff = Math.abs(c1.getGreen() - c2.getGreen());
+        int blueDiff = Math.abs(c1.getBlue() - c2.getBlue());
+        return Math.max(redDiff, Math.max(greenDiff, blueDiff));
     }
 }

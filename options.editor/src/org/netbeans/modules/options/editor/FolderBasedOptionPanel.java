@@ -56,6 +56,7 @@ import javax.swing.ListCellRenderer;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorRegistry;
+import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.editor.settings.storage.api.EditorSettings;
 import org.netbeans.spi.options.OptionsPanelController;
 
@@ -63,6 +64,10 @@ import org.netbeans.spi.options.OptionsPanelController;
  *
  * @author Dusan Balek
  */
+@OptionsPanelController.KeywordsRegistration({
+    @OptionsPanelController.Keywords(keywords = {"#KW_Hints"}, location = OptionsDisplayer.EDITOR, tabTitle="#CTL_Hints_DisplayName"),
+    @OptionsPanelController.Keywords(keywords = {"#KW_Mark"}, location = OptionsDisplayer.EDITOR, tabTitle="#CTL_MarkOccurences_DisplayName")
+})
 public final class FolderBasedOptionPanel extends JPanel implements ActionListener {
     
     private final FolderBasedController controller;

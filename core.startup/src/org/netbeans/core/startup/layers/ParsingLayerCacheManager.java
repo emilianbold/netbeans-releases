@@ -166,7 +166,7 @@ abstract class ParsingLayerCacheManager extends LayerCacheManager implements Con
                 LayerCacheManager.err.log(Level.FINE, "Parsing: {0}", base);
                 atLeastOneFileOrFolderInLayer = false;
                 try {
-                    r.parse(base.toExternalForm());
+                    r.parse(base.toURI().toASCIIString());
                     if (!atLeastOneFileOrFolderInLayer && root.attrs == null) {
                         LayerCacheManager.err.log(Level.WARNING, "Inefficient to include an empty layer in a module: {0}", base);
                     }

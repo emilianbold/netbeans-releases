@@ -195,7 +195,7 @@ public final class ScopeController extends ComponentController<JComboBox> {
         }
 
         private String getFullText(String text, String extraText) {
-            return text + SP + START + SP + extraText + SP + END;
+            return text + SP + START + extraText + END;
         }
 
         @Override

@@ -104,6 +104,7 @@ public class DBSchemaManager {
         if (oldDBConn != null && oldDBConn != dbconn && !oldDBConnWasConnected) {
             // need to disconnect the old connection
             actions.add(new ProgressSupport.BackgroundAction() {
+                @Override
                 public void run(ProgressSupport.Context actionContext) {
                     actionContext.progress(NbBundle.getMessage(DBSchemaManager.class, "LBL_ClosingPreviousConnection"));
 
@@ -120,6 +121,7 @@ public class DBSchemaManager {
         }
 
         actions.add(new ProgressSupport.EventThreadAction() {
+            @Override
             public void run(ProgressSupport.Context actionContext) {
                 ConnectionManager.getDefault().showConnectionDialog(dbconn);
                 conn = dbconn.getJDBCConnection();
@@ -144,12 +146,13 @@ public class DBSchemaManager {
             }
             
             
+            @Override
             public void run(final ProgressSupport.Context actionContext) {
                 actionContext.progress(NbBundle.getMessage(DBSchemaManager.class, "LBL_RetrievingSchema"));
                 
                 oldDBConn = dbconn;
                 
-                ConnectionProvider connectionProvider = null;
+                ConnectionProvider connectionProvider;
                 try {
                     connectionProvider = new ConnectionProvider(conn, dbconn.getDriverClass());
                     connectionProvider.setSchema(dbconn.getSchema());
@@ -174,6 +177,7 @@ public class DBSchemaManager {
                 schemaElement = new SchemaElement(schemaElementImpl);
                 
                 schemaElementImpl.addPropertyChangeListener(new PropertyChangeListener() {
+                    @Override
                     public void propertyChange(PropertyChangeEvent event) {
                         String propertyName = event.getPropertyName();
                         String message = null;
@@ -251,6 +255,7 @@ public class DBSchemaManager {
         List<ProgressSupport.Action> actions = new ArrayList<ProgressSupport.Action>();
 
         actions.add(new ProgressSupport.BackgroundAction() {
+            @Override
             public void run(ProgressSupport.Context actionContext) {
                 actionContext.progress(NbBundle.getMessage(DBSchemaManager.class, "LBL_ReadingSchemaFile"));
 
@@ -310,7 +315,7 @@ public class DBSchemaManager {
      */
     private static FileObject writeDBSchema(SchemaElement schemaElement, FileObject folder, String projectName) throws IOException {
         String schemaName = schemaElement.getSchema().getName();
-        String fileName = (schemaName != null && schemaName != "" ? schemaName + "_" : "") + projectName; // NOI18N
+        String fileName = (schemaName != null && schemaName.length()>0 ? schemaName + "_" : "") + projectName; // NOI18N
         // #65887: the schema name should not contain the schema db element separator
         fileName = fileName.replace(NameUtil.dbElementSeparator, '_'); // NOI18N
 
@@ -320,8 +325,7 @@ public class DBSchemaManager {
         try {
             schemaElement.setName(dbschemaName);
         } catch (DBException e) {
-            IOException ioe = new IOException(e.getMessage());
-            ioe.initCause(e);
+            IOException ioe = new IOException(e);
             throw ioe;
         }
 
@@ -339,8 +343,7 @@ public class DBSchemaManager {
         try {
             schemaElement.setName(dbschemaName);
         } catch (DBException e) {
-            IOException ioe = new IOException(e.getMessage());
-            ioe.initCause(e);
+            IOException ioe = new IOException(e);
             throw ioe;
         }
 

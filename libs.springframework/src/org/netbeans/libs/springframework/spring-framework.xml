@@ -40,8 +40,7 @@ Contributor(s):
 
 Portions Copyrighted 2008 Sun Microsystems, Inc.
 -->
-<!DOCTYPE library PUBLIC "-//NetBeans//DTD Library Declaration 1.0//EN" "http://www.netbeans.org/dtds/library-declaration-1_0.dtd">
-<library version="1.0">
+<library version="3.0" xmlns="http://www.netbeans.org/ns/library-declaration/3">
     <name>spring-framework</name>
     <type>j2se</type>
     <localizing-bundle>org.netbeans.libs.springframework.Bundle</localizing-bundle>
@@ -57,9 +56,11 @@ Portions Copyrighted 2008 Sun Microsystems, Inc.
     <volume>
         <type>javadoc</type>
     </volume>
-    <volume>
+    <properties>
         <!-- please check with mkleint@netbeans.org before/after updating this or "classpath" section -->
-        <type>maven-pom</type>
-        <resource>http://repo1.maven.org/maven2/org/springframework/spring/2.5.6.SEC03/spring-2.5.6.SEC03.pom</resource>
-    </volume>
+        <property>
+            <name>maven-dependencies</name>
+            <value>org.springframework:spring:2.5.6.SEC03:jar</value>
+        </property>
+    </properties>
 </library>

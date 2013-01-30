@@ -94,6 +94,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 import static org.netbeans.modules.java.hints.errors.CreateElementUtilities.*;
+import org.netbeans.modules.java.hints.errors.Utilities.MethodArguments;
 
 /**
  *
@@ -373,7 +374,7 @@ public final class CreateElement implements ErrorRule<Void> {
 //                FileObject targetFile = SourceUtils.getFile(target, info.getClasspathInfo());
                 FileObject targetFile = SourceUtils.getFile(ElementHandle.create(target), info.getClasspathInfo());
                 if (targetFile != null) {
-                    result.add(new CreateMethodFix(info, simpleName, modifiers, (TypeElement) target, type, types, Collections.<String>emptyList(), targetFile));
+                    result.add(new CreateMethodFix(info, simpleName, modifiers, (TypeElement) target, type, types, Collections.<String>emptyList(), Collections.<TypeMirror>emptyList(), Collections.<String>emptyList(), targetFile));
                 }
 
                 return result;
@@ -381,10 +382,12 @@ public final class CreateElement implements ErrorRule<Void> {
                 FileObject targetFile = SourceUtils.getFile(ElementHandle.create(target), info.getClasspathInfo());
                 if (targetFile != null) {
                     if (target.getKind() == ElementKind.ENUM) {
+                        if (source != null) { //TODO: maybe create a constant? - but the test below seems very suspicious:
                         if (source.equals(target)) {
                             result.add(new CreateFieldFix(info, simpleName, modifiers, (TypeElement) target, type, targetFile));
                         } else {
                             result.add(new CreateEnumConstant(info, simpleName, modifiers, (TypeElement) target, type, targetFile));
+                        }
                         }
                     } else {
                         if (firstMethod != null && info.getTrees().getElement(firstMethod).getKind() == ElementKind.CONSTRUCTOR && ErrorFixesFakeHint.isCreateFinalFieldsForCtor()) {
@@ -416,21 +419,20 @@ public final class CreateElement implements ErrorRule<Void> {
     }
 
     private static List<Fix> prepareCreateMethodFix(CompilationInfo info, TreePath invocation, Set<Modifier> modifiers, TypeElement target, String simpleName, List<? extends ExpressionTree> arguments, List<? extends TypeMirror> returnTypes) {
-        //create method:
-        Pair<List<? extends TypeMirror>, List<String>> formalArguments = Utilities.resolveArguments(info, invocation, arguments, target);
-
         //return type:
         //XXX: should reasonably consider all the found type candidates, not only the one:
         TypeMirror returnType = returnTypes != null ? Utilities.resolveCapturedType(info, returnTypes.get(0)) : null;
 
         //currently, we cannot handle error types, TYPEVARs and WILDCARDs:
-        if (formalArguments == null || returnType != null && Utilities.containsErrorsRecursively(returnType)) {
+        if (returnType != null && Utilities.containsErrorsRecursively(returnType)) {
             return Collections.<Fix>emptyList();
         }
+        
+        //create method:
+        MethodArguments formalArguments = Utilities.resolveArguments(info, invocation, arguments, target, returnType);
 
-        Collection<TypeVariable> typeVars = Utilities.containedTypevarsRecursively(returnType);
-
-        if (!Utilities.allTypeVarsAccessible(typeVars, target)) {
+        //currently, we cannot handle error types, TYPEVARs and WILDCARDs:
+        if (formalArguments == null) {
             return Collections.<Fix>emptyList();
         }
 
@@ -442,7 +444,7 @@ public final class CreateElement implements ErrorRule<Void> {
         if (targetFile == null)
             return Collections.<Fix>emptyList();
 
-        return Collections.<Fix>singletonList(new CreateMethodFix(info, simpleName, modifiers, target, returnType, formalArguments.getA(), formalArguments.getB(), targetFile));
+        return Collections.<Fix>singletonList(new CreateMethodFix(info, simpleName, modifiers, target, returnType, formalArguments.parameterTypes, formalArguments.parameterNames, formalArguments.typeParameterTypes, formalArguments.typeParameterNames, targetFile));
     }
 
     private static List<Fix> prepareCreateOuterClassFix(CompilationInfo info, TreePath invocation, Element source, Set<Modifier> modifiers, String simpleName, List<? extends ExpressionTree> realArguments, TypeMirror superType, ElementKind kind, int numTypeParameters) {

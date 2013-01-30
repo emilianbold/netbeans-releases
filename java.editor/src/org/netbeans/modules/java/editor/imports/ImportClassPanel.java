@@ -59,6 +59,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.swing.DefaultListCellRenderer;
@@ -68,6 +70,7 @@ import javax.swing.JList;
 import javax.swing.KeyStroke;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorRegistry;
+import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.JavaSource.Phase;
@@ -256,7 +259,7 @@ public class ImportClassPanel extends javax.swing.JPanel {
         if ( packageImport && !useFqn ) {
             int index = name.lastIndexOf('.'); // NOI18N 
             if ( index != -1 ) {
-                name = name.substring(0, index) + ".*"; // NOI18N        
+                name = name.substring(0, index);        
             }
         }
         
@@ -272,17 +275,14 @@ public class ImportClassPanel extends javax.swing.JPanel {
                     wc.toPhase(Phase.RESOLVED);
                     if (cancel != null && cancel.get())
                         return ;
-                    TreeMaker make = wc.getTreeMaker();
                     CompilationUnitTree cut = wc.getCompilationUnit();
-                    // make a copy of list
-                    List<ImportTree> imports = new ArrayList<ImportTree>(cut.getImports());
                     
                     if ( useFqn && replaceSimpleName(fqn, wc) ) {                        
                         return;
                     }
                     
                     // Test whether already imported                    
-                    if ( isImported(fqn, imports)) {
+                    if ( isImported(fqn, cut.getImports())) {
                         Utilities.setStatusText(EditorRegistry.lastFocusedComponent(), 
                         NbBundle.getMessage(
                                 ImportClassPanel.class,
@@ -291,35 +291,17 @@ public class ImportClassPanel extends javax.swing.JPanel {
                         return;
                     }
                     
-                                     
-                    // prepare the import tree to add
-                    ImportTree njuImport = make.Import(make.Identifier(fqn), false);
-                    for (ListIterator<ImportTree> it = imports.listIterator(); it.hasNext(); ) {
-                        ImportTree item = it.next();
-                        if (item.isStatic() || item.getQualifiedIdentifier().toString().compareTo(fqn) > 0) {
-                            it.set(njuImport);
-                            it.add(item);
-                            break;
-                        }
+                    Element e = packageImport ? wc.getElements().getPackageElement(fqn) : wc.getElements().getTypeElement(fqn);
+                    if (e == null) {
+                        Utilities.setStatusText(EditorRegistry.lastFocusedComponent(), 
+                        NbBundle.getMessage(
+                                ImportClassPanel.class,
+                                packageImport ? "MSG_CannotResolvePackage" : "MSG_CannotResolveClass", 
+                                fqn), StatusDisplayer.IMPORTANCE_ERROR_HIGHLIGHT);
+                        return;
                     }
-                    CompilationUnitTree cutCopy;
-                    // import was inserted somewhere to inside the list, prepare
-                    // copy of compilation unit.
-                    if (imports.contains(njuImport)) {
-                        cutCopy = make.CompilationUnit(
-                            cut.getPackageAnnotations(),
-                            cut.getPackageName(),
-                            imports,
-                            cut.getTypeDecls(),
-                            cut.getSourceFile()
-                        );
-                    } else {
-                        // import section was not modified by for loop,
-                        // either it means the section is empty or
-                        // the import has to be added to the end of the section.
-                        // prepare copy of compilation unit tree.
-                        cutCopy = make.addCompUnitImport(cut, njuImport);
-                    }
+                    
+                    CompilationUnitTree cutCopy = GeneratorUtilities.get(wc).addImports(cut, Collections.singleton(e));
                     wc.rewrite(cut, cutCopy);
                 }
                 
@@ -343,7 +325,7 @@ public class ImportClassPanel extends javax.swing.JPanel {
                     return false;
                 }
                 
-                private boolean isImported(String fqn, List<ImportTree> imports) {
+                private boolean isImported(String fqn, List<? extends ImportTree> imports) {
                     for (ImportTree i : imports) {
                         if( fqn.equals( i.getQualifiedIdentifier().toString() )) {
                             return true;

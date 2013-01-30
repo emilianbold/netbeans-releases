@@ -44,6 +44,7 @@
 package org.netbeans.performance.j2se.setup;
 
 import java.io.IOException;
+import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.modules.performance.utilities.CommonUtilities;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase2;
 import org.openide.util.Exceptions;
@@ -85,16 +86,12 @@ public class J2SESetup extends PerformanceTestCase2 {
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
-    }
-
-   /* No longer active by default for J2SE projects
-    public void testCloseTaskWindow() {
-        CommonUtilities.closeTaskWindow();
-    } */
-
+    }   
 
     public void testCloseMemoryToolbar() {
         CommonUtilities.closeMemoryToolbar();
+        closeAllModal();
+        MainWindowOperator.getDefault().maximize();
     }
 
 }

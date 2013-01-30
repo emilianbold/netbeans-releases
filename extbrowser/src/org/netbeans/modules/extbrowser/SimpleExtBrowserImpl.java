@@ -51,6 +51,7 @@ import java.net.URL;
 import java.util.logging.Level;
 
 import java.util.logging.Logger;
+import org.netbeans.modules.extbrowser.plugins.ExternalBrowserPlugin;
 import org.openide.NotifyDescriptor;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -72,7 +73,7 @@ public class SimpleExtBrowserImpl extends ExtBrowserImpl {
     /** Given URL is displayed. 
       *  Configured process is started to satisfy this request. 
       */
-    public void setURL(URL url) {
+    protected void loadURLInBrowser(URL url) {
         if (url == null) {
             return;
         }
@@ -85,7 +86,6 @@ public class SimpleExtBrowserImpl extends ExtBrowserImpl {
             if (np != null) {
                 np.exec(new SimpleExtBrowser.BrowserFormat((uri == null)? "": uri.toASCIIString())); // NOI18N
             }
-            this.url = url;
         } catch (URISyntaxException ex) {
             Exceptions.printStackTrace(ex);
         } catch (IOException ex) {

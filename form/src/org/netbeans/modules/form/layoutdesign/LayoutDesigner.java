@@ -137,6 +137,14 @@ public final class LayoutDesigner implements LayoutConstants {
             if (type != LayoutEvent.INTERVAL_SIZE_CHANGED
                     && type != LayoutEvent.INTERVAL_PADDING_TYPE_CHANGED) {
                 selectedGap = null;
+                if (type == LayoutEvent.COMPONENT_UNREGISTERED && selectedComponents != null) {
+                    for (Iterator<LayoutComponent> it = selectedComponents.iterator(); it.hasNext(); ) {
+                        LayoutComponent comp = it.next();
+                        if (layoutModel.getLayoutComponent(comp.getId()) == null) {
+                            it.remove();
+                        }
+                    }
+                }
             }
         }
     }
@@ -1353,7 +1361,7 @@ public final class LayoutDesigner implements LayoutConstants {
      * @return true if repaint is needed (selection changed)
      */
     public boolean selectInside(Point p) {
-        if (!paintGaps) {
+        if (!paintGaps || !visualStateUpToDate) {
             return false;
         }
 
@@ -3400,6 +3408,8 @@ public final class LayoutDesigner implements LayoutConstants {
                 }
                 operations.resizeInterval(li, NOT_EXPLICITLY_DEFINED);
             }
+        } else {
+            preferredSizeChanged = true;
         }
         updateDataAfterBuild = true;
     }

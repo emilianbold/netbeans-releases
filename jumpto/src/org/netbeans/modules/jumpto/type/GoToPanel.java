@@ -30,6 +30,9 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
+ * markiewb@netbeans.org
+ *
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -56,6 +59,7 @@ import java.util.LinkedList;
 import java.util.List;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
+import javax.swing.ButtonModel;
 import javax.swing.Icon;
 import javax.swing.InputMap;
 import javax.swing.JLabel;
@@ -71,6 +75,8 @@ import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.jumpto.SearchHistory;
 import org.netbeans.spi.jumpto.type.TypeDescriptor;
 import org.openide.filesystems.FileObject;
@@ -131,7 +137,10 @@ public class GoToPanel extends javax.swing.JPanel {
         
         // matchesList.setBackground( bgColorBrighter );
         // matchesScrollPane1.setBackground( bgColorBrighter );
-        matchesList.setCellRenderer( contentProvider.getListCellRenderer( matchesList ) );
+        matchesList.setCellRenderer( contentProvider.getListCellRenderer(
+                matchesList,
+                nameField.getDocument(),
+                caseSensitive.getModel()));
         contentProvider.setListModel( this, null );
         
         PatternListener pl = new PatternListener( this );
@@ -569,8 +578,12 @@ public class GoToPanel extends javax.swing.JPanel {
              
         
     public static interface ContentProvider {
-        
-        public ListCellRenderer getListCellRenderer( JList list );
+
+        @NonNull
+        public ListCellRenderer getListCellRenderer(
+                @NonNull JList list,
+                @NonNull Document doc,
+                @NonNull ButtonModel caseSensitive);
         
         public void setListModel( GoToPanel panel, String text );
         

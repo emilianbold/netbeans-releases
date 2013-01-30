@@ -50,6 +50,7 @@ import javax.swing.text.Document;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.editor.mimelookup.MimeRegistrations;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.spellchecker.spi.language.TokenList;
 import org.netbeans.modules.spellchecker.spi.language.TokenListProvider;
@@ -78,11 +79,12 @@ public class CndTokenListProvider implements TokenListProvider {
     public CndTokenListProvider() {
     }
 
+    @Override
     public TokenList findTokenList(Document doc) {
 //        LOG.log(Level.INFO, "creating list for {0}", doc);
         List<TokenList> lists = new LinkedList<TokenList>();
         if (doc instanceof BaseDocument) {
-            String mime = (String) doc.getProperty("mimeType");//NOI18N
+            String mime = DocumentUtilities.getMimeType(doc);
             if (MIMENames.CND_TEXT_MIME_TYPES.contains(mime)) {
 //                LOG.log(Level.INFO, "creating source token list for {0}", mime);
                 lists.add(new CndTokenList((BaseDocument) doc));

@@ -46,6 +46,7 @@ import java.util.HashSet;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils;
 import org.netbeans.modules.refactoring.java.ui.JavaRefactoringGlobalAction;
+import org.netbeans.modules.refactoring.java.ui.RefactoringActionsProvider;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionRegistration;
@@ -81,23 +82,7 @@ public final class CallHierarchyAction extends JavaRefactoringGlobalAction {
 
     @Override
     protected boolean enable(Lookup context) {
-        Collection<? extends Node> nodes = new HashSet<Node>(context.lookupAll(Node.class));
-        if (nodes.size() != 1) {
-            return false;
-        }
-        Node n = nodes.iterator().next();
-        if (n.getLookup().lookup(TreePathHandle.class) != null) {
-            return true;
-        }
-        DataObject dob = n.getCookie(DataObject.class);
-        if (dob == null) {
-            return false;
-        }
-        FileObject fo = dob.getPrimaryFile();
-        if (JavaRefactoringUtils.isRefactorable(fo)) {
-            return true;
-        }
-        return false;
+        return new RefactoringActionsProvider().canFindUsages(context);
     }
 
     @Override

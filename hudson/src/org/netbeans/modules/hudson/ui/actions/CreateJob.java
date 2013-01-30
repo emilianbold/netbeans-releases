@@ -54,6 +54,7 @@ import java.util.Collection;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.Action;
 import javax.swing.JButton;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
@@ -110,6 +111,14 @@ public class CreateJob implements ActionListener {
         "CreateJob.create=Create"
     })
     @Override public void actionPerformed(ActionEvent e) {
+        if (instance instanceof HudsonInstanceImpl) {
+            Action custom = ((HudsonInstanceImpl) instance)
+                    .getPersistence().getNewJobAction();
+            if (custom != null) {
+                custom.actionPerformed(e);
+                return;
+            }
+        }
         final CreateJobPanel panel = new CreateJobPanel();
         final DialogDescriptor dd = new DialogDescriptor(panel, CreateJob_title());
         final AtomicReference<Dialog> dialog = new AtomicReference<Dialog>();
@@ -173,6 +182,8 @@ public class CreateJob implements ActionListener {
             // stats
             UsageLogging.logUI(NbBundle.getBundle(CreateJob.class), "UI_HUDSON_JOB_CREATED", project.getClass().getName()); // NOI18N
             UsageLogging.logUsage(CreateJob.class, "USG_HUDSON_JOB_CREATED", project.getClass().getName()); // NOI18N
+        } catch (ProjectHudsonJobCreator.SilentIOException x) {
+            Logger.getLogger(CreateJob.class.getName()).log(Level.INFO, null, x);
         } catch (IOException x) {
             Exceptions.attachLocalizedMessage(x, CreateJob_failure());
             Logger.getLogger(CreateJob.class.getName()).log(Level.WARNING, null, x);

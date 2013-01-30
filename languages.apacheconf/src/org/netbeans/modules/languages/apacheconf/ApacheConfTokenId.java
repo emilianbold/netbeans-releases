@@ -61,7 +61,7 @@ public enum ApacheConfTokenId implements TokenId {
     AC_TAG("tag"), //NOI18N
     AC_TAG_PARAM("tagparam"), //NOI18N
     AC_DIRECTIVE("directive"), //NOI18N
-    AC_DIRECTIVE_PARAM("directiveparam"), //NOI18N
+    AC_DIRECTIVE_PARAM_TOKEN("directiveparam"), //NOI18N
     AC_WHITESPACE("whitespace"); //NOI18N
 
     private final String name;

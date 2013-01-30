@@ -51,11 +51,15 @@ import java.awt.Toolkit;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyVetoException;
 import java.util.Collection;
+import java.util.Map;
+import java.util.WeakHashMap;
 import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 import javax.swing.KeyStroke;
 import javax.swing.event.ChangeEvent;
+import javax.swing.text.Document;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.core.Language;
 import org.netbeans.modules.csl.core.LanguageRegistry;
 import org.netbeans.modules.csl.api.StructureItem;
@@ -65,11 +69,14 @@ import org.netbeans.modules.csl.navigation.actions.FilterSubmenuAction;
 import org.netbeans.modules.csl.navigation.actions.SortActionSupport.SortByNameAction;
 import org.netbeans.modules.csl.navigation.actions.SortActionSupport.SortBySourceAction;
 import org.netbeans.modules.csl.navigation.base.FiltersManager;
+import org.openide.explorer.ExplorerUtils;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.netbeans.modules.csl.navigation.base.TapPanel;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.parsing.spi.Scheduler;
+import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.filesystems.FileObject;
@@ -96,14 +103,14 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
     private MyBeanTreeView elementView;
     private TapPanel filtersPanel;
     private JLabel filtersLbl;
-    private Lookup lookup = null; // XXX may need better lookup
+    private Lookup lookup;
     private ClassMemberFilters filters;
     
     private Action[] actions; // General actions for the panel
     
     /** Creates new form ClassMemberPanelUi */
     public ClassMemberPanelUI(final Language language) {
-                      
+        
         initComponents();
         
         // Tree view of the elements
@@ -166,6 +173,8 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
             }
         });
         manager.setRootContext(ElementNode.getWaitNode());
+        
+        lookup = ExplorerUtils.createLookup(manager, getActionMap());       
     }
 
     @Override
@@ -182,7 +191,26 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
     
     public org.netbeans.modules.csl.navigation.ElementScanningTask getTask() {
         
-        return new ElementScanningTask(this);
+        return new ElementScanningTask() {
+            public @Override int getPriority() {
+                return 20000;
+            }
+            public @Override Class<? extends Scheduler> getSchedulerClass() {
+                return CSLNavigatorScheduler.class;
+            }
+            @Override public void run(ParserResult result, SchedulerEvent event) {
+                resume();
+                
+                StructureItem root = computeStructureRoot(result.getSnapshot().getSource());
+                FileObject file = result.getSnapshot().getSource().getFileObject();
+
+                if (root != null && file != null) {
+                    Document doc = result.getSnapshot().getSource().getDocument(false);
+                    BaseDocument bd = doc instanceof BaseDocument ? (BaseDocument)doc : null;
+                    refresh(root, file, bd);
+                }
+            }
+        };
         
     }
     
@@ -195,28 +223,60 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
             } 
         });
     }
+    
+    /**
+     * For a FileObject/source, holds a position/offset of the caret; the position should be selected
+     * after parse.
+     */
+    private Map<FileObject, Integer> positionRequests = new WeakHashMap<FileObject, Integer>();
 
     public void selectElementNode(final ParserResult info, final int offset) {
+        final ElementNode root = getRootNode();
+        if ( root == null ) {
+            return;
+        }
+        FileObject rootFo = root.getFileObject();
+        FileObject sourceFo = info.getSnapshot().getSource().getFileObject();
+        if (sourceFo != null && !sourceFo.equals(rootFo)) {
+            // switching files; refresh should be fired by periodic scheduler
+            synchronized (this) {
+                positionRequests.put(sourceFo, offset);
+            }
+        } else {
+            doSelectNodes(info, null, offset);
+        }
+    }
+    
+    private void doSelectNodes(final ParserResult info, final BaseDocument bd, final int offset) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                ElementNode root = getRootNode();
-                if ( root == null ) {
-                    return;
-                }
-                final ElementNode node = root.getMimeRootNodeForOffset(info, offset);
-                Node[] selectedNodes = manager.getSelectedNodes();
-                if (!(selectedNodes != null && selectedNodes.length == 1 && selectedNodes[0] == node)) {
-                    try {
-                        manager.setSelectedNodes(new Node[]{ node == null ? getRootNode() : node });
-                    } catch (PropertyVetoException propertyVetoException) {
-                        Exceptions.printStackTrace(propertyVetoException);
-                    }
-                }
+                doSelectNodes0(info, bd, offset);
             }
         });
     }
+    
+    private void doSelectNodes0(ParserResult info, BaseDocument bd, int offset) {
+        ElementNode node;
+        final ElementNode rootNode = getRootNode();
+        if (info != null && rootNode != null) {
+            node = rootNode.getMimeRootNodeForOffset(info, offset);
+        } else if (bd != null && rootNode != null) {
+            node = rootNode.getMimeRootNodeForOffset(bd, offset);
+        } else {
+            return;
+        }
+        Node[] selectedNodes = manager.getSelectedNodes();
+        if (!(selectedNodes != null && selectedNodes.length == 1 && selectedNodes[0] == node)) {
+            try {
+                manager.setSelectedNodes(new Node[]{ node == null ? getRootNode() : node });
+            } catch (PropertyVetoException propertyVetoException) {
+                Exceptions.printStackTrace(propertyVetoException);
+            }
+        }
+    }
 
-    public void refresh( final StructureItem description, final FileObject fileObject) {
+    public void refresh( final StructureItem description, final FileObject fileObject, 
+            final BaseDocument bd) {
         final ElementNode rootNode = getRootNode();
         
         if ( rootNode != null && rootNode.getFileObject().equals( fileObject) ) {
@@ -268,6 +328,14 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
                     long endTime = System.currentTimeMillis();
                     Logger.getLogger("TIMER").log(Level.FINE, "Navigator Initialization",
                             new Object[] {fileObject, endTime - startTime});
+
+                    final Integer offset;
+                    synchronized (ClassMemberPanelUI.this) {
+                        offset = positionRequests.remove(fileObject);    
+                    }
+                    if (offset != null) {
+                        doSelectNodes(null, bd, offset);
+                    }
                 }
 
             };

@@ -64,6 +64,7 @@ import org.netbeans.modules.debugger.jpda.jdi.event.ClassPrepareEventWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.request.ClassPrepareRequestWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.request.ClassUnloadRequestWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.request.EventRequestManagerWrapper;
+import org.netbeans.spi.debugger.jpda.BreakpointsClassFilter.ClassNames;
 
 /**
 * Implementation of breakpoint on method.
@@ -87,9 +88,16 @@ public class ClassBreakpointImpl extends ClassBasedBreakpoint {
     
     @Override
     protected void setRequests () {
+        ClassNames classNames = getClassFilter().filterClassNames(
+                new ClassNames(
+                    breakpoint.getClassFilters(),
+                    breakpoint.getClassExclusionFilters()),
+                breakpoint);
+        String[] names = classNames.getClassNames();
+        String[] excludedNames = classNames.getExcludedClassNames();
         setClassRequests (
-            breakpoint.getClassFilters (), 
-            breakpoint.getClassExclusionFilters (), 
+            names,
+            excludedNames,
             breakpoint.getBreakpointType (),
             false
         );

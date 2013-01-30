@@ -51,6 +51,7 @@ import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
+import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmQualifiedNamedElement;
 import org.netbeans.modules.cnd.api.model.CsmScope;
@@ -60,6 +61,8 @@ import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.CsmVariableDefinition;
 import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
 import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
+import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
+import org.netbeans.modules.cnd.modelimpl.csm.TypeFactory.TypeBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstRenderer;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
 import org.netbeans.modules.cnd.modelimpl.csm.core.CsmIdentifiable;
@@ -67,6 +70,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.Disposable;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
+import org.netbeans.modules.cnd.modelimpl.csm.deep.CompoundStatementImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.ExpressionBase;
 import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
@@ -110,6 +114,16 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
         _setScope(scope);
     }
 
+    protected VariableImpl(CsmType type, CharSequence name, CsmScope scope,  boolean _static, boolean _extern, ExpressionBase initExpr, CsmFile file, int startOffset, int endOffset) {
+        super(file, startOffset, endOffset);
+        this.initExpr = initExpr;
+        this._static = _static;
+        this._extern = _extern;
+        this.name = name;
+        this.type = type;
+        _setScope(scope);
+    }
+    
     public static<T> VariableImpl<T> create(AST ast, CsmFile file, CsmType type, NameHolder name, CsmScope scope,  boolean _static, boolean _extern, boolean global) {
         VariableImpl<T> variableImpl = new VariableImpl<T>(ast, file, type, name, scope, _static, _extern);
         postObjectCreateRegistration(global, variableImpl);
@@ -303,7 +317,7 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
             }
         }
     }
-
+    
     /** Gets this variable initial value 
      * @return 
      */
@@ -454,6 +468,25 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
         return getDisplayText();
     }
 
+    
+    public static class VariableBuilder extends SimpleDeclarationBuilder implements CsmObjectBuilder {
+        
+        @Override
+        public VariableImpl create() {
+            VariableImpl var = null;
+            CsmScope s = getScope();
+            if (var == null && s != null && getName() != null && getScope() != null) {
+                var = new VariableImpl(getType(), getName(), getScope(), isStatic(), isExtern(), null, getFile(), getStartOffset(), getEndOffset());
+                
+                postObjectCreateRegistration(isGlobal(), var);
+                
+                addDeclaration(var);
+            }
+            return var;
+        }
+    }       
+    
+    
     ////////////////////////////////////////////////////////////////////////////
     // impl of SelfPersistent
     @Override

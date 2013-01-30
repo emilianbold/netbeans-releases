@@ -53,6 +53,7 @@ import org.eclipse.jgit.diff.DiffFormatter;
 import org.eclipse.jgit.diff.RenameDetector;
 import org.eclipse.jgit.dircache.DirCacheIterator;
 import org.eclipse.jgit.lib.Constants;
+import org.eclipse.jgit.lib.CoreConfig;
 import org.eclipse.jgit.lib.NullProgressMonitor;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.ObjectReader;
@@ -63,12 +64,14 @@ import org.eclipse.jgit.treewalk.CanonicalTreeParser;
 import org.eclipse.jgit.treewalk.EmptyTreeIterator;
 import org.eclipse.jgit.treewalk.FileTreeIterator;
 import org.eclipse.jgit.treewalk.WorkingTreeIterator;
+import org.eclipse.jgit.treewalk.WorkingTreeOptions;
 import org.eclipse.jgit.treewalk.filter.PathFilter;
 import org.eclipse.jgit.treewalk.filter.PathFilterGroup;
 import org.netbeans.libs.git.GitClient.DiffMode;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.jgit.GitClassFactory;
 import org.netbeans.libs.git.jgit.Utils;
+import org.netbeans.libs.git.jgit.utils.AutoCRLFComparator;
 import org.netbeans.libs.git.progress.FileListener;
 import org.netbeans.libs.git.progress.ProgressMonitor;
 
@@ -103,6 +106,10 @@ public class ExportDiffCommand extends GitCommand {
             Collection<PathFilter> pathFilters = Utils.getPathFilters(repository.getWorkTree(), roots);
             if (!pathFilters.isEmpty()) {
                 formatter.setPathFilter(PathFilterGroup.create(pathFilters));
+            }
+            if (repository.getConfig().get(WorkingTreeOptions.KEY).getAutoCRLF() != CoreConfig.AutoCRLF.FALSE) {
+                // work-around for autocrlf
+                formatter.setDiffComparator(new AutoCRLFComparator());
             }
             AbstractTreeIterator firstTree;
             AbstractTreeIterator secondTree;

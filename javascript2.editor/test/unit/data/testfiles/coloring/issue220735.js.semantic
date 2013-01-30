@@ -1,0 +1,16 @@
+|>GLOBAL:$scope<|.|>METHOD:init<| = function() {
+    var session = |>GLOBAL:window<|.SYNERGY.util.getCookie("user");
+    if (typeof session !== "undefined") {
+        session = |>GLOBAL:JSON<|.parse(session);
+        try {
+            var diff = new Date().getTime() - parseInt(session.created);
+            if (diff < |>GLOBAL:window<|.SYNERGY.|>FIELD:defaultCookiesExpiration<| * 24 * 60 * 60 * 1000) {
+                |>GLOBAL:window<|.SYNERGY.session.hideLoginForm();
+                |>GLOBAL:window<|.SYNERGY.session.showUserMenu();
+            } else {
+                |>GLOBAL:window<|.SYNERGY.util.deleteCookie("user");
+            }
+        } catch (e) {
+        }
+    }
+}

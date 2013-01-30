@@ -70,4 +70,4 @@ exclude **/itext-2.0.5.jar:
 exclude **/JGo5.1.jar:
 exclude **/Tidy.jar:
 exclude **/ant.jar:
-
+exclude **/locale/*_*.jar:

@@ -66,6 +66,7 @@ public class MeasureJ2SEMenusTest {
         .addTest(FormInspectorNodePopupMenuTest.class)
         .addTest(ProjectsViewPopupMenuTest.class)
         .addTest(ProjectsViewSubMenusTest.class)
+        .addTest(RuntimeViewPopupMenuTest.class)
         .addTest(SourceEditorPopupMenuTest.class)
         .addTest(ToolsMenuTest.class)
         .enableModules(".*").clusters(".*").reuseUserDir(true)));

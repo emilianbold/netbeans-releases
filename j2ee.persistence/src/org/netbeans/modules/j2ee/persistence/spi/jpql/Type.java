@@ -41,12 +41,10 @@
  */
 package org.netbeans.modules.j2ee.persistence.spi.jpql;
 
-import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.concurrent.Callable;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -58,9 +56,7 @@ import org.eclipse.persistence.jpa.jpql.spi.IConstructor;
 import org.eclipse.persistence.jpa.jpql.spi.IType;
 import org.eclipse.persistence.jpa.jpql.spi.ITypeDeclaration;
 import org.eclipse.persistence.jpa.jpql.spi.ITypeRepository;
-import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.PersistentObject;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -129,7 +125,7 @@ public class Type implements IType{
     
     @Override
     public boolean equals(Object itype) {
-        return (this == itype) || equals((IType) itype);
+        return (this == itype) || ((itype instanceof IType) && equals((IType) itype));
     }
     
     @Override
@@ -173,8 +169,12 @@ public class Type implements IType{
         if(typeName == null){
             Element elt = po != null ? getTypeElement(po) : element;
             if(elt != null){
-                if(elt instanceof TypeElement) typeName = ((TypeElement) elt).getQualifiedName().toString();
-                else typeName = elt.asType().toString();
+                if(elt instanceof TypeElement) {
+                    typeName = ((TypeElement) elt).getQualifiedName().toString();
+                }
+                else {
+                    typeName = elt.asType().toString();
+                }
             } else if (type != null) {
                 typeName = type.getName();
             }
@@ -198,7 +198,9 @@ public class Type implements IType{
 
     @Override
     public boolean isAssignableTo(IType itype) {
-        if(this == itype) return true;
+        if(this == itype) {
+            return true;
+        }
         Type tp = (Type) itype;
         Element elt1 = po != null ? getTypeElement(po) : element;
         Element elt2 = tp.po != null ? getTypeElement(tp.po) : tp.element;
@@ -232,7 +234,9 @@ public class Type implements IType{
     }
     
     private void collectConstructors(Collection<IConstructor> constructors, Element element){
-        if(element == null || element.getKind()!=ElementKind.CLASS)return;
+        if(element == null || element.getKind()!=ElementKind.CLASS) {
+            return;
+        }
         TypeElement el = (TypeElement) element;
         for(Element sub: el.getEnclosedElements()){
             if(sub.getKind() == ElementKind.CONSTRUCTOR){
@@ -268,8 +272,12 @@ public class Type implements IType{
                 if (supMirror.getKind() == TypeKind.DECLARED) {
                     DeclaredType superclassDeclaredType = (DeclaredType)supMirror;
                     Element superclassElement = superclassDeclaredType.asElement();  
-                    if(superclassElement instanceof TypeElement)tmpEl = (TypeElement) superclassElement;
-                    else tmpEl = null;
+                    if(superclassElement instanceof TypeElement) {
+                        tmpEl = (TypeElement) superclassElement;
+                    }
+                    else {
+                        tmpEl = null;
+                    }
                 } else {
                     tmpEl = null;
                 }
@@ -281,7 +289,9 @@ public class Type implements IType{
                     Element intElement = intDeclType.asElement();  
                     if(intElement instanceof TypeElement){
                         tmpEl = (TypeElement) intElement;
-                        if(haveInHierarchy(tmpEl, name))return true;
+                        if(haveInHierarchy(tmpEl, name)) {
+                            return true;
+                        }
                     }
             }
         }

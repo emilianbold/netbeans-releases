@@ -429,7 +429,6 @@ public class EjbJarProject implements Project, FileChangeListener {
                 // FIXME this is just fallback for code searching for the old SPI in lookup
                 // remove in next release
                 new EjbJarImpl(apiEjbJar),
-                new EjbJarActionProvider(this, updateHelper),
                 new EjbJarLogicalViewProvider(this, updateHelper, evaluator(), spp, refHelper, ejbModule),
                 new CustomizerProviderImpl( this, updateHelper, evaluator(), refHelper ),
                 LookupMergerSupport.createClassPathProviderMerger(cpProvider),
@@ -464,13 +463,14 @@ public class EjbJarProject implements Project, FileChangeListener {
                 UILookupMergerSupport.createPrivilegedTemplatesMerger(),
                 UILookupMergerSupport.createRecommendedTemplatesMerger(),
                 LookupProviderSupport.createSourcesMerger(),
+                LookupProviderSupport.createActionProviderMerger(),
                 WhiteListQueryMergerSupport.createWhiteListQueryMerger(),
                 QuerySupport.createTemplateAttributesProvider(helper, encodingQuery),
                 ExtraSourceJavadocSupport.createExtraSourceQueryImplementation(this, helper, eval),
                 LookupMergerSupport.createSFBLookupMerger(),
                 ExtraSourceJavadocSupport.createExtraJavadocQueryImplementation(this, helper, eval),
                 LookupMergerSupport.createJFBLookupMerger(),
-                QuerySupport.createBinaryForSourceQueryImplementation(sourceRoots, testRoots, helper, eval),
+                QuerySupport.createBinaryForSourceQueryImplementation(getSourceRoots(), getTestSourceRoots(), helper, eval),
                 // TODO: AB: maybe add "this" to the lookup. You should not cast a Project to EjbJarProject, but use the lookup instead.
             });
         lookup = base;
@@ -774,18 +774,23 @@ public class EjbJarProject implements Project, FileChangeListener {
                 
                 // Register copy on save support
                 css.initialize();
-                
-                if (libFolderName != null && helper.resolveFile (libFolderName).isDirectory ()) {
-                    libFolder = helper.resolveFileObject(libFolderName);
-                        FileObject[] children = libFolder.getChildren ();
-                        List<URL> libs = new LinkedList<URL>();
-                        for (int i = 0; i < children.length; i++) {
-                            if (FileUtil.isArchiveFile(children[i])) {
-                                libs.add(FileUtil.getArchiveRoot(children[i].getURL()));
-                            }
+
+                FileObject lf = null;
+                if (libFolderName != null) {
+                    lf = helper.resolveFileObject(libFolderName);
+                }
+
+                if (lf != null && lf.isFolder()) {
+                    libFolder = lf;
+                    FileObject[] children = libFolder.getChildren ();
+                    List<URL> libs = new LinkedList<URL>();
+                    for (int i = 0; i < children.length; i++) {
+                        if (FileUtil.isArchiveFile(children[i])) {
+                            libs.add(FileUtil.getArchiveRoot(children[i].toURL()));
                         }
-                        classPathModifier.addRoots(libs.toArray(new URL[libs.size()]), ProjectProperties.JAVAC_CLASSPATH);
-                        libFolder.addFileChangeListener (EjbJarProject.this);
+                    }
+                    classPathModifier.addRoots(libs.toArray(new URL[libs.size()]), ProjectProperties.JAVAC_CLASSPATH);
+                    libFolder.addFileChangeListener (EjbJarProject.this);
                 }
                 
                 // Check up on build scripts.
@@ -1279,7 +1284,6 @@ public class EjbJarProject implements Project, FileChangeListener {
                         return;
                     }
                     FileObject destFile = ensureDestinationFileExists(ejbBuildBase, path, fo.isFolder());
-                    assert destFile != null : "ejbBuildBase: " + ejbBuildBase + ", path: " + path + ", isFolder: " + fo.isFolder();
                     if (!fo.isFolder()) {
                         InputStream is = null;
                         OutputStream os = null;
@@ -1330,7 +1334,6 @@ public class EjbJarProject implements Project, FileChangeListener {
                         assert newCurrent != null : "ejbBuildBase: " + ejbBuildBase + ", path: " + path + ", isFolder: " + isFolder;
                     }
                 }
-                assert newCurrent != null : "ejbBuildBase: " + ejbBuildBase + ", path: " + path + ", isFolder: " + isFolder;
                 current = newCurrent;
             }
             assert current != null : "ejbBuildBase: " + ejbBuildBase + ", path: " + path + ", isFolder: " + isFolder;
@@ -1535,7 +1538,7 @@ public class EjbJarProject implements Project, FileChangeListener {
             if (!checked){
                 Profile version=Profile.fromPropertiesString(evaluator().getProperty(EjbJarProjectProperties.J2EE_PLATFORM));
                 isEE5 = Profile.JAVA_EE_5==version;
-                isEE6 = Profile.JAVA_EE_6_FULL==version;
+                isEE6 = Profile.JAVA_EE_6_FULL==version || Profile.JAVA_EE_7_FULL==version;
                 final Object srcType = helper.getAntProjectHelper().
                         getStandardPropertyEvaluator().getProperty(EjbJarProjectProperties.JAVA_SOURCE_BASED);
                 if ("false".equals(srcType)) {
@@ -1549,7 +1552,7 @@ public class EjbJarProject implements Project, FileChangeListener {
     // FIXME this is just fallback for code searching for the old SPI in lookup
     // remove in next release
     @SuppressWarnings("deprecation")
-    private class EjbJarImpl implements EjbJarImplementation {
+    private static class EjbJarImpl implements EjbJarImplementation {
 
         private final EjbJar apiModule;
 
@@ -1578,7 +1581,7 @@ public class EjbJarProject implements Project, FileChangeListener {
         }
     }
 
-    private class EjbJarImpl2 implements EjbJarImplementation2 {
+    private static class EjbJarImpl2 implements EjbJarImplementation2 {
 
         private final EjbJarProvider provider;
 

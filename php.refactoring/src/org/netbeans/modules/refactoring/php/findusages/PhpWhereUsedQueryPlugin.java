@@ -46,9 +46,9 @@ package org.netbeans.modules.refactoring.php.findusages;
 import java.util.Collection;
 import java.util.Set;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
-import org.netbeans.modules.refactoring.api.WhereUsedQuery;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.ProgressEvent;
+import org.netbeans.modules.refactoring.api.WhereUsedQuery;
 import org.netbeans.modules.refactoring.php.findusages.WhereUsedSupport.Results;
 import org.netbeans.modules.refactoring.spi.ProgressProviderAdapter;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
@@ -58,7 +58,7 @@ import org.openide.filesystems.FileObject;
 /**
  * @todo index all identifiers inside project not to crawl the whole project for usages
  * @todo Scan comments!
- * 
+ *
  * @author  Radek Matous
  */
 public class PhpWhereUsedQueryPlugin extends ProgressProviderAdapter implements RefactoringPlugin {
@@ -103,7 +103,7 @@ public class PhpWhereUsedQueryPlugin extends ProgressProviderAdapter implements 
         for (WhereUsedElement whereUsedElement : resultElements) {
             elementsBag.add(refactoring, whereUsedElement);
         }
-        
+
         Collection<WarningFileElement> warningElements = results.getWarningElements();
         for (WarningFileElement warningElement : warningElements) {
             elementsBag.add(refactoring, warningElement);

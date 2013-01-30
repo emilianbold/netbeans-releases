@@ -41,9 +41,8 @@
  */
 package org.netbeans.modules.css.editor.module.main;
 
-import org.netbeans.modules.css.editor.module.CssModuleSupport;
-import org.netbeans.modules.css.editor.properties.parser.GrammarResolver;
-import org.netbeans.modules.css.editor.properties.parser.PropertyModel;
+import org.netbeans.modules.css.lib.api.properties.Properties;
+import org.netbeans.modules.css.lib.api.properties.PropertyDefinition;
 
 /**
  *
@@ -69,13 +68,14 @@ public class GeneratedAndReplacedContentModuleTest extends CssModuleTestBase {
         assertPropertyDeclaration("content: counter(item, decimal) '.';");
 
         assertPropertyDeclaration("content: url(\"link\")");
+        assertPropertyDeclaration("content: \" (\" attr(href) \")\"");
     }
 
     public void testContent2() {
-        PropertyModel model = CssModuleSupport.getPropertyModel("content");
+        PropertyDefinition model = Properties.getPropertyDefinition( "content");
 
-        assertResolve(model.getGrammar(), "url(\"link\") normal");
-        assertResolve(model.getGrammar(), "url(\"link\") counter(anid, anotherid)");
+        assertResolve(model.getGrammarElement(null), "url(\"link\") normal");
+        assertResolve(model.getGrammarElement(null), "url(\"link\") counter(anid, anotherid)");
     }
 
     public void testCounter() {

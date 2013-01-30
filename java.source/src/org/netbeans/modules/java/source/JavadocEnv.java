@@ -240,7 +240,7 @@ public class JavadocEnv extends DocEnv {
     @Override
     public ClassDocImpl lookupClass(String name) {
         ClassDocImpl cls = super.lookupClass(name);
-        if (cls == null)
+        if (cls == null && name != null && !name.isEmpty())
             cls = loadClass(name);
         return cls;
     }

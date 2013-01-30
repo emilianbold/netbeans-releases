@@ -88,6 +88,9 @@ final class MainImpl extends Object {
             return;
         } else if (res != 0) {
             // Some CLIHandler refused the invocation
+            if (res == Integer.MIN_VALUE) {
+                res = 0;
+            }
             System.exit(res);
         }
 
@@ -242,6 +245,9 @@ final class MainImpl extends Object {
     public static void finishInitialization() {
         int r = CLIHandler.finishInitialization (false);
         if (r != 0) {
+            if (r == Integer.MIN_VALUE) {
+                r = 0;
+            }
             TopSecurityManager.exit(r);
         }
     }

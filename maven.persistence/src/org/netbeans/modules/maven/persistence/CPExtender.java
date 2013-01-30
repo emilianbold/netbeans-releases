@@ -133,7 +133,7 @@ public class CPExtender extends ProjectClassPathModifierImplementation {
             // then we could just copy the pieces to local repo.
             //not necessary any more. toplink will be handled by default library impl..            
             // checking source doesn't work anymore, the wizard requires the level to be 1.5 up front.
-            String source = PluginPropertyUtils.getPluginProperty(project, Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_COMPILER, Constants.SOURCE_PARAM, "compile");
+            String source = PluginPropertyUtils.getPluginProperty(project, Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_COMPILER, Constants.SOURCE_PARAM, "compile", "maven.compiler.source");
             if (source == null || source.matches("1[.][0-4]")) {
                 Utilities.performPOMModelOperations(project.getProjectDirectory().getFileObject("pom.xml"), Collections.singletonList(new ModelOperation<POMModel>() {
                     @Override public void performOperation(POMModel model) {

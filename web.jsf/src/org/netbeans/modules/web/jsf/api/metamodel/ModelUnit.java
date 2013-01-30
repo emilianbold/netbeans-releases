@@ -48,9 +48,9 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.project.Project;
@@ -302,12 +302,15 @@ public class ModelUnit {
                 // of the folder we are keeping eye on; that way we will ignore
                 // events coming for JSF configuration files from different projects
                 res = false;
-                    for (FileObject fo : ModelUnit.this.getConfigRoots()) {
+                List<FileObject> cfRoots = ModelUnit.this.getConfigRoots();
+                synchronized (cfRoots) {
+                    for (FileObject fo : cfRoots) {
                         if (FileUtil.isParentOf(fo, fe.getFile())) {
                             res = true;
                             break;
                         }
                     }
+                }
             }
             return res;
         }

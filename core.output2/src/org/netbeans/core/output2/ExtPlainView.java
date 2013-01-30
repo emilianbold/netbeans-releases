@@ -52,6 +52,8 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.text.*;
 import java.awt.*;
 import javax.swing.text.Position.Bias;
+import org.netbeans.core.output2.options.OutputOptions;
+import org.openide.windows.IOColors;
 
 /**
  * Extension to PlainView which can paint hyperlinked lines in different
@@ -70,15 +72,15 @@ class ExtPlainView extends PlainView {
     private static final boolean antialias = Boolean.getBoolean ("swing.aatext") || //NOI18N
                                              "Aqua".equals (UIManager.getLookAndFeel().getID()); // NOI18N
 
-    private static Map hintsMap = null;
+    private static Map<RenderingHints.Key, Object> hintsMap = null;
     
     @SuppressWarnings("unchecked")
-    static final Map getHints() {
+    static Map<RenderingHints.Key, Object> getHints() {
         if (hintsMap == null) {
             //Thanks to Phil Race for making this possible
             hintsMap = (Map)(Toolkit.getDefaultToolkit().getDesktopProperty("awt.font.desktophints")); //NOI18N
             if (hintsMap == null) {
-                hintsMap = new HashMap();
+                hintsMap = new HashMap<RenderingHints.Key, Object>();
                 if (antialias) {
                     hintsMap.put(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
                 }
@@ -102,7 +104,8 @@ class ExtPlainView extends PlainView {
         return SwingUtilities.isEventDispatchThread() ? SEGMENT : new Segment(); 
     }
 
-    private int drawText(Graphics g, int x, int y, int p0, int p1) throws BadLocationException {
+    private int drawText(Graphics g, int x, int y, int p0, int p1,
+            boolean selected) throws BadLocationException {
         Document doc = getDocument();
         if (doc instanceof OutputDocument) {
             Segment s = getSegment();
@@ -119,7 +122,6 @@ class ExtPlainView extends PlainView {
                 if (lineOffset + ls.getEnd() <= p0) {
                     continue;
                 }
-                g.setColor(ls.getColor());
                 s.count = Math.min(lineOffset + ls.getEnd() - p0, end - p0);
                 if (s.count == 0) {
                     return x;
@@ -127,6 +129,15 @@ class ExtPlainView extends PlainView {
 //                if (!getText(p0, Math.min(end, p1) - p0, s)) {
 //                    return x;
 //                }
+                Color bg = ls.getCustomBackground();
+                if (bg != null && !selected) {
+                    int w = Utilities.getTabbedTextWidth(
+                            s, metrics, x, this, p0);
+                    int h = metrics.getHeight();
+                    g.setColor(bg);
+                    g.fillRect(x, y - h + metrics.getDescent(), w, h);
+                }
+                g.setColor(ls.getColor());
                 int nx = Utilities.drawTabbedText(s, x, y, g, this, p0);
                 if (ls.getListener() != null) {
                     underline(g, s, x, p0, y);
@@ -143,12 +154,12 @@ class ExtPlainView extends PlainView {
 
     @Override
     protected int drawSelectedText(Graphics g, int x, int y, int p0, int p1) throws BadLocationException {
-        return drawText(g, x, y, p0, p1);
+        return drawText(g, x, y, p0, p1, true);
     }
 
     @Override
     protected int drawUnselectedText(Graphics g, int x, int y, int p0, int p1) throws BadLocationException {
-        return drawText(g, x, y, p0, p1);
+        return drawText(g, x, y, p0, p1, false);
     }
 
     /*
@@ -183,6 +194,9 @@ class ExtPlainView extends PlainView {
     }
 
     private void underline(Graphics g, Segment s, int x, int p0, int y) {
+        if (!isLinkUndeliningEnabled(this)) {
+            return;
+        }
         int textLen = Utilities.getTabbedTextWidth(s, metrics, tabBase, this, p0);
         int underlineShift = g.getFontMetrics().getDescent() - 1;
         g.drawLine(x, y + underlineShift, x + textLen, y + underlineShift);
@@ -444,4 +458,20 @@ class ExtPlainView extends PlainView {
         return pos;
     }
 
+    static boolean isLinkUndeliningEnabled(View v) {
+        Container pane = v.getContainer();
+        if (pane != null) {
+            OutputTab tab = (OutputTab) SwingUtilities.getAncestorOfClass(
+                    OutputTab.class, pane);
+            if (tab != null) {
+                OutputTab outputTab = tab;
+                OutputOptions.LinkStyle linkStyle;
+                linkStyle = outputTab.getIO().getOptions().getLinkStyle();
+                if (linkStyle == OutputOptions.LinkStyle.NONE) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
 }

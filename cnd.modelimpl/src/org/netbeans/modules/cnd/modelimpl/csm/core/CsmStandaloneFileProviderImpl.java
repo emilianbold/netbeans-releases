@@ -234,10 +234,7 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
         try {
             DataObject dao = DataObject.find(fo);
             if (dao != null) {
-                EditorCookie editorCookie = dao.getLookup().lookup(EditorCookie.class);
-                if (editorCookie != null) {
-                    return CsmUtilities.findRecentEditorPaneInEQ(editorCookie) != null;
-                }
+                return CsmUtilities.findOpenedEditor(dao) != null;
             }
         } catch (DataObjectNotFoundException ex) {
             // we don't need to report this exception;
@@ -283,11 +280,14 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
     }
 
     private void scheduleProjectRemoval(final CsmProject project) {
-        final NativeProject nativeProject = (NativeProject)project.getPlatformProject();
         if(!project.isValid()) {
             return;
         }
-        final String root = nativeProject.getProjectRoot();
+        final Object nativeProject = project.getPlatformProject();
+        if (!(nativeProject instanceof NativeProject)) {
+            return;
+        }
+        final String root = ((NativeProject)nativeProject).getProjectRoot();
         if (TRACE) {trace("schedulling removal %s", project.toString());} //NOI18N
         synchronized (lock) {
             toBeRmoved.add(root);

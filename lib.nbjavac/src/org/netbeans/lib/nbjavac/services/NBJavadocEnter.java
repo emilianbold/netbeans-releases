@@ -50,6 +50,7 @@ import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.JCDiagnostic.DiagnosticPosition;
 import com.sun.tools.javadoc.JavadocEnter;
 import com.sun.tools.javadoc.Messager;
+import org.netbeans.lib.nbjavac.services.NBTreeMaker.IndexedClassDecl;
 
 /**
  * JavadocEnter which doesn't ignore class duplicates unlike the base JavadocEnter
@@ -92,5 +93,10 @@ public class NBJavadocEnter extends JavadocEnter {
     public void visitClassDef(JCClassDecl tree) {
         cancelService.abortIfCanceled();
         super.visitClassDef(tree);
+    }
+
+    @Override
+    protected int getIndex(JCClassDecl clazz) {
+        return clazz instanceof IndexedClassDecl ? ((IndexedClassDecl) clazz).index : -1;
     }
 }

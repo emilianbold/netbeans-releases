@@ -90,14 +90,15 @@ public class NewFileIterator implements WizardDescriptor.InstantiatingIterator<W
         return new NewFileIterator (false);
     }
     
-    @TemplateRegistration(
+    /** see issue #214254
+     * @TemplateRegistration(
         folder="Other",
         position=2100,
         displayName="#folderIterator",
         iconBase="org/openide/loaders/defaultFolder.gif",
         description="templatesFolder.html",
         category="simple-files"
-    )
+    )*/
     @Messages("folderIterator=Folder")
     public static NewFileIterator folderIterator () {
         return new NewFileIterator (true);
@@ -144,6 +145,7 @@ public class NewFileIterator implements WizardDescriptor.InstantiatingIterator<W
         return res;
     }
     
+    @Override
     public Set/*<FileObject>*/ instantiate () throws IOException {
         FileObject dir = Templates.getTargetFolder( wiz );
         
@@ -156,6 +158,7 @@ public class NewFileIterator implements WizardDescriptor.InstantiatingIterator<W
         return Collections.singleton (dobj.getPrimaryFile ());
     }
     
+    @Override
     public void initialize(WizardDescriptor wiz) {
         panel = getPanel(wiz);
         this.wiz = wiz;
@@ -185,34 +188,43 @@ public class NewFileIterator implements WizardDescriptor.InstantiatingIterator<W
         }
     }
 
+    @Override
     public void uninitialize (WizardDescriptor wiz) {
         this.simpleIterator = null;
         this.wiz = null;
         panel = null;
     }
     
+    @Override
     public String name() {
         return getSimpleIterator ().name ();
     }
     
+    @Override
     public boolean hasNext() {
         return getSimpleIterator ().hasNext ();
     }
+    @Override
     public boolean hasPrevious() {
         return getSimpleIterator ().hasPrevious ();
     }
+    @Override
     public void nextPanel() {
         getSimpleIterator ().nextPanel ();
     }
+    @Override
     public void previousPanel() {
         getSimpleIterator ().previousPanel ();
     }
+    @Override
     public WizardDescriptor.Panel<WizardDescriptor> current() {
         return getSimpleIterator ().current ();
     }
+    @Override
     public final void addChangeListener(ChangeListener l) {
         getSimpleIterator ().addChangeListener (l);
     }
+    @Override
     public final void removeChangeListener(ChangeListener l) {
         getSimpleIterator ().removeChangeListener (l);
     }

@@ -44,9 +44,13 @@ package org.netbeans.modules.maven.queries;
 
 import java.io.File;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.prefs.Preferences;
+import org.codehaus.plexus.util.StringUtils;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.modules.maven.api.FileUtilities;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbPreferences;
 
@@ -59,24 +63,35 @@ class SourceJavadocByHash {
         return NbPreferences.forModule(SourceJavadocByHash.class).node(javadoc ? "attachedJavadoc" : "attachedSource");
     }
 
-    public static void register(@NonNull URL root, @NonNull File result, boolean javadoc) {
-        node(javadoc).put(root.toString(), result.getAbsolutePath());
+    public static void register(@NonNull URL root, @NonNull File[] result, boolean javadoc) {
+        StringBuilder sb = new StringBuilder();
+        for (File res : result) {
+            sb.append("||").append(res.getAbsolutePath());
+        }
+        node(javadoc).put(root.toString(), sb.substring(2));
     }
 
-    public static @CheckForNull File find(@NonNull URL root, boolean javadoc) {
+    public static @CheckForNull File[] find(@NonNull URL root, boolean javadoc) {
         String k = root.toString();
         Preferences n = node(javadoc);
         String v = n.get(k, null);
         if (v == null) {
             return null;
         }
-        File f = FileUtil.normalizeFile(new File(v));
-        if (f.isFile()) {
-            return f;
-        } else {
-            n.remove(k);
-            return null;
+        String[] split = StringUtils.split(v, "||");
+        List<File> toRet = new ArrayList<File>();
+        for (String vv : split) {
+            File f = FileUtilities.convertStringToFile(vv);
+            if (f.isFile()) {
+                toRet.add(f);
+            } else {
+                //what do we do when one of the possibly more files is gone?
+                //in most cases we are dealing with exactly one file, so keep the
+                //previous behaviour of removing it.
+                n.remove(k);
+            }
         }
+        return toRet.toArray(new File[0]);
     }
 
     private SourceJavadocByHash() {}

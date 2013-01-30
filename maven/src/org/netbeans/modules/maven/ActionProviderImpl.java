@@ -54,12 +54,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.JButton;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.SwingUtilities;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.versioning.ComparableVersion;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import static org.netbeans.modules.maven.Bundle.*;
@@ -78,8 +78,6 @@ import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
 import org.netbeans.modules.maven.execute.ui.RunGoalsPanel;
 import org.netbeans.modules.maven.operations.Operations;
 import org.netbeans.modules.maven.options.MavenSettings;
-import org.netbeans.modules.maven.problems.ProblemReporterImpl;
-import org.netbeans.modules.maven.problems.ProblemsPanel;
 import org.netbeans.modules.maven.spi.actions.AbstractMavenActionsProvider;
 import org.netbeans.modules.maven.spi.actions.ActionConvertor;
 import org.netbeans.modules.maven.spi.actions.MavenActionsProvider;
@@ -95,10 +93,12 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
+import org.openide.awt.ActionReferences;
 import org.openide.awt.ActionRegistration;
 import org.openide.awt.DynamicMenuContent;
 import org.openide.awt.StatusDisplayer;
 import org.openide.execution.ExecutorTask;
+import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
@@ -145,7 +145,7 @@ public class ActionProviderImpl implements ActionProvider {
         COMMAND_COPY
     };
     
-    private RequestProcessor RP = new RequestProcessor(ActionProviderImpl.class.getName(), 3);
+    private static RequestProcessor RP = new RequestProcessor(ActionProviderImpl.class.getName(), 3);
 
     public ActionProviderImpl(Project proj) {
         this.proj = proj;
@@ -173,7 +173,7 @@ public class ActionProviderImpl implements ActionProvider {
 
     private boolean usingJUnit4() { // SUREFIRE-724
         for (Artifact a : proj.getLookup().lookup(NbMavenProject.class).getMavenProject().getArtifacts()) {
-            if ("junit".equals(a.getGroupId()) && "junit".equals(a.getArtifactId())) {
+            if ("junit".equals(a.getGroupId()) && ("junit".equals(a.getArtifactId()) || "junit-dep".equals(a.getArtifactId()))) { //junit-dep  see #214238
                 String version = a.getVersion();
                 if (version != null && new ComparableVersion(version).compareTo(new ComparableVersion("4.8")) >= 0) {
                     return true;
@@ -196,10 +196,11 @@ public class ActionProviderImpl implements ActionProvider {
         return RunUtils.hasTestCompileOnSaveEnabled(proj) || (usingSurefire28() && (usingJUnit4() || usingTestNG()));
     }
 
-    @Messages("run_single_method_disabled=Surefire 2.8+ with JUnit 4 needed to run a single test method without Compile on Save.")
+    @Messages("run_single_method_disabled=Surefire 2.8+ with JUnit 4.8+ or TestNG needed to run a single test method without Compile on Save.")
     @Override public void invokeAction(final String action, final Lookup lookup) {
         if (action.equals(SingleMethod.COMMAND_RUN_SINGLE_METHOD) || action.equals(SingleMethod.COMMAND_DEBUG_SINGLE_METHOD)) {
             if (!runSingleMethodEnabled()) {
+                //TODO show a popup dialog with X Show Next time?
                 StatusDisplayer.getDefault().setStatusText(run_single_method_disabled());
                 return;
             }
@@ -427,7 +428,8 @@ public class ActionProviderImpl implements ActionProvider {
 
     // XXX should this be an API somewhere?
     private static abstract class ConditionallyShownAction extends AbstractAction implements ContextAwareAction {
-
+        protected boolean triggeredOnFile = false;
+        
         protected ConditionallyShownAction() {
             setEnabled(false);
             putValue(DynamicMenuContent.HIDE_WHEN_DISABLED, true);
@@ -440,8 +442,20 @@ public class ActionProviderImpl implements ActionProvider {
         protected abstract Action forProject(Project p);
 
         public final @Override Action createContextAwareInstance(Lookup actionContext) {
+            triggeredOnFile = false;
             Collection<? extends Project> projects = actionContext.lookupAll(Project.class);
             if (projects.size() != 1) {
+                Collection<? extends FileObject> fobs = actionContext.lookupAll(FileObject.class);
+                if (fobs.size() == 1) {
+                    if ("pom.xml".equals(fobs.iterator().next().getNameExt())) {
+                        Project p = FileOwnerQuery.getOwner(fobs.iterator().next());
+                        if (p != null) {
+                             triggeredOnFile = true;
+                             Action a = forProject(p);
+                             return a != null ? a : this;
+                        }
+                    }
+                }
                 return this;
             }
             Action a = forProject(projects.iterator().next());
@@ -452,20 +466,26 @@ public class ActionProviderImpl implements ActionProvider {
 
     @ActionID(id = "org.netbeans.modules.maven.customPopup", category = "Project")
     @ActionRegistration(displayName = "#LBL_Custom_Run", lazy=false)
-    @ActionReference(position = 1400, path = "Projects/org-netbeans-modules-maven/Actions")
-    @Messages("LBL_Custom_Run=Custom")
+    @ActionReferences({
+        @ActionReference(position = 1400, path = "Projects/org-netbeans-modules-maven/Actions"),
+        @ActionReference(position = 250, path = "Loaders/text/x-maven-pom+xml/Actions")
+    })
+    @Messages({"LBL_Custom_Run=Custom", "LBL_Custom_Run_File=Run Maven"})
     public static ContextAwareAction customPopupActions() {
         return new ConditionallyShownAction() {
+            
             protected @Override Action forProject(Project p) {
                 ActionProviderImpl ap = p.getLookup().lookup(ActionProviderImpl.class);
-                return ap != null ? ap.new CustomPopupActions() : null;
+                return ap != null ? ap.new CustomPopupActions(triggeredOnFile) : null;
             }
         };
     }
     private final class CustomPopupActions extends AbstractAction implements Presenter.Popup {
+        private final boolean onFile;
 
-        private CustomPopupActions() {
-            putValue(Action.NAME, LBL_Custom_Run());
+        private CustomPopupActions(boolean onFile) {
+            putValue(Action.NAME, onFile ? LBL_Custom_Run_File() : LBL_Custom_Run());
+            this.onFile = onFile;
         }
 
         @Override
@@ -479,7 +499,7 @@ public class ActionProviderImpl implements ActionProvider {
         })
         @Override public JMenuItem getPopupPresenter() {
 
-            final JMenu menu = new JMenu(LBL_Custom_Run());
+            final JMenu menu = new JMenu(onFile ? LBL_Custom_Run_File() : LBL_Custom_Run());
             final JMenuItem loading = new JMenuItem(LBL_Loading());
 
             menu.add(loading);
@@ -538,47 +558,17 @@ public class ActionProviderImpl implements ActionProvider {
             putValue(Action.NAME, ACT_CloseRequired());
         }
         public @Override void actionPerformed(ActionEvent e) {
-            SubprojectProvider subs = project.getLookup().lookup(SubprojectProvider.class);
-            Set<? extends Project> lst = subs.getSubprojects();
-            Project[] arr = lst.toArray(new Project[lst.size()]);
-            OpenProjects.getDefault().close(arr);
-        }
-    }
-
-    @ActionID(id = "org.netbeans.modules.maven.showProblems", category = "Project")
-    @ActionRegistration(displayName = "#ACT_ShowProblems", lazy=false)
-    @ActionReference(position = 3100, path = "Projects/org-netbeans-modules-maven/Actions")
-    @Messages("ACT_ShowProblems=Show and Resolve Problems...")
-    public static ContextAwareAction showProblemsAction() {
-        return new ConditionallyShownAction() {
-            protected @Override Action forProject(Project p) {
-                ProblemReporterImpl reporter = p.getLookup().lookup(ProblemReporterImpl.class);
-                return reporter != null && !reporter.getReports().isEmpty() ? new ShowProblemsAction(reporter) : null;
-            }
-        };
-    }
-    private static class ShowProblemsAction extends AbstractAction {
-        private final ProblemReporterImpl reporter;
-        ShowProblemsAction(ProblemReporterImpl reporter) {
-            this.reporter = reporter;
-            putValue(Action.NAME, ACT_ShowProblems());
-        }
-        @Messages({
-            "BTN_Close=Close",
-            "TIT_Show_Problems=Show Problems"
-        })
-        @Override public void actionPerformed(ActionEvent arg0) {
-            JButton butt = new JButton();
-            ProblemsPanel panel = new ProblemsPanel(reporter);
-            panel.setActionButton(butt);
-            JButton close = new JButton();
-            panel.setCloseButton(close);
-            close.setText(BTN_Close());
-            DialogDescriptor dd = new DialogDescriptor(panel, TIT_Show_Problems());
-            dd.setOptions(new Object[] { butt,  close});
-            dd.setClosingOptions(new Object[] { butt, close });
-            dd.setModal(false);
-            DialogDisplayer.getDefault().notify(dd);
+            RP.post(new Runnable() {
+                @Override
+                public void run() {
+                    //mkleint: usage of subprojectprovider is correct here
+                    SubprojectProvider subs = project.getLookup().lookup(SubprojectProvider.class);
+                    Set<? extends Project> lst = subs.getSubprojects();
+                    Project[] arr = lst.toArray(new Project[lst.size()]);
+                    OpenProjects.getDefault().close(arr);
+                }
+            });
+            
         }
     }
 

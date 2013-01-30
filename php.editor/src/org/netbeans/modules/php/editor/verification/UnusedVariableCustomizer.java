@@ -57,7 +57,6 @@ public class UnusedVariableCustomizer extends javax.swing.JPanel {
     private final UnusedVariableHint unusedVariableHint;
     private final Preferences preferences;
 
-    /** Creates new form UnusedVariableCustomizer */
     public UnusedVariableCustomizer(Preferences preferences, UnusedVariableHint unusedVariableHint) {
         this.preferences = preferences;
         this.unusedVariableHint = unusedVariableHint;

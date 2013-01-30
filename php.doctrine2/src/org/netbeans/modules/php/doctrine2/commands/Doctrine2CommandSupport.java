@@ -41,36 +41,22 @@
  */
 package org.netbeans.modules.php.doctrine2.commands;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.netbeans.api.extexecution.ExecutionDescriptor;
-import org.netbeans.api.extexecution.ExecutionService;
-import org.netbeans.api.extexecution.ExternalProcessBuilder;
+import org.netbeans.modules.php.api.executable.InvalidPhpExecutableException;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
-import org.netbeans.modules.php.api.phpmodule.PhpProgram.InvalidPhpProgramException;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.doctrine2.ui.options.Doctrine2OptionsPanelController;
-import org.netbeans.modules.php.spi.commands.FrameworkCommand;
-import org.netbeans.modules.php.spi.commands.FrameworkCommandSupport;
-import org.openide.filesystems.FileUtil;
+import org.netbeans.modules.php.spi.framework.commands.FrameworkCommand;
+import org.netbeans.modules.php.spi.framework.commands.FrameworkCommandSupport;
 import org.openide.util.NbBundle.Messages;
 
 /**
  * Command support for Doctrine2.
  */
 public final class Doctrine2CommandSupport extends FrameworkCommandSupport {
-
-    static final Logger LOGGER = Logger.getLogger(Doctrine2CommandSupport.class.getName());
-
 
     public Doctrine2CommandSupport(PhpModule phpModule) {
         super(phpModule);
@@ -83,17 +69,22 @@ public final class Doctrine2CommandSupport extends FrameworkCommandSupport {
     }
 
     @Override
-    public void runCommand(CommandDescriptor commandDescriptor) {
-        Callable<Process> callable = createCommand(commandDescriptor.getFrameworkCommand().getCommands(), commandDescriptor.getCommandParams());
-        ExecutionDescriptor descriptor = getDescriptor();
-        String displayName = getOutputTitle(commandDescriptor);
-        ExecutionService service = ExecutionService.newService(callable, descriptor, displayName);
-        service.run();
+    public void runCommand(CommandDescriptor commandDescriptor, Runnable postExecution) {
+        String[] commands = commandDescriptor.getFrameworkCommand().getCommands();
+        String[] commandParams = commandDescriptor.getCommandParams();
+        List<String> params = new ArrayList<String>(commands.length + commandParams.length);
+        params.addAll(Arrays.asList(commands));
+        params.addAll(Arrays.asList(commandParams));
+        try {
+            Doctrine2Script.getDefault().runCommand(phpModule, params, postExecution);
+        } catch (InvalidPhpExecutableException ex) {
+            UiUtils.invalidScriptProvided(ex.getLocalizedMessage(), Doctrine2OptionsPanelController.OPTIONS_SUBPATH);
+        }
     }
 
     @Override
     protected String getOptionsPath() {
-        return UiUtils.OPTIONS_PATH + "/" + Doctrine2OptionsPanelController.OPTIONS_SUBPATH; // NOI18N
+        return Doctrine2OptionsPanelController.getOptionsPath();
     }
 
     @Override
@@ -102,52 +93,18 @@ public final class Doctrine2CommandSupport extends FrameworkCommandSupport {
     }
 
     @Override
-    protected ExternalProcessBuilder getProcessBuilder(boolean warnUser) {
-        Doctrine2Script script;
-        try {
-            script = Doctrine2Script.getDefault();
-        } catch (InvalidPhpProgramException ex) {
-            if (warnUser) {
-                UiUtils.invalidScriptProvided(ex.getMessage(), Doctrine2OptionsPanelController.OPTIONS_SUBPATH);
-            }
-            return null;
-        }
-        assert script.isValid();
-
-        ExternalProcessBuilder processBuilder = script.getProcessBuilder()
-                .workingDirectory(FileUtil.toFile(phpModule.getSourceDirectory()));
-        for (String param : script.getParameters()) {
-            processBuilder = processBuilder.addArgument(param);
-        }
-        processBuilder = processBuilder
-                .addArgument("--ansi"); // NOI18N
-        return processBuilder;
-    }
-
-    @Override
     protected List<FrameworkCommand> getFrameworkCommandsInternal() {
-        // validate
-        if (getProcessBuilder(true) == null) {
-            return null;
-        }
-        InputStream output = redirectScriptOutput(Doctrine2Script.LIST_COMMAND, Doctrine2Script.XML_PARAM);
-        if (output == null) {
-            return null;
-        }
-        List<Doctrine2CommandVO> commandsVO = new ArrayList<Doctrine2CommandVO>();
+        Doctrine2Script doctrine2;
         try {
-            Reader reader = new BufferedReader(new InputStreamReader(output));
-            Doctrine2CommandsXmlParser.parse(reader, commandsVO);
-        } finally {
-            try {
-                output.close();
-            } catch (IOException ex) {
-                LOGGER.log(Level.WARNING, null, ex);
-            }
+            doctrine2 = Doctrine2Script.getDefault();
+        } catch (InvalidPhpExecutableException ex) {
+            UiUtils.invalidScriptProvided(ex.getLocalizedMessage(), Doctrine2OptionsPanelController.OPTIONS_SUBPATH);
+            return null;
         }
-        if (commandsVO.isEmpty()) {
-            // ??? try to read them from output
-            LOGGER.info("Doctrine2 commands from XML should be parsed");
+
+        List<Doctrine2CommandVO> commandsVO = doctrine2.getCommands(phpModule);
+        if (commandsVO == null) {
+            // some error
             return null;
         }
         List<FrameworkCommand> commands = new ArrayList<FrameworkCommand>(commandsVO.size());

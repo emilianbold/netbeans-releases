@@ -74,7 +74,7 @@ public class BinaryToStringConverter {
     /**
      * Convert from an array of Bytes into a string.
      */
-    public static String convertToString(Byte[] data, int base, boolean showAscii) {
+    public static String convertToString(byte[] data, int base, boolean showAscii) {
 
         if (data == null) {
             return null;
@@ -85,7 +85,7 @@ public class BinaryToStringConverter {
 
         // Convert each byte and put into string buffer
         for (int i = 0; i < data.length; i++) {
-            int value = data[i].byteValue();
+            int value = data[i];
             String s = null;
 
             // if user wants to see ASCII chars as characters,

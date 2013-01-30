@@ -43,24 +43,33 @@
  * made subject to such option by the copyright holder.
  *
  * Contributor(s): Petr Hrebejk
+  *                markiewb@netbeans.org
  */
 
 package org.netbeans.modules.jumpto.file;
 
 import java.awt.Image;
 import java.beans.BeanInfo;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import org.netbeans.api.actions.Editable;
+import org.netbeans.api.actions.Openable;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.spi.jumpto.file.FileDescriptor;
-import org.openide.cookies.EditCookie;
+import org.openide.cookies.LineCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.text.Line;
 import org.openide.util.ImageUtilities;
+import org.openide.util.Parameters;
 
 /** Contains interesting information about file found in the search.
  *
@@ -70,6 +79,8 @@ import org.openide.util.ImageUtilities;
  * and everyone will use the default impl anyway.
  */
 public class FileDescription extends FileDescriptor {
+
+    private static final Logger LOG = Logger.getLogger(FileDescription.class.getName());
     /**
      * The icon used if unknown project, i.e. {@code project == null}.
      * In such case, we use {@code find.png} - "a file belongs to the find".
@@ -79,15 +90,23 @@ public class FileDescription extends FileDescriptor {
     private final FileObject fileObject;
     private final String ownerPath;
     private final Project project; // Project the file belongs to
+    private final int lineNr;
 
     private Icon icon;
     private String projectName;
     private Icon projectIcon;
 
-    public FileDescription(FileObject file, String ownerPath, Project project) {
+    public FileDescription(
+            @NonNull final FileObject file,
+            @NonNull final String ownerPath,
+            @NullAllowed final Project project,
+            final int lineNr) {
+        Parameters.notNull("file", file);   //NOI18N
+        Parameters.notNull("ownerPath", ownerPath); //NOI18N
         this.fileObject = file;
         this.ownerPath = ownerPath;
         this.project = project;
+        this.lineNr = lineNr;
     }
 
     @Override
@@ -132,21 +151,34 @@ public class FileDescription extends FileDescriptor {
     @Override
     public void open() {
         DataObject od = getDataObject();
-        if ( od != null ) {
-            EditCookie ec = (EditCookie) od.getCookie(EditCookie.class);
-            if (ec != null) {
-                ec.edit();
-            }
-            else {
-                OpenCookie oc = od.getCookie( OpenCookie.class );
-                if ( oc != null ) {
-                    oc.open();
+        if (od != null) {
+            // if linenumber is given then try to open file at this line
+            // code taken from org.netbeans.modules.java.stackanalyzer.StackLineAnalyser.Link.show()
+            final LineCookie lineCookie = od.getLookup().lookup(LineCookie.class);
+            if (lineCookie != null && lineNr != -1) {
+                try {
+                    Line l = lineCookie.getLineSet().getCurrent(lineNr - 1);
+                    if (l != null) {
+                        // open file at the given line
+                        l.show(Line.ShowOpenType.OPEN, Line.ShowVisibilityType.FOCUS, -1);
+                        return;
+                    }
+                } catch (IndexOutOfBoundsException oob) {
+                    LOG.log(Level.FINE, "Line no more exists.", oob);   //NOI18N
                 }
             }
+            final Editable editable = od.getLookup().lookup(Editable.class);
+            if (editable != null) {
+                editable.edit();
+                return;
+            }
+            final Openable oc = od.getLookup().lookup(Openable.class);
+            if (oc != null) {
+                oc.open();
+            }
         }
-
     }
-
+    
     @Override
     public FileObject getFileObject() {
         return fileObject;

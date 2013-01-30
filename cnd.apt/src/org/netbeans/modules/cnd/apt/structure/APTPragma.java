@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.cnd.apt.structure;
 
+import org.netbeans.modules.cnd.antlr.TokenStream;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 
 /**
@@ -55,4 +56,11 @@ public interface APTPragma extends APT {
      */
     public APTToken getName();
 
+    /**
+     * returns reset token stream of the node; use this method to get first
+     * access to token stream, do not use this method as each time getter, reset
+     * stream means, that token stream's iterator moved to the begin of the
+     * stream
+     */
+    public TokenStream getTokenStream();    
 }

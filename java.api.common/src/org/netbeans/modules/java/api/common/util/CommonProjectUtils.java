@@ -42,9 +42,14 @@
 
 package org.netbeans.modules.java.api.common.util;
 
+import java.net.URL;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import javax.lang.model.element.TypeElement;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
@@ -53,7 +58,10 @@ import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.modules.java.api.common.project.ui.customizer.MainClassChooser;
+import org.netbeans.spi.project.libraries.LibraryImplementation3;
+import org.netbeans.spi.project.libraries.support.LibrariesSupport;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Parameters;
 
 /**
  * Common project utilities. This is a helper class; all methods are static.
@@ -131,6 +139,62 @@ public final class CommonProjectUtils {
     public static boolean isMainClass (final String className, ClassPath bootPath, ClassPath compilePath, ClassPath sourcePath) {
         ClasspathInfo cpInfo = ClasspathInfo.create(bootPath, compilePath, sourcePath);
         return SourceUtils.isMainClass(className, cpInfo);
+    }
+
+    /**
+     * Creates a {@link LibraryImplementation3} that can subsequently be used with
+     * both Ant and Maven based Java projects.
+     * @param classpath local library classpath for use by Ant
+     * @param src local library sources for use by Ant
+     * @param javadoc local Javadoc path for use by Ant
+     * @param mavendeps list of maven dependencies in the form of groupId:artifactId:version:type,
+     *    for example org.eclipse.persistence:eclipselink:2.3.2:jar
+     * @param mavenrepos list of maven repositories in the form of layout:url,
+     *    for example default:http://download.eclipse.org/rt/eclipselink/maven.repo/
+     * @return {@link LibraryImplementation3} representing the information passed as parameters
+     * @since 1.40
+     */
+    public static LibraryImplementation3 createJavaLibraryImplementation(
+            @NonNull final String name,
+            @NonNull final URL[] classPath,
+            @NonNull final URL[] sources,
+            @NonNull final URL[] javadoc,
+            @NonNull final String[] mavendeps,
+            @NonNull final String[] mavenrepos) {
+        Parameters.notNull("name", name);   //NOI18N
+        Parameters.notNull("classPath", classPath); //NOI18N
+        Parameters.notNull("src", sources); //NOI18N
+        Parameters.notNull("javadoc", javadoc); //NOI18N
+        Parameters.notNull("mavendeps", mavendeps);  //NOI18N
+        Parameters.notNull("mavenrepos", mavenrepos);   //NOI18N
+        final LibraryImplementation3 impl = LibrariesSupport.createLibraryImplementation3(
+                "j2se",         //NOI18N
+                "classpath",    //NOI18N
+                "src",          //NOI18N
+                "javadoc"       //NOI18N
+                );
+        impl.setName(name);
+        impl.setContent("classpath", Arrays.asList(classPath)); //NOI18N
+        impl.setContent("src", Arrays.asList(sources));     //NOI18N
+        impl.setContent("javadoc", Arrays.asList(javadoc));     //NOI18N
+        final Map<String,String> props = new HashMap<String, String>();
+        // properties: "maven-dependencies", "maven-repositories"
+        props.put("maven-dependencies", getPropertyValue(mavendeps));  //NOI18N
+        props.put("maven-repositories", getPropertyValue(mavenrepos)); //NOI18N
+        impl.setProperties(props);
+        return impl;
+    }
+
+    @NonNull
+    private static String getPropertyValue(@NonNull final String[] values) {
+        final StringBuilder result = new StringBuilder();
+        for (String value : values) {
+            result.append(value);
+            result.append(' '); //NOI18N
+        }
+        return result.length() == 0 ?
+           result.toString() :
+           result.substring(0, result.length()-1);
     }
 
 }

@@ -81,6 +81,7 @@ public class Saas implements Comparable<Saas> {
     public static final String NS_SAAS = "http://xml.netbeans.org/websvc/saas/services/1.0";
     public static final String NS_WSDL = "http://schemas.xmlsoap.org/wsdl/";
     public static final String NS_WADL = "http://research.sun.com/wadl/2006/10";
+    public static final String NS_WADL_09 = "http://wadl.dev.java.net/2009/02";
     //private static final String CUSTOM = "custom";
     public static final String ARTIFACT_TYPE_LIBRARY = "library";
     

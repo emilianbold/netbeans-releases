@@ -41,14 +41,24 @@
  */
 package org.netbeans.modules.php.editor.elements;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.netbeans.modules.php.editor.api.ElementQuery;
 import org.netbeans.modules.php.editor.api.NameKind;
 import org.netbeans.modules.php.editor.api.NameKind.Exact;
 import org.netbeans.modules.php.editor.api.PhpElementKind;
 import org.netbeans.modules.php.editor.api.PhpModifiers;
-import org.netbeans.modules.php.editor.api.elements.*;
+import org.netbeans.modules.php.editor.api.elements.BaseFunctionElement.PrintAs;
+import org.netbeans.modules.php.editor.api.elements.MethodElement;
+import org.netbeans.modules.php.editor.api.elements.ParameterElement;
+import org.netbeans.modules.php.editor.api.elements.TypeElement;
+import org.netbeans.modules.php.editor.api.elements.TypeNameResolver;
+import org.netbeans.modules.php.editor.api.elements.TypeResolver;
 import org.netbeans.modules.php.editor.index.PHPIndexer;
 import org.netbeans.modules.php.editor.index.Signature;
 import org.netbeans.modules.php.editor.model.impl.VariousUtils;
@@ -80,7 +90,7 @@ public final class MethodElementImpl extends PhpElementImpl implements MethodEle
             final List<ParameterElement> parameters,
             final Set<TypeResolver> returnTypes) {
         super(methodName, enclosingType.getName(), fileUrl, offset, elementQuery);
-        final boolean isFromInterface = enclosingType != null && enclosingType.isInterface();
+        final boolean isFromInterface = enclosingType.isInterface();
         this.modifiers = PhpModifiers.fromBitMask((isFromInterface) ? (flags | Modifier.ABSTRACT | Modifier.PUBLIC) : flags);
         this.isMagic = isMagic;
         this.enclosingType = enclosingType;
@@ -89,25 +99,25 @@ public final class MethodElementImpl extends PhpElementImpl implements MethodEle
 
     public static Set<MethodElement> getMagicMethods(final TypeElement type) {
         Set<MethodElement> retval = new HashSet<MethodElement>();
-        retval.add(createMagicMethod(type, "__callStatic", Modifier.PUBLIC | Modifier.STATIC, "$name", "$arguments"));//NOI18N
-        retval.add(createMagicMethod(type, "__set_state", Modifier.PUBLIC | Modifier.STATIC, "$array"));//NOI18N
-        retval.add(createMagicMethod(type, "__call",  Modifier.PUBLIC, "$name", "$arguments"));//NOI18N
-        retval.add(createMagicMethod(type, "__clone",  Modifier.PUBLIC));//NOI18N
-        retval.add(createMagicMethod(type, "__construct",  Modifier.PUBLIC));//NOI18N
-        retval.add(createMagicMethod(type, "__destruct",  Modifier.PUBLIC));//NOI18N
-        retval.add(createMagicMethod(type, "__invoke",  Modifier.PUBLIC));//NOI18N
-        retval.add(createMagicMethod(type, "__get",  Modifier.PUBLIC, "$name"));//NOI18N
-        retval.add(createMagicMethod(type, "__set",  Modifier.PUBLIC, "$name", "$value"));//NOI18N
-        retval.add(createMagicMethod(type, "__isset",  Modifier.PUBLIC, "$name"));//NOI18N
-        retval.add(createMagicMethod(type, "__unset",  Modifier.PUBLIC, "$name"));//NOI18N
-        retval.add(createMagicMethod(type, "__sleep",  Modifier.PUBLIC));//NOI18N
-        retval.add(createMagicMethod(type, "__wakeup",  Modifier.PUBLIC));//NOI18N
-        retval.add(createMagicMethod(type, "__toString",  Modifier.PUBLIC));//NOI18N
+        retval.add(createMagicMethod(type, "__callStatic", Modifier.PUBLIC | Modifier.STATIC, "$name", "$arguments")); //NOI18N
+        retval.add(createMagicMethod(type, "__set_state", Modifier.PUBLIC | Modifier.STATIC, "$array")); //NOI18N
+        retval.add(createMagicMethod(type, "__call",  Modifier.PUBLIC, "$name", "$arguments")); //NOI18N
+        retval.add(createMagicMethod(type, "__clone",  Modifier.PUBLIC)); //NOI18N
+        retval.add(createMagicMethod(type, "__construct",  Modifier.PUBLIC)); //NOI18N
+        retval.add(createMagicMethod(type, "__destruct",  Modifier.PUBLIC)); //NOI18N
+        retval.add(createMagicMethod(type, "__invoke",  Modifier.PUBLIC)); //NOI18N
+        retval.add(createMagicMethod(type, "__get",  Modifier.PUBLIC, "$name")); //NOI18N
+        retval.add(createMagicMethod(type, "__set",  Modifier.PUBLIC, "$name", "$value")); //NOI18N
+        retval.add(createMagicMethod(type, "__isset",  Modifier.PUBLIC, "$name")); //NOI18N
+        retval.add(createMagicMethod(type, "__unset",  Modifier.PUBLIC, "$name")); //NOI18N
+        retval.add(createMagicMethod(type, "__sleep",  Modifier.PUBLIC)); //NOI18N
+        retval.add(createMagicMethod(type, "__wakeup",  Modifier.PUBLIC)); //NOI18N
+        retval.add(createMagicMethod(type, "__toString",  Modifier.PUBLIC)); //NOI18N
         return retval;
     }
 
     public static MethodElement createMagicMethod(final TypeElement type, String methodName, int flags, String... arguments) {
-        MethodElement retval = new MethodElementImpl(type, methodName, true, 0, flags ,//NOI18N
+        MethodElement retval = new MethodElementImpl(type, methodName, true, 0, flags, //NOI18N
                 type.getFilenameUrl(), null, fromParameterNames(arguments), Collections.<TypeResolver>emptySet());
         return retval;
     }
@@ -210,33 +220,33 @@ public final class MethodElementImpl extends PhpElementImpl implements MethodEle
     }
 
     @Override
-    public final PhpElementKind getPhpElementKind() {
+    public PhpElementKind getPhpElementKind() {
         return MethodElement.KIND;
     }
 
 
     @Override
-    public final PhpModifiers getPhpModifiers() {
+    public PhpModifiers getPhpModifiers() {
         return modifiers;
     }
 
     @Override
-    public final TypeElement getType() {
+    public TypeElement getType() {
         return enclosingType;
     }
 
     @Override
     public boolean isConstructor() {
         final Exact exactName = NameKind.exact(getName());
-        return exactName.matchesName(getPhpElementKind(), CONSTRUCTOR_NAME) ||
-                exactName.matchesName(getPhpElementKind(), getType().getName());
+        return exactName.matchesName(getPhpElementKind(), CONSTRUCTOR_NAME)
+                || exactName.matchesName(getPhpElementKind(), getType().getName());
     }
 
     @Override
     public String getSignature() {
         StringBuilder sb = new StringBuilder();
-        sb.append(getName().toLowerCase()).append(SEPARATOR.SEMICOLON);//NOI18N
-        sb.append(getName()).append(SEPARATOR.SEMICOLON);//NOI18N
+        sb.append(getName().toLowerCase()).append(Separator.SEMICOLON); //NOI18N
+        sb.append(getName()).append(Separator.SEMICOLON); //NOI18N
         sb.append(getSignatureLastPart());
         checkSignature(sb);
         return sb.toString();
@@ -244,8 +254,8 @@ public final class MethodElementImpl extends PhpElementImpl implements MethodEle
 
     public String getConstructorSignature() {
         StringBuilder sb = new StringBuilder();
-        sb.append(getType().getName().toLowerCase()).append(SEPARATOR.SEMICOLON);//NOI18N
-        sb.append(getType().getName()).append(SEPARATOR.SEMICOLON);//NOI18N
+        sb.append(getType().getName().toLowerCase()).append(Separator.SEMICOLON); //NOI18N
+        sb.append(getType().getName()).append(Separator.SEMICOLON); //NOI18N
         sb.append(getSignatureLastPart());
         checkConstructorSignature(sb);
         return sb.toString();
@@ -253,22 +263,22 @@ public final class MethodElementImpl extends PhpElementImpl implements MethodEle
 
     private String getSignatureLastPart() {
         StringBuilder sb = new StringBuilder();
-        sb.append(getOffset()).append(SEPARATOR.SEMICOLON); //NOI18N
+        sb.append(getOffset()).append(Separator.SEMICOLON); //NOI18N
         List<ParameterElement> parameterList = getParameters();
         for (int idx = 0; idx < parameterList.size(); idx++) {
             ParameterElementImpl parameter = (ParameterElementImpl) parameterList.get(idx);
             if (idx > 0) {
-                sb.append(SEPARATOR.COMMA); //NOI18N
+                sb.append(Separator.COMMA); //NOI18N
             }
             sb.append(parameter.getSignature());
         }
-        sb.append(SEPARATOR.SEMICOLON); //NOI18N
+        sb.append(Separator.SEMICOLON); //NOI18N
         for (TypeResolver typeResolver : getReturnTypes()) {
             TypeResolverImpl resolverImpl = (TypeResolverImpl) typeResolver;
             sb.append(resolverImpl.getSignature());
         }
-        sb.append(SEPARATOR.SEMICOLON); //NOI18N
-        sb.append(getPhpModifiers().toFlags()).append(SEPARATOR.SEMICOLON);
+        sb.append(Separator.SEMICOLON); //NOI18N
+        sb.append(getPhpModifiers().toFlags()).append(Separator.SEMICOLON);
         return sb.toString();
     }
 
@@ -303,7 +313,7 @@ public final class MethodElementImpl extends PhpElementImpl implements MethodEle
     }
 
     @Override
-    public final boolean isMagic() {
+    public boolean isMagic() {
         return isMagic;
     }
 

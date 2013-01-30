@@ -50,7 +50,10 @@ import java.util.logging.Level;
 import java.util.zip.CRC32;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 
 /** This class represents module updates tracking
  *
@@ -100,7 +103,6 @@ public final class UpdateTracking {
      */
     private LinkedHashMap<File, Module> installedModules = new LinkedHashMap<File, Module> ();
 
-    private boolean pError = false;
     private final File directory;
     private final File trackingFile;
     private String origin = NBM_ORIGIN;
@@ -280,7 +282,20 @@ public final class UpdateTracking {
     //
     // Private impls
     //
-    
+    private static ErrorHandler DUMMY_ERROR_HANDLER = new ErrorHandler() {
+
+                @Override
+                public void warning(SAXParseException exception) throws SAXException {
+                }
+
+                @Override
+                public void error(SAXParseException exception) throws SAXException {
+                }
+
+                @Override
+                public void fatalError(SAXParseException exception) throws SAXException {
+                }
+            };
     
     /** Scan through org.w3c.dom.Document document. */
     private void read() {
@@ -289,25 +304,29 @@ public final class UpdateTracking {
 
         File file;
         InputStream is;
+        int avail = 0;
         try {
             file = trackingFile;
             
-            if ( ! file.isFile () )
+            if ( ! file.isFile () ) {
                 return;
+            }
             
             is = new FileInputStream( file );
+            avail = is.available();
 
             InputSource xmlInputSource = new InputSource( is );
-            document = XMLUtil.parse( xmlInputSource, false, false, new ErrorCatcher(), XMLUtil.createAUResolver() );
-            if (is != null)
+            document = XMLUtil.parse(xmlInputSource, false, false, DUMMY_ERROR_HANDLER, XMLUtil.createAUResolver());
+            if (is != null) {
                 is.close();
+            }
         }
         catch ( org.xml.sax.SAXException e ) {
-            XMLUtil.LOG.log(Level.SEVERE, "Bad update_tracking", e); // NOI18N
+            XMLUtil.LOG.log(Level.SEVERE, "Bad update_tracking: " + trackingFile + ", available bytes: " + avail, e); // NOI18N
             return;
         }
         catch ( java.io.IOException e ) {
-            XMLUtil.LOG.log(Level.SEVERE, "Missing update_tracking", e); // NOI18N
+            XMLUtil.LOG.log(Level.SEVERE, "Missing update_tracking: " + trackingFile + ", available bytes: " + avail, e); // NOI18N
             return;
         }
 
@@ -326,7 +345,9 @@ public final class UpdateTracking {
             if ( node.getNodeType() == org.w3c.dom.Node.ELEMENT_NODE ) {
                 org.w3c.dom.Element nodeElement = (org.w3c.dom.Element)node;
                 if (nodeElement.getTagName().equals(ELEMENT_MODULE)) {
-                    if (true) throw new IllegalStateException ("What now!?");
+                    if (true) {
+                        throw new IllegalStateException ("What now!?");
+                    }
                     // XXX  - should put the module into installedModules but do not know the key
                     // modules.add( scanElement_module(nodeElement, fromuser) );
                 }                
@@ -360,7 +381,7 @@ public final class UpdateTracking {
     
     /** Scan through org.w3c.dom.Element named module_version. */
     private void scanElement_module_version(org.w3c.dom.Element element, Module module) { // <module_version>
-        Version version = new Version();        
+        Version version = new Version(module);        
         org.w3c.dom.NamedNodeMap attrs = element.getAttributes();
         for (int i = 0; i < attrs.getLength(); i++) {
             org.w3c.dom.Attr attr = (org.w3c.dom.Attr)attrs.item(i);
@@ -423,24 +444,26 @@ public final class UpdateTracking {
         
         // fix for #34355
         try {
-            if ( file.exists() && file.length()==0 )
+            if ( file.exists() && file.length()==0 ) {
                 file.delete();
+            }
         } catch (Exception e) {
             // ignore
         }
         
         if ( ! file.exists() ) {
-            if ( create )
+            if ( create ) {
                 return new Module( codename, file);
-            else
+            } else {
                 return null;
+            }
         }
 
         return readModuleFromFile( file, codename, create );
     }
     
     Version createVersion(String specversion) {
-        Version ver = new Version();
+        Version ver = new Version(null);
         ver.setVersion( specversion );
         return ver;
     }
@@ -454,18 +477,20 @@ public final class UpdateTracking {
             is = new FileInputStream( file );
 
             InputSource xmlInputSource = new InputSource( is );
-            document = XMLUtil.parse( xmlInputSource, false, false, new ErrorCatcher(), XMLUtil.createAUResolver() );
-            if (is != null)
+            document = XMLUtil.parse(xmlInputSource, false, false, DUMMY_ERROR_HANDLER, XMLUtil.createAUResolver());
+            if (is != null) {
                 is.close();
+            }
         } catch ( org.xml.sax.SAXException e ) {
             XMLUtil.LOG.log(Level.SEVERE, "Bad update_tracking", e); // NOI18N
             return null;
         }
         catch ( java.io.IOException e ) {
-            if ( create )
+            if ( create ) {
                 return new Module (codename, file);
-            else
+            } else {
                 return null;
+            }
         }
 
         org.w3c.dom.Element element = document.getDocumentElement();
@@ -476,17 +501,19 @@ public final class UpdateTracking {
             installedModules.put (file, m);
             return m;
         }
-        if ( create )
+        if ( create ) {
             return new Module (codename, file);
-        else
+        } else {
             return null;
+        }
     }
     
     private static String getTrackingName(String codename) {
         String trackingName = codename;
         int pos = trackingName.indexOf('/');    // NOI18N
-        if ( pos > -1 )
+        if ( pos > -1 ) {
             trackingName = trackingName.substring( 0, pos );
+        }
         return trackingName.replace( '.', '-' );       // NOI18N
     }
     
@@ -510,8 +537,9 @@ public final class UpdateTracking {
             }
         }
         finally {
-            if ( bsrc != null )
+            if ( bsrc != null ) {
                 bsrc.close();
+            }
         }
         return crc.getValue();
     }
@@ -521,10 +549,11 @@ public final class UpdateTracking {
         File[] files = dir.listFiles( new FileFilter() {
                                @Override
                                public boolean accept( File file ) {
-                                   if ( !file.isDirectory() && file.getName().toUpperCase().endsWith(".XML") ) // NOI18N
+                                   if ( !file.isDirectory() && file.getName().toUpperCase().endsWith(".XML") ) {
                                        return true;
-                                   else
+                                   } else {
                                        return false;
+                                   }
                                }
                            } );
                            
@@ -538,6 +567,11 @@ public final class UpdateTracking {
             }
                 
         }
+    }
+    
+    @Override
+    public String toString() {
+        return "UpdateTracing[" + this.directory + ", origin: " + this.origin + "]";
     }
     
     class Module extends Object {        
@@ -599,10 +633,11 @@ public final class UpdateTracking {
         }
         
         private Version getNewOrLastVersion() {
-            if ( newVersion != null )
+            if ( newVersion != null ) {
                 return newVersion;
-            else
+            } else {
                 return lastVersion;
+            }
         }
         
         boolean hasNewVersion() {
@@ -614,9 +649,10 @@ public final class UpdateTracking {
         }
         
         public Version addNewVersion( String spec_version, String origin ) {
-            if ( lastVersion != null )
+            if ( lastVersion != null ) {
                 lastVersion.setLast ( false );
-            Version version = new Version();        
+            }
+            Version version = new Version(this);        
             newVersion = version;
             version.setVersion( spec_version );
             version.setOrigin( origin );
@@ -627,16 +663,17 @@ public final class UpdateTracking {
         }
         
         void addOldVersion( Version version ) {
-            if ( version.isLast() )
+            if ( version.isLast() ) {
                 lastVersion = version;
+            }
                     
             versions.add( version );
         }
         
         void addL10NVersion( Version l_version ) {
-            if ( lastVersion != null )
+            if ( lastVersion != null ) {
                 lastVersion.addL10NFiles( l_version.getFiles() );
-            else {
+            } else {
                 l_version.setOrigin( origin );
                 l_version.setLast( true );
                 l_version.setInstall_time( System.currentTimeMillis() );
@@ -717,34 +754,34 @@ public final class UpdateTracking {
         
         void write( ) {
             Document document = XMLUtil.createDocument(ELEMENT_MODULE);
-            
+
             Element e_module = document.getDocumentElement();
             Element e_version;
             Element e_file;
-            
+
             e_module.setAttribute(ATTR_CODENAMEBASE, getCodenamebase());
-            Iterator it2 = getVersions().iterator();
-            while ( it2.hasNext() ) {
-                Version ver = (Version)it2.next();
+
+            for (Version ver : getVersions()) {
                 e_version = document.createElement(ELEMENT_VERSION);
-                if ( ver.getVersion() != null )
+                if (ver.getVersion() != null) {
                     e_version.setAttribute(ATTR_VERSION, ver.getVersion());
+                }
                 e_version.setAttribute(ATTR_ORIGIN, ver.getOrigin());
-                e_version.setAttribute(ATTR_LAST, Boolean.valueOf( ver.isLast() ).toString());
-                e_version.setAttribute(ATTR_INSTALL, Long.toString(ver.getInstall_time()));                
-                e_module.appendChild( e_version );
-                Iterator it3 = ver.getFiles().iterator();
-                while ( it3.hasNext() ) {
-                    ModuleFile moduleFile = (ModuleFile)it3.next();
+                e_version.setAttribute(ATTR_LAST, Boolean.valueOf(ver.isLast()).toString());
+                e_version.setAttribute(ATTR_INSTALL, Long.toString(ver.getInstall_time()));
+                e_module.appendChild(e_version);
+                
+                for (ModuleFile moduleFile : ver.getFiles()) {
                     e_file = document.createElement(ELEMENT_FILE);
                     e_file.setAttribute(ATTR_FILE_NAME, moduleFile.getName());
                     e_file.setAttribute(ATTR_CRC, moduleFile.getCrc());
-                    if ( moduleFile.getLocaleversion() != null )
+                    if (moduleFile.getLocaleversion() != null) {
                         e_file.setAttribute(ATTR_VERSION, moduleFile.getLocaleversion());
-                    e_version.appendChild( e_file );                
+                    }
+                    e_version.appendChild(e_file);
                 }
             }
-            
+
             document.getDocumentElement().normalize();
 
             OutputStream os = null;
@@ -768,7 +805,7 @@ public final class UpdateTracking {
             if (os != null) {
                 try {
                     XMLUtil.write(document, os);
-                    XMLUtil.LOG.info("File " + file + " modified." );
+                    XMLUtil.LOG.info("File " + file + " modified.");
                 } catch (IOException e) {
                     XMLUtil.LOG.log(Level.WARNING, "Cannot write " + file, e);
                 } finally {
@@ -782,13 +819,13 @@ public final class UpdateTracking {
         }
 
         void deleteUnusedFiles() {
-            if ( lastVersion == null || newVersion == null )
+            if ( lastVersion == null || newVersion == null ) {
                 return;
-            Iterator it = lastVersion.getFiles().iterator();
-            while ( it.hasNext() ) {
-                ModuleFile modFile = (ModuleFile)it.next();
-                if ( ! newVersion.containsFile( modFile ) && modFile.getName().indexOf( LOCALE_DIR ) == -1 )
+            }
+            for (ModuleFile modFile : lastVersion.getFiles()) {
+                if ( ! newVersion.containsFile( modFile ) && modFile.getName().indexOf( LOCALE_DIR ) == -1 ) {
                     safeDelete( modFile );
+                }
             }
         }
         
@@ -798,8 +835,9 @@ public final class UpdateTracking {
             if ( f.exists() ) {
                 // test crc
                 try {
-                    if ( ! Long.toString( getFileCRC( f ) ).equals( modFile.getCrc() ) )
+                    if (! Long.toString(getFileCRC(f)).equals(modFile.getCrc())) {
                         return;
+                    }
                 } catch ( IOException ioe ) {
                     return;
                 }
@@ -812,14 +850,16 @@ public final class UpdateTracking {
                     Module mod = it.next();
                     if ( ! mod.equals( this ) ) {
                         Version v = mod.getNewOrLastVersion();
-                        if ( v != null && v.containsFile( modFile ) )
+                        if ( v != null && v.containsFile( modFile ) ) {
                             found = true;
+                        }
                     }
                 }
-                if ( ! found )
+                if ( ! found ) {
                     XMLUtil.LOG.info("Deleting file: " + f);
                     boolean deleted = f.delete();
                     XMLUtil.LOG.info(".... " + f + " was deleted? " + deleted);
+                }
             }
         }
         
@@ -828,8 +868,9 @@ public final class UpdateTracking {
             Collections.<Version>sort( versions );
             for (Version ver: versions) {
                 localever = ver.getLocaleVersion( jarpath );
-                if ( localever != null )
+                if ( localever != null ) {
                     return localever;
+                }
             }
             return null;
         }
@@ -932,9 +973,19 @@ public final class UpdateTracking {
                 XMLUtil.LOG.log(Level.INFO, null, ex);
             }
         }
+        
+        @Override
+        public String toString() {
+            return "UpdateTracing.Module[" + this.codenamebase + "(" + this.file + "), OSGI? " + this.osgi + "]";
+        }
     }
     
     public class Version extends Object implements Comparable<Version> {
+        private final Module module;
+        
+        Version(Module m) {
+            this.module = m;
+        }
         
         /** Holds value of property version. */
         private String version;
@@ -1018,14 +1069,13 @@ public final class UpdateTracking {
          * @param files New value of property files.
          */
         void addL10NFiles(List<ModuleFile> l10nfiles) {
-            Iterator it = l10nfiles.iterator();
-            while ( it.hasNext() ) {
-                ModuleFile lf = (ModuleFile) it.next();
+            for (ModuleFile lf : l10nfiles) {
                 String lname = lf.getName();
                 for ( int i = files.size() - 1; i >=0; i-- ) {
                     ModuleFile f = files.get( i );
-                    if ( f.getName().equals( lname ) )
+                    if ( f.getName().equals( lname ) ) {
                         files.remove( i );
+                    }
                 }
             }
             files.addAll( l10nfiles );
@@ -1051,21 +1101,19 @@ public final class UpdateTracking {
         }
         
         boolean containsFile( ModuleFile file ) {
-            Iterator it = files.iterator();
-            while ( it.hasNext() ) {
-                ModuleFile f = (ModuleFile)it.next();
-                if ( f.getName().equals( file.getName() ) )
+            for (ModuleFile f : files) {
+                if ( f.getName().equals( file.getName() ) ) {
                     return true;
+                }
             }
             return false;
         }
         
         ModuleFile findFile(String filename) {
-            Iterator it = files.iterator();
-            while ( it.hasNext() ) {
-                ModuleFile f = (ModuleFile)it.next();
-                if ( f.getName().equals( filename ) )
+            for (ModuleFile f : files) {
+                if ( f.getName().equals( filename ) ) {
                     return f;
+                }
             }
             return null;
         }
@@ -1075,20 +1123,28 @@ public final class UpdateTracking {
             ModuleFile f = findFile( filename );
             if ( f != null ) {
                 locver = f.getLocaleversion();
-                if ( locver == null )
+                if ( locver == null ) {
                     locver = version;
+                }
             }
             return locver;
         }
         
         @Override
         public int compareTo (Version oth) {
-            if ( install_time < oth.getInstall_time() )
+            if ( install_time < oth.getInstall_time() ) {
                 return 1;
-            else if ( install_time > oth.getInstall_time() )
+            }
+            else if ( install_time > oth.getInstall_time() ) {
                 return -1;
-            else
+            } else {
                 return 0;
+            }
+        }
+        
+        @Override
+        public String toString() {
+            return "UpdateTracing.Version[" + this.module + "/" + this.version + ", last? " + this.isLast() + "]";
         }
     }
     
@@ -1147,30 +1203,13 @@ public final class UpdateTracking {
             this.localeversion = localeversion;
         }
         
+        @Override
+        public String toString() {
+            return "UpdateTracing.ModuleFile[" + this.name + "(" + this.crc + ")" + "]";
+        }
+        
     }
 
-    class ErrorCatcher implements org.xml.sax.ErrorHandler {
-        private void message (String level, org.xml.sax.SAXParseException e) {
-            pError = true;
-        }
-
-        @Override
-        public void error (org.xml.sax.SAXParseException e) {
-            // normally a validity error
-            pError = true;
-        }
-
-        @Override
-        public void warning (org.xml.sax.SAXParseException e) {
-            //parseFailed = true;
-        }
-
-        @Override
-        public void fatalError (org.xml.sax.SAXParseException e) {
-            pError = true;
-        }
-    }
-    
     public static class AdditionalInfo extends Object {
         private Map<String, String> sources;
         

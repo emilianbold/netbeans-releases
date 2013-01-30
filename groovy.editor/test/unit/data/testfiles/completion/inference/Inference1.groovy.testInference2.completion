@@ -3,6 +3,7 @@ set.t|
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
 METHOD     take(int)                                  CharSequence
+METHOD     takeWhile(Closure)                         CharSequence
 METHOD     toBigDecimal()                             BigDecimal
 METHOD     toBigInteger()                             BigInteger
 METHOD     toBoolean()                                Boolean

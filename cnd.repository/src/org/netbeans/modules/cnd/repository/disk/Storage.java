@@ -77,4 +77,5 @@ public interface Storage {
      */
     public boolean defragment(long timeout)  throws IOException;
     
+    public void debugDump(Key key);
 }

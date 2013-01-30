@@ -65,6 +65,7 @@ import org.openide.util.NbBundle;
 public class AddIndexDialog {
     boolean result = false;
     Dialog dialog = null;
+    DialogDescriptor descriptor;
     JTextField namefld;
     CheckBoxListener cbxlistener;
     JCheckBox cbx_uq;
@@ -208,7 +209,9 @@ public class AddIndexDialog {
                 }
             };
 
-            DialogDescriptor descriptor = new DialogDescriptor(pane, NbBundle.getMessage (AddIndexDialog.class, "AddIndexTitle"), true, listener); //NOI18N
+            descriptor = new DialogDescriptor(pane, NbBundle.getMessage (AddIndexDialog.class, "AddIndexTitle"), true, listener); //NOI18N
+             // Initally no column is checked => an index can't be created
+            descriptor.setValid(false);
             // inbuilt close of the dialog is only after CANCEL button click
             // after OK button is dialog closed by hand
             Object [] closingOptions = {DialogDescriptor.CANCEL_OPTION};
@@ -257,6 +260,12 @@ public class AddIndexDialog {
             String name = cbx.getName();
             if (cbx.isSelected()) set.add(name);
             else set.remove(name);
+            // Only allow creation of index if at least one column is selected
+            if(set.size() > 0) {
+                descriptor.setValid(true);
+            } else {
+                descriptor.setValid(false);
+            }
         }
 
         public Set getSelectedColumns()

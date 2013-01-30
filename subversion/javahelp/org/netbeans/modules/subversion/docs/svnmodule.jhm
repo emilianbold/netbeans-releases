@@ -193,5 +193,8 @@ Other names may be trademarks of their respective owners.
         <!-- Select Template dialog box -->
         <mapID target="org.netbeans.modules.subversion.ui.commit.TemplatePanel" url="svnmodule/csh/svn-select-template.html" />
 
+        <!-- Shelve Changes dialog box -->
+        <mapID target="org.netbeans.modules.subversion.ui.shelve.ShelveChangesPanel" url="svnmodule/csh/svn_shelve.html" />
+
 </map>
 

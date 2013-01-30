@@ -43,7 +43,9 @@ package org.netbeans.modules.ide.ergonomics.fod;
 
 import java.awt.EventQueue;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openide.awt.CheckForUpdatesProvider;
@@ -90,7 +92,7 @@ final class InstallOrActivateTask implements Runnable, FileChangeListener {
         } finally {
             if (fo != null) {
                 fo.removeFileChangeListener(this);
-                FeatureManager.associateFiles(changed);
+                FeatureManager.associateFiles(getChangedFiles());
             }
             notifyUpdates();
         }
@@ -110,11 +112,11 @@ final class InstallOrActivateTask implements Runnable, FileChangeListener {
     public void fileFolderCreated(FileEvent fe) {
     }
 
-    public void fileDataCreated(FileEvent fe) {
+    public synchronized void fileDataCreated(FileEvent fe) {
         changed.add(fe.getFile());
     }
 
-    public void fileChanged(FileEvent fe) {
+    public synchronized void fileChanged(FileEvent fe) {
         changed.add(fe.getFile());
     }
 
@@ -125,5 +127,9 @@ final class InstallOrActivateTask implements Runnable, FileChangeListener {
     }
 
     public void fileAttributeChanged(FileAttributeEvent fe) {
+    }
+    
+    private synchronized List<FileObject> getChangedFiles() {
+        return new ArrayList<FileObject>(changed);
     }
 }

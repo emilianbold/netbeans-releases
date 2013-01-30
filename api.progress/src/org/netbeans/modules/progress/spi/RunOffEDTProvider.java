@@ -140,7 +140,7 @@ public interface RunOffEDTProvider {
          * @param dialogAfter amount of time, in milliseconds, after which 
          *                    dialog is shown
          * 
-         * @since 1.29.1
+         * @since 1.30
          */
         public void runOffEventThreadWithProgressDialog(
             final Runnable operation, 
@@ -168,7 +168,7 @@ public interface RunOffEDTProvider {
          * @param dialogAfter amount of time, in milliseconds, after which 
          *                    dialog is shown
          * 
-         * @since 1.29.1
+         * @since 1.30
          */
         public void runOffEventThreadWithCustomDialogContent(
             final Runnable operation,

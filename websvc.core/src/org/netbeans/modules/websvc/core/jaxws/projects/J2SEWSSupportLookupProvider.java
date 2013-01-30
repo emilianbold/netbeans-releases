@@ -73,6 +73,7 @@ public class J2SEWSSupportLookupProvider extends ProjectOpenedHook {
         this.project = project;
     }
 
+    @org.netbeans.api.annotations.common.SuppressWarnings("DE_MIGHT_IGNORE")
     @Override
     protected void projectOpened() {
         if(WebServicesClientSupport.isBroken(project)) {

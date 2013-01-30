@@ -95,7 +95,7 @@ public class ActionsSearchProvider implements SearchProvider {
     public void evaluate(final SearchRequest request, final SearchResponse response) {
         currentRequest = request;
         final Map<Object, String> duplicateCheck = new HashMap<Object, String>();
-        final List<Object[]> possibleResults = new ArrayList<Object[]>(7);
+        final List<ActionInfo> possibleResults = new ArrayList<ActionInfo>(7);
         Map<ShortcutAction, Set<String>> curKeymap;
         // iterate over all found KeymapManagers
         for (KeymapManager m : Lookup.getDefault().lookupAll(KeymapManager.class)) {
@@ -107,7 +107,8 @@ public class ActionsSearchProvider implements SearchProvider {
                     }
 
                     // check action and obtain only meaningful ones
-                    Object[] actInfo = getActionInfo(sa, curKeymap.get(sa));
+                    ActionInfo actInfo = getActionInfo(sa, curKeymap.get(sa),
+                            entry.getKey());
                     if (actInfo == null) {
                         continue;
                     }
@@ -134,7 +135,7 @@ public class ActionsSearchProvider implements SearchProvider {
                             if (action == null) {
                                 continue;
                             }
-                            Object[] actInfo = new Object[]{action, null, null};
+                            ActionInfo actInfo = new ActionInfo(action, null, null, null);
                             Object name = action.getValue(Action.NAME);
                             if (!(name instanceof String)) {
                                 // skip action without proper name
@@ -156,7 +157,7 @@ public class ActionsSearchProvider implements SearchProvider {
 
 
         // add results stored above, actions that contain typed text, but not as prefix
-        for (Object[] actInfo : possibleResults) {
+        for (ActionInfo actInfo : possibleResults) {
             if (currentRequest != request) {
                 return;
             }
@@ -167,16 +168,16 @@ public class ActionsSearchProvider implements SearchProvider {
     }
     
 
-    private boolean addAction(Object[] actInfo, SearchResponse response, Map<Object, String> duplicateCheck) {
+    private boolean addAction(ActionInfo actInfo, SearchResponse response, Map<Object, String> duplicateCheck) {
         KeyStroke stroke = null;
         // obtaining shortcut, first try Keymaps
-        Set<String> shortcuts = (Set<String>)actInfo[2];
+        Set<String> shortcuts = actInfo.getShortcuts();
         if (shortcuts != null && shortcuts.size() > 0) {
             String shortcut = shortcuts.iterator().next();
             stroke = Utilities.stringToKey(shortcut);
         }
         // try accelerator key property if Keymaps returned no shortcut
-        Action action = (Action) actInfo[0];
+        Action action = actInfo.getAction();
         if (stroke == null) {
             Object shortcut = action.getValue(Action.ACCELERATOR_KEY);
             if (shortcut instanceof KeyStroke) {
@@ -192,7 +193,7 @@ public class ActionsSearchProvider implements SearchProvider {
         }*/
         
         String displayName = null;
-        ShortcutAction sa= (ShortcutAction)actInfo[1];
+        ShortcutAction sa = actInfo.getShortcutAction();
         if (sa != null) {
             displayName = sa.getDisplayName();
         } else {
@@ -200,6 +201,10 @@ public class ActionsSearchProvider implements SearchProvider {
             if (name instanceof String) {
                 displayName = ((String) name).replaceFirst("&(?! )", "");  //NOI18N
             }
+        }
+        if (actInfo.getCategory() != null && !actInfo.getCategory().isEmpty()
+                && !actInfo.getCategory().equals(displayName)) {
+            displayName += " (" + actInfo.getCategory() + ")";          //NOI18N
         }
 
         // #140580 - check for duplicate actions
@@ -211,7 +216,7 @@ public class ActionsSearchProvider implements SearchProvider {
     }
 
     private boolean doEvaluation(String name, SearchRequest request,
-            Object[] actInfo, SearchResponse response, List<Object[]> possibleResults, Map<Object, String> duplicateCheck) {
+            ActionInfo actInfo, SearchResponse response, List<ActionInfo> possibleResults, Map<Object, String> duplicateCheck) {
         int index = name.toLowerCase().indexOf(request.getText().toLowerCase());
         if (index == 0) {
             return addAction(actInfo, response, duplicateCheck);
@@ -223,8 +228,9 @@ public class ActionsSearchProvider implements SearchProvider {
         return true;
     }
     
-    private Object[] getActionInfo(final ShortcutAction sa, final Set<String> shortcuts) {
-        final Object[][] result = new Object[1][];
+    private ActionInfo getActionInfo(final ShortcutAction sa,
+            final Set<String> shortcuts, final String category) {
+        final ActionInfo[] result = new ActionInfo[1];
         try {
             SwingUtilities.invokeAndWait(new Runnable() {
 
@@ -239,7 +245,7 @@ public class ActionsSearchProvider implements SearchProvider {
                         if (!action.isEnabled()) {
                             return;
                         }
-                        result[0] = new Object[]{action, sa, shortcuts};
+                        result[0] = new ActionInfo(action, sa, shortcuts, category);
                         return;
                     } catch (Throwable thr) {
                         if (thr instanceof ThreadDeath) {
@@ -361,4 +367,35 @@ public class ActionsSearchProvider implements SearchProvider {
         }
     }
 
+    private static class ActionInfo {
+
+        private Action action;
+        private ShortcutAction shortcutAction = null;
+        private Set<String> shortcuts = null;
+        private String category = null;
+
+        public ActionInfo(Action action, ShortcutAction shortcutAction,
+                Set<String> shortcuts, String category) {
+            this.action = action;
+            this.shortcutAction = shortcutAction;
+            this.shortcuts = shortcuts;
+            this.category = category;
+        }
+
+        public Action getAction() {
+            return action;
+        }
+
+        public ShortcutAction getShortcutAction() {
+            return shortcutAction;
+        }
+
+        public Set<String> getShortcuts() {
+            return shortcuts;
+        }
+
+        public String getCategory() {
+            return category;
+        }
+    }
 }

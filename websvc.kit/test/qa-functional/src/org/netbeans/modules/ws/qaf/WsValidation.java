@@ -142,7 +142,7 @@ public class WsValidation extends WebServicesTestBase {
 
     /** Creates a new instance of WsValidation */
     public WsValidation(String name) {
-        super(name);
+        super(name, Server.GLASSFISH);
     }
 
     public String getProjectName() {

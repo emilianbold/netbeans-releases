@@ -106,6 +106,7 @@ import org.netbeans.modules.editor.lib.KitsTracker;
 import org.netbeans.modules.editor.lib.NavigationHistory;
 import org.netbeans.modules.editor.lib.SettingsConversions;
 import org.netbeans.modules.editor.lib2.RectangularSelectionUtils;
+import org.netbeans.modules.editor.lib2.actions.KeyBindingsUpdater;
 import org.netbeans.modules.editor.lib2.typinghooks.DeletedTextInterceptorsManager;
 import org.netbeans.modules.editor.lib2.typinghooks.TypedBreakInterceptorsManager;
 import org.netbeans.modules.editor.lib2.typinghooks.TypedTextInterceptorsManager;
@@ -190,16 +191,12 @@ public class BaseKit extends DefaultEditorKit {
     /** Remove line */
     public static final String removeLineAction = "remove-line"; // NOI18N
     
-    /** Move selection else line up */
     public static final String moveSelectionElseLineUpAction = "move-selection-else-line-up"; // NOI18N
     
-    /** Move selection else line down */
     public static final String moveSelectionElseLineDownAction = "move-selection-else-line-down"; // NOI18N
     
-    /** Copy selection else line up */
     public static final String copySelectionElseLineUpAction = "copy-selection-else-line-up"; // NOI18N
     
-    /** Copy selection else line down */
     public static final String copySelectionElseLineDownAction = "copy-selection-else-line-down"; // NOI18N
 
     /** Toggle the typing mode to overwrite mode or back to insert mode */
@@ -378,6 +375,8 @@ public class BaseKit extends DefaultEditorKit {
     public static final int MAGIC_POSITION_MAX = Integer.MAX_VALUE - 1;
 
     private final SearchableKit searchableKit;
+    
+    private boolean keyBindingsUpdaterInited;
 
 //    static SettingsChangeListener settingsListener = new SettingsChangeListener() {
 //        public void settingsChange(SettingsChangeEvent evt) {
@@ -974,7 +973,14 @@ public class BaseKit extends DefaultEditorKit {
     * to get basic list and then customActions are added.
     */
     public @Override final Action[] getActions() {
-        return (Action []) addActionsToMap()[0];
+        Action[] actions = (Action []) addActionsToMap()[0];
+
+        if (!keyBindingsUpdaterInited) {
+            keyBindingsUpdaterInited = true;
+            KeyBindingsUpdater.get(getContentType()).addKit(this); // Update key bindings in actions
+        }
+        
+        return actions;
     }
 
     /* package */ Map<String, Action> getActionMap() {
@@ -1061,7 +1067,32 @@ public class BaseKit extends DefaultEditorKit {
         return ret;
     }
 
-
+    /**
+     * Checks that the action will result in an insertion into document. 
+     * Returns true for readonly docs as well.
+     * 
+     * @param evt action event
+     * @return true, if the action event will result in insertion; readonly doc status is not 
+     * checked.
+     */
+    static boolean isValidDefaultTypedAction(ActionEvent evt) {
+        // Check whether the modifiers are OK
+        int mod = evt.getModifiers();
+        boolean ctrl = ((mod & ActionEvent.CTRL_MASK) != 0);
+        boolean alt = org.openide.util.Utilities.isMac() ? ((mod & ActionEvent.META_MASK) != 0) :
+            ((mod & ActionEvent.ALT_MASK) != 0);
+        return !(alt || ctrl);
+    }
+    
+    /**
+     * 
+     * @param evt
+     * @return 
+     */
+    static boolean isValidDefaultTypedCommand(ActionEvent evt) {
+        final String cmd = evt.getActionCommand();
+        return (cmd != null && cmd.length() == 1 && cmd.charAt(0) >= 0x20 && cmd.charAt(0) != 0x7F);
+    }
 
     /** 
      * Default typed action
@@ -1084,16 +1115,7 @@ public class BaseKit extends DefaultEditorKit {
         public void actionPerformed (final ActionEvent evt, final JTextComponent target) {
             if ((target != null) && (evt != null)) {
 
-                // Check whether the modifiers are OK
-                int mod = evt.getModifiers();
-                boolean ctrl = ((mod & ActionEvent.CTRL_MASK) != 0);
-                // On the mac, norwegian and french keyboards use Alt to do bracket characters.
-                // This replicates Apple's modification DefaultEditorKit.DefaultKeyTypedAction
-                boolean alt = org.openide.util.Utilities.isMac() ? ((mod & ActionEvent.META_MASK) != 0) :
-                    ((mod & ActionEvent.ALT_MASK) != 0);
-                
-                
-                if (alt || ctrl) {
+                if (!isValidDefaultTypedAction(evt)) {
                     return;
                 }
                 
@@ -1110,7 +1132,7 @@ public class BaseKit extends DefaultEditorKit {
                 
                 // determine if typed char is valid
                 final String cmd = evt.getActionCommand();
-                if (cmd != null && cmd.length() == 1 && cmd.charAt(0) >= 0x20 && cmd.charAt(0) != 0x7F) {
+                if (isValidDefaultTypedCommand(evt)) {
                     if (LOG.isLoggable(Level.FINE)) {
                         LOG.log(Level.FINE, "Processing command char: {0}", Integer.toHexString(cmd.charAt(0))); //NOI18N
                     }
@@ -2013,8 +2035,10 @@ public class BaseKit extends DefaultEditorKit {
                 try {
                     int caretPosition = target.getCaretPosition();
                     boolean emptySelection = !Utilities.isSelectionShowing(target);
+                    boolean disableNoSelectionCopy =
+                            Boolean.getBoolean("org.netbeans.editor.disable.no.selection.copy");
                     // If there is no selection then pre-select a current line including newline
-                    if (emptySelection) {
+                    if (emptySelection && !disableNoSelectionCopy) {
                         Element elem = ((AbstractDocument) target.getDocument()).getParagraphElement(
                                 caretPosition);
                         if (!Utilities.isRowWhite((BaseDocument) target.getDocument(), elem.getStartOffset())) {
@@ -2022,7 +2046,7 @@ public class BaseKit extends DefaultEditorKit {
                         }
                     }
                     target.copy();
-                    if (emptySelection) {
+                    if (emptySelection && !disableNoSelectionCopy) {
                         target.setCaretPosition(caretPosition);
                     }
                 } catch (BadLocationException ble) {
@@ -3129,6 +3153,7 @@ public class BaseKit extends DefaultEditorKit {
 
         public void addComponent(JTextComponent c) {
             synchronized (KEYMAPS_AND_ACTIONS_LOCK) {
+                assert c != null;
                 components.add(c);
             }            
         }

@@ -133,4 +133,12 @@ public class StringUtilsTest extends NbTestCase {
         assertTrue(pattern.matcher("TEST.PHP5").matches());
         assertFalse(pattern.matcher("php").matches());
     }
+
+    public void testWebalize() {
+        assertEquals("my-super-company", StringUtils.webalize("My SuperCompany"));
+        assertEquals("my-super-company", StringUtils.webalize("My_Super_Company"));
+        assertEquals("my-super-company", StringUtils.webalize("  My   SuperCompany  "));
+        assertEquals("hello9", StringUtils.webalize("hello9"));
+    }
+
 }

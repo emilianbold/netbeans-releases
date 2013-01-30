@@ -50,7 +50,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import javax.swing.Action;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
@@ -70,6 +74,7 @@ import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.modules.parsing.spi.Parser;
+import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
 import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
@@ -94,13 +99,13 @@ import org.openide.util.lookup.InstanceContent;
 public class InstantRenameAction extends BaseAction {
     /** Creates a new instance of InstantRenameAction */
     public InstantRenameAction() {
-        super("in-place-refactoring", MAGIC_POSITION_RESET | UNDO_MERGE_RESET);
+        super("in-place-refactoring", MAGIC_POSITION_RESET | UNDO_MERGE_RESET); //NOI18N
     }
 
     public @Override void actionPerformed(ActionEvent evt, final JTextComponent target) {
         try {
             final int caret = target.getCaretPosition();
-            String ident = Utilities.getIdentifier(Utilities.getDocument(target), caret);
+            final String ident = Utilities.getIdentifier(Utilities.getDocument(target), caret);
 
             if (ident == null) {
                 Utilities.setStatusBoldText(target, NbBundle.getMessage(InstantRenameAction.class, "InstantRenameDenied"));
@@ -111,74 +116,121 @@ public class InstantRenameAction extends BaseAction {
                 Utilities.setStatusBoldText(target, NbBundle.getMessage(InstantRenameAction.class, "scanning-in-progress"));
                 return;
             }
-
-            Source js = Source.create (DataLoadersBridge.getDefault().getFileObject(target));
+            Source js = Source.create(target.getDocument());
             if (js == null) {
                 return;
             }
 
             final Set<OffsetRange>[] changePoints = new Set[1];
+            final AtomicInteger changed = new AtomicInteger(0);
 
-            ParserManager.parse (
-                Collections.<Source> singleton (js), 
-                new UserTask () {
-                    public @Override void run (ResultIterator resultIterator) throws Exception {
-                        Map<String, Parser.Result> embeddedResults = new HashMap<String, Parser.Result>();
-                        outer:for(;;) {
-                            embeddedResults.put(resultIterator.getParserResult().getSnapshot().getMimeType(),
-                                    resultIterator.getParserResult());
-                            
-                            Iterable<Embedding> embeddings = resultIterator.getEmbeddings();
-                            for(Embedding e : embeddings) {
-                                if(e.containsOriginalOffset(caret)) {
-                                    resultIterator = resultIterator.getResultIterator(e);
-                                    continue outer;
-                                }
-                            }
-                            break;
-                        }
+            DocumentListener dl = new DocumentListener() {
 
-                        BaseDocument baseDoc = (BaseDocument)target.getDocument();
-                        List<Language> list = LanguageRegistry.getInstance().getEmbeddedLanguages(baseDoc, caret);
-                        for (Language language : list) {
-                            if (language.getInstantRenamer() != null) {
-                                //the parser result matching with the language is just
-                                //mimetype based, it doesn't take mimepath into account,
-                                //which I belive is ok here.
-                                Parser.Result result = embeddedResults.get(language.getMimeType());
-                                if(!(result instanceof ParserResult)) {
-                                    return ;
-                                }
-                                ParserResult parserResult = (ParserResult)result;
-
-                                InstantRenamer renamer = language.getInstantRenamer();
-                                assert renamer != null;
-
-                                String[] descRetValue = new String[1];
-
-                                if (!renamer.isRenameAllowed(parserResult, caret, descRetValue)) {
-                                    return;
-                                }
-
-                                Set<OffsetRange> regions = renamer.getRenameRegions(parserResult, caret);
-
-                                if ((regions != null) && (regions.size() > 0)) {
-                                    changePoints[0] = regions;
-                                }
-
-                                break; //the for break
-                            }
-                        }
-                    }
+                @Override
+                public void insertUpdate(DocumentEvent e) {
+                    changed.compareAndSet(0, 1);
                 }
-            );
 
-            if (changePoints[0] != null) {
-                doInstantRename(changePoints[0], target, caret, ident);
-            } else {
-                doFullRename((EditorCookie)DataLoadersBridge.getDefault().getCookie(target,EditorCookie.class), DataLoadersBridge.getDefault().getNodeDelegate(target));
+                @Override
+                public void removeUpdate(DocumentEvent e) {
+                    changed.compareAndSet(0, 1);
+                }
+
+                @Override
+                public void changedUpdate(DocumentEvent e) {
+                    // ignore attr changes
+                }
+                
+            };
+            target.getDocument().addDocumentListener(dl);
+            try {
+                do {
+                    changed.set(0);
+                    ParserManager.parse (
+                        Collections.<Source> singleton (js), 
+                        new UserTask () {
+                            public @Override void run (ResultIterator resultIterator) throws Exception {
+                                Map<String, Parser.Result> embeddedResults = new HashMap<String, Parser.Result>();
+                                outer:for(;;) {
+                                    final Result parserResult = resultIterator.getParserResult();
+                                    if (parserResult == null) {
+                                        return;
+                                    }
+                                    embeddedResults.put(parserResult.getSnapshot().getMimeType(),
+                                            resultIterator.getParserResult());
+
+                                    Iterable<Embedding> embeddings = resultIterator.getEmbeddings();
+                                    for(Embedding e : embeddings) {
+                                        if(e.containsOriginalOffset(caret)) {
+                                            resultIterator = resultIterator.getResultIterator(e);
+                                            continue outer;
+                                        }
+                                    }
+                                    break;
+                                }
+
+                                BaseDocument baseDoc = (BaseDocument)target.getDocument();
+                                List<Language> list = LanguageRegistry.getInstance().getEmbeddedLanguages(baseDoc, caret);
+                                for (Language language : list) {
+                                    if (language.getInstantRenamer() != null) {
+                                        //the parser result matching with the language is just
+                                        //mimetype based, it doesn't take mimepath into account,
+                                        //which I belive is ok here.
+                                        Parser.Result result = embeddedResults.get(language.getMimeType());
+                                        if(!(result instanceof ParserResult)) {
+                                            return ;
+                                        }
+                                        ParserResult parserResult = (ParserResult)result;
+
+                                        InstantRenamer renamer = language.getInstantRenamer();
+                                        assert renamer != null;
+
+                                        String[] descRetValue = new String[1];
+
+                                        if (!renamer.isRenameAllowed(parserResult, caret, descRetValue)) {
+                                            return;
+                                        }
+
+                                        Set<OffsetRange> regions = renamer.getRenameRegions(parserResult, caret);
+
+                                        if ((regions != null) && (regions.size() > 0)) {
+                                            changePoints[0] = regions;
+                                        }
+
+                                        break; //the for break
+                                    }
+                                }
+                            }
+                        }
+                    );
+
+                    if (changePoints[0] != null) {
+                        final BadLocationException[] exc = new BadLocationException[1];
+                        target.getDocument().render(new Runnable() {
+                            public void run() {
+                                try {
+                                    // writers are now locked out, check mod flag:
+                                    if (changed.get() == 0) {
+                                        doInstantRename(changePoints[0], target, caret, ident);
+                                        // don't loop even if there's a modification
+                                        changed.set(2);
+                                    }
+                                } catch (BadLocationException ex) {
+                                    exc[0] = ex;
+                                }
+                            }
+                        });
+                        if (exc[0] != null) {
+                            throw exc[0];
+                        }
+                    } else {
+                        doFullRename((EditorCookie)DataLoadersBridge.getDefault().getCookie(target,EditorCookie.class), DataLoadersBridge.getDefault().getNodeDelegate(target));
+                        break;
+                    }
+                } while (changed.get() == 1);
+            } finally {
+                target.getDocument().removeDocumentListener(dl);
             }
-            
         } catch (BadLocationException e) {
             ErrorManager.getDefault().notify(e);
         } catch (IOException ioe) {

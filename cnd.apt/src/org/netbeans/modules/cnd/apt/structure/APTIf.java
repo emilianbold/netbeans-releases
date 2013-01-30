@@ -44,12 +44,9 @@
 
 package org.netbeans.modules.cnd.apt.structure;
 
-import org.netbeans.modules.cnd.antlr.TokenStream;
-
 /**
  * #if directive
  * @author Vladimir Voskresensky
  */
-public interface APTIf extends APT {
-    TokenStream getCondition();
+public interface APTIf extends APTIfCondition {
 }

@@ -52,6 +52,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -61,6 +62,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 
 /**
@@ -113,7 +115,7 @@ public final class SourceRoots {
     private final Type type;
 
     // #196060 - help to diagnose
-    private volatile long firedChanges = 0;
+    private AtomicLong firedChanges = new AtomicLong();
 
 
     public static SourceRoots create(UpdateHelper helper, PropertyEvaluator evaluator, ReferenceHelper refHelper, Type type) {
@@ -223,7 +225,7 @@ public final class SourceRoots {
                             if (prop != null) {
                                 File f = helper.getAntProjectHelper().resolveFile(prop);
                                 try {
-                                    URL url = f.toURI().toURL();
+                                    URL url = Utilities.toURI(f).toURL();
                                     if (!f.exists()) {
                                         url = new URL(url.toExternalForm() + "/"); // NOI18N
                                     } else if (f.isFile()) {
@@ -352,7 +354,7 @@ public final class SourceRoots {
             }
         }
         if (fire) {
-            firedChanges++;
+            firedChanges.incrementAndGet();
             support.firePropertyChange(PROP_ROOTS, null, null);
         }
     }
@@ -362,7 +364,7 @@ public final class SourceRoots {
     }
 
     public long getFiredChanges() {
-        return firedChanges;
+        return firedChanges.get();
     }
 
     //~ Inner classes

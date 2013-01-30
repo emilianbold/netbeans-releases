@@ -48,6 +48,7 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.modules.editor.lib2.search.EditorFindSupport;
+import org.netbeans.modules.editor.lib2.search.EditorFindSupport.RP;
 import org.netbeans.modules.editor.lib2.search.EditorFindSupport.SPW;
 import org.netbeans.modules.editor.search.SearchBar;
 import org.netbeans.modules.editor.search.SearchNbEditorKit;
@@ -80,7 +81,7 @@ public class SearchCompletion implements CompletionProvider {
     static class Query extends AsyncCompletionQuery {
 
         private SearchBar searchBar = SearchBar.getInstance();
-        Set<SearchCompletionItem> results;
+        private Set<SearchCompletionItem> results;
 
         @Override
         protected void query(CompletionResultSet resultSet, Document doc, int caretOffset) {
@@ -104,6 +105,13 @@ public class SearchCompletion implements CompletionProvider {
                 }
                 for (SPW spw : EditorFindSupport.getInstance().getHistory()) {
                     String s = spw.getSearchExpression().trim();
+                    if (s.toLowerCase().startsWith(queryText) && s.length() != queryText.length()) {
+                        SearchCompletionItem searchCompletionItem = new SearchCompletionItem(s);
+                        results.add(searchCompletionItem);
+                    }
+                }
+                for (RP rp : EditorFindSupport.getInstance().getReplaceHistory()) {
+                    String s = rp.getReplaceExpression().trim();
                     if (s.toLowerCase().startsWith(queryText) && s.length() != queryText.length()) {
                         SearchCompletionItem searchCompletionItem = new SearchCompletionItem(s);
                         results.add(searchCompletionItem);

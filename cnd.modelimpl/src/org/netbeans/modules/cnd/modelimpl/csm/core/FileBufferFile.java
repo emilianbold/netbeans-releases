@@ -49,6 +49,7 @@ import java.io.*;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
+import org.netbeans.modules.cnd.debug.CndTraceFlags;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
@@ -62,6 +63,7 @@ import org.openide.filesystems.FileObject;
 public class FileBufferFile extends AbstractFileBuffer {
     
     private volatile Reference<char[]> cachedArray;
+    private long crc = Long.MIN_VALUE;
     private final Object lock = new Object();
     private volatile long lastModifiedWhenCachedString;
 
@@ -82,11 +84,24 @@ public class FileBufferFile extends AbstractFileBuffer {
             if( end > buf.length ) {
                 new IllegalArgumentException("").printStackTrace(System.err); // NOI18N
                 end = buf.length;
+                if (start > end) {
+                    start = end;
+                }
             }
             return new String(buf, start, end - start);
         } catch( IOException e ) {
             DiagnosticExceptoins.register(e);
             return ""; // NOI18N
+        }
+    }
+
+    @Override
+    public long getCRC() {
+        synchronized (lock) {
+            if (crc == Long.MIN_VALUE) {
+                crc = super.getCRC();
+            }
+            return crc;
         }
     }
 
@@ -101,6 +116,7 @@ public class FileBufferFile extends AbstractFileBuffer {
                         }
                 }
             }
+            crc = Long.MIN_VALUE;
             FileObject fo = getFileObject();
             long length = fo.getSize();
             if (length > Integer.MAX_VALUE) {
@@ -145,7 +161,7 @@ public class FileBufferFile extends AbstractFileBuffer {
                 reader.close();
                 is.close();
             }
-            if (MIMENames.isCppOrCOrFortran(fo.getMIMEType())) {
+            if (CndTraceFlags.WEAK_REFS_HOLDERS || MIMENames.isCppOrCOrFortran(fo.getMIMEType())) {
                 cachedArray = new WeakReference<char[]>(readChars);
             } else {
                 cachedArray = new SoftReference<char[]>(readChars);
@@ -179,8 +195,8 @@ public class FileBufferFile extends AbstractFileBuffer {
     ////////////////////////////////////////////////////////////////////////////
     // impl of SelfPersistent
     
-    public FileBufferFile(RepositoryDataInput input) throws IOException {
-        super(input);
+    public FileBufferFile(RepositoryDataInput input, int unitId) throws IOException {
+        super(input, unitId);
     }
 
     @Override

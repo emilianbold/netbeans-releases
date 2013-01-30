@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -54,36 +54,43 @@ import org.netbeans.api.autoupdate.UpdateUnit;
 import org.netbeans.modules.autoupdate.services.OperationContainerImpl.OperationInfoImpl;
 import org.netbeans.modules.autoupdate.services.UpdateUnitImpl;
 
-/** Trampline to access internals of API and SPI.
+/** Trampoline to access internals of API and SPI.
  *
  * @author Jiri Rechtacek
  */
 final class TrampolineSPI extends Trampoline {
     
+    @Override
     protected UpdateUnit createUpdateUnit (UpdateUnitImpl impl) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
     
+    @Override
     protected UpdateUnitImpl impl (UpdateUnit unit) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
     
+    @Override
     protected UpdateElement createUpdateElement (UpdateElementImpl impl) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    @Override
     protected UpdateElementImpl impl (UpdateElement element) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    @Override
     public UpdateItemImpl impl(UpdateItem item) {
         return item.impl;
     }
 
+    @Override
     protected UpdateItem createUpdateItem (UpdateItemImpl impl) {
         return new UpdateItem (impl);
     }
 
+    @Override
     protected OperationContainerImpl impl(OperationContainer container) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
@@ -92,28 +99,39 @@ final class TrampolineSPI extends Trampoline {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    @Override
     protected UpdateUnitProvider createUpdateUnitProvider(UpdateUnitProviderImpl impl) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    @Override
     public UpdateUnitProviderImpl impl(UpdateUnitProvider provider) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    @Override
     protected OperationInfoImpl impl (OperationInfo info) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    @Override
     protected OperationInfo createOperationInfo(OperationContainerImpl.OperationInfoImpl impl) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    @Override
     protected File findCluster (String clusterName, AutoupdateClusterCreator creator) {
         return creator.findCluster (clusterName);
     }
 
+    @Override
     protected File[] registerCluster (String clusterName, File cluster, AutoupdateClusterCreator creator) throws IOException {
         return creator.registerCluster (clusterName, cluster);
+    }
+
+    @Override
+    public InstallSupportImpl impl(InstallSupport support) {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
 }

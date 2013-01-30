@@ -43,7 +43,6 @@ package org.netbeans.modules.ws.qaf.rest;
 
 import java.io.File;
 import java.io.IOException;
-import javax.swing.JButton;
 import javax.swing.ListModel;
 import junit.framework.Test;
 import org.netbeans.api.project.Project;
@@ -55,7 +54,6 @@ import org.netbeans.jellytools.WizardOperator;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.*;
-import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.project.ui.OpenProjectList;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
@@ -184,9 +182,6 @@ public class RestCStubsTest extends RestTestBase {
         jrbo.clickMouse();
         JTextFieldOperator jtfo = new JTextFieldOperator(wo, 0);
         jtfo.setText(new File(getRestDataDir(), "testApplication.wadl").getCanonicalFile().getAbsolutePath()); //NOI18N
-        if (useJMaki()) {
-            new JCheckBoxOperator(wo, 0).setSelected(true);
-        }
         //click on the radio button again to force the wizard to revalidate itself
         //WA for: http://www.netbeans.org/issues/show_bug.cgi?id=128445
         jrbo.clickMouse();
@@ -203,17 +198,10 @@ public class RestCStubsTest extends RestTestBase {
         createNewWSFile(getProject(), cStubsLabel);
         WizardOperator wo = new WizardOperator(cStubsLabel);
         addProject(wo, sourcePath);
-        if (useJMaki()) {
-            new JCheckBoxOperator(wo, 0).setSelected(true);
-        }
         wo.finish();
         //Generating Client Stubs From RESTful Web Services...
         String progressLabel = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.wizard.Bundle", "LBL_ClientStubsProgress");
         waitDialogClosed(progressLabel);
-    }
-
-    protected boolean useJMaki() {
-        return false;
     }
 
     private void addProject(WizardOperator wo, String path) {
@@ -237,11 +225,11 @@ public class RestCStubsTest extends RestTestBase {
      * Creates suite from particular test cases. You can define order of testcases here.
      */
     public static Test suite() {
-        return NbModuleSuite.create(addServerTests(Server.GLASSFISH, NbModuleSuite.createConfiguration(RestCStubsTest.class),
+        return createAllModulesServerSuite(Server.GLASSFISH, RestCStubsTest.class,
                 "testWizard", //NOI18N
                 "testCreateSimpleStubs", //NOI18N
                 "testFromWADL", //NOI18N
                 "testCloseProject" //NOI18N
-                ).enableModules(".*").clusters(".*")); //NOI18N
+                );
     }
 }

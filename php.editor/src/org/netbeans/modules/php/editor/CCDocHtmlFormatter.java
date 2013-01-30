@@ -63,16 +63,19 @@ public class CCDocHtmlFormatter extends HtmlFormatter {
     public CCDocHtmlFormatter() {
     }
 
+    @Override
     public void reset() {
         textLength = 0;
         sb.setLength(0);
     }
 
+    @Override
     public void appendHtml(String html) {
         sb.append(html);
         // Not sure what to do about maxLength here... but presumably
     }
 
+    @Override
     public void appendText(String text, int fromInclusive, int toExclusive) {
         for (int i = fromInclusive; i < toExclusive; i++) {
             if (textLength >= maxLength) {
@@ -111,6 +114,7 @@ public class CCDocHtmlFormatter extends HtmlFormatter {
         }
     }
 
+    @Override
     public void name(ElementKind kind, boolean start) {
         assert start != isName;
         isName = start;
@@ -122,6 +126,7 @@ public class CCDocHtmlFormatter extends HtmlFormatter {
         }
     }
 
+    @Override
     public void parameters(boolean start) {
         assert start != isParameter;
         isParameter = start;
@@ -138,6 +143,7 @@ public class CCDocHtmlFormatter extends HtmlFormatter {
         emphasis(start);
     }
 
+    @Override
     public void type(boolean start) {
         assert start != isType;
         isType = start;
@@ -151,6 +157,7 @@ public class CCDocHtmlFormatter extends HtmlFormatter {
         }
     }
 
+    @Override
     public void deprecated(boolean start) {
         assert start != isDeprecated;
         isDeprecated = start;
@@ -162,12 +169,14 @@ public class CCDocHtmlFormatter extends HtmlFormatter {
         }
     }
 
+    @Override
     public String getText() {
         assert !isParameter && !isDeprecated && !isName && !isType;
 
         return sb.toString();
     }
 
+    @Override
     public void emphasis(boolean start) {
         assert start != isEmphasis;
         isEmphasis = start;

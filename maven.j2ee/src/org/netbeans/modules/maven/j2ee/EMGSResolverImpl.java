@@ -52,16 +52,16 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.common.queries.api.InjectionTargetQuery;
 import org.netbeans.modules.j2ee.core.api.support.classpath.ContainerClassPathModifier;
 import org.netbeans.modules.j2ee.core.api.support.java.SourceUtils;
-import org.netbeans.modules.j2ee.persistence.spi.entitymanagergenerator.ApplicationManagedResourceTransactionInjectableInWeb;
-import org.netbeans.modules.j2ee.persistence.spi.entitymanagergenerator.ApplicationManagedResourceTransactionNonInjectableInWeb;
-import org.netbeans.modules.j2ee.persistence.spi.entitymanagergenerator.ContainerManagedJTAInjectableInWeb;
-import org.netbeans.modules.j2ee.persistence.spi.entitymanagergenerator.EntityManagerGenerationStrategy;
-import org.netbeans.modules.j2ee.persistence.spi.entitymanagergenerator.EntityManagerGenerationStrategyResolver;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
 import org.netbeans.modules.j2ee.persistence.dd.PersistenceMetadata;
 import org.netbeans.modules.j2ee.persistence.dd.common.Persistence;
 import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
+import org.netbeans.modules.j2ee.persistence.spi.entitymanagergenerator.ApplicationManagedResourceTransactionInjectableInWeb;
+import org.netbeans.modules.j2ee.persistence.spi.entitymanagergenerator.ApplicationManagedResourceTransactionNonInjectableInWeb;
+import org.netbeans.modules.j2ee.persistence.spi.entitymanagergenerator.ContainerManagedJTAInjectableInEJB;
 import org.netbeans.modules.j2ee.persistence.spi.entitymanagergenerator.ContainerManagedJTANonInjectableInWeb;
+import org.netbeans.modules.j2ee.persistence.spi.entitymanagergenerator.EntityManagerGenerationStrategy;
+import org.netbeans.modules.j2ee.persistence.spi.entitymanagergenerator.EntityManagerGenerationStrategyResolver;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.filesystems.FileObject;
@@ -107,7 +107,7 @@ public class EMGSResolverImpl implements EntityManagerGenerationStrategyResolver
                 // andjavax.transaction.UserTransaction, javax.naming.Context
                 //add jee5 on classpath
 
-                return ContainerManagedJTAInjectableInWeb.class;
+                return ContainerManagedJTAInjectableInEJB.class;
             } else { // other classes
                 //javax.transaction.UserTransaction
                 //javax.naming.Context
@@ -128,7 +128,11 @@ public class EMGSResolverImpl implements EntityManagerGenerationStrategyResolver
 
     private boolean isInjectionTarget(FileObject target) {
         final boolean[] result = new boolean[1];
-        JavaSource source = JavaSource.forFileObject(target);
+        final JavaSource source = JavaSource.forFileObject(target);
+        if (source == null) {
+            return false;
+        }
+
         try{
             source.runModificationTask(new Task<WorkingCopy>(){
                 @Override

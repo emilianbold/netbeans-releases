@@ -46,8 +46,8 @@ import java.util.LinkedList;
 import javax.swing.JTree;
 import javax.swing.tree.MutableTreeNode;
 import org.netbeans.modules.php.editor.api.elements.ElementFilter;
-import org.netbeans.modules.php.editor.api.elements.TypeElement;
 import org.netbeans.modules.php.editor.api.elements.TreeElement;
+import org.netbeans.modules.php.editor.api.elements.TypeElement;
 import org.netbeans.modules.php.editor.codegen.CGSGenerator;
 import org.netbeans.modules.php.editor.codegen.CGSInfo;
 import org.netbeans.modules.php.editor.codegen.MethodProperty;
@@ -80,7 +80,7 @@ public class MethodPanel extends ConstructorPanel {
         queue.offer(enclosingType);
         while (!queue.isEmpty()) {
             TreeElement<TypeElement> type = queue.poll();
-            final String nodeText = String.format("<html><b>%s</b> %s</html>",//NOI18N
+            final String nodeText = String.format("<html><b>%s</b> %s</html>", //NOI18N
                     type.getElement().getName(), type.getElement().asString(TypeElement.PrintAs.SuperTypes));
             final CGSClassNode classNode = new CheckNode.CGSClassNode(nodeText);
             for (Property property : properties) {

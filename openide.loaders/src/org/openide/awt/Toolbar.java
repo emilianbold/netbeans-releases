@@ -79,7 +79,7 @@ import org.openide.util.actions.Presenter;
  *
  * @author  David Peroutka, Libor Kramolis
  */
-public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInputListener*/ {
+public class Toolbar extends ToolbarWithOverflow /*implemented by patchsuperclass MouseInputListener*/ {
     /** Basic toolbar height.
      @deprecated Use getBasicHeight instead. */
     @Deprecated

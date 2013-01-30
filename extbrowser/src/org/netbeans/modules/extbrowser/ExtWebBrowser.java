@@ -47,6 +47,8 @@ package org.netbeans.modules.extbrowser;
 import java.beans.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.web.browser.api.BrowserFamilyId;
+import org.netbeans.modules.web.browser.spi.EnhancedBrowserFactory;
 
 import org.openide.execution.NbProcessDescriptor;
 import org.openide.util.NbBundle;
@@ -56,7 +58,7 @@ import org.openide.util.Utilities;
 /** Factory and descriptions for external browser
  */
 
-public class ExtWebBrowser implements HtmlBrowser.Factory, java.io.Serializable, PropertyChangeListener {
+public class ExtWebBrowser implements HtmlBrowser.Factory, java.io.Serializable, PropertyChangeListener, EnhancedBrowserFactory {
 
     private static final long serialVersionUID = -3021027901671504127L;
 
@@ -79,12 +81,15 @@ public class ExtWebBrowser implements HtmlBrowser.Factory, java.io.Serializable,
     
     /** Name of DDE server corresponding to Google Chrome */
     public static final String CHROME = "CHROME";   // NOI18N
+    /** Name of DDE server corresponding to Google Chromium */
+    public static final String CHROMIUM = "CHROMIUM";   // NOI18N
     /** Name of DDE server corresponding to Internet Explorer */
     public static final String IEXPLORE = "IEXPLORE";   // NOI18N
     /** Name of DDE server corresponding to Mozilla */
     public static final String MOZILLA  = "MOZILLA";    // NOI18N
     /** Name of DDE server corresponding to Firefox */
     public static final String FIREFOX  = "FIREFOX";    // NOI18N
+
     
 //    /** Default timeout for starting the browser */
 //    protected static final int DEFAULT_BROWSER_START_TIMEOUT = 5000;
@@ -462,6 +467,23 @@ public class ExtWebBrowser implements HtmlBrowser.Factory, java.io.Serializable,
         init();
     }
 
+    public BrowserFamilyId getBrowserFamilyId() {
+        NbProcessDescriptor desc = getBrowserExecutable();
+        if (desc != null) {
+            String p = desc.getProcessName();
+            if (p.contains("chrom")) {
+                return BrowserFamilyId.CHROME;
+            }
+            
+            // TODO:
+            
+            // recognize other browser types according to binary name specified by user
+            
+            
+        }
+        return BrowserFamilyId.UNKNOWN;
+    }
+    
     /** Default format that can format tags related to execution. 
      * Currently this is only the URL.
      */

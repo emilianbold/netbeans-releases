@@ -50,6 +50,7 @@ import org.netbeans.modules.php.editor.api.QualifiedName;
  * @author Radek Matous
  */
 public interface IndexScope extends Scope {
+
     //for now implemented on top of PHPIndex
     ElementQuery.Index getIndex();
     //globally visible
@@ -69,7 +70,8 @@ public interface IndexScope extends Scope {
     List<? extends ClassConstantElement> findInheritedClassConstants(ClassScope clsScope, String constName);
     List<? extends FieldElement> findFields(ClassScope cls, String field, int... modifiers);
     List<? extends FieldElement> findFields(TraitScope cls, String field, int... modifiers);
-    List<? extends FieldElement>findFields(ClassScope cls, int... modifiers);
-    List<? extends FieldElement>findFields(TraitScope cls, int... modifiers);
+    List<? extends FieldElement> findFields(ClassScope cls, int... modifiers);
+    List<? extends FieldElement> findFields(TraitScope cls, int... modifiers);
     List<? extends FieldElement> findInheritedFields(ClassScope clsScope, String fieldName);
+
 }

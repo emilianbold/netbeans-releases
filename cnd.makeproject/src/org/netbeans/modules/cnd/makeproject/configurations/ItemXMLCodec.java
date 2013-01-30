@@ -109,30 +109,31 @@ public class ItemXMLCodec extends XMLDecoder implements XMLEncoder {
         if (item.isDefaultConfiguration()) {
             return;
         }
+        PredefinedToolKind tool = item.getTool();
 
         xes.elementOpen(ITEM_ELEMENT, new AttrValuePair[]{
             new AttrValuePair(PATH_ATTR, item.getItem().getPath()),
             new AttrValuePair(EXCLUDED_ATTR, "" + item.getExcluded().getValue()),
-            new AttrValuePair(TOOL_ATTR, "" + item.getTool().ordinal()),
+            new AttrValuePair(TOOL_ATTR, "" + tool.ordinal()),
             new AttrValuePair(FLAVOR2_ATTR, "" + item.getLanguageFlavor().toExternal()),
         });
 //        if (item.getExcluded().getModified()) {
 //            xes.element(ITEM_EXCLUDED_ELEMENT, "" + item.getExcluded().getValue()); // NOI18N
 //        }
 //        xes.element(ITEM_TOOL_ELEMENT, "" + item.getTool()); // NOI18N
-        if (item.getTool() == PredefinedToolKind.CCompiler) {
+        if (tool == PredefinedToolKind.CCompiler) {
             CommonConfigurationXMLCodec.writeCCompilerConfiguration(xes, item.getCCompilerConfiguration(), CommonConfigurationXMLCodec.ITEM_LEVEL);
             if(item.isProCFile()) {
                 CommonConfigurationXMLCodec.writeCustomToolConfiguration(xes, item.getCustomToolConfiguration());
             }
-        } else if (item.getTool() == PredefinedToolKind.CCCompiler) {
+        } else if (tool == PredefinedToolKind.CCCompiler) {
             CommonConfigurationXMLCodec.writeCCCompilerConfiguration(xes, item.getCCCompilerConfiguration(), CommonConfigurationXMLCodec.ITEM_LEVEL);
             if(item.isProCFile()) {
                 CommonConfigurationXMLCodec.writeCustomToolConfiguration(xes, item.getCustomToolConfiguration());
             }
-        } else if (item.getTool() == PredefinedToolKind.FortranCompiler) {
+        } else if (tool == PredefinedToolKind.FortranCompiler) {
             CommonConfigurationXMLCodec.writeFortranCompilerConfiguration(xes, item.getFortranCompilerConfiguration());
-        } else if (item.getTool() == PredefinedToolKind.CustomTool) {
+        } else if (tool == PredefinedToolKind.CustomTool) {
             CommonConfigurationXMLCodec.writeCustomToolConfiguration(xes, item.getCustomToolConfiguration());
         }
         xes.elementClose(ITEM_ELEMENT);

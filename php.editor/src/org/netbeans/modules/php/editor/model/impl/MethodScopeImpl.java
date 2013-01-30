@@ -42,21 +42,20 @@
 package org.netbeans.modules.php.editor.model.impl;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-import org.netbeans.modules.php.editor.api.elements.TypeResolver;
-import org.netbeans.modules.php.editor.model.ClassScope;
-import org.netbeans.modules.php.editor.model.MethodScope;
 import org.netbeans.modules.php.editor.PredefinedSymbols;
 import org.netbeans.modules.php.editor.api.PhpElementKind;
-import org.netbeans.modules.php.editor.model.ModelUtils;
-import org.netbeans.modules.php.editor.model.NamespaceScope;
 import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.api.elements.BaseFunctionElement;
 import org.netbeans.modules.php.editor.api.elements.ParameterElement;
+import org.netbeans.modules.php.editor.api.elements.TypeResolver;
 import org.netbeans.modules.php.editor.elements.ParameterElementImpl;
 import org.netbeans.modules.php.editor.index.Signature;
+import org.netbeans.modules.php.editor.model.ClassScope;
+import org.netbeans.modules.php.editor.model.MethodScope;
+import org.netbeans.modules.php.editor.model.ModelUtils;
+import org.netbeans.modules.php.editor.model.NamespaceScope;
 import org.netbeans.modules.php.editor.model.Scope;
 import org.netbeans.modules.php.editor.model.TypeScope;
 import org.netbeans.modules.php.editor.model.VariableName;
@@ -88,7 +87,7 @@ final class MethodScopeImpl extends FunctionScopeImpl implements MethodScope, Va
 
     MethodScopeImpl(Scope inScope, MagicMethodDeclarationInfo nodeInfo) {
         super(inScope, nodeInfo);
-        assert inScope instanceof TypeScope;
+        assert inScope instanceof TypeScope : inScope.getClass().toString();
         classNormName = inScope.getNormalizedName();
         scanned = true;
     }
@@ -101,7 +100,9 @@ final class MethodScopeImpl extends FunctionScopeImpl implements MethodScope, Va
     }
 
     public static MethodScopeImpl createElement(Scope scope, PHPDocMethodTag node) {
-        return new MethodScopeImpl(scope, MagicMethodDeclarationInfo.create(node));
+        MagicMethodDeclarationInfo nodeInfo = MagicMethodDeclarationInfo.create(node);
+        assert nodeInfo != null;
+        return new MethodScopeImpl(scope, nodeInfo);
     }
 
     @Override
@@ -131,7 +132,7 @@ final class MethodScopeImpl extends FunctionScopeImpl implements MethodScope, Va
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append(getPhpModifiers().toString()).append(" ");//NOI18N
+        sb.append(getPhpModifiers().toString()).append(" "); //NOI18N
         sb.append(super.toString());
         return sb.toString();
     }
@@ -142,8 +143,13 @@ final class MethodScopeImpl extends FunctionScopeImpl implements MethodScope, Va
     }
 
     @Override
+    public boolean isInitiator() {
+        return isConstructor() || getName().contains("setUp"); //NOI18N
+    }
+
+    @Override
     public boolean isConstructor() {
-        return isMagic() ? getName().contains("__construct") : false;
+        return isMagic() ? getName().contains("__construct") : false; //NOI18N
     }
 
     @Override
@@ -153,20 +159,20 @@ final class MethodScopeImpl extends FunctionScopeImpl implements MethodScope, Va
 
     @Override
     public String getNormalizedName() {
-        return classNormName+super.getNormalizedName();
+        return classNormName + super.getNormalizedName();
     }
 
     @Override
     public String getClassSkeleton() {
         StringBuilder sb = new StringBuilder();
-        sb.append(getPhpModifiers().toString()).append(" ");//NOI18N
-        sb.append("function").append(" ").append(getName());//NOI18N
-        sb.append("(");//NOI18N
+        sb.append(getPhpModifiers().toString()).append(" "); //NOI18N
+        sb.append("function").append(" ").append(getName()); //NOI18N
+        sb.append("("); //NOI18N
         List<? extends ParameterElement> parameterList = getParameters();
         if (parameterList.size() > 0) {
             for (int i = 0, n = parameterList.size(); i < n; i++) {
                 if (i > 0) {
-                    sb.append(", ");
+                    sb.append(", "); //NOI18N
                 }
                 final ParameterElement param = parameterList.get(i);
                     if (param.hasDeclaredType()) {
@@ -174,7 +180,7 @@ final class MethodScopeImpl extends FunctionScopeImpl implements MethodScope, Va
                         if (types.size() == 1) {
                             for (TypeResolver typeResolver : types) {
                                 if (typeResolver.isResolved()) {
-                                    sb.append(typeResolver.getTypeName(false)).append(' ');//NOI18N
+                                    sb.append(typeResolver.getTypeName(false)).append(' '); //NOI18N
                                 }
                             }
                         }
@@ -190,27 +196,27 @@ final class MethodScopeImpl extends FunctionScopeImpl implements MethodScope, Va
             }
         }
 
-        sb.append(")");
-        sb.append("{\n}");//NOI18N
+        sb.append(")"); //NOI18N
+        sb.append("{\n}"); //NOI18N
         return sb.toString();
     }
 
     @Override
     public String getInterfaceSkeleton() {
         StringBuilder sb = new StringBuilder();
-        sb.append(getPhpModifiers().toString()).append(" ");//NOI18N
-        sb.append("function").append(" ").append(getName());//NOI18N
-        sb.append("(");//NOI18N
+        sb.append(getPhpModifiers().toString()).append(" "); //NOI18N
+        sb.append("function").append(" ").append(getName()); //NOI18N
+        sb.append("("); //NOI18N
         List<? extends String> parameterNames = getParameterNames();
         for (int i = 0; i < parameterNames.size(); i++) {
             String param = parameterNames.get(i);
             if (i > 0) {
-                sb.append(", ");//NOI18N
+                sb.append(", "); //NOI18N
             }
             sb.append(param);
         }
-        sb.append(")");
-        sb.append(";\n");//NOI18N
+        sb.append(")"); //NOI18N
+        sb.append(";\n"); //NOI18N
         return sb.toString();
     }
 
@@ -231,6 +237,7 @@ final class MethodScopeImpl extends FunctionScopeImpl implements MethodScope, Va
         sb.append(typeName).append(Signature.ITEM_DELIMITER);
         sb.append(getSignatureLastPart());
         NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(this);
+        assert namespaceScope != null;
         QualifiedName qualifiedName = namespaceScope.getQualifiedName();
         sb.append(qualifiedName.toString()).append(Signature.ITEM_DELIMITER);
         return sb.toString();

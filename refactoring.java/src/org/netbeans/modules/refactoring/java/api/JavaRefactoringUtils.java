@@ -90,6 +90,11 @@ public final class JavaRefactoringUtils {
     public static Collection<ExecutableElement> getOverridingMethods(ExecutableElement method, CompilationInfo info) {
         return RefactoringUtils.getOverridingMethods(method, info, new AtomicBoolean());
     }
+    
+    @SuppressWarnings("deprecation")
+    public static boolean isFromLibrary(ElementHandle<? extends Element> element, ClasspathInfo info) {
+        return RefactoringUtils.isFromLibrary(element, info);
+    }
 
     /**
      * Returns true if file is on known source path.

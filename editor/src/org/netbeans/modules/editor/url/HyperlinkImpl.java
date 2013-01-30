@@ -60,6 +60,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt;
@@ -207,7 +208,13 @@ public class HyperlinkImpl implements HyperlinkProviderExt {
         try {
             c = url.openConnection();
 
-            String encoding = c.getContentEncoding();
+            String encoding = null;
+            try {
+                encoding = c.getContentEncoding();
+            } catch (Throwable ex) {
+                org.netbeans.editor.Utilities.setStatusText(EditorRegistry.lastFocusedComponent(), "Invalid URL");
+                return null;
+            }
 
             if (encoding == null) {
                 encoding = Parser.decodeContentType(c.getContentType());

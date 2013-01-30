@@ -53,6 +53,7 @@ import org.netbeans.modules.csl.api.StructureItem;
 import org.netbeans.modules.css.editor.csl.CssNodeElement;
 import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.lib.api.NodeUtil;
+import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
 /**
@@ -64,8 +65,8 @@ public class NamespaceStructureItem implements StructureItem {
     private CssNodeElement handle;
     private CharSequence prefix, resource;
     
-    public NamespaceStructureItem(Node namespaceNode) {
-        this.handle = CssNodeElement.createElement(namespaceNode);
+    public NamespaceStructureItem(FileObject file, Node namespaceNode) {
+        this.handle = CssNodeElement.createElement(file, namespaceNode);
         
         Node prefixNode = NodeUtil.query(namespaceNode, "namespace_prefix"); //NOI18N
         this.prefix = prefixNode != null ? prefixNode.image() : NbBundle.getMessage(NamespaceStructureItem.class, "default_namespace");

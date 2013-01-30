@@ -43,11 +43,17 @@
  */
 package org.netbeans.modules.cnd.repository.impl;
 
+import java.io.File;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
+import org.netbeans.modules.cnd.repository.api.CacheLocation;
 import org.netbeans.modules.cnd.repository.api.DatabaseTable;
 import org.netbeans.modules.cnd.repository.api.Repository;
-import org.netbeans.modules.cnd.repository.api.RepositoryAccessor;
 import org.netbeans.modules.cnd.repository.disk.DiskRepositoryManager;
+import org.netbeans.modules.cnd.repository.relocate.api.UnitCodec;
+import org.netbeans.modules.cnd.repository.relocate.spi.RelocationSupportProvider;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.spi.RepositoryListener;
@@ -55,31 +61,49 @@ import org.netbeans.modules.cnd.repository.testbench.Stats;
 import org.netbeans.modules.cnd.repository.translator.RepositoryTranslatorImpl;
 import org.netbeans.modules.cnd.repository.util.RepositoryListenersManager;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.openide.util.Utilities;
+import org.openide.util.lookup.ServiceProvider;
+import org.openide.util.lookup.ServiceProviders;
 
 /**
  *
  * @author Vladimir Voskresensky
  */
-@org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.cnd.repository.api.Repository.class)
-public final class DelegateRepository implements Repository {
+@ServiceProviders({
+@ServiceProvider(service = org.netbeans.modules.cnd.repository.api.Repository.class),
+@ServiceProvider(path = RelocationSupportProvider.PATH, service = RelocationSupportProvider.class, position = 1000)
+})
+public final class DelegateRepository implements Repository, RelocationSupportProvider {    
 
-    private Repository delegate;
+    /** guards cacheToDelegate and delegates *modification* */
+    private final Object delegatesLock = new Object();    
+
+    /** read access - without lock, write access guarded by delegatesLock */
+    private final ArrayList<BaseRepository> delegates;
+    
+    /** guarded by delegatesLock */
+    private final Map<CacheLocation, BaseRepository> cacheToDelegate = new HashMap<CacheLocation, BaseRepository>();
+    
+    private int persistMechanismVersion = -1;
 
     public DelegateRepository() {
+        delegates = new ArrayList<BaseRepository>();        
+        delegates.add(new DummyRepository(0));
     }
 
     @Override
     public void hang(Key key, Persistent obj) {
-        delegate.hang(key, obj);
+        getDelegate(key.getUnitId()).hang(key, obj);
     }
 
     @Override
     public void put(Key key, Persistent obj) {
-        delegate.put(key, obj);
+        getDelegate(key.getUnitId()).put(key, obj);
     }
 
     @Override
     public Persistent get(Key key) {
+        Repository delegate = getDelegate(key.getUnitId());
         Persistent result = delegate.get(key);
         if (result == null && Stats.useNullWorkaround) {
             String keyClassName = key.getClass().getName();
@@ -95,49 +119,51 @@ public final class DelegateRepository implements Repository {
 
     @Override
     public Persistent tryGet(Key key) {
-        return delegate.tryGet(key);
+        return getDelegate(key.getUnitId()).tryGet(key);
     }
 
     @Override
     public void remove(Key key) {
-        delegate.remove(key);
+        getDelegate(key.getUnitId()).remove(key);
     }
 
     @Override
     public void debugClear() {
-        delegate.debugClear();
-        delegate = null;
+        synchronized (delegatesLock) {
+            for (Repository delegate : getDelegates()) {
+                delegate.debugClear();
+            }
+            //delegates.clear();
+        }
     }
 
     @Override
     public void shutdown() {
-        Repository aDelegate = delegate;
-        if (aDelegate != null) {
+        for (Repository aDelegate : getDelegates()) {
             aDelegate.shutdown();
         }
     }
 
     @Override
     public void openUnit(int unitId, CharSequence unitName) {
-        delegate.openUnit(unitId, unitName);
+        getDelegate(unitId).openUnit(unitId, unitName);
     }
 
     @Override
-    public void closeUnit(CharSequence unitName, boolean cleanRepository, Set<CharSequence> requiredUnits) {
-        Repository aDelegate = delegate;
-        if (aDelegate != null) {
-            aDelegate.closeUnit(unitName, cleanRepository, requiredUnits);
-        }
+    public void closeUnit(int unitId, boolean cleanRepository, Set<Integer> requiredUnits) {
+        getDelegate(unitId).closeUnit(unitId, cleanRepository, requiredUnits);
     }
 
     @Override
-    public void removeUnit(CharSequence unitName) {
-        delegate.removeUnit(unitName);
+    public void removeUnit(int unitId) {
+        getDelegate(unitId).removeUnit(unitId);
     }
 
     @Override
     public void cleanCaches() {
-        delegate.cleanCaches();
+        for (Repository delegate : getDelegates()) {
+            delegate.cleanCaches();
+        }
     }
 
     @Override
@@ -152,35 +178,198 @@ public final class DelegateRepository implements Repository {
 
     @Override
     public void startup(int persistMechanismVersion) {
-        initDelegate();
-        ((RepositoryTranslatorImpl) RepositoryAccessor.getTranslator()).startup(persistMechanismVersion);
-        delegate.startup(persistMechanismVersion);
+        this.persistMechanismVersion = persistMechanismVersion;
+        for (BaseRepository delegate : getDelegates()) {
+            delegate.startup(persistMechanismVersion);
+        }
     }
 
-    private synchronized void initDelegate() {
-        if (delegate == null) {
-            // we have to ask sys property each time, because tests changes
-            // settings in runtime
-            if (CndUtils.getBoolean("cnd.repository.validate.keys", false)) {
-                Stats.log("Testing keys using KeyValidatorRepository."); // NOI18N
-                delegate = new KeyValidatorRepository();
-            } else if (CndUtils.getBoolean("cnd.repository.hardrefs", false)) { // NOI18N
-                Stats.log("Using HashMapRepository."); // NOI18N
-                delegate = new HashMapRepository();
-            } else {
-                Stats.log("by default using HybridRepository."); // NOI18N
-                delegate = new DiskRepositoryManager();
-            }
+    private BaseRepository createRepository(int id, CacheLocation cacheLocation) {
+        BaseRepository delegate;
+        if (CndUtils.getBoolean("cnd.repository.validate.keys", false)) {
+            Stats.log("Testing keys using KeyValidatorRepository."); // NOI18N
+            delegate = new KeyValidatorRepository(id, cacheLocation);
+        } else if (CndUtils.getBoolean("cnd.repository.hardrefs", false)) { // NOI18N
+            Stats.log("Using HashMapRepository."); // NOI18N
+            delegate = new HashMapRepository(id, cacheLocation);
+        } else {
+            Stats.log("by default using HybridRepository."); // NOI18N
+            delegate = new DiskRepositoryManager(id, cacheLocation);
         }
+        delegate.getTranslation().startup(persistMechanismVersion, delegate);
+        delegate.startup(persistMechanismVersion);
+        return delegate;
     }
 
     @Override
     public void debugDistribution() {
-        delegate.debugDistribution();
+        for (Repository delegate : getDelegates()) {
+            delegate.debugDistribution();
+        }
+    }
+    
+    @Override
+    public void debugDump(Key key) {
+        assert key != null;
+        BaseRepository delegate = getDelegate(key.getUnitId());
+        if (delegate == null) {
+            System.err.printf("=== Repository debug dump for key=%s. Delegate not found.", key); //NOI18N
+        } else {
+            delegate.debugDump(key);
+        }
     }
 
     @Override
     public DatabaseTable getDatabaseTable(Key unitKey, String tableID) {
-        return delegate.getDatabaseTable(unitKey, tableID);
+        return getDelegate(unitKey.getUnitId()).getDatabaseTable(unitKey, tableID);
     }
+
+    private BaseRepository getDelegate(int unitId) {
+        int repoId = unitId / BaseRepository.REPO_DENOM;
+        boolean assertions = false;
+        assert (assertions = true);
+        if (assertions && repoId >= delegates.size()) {
+	    throw new IndexOutOfBoundsException("Index: "+repoId+", Size: "+delegates.size()); //NOI18N
+        }
+        return delegates.get(repoId);
+    }
+
+    public Iterable<BaseRepository> testGetDelegates() {
+        return getDelegates();
+    }
+
+    private Iterable<BaseRepository> getDelegates() {
+        synchronized (delegatesLock) {
+            return new ArrayList<BaseRepository>(delegates);
+        }
+    }
+
+    public RepositoryTranslatorImpl getTranslatorImpl(int unitId) {
+        return getDelegate(unitId).getTranslation();
+    }
+
+    private BaseRepository getOrCreateRepository(CacheLocation cacheLocation) {
+        CndUtils.assertNotNull(cacheLocation, "null cache location"); //NOI18N
+        if (cacheLocation == null) {
+            cacheLocation = CacheLocation.DEFAULT;
+        }
+        assert cacheLocation != null;
+        BaseRepository repo;
+        synchronized (delegatesLock) {
+            repo = cacheToDelegate.get(cacheLocation);
+            if (repo == null) {
+                int newId = delegates.size();
+                repo = createRepository(newId, cacheLocation);
+                cacheToDelegate.put(cacheLocation, repo);
+                delegates.add(repo);
+            }
+        }
+        return repo;
+    }
+
+    public int getUnitId(CharSequence unitName, CacheLocation cacheLocation) {
+        BaseRepository repo = getOrCreateRepository(cacheLocation);
+        synchronized (delegatesLock) {
+            int unitId = repo.getTranslation().getUnitId(unitName);
+            return unitId;
+        }
+    }
+    
+    @Override
+    public UnitCodec getUnitCodec(CacheLocation cacheLocation) {
+        BaseRepository repo = getOrCreateRepository(cacheLocation);
+        return repo.getUnitCodec();
+    }
+    
+    public CacheLocation getCacheLocation(int unitId) {
+        return getDelegate(unitId).getCacheLocation();
+    }
+        
+    private static class DummyRepository extends BaseRepository {
+
+        private static final String exceptionText = "DummyRepository should never be accessed"; //NOI18N
+
+        public DummyRepository(int id) {
+            super(id, new CacheLocation(new File(Utilities.isWindows() ? "nul" : "/dev/null"))); //NOI18N;
+        }
+
+        @Override
+        public void hang(Key key, Persistent obj) {
+            throw new IllegalArgumentException(exceptionText);
+        }
+
+        @Override
+        public void put(Key key, Persistent obj) {
+            throw new IllegalArgumentException(exceptionText);
+        }
+
+        @Override
+        public Persistent get(Key key) {
+            throw new IllegalArgumentException(exceptionText);
+        }
+
+        @Override
+        public Persistent tryGet(Key key) {
+            throw new IllegalArgumentException(exceptionText);
+        }
+
+        @Override
+        public void remove(Key key) {
+            throw new IllegalArgumentException(exceptionText);
+        }
+
+        @Override
+        public void debugClear() {
+        }
+
+        @Override
+        public void debugDistribution() {
+        }
+
+        @Override
+        public void debugDump(Key key) {            
+        }
+
+        @Override
+        public void startup(int persistMechanismVersion) {
+        }
+
+        @Override
+        public void shutdown() {
+        }
+
+        @Override
+        public void openUnit(int unitId, CharSequence unitName) {
+            throw new IllegalArgumentException(exceptionText);
+        }
+
+        @Override
+        public void closeUnit(int unitId, boolean cleanRepository, Set<Integer> requiredUnits) {
+            throw new IllegalArgumentException(exceptionText);
+        }
+
+        @Override
+        public void removeUnit(int unitId) {
+            throw new IllegalArgumentException(exceptionText);
+        }
+
+        @Override
+        public void cleanCaches() {
+        }
+
+        @Override
+        public void registerRepositoryListener(RepositoryListener aListener) {
+            throw new IllegalArgumentException(exceptionText);
+        }
+
+        @Override
+        public void unregisterRepositoryListener(RepositoryListener aListener) {
+            throw new IllegalArgumentException(exceptionText);
+        }
+
+        @Override
+        public DatabaseTable getDatabaseTable(Key unitKey, String tableID) {
+            throw new IllegalArgumentException(exceptionText);
+        }        
+    }    
 }

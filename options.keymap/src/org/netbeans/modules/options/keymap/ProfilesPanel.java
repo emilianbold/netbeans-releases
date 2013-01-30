@@ -56,6 +56,7 @@ import java.util.logging.Logger;
 import javax.swing.AbstractListModel;
 import javax.swing.JFileChooser;
 import javax.swing.KeyStroke;
+import org.netbeans.core.options.keymap.api.KeyStrokeUtils;
 import org.netbeans.core.options.keymap.api.ShortcutAction;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -89,8 +90,8 @@ public class ProfilesPanel extends javax.swing.JPanel {
         keymapPanel = k;
         model = new ProfileListModel();
         initComponents();
-        model.setData(getKeymapPanel().getModel().getProfiles());
-        profilesList.setSelectedValue(getKeymapPanel().getModel().getCurrentProfile(), true);
+        model.setData(getKeymapPanel().getMutableModel().getProfiles());
+        profilesList.setSelectedValue(getKeymapPanel().getMutableModel().getCurrentProfile(), true);
     }
 
     private KeymapPanel getKeymapPanel() {
@@ -235,12 +236,17 @@ public class ProfilesPanel extends javax.swing.JPanel {
         duplicateButton.setEnabled(true);
         exportButton.setEnabled(true);
         
-        if(getKeymapPanel().getModel().isCustomProfile(profile)) {
+        MutableShortcutsModel model = getKeymapPanel().getMutableModel();
+        if(model.isCustomProfile(profile)) {
             deleteButton.setEnabled(true);
             restoreButton.setEnabled(false);
         } else {
+            boolean change = model.isChangedProfile(profile);
+            if (!change) {
+                change |= model.differsFromDefault(profile);
+            }
             deleteButton.setEnabled(false);
-            restoreButton.setEnabled(true);
+            restoreButton.setEnabled(change);
         }
     }//GEN-LAST:event_profilesListValueChanged
 
@@ -259,7 +265,7 @@ public class ProfilesPanel extends javax.swing.JPanel {
         DialogDisplayer.getDefault().notify(il);
         if (il.getValue() == NotifyDescriptor.OK_OPTION) {
             newName = il.getInputText();
-            for (String s : getKeymapPanel().getModel().getProfiles()) {
+            for (String s : getKeymapPanel().getMutableModel().getProfiles()) {
                 if (newName.equals(s)) {
                     Message md = new Message(
                             KeymapPanel.loc("CTL_Duplicate_Profile_Name"), // NOI18N
@@ -268,10 +274,10 @@ public class ProfilesPanel extends javax.swing.JPanel {
                     return null;
                 }
             }
-            KeymapViewModel currentModel = getKeymapPanel().getModel();
+            MutableShortcutsModel currentModel = getKeymapPanel().getMutableModel();
             String currrentProfile = currentModel.getCurrentProfile();
-            getKeymapPanel().getModel().setCurrentProfile(profileToDuplicate);
-            getKeymapPanel().getModel().cloneProfile(newName);
+            getKeymapPanel().getMutableModel().setCurrentProfile(profileToDuplicate);
+            getKeymapPanel().getMutableModel().cloneProfile(newName);
             currentModel.setCurrentProfile(currrentProfile);
             model.addItem(il.getInputText());
             profilesList.setSelectedValue(il.getInputText(), true);
@@ -299,31 +305,24 @@ public class ProfilesPanel extends javax.swing.JPanel {
             Document doc = XMLUtil.createDocument(ELEM_XML_ROOT, null, PUBLIC_ID, SYSTEM_ID);
             Node root = doc.getElementsByTagName(ELEM_XML_ROOT).item(0);
 
-            KeymapViewModel kmodel = getKeymapPanel().getModel();
-            for (String categorySet : kmodel.getCategories().keySet()) {
-                for (String category : kmodel.getCategories().get(categorySet)) {
-                    for (Object o : kmodel.getItems(category)) {
-                        if (o instanceof ShortcutAction) {
-                            ShortcutAction sca = (ShortcutAction) o;
-                            String[] shortcuts = kmodel.getShortcuts(sca);
-                            if (shortcuts.length > 0) { //export only actions with at least one SC
-                                String id = sca.getId();
-                                Element actionElement = doc.createElement(ELEM_ACTION);
-                                actionElement.setAttribute(ATTR_ACTION_ID, id);
-                                for (int i = 0; i < shortcuts.length; i++) {
-                                    Element shortcutElement = doc.createElement(ELEM_SHORTCUT);
-                                    //get portable representation of the ahortcut
-                                    String shortcutToStore = shortcutToPortableRepresentation(shortcuts[i]);
-                                    shortcutElement.setAttribute(ATTR_SHORTCUT_STRING, shortcutToStore);
-                                    actionElement.appendChild(shortcutElement);
-                                }
-                                root.appendChild(actionElement);
-                            }
-                        }
+            MutableShortcutsModel kmodel = getKeymapPanel().getMutableModel();
+            for (Object o : kmodel.getItems("")) {
+                ShortcutAction sca = (ShortcutAction) o;
+                String[] shortcuts = kmodel.getShortcuts(sca);
+                if (shortcuts.length > 0) { //export only actions with at least one SC
+                    String id = sca.getId();
+                    Element actionElement = doc.createElement(ELEM_ACTION);
+                    actionElement.setAttribute(ATTR_ACTION_ID, id);
+                    for (int i = 0; i < shortcuts.length; i++) {
+                        Element shortcutElement = doc.createElement(ELEM_SHORTCUT);
+                        //get portable representation of the ahortcut
+                        String shortcutToStore = shortcutToPortableRepresentation(shortcuts[i]);
+                        shortcutElement.setAttribute(ATTR_SHORTCUT_STRING, shortcutToStore);
+                        actionElement.appendChild(shortcutElement);
                     }
+                    root.appendChild(actionElement);
                 }
             }
-
             File f = chooser.getSelectedFile();
 
             FileOutputStream fos;
@@ -347,7 +346,7 @@ public class ProfilesPanel extends javax.swing.JPanel {
         for(StringTokenizer st = new StringTokenizer(key, delimiter); st.hasMoreTokens();) { //NOI18N
             String ks = st.nextToken().trim();
 
-            KeyStroke keyStroke = Utils.getKeyStroke(ks);
+            KeyStroke keyStroke = KeyStrokeUtils.getKeyStroke(ks);
 
             if (keyStroke != null) {
                 buf.append(Utilities.keyToString(keyStroke, true));
@@ -373,7 +372,7 @@ public class ProfilesPanel extends javax.swing.JPanel {
             KeyStroke keyStroke = Utilities.stringToKey(ks);
 
             if (keyStroke != null) {
-                buf.append(Utils.getKeyStrokeAsText(keyStroke));
+                buf.append(KeyStrokeUtils.getKeyStrokeAsText(keyStroke));
                 if (st.hasMoreTokens())
                     buf.append(' ');
             } else {
@@ -403,7 +402,7 @@ public class ProfilesPanel extends javax.swing.JPanel {
         if(ret == JFileChooser.APPROVE_OPTION) {
             try {
                 InputSource is = new InputSource(new FileInputStream(chooser.getSelectedFile()));
-                KeymapViewModel kmodel = getKeymapPanel().getModel();
+                MutableShortcutsModel kmodel = getKeymapPanel().getMutableModel();
                 String newProfile = duplicateProfile();
                 if (newProfile == null) return; //invalid (duplicate) profile name
                 kmodel.setCurrentProfile(newProfile);
@@ -479,11 +478,12 @@ public class ProfilesPanel extends javax.swing.JPanel {
 
     private void deleteOrRestoreSelectedProfile() {
         String currentProfile = (String) profilesList.getSelectedValue();
-        final KeymapViewModel keymapModel = getKeymapPanel().getModel();
-        keymapModel.deleteOrRestoreProfile(currentProfile);
-        if (keymapModel.isCustomProfile (currentProfile)) {
+        final MutableShortcutsModel keymapModel = getKeymapPanel().getMutableModel();
+        if (keymapModel.deleteOrRestoreProfile(currentProfile)) {
             model.removeItem(profilesList.getSelectedIndex());
             profilesList.setSelectedIndex(0);
+        } else {
+            profilesListValueChanged(null);
         }
     }
 

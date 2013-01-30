@@ -49,7 +49,7 @@ made subject to such option by the copyright holder.
     
     <target name="compile" depends="init,up-to-date,-compile-default-platform,-compile-explicit-platform"/>
 
-    <target name="-compile-default-platform" unless="nbjdk.bootclasspath">
+    <target name="-compile-default-platform" depends="build-init" unless="nbjdk.bootclasspath">
 	<mkdir dir="${build.classes.dir}"/>
         <depend srcdir="${src.dir}" destdir="${build.classes.dir}" cache="build/depcache">
             <classpath refid="cp"/>

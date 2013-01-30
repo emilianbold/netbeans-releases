@@ -44,24 +44,36 @@
 
 package org.netbeans.modules.openfile;
 
+import java.beans.BeanInfo;
 import java.beans.PropertyChangeEvent;
-import java.util.prefs.BackingStoreException;
-import org.netbeans.modules.openfile.RecentFiles.HistoryItem;
-import org.openide.loaders.DataObject;
-import org.openide.windows.CloneableTopComponent;
-import org.openide.windows.TopComponent;
 import java.beans.PropertyChangeListener;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
+import org.netbeans.modules.openfile.RecentFiles.HistoryItem;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbPreferences;
+import org.openide.util.RequestProcessor;
+import org.openide.windows.CloneableTopComponent;
+import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
 /**
@@ -73,6 +85,8 @@ public final class RecentFiles {
 
     /** List of recently closed files */
     private static List<HistoryItem> history = new ArrayList<HistoryItem>();
+    /** Request processor */
+    private static RequestProcessor RP = new RequestProcessor(RecentFiles.class);
     /** Preferences node for storing history info */
     private static Preferences prefs;
     private static final Object HISTORY_LOCK = new Object();
@@ -80,8 +94,12 @@ public final class RecentFiles {
     private static final String PREFS_NODE = "RecentFilesHistory"; //NOI18N
     /** Prefix of property for recent file URL*/
     private static final String PROP_URL_PREFIX = "RecentFilesURL."; //NOI18N
+    /** Prefix of property for recent file icon bytes*/
+    private static final String PROP_ICON_PREFIX = "RecentFilesIcon."; //NOI18N
     /** Boundary for items count in history */
     static final int MAX_HISTORY_ITEMS = 15;
+
+    private static final String RECENT_FILE_KEY = "nb.recent.file.path"; // NOI18N
 
     private RecentFiles() {
     }
@@ -142,12 +160,16 @@ public final class RecentFiles {
 
         List<HistoryItem> result = new ArrayList<HistoryItem>();
         for (String curKey : keys) {
+            if (curKey.startsWith(PROP_ICON_PREFIX)) {
+                continue;
+            }
             String value = _prefs.get(curKey, null);
             if (value != null) {
                 try {
                     int id = new Integer(
                          curKey.substring(PROP_URL_PREFIX.length())).intValue();
-                    HistoryItem hItem = new HistoryItem(id, value);
+                    HistoryItem hItem = new HistoryItem(id, value,
+                            _prefs.getByteArray(PROP_ICON_PREFIX + id, null));
                     int ind = result.indexOf(hItem);
                     if (ind == -1) {
                         result.add(hItem);
@@ -183,9 +205,15 @@ public final class RecentFiles {
             HistoryItem hi = history.get(i);
             if ((hi.id != i) && (hi.id >= history.size())) {
                 _prefs.remove(PROP_URL_PREFIX + hi.id);
+                _prefs.remove(PROP_ICON_PREFIX + hi.id);
             }
             hi.id = i;
             _prefs.put(PROP_URL_PREFIX + i, hi.getPath());
+            if (hi.getIconBytes() == null) {
+                _prefs.remove(PROP_ICON_PREFIX + i);
+            } else {
+                _prefs.putByteArray(PROP_ICON_PREFIX + i, hi.getIconBytes());
+            }
         }
     }
 
@@ -200,9 +228,7 @@ public final class RecentFiles {
      * if conditions are met.
      */
     private static void addFile(TopComponent tc) {
-        if (tc instanceof CloneableTopComponent) {
-            addFile(obtainPath(tc));
-        }
+        addFile(obtainPath(tc));
     }
 
     static void addFile(String path) {
@@ -215,12 +241,18 @@ public final class RecentFiles {
                     hItem = findHistoryItem(path);
                 } while (history.remove(hItem));
 
-                hItem = new HistoryItem(0, path);
-                history.add(0, hItem);
+                final HistoryItem newItem = new HistoryItem(0, path);
+                history.add(0, newItem);
                 for (int i = MAX_HISTORY_ITEMS; i < history.size(); i++) {
                     history.remove(i);
                 }
-                store();
+                RP.post(new Runnable() { // load icon and save in background
+                    @Override
+                    public void run() {
+                        newItem.setIcon(findIconForPath(newItem.getPath()));
+                        store();
+                    }
+                });
             }
         }
     }
@@ -228,26 +260,49 @@ public final class RecentFiles {
     /** Removes file represented by given TopComponent from the list */
     private static void removeFile(TopComponent tc) {
         historyProbablyValid = false;
-        if (tc instanceof CloneableTopComponent) {
-            String path = obtainPath(tc);
-            if (path != null) {
-                synchronized (HISTORY_LOCK) {
-                    HistoryItem hItem = findHistoryItem(path);
-                    if (hItem != null) {
-                        history.remove(hItem);
-                    }
-                    store();
+        String path = obtainPath(tc);
+        if (path != null) {
+            synchronized (HISTORY_LOCK) {
+                HistoryItem hItem = findHistoryItem(path);
+                if (hItem != null) {
+                    history.remove(hItem);
                 }
+                store();
             }
         }
     }
 
+    private static Icon findIconForPath(String path) {
+        FileObject fo = RecentFiles.convertPath2File(path);
+        final Icon i;
+        if (fo == null) {
+            i = null;
+        } else {
+            DataObject dObj;
+            try {
+                dObj = DataObject.find(fo);
+            } catch (DataObjectNotFoundException e) {
+                dObj = null;
+            }
+            i = dObj == null
+                    ? null
+                    : new ImageIcon(dObj.getNodeDelegate().getIcon(
+                    BeanInfo.ICON_COLOR_16x16));
+        }
+        return i;
+    }
+
     private static String obtainPath(TopComponent tc) {
-        DataObject dObj = tc.getLookup().lookup(DataObject.class);
-        if (dObj != null) {
-            FileObject fo = dObj.getPrimaryFile();
-            if (fo != null) {
-                return convertFile2Path(fo);
+        Object file = tc.getClientProperty( RECENT_FILE_KEY );
+        if( file instanceof File )
+            return ((File)file).getPath();
+        if( tc instanceof CloneableTopComponent ) {
+            DataObject dObj = tc.getLookup().lookup(DataObject.class);
+            if (dObj != null) {
+                FileObject fo = dObj.getPrimaryFile();
+                if (fo != null) {
+                    return convertFile2Path(fo);
+                }
             }
         }
         return null;
@@ -279,6 +334,58 @@ public final class RecentFiles {
         historyProbablyValid = !history.isEmpty();
     }
 
+    private static byte[] iconToBytes(Icon icon) {
+        if (icon == null) {
+            return null;
+        } else {
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            try {
+                ObjectOutputStream objOut = new ObjectOutputStream(out);
+                try {
+                    //#138000
+                    Icon icn = icon;
+                    if (!(icn instanceof Serializable)) {
+                        icn = new ImageIcon(ImageUtilities.icon2Image(icn));
+                    }
+                    objOut.writeObject(icn);
+                    return out.toByteArray();
+                } finally {
+                    objOut.close();
+                }
+            } catch (IOException ex) {
+                return null;
+            } finally {
+                try {
+                    out.close();
+                } catch (IOException ex) {
+                }
+            }
+        }
+    }
+
+    private static Icon bytesToIcon(byte[] bytes) {
+        if (bytes == null) {
+            return null;
+        } else {
+            ObjectInputStream objin = null;
+            try {
+                ByteArrayInputStream in = new ByteArrayInputStream(bytes);
+                objin = new ObjectInputStream(in);
+                Object obj = objin.readObject();
+                return (obj instanceof Icon) ? (Icon) obj : null;
+            } catch (Exception ex) {
+                return null;
+            } finally {
+                try {
+                    if (objin != null) {
+                        objin.close();
+                    }
+                } catch (IOException ex) {
+                }
+            }
+        }
+    }
+
     static void pruneHistory() {
         synchronized (HISTORY_LOCK) {
             Iterator<HistoryItem> it = history.iterator();
@@ -301,10 +408,16 @@ public final class RecentFiles {
         private int id;
         private String path;
         private String fileName;
+        private Icon icon = null;
 
         HistoryItem(int id, String path) {
+            this(id, path, null);
+        }
+
+        HistoryItem(int id, String path, byte[] iconBytes) {
             this.path = path;
             this.id = id;
+            this.icon = bytesToIcon(iconBytes);
         }
 
         public String getPath() {
@@ -321,6 +434,31 @@ public final class RecentFiles {
                 }
             }
             return fileName;
+        }
+
+        /**
+         * Get specified icon, or a default one if no icon is specified.
+         */
+        public Icon getIcon() {
+            return this.icon == null
+                    ? ImageUtilities.loadImageIcon(
+                    "org/openide/resources/actions/empty.gif", false) //NOI18N
+                    : this.icon;
+        }
+
+        /**
+         * Set icon of this history item. The icon can be set after
+         * initialization, usually after it was loaded in a background thread.
+         */
+        public void setIcon(Icon icon) {
+            this.icon = icon;
+        }
+
+        /**
+         * Return bytes for the icon, or null if no icon is specified.
+         */
+        public byte[] getIconBytes() {
+            return iconToBytes(icon);
         }
 
         @Override

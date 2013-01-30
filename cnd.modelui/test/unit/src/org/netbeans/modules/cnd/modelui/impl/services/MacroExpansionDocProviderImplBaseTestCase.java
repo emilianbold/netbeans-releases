@@ -59,12 +59,12 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
+import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.services.CsmMacroExpansion;
 import org.netbeans.modules.cnd.modelimpl.trace.TraceModelTestBase;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.utils.MIMENames;
-import org.netbeans.modules.editor.NbEditorDocument;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -129,10 +129,10 @@ public class MacroExpansionDocProviderImplBaseTestCase extends TraceModelTestBas
     }
 
     public static void setupMimeType(Document doc) {
-        Object mimeTypeObj = doc.getProperty(NbEditorDocument.MIME_TYPE_PROP);
-        if (mimeTypeObj != null) {
-            if ("text/plain".equals(mimeTypeObj)) { // NOI18N
-                doc.putProperty(NbEditorDocument.MIME_TYPE_PROP, MIMENames.CPLUSPLUS_MIME_TYPE);
+        String mimeType = DocumentUtilities.getMimeType(doc);
+        if (mimeType != null) {
+            if ("text/plain".equals(mimeType)) { // NOI18N
+                doc.putProperty(BaseDocument.MIME_TYPE_PROP, MIMENames.CPLUSPLUS_MIME_TYPE);
             }
         }
     }
@@ -141,7 +141,7 @@ public class MacroExpansionDocProviderImplBaseTestCase extends TraceModelTestBas
         Document doc = null;
         try {
             DataObject dob = DataObject.find(fo);
-            EditorCookie ec = dob.getCookie(EditorCookie.class);
+            EditorCookie ec = dob.getLookup().lookup(EditorCookie.class);
             doc = CsmUtilities.openDocument(ec);
             if (doc != null) {
                 doc.putProperty(Document.StreamDescriptionProperty, dob);

@@ -141,11 +141,14 @@ implements Cloneable, Stamps.Updater {
             readBundles();
             
             Map configMap = new HashMap();
+            injectSystemProperties(configMap); // ensure we read system properties
             final String cache = getNetigsoCache().getPath();
             configMap.put(Constants.FRAMEWORK_STORAGE, cache);
             activator = new NetigsoActivator(this);
             configMap.put("netigso.archive", NetigsoArchiveFactory.DEFAULT.create(this)); // NOI18N
-            configMap.put("felix.log.level", "4"); // NOI18N
+            if (!configMap.containsKey("felix.log.level")) { // NOI18N
+              configMap.put("felix.log.level", "4"); // NOI18N - allow others to set log level
+            }
             configMap.put("felix.bootdelegation.classloaders", activator); // NOI18N
             String startLevel = FRAMEWORK_START_LEVEL();
             if (!startLevel.isEmpty()) {
@@ -187,6 +190,16 @@ implements Cloneable, Stamps.Updater {
             framework.start();
         } catch (BundleException ex) {
             LOG.log(Level.WARNING, "Cannot start Container" + framework, ex);
+        }
+    }
+
+    /** contributed by Alex Bowen (trajar@netbeans.org) */
+    private void injectSystemProperties(Map configProps) {
+        for (Enumeration e = System.getProperties().propertyNames(); e.hasMoreElements(); ) {
+            String key = e.nextElement().toString();
+            if (key.startsWith("felix.") || key.startsWith("org.osgi.framework.")) { // NOI18N
+                configProps.put(key, System.getProperty(key));
+            }
         }
     }
 

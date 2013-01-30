@@ -44,27 +44,34 @@
 package org.netbeans.modules.refactoring.spi.impl;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.List;
 import javax.swing.Icon;
+import javax.swing.SwingUtilities;
 import javax.swing.tree.*;
 import org.netbeans.modules.refactoring.spi.ui.TreeElement;
 import org.openide.text.PositionBounds;
 import org.netbeans.modules.refactoring.api.RefactoringElement;
+import org.netbeans.modules.refactoring.spi.ui.ExpandableTreeElement;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
+import org.openide.util.NbCollections;
+import org.openide.util.RequestProcessor;
 
 /**
  * @author Pavel Flaska
  */
-public class CheckNode extends DefaultMutableTreeNode {
+public final class CheckNode extends DefaultMutableTreeNode {
 
     public final static int SINGLE_SELECTION = 0;
     public final static int DIG_IN_SELECTION = 4;
   
     private int selectionMode;
     private boolean isSelected;
+    private boolean isQuery;
 
     private String nodeLabel;
     private Icon icon;
@@ -74,9 +81,10 @@ public class CheckNode extends DefaultMutableTreeNode {
     private static Icon found = ImageUtilities.loadImageIcon("org/netbeans/modules/refactoring/api/resources/found_item_orange.png", false);
     
     public CheckNode(Object userObject, String nodeLabel, Icon icon, boolean isQuery) {
-        super(userObject, !(userObject instanceof RefactoringElement));
+        super(userObject, !(userObject instanceof RefactoringElement) || userObject instanceof ExpandableTreeElement);
         this.isSelected = true;
         setSelectionMode(DIG_IN_SELECTION);
+        this.isQuery = isQuery;
         this.nodeLabel = nodeLabel;
         this.icon = icon;
         if (userObject instanceof TreeElement) {
@@ -107,6 +115,10 @@ public class CheckNode extends DefaultMutableTreeNode {
                             + "</font>]" + this.nodeLabel; // NOI18N
                 }
             }
+        }
+
+        if (userObject instanceof ExpandableTreeElement) {
+            add(new CheckNode("Please wait", "Please wait...", null, isQuery));
         }
     }
     
@@ -217,5 +229,44 @@ public class CheckNode extends DefaultMutableTreeNode {
             l = "&nbsp;" + l; //NOI18N
         }
         return l + ":&nbsp;&nbsp;"; //NOI18N
+    }
+    
+    private static final RequestProcessor WORKER = new RequestProcessor(CheckNode.class.getName(), 1, true, false);
+    private boolean childrenFilled;
+    
+    public synchronized void ensureChildrenFilled(final DefaultTreeModel model) {
+        if (!childrenFilled) {
+            childrenFilled = true;
+
+            if (userObject instanceof ExpandableTreeElement) {
+                WORKER.post(new Runnable() {
+                    @Override public void run() {
+                        final List<TreeElement> subelements = new ArrayList<TreeElement>();
+                        
+                        for (TreeElement el : ((ExpandableTreeElement) userObject)) {
+                            subelements.add(el);
+                        }
+
+                        SwingUtilities.invokeLater(new Runnable() {
+                            @Override public void run() {
+                                for (TreeElement el : subelements) {
+                                    insert(new CheckNode(el, el.getText(/*XXX:*/true), el.getIcon(), isQuery), getChildCount() - 1);
+                                }
+                                int[] added = new int[getChildCount() - 1];
+                                for (int i = 0; i < added.length; i++) {
+                                    added[i] = i;
+                                }
+                                model.nodesWereInserted(CheckNode.this, added);
+                                int childCount = getChildCount();
+                                Object last = getChildAt(childCount - 1);
+                                int index = model.getIndexOfChild(CheckNode.this, last);
+                                remove(index); //remove the please wait node
+                                model.nodesWereRemoved(CheckNode.this, new int[] {index}, new Object[] {last});
+                            }
+                        });
+                    }
+                });
+            }
+        }
     }
 }

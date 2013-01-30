@@ -81,6 +81,15 @@ made subject to such option by the copyright holder.
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.projectuiapi</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.61</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.openide.dialogs</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -221,7 +230,6 @@ made subject to such option by the copyright holder.
                 <package>org.apache.maven.wagon.events</package>
                 <package>org.apache.maven.wagon.providers.file</package>
                 <package>org.apache.maven.wagon.providers.http</package>
-                <package>org.apache.maven.wagon.shared.http4</package>
                 <package>org.apache.maven.wagon.proxy</package>
                 <package>org.apache.maven.wagon.repository</package>
                 <package>org.apache.maven.wagon.resource</package>
@@ -258,10 +266,11 @@ made subject to such option by the copyright holder.
                 <package>org.sonatype.aether.version</package>
                 <package>org.sonatype.plexus.components.cipher</package>
                 <package>org.sonatype.plexus.components.sec.dispatcher</package>
+                <package>org.apache.maven.wagon.shared.http4</package>
             </friend-packages>
             <class-path-extension>
-                <runtime-relative-path>ext/maven/maven-dependency-tree-1.2.jar</runtime-relative-path>
-                <binary-origin>external/maven-dependency-tree-1.2.jar</binary-origin>
+                <runtime-relative-path>ext/maven/maven-dependency-tree-2.0.jar</runtime-relative-path>
+                <binary-origin>external/maven-dependency-tree-2.0.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/maven/jdom-1.0.jar</runtime-relative-path>

@@ -44,10 +44,9 @@
 
 package org.netbeans.performance.j2se;
 
-import org.netbeans.performance.j2se.setup.J2SESetup;
-
-import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.junit.NbTestSuite;
+import org.netbeans.performance.j2se.setup.J2SESetup;
 
 /**
  * Test suite that actually does not perform any test but sets up user directory

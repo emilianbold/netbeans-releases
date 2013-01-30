@@ -45,53 +45,49 @@ package org.netbeans.modules.cnd.api.utils;
 import java.io.File;
 import java.util.regex.Pattern;
 import javax.swing.event.ChangeListener;
-import org.netbeans.spi.queries.VisibilityQueryImplementation2;
 import org.openide.filesystems.FileObject;
 import org.openide.util.ChangeSupport;
 
-public class CndVisibilityQuery  implements VisibilityQueryImplementation2 {
+public final class CndVisibilityQuery {
     private final ChangeSupport cs = new ChangeSupport(this);
 
-    private Pattern pattern = null;
+    private Pattern ignorePattern = null;
 
-    public CndVisibilityQuery(String regex){
-        pattern = Pattern.compile(regex);
+    public CndVisibilityQuery(String ignoredRegex){
+        ignorePattern = Pattern.compile(ignoredRegex);
     }
 
-    public void setPattern(String regex) {
-        if (pattern != null && regex != null && !pattern.pattern().equals(regex)) {
-            pattern = Pattern.compile(regex);
+    public void setIgnoredPattern(String regex) {
+        if (ignorePattern != null && regex != null && !ignorePattern.pattern().equals(regex)) {
+            ignorePattern = Pattern.compile(regex);
             cs.fireChange();
         }
-        else if (pattern == null && regex != null) {
-            pattern = Pattern.compile(regex);
+        else if (ignorePattern == null && regex != null) {
+            ignorePattern = Pattern.compile(regex);
             cs.fireChange();
         }
     }
 
     public String getRegEx() {
-        return pattern.pattern();
+        return ignorePattern.pattern();
     }
 
-    @Override
-    public boolean isVisible(FileObject file) {
-        return isVisible(file.getNameExt());
+    public boolean isIgnored(FileObject file) {
+        return isIgnored(file.getNameExt());
     }
 
-    @Override
-    public boolean isVisible(File file) {
-        return isVisible(file.getName());
+    public boolean isIgnored(File file) {
+        return isIgnored(file.getName());
     }
 
-    public boolean isVisible(final String fileName) {
-        return pattern.matcher(fileName).find();
+    private boolean isIgnored(final String fileName) {
+        return ignorePattern.matcher(fileName).find();
     }
 
     /**
      * Add a listener to changes.
      * @param l a listener to add
      */
-    @Override
     public void addChangeListener(ChangeListener l) {
         cs.addChangeListener(l);
     }
@@ -100,7 +96,6 @@ public class CndVisibilityQuery  implements VisibilityQueryImplementation2 {
      * Stop listening to changes.
      * @param l a listener to remove
      */
-    @Override
     public void removeChangeListener(ChangeListener l) {
         cs.removeChangeListener(l);
     }

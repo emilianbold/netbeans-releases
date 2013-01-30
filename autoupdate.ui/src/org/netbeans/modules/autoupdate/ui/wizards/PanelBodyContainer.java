@@ -62,7 +62,6 @@ import org.openide.util.RequestProcessor.Task;
  * @author  Jiri Rechtacek
  */
 public class PanelBodyContainer extends javax.swing.JPanel {
-    private static boolean initHtmlKit;
     private String head = null;
     private String message = null;
     private JScrollPane customPanel;
@@ -178,29 +177,35 @@ public class PanelBodyContainer extends javax.swing.JPanel {
         JLabel title;
         if (bodyPanel instanceof LicenseApprovalPanel) {
             title = new JLabel (NbBundle.getMessage (PanelBodyContainer.class, "PanelBodyContainer_PleaseWaitForLicense")); // NOI18N
+        } else if (estimatedTime > 0) {
+            title = new JLabel(NbBundle.getMessage(PanelBodyContainer.class, "PanelBodyContainer_ProgressLine")); // NOI18N
         } else {
             title = new JLabel (NbBundle.getMessage (PanelBodyContainer.class, "PanelBodyContainer_PleaseWait")); // NOI18N
-        } 
+        }
         progress = ProgressHandleFactory.createProgressComponent (handle);        
         progressPanel = new JPanel (new GridBagLayout ());
         
         GridBagConstraints gridBagConstraints = new GridBagConstraints ();
         gridBagConstraints.anchor = GridBagConstraints.WEST;
-        gridBagConstraints.insets = new Insets (7, 12, 0, 12);
-        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new Insets (7, 7, 0, 12);
+        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
+        progress.setMinimumSize(new Dimension(70, progress.getMinimumSize().height));
+        
         progressPanel.add (progress, gridBagConstraints);
         
         gridBagConstraints = new GridBagConstraints ();
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         gridBagConstraints.insets = new Insets (7, 0, 0, 20);
-        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         progressPanel.add (title, gridBagConstraints);
         progressPanel.setVisible(false);        
         delay = new Timer(900, new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 delay.stop();
-                adjustProgressWidth();
+                //adjustProgressWidth();
                 progressPanel.setVisible(true);
                 initBodyPanel();
             }
@@ -229,7 +234,7 @@ public class PanelBodyContainer extends javax.swing.JPanel {
         if (min != null && preferred != null && (min.width * 2) < preferred.width) {
             int width = preferred.width / 2 ;
             int height = min.height;
-            progress.setMinimumSize(new Dimension(width, height));
+            progress.setMinimumSize(new Dimension(150, height));
         }        
     }
 
@@ -239,7 +244,9 @@ public class PanelBodyContainer extends javax.swing.JPanel {
         customPanel.setBorder (null);
         pBodyPanel.add (customPanel, BorderLayout.CENTER);
         if (isWaiting) {
-            pBodyPanel.add (progressPanel, BorderLayout.SOUTH);
+            if (progressPanel != null) {
+                pBodyPanel.add (progressPanel, BorderLayout.SOUTH);
+            }
         }
         customPanel.setViewportView (bodyPanel);
         customPanel.getVerticalScrollBar ().setUnitIncrement (10);
@@ -296,8 +303,8 @@ public class PanelBodyContainer extends javax.swing.JPanel {
 
         pBodyPanel.setLayout(new java.awt.BorderLayout());
 
-        tpPanelHeader.setContentType("text/html"); // NOI18N
         tpPanelHeader.setEditable(false);
+        tpPanelHeader.setContentType("text/html"); // NOI18N
         spPanelHeader.setViewportView(tpPanelHeader);
         tpPanelHeader.getAccessibleContext().setAccessibleName(head);
 
@@ -305,15 +312,15 @@ public class PanelBodyContainer extends javax.swing.JPanel {
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(pBodyPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 24, Short.MAX_VALUE)
-            .addComponent(spPanelHeader, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 24, Short.MAX_VALUE)
+            .addComponent(pBodyPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 390, Short.MAX_VALUE)
+            .addComponent(spPanelHeader, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 390, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addComponent(spPanelHeader, javax.swing.GroupLayout.PREFERRED_SIZE, 78, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(pBodyPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addComponent(pBodyPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 249, Short.MAX_VALUE))
         );
 
         getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PanelBodyContainer.class, "PanelBodyContainer_ACN")); // NOI18N
@@ -329,25 +336,23 @@ public class PanelBodyContainer extends javax.swing.JPanel {
 
     private final class UpdateProgress implements Runnable {
         private final long friendlyEstimatedTime;
-        private final String progressDisplayName;
         private final Task task;
+        private int i;
 
         @SuppressWarnings("LeakingThisInConstructor")
         public UpdateProgress(long friendlyEstimatedTime, String progressDisplayName) {
             this.friendlyEstimatedTime = friendlyEstimatedTime;
-            this.progressDisplayName = progressDisplayName;
             this.task = Installer.RP.create(this);
+            this.i = 0;
         }
 
         @Override
         public void run () {
-            int i = 0;
             if (isWaiting && isShowing()) {
                 if (friendlyEstimatedTime * 10 > i++) {
-                    handle.progress (progressDisplayName, i);
+                    handle.progress (i);
                 } else {
                     handle.switchToIndeterminate ();
-                    handle.progress (progressDisplayName);
                     return ;
                 }
                 task.schedule(100);

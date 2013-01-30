@@ -86,7 +86,7 @@ public class TopComponentProcessorTest extends  NbTestCase {
         FileObject set2 = FileUtil.getConfigFile("Windows2/Roles/UnitTestRole2/Components/my-tc2.settings");
         assertNotNull("Settings file found", set2);
     }
-
+    
     public void testTCRegisteredFine() throws Exception {
         FileObject set = FileUtil.getConfigFile("Windows2/Components/my-tc.settings");
         assertNotNull("Settings file found", set);

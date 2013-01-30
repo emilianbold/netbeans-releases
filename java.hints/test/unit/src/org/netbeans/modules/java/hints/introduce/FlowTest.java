@@ -45,12 +45,16 @@ import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.VariableElement;
 import javax.swing.text.Document;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.CompilationInfo;
@@ -820,7 +824,101 @@ public class FlowTest extends NbTestCase {
                     "false",
                     "true");
     }
+    
+    public void testStayContinue219270() throws Exception {
+        performTest("package test;\n" +
+                    "import java.util.Collection;\n" +
+                    "import java.util.Iterator;\n" +
+                    "public class Test {\n" +
+                    "    public void f() {\n" +
+                    "        boolean empty = false;\n" +
+                    "        System.err.println(emp`ty);\n" +
+                    "        T: { continue T; }\n" +
+                    "    }\n" +
+                    "}\n",
+                    true,
+                    "false");
+    }
 
+    public void testLoopExponentialExplosion() throws Exception {
+        String sourceCode = "package test;\n" +
+                            "import java.util.*;\n" +
+                            "class Test {\n" +
+                            "    private void t(List<String> args) {\n";
+        
+        for (int i = 0; i < 20; i++) {
+            sourceCode += "for (Iterator<String> it" + i + " = args.iterator(); it" + i + ".hasNext(); )";
+        }
+        
+        sourceCode += "if (ar`gs.size() == 0) System.err.println('a');\n" +
+                      "    }\n" +
+                      "}\n";
+        performTest(sourceCode,
+                    true,
+                    "List<String> args");
+    }
+    
+    public void testLoopExponentialExplosionDoWhile() throws Exception {
+        String sourceCode = "package test;\n" +
+                            "import java.util.*;\n" +
+                            "class Test {\n" +
+                            "    private void t(List<Boolean> args, boolean b) {\n" +
+                            "        |\n" +
+                            "    }\n" +
+                            "}\n";
+        
+        for (int i = 0; i < 20; i++) {
+            sourceCode = sourceCode.replace("|", "do { args.set(i, !args.get(i)); | } while (args.get(i)); ");
+        }
+        
+        sourceCode = sourceCode.replace("|", "if (ar`gs.size() == 0) System.err.println('a');\n");
+        
+        performTest(sourceCode,
+                    true,
+                    "List<Boolean> args");
+    }
+    
+    public void test224028() throws Exception {
+        performTest("package test;\n" +
+                    "import java.io.*;\n" +
+                    "import java.util.*;\n" +
+                    "public class Test {\n" +
+                    "    private void doSomething(Properties props) {\n" +
+                    "        Properties props = new Properties();\n" +
+                    "        try {\n" +
+                    "            canThrow();\n" +
+                    "        } catch (EmptyStackException | IOException ex) {\n" +
+                    "            props = null;\n" +
+                    "        }\n" +
+                    "        pro`ps.clear();\n" +
+                    "    }\n" +
+                    "    private void canThrow() throws EmptyStackException, IOException {\n" +
+                    "    }\n" +
+                    "}\n",
+                    true,
+                    "new Properties()",
+                    "null");
+    }
+    
+    public void testLoops() throws Exception {
+        performTest("package test;\n" +
+                    "public class Test {\n" +
+                    "     public Test getParent() {\n" +
+                    "          return this;\n" +
+                    "     }\n" +
+                    "     public static void t(Iterable<? extends Test> tps) {\n" +
+                    "          for (Test tp : tps) {\n" +
+                    "               Test toResume = tp;\n" +
+                    "               while (toR`esume != null) {\n" +
+                    "                    toResume = toResume.getParent();\n" +
+                    "               }\n" +
+                    "          }\n" +
+                    "     }\n" +
+                    "}\n",
+                    "tp",
+                    "toResume.getParent()");
+    }
+    
     public void testDeadBranch207514() throws Exception {
         performDeadBranchTest("package test;\n" +
                               "public class Test {\n" +
@@ -985,5 +1083,60 @@ public class FlowTest extends NbTestCase {
         }
 
         assertEquals(goldenSpans, actual);
+    }
+
+    public void testMustPerformResumeAfter206739() throws Exception {
+        performDefinitellyAssignmentTest("package test;\n" +
+                                         "public class Test {\n" +
+                                         "    static void t(java.lang.annotation.RetentionPolicy pol) {\n" +
+                                         "        if (true) {\n" +
+                                         "            int i`i = 0;\n" +
+                                         "            |switch (pol) {\n" +
+                                         "                case CLASS: ii = 0; break;\n" +
+                                         "                default: break;\n" +
+                                         "            }|\n" +
+                                         "            System.err.println(ii);\n" +
+                                         "        }\n" +
+                                         "    }\n" +
+                                         "}\n",
+                                         false,
+                                         false);
+    }
+    
+    private void performDefinitellyAssignmentTest(String code, boolean allowErrors, boolean definitellyAssigned) throws Exception {
+        int varPos = code.indexOf('`');
+        
+        code = code.replace("`", "");
+        
+        assertTrue(varPos >= 0);
+        
+        int[] span = new int[2];
+
+        code = TestUtilities.detectOffsets(code, span, "\\|");
+
+        prepareTest(code, allowErrors);
+
+        TreePath tp = info.getTreeUtilities().pathFor((span[0] + span[1]) / 2);
+        
+        while (tp != null) {
+            long s = info.getTrees().getSourcePositions().getStartPosition(tp.getCompilationUnit(), tp.getLeaf());
+            long e = info.getTrees().getSourcePositions().getEndPosition(tp.getCompilationUnit(), tp.getLeaf());
+            
+            if (span[0] == s && span[1] == e) break;
+            
+            tp = tp.getParentPath();
+        }
+        
+        assertNotNull(tp);
+        
+        TreePath var = info.getTreeUtilities().pathFor(varPos);
+        Element el = info.getTrees().getElement(var);
+        
+        assertNotNull(el);
+        assertEquals(ElementKind.LOCAL_VARIABLE, el.getKind());
+        
+        boolean actual = Flow.definitellyAssigned(info, (VariableElement) el, Collections.singletonList(tp), new AtomicBoolean());
+        
+        assertEquals(definitellyAssigned, actual);
     }
 }

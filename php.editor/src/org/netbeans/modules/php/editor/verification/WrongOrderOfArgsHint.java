@@ -44,7 +44,6 @@ package org.netbeans.modules.php.editor.verification;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
-import javax.swing.text.BadLocationException;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
@@ -63,7 +62,6 @@ import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
-import org.netbeans.modules.php.editor.verification.PHPHintsProvider.Kind;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle.Messages;
 
@@ -71,17 +69,20 @@ import org.openide.util.NbBundle.Messages;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class WrongOrderOfArgsHint extends AbstractRule {
+public class WrongOrderOfArgsHint extends AbstractHint {
 
     private static final String HINT_ID = "Wrong.Order.Of.Args.Hint"; //NOI18N
 
     @Override
-    void computeHintsImpl(PHPRuleContext context, List<Hint> hints, Kind kind) throws BadLocationException {
+    void compute(PHPRuleContext context, List<Hint> hints) {
         PHPParseResult phpParseResult = (PHPParseResult) context.parserResult;
         if (phpParseResult.getProgram() == null) {
             return;
         }
         FileObject fileObject = phpParseResult.getSnapshot().getSource().getFileObject();
+        if (fileObject == null) {
+            return;
+        }
         TokenHierarchy<?> tokenHierarchy = phpParseResult.getSnapshot().getTokenHierarchy();
         CheckVisitor checkVisitor = new CheckVisitor(fileObject, context.doc, tokenHierarchy);
         phpParseResult.getProgram().accept(checkVisitor);
@@ -130,7 +131,7 @@ public class WrongOrderOfArgsHint extends AbstractRule {
 
     }
 
-    private class RearrangeParametersFix implements HintFix {
+    private static class RearrangeParametersFix implements HintFix {
 
         private final FunctionDeclaration node;
         private final BaseDocument doc;
@@ -206,7 +207,7 @@ public class WrongOrderOfArgsHint extends AbstractRule {
 
     }
 
-    private class RearrangedFunctionDeclaration extends FunctionDeclaration {
+    private static class RearrangedFunctionDeclaration extends FunctionDeclaration {
 
         public RearrangedFunctionDeclaration(FunctionDeclaration node) {
             super(node.getStartOffset(), node.getEndOffset(), node.getFunctionName(), node.getFormalParameters(), node.getBody(), node.isReference());

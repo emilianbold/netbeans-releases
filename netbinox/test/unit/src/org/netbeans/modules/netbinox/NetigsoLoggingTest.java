@@ -44,7 +44,6 @@ package org.netbeans.modules.netbinox;
 import org.netbeans.core.startup.*;
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 import java.util.Locale;
 import java.util.logging.Level;
 import junit.framework.Test;
@@ -53,8 +52,6 @@ import org.netbeans.ModuleManager;
 import org.netbeans.SetupHid;
 import org.netbeans.junit.Log;
 import org.netbeans.junit.NbTestSuite;
-import org.osgi.framework.Bundle;
-import org.osgi.framework.BundleContext;
 
 /**
  * Do we correctly call the BundleActivators?

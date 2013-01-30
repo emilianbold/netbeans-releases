@@ -49,6 +49,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
 import org.netbeans.modules.autoupdate.services.OperationContainerImpl;
 
 /**
@@ -138,8 +139,9 @@ public final class OperationContainer<Support> {
      * @return newly constructed instance of <code>OperationContainer</code> for update operation
      */    
     public static OperationContainer<OperationSupport> createForDirectUpdate() {
+        OperationContainerImpl<OperationSupport> implContainerForDirectUpdate = OperationContainerImpl.createForDirectUpdate();
         OperationContainer<OperationSupport> retval =
-                new OperationContainer<OperationSupport>(OperationContainerImpl.createForDirectUpdate(), new OperationSupport());
+                new OperationContainer<OperationSupport>(implContainerForDirectUpdate, new OperationSupport());
         retval.getSupportInner ().setContainer(retval);
         return retval;
     }    
@@ -236,9 +238,6 @@ public final class OperationContainer<Support> {
                 upToDate = true;
                 return support;
             } else {
-                if (upToDate != null) {
-                    OperationContainerImpl.LOGGER.info("Support is null, either listAll[" + listAll() + "] empty, or there are invalid[" + listInvalid() + "]");
-                }
                 return null;
             }
         }

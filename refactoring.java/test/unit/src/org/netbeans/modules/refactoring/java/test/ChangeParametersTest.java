@@ -67,6 +67,148 @@ public class ChangeParametersTest extends RefactoringTestBase {
         super(name);
     }
     
+    public void test221730() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t;\n"
+                + "import java.util.Map;\n"
+                + "\n"
+                + "public class A {\n"
+                + "    public static void testMethod(Map<String, Map<Boolean, Long>> x) {\n"
+                + "         System.out.println(x);\n"
+                + "    }\n"
+                + "\n"
+                + "    public static void main(string[] args) {\n"
+                + "        testMethod(null);\n"
+                + "    }\n"
+                + "}\n"));
+        ParameterInfo[] paramTable = {new ParameterInfo(0, "x", "Map<String, Map<Boolean, Long>>", null), new ParameterInfo(-1, "y", "int", "1")};
+        performChangeParameters(null, null, null, paramTable, Javadoc.NONE, 1, false);
+        verifyContent(src,
+                new File("t/A.java","package t;\n"
+                + "import java.util.Map;\n"
+                + "\n"
+                + "public class A {\n"
+                + "    public static void testMethod(Map<String, Map<Boolean, Long>> x, int y) {\n"
+                + "         System.out.println(x);\n"
+                + "    }\n"
+                + "\n"
+                + "    public static void main(string[] args) {\n"
+                + "        testMethod(null, 1);\n"
+                + "    }\n"
+                + "}\n"));
+    }
+    
+    public void test215256() throws Exception { // #215256 - Refactoring "change method parameters" confuses parameters of newly created delegate
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t;\n"
+                + "\n"
+                + "import java.io.File;\n"
+                + "import java.util.Scanner;\n"
+                + "\n"
+                + "public class A\n"
+                + "{\n"
+                + "    public static void main(String[] args) throws Exception\n"
+                + "    {\n"
+                + "        File file = new File(\"example\");\n"
+                + "        analyzeFile(file);\n"
+                + "    }\n"
+                + "\n"
+                + "    private static void analyzeFile(final File file) throws\n"
+                + "java.io.FileNotFoundException\n"
+                + "    {\n"
+                + "        Scanner scanner = new Scanner(file);\n"
+                + "\n"
+                + "        while(scanner.hasNext())\n"
+                + "        {\n"
+                + "            String nextLine = scanner.nextLine();\n"
+                + "            System.out.println(nextLine);\n"
+                + "        }\n"
+                + "    }\n"
+                + "\n"
+                + "}"));
+        ParameterInfo[] paramTable = new ParameterInfo[] {new ParameterInfo(0, "is", "java.io.InputStream", null)};
+        performChangeParameters(null, null, null, paramTable, Javadoc.NONE, 2, true, new Problem(false, "WRN_isNotAssignable"));
+        verifyContent(src,
+                new File("t/A.java", "package t;\n"
+                + "\n"
+                + "import java.io.File;\n"
+                + "import java.util.Scanner;\n"
+                + "\n"
+                + "public class A\n"
+                + "{\n"
+                + "    public static void main(String[] args) throws Exception\n"
+                + "    {\n"
+                + "        File file = new File(\"example\");\n"
+                + "        analyzeFile(file);\n"
+                + "    }\n"
+                + "\n"
+                + "    private static void analyzeFile(final File file) throws\n"
+                + "java.io.FileNotFoundException\n"
+                + "    {\n"
+                + "        analyzeFile(file);\n"
+                + "    }\n"
+                + "\n"
+                + "    private static void analyzeFile(final java.io.InputStream is) throws\n"
+                + "java.io.FileNotFoundException\n"
+                + "    {\n"
+                + "        Scanner scanner = new Scanner(is);\n"
+                + "\n"
+                + "        while(scanner.hasNext())\n"
+                + "        {\n"
+                + "            String nextLine = scanner.nextLine();\n"
+                + "            System.out.println(nextLine);\n"
+                + "        }\n"
+                + "    }\n"
+                + "\n"
+                + "}"));
+    }
+    
+    public void test218053() throws Exception { // #218053 - IllegalArgumentException after ChangeMethodParameters refactoring
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t; public class A {\n"
+                + "    /**\n"
+                + "     * \n"
+                + "     * @param x the value of x\n"
+                + "     * @param y the value of y\n"
+                + "     */\n"
+                + "    public void testMethod(int x, int y) {\n"
+                + "         System.out.println(x);\n"
+                + "    }\n"
+                + "\n"
+                + "    public static void main(string[] args) {\n"
+                + "        testMethod(2, 1);\n"
+                + "    }\n"
+                + "}\n"),
+                new File("t/B.java", "package t; public class B extends A {\n"
+                + "    public void testMethod(int x, int y) {\n"
+                + "         System.out.println(x);\n"
+                + "    }\n"
+                + "}\n"));
+        ParameterInfo[] paramTable = new ParameterInfo[] {new ParameterInfo(1, "z", "int", null), new ParameterInfo(0, "w", "int", null)};
+        performChangeParameters(null, null, null, paramTable, Javadoc.UPDATE, 1, false);
+        verifyContent(src,
+                new File("t/A.java", "package t; public class A {\n"
+                + "    /**\n"
+                + "     * \n"
+                + "     * \n"
+                + "     * @param z the value of z\n"
+                + "     * @param w the value of w\n"
+                + "     */\n"
+                + "    public void testMethod(int z, int w) {\n"
+                + "         System.out.println(w);\n"
+                + "    }\n"
+                + "\n"
+                + "    public static void main(string[] args) {\n"
+                + "        testMethod(1, 2);\n"
+                + "    }\n"
+                + "}\n"),
+                new File("t/B.java", "package t; public class B extends A {\n"
+                + "    public void testMethod(int z, int w) {\n"
+                + "         System.out.println(w);\n"
+                + "    }\n"
+                + "}\n"));
+    }
+    
     public void test208495() throws Exception { //[Bug 208495] [Change Method Parameter] Method is not renamed when generating javadoc and adding a parameter
         writeFilesAndWaitForScan(src,
                 new File("t/A.java", "package t; public class A {\n"

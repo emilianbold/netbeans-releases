@@ -101,6 +101,8 @@ public class JavaHudsonLogger implements HudsonLogger {
 
     private static class Hyperlink implements OutputListener {
 
+        private static final RequestProcessor RP =
+                new RequestProcessor(Hyperlink.class);
         private final String resource;
         private final int lineNumber;
 
@@ -120,7 +122,7 @@ public class JavaHudsonLogger implements HudsonLogger {
         public void outputLineCleared(OutputEvent ev) {}
 
         private void acted(final boolean force) {
-            RequestProcessor.getDefault().post(new Runnable() {
+            RP.post(new Runnable() {
                 public @Override void run() {
                     FileObject source = GlobalPathRegistry.getDefault().findResource(resource);
                     if (source != null) {

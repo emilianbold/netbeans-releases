@@ -56,6 +56,8 @@ import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.j2ee.core.api.support.java.GenerationUtils;
 import org.netbeans.modules.j2ee.core.api.support.java.JavaIdentifiers;
+import org.netbeans.modules.websvc.rest.codegen.model.EntityClassInfo;
+import org.netbeans.modules.websvc.rest.codegen.model.EntityClassInfo.FieldInfo;
 import org.netbeans.modules.websvc.rest.model.api.RestConstants;
 import org.netbeans.modules.websvc.rest.support.JavaSourceHelper;
 import org.netbeans.modules.websvc.rest.support.SpringHelper;
@@ -90,10 +92,17 @@ public class SpringEntityResourcesGenerator extends EntityResourcesGenerator {
      */
     @Override
     protected boolean generateInfrastracture( Set<FileObject> createdFiles,
-            String entitySimpleName, FileObject facade ) throws IOException
+            String entityFqn, FileObject facade ) throws IOException
     {
+        if ( !super.generateInfrastracture(createdFiles, entityFqn, facade) ){
+            return false;
+        }
+        
         // Inject EntityManager
         JavaSource javaSource = JavaSource.forFileObject( facade );
+        if ( javaSource == null ){
+            return false;
+        }
         Task<WorkingCopy> task = new Task<WorkingCopy>() {
             
             @Override
@@ -218,6 +227,7 @@ public class SpringEntityResourcesGenerator extends EntityResourcesGenerator {
         return tree;
     }
     
+    @Override
     protected RestGenerationOptions getGenerationOptions(
             RestFacadeMethod method, String entityFQN, String paramArg,
             String idType )
@@ -225,6 +235,13 @@ public class SpringEntityResourcesGenerator extends EntityResourcesGenerator {
         String entitySimpleName = JavaIdentifiers.unqualify(entityFQN);
         RestGenerationOptions options = super.getGenerationOptions(method, 
                 entityFQN, paramArg, idType);
+        boolean needPathSegment = false;
+        EntityClassInfo entityInfo = getModel().getEntityInfo(entityFQN);
+        if ( entityInfo!= null ){
+            FieldInfo idFieldInfo = entityInfo.getIdFieldInfo();
+            needPathSegment = idFieldInfo!= null && idFieldInfo.isEmbeddedId()&& 
+                    idFieldInfo.getType()!= null;
+        }
         StringBuilder builder ;
         switch ( method ){
             case CREATE:
@@ -243,7 +260,13 @@ public class SpringEntityResourcesGenerator extends EntityResourcesGenerator {
                 return options;
             case REMOVE:
                 options.setReturnType("void");                                  // NOI18N
-                builder = new StringBuilder(entitySimpleName);
+                builder = new StringBuilder();
+                if ( needPathSegment ){
+                    builder.append(idType);
+                    builder.append( " key=getPrimaryKey(id);\n");               // NOI18N
+                    paramArg = "key";                                           // NOI18N
+                }
+                builder.append(entitySimpleName);
                 builder.append(" entity = entityManager.getReference(");        // NOI18N
                 builder.append(entitySimpleName);
                 builder.append(".class, ");                                     // NOI18N
@@ -253,7 +276,13 @@ public class SpringEntityResourcesGenerator extends EntityResourcesGenerator {
                 options.setBody(builder.toString());
                 return options;
             case FIND:
-                builder = new StringBuilder("return entityManager.find(");      // NOI18N
+                builder = new StringBuilder();
+                if ( needPathSegment ){
+                    builder.append(idType);
+                    builder.append( " key=getPrimaryKey(id);\n");               // NOI18N
+                    paramArg = "key";                                           // NOI18N
+                }
+                builder.append("return entityManager.find(");                   // NOI18N
                 builder.append(entitySimpleName);   
                 builder.append(".class, ");                                     // NOI18N
                 builder.append(paramArg);
@@ -281,7 +310,7 @@ public class SpringEntityResourcesGenerator extends EntityResourcesGenerator {
         return null;
     }
     
-    private final class FindMethod implements RestMethod {
+    private static final class FindMethod implements RestMethod {
 
         @Override
         public boolean overrides() {

@@ -45,6 +45,7 @@ package org.netbeans.modules.maven.embedder;
 import java.io.File;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -101,10 +102,12 @@ import org.apache.maven.settings.crypto.SettingsDecrypter;
 import org.apache.maven.settings.crypto.SettingsDecryptionResult;
 import org.codehaus.plexus.PlexusContainer;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.modules.maven.embedder.exec.ProgressTransferListener;
 import org.netbeans.modules.maven.embedder.impl.NBModelBuilder;
+import org.netbeans.modules.maven.embedder.impl.NbRepositoryCache;
 import org.netbeans.modules.maven.embedder.impl.NbWorkspaceReader;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -118,6 +121,7 @@ import org.sonatype.aether.util.repository.DefaultProxySelector;
 
 /**
  * Handle for the embedded Maven system, used to parse POMs and more.
+ * Since 2.36, all File instances in Artifacts, MavenProjects or Models should be pre-emptively normalized.
  */
 public final class MavenEmbedder {
 
@@ -177,15 +181,20 @@ public final class MavenEmbedder {
      * @since 2.26
      */
     public File getLocalRepositoryFile() {
-        String s = getLocalRepository().getBasedir();
-        return FileUtil.normalizeFile(new File(s));
+        return FileUtil.normalizeFile(new File(getLocalRepository().getBasedir()));
     }
+    
+    //only for unit tests..
+    private static Settings testSettings;
 
     @SuppressWarnings("NestedSynchronizedStatement")
     @org.netbeans.api.annotations.common.SuppressWarnings("ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD")
     public synchronized Settings getSettings() {
         if (Boolean.getBoolean("no.local.settings")) { // for unit tests
-            return new Settings(); // could instead make public void setSettings(Settings settingsOverride)
+            if (testSettings == null) {
+                testSettings = new Settings();
+            }
+            return testSettings; // could instead make public void setSettings(Settings settingsOverride)
         }
         File settingsXml = embedderConfiguration.getSettingsXml();
         long newSettingsTimestamp = settingsXml.hashCode() ^ settingsXml.lastModified() ^ MavenCli.DEFAULT_USER_SETTINGS_FILE.lastModified();
@@ -249,6 +258,7 @@ public final class MavenEmbedder {
             //the error logs with msgs
             return result.addException(ex);
         }
+        normalizePaths(result.getProject());
         return result;
     }
 
@@ -302,6 +312,7 @@ public final class MavenEmbedder {
         req.setArtifact(sources);
         req.setOffline(isOffline());
         ArtifactResolutionResult result = repositorySystem.resolve(req);
+        normalizePath(sources);
         // XXX check result for exceptions and throw them now?
         for (Exception ex : result.getExceptions()) {
             LOG.log(Level.FINE, null, ex);
@@ -316,7 +327,9 @@ public final class MavenEmbedder {
         MavenExecutionRequest request = createMavenExecutionRequest();
         req.setProcessPlugins(false);
         req.setRepositorySession(maven.newRepositorySession(request));
-        return projectBuilder.build(art, req);
+        ProjectBuildingResult res = projectBuilder.build(art, req);
+        normalizePaths(res.getProject());
+        return res;
     }
 
     public MavenExecutionResult execute(MavenExecutionRequest req) {
@@ -327,26 +340,19 @@ public final class MavenEmbedder {
      * Creates a list of POM models in an inheritance lineage.
      * Each resulting model is "raw", so contains no interpolation or inheritance.
      * In particular beware that groupId and/or version may be null if inherited from a parent; use {@link Model#getParent} to resolve.
+     * Internally calls <code>executeModelBuilder</code> so if you need to call both just use the execute method.
      * @param pom a POM to inspect
      * @param embedder an embedder to use
      * @return a list of models, starting with the specified POM, going through any parents, finishing with the Maven superpom (with a null artifactId)
      * @throws ModelBuildingException if the POM or parents could not even be parsed; warnings are not reported
      */
     public List<Model> createModelLineage(File pom) throws ModelBuildingException {
-        ModelBuilder mb = lookupComponent(ModelBuilder.class);
-        assert mb!=null : "ModelBuilder component not found in maven";
-        ModelBuildingRequest req = new DefaultModelBuildingRequest();
-        req.setPomFile(pom);
-        req.setProcessPlugins(false);
-        req.setValidationLevel(ModelBuildingRequest.VALIDATION_LEVEL_MINIMAL);
-        req.setModelResolver(new NBRepositoryModelResolver(this));
-        req.setSystemProperties(getSystemProperties());
-        
-        ModelBuildingResult res = mb.build(req);
+        ModelBuildingResult res = executeModelBuilder(pom);
         List<Model> toRet = new ArrayList<Model>();
 
         for (String id : res.getModelIds()) {
             Model m = res.getRawModel(id);
+            normalizePath(m);
             toRet.add(m);
         }
 //        for (ModelProblem p : res.getProblems()) {
@@ -356,7 +362,26 @@ public final class MavenEmbedder {
 //            }
 //        }
         return toRet;
-    }    
+    }
+    /**
+     * 
+     * @param pom
+     * @return result object with access to effective pom model and raw models for each parent.
+     * @throws ModelBuildingException if the POM or parents could not even be parsed; warnings are not reported
+     */
+    public ModelBuildingResult executeModelBuilder(File pom) throws ModelBuildingException {
+        ModelBuilder mb = lookupComponent(ModelBuilder.class);
+        assert mb!=null : "ModelBuilder component not found in maven";
+        ModelBuildingRequest req = new DefaultModelBuildingRequest();
+        req.setPomFile(pom);
+        req.setProcessPlugins(false);
+        req.setValidationLevel(ModelBuildingRequest.VALIDATION_LEVEL_MINIMAL);
+        req.setLocationTracking(true);
+        req.setModelResolver(new NBRepositoryModelResolver(this));
+        req.setSystemProperties(getSystemProperties());
+        return mb.build(req);
+        
+    }
     
     public List<String> getLifecyclePhases() {
 
@@ -411,6 +436,7 @@ public final class MavenEmbedder {
             Exceptions.printStackTrace(x);
         }
         req.setOffline(isOffline());
+        req.setRepositoryCache(new NbRepositoryCache());
 
         return req;
     }
@@ -462,5 +488,119 @@ public final class MavenEmbedder {
      */
     public static Set<String> getAllProjectProfiles(MavenProject mp) {
         return NBModelBuilder.getAllProfiles(mp.getModel());
+    }
+    /**
+     * descriptions of models that went into effective pom, containing information that was lost in processing and is not cheap to obtain.
+     * in the list the current project's model description comes first, second is it's parent and so on.
+     * @param mp
+     * @return null if the parameter passed was not created using the Project Maven Embedder.
+     * @since 2.30
+     */
+    public static @CheckForNull List<ModelDescription> getModelDescriptors(MavenProject mp) {
+        return NBModelBuilder.getModelDescriptors(mp.getModel());
+    }
+
+    /**
+     * normalize all File references in the object tree.
+     * @param project 
+     * @since 2.36
+     */
+    public static void normalizePaths(MavenProject project) {
+        if (project == null) {
+            return;
+        }
+        File f = project.getFile();
+        if (f != null) {
+            project.setFile(FileUtil.normalizeFile(f));
+        }
+        normalizePath(project.getArtifact());
+        normalizePaths(project.getAttachedArtifacts());
+        f = project.getParentFile();
+        if (f != null) {
+            project.setParentFile(FileUtil.normalizeFile(f));
+        }
+        normalizePath(project.getParentArtifact());
+        
+        normalizePaths(project.getArtifacts());
+        normalizePaths(project.getDependencyArtifacts());
+        normalizePaths(project.getExtensionArtifacts());
+        normalizePaths(project.getPluginArtifacts());
+        
+        normalizePath(project.getModel());
+        normalizePath(project.getOriginalModel());
+    }
+    
+    static void normalizePath(Model model) {
+        if (model != null) {
+            File f = model.getPomFile();
+            if (f != null) {
+                model.setPomFile(FileUtil.normalizeFile(f));
+            }
+        }
+    }
+
+    static void normalizePaths(Collection<Artifact> arts) {
+        if (arts != null) {
+            for (Artifact aa : arts) {
+                normalizePath(aa);
+            }
+        }
+    }
+    
+    static void normalizePath(Artifact a) {
+        if (a != null) {
+            File f = a.getFile();
+            if (f != null) {
+                a.setFile(FileUtil.normalizeFile(f));
+            }
+        }
+    }
+
+    /**
+     * descriptor containing some base information about the models collected while building
+     * effective model. 
+     * @since 2.30
+     */
+    public static interface ModelDescription {
+        /*
+         * groupId:artifactId:version
+         */
+        String getId();
+        /**
+         * artifactId as defined in the model
+         * @return 
+         */
+        String getArtifactId();
+        /**
+         * version as defined in the model
+         * @return 
+         */
+        String getVersion();
+        /**
+         * groupId as defined in the model
+         * @return 
+         */
+        String getGroupId();
+        /**
+         * name as defined in the model
+         * @return 
+         */
+        String getName();
+        /**
+         * location of the model pom file.
+         * @return normalized path
+         */
+        File getLocation();
+        /**
+         * all profile ids as found in the model
+         * @return 
+         */
+        List<String> getProfiles();
+        /**
+         * get all module declarations from base and from profile locations
+         * @return 
+         */
+        List<String> getModules();
+        
     }
 }

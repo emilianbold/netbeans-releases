@@ -338,7 +338,9 @@ public class MakeNBM extends Task {
     public void setLocales(String s) {
         locales = new ArrayList<String>();
         for (String st : s.split("[, ]+")) {
-            locales.add(st);
+            if (! st.trim().isEmpty()) {
+                locales.add(st);
+            }
         }
     }
     /** Include netbeans directory - default is true */
@@ -1004,7 +1006,7 @@ public class MakeNBM extends Task {
             module.setAttribute("global", global);
         }
         if (preferredupdate != null && !("".equals(preferredupdate))) {
-            module.setAttribute("preferredupdate", global);
+            module.setAttribute("preferredupdate", preferredupdate);
         }
         if (targetcluster != null && !("".equals(targetcluster))) {
             module.setAttribute("targetcluster", targetcluster);

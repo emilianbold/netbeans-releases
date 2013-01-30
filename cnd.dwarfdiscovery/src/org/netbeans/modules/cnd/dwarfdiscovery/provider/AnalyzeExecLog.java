@@ -59,6 +59,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport;
+import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.discovery.api.ApplicableImpl;
 import org.netbeans.modules.cnd.discovery.api.Configuration;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryExtensionInterface;
@@ -218,16 +219,15 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
     @Override
     public boolean isApplicable(ProjectProxy project) {
         String set = (String) getProperty(EXEC_LOG_KEY).getValue();
-        if (set == null || set.length() == 0) {
-            return false;
+        if (set != null && set.length() > 0) {
+            return true;
         }
-        return true;
-        //Object o = getProperty(RESTRICT_COMPILE_ROOT).getValue();
-        //if (o == null || "".equals(o.toString())) { // NOI18N
-        //    getProperty(RESTRICT_COMPILE_ROOT).setValue(project.getSourceRoot());
-        //    return true;
-        //}
-        //return false;
+        Object o = getProperty(RESTRICT_COMPILE_ROOT).getValue();
+        if (o == null || "".equals(o.toString())) { // NOI18N
+            getProperty(RESTRICT_COMPILE_ROOT).setValue(project.getSourceRoot());
+            return true;
+        }
+        return false;
     }
 
     @Override
@@ -263,7 +263,7 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
     public List<Configuration> analyze(final ProjectProxy project, Progress progress) {
         isStoped.set(false);
         List<Configuration> confs = new ArrayList<Configuration>();
-        setCommpilerSettings(project);
+        init(project);
         this.progress = progress;
         if (!isStoped.get()) {
             Configuration conf = new Configuration() {
@@ -314,6 +314,9 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
         private final PathMap pathMapper;
         private final FileSystem fileSystem;
         private final CompilerSettings compilerSettings;
+        private final Set<String> C_NAMES;
+        private final Set<String> CPP_NAMES;
+        private final Set<String> FORTRAN_NAMES;
 
         public ExecLogReader(String fileName, String root, ProjectProxy project) {
             if (root.length() > 0) {
@@ -326,8 +329,11 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
             this.pathMapper = getPathMapper(project);
             this.fileSystem = getFileSystem(project);
             this.compilerSettings = new CompilerSettings(project);
+            C_NAMES = DiscoveryUtils.getCompilerNames(project, PredefinedToolKind.CCompiler);
+            CPP_NAMES = DiscoveryUtils.getCompilerNames(project, PredefinedToolKind.CCCompiler);
+            FORTRAN_NAMES = DiscoveryUtils.getCompilerNames(project, PredefinedToolKind.FortranCompiler);
         }
-
+        
         private PathMap getPathMapper(ProjectProxy project) {
             if (project != null) {
                 Project p = project.getProject();
@@ -447,12 +453,11 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
             } else {
                 compiler = tool;
             }
-            if (compiler.equals("cc") || compiler.equals("gcc") || compiler.equals("clang")) { //NOI18N
+            if (C_NAMES.contains(compiler)) {
                 language = LanguageKind.C;
-            } else if (compiler.equals("CC") || compiler.equals("g++") || compiler.equals("c++") || compiler.equals("clang++")) { //NOI18N
+            } else if (CPP_NAMES.contains(compiler)) {
                 language = LanguageKind.CPP;
-            } else if (compiler.equals("ffortran") || compiler.equals("f77") || compiler.equals("f90") || compiler.equals("f95") || //NOI18N
-                       compiler.equals("gfortran") || compiler.equals("g77") || compiler.equals("g90") || compiler.equals("g95")) { //NOI18N
+            } else if (FORTRAN_NAMES.contains(compiler)) {
                 language = LanguageKind.Fortran;
             } else {
                 language = LanguageKind.Unknown;
@@ -532,11 +537,19 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
                     } else if (languageArtifacts.contains("c++")) { // NOI18N
                         language = ItemProperties.LanguageKind.CPP;
                     } else {
-                        String mime =MIMESupport.getKnownSourceFileMIMETypeByExtension(fullName);
-                        if (MIMENames.CPLUSPLUS_MIME_TYPE.equals(mime)) {
-                            language = ItemProperties.LanguageKind.CPP;
-                        } else if (MIMENames.C_MIME_TYPE.equals(mime)) {
-                            language = ItemProperties.LanguageKind.C;
+                        if (language == LanguageKind.Unknown) {
+                            String mime =MIMESupport.getKnownSourceFileMIMETypeByExtension(fullName);
+                            if (MIMENames.CPLUSPLUS_MIME_TYPE.equals(mime)) {
+                                language = ItemProperties.LanguageKind.CPP;
+                            } else if (MIMENames.C_MIME_TYPE.equals(mime)) {
+                                language = ItemProperties.LanguageKind.C;
+                            }
+                        } else if(language == LanguageKind.C && !compiler.equals("cc")){ // NOI18N
+                            // GNU driver detect language by mime type
+                            String mime =MIMESupport.getKnownSourceFileMIMETypeByExtension(fullName);
+                            if (MIMENames.CPLUSPLUS_MIME_TYPE.equals(mime)) {
+                                language = ItemProperties.LanguageKind.CPP;
+                            }
                         }
                     }
                     ExecSource res = new ExecSource(storage);
@@ -577,20 +590,16 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
         }
     }
     
-    private static class ExecSource implements SourceFileProperties {
+    private static class ExecSource extends RelocatableImpl implements SourceFileProperties {
 
-        private String compilePath;
         private String sourceName;
-        private String fullName;
         private String compiler;
         private ItemProperties.LanguageKind language;
         private LanguageStandard standard = LanguageStandard.Unknown;
-        private List<String> userIncludes;
         private List<String> systemIncludes = Collections.<String>emptyList();
         private Map<String, String> userMacros;
         private List<String> undefinedMacros;
         private Map<String, String> systemMacros = Collections.<String, String>emptyMap();
-        private Set<String> includedFiles = Collections.<String>emptySet();
         private final CompileLineStorage storage;
         private int handler = -1;
 
@@ -617,7 +626,7 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
         public String getItemName() {
             return sourceName;
         }
-
+        
         @Override
         public List<String> getUserInludePaths() {
             return userIncludes;

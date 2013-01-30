@@ -55,6 +55,8 @@ import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.modules.php.api.validation.ValidationResult;
 import org.netbeans.modules.php.project.connections.ConfigManager.Configuration;
 import org.netbeans.modules.php.project.connections.api.RemotePreferences;
 import org.netbeans.modules.php.project.connections.spi.RemoteConnectionProvider;
@@ -149,6 +151,17 @@ public final class RemoteConnections {
 
     List<RemoteConnectionProvider> getConnectionProviders() {
         return CONNECTION_PROVIDERS;
+    }
+
+    @CheckForNull
+    public ValidationResult validateRemoteConfiguration(RemoteConfiguration remoteConfiguration) {
+        for (RemoteConnectionProvider provider : getConnectionProviders()) {
+            ValidationResult validationResult = provider.validate(remoteConfiguration);
+            if (validationResult != null) {
+                return validationResult;
+            }
+        }
+        return null;
     }
 
     public List<String> getRemoteConnectionTypes() {

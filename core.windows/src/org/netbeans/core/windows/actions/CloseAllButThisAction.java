@@ -46,6 +46,8 @@
 package org.netbeans.core.windows.actions;
 
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 import org.openide.util.Mutex;
@@ -74,10 +76,22 @@ implements PropertyChangeListener, Runnable {
      */
     private boolean isContext;
 
+    private Timer updateTimer;
+    private final Object LOCK = new Object();
+
     public CloseAllButThisAction() {
         this.isContext = false;
         putValue(NAME, NbBundle.getMessage(CloseAllButThisAction.class,
             "CTL_CloseAllButThisAction_MainMenu")); //NOI18N
+
+        updateTimer = new Timer( 300, new ActionListener() {
+
+            @Override
+            public void actionPerformed( ActionEvent e ) {
+                updateEnabled();
+            }
+        });
+        updateTimer.setRepeats( false );
 
         TopComponent.getRegistry().addPropertyChangeListener(
             WeakListeners.propertyChange(this, TopComponent.getRegistry()));
@@ -95,6 +109,7 @@ implements PropertyChangeListener, Runnable {
     }
 
     /** Perform the action. Sets/unsets maximzed mode. */
+    @Override
     public void actionPerformed(java.awt.event.ActionEvent ev) {
         TopComponent topC = obtainTC();
         if(topC != null) {
@@ -102,11 +117,23 @@ implements PropertyChangeListener, Runnable {
         }
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         String propName = evt.getPropertyName();
         if(TopComponent.Registry.PROP_ACTIVATED.equals(propName) ||
                 TopComponent.Registry.PROP_OPENED.equals(propName)) {
-            updateEnabled();
+            //#216454 
+            scheduleUpdate();
+        }
+    }
+
+    private void scheduleUpdate() {
+        synchronized( LOCK ) {
+            if( updateTimer.isRunning() ) {
+                updateTimer.restart();
+            } else {
+                updateTimer.start();
+            }
         }
     }
     
@@ -114,6 +141,7 @@ implements PropertyChangeListener, Runnable {
         Mutex.EVENT.readAccess(this);
     }
     
+    @Override
     public void run() {
         TopComponent tc = obtainTC();
         WindowManagerImpl wmi = WindowManagerImpl.getInstance();
@@ -137,6 +165,7 @@ implements PropertyChangeListener, Runnable {
     /** Overriden to share accelerator with 
      * org.netbeans.core.windows.actions.ActionUtils.CloseWindowAction
      */ 
+    @Override
     public void putValue(String key, Object newValue) {
         if (Action.ACCELERATOR_KEY.equals(key)) {
             ActionUtils.putSharedAccelerator("CloseAllButThis", newValue); //NOI18N
@@ -148,6 +177,7 @@ implements PropertyChangeListener, Runnable {
     /** Overriden to share accelerator with 
      * org.netbeans.core.windows.actions.ActionUtils.CloseWindowAction
      */ 
+    @Override
     public Object getValue(String key) {
         if (Action.ACCELERATOR_KEY.equals(key)) {
             return ActionUtils.getSharedAccelerator("CloseAllButThis"); //NOI18N

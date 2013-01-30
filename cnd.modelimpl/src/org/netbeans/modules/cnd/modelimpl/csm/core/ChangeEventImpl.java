@@ -72,6 +72,7 @@ public class ChangeEventImpl extends CsmChangeEvent {
     protected Map<CsmOffsetableDeclaration,CsmOffsetableDeclaration> changedDeclarations;
     
     protected Set<CsmProject>   changedProjects;
+    protected Set<CsmProject>   projectsWithChangedLibs;
     
     protected Map<CharSequence, CsmNamespace>   newNamespaces;
     protected Map<CharSequence, CsmNamespace>   removedNamespaces;
@@ -136,6 +137,13 @@ public class ChangeEventImpl extends CsmChangeEvent {
         return changedProjects;
     }
     
+    @Override
+    public Collection<CsmProject> getProjectsWithChangedLibs() {
+        return projectsWithChangedLibs == null ? 
+                Collections.<CsmProject>emptyList() : 
+                Collections.unmodifiableSet(projectsWithChangedLibs);
+    }
+
     @Override
     public Collection<CsmNamespace> getNewNamespaces() {
         if( newNamespaces != null ) {
@@ -217,6 +225,13 @@ public class ChangeEventImpl extends CsmChangeEvent {
         }
     }   
     
+    public void addProjectThatChangedLibs(CsmProject project) {
+        if (projectsWithChangedLibs == null) {
+            projectsWithChangedLibs = new HashSet<CsmProject>();
+        }        
+        projectsWithChangedLibs.add(project);
+    }
+
     private Map<CharSequence, CsmNamespace> _getRemovedNamespaces() {
         if (removedNamespaces == null) {
             removedNamespaces = new HashMap<CharSequence, CsmNamespace>();            

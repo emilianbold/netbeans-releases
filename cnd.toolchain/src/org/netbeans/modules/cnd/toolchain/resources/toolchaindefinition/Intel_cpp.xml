@@ -47,5 +47,12 @@ made subject to such option by the copyright holder.
 <toolchaindefinition xmlns="http://www.netbeans.org/ns/cnd-toolchain-definition/1">
     <cpp>
         <compiler name="icpc"/>
+        <system_macros flags="-x c++ -E -dM" parser="GNU">
+            <macro stringvalue="__INTEL_COMPILER_BUILD_DATE" hide="true"/>
+            <macro stringvalue="__LINE__" hide="true"/>
+            <macro stringvalue="__FILE__" hide="true"/>
+            <macro stringvalue="__DATE__" hide="true"/>
+            <macro stringvalue="__TIME__" hide="true"/>
+        </system_macros>
     </cpp>
 </toolchaindefinition>

@@ -45,10 +45,7 @@
 package org.netbeans.modules.debugger.ui.views;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
+import java.awt.Image;
 import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
@@ -56,9 +53,6 @@ import java.io.ObjectOutput;
 import javax.swing.JComponent;
 import javax.swing.JToolBar;
 import javax.swing.UIManager;
-import javax.swing.border.EmptyBorder;
-import javax.swing.border.MatteBorder;
-import org.netbeans.spi.viewmodel.Models;
 
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -83,13 +77,13 @@ public class View extends TopComponent implements org.openide.util.HelpCtx.Provi
     
     private transient JComponent contentComponent;
     private transient ViewModelListener viewModelListener;
-    private String name; // Store just the name persistently, we'll create the component from that
-    private transient String helpID;
-    private transient String propertiesHelpID;
+    protected String name; // Store just the name persistently, we'll create the component from that
+    protected transient String helpID;
+    protected transient String propertiesHelpID;
     private transient String displayNameResource;
     private transient String toolTipResource;
     
-    private View (String icon, String name, String helpID, String propertiesHelpID,
+    protected View (String icon, String name, String helpID, String propertiesHelpID,
                   String displayNameResource, String toolTipResource) {
         setIcon (ImageUtilities.loadImage (icon));
         // Remember the location of the component when closed.
@@ -101,10 +95,12 @@ public class View extends TopComponent implements org.openide.util.HelpCtx.Provi
         this.toolTipResource = toolTipResource;
     }
 
+    @Override
     protected String preferredID() {
         return this.getClass().getPackage().getName() + "." + name;
     }
 
+    @Override
     protected void componentShowing () {
         super.componentShowing ();
         if (viewModelListener != null) {
@@ -117,7 +113,9 @@ public class View extends TopComponent implements org.openide.util.HelpCtx.Provi
             contentComponent = new javax.swing.JPanel(new BorderLayout ());
             
             //tree = Models.createView (Models.EMPTY_MODEL);
-            contentComponent.setName (NbBundle.getMessage (View.class, toolTipResource));
+            if (toolTipResource != null) {
+                contentComponent.setName (NbBundle.getMessage (View.class, toolTipResource));
+            }
             add (contentComponent, BorderLayout.CENTER);  //NOI18N
             JToolBar toolBar = new JToolBar(JToolBar.VERTICAL);
             toolBar.setFloatable(false);
@@ -154,6 +152,7 @@ public class View extends TopComponent implements org.openide.util.HelpCtx.Provi
         // </RAVE>
     }
     
+    @Override
     protected void componentHidden () {
         super.componentHidden ();
         if (viewModelListener != null) {
@@ -163,18 +162,23 @@ public class View extends TopComponent implements org.openide.util.HelpCtx.Provi
     
     // <RAVE>
     // Implement getHelpCtx() with the correct help ID
+    @Override
     public org.openide.util.HelpCtx getHelpCtx() {
         return new org.openide.util.HelpCtx(helpID);
     }
     // </RAVE>
     
+    @Override
     public int getPersistenceType () {
         return PERSISTENCE_ALWAYS;
     }
         
+    @Override
     public boolean requestFocusInWindow () {
         super.requestFocusInWindow ();
-        if (contentComponent == null) return false;
+        if (contentComponent == null) {
+            return false;
+        }
         if (contentComponent.getComponentCount() > 0) {
             return contentComponent.getComponent(0).requestFocusInWindow ();
         } else {
@@ -182,6 +186,7 @@ public class View extends TopComponent implements org.openide.util.HelpCtx.Provi
         }
     }
 
+    @Override
     public void requestActive() {
         super.requestActive();
         if (contentComponent != null) {
@@ -193,14 +198,17 @@ public class View extends TopComponent implements org.openide.util.HelpCtx.Provi
         }
     }
     
+    @Override
     public String getName () {
         return NbBundle.getMessage (View.class, displayNameResource);
     }
     
+    @Override
     public String getToolTipText () {
         return NbBundle.getMessage (View.class, toolTipResource);// NOI18N
     }
     
+    @Override
     public Object writeReplace() {
         return new ResolvableHelper(name);
     }
@@ -224,10 +232,12 @@ public class View extends TopComponent implements org.openide.util.HelpCtx.Provi
             // Just for the purpose of deserialization
         }
         
+        @Override
         public void writeExternal(ObjectOutput out) throws IOException {
             out.writeObject(name);
         }
         
+        @Override
         public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
             name = (String) in.readObject();
         }
@@ -241,6 +251,7 @@ public class View extends TopComponent implements org.openide.util.HelpCtx.Provi
     /** Creates the view. Call from the module layer only!
      * @deprecated Do not call.
      */
+    @Deprecated
     public static synchronized TopComponent getBreakpointsView() {
         return new View(
             "org/netbeans/modules/debugger/resources/breakpointsView/Breakpoint.gif",
@@ -255,6 +266,7 @@ public class View extends TopComponent implements org.openide.util.HelpCtx.Provi
     /** Creates the view. Call from the module layer only!
      * @deprecated Do not call.
      */
+    @Deprecated
     public static synchronized TopComponent getCallStackView() {
         return new View(
             "org/netbeans/modules/debugger/resources/allInOneView/CallStack.gif",
@@ -269,6 +281,7 @@ public class View extends TopComponent implements org.openide.util.HelpCtx.Provi
     /** Creates the view. Call from the module layer only!
      * @deprecated Do not call.
      */
+    @Deprecated
     public static synchronized TopComponent getLocalsView() {
         return new View(
             "org/netbeans/modules/debugger/resources/localsView/local_variable_16.png",
@@ -283,6 +296,7 @@ public class View extends TopComponent implements org.openide.util.HelpCtx.Provi
     /** Creates the view. Call from the module layer only!
      * @deprecated Do not call.
      */
+    @Deprecated
     public static synchronized TopComponent getSessionsView() {
         return new View(
             "org/netbeans/modules/debugger/resources/sessionsView/session_16.png",
@@ -297,6 +311,7 @@ public class View extends TopComponent implements org.openide.util.HelpCtx.Provi
     /** Creates the view. Call from the module layer only!
      * @deprecated Do not call.
      */
+    @Deprecated
     public static synchronized TopComponent getThreadsView() {
         return new View(
             "org/netbeans/modules/debugger/resources/threadsView/RunningThread.gif",
@@ -311,6 +326,7 @@ public class View extends TopComponent implements org.openide.util.HelpCtx.Provi
     /** Creates the view. Call from the module layer only!
      * @deprecated Do not call.
      */
+    @Deprecated
     public static synchronized TopComponent getWatchesView() {
         return new View(
             "org/netbeans/modules/debugger/resources/watchesView/watch_16.png",
@@ -325,6 +341,7 @@ public class View extends TopComponent implements org.openide.util.HelpCtx.Provi
     /** Creates the view. Call from the module layer only!
      * @deprecated Do not call.
      */
+    @Deprecated
     public static synchronized TopComponent getSourcesView() {
         return new View(
             "org/netbeans/modules/debugger/resources/sourcesView/sources_16.png",
@@ -339,6 +356,7 @@ public class View extends TopComponent implements org.openide.util.HelpCtx.Provi
     /** Creates the view. Call from the module layer only!
      * @deprecated Do not call.
      */
+    @Deprecated
     public static synchronized TopComponent getResultsView() {
         return new View(
             "org/netbeans/modules/debugger/resources/sourcesView/sources_16.png",

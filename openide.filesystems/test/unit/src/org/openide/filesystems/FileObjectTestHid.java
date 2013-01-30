@@ -55,6 +55,7 @@ import java.util.*;
 import java.net.*;
 import java.util.logging.Level;
 import org.netbeans.junit.RandomlyFails;
+import org.openide.util.Lookup.Result;
 
 /**
  *
@@ -348,6 +349,47 @@ public class FileObjectTestHid extends TestBaseHid {
         value.equals((String)fo3.getAttribute(attrName)) );
         fileDataCreatedAssert("parent should fire fileDataCreated",1);
     }
+    
+    /** Test of copy method, of class org.openide.filesystems.FileObject. */
+    public void  testCopyFolderWith() throws IOException {
+        checkSetUp();
+        FileObject fold = getTestFolder1(root);
+        FileObject target;
+        FileObject src;
+        FileObject data;
+        try {
+            target = fold.createFolder("target");
+            src = fold.createFolder("s.r.c");
+            data = src.createData("x.txt");
+        } catch (IOException iex) {
+            fsAssert("expected copy will success on writable FS",
+            fs.isReadOnly() || fold.isReadOnly());
+            return;
+        }
+        assertEquals("Folder name", "s.r.c", src.getNameExt());
+        assertEquals("Folder name", "s.r", src.getName());
+        assertEquals("Folder name", "c", src.getExt());
+        
+        src.copy(target, src.getNameExt(), null);
+        FileObject ffo = fold.getFileObject("target/s.r.c");
+        assertNotNull("Copied folder found: " + Arrays.asList(target.getChildren()), ffo);
+
+        FileObject fo = fold.getFileObject("target/s.r.c/x.txt");
+        assertNotNull("Copied file found: " + Arrays.asList(target.getFileObject("s.r.c").getChildren()), fo);
+    }
+    
+    public void  testCopyToMemory() throws IOException {
+        checkSetUp();
+        FileObject fold = getTestFolder1(root);
+        FileObject fo1 = getTestFile1(fold);
+        
+        FileSystem memoryFileSystem = FileUtil.createMemoryFileSystem();
+        FileObject memoryFsRoot = memoryFileSystem.getRoot();
+        FileObject result = fo1.copy(memoryFsRoot, fo1.getName(), null);        
+        
+        assertTrue("Result is valid: " + result, result.isValid());
+        assertEquals("Some content in the file", fo1.asText(), result.asText());
+    }
 
     public void  testCreateAndOpen() throws Exception {
         checkSetUp();
@@ -512,6 +554,148 @@ public class FileObjectTestHid extends TestBaseHid {
         }
         fsFail  ("move  should fire exception if file already exists");
     }
+
+    public void  testMoveToMemory() throws IOException {
+        checkSetUp();
+        FileObject fold = getTestFolder1(root);
+        FileObject fo1 = getTestFile1(fold);
+        
+        FileSystem memoryFileSystem = FileUtil.createMemoryFileSystem();
+        FileObject memoryFsRoot = memoryFileSystem.getRoot();
+        FileLock lck = null;
+        try {
+            lck = fo1.lock();
+            FileObject result = fo1.move(lck, memoryFsRoot, fo1.getName(), null);        
+
+            assertTrue("Result is valid: " + result, result.isValid());
+            assertFalse("Original is not valid anymore: " + fo1, fo1.isValid());
+        } catch (IOException ex) {
+            fsAssert("OK, if the system is read-only",
+                fs.isReadOnly() || root.isReadOnly());
+            return;
+        } finally {
+            if (lck != null) {
+                lck.releaseLock();
+            }
+        } 
+    }
+    
+    public void  testRenameLookup() throws Exception {
+        checkSetUp();
+        FileObject fold = getTestFolder1(root);
+        FileObject fo1 = getTestFile1(fold);
+
+        Lookup first = fo1.getLookup();
+        Collection<? extends FileObject> all = first.lookupAll(FileObject.class);
+        assertTrue("Contains itself before rename: " + all, all.contains(fo1));
+        FileLock lock = null;
+        FileObject ret;
+        try {
+            lock = fo1.lock();
+            fo1.rename(lock, "New" + fo1.getName(), fo1.getExt());
+            ret = fo1;
+        } catch (IOException ex) {
+            fsAssert("OK, if the system is read-only",
+                fs.isReadOnly() || root.isReadOnly());
+            return;
+        } finally {
+            if (lock != null) {
+                lock.releaseLock();
+            }            
+        }
+        Lookup second = ret.getLookup();
+        assertSame("Lookup's identity is preserved during rename", first, second);
+        all = second.lookupAll(FileObject.class);
+        assertTrue("Contains itself after rename: " + all, all.contains(ret));
+    }
+    public void  testMoveLookup() throws Exception {
+        checkSetUp();
+        FileObject fold = getTestFolder1(root);
+        FileObject fo1 = getTestFile1(fold);
+        FileObject sub;
+        try {
+            sub = fold.createFolder("sub");
+        } catch (IOException ex) {
+            fsAssert("OK, if the system is read-only",
+                fs.isReadOnly() || root.isReadOnly());
+            return;
+        }
+
+        Lookup first = fo1.getLookup();
+        Collection<? extends FileObject> all = first.lookupAll(FileObject.class);
+        assertTrue("Contains itself before move: " + all, all.contains(fo1));
+        FileLock lock = null;
+        FileObject ret;
+        try {
+            lock = fo1.lock();
+            ret = fo1.move(lock, sub, fo1.getName(), fo1.getExt());
+        } finally {
+            if (lock != null) {
+                lock.releaseLock();
+            }            
+        }
+        Lookup second = ret.getLookup();
+        assertSame("Lookup's identity is preserved during move", first, second);
+        
+        all = second.lookupAll(FileObject.class);
+        assertTrue("Contains itself after move: " + all, all.contains(ret));
+    }
+    
+    public void  testMoveAndChanges() throws Exception {
+        checkSetUp();
+        FileObject fold = getTestFolder1(root);
+        FileObject fo1 = getTestFile1(fold);
+        FileObject sub;
+        try {
+            sub = fold.createFolder("sub");
+        } catch (IOException ex) {
+            fsAssert("OK, if the system is read-only",
+                fs.isReadOnly() || root.isReadOnly());
+            return;
+        }
+        
+        class L implements LookupListener {
+            int cnt;
+
+            @Override
+            public void resultChanged(LookupEvent ev) {
+                cnt++;
+            }
+            
+            public void assertChange(String msg) {
+                assertTrue(msg, cnt > 0);
+                cnt = 0;
+            }
+        }
+        L listener = new L();
+
+        Lookup first = fo1.getLookup();
+        Result<FileObject> result = first.lookupResult(FileObject.class);
+        result.addLookupListener(listener);
+        
+        Collection<? extends FileObject> all = result.allInstances();
+        assertTrue("Contains itself before move: " + all, all.contains(fo1));
+        FileLock lock = null;
+        FileObject ret;
+        try {
+            lock = fo1.lock();
+            ret = fo1.move(lock, sub, fo1.getName(), fo1.getExt());
+        } finally {
+            if (lock != null) {
+                lock.releaseLock();
+            }            
+        }
+        
+        listener.assertChange("File object has changed");
+        all = result.allInstances();
+        assertTrue("Contains itself after move: " + all, all.contains(ret));
+        
+        FileObject ret2 = FileUtil.moveFile(ret, fold, "strange.name");
+
+        listener.assertChange("Another change in the lookup");
+        all = result.allInstances();
+        assertTrue("Contains itself after move: " + all, all.contains(ret2));
+    }
     
     /** Test of move method, of class org.openide.filesystems.FileObject. */
     public void  testMove1() throws IOException {
@@ -568,8 +752,33 @@ public class FileObjectTestHid extends TestBaseHid {
             assertNotNull (toMove2 = toMove.move(lock, fold2, toMove.getName(), toMove.getExt()));
             lock.releaseLock();
             lock = toMove2.lock();
-            assertNotNull (toMove2.move(lock, fold1, toMove.getName(), toMove.getExt()));
-            
+            FileObject ret = toMove2.move(lock, fold1, toMove.getName(), toMove.getExt());
+            assertNotNull("Moved object returned", ret);
+            assertEquals("Has the right parent", fold1, ret.getParent());
+        } finally {
+            lock.releaseLock();
+        }
+    }
+    
+    public void  testMoveToSameFolderAlaRename() throws IOException {
+        checkSetUp();
+        if (fs.isReadOnly()) return;
+        FileObject fold = getTestFolder1(root);
+
+        FileObject fold1 = fold.createFolder("A");
+
+        FileObject toMove = fold1.createData("something");
+        final String origName = toMove.getName();
+        FileLock lock = toMove.lock();
+        try {
+            FileObject toMove2 = null;
+            final String origExt = toMove.getExt();
+            assertNotNull (toMove2 = toMove.move(lock, fold1, "New" + origName, origExt));
+            lock.releaseLock();
+            lock = toMove2.lock();
+            FileObject ret = toMove2.move(lock, fold1, origName, origExt);
+            assertNotNull("Moved object returned", ret);
+            assertEquals("Has the right parent", fold1, ret.getParent());
         } finally {
             lock.releaseLock();
         }
@@ -601,6 +810,51 @@ public class FileObjectTestHid extends TestBaseHid {
         FileObject created = last.getChildren()[0];
         assertEquals("kid", created.getNameExt());
         assertTrue("is data", created.isData());
+    }
+    
+    public void  testMoveIntoItself() throws IOException {
+        checkSetUp();
+        if (fs.isReadOnly()) return;
+        FileObject fold = getTestFolder1(root);
+
+        FileObject fold1 = fold.createFolder("A");
+
+        for (int i = 0; i < 100; i++) {
+            fold1.createData("akid." + i);
+        }
+        FileObject target = fold1.createFolder("dest");
+        FileLock lock = fold1.lock();
+        try {
+            FileObject toMove2 = fold1.move(lock, target, target.getName(), target.getExt());
+            fail("This move should not succeed! But it returned: " + toMove2);
+        } catch (IOException ex) {
+            // OK, cannot move folder into own children
+        } finally {
+            lock.releaseLock();
+        }
+        List<FileObject> arr = Arrays.asList(target.getChildren());
+        assertTrue("No children should be created in target folder: " + arr, arr.isEmpty());
+    }
+    
+    public void  testCopyIntoItself() throws IOException {
+        checkSetUp();
+        if (fs.isReadOnly()) return;
+        FileObject fold = getTestFolder1(root);
+
+        FileObject fold1 = fold.createFolder("A");
+
+        for (int i = 0; i < 100; i++) {
+            fold1.createData("akid." + i);
+        }
+        FileObject target = fold1.createFolder("dest");
+        try {
+            FileObject toMove2 = fold1.copy(target, target.getName(), target.getExt());
+            fail("This move should not succeed! But it returned: " + toMove2);
+        } catch (IOException ex) {
+            // OK, cannot move folder into own children
+        }
+        List<FileObject> arr = Arrays.asList(target.getChildren());
+        assertTrue("No children should be created in target folder: " + arr, arr.isEmpty());
     }
 
     /** Test of move method, of class org.openide.filesystems.FileObject. */
@@ -2152,6 +2406,101 @@ public class FileObjectTestHid extends TestBaseHid {
         } finally {
         }
     }
+    
+    public void testNestedRecursiveListener() throws IOException {
+        doNestedRecursiveListener(false);
+    }
+
+    public void testNestedRecursiveListenerReversed() throws IOException {
+        doNestedRecursiveListener(true);
+    }
+    
+    private void doNestedRecursiveListener(boolean reverse) throws IOException {
+        checkSetUp();
+
+        FileObject folder1 = getTestFolder1 (root);
+        /** delete first time*/
+        try {
+            FileObject obj = FileUtil.createData(folder1, "my/sub/children/children.java");
+            final FileObject children = obj.getParent();
+            final FileObject sub = children.getParent();
+            final FileObject my = sub.getParent();
+
+            class L implements FileChangeListener {
+                StringBuilder sb = new StringBuilder();
+
+                public void fileFolderCreated(FileEvent fe) {
+                    sb.append("FolderCreated");
+                }
+
+                public void fileDataCreated(FileEvent fe) {
+                    sb.append("DataCreated");
+                }
+
+                public void fileChanged(FileEvent fe) {
+                    sb.append("Changed");
+                }
+
+                public void fileDeleted(FileEvent fe) {
+                    sb.append("Deleted");
+                }
+
+                public void fileRenamed(FileRenameEvent fe) {
+                    sb.append("Renamed");
+                }
+
+                public void fileAttributeChanged(FileAttributeEvent fe) {
+                    sb.append("AttributeChanged");
+                }
+
+                public void assertMessages(String txt, String msg) {
+                    assertEquals(txt, msg, sb.toString());
+                    sb.setLength(0);
+                }
+            }
+            L recursive = new L();
+
+            my.addRecursiveListener(recursive);
+            sub.addRecursiveListener(recursive);
+            children.addRecursiveListener(recursive);
+
+            FileObject fo = obj.getParent().createData("sibling.java");
+
+            recursive.assertMessages("3x of Creation", "DataCreatedDataCreatedDataCreated");
+            
+            FileObject[] removalOrder = { my, sub, children };
+            if (reverse) {
+                Collections.reverse(Arrays.asList(removalOrder));
+            }
+            
+            removalOrder[0].removeRecursiveListener(recursive);
+            
+            FileLock lck = fo.lock();
+            fo.rename(lck, "ibling", "stava");
+            lck.releaseLock();
+            
+            recursive.assertMessages("2x renames", "RenamedRenamed");
+            
+            removalOrder[1].removeRecursiveListener(recursive);
+
+            lck = fo.lock();
+            fo.rename(lck, "dibling", "trava");
+            lck.releaseLock();
+            
+            recursive.assertMessages("1x rename", "Renamed");
+            
+            removalOrder[2].removeRecursiveListener(recursive);
+            
+            fo.delete();
+            
+            recursive.assertMessages("Nothing", "");
+            
+        } catch (IOException iex) {
+            if (fs.isReadOnly() || root.isReadOnly()) return;
+            throw iex;
+        } finally {
+        }
+    }
 
     
     /** Test of delete method, of class org.openide.filesystems.FileObject. */    
@@ -3176,7 +3525,75 @@ public class FileObjectTestHid extends TestBaseHid {
         fileChangedAssert("expected FileChangeListener: ", 1);        
     }
     
+    public void testClosingTheStreamReleasesLockFirst() throws java.io.FileNotFoundException, IOException {
+        checkSetUp();
+
+        final FileObject fo1 = getTestFile1 (root);
+        class Teaser extends FileChangeAdapter {
+            private FileLock lock;
+            private IOException ex;
+
+            @Override
+            public void fileChanged(FileEvent fe) {
+                try {
+                    lock = fo1.lock();
+                } catch (IOException e) {
+                    this.ex = e;
+                }
+            }
+        }
+        Teaser t = new Teaser();
+        try {
+            fo1.addFileChangeListener(t);
+            
+            OutputStream os = fo1.getOutputStream();
+            String txt = "Ahoj\nJak\nSe\nMas";
+            os.write(txt.getBytes("UTF-8"));
+            os.close();
+
+            
+        } catch (IOException iex) {
+            fsAssert  ("Expected that FS provides InputStream ",fo1.getSize () == 0);
+        } finally {
+            fo1.removeFileChangeListener(t);
+        }
+        if (t.ex != null) {
+            throw t.ex;
+        }
+    }
+    
+    public void testFoldersWithHashes() throws Exception {
+        final String MATH_FILE_NAME = "definition.math";
+        
+        FileObject myFo = root.getFileObject("superbugName/ADZ#CT#SLT.label");
+        assertNotNull("Finds the first folder", myFo);
+        
+        FileObject myFoMath = myFo.getFileObject(MATH_FILE_NAME);
+        
+        FileObject sndFo = root.getFileObject("superbugName/ADXACT#SLT.label");
+        FileObject sndMath = sndFo.getFileObject(MATH_FILE_NAME);
+        
+        assertEquals("The right parent", sndFo, sndMath.getParent());
+    }
+    
+    private String[] initFoldersWithHashes() {
+        return new String[] {
+            "superbugName/ADZ#CT#SLT.label/definition.math",
+            "superbugName/ADZ#CT#SLT.label/symbol.png",
+            "superbugName/ADXACT#SLT.label/definition.math",
+            "superbugName/ADXACT#SLT.label/symbol.png",
+            "superbugName/ADXACT#SLT.label/myFolder/",
+            "superbugName/ADXACT_SLT.label/definition.math",
+            "superbugName/ADXACT_SLT.label/symbol.png",
+            "superbugName/ADXACT_SLT.label/myFolder/"
+        };
+    }
+    
     protected String[] getResources(String testName) {
+        if ("testFoldersWithHashes".equals(testName)) {
+            return initFoldersWithHashes();
+        }
+        
         if (res == null ) {
             res = new HashSet(Arrays.asList(resources));
             createResource("",0,3, true);

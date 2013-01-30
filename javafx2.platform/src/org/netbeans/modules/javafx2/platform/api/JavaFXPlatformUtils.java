@@ -308,12 +308,14 @@ public final class JavaFXPlatformUtils {
                 locations.addAll(Arrays.asList(children));
             }
             for (File file : locations) {
-                if(isSdkPathCorrect(file)) {
-                    return file.getAbsolutePath();
-                }
-                File macSubDir = new File(file.getAbsolutePath() + MAC_JDK_SUBDIR); // NOI18N
-                if (isSdkPathCorrect(macSubDir)) {
-                    return macSubDir.getAbsolutePath();
+                if(file.isDirectory()) {
+                    if(isSdkPathCorrect(file)) {
+                        return file.getAbsolutePath();
+                    }
+                    File macSubDir = new File(file.getAbsolutePath() + MAC_JDK_SUBDIR); // NOI18N
+                    if (isSdkPathCorrect(macSubDir)) {
+                        return macSubDir.getAbsolutePath();
+                    }
                 }
             }
         }
@@ -329,10 +331,25 @@ public final class JavaFXPlatformUtils {
      */
     @CheckForNull
     public static String predictRuntimeLocation(@NonNull String path) {
+        return predictRuntimeLocation(path, true);
+    }
+
+    /**
+     * Tries to predict JavaFX Runtime location for given path
+     * Can return null.
+     * 
+     * @param folder where to look up
+     * @return JavaFX Runtime location absolute path, or null if not predicted
+     */
+    @CheckForNull
+    public static String predictRuntimeLocation(@NonNull String path, boolean allowIncomplete) {
         File location = new File(path);
         if (location.exists()) {
             List<File> locations = new ArrayList<File>();
             locations.add(location); // check root location
+            if(path.endsWith("SDK")) { //NOI18N
+                locations.add(new File(path.replace("SDK", "Runtime"))); // NOI18N
+            }
             File[] children = location.listFiles();
             if (children == null) {
                 return null;
@@ -353,8 +370,15 @@ public final class JavaFXPlatformUtils {
                 }
             }
             for (File file : locations) {
-                if(isRuntimePathCorrect(file)) {
+                if(file.isDirectory() && isRuntimePathCorrectAndComplete(file)) {
                     return file.getAbsolutePath();
+                }
+            }
+            if(allowIncomplete) {
+                for (File file : locations) {
+                    if(file.isDirectory() && isRuntimePathCorrect(file)) {
+                        return file.getAbsolutePath();
+                    }
                 }
             }
         }
@@ -380,13 +404,15 @@ public final class JavaFXPlatformUtils {
             }
             locations.addAll(Arrays.asList(children));
             for (File file : locations) {
-                File docs = new File(file.getAbsolutePath() + File.separatorChar + "docs" + File.separatorChar + "api"); // NOI18N
-                if (docs.exists()) {
-                    return docs.getAbsolutePath();
-                }
-                docs = new File(file.getAbsolutePath() + MAC_JDK_SUBDIR + File.separatorChar + "docs" + File.separatorChar + "api"); // NOI18N
-                if (docs.exists()) {
-                    return docs.getAbsolutePath();
+                if(file.isDirectory()) {
+                    File docs = new File(file.getAbsolutePath() + File.separatorChar + "docs" + File.separatorChar + "api"); // NOI18N
+                    if (docs.exists()) {
+                        return docs.getAbsolutePath();
+                    }
+                    docs = new File(file.getAbsolutePath() + MAC_JDK_SUBDIR + File.separatorChar + "docs" + File.separatorChar + "api"); // NOI18N
+                    if (docs.exists()) {
+                        return docs.getAbsolutePath();
+                    }
                 }
             }
         }
@@ -466,6 +492,23 @@ public final class JavaFXPlatformUtils {
     }
 
     /**
+     * Determines whether JavaFX RT location is valid and containing all required artifacts
+     * 
+     * @param JavaFX RT path
+     * @return true if location is correct and containing all required artifacts
+     */
+    public static boolean isRuntimePathCorrectAndComplete(@NonNull String runtimePath) {
+        if (runtimePath.isEmpty()) {
+            return false;
+        }
+        File file = new File(runtimePath);
+        if (!file.exists()) {
+            return false;
+        }
+        return isRuntimePathCorrectAndComplete(file);
+    }
+
+    /**
      * Determines whether JavaFX RT location is valid
      * 
      * @param JavaFX RT path
@@ -474,6 +517,20 @@ public final class JavaFXPlatformUtils {
     public static boolean isRuntimePathCorrect(@NonNull File file) {
         File rtJar = new File(file.getAbsolutePath() + File.separatorChar + "lib" + File.separatorChar + "jfxrt.jar"); // NOI18N
         return rtJar.exists();
+    }
+
+    /**
+     * Determines whether JavaFX RT location is valid and contains all required artifacts
+     * 
+     * @param JavaFX RT path
+     * @return true if location is correct and containing all required artifacts
+     */
+    public static boolean isRuntimePathCorrectAndComplete(@NonNull File file) {
+        File rtJar1 = new File(file.getAbsolutePath() + File.separatorChar + "lib" + File.separatorChar + "jfxrt.jar"); // NOI18N
+        File rtJar2 = new File(file.getAbsolutePath() + File.separatorChar + "lib" + File.separatorChar + "deploy.jar"); // NOI18N
+        File rtJar3 = new File(file.getAbsolutePath() + File.separatorChar + "lib" + File.separatorChar + "javaws.jar"); // NOI18N
+        File rtJar4 = new File(file.getAbsolutePath() + File.separatorChar + "lib" + File.separatorChar + "plugin.jar"); // NOI18N
+        return rtJar1.exists() && rtJar2.exists() && rtJar3.exists() && rtJar4.exists();
     }
 
 }

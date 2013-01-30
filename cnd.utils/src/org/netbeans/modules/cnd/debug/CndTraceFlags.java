@@ -50,4 +50,9 @@ public interface CndTraceFlags {
     public static final boolean TRACE_SLICE_DISTIBUTIONS = DebugUtils.getBoolean("cnd.slice.trace", false); // NOI18N
 
     public static final boolean LANGUAGE_FLAVOR_CPP11 = DebugUtils.getBoolean("cnd.language.flavor.cpp11", false); // NOI18N
+
+    // use of weak refs instead of soft to allow quicker GC
+    public static final boolean WEAK_REFS_HOLDERS = DebugUtils.getBoolean("cnd.weak.refs", false); // NOI18N
+    
+    public static final boolean TEXT_INDEX = DebugUtils.getBoolean("cnd.model.text.index", true); // NOI18N
 }

@@ -75,9 +75,10 @@ made subject to such option by the copyright holder.
                 </file>
                 <folder name="text">
                     <folder name="x-java">
+                        <!-- issue #216625
                         <file name="org-netbeans-modules-web-core-syntax-indent-JspJavaIndentTaskFactory.instance">
                             <attr name="instanceOf" stringvalue="org.netbeans.modules.editor.indent.spi.IndentTask$Factory"/>
-                        </file>
+                        </file> -->
                         <folder name="CodeTemplates">
                             <folder name="Defaults">
                                 <file name="codetemplates.shadow">
@@ -101,16 +102,10 @@ made subject to such option by the copyright holder.
                 </folder>
                 <folder name="FoldManager">
                     <file name="org-netbeans-modules-csl-editor-fold-GsfFoldManagerFactory.instance"/>
-                    <file name="org-netbeans-modules-web-core-syntax-folding-JspFoldManagerFactory.instance"/>
                 </folder>
                 <folder name="SideBar">
                     <file name="org-netbeans-modules-csl-editor-GsfCodeFoldingSideBarFactory.instance">
                         <attr name="position" intvalue="1200"/>
-                    </file>
-                    <file name="org-netbeans-modules-html-editor-NavigationSideBar$NavigationSideBarFactory.instance">
-                        <attr name="position" intvalue="1300"/>
-                        <attr name="location" stringvalue="North"/>
-                        <attr name="scrollable" boolvalue="false"/>
                     </file>
                 </folder>
                 <file name="org-netbeans-modules-web-core-syntax-indent-JspIndentTaskFactory.instance">
@@ -220,7 +215,7 @@ made subject to such option by the copyright holder.
                         <attr name="instanceOf" stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt"/>
                     </file>
                     <file name="ELHyperlinkProvider.instance">
-                        <attr name="instanceClass" stringvalue="org.netbeans.modules.web.el.ELHyperlinkProvider"/>
+                        <attr name="instanceClass" stringvalue="org.netbeans.modules.web.el.navigation.ELHyperlinkProvider"/>
                         <attr name="instanceOf" stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt"/>
                     </file>
                 </folder>
@@ -250,6 +245,15 @@ made subject to such option by the copyright holder.
                     <attr name="instanceOf" stringvalue="javax.swing.text.EditorKit,org.netbeans.modules.web.core.syntax.JspKit"/>
                     <attr name="beaninfo" boolvalue="false"/>
                 </file>
+                
+                <folder name="UpToDateStatusProvider">
+                    <file name="org-netbeans-modules-web-core-syntax-JspUpToDateStatusProviderFactory.instance"/>
+                </folder>
+
+                <file name="org-netbeans-modules-csl-core-GsfParserFactory.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.parsing.spi.ParserFactory"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.csl.core.GsfParserFactory.create"/>
+                </file>
 
                 <file name="org-netbeans-modules-web-core-syntax-JspSourceTask$Factory.instance">
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.parsing.spi.TaskFactory"/>
@@ -266,16 +270,10 @@ made subject to such option by the copyright holder.
                 </folder>
                 <folder name="FoldManager">
                     <file name="org-netbeans-modules-csl-editor-fold-GsfFoldManagerFactory.instance"/>
-                    <file name="org-netbeans-modules-web-core-syntax-folding-JspFoldManagerFactory.instance"/>
                 </folder>
                 <folder name="SideBar">
                     <file name="org-netbeans-modules-csl-editor-GsfCodeFoldingSideBarFactory.instance">
                         <attr name="position" intvalue="1200"/>
-                    </file>
-                    <file name="org-netbeans-modules-html-editor-NavigationSideBar$NavigationSideBarFactory.instance">
-                        <attr name="position" intvalue="1300"/>
-                        <attr name="location" stringvalue="North"/>
-                        <attr name="scrollable" boolvalue="false"/>
                     </file>
                 </folder>
                 <file name="org-netbeans-modules-web-core-syntax-indent-JspIndentTaskFactory.instance">
@@ -357,7 +355,7 @@ made subject to such option by the copyright holder.
                         <attr name="instanceOf" stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt"/>
                     </file>
                     <file name="ELHyperlinkProvider.instance">
-                        <attr name="instanceClass" stringvalue="org.netbeans.modules.web.el.ELHyperlinkProvider"/>
+                        <attr name="instanceClass" stringvalue="org.netbeans.modules.web.el.navigation.ELHyperlinkProvider"/>
                         <attr name="instanceOf" stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt"/>
                     </file>
                 </folder>

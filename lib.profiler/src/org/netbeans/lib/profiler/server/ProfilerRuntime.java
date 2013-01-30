@@ -43,11 +43,12 @@
 
 package org.netbeans.lib.profiler.server;
 
+import java.lang.reflect.Method;
+import java.util.*;
 import org.netbeans.lib.profiler.global.CommonConstants;
 import org.netbeans.lib.profiler.global.ProfilingPointServerHandler;
 import org.netbeans.lib.profiler.global.ProfilingSessionStatus;
-import java.lang.reflect.Method;
-import java.util.*;
+import org.netbeans.lib.profiler.server.system.Histogram;
 
 /**
  * This is a base class, containing common functionality for classes that contain instrumentation methods.
@@ -382,6 +383,14 @@ public class ProfilerRuntime implements CommonConstants {
         Monitors.recordThreadStateChange(ti.thread, THREAD_STATUS_RUNNING, timeStamp, null);
         ti.inProfilingRuntimeMethod--;
     }
+    
+    public static void parkEntry() {
+        waitEntry();
+    }
+
+    public static void parkExit() {
+        waitExit();
+    }
 
     public static void writeProfilingPointHitEvent(int id, long absTimeStamp) {
         ThreadInfo ti = ThreadInfo.getThreadInfo();
@@ -494,6 +503,11 @@ public class ProfilerRuntime implements CommonConstants {
             case INSTR_OBJECT_LIVENESS:
                 ProfilerRuntimeMemory.resetProfilerCollectors(instrType);
 
+                break;
+            case INSTR_NONE_MEMORY_SAMPLING:
+                if (Histogram.isAvailable()) {
+                    ProfilerServer.notifyClientOnResultsAvailability();
+                }
                 break;
         }
     }

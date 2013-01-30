@@ -1,20 +1,43 @@
 /*
- * The contents of this file are subject to the terms of the Common Development
- * and Distribution License (the License). You may not use this file except in
- * compliance with the License.
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
- * or http://www.netbeans.org/cddl.txt.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
- * When distributing Covered Code, include this CDDL Header Notice in each file
- * and include the License file at http://www.netbeans.org/cddl.txt.
- * If applicable, add the following below the CDDL Header, with the fields
- * enclosed by brackets [] replaced by your own identifying information:
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Oracle in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.editor.lib2.document;
@@ -37,62 +60,20 @@ import javax.swing.text.SimpleAttributeSet;
  * @since 1.46
  */
 
-public final class LineElement implements Element, Position {
-    
-    /** Parent and root element */
-    private final LineElementRoot root; // 8 + 4 = 12 bytes
-    
-    /** Position at the beginning of the line */
-    private final Position startPos; // 12 + 4 = 16 bytes
-    
-    /** Next line or null if this is the last line. */
-    private final Position endPos; // 16 + 4 = 20 bytes
+public final class LineElement extends AbstractPositionElement implements Position {
     
     /**
      * Attributes of this line element
      */
-    private Object attributes; // 20 + 4 = 24 bytes
+    private Object attributes; // 20(super) + 4 = 24 bytes
     
-    LineElement(LineElementRoot root, Position startPos, Position endPos) {
-        assert(startPos != null);
-        assert(endPos != null);
-
-        this.root = root;
-        this.startPos = startPos;
-        this.endPos = endPos;
-    }
-
-    @Override
-    public Document getDocument() {
-        return root.getDocument();
-    }
-
-    @Override
-    public int getStartOffset() {
-        return startPos.getOffset();
-    }
-    
-    public Position getStartPosition() {
-        return startPos;
+    LineElement(LineRootElement root, Position startPos, Position endPos) {
+        super(root, startPos, endPos);
     }
 
     @Override
     public int getOffset() {
         return getStartOffset();
-    }
-    
-    @Override
-    public int getEndOffset() {
-        return endPos.getOffset();
-    }
-    
-    public Position getEndPosition() {
-        return endPos;
-    }
-
-    @Override
-    public Element getParentElement() {
-        return root;
     }
 
     @Override
@@ -116,32 +97,6 @@ public final class LineElement implements Element, Position {
     
     public void legacySetAttributesObject(Object attributes) {
         this.attributes = attributes;
-    }
-
-    @Override
-    public int getElementIndex(int offset) {
-        return -1;
-    }
-
-    @Override
-    public int getElementCount() {
-        return 0;
-    }
-
-    @Override
-    public Element getElement(int index) {
-        return null;
-    }
-
-    @Override
-    public boolean isLeaf() {
-        return true;
-    }
-    
-    @Override
-    public String toString() {
-        return "getStartOffset()=" + getStartOffset() // NOI18N
-            + ", getEndOffset()=" + getEndOffset(); // NOI18N
     }
 
 }

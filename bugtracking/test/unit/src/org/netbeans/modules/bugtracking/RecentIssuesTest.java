@@ -244,8 +244,8 @@ public class RecentIssuesTest extends NbTestCase {
         public TestIssue createIssue() {throw new UnsupportedOperationException("Not supported yet.");}
         public Collection<TestQuery> getQueries() {throw new UnsupportedOperationException("Not supported yet.");}
         public Collection<TestIssue> simpleSearch(String criteria) {throw new UnsupportedOperationException("Not supported yet.");}
-        public void removePropertyChangeListener(PropertyChangeListener listener) { throw new UnsupportedOperationException("Not supported yet."); }
-        public void addPropertyChangeListener(PropertyChangeListener listener) {throw new UnsupportedOperationException("Not supported yet.");}
+        public void removePropertyChangeListener(PropertyChangeListener listener) {}
+        public void addPropertyChangeListener(PropertyChangeListener listener) {}
     }
 
     private class RITestIssue extends TestIssue {

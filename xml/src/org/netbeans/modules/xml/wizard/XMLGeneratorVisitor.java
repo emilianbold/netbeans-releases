@@ -160,6 +160,9 @@ public class XMLGeneratorVisitor extends DeepAXITreeVisitor {
         if(ms == null)
             return;
         SchemaModel model = SchemaModelFactory.getDefault().getModel(ms);
+        if (model.getSchema() == null) {
+            return;
+        }
         generateXML(rootElement, model);
         
     }

@@ -77,7 +77,7 @@ import org.openide.util.lookup.ServiceProvider;
  * @author marekfukala
  */
 @ServiceProvider(service=ELPlugin.class)
-public class FaceletsELPlugin implements ELPlugin {
+public class FaceletsELPlugin extends ELPlugin {
 
     private static final String PLUGIN_NAME = "JSF Facelets EL Plugin"; //NOI18N
 

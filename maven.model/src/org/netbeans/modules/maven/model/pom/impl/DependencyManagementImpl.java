@@ -87,10 +87,7 @@ public class DependencyManagementImpl extends POMComponentImpl implements Depend
 
     @Override
     public void removeDependency(Dependency dep) {
-        ModelList<Dependency> childs = getChild(DependencyImpl.List.class);
-        if (childs != null) {
-            childs.removeListChild(dep);
-        }
+        remove(dep, getModel().getPOMQNames().DEPENDENCIES.getName(), DependencyImpl.List.class);
     }
 
     @Override

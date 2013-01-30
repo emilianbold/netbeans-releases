@@ -42,12 +42,9 @@
 
 package org.netbeans.modules.php.editor.model.impl;
 
-import java.util.Collection;
 import org.netbeans.api.annotations.common.CheckForNull;
-import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.model.FunctionScope;
 import org.netbeans.modules.php.editor.model.Scope;
-import org.netbeans.modules.php.editor.model.UseScope;
 import org.netbeans.modules.php.editor.model.nodes.ClassConstantDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.ClassDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.IncludeInfo;
@@ -61,9 +58,10 @@ import org.netbeans.modules.php.editor.model.nodes.TraitDeclarationInfo;
  *
  * @author Radek Matous
  */
-class ModelElementFactory {
+final class ModelElementFactory {
 
-    private ModelElementFactory(){};
+    private ModelElementFactory() {
+    }
 
     static NamespaceScopeImpl create(NamespaceDeclarationInfo nodeInfo, ModelBuilder context) {
         NamespaceScopeImpl namespaceScope = new NamespaceScopeImpl(context.getFileScope(), nodeInfo);
@@ -83,7 +81,7 @@ class ModelElementFactory {
         if (currentScope instanceof FunctionScope) {
             currentScope = currentScope.getInScope();
         }
-        ClassScopeImpl clz = new ClassScopeImpl( currentScope, nodeInfo);
+        ClassScopeImpl clz = new ClassScopeImpl(currentScope, nodeInfo);
         return clz;
     }
 
@@ -105,7 +103,7 @@ class ModelElementFactory {
     }
 
     static FieldElementImpl create(SingleFieldDeclarationInfo nodeInfo, ModelBuilder context) {
-        String returnType = VariousUtils.getFieldTypeFromPHPDoc(context.getProgram(),nodeInfo.getOriginalNode());
+        String returnType = VariousUtils.getFieldTypeFromPHPDoc(context.getProgram(), nodeInfo.getOriginalNode());
         String returnFQType = VariousUtils.qualifyTypeNames(returnType, nodeInfo.getRange().getStart(), context.getCurrentScope());
         FieldElementImpl fei = new FieldElementImpl(context.getCurrentScope(), returnType, returnFQType, nodeInfo);
         return fei;

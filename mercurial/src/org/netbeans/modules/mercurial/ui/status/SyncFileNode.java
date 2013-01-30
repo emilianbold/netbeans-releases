@@ -54,7 +54,6 @@ import org.openide.nodes.*;
 import org.openide.util.*;
 import org.openide.util.lookup.Lookups;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 
@@ -84,6 +83,7 @@ public class SyncFileNode extends AbstractNode {
     private RequestProcessor.Task repoload;
 
     private final VersioningPanel panel;
+    private DataObject dobj;
 
     public SyncFileNode(HgFileNode node, VersioningPanel _panel) {
         this(Children.LEAF, node, _panel);
@@ -94,6 +94,7 @@ public class SyncFileNode extends AbstractNode {
         super(children, Lookups.fixed(node.getLookupObjects()));
         this.node = node;
         this.panel = _panel;
+        init();
         initProperties();
         refreshHtmlDisplayName();
     }
@@ -124,19 +125,24 @@ public class SyncFileNode extends AbstractNode {
      * it has respective DataObject cookies.
      */
     @SuppressWarnings("unchecked") // Adding getCookie(Class<Cookie> klass) results in name clash
+    @Override
     public Cookie getCookie(Class klass) {
-        FileObject fo = FileUtil.toFileObject(getFile());
+        if (dobj == null) {
+            return super.getCookie(klass);
+        } else {
+            return dobj.getCookie(klass);
+        }
+    }
+
+    private void init () {
+        FileObject fo = node.getFileObject();
         if (fo != null) {
             try {
-                DataObject dobj = DataObject.find(fo);
-                if (fo.equals(dobj.getPrimaryFile())) {
-                    return dobj.getCookie(klass);
-                }
+                dobj = DataObject.find(fo);
             } catch (DataObjectNotFoundException e) {
                 // ignore file without data objects
             }
         }
-        return super.getCookie(klass);
     }
 
     private void initProperties() {

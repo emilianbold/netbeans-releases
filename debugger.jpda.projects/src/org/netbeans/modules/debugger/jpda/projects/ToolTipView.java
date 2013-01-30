@@ -51,21 +51,25 @@ import java.awt.Font;
 import java.awt.Insets;
 import java.awt.Point;
 import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.JToolBar;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Keymap;
+import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.editor.ext.ToolTipSupport;
+import org.netbeans.spi.debugger.ui.ViewFactory;
 
 import org.openide.util.ImageUtilities;
 
@@ -83,14 +87,25 @@ public class ToolTipView extends JComponent implements org.openide.util.HelpCtx.
     private static volatile ObjectVariable variable;
 
     private transient JComponent contentComponent;
-    private transient ViewModelListener viewModelListener;
+    private transient JPDADebugger debugger;
+    private transient ToolTipSupport toolTipSupport;
+    private transient DebuggerStateChangeListener debuggerStateChangeListener;
     private String name; // Store just the name persistently, we'll create the component from that
     
-    private ToolTipView(String expression, ObjectVariable v, String icon) {
+    private ToolTipView(JPDADebugger debugger, String expression, ObjectVariable v, String icon) {
+        this.debugger = debugger;
         ToolTipView.expression = expression;
         variable = v;
         this.name = TOOLTIP_VIEW_NAME;
-        componentShowing(icon);
+        JComponent c = ViewFactory.getDefault().createViewComponent(
+                icon,
+                ToolTipView.TOOLTIP_VIEW_NAME,
+                "NetbeansDebuggerJPDAToolTipNode",
+                null);
+        setLayout (new BorderLayout ());
+        add (c, BorderLayout.CENTER);  //NOI18N
+        debuggerStateChangeListener = new DebuggerStateChangeListener();
+        debugger.addPropertyChangeListener(JPDADebugger.PROP_STATE, debuggerStateChangeListener);
     }
 
     static String getExpression() {
@@ -102,68 +117,19 @@ public class ToolTipView extends JComponent implements org.openide.util.HelpCtx.
     }
 
     void setToolTipSupport(ToolTipSupport toolTipSupport) {
-        if (viewModelListener != null) {
-            viewModelListener.setToolTipSupport(toolTipSupport);
-        }
-    }
-
-    private void componentShowing (String icon) {
-        if (viewModelListener != null) {
-            viewModelListener.setUp();
-            return ;
-        }
-        JComponent buttonsPane;
-        if (contentComponent == null) {
-            setLayout (new BorderLayout ());
-            contentComponent = new javax.swing.JPanel(new BorderLayout ());
-            
-            //tree = Models.createView (Models.EMPTY_MODEL);
-            add (contentComponent, BorderLayout.CENTER);  //NOI18N
-            JToolBar toolBar = new JToolBar(JToolBar.VERTICAL);
-            toolBar.setFloatable(false);
-            toolBar.setRollover(true);
-            toolBar.setBorderPainted(true);
-            if( "Aqua".equals(UIManager.getLookAndFeel().getID()) ) { //NOI18N
-                toolBar.setBackground(UIManager.getColor("NbExplorerView.background")); //NOI18N
-            }
-            toolBar.setBorder(javax.swing.BorderFactory.createCompoundBorder(
-                    javax.swing.BorderFactory.createMatteBorder(0, 0, 0, 1,
-                    javax.swing.UIManager.getDefaults().getColor("Separator.background")),
-                    javax.swing.BorderFactory.createMatteBorder(0, 0, 0, 1,
-                    javax.swing.UIManager.getDefaults().getColor("Separator.foreground"))));
-            toolBar.setPreferredSize(new Dimension(26, 10));
-            add(toolBar, BorderLayout.WEST);
-            buttonsPane = toolBar;
-        } else {
-            buttonsPane = (JComponent) ((BorderLayout) getLayout()).getLayoutComponent(BorderLayout.WEST);
-        }
-        // <RAVE> CR 6207738 - fix debugger help IDs
-        // Use the modified constructor that stores the propertiesHelpID
-        // for nodes in this view
-        // viewModelListener = new ViewModelListener (
-        //     "ThreadsView",
-        //     tree
-        // );
-        // ====
-        viewModelListener = new ViewModelListener (
-            name,
-            contentComponent,
-            buttonsPane,
-            null,
-            ImageUtilities.loadImage (icon),
-            variable
-        );
-        // </RAVE>
+        this.toolTipSupport = toolTipSupport;
     }
     
+    private void closeToolTip() {
+        toolTipSupport.setToolTipVisible(false);
+    }
+
     //protected void componentHidden () {
     @Override
     public void removeNotify() {
         super.removeNotify();//componentHidden ();
         variable = null;
-        if (viewModelListener != null) {
-            viewModelListener.destroy ();
-        }
+        debugger.removePropertyChangeListener(JPDADebugger.PROP_STATE, debuggerStateChangeListener);
     }
     
     // <RAVE>
@@ -200,10 +166,28 @@ public class ToolTipView extends JComponent implements org.openide.util.HelpCtx.
     }
      */
     
+    private class DebuggerStateChangeListener implements PropertyChangeListener, Runnable {
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (JPDADebugger.STATE_DISCONNECTED == ((Integer) evt.getNewValue()).intValue()) {
+                SwingUtilities.invokeLater(this);
+            }
+        }
+
+        @Override
+        public void run() {
+            closeToolTip();
+        }
+        
+    }
+    
+    
     
     /** Creates the view. */
-    public static synchronized ToolTipView getToolTipView(String expression, ObjectVariable v) {
+    public static synchronized ToolTipView getToolTipView(JPDADebugger debugger, String expression, ObjectVariable v) {
         return new ToolTipView(
+                debugger,
                 expression,
                 v,
                 "org/netbeans/modules/debugger/resources/localsView/local_variable_16.png"

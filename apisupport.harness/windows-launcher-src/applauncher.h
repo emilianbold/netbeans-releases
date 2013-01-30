@@ -50,6 +50,7 @@
 #include <string>
 #include <windows.h>
 
+#include "shlobj.h"
 #include "../../ide/launcher/windows/nblauncher.h"
 
 class AppLauncher : public NbLauncher {

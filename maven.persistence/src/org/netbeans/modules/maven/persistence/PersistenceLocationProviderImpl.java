@@ -45,11 +45,15 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URI;
 import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.persistence.spi.PersistenceLocationProvider;
+import org.netbeans.modules.maven.api.NbMavenProject;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
 
 /**
  * Maven2 Implementation of 
@@ -62,17 +66,21 @@ public class PersistenceLocationProviderImpl implements PersistenceLocationProvi
     static final String DEF_LOCATION = "src/main/resources/META-INF"; //NOI18N
     static final String DEF_PERSISTENCE = "src/main/resources/META-INF/persistence.xml"; //NOI18N
     static final String ALT_PERSISTENCE = "src/main/java/META-INF/persistence.xml"; //NOI18N
+    static final String REL_PERSISTENCE = "META-INF/persistence.xml";//NOI18N
+    static final String REL_LOCATION = "META-INF";//NOI18N
     private Project project = null;
     private FileObject location = null;
     private File projectDir = null;
     private File persistenceXml = null;
+    private final NbMavenProject mproject;
 
     /**
      * Creates a new instance of PersistenceLocationProviderImpl
      * @param proj reference to the NbMavenProject provider
      */
-    public PersistenceLocationProviderImpl(Project proj) {
+    public PersistenceLocationProviderImpl(Project proj, NbMavenProject mProj) {
         project = proj;
+        mproject = mProj;
         projectDir = FileUtil.toFile(proj.getProjectDirectory());
         persistenceXml = findPersistenceXml();
         location = FileUtil.toFileObject(persistenceXml.getParentFile());
@@ -98,8 +106,19 @@ public class PersistenceLocationProviderImpl implements PersistenceLocationProvi
     @Override
     public FileObject createLocation() throws IOException {
         FileObject retVal = null;
+        URI[] resources = mproject!=null ? mproject.getResources(false) : null;
+        if(resources!=null && resources.length>0) {
+            try {
+                FileObject res = URLMapper.findFileObject(resources[0].toURL());
+                retVal = res.getFileObject(REL_LOCATION);
+                if(retVal == null){
+                    retVal = res.createFolder(REL_LOCATION);
+                }
+            } catch (Exception ex) {
 
-        {
+            }
+        } 
+        if(retVal == null) {
             File defaultLocation = FileUtilities.resolveFilePath(
                     projectDir, DEF_LOCATION);
 
@@ -145,7 +164,20 @@ public class PersistenceLocationProviderImpl implements PersistenceLocationProvi
             if (altLocation.exists()) {
                 retVal = altLocation;
             } else {
-                retVal = defaultLocation;
+                URI[] resources = mproject!=null ? mproject.getResources(false) : null;
+                if(resources!=null && resources.length>0) {
+                    try {
+                        FileObject res = URLMapper.findFileObject(resources[0].toURL());
+                        retVal = res!=null ? FileUtilities.resolveFilePath(FileUtil.toFile(res), REL_PERSISTENCE) : null;
+                        if(retVal == null || !retVal.exists()) {
+                            retVal = defaultLocation;
+                        }
+                    } catch (MalformedURLException ex) {
+                        retVal = defaultLocation;
+                    }
+                } else {
+                    retVal = defaultLocation;
+                }
             }
         }
 

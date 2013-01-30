@@ -528,10 +528,10 @@ public final class CodeTemplateInsertHandler implements TextRegionManagerListene
         }
 
         TextRegionManager trm = textRegionManager();
-        trm.removeTextRegionManagerListener(this);
         if (textSyncGroup.textRegionManager() == trm) {
             trm.stopGroupEditing(textSyncGroup);
         }
+        trm.removeTextRegionManagerListener(this);
         if (LOG.isLoggable(Level.FINE)) {
             if (LOG.isLoggable(Level.FINER)) {
                 LOG.log(Level.INFO, "", new Exception());

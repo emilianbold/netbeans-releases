@@ -63,7 +63,7 @@ import org.w3c.dom.Node;
 public class RequestedUrlEvalResponse extends EvalResponse {
 
     private static final Logger logger = Logger.getLogger(DbgpStream.class.getName());
-    
+
     public RequestedUrlEvalResponse(Node node) {
         super(node);
     }
@@ -83,7 +83,7 @@ public class RequestedUrlEvalResponse extends EvalResponse {
         }
     }
 
-    private class OutputListenerImpl implements OutputListener {
+    private static class OutputListenerImpl implements OutputListener {
 
         @Override
         public void outputLineSelected(OutputEvent ev) {
@@ -101,7 +101,7 @@ public class RequestedUrlEvalResponse extends EvalResponse {
         @Override
         public void outputLineCleared(OutputEvent ev) {
         }
-    
+
     }
-    
+
 }

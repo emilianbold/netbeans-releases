@@ -53,9 +53,10 @@ import org.netbeans.modules.kenai.api.Kenai.Status;
 import org.netbeans.modules.kenai.api.KenaiFeature;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.api.KenaiService;
-import org.netbeans.modules.kenai.ui.spi.MessagingAccessor;
-import org.netbeans.modules.kenai.ui.spi.MessagingHandle;
-import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
+import org.netbeans.modules.kenai.ui.api.KenaiServer;
+import org.netbeans.modules.team.ui.spi.MessagingAccessor;
+import org.netbeans.modules.team.ui.spi.MessagingHandle;
+import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -63,15 +64,24 @@ import org.openide.util.lookup.ServiceProvider;
  * @author Jan Becicka
  */
 @ServiceProvider(service=MessagingAccessor.class)
-public class MessagingAccessorImpl extends MessagingAccessor {
+public class MessagingAccessorImpl extends MessagingAccessor<KenaiProject> {
+
+    private static MessagingAccessor instance;
+    
+    public static MessagingAccessor getDefault() {
+        if(instance == null) {
+            instance = new MessagingAccessorImpl();
+        }
+        return instance;
+    }
 
     @Override
-    public MessagingHandle getMessaging(ProjectHandle project) {
-        Kenai k = project.getKenaiProject().getKenai();
+    public MessagingHandle getMessaging(ProjectHandle<KenaiProject> project) {
+        Kenai k = project.getTeamProject().getKenai();
         KenaiConnection kc = KenaiConnection.getDefault(k);
         //synchronized (kc) {
             try {
-                final KenaiProject prj = project.getKenaiProject();
+                final KenaiProject prj = project.getTeamProject();
                 if (prj.isMyProject() && k.getStatus()==Status.ONLINE) {
                     MultiUserChat chat = kc.getChat(project.getId());
                     if (chat == null) {
@@ -91,37 +101,37 @@ public class MessagingAccessorImpl extends MessagingAccessor {
                 }
             } catch (Exception ex) {
                 Logger.getLogger(MessagingAccessorImpl.class.getName()).log(Level.INFO, ex.getMessage(), ex);
-                    MessagingHandleImpl m = new MessagingHandleImpl(project.getKenaiProject());
+                    MessagingHandleImpl m = new MessagingHandleImpl(project.getTeamProject());
                     m.setMessageCount(0);
                     m.setOnlineCount(-3);
                     return m;
                 }
 
-            return ChatNotifications.getDefault().getMessagingHandle(project.getKenaiProject());
+            return ChatNotifications.getDefault().getMessagingHandle(project.getTeamProject());
         //}
     }
 
 
 
     @Override
-    public Action getOpenMessagesAction(final ProjectHandle project) {
+    public Action getOpenMessagesAction(final ProjectHandle<KenaiProject> project) {
         return new AbstractAction() {
             public void actionPerformed(ActionEvent arg0) {
                 final ChatTopComponent chatTC = ChatTopComponent.findInstance();
                 chatTC.open();
-                chatTC.setActiveGroup(project.getId() + "@muc." + project.getKenaiProject().getKenai().getUrl().getHost()); // NOI18N
+                chatTC.setActiveGroup(project.getId() + "@muc." + project.getTeamProject().getKenai().getUrl().getHost()); // NOI18N
                 chatTC.requestActive(false);
             }
         };
     }
 
     @Override
-    public Action getCreateChatAction(final ProjectHandle project) {
-        return new CreateChatAction(project.getKenaiProject());
+    public Action getCreateChatAction(final ProjectHandle<KenaiProject> project) {
+        return new CreateChatAction(project.getTeamProject());
     }
 
     @Override
-    public Action getReconnectAction(final ProjectHandle project) {
+    public Action getReconnectAction(final ProjectHandle<KenaiProject> project) {
         return new AbstractAction() {
 
             public void actionPerformed(ActionEvent e) {

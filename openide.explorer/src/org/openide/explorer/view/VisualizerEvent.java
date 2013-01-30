@@ -158,8 +158,10 @@ abstract class VisualizerEvent extends EventObject {
     }
     
     static final class Destroyed extends VisualizerEvent implements Runnable {
-        public Destroyed(VisualizerChildren ch, NodeEvent ev) {
+        private final VisualizerNode toNull;
+        public Destroyed(VisualizerChildren ch, NodeEvent ev, VisualizerNode toNull) {
             super(ch, null, ev, null);
+            this.toNull = toNull;
         }
         
         @Override
@@ -171,7 +173,7 @@ abstract class VisualizerEvent extends EventObject {
                     v.nodeDestroyed(originalEvent);
                 }
             }
-            
+            toNull.parent = null;
         }
     }
 }

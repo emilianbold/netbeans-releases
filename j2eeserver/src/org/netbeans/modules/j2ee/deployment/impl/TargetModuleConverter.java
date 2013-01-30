@@ -62,6 +62,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openide.filesystems.FileLock;
@@ -84,6 +85,8 @@ public class TargetModuleConverter extends DOMConvertor {
     private static final String A_TIMESTAMP = "timestamp";
     private static final String A_CONTENT_DIR = "content-dir";
     private static final String A_CONTEXT_ROOT = "context-root";
+
+    private static final String CHARSET = "UTF-8"; // NOI18N
 
     private static final Logger LOGGER = Logger.getLogger(TargetModuleConverter.class.getName());
 
@@ -186,7 +189,7 @@ public class TargetModuleConverter extends DOMConvertor {
                 public Void call() throws Exception {
                     FileLock lock = fo.lock();
                     try {
-                        Writer writer = new OutputStreamWriter(fo.getOutputStream(lock));
+                        Writer writer = new OutputStreamWriter(fo.getOutputStream(lock), CHARSET);
                         try {
                             create().write(writer, new TargetModule.List(instance));
                             return null;
@@ -225,7 +228,7 @@ public class TargetModuleConverter extends DOMConvertor {
 
                             @Override
                             public TargetModule call() throws Exception {
-                                Reader reader = new InputStreamReader(fo.getInputStream());
+                                Reader reader = new InputStreamReader(fo.getInputStream(), CHARSET);
                                 try {
                                     TargetModule.List tml = (TargetModule.List) create().read(reader);
                                     if (tml == null || tml.getTargetModules().length < 1) {
@@ -267,25 +270,34 @@ public class TargetModuleConverter extends DOMConvertor {
                     final ArrayList<TargetModule> result = new ArrayList<TargetModule>();
                     while (fos.hasMoreElements()) {
                         final FileObject fo = (FileObject) fos.nextElement();
+                        final AtomicInteger exceptions = new AtomicInteger();
                         executeExclusively(fo, new Callable<Void>() {
 
                             @Override
                             public Void call() throws Exception {
-                                Reader reader = new InputStreamReader(fo.getInputStream());
                                 try {
-                                    TargetModule.List tml = (TargetModule.List) create().read(reader);
-                                    if (tml != null && tml.getTargetModules().length > 0) {
-                                        TargetModule tm = tml.getTargetModules()[0];
-                                        if (contextRoot.equals(tm.getContextRoot())) {
-                                            result.add(tm);
+                                    Reader reader = new InputStreamReader(fo.getInputStream(), CHARSET);
+                                    try {
+                                        TargetModule.List tml = (TargetModule.List) create().read(reader);
+                                        if (tml != null && tml.getTargetModules().length > 0) {
+                                            TargetModule tm = tml.getTargetModules()[0];
+                                            if (contextRoot.equals(tm.getContextRoot())) {
+                                                result.add(tm);
+                                            }
+                                        }
+                                    } finally {
+                                        if (reader != null) {
+                                            reader.close();
                                         }
                                     }
-                                    return null;
-                                } finally {
-                                    if (reader != null) {
-                                        reader.close();
+                                } catch (IOException ioe) {
+                                    if (exceptions.getAndIncrement() < 1) {
+                                        LOGGER.log(Level.WARNING, fo.getName(), ioe);
+                                    } else {
+                                        LOGGER.log(Level.INFO, fo.getName(), ioe);
                                     }
                                 }
+                                return null;
                             }
                         });
                     }

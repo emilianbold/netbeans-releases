@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.26
+#Version 1.28.1
 
 CLSS public java.lang.Object
 cons public init()
@@ -88,7 +88,7 @@ meth public void progress(java.lang.String)
 meth public void progress(java.lang.String,int)
 meth public void start(int)
 supr java.lang.Object
-hfds current,id,lastParentedUnit,parent,parentUnits,workunits
+hfds LOG,current,id,lastParentedUnit,parent,parentUnits,workunits
 
 CLSS public abstract interface org.netbeans.api.progress.aggregate.ProgressMonitor
 meth public abstract void finished(org.netbeans.api.progress.aggregate.ProgressContributor)
@@ -213,7 +213,8 @@ meth public void removeHandle(org.netbeans.modules.progress.spi.InternalHandle)
 meth public void removeListDataListener(javax.swing.event.ListDataListener)
 meth public void removeListSelectionListener(javax.swing.event.ListSelectionListener)
 supr java.lang.Object
-hfds explicit,model,selectionModel
+hfds dataListeners,explicit,model,selectionListeners,selectionModel
+hcls TaskListener
 
 CLSS abstract interface org.netbeans.modules.progress.spi.package-info
 

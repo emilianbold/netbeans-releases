@@ -54,8 +54,10 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.php.project.PhpProject;
+import org.netbeans.modules.php.project.PhpProjectValidator;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.SourceRoots;
+import org.netbeans.modules.php.project.ui.Utils;
 import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
@@ -100,6 +102,7 @@ public final class NewFileWizardIterator implements WizardDescriptor.Instantiati
     @Override
     public void initialize(WizardDescriptor wizard) {
         this.wizard = wizard;
+        checkPhpProject();
         setTargetFolder();
         wizardPanels = getPanels();
 
@@ -111,9 +114,20 @@ public final class NewFileWizardIterator implements WizardDescriptor.Instantiati
             Component c = wizardPanels[i].getComponent();
             if (c instanceof JComponent) { // assume Swing components
                 JComponent jc = (JComponent) c;
-                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, new Integer(i + beforeStepLength - 1)); // NOI18N
+                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, Integer.valueOf(i + beforeStepLength - 1)); // NOI18N
                 jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps); // NOI18N
             }
+        }
+    }
+
+    private void checkPhpProject() {
+        PhpProject phpProject = getPhpProject();
+        if (phpProject == null) {
+            // not php project
+            return;
+        }
+        if (PhpProjectValidator.isFatallyBroken(phpProject)) {
+            Utils.warnInvalidSourcesDirectory(phpProject);
         }
     }
 
@@ -122,19 +136,28 @@ public final class NewFileWizardIterator implements WizardDescriptor.Instantiati
             // already set
             return;
         }
+        PhpProject phpProject = getPhpProject();
+        if (phpProject == null) {
+            // not php project
+            return;
+        }
+        FileObject srcDir = ProjectPropertiesSupport.getSourcesDirectory(phpProject);
+        if (srcDir != null && srcDir.isValid()) {
+            Templates.setTargetFolder(wizard, srcDir);
+        }
+    }
+
+    private PhpProject getPhpProject() {
         Project project = Templates.getProject(wizard);
         if (project == null) {
             // no project => ignore
-            return;
+            return null;
         }
         if (!(project instanceof PhpProject)) {
             LOGGER.log(Level.WARNING, "PHP project expected but found {0}", project.getClass().getName());
-            return;
+            return null;
         }
-        FileObject srcDir = ProjectPropertiesSupport.getSourcesDirectory((PhpProject) project);
-        if (srcDir != null) {
-            Templates.setTargetFolder(wizard, srcDir);
-        }
+        return (PhpProject) project;
     }
 
     private String[] createSteps(String[] beforeSteps) {
@@ -217,36 +240,40 @@ public final class NewFileWizardIterator implements WizardDescriptor.Instantiati
     }
 
     private WizardDescriptor.Panel<WizardDescriptor>[] getPanels() {
-        Project p = Templates.getProject(wizard);
-        SourceGroup[] groups = PhpProjectUtils.getSourceGroups(p);
-        // #180054
-        if (groups != null && groups.length == 0) {
-            PhpProject project = (PhpProject) p;
-            FileObject sources = ProjectPropertiesSupport.getSourcesDirectory(project);
-            FileObject tests = ProjectPropertiesSupport.getTestDirectory(project, false);
-            FileObject selenium = ProjectPropertiesSupport.getSeleniumDirectory(project, false);
-            SourceRoots sourceRoots = project.getSourceRoots();
-            SourceRoots testRoots = project.getTestRoots();
-            SourceRoots seleniumRoots = project.getSeleniumRoots();
+        Project project = Templates.getProject(wizard);
+        SourceGroup[] groups = PhpProjectUtils.getSourceGroups(project);
+        // #218437
+        PhpProject phpProject = getPhpProject();
+        if (phpProject != null) {
+            // php project found
+            if (groups != null && groups.length == 0 && !PhpProjectValidator.isFatallyBroken(phpProject)) {
+                // sources found but no source roots?!
+                FileObject sources = ProjectPropertiesSupport.getSourcesDirectory(phpProject);
+                FileObject tests = ProjectPropertiesSupport.getTestDirectory(phpProject, false);
+                FileObject selenium = ProjectPropertiesSupport.getSeleniumDirectory(phpProject, false);
+                SourceRoots sourceRoots = phpProject.getSourceRoots();
+                SourceRoots testRoots = phpProject.getTestRoots();
+                SourceRoots seleniumRoots = phpProject.getSeleniumRoots();
 
-            StringBuilder sb = new StringBuilder(200);
-            addDiagnosticForDirs(sb, project, sources, tests, selenium);
-            addDiagnosticForRoots(sb, sourceRoots, testRoots, seleniumRoots);
-            LOGGER.log(Level.WARNING, sb.toString(),
-                    new IllegalStateException("No source roots found (attach your IDE log to https://netbeans.org/bugzilla/show_bug.cgi?id=196060)"));
+                StringBuilder sb = new StringBuilder(200);
+                addDiagnosticForDirs(sb, phpProject, sources, tests, selenium);
+                addDiagnosticForRoots(sb, sourceRoots, testRoots, seleniumRoots);
+                LOGGER.log(Level.WARNING, sb.toString(),
+                        new IllegalStateException("No source roots found (attach your IDE log to https://netbeans.org/bugzilla/show_bug.cgi?id=218437)"));
 
-            // try to recover...
-            sourceRoots.fireChange();
-            testRoots.fireChange();
-            seleniumRoots.fireChange();
-            sb = new StringBuilder(200);
-            addDiagnosticForRoots(sb, sourceRoots, testRoots, seleniumRoots);
-            LOGGER.log(Level.WARNING, sb.toString(),
-                    new IllegalStateException("Trying to fire changes for all source roots"));
+                // try to recover...
+                sourceRoots.fireChange();
+                testRoots.fireChange();
+                seleniumRoots.fireChange();
+                sb = new StringBuilder(200);
+                addDiagnosticForRoots(sb, sourceRoots, testRoots, seleniumRoots);
+                LOGGER.log(Level.WARNING, sb.toString(),
+                        new IllegalStateException("Trying to fire changes for all source roots"));
 
-            groups = PhpProjectUtils.getSourceGroups(p);
+                groups = PhpProjectUtils.getSourceGroups(project);
+            }
         }
-        WizardDescriptor.Panel<WizardDescriptor> simpleTargetChooserPanel = Templates.buildSimpleTargetChooser(p, groups).freeFileExtension().create();
+        WizardDescriptor.Panel<WizardDescriptor> simpleTargetChooserPanel = Templates.buildSimpleTargetChooser(project, groups).freeFileExtension().create();
 
         @SuppressWarnings("unchecked") // Generic Array Creation
         WizardDescriptor.Panel<WizardDescriptor>[] panels = new WizardDescriptor.Panel[] {

@@ -47,12 +47,15 @@ package org.apache.tools.ant.module.wizards.shortcut;
 import java.awt.Component;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import javax.swing.KeyStroke;
 import javax.swing.event.ChangeListener;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -123,9 +126,47 @@ final class SelectKeyboardShortcutPanel extends javax.swing.JPanel implements Ke
     
     // KeyListener:
 
+    // --- see defect #217279
+    // JDK-specific translation of KeyEvent to KeyStroke, method is only available
+    // in JDK 1.7+
+    private static final Method keyEvent_getExtendedKeyCode;
+    
+    static {
+        Class eventClass = KeyEvent.class;
+        Method m = null;
+        try {
+            m = eventClass.getMethod("getExtendedKeyCode"); // NOI18N
+        } catch (NoSuchMethodException ex) {
+            // expected, JDK < 1.7
+        } catch (SecurityException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        keyEvent_getExtendedKeyCode = m;
+    }
+    
+    static KeyStroke createKeyStroke(KeyEvent e) {
+        int code = e.getKeyCode();
+        if (keyEvent_getExtendedKeyCode != null) {
+            try {
+                int ecode = (int)(Integer)keyEvent_getExtendedKeyCode.invoke(e);
+                if (ecode != KeyEvent.VK_UNDEFINED) {
+                    code = ecode;
+                }
+            } catch (IllegalAccessException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (IllegalArgumentException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (InvocationTargetException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        return KeyStroke.getKeyStroke(code, e.getModifiers());
+    }
+    // --- end defect #217279
+    
     public void keyPressed (KeyEvent e) {
         // XXX ideally make TAB switch focus, rather than be handled...
-        stroke = KeyStroke.getKeyStroke (e.getKeyCode (), e.getModifiers ());
+        stroke = createKeyStroke(e);
         testField.setText (Utilities.keyToString (stroke));
         wiz.fireChangeEvent ();
         e.consume ();

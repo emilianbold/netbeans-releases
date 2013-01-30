@@ -47,8 +47,6 @@ package org.netbeans.modules.java.guards;
 import java.io.CharArrayWriter;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import org.netbeans.api.editor.guards.GuardedSection;
@@ -78,6 +76,8 @@ final class JavaGuardedWriter {
     /** This flag is used during writing. It is complicated to explain. */
     boolean wasNewLine;
 
+    private StringBuilder currentLine;
+
     /** number of consecutive spaces */
     int spaces;
     
@@ -97,13 +97,15 @@ final class JavaGuardedWriter {
         this.writer = new CharArrayWriter(writeBuff.length);
         this.offsetCounter = 0;
         this.wasNewLine = false;
-        
+        this.currentLine = new StringBuilder(100);
+
         nextSection();
         
         try {
             for (char c : writeBuff) {
                 writeOneChar(c);
             }
+            writer.append(currentLine);
             return this.writer.toCharArray();
         } catch (IOException ex) {
             // it hardly occurs since we write to CharArrayWriter, but for sure
@@ -127,7 +129,7 @@ final class JavaGuardedWriter {
             if (offsetCounter == current.getBegin()) {
                 wasNewLine = false;
             }
-            if ((b == '\n') && (current.getBegin() <= offsetCounter)) {
+            if (current.getBegin() <= offsetCounter && b == '\n') {
                 switch(current.getType()) {
                     case LINE:
 
@@ -181,16 +183,18 @@ final class JavaGuardedWriter {
                 }
             }
         }
-        if (b==' ')
+        if (b == ' ') {
             spaces++;
-        else {
-            if (spaces > 0) {
-                char[] sp = new char[spaces];
-                Arrays.fill(sp,' ');
-                writer.write(sp);
-                spaces=0;
+        } else {
+            while (spaces > 0) {
+                currentLine.append(' ');
+                spaces--;
             }
-            writer.write(b);
+            currentLine.append((char)b);
+            if (b == '\n') {
+                writer.append(currentLine);
+                currentLine.delete(0, currentLine.length());
+            }
         }
         offsetCounter++;
     }
@@ -213,8 +217,14 @@ final class JavaGuardedWriter {
 //        }
         spaces = 0;
         String magic = JavaGuardedReader.MAGIC_PREFIX + type.name() + ':';
-        writer.write(magic, 0, magic.length());
-        writer.write(name, 0, name.length());
+        if (JavaGuardedReader.getKeepGuardedComments()) {
+            int i = currentLine.lastIndexOf(magic);
+            if (i >= 0) { // after section rename there could still be a comment with the previous name
+                currentLine.delete(i, currentLine.length());
+            }
+        }
+        currentLine.append(magic);
+        currentLine.append(name);
     }
 
     /** This method prepares the iterator of the SectionDesc classes

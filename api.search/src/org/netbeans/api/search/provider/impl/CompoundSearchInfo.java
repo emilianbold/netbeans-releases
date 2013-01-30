@@ -43,6 +43,7 @@
  */
 package org.netbeans.api.search.provider.impl;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -114,10 +115,47 @@ public class CompoundSearchInfo extends SearchInfo {
                 searchableElements.add(element);
             }
         }
-        return new CompoundSearchIterator(
+        return new AbstractCompoundIterator<SearchInfo, FileObject>(
                 searchableElements.toArray(
                 new SearchInfo[searchableElements.size()]),
-                options, listener, terminated);
+                options, listener, terminated) {
+            @Override
+            protected Iterator<FileObject> getIteratorFor(SearchInfo element,
+                    SearchScopeOptions options, SearchListener listener,
+                    AtomicBoolean terminated) {
+                return element.getFilesToSearch(options, listener,
+                        terminated).iterator();
+            }
+        };
+    }
+
+    @Override
+    protected Iterator<URI> createUrisToSearchIterator(
+            SearchScopeOptions options, SearchListener listener,
+            AtomicBoolean terminated) {
+        if (elements == null) {
+            return Collections.<URI>emptyList().iterator();
+        }
+
+        List<SearchInfo> searchableElements =
+                new ArrayList<SearchInfo>(elements.length);
+        for (SearchInfo element : elements) {
+            if (element.canSearch()) {
+                searchableElements.add(element);
+            }
+        }
+        return new AbstractCompoundIterator<SearchInfo, URI>(
+                searchableElements.toArray(
+                new SearchInfo[searchableElements.size()]),
+                options, listener, terminated) {
+            @Override
+            protected Iterator<URI> getIteratorFor(SearchInfo element,
+                    SearchScopeOptions options, SearchListener listener,
+                    AtomicBoolean terminated) {
+                return element.getUrisToSearch(
+                        options, listener, terminated).iterator();
+            }
+        };
     }
 
     @Override

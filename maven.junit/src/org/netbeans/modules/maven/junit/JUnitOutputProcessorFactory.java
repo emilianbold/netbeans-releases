@@ -68,7 +68,7 @@ public class JUnitOutputProcessorFactory implements ContextOutputProcessorFactor
 
     @Override
     public Set<OutputProcessor> createProcessorsSet(Project project, RunConfig config) {
-        if (config.getGoals().contains("test") || config.getGoals().contains("surefire:test")) { //NOI18N
+        if (config.getGoals().contains("test") || config.getGoals().contains("integration-test") || config.getGoals().contains("surefire:test")) { //NOI18N
             Set<OutputProcessor> toReturn = new HashSet<OutputProcessor>();
             if (project != null) {
                 toReturn.add(new JUnitOutputListenerProvider(config));

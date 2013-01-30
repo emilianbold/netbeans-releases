@@ -44,8 +44,9 @@ package org.netbeans.modules.css.editor.module.main;
 import java.util.Collection;
 import org.netbeans.modules.css.editor.module.CssModuleSupport;
 import org.netbeans.modules.css.editor.module.spi.HelpResolver;
-import org.netbeans.modules.css.editor.module.spi.Property;
-import org.netbeans.modules.css.editor.properties.parser.PropertyModel;
+import org.netbeans.modules.css.lib.api.properties.Properties;
+import org.netbeans.modules.css.lib.api.properties.PropertyDefinition;
+import org.netbeans.modules.css.lib.api.properties.PropertyDefinition;
 
 /**
  *
@@ -171,12 +172,10 @@ public class DefaultCssModuleTest extends CssModuleTestBase {
         HelpResolver resolver = CssModuleSupport.getHelpResolver();
         assertNotNull(resolver);
 
-        Collection<Property> colors = CssModuleSupport.getProperties("color");
-        assertNotNull(colors);
-        assertFalse(colors.isEmpty());
-        Property color = colors.iterator().next();
-
-        String help = resolver.getHelp(color);
+        PropertyDefinition color = Properties.getPropertyDefinition( "color");
+        assertNotNull(color);
+        
+        String help = resolver.getHelp(null, color);
         assertNotNull(help);
         assertTrue(help.length() > 0);
 
@@ -185,9 +184,15 @@ public class DefaultCssModuleTest extends CssModuleTestBase {
 
     public void testAllCSS21PropertiesAreAvailable() {
         for(String propName : ALL_CSS21_PROPERTIES) {
-            PropertyModel prop = CssModuleSupport.getPropertyModel(propName);
+            PropertyDefinition prop = Properties.getPropertyDefinition( propName);
             assertNotNull(String.format("No such property %s found!", propName), prop);
             
         }
     }
+    
+    public void testCalc() {
+        assertPropertyValues("width", "calc(100%/3 - 2*1em - 2*1px)");
+    }
+    
+    
 }

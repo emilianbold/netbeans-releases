@@ -294,7 +294,7 @@ public class AnalyzeExecutable extends BaseDwarfProvider {
     public List<Configuration> analyze(final ProjectProxy project, Progress progress) {
         isStoped.set(false);
         List<Configuration> confs = new ArrayList<Configuration>();
-        setCommpilerSettings(project);
+        init(project);
         if (!isStoped.get()){
             Configuration conf = new Configuration(){
                 private List<SourceFileProperties> myFileProperties;
@@ -321,12 +321,12 @@ public class AnalyzeExecutable extends BaseDwarfProvider {
                         if (set != null && set.length() > 0) {
                             String[] add = (String[])getProperty(LIBRARIES_KEY).getValue();
                             if (add == null || add.length==0) {
-                                myFileProperties = getSourceFileProperties(new String[]{set},null, null, myDependencies, new CompileLineStorage());
+                                myFileProperties = getSourceFileProperties(new String[]{set},null, project, myDependencies, new CompileLineStorage());
                             } else {
                                 String[] all = new String[add.length+1];
                                 all[0] = set;
                                 System.arraycopy(add, 0, all, 1, add.length);
-                                myFileProperties = getSourceFileProperties(all,null, null, myDependencies, new CompileLineStorage());
+                                myFileProperties = getSourceFileProperties(all,null, project, myDependencies, new CompileLineStorage());
                             }
                         }
                     }

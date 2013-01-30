@@ -48,16 +48,17 @@ import java.awt.Color;
 
 
 public class ParamStr {
-    private String type, simpleType, prm;
-    private Color typeColor;
-    private boolean isVarArg;
+    private final String type, simpleType, prm, text;
+    private final Color typeColor;
+    private final boolean isVarArg;
     
-    public ParamStr(String type, String simpleType, String prm, boolean isVarArg, Color typeColor) {
+    public ParamStr(String type, String simpleType, String prm, String text, boolean isVarArg, Color typeColor) {
         this.type = type;
         this.simpleType = simpleType;
         this.prm = prm;
         this.typeColor = typeColor;
         this.isVarArg = isVarArg;
+        this.text = text;
     }
 
     public String getTypeName() {
@@ -72,6 +73,10 @@ public class ParamStr {
         return prm;
     }
 
+    public String getText() {
+        return text;
+    }
+    
     public Color getTypeColor() {
         return typeColor;
     }

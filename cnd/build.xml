@@ -52,7 +52,7 @@ made subject to such option by the copyright holder.
     <property name="javahelp.base" value="org/netbeans/modules/cnd/help"/>
     <import file="../nbbuild/templates/projectized.xml"/>
 
-    <target name="netbeans" depends="projectized-common.netbeans">
+    <target name="netbeans" depends="projectized.netbeans">
 	<fixcrlf srcdir="${cluster}/bin" includes="dorun.sh" eol="lf"/>
     </target>
 

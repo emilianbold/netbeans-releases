@@ -60,7 +60,7 @@ import org.openide.util.Lookup;
 @OptionsPanelController.SubRegistration(
     location=UiUtils.OPTIONS_PATH,
     id=HudsonOptionsPanelController.OPTIONS_SUBPATH,
-    displayName="#LBL_OptionsName",
+    displayName="#LBL_HudsonPHPOptionsName",
 //    toolTip="#LBL_OptionsTooltip"
     position=160
 )

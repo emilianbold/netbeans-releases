@@ -62,7 +62,7 @@ public class GroovySemanticAnalyzerTest extends GroovyTestBase {
     protected void setUp() throws Exception {
         super.setUp();
         // Logger.getLogger(GroovySemanticAnalyzer.class.getName()).setLevel(Level.FINEST);
-        Logger.getLogger(org.netbeans.modules.groovy.editor.api.AstUtilities.class.getName()).setLevel(Level.FINEST);
+        Logger.getLogger(org.netbeans.modules.groovy.editor.api.ASTUtils.class.getName()).setLevel(Level.FINEST);
     }
     
     // uncomment this to have logging

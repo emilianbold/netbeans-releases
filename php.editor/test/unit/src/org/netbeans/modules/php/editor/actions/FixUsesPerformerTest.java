@@ -42,13 +42,13 @@
 package org.netbeans.modules.php.editor.actions;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import javax.swing.text.Document;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
@@ -58,6 +58,7 @@ import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.modules.php.editor.PHPCodeCompletionTestBase;
 import org.netbeans.modules.php.editor.actions.FixUsesAction.Options;
+import org.netbeans.modules.php.editor.actions.ImportData.ItemVariant;
 import org.netbeans.modules.php.editor.api.ElementQuery.Index;
 import org.netbeans.modules.php.editor.api.ElementQueryFactory;
 import org.netbeans.modules.php.editor.api.QuerySupportFactory;
@@ -90,31 +91,43 @@ public class FixUsesPerformerTest extends PHPCodeCompletionTestBase {
 
     public void testIssue210093_01() throws Exception {
         String[] selections = new String[] {"\\Issue\\Martin\\Pondeli"};
-        Options options = new Options(false, false, true);
+        Options options = new Options(false, false, true, false);
         performTest("function testFail(\\Issue\\Martin\\Pond^eli $param) {}", selections, true, options);
     }
 
     public void testIssue210093_02() throws Exception {
         String[] selections = new String[] {"\\Issue\\Martin\\Pondeli"};
-        Options options = new Options(false, false, false);
+        Options options = new Options(false, false, false, false);
         performTest("function testFail(\\Issue\\Martin\\Pond^eli $param) {}", selections, true, options);
     }
 
     public void testIssue211566_01() throws Exception {
         String[] selections = new String[] {"\\Foo\\Bar\\Baz"};
-        Options options = new Options(false, false, false);
+        Options options = new Options(false, false, false, false);
         performTest("new \\Foo\\Bar\\B^az(); //HERE", selections, true, options);
     }
 
     public void testIssue211566_02() throws Exception {
         String[] selections = new String[] {"\\Foo\\Bar\\Baz"};
-        Options options = new Options(false, false, true);
+        Options options = new Options(false, false, true, false);
         performTest("new \\Foo\\Bar\\B^az(); //HERE", selections, true, options);
     }
 
     public void testIssue214699() throws Exception {
         String[] selections = new String[] {"\\Foo\\Bar\\ClassName", "\\Baz\\Bat\\ClassName", "\\Fom\\Bom\\ClassName"};
         performTest("$a = new ClassName();^//HERE", selections);
+    }
+
+    public void testIssue211585_01() throws Exception {
+        String[] selections = new String[] {"\\Foo\\Bar\\ClassName", "\\Baz\\Bat\\ClassName", "\\Fom\\Bom\\ClassName"};
+        Options options = new Options(false, false, true, true);
+        performTest("$a = new ClassName();^//HERE", selections, false, options);
+    }
+
+    public void testIssue211585_02() throws Exception {
+        String[] selections = new String[] {"\\Fom\\Bom\\ClassName", "\\Foo\\Bar\\ClassName", "\\Baz\\Bat\\ClassName"};
+        Options options = new Options(false, false, true, true);
+        performTest("$a = new ClassName();^//HERE", selections, false, options);
     }
 
     private String getTestResult(final String fileName, final String caretLine, final String[] selections, final boolean removeUnusedUses, final Options options) throws Exception {
@@ -147,8 +160,12 @@ public class FixUsesPerformerTest extends PHPCodeCompletionTestBase {
                         currentOptions = new FixUsesAction.Options(codeStyle);
                     }
                     ImportData importData = new ImportDataCreator(usedNames, index, namespaceScope.getNamespaceName(), currentOptions).create();
+                    final List<ItemVariant> properSelections = new ArrayList<ItemVariant>();
+                    for (String selection : selections) {
+                        properSelections.add(new ItemVariant(selection, ItemVariant.UsagePolicy.CAN_BE_USED));
+                    }
                     importData.caretPosition = caretOffset;
-                    FixUsesPerformer fixUsesPerformer = new FixUsesPerformer(phpResult, importData, selections, removeUnusedUses, currentOptions);
+                    FixUsesPerformer fixUsesPerformer = new FixUsesPerformer(phpResult, importData, properSelections, removeUnusedUses, currentOptions);
                     fixUsesPerformer.perform();
                     result[0] = document.getText(0, document.getLength());
                 }

@@ -107,6 +107,112 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="pasive.corrected.to.passive">
+            <summary>Spelling error in the API corrected</summary>
+            <version major="3" minor="33"/>
+            <date day="17" month="12" year="2012"/>
+            <author login="dstrupl"/>
+            <compatibility binary="compatible" source="compatible" semantic="compatible"
+                addition="yes"/>
+            <description>
+                <p>
+                    Two methods containing the word "pasive" were renamed to contain "passive".
+                </p>
+            </description>
+            <class name="Annotations" package="org.netbeans.editor"/>
+            <issue number="197623"/>
+        </change>
+        <change id="removing-find">
+            <summary>Removing old deprecatted find implementations</summary>
+            <version major="3" minor="30"/>
+            <date day="5" month="10" year="2012"/>
+            <author login="mkristofic"/>
+            <compatibility binary="incompatible" source="incompatible" semantic="incompatible" addition="no" deprecation="yes" deletion="yes" modification="yes"/>
+            <description>
+                <p>
+                    The old find apis and implementations (<code>org.netbeans.editor.FindSupport</code> &amp; co.)
+                    has been removed. The current implementation is in editor.lib2 and editor.search
+                </p>
+                <p>The exact API changes are listed in the sigtest report below.</p>
+<pre>
+-sigtest-init:
+     [echo] sigtest check: editor.lib; cnb: org-netbeans-modules-editor-lib; email: api-changes@netbeans.org; type: check
+
+check-sigtest:
+    [mkdir] Created dir: /home/mito/nb/develop/editor.lib/build/test/sigtest/results
+  [sigtest] /home/mito/nb/develop/editor.lib/build/test/sigtest/results/org.netbeans.modules.editor.lib
+  [sigtest] Packages: org.netbeans.editor.*, org.netbeans.editor.ext.*, org.netbeans.editor.view.spi.*, org.netbeans.lib.editor.hyperlink.spi.*, org.netbeans.lib.editor.view.*
+  [sigtest]
+  [sigtest] email: api-changes@netbeans.org
+  [sigtest] SignatureTest report
+  [sigtest] Base version: 3.29.0
+  [sigtest] Tested version: 3.29.0
+  [sigtest] Check mode: bin [throws removed]
+  [sigtest] Constant checking: on
+  [sigtest]
+  [sigtest]
+  [sigtest] Class org.netbeans.editor.FindSupport
+  [sigtest]   "E1.2 - API type removed" : CLASS public org.netbeans.editor.FindSupport
+  [sigtest]
+  [sigtest] Class org.netbeans.editor.FindSupport$SearchPatternWrapper
+  [sigtest]   "E1.2 - API type removed" : CLASS public static org.netbeans.editor.FindSupport$SearchPatternWrapper
+  [sigtest]
+  [sigtest] Class org.netbeans.editor.ext.ExtKit$FindAction
+  [sigtest]   "E1.2 - API type removed" : CLASS public static org.netbeans.editor.ext.ExtKit$FindAction
+  [sigtest]
+  [sigtest] Class org.netbeans.editor.ext.ExtKit$ReplaceAction
+  [sigtest]   "E1.2 - API type removed" : CLASS public static org.netbeans.editor.ext.ExtKit$ReplaceAction
+  [sigtest]
+  [sigtest] Class org.netbeans.editor.ext.FindDialogPanel
+  [sigtest]   "E1.2 - API type removed" : CLASS public org.netbeans.editor.ext.FindDialogPanel
+  [sigtest]
+  [sigtest] Class org.netbeans.editor.ext.FindDialogSupport
+  [sigtest]   "E1.2 - API type removed" : CLASS public org.netbeans.editor.ext.FindDialogSupport
+  [sigtest]
+  [sigtest] /home/mito/nb/develop/editor.lib/build/test/sigtest/results/org-netbeans-modules-editor-lib.xml: 1 failures in /home/mito/nb/develop/editor.lib/nbproject/org-netbeans-modules-editor-lib.sig
+
+</pre>
+            </description>
+            <issue number="189638"/>
+        </change>
+        <change id="programmatic.tooltips.visible">
+            <summary>Support to show tooltips not tied to the view hierarchy</summary>
+            <version major="3" minor="28"/>
+            <date day="11" month="9" year="2012"/>
+            <author login="sdedic"/>
+            <compatibility binary="compatible" source="compatible" semantic="compatible"
+                addition="yes"/>
+            <description>
+                <p>
+                    When the tooltip is being shown (<code>setTooltipVisible(true)</code>),
+                    the ToolTipSupport attempts to build the tooltip from the view hierarchy,
+                    based on mouse position. This may fail, if the tooltip was initiated in
+                    other way, than mouse hover, or even programmatically.
+                </p>
+                <p>
+                    The new <code>setTooltipVisible</code> overload allows to skip the step
+                    during the process of showing the tooltip.
+                </p>
+            </description>
+            <class name="ToolTipSupport" package="org.netbeans.editor.ext"/>
+            <issue number="216245"/>
+        </change>
+        <change id="absolute-positioned-tooltips">
+            <summary>Tooltips can be positioned at absolute position, not relative to the caret</summary>
+            <version major="3" minor="26"/>
+            <date day="5" month="7" year="2012"/>
+            <author login="sdedic"/>
+            <compatibility binary="compatible" semantic="compatible" addition="yes"/>
+            <description>
+                <p>
+                    Tooltips are usually positioned above/below the caret, so they appear in the area the user is focused on.
+                    Some tooltips however should be displayed above or next to the editor window, e.g. begin/end of a code block,
+                    which is alredy off the visible area. This change allows to specify <code>Point</code> relative to the
+                    view or the scroller, where the tooltip should appear.
+                </p>
+            </description>
+            <issue number="214755"/>
+        </change>
         <change id="clickable-annotations">
             <summary>Clickable annotations in the editor glyph gutter</summary>
             <version major="3" minor="24"/>

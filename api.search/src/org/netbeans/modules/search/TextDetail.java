@@ -45,12 +45,14 @@
 
 package org.netbeans.modules.search;
 
-import java.awt.Image;
+import java.awt.EventQueue;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
 import java.io.CharConversionException;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JEditorPane;
@@ -63,20 +65,18 @@ import org.netbeans.api.search.SearchPattern;
 import org.netbeans.modules.search.ui.ReplaceCheckableNode;
 import org.netbeans.modules.search.ui.ResultsOutlineSupport;
 import org.netbeans.modules.search.ui.UiUtils;
+import org.openide.awt.StatusDisplayer;
+import org.openide.cookies.EditCookie;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
-import org.openide.nodes.Node;
 import org.openide.text.Line;
 import org.openide.text.Line.ShowOpenType;
 import org.openide.text.Line.ShowVisibilityType;
 import org.openide.util.ChangeSupport;
-import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.NodeAction;
-import org.openide.util.actions.SystemAction;
 import org.openide.util.datatransfer.PasteType;
 import org.openide.util.lookup.Lookups;
 import org.openide.windows.OutputEvent;
@@ -91,6 +91,8 @@ import org.openide.xml.XMLUtil;
  */
 public final class TextDetail implements Selectable {
 
+    private static final Logger LOG = Logger.getLogger(
+            TextDetail.class.getName());
     /** Property name which indicates this detail to show. */
     public static final int DH_SHOW = 1;
     /** Property name which indicates this detail to go to. */
@@ -122,6 +124,8 @@ public final class TextDetail implements Selectable {
     private boolean selected = true;
     /** Line number indent */
     private String lineNumberIndent = "";                               //NOI18N
+    /** Show the text detail after the data object is updated */
+    private boolean showAfterDataObjectUpdated = false;
 
     private ChangeSupport changeSupport = new ChangeSupport(this);
     /** Constructor using data object. 
@@ -141,10 +145,18 @@ public final class TextDetail implements Selectable {
      * @see #DH_GOTO 
      * @see #DH_SHOW 
      * @see #DH_HIDE */
+    @NbBundle.Messages({
+        "MSG_CannotShowTextDetai=The text match cannot be shown."
+    })
     public void showDetail(int how) {
         prepareLine();
         if (lineObj == null) {
             Toolkit.getDefaultToolkit().beep();
+            EditCookie ed = dobj.getLookup().lookup(EditCookie.class);
+            if (ed != null) {
+                ed.edit();
+                showAfterDataObjectUpdated = true; // show correct line later
+            }
             return;
         }
         if (how == DH_HIDE) {
@@ -171,13 +183,20 @@ public final class TextDetail implements Selectable {
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {
-                        Caret caret = panes[0].getCaret(); // #23626
-                        caret.moveDot(caret.getDot() + markLength);
+                        try {
+                            Caret caret = panes[0].getCaret(); // #23626
+                            caret.moveDot(caret.getDot() + markLength);
+                        } catch (Exception e) { // #217038
+                            StatusDisplayer.getDefault().setStatusText(
+                                    Bundle.MSG_CannotShowTextDetai());
+                            LOG.log(Level.FINE,
+                                    Bundle.MSG_CannotShowTextDetai(), e);
+                        }
                     }
                 });
             }
         }
-        SearchHistory.getDefault().setLastSelected(
+        SearchHistory.getDefault().add(
                 SearchPattern.create(
                 searchPattern.getSearchExpression(),
                 searchPattern.isWholeWords(), searchPattern.isMatchCase(),
@@ -389,6 +408,31 @@ public final class TextDetail implements Selectable {
     }
 
     /**
+     * Update data object. Can be called when a module is enabled and new data
+     * loader produces new data object. The new data object can provide new
+     * features, e.g. LineCookie.
+     */
+    public void updateDataObject(DataObject dataObject) {
+        if (this.dobj.getPrimaryFile().equals(
+                dataObject.getPrimaryFile())) {
+            this.dobj = dataObject;
+            this.lineObj = null;
+            if (showAfterDataObjectUpdated) {
+                EventQueue.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        showDetail(TextDetail.DH_GOTO);
+                    }
+                });
+                showAfterDataObjectUpdated = false;
+            }
+        } else {
+            throw new IllegalArgumentException(
+                    "Expected data object for the same file");          //NOI18N
+        }
+    }
+
+    /**
      * Node that represents information about one occurence of a matching
      * string.
      *
@@ -398,9 +442,15 @@ public final class TextDetail implements Selectable {
                                           implements OutputListener {
         private static final String ICON =
                 "org/netbeans/modules/search/res/textDetail.png";       //NOI18N
+        /** Maximal lenght of displayed text detail. */
+        static final int DETAIL_DISPLAY_LENGTH = 240;
+        private static final String ELLIPSIS = "...";                   //NOI18N
         
         /** Detail to represent. */
         private TextDetail txtDetail;
+        /** Cached toString value. */
+        private String name;
+        private String htmlDisplayName;
         
         /**
          * Constructs a node representing the specified information about
@@ -414,7 +464,6 @@ public final class TextDetail implements Selectable {
             
             this.txtDetail = txtDetail;
             
-            setShortDescription(DetailNode.getShortDesc(txtDetail));
             setValue(SearchDisplayer.ATTR_OUTPUT_LINE,
                      DetailNode.getFullDesc(txtDetail));
             // A workaround for #124559 - when the detail becomes visible,
@@ -467,16 +516,22 @@ public final class TextDetail implements Selectable {
         /** {@inheritDoc} */
         @Override
         public String getName() {
-            return txtDetail.getLineText() +
+            if (name == null) {
+                name = cutLongLine(txtDetail.getLineText()) +
                     "      [" + DetailNode.getName(txtDetail) + "]";  // NOI18N
+            }
+            return name;
         }
 
         /** {@inheritDoc} */
         @Override
         public String getHtmlDisplayName() {
+            if (htmlDisplayName != null) {
+                return htmlDisplayName;
+            }
             try {
                 StringBuffer text = new StringBuffer();
-                text.append("<font color='!controlShadow'>");           //NOI18N
+                text.append("<html><font color='!controlShadow'>");     //NOI18N
                 text.append(txtDetail.lineNumberIndent);
                 text.append(txtDetail.getLine());
                 text.append(": ");                                      //NOI18N
@@ -485,15 +540,27 @@ public final class TextDetail implements Selectable {
                     appendMarkedText(text);
                 }
                 else {
-                    text.append(escape(txtDetail.getLineText()));
+                    text.append(escape(cutLongLine(txtDetail.getLineText())));
                 }
                 text.append("      ");  // NOI18N
                 text.append("<font color='!controlShadow'>[");  // NOI18N
                 text.append(escape(DetailNode.getLinePos(txtDetail)));
-                text.append("]");  // NOI18N
-                return text.toString();
+                text.append("]</font></html>");                         //NOI18N
+                htmlDisplayName = text.toString();
+                return htmlDisplayName;
             } catch (CharConversionException e) {
                 return null; // exception in escape(String s)
+            }
+        }
+
+        private String cutLongLine(String s) {
+            if (s == null) {
+                return "";                                              //NOI18N
+            } else if (s.length() < DETAIL_DISPLAY_LENGTH) {
+                return s;
+            } else {
+                return s.substring(0,
+                        DETAIL_DISPLAY_LENGTH - ELLIPSIS.length()) + ELLIPSIS;
             }
         }
 
@@ -508,26 +575,108 @@ public final class TextDetail implements Selectable {
                    col0 < txtDetail.getLineTextLength(); // #177891
         }
 
-        private void appendMarkedText(StringBuffer text)
-                                                throws CharConversionException {
-            int col0 = txtDetail.getColumn0();  // base 0
-            int end = col0 + Math.min(txtDetail.getMarkLength(),
-                                      txtDetail.getLineTextLength() - col0);
-            int markEnd = col0 + txtDetail.getMarkLength();
-            final int detailLen = txtDetail.getLineTextLength();
+        private void appendMarkedText(StringBuffer sb)
+                throws CharConversionException {
+            final int lineLen = txtDetail.getLineTextLength();
+            int matchStart = txtDetail.getColumn0();  // base 0
+            int matchEnd = matchStart + Math.min(txtDetail.getMarkLength(),
+                    lineLen - matchStart);
+            int detailLen = matchEnd - matchStart;
+            int prefixStart, suffixEnd;
 
-            text.append(escape(txtDetail.getLineTextPart(0, col0)));
+            if (detailLen > DETAIL_DISPLAY_LENGTH) {
+                prefixStart = matchStart;
+                suffixEnd = matchEnd;
+            } else if (lineLen > DETAIL_DISPLAY_LENGTH) {
+                int remaining = DETAIL_DISPLAY_LENGTH - detailLen;
+                int quarter = remaining / 4;
+                int shownPrefix = Math.min(quarter, matchStart);
+                int shownSuffix = Math.min(3 * quarter, lineLen - matchEnd);
+                int extraForSuffix = quarter - shownPrefix;
+                int extraForPrefix = 3 * quarter - shownSuffix;
+                prefixStart = Math.max(0,
+                        matchStart - shownPrefix - extraForPrefix);
+                suffixEnd = Math.min(lineLen,
+                        matchEnd + shownSuffix + extraForSuffix);
+            } else { // whole line can be displayed
+                prefixStart = 0;
+                suffixEnd = lineLen;
+            }
+            appendMarkedTextPrefix(sb, prefixStart, matchStart);
+            appendMarkedTextMatch(sb, matchStart, matchEnd, lineLen, detailLen);
+            appendMarkedTextSuffix(sb, matchEnd, suffixEnd, lineLen);
+        }
+
+        /**
+         * Append part of line that is before matched text.
+         *
+         * @param text Buffer to append to.
+         * @param prefixStart Line index of the first character to be displayed.
+         * @param matchStart Line index of the matched text.
+         */
+        private void appendMarkedTextPrefix(StringBuffer text, int prefixStart,
+                int matchStart) throws CharConversionException {
+            if (prefixStart > 0) {
+                text.append(ELLIPSIS);
+            }
+            text.append(escape(txtDetail.getLineTextPart(prefixStart,
+                    matchStart)));
+        }
+
+        /**
+         * Append part of line that contains the matched text.
+         *
+         * @param text Buffer to append to.
+         * @param matchStart Line index of the first character of the matched
+         * text.
+         * @param matchEnd Line index after the last character of the matched
+         * text.
+         * @param lineLength Lenght of the line.
+         * @param detailLength Lengt of matched part.
+         */
+        private void appendMarkedTextMatch(StringBuffer text, int matchStart,
+                int matchEnd, int lineLength, int matchedLength)
+                throws CharConversionException {
+
             text.append("<b>");  // NOI18N
-            if (markEnd > detailLen) { // mark up to the text end?
-                text.append(escape(txtDetail.getLineTextPart(col0, end)));
-                text.append(" ..."); //NOI18N
+            if (matchedLength > DETAIL_DISPLAY_LENGTH) {
+                int off = (DETAIL_DISPLAY_LENGTH - ELLIPSIS.length()) / 2;
+                text.append(escape(txtDetail.getLineTextPart(
+                        matchStart, matchStart + off)));
+                text.append("</b>");
+                text.append(ELLIPSIS);
+                text.append("<b>");
+                text.append(escape(txtDetail.getLineTextPart(
+                        matchEnd - off, matchEnd)));
+            } else {
+                text.append(escape(
+                        txtDetail.getLineTextPart(matchStart, matchEnd)));
             }
-            else {
-                text.append(escape(txtDetail.getLineTextPart(col0, end)));
-            }
+            int markEnd = matchStart + txtDetail.getMarkLength();
             text.append("</b>"); // NOI18N
-            if (detailLen > end) {
-                text.append(escape(txtDetail.getLineTextPart(end)));
+            if (markEnd > lineLength) { // mark up to the text end?
+                text.append(ELLIPSIS);
+            }
+        }
+
+        /**
+         * Append a part of line that is after the matched text.
+         *
+         * @param text Buffer to append to.
+         * @param matchEnd Line index after the last character of the matched
+         * text.
+         * @param suffixEnd Line index after the last character of displayed
+         * text.
+         */
+        private void appendMarkedTextSuffix(StringBuffer text, int matchEnd,
+                int suffixEnd, int lineLength) throws CharConversionException {
+
+            if (lineLength > matchEnd) {
+                text.append(escape(txtDetail.getLineTextPart(matchEnd,
+                        suffixEnd)));
+                if (suffixEnd < lineLength) {
+                    text.append(ELLIPSIS);
+                }
             }
         }
 

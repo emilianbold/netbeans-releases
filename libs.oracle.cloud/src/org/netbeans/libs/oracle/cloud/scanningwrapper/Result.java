@@ -44,11 +44,12 @@ package org.netbeans.libs.oracle.cloud.scanningwrapper;
 public class Result {
 
     private boolean allowed;
-    
+    private boolean warning;
     private String msg;
 
-    public Result(boolean allowed, String msg) {
+    public Result(boolean allowed, boolean warning, String msg) {
         this.allowed = allowed;
+        this.warning = warning;
         this.msg = msg;
     }
     
@@ -58,5 +59,9 @@ public class Result {
 
     public String getMessage() {
         return msg;
+    }
+    
+    public boolean isWarningOnly() {
+        return warning;
     }
 }

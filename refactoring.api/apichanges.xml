@@ -49,6 +49,60 @@ made subject to such option by the copyright holder.
     <apidef name="refactoring">Refactoring API</apidef>
 </apidefs>
 <changes>
+    <change id="TransactionProgress">
+        <api name="refactoring"/>
+        <summary>RefactoringCommit implements the interface ProgressProvider.</summary>
+        <version major="1" minor="33"/>
+        <date day="27" month="11" year="2012"/>
+        <author login="ralphbenjamin"/>
+        <compatibility addition="yes"/>
+        <description>
+            <p>
+                RefactoringCommit now implements the interface ProgressProvider
+                to notify the progress of the commit.
+            </p>
+        </description>
+        <class package="org.netbeans.modules.refactoring.spi" name="RefactoringCommit"/>
+        <issue number="221295"/>
+    </change>
+    <change id="ServerSideQueries">
+        <api name="refactoring"/>
+        <summary>Added support for Scope Providers and ExpandableTreeElements.</summary>
+        <version major="1" minor="30"/>
+        <date day="31" month="8" year="2012"/>
+        <author login="ralphbenjamin"/>
+        <compatibility addition="yes"/>
+        <description>
+            <p>
+                Added an ExpandableTreeElement and a declarative way to add new scopes.
+            </p>
+        </description>
+        <class package="org.netbeans.modules.refactoring.spi.ui" name="ExpandableTreeElement"/>
+        <class package="org.netbeans.modules.refactoring.spi.ui" name="ScopeProvider"/>
+        <class package="org.netbeans.modules.refactoring.spi.ui" name="ScopeReference"/>
+        <class package="org.netbeans.modules.refactoring.spi.ui" name="ScopeReferences"/>
+        <class package="org.netbeans.modules.refactoring.spi.ui" name="ScopePanel"/>
+        <issue number="217347"/>
+    </change>
+    <change id="RefactoringResultsFilters">
+        <api name="refactoring"/>
+        <summary>Added an API to support filters of the Find Usages results.</summary>
+        <version major="1" minor="29"/>
+        <date day="8" month="8" year="2012"/>
+        <author login="ralphbenjamin"/>
+        <compatibility addition="yes"/>
+        <description>
+            <p>
+                This API allows refactoring plugins to add/enable filters to the
+                results window and refactoring elements to specify if they should
+                be included in the results.
+            </p>
+        </description>
+        <class package="org.netbeans.modules.refactoring.api" name="RefactoringElement"/>
+        <class package="org.netbeans.modules.refactoring.spi" name="FiltersManager"/>
+        <class package="org.netbeans.modules.refactoring.spi.ui" name="FiltersDescription"/>
+        <issue number="215361"/>
+    </change>
     <change id="FinishSession">
         <api name="refactoring"/>
         <summary>Changed access level of #finish() to public.</summary>

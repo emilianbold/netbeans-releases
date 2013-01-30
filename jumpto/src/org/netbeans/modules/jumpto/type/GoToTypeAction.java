@@ -30,6 +30,8 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2011 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
+ * markiewb@netbeans.org
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -44,6 +46,7 @@
 
 package org.netbeans.modules.jumpto.type;
 
+import org.netbeans.modules.jumpto.common.Models;
 import org.netbeans.spi.jumpto.type.SearchType;
 import org.netbeans.spi.jumpto.type.TypeProvider;
 import org.netbeans.spi.jumpto.type.TypeDescriptor;
@@ -74,6 +77,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import javax.swing.AbstractAction;
+import javax.swing.ButtonModel;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.ListCellRenderer;
@@ -85,14 +89,21 @@ import javax.swing.JViewport;
 import javax.swing.ListModel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.jumpto.type.TypeBrowser;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.jumpto.EntitiesListCellRenderer;
+import org.netbeans.modules.jumpto.common.HighlightingNameFormatter;
 import org.netbeans.modules.jumpto.file.LazyListModel;
 import org.netbeans.modules.sampler.Sampler;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
+import org.openide.awt.HtmlRenderer;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -103,6 +114,7 @@ import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
@@ -219,8 +231,14 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
     
     
     @Override
-    public ListCellRenderer getListCellRenderer( JList list ) {
-        return new Renderer( list );        
+    public ListCellRenderer getListCellRenderer(
+            @NonNull final JList list,
+            @NonNull final Document nameFieldDocument,
+            @NonNull final ButtonModel caseSensitive) {
+        Parameters.notNull("list", list);   //NOI18N
+        Parameters.notNull("nameFieldDocument", nameFieldDocument); //NOI18N
+        Parameters.notNull("caseSensitive", caseSensitive); //NOI18N
+        return new Renderer(list, nameFieldDocument, caseSensitive);
     }
     
     
@@ -269,8 +287,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
         int wildcard = containsWildCard(text);
                 
         if (exact) {
-            //nameKind = panel.isCaseSensitive() ? SearchType.EXACT_NAME : SearchType.CASE_INSENSITIVE_EXACT_NAME;
-            nameKind = SearchType.EXACT_NAME;
+            nameKind = panel.isCaseSensitive() ? SearchType.EXACT_NAME : SearchType.CASE_INSENSITIVE_EXACT_NAME;
         }
         else if ((isAllUpper(text) && text.length() > 1) || isCamelCase(text)) {
             nameKind = SearchType.CAMEL_CASE;
@@ -283,7 +300,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
         }
         
         // Compute in other thread        
-        running = new Worker( text );
+        running = new Worker( text , panel.isCaseSensitive());
         task = rp.post( running, 220);
         if ( panel.time != -1 ) {
             LOGGER.log( Level.FINE, "Worker posted after {0} ms.", System.currentTimeMillis() - panel.time ); //NOI18N
@@ -436,11 +453,14 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
         private volatile boolean isCanceled = false;
         private volatile TypeProvider current;
         private final String text;
-        
+        private final boolean caseSensitive;        
         private final long createTime;
+
+        private int lastSize = -1;
         
-        public Worker( String text ) {
+        public Worker( String text, final boolean caseSensitive) {
             this.text = text;
+            this.caseSensitive = caseSensitive;
             this.createTime = System.currentTimeMillis();
             LOGGER.log( Level.FINE, "Worker for {0} - created after {1} ms.",   //NOI18N
                     new Object[]{
@@ -471,35 +491,41 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
                                 });
                         return;
                     }
-                    ListModel model = Models.fromList(types);
-                    if (typeFilter != null) {
-                        model = LazyListModel.create(model, GoToTypeAction.this, 0.1, "Not computed yet");  
-                    }
-                    final ListModel fmodel = model;
-                    if ( isCanceled ) {
-                        LOGGER.log( Level.FINE, "Worker for {0} exited after cancel {1} ms.",   //NOI18N
-                                new Object[]{
-                                    text,
-                                    System.currentTimeMillis() - createTime
-                                });
-                        return;
-                    }
+                    final int newSize = types.size();
+                    //Optimistic the types just added, but safer is compare the collections.
+                    //Unfortunatelly no TypeDescriptor impl provides equals.
+                    if (lastSize != newSize) {
+                        lastSize = newSize;
+                        ListModel model = Models.fromList(types);
+                        if (typeFilter != null) {
+                            model = LazyListModel.create(model, GoToTypeAction.this, 0.1, "Not computed yet");
+                        }
+                        final ListModel fmodel = model;
+                        if ( isCanceled ) {
+                            LOGGER.log( Level.FINE, "Worker for {0} exited after cancel {1} ms.",   //NOI18N
+                                    new Object[]{
+                                        text,
+                                        System.currentTimeMillis() - createTime
+                                    });
+                            return;
+                        }
 
-                    if ( !isCanceled && fmodel != null ) {
-                        LOGGER.log( Level.FINE, "Worker for text {0} finished after {1} ms.",   //NOI18N
-                                new Object[]{
-                                    text,
-                                    System.currentTimeMillis() - createTime
-                                });
-                        SwingUtilities.invokeLater(new Runnable() {
-                            @Override
-                            public void run() {
-                                panel.setModel(fmodel);
-                                if (okButton != null && !types.isEmpty()) {
-                                    okButton.setEnabled (true);
+                        if ( !isCanceled && fmodel != null ) {
+                            LOGGER.log( Level.FINE, "Worker for text {0} finished after {1} ms.",   //NOI18N
+                                    new Object[]{
+                                        text,
+                                        System.currentTimeMillis() - createTime
+                                    });
+                            SwingUtilities.invokeLater(new Runnable() {
+                                @Override
+                                public void run() {
+                                    panel.setModel(fmodel);
+                                    if (okButton != null && !types.isEmpty()) {
+                                        okButton.setEnabled (true);
+                                    }
                                 }
-                            }
-                        });
+                            });
+                        }
                     }
                 } finally {
                     if (profile != null) {
@@ -576,7 +602,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
             retry[0] = TypeProviderAccessor.DEFAULT.getRetry(result);
             if ( !isCanceled ) {   
                 //time = System.currentTimeMillis();
-                Collections.sort(items, new TypeComparator());
+                Collections.sort(items, new TypeComparator(caseSensitive));
                 panel.setWarning(message[0]);
                 //sort += System.currentTimeMillis() - time;
                 //LOGGER.fine("PERF - " + " GSS:  " + gss + " GSB " + gsb + " CP: " + cp + " SFB: " + sfb + " GTN: " + gtn + "  ADD: " + add + "  SORT: " + sort );
@@ -622,10 +648,10 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
         task.waitFinished();
     }
 
-    private static final class Renderer extends EntitiesListCellRenderer {
+    private static final class Renderer extends EntitiesListCellRenderer implements DocumentListener, ActionListener {
          
         private MyPanel rendererComponent;
-        private JLabel jlName = new JLabel();
+        private JLabel jlName = HtmlRenderer.createLabel();
         private JLabel jlPkg = new JLabel();
         private JLabel jlPrj = new JLabel();
         private int DARKER_COLOR_COMPONENT = 5;
@@ -638,12 +664,19 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
         private Color fgSelectionColor;
         
         private JList jList;
+        private String searchText = "";
+        private boolean caseSensitive;
+        private final HighlightingNameFormatter typeNameFormatter;
 
         @SuppressWarnings("LeakingThisInConstructor")
-        public Renderer( JList list ) {
+        public Renderer(
+                @NonNull final JList list,
+                @NonNull final Document nameFieldDocument,
+                @NonNull final ButtonModel caseSensitive) {
             
             jList = list;
-            
+            this.caseSensitive = caseSensitive.isSelected();
+            resetName();
             Container container = list.getParent();
             if ( container instanceof JViewport ) {
                 ((JViewport)container).addChangeListener(this);
@@ -658,7 +691,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
             c.gridwidth = 1;
             c.gridheight = 1;
             c.fill = GridBagConstraints.NONE;
-            c.weightx = 0;            
+            c.weightx = 0;
             c.anchor = GridBagConstraints.WEST;
             c.insets = new Insets (0,0,0,7);
             rendererComponent.add( jlName, c);
@@ -669,7 +702,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
             c.gridwidth = 1;
             c.gridheight = 1;
             c.fill = GridBagConstraints.HORIZONTAL;
-            c.weightx = 0.1;            
+            c.weightx = 0.1;
             c.anchor = GridBagConstraints.WEST;
             c.insets = new Insets (0,0,0,7);
             rendererComponent.add( jlPkg, c);
@@ -680,20 +713,18 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
             c.gridwidth = 1;
             c.gridheight = 1;
             c.fill = GridBagConstraints.NONE;
-            c.weightx = 0;            
+            c.weightx = 0;
             c.anchor = GridBagConstraints.EAST;
             rendererComponent.add( jlPrj, c);
             
             
-            jlName.setOpaque(false);
             jlPkg.setOpaque(false);
-            jlPrj.setOpaque(false);
-            
-            jlName.setFont(list.getFont());
+            jlPrj.setOpaque(false);                        
+
             jlPkg.setFont(list.getFont());
             jlPrj.setFont(list.getFont());
-            
-            
+
+
             jlPrj.setHorizontalAlignment(RIGHT);
             jlPrj.setHorizontalTextPosition(LEFT);
             
@@ -712,7 +743,10 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
                                     Math.abs(bgColor.getBlue() - DARKER_COLOR_COMPONENT)
                             );
             bgSelectionColor = list.getSelectionBackground();
-            fgSelectionColor = list.getSelectionForeground();        
+            fgSelectionColor = list.getSelectionForeground();
+            this.typeNameFormatter = HighlightingNameFormatter.createBoldFormatter();
+            nameFieldDocument.addDocumentListener(this);
+            caseSensitive.addActionListener(this);
         }
         
         public @Override Component getListCellRendererComponent( JList list,
@@ -732,18 +766,18 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
             
             Dimension size = new Dimension( width, height );
             rendererComponent.setMaximumSize(size);
-            rendererComponent.setPreferredSize(size);
-                        
+            rendererComponent.setPreferredSize(size);            
+            resetName();
             if ( isSelected ) {
                 jlName.setForeground(fgSelectionColor);
                 jlPkg.setForeground(fgSelectionColor);
-                jlPrj.setForeground(fgSelectionColor);
+                jlPrj.setForeground(fgSelectionColor);                
                 rendererComponent.setBackground(bgSelectionColor);
             }
             else {
                 jlName.setForeground(fgColor);
                 jlPkg.setForeground(fgColorLighter);
-                jlPrj.setForeground(fgColor);                
+                jlPrj.setForeground(fgColor);
                 rendererComponent.setBackground( index % 2 == 0 ? bgColor : bgColorDarker );
             }
             
@@ -751,11 +785,17 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
                 long time = System.currentTimeMillis();
                 TypeDescriptor td = (TypeDescriptor)value;                
                 jlName.setIcon(td.getIcon());
-                jlName.setText(td.getTypeName());
+                //highlight matching search text patterns in type
+                final String formattedTypeName = typeNameFormatter.formatName(
+                        td.getTypeName(),
+                        searchText,
+                        caseSensitive,
+                        isSelected? fgSelectionColor : fgColor);
+                jlName.setText(formattedTypeName);
                 jlPkg.setText(td.getContextName());
                 setProjectName(jlPrj, td.getProjectName());
                 jlPrj.setIcon(td.getProjectIcon());
-		rendererComponent.setDescriptor(td);
+		rendererComponent.setDescriptor(td);                
                 LOGGER.log(Level.FINE, "  Time in paint {0} ms.", System.currentTimeMillis() - time);   //NOI18N
             }
             else {
@@ -776,6 +816,38 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
             
             jList.setFixedCellHeight(jlName.getPreferredSize().height);
             jList.setFixedCellWidth(jv.getExtentSize().width);
+        }
+
+        @Override
+        public void insertUpdate(DocumentEvent e) {
+            changedUpdate(e);
+        }
+
+        @Override
+        public void removeUpdate(DocumentEvent e) {
+            changedUpdate(e);
+        }
+
+        @Override
+        public void changedUpdate(DocumentEvent e) {
+            try {
+                searchText = e.getDocument().getText(0, e.getDocument().getLength());
+            } catch (BadLocationException ex) {
+                searchText = "";    //NOI18N
+            }
+        }
+
+        @Override
+        public void actionPerformed(@NonNull final ActionEvent e) {
+            caseSensitive = ((ButtonModel)e.getSource()).isSelected();
+        }
+
+        private void resetName() {
+            ((HtmlRenderer.Renderer)jlName).reset();
+            jlName.setFont(jList.getFont());
+            jlName.setOpaque(false);
+            ((HtmlRenderer.Renderer)jlName).setHtml(true);
+            ((HtmlRenderer.Renderer)jlName).setRenderStyle(HtmlRenderer.STYLE_TRUNCATE);
         }
 
      } // Renderer

@@ -43,7 +43,6 @@
 package org.netbeans.modules.php.editor.parser;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocNode;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocStaticAccessType;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTag;
@@ -57,9 +56,9 @@ import org.netbeans.modules.php.editor.parser.astnodes.PHPVarComment;
  */
 public class PHPVarCommentParser {
 
-    private static String PHPDOCTAG = "@" + PHPDocTag.Type.VAR.name().toLowerCase(); //NOI18N
+    private static final String PHPDOCTAG = "@" + PHPDocTag.Type.VAR.name().toLowerCase(); //NOI18N
 
-    PHPVarComment parse (final int startOffset, final int endOffset, final String comment) {
+    PHPVarComment parse(final int startOffset, final int endOffset, final String comment) {
         int index = comment.indexOf(PHPDOCTAG);
         if (index > -1) {
             String definition = comment.substring(index);
@@ -67,15 +66,15 @@ public class PHPVarCommentParser {
             if (index > -1) {
                 definition = definition.substring(0, index);
             }
-            int startDocNode = 0;
+            int startDocNode;
             int endPosition = 0;
-            String parts[] = definition.split(" +"); //NOI18N
+            String[] parts = definition.split(" +"); //NOI18N
             if (parts.length == 3 && parts[1].charAt(0) == '$') { //NOI18N
                 //counting types
-                String types[] = parts[2].split("[|]"); //NOI18N
+                String[] types = parts[2].split("[|]"); //NOI18N
                 int typePosition = startOffset + comment.indexOf(parts[2]);
                 ArrayList<PHPDocTypeNode> typeNodes = new ArrayList<PHPDocTypeNode>();
-                for(String type: types) {
+                for (String type: types) {
                     startDocNode = typePosition + parts[2].indexOf(type);
                     index = type.indexOf("::"); //NOI18N
                     boolean isArray = (type.indexOf('[') > 0  && type.indexOf(']') > 0);
@@ -86,12 +85,11 @@ public class PHPVarCommentParser {
                     endPosition = startDocNode + type.length();
                     if (index == -1) {
                         docType = new PHPDocTypeNode(startDocNode, endPosition, type, isArray);
-                    }
-                    else {
+                    } else {
                         String className = type.substring(0, index);
-                        String constantName = type.substring(index+2, type.length());
+                        String constantName = type.substring(index + 2, type.length());
                         PHPDocNode classNameNode = new PHPDocNode(startDocNode, startDocNode + className.length(), className);
-                        PHPDocNode constantNode = new PHPDocNode(startDocNode + className.length()+2, startDocNode + type.length(), constantName);
+                        PHPDocNode constantNode = new PHPDocNode(startDocNode + className.length() + 2, startDocNode + type.length(), constantName);
                         docType = new PHPDocStaticAccessType(startDocNode, startDocNode + type.length(), type, classNameNode, constantNode);
                     }
                     typeNodes.add(docType);

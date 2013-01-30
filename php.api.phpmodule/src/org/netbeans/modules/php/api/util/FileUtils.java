@@ -79,7 +79,6 @@ public final class FileUtils {
 
     /**
      * Constant for PHP MIME type.
-     * @since 1.15
      * @see #isPhpFile(FileObject)
      */
     public static final String  PHP_MIME_TYPE = "text/x-php5"; // NOI18N
@@ -106,7 +105,6 @@ public final class FileUtils {
      * Returns <code>true</code> if the file is a PHP file.
      * @param file file to check
      * @return <code>true</code> if the file is a PHP file
-     * @since 1.15
      * @see #PHP_MIME_TYPE
      */
     public static boolean isPhpFile(FileObject file) {
@@ -133,7 +131,6 @@ public final class FileUtils {
      * @param filename the name of a file to find, more names can be provided.
      * @return list of absolute paths of found files (order preserved according to input names).
      * @see #findFileOnUsersPath(String)
-     * @since 1.33
      */
     public static List<String> findFileOnUsersPath(String... filename) {
         Parameters.notNull("filename", filename); // NOI18N
@@ -173,7 +170,6 @@ public final class FileUtils {
      * </ul>
      * @param withDot return "." as well, e.g. <tt>.sh</tt>
      * @return the OS-dependent script extension
-     * @since 1.33
      */
     public static String getScriptExtension(boolean withDot) {
         StringBuilder sb = new StringBuilder(4);
@@ -192,7 +188,6 @@ public final class FileUtils {
      * Get {@link FileObject} for the given {@link Lookup context}.
      * @param context {@link Lookup context} where the {@link FileObject} is searched for
      * @return {@link FileObject} for the given {@link Lookup context} or <code>null</code> if not found
-     * @since 1.16
      */
     public static FileObject getFileObject(Lookup context) {
         FileObject fo = context.lookup(FileObject.class);
@@ -210,7 +205,6 @@ public final class FileUtils {
      * Create {@link org.xml.sax.XMLReader} from {javax.xml.parsers.SAXParser}.
      * @return {@link org.xml.sax.XMLReader} from {javax.xml.parsers.SAXParser}
      * @throws SAXException if the parser cannot be created
-     * @since 1.22
      */
     public static XMLReader createXmlReader() throws SAXException {
         SAXParserFactory factory = SAXParserFactory.newInstance();
@@ -224,40 +218,6 @@ public final class FileUtils {
     }
 
     /**
-     * Validate a script path and return {@code null} if it is valid, otherwise an error.
-     * <p>
-     * A valid script means that the <tt>filePath</tt> represents a valid, readable file
-     * with absolute file path.
-     * <p>
-     * <b>This method will be removed after 7.1!</b>
-     * @param filePath a file path to validate
-     * @param scriptName the display name of the script
-     * @return {@code null} if it is valid, otherwise an error
-     * @see #validateFile(java.lang.String, boolean)
-     * @see #validateDirectory(String, boolean)
-     * @since 1.35
-     * @deprecated use {@link #validateFile(String, boolean)} instead
-     */
-    @Deprecated
-    public static String validateScript(String filePath, String scriptName) {
-        if (!StringUtils.hasText(filePath)) {
-            return NbBundle.getMessage(FileUtils.class, "MSG_NoScript", scriptName);
-        }
-
-        File file = new File(filePath);
-        if (!file.isAbsolute()) {
-            return NbBundle.getMessage(FileUtils.class, "MSG_ScriptNotAbsolutePath", scriptName);
-        }
-        if (!file.isFile()) {
-            return NbBundle.getMessage(FileUtils.class, "MSG_ScriptNotFile", scriptName);
-        }
-        if (!file.canRead()) {
-            return NbBundle.getMessage(FileUtils.class, "MSG_ScriptCannotRead", scriptName);
-        }
-        return null;
-    }
-
-    /**
      * Validate a file path and return {@code null} if it is valid, otherwise an error.
      * <p>
      * This method simply calls {@link #validateFile(String, String, boolean)} with "File"
@@ -266,7 +226,6 @@ public final class FileUtils {
      * @param writable {@code true} if the file must be writable, {@code false} otherwise
      * @return {@code null} if it is valid, otherwise an error
      * @see #validateFile(String, String, boolean)
-     * @since 1.53
      */
     @NbBundle.Messages("FileUtils.validateFile.file=File")
     public static String validateFile(String filePath, boolean writable) {
@@ -283,7 +242,6 @@ public final class FileUtils {
      * @param writable {@code true} if the file must be writable, {@code false} otherwise
      * @return {@code null} if it is valid, otherwise an error
      * @see #validateDirectory(String, String, boolean)
-     * @since 1.64
      */
     @NbBundle.Messages({
         "# {0} - source",
@@ -318,25 +276,6 @@ public final class FileUtils {
     /**
      * Validate a directory path and return {@code null} if it is valid, otherwise an error.
      * <p>
-     * A valid directory means that the <tt>dirPath</tt> represents an existing, readable,
-     * writable directory with absolute file path.
-     * <p>
-     * <b>This method will be removed after 7.1!</b>
-     * @param dirPath a file path to validate
-     * @return {@code null} if it is valid, otherwise an error
-     * @see #validateScript(String, String)
-     * @see #isDirectoryWritable(File)
-     * @since 1.35
-     * @deprecated use {@link #validateDirectory(String, boolean)} instead
-     */
-    @Deprecated
-    public static String validateDirectory(String dirPath) {
-        return validateDirectory(dirPath, true);
-    }
-
-    /**
-     * Validate a directory path and return {@code null} if it is valid, otherwise an error.
-     * <p>
      * This method simply calls {@link #validateDirectory(String, String, boolean)} with "Directory"
      * (localized) as a {@code source}.
      * @param dirPath a file path to validate
@@ -344,7 +283,6 @@ public final class FileUtils {
      * @return {@code null} if it is valid, otherwise an error
      * @see #validateDirectory(String, String, boolean)
      * @see #isDirectoryWritable(File)
-     * @since 1.53
      */
     @NbBundle.Messages("FileUtils.validateDirectory.directory=Directory")
     public static String validateDirectory(String dirPath, boolean writable) {
@@ -361,7 +299,6 @@ public final class FileUtils {
      * @param writable {@code true} if the directory must be writable, {@code false} otherwise
      * @return {@code null} if it is valid, otherwise an error
      * @see #isDirectoryWritable(File)
-     * @since 1.64
      */
     @NbBundle.Messages({
         "# {0} - source",
@@ -398,7 +335,6 @@ public final class FileUtils {
      * Handles correctly 'feature' of Windows (read-only flag, "Program Files" directory on Windows Vista).
      * @param directory a directory to check
      * @return <code>true</code> if directory is writable
-     * @since 1.35
      */
     public static boolean isDirectoryWritable(File directory) {
         if (!directory.isDirectory()) {
@@ -439,7 +375,6 @@ public final class FileUtils {
      * and correct result is returned.
      * @param directory file to be checked, cannot be {@code null}
      * @return {@code true} if the file is a folder and a symlink, {@code false} otherwise
-     * @since 1.46
      */
     public static boolean isDirectoryLink(File directory) {
         Parameters.notNull("directory", directory); // NOI18N
@@ -466,7 +401,6 @@ public final class FileUtils {
      * @param targetDirectory target directory
      * @param zipEntryFilter {@link ZipEntryFilter}, can be {@code null} (in such case, all entries are accepted with their original names)
      * @throws IOException if any error occurs
-     * @since 1.53
      */
     public static void unzip(String zipPath, File targetDirectory, ZipEntryFilter zipEntryFilter) throws IOException {
         Parameters.notEmpty("zipPath", zipPath); // NOI18N
@@ -525,7 +459,6 @@ public final class FileUtils {
      * <p>
      * Instances of this interface may be passed to the {@link #unzip(String, File, ZipEntryFilter)}code> method.
      * @see #unzip(String, File, ZipEntryFilter)
-     * @since 1.53
      */
     public interface ZipEntryFilter {
 

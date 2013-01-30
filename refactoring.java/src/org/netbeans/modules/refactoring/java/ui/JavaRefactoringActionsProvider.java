@@ -166,7 +166,7 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
     @Override
     public void doIntroduceLocalExtension(Lookup lookup) {
         Runnable task = ContextAnalyzer.createTask(lookup, IntroduceLocalExtensionUI.factory());
-        ScanDialog.runWhenScanFinished(task, RefactoringActionsProvider.getActionName(JavaRefactoringActionsFactory.encapsulateFieldsAction()));
+        ScanDialog.runWhenScanFinished(task, RefactoringActionsProvider.getActionName(JavaRefactoringActionsFactory.introduceLocalExtensionAction()));
     }
     
     @Override

@@ -34,10 +34,11 @@ import java.io.IOException;
 import org.netbeans.feedreader.Feed;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataFolder;
+import org.openide.loaders.InstanceDataObject;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 
 /** Getting the children of the root node */
 public class RssFolderChildren extends FilterNode.Children {
@@ -48,10 +49,11 @@ public class RssFolderChildren extends FilterNode.Children {
 
     @Override
     protected Node[] createNodes(Node n) {
-        if (n.getLookup().lookup(DataFolder.class) != null) {
+        FileObject fo = n.getLookup().lookup(FileObject.class);
+        if (fo != null && fo.isFolder()) {
             return new Node[]{new RssNode(n)};
         } else {
-            Feed feed = getFeed(n);
+            Feed feed = getFeed(fo.getLookup());
             if (feed != null) {
                 try {
                     return new Node[]{new OneFeedNode(n, feed.getSyndFeed())};
@@ -65,11 +67,11 @@ public class RssFolderChildren extends FilterNode.Children {
     }
 
     /** Looking up a feed */
-    private static Feed getFeed(Node node) {
-        InstanceCookie ck = node.getLookup().lookup(InstanceCookie.class);
+    private static Feed getFeed(Lookup lkp) {
+        InstanceCookie ck = lkp.lookup(InstanceDataObject.class);
         if (ck == null) {
             throw new IllegalStateException("Bogus file in feeds folder: " +
-                    node.getLookup().lookup(FileObject.class));
+                     lkp.lookup(FileObject.class));
         }
         try {
             return (Feed) ck.instanceCreate();

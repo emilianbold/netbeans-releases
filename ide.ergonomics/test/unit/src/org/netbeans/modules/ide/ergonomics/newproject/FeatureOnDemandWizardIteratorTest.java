@@ -44,12 +44,17 @@ package org.netbeans.modules.ide.ergonomics.newproject;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.EventQueue;
+import java.net.URL;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.RandomlyFails;
+import org.netbeans.modules.ide.ergonomics.fod.FeatureInfo;
+import org.netbeans.modules.ide.ergonomics.fod.FeatureManager;
+import org.netbeans.modules.ide.ergonomics.fod.FoDLayersProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 
 public class FeatureOnDemandWizardIteratorTest extends NbTestCase {
     public FeatureOnDemandWizardIteratorTest(String s) {
@@ -60,12 +65,22 @@ public class FeatureOnDemandWizardIteratorTest extends NbTestCase {
     protected int timeOut() {
         return 10000;
     }
+
+    @Override
+    protected void setUp() throws Exception {
+        URL fakeLayer = FeatureOnDemandWizardIteratorTest.class.getResource("smpl.xml");
+        URL fakeProps = FeatureOnDemandWizardIteratorTest.class.getResource("smpl.properties");
+        FeatureInfo info = FeatureInfo.create("fake", fakeLayer, fakeProps);
+        Lookup lkp = Lookups.singleton(info);
+        FeatureManager.assignFeatureTypesLookup(lkp);
+        FoDLayersProvider.getInstance().refreshForce();
+    }
     
-    @RandomlyFails  
     public void testIteratorCreatesUI() throws Exception {
         assertFalse("No EDT", EventQueue.isDispatchThread());
         
-        FileObject fo = FileUtil.getConfigRoot().createData("smpl.tmp");
+        FileObject fo = FileUtil.getConfigFile("smpl.tmp");
+        assertNotNull("layer file found", fo);
         final FeatureOnDemandWizardIterator it = new FeatureOnDemandWizardIterator(fo);
         fo.setAttribute("instantiatingIterator", it);
         

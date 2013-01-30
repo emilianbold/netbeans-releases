@@ -900,7 +900,7 @@ public final class LayoutInterval implements LayoutConstants {
     /**
      * @return whether given interval is allowed to resize (not defined as fixed)
      */
-    static boolean canResize(LayoutInterval interval) {
+    public static boolean canResize(LayoutInterval interval) {
         // [don't care about shrinking, assuming min possibly not defined - is it ok?]
         int max = interval.getMaximumSize();
         int pref = interval.getPreferredSize();
@@ -923,7 +923,7 @@ public final class LayoutInterval implements LayoutConstants {
      * space by its parent).
      * @return whether given interval would resize if given opportunity
      */
-    static boolean wantResize(LayoutInterval interval) {
+    public static boolean wantResize(LayoutInterval interval) {
         return canResize(interval)
                && (!interval.isGroup() || contentWantResize(interval));
     }

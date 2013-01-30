@@ -145,6 +145,7 @@ public class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectio
     private String currentProfileId = HintsSettings.getCurrentProfileId();
     private JButton editScript;
     private Preferences overlayPreferences;
+    private boolean inOptionsDialog;
     
     HintsPanelLogic() {
         defModel.addElement(NbBundle.getMessage(HintsPanel.class, "CTL_AsError")); //NOI18N
@@ -158,7 +159,8 @@ public class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectio
     
     void connect( final JTree errorTree, DefaultTreeModel errorTreeModel, JLabel severityLabel, JComboBox severityComboBox,
                   JCheckBox tasklistCheckBox, JPanel customizerPanel,
-                  JEditorPane descriptionTextArea, final JComboBox configCombo, JButton editScript) {
+                  JEditorPane descriptionTextArea, final JComboBox configCombo, JButton editScript,
+                  boolean inOptionsDialog) {
         
         this.errorTree = errorTree;
         this.errorTreeModel = errorTreeModel;
@@ -169,6 +171,7 @@ public class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectio
         this.descriptionTextArea = descriptionTextArea;        
         this.configCombo = configCombo;
         this.editScript = editScript;
+        this.inOptionsDialog = inOptionsDialog;
         
         
         if (configCombo.getSelectedItem() !=null) {
@@ -270,7 +273,7 @@ public class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectio
             Object o = ch.getUserObject();
             if ( o instanceof HintMetadata ) {
                 HintMetadata hint = (HintMetadata)o;
-                if ( HintsSettings.isEnabled(hint, getCurrentPrefernces(hint.id)) ) {
+                if (isEnabled(hint)) {
                     hasEnabled = true;
                 } else {
                     hasDisabled = true;
@@ -319,7 +322,7 @@ public class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectio
 
     @Override
     public void keyPressed(KeyEvent e) {
-        if (e.getKeyCode() == KeyEvent.VK_SPACE || e.getKeyCode() == KeyEvent.VK_ENTER ) {
+        if (e.getKeyCode() == KeyEvent.VK_SPACE) {
 
             if ( e.getSource() instanceof JTree ) {
                 JTree tree = (JTree) e.getSource();
@@ -492,7 +495,7 @@ public class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectio
 
         if ( o instanceof HintMetadata ) {
             HintMetadata hint = (HintMetadata)o;
-            boolean value = HintsSettings.isEnabled(hint,getCurrentPrefernces(hint.id));
+            boolean value = isEnabled(hint);
             Preferences mn = getPreferences4Modification(hint.id);
             HintsSettings.setEnabled(mn, !value);
             model.nodeChanged(node);
@@ -506,7 +509,7 @@ public class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectio
                 Object cho = ch.getUserObject();
                 if ( cho instanceof HintMetadata ) {
                     HintMetadata hint = (HintMetadata)cho;
-                    boolean cv = HintsSettings.isEnabled(hint,getCurrentPrefernces(hint.id));
+                    boolean cv = isEnabled(hint);
                     if ( cv != value ) {                    
                         Preferences mn = getPreferences4Modification(hint.id);
                         HintsSettings.setEnabled(mn, value);
@@ -553,6 +556,10 @@ public class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectio
         }
     }
 
+    public boolean isEnabled(HintMetadata hint) {
+        return HintsSettings.isEnabledWithDefault(getCurrentPrefernces(hint.id), inOptionsDialog && hint.enabled);
+    }
+    
     public static final class HintCategory {
         private  static final String HINTS_FOLDER = "org-netbeans-modules-java-hints/rules/hints/";  // NOI18N
         public static final String CUSTOM_CATEGORY ="custom";
@@ -572,11 +579,12 @@ public class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectio
     // Inner classes -----------------------------------------------------------
            
     private static class ModifiedPreferences extends AbstractPreferences {
+        private static final String MODIFIED_HINT_SETTINGS_MARKER = "MODIFIED_HINT_SETTINGS";
         
         private Map<String,Object> map = new HashMap<String, Object>();
 
         public ModifiedPreferences( Preferences node ) {
-            super(null, ""); // NOI18N
+            super(FAKE_ROOT, MODIFIED_HINT_SETTINGS_MARKER); // NOI18N
             try {                
                 for (java.lang.String key : node.keys()) {
                     put(key, node.get(key, null));
@@ -651,5 +659,35 @@ public class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectio
 	    return map.isEmpty();
 	}
     }
+    
+    private static final AbstractPreferences FAKE_ROOT = new AbstractPreferences(null, "") {
+        @Override protected void putSpi(String key, String value) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+        @Override protected String getSpi(String key) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+        @Override protected void removeSpi(String key) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+        @Override protected void removeNodeSpi() throws BackingStoreException {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+        @Override protected String[] keysSpi() throws BackingStoreException {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+        @Override protected String[] childrenNamesSpi() throws BackingStoreException {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+        @Override protected AbstractPreferences childSpi(String name) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+        @Override protected void syncSpi() throws BackingStoreException {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+        @Override protected void flushSpi() throws BackingStoreException {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+    };
 
 }

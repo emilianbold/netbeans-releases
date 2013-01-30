@@ -55,6 +55,6 @@ made subject to such option by the copyright holder.
         <resource>jar:nbinst://org.netbeans.modules.servletjspapi/modules/ext/servlet3.0-jsp2.2-api.jar!/</resource>
         <resource>jar:nbinst://org.netbeans.modules.web.jspparser/modules/ext/glassfish-jspparser-3.0.jar!/</resource>
         <resource>jar:nbinst://org.netbeans.modules.web.jstl11/modules/ext/standard.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.modules.web.jsf20/modules/ext/jsf-2_1/jsf-impl.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.web.jsf20/modules/ext/jsf-2_1/javax.faces.jar!/</resource>
     </volume>
 </library>

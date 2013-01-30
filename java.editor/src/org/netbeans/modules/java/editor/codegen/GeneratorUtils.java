@@ -44,13 +44,16 @@
 package org.netbeans.modules.java.editor.codegen;
 
 import com.sun.source.tree.AssignmentTree;
+import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
+import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 import com.sun.source.util.Trees;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -58,11 +61,13 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -81,9 +86,9 @@ import javax.swing.JComponent;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 
-import com.sun.source.util.SourcePositions;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.source.CodeStyle;
+import org.netbeans.api.java.source.Comment;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.api.java.source.GeneratorUtilities;
@@ -151,10 +156,10 @@ public class GeneratorUtils {
                     ERR.log(ErrorManager.INFORMATIONAL, "ee=" + ee);
                     ERR.log(ErrorManager.INFORMATIONAL, "thisElement = " + thisElement);
                     ERR.log(ErrorManager.INFORMATIONAL, "classes.subList(0, thisElement + 1)=" + classes.subList(0, thisElement + 1));
-                    ERR.log(ErrorManager.INFORMATIONAL, "isOverriden(info, ee, classes.subList(0, thisElement + 1))=" + isOverriden(info, ee, classes.subList(0, thisElement + 1)));
+                    ERR.log(ErrorManager.INFORMATIONAL, "isOverridden(info, ee, classes.subList(0, thisElement + 1))=" + isOverridden(info, ee, classes.subList(0, thisElement + 1)));
                 }
                 
-                if (!isOverriden(info, ee, classes.subList(0, thisElement + 1))) {
+                if (!isOverridden(info, ee, classes.subList(0, thisElement + 1))) {
                     overridable.add(ee);
                 }
             }
@@ -230,12 +235,12 @@ public class GeneratorUtils {
         }
     }
 
-    public static void generateAbstractMethodImplementation(WorkingCopy wc, TreePath path, ExecutableElement element, int index) {
+    public static void generateAbstractMethodImplementation(WorkingCopy wc, TreePath path, ExecutableElement element, int offset) {
         assert TreeUtilities.CLASS_TREE_KINDS.contains(path.getLeaf().getKind());
         TypeElement te = (TypeElement)wc.getTrees().getElement(path);
         if (te != null) {
-            ClassTree decl = wc.getTreeMaker().insertClassMember((ClassTree)path.getLeaf(), index, GeneratorUtilities.get(wc).createAbstractMethodImplementation(te, element));
-            wc.rewrite(path.getLeaf(), decl);
+            ClassTree clazz = (ClassTree)path.getLeaf();
+            wc.rewrite(clazz, insertClassMember(wc, clazz, GeneratorUtilities.get(wc).createAbstractMethodImplementation(te, element), offset));
         }
     }
     
@@ -248,12 +253,12 @@ public class GeneratorUtils {
         }
     }
     
-    public static void generateMethodOverride(WorkingCopy wc, TreePath path, ExecutableElement element, int index) {
+    public static void generateMethodOverride(WorkingCopy wc, TreePath path, ExecutableElement element, int offset) {
         assert TreeUtilities.CLASS_TREE_KINDS.contains(path.getLeaf().getKind());
         TypeElement te = (TypeElement)wc.getTrees().getElement(path);
         if (te != null) {
-            ClassTree decl = wc.getTreeMaker().insertClassMember((ClassTree)path.getLeaf(), index, GeneratorUtilities.get(wc).createOverridingMethod(te, element));
-            wc.rewrite(path.getLeaf(), decl);
+            ClassTree clazz = (ClassTree)path.getLeaf();
+            wc.rewrite(clazz, insertClassMember(wc, clazz, GeneratorUtilities.get(wc).createOverridingMethod(te, element), offset));
         }
     }
 
@@ -331,6 +336,8 @@ public class GeneratorUtils {
     }
     
     public static ClassTree insertClassMembers(WorkingCopy wc, ClassTree clazz, List<? extends Tree> members, int offset) throws IllegalStateException {
+        if (members.isEmpty())
+            return clazz;
         if (offset < 0 || getCodeStyle(wc).getClassMemberInsertionPoint() != CodeStyle.InsertionPoint.CARET_LOCATION)
             return GeneratorUtilities.get(wc).insertClassMembers(clazz, members);
         int index = 0;
@@ -342,17 +349,28 @@ public class GeneratorUtils {
                 gdoc = (GuardedDocument)doc;
         } catch (IOException ioe) {}
         Tree lastMember = null;
+        Tree nextMember = null;
         for (Tree tree : clazz.getMembers()) {
             if (offset <= sp.getStartPosition(wc.getCompilationUnit(), tree)) {
-                if (gdoc == null)
+                if (gdoc == null) {
+                    nextMember = tree;
                     break;
+                }
                 int pos = (int)(lastMember != null ? sp.getEndPosition(wc.getCompilationUnit(), lastMember) : sp.getStartPosition(wc.getCompilationUnit(), clazz));
                 pos = gdoc.getGuardedBlockChain().adjustToBlockEnd(pos);
-                if (pos <= sp.getStartPosition(wc.getCompilationUnit(), tree))
+                if (pos <= sp.getStartPosition(wc.getCompilationUnit(), tree)) {
+                    nextMember = tree;
                     break;
+                }
             }
             index++;
             lastMember = tree;
+        }
+        if (lastMember != null) {
+            moveCommentsBeforeOffset(wc, lastMember, false, members.get(0), offset);
+        }
+        if (nextMember != null) {
+            moveCommentsBeforeOffset(wc, nextMember, true, members.get(0), offset);
         }
         TreeMaker tm = wc.getTreeMaker();
         for (int i = members.size() - 1; i >= 0; i--) {
@@ -361,6 +379,64 @@ public class GeneratorUtils {
         return clazz;
     }
     
+    public static ClassTree insertClassMember(WorkingCopy wc, ClassTree clazz, Tree member, int offset) throws IllegalStateException {
+        int idx = 0;
+        Tree prev = null;
+        Tree next = null;
+        for (Tree tree : clazz.getMembers()) {
+            if (wc.getTrees().getSourcePositions().getStartPosition(wc.getCompilationUnit(), tree) < offset) {
+                prev = tree;
+                idx++;
+            } else {
+                next = tree;
+                break;
+            }
+        }
+        if (prev != null) {
+            moveCommentsBeforeOffset(wc, prev, false, member, offset);
+        }
+        if (next != null) {
+            moveCommentsBeforeOffset(wc, next, true, member, offset);
+        }
+        return wc.getTreeMaker().insertClassMember(clazz, idx, member);
+    }
+    
+    private static void moveCommentsBeforeOffset(WorkingCopy wc, Tree from, boolean next, Tree to, int offset) {
+        List<Comment> toMove = new LinkedList<Comment>();
+        int idx = 0;
+        for (Comment comment : wc.getTreeUtilities().getComments(from, next)) {
+            if (comment.endPos() > offset)
+                break;
+            toMove.add(comment);
+            idx++;
+        }
+        if (toMove.size() > 0) {
+            TreeMaker tm = wc.getTreeMaker();
+            Tree tree = from;
+            switch (from.getKind()) {
+                case METHOD:
+                    tree = tm.setLabel(from, ((MethodTree)from).getName());
+                    break;
+                case VARIABLE:
+                    tree = tm.setLabel(from, ((VariableTree)from).getName());
+                    break;
+                case BLOCK:
+                    tree = tm.Block(((BlockTree)from).getStatements(), ((BlockTree)from).isStatic());
+                    GeneratorUtilities gu = GeneratorUtilities.get(wc);
+                    gu.copyComments(from, tree, true);
+                    gu.copyComments(from, tree, false);
+                    break;
+            }
+            for (int i = idx - 1; i >= 0; i--) {
+                tm.removeComment(tree, i, next);
+            }
+            wc.rewrite(from, tree);
+            for (Comment comment : toMove) {
+                tm.addComment(to, comment, true);
+            }
+        }
+    }
+
     private static CodeStyle getCodeStyle(CompilationInfo info) {
         if (info != null) {
             try {
@@ -465,9 +541,9 @@ public class GeneratorUtils {
         return result;
     }
     
-    private static boolean isOverriden(CompilationInfo info, ExecutableElement methodBase, List<TypeElement> classes) {
+    private static boolean isOverridden(CompilationInfo info, ExecutableElement methodBase, List<TypeElement> classes) {
         if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
-            ERR.log(ErrorManager.INFORMATIONAL, "isOverriden(" + info + ", " + methodBase + ", " + classes + ")");
+            ERR.log(ErrorManager.INFORMATIONAL, "isOverridden(" + info + ", " + methodBase + ", " + classes + ")");
         }
         
         for (TypeElement impl : classes) {

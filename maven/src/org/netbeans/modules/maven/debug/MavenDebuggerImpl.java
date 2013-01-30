@@ -59,6 +59,7 @@ import org.openide.windows.InputOutput;
  */
 @ProjectServiceProvider(service=MavenDebugger.class, projectType="org-netbeans-modules-maven")
 public class MavenDebuggerImpl implements MavenDebugger {
+    private final RequestProcessor RP = new RequestProcessor(MavenDebuggerImpl.class);
     private final Project nbproject;
     
     /** Creates a new instance of MavenDebuggerImpl */
@@ -85,14 +86,14 @@ public class MavenDebuggerImpl implements MavenDebugger {
         properties.put("baseDir", FileUtil.toFile(nbproject.getProjectDirectory())); // NOI18N
 
         synchronized(lock) {
-            RequestProcessor.getDefault().post(new Runnable() {
+            RP.post(new Runnable() {
                 @Override
                 public void run() {
                     synchronized(lock) {
                         try {
                             // VirtualMachineManagerImpl can be initialized
                             // here, so needs to be inside RP thread.
-                            if (transport.equals("dt_socket")) //NOI18N
+                            if (transport.equals("dt_socket")) {//NOI18N
                                 try {
                                     JPDADebugger.attach(
                                             host,
@@ -103,11 +104,14 @@ public class MavenDebuggerImpl implements MavenDebugger {
                                     throw new Exception(
                                             "address attribute must specify port " + //NOI18N
                                             "number for dt_socket connection"); //NOI18N
-                                } else
+                                }
+                            }
+                            else {
                                     JPDADebugger.attach(
                                             address,
                                             new Object[] {properties}
                                     );
+                            }
                         } catch (Throwable e) {
                             lock[0] = e;
                         } finally {

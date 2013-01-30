@@ -83,7 +83,7 @@ import org.openide.util.Parameters;
  *
  * @author tomslot
  */
-public class CodeUtils {
+public final class CodeUtils {
     public static final String FUNCTION_TYPE_PREFIX = "@fn:";
     public static final String METHOD_TYPE_PREFIX = "@mtd:";
     public static final String STATIC_METHOD_TYPE_PREFIX = "@static.mtd:";
@@ -96,15 +96,15 @@ public class CodeUtils {
     public static FileObject getFileObject(Document doc) {
         Object sdp = doc.getProperty(Document.StreamDescriptionProperty);
         if (sdp instanceof FileObject) {
-            return (FileObject)sdp;
+            return (FileObject) sdp;
         }
         if (sdp instanceof DataObject) {
-            return ((DataObject)sdp).getPrimaryFile();
+            return ((DataObject) sdp).getPrimaryFile();
         }
         return null;
     }
 
-    public static  boolean isPhp_52(FileObject file) {
+    public static boolean isPhp52(FileObject file) {
         Parameters.notNull("file", file);
         boolean result = false;
         PhpLanguageProperties forFileObject = PhpLanguageProperties.forFileObject(file);
@@ -114,7 +114,7 @@ public class CodeUtils {
         return result;
     }
 
-    public static  boolean isPhp_53(FileObject file) {
+    public static boolean isPhp53(FileObject file) {
         Parameters.notNull("file", file);
         boolean result = false;
         PhpLanguageProperties forFileObject = PhpLanguageProperties.forFileObject(file);
@@ -124,7 +124,7 @@ public class CodeUtils {
         return result;
     }
 
-    public static  boolean isPhp_54(FileObject file) {
+    public static boolean isPhp54(FileObject file) {
         Parameters.notNull("file", file);
         boolean result = false;
         PhpLanguageProperties forFileObject = PhpLanguageProperties.forFileObject(file);
@@ -134,19 +134,18 @@ public class CodeUtils {
         return result;
     }
 
-    //TODO: extracting name needs to be take into account namespaces
     @CheckForNull
     public static Identifier extractUnqualifiedIdentifier(Expression typeName) {
         Parameters.notNull("typeName", typeName);
         if (typeName instanceof Identifier) {
             return (Identifier) typeName;
         } else if (typeName instanceof NamespaceName) {
-            return extractUnqualifiedIdentifier((NamespaceName)typeName);
-        } else if (typeName instanceof Variable){
-            Variable v = (Variable)typeName;
+            return extractUnqualifiedIdentifier((NamespaceName) typeName);
+        } else if (typeName instanceof Variable) {
+            Variable v = (Variable) typeName;
             return extractUnqualifiedIdentifier(v.getName()); // #167863
         } else if (typeName instanceof FieldAccess) {
-            return extractUnqualifiedIdentifier(((FieldAccess)typeName).getField()); // #167863
+            return extractUnqualifiedIdentifier(((FieldAccess) typeName).getField()); // #167863
         }
         //TODO: php5.3 !!!
         //assert false : typeName.getClass(); //NOI18N
@@ -158,7 +157,7 @@ public class CodeUtils {
         if (typeName instanceof Identifier) {
             return ((Identifier) typeName).getName();
         } else if (typeName instanceof NamespaceName) {
-            return extractUnqualifiedName((NamespaceName)typeName);
+            return extractUnqualifiedName((NamespaceName) typeName);
         }
 
         //TODO: php5.3 !!!
@@ -171,7 +170,7 @@ public class CodeUtils {
         if (typeName instanceof Identifier) {
             return ((Identifier) typeName).getName();
         } else if (typeName instanceof NamespaceName) {
-            return extractQualifiedName((NamespaceName)typeName);
+            return extractQualifiedName((NamespaceName) typeName);
         }
         assert false : typeName.getClass(); //NOI18N
         return null;
@@ -208,7 +207,7 @@ public class CodeUtils {
 
     public static String extractQualifiedName(NamespaceName namespaceName) {
         Parameters.notNull("namespaceName", namespaceName);
-        String retval = ""; //NOI18N
+        String retval;
         StringBuilder sb = new StringBuilder();
         final List<Identifier> segments = namespaceName.getSegments();
         if (namespaceName.isGlobal()) {
@@ -223,13 +222,10 @@ public class CodeUtils {
         return retval.substring(0, retval.length() - NamespaceDeclarationInfo.NAMESPACE_SEPARATOR.length());
     }
 
-    public static Identifier extractUnqualifiedIdentifier(NamespaceName name) {
-        if (name instanceof NamespaceName) {
-            NamespaceName namespaceName = (NamespaceName) name;
-            final List<Identifier> segments = namespaceName.getSegments();
-            if (segments.size() >= 1) {
-                return segments.get(segments.size()-1);
-            }
+    public static Identifier extractUnqualifiedIdentifier(NamespaceName namespaceName) {
+        final List<Identifier> segments = namespaceName.getSegments();
+        if (segments.size() >= 1) {
+            return segments.get(segments.size() - 1);
         }
         //TODO: php5.3 !!!
         //assert false : "[php5.3] className Expression instead of Identifier"; //NOI18N
@@ -248,22 +244,21 @@ public class CodeUtils {
             }
         }
         if (name instanceof NamespaceName) {
-            return extractUnqualifiedName((NamespaceName)name);
+            return extractUnqualifiedName((NamespaceName) name);
         }
-        return (name instanceof Identifier) ? ((Identifier) name).getName() : "";//NOI18N
+        return (name instanceof Identifier) ? ((Identifier) name).getName() : ""; //NOI18N
     }
 
     public static String extractClassName(ClassDeclaration clsDeclaration) {
         return clsDeclaration.getName().getName();
     }
 
-    private static class VariableNameVisitor extends DefaultVisitor {
+    private static final class VariableNameVisitor extends DefaultVisitor {
 
         private String name = null;
         private boolean isDollared = false;
 
-        private VariableNameVisitor () {
-
+        private VariableNameVisitor() {
         }
 
         private static class SingletonHolder {
@@ -345,7 +340,7 @@ public class CodeUtils {
             String className = CodeUtils.extractUnqualifiedClassName(staticMethodInvocation);
             String methodName = extractFunctionName(staticMethodInvocation.getMethod());
 
-            if (className != null && methodName != null){
+            if (className != null && methodName != null) {
                 return STATIC_METHOD_TYPE_PREFIX + className + '.' + methodName;
             }
         } else if (rightSideExpression instanceof MethodInvocation) {
@@ -359,7 +354,7 @@ public class CodeUtils {
 
             String methodName = extractFunctionName(methodInvocation.getMethod());
 
-            if (varName != null && methodName != null){
+            if (varName != null && methodName != null) {
                 return METHOD_TYPE_PREFIX + varName + '.' + methodName;
             }
         }
@@ -367,24 +362,24 @@ public class CodeUtils {
         return null;
     }
 
-    public static String extractFunctionName(FunctionInvocation functionInvocation){
+    public static String extractFunctionName(FunctionInvocation functionInvocation) {
         return extractFunctionName(functionInvocation.getFunctionName());
     }
 
-    public static String extractFunctionName(FunctionDeclaration functionDeclaration){
+    public static String extractFunctionName(FunctionDeclaration functionDeclaration) {
         return functionDeclaration.getFunctionName().getName();
     }
 
-    public static String extractMethodName(MethodDeclaration methodDeclaration){
+    public static String extractMethodName(MethodDeclaration methodDeclaration) {
         return methodDeclaration.getFunction().getFunctionName().getName();
     }
 
-    public static String extractFunctionName(FunctionName functionName){
+    public static String extractFunctionName(FunctionName functionName) {
         if (functionName.getName() instanceof Identifier) {
             Identifier id = (Identifier) functionName.getName();
             return id.getName();
         } else if (functionName.getName() instanceof NamespaceName) {
-            return extractUnqualifiedName((NamespaceName)functionName.getName());
+            return extractUnqualifiedName((NamespaceName) functionName.getName());
         }
         if (functionName.getName() instanceof Variable) {
             Variable var = (Variable) functionName.getName();
@@ -409,7 +404,7 @@ public class CodeUtils {
             String returnValue = scalar.getStringValue();
             return Operator.MINUS.equals(operator) ? "-" + returnValue : returnValue; // NOI18N
         } else if (expr instanceof ArrayCreation) {
-            return "array()";//NOI18N
+            return "array()"; //NOI18N
         } else if (expr instanceof StaticConstantAccess) {
             StaticConstantAccess staticConstantAccess = (StaticConstantAccess) expr;
             Expression className = staticConstantAccess.getClassName();
@@ -427,7 +422,7 @@ public class CodeUtils {
                     sb.append(NamespaceDeclarationInfo.NAMESPACE_SEPARATOR);
                 }
 
-                for (Iterator<Identifier> iter = segments.iterator(); iter.hasNext(); ) {
+                for (Iterator<Identifier> iter = segments.iterator(); iter.hasNext();) {
                     Identifier namespaceSegment = iter.next();
                     sb.append(namespaceSegment.getName());
 
@@ -439,7 +434,7 @@ public class CodeUtils {
                 return sb.toString() + "::" + staticConstantAccess.getConstant().getName(); // NOI18N
             }
         }
-        return expr == null ? null : " ";//NOI18N
+        return expr == null ? null : " "; //NOI18N
     }
 
     public static String getParamDisplayName(FormalParameter param) {

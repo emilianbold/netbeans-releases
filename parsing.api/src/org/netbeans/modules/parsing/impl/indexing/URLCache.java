@@ -47,8 +47,10 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
-import java.util.WeakHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.openide.filesystems.FileObject;
@@ -62,6 +64,9 @@ import org.openide.util.Utilities;
  * @author Vita Stejskal
  */
 public final class URLCache {
+
+    private static final Logger LOG = Logger.getLogger(URLCache.class.getName());
+
     public static synchronized URLCache getInstance() {
         if (instance == null) {
             instance = new URLCache();
@@ -70,7 +75,9 @@ public final class URLCache {
     }
 
     @CheckForNull
-    public FileObject findFileObject(final @NonNull URL url) {
+    public FileObject findFileObject(
+            final @NonNull URL url,
+            final boolean validate) {
         URI uri = null;
         try {
             uri  = url.toURI();
@@ -83,17 +90,29 @@ public final class URLCache {
             if (ref != null) {
                 f = ref.get();
             }
-            if (f != null && f.isValid() && url.equals(f.toURL())) {
+            if (f != null && f.isValid() && (!validate || f.toURI().equals(uri))) {
+                LOG.log(
+                    Level.FINEST,
+                    "Found: {0} in cache for: {1}", //NOI18N
+                    new Object[]{
+                        f,
+                        url
+                    });
                 return f;
             }
         }
 
         f = URLMapper.findFileObject(url);
 
-        if (uri != null) {
-            if (f != null && f.isValid()) {
-                cache.put(uri, new CleanReference(f,uri));
-            }
+        if (uri != null && f != null && f.isValid()) {
+            LOG.log(
+               Level.FINEST,
+               "Caching: {0} for: {1}", //NOI18N
+               new Object[]{
+                   f,
+                   url
+               });
+            cache.put(uri, new CleanReference(f,uri));
         }
 
         return f;
@@ -101,7 +120,7 @@ public final class URLCache {
 
     private static URLCache instance = null;
     private final Map<URI, Reference<FileObject>> cache = Collections.synchronizedMap(
-            new WeakHashMap<URI, Reference<FileObject>>());
+            new HashMap<URI, Reference<FileObject>>());
 
     private URLCache() {
     }

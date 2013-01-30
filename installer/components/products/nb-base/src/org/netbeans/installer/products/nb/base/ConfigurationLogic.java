@@ -109,7 +109,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                     getString("CL.install.error.jdk.home"), // NOI18N
                     e);
         }
-
+        
         /////////////////////////////////////////////////////////////////////////////
         try {
             progress.setDetail(getString("CL.install.netbeans.clusters")); // NOI18N
@@ -530,6 +530,8 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             //JavaFX integration files
             filesList.add(new File (nbCluster, "config/JavaFX/Instances/javafx_sdk_autoregistered_instance"));
             filesList.add(new File (nbCluster, "config/JavaFX/Instances/.nbattrs"));
+            filesList.add(new File (nbCluster, "config/JavaFX/Instances"));
+            filesList.add(new File (nbCluster, "config/JavaFX"));
         } catch (IOException e) {
             LogManager.log(e);
         }

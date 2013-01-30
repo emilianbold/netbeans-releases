@@ -488,12 +488,23 @@ public class Subversion {
      * @throws IOException when an error occurrs
      */
     public static void openCheckoutWizard (final String url) throws MalformedURLException, IOException {
+        openCheckoutWizard(url, false);
+    }
+    
+    /**
+     * Opens standard checkout wizard
+     * @param url repository url to checkout
+     * @param waitFinished if true, blocks and waits for the task to finish
+     * @throws java.net.MalformedURLException in case the url is invalid
+     * @throws IOException when an error occurrs
+     */
+    public static File openCheckoutWizard (final String url, boolean waitFinished) throws MalformedURLException, IOException {
         addRecentUrl(url);
         if (!isClientAvailable(true)) {
             org.netbeans.modules.subversion.Subversion.LOG.log(Level.INFO, "Subversion client is unavailable");
             throw new IOException(CLIENT_UNAVAILABLE_ERROR_MESSAGE);
         }
-        CheckoutAction.perform();
+        return CheckoutAction.performCheckout(waitFinished);
     }
 
     /**

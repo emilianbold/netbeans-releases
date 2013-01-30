@@ -56,6 +56,9 @@ import javax.swing.JMenuItem;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.Timer;
 import javax.swing.text.Caret;
+import javax.swing.text.Document;
+import javax.swing.text.JTextComponent;
+import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.cnd.api.model.CsmChangeEvent;
 import org.netbeans.modules.cnd.api.model.CsmFile;
@@ -68,12 +71,10 @@ import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.qnavigator.navigator.CsmFileFilter.SortMode;
 import org.netbeans.modules.cnd.qnavigator.navigator.CsmFileModel.PreBuildModel;
 import org.netbeans.modules.cnd.utils.MIMENames;
-import org.openide.cookies.EditorCookie;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
-import org.openide.text.NbDocument;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.Presenter;
@@ -182,6 +183,9 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
             if (CsmModelAccessor.getModelState() != CsmModelState.ON) {
                 return;
             }
+            if (csmFile == null || !csmFile.isValid()) {
+                return;
+            }
             if (busyListener != null) {
                 busyListener.busyStart();
             }
@@ -265,16 +269,16 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
             }
         }
     }
-
+    
     private JEditorPane findCurrentJEditorPane() {
-        JEditorPane currentJEditorPane = null;
         if (cdo != null) {
-            EditorCookie ec = cdo.getLookup().lookup(EditorCookie.class);
-            if (ec != null) {
-                currentJEditorPane = NbDocument.findRecentEditorPane(ec);
+            JTextComponent comp = EditorRegistry.lastFocusedComponent();
+            DataObject obj = CsmUtilities.getDataObject(comp);
+            if (cdo.equals(obj) && comp instanceof JEditorPane) {
+                return (JEditorPane) comp;
             }
         }
-        return currentJEditorPane;
+        return null;
     }
 
     private void restartTimers() {
@@ -326,6 +330,9 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
 
     @Override
     public void projectLoaded(CsmProject project) {
+        if (!project.isValid()) {
+            return;
+        }
         CsmFileModel.logger.log(Level.FINE, "projectLoaded {0}", project); // NOI18N
         CsmFile file = getCsmFile();
         if( file != null && project.equals(file.getProject()) ) {

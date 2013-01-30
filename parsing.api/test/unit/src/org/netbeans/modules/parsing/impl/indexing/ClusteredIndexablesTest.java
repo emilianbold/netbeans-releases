@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.parsing.impl.indexing;
 
+import java.lang.reflect.Field;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -51,13 +52,19 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -86,24 +93,24 @@ public class ClusteredIndexablesTest {
 
     @Test
     public void testSimple() {
-        List<IndexableImpl> textPlains = Arrays.asList(new IndexableImpl [] {
-            new TestIndexable("foo/indexable1", "text/plain"),
-            new TestIndexable("foo/indexable2", "text/plain"),
-            new TestIndexable("foo/indexable3", "text/plain"),
+        List<Indexable> textPlains = Arrays.asList(new Indexable [] {
+            SPIAccessor.getInstance().create(new TestIndexable("foo/indexable1", "text/plain")),
+            SPIAccessor.getInstance().create(new TestIndexable("foo/indexable2", "text/plain")),
+            SPIAccessor.getInstance().create(new TestIndexable("foo/indexable3", "text/plain")),
         });
-        List<IndexableImpl> javas = Arrays.asList(new IndexableImpl [] {
-            new TestIndexable("java/indexable1", "text/x-java"),
-            new TestIndexable("java/indexable2", "text/x-java"),
+        List<Indexable> javas = Arrays.asList(new Indexable [] {
+            SPIAccessor.getInstance().create(new TestIndexable("java/indexable1", "text/x-java")),
+            SPIAccessor.getInstance().create(new TestIndexable("java/indexable2", "text/x-java")),
         });
-        List<IndexableImpl> xmls = Arrays.asList(new IndexableImpl [] {
-            new TestIndexable("xml/indexable1", "text/xml"),
-            new TestIndexable("xml/indexable2", "text/xml"),
-            new TestIndexable("xml/indexable3", "text/xml"),
-            new TestIndexable("xml/indexable4", "text/xml"),
-            new TestIndexable("xml/indexable5", "text/xml"),
+        List<Indexable> xmls = Arrays.asList(new Indexable [] {
+            SPIAccessor.getInstance().create(new TestIndexable("xml/indexable1", "text/xml")),
+            SPIAccessor.getInstance().create(new TestIndexable("xml/indexable2", "text/xml")),
+            SPIAccessor.getInstance().create(new TestIndexable("xml/indexable3", "text/xml")),
+            SPIAccessor.getInstance().create(new TestIndexable("xml/indexable4", "text/xml")),
+            SPIAccessor.getInstance().create(new TestIndexable("xml/indexable5", "text/xml")),
         });
 
-        List<IndexableImpl> indexables = new ArrayList<IndexableImpl>();
+        List<Indexable> indexables = new ArrayList<Indexable>();
         indexables.addAll(textPlains);
         indexables.addAll(javas);
         indexables.addAll(xmls);
@@ -128,11 +135,93 @@ public class ClusteredIndexablesTest {
         check("Wrong all indexables", indexables, allAgain);
     }
 
-    private void check(String message, Collection<IndexableImpl> indexableImpls, Collection<Indexable> indexables) {
+    @Test
+    public void testRaceIssue222383() throws Exception {
+        final ClusteredIndexables.AttachableDocumentIndexCache cache = ClusteredIndexables.createDocumentIndexCache();
+        final ClusteredIndexables indexables1 = new ClusteredIndexables(Collections.<Indexable>emptyList());
+        final ClusteredIndexables indexables2 = new ClusteredIndexables(Collections.<Indexable>emptyList());
+        final CountDownLatch indexing = new CountDownLatch(1);
+        final CountDownLatch changed = new CountDownLatch(1);
+        final AtomicReference<Throwable> res = new AtomicReference<Throwable>();
+        final Thread fastChangeThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    indexing.await();
+                } catch (InterruptedException ex) {
+                    res.set(ex);
+                    return;
+                }
+                try {
+                    cache.attach(ClusteredIndexables.INDEX, indexables2);
+                    cache.detach();
+                } catch (IllegalStateException e) {
+                    res.set(e);
+                } finally {
+                    changed.countDown();
+                }
+            }
+        });
+        fastChangeThread.start();
+        cache.attach(ClusteredIndexables.INDEX, indexables1);
+        indexing.countDown();
+        changed.await();
+        Assert.assertEquals(indexables1, getCacheField(cache, "indexIndexables"));  //NOI18N
+        cache.detach();
+        Assert.assertTrue(res.get() instanceof IllegalStateException);
+    }
+
+    @Test
+    public void testRaceIssue222383TransientUpdate() throws Exception {
+        final ClusteredIndexables.AttachableDocumentIndexCache cache = ClusteredIndexables.createDocumentIndexCache();
+        final ClusteredIndexables indexables1 = new ClusteredIndexables(Collections.<Indexable>emptyList());
+        final ClusteredIndexables indexables2 = new ClusteredIndexables(Collections.<Indexable>emptyList());
+        final CountDownLatch indexing = new CountDownLatch(1);
+        final CountDownLatch changed = new CountDownLatch(1);
+        final AtomicBoolean success = new AtomicBoolean();
+        final Thread fastChangeThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                TransientUpdateSupport.setTransientUpdate(true);
+                try {
+                    indexing.await();
+                    cache.attach(ClusteredIndexables.INDEX, indexables2);
+                    cache.detach();
+                    success.set(true);
+                } catch (InterruptedException ioe) {
+                    //Ignore
+                } finally {
+                    TransientUpdateSupport.setTransientUpdate(false);
+                    changed.countDown();
+                }
+            }
+        });
+        fastChangeThread.start();
+        cache.attach(ClusteredIndexables.INDEX, indexables1);
+        indexing.countDown();
+        changed.await();
+        Assert.assertEquals(indexables1, getCacheField(cache, "indexIndexables"));  //NOI18N
+        cache.detach();
+        Assert.assertTrue(success.get());
+    }
+
+    private Object getCacheField(
+       @NonNull final ClusteredIndexables.AttachableDocumentIndexCache cache,
+       @NonNull final String fieldName) throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException, ClassNotFoundException {
+        final Class<?> clz = Class.forName("org.netbeans.modules.parsing.impl.indexing.ClusteredIndexables$DocumentIndexCacheImpl");    //NOI18N
+        final Field f = clz.getDeclaredField(fieldName);
+        if (f == null) {
+            return null;
+        }
+        f.setAccessible(true);
+        return f.get(cache);
+    }
+
+    private void check(String message, Collection<Indexable> indexableImpls, Collection<Indexable> indexables) {
         Assert.assertEquals(message, indexableImpls.size(), indexables.size());
 
         Map<String, String> iiMap = new HashMap<String, String>();
-        for(IndexableImpl ii : indexableImpls) {
+        for(Indexable ii : indexableImpls) {
             iiMap.put(ii.getRelativePath(), ii.getMimeType());
         }
 

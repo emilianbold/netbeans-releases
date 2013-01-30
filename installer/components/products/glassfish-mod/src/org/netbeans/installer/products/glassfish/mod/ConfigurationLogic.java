@@ -567,40 +567,9 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         
         return SystemUtils.executeCommand(nbLocation, commands.toArray(new String[]{})).getErrorCode() == 0;
     }
-    private void removeGlassFishIntegration(File nbLocation, File gfLocation) throws IOException {
-        LogManager.log("... ide location is " + nbLocation);
-        FileUtils.deleteFile(new File (nbLocation, "nb/config/GlassFishEE6WC/Instances/glassfish_autoregistered_instance"));
-        FileUtils.deleteFile(new File (nbLocation, "nb/config/GlassFishEE6WC/Instances/.nbattrs"));
-        FileUtils.deleteFile(new File (nbLocation, "nb/config/GlassFishEE6/Instances/glassfish_autoregistered_instance"));
-        FileUtils.deleteFile(new File (nbLocation, "nb/config/GlassFishEE6/Instances/.nbattrs"));
-    }
 
-
-    public void uninstall(final Progress progress)
-            throws UninstallationException {
+    public void uninstall(final Progress progress) throws UninstallationException {
         File directory = getProduct().getInstallationLocation();
-
-        /////////////////////////////////////////////////////////////////////////////
-        try {
-            progress.setDetail(getString("CL.uninstall.ide.integration")); // NOI18N
-
-            final List<Product> ides =
-                    Registry.getInstance().getProducts("nb-base");
-            for (Product ide: ides) {
-                if (ide.getStatus() == Status.INSTALLED) {
-                    LogManager.log("... checking if " + ide.getDisplayName() + " is integrated with " + getProduct().getDisplayName() + " installed at " + directory);
-                    final File nbLocation = ide.getInstallationLocation();
-
-                    if (nbLocation != null) {
-                        removeGlassFishIntegration(nbLocation, directory);
-                    }
-                }
-            }
-        } catch (IOException e) {
-            throw new UninstallationException(
-                    getString("CL.uninstall.error.ide.integration"), // NOI18N
-                    e);
-        }
         
 /////////////////////////////////////////////////////////////////////////////
         try {

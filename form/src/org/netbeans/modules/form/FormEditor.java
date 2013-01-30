@@ -78,6 +78,7 @@ import org.netbeans.modules.form.project.ClassSource;
 import org.netbeans.modules.form.project.ClassPathUtils;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.WeakSet;
 
 /**
  * Form editor.
@@ -130,7 +131,11 @@ public class FormEditor {
     
     /** List of floating windows - must be closed when the form is closed. */
     private List<java.awt.Window> floatingWindows;
-    
+
+    /** Set of nodes for which a standalone Properties window was opened.
+     * The windows must be closed when the form is closed. */
+    private Set<FormNode> nodesWithPropertiesWindows;
+
     /** The DataObject of the form */
     private FormDataObject formDataObject;
     private PropertyChangeListener dataObjectListener;
@@ -505,14 +510,37 @@ public class FormEditor {
     }
 
     public void reportSavingErrors() { // TODO can get rid of this? (throw exc on failed saving)
-        reportErrors(false);
+        reportErrors(false, null);
     }
 
+    // TODO should not be needed, kept temporarily for compatibility
     public String reportLoadingErrors() {
-        return reportErrors(formLoaded);
+        DialogDescriptor dd = reportLoadingErrors(null);
+        Object message = dd != null ? dd.getMessage() : null;
+        return message instanceof String ? (String)message : null;
     }
 
-    private String reportErrors(boolean checkNonFatalLoadingErrors) {
+    /**
+     * Helper methods for reporting errors that happend during form loading.
+     * (1) If some fatal error happened (i.e. the form could not be loaded) then
+     * it is reported right away by this method in a modal dialog.
+     * (2) If only some non-fatal errors happened causing some components or
+     * properties not loaded, then a DialogDescriptor is created and returned to
+     * be used to report the errors at a suitable moment (i.e. after the loading
+     * sequence is completed so the GUI form becomes fully visible incl. broken
+     * components). In this case the parameter 'options' is used, representing
+     * how the user can proceed (e.g. view only, edit anyway, cancel opening).
+     * @return DialogDescriptor to use to report errors to the user, or null if
+     *         nothing needs to be reported
+     */
+    public DialogDescriptor reportLoadingErrors(Object[] options) {
+        // The options for DialogDescriptor must be provided upfront so the first
+        // option can be set as initial (default). This cannot be set later, only
+        // in constructor of DialogDescriptor.
+        return reportErrors(formLoaded, options);
+    }
+
+    private DialogDescriptor reportErrors(boolean checkNonFatalLoadingErrors, Object[] options) {
         if (!anyPersistenceError()) {
             return null; // no errors or warnings logged
         }
@@ -581,15 +609,20 @@ public class FormEditor {
             }
         }
 
-        resetPersistenceErrorLog();
-
+        DialogDescriptor dd = null;
         if (checkNonFatalLoadingErrors && dataLossError) {
             // the form was loaded with some non-fatal errors - some data
             // was not loaded - show a warning about possible data loss
-            return userErrorMsgs.append(FormUtils.getBundleString("MSG_FormLoadedWithErrors")).toString();  // NOI18N
-        } else {
-            return null;
+            userErrorMsgs.append(FormUtils.getBundleString("MSG_FormLoadedWithErrors"));
+            dd = FormUtils.createErrorDialogWithExceptions(
+                     FormUtils.getBundleString("CTL_FormLoadedWithErrors"), // NOI18N
+                     userErrorMsgs.toString(),
+                     DialogDescriptor.WARNING_MESSAGE,
+                     options,
+                     persistenceErrors.toArray(new Throwable[persistenceErrors.size()]));
         }
+        resetPersistenceErrorLog();
+        return dd;
     }    
     
     /**
@@ -619,11 +652,17 @@ public class FormEditor {
     }
     
     /**
-     * Sets the FormEditor in Read-Only mode
+     * Sets the FormEditor to read-only mode.
      */
     public void setFormReadOnly() {
         formModel.setReadOnly(true);
-        getFormDesigner().getHandleLayer().setViewOnly(true);                                                
+        FormDesigner designer = getFormDesigner();
+        if (designer != null) {
+            HandleLayer handleLayer = designer.getHandleLayer();
+            if (handleLayer != null) {
+                handleLayer.setViewOnly(true);
+            }
+        }
         detachFormListener();
     }
 
@@ -712,6 +751,13 @@ public class FormEditor {
                     }
                 }
                 floatingWindows = null;
+            }
+
+            // close standalone properties window invoked explicitly on selected nodes via the Properties action
+            if (nodesWithPropertiesWindows != null) {
+                for (FormNode n : nodesWithPropertiesWindows) {
+                    n.fireNodeDestroyedHelper();
+                }
             }
         }
         ClassPathUtils.releaseFormClassLoader(formDataObject.getPrimaryFile());
@@ -1183,6 +1229,13 @@ public class FormEditor {
     public void unregisterFloatingWindow(java.awt.Window window) {
         if (floatingWindows != null)
             floatingWindows.remove(window);
+    }
+
+    void registerNodeWithPropertiesWindow(FormNode node) {
+        if (nodesWithPropertiesWindows == null) {
+            nodesWithPropertiesWindows = new WeakSet<FormNode>();
+        }
+        nodesWithPropertiesWindows.add(node);
     }
 
     public void registerDefaultComponentAction(Action action) {

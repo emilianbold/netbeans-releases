@@ -69,7 +69,7 @@ public final class IssueImpl<I> {
         this.repo = repo;
     }
 
-    public Issue getIssue() {
+    public synchronized Issue getIssue() {
         if(issue == null) {
             issue = APIAccessor.IMPL.createIssue(this);
         }

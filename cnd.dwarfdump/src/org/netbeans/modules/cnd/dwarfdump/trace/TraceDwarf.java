@@ -45,10 +45,10 @@ package org.netbeans.modules.cnd.dwarfdump.trace;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.List;
 import java.util.logging.Level;
-import org.netbeans.modules.cnd.dwarfdump.CompilationUnit;
+import org.netbeans.modules.cnd.dwarfdump.CompilationUnitInterface;
 import org.netbeans.modules.cnd.dwarfdump.Dwarf;
+import org.netbeans.modules.cnd.dwarfdump.Dwarf.CompilationUnitIterator;
 import org.netbeans.modules.cnd.dwarfdump.exception.WrongFileFormatException;
 
 
@@ -70,11 +70,12 @@ public class TraceDwarf {
         try {
             Dwarf.LOG.log(Level.FINE, "TraceDwarf.");  // NOI18N
             dump = new Dwarf(objFileName);
-            List<CompilationUnit> units = dump.getCompilationUnits();
+            CompilationUnitIterator units = dump.iteratorCompilationUnits();
             int idx = 0;
-            if (units != null && units.size() > 0) {
-                Dwarf.LOG.log(Level.FINE, "\n**** Done. {0} compilation units were found:", units.size()); // NOI18N
-                for (CompilationUnit compilationUnit : units) {
+            if (units != null && units.hasNext()) {
+                Dwarf.LOG.log(Level.FINE, "\n**** Done. Compilation units were found"); // NOI18N
+                while(units.hasNext()) {
+                    CompilationUnitInterface compilationUnit = units.next();
                     Dwarf.LOG.log(Level.FINE, "{0}: {1}", new Object[]{++idx, compilationUnit.getSourceFileName()});// NOI18N
                 }
 

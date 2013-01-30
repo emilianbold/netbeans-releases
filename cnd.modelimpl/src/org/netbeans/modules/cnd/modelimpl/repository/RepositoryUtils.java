@@ -43,19 +43,11 @@
  */
 package org.netbeans.modules.cnd.modelimpl.repository;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.cnd.api.model.CsmInstantiation;
-import org.netbeans.modules.cnd.api.model.CsmNamespace;
-import org.netbeans.modules.cnd.api.model.CsmObject;
-import org.netbeans.modules.cnd.api.model.CsmProject;
-import org.netbeans.modules.cnd.api.model.CsmUID;
+import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.debug.DebugUtils;
 import org.netbeans.modules.cnd.modelimpl.csm.core.CsmIdentifiable;
@@ -68,7 +60,6 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDProviderIml;
 import org.netbeans.modules.cnd.repository.api.Repository;
 import org.netbeans.modules.cnd.repository.api.RepositoryAccessor;
 import org.netbeans.modules.cnd.repository.api.RepositoryException;
-import org.netbeans.modules.cnd.repository.api.RepositoryTranslation;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.spi.RepositoryListener;
@@ -84,11 +75,13 @@ public final class RepositoryUtils {
     private static final boolean TRACE_ARGS = CndUtils.getBoolean("cnd.repository.trace.args", false); //NOI18N;
     private static final boolean TRACE_REPOSITORY_ACCESS = TRACE_ARGS || DebugUtils.getBoolean("cnd.modelimpl.trace.repository", false);
     private static final Repository repository = RepositoryAccessor.getRepository();
-    private static final RepositoryTranslation translator = RepositoryAccessor.getTranslator();
     /**
      * the version of the persistency mechanism
      */
-    private static int CURRENT_VERSION_OF_PERSISTENCY = 127;
+    private static int CURRENT_VERSION_OF_PERSISTENCY = 142;
+
+//    /** temporary flag, to be removed as soon as relocatable repository is achieved */
+//    public static final boolean RELOCATABLE = true;
 
     /** Creates a new instance of RepositoryUtils */
     private RepositoryUtils() {
@@ -296,52 +289,52 @@ public final class RepositoryUtils {
         repository.debugClear();
     }
 
-    public static<T> void closeUnit(CsmUID<T> uid, Set<CharSequence> requiredUnits, boolean cleanRepository) {
+    public static<T> void closeUnit(CsmUID<T> uid, Set<Integer> requiredUnits, boolean cleanRepository) {
         closeUnit(UIDtoKey(uid), requiredUnits, cleanRepository);
     }
 
-    public static void closeUnit(CharSequence unitName, Set<CharSequence> requiredUnits, boolean cleanRepository) {
-        RepositoryListenerImpl.instance().onExplicitClose(unitName);
-        _closeUnit(unitName, requiredUnits, cleanRepository);
+    public static void closeUnit(int unitId, Set<Integer> requiredUnits, boolean cleanRepository) {
+        RepositoryListenerImpl.instance().onExplicitClose(KeyUtilities.getUnitName(unitId));
+        _closeUnit(unitId, requiredUnits, cleanRepository);
     }
 
-    public static void closeUnit(Key key, Set<CharSequence> requiredUnits, boolean cleanRepository) {
+    public static void closeUnit(Key key, Set<Integer> requiredUnits, boolean cleanRepository) {
         assert key != null;
-        _closeUnit(key.getUnit(), requiredUnits, cleanRepository);
+        _closeUnit(key.getUnitId(), requiredUnits, cleanRepository);
         if (cleanRepository) {
             UIDManager.instance().clearProjectCache(key);
         }
     }
 
-    private static void _closeUnit(CharSequence unit, Set<CharSequence> requiredUnits, boolean cleanRepository) {
-        assert unit != null;
+    private static void _closeUnit(int unitId, Set<Integer> requiredUnits, boolean cleanRepository) {        
         if (!cleanRepository) {
-            int errors = myRepositoryListenerProxy.getErrorCount(unit);
+            int errors = myRepositoryListenerProxy.getErrorCount(unitId);
             if (errors > 0) {
                 if (LOG.isLoggable(Level.INFO)) {
-                    LOG.log(Level.INFO, "Clean index for project \"{0}\" because index was corrupted (was {1} errors).", new Object[]{unit, errors}); // NOI18N
+                    CharSequence unit = KeyUtilities.getUnitNameSafe(unitId);
+                    LOG.log(Level.INFO, "Clean index for project {0} \"{1}\" because index was corrupted (was {1} errors).", new Object[]{unitId, unit, errors}); // NOI18N
                 }
                 cleanRepository = true;
             }
         }
-        myRepositoryListenerProxy.cleanErrorCount(unit);
-        repository.closeUnit(unit, cleanRepository, requiredUnits);
+        myRepositoryListenerProxy.cleanErrorCount(unitId);
+        repository.closeUnit(unitId, cleanRepository, requiredUnits);
     }
 
     public static int getRepositoryErrorCount(ProjectBase project){
-        return getRepositoryListenerProxy().getErrorCount(project.getUniqueName());
+        return getRepositoryListenerProxy().getErrorCount(project.getUnitId());
     }
 
     public static void registerRepositoryError(ProjectBase project, Exception e) {
         CsmUID<?> uid = project.getUID();
         assert uid != null;
         Key key = UIDtoKey(uid);        
-        getRepositoryListenerProxy().anExceptionHappened(key.getUnit(), new RepositoryException(e));
+        getRepositoryListenerProxy().anExceptionHappened(key.getUnitId(), key.getUnit(), new RepositoryException(e));
     }
     
     public static void onProjectDeleted(NativeProject nativeProject) {
         Key key = KeyUtilities.createProjectKey(nativeProject);
-        repository.removeUnit(key.getUnit());
+        repository.removeUnit(key.getUnitId());
     }
 
     public static void openUnit(ProjectBase project) {
@@ -357,36 +350,12 @@ public final class RepositoryUtils {
 
     private static void openUnit(int unitId, CharSequence unitName) {
         // TODO explicit open should be called here:
-        RepositoryListenerImpl.instance().onExplicitOpen(unitName);
+        RepositoryListenerImpl.instance().onExplicitOpen(unitId);
         repository.openUnit(unitId, unitName);
     }
 
     public static void unregisterRepositoryListener(RepositoryListener listener) {
         repository.unregisterRepositoryListener(listener);
-    }
-
-    static int getUnitId(CharSequence unitName) {
-        return translator.getUnitId(unitName);
-    }
-
-    static CharSequence getUnitName(int unitIndex) {
-        return translator.getUnitName(unitIndex);
-    }
-
-    static CharSequence getUnitNameSafe(int unitIndex) {
-        return translator.getUnitNameSafe(unitIndex);
-    }
-
-    static int getFileIdByName(int unitId, CharSequence fileName) {
-        return translator.getFileIdByName(unitId, fileName);
-    }
-
-    static CharSequence getFileNameByIdSafe(int unitId, int fileId) {
-        return translator.getFileNameByIdSafe(unitId, fileId);
-    }
-
-    static CharSequence getFileNameById(int unitId, int fileId) {
-        return translator.getFileNameById(unitId, fileId);
     }
 
     private static boolean isTracingKey(Key key) {
@@ -404,34 +373,34 @@ public final class RepositoryUtils {
 
     private static class RepositoryListenerProxy implements RepositoryListener {
         private RepositoryListener parent = RepositoryListenerImpl.instance();
-        private Map<CharSequence,Integer> wasErrors = new ConcurrentHashMap<CharSequence,Integer>();
+        private Map<Integer,Integer> wasErrors = new ConcurrentHashMap<Integer,Integer>();
         private boolean fatalError = false;
         private RepositoryListenerProxy(){
         }
-        public int getErrorCount(CharSequence unitName) {
-            Integer i = wasErrors.get(unitName);
+        public int getErrorCount(int unitId) {
+            Integer i = wasErrors.get(unitId);
             if (i == null) {
                 return fatalError ? 1 : 0;
             } else {
                 return fatalError ? i.intValue() + 1 : i.intValue();
             }
         }
-        public void cleanErrorCount(CharSequence unitName) {
-            wasErrors.remove(unitName);
+        public void cleanErrorCount(int unitId) {
+            wasErrors.remove(unitId);
             fatalError = false;
         }
         @Override
-        public boolean unitOpened(CharSequence unitName) {
-            return parent.unitOpened(unitName);
+        public boolean unitOpened(int unitId, CharSequence unitName) {
+            return parent.unitOpened(unitId, unitName);
         }
         @Override
-        public void unitClosed(CharSequence unitName) {
-            parent.unitClosed(unitName);
+        public void unitClosed(int unitId, CharSequence unitName) {
+            parent.unitClosed(unitId, unitName);
         }
         @Override
-        public void anExceptionHappened(CharSequence unitName, RepositoryException exc) {
-            primitiveErrorStrategy(unitName, exc);
-            parent.anExceptionHappened(unitName, exc);
+        public void anExceptionHappened(final int unitId, CharSequence unitName, RepositoryException exc) {
+            primitiveErrorStrategy(unitId, exc);
+            parent.anExceptionHappened(unitId, unitName, exc);
         }
 
         /**
@@ -440,18 +409,14 @@ public final class RepositoryUtils {
          * Provide intelligence logic that take into account possibility to "fixing" errors.
          * For example error in "file" segment can be fixed by file reparse.
          */
-        private void primitiveErrorStrategy(CharSequence unitName, RepositoryException exc){
-            if (unitName != null) {
-                Integer i = wasErrors.get(unitName);
-                if (i == null) {
-                    i = Integer.valueOf(1);
-                } else {
-                    i = Integer.valueOf(i.intValue()+1);
-                }
-                wasErrors.put(unitName, i);
+        private void primitiveErrorStrategy(int unitId, RepositoryException exc){
+            Integer i = wasErrors.get(unitId);
+            if (i == null) {
+                i = Integer.valueOf(1);
             } else {
-                fatalError = true;
+                i = Integer.valueOf(i.intValue()+1);
             }
+            wasErrors.put(unitId, i);
         }
     }
 }

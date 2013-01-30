@@ -46,7 +46,8 @@
     mddFile="../../resources/hibernate-configuration-3.0.mdd",
     outputType=OutputType.TRADITIONAL_BASEBEAN,
     validate=false,
-    removeUnreferencedNodes=true
+    removeUnreferencedNodes=true,
+    java5=true
 )
 package org.netbeans.modules.hibernate.cfg.model;
 

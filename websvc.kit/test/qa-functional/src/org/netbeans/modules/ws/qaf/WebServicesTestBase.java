@@ -380,7 +380,7 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
             if (ServerType.TOMCAT.equals(REGISTERED_SERVER) && !ProjectType.WEB.equals(getProjectType()) && !ProjectType.JAVASE_APPLICATION.equals(getProjectType())) {
                 fail("Tomcat does not support: " + getProjectType().getProjectTypeName() + "s."); //NOI18N
             }
-            System.out.println("########  TestCase: " + getName() + "  #######"); //NOI18N
+            System.out.println("########  TestCase: " + getClass().getSimpleName() + "." + getName() + "  #######"); //NOI18N
             System.out.println("########  Server: " + REGISTERED_SERVER.toString() + "  #######"); //NOI18N
             File projectRoot = new File(getDataDir(), "projects/" + getProjectName()); //NOI18N
             if (projectRoot.exists()) {
@@ -509,12 +509,12 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
         // wait project appear in projects view
         ProjectRootNode node;
         long oldTimeout = JemmyProperties.getCurrentTimeout("JTreeOperator.WaitNextNodeTimeout");
-        if (!type.isAntBasedProject()) {
-            // need to increase time to wait for project node for Maven project
-            JemmyProperties.setCurrentTimeout("JTreeOperator.WaitNextNodeTimeout", 120000);
-        }
+        // need to increase time to wait for project node
+        JemmyProperties.setCurrentTimeout("JTreeOperator.WaitNextNodeTimeout", 120000);
         try {
             node = ProjectsTabOperator.invoke().getProjectRootNode(name);
+            // expand project to prevent #217775
+            node.expand();
         } finally {
             JemmyProperties.setCurrentTimeout("JTreeOperator.WaitNextNodeTimeout", oldTimeout);
         }
@@ -666,11 +666,23 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
     }
 
     /**
-     * Wait until dialog with title <code>dialogTitle</code> is closed
+     * Wait at most 120 seconds until dialog with title
+     * <code>dialogTitle</code> is closed
      *
      * @param dialogTitle title of the dialog to be closed
      */
     protected void waitDialogClosed(String dialogTitle) {
+        waitDialogClosed(dialogTitle, 120000);
+    }
+
+    /**
+     * Wait until dialog with title
+     * <code>dialogTitle</code> is closed
+     *
+     * @param dialogTitle title of the dialog to be closed
+     * @param timeout timeout in miliseconds
+     */
+    protected void waitDialogClosed(String dialogTitle, int timeout) {
         NbDialogOperator dialogOper;
         try {
             dialogOper = new NbDialogOperator(dialogTitle);
@@ -678,8 +690,7 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
             // ignore when progress dialog was closed before we started to wait for it
             return;
         }
-        // wait at most 120 second until progress dialog dismiss
-        dialogOper.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 120000); //NOI18N
+        dialogOper.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", timeout); //NOI18N
         dialogOper.waitClosed();
     }
 
@@ -813,7 +824,7 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
     
     protected File getProjectsRootDir() throws IOException {
         File f = getWorkDir();
-        LOGGER.log(Level.FINE, "Working directory is set to: {0}", f.getAbsolutePath());
+        LOGGER.log(Level.FINE, "Working directory is set to: {0}", f);
         if (f != null) {
             f = f.getParentFile();
             if (f != null) {

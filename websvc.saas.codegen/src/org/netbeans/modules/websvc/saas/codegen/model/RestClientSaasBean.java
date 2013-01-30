@@ -44,13 +44,15 @@ package org.netbeans.modules.websvc.saas.codegen.model;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import javax.xml.bind.JAXBElement;
 import javax.xml.namespace.QName;
 import org.netbeans.modules.websvc.saas.codegen.SaasClientCodeGenerator;
+import org.netbeans.modules.websvc.saas.model.Saas;
 import org.netbeans.modules.websvc.saas.model.WadlSaasMethod;
 import org.netbeans.modules.websvc.saas.model.wadl.Param;
-import org.netbeans.modules.websvc.saas.model.wadl.RepresentationType;
+import org.netbeans.modules.websvc.saas.model.wadl.Representation;
 import org.netbeans.modules.websvc.saas.model.wadl.Request;
 import org.netbeans.modules.websvc.saas.model.wadl.Resource;
 import org.netbeans.modules.websvc.saas.model.wadl.Response;
@@ -117,7 +119,7 @@ public class RestClientSaasBean extends SaasBean {
         Resource[] rArray = m.getResourcePath();
         if(rArray == null || rArray.length == 0)
             throw new IllegalArgumentException("Method do not belong to any resource in the WADL.");
-        String url2 = m.getSaas().getWadlModel().getResources().getBase();
+        String url2 = m.getSaas().getBaseURL();
 
         url2 = url2.replace(PROTOCOL_SEPERATOR, PROTOCOL_SEPERATOR_ALT);//replace now, add :// later
         for(Resource r: rArray){
@@ -186,29 +188,33 @@ public class RestClientSaasBean extends SaasBean {
         ArrayList<ParameterInfo> inputParams = new ArrayList<ParameterInfo>();
         Request req = wm.getRequest();
         findWadlParams(inputParams, req.getParam());
-        List<RepresentationType> reps = req.getRepresentation();
-        for(RepresentationType rep:reps) {
+        List<Representation> reps = req.getRepresentation();
+        for(Representation rep:reps) {
             findWadlParams(inputParams, rep.getParam());
         }
         return inputParams;
     }
 
     private void initMimeTypes() {
-        List<MimeType> mimeTypes = new ArrayList<MimeType>();
-        Response response = m.getWadlMethod().getResponse();
-        findMediaType(response, mimeTypes);
+        List<MimeType> mimeTypes = new LinkedList<MimeType>();
+        List<Response> responses = m.getWadlMethod().getResponse();
+        for( Response response : responses ){
+            findMediaType(response, mimeTypes);
+        }
         if(mimeTypes.size() > 0)
             this.setMimeTypes(mimeTypes.toArray(new MimeType[mimeTypes.size()]));
     }
     
     public static List<QName> findRepresentationTypes(WadlSaasMethod wm) {
-        List<QName> repTypes = new ArrayList<QName>();
-        Response response = wm.getWadlMethod().getResponse();
-        findRepresentationType(response, repTypes);
+        List<QName> repTypes = new LinkedList<QName>();
+        List<Response> responses = wm.getWadlMethod().getResponse();
+        for(Response response:responses){
+            findRepresentationType(response, repTypes);
+        }
         return repTypes;
     }
   
-    public static List<RepresentationType> findInputRepresentations(WadlSaasMethod m) {
+    public static List<Representation> findInputRepresentations(WadlSaasMethod m) {
         return m.getWadlMethod().getRequest().getRepresentation();
     }
     
@@ -219,9 +225,9 @@ public class RestClientSaasBean extends SaasBean {
     public static void findMediaType(Response response, List<MimeType> mimeTypes) {
         if(response == null)
             return;
-        List<JAXBElement<RepresentationType>> repOrFaults = response.getRepresentationOrFault();
-        for (JAXBElement<RepresentationType> repElement : repOrFaults) {
-            String mediaType = repElement.getValue().getMediaType();
+        List<Representation> representations = response.getRepresentation();
+        for (Representation representation : representations) {
+            String mediaType = representation.getMediaType();
             if(mediaType == null)
                 continue;
             String[] mTypes = mediaType.split(",");
@@ -237,8 +243,8 @@ public class RestClientSaasBean extends SaasBean {
     public static void findMediaType(Request request, List<String> mimeTypes) {
         if(request == null)
             return;
-        List<RepresentationType> reps = request.getRepresentation();
-        for (RepresentationType rep : reps) {
+        List<Representation> reps = request.getRepresentation();
+        for (Representation rep : reps) {
             String mediaType = rep.getMediaType();
             if(mediaType == null)
                 continue;
@@ -273,11 +279,12 @@ public class RestClientSaasBean extends SaasBean {
     public static void findRepresentationType(Response response, List<QName> repTypes) {
         if(response == null)
             return;
-        List<JAXBElement<RepresentationType>> repOrFaults = response.getRepresentationOrFault();
-        for (JAXBElement<RepresentationType> repElement : repOrFaults) {
-            QName repType = repElement.getValue().getElement();
-            if(repType == null || repTypes.contains(repType))
+        List<Representation> representations = response.getRepresentation();
+        for (Representation representation : representations) {
+            QName repType = representation.getElement();
+            if(repType == null || repTypes.contains(repType)){
                 continue;
+            }
             repTypes.add(repType);
         }
     }

@@ -66,6 +66,17 @@ public class CssCompletionTest extends CssModuleTestBase {
         checkCC("@| h1 { }", AT_RULES, Match.CONTAINS);
         checkCC("@pa| h1 { }", new String[]{"@page"}, Match.CONTAINS);
     }
+    
+    public void testAtRules2() throws ParseException {
+        checkCC("@charset| ", new String[]{"@font-face"}, Match.DOES_NOT_CONTAIN);
+        checkCC("@charset| div { }", new String[]{"@font-face"}, Match.DOES_NOT_CONTAIN);
+        
+        checkCC("@fon| div { }", new String[]{"@font-face"}, Match.EXACT);
+        
+        checkCC("@media| div { }", new String[]{"@media"}, Match.EXACT);
+        
+        checkCC("@page| div { }", new String[]{"@page"}, Match.EXACT);
+    }
 
     public void testPropertyNames() throws ParseException {
         //empty rule
@@ -184,9 +195,9 @@ public class CssCompletionTest extends CssModuleTestBase {
     }
 
     public void testCompletionInMozillaSpecificAtRule() throws ParseException {
-        checkCC(" @-moz-document url(http://www.w3.org/) { | }", arr("color"), Match.CONTAINS);
-        checkCC(" @-moz-document url(http://www.w3.org/) { p { } | }", arr("color"), Match.CONTAINS);
-        checkCC(" @-moz-document url(http://www.w3.org/) { p { } | div { } }", arr("color"), Match.CONTAINS);
+        checkCC(" @-moz-document url(http://www.w3.org/) { | }", arr("div"), Match.CONTAINS);
+        checkCC(" @-moz-document url(http://www.w3.org/) { p { } | }", arr("div"), Match.CONTAINS);
+        checkCC(" @-moz-document url(http://www.w3.org/) { p { } | div { } }", arr("div"), Match.CONTAINS);
     }
 
     //Bug 204128 - CC stops work after # in a color attribute 
@@ -240,8 +251,8 @@ public class CssCompletionTest extends CssModuleTestBase {
     public void testPropertyValueFontFamilyProblem2() throws ParseException {
         //completion doesn't offer items that can immediatelly follow
         //a valid token
-        checkCC("div { font-family: fantasy |}", arr(",", "identifier"), Match.EXACT);
-        checkCC("div { font-family: fantasy|}", arr(",", "identifier"), Match.EXACT);
+        checkCC("div { font-family: fantasy |}", arr(",", "!identifier"), Match.EXACT);
+        checkCC("div { font-family: fantasy|}", arr(",", "!identifier"), Match.EXACT);
     }
     
     public void testPropertyValueJustAfterRGB() throws ParseException {
@@ -267,4 +278,33 @@ public class CssCompletionTest extends CssModuleTestBase {
         checkCC("div { background: |; }", arr("red"), Match.CONTAINS);
     }
     
+    //Bug 217457 - Broken code completion inside identifier for values
+    public void test217457() throws ParseException, BadLocationException {
+        checkCC("div { transform: sca|leZ ; }", arr("scaleZ"), Match.CONTAINS);
+        checkCC("div { transform: sca|leZ(0.3); }", arr("scaleZ"), Match.CONTAINS);
+    }
+    
+    //http://netbeans.org/bugzilla/show_bug.cgi?id=221349
+    public void testNoCompletionAfterImport() throws ParseException, BadLocationException {
+        checkCC("@import \"s1.css\"; |  root { display: block;}", arr("body"), Match.CONTAINS_ONCE);
+        
+    }
+    
+    //http://netbeans.org/bugzilla/show_bug.cgi?id=221461
+    //doubled items between rule w/o prefix
+    public void testDoubledItemsBetweenRulesWithoutPrefix() throws ParseException, BadLocationException {
+        //this works already (w/ prefix)
+        checkCC("root { } bo| .x {  }", arr("body"), Match.CONTAINS_ONCE);
+        //this doesn't
+        checkCC("root { } | .x {  }", arr("body"), Match.CONTAINS_ONCE);
+        
+    }
+    
+    public void testInheritInColor() throws ParseException {
+        checkCC("div { color:|  }", arr("inherit"), Match.CONTAINS_ONCE);
+    }
+    
+    public void testURICompletion() throws ParseException {
+        checkCC("div { background-image: | } ", arr("url"), Match.CONTAINS);
+    }
 }

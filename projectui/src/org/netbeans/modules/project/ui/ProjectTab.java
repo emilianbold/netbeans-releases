@@ -246,6 +246,7 @@ public class ProjectTab extends TopComponent
             
     /** Explorer manager implementation 
      */
+    @Override
     public ExplorerManager getExplorerManager() {
         return manager;
     }
@@ -489,6 +490,7 @@ public class ProjectTab extends TopComponent
     private static final Lookup.Result<DataObject> doSelection = context.lookup(new Lookup.Template<DataObject>(DataObject.class));
 
     private final LookupListener baseListener = new LookupListener() {
+        @Override
         public void resultChanged(LookupEvent ev) {
             if (TopComponent.getRegistry().getActivated() == ProjectTab.this) {
                 // Do not want to go into a loop.
@@ -544,6 +546,7 @@ public class ProjectTab extends TopComponent
 
     private Task createSelectionTask() {
         Task task = RP.create(new Runnable() {
+            @Override
             public void run() {
                 if (objectToSelect == null) {
                     return;
@@ -592,6 +595,7 @@ public class ProjectTab extends TopComponent
                  final Node selectedNode = tempNode;
                 // Back to AWT             // Back to AWT
                 SwingUtilities.invokeLater( new Runnable() {
+                    @Override
                     public void run() {
                         if ( selectedNode != null ) {
                             try {
@@ -655,6 +659,7 @@ public class ProjectTab extends TopComponent
         return result;
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (OpenProjects.PROPERTY_OPEN_PROJECTS.equals(evt.getPropertyName())) {
             final boolean someProjectsOpen = OpenProjects.getDefault().getOpenProjects().length > 0;
@@ -700,6 +705,7 @@ public class ProjectTab extends TopComponent
             // were processed and TreeNodes are already in hierarchy
             SwingUtilities.invokeLater(new Runnable() {
 
+                @Override
                 public void run() {
                     TreeNode tn = Visualizer.findVisualizer(n);
                     if (tn == null) {
@@ -809,6 +815,7 @@ public class ProjectTab extends TopComponent
 
     private class NbPrefsListener implements PreferenceChangeListener {
 
+        @Override
         public void preferenceChange(PreferenceChangeEvent evt) {
             if (SyncEditorWithViewsAction.SYNC_ENABLED_PROP_NAME.equals(evt.getKey())) {
                 synchronizeViews = Boolean.parseBoolean(evt.getNewValue());

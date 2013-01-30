@@ -448,11 +448,6 @@ public class ResolveConflictsExecutor extends GitProgressSupport {
         }
     }
 
-    private boolean getFile (File file, File out, int stage) throws GitException, FileNotFoundException {
-        GitClient client = getClient();
-        return client.catIndexEntry(file, stage, new FileOutputStream(out), getProgressMonitor());
-    }
-
     private static class MergeResultWriterInfo extends StreamSource {
         
         private File tempf1, tempf2, tempf3, outputFile;

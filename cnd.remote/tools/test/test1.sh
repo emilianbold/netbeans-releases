@@ -1,4 +1,9 @@
 #/bin/sh -x
+
+#
+# Copyright (c) 2009, 2012, Oracle and/or its affiliates. All rights reserved.
+#
+
 echo "### absolute"
 cat `pwd`/test/file_1
 cat `pwd`/test/subdir/sub_1

@@ -49,5 +49,7 @@ import org.netbeans.modules.csl.api.OffsetRange;
  * @author Radek Matous
  */
 public interface IncludeElement extends ModelElement {
-    public OffsetRange getReferenceSpanRange();
+
+    OffsetRange getReferenceSpanRange();
+
 }

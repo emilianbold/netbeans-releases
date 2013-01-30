@@ -46,6 +46,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.InputStream;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
@@ -54,12 +55,13 @@ import java.util.Set;
 import java.util.TreeSet;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
+import org.openide.util.Utilities;
 
 /**
  *
  * @author tomslot
  */
-public class PredefinedSymbols {
+public final class PredefinedSymbols {
     public static final String MIXED_TYPE = "mixed"; //NOI18N
 
     // see http://www.php.net/manual/en/reserved.variables.php
@@ -106,7 +108,7 @@ public class PredefinedSymbols {
             });
 
 
-    public static Set<String> MAGIC_METHODS = new HashSet<String>(Arrays.asList(new String[]{
+    public static final Set<String> MAGIC_METHODS = new HashSet<String>(Arrays.asList(new String[]{
                 "__callStatic",
                 "__set_state",
                 "__call",
@@ -131,20 +133,23 @@ public class PredefinedSymbols {
 
     private static String docURLBase;
 
+    private PredefinedSymbols() {
+    }
+
     private static void initDoc() {
         File file = InstalledFileLocator.getDefault().locate("docs/predefined_vars.zip", null, true); //NoI18N
         if (file != null) {
             try {
-                URL urll = file.toURI().toURL();
+                URL urll = Utilities.toURI(file).toURL();
                 urll = FileUtil.getArchiveRoot(urll);
                 docURLBase = urll.toString();
             } catch (java.net.MalformedURLException e) {
                 // nothing to do
-                }
+            }
         }
     }
 
-    public static boolean isSuperGlobalName(String name){
+    public static boolean isSuperGlobalName(String name) {
         return SUPERGLOBALS.contains(name);
     }
 
@@ -158,9 +163,9 @@ public class PredefinedSymbols {
         try {
             URL url = new URL(resPath);
             InputStream is = url.openStream();
-            byte buffer[] = new byte[1000];
+            byte[] buffer = new byte[1000];
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            int count = 0;
+            int count;
             do {
                 count = is.read(buffer);
                 if (count > 0) {
@@ -169,7 +174,7 @@ public class PredefinedSymbols {
             } while (count > 0);
 
             is.close();
-            String text = baos.toString();
+            String text = baos.toString(Charset.defaultCharset().name());
             baos.close();
             return text;
         } catch (java.io.IOException e) {

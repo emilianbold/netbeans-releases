@@ -200,7 +200,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
      *
      * @param issue displayed by this top-component.
      */
-    public void setIssue(IssueImpl issue) {
+    void setIssue(IssueImpl issue) {
         assert (this.issue == null);
         LogUtils.logBugtrackingUsage(issue.getRepositoryImpl().getRepository(), "ISSUE_EDIT"); // NOI18N
         this.issue = issue;
@@ -216,6 +216,10 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
         repoPanel.setVisible(false);
         setNameAndTooltip();
         issue.addPropertyChangeListener(this);
+        
+        if(!issue.isNew()) {
+            BugtrackingManager.getInstance().addRecentIssue(issue.getRepositoryImpl(), issue);
+        }
     }
 
     /** This method is called from within the constructor to
@@ -232,6 +236,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
         repoLabel = new javax.swing.JLabel();
         jPanel1 = new javax.swing.JPanel();
         newButton = new org.netbeans.modules.bugtracking.util.LinkButton();
+        jSeparator1 = new javax.swing.JSeparator();
         issuePanel = new javax.swing.JPanel();
         preparingLabel = new javax.swing.JLabel();
 
@@ -273,21 +278,27 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
                     .addComponent(findIssuesLabel))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(36, Short.MAX_VALUE))
+            .addComponent(jSeparator1)
         );
         repoPanelLayout.setVerticalGroup(
             repoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(repoPanelLayout.createSequentialGroup()
-                .addGap(50, 50, 50)
-                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-            .addGroup(repoPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(findIssuesLabel)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(repoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(repoLabel)
-                    .addComponent(repositoryComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(newButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addGroup(repoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(repoPanelLayout.createSequentialGroup()
+                        .addGap(50, 50, 50)
+                        .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(repoPanelLayout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(findIssuesLabel)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(repoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(repoLabel)
+                            .addComponent(repositoryComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(newButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                .addGap(0, 0, 0)
+                .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 0, Short.MAX_VALUE))
         );
 
         issuePanel.setBackground(javax.swing.UIManager.getDefaults().getColor("EditorPane.background"));
@@ -309,7 +320,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
             .addGroup(layout.createSequentialGroup()
                 .addComponent(repoPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(0, 0, 0)
-                .addComponent(issuePanel, javax.swing.GroupLayout.DEFAULT_SIZE, 36, Short.MAX_VALUE))
+                .addComponent(issuePanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -408,6 +419,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
     private javax.swing.JLabel findIssuesLabel;
     private javax.swing.JPanel issuePanel;
     private javax.swing.JPanel jPanel1;
+    private javax.swing.JSeparator jSeparator1;
     private org.netbeans.modules.bugtracking.util.LinkButton newButton;
     private javax.swing.JLabel preparingLabel;
     private javax.swing.JLabel repoLabel;

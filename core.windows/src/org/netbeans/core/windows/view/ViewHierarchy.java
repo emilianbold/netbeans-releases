@@ -46,15 +46,6 @@
 package org.netbeans.core.windows.view;
 
 
-import org.netbeans.core.windows.Constants;
-import org.netbeans.core.windows.view.dnd.TopComponentDraggable;
-import org.netbeans.core.windows.view.dnd.WindowDnDManager;
-import org.netbeans.core.windows.view.ui.DesktopImpl;
-import org.netbeans.core.windows.view.ui.EditorAreaFrame;
-import org.netbeans.core.windows.view.ui.MainWindow;
-import org.netbeans.core.windows.view.ui.slides.SlideOperation;
-
-import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.lang.ref.WeakReference;
@@ -62,10 +53,16 @@ import java.util.*;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
+import javax.swing.*;
+import org.netbeans.core.windows.Constants;
 import org.netbeans.core.windows.Debug;
-import org.netbeans.core.windows.Switches;
 import org.netbeans.core.windows.WindowManagerImpl;
+import org.netbeans.core.windows.view.dnd.TopComponentDraggable;
+import org.netbeans.core.windows.view.dnd.WindowDnDManager;
+import org.netbeans.core.windows.view.ui.DesktopImpl;
+import org.netbeans.core.windows.view.ui.EditorAreaFrame;
+import org.netbeans.core.windows.view.ui.MainWindow;
+import org.netbeans.core.windows.view.ui.slides.SlideOperation;
 import org.openide.windows.TopComponent;
 
 /**
@@ -81,7 +78,7 @@ final class ViewHierarchy {
     private final WindowDnDManager windowDnDManager;
 
     /** desktop component maintainer */
-    private DesktopImpl desktop = new DesktopImpl();
+    private DesktopImpl desktop = null;
     /** Map of separate mode views (view <-> accessor). */
     private final Map<ModeView, ModeAccessor> separateModeViews = 
             new HashMap<ModeView, ModeAccessor>(10);
@@ -141,6 +138,7 @@ final class ViewHierarchy {
             }
             if( null == mainFrame ) {
                 mainFrame = new JFrame();
+                mainFrame.setName( "NbMainWindow" ); //NOI18N
             }
             Logger.getLogger(MainWindow.class.getName()).log(Level.FINE, "Installing MainWindow into " + mainFrame); //NOI18N
             mainWindow = MainWindow.install(mainFrame);
@@ -174,7 +172,7 @@ final class ViewHierarchy {
         if( null == currentSplitRoot && shouldUseFakeSplitRoot() ) {
             currentSplitRoot = getFakeSplitRoot();
         }
-        if (desktop.getSplitRoot() == null) {
+        if (getDesktop().getSplitRoot() == null) {
             setSplitRootIntoDesktop(currentSplitRoot);
         }
         updateSeparateViews(modeStructureAccessor.getSeparateModeAccessors());
@@ -394,14 +392,14 @@ final class ViewHierarchy {
         
         // remove old views.
         for(SlidingView curSv: oldViews) {
-            desktop.removeSlidingView(curSv);
+            getDesktop().removeSlidingView(curSv);
         }
         // add all new views.
         for(SlidingView curSv: addedViews) {
-            desktop.addSlidingView(curSv);
+            getDesktop().addSlidingView(curSv);
         }
         
-        desktop.updateCorners();
+        getDesktop().updateCorners();
     }
     
     
@@ -485,7 +483,7 @@ final class ViewHierarchy {
             return;
         }
         
-        setSplitRootIntoDesktop((SplitView)removeModeViewFromElement(desktop.getSplitRoot(), modeView));
+        setSplitRootIntoDesktop((SplitView)removeModeViewFromElement(getDesktop().getSplitRoot(), modeView));
     }
     
     /** Gets set of all mode view components. */
@@ -562,7 +560,7 @@ final class ViewHierarchy {
     }
     
     private Component getDesktopComponent() {
-        return currentSplitRoot == null ? null : desktop.getDesktopComponent();
+        return currentSplitRoot == null ? null : getDesktop().getDesktopComponent();
     }    
 
     public ViewElement getSplitRootElement() {
@@ -578,7 +576,7 @@ final class ViewHierarchy {
     }
     
     public void setSplitModesVisible(boolean visible) {
-        setVisibleModeElement(desktop.getSplitRoot(), visible);
+        setVisibleModeElement(getDesktop().getSplitRoot(), visible);
     }
     
     private static void setVisibleModeElement(ViewElement view, boolean visible) {
@@ -642,31 +640,31 @@ final class ViewHierarchy {
     }
     
     private void setMaximizedViewIntoDesktop(ViewElement elem) {
-        boolean revalidate = elem.updateAWTHierarchy(desktop.getInnerPaneDimension());
+        boolean revalidate = elem.updateAWTHierarchy(getDesktop().getInnerPaneDimension());
         
-        desktop.setMaximizedView(elem);
+        getDesktop().setMaximizedView(elem);
         
         if (revalidate) {
-            desktop.getDesktopComponent().invalidate();
-            ((JComponent)desktop.getDesktopComponent()).revalidate();
-            desktop.getDesktopComponent().repaint();
+            getDesktop().getDesktopComponent().invalidate();
+            ((JComponent)getDesktop().getDesktopComponent()).revalidate();
+            getDesktop().getDesktopComponent().repaint();
         }
     }
     
     
     private void setSplitRootIntoDesktop(ViewElement root) {
         boolean revalidate = false;
-        desktop.setSplitRoot(root);
+        getDesktop().setSplitRoot(root);
         if (root != null) {
-            Dimension dim = desktop.getInnerPaneDimension();
+            Dimension dim = getDesktop().getInnerPaneDimension();
 //            debugLog("innerpanedidim=" + dim + " currentsize=" + root.getComponent().getSize());
             revalidate = root.updateAWTHierarchy(dim);
         }
         
         if (revalidate) {
-            desktop.getDesktopComponent().invalidate();
-            ((JComponent)desktop.getDesktopComponent()).revalidate();
-            desktop.getDesktopComponent().repaint();
+            getDesktop().getDesktopComponent().invalidate();
+            ((JComponent)getDesktop().getDesktopComponent()).revalidate();
+            getDesktop().getDesktopComponent().repaint();
 //            debugLog("revalidating..size=" + desktop.getDesktopComponent().getSize() + "innerpane=" + desktop.getInnerPaneDimension());
         } 
     }
@@ -779,27 +777,27 @@ final class ViewHierarchy {
     }
     
     public void performSlideIn(SlideOperation operation) {
-        desktop.performSlideIn(operation, getPureEditorAreaBounds());
+        getDesktop().performSlideIn(operation, getPureEditorAreaBounds());
     }
     
     public void performSlideOut(SlideOperation operation) {
-        desktop.performSlideOut(operation, getPureEditorAreaBounds());
+        getDesktop().performSlideOut(operation, getPureEditorAreaBounds());
     }
     
     public void performSlideIntoDesktop(SlideOperation operation) {
-        desktop.performSlideIntoDesktop(operation, getPureEditorAreaBounds());
+        getDesktop().performSlideIntoDesktop(operation, getPureEditorAreaBounds());
     }
     
     public void performSlideIntoEdge(SlideOperation operation) {
-        desktop.performSlideIntoEdge(operation, getPureEditorAreaBounds());
+        getDesktop().performSlideIntoEdge(operation, getPureEditorAreaBounds());
     }
     
     public void performSlideResize(SlideOperation operation) {
-        desktop.performSlideResize(operation);
+        getDesktop().performSlideResize(operation);
     }
     
     public void performSlideToggleMaximize( TopComponent tc, String side ) {
-        desktop.performSlideToggleMaximize( tc, side, getPureEditorAreaBounds());
+        getDesktop().performSlideToggleMaximize( tc, side, getPureEditorAreaBounds());
     }
     
     private void setMainWindowDesktop(Component component) {
@@ -871,6 +869,7 @@ final class ViewHierarchy {
         });
         
         frame.addWindowStateListener(new WindowStateListener() {
+            @Override
             public void windowStateChanged(WindowEvent evt) {
      // All the timestamping is a a workaround beause of buggy GNOME and of its kind who iconify the windows on leaving the desktop.
                 long currentStamp = System.currentTimeMillis();
@@ -979,7 +978,7 @@ final class ViewHierarchy {
     
     @Override
     public String toString() {
-        return dumpElement(desktop.getSplitRoot(), 0) + "\nseparateViews=" + separateModeViews.keySet(); // NOI18N
+        return dumpElement(getDesktop().getSplitRoot(), 0) + "\nseparateViews=" + separateModeViews.keySet(); // NOI18N
     }
     
     private String dumpElement(ViewElement view, int indent) {
@@ -1070,14 +1069,17 @@ final class ViewHierarchy {
             this.hierarchy  = hierarchy;
         }
         
+        @Override
         public void componentResized(ComponentEvent evt) {
             controller.userResizedMainWindow(evt.getComponent().getBounds());
         }
         
+        @Override
         public void componentMoved(ComponentEvent evt) {
             controller.userMovedMainWindow(evt.getComponent().getBounds());
         }
         
+        @Override
         public void windowStateChanged(WindowEvent evt) {
             int oldState = evt.getOldState();
             int newState = evt.getNewState();
@@ -1127,6 +1129,15 @@ final class ViewHierarchy {
             };
         }
         return fakeSplitRoot;
+    }
+
+    private DesktopImpl getDesktop() {
+        synchronized( this ) {
+            if( null == desktop ) {
+                desktop = new DesktopImpl();
+            }
+        }
+        return desktop;
     }
 }
 

@@ -89,8 +89,7 @@ public class Commit extends GeneralPHP {
     }
 
     public static Test suite() {
-        return NbModuleSuite.create(
-                NbModuleSuite.createConfiguration(Commit.class).addTest(
+        return createModuleTest(Commit.class,
                 "CreatePHPApplication",
                 "ManipulateIndexPHP",
                 "CreateEmptyPHP",
@@ -101,8 +100,7 @@ public class Commit extends GeneralPHP {
                 //"ManipulateStandalonePHP",
                 //"CreateCustomPHPApplication",
                 "CreatePHPWithExistingSources",
-                "ManipulatePHPWithExistingSources").enableModules(".*").clusters(".*")
-                );
+                "ManipulatePHPWithExistingSources");
     }
 
     @Override

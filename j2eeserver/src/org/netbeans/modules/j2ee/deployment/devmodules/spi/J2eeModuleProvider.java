@@ -525,6 +525,26 @@ public abstract class J2eeModuleProvider {
         public void removeLibraryChangeListener(@NonNull ChangeListener listener);
 
         public boolean isDescriptorRequired();
+        
+        /**
+         * Adds a listener which is notified whenever there is deploy on save
+         * performed for the provider associated with this support.
+         * 
+         * @param listener listener to add
+         * @since 1.91
+         */
+        // XXX commented out - there does not seem to be any client for 7.3
+        //public void addDeployOnSaveListener( DeployOnSaveListener listener );
+
+        /**
+         * Removes the listener listening for deploy on save.
+         * 
+         * @param listener listener to remove
+         * @see #addDeployOnSaveListener(org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider.DeployOnSaveListener)
+         * @since 1.91
+         */
+        // XXX commented out - there does not seem to be any client for 7.3
+        //public void removeDeployOnSaveListener( DeployOnSaveListener listener );
 
         /**
          * Retrieves message destinations stored in the module.

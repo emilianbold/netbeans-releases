@@ -68,7 +68,7 @@ class AssignComments extends TreeScanner<Void, Void> {
     private final SourcePositions positions;
     private int tokenIndexAlreadyAdded = -1;
     private boolean mapComments;
-    
+    private Tree parent = null;
 
     public AssignComments(final CompilationInfo info,
             final Tree commentMapTarget,
@@ -109,11 +109,17 @@ class AssignComments extends TreeScanner<Void, Void> {
                 if ((commentMapTarget != null) && info.getTreeUtilities().isSynthetic(new TreePath(new TreePath(unit), tree)))
                     return null;
                 if (commentMapTarget != null) {
-                    mapComments2(tree, true);
+                    mapComments2(tree, true, false);
                 }
-                super.scan(tree, p);
+                Tree oldParent = parent;
+                try {
+                    parent = tree;
+                    super.scan(tree, p);
+                } finally {
+                    parent = oldParent;
+                }
                 if (commentMapTarget != null) {
-                    mapComments2(tree, false);
+                    mapComments2(tree, false, tree.getKind() != Tree.Kind.BLOCK || parent == null || parent.getKind() != Tree.Kind.METHOD);
                     if (mapComments) {
                         ((CommentSetImpl) createCommentSet(commentService, tree)).commentsMapped();
                     }
@@ -125,11 +131,11 @@ class AssignComments extends TreeScanner<Void, Void> {
         }
     }
         
-    private void mapComments2(Tree tree, boolean preceding) {
+    private void mapComments2(Tree tree, boolean preceding, boolean trailing) {
         if (((JCTree) tree).pos <= 0) {
             return;
         }
-        collect(tree, preceding);
+        collect(tree, preceding, trailing);
     }
     
     /*
@@ -138,7 +144,7 @@ class AssignComments extends TreeScanner<Void, Void> {
     
     private static Logger log = Logger.getLogger(AssignComments.class.getName());
     
-    private void collect(Tree tree, boolean preceding) {
+    private void collect(Tree tree, boolean preceding, boolean trailing) {
         if (isEvil(tree)) {
             return;
         }
@@ -154,7 +160,9 @@ class AssignComments extends TreeScanner<Void, Void> {
             }
         } else {
             lookForInline(seq, tree);
-            lookForTrailing(seq, tree);
+            if (trailing) {
+                lookForTrailing(seq, tree);
+            }
         }
 
         if (log.isLoggable(Level.FINE)) {

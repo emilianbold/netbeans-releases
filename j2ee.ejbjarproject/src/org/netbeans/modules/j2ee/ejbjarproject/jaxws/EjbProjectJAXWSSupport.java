@@ -67,13 +67,11 @@ import org.openide.util.Exceptions;
  */
 public class EjbProjectJAXWSSupport extends ProjectJAXWSSupport /*implements JAXWSSupportImpl*/ {
     private EjbJarProject project;
-    private AntProjectHelper antProjectHelper;
     
     /** Creates a new instance of JAXWSSupport */
     public EjbProjectJAXWSSupport(EjbJarProject project, AntProjectHelper antProjectHelper) {
         super(project,antProjectHelper);
         this.project = project;
-        this.antProjectHelper = antProjectHelper;
     }
 
     public FileObject getWsdlFolder(boolean create) throws java.io.IOException {
@@ -189,6 +187,10 @@ public String addService(String name, String serviceImpl, String wsdlUrl, String
                 return JAVA_EE_VERSION_16;
             } else if (Profile.JAVA_EE_6_FULL.equals(ejbModule.getJ2eeProfile())) {
                 return JAVA_EE_VERSION_16;
+            } else if (Profile.JAVA_EE_7_WEB.equals(ejbModule.getJ2eeProfile())) {
+                return JAVA_EE_VERSION_17;
+            } else if (Profile.JAVA_EE_7_FULL.equals(ejbModule.getJ2eeProfile())) {
+                return JAVA_EE_VERSION_17;
             } else if (Profile.JAVA_EE_5.equals(ejbModule.getJ2eeProfile())) {
                 return JAVA_EE_VERSION_15;
             }

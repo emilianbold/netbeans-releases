@@ -55,9 +55,11 @@ import org.netbeans.modules.php.api.editor.PhpClass;
 import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.api.util.Pair;
 import org.netbeans.modules.php.project.PhpProject;
+import org.netbeans.modules.php.project.PhpProjectValidator;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
 import org.netbeans.modules.php.project.phpunit.PhpUnit;
+import org.netbeans.modules.php.project.ui.Utils;
 import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.netbeans.spi.gototest.TestLocator;
 import org.openide.filesystems.FileObject;
@@ -110,6 +112,10 @@ public class GoToTest implements TestLocator {
             LOGGER.log(Level.INFO, "PHP project was not found for file {0}", fo);
             return null;
         }
+        if (PhpProjectValidator.isFatallyBroken(project)) {
+            Utils.warnInvalidSourcesDirectory(project);
+            return null;
+        }
 
         if (CommandUtils.isUnderTests(project, fo, false)) {
             return findSource(project, fo);
@@ -122,7 +128,7 @@ public class GoToTest implements TestLocator {
     @Override
     public FileType getFileType(FileObject fo) {
         PhpProject project = PhpProjectUtils.getPhpProject(fo);
-        if (project == null) {
+        if (project == null || PhpProjectValidator.isFatallyBroken(project)) {
             LOGGER.log(Level.INFO, "PHP project was not found for file {0}", fo);
             return FileType.NEITHER;
         }
@@ -171,7 +177,9 @@ public class GoToTest implements TestLocator {
                 if (!PhpUnit.isTestOrSuiteClass(phpClass.getName())) {
                     continue;
                 }
-                classes.add(Pair.of(PhpUnit.getTestedClass(phpClass.getName()), PhpUnit.getTestedClass(phpClass.getFullyQualifiedName())));
+                String fullyQualifiedName = phpClass.getFullyQualifiedName();
+                assert fullyQualifiedName != null : "No FQN for php class: " + phpClass.getName();
+                classes.add(Pair.of(PhpUnit.getTestedClass(phpClass.getName()), PhpUnit.getTestedClass(fullyQualifiedName)));
             }
 
             for (Pair<String, String> namePair : classes) {

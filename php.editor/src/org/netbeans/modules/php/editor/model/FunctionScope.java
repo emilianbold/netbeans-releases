@@ -51,10 +51,12 @@ import org.netbeans.modules.php.editor.api.elements.ParameterElement;
  * @author Radek Matous
  */
 public interface FunctionScope extends Scope, VariableScope, FullyQualifiedElement {
-    boolean isAnonymous();//lambda, closures
+
+    boolean isAnonymous(); //lambda, closures
     List<? extends String> getParameterNames();
     List<? extends ParameterElement> getParameters();
     Collection<? extends String> getReturnTypeNames();
     Collection<? extends TypeScope> getReturnTypes();
     Collection<? extends TypeScope> getReturnTypes(boolean resolve);
+
 }

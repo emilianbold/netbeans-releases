@@ -178,19 +178,11 @@ public class WebProjectOperations implements DeleteOperationImplementation, Copy
     }
     
     public void notifyDeleting() throws IOException {
-        WebActionProvider ap = (WebActionProvider) project.getLookup().lookup(WebActionProvider.class);
-        
-        assert ap != null;
-        
-        Lookup context = Lookups.fixed(new Object[0]);
-        Properties p = new Properties();
-        String[] targetNames = ap.getTargetNames(ActionProvider.COMMAND_CLEAN, context, p);
         FileObject buildXML = project.getProjectDirectory().getFileObject(GeneratedFilesHelper.BUILD_XML_PATH);
-        
-        assert targetNames != null;
-        assert targetNames.length > 0;
-        
-        ActionUtils.runTarget(buildXML, targetNames, p).waitFinished();
+        // #215290
+        if (buildXML != null) {
+            ActionUtils.runTarget(buildXML, new String[]{ActionProvider.COMMAND_CLEAN}, new Properties()).waitFinished();
+        }
     }
     
     public void notifyDeleted() throws IOException {

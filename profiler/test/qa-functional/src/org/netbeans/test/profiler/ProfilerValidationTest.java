@@ -48,6 +48,7 @@ import java.util.logging.Level;
 import javax.swing.JCheckBox;
 import junit.framework.Test;
 import org.netbeans.jellytools.Bundle;
+import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.JavaProjectsTabOperator;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.MainWindowOperator;
@@ -55,13 +56,17 @@ import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.NewJavaProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.OptionsOperator;
+import org.netbeans.jellytools.OutputTabOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.ActionNoBlock;
+import org.netbeans.jellytools.actions.EditAction;
 import org.netbeans.jellytools.nodes.JavaProjectRootNode;
 import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.EventTool;
+import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.Waitable;
@@ -73,6 +78,7 @@ import org.netbeans.jemmy.operators.JLabelOperator;
 import org.netbeans.jemmy.operators.JTabbedPaneOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.lib.profiler.common.Profiler;
 import org.netbeans.test.ide.WatchProjects;
 
 /**
@@ -108,8 +114,7 @@ public class ProfilerValidationTest extends JellyTestCase {
                 "testProfilerCalibration",
                 "testProfilerProperties",
                 "testProfilerMenus",
-                "testProfiler",
-                "issue144699Hack");
+                "testProfiler");
         return conf.suite();
     }
 
@@ -259,13 +264,13 @@ public class ProfilerValidationTest extends JellyTestCase {
         WatchProjects.waitScanFinished();
         projectNode.buildProject();
         MainWindowOperator.getDefault().waitStatusText(Bundle.getStringTrimmed("org.apache.tools.ant.module.run.Bundle", "FMT_finished_target_status")); // "Finished Building"
-
+        // add log message to application to 
+        Node anagramsNode = new Node(new SourcePackagesNode(projectNode), "ui|Anagrams.java");
+        new EditAction().perform(anagramsNode);
+        String visibleToken = "VISIBLE";
+        new EditorOperator("Anagrams.java").replace("setVisible(true);", "setVisible(true);\nSystem.out.println(\"" + visibleToken + "\");");
         // call Profile|Profile Main Project
         new ActionNoBlock(ProfileMenu + "|" + Bundle.getStringTrimmed("org.netbeans.modules.profiler.actions.Bundle", "LBL_ProfileMainProjectAction"), null).perform();
-        // confirm changes in project when profiled for the first time
-        //new NbDialogOperator( Bundle.getStringTrimmed("org.netbeans.modules.profiler.j2se.Bundle",
-        //                "J2SEProjectTypeProfiler_ModifyBuildScriptCaption") ).ok(); //"Enable Profiling of {0}"
-        //wait
         // click Run in Profile AnagramGame dialog
         NbDialogOperator profileOper = new NbDialogOperator(Bundle.getStringTrimmed("org.netbeans.modules.profiler.stp.Bundle",
                 "SelectProfilingTask_ProfileDialogCaption")); // "Profile "+anagramGamePrName
@@ -276,11 +281,14 @@ public class ProfilerValidationTest extends JellyTestCase {
                 "NetBeansProfiler_ProgressDialogCaption"), 50000); // "Progress ..."
         TopComponentOperator tco = new TopComponentOperator(Bundle.getStringTrimmed("org.netbeans.modules.profiler.Bundle",
                 "LAB_ControlPanelName")); // "Profiler"
-        //new OutputTabOperator(anagramGamePrName).waitText( Bundle.getStringTrimmed(PROFILER_LIB_BUNDLE,
-        //                            "ProfilerServer_LocalConnectionMsg") ); //"Established local connection with the tool"
+        // wait for application visible
+        OutputTabOperator oto = new OutputTabOperator("profile");
+        oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 120000);
+        oto.waitText(visibleToken);
+        new EventTool().waitNoEvent(1000);
         Action takeSnapshotAction = new Action(ProfileMenu + "|" + Bundle.getStringTrimmed(PROFILER_ACTIONS_BUNDLE,
                 "LBL_TakeSnapshotAction"), null);
-        new Waiter(new Waitable() {
+        Waiter waiter = new Waiter(new Waitable() {
             @Override
             public Object actionProduced(Object takeSnapshotAction) {
                 MainWindowOperator.getDefault().toFront();
@@ -291,8 +299,10 @@ public class ProfilerValidationTest extends JellyTestCase {
             public String getDescription() {
                 return ("Wait menu item is enabled."); // NOI18N
             }
-        }).waitAction(takeSnapshotAction);
-        new EventTool().waitNoEvent(5000);
+        });
+        waiter.getTimeouts().setTimeout("Waiter.WaitingTime", 60000);
+        waiter.waitAction(takeSnapshotAction);
+        new EventTool().waitNoEvent(1000);
         takeSnapshotAction.perform();
         TopComponentOperator collectedResults;
         try {
@@ -307,6 +317,7 @@ public class ProfilerValidationTest extends JellyTestCase {
         // call "Profile|Stop Profiling Session"
         new Action(ProfileMenu + "|" + Bundle.getStringTrimmed(PROFILER_ACTIONS_BUNDLE,
                 "LBL_StopAction"), null).perform();
+        waitProfilerStopped();
     }
 
     public void waitProgressDialog(String title, int milliseconds) {
@@ -330,6 +341,34 @@ public class ProfilerValidationTest extends JellyTestCase {
                     "LBL_TakeSnapshotAction"), null).perform(); // "Take Snapshot of Collected Results"
         } catch (TimeoutExpiredException e) {
             // ignore when Error dialog did not appear (not 100% reproducible)
+        }
+    }
+    
+    /**
+     * Waits until profiler is not stopped.
+     */
+    private void waitProfilerStopped() {
+        try {
+            new Waiter(new Waitable() {
+                @Override
+                public Object actionProduced(Object object) {
+                    final int state = Profiler.getDefault().getProfilingState();
+                    final int mode = Profiler.getDefault().getProfilingMode();
+                    if ((state == Profiler.PROFILING_PAUSED) || (state == Profiler.PROFILING_RUNNING)) {
+                        if (mode == Profiler.MODE_PROFILE) {
+                            return null;
+                        }
+                    }
+                    return Boolean.TRUE;
+                }
+
+                @Override
+                public String getDescription() {
+                    return ("Wait profiler stopped."); // NOI18N
+                }
+            }).waitAction(null);
+        } catch (InterruptedException ex) {
+            throw new JemmyException("Waiting for profiler stopped failed.", ex);
         }
     }
 }

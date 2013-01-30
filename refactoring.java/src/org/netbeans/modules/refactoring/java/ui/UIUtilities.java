@@ -66,6 +66,7 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.refactoring.java.api.MemberInfo;
+import org.netbeans.swing.plaf.LFCustoms;
 import org.openide.util.Lookup;
 import org.openide.xml.XMLUtil;
 
@@ -279,7 +280,7 @@ public final class UIUtilities {
             buf.insert(0, "<s>"); // NOI18N
             buf.append("</s>"); // NOI18N
         }
-        buf.insert(0, "<font color=" + getHTMLColor(StyleConstants.getForeground(set)) + ">"); //NOI18N
+        buf.insert(0, "<font color=" + getHTMLColor(LFCustoms.getForeground(set)) + ">"); //NOI18N
         buf.append("</font>"); //NOI18N
         return buf.toString();
     }

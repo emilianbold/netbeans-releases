@@ -94,9 +94,9 @@ public class SearchHistoryTopComponent extends TopComponent implements DiffSetup
         shp.setDiffResultsViewFactory(fac);
     }
 
-    public void search() {        
+    public void search (boolean showCriteria) {        
         shp.executeSearch();
-        shp.setSearchCriteria(false);
+        shp.setSearchCriteria(showCriteria);
     }
     
     public void searchOut() {  
@@ -111,6 +111,10 @@ public class SearchHistoryTopComponent extends TopComponent implements DiffSetup
         scp.setTo("");
         shp.setSearchCriteria(false);
         shp.executeSearch();
+    }
+
+    void activateDiffView (boolean selectFirstRevision) {
+        shp.activateDiffView(selectFirstRevision);
     }
 
     private void initComponents(final File[] roots, Date from, Date to, String branchName) {

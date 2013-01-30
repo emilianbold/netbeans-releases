@@ -67,7 +67,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.Program;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class InvocationContextResolver {
+public final class InvocationContextResolver {
 
     private static final Logger LOGGER = Logger.getLogger(InvocationContextResolver.class.getName());
     private List<ASTNode> nodes = new LinkedList<ASTNode>();

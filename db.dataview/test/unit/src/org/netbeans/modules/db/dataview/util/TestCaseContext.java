@@ -69,7 +69,7 @@ public class TestCaseContext {
     private File[] jars;
     private String name;
     
-    public TestCaseContext(HashMap map,String name)  throws Exception{
+    public TestCaseContext(HashMap<String,Object> map,String name)  throws Exception{
         this.name=name;
         setProperties((File)map.get(TestCaseDataFactory.DB_PROP));
         setJars((File[])map.get(TestCaseDataFactory.DB_JARS));
@@ -132,7 +132,7 @@ public class TestCaseContext {
         sql_del=getContent(f);
     }
     
-    public Map getData(){
+    public Properties getData(){
         return data;
     }
     
@@ -148,27 +148,16 @@ public class TestCaseContext {
         jars=f;
     }
     
-    private String[] parseContent(File f) throws  Exception{
-        BufferedReader br=new BufferedReader(new InputStreamReader(new FileInputStream(f.getAbsolutePath())));
-        List array=new ArrayList();
-        String s=null;
-        while((s=br.readLine())!=null){
-          array.add(s);
-        }
-        if(array.size()==0)
-            throw new RuntimeException(name+": File "+f.getName()+" doesn't containt the data !");
-        return (String[])array.toArray(new String[0]);
-    }
-    
     private  String getContent(File f) throws Exception{
         BufferedReader br=new BufferedReader(new InputStreamReader(new FileInputStream(f.getAbsolutePath())));
-        StringBuffer sb=new StringBuffer();
-        String s=null;
+        StringBuilder sb=new StringBuilder();
+        String s;
         while((s=br.readLine())!=null){
           sb.append(s);
         }
-        if(sb.length()==0)
+        if(sb.length()==0) {
             throw new RuntimeException(name+": File called "+f.getName()+" doesn't contain the data.");
+        }
         return sb.toString();
     }
     

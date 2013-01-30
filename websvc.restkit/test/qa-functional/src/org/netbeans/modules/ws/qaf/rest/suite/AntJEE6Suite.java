@@ -43,7 +43,6 @@ package org.netbeans.modules.ws.qaf.rest.suite;
 
 import junit.framework.Test;
 import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
-import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.ws.qaf.rest.JEE6CRUDTest;
 import org.netbeans.modules.ws.qaf.rest.JEE6FromDBTest;
 import org.netbeans.modules.ws.qaf.rest.JEE6PatternsTest;
@@ -68,7 +67,7 @@ public class AntJEE6Suite extends J2eeTestCase {
                 addServerTests(Server.GLASSFISH,
                 addServerTests(Server.GLASSFISH,
                 addServerTests(Server.GLASSFISH,
-                addServerTests(Server.GLASSFISH, NbModuleSuite.emptyConfiguration(), JEE6FromDBTest.class,
+                addServerTests(Server.GLASSFISH, emptyConfiguration(), JEE6FromDBTest.class,
                 "testFromDB",
                 "testDeploy",
                 "testUndeploy"), JEE6CRUDTest.class,
@@ -89,7 +88,6 @@ public class AntJEE6Suite extends J2eeTestCase {
                 "testContainerI3", //NOI18N
                 "testCcContainerI2", //NOI18N
                 "testCcContainerI3", //NOI18N
-                "testNodes", //NOI18N
                 "testDeploy", //NOI18N
                 "testUndeploy"), JEE6RestCStubsTest.class,
                 "testWizard", //NOI18N

@@ -165,12 +165,14 @@ public class AddConnectionWizard extends ConnectionDialogMediator implements Wiz
                 driverPanel,
                 new ConnectionPanel(),
                 new ChoosingSchemaPanel(),
+                new ChoosingConnectionNamePanel()
             };
             steps = new String[panels.length];
             steps = new String[] {
                 NbBundle.getMessage(AddConnectionWizard.class, "ChoosingDriverUI.Name"), // NOI18N
                 NbBundle.getMessage(AddConnectionWizard.class, "ConnectionPanel.Name"), // NOI18N
                 NbBundle.getMessage(AddConnectionWizard.class, "ChoosingSchemaPanel.Name"), // NOI18N
+                NbBundle.getMessage(AddConnectionWizard.class, "ChooseConnectionNamePanel.Name"), // NOI18N
             };
         }
         return panels;
@@ -359,7 +361,7 @@ public class AddConnectionWizard extends ConnectionDialogMediator implements Wiz
             } else if (driverName.contains(DatabaseModule.IDENTIFIER_MYSQL)) {
                 this.driverDN = NbBundle.getMessage(AddConnectionWizard.class, "MySQLDriverDisplayName"); // NOI18N
                 this.driverClass = NbBundle.getMessage(AddConnectionWizard.class, "MySQLDriverClass"); // NOI18N
-                this.databaseUrl = NbBundle.getMessage(AddConnectionWizard.class, "MySQLSampleDatabaseUrl"); // NOI18N
+                this.databaseUrl = databaseUrl != null ? databaseUrl : NbBundle.getMessage(AddConnectionWizard.class, "MySQLSampleDatabaseUrl"); // NOI18N
                 this.user = user == null ? NbBundle.getMessage(AddConnectionWizard.class, "MySQLSampleUser") : user; // NOI18N
                 this.pwd = password == null ? NbBundle.getMessage(AddConnectionWizard.class, "MySQLSamplePassword") : password; // NOI18N
                 this.downloadFrom = NbBundle.getMessage(AddConnectionWizard.class, "mysql.from"); // NOI18N

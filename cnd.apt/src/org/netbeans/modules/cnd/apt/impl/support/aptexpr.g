@@ -85,11 +85,24 @@ options {
 
 {
     private APTMacroCallback callback = null;
-    
+    private boolean bigValuesInUse = false;
+    private static final long MAX_INT = (long)Integer.MAX_VALUE;
+    private static final long MIN_INT = (long)Integer.MIN_VALUE;
+
     public APTExprParser(TokenStream lexer, APTMacroCallback callback) {
         super(lexer, 1, 16);
         tokenNames = _tokenNames;
         this.callback = callback;
+    }
+
+    private void checkBigValues(long r) {
+        if (r >= MAX_INT || r <= MIN_INT) {
+            this.bigValuesInUse = true;
+        }
+    }
+
+    public boolean areBigValuesUsed() {
+        return this.bigValuesInUse;
     }
 
     private boolean isDefined(Token id) {
@@ -253,7 +266,9 @@ defined returns [long r] {r=0;} :
 ;
 
 constant returns [long r] {r=0;}
-            :	LITERAL_true { r=toLong(true);}
+            :	
+            (
+                LITERAL_true { r=toLong(true);}
             |	LITERAL_false { r=toLong(false);}
             |   n:NUMBER {r=toLong(n.getText());}
             |   id:IDENT {r=evalID(id);}
@@ -265,6 +280,8 @@ constant returns [long r] {r=0;}
             | c: CHAR_LITERAL {r=charToLong(c.getText());; }
 //          | f1: FLOATONE {r=Integer.parseInt(f1.getText());}
 //          | f2: FLOATTWO {r=Integer.parseInt(f2.getText());}
+            )
+            {checkBigValues(r);}
 	;
 
 /* APTExpressionWalker is not used any more, because all evaluations are done in APTExprParser

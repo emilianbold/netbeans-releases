@@ -26,6 +26,7 @@
             <friend-packages>
                 <friend>org.apache.tools.ant.module</friend>
                 <friend>org.netbeans.modules.debugger.jpda.ui</friend>
+                <friend>org.netbeans.modules.debugger.jpda.visual</friend>
                 <friend>org.netbeans.modules.form</friend>
                 <friend>org.netbeans.modules.javacard.project</friend>
                 <friend>org.netbeans.modules.javafx2.scenebuilder</friend>

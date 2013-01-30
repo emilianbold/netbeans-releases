@@ -46,9 +46,9 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 import java.util.Stack;
 import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
@@ -59,7 +59,6 @@ import org.netbeans.modules.php.editor.api.ElementQuery;
 import org.netbeans.modules.php.editor.api.ElementQuery.Index;
 import org.netbeans.modules.php.editor.api.elements.BaseFunctionElement;
 import org.netbeans.modules.php.editor.api.elements.ClassElement;
-import org.netbeans.modules.php.editor.api.elements.FunctionElement;
 import org.netbeans.modules.php.editor.api.elements.MethodElement;
 import org.netbeans.modules.php.editor.api.elements.ParameterElement;
 import org.netbeans.modules.php.editor.api.elements.ParameterElement.OutputType;
@@ -89,6 +88,7 @@ public class ParameterInfoSupport {
         this.modelVisitor = modelVisitor;
         this.offset = offset;
     }
+
     private static final Collection<PHPTokenId> CTX_DELIMITERS = Arrays.asList(
             PHPTokenId.PHP_OPENTAG, PHPTokenId.PHP_SEMICOLON, PHPTokenId.PHP_CURLY_OPEN, PHPTokenId.PHP_CURLY_CLOSE,
             PHPTokenId.PHP_RETURN, PHPTokenId.PHP_OPERATOR, PHPTokenId.PHP_ECHO,
@@ -100,8 +100,7 @@ public class ParameterInfoSupport {
 
 
     private enum State {
-
-        START, METHOD, INVALID, VARBASE, DOLAR, PARAMS, REFERENCE, STATIC_REFERENCE, FUNCTION, FIELD, VARIABLE, CLASSNAME, STOP
+       START, METHOD, INVALID, VARBASE, DOLAR, PARAMS, REFERENCE, STATIC_REFERENCE, FUNCTION, FIELD, VARIABLE, CLASSNAME, STOP
     };
 
     public ParameterInfo getParameterInfo() {
@@ -111,6 +110,7 @@ public class ParameterInfoSupport {
         }
         return retval;
     }
+
     private ParameterInfo parametersTokenImpl() {
         FileScope modelScope = modelVisitor.getFileScope();
         VariableScope nearestVariableScope = modelVisitor.getNearestVariableScope(offset);
@@ -202,7 +202,7 @@ public class ParameterInfoSupport {
                         if (isString(token)) {
                             metaAll.insert(0, token.text().toString());
                             if (anchor == -1) {
-                                anchor = tokenSequence.offset()+token.text().toString().length();
+                                anchor = tokenSequence.offset() + token.text().toString().length();
                             }
                             state = State.METHOD;
                         }
@@ -215,21 +215,21 @@ public class ParameterInfoSupport {
                         }
                         break;
                     case VARBASE:
-                        state = State.INVALID;
                         if (isStaticReference(token)) {
                             state = State.STATIC_REFERENCE;
                             break;
-                        } else {
-                            state = State.VARIABLE;
                         }
-
                     case VARIABLE:
                         metaAll.insert(0, VariousUtils.PRE_OPERATION_TYPE_DELIMITER + VariousUtils.VAR_TYPE_PREFIX);
+                        state = State.STOP;
+                        break;
                     case CLASSNAME:
                         //TODO: self, parent not handled yet
                         //TODO: maybe rather introduce its own State for self, parent
                         state = State.STOP;
                         break;
+                    default:
+                        //no-op
                 }
             } else {
                 if (state.equals(State.METHOD)) {
@@ -294,19 +294,19 @@ public class ParameterInfoSupport {
     }
 
     private static boolean isDolar(Token<PHPTokenId> token) {
-        return token.id().equals(PHPTokenId.PHP_TOKEN) && "$".contentEquals(token.text());//NOI18N
+        return token.id().equals(PHPTokenId.PHP_TOKEN) && "$".contentEquals(token.text()); //NOI18N
     }
 
     private static boolean isLeftBracket(Token<PHPTokenId> token) {
-        return token.id().equals(PHPTokenId.PHP_TOKEN) && "(".contentEquals(token.text());//NOI18N
+        return token.id().equals(PHPTokenId.PHP_TOKEN) && "(".contentEquals(token.text()); //NOI18N
     }
 
     private static boolean isRightBracket(Token<PHPTokenId> token) {
-        return token.id().equals(PHPTokenId.PHP_TOKEN) && ")".contentEquals(token.text());//NOI18N
+        return token.id().equals(PHPTokenId.PHP_TOKEN) && ")".contentEquals(token.text()); //NOI18N
     }
 
     private static boolean isComma(Token<PHPTokenId> token) {
-        return token.id().equals(PHPTokenId.PHP_TOKEN) && ",".contentEquals(token.text());//NOI18N
+        return token.id().equals(PHPTokenId.PHP_TOKEN) && ",".contentEquals(token.text()); //NOI18N
     }
 
     private static boolean isReference(Token<PHPTokenId> token) {
@@ -339,6 +339,7 @@ public class ParameterInfoSupport {
 
     private static ParameterInfo parametersNodeImpl(final int caretOffset, final ParserResult info) {
         final ParameterInfo[] retval = new ParameterInfo[1];
+        retval[0] = ParameterInfo.NONE;
         DefaultVisitor visitor = new DefaultVisitor() {
 
             @Override
@@ -367,7 +368,7 @@ public class ParameterInfoSupport {
             }
 
             private ParameterInfo createParameterInfo(ASTNodeInfo nodeInfo, List<Expression> parameters) {
-                int idx = -1;
+                int idx;
                 ASTNode node = nodeInfo.getOriginalNode();
                 int anchor  = nodeInfo.getRange().getEnd();
                 OffsetRange offsetRange = new OffsetRange(anchor, node.getEndOffset());
@@ -385,7 +386,7 @@ public class ParameterInfoSupport {
                             }
                         }
                     }
-                    final Model model = ((PHPParseResult)info).getModel();
+                    final Model model = ((PHPParseResult) info).getModel();
                     OccurencesSupport occurencesSupport = model.getOccurencesSupport((nodeInfo.getRange().getStart() + anchor) / 2);
                     Occurence occurence = occurencesSupport.getOccurence();
                     if (occurence != null) {
@@ -394,33 +395,30 @@ public class ParameterInfoSupport {
                             PhpElement declaration = allDeclarations.iterator().next();
                             final boolean oneDeclaration = occurence.getAllDeclarations().size() == 1;
                             if (declaration instanceof FunctionScope && oneDeclaration) {
-                                FunctionScope functionScope = (FunctionScope) declaration;
-                                return new ParameterInfo(toParamNames(functionScope), idx, anchor);
+                                List<String> paramNames = toParamNames((FunctionScope) declaration);
+                                return paramNames.isEmpty() ? ParameterInfo.NONE : new ParameterInfo(paramNames, idx, anchor);
                             } else if (declaration instanceof BaseFunctionElement && oneDeclaration) {
-                                BaseFunctionElement functionElement = (BaseFunctionElement) declaration;
-                                return new ParameterInfo(toParamNames(functionElement), idx, anchor);
+                                List<String> paramNames = toParamNames((BaseFunctionElement) declaration);
+                                return paramNames.isEmpty() ? ParameterInfo.NONE : new ParameterInfo(paramNames, idx, anchor);
                             } else if (declaration instanceof ClassElement && oneDeclaration) {
-                                ClassElement clsElement = (ClassElement) declaration;
-                                return new ParameterInfo(toParamNames(clsElement), idx, anchor);
+                                List<String> paramNames = toParamNames((ClassElement) declaration);
+                                return paramNames.isEmpty() ? ParameterInfo.NONE : new ParameterInfo(paramNames, idx, anchor);
                             }
 
                         }
                     }
                 }
-                return null;
+                return ParameterInfo.NONE;
             }
         };
         Program root = Utils.getRoot(info);
         if (root != null) {
             visitor.scan(root);
-            if (retval[0] != null) {
-                return retval[0];
-            }
         }
-        return ParameterInfo.NONE;
+        return retval[0];
     }
 
-    @CheckForNull
+    @NonNull
     private static List<String> toParamNames(FunctionScope functionScope) {
         List<String> paramNames = new ArrayList<String>();
         List<? extends ParameterElement> parameters = functionScope.getParameters();

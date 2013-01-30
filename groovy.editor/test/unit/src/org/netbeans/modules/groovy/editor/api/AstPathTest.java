@@ -116,7 +116,7 @@ public class AstPathTest extends GroovyTestBase {
         final CountDownLatch latch = new CountDownLatch(1);
         ParserManager.parse(Collections.singleton(source), new UserTask() {
             public @Override void run(ResultIterator resultIterator) throws Exception {
-                GroovyParserResult result = AstUtilities.getParseResult(resultIterator.getParserResult());
+                GroovyParserResult result = ASTUtils.getParseResult(resultIterator.getParserResult());
                 String text = result.getSnapshot().getText().toString();
 
                 int caretDelta = caretLine.indexOf('^');

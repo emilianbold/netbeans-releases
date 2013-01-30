@@ -1,9 +1,9 @@
 Name: OSGi
-Version: 4.3
-Files: osgi.core-4.3.jar osgi.cmpn-4.2.jar
+Version: 5.0
+Files: osgi.core-5.0.0.jar osgi.cmpn-4.2.jar
 Description: OSGi specification (core & compendium).
 License: Apache-2.0
-Origin: http://www.osgi.org/Download/Release4V43
+Origin: http://www.osgi.org/Download/Release5
 OSR: Oracle-7596
 
                                  Apache License

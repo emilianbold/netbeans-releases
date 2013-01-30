@@ -86,10 +86,10 @@ public class FortranCompilerConfiguration extends BasicCompilerConfiguration imp
     // Interface OptionsProvider
     @Override
     public String getOptions(AbstractCompiler compiler) {
-        String options = "$(COMPILE.f) "; // NOI18N
-        options += getAllOptions2(compiler) + " "; // NOI18N
-        options += getCommandLineConfiguration().getValue() + " "; // NOI18N
-        return CppUtils.reformatWhitespaces(options);
+        StringBuilder options = new StringBuilder("$(COMPILE.f) "); // NOI18N
+        options.append(getAllOptions2(compiler)).append(' '); // NOI18N
+        options.append(getCommandLineOptions(true));
+        return CppUtils.reformatWhitespaces(options.toString());
     }
 
     public String getFFlagsBasic(AbstractCompiler compiler) {

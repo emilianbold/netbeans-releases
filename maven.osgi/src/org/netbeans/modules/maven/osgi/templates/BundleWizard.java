@@ -42,13 +42,14 @@ import org.netbeans.api.templates.TemplateRegistration;
 import org.netbeans.modules.maven.api.archetype.ArchetypeWizards;
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle.Messages;
+import static org.netbeans.modules.maven.osgi.templates.Bundle.*;
 
 public class BundleWizard {
     
     @TemplateRegistration(folder=ArchetypeWizards.TEMPLATE_FOLDER, position=290, displayName="#template.project.OSGi", iconBase="org/netbeans/modules/maven/osgi/maven_osgi_16.png", description="OSGiDescription.html")
     @Messages("template.project.OSGi=OSGi Bundle")
     public static WizardDescriptor.InstantiatingIterator<?> create() {
-        return ArchetypeWizards.definedArchetype("org.codehaus.mojo.archetypes", "osgi-archetype", "1.3", null);
+        return ArchetypeWizards.definedArchetype("org.codehaus.mojo.archetypes", "osgi-archetype", "1.4", null, template_project_OSGi());
     }
 
     private BundleWizard() {}

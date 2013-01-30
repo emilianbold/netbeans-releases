@@ -49,7 +49,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import org.netbeans.modules.php.editor.api.ElementQuery.QueryScope;
-import org.netbeans.modules.php.editor.api.elements.TypeElement;
 import org.netbeans.modules.php.editor.api.elements.ClassElement;
 import org.netbeans.modules.php.editor.api.elements.ConstantElement;
 import org.netbeans.modules.php.editor.api.elements.FieldElement;
@@ -60,6 +59,7 @@ import org.netbeans.modules.php.editor.api.elements.NamespaceElement;
 import org.netbeans.modules.php.editor.api.elements.PhpElement;
 import org.netbeans.modules.php.editor.api.elements.TraitElement;
 import org.netbeans.modules.php.editor.api.elements.TypeConstantElement;
+import org.netbeans.modules.php.editor.api.elements.TypeElement;
 import org.netbeans.modules.php.editor.api.elements.TypeResolver;
 import org.netbeans.modules.php.editor.api.elements.VariableElement;
 import org.netbeans.modules.php.editor.elements.ClassElementImpl;
@@ -94,7 +94,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Parameters;
 
-public class FileElementQuery extends AbstractElementQuery implements ElementQuery.File {
+public final class FileElementQuery extends AbstractElementQuery implements ElementQuery.File {
 
     private final FileObject fileObject;
     private final PHPParseResult result;
@@ -114,66 +114,66 @@ public class FileElementQuery extends AbstractElementQuery implements ElementQue
         return new FileElementQuery(result);
     }
 
-    public final NamespaceElement create(final NamespaceDeclaration node) {
-        Parameters.notNull("node", node);//NOI18N
+    public NamespaceElement create(final NamespaceDeclaration node) {
+        Parameters.notNull("node", node); //NOI18N
         final NamespaceElement retval = NamespaceElementImpl.fromNode(node, this);
         addElement(retval);
         return retval;
     }
 
-    public final TypeElement create(final NamespaceElement namespace, final TypeDeclaration node) {
-        Parameters.notNull("node", node);//NOI18N
+    public TypeElement create(final NamespaceElement namespace, final TypeDeclaration node) {
+        Parameters.notNull("node", node); //NOI18N
         TypeElement retval = null;
         if (node instanceof ClassDeclaration) {
             retval = create(namespace, (ClassDeclaration) node);
         } else if (node instanceof InterfaceDeclaration) {
             retval = create(namespace, (InterfaceDeclaration) node);
         } else if (node instanceof TraitDeclaration) {
-            retval = create(namespace, (InterfaceDeclaration) node);
+            retval = create(namespace, (TraitDeclaration) node);
         }
         addElement(retval);
         return retval;
     }
 
-    public final ClassElement create(final NamespaceElement namespace, final ClassDeclaration node) {
-        Parameters.notNull("node", node);//NOI18N
+    public ClassElement create(final NamespaceElement namespace, final ClassDeclaration node) {
+        Parameters.notNull("node", node); //NOI18N
         final ClassElement retval = ClassElementImpl.fromNode(namespace, node, this);
         addElement(retval);
         return retval;
     }
 
-    public final InterfaceElement create(final NamespaceElement namespace, final InterfaceDeclaration node) {
-        Parameters.notNull("node", node);//NOI18N
+    public InterfaceElement create(final NamespaceElement namespace, final InterfaceDeclaration node) {
+        Parameters.notNull("node", node); //NOI18N
         final InterfaceElement retval = InterfaceElementImpl.fromNode(namespace, node, this);
         addElement(retval);
         return retval;
     }
 
-    public final TraitElement create(final NamespaceElement namespace, final TraitDeclaration node) {
-        Parameters.notNull("node", node);//NOI18N
+    public TraitElement create(final NamespaceElement namespace, final TraitDeclaration node) {
+        Parameters.notNull("node", node); //NOI18N
         final TraitElement retval = TraitElementImpl.fromNode(namespace, node, this);
         addElement(retval);
         return retval;
     }
 
-    public final FunctionElement create(final NamespaceElement namespace, final FunctionDeclaration node) {
-        Parameters.notNull("node", node);//NOI18N
+    public FunctionElement create(final NamespaceElement namespace, final FunctionDeclaration node) {
+        Parameters.notNull("node", node); //NOI18N
         final FunctionElement retval = FunctionElementImpl.fromNode(namespace, node, this);
         addElement(retval);
         return retval;
     }
 
-    public final MethodElement create(final TypeElement type, final MethodDeclaration node) {
-        Parameters.notNull("type", type);//NOI18N
-        Parameters.notNull("node", node);//NOI18N
+    public MethodElement create(final TypeElement type, final MethodDeclaration node) {
+        Parameters.notNull("type", type); //NOI18N
+        Parameters.notNull("node", node); //NOI18N
         MethodElement retval = MethodElementImpl.fromNode(type, node, this);
         addElement(retval);
         return retval;
     }
 
-    public final Set<FieldElement> create(final TypeElement type, final FieldsDeclaration node) {
-        Parameters.notNull("type", type);//NOI18N
-        Parameters.notNull("node", node);//NOI18N
+    public Set<FieldElement> create(final TypeElement type, final FieldsDeclaration node) {
+        Parameters.notNull("type", type); //NOI18N
+        Parameters.notNull("node", node); //NOI18N
         final Set<FieldElement> retval = FieldElementImpl.fromNode(type, node, this);
         for (FieldElement fieldElement : retval) {
             if (!fields.contains(fieldElement)) {
@@ -187,16 +187,16 @@ public class FileElementQuery extends AbstractElementQuery implements ElementQue
     /**
      * @return instance of PropertyElement or null
      */
-    public final FieldElement create(final TypeElement type, final FieldAccess node) {
-        Parameters.notNull("type", type);//NOI18N
-        Parameters.notNull("node", node);//NOI18N
+    public FieldElement create(final TypeElement type, final FieldAccess node) {
+        Parameters.notNull("type", type); //NOI18N
+        Parameters.notNull("node", node); //NOI18N
         final Set<TypeResolver> resolvers = new HashSet<TypeResolver>();
         resolvers.add(new VariableTypeResolver(node));
         VariableBase dispatcher = node.getDispatcher();
         final MethodElement method = getLast(MethodElement.class);
         if (method != null && dispatcher instanceof Variable) {
             VariableElement varDispatcher = createMethodVariable(method, (Variable) dispatcher);
-            if (varDispatcher.getName(false).equalsIgnoreCase("this")) {//NOI18N
+            if (varDispatcher.getName(false).equalsIgnoreCase("this")) { //NOI18N
                 final FieldElement retval = FieldElementImpl.fromNode(type, node, resolvers, this);
                 if (!fields.contains(retval)) {
                     fields.add(retval);
@@ -208,56 +208,56 @@ public class FileElementQuery extends AbstractElementQuery implements ElementQue
         return null;
     }
 
-    public final VariableElement createTopLevelVariable(final Variable node) {
-        Parameters.notNull("node", node);//NOI18N
+    public VariableElement createTopLevelVariable(final Variable node) {
+        Parameters.notNull("node", node); //NOI18N
         final Set<TypeResolver> resolvers = new HashSet<TypeResolver>();
         resolvers.add(new VariableTypeResolver(node));
         return addTopLevelVariable(VariableElementImpl.fromNode(node, resolvers, this));
     }
 
-    public final VariableElement createMethodVariable(final MethodElement method, final Variable node) {
-        Parameters.notNull("method", method);//NOI18N
-        Parameters.notNull("node", node);//NOI18N
+    public VariableElement createMethodVariable(final MethodElement method, final Variable node) {
+        Parameters.notNull("method", method); //NOI18N
+        Parameters.notNull("node", node); //NOI18N
         final Set<TypeResolver> resolvers = new HashSet<TypeResolver>();
         resolvers.add(new VariableTypeResolver(node));
         return addMethodVariable(method, VariableElementImpl.fromNode(node, resolvers, this));
     }
 
-    public final VariableElement createFunctionVariable(final FunctionElement function, final Variable node) {
-        Parameters.notNull("method", function);//NOI18N
-        Parameters.notNull("node", node);//NOI18N
+    public VariableElement createFunctionVariable(final FunctionElement function, final Variable node) {
+        Parameters.notNull("method", function); //NOI18N
+        Parameters.notNull("node", node); //NOI18N
         final Set<TypeResolver> resolvers = new HashSet<TypeResolver>();
         resolvers.add(new VariableTypeResolver(node));
         return addFunctionVariable(function, VariableElementImpl.fromNode(node, resolvers, this));
     }
 
-    public final Set<ConstantElement> createConstant(final NamespaceElement namespace, final ConstantDeclaration node) {
-        Parameters.notNull("node", node);//NOI18N
+    public Set<ConstantElement> createConstant(final NamespaceElement namespace, final ConstantDeclaration node) {
+        Parameters.notNull("node", node); //NOI18N
         final Set<ConstantElement> retval = ConstantElementImpl.fromNode(namespace, node, this);
         addElements(retval);
         return retval;
     }
 
-    public final Set<TypeConstantElement> createTypeConstant(final TypeElement type, final ConstantDeclaration node) {
-        Parameters.notNull("type", type);//NOI18N
-        Parameters.notNull("node", node);//NOI18N
+    public Set<TypeConstantElement> createTypeConstant(final TypeElement type, final ConstantDeclaration node) {
+        Parameters.notNull("type", type); //NOI18N
+        Parameters.notNull("node", node); //NOI18N
         final Set<TypeConstantElement> retval = TypeConstantElementImpl.fromNode(type, node, this);
         addElements(retval);
         return retval;
     }
 
     @Override
-    public final FileObject getFileObject() {
+    public FileObject getFileObject() {
         return fileObject;
     }
 
     @Override
-    public final URL getURL() {
+    public URL getURL() {
         return url;
     }
 
     @Override
-    public final PHPParseResult getResult() {
+    public PHPParseResult getResult() {
         return result;
     }
 
@@ -289,7 +289,7 @@ public class FileElementQuery extends AbstractElementQuery implements ElementQue
         return old != null ? old : variable;
     }
 
-    private final synchronized VariableElement addFunctionVariable(final FunctionElement scope, final VariableElement variable) {
+    private synchronized VariableElement addFunctionVariable(final FunctionElement scope, final VariableElement variable) {
         return addVariable(scope, variable);
     }
 
@@ -323,7 +323,7 @@ public class FileElementQuery extends AbstractElementQuery implements ElementQue
         return map != null ? new HashSet(map.values()) : Collections.emptySet();
     }
 
-    private class VariableTypeResolver implements TypeResolver {
+    private final class VariableTypeResolver implements TypeResolver {
 
         private final String rawName;
         private QualifiedName name;
@@ -366,7 +366,9 @@ public class FileElementQuery extends AbstractElementQuery implements ElementQue
                     Collection<? extends TypeScope> types = VariousUtils.getType(scope, rawName, offset, false);
                     for (TypeScope typeScope : types) {
                         name = typeScope.getFullyQualifiedName();
-                        if (name != null) break;
+                        if (name != null) {
+                            break;
+                        }
                     }
 
                 }

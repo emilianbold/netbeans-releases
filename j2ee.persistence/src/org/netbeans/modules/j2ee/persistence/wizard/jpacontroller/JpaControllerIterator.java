@@ -299,24 +299,18 @@ public class JpaControllerIterator implements TemplateWizard.Iterator {
         index = 0;
         // obtaining target folder
         Project project = Templates.getProject(wizard);
-        DataFolder targetFolder = null;
-        try {
-            targetFolder = wizard.getTargetFolder();
-        } catch (IOException ex) {
-            targetFolder = DataFolder.findFolder(project.getProjectDirectory());
-        }
 
         WizardDescriptor.Panel secondPanel = new ValidationPanel(
                 new PersistenceClientEntitySelection(NbBundle.getMessage(JpaControllerIterator.class, "LBL_EntityClasses"),
                 new HelpCtx("org.netbeans.modules.j2ee.persistence.wizard.jpacontroller$"+PersistenceClientEntitySelection.class.getSimpleName()), wizard)); // NOI18N
         WizardDescriptor.Panel thirdPanel = new JpaControllerSetupPanel(project, wizard);
-        String names[] = null;
+        String names[];
         //
         boolean noPuNeeded = true;
         try {
             noPuNeeded = ProviderUtil.persistenceExists(project) || !ProviderUtil.isValidServerInstanceOrNone(project);
         } catch (InvalidPersistenceXmlException ex) {
-            Logger.getLogger(JpaControllerIterator.class.getName()).log(Level.FINE, "Invalid persistence.xml: "+ ex.getPath()); //NOI18N
+            Logger.getLogger(JpaControllerIterator.class.getName()).log(Level.FINE, "Invalid persistence.xml: {0}", ex.getPath()); //NOI18N
         }
         if (!noPuNeeded) {
             puPanel = new PersistenceUnitWizardDescriptor(project);
@@ -393,7 +387,7 @@ public class JpaControllerIterator implements TemplateWizard.Iterator {
      * A panel which checks that the target project has a valid server set
      * otherwise it delegates to the real panel.
      */
-    private class ValidationPanel extends DelegatingWizardDescriptorPanel {
+    private static class ValidationPanel extends DelegatingWizardDescriptorPanel {
 
         private ValidationPanel(WizardDescriptor.Panel delegate) {
             super(delegate);

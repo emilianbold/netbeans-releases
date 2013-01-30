@@ -121,7 +121,7 @@ made subject to such option by the copyright holder.
                 <junit
                     showoutput="true" fork="true" failureproperty="tests.failed"
                     errorproperty="tests.failed" filtertrace="${test.filter.trace}"
-                    tempdir="${test.results.dir}" timeout="${test.timeout}"
+                    tempdir="${test.results.dir}" timeout="${test.timeout}" jvm="${custom.jvm.executable}"
                 >
                     <batchtest todir="${test.results.dir}">
                         <fileset dir="${test.classes.dir}" includes="${test.includes}" excludes="${test.excludes}"/>
@@ -131,7 +131,7 @@ made subject to such option by the copyright holder.
                     <sysproperty key="nbjunit.workdir" path="${nbjunit.workdir}"/>
                     <sysproperty key="nbjunit.hard.timeout" value="${test.timeout}"/>
                     <jvmarg line="${test.bootclasspath.prepend.args}"/>
-                    <jvmarg line="${test.run.args}"/>
+                    <jvmarg line="${test.run.args.full}"/>
                     <formatter type="brief" usefile="false"/>
                     <formatter type="xml"/>
                 </junit>
@@ -181,6 +181,9 @@ made subject to such option by the copyright holder.
         </macrodef>
         <property name="test.config" value="default"/>
         <property name="test.run.args" value="-ea -XX:PermSize=32m -XX:MaxPermSize=200m -Xmx320m -Dnetbeans.keyring.no.master=true"/>
+        <property name="custom.jvm.args" value=""/>
+        <property name="custom.jvm.executable" value="java"/>
+        <property name="test.run.args.full" value="${test.run.args} ${custom.jvm.args}"/>
         <property name="test.config.default.includes" value="**/*Test.class"/>
         <property name="test.config.${test.config}.includes" value="NOTHING"/>
         <metaproperty name="test.includes" value="test.config.${test.config}.includes"/>

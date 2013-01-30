@@ -70,9 +70,6 @@ final class RemoteTransferFile extends TransferFile {
         if (file == null) {
             throw new NullPointerException("Remote file cannot be null");
         }
-        if (remoteClient == null) {
-            throw new NullPointerException("Remote client cannot be null");
-        }
         if (!baseRemoteDirectoryPath.startsWith(REMOTE_PATH_SEPARATOR)) {
             throw new IllegalArgumentException("Base directory '" + baseRemoteDirectoryPath + "' must start with '" + REMOTE_PATH_SEPARATOR + "'");
         }

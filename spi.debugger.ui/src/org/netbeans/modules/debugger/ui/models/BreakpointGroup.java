@@ -427,6 +427,7 @@ public class BreakpointGroup {
                                           Set<Project> allSubProjects) {                    // all inspected sub-projects
         Set<? extends Project> sps = subProjects.get(op);
         if (sps == null) {
+            //mkleint: see subprojectprovider for official contract, see #210465
             SubprojectProvider spp = op.getLookup().lookup(SubprojectProvider.class);
             if (spp == null) {
                 return false;

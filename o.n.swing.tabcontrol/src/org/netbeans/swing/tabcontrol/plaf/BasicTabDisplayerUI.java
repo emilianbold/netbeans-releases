@@ -522,12 +522,20 @@ public abstract class BasicTabDisplayerUI extends AbstractTabDisplayerUI {
     protected final void requestAttention (int tab) {
         tabState.addAlarmTab(tab);
     }
-    
+
     @Override
     protected final void cancelRequestAttention (int tab) {
         tabState.removeAlarmTab(tab);
     }
-    
+
+    @Override
+    protected final void setAttentionHighlight (int tab, boolean highlight) {
+        if( highlight ) {
+            tabState.addHighlightTab(tab);
+        } else {
+            tabState.removeHighlightTab(tab);
+        }
+    }
 
     @Override
     protected void modelChanged() {
@@ -537,7 +545,7 @@ public abstract class BasicTabDisplayerUI extends AbstractTabDisplayerUI {
         //sync
         int idx = selectionModel.getSelectedIndex();
         tabState.setSelected(idx);
-        tabState.pruneAlarmTabs(displayer.getModel().size());
+        tabState.pruneTabs(displayer.getModel().size());
         super.modelChanged();
     }
 
@@ -756,7 +764,7 @@ public abstract class BasicTabDisplayerUI extends AbstractTabDisplayerUI {
             }
 
             if (command != null) {
-                performCommand (command, lastPressedTab == -1 || lastPressedTab >
+                performCommand (command, lastPressedTab == -1 || lastPressedTab >=
                     displayer.getModel().size() ? idx : lastPressedTab, e);
             }
         }

@@ -62,6 +62,7 @@ import org.openide.nodes.Node;
 import org.netbeans.modules.form.*;
 import org.netbeans.modules.form.palette.PaletteItem;
 import org.netbeans.modules.form.layoutdesign.LayoutModel;
+import org.netbeans.modules.form.layoutsupport.LayoutSupportDelegate;
 import org.netbeans.modules.form.palette.PaletteUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -172,41 +173,79 @@ public class SelectLayoutAction extends CallableSystemAction {
         public JPopupMenu getPopupMenu() {
             JPopupMenu popup = super.getPopupMenu();
             Node[] nodes = getNodes();
+            RADVisualContainer metacont;
 
-            if (nodes.length != 0 && !initialized) {
+            if (nodes.length != 0 && !initialized && (metacont = getContainer(nodes[0])) != null) {
+                assert !metacont.hasDedicatedLayoutSupport();
                 popup.removeAll();
+
+                boolean currentFound = false;
+                boolean defaultFound = false;
 
                 JMenuItem mi = new JMenuItem(NbBundle.getMessage(SelectLayoutAction.class, "NAME_FreeDesign")); // NOI18N
                 popup.add(mi);
                 mi.addActionListener(new LayoutActionListener(null));
                 popup.addSeparator();
-
-                RADVisualContainer container = getContainer(nodes[0]);                
-                boolean hasFreeDesignSupport = RADVisualContainer.isFreeDesignContainer(container);
-                if(hasFreeDesignSupport){
-                    setBoldFontForMenuText(mi);                        
+                if (RADVisualContainer.isFreeDesignContainer(metacont)) {
+                    setBoldFontForMenuText(mi);
+                    currentFound = true;
                 }
-                
-                PaletteItem[] layouts = getAllLayouts();
-                for (int i = 0; i < layouts.length; i++) {
-                    mi = new JMenuItem(layouts[i].getNode().getDisplayName());
-                    HelpCtx.setHelpIDString(mi, SelectLayoutAction.class.getName());                    
+                if (metacont.isLayoutDefaultLayout(javax.swing.GroupLayout.class)) {
+                    addDefaultToMenuText(mi);
+                    defaultFound = true;
+                }
+
+                for (PaletteItem layout : getAllLayouts()) {
+                    mi = new JMenuItem(layout.getNode().getDisplayName());
+                    HelpCtx.setHelpIDString(mi, SelectLayoutAction.class.getName());
                     addSortedMenuItem(popup, mi);
-                    mi.addActionListener(new LayoutActionListener(layouts[i]));
-                    if(!hasFreeDesignSupport && isContainersLayout(container, layouts[i])){
-                        setBoldFontForMenuText(mi);                                                                        
-                    }                     
+                    if (!currentFound && isCurrentLayout(layout, metacont)) {
+                        setBoldFontForMenuText(mi);
+                        currentFound = true;
+                    }
+                    if (!defaultFound && isDefaultLayout(layout, metacont)) {
+                        mi.addActionListener(new LayoutActionListener(true));
+                        addDefaultToMenuText(mi);
+                        defaultFound = true;
+                    } else {
+                        mi.addActionListener(new LayoutActionListener(layout));
+                    }
+                }
+
+                if (!defaultFound) {
+                    mi = new JMenuItem(NbBundle.getMessage(SelectLayoutAction.class, "NAME_DefaultLayout")); // NOI18N
+                    HelpCtx.setHelpIDString(mi, SelectLayoutAction.class.getName());
+                    popup.addSeparator();
+                    popup.add(mi);
+                    mi.addActionListener(new LayoutActionListener(true));
+                    if (!currentFound && metacont.hasDefaultLayout()) {
+                        setBoldFontForMenuText(mi);
+                    }
                 }
                 initialized = true;
             }
             return popup;
         }
-        
-        private boolean isContainersLayout(RADVisualContainer container, PaletteItem layout){
-            return container != null 
-                   && (container.getLayoutSupport().getLayoutDelegate().getSupportedClass() == layout.getComponentClass() 
-                       || (container.getLayoutSupport().getLayoutDelegate().getClass() == org.netbeans.modules.form.layoutsupport.delegates.NullLayoutSupport.class &&
-                           layout.getComponentClass() == org.netbeans.modules.form.layoutsupport.delegates.NullLayoutSupport.class));
+
+        private static boolean isCurrentLayout(PaletteItem paletteLayout, RADVisualContainer metacont) {
+            return sameLayout(metacont.getLayoutSupport().getLayoutDelegate(), paletteLayout);
+        }
+
+        private static boolean isDefaultLayout(PaletteItem paletteLayout, RADVisualContainer metacont) {
+            LayoutSupportDelegate defaultDelegate = null;
+            try {
+                defaultDelegate = metacont.getDefaultLayoutDelegate(false);
+            } catch (Exception ex) { // ignore unlikely classloading failure
+            } catch (LinkageError ex) { // ignore unlikely classloading failure
+            }
+            return sameLayout(defaultDelegate, paletteLayout);
+        }
+
+        private static boolean sameLayout(LayoutSupportDelegate contLayoutDelegate, PaletteItem paletteLayout) {
+            return contLayoutDelegate != null && paletteLayout != null
+                   && (contLayoutDelegate.getClass().getName().equals(paletteLayout.getComponentClassName())
+                       || RADVisualContainer.sameLayouts(contLayoutDelegate.getSupportedClass(),
+                                                         paletteLayout.getComponentClass()));
         }
 
         private static void addSortedMenuItem(JPopupMenu menu, JMenuItem menuItem) {
@@ -229,13 +268,21 @@ public class SelectLayoutAction extends CallableSystemAction {
             mi.setFont(font.deriveFont(font.getStyle() | java.awt.Font.BOLD));
         }
     
+        private static void addDefaultToMenuText(JMenuItem mi) {
+            mi.setText(NbBundle.getMessage(SelectLayoutAction.class, "FMT_DefaultLayoutSuffix", mi.getText())); // NOI18N
+        }
     }
 
     private static class LayoutActionListener implements ActionListener {
         private PaletteItem paletteItem;
+        private boolean defaultLayout;
 
         LayoutActionListener(PaletteItem paletteItem) {
             this.paletteItem = paletteItem;
+        }
+
+        LayoutActionListener(boolean defaultLayout) {
+            this.defaultLayout = defaultLayout;
         }
 
         @Override
@@ -243,15 +290,17 @@ public class SelectLayoutAction extends CallableSystemAction {
             Node[] nodes = getNodes();
             for (int i = 0; i < nodes.length; i++) {
                 RADVisualContainer container = getContainer(nodes[i]);
-                if (container == null)
+                if (container == null) {
                     continue;
+                }
 
                 if (paletteItem != null) {
                     // set the selected layout on the container
                     container.getFormModel().getComponentCreator().createComponent(
                         paletteItem, container, null);
-                }
-                else if (container.getLayoutSupport() != null) {
+                } else if (defaultLayout) {
+                    container.getFormModel().getComponentCreator().restoreDefaultLayout(container);
+                } else if (container.getLayoutSupport() != null) {
                     convertToNewLayout(container);
                 }
             }

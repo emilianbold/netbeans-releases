@@ -111,11 +111,38 @@ public interface ProjectHudsonJobCreatorFactory {
          * @return a document initially consisting of just {@code <project/>}
          *         to be populated with subelements
          *         following the format of {@code ${workdir}/jobs/${projname}/config.xml}
-         * @throws IOException in case project metadata cannot be read or is malformed
+         * @throws IOException in case project metadata cannot be read or is
+         * malformed. Use {@link SilentIOException} to suppress showing error
+         * message.
          * @see Helper
          */
         Document configure() throws IOException;
 
+        /**
+         * Exception of this class can be thrown from
+         * {@link ProjectHudsonJobCreator#configure()} if no error message
+         * should be shown to the user. E.g. if some custom dialog has been
+         * already displayed.
+         *
+         * @since 1.23
+         */
+        public static class SilentIOException extends IOException {
+
+            public SilentIOException() {
+            }
+
+            public SilentIOException(String message) {
+                super(message);
+            }
+
+            public SilentIOException(String message, Throwable cause) {
+                super(message, cause);
+            }
+
+            public SilentIOException(Throwable cause) {
+                super(cause);
+            }
+        }
     }
 
     /**

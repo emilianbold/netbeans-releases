@@ -97,6 +97,6 @@ class ColorValue {
     }
     
     private static String loc (String key) {
-        return NbBundle.getMessage (ColorComboBox.class, key);
+        return NbBundle.getMessage (ColorComboBoxSupport.class, key);
     }
 }

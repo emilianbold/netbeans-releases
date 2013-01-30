@@ -75,6 +75,7 @@ public class JSFConfigurationPanel extends WebModuleExtender implements WebModul
     private final JSFFrameworkProvider framework;
     private final ExtenderController controller;
     private JSFConfigurationPanelVisual component;
+    private boolean isFrameworkAddition;
 
     private static final String PREFERRED_LANGUAGE="jsf.language"; //NOI18N
 
@@ -123,12 +124,17 @@ public class JSFConfigurationPanel extends WebModuleExtender implements WebModul
         }
     }
     
-    public JSFConfigurationPanel(JSFFrameworkProvider framework, ExtenderController controller, boolean customizer) {
+    public JSFConfigurationPanel(JSFFrameworkProvider framework, ExtenderController controller, boolean isFrameworkAddition) {
+        this(framework, controller, isFrameworkAddition, null, null);
+    }
+
+    public JSFConfigurationPanel(JSFFrameworkProvider framework, ExtenderController controller, boolean isFrameworkAddition, Preferences preferences, WebModule webModule) {
         this.framework = framework;
         this.controller = controller;
-        this.customizer = customizer;
+        this.isFrameworkAddition = isFrameworkAddition;
+        this.preferences = preferences;
+        this.webModule = webModule;
 
-        enableFacelets = false;
         debugFacelets = true;
         skipComments = true;
         createExamples = true;
@@ -136,24 +142,20 @@ public class JSFConfigurationPanel extends WebModuleExtender implements WebModul
         validateXml = true;
         verifyObjects = false;
         facesMapping = "/faces/*"; //NOI18N
-        
+        if (preferences != null) {
+            enableFacelets = preferences.get(PREFERRED_LANGUAGE, "JSP").equals(PreferredLanguage.Facelets.getName());
+        } else {
+            enableFacelets = false;
+        }
+
         getComponent();
     }
 
-    public JSFConfigurationPanel(JSFFrameworkProvider framework, ExtenderController controller, boolean customizer, Preferences preferences, WebModule webModule) {
-        this(framework, controller, customizer);
-        this.preferences = preferences;
-        this.webModule = webModule;
-        enableFacelets = preferences.get(PREFERRED_LANGUAGE, "JSP").equals(PreferredLanguage.Facelets.getName());
-    }
-
-    private boolean customizer;
-
     @Override
-    public JSFConfigurationPanelVisual getComponent() {
-        if (component == null) 
-            component = new JSFConfigurationPanelVisual(this, customizer);
-
+    public synchronized JSFConfigurationPanelVisual getComponent() {
+        if (component == null) {
+            component = new JSFConfigurationPanelVisual(this, isFrameworkAddition, webModule != null);
+        }
         return component;
     }
 
@@ -223,6 +225,12 @@ public class JSFConfigurationPanel extends WebModuleExtender implements WebModul
 
     public void setServletName(String name){
         component.setServletName(name);
+    }
+
+    protected boolean isMaven() {
+        ExtenderController.Properties properties = getController().getProperties();
+        Boolean isMaven = (Boolean) properties.getProperty("maven"); //NOI18N
+        return isMaven != null && isMaven;
     }
 
     @Deprecated

@@ -76,6 +76,21 @@
     <!-- CSH for the Delete dialog, includes help for Usages window -->
     <mapID target="org.netbeans.modules.refactoring.php.delete.PhpDeleteRefactoringUI" url="csh/safe-delete.html"/>
 
+    <!-- CSH for the Debugger window. This is same id used by Java debugger but this will be used when Java not installed -->
+    <mapID target="NetbeansDebuggerBreakpointNode" url="debug/windows/breakpoint_view.html"/>
+    
+    <!-- CSH for the New Watch dialog. This is same id used by Java debugger but this will be used when Java not installed -->
+    <mapID target="debug.add.watch" url="debug/windows/watch_window.html"/>
+    
+    <!-- CSH for the Call Stack window. This is same id used by Java debugger but this will be used when Java not installed -->
+    <mapID target="NetbeansDebuggerCallStackNode" url="debug/windows/callstack_view.html"/>
+    
+    <!-- CSH for the Threads window. This is same id used by Java debugger but this will be used when Java not installed -->
+    <mapID target="NetbeansDebuggerThreadNode" url="debug/windows/threads_view.html"/>
+    
+    <!-- CSH for the Watches window. This is same id used by Java debugger but this will be used when Java not installed -->
+    <mapID target="NetbeansDebuggerWatchNode" url="debug/windows/watches_view.html"/>
+    
     <!--CSH for PHP source editor-->
     <mapID target="text.x-php5" url="csh/about_source_editor.html" />
     <!-- CSH for PHP Options -->

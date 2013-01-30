@@ -44,30 +44,20 @@ package org.netbeans.modules.maven.queries;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.File;
-import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.api.annotations.common.CheckForNull;
-import org.netbeans.api.annotations.common.NullAllowed;
-import org.netbeans.api.annotations.common.SuppressWarnings;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.NbMavenProject;
-import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.api.java.queries.JavadocForBinaryQuery;
-import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.spi.queries.ForeignClassBundler;
-import org.netbeans.modules.maven.spi.queries.JavaLikeRootProvider;
 import org.netbeans.spi.java.queries.JavadocForBinaryQueryImplementation;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation2;
@@ -81,8 +71,7 @@ import org.openide.filesystems.FileUtil;
  * @author  Milos Kleint 
  */
 @ProjectServiceProvider(service={SourceForBinaryQueryImplementation.class, SourceForBinaryQueryImplementation2.class, JavadocForBinaryQueryImplementation.class}, projectType="org-netbeans-modules-maven")
-public class MavenForBinaryQueryImpl implements SourceForBinaryQueryImplementation2,
-        JavadocForBinaryQueryImplementation {
+public class MavenForBinaryQueryImpl extends AbstractMavenForBinaryQueryImpl {
     
     private final Project p;
     private final HashMap<String, BinResult> map;
@@ -114,18 +103,11 @@ public class MavenForBinaryQueryImpl implements SourceForBinaryQueryImplementati
         });
     }
 
-    public @Override SourceForBinaryQuery.Result findSourceRoots(URL url) {
-        return findSourceRoots2(url);
-    }
-
     public @Override SourceForBinaryQueryImplementation2.Result findSourceRoots2(URL url) {
         synchronized (map) {
             BinResult toReturn = map.get(url.toString());
             if (toReturn != null) {
                 return toReturn;
-            }
-            if (url.getProtocol().equals("jar") && checkURL(url) != -1) { //NOI18N
-                toReturn = new BinResult(url);
             }
             if (url.getProtocol().equals("file")) { //NOI18N
                 int result = checkURL(url);
@@ -164,8 +146,7 @@ public class MavenForBinaryQueryImpl implements SourceForBinaryQueryImplementati
      * 0 - source
      * 1 - test source
      */
-    @SuppressWarnings("DMI_BLOCKING_METHODS_ON_URL")
-    private int checkURL(URL url) {
+    protected int checkURL(URL url) {
         NbMavenProjectImpl project = p.getLookup().lookup(NbMavenProjectImpl.class);
         if ("file".equals(url.getProtocol())) { //NOI18N
             // true for directories.
@@ -177,110 +158,8 @@ public class MavenForBinaryQueryImpl implements SourceForBinaryQueryImplementati
                 return -1;
             }
         }
-        if (Boolean.getBoolean("mevenide.projectLinksDisable")) { // #198951
             return -1;
         }
-        File file = FileUtil.archiveOrDirForURL(url);
-        if (file != null) {
-            String filepath = file.getAbsolutePath().replace('\\', '/'); //NOI18N
-            String path = jarify(project.getArtifactRelativeRepositoryPath());
-            int ret = path == null ? -1 : filepath.endsWith(path) ? 0 : -1;
-            if (ret == -1) {
-                path = jarify(project.getTestArtifactRelativeRepositoryPath());
-                ret = path == null ? -1 : filepath.endsWith(path) ? 1 : -1;
-            }
-            return ret;
-        }
-        return -1;
-    }
-    static @CheckForNull String jarify(@NullAllowed String path) { // #200088
-        return path != null ? path.replaceFirst("[.][^./]+$", ".jar") : null;
-    }
-    
-    private FileObject[] getSrcRoot() {
-        NbMavenProjectImpl project = p.getLookup().lookup(NbMavenProjectImpl.class);
-        Collection<FileObject> toReturn = new LinkedHashSet<FileObject>();
-        for (String item : project.getOriginalMavenProject().getCompileSourceRoots()) {
-            FileObject fo = FileUtilities.convertStringToFileObject(item);
-            if (fo != null) {
-                toReturn.add(fo);
-            }
-        }
-        for (URI genRoot : project.getGeneratedSourceRoots(false)) {
-            FileObject fo = FileUtilities.convertURItoFileObject(genRoot);
-            if (fo != null) {
-                toReturn.add(fo);
-            }
-        }
-        for (JavaLikeRootProvider rp : project.getLookup().lookupAll(JavaLikeRootProvider.class)) {
-            FileObject fo = project.getProjectDirectory().getFileObject("src/main/" + rp.kind());
-            if (fo != null) {
-                toReturn.add(fo);
-            }
-        }
-
-        URI[] res = project.getResources(false);
-        for (int i = 0; i < res.length; i++) {
-            FileObject fo = FileUtilities.convertURItoFileObject(res[i]);
-            if (fo != null) {
-                boolean ok = true;
-                //#166655 resource root cannot contain the real java/xxx roots
-                for (FileObject form : toReturn) {
-                    if (FileUtil.isParentOf(fo, form)) {
-                        ok = false;
-                        break;
-                    }
-                }
-                if (ok) {
-                    toReturn.add(fo);
-                }
-            }
-        }
-        return toReturn.toArray(new FileObject[toReturn.size()]);
-    }
-    
-    private FileObject[] getTestSrcRoot() {
-        NbMavenProjectImpl project = p.getLookup().lookup(NbMavenProjectImpl.class);
-        Collection<FileObject> toReturn = new LinkedHashSet<FileObject>();
-        for (String item : project.getOriginalMavenProject().getTestCompileSourceRoots()) {
-            FileObject fo = FileUtilities.convertStringToFileObject(item);
-            if (fo != null) {
-                toReturn.add(fo);
-            }
-        }
-        for (URI genRoot : project.getGeneratedSourceRoots(true)) {
-            FileObject fo = FileUtilities.convertURItoFileObject(genRoot);
-            if (fo != null) {
-                toReturn.add(fo);
-            }
-        }
-        for (JavaLikeRootProvider rp : project.getLookup().lookupAll(JavaLikeRootProvider.class)) {
-            FileObject fo = project.getProjectDirectory().getFileObject("src/test/" + rp.kind());
-            if (fo != null) {
-                toReturn.add(fo);
-            }
-        }
-
-        URI[] res = project.getResources(true);
-        for (int i = 0; i < res.length; i++) {
-            FileObject fo = FileUtilities.convertURItoFileObject(res[i]);
-            if (fo != null) {
-                boolean ok = true;
-                //#166655 resource root cannot contain the real java/xxx roots
-                for (FileObject form : toReturn) {
-                    if (FileUtil.isParentOf(fo, form)) {
-                        ok = false;
-                        break;
-                    }
-                }
-                if (ok) {
-                    toReturn.add(fo);
-                }
-            }
-        }
-        return toReturn.toArray(new FileObject[toReturn.size()]);
-    }
-    
     
     private URL[] getJavadocRoot() {
         //TODO shall we delegate to "possibly" generated javadoc in project or in site?
@@ -302,9 +181,9 @@ public class MavenForBinaryQueryImpl implements SourceForBinaryQueryImplementati
         public @Override FileObject[] getRoots() {
             int xxx = checkURL(url);
             if (xxx == 0) {
-                results = getSrcRoot();
+                results = getProjectSrcRoots(p);
             } else if (xxx == 1) {
-                results = getTestSrcRoot();
+                results = getProjectTestSrcRoots(p);
             } else {
                 results = new FileObject[0];
             }

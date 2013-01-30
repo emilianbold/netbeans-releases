@@ -77,6 +77,7 @@ public abstract class AbstractElementHandle implements ElementHandle {
     public String getIn() {
         return null;
     }
+    @Override
     public OffsetRange getOffsetRange(ParserResult result) {
         return OffsetRange.NONE;
     }

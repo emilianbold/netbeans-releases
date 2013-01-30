@@ -289,9 +289,13 @@ public class ComponentPeer implements PropertyChangeListener, DocumentListener, 
             
             final int[] span = getCurrentVisibleSpan();
 
-            if (span == null || span[0] == (-1)) {
+            if (span == null) {
                 //not initialized yet:
                 doUpdateCurrentVisibleSpan();
+                return ;
+            }
+            
+            if (span[0] == (-1)) {
                 return ;
             }
 
@@ -399,6 +403,7 @@ public class ComponentPeer implements PropertyChangeListener, DocumentListener, 
                         }
                     });
                 } else {
+                    final OffsetsBag paneBag = SpellcheckerHighlightLayerFactory.getBag(pane);
                     _document.render(new Runnable() {
                         public void run() {
                             if (isCanceled()) {
@@ -409,7 +414,7 @@ public class ComponentPeer implements PropertyChangeListener, DocumentListener, 
                             for (int[] current : localHighlights) {
                                 localHighlightsBag.addHighlight(current[0], current[1], ERROR);
                             }
-                            SpellcheckerHighlightLayerFactory.getBag(pane).setHighlights(localHighlightsBag);
+                            paneBag.setHighlights(localHighlightsBag);
                         }
                     });
                 }
@@ -469,6 +474,10 @@ public class ComponentPeer implements PropertyChangeListener, DocumentListener, 
             locale = LocaleQuery.findLocale(file);
         } else {
             locale = DefaultLocaleQueryImplementation.getDefaultLocale();
+        }
+        
+        if (locale == null) {
+            locale = Locale.getDefault();
         }
         
         Dictionary d = ACCESSOR.lookupDictionary(locale);

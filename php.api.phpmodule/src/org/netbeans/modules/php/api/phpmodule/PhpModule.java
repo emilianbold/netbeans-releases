@@ -42,7 +42,10 @@
 
 package org.netbeans.modules.php.api.phpmodule;
 
+import java.beans.PropertyChangeEvent;
 import java.util.prefs.Preferences;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
@@ -59,7 +62,15 @@ import org.openide.windows.WindowManager;
  * Note: For public API, this should likely be final class using accessor pattern.
  * @author Tomas Mysik
  */
+// XXX add @NonNull etc.
 public abstract class PhpModule {
+
+    /**
+     * Property for frameworks.
+     * @see #propertyChanged(PropertyChangeEvent)
+     * @since 2.4
+     */
+    public static final String PROPERTY_FRAMEWORKS = "PROPERTY_FRAMEWORKS"; // NOI18N
 
     /**
      * See {@link org.netbeans.api.project.ProjectInformation#getName}.
@@ -72,16 +83,22 @@ public abstract class PhpModule {
     public abstract String getDisplayName();
 
     /**
+     * CHeck whether the PHP module is broken (e.g. missing Source Files).
+     * @return {@code true} if the PHP module is broken, {@code false} otherwise
+     */
+    public abstract boolean isBroken();
+
+    /**
      * Get the project directory for this PHP module.
      * @return the project directory, never <code>null</code>
-     * @since 1.50
      */
     public abstract FileObject getProjectDirectory();
 
     /**
      * Get the source directory for this PHP module.
-     * @return the source directory, never <code>null</code>
+     * @return the source directory, <b>can be <code>null</code> or {@link org.openide.filesystems.FileObject#isValid() invalid} if the project is {@link #isBroken() broken}.</b>
      */
+    @CheckForNull
     public abstract FileObject getSourceDirectory();
 
     /**
@@ -95,7 +112,6 @@ public abstract class PhpModule {
      * Please note that caller should not hold this properties because they can
      * change very often (if user changes Run Configuration).
      * @return the current {@link PhpModuleProperties properties}
-     * @since 1.19
      */
     public abstract PhpModuleProperties getProperties();
 
@@ -106,18 +122,25 @@ public abstract class PhpModule {
      * @param clazz a class which defines the namespace of preferences
      * @param shared whether the returned settings should be shared
      * @return {@link Preferences} for this PHP module and the given class
-     * @since 1.26
      * @see org.netbeans.api.project.ProjectUtils#getPreferences(org.netbeans.api.project.Project, Class, boolean)
      */
     public abstract Preferences getPreferences(Class<?> clazz, boolean shared);
 
     /**
+     * A way for informing PHP module that something has changed.
+     * @param propertyChangeEvent property change event
+     * @since 2.4
+     * @see #PROPERTY_FRAMEWORKS
+     */
+    public abstract void propertyChanged(@NonNull PropertyChangeEvent propertyChangeEvent);
+
+    /**
      * Gets PHP module for the given {@link FileObject}.
      * @param fo {@link FileObject} to get PHP module for
      * @return PHP module or <code>null</code> if not found
-     * @since 1.16
      */
     public static PhpModule forFileObject(FileObject fo) {
+        Parameters.notNull("fo", fo); // NOI18N
         Project project = FileOwnerQuery.getOwner(fo);
         if (project == null) {
             return null;
@@ -211,33 +234,4 @@ public abstract class PhpModule {
         return null;
     }
 
-    /**
-     * This class is used to notify about changes in the direction from frameworks to PHP module.
-     * @see org.netbeans.modules.php.spi.phpmodule.PhpModuleCustomizerExtender#save(PhpModule)
-     * @since 1.26
-     */
-    public enum Change {
-        /**
-         * Directory with source files changed.
-         */
-        SOURCES_CHANGE,
-        /**
-         * Directory with test files changed.
-         */
-        TESTS_CHANGE,
-        /**
-         * Directory with Selenium files changed.
-         */
-        SELENIUM_CHANGE,
-        /**
-         * Ignored files changed.
-         * @see org.netbeans.modules.php.spi.phpmodule.PhpModuleIgnoredFilesExtender
-         */
-        IGNORED_FILES_CHANGE,
-        /**
-         * Framework has been added or removed.
-         * @since 1.60
-         */
-        FRAMEWORK_CHANGE,
-    }
 }

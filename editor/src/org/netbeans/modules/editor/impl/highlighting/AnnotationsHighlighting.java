@@ -200,7 +200,7 @@ public final class AnnotationsHighlighting extends AbstractHighlightsContainer i
         private void refreshLine(int line, OffsetsBag b, int lineStartOffset, int lineEndOffset) {
             LOG.log(Level.FINE, "Refreshing line {0}", line); //NOI18N
 
-           AnnotationDesc [] allPassive = annotations.getPasiveAnnotations(line);
+           AnnotationDesc [] allPassive = annotations.getPassiveAnnotationsForLine(line);
             if (allPassive != null) {
                 for(AnnotationDesc passive : allPassive) {
                     AttributeSet attribs = getAttributes(passive.getAnnotationTypeInstance());

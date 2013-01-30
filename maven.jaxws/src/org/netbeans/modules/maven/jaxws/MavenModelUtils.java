@@ -175,7 +175,6 @@ public final class MavenModelUtils {
             config = model.getFactory().createConfiguration();
             plugin.setConfiguration(config);
         }
-        List<POMExtensibilityElement> ex = config.getConfigurationElements();
         POMExtensibilityElement webResources = findChild(config.getConfigurationElements(), "webResources");
         if (webResources == null) {
             webResources = model.getFactory().createPOMExtensibilityElement(
@@ -225,6 +224,7 @@ public final class MavenModelUtils {
             return;
         }
         boolean foundResourceForMetaInf = false;
+        boolean mainResourcesFound = false;
         List<Resource> resources = bld.getResources();
         if (resources != null) {
             for (Resource resource : resources) {
@@ -232,6 +232,9 @@ public final class MavenModelUtils {
                      && ("src".equals(resource.getDirectory()) || "${basedir}/src".equals(resource.getDirectory()))) { //NOI18N
                     foundResourceForMetaInf = true;
                     //TODO shall we chckf or jax-ws-catalog.xml + wsdl includes?
+                }
+                else if ( "src/main/resources".equals(resource.getDirectory())){
+                    mainResourcesFound = true;
                 }
             }
         }
@@ -241,6 +244,11 @@ public final class MavenModelUtils {
             res.setDirectory("src"); //NOI18N
             res.addInclude("jax-ws-catalog.xml"); //NOI18N
             res.addInclude("wsdl/**"); //NOI18N
+            bld.addResource(res);
+        }
+        if ( !mainResourcesFound ){
+            Resource res = model.getFactory().createResource();
+            res.setDirectory("src/main/resources"); //NOI18N
             bld.addResource(res);
         }
 

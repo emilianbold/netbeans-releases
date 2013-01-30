@@ -51,9 +51,12 @@ import javax.swing.text.Document;
 import javax.swing.text.Element;
 import javax.swing.undo.UndoManager;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.BaseKit;
+import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.lib.editor.util.ArrayUtilities;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
@@ -62,6 +65,7 @@ import org.netbeans.lib.editor.util.random.DocumentTesting;
 import org.netbeans.lib.editor.util.random.RandomTestContainer.Context;
 import org.netbeans.lib.editor.util.random.RandomText;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
+import org.netbeans.modules.editor.lib2.document.ModRootElement;
 
 public class TrailingWhitespaceRemoveTest extends NbTestCase {
 
@@ -92,6 +96,11 @@ public class TrailingWhitespaceRemoveTest extends NbTestCase {
     }
 
     private void checkTrailingWhitespaceRemove(String policy, String result) throws Exception {
+        MockServices.setServices(MockMimeLookup.class);
+        MockMimeLookup.setInstances(MimePath.parse(""),
+                new TrailingWhitespaceRemove.FactoryImpl()
+        );
+        
         RandomTestContainer container = DocumentTesting.initContainer(null);
         container.setName(this.getName());
 //        container.putProperty(RandomTestContainer.LOG_OP, Boolean.TRUE);
@@ -117,13 +126,9 @@ public class TrailingWhitespaceRemoveTest extends NbTestCase {
         
         // Do a fixed scenario
         DocumentTesting.insert(container.context(), 0, "abc\ndef\n\n123 \n567 \nghi");
-        // force TrailingWhitespaceRemove recreation
-        TrailingWhitespaceRemove twr = (TrailingWhitespaceRemove) doc.getProperty(TrailingWhitespaceRemove.class);
-        if (twr != null) {
-            BeforeSaveTasks.get(doc).removeTask(twr);
-            doc.putProperty(TrailingWhitespaceRemove.class, null);
-        }
-        TrailingWhitespaceRemove.install(doc);
+        ModRootElement modRootElement = ModRootElement.get(doc);
+        modRootElement.resetMods(null);
+
         DocumentTesting.insert(container.context(), 3, " a ");
         //  000000000011111111111222222222
         //  012345678901234567890123456789
@@ -201,10 +206,8 @@ public class TrailingWhitespaceRemoveTest extends NbTestCase {
     
     public static void removeTrailingWhitespace(Context context, String policy) {
         Document doc = context.getInstance(Document.class);
-        Preferences prefs = MimeLookup.getLookup(DocumentUtilities.getMimeType(doc)).lookup(Preferences.class);
+        Preferences prefs = MimeLookup.getLookup(MimePath.EMPTY).lookup(Preferences.class);
         prefs.put(SimpleValueNames.ON_SAVE_REMOVE_TRAILING_WHITESPACE, policy);
-        TrailingWhitespaceRemove tws = (TrailingWhitespaceRemove) doc.getProperty(TrailingWhitespaceRemove.class);
-        assertNotNull(tws);
         Runnable beforeSaveRunnable = (Runnable) doc.getProperty("beforeSaveRunnable");
         assertNotNull(beforeSaveRunnable);
         beforeSaveRunnable.run();
@@ -245,13 +248,12 @@ public class TrailingWhitespaceRemoveTest extends NbTestCase {
         @Override
         protected void run(Context context) throws Exception {
             Document doc = context.getInstance(Document.class);
-            TrailingWhitespaceRemove tws = (TrailingWhitespaceRemove)
-                    doc.getProperty(TrailingWhitespaceRemove.class);
-            assertNotNull(tws);
             logOp(context, doc, "Before");
             Runnable beforeSaveRunnable = (Runnable) doc.getProperty("beforeSaveRunnable");
             assertNotNull(beforeSaveRunnable);
             beforeSaveRunnable.run();
+            ModRootElement modRootElement = ModRootElement.get(doc); // Should be non-null for BaseDocument
+            modRootElement.resetMods(null);
 
             logOp(context, doc, "After");
             // Remove all chars from document because the following case is currently unhandled:
@@ -265,10 +267,7 @@ public class TrailingWhitespaceRemoveTest extends NbTestCase {
 
         private void logOp(Context context, Document doc, String msg) throws Exception {
             if (Boolean.TRUE.equals(context.round().getPropertyOrNull(RandomTestContainer.LOG_OP))) {
-                TrailingWhitespaceRemove tws = (TrailingWhitespaceRemove)
-                        doc.getProperty(TrailingWhitespaceRemove.class);
                 StringBuilder sb = new StringBuilder(doc.getLength() + 50);
-                sb.append(msg).append(" TrailingWhitespaceRemove:\n").append(tws);
                 dumpLines(sb, doc);
                 sb.append("\n");
                 context.container().logger().info(sb.toString());
@@ -292,7 +291,8 @@ public class TrailingWhitespaceRemoveTest extends NbTestCase {
                 dumpLines(sb, doc).append('\n');
                 context.container().logger().info(sb.toString());
             }
-            tws.checkConsistency();
+            ModRootElement modRootElement = ModRootElement.get(doc); // Should be non-null for BaseDocument
+            modRootElement.checkConsistency();
         }
 
     }

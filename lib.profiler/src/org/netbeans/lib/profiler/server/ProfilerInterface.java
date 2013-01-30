@@ -53,6 +53,7 @@ import org.netbeans.lib.profiler.wireprotocol.*;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.text.MessageFormat;
 import java.util.ResourceBundle;
@@ -136,6 +137,11 @@ public class ProfilerInterface implements CommonConstants {
                     case INSTR_OBJECT_LIVENESS:
                         initiateInstrumentation(instrType);
                         break;
+                    case INSTR_NONE_MEMORY_SAMPLING:
+                        if (Histogram.isAvailable()) {
+                            profilerServer.notifyClientOnResultsAvailability();
+                        }
+                        break;
                     default:
                         throw new IllegalArgumentException("Instr. type: "+instrType);
                 }
@@ -172,7 +178,6 @@ public class ProfilerInterface implements CommonConstants {
 
                 Class.forName("java.lang.reflect.InvocationTargetException"); // NOI18N
                 Class.forName("java.lang.InterruptedException");    // NOI18N
-                Class.forName("java.util.zip.Deflater");    // NOI18N compressed remote profiling
                 Class.forName("java.lang.ClassFormatError"); // NOI18N class caching
             } catch (ClassNotFoundException e) {
                 e.printStackTrace(System.err);
@@ -339,6 +344,8 @@ public class ProfilerInterface implements CommonConstants {
     private static volatile Thread instrumentMethodGroupCallThread;
 
     private static volatile boolean detachStarted;
+    
+    private static HeapHistogramManager heapHistgramManager;
 
     //~ Methods ------------------------------------------------------------------------------------------------------------------
 
@@ -476,6 +483,7 @@ public class ProfilerInterface implements CommonConstants {
 
     public static void disableProfilerHooks() {
         Classes.setWaitTrackingEnabled(false);
+        Classes.setParkTrackingEnabled(false);
         Classes.setSleepTrackingEnabled(false);
         Classes.disableClassLoadHook();
         ProfilerRuntimeCPU.setJavaLangReflectMethodInvokeInterceptEnabled(false);
@@ -517,7 +525,9 @@ public class ProfilerInterface implements CommonConstants {
         reflectMethods = new WeakHashMap();
 
         evBufManager = new EventBufferManager(profilerServer);
+        heapHistgramManager = new HeapHistogramManager();
         ProfilerInterface.status = status;
+        detachStarted = false;
 
         // Check that all profiler's own threads are running, and then record them internally, so that target app threads
         // are accounted for properly.
@@ -578,6 +588,7 @@ public class ProfilerInterface implements CommonConstants {
 
         switch (instrType) {
             case INSTR_NONE:
+            case INSTR_NONE_MEMORY_SAMPLING:
                 // do nothing
                 break;
             case INSTR_RECURSIVE_FULL:
@@ -666,7 +677,11 @@ public class ProfilerInterface implements CommonConstants {
     static boolean isDetachStarted() {
         return detachStarted;
     }
-    
+        
+    static HeapHistogramResponse computeHistogram() {
+        return heapHistgramManager.computeHistogram(Histogram.getRawHistogram());
+    }
+
     private static boolean getAndInstrumentClasses(boolean rootClassInstrumentation) {
         Response r = profilerServer.getLastResponse();
 
@@ -1284,7 +1299,7 @@ public class ProfilerInterface implements CommonConstants {
         );
     }
 
-    private static boolean serverInternalClassName(String name) {
+    static boolean serverInternalClassName(String name) {
         if (INSTRUMENT_JFLUID_CLASSES) {
             return name.startsWith("org.netbeans.lib.profiler.server") || // NOI18N
                    name.startsWith("org.netbeans.lib.profiler.global") || // NOI18N

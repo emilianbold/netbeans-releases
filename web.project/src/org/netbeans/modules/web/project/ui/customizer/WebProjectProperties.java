@@ -62,7 +62,6 @@ import javax.swing.ComboBoxModel;
 import javax.swing.DefaultListModel;
 import javax.swing.JToggleButton;
 import javax.swing.ListCellRenderer;
-import javax.swing.SwingUtilities;
 
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
@@ -95,8 +94,6 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.api.j2ee.core.Profile;
-import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.progress.ProgressRunnable;
 import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.java.api.common.SourceRoots;
@@ -161,6 +158,7 @@ final public class WebProjectProperties {
     public static final String J2EE_COPY_STATIC_FILES_ON_SAVE = "j2ee.copy.static.files.on.save"; //NOI18N
     public static final String CONTEXT_PATH = "context.path"; //NOI18N
     public static final String J2EE_SERVER_INSTANCE = "j2ee.server.instance"; //NOI18N
+    public static final String J2EE_SERVER_CHECK = "j2ee.server.check"; //NOI18N
     public static final String J2EE_SERVER_TYPE = "j2ee.server.type"; //NOI18N
     public static final String J2EE_PLATFORM_CLASSPATH = "j2ee.platform.classpath"; //NOI18N
     public static final String J2EE_PLATFORM_EMBEDDABLE_EJB_CLASSPATH = "j2ee.platform.embeddableejb.classpath"; //NOI18N
@@ -217,6 +215,7 @@ final public class WebProjectProperties {
     public static final String ANT_DEPLOY_BUILD_SCRIPT = "nbproject/ant-deploy.xml"; // NOI18N
     
     private static Logger LOGGER = Logger.getLogger(WebProjectProperties.class.getName());
+    private static RequestProcessor RP = new RequestProcessor("WebProjectProperties", 5);
 
     public ClassPathSupport cs;
 
@@ -318,9 +317,9 @@ final public class WebProjectProperties {
 
     //Hotfix of the issue #70058 (copied from J2seProjectProperties)
     //Should be removed when the StoreGroup SPI will be extended to allow false default value in ToggleButtonModel
-    private static final Integer BOOLEAN_KIND_TF = new Integer( 0 );
-    private static final Integer BOOLEAN_KIND_YN = new Integer( 1 );
-    private static final Integer BOOLEAN_KIND_ED = new Integer( 2 );
+    private static final Integer BOOLEAN_KIND_TF = 0;
+    private static final Integer BOOLEAN_KIND_YN = 1;
+    private static final Integer BOOLEAN_KIND_ED = 2;
     
     private final List<ActionListener> optionListeners = new CopyOnWriteArrayList<ActionListener>();
 
@@ -394,6 +393,8 @@ final public class WebProjectProperties {
             minimalSourceLevel = new SpecificationVersion("1.6");
         } else if (Profile.JAVA_EE_5.equals(profile)) {
             minimalSourceLevel = new SpecificationVersion("1.5");
+        } else if (Profile.JAVA_EE_7_FULL.equals(profile)) {
+            minimalSourceLevel = new SpecificationVersion("1.7");
         }
         JAVAC_SOURCE_MODEL = PlatformUiSupport.createSourceLevelComboBoxModel (PLATFORM_MODEL, evaluator.getProperty(JAVAC_SOURCE), evaluator.getProperty(JAVAC_TARGET), minimalSourceLevel);
         JAVAC_SOURCE_RENDERER = PlatformUiSupport.createSourceLevelListCellRenderer ();
@@ -486,7 +487,7 @@ final public class WebProjectProperties {
         } catch (BadLocationException exc) {
             //ignore
         }
-        loadingFrameworksTask = RequestProcessor.getDefault().post(new Runnable() {
+        loadingFrameworksTask = RP.post(new Runnable() {
                 public void run() {
                     loadCurrentFrameworks();
                 }
@@ -957,10 +958,10 @@ final public class WebProjectProperties {
     //Hotfix of the issue #70058 (copied from J2SEProjectProperties)
     //Should be removed when the StoreGroup SPI will be extended to allow false default value in ToggleButtonModel
     private static String encodeBoolean (boolean value, Integer kind) {
-        if ( kind == BOOLEAN_KIND_ED ) {
+        if ( BOOLEAN_KIND_ED.equals(kind) ) {
             return value ? "on" : "off"; // NOI18N
         }
-        else if ( kind == BOOLEAN_KIND_YN ) { // NOI18N
+        else if ( BOOLEAN_KIND_YN.equals(kind) ) { // NOI18N
             return value ? "yes" : "no";
         }
         else {
@@ -1035,7 +1036,7 @@ final public class WebProjectProperties {
     private void handleExtenders(final List newExtenders, final List<WebModuleExtender> existingExtenders) {
         if (newExtenders != null && !newExtenders.isEmpty()) {
             // in case that new extenders should be included
-            RequestProcessor.getDefault().post(new Runnable() {
+            RP.post(new Runnable() {
                 @Override
                 public void run() {
                     // it mostly results into lenghty opperation, show progress dialog
@@ -1058,7 +1059,7 @@ final public class WebProjectProperties {
             });
         } else if (existingExtenders != null && !existingExtenders.isEmpty()) {
             // in case that webModule contains some extenders which should be saved
-            RequestProcessor.getDefault().post(new Runnable() {
+            RP.post(new Runnable() {
 
                 @Override
                 public void run() {
@@ -1073,7 +1074,7 @@ final public class WebProjectProperties {
                     });
                     try {
                         // start the extenders saving task
-                        RequestProcessor.getDefault().post(future);
+                        RP.post(future);
                         // When the task doesn't finish shortly, run it with progress dialog to inform user
                         // that lenghty opperation is happening. BTW, initial waiting time is used to prevent
                         // dialogs flickering.

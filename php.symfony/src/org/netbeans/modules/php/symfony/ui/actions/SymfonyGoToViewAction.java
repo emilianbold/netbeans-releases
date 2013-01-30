@@ -45,7 +45,7 @@ import java.util.List;
 import org.netbeans.modules.csl.api.UiUtils;
 import org.netbeans.modules.php.api.editor.EditorSupport;
 import org.netbeans.modules.php.api.editor.PhpBaseElement;
-import org.netbeans.modules.php.spi.actions.GoToViewAction;
+import org.netbeans.modules.php.spi.framework.actions.GoToViewAction;
 import org.netbeans.modules.php.symfony.util.SymfonyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;

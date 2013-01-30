@@ -56,12 +56,15 @@ import org.netbeans.api.j2ee.core.Profile;
 
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ui.ProjectGroup;
+import org.netbeans.api.project.ui.ProjectGroupChangeListener;
 import org.netbeans.junit.MockServices;
 import org.netbeans.modules.j2ee.dd.api.web.WebAppMetadata;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.metadata.model.support.JavaSourceTestCase;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
+import org.netbeans.modules.project.ui.OpenProjectList;
 import org.netbeans.modules.project.uiapi.OpenProjectsTrampoline;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.spi.webmodule.WebModuleFactory;
@@ -257,6 +260,19 @@ public class CommonAnnotationTestCase extends JavaSourceTestCase {
 
         public @Override void setMainProject(Project project) {
             
+        }
+
+        @Override
+        public ProjectGroup getActiveProjectGroupAPI() {
+            return null;
+        }
+
+        @Override
+        public void addProjectGroupChangeListenerAPI(ProjectGroupChangeListener listener) {
+        }
+
+        @Override
+        public void removeProjectGroupChangeListenerAPI(ProjectGroupChangeListener listener) {
         }
 
     }

@@ -185,12 +185,14 @@ public class AutoupdateCheckScheduler {
             }
             boolean hasUpdates = false;
             if (Utilities.shouldCheckAvailableUpdates ()) {
-                Collection<UpdateElement> updates = checkUpdateElements (OperationType.UPDATE, false);
+                Collection<UpdateElement> updates = new HashSet<UpdateElement> ();
+                checkUpdateElements(OperationType.UPDATE, null, false, updates);
                 hasUpdates = updates != null && ! updates.isEmpty ();
                 LazyUnit.storeUpdateElements (OperationType.UPDATE, updates);
+                Utilities.storeAcceptedLicenseIDs();
             }
             if (! hasUpdates && Utilities.shouldCheckAvailableNewPlugins ()) {
-                LazyUnit.storeUpdateElements (OperationType.INSTALL, checkUpdateElements (OperationType.INSTALL, false));
+                LazyUnit.storeUpdateElements (OperationType.INSTALL, checkUpdateElements(OperationType.INSTALL, null, false, null));
             }
             Installer.RP.post (doCheckLazyUpdates, 500);
         }
@@ -200,11 +202,8 @@ public class AutoupdateCheckScheduler {
         Installer.RP.post (doCheckAvailableUpdates, delay);
     }
 
-    public static Collection<UpdateElement> checkUpdateElements (OperationType type, boolean forceReload) {
-        return checkUpdateElements(type,null,forceReload);
-    }
-    
-    public static Collection<UpdateElement> checkUpdateElements (OperationType type,Collection<String> problems, boolean forceReload) {
+    public static Collection<UpdateElement> checkUpdateElements(OperationType type, Collection<String> problems,
+            boolean forceReload, Collection<UpdateElement> visibleUpdateElement) {
         // check
         err.log (Level.FINEST, "Check UpdateElements for " + type);
         if (forceReload) {
@@ -212,9 +211,11 @@ public class AutoupdateCheckScheduler {
             ProgressHandleFactory.createProgressComponent(dummyHandler);
             dummyHandler.start();
             Collection <String> updateProblems=refreshUpdateCenters (dummyHandler);
-            if(problems!=null && updateProblems!=null)problems.addAll(updateProblems);
+            if (problems != null && updateProblems != null) {
+                problems.addAll(updateProblems);
+            }
         }
-        List<UpdateUnit> units = UpdateManager.getDefault ().getUpdateUnits (Utilities.getUnitTypes ());
+        List<UpdateUnit> units = UpdateManager.getDefault ().getUpdateUnits (UpdateManager.TYPE.MODULE);
         boolean handleUpdates = OperationType.UPDATE == type;
         Collection<UnitCategory> cats =  handleUpdates ?
             Utilities.makeUpdateCategories (units, false) :
@@ -238,9 +239,12 @@ public class AutoupdateCheckScheduler {
             for (Unit u : cat.getUnits ()) {        
                 if(u instanceof Unit.Available) {
                     elements.add(((Unit.Available) u).getRelevantElement ());
-                } else if (u instanceof Unit.InternalUpdate) {
-                    for(UpdateUnit uu :((Unit.InternalUpdate) u).getUpdateUnits()) {
+                } else if (u instanceof Unit.CompoundUpdate) {
+                    for(UpdateUnit uu :((Unit.CompoundUpdate) u).getUpdateUnits()) {
                         elements.add(uu.getAvailableUpdates().get(0));
+                    }
+                    if (((Unit.CompoundUpdate) u).getRealUpdate() != null) {
+                        elements.add(((Unit.CompoundUpdate) u).getRealUpdate());
                     }
                 } else if (u instanceof Unit.Update) {
                     elements.add(((Unit.Update) u).getRelevantElement ());
@@ -333,8 +337,22 @@ public class AutoupdateCheckScheduler {
         }
 
         // if any then notify updates
-        err.log (Level.FINE, "findUpdateElements(" + type + ") returns " + updates.size () + " elements.");
-        return updates;
+        if (visibleUpdateElement == null) {
+            err.log (Level.FINE, "findUpdateElements(" + type + ") returns " + updates.size () + " elements.");
+            return updates;
+        } else {
+            for (UnitCategory cat : cats) {
+                for (Unit u : cat.getUnits()) {
+                    assert u instanceof Unit.Update : u + " has to be instanceof Unit.Update";
+                    if (u instanceof Unit.Update) {
+                        visibleUpdateElement.add(((Unit.Update)u).getRelevantElement());
+                    }
+                }
+            }
+            err.log (Level.FINE, "findUpdateElements(" + type + ") returns " + visibleUpdateElement.size () +
+                    " visible elements (" + updates.size() + " in all)");
+            return updates;
+        }
     }
 
     /**
@@ -498,6 +516,10 @@ public class AutoupdateCheckScheduler {
     public static void notifyAvailable (final Collection<LazyUnit> units, final OperationType type) {
 
         if (units == null || units.isEmpty ()) {
+            if (updatesNotification != null) {
+                updatesNotification.clear();
+                updatesNotification = null;
+            }
             return ;
         }
         

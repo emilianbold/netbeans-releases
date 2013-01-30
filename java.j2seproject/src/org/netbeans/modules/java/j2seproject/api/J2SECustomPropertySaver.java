@@ -46,6 +46,8 @@ import org.netbeans.api.project.Project;
  * if modified by user in Project Properties dialog.
  * Implementation of the interface should be registered using {@link org.netbeans.spi.project.ProjectServiceProvider}.
  * 
+ * Note: alternatively use org.netbeans.spi.project.ui.support.ProjectCustomizer.Category.setStoreListener
+ * 
  * @author Petr Somol
  * @since 1.46
  */

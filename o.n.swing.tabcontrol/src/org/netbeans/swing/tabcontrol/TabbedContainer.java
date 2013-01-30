@@ -619,6 +619,15 @@ public class TabbedContainer extends JComponent implements Accessible {
     public final void cancelRequestAttention (int tab) {
         getUI().cancelRequestAttention(tab);
     }
+
+    /**
+     * Turn tab highlight on/off
+     * @param tab
+     * @since 1.38
+     */
+    public final void setAttentionHighlight (int tab, boolean highlight) {
+        getUI().setAttentionHighlight(tab, highlight);
+    }
     
     /**
      * Cause the specified tab to blink or otherwisse suggest that the user should
@@ -632,11 +641,23 @@ public class TabbedContainer extends JComponent implements Accessible {
         }
         return result;
     }    
-    
+
     public final void cancelRequestAttention (TabData data) {
         int idx = getModel().indexOf(data);
         if (idx != -1) {
             cancelRequestAttention(idx);
+        }
+    }
+
+    /**
+     *
+     * @param data
+     * @since 1.38
+     */
+    public final void setAttentionHighlight (TabData data, boolean highlight) {
+        int idx = getModel().indexOf(data);
+        if (idx != -1) {
+            setAttentionHighlight(idx, highlight);
         }
     }
 

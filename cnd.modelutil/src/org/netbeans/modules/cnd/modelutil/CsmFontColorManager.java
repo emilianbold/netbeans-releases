@@ -119,38 +119,46 @@ public final class CsmFontColorManager {
 
         private final String mimeType;
         private final List<WeakReference<FontColorChangeListener>> listeners = new ArrayList<WeakReference<FontColorChangeListener>>();
-        FontColorSettings fcs;
+        private FontColorSettings fcs;
+        private final Object lock = new Object();
 
         public FontColorProviderImpl(String mimeType) {
             this.mimeType = mimeType;
             Lookup lookup = MimeLookup.getLookup(MimePath.get(mimeType));
-            Lookup.Result<FontColorSettings> result =
-                    lookup.lookup(new Lookup.Template<FontColorSettings>(FontColorSettings.class));
+            Lookup.Result<FontColorSettings> result = lookup.lookupResult(FontColorSettings.class);
             fcs = result.allInstances().iterator().next();
             result.addLookupListener(this);
         }
 
         public void addListener(FontColorChangeListener listener) {
-            listeners.add(new WeakReference<FontColorChangeListener>(listener));
+            synchronized (listeners) {
+                listeners.add(new WeakReference<FontColorChangeListener>(listener));
+            }
             listener.stateChanged(this);
         }
 
         @Override
         public AttributeSet getColor(Entity color) {
-            return fcs.getTokenFontColors(color.getResourceName());
+            synchronized(lock) {
+                return fcs.getTokenFontColors(color.getResourceName());
+            }
         }
 
         @Override
         public void resultChanged(LookupEvent ev) {
             Lookup lookup = MimeLookup.getLookup(MimePath.get(mimeType));
-            fcs = lookup.lookup(FontColorSettings.class);
-            for (ListIterator<WeakReference<FontColorChangeListener>> it = listeners.listIterator(); it.hasNext();) {
-                WeakReference<FontColorChangeListener> wrcl = it.next();
-                FontColorChangeListener cl = wrcl.get();
-                if (cl != null) {
-                    cl.stateChanged(this);
-                } else {
-                    it.remove();
+            synchronized(lock) {
+                fcs = lookup.lookup(FontColorSettings.class);
+            }
+            synchronized (listeners) {
+                for (ListIterator<WeakReference<FontColorChangeListener>> it = listeners.listIterator(); it.hasNext();) {
+                    WeakReference<FontColorChangeListener> wrcl = it.next();
+                    FontColorChangeListener cl = wrcl.get();
+                    if (cl != null) {
+                        cl.stateChanged(this);
+                    } else {
+                        it.remove();
+                    }
                 }
             }
         }

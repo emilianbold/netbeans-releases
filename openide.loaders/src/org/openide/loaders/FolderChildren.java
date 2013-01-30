@@ -86,6 +86,7 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
     @SuppressWarnings("NonConstantLogger")
     private final Logger err;
     /** last refresh task */
+    private volatile Collection<FolderChildrenPair> pairs;
     private volatile Task refTask = Task.EMPTY;
     private static final boolean DELAYED_CREATION_ENABLED;
     static {
@@ -126,6 +127,11 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
     DataFilter getFilter () {
         return filter;
     }
+    
+    void applyKeys(Collection<FolderChildrenPair> pairs) {
+        setKeys(pairs);
+        this.pairs = pairs;
+    }
 
     static void waitRefresh() {
         DataNodeUtils.reqProcessor().post(Task.EMPTY, 0, Thread.MIN_PRIORITY).waitFinished();
@@ -142,7 +148,28 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
     @Override
     public void stateChanged(ChangeEvent e) {
         // Filtering changed need to recompute children
-        refreshChildren(RefreshMode.DEEP);
+        Object source = e.getSource();
+        FileObject fo = null;
+        if (source instanceof DataObject) {
+            DataObject dobj = (DataObject) source;
+            fo = dobj.getPrimaryFile();
+        } else if (source instanceof FileObject) {
+            fo = (FileObject) source;
+        }
+        boolean doRefresh;
+        if (fo != null) {
+            FileObject folderFO = folder.getPrimaryFile();
+            if (!fo.isFolder()) {
+                doRefresh = (fo.getParent() == folderFO);
+            } else {
+                doRefresh = (fo == folderFO);
+            }
+        } else {
+            doRefresh = true;
+        }
+        if (doRefresh) {
+            refreshChildren(RefreshMode.DEEP);
+        }
     }
 
     private enum RefreshMode {SHALLOW, SHALLOW_IMMEDIATE, DEEP, DEEP_LATER, CLEAR}
@@ -160,7 +187,7 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
 
                 try {
                     if (op == RefreshMode.CLEAR) {
-                        setKeys(Collections.<FolderChildrenPair>emptyList());
+                        applyKeys(Collections.<FolderChildrenPair>emptyList());
                         return;
                     }
 
@@ -179,13 +206,13 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
                     }
 
                     if (op == RefreshMode.DEEP_LATER) {
-                        setKeys(Collections.<FolderChildrenPair>emptyList());
-                        setKeys(positioned);
+                        applyKeys(Collections.<FolderChildrenPair>emptyList());
+                        applyKeys(positioned);
                         return;
                     }
 
                     if (op == RefreshMode.SHALLOW) {
-                        setKeys(positioned);
+                        applyKeys(positioned);
                         return;
                     }
 
@@ -257,7 +284,9 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
     @Override
     public Node[] getNodes(boolean optimalResult) {
         Node[] arr;
-        for (;;) {
+        Level previous = null;
+        final int limit = 1000;
+        for (int round = 0; ; round++) {
             if (optimalResult) {
                 waitOptimalResult();
             }
@@ -267,21 +296,113 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
                 if (n instanceof DelayedNode) {
                     DelayedNode dn = (DelayedNode)n;
                     if (checkChildrenMutex() && dn.waitFinished()) {
+                        err.log(Level.FINE, "Waiting for delayed node {0}", dn);
                         stop = false;
+                        if (round > 600) {
+                            err.log(Level.WARNING, "Scheduling additional refresh for {0}", dn);
+                            dn.scheduleRefresh("fallback"); // NOI18N
+                        }
                     }
                 }
             }
             if (stop) {
                 break;
             }
+            if (round == 500) {
+                err.warning("getNodes takes ages, turning on logging");
+                previous = err.getLevel();
+                err.setLevel(Level.FINE);
+            }
+            if (round == limit) {
+                err.warning(threadDump());
+                err.setLevel(previous);
+                boolean thrw = false;
+                assert thrw = true;
+                if (thrw) {
+                    throw new IllegalStateException("Too many repetitions in getNodes(true). Giving up.");
+                }
+                break;
+            }
+        }
+        if (previous != null) {
+            err.setLevel(previous);
         }
         return arr;
     }
+    
+    private static void appendThread(StringBuffer sb, String indent, Thread t, java.util.Map<Thread,StackTraceElement[]> data) {
+        sb.append(indent).append("Thread ").append(t.getName()).append('\n');
+        StackTraceElement[] stack = data.get(t);
+        if (stack != null) {
+        for (StackTraceElement e : stack) {
+            sb.append("\tat ").append(e.getClassName()).append('.').append(e.getMethodName())
+                    .append('(').append(e.getFileName()).append(':').append(e.getLineNumber()).append(")\n");
+        }
+        }
+    }
+    
+    private static void appendGroup(StringBuffer sb, String indent, ThreadGroup tg, java.util.Map<Thread,StackTraceElement[]> data) {
+        sb.append(indent).append("Group ").append(tg.getName()).append('\n');
+        indent = indent.concat("  ");
+
+        int groups = tg.activeGroupCount();
+        ThreadGroup[] chg = new ThreadGroup[groups];
+        tg.enumerate(chg, false);
+        for (ThreadGroup inner : chg) {
+            if (inner != null) {
+                appendGroup(sb, indent, inner, data);
+            }
+        }
+
+        int threads = tg.activeCount();
+        Thread[] cht= new Thread[threads];
+        tg.enumerate(cht, false);
+        for (Thread t : cht) {
+            if (t != null) {
+                appendThread(sb, indent, t, data);
+            }
+        }
+    }
+    
+    private static String threadDump() {
+        java.util.Map<Thread,StackTraceElement[]> all = Thread.getAllStackTraces();
+        ThreadGroup root = Thread.currentThread().getThreadGroup();
+        while (root.getParent() != null) {
+            root = root.getParent();
+        }
+
+        StringBuffer sb = new StringBuffer();
+        appendGroup(sb, "", root, all);
+        return sb.toString();
+    }
+    
 
     @Override
     public Node findChild(String name) {
         if (checkChildrenMutex()) {
-            getNodesCount(true);
+            waitOptimalResult();
+        }
+        int i = 0;
+        final Collection<FolderChildrenPair> tmp = pairs;
+        if (tmp != null) {
+            for (FolderChildrenPair p : tmp) {
+                final FileObject pf = p.primaryFile;
+                if (pf.getNameExt().startsWith(name)) {
+                    try {
+                        Node original = DataObject.find(pf).getNodeDelegate();
+                        if (!original.getName().equals(name)) {
+                            continue;
+                        }
+                        Node candidate = getNodeAt(i);
+                        if (candidate != null && candidate.getName().equals(name)) {
+                            return candidate;
+                        }
+                    } catch (DataObjectNotFoundException ex) {
+                        err.log(Level.INFO, "Can't find object for " + pf, ex);
+                    }
+                }
+                i++;
+            }
         }
         return super.findChild(name);
     }
@@ -352,7 +473,7 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
 
         // we need to clear the children now
         List<FolderChildrenPair> emptyList = Collections.emptyList();
-        setKeys(emptyList);
+        applyKeys(emptyList);
         err.fine("removeNotify end");
     }
 
@@ -396,19 +517,19 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
         refreshChildren(RefreshMode.SHALLOW);
     }
     
-    private final class DelayedNode extends FilterNode 
-    implements Runnable, InstanceContent.Convertor<DelayedNode,DataObject>{
-        private final FolderChildrenPair pair;
-        private volatile RequestProcessor.Task task;
+    private final class DelayedNode extends FilterNode implements Runnable {
+        final FolderChildrenPair pair;
+        /** @GuardedBy("this") */
+        private RequestProcessor.Task task;
 
         public DelayedNode(FolderChildrenPair pair) {
-            this(pair, new InstanceContent());
+            this(pair, new DelayedLkp(new InstanceContent()));
         }
         
-        private DelayedNode(FolderChildrenPair pair, InstanceContent ic) {
-            this(pair, new AbstractNode(Children.LEAF, new AbstractLookup(ic)));
-            ic.add(pair.primaryFile);
-            ic.add(this, this);
+        private DelayedNode(FolderChildrenPair pair, DelayedLkp lkp) {
+            this(pair, new AbstractNode(Children.LEAF, lkp));
+            lkp.ic.add(pair.primaryFile);
+            lkp.node = this;
         }
         
         private DelayedNode(FolderChildrenPair pair, AbstractNode an) {
@@ -416,8 +537,7 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
             this.pair = pair;
             an.setName(pair.primaryFile.getNameExt());
             an.setIconBaseWithExtension("org/openide/loaders/unknown.gif"); // NOI18N
-            
-            task = DataNodeUtils.reqProcessor().post(this);
+            scheduleRefresh("constructor"); // NOI18N
         }
         
         @Override
@@ -428,21 +548,53 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
             } else {
                 refreshKey(pair);
             }
-            task = null;
+            synchronized (this) {
+                task = null;
+            }
+            err.log(Level.FINE, "delayed node refreshed {0} original: {1}", new Object[]{this, n});
         }
         
         /* @return true if there was some change in the node while waiting */
         public final boolean waitFinished() {
-            RequestProcessor.Task t = task;
-            if (t == null) {
-                return false;
+            RequestProcessor.Task t;
+            synchronized (this) {
+                t = task;
+                if (t == null) {
+                    return false;
+                }
             }
+            err.log(Level.FINE, "original before wait: {0}", getOriginal());
             t.waitFinished();
+            err.log(Level.FINE, "original after wait: {0}", getOriginal());
+            err.log(Level.FINE, "task after waitFinished {0}", task);
             return true;
         }
 
+        final synchronized void scheduleRefresh(String by) {
+            task = DataNodeUtils.reqProcessor().post(this);
+            err.log(Level.FINE, "Task initialized by {0} to {1} for {2}", new Object[] { by, task, this });
+        }
+    }
+    
+    private final class DelayedLkp extends AbstractLookup {
+        DelayedNode node;
+        final InstanceContent ic;
+        
+        public DelayedLkp(InstanceContent content) {
+            super(content);
+            ic = content;
+        }
+        
         @Override
+        protected void beforeLookup(Template<?> template) {
+            Class<?> type = template.getType();
+            if (DataObject.class.isAssignableFrom(type)) {
+                ic.add(convert(node));
+            }
+        }
+        
         public DataObject convert(DelayedNode obj) {
+            final FolderChildrenPair pair = obj.pair;
             if (EventQueue.isDispatchThread()) {
                 err.log(Level.WARNING, "Attempt to obtain DataObject for {0} from EDT", pair.primaryFile);
                 boolean assertsOn = false;
@@ -457,21 +609,6 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
                 err.log(Level.INFO, "Cannot convert " + pair.primaryFile, ex);
                 return null;
             }
-        }
-
-        @Override
-        public Class<? extends DataObject> type(DelayedNode obj) {
-            return DataObject.class;
-        }
-
-        @Override
-        public String id(DelayedNode obj) {
-            return type(obj).getName();
-        }
-
-        @Override
-        public String displayName(DelayedNode obj) {
-            return id(obj);
         }
     }
 }

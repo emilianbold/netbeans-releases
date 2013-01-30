@@ -139,13 +139,37 @@ public class CasualDiff {
         td.oldTopLevel =  (JCCompilationUnit) (oldTree.getKind() == Kind.COMPILATION_UNIT ? oldTree : diffContext.origUnit);
 
         for (Tree t : oldTreePath) {
-            if (t != oldTree && (TreeUtilities.CLASS_TREE_KINDS.contains(t.getKind()) || t.getKind() == Kind.BLOCK)) {
+            if (t == oldTree) continue;
+            
+            List<? extends Tree> embeddedElements;
+            
+            if (TreeUtilities.CLASS_TREE_KINDS.contains(t.getKind())) {
+                embeddedElements = ((ClassTree) t).getMembers();
+            } else if (t.getKind() == Kind.BLOCK) {
+                embeddedElements = ((BlockTree) t).getStatements();
+            } else {
+                continue;
+            }
+            
+            embeddedElements = td.filterHidden(NbCollections.checkedListByCopy(embeddedElements, JCTree.class, false));
+            
+            if (embeddedElements.isEmpty()) {
                 int indent = getOldIndent(diffContext, t);
+
                 if (indent < 0) {
                     td.printer.indent();
                 } else {
                     td.printer.setIndent(indent);
                     td.printer.indent();
+                    break;
+                }
+            } else {
+                int indent = getOldIndent(diffContext, embeddedElements.get(0));
+
+                if (indent < 0) {
+                    td.printer.indent();
+                } else {
+                    td.printer.setIndent(indent);
                     break;
                 }
             }
@@ -290,14 +314,28 @@ public class CasualDiff {
     }
     
     private static int getOldIndent(DiffContext diffContext, Tree t) {
-        if (diffContext.doc != null) {
-            try {
-                int offset = (int) diffContext.trees.getSourcePositions().getStartPosition(diffContext.origUnit, t);
-                int lineStartOffset = IndentUtils.lineStartOffset(diffContext.doc, offset);
-                return IndentUtils.lineIndent(diffContext.doc, lineStartOffset);
-            } catch (BadLocationException ex) {}
+        int offset = (int) diffContext.trees.getSourcePositions().getStartPosition(diffContext.origUnit, t);
+        
+        if (offset < 0) return -1;
+        
+        while (offset > 0 && diffContext.origText.charAt(offset - 1) != '\n')
+            offset--;
+        
+        int indent = 0;
+        
+        while (offset < diffContext.origText.length()) {
+            char c = diffContext.origText.charAt(offset++);
+            
+            if (c == '\t') {
+                indent += diffContext.style.getTabSize();
+            } else if (c == '\n' || !Character.isWhitespace(c)) {
+                break;
+            } else {
+                indent++;
+            }
         }
-        return -1;
+        
+        return indent;
     }
 
     private static enum ChangeKind {
@@ -378,10 +416,12 @@ public class CasualDiff {
 
     // TODO: should be here printer.enclClassName be used?
     private Name origClassName = null;
+    private Name newClassName = null;
 
     protected int diffClassDef(JCClassDecl oldT, JCClassDecl newT, int[] bounds) {
         int localPointer = bounds[0];
         final Name origOuterClassName = origClassName;
+        final Name newOuterClassName = newClassName;
         int insertHint = localPointer;
         List<JCTree> filteredOldTDefs = filterHidden(oldT.defs);
         List<JCTree> filteredNewTDefs = filterHidden(newT.defs);
@@ -422,11 +462,12 @@ public class CasualDiff {
             printer.print(newT.name);
             diffInfo.put(insertHint, NbBundle.getMessage(CasualDiff.class,"TXT_ChangeClassName"));
             localPointer = insertHint += oldT.name.length();
-            origClassName = oldT.name;
         } else {
             insertHint += oldT.name.length();
             copyTo(localPointer, localPointer = insertHint);
         }
+        origClassName = oldT.name;
+        newClassName = newT.name;
         if (oldT.typarams.nonEmpty() && newT.typarams.nonEmpty()) {
             copyTo(localPointer, localPointer = oldT.typarams.head.pos);
         }
@@ -515,7 +556,7 @@ public class CasualDiff {
         PositionEstimator est = EstimatorFactory.members(filteredOldTDefs, filteredNewTDefs, diffContext);
         if (localPointer < insertHint)
             copyTo(localPointer, insertHint);
-        if ((newT.mods.flags & Flags.ENUM) != 0 && filteredOldTDefs.isEmpty() && !filteredNewTDefs.isEmpty() && !isEnum(filteredNewTDefs.get(0))) {
+        if ((newT.mods.flags & Flags.ENUM) != 0 && filteredOldTDefs.isEmpty() && !filteredNewTDefs.isEmpty() && !isEnum(filteredNewTDefs.get(0)) && !newT.getSimpleName().isEmpty()) {
             printer.blankline();
             printer.toLeftMargin();
             printer.print(";"); //NOI18N
@@ -524,6 +565,7 @@ public class CasualDiff {
         localPointer = diffList(filteredOldTDefs, filteredNewTDefs, insertHint, est, Measure.REAL_MEMBER, printer);
         printer.enclClassName = origName;
         origClassName = origOuterClassName;
+        newClassName = newOuterClassName;
         printer.undent(old);
         if (localPointer != -1 && localPointer < origText.length()) {
             if (origText.charAt(localPointer) == '}') {
@@ -596,28 +638,34 @@ public class CasualDiff {
             copyTo(localPointer, restypeBounds[0]);
             localPointer = diffTree(oldT.restype, newT.restype, restypeBounds);
             copyTo(localPointer, localPointer = restypeBounds[1]);
+        } else if(oldT.restype == null && newT.restype != null) {
+            copyTo(localPointer, localPointer = oldT.pos);
+            printer.print(newT.restype);
+            printer.print(" "); // print the space after return type
         }
+        
         int posHint;
         if (oldT.typarams.isEmpty()) {
             posHint = oldT.restype != null ? oldT.restype.getStartPosition() : oldT.getStartPosition();
         } else {
             posHint = oldT.typarams.iterator().next().getStartPosition();
         }
-        if (oldT.name != names.init || origClassName != null) {
+        if ((oldT.name != names.init || origClassName != null) && (newT.name != names.init || newClassName != null)) {
+            int origLength = (oldT.name == names.init && origClassName != null ? origClassName.length() : oldT.name.length());
             if (nameChanged(oldT.name, newT.name)) {
                 copyTo(localPointer, oldT.pos);
                 // use orig class name in case of constructor
-                if (oldT.name == names.init && (origClassName != null)) {
-                    printer.print(newT.name);
-                    localPointer = oldT.pos + origClassName.length();
+                if (newT.name == names.init && (newClassName != null)) {
+                    printer.print(newClassName);
+                    localPointer = oldT.pos + origLength;
                 }
                 else {
                     printer.print(newT.name);
                     diffInfo.put(oldT.pos, NbBundle.getMessage(CasualDiff.class,"TXT_RenameMethod",oldT.name));
-                    localPointer = oldT.pos + oldT.name.length();
+                    localPointer = oldT.pos + origLength;
                 }
             } else {
-                copyTo(localPointer, localPointer = (oldT.pos + oldT.name.length()));
+                copyTo(localPointer, localPointer = (oldT.pos + origLength));
             }
         }
         if (oldT.params.isEmpty()) {
@@ -852,13 +900,6 @@ public class CasualDiff {
             }
         } else {
             copyTo(localPointer, localPointer = oldT.pos + 1);
-        }
-        // syntetic super() found, skip it
-        if (diffContext.syntheticTrees.contains(oldT.stats.head)) {
-            oldT.stats = oldT.stats.tail;
-        }
-        if (diffContext.syntheticTrees.contains(newT.stats.head)) {
-            newT.stats = newT.stats.tail;
         }
         PositionEstimator est = EstimatorFactory.statements(
                 filterHidden(oldT.stats),
@@ -1156,7 +1197,7 @@ public class CasualDiff {
         copyTo(localPointer, bodyPos[0]);
         localPointer = diffTree(oldT.body, newT.body, bodyPos);
         copyTo(localPointer, localPointer = bodyPos[1]);
-        PositionEstimator est = EstimatorFactory.catches(oldT.getCatches(), newT.getCatches(), diffContext);
+        PositionEstimator est = EstimatorFactory.catches(oldT.getCatches(), newT.getCatches(), oldT.finalizer != null, diffContext);
         localPointer = diffList(oldT.catchers, newT.catchers, localPointer, est, Measure.DEFAULT, printer);
 
         if (oldT.finalizer != null) {
@@ -1790,6 +1831,7 @@ public class CasualDiff {
         }
         JCTree oldBound = oldT.kind.kind != BoundKind.UNBOUND ? oldT.inner : null;
         JCTree newBound = newT.kind.kind != BoundKind.UNBOUND ? newT.inner : null;
+        if (oldBound == newBound && oldBound == null) return localPointer;
         int[] innerBounds = getBounds(oldBound);
         copyTo(localPointer, innerBounds[0]);
         localPointer = diffTree(oldBound, newBound, innerBounds);
@@ -1920,7 +1962,7 @@ public class CasualDiff {
             }
             copyTo(localPointer, startPos);
             PositionEstimator est = EstimatorFactory.annotations(oldAnnotations,newAnnotations, diffContext, parameterPrint);
-            localPointer = diffList(oldAnnotations, newAnnotations, startPos, est, Measure.DEFAULT, printer);
+            localPointer = diffList(oldAnnotations, newAnnotations, startPos, est, Measure.ARGUMENT, printer);
         }
 
         return localPointer;
@@ -2684,6 +2726,7 @@ public class CasualDiff {
         List<JCVariableDecl> enumConstants = new ArrayList<JCVariableDecl>();
         for (JCTree tree : list) {
             if (tree.pos == (-1)) continue;
+            if (diffContext.syntheticTrees.contains(tree)) continue;
             else if (Kind.VARIABLE == tree.getKind()) {
                 JCVariableDecl var = (JCVariableDecl) tree;
                 if ((var.mods.flags & Flags.ENUM) != 0) {
@@ -3135,72 +3178,6 @@ public class CasualDiff {
         }
     }
 
-    // from TreesService
-    private static JCTree leftMostTree(JCTree tree) {
-        switch (tree.getTag()) {
-            case(JCTree.APPLY):
-                return leftMostTree(((JCMethodInvocation)tree).meth);
-            case(JCTree.ASSIGN):
-                return leftMostTree(((JCAssign)tree).lhs);
-            case(JCTree.BITOR_ASG): case(JCTree.BITXOR_ASG): case(JCTree.BITAND_ASG):
-            case(JCTree.SL_ASG): case(JCTree.SR_ASG): case(JCTree.USR_ASG):
-            case(JCTree.PLUS_ASG): case(JCTree.MINUS_ASG): case(JCTree.MUL_ASG):
-            case(JCTree.DIV_ASG): case(JCTree.MOD_ASG):
-                return leftMostTree(((JCAssignOp)tree).lhs);
-            case(JCTree.OR): case(JCTree.AND): case(JCTree.BITOR):
-            case(JCTree.BITXOR): case(JCTree.BITAND): case(JCTree.EQ):
-            case(JCTree.NE): case(JCTree.LT): case(JCTree.GT):
-            case(JCTree.LE): case(JCTree.GE): case(JCTree.SL):
-            case(JCTree.SR): case(JCTree.USR): case(JCTree.PLUS):
-            case(JCTree.MINUS): case(JCTree.MUL): case(JCTree.DIV):
-            case(JCTree.MOD):
-                return leftMostTree(((JCBinary)tree).lhs);
-            case(JCTree.CLASSDEF): {
-                JCClassDecl node = (JCClassDecl)tree;
-                if (node.mods.pos != Position.NOPOS)
-                    return node.mods;
-                break;
-            }
-            case(JCTree.CONDEXPR):
-                return leftMostTree(((JCConditional)tree).cond);
-            case(JCTree.EXEC):
-                return leftMostTree(((JCExpressionStatement)tree).expr);
-            case(JCTree.INDEXED):
-                return leftMostTree(((JCArrayAccess)tree).indexed);
-            case(JCTree.METHODDEF): {
-                JCMethodDecl node = (JCMethodDecl)tree;
-                if (node.mods.pos != Position.NOPOS)
-                    return node.mods;
-                if (node.restype != null) // true for constructors
-                    return leftMostTree(node.restype);
-                return node;
-            }
-            case(JCTree.SELECT):
-                return leftMostTree(((JCFieldAccess)tree).selected);
-            case(JCTree.TYPEAPPLY):
-                return leftMostTree(((JCTypeApply)tree).clazz);
-            case(JCTree.TYPEARRAY):
-                return leftMostTree(((JCArrayTypeTree)tree).elemtype);
-            case(JCTree.TYPETEST):
-                return leftMostTree(((JCInstanceOf)tree).expr);
-            case(JCTree.POSTINC):
-            case(JCTree.POSTDEC):
-                return leftMostTree(((JCUnary)tree).arg);
-            case(JCTree.VARDEF): {
-                JCVariableDecl node = (JCVariableDecl)tree;
-                if (node.mods.pos != Position.NOPOS)
-                    return node.mods;
-                return leftMostTree(node.vartype);
-            }
-            case(JCTree.TOPLEVEL): {
-                JCCompilationUnit node = (JCCompilationUnit)tree;
-                assert node.defs.size() > 0;
-                return node.pid != null ? node.pid : node.defs.head;
-            }
-        }
-        return tree;
-    }
-
     private static int getOldPos(JCTree oldT) {
         return TreeInfo.getStartPos(oldT);
     }
@@ -3250,7 +3227,7 @@ public class CasualDiff {
             return tokenSequence.offset();
         }
 
-        if (printer.handlePossibleOldTrees(Collections.singletonList(newT), false)) {
+        if (printer.handlePossibleOldTrees(Collections.singletonList(newT), true)) {
             return getCommentCorrectedEndPos(oldT);
         }
 
@@ -3763,6 +3740,8 @@ public class CasualDiff {
         copyTo(from, to, printer);
     }
 
+    public static boolean noInvalidCopyTos = false;
+    
     public void copyTo(int from, int to, VeryPretty loc) {
         if (from == to) {
             return;
@@ -3771,6 +3750,8 @@ public class CasualDiff {
             LOG.log(INFO, "-----\n" + origText + "-----\n");
             LOG.log(INFO, "Illegal values: from = " + from + "; to = " + to + "." +
                 "Please, attach your messages.log to new issue!");
+            if (noInvalidCopyTos)
+                throw new IllegalStateException("Illegal values: from = " + from + "; to = " + to + ".");
             if (to >= 0)
                 printer.eatChars(from-to);
             return;

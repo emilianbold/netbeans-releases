@@ -101,7 +101,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
 import javax.swing.plaf.TextUI;
-import javax.swing.plaf.basic.BasicEditorPaneUI;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.util.Mutex;
@@ -349,19 +348,30 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
         }
     }
 
-    boolean canRollback(Difference diff) {
+    boolean canRollback(final Difference diff) {
         if (!(document instanceof GuardedDocument)) {
             return true;
         }
-        int start, end;
-        if (diff.getType() == Difference.DELETE) {
-            start = end = Utilities.getRowStartFromLineOffset(document, diff.getSecondStart());
-        } else {
-            start = Utilities.getRowStartFromLineOffset(document, diff.getSecondStart() - 1);
-            end = Utilities.getRowStartFromLineOffset(document, diff.getSecondEnd());
-        }
-        MarkBlockChain mbc = ((GuardedDocument) document).getGuardedBlockChain();
-        return (mbc.compareBlock(start, end) & MarkBlock.OVERLAP) == 0;
+        final boolean[] modifiable = new boolean[1];
+        document.runAtomic(new Runnable() {
+            @Override
+            public void run () {
+                boolean canModify = document.isModifiable();
+                if (canModify) {
+                    int start, end;
+                    if (diff.getType() == Difference.DELETE) {
+                        start = end = Utilities.getRowStartFromLineOffset(document, diff.getSecondStart());
+                    } else {
+                        start = Utilities.getRowStartFromLineOffset(document, diff.getSecondStart() - 1);
+                        end = Utilities.getRowStartFromLineOffset(document, diff.getSecondEnd());
+                    }
+                    MarkBlockChain mbc = ((GuardedDocument) document).getGuardedBlockChain();
+                    canModify = (mbc.compareBlock(start, end) & MarkBlock.OVERLAP) == 0;
+                }
+                modifiable[0] = canModify;
+            }
+        });
+        return modifiable[0];
     }
     
     void onPrevious(Difference diff) {
@@ -407,8 +417,14 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
             Rectangle visibleRect = new Rectangle(startRect.x - visibleBorder, startRect.y - visibleBorder, 
                                                   startRect.x, endRect.y - startRect.y + endRect.height + visibleBorder * 2);
             textComponent.scrollRectToVisible(visibleRect);
+           
+            //make sure the y coordinate isn't outside the editor bounds otherwise the popup will 'float' beneath the editor
+            Rectangle extent = editorUI.getExtentBounds();
+            int maxVisibleY = extent.y + extent.height;
             
-            Point p = new Point(endRect.x, endRect.y + endRect.height + 1);
+            Point p = new Point(endRect.x, Math.min(maxVisibleY, endRect.y + endRect.height + 1));
+            
+            //XXX: The resulting screen coordinates could still be outside the main screen
             SwingUtilities.convertPointToScreen(p, textComponent);
             return p;
         } catch (BadLocationException e) {
@@ -651,6 +667,12 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
         JTextComponent component = textComponent;
         TextUI textUI = component.getUI();
         EditorUI editorUI = Utilities.getEditorUI(textComponent);
+        if (editorUI == null) {
+            LOG.log(Level.WARNING, "No editor UI for file {0}, has {1} text UI", new Object[] { //NOI18N
+                fileObject == null ? null : fileObject.getPath(),
+                textComponent.getUI() });
+            return;
+        }
         View rootView = Utilities.getDocumentView(component);
         if (rootView == null) {
             return;
@@ -1189,29 +1211,20 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
         return new StringReader(str[0]);
     }  
    
-
-    /**
-     * Recursively deletes the file or directory.
-     *
-     * @param file file/directory to delete
-     */
-    private static void deleteRecursively(File file) {
-        deleteRecursively(file, Level.WARNING);
-    }
-
     /**
      * Recursively deletes the file or directory.
      *
      * @param file file/directory to delete
      * @param level log level
      */
-    private static void deleteRecursively(File file, Level level) {
+    private static void deleteRecursively (File file) {
         FileObject fo = FileUtil.toFileObject(file);
         if (fo == null) return;
         try {
             fo.delete();
         } catch (IOException e) {
-            DiffSidebarManager.LOG.log(level, "", e);
+            DiffSidebarManager.LOG.log(Level.INFO, "", e);
+            file.deleteOnExit();
         }
     }
     

@@ -146,6 +146,18 @@ public class IpeUtils {
 	}
 	return s;
     }
+    
+    public static String unquoteIfNecessary(String s) {
+        if (s.charAt(0) == '"') {
+            s = s.substring(1);
+        }
+        
+        if (s.charAt(s.length()-1) == '"') {
+            s = s.substring(0, s.length()-1);
+        }
+        
+        return s;
+    }
 
     /**
      * Expand '~' and env variables in path.

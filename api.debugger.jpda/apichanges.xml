@@ -786,6 +786,21 @@ These are mainly class and thread filters and hit counts.
         <issue number="182439"/>
     </change>
 
+    <change>
+        <api name="JPDADebuggerAPI"/>
+        <summary>BreakpointsClassFilter provider introduced.</summary>
+        <version major="2" minor="37"/>
+        <date day="4" month="8" year="2012"/>
+        <author login="mentlicher"/>
+        <compatibility addition="yes" source="compatible" binary="compatible"/>
+        <description>
+            BreakpointsClassFilter introduced to provide a customized set of classes
+            for breakpoints.
+        </description>
+        <class package="org.netbeans.spi.debugger.jpda" name="BreakpointsClassFilter" />
+        <issue number="215680"/>
+    </change>
+
 
 </changes>
 

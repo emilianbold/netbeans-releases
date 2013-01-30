@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 3.11
+#Version 3.13.1
 
 CLSS public java.lang.Object
 cons public init()
@@ -251,6 +251,7 @@ meth public void selectCategory(java.lang.String)
 meth public void selectEditor()
 meth public void selectFontAndColors()
 meth public void selectGeneral()
+meth public void selectJava()
 meth public void selectKeymap()
 meth public void selectMiscellaneous()
 meth public void setDefaultLevel(java.lang.String)
@@ -675,6 +676,7 @@ hfds cutMenu,cutPopup,keystroke
 
 CLSS public org.netbeans.jellytools.actions.DeleteAction
 cons public init()
+meth public static void confirmDeletion()
 supr org.netbeans.jellytools.actions.ActionNoBlock
 hfds deleteMenu,deletePopup,keystroke
 
@@ -908,7 +910,7 @@ supr java.lang.Object
 hfds comparator,linkSuffix
 hcls NodesJTreeOperator,StringArraySubPathChooser
 
-CLSS public org.netbeans.jellytools.nodes.OutlineNode
+CLSS public final org.netbeans.jellytools.nodes.OutlineNode
 cons public init(org.netbeans.jellytools.OutlineOperator,java.lang.String)
 cons public init(org.netbeans.jellytools.OutlineOperator,javax.swing.tree.TreePath)
 cons public init(org.netbeans.jellytools.nodes.OutlineNode,java.lang.String)
@@ -2532,6 +2534,6 @@ meth public void run(junit.framework.TestResult)
 meth public void runBare() throws java.lang.Throwable
 meth public void setFilter(org.netbeans.junit.Filter)
 supr junit.framework.TestCase
-hfds filter,lastTestMethod,logStreamTable,radix,systemOutPSWrapper,time,usedPaths,workDirPath
+hfds filter,lastTestMethod,logStreamTable,radix,systemOutPSWrapper,time,usedPaths,vmDeadline,workDirPath
 hcls WFOS
 

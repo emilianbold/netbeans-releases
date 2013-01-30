@@ -41,14 +41,14 @@
  */
 package org.netbeans.modules.php.apigen.annotations;
 
-import org.netbeans.modules.php.spi.annotations.PhpAnnotationTag;
+import org.netbeans.modules.php.spi.annotation.AnnotationCompletionTag;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class TutorialTag extends PhpAnnotationTag {
+public class TutorialTag extends AnnotationCompletionTag {
 
     public TutorialTag() {
         super("tutorial", "@tutorial ${package}", //NOI18N

@@ -80,6 +80,7 @@ import org.netbeans.modules.git.ui.checkout.RevertChangesAction;
 import org.netbeans.modules.git.ui.commit.CommitAction;
 import org.netbeans.modules.git.ui.commit.GitFileNode;
 import org.netbeans.modules.git.ui.diff.DiffAction;
+import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.util.NoContentPanel;
 import org.netbeans.modules.versioning.util.Utils;
@@ -283,7 +284,7 @@ class VersioningPanelController implements ActionListener, PropertyChangeListene
         } else {
             if (!oldInfo.containsStatus(displayStatuses) && !newInfo.containsStatus(displayStatuses)) return false;
         }
-        return context == null ? false: context.contains(file);
+        return context == null ? false : GitUtils.contains(context.getRootFiles(), file);
     }
 
     private void initPanelMode () {

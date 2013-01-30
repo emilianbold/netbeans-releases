@@ -52,7 +52,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.ui.search.QuickSearchComboBar;
-import org.netbeans.modules.bugtracking.util.BugtrackingOwnerSupport;
+import org.netbeans.modules.bugtracking.util.OwnerUtils;
 import org.netbeans.modules.versioning.util.ExportDiffSupport;
 
 /**
@@ -62,13 +62,11 @@ import org.netbeans.modules.versioning.util.ExportDiffSupport;
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.versioning.util.ExportDiffSupport.ExportDiffProvider.class)
 public class ExportDiffProviderImpl extends ExportDiffSupport.ExportDiffProvider implements DocumentListener, PropertyChangeListener {
 
-    private BugtrackingOwnerSupport support;
     private AttachPanel panel;
     private File[] files;
     private static Logger LOG = Logger.getLogger("org.netbeans.modules.bugtracking.exportdiff.AttachIssue");   // NOI18N
 
     public ExportDiffProviderImpl() {
-        support = BugtrackingOwnerSupport.getInstance();
     }
 
     @Override
@@ -89,6 +87,8 @@ public class ExportDiffProviderImpl extends ExportDiffSupport.ExportDiffProvider
         issue.attachPatch(file, panel.descriptionTextField.getText());
         issue.open();
 
+        OwnerUtils.setFirmAssociations(files, panel.getRepository());
+                
         LOG.log(Level.FINE, "handeDiff end for " + file); // NOI18N
     }
 

@@ -48,20 +48,24 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import org.netbeans.modules.cnd.repository.api.CacheLocation;
 import org.netbeans.modules.cnd.repository.api.DatabaseTable;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
-import org.netbeans.modules.cnd.repository.api.Repository;
 import org.netbeans.modules.cnd.repository.spi.RepositoryListener;
 
 /**
  * hash map based Repository
  * @author Vladimir Voskresensky
  */
-public class HashMapRepository implements Repository {
+public class HashMapRepository extends BaseRepository {
 
     @Override
     public void debugDistribution() {
+    }
+
+    @Override
+    public void debugDump(Key key) {
     }
 
     @Override
@@ -72,10 +76,12 @@ public class HashMapRepository implements Repository {
     /** represents a single unit */
     private static class Unit {
         
-        private Map<Key,Persistent> map = new ConcurrentHashMap<Key,Persistent>();
-        private CharSequence name;
+        private final Map<Key,Persistent> map = new ConcurrentHashMap<Key,Persistent>();
+        private final CharSequence name;
+        private final int id;
 
-        public Unit(CharSequence name) {
+        public Unit(int id, CharSequence name) {
+            this.id = id;
             this.name = name;
         }
         
@@ -93,9 +99,13 @@ public class HashMapRepository implements Repository {
             assert key.getUnit().equals(name);
             map.remove(key);
         }
+
+        public int getId() {
+            return id;
+        }        
     }
     
-    private final Map<CharSequence, Unit> units;
+    private final Map<Integer, Unit> units;
     private static final class Lock {}
     private final Object unitsLock = new Lock();
     
@@ -103,20 +113,23 @@ public class HashMapRepository implements Repository {
      *  HashMapRepository creates from META-INF/services;
      *  no need for public constructor
      */
-    public HashMapRepository() {
-        units = new ConcurrentHashMap<CharSequence, Unit>();
+    public HashMapRepository(int id, CacheLocation cacheLocation) {
+        super(id, cacheLocation);
+        units = new ConcurrentHashMap<Integer, Unit>();
     }
 
     /** Never returns null */
-    private Unit getUnit(CharSequence name) {
+    private Unit getUnit(Key key) {
+        int id = key.getUnitId();
+        CharSequence name = key.getUnit();
         assert name != null;
-        Unit unit = units.get(name);
+        Unit unit = units.get(id);
         if (unit == null) {
             synchronized (unitsLock) {
-                unit = units.get(name);
+                unit = units.get(id);
                 if (unit == null) {
-                    unit = new Unit(name);
-                    units.put(name, unit);
+                    unit = new Unit(id, name);
+                    units.put(id, unit);
                 }
             }
         }
@@ -126,12 +139,12 @@ public class HashMapRepository implements Repository {
     @Override
     public void put(Key key, Persistent obj) {
         assert obj != null;
-        getUnit(key.getUnit()).put(key, obj);
+        getUnit(key).put(key, obj);
     }
 
     @Override
     public Persistent get(Key key) {
-        return getUnit(key.getUnit()).get(key);
+        return getUnit(key).get(key);
     }
 
     @Override
@@ -141,7 +154,7 @@ public class HashMapRepository implements Repository {
     
     @Override
     public void remove(Key key) {
-        getUnit(key.getUnit()).remove(key);
+        getUnit(key).remove(key);
     }
 
     @Override
@@ -166,15 +179,15 @@ public class HashMapRepository implements Repository {
     }
     
     @Override
-    public synchronized void closeUnit(CharSequence unitName, boolean cleanRepository, Set<CharSequence> requiredUnits) {
-        removeUnit(unitName);
+    public void closeUnit(int unitId, boolean cleanRepository, Set<Integer> requiredUnits) {
+        removeUnit(unitId);
     }
-    
+
     @Override
-    public synchronized void removeUnit(CharSequence unitName) {
-        for( Iterator<CharSequence> iter = units.keySet().iterator(); iter.hasNext(); ) {
-            CharSequence key = iter.next();
-            if( key.equals(unitName)) {
+    public synchronized void removeUnit(int unitId) {
+        for( Iterator<Unit> iter = units.values().iterator(); iter.hasNext(); ) {
+            Unit unit = iter.next();
+            if( unit.getId() == unitId) {
                 synchronized( unitsLock ) {
                     iter.remove();
                     return;

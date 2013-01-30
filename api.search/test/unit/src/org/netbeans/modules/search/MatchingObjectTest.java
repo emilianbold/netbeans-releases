@@ -42,6 +42,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.lang.reflect.InvocationTargetException;
+import java.net.URI;
 import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.Iterator;
@@ -213,6 +214,14 @@ public class MatchingObjectTest extends NbTestCase {
         @Override
         public SearchInfo getSearchInfo() {
             return new SearchInfo() {
+
+                @Override
+                protected Iterator<URI> createUrisToSearchIterator(
+                        SearchScopeOptions options, SearchListener listener,
+                        AtomicBoolean terminated) {
+                    throw new UnsupportedOperationException(
+                            "Not supported yet.");                      //NOI18N
+                }
                 @Override
                 public boolean canSearch() {
                     return true;

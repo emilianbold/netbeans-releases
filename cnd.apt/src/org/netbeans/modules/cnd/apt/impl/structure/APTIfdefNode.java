@@ -54,7 +54,7 @@ import org.netbeans.modules.cnd.apt.support.APTToken;
  * @author Vladimir Voskresensky
  */
 public final class APTIfdefNode extends APTIfdefConditionBaseNode 
-                                implements APTIfdef, Serializable {
+                                implements APTNodeBuilder, APTIfdef, Serializable {
     private static final long serialVersionUID = -6972412209355180246L;
     
     /** Copy constructor */
@@ -75,4 +75,9 @@ public final class APTIfdefNode extends APTIfdefConditionBaseNode
     public final int getType() {
         return APT.Type.IFDEF;
     }    
+    
+    @Override
+    public APTBaseNode getNode() {
+        return this;
+    }
 }

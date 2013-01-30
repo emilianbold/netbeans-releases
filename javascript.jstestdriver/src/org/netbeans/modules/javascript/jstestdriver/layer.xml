@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
+<filesystem>
+    <folder name="Templates">
+        <folder name="js-test-driver">
+            <attr name="position" intvalue="1211"/>
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javascript.jstestdriver.Bundle"/>
+
+            <file name="jsTestDriver.conf" url="nbresloc:/org/netbeans/modules/javascript/jstestdriver/resources/jsTestDriver.conf">
+                <attr name="position" intvalue="100"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="instantiatingIterator" newvalue="org.netbeans.modules.javascript.jstestdriver.wizard.NewConfigFileWizardIterator"/>
+                <attr name="templateCategory" stringvalue="clientside-types"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/javascript/jstestdriver/resources/TemplateHelp.html"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javascript.jstestdriver.Bundle"/>
+            </file>
+            
+        </folder>
+    </folder>
+</filesystem>

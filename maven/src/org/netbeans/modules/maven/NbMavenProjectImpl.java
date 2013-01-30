@@ -59,6 +59,8 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
+import org.apache.maven.DefaultMaven;
+import org.apache.maven.Maven;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.DefaultArtifact;
 import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
@@ -66,7 +68,11 @@ import org.apache.maven.cli.MavenCli;
 import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.execution.MavenExecutionResult;
 import org.apache.maven.model.Resource;
+import org.apache.maven.project.DefaultProjectBuildingRequest;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.project.ProjectBuilder;
+import org.apache.maven.project.ProjectBuildingException;
+import org.apache.maven.project.ProjectBuildingRequest;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
@@ -79,7 +85,9 @@ import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.PluginPropertyUtils;
 import org.netbeans.modules.maven.api.execute.ActiveJ2SEPlatformProvider;
 import org.netbeans.modules.maven.configurations.M2ConfigProvider;
+import org.netbeans.modules.maven.configurations.M2Configuration;
 import org.netbeans.modules.maven.configurations.ProjectProfileHandlerImpl;
+import org.netbeans.modules.maven.cos.CopyResourcesOnSave;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.embedder.MavenEmbedder;
 import org.netbeans.modules.maven.modelcache.MavenProjectCache;
@@ -124,12 +132,18 @@ public final class NbMavenProjectImpl implements Project {
     private final Lookup lookup;
     private final Updater projectFolderUpdater;
     private final Updater userFolderUpdater;
+    
     private Reference<MavenProject> project;
+    private boolean hardReferencingMavenProject = false; //only should be true when project is open.
+    private MavenProject hardRefProject;
+    
     private ProblemReporterImpl problemReporter;
     private final @NonNull NbMavenProject watcher;
     private final M2ConfigProvider configProvider;
     private final @NonNull MavenProjectPropsImpl auxprops;
     private ProjectProfileHandlerImpl profileHandler;
+    private CopyResourcesOnSave copyResourcesOnSave;
+    private final Object COPYRESOURCES_LOCK = new Object();
     @org.netbeans.api.annotations.common.SuppressWarnings("MS_SHOULD_BE_FINAL")
     public static WatcherAccessor ACCESSOR = null;
 
@@ -143,6 +157,26 @@ public final class NbMavenProjectImpl implements Project {
             LOG.log(Level.SEVERE, "very wrong, very wrong, yes indeed", ex);
         }
     }
+
+    //#224012
+    private ProjectOpenedHookImpl hookImpl;
+    private Exception ex;
+    private final Object LOCK_224012 = new Object();
+    boolean setIssue224012(ProjectOpenedHookImpl hook, Exception exception) {
+        synchronized (LOCK_224012) {
+            if (hookImpl == null) {
+                hookImpl = hook;
+                ex = exception;
+                return true;
+            } else {
+                LOG.log(Level.INFO, "    first creation stacktrace", ex);
+                LOG.log(Level.INFO, "    second creation stacktrace", exception);
+                LOG.log(Level.WARNING, "Spotted issue 224012 (https://netbeans.org/bugzilla/show_bug.cgi?id=224012). Please report the incident.");
+                return false;
+            }
+        }
+    }
+
 
     public static abstract class WatcherAccessor {
 
@@ -164,7 +198,7 @@ public final class NbMavenProjectImpl implements Project {
             public Lookup getLookup() {
                 if (completeLookup == null) {
                     //not fully initialized constructor
-                    LOG.log(Level.FINE, "accessing project's lookup before the instance is fully initialized", new Exception());
+                    LOG.log(Level.FINE, "accessing project's lookup before the instance is fully initialized at " + projectFile, new Exception());
                     assert basicLookup != null;
                     return basicLookup;
                 } else {
@@ -176,14 +210,14 @@ public final class NbMavenProjectImpl implements Project {
         projectFolderUpdater = new Updater("nb-configuration.xml", "pom.xml"); //NOI18N
         userFolderUpdater = new Updater("settings.xml");//NOI18N
         problemReporter = new ProblemReporterImpl(this);
-        M2AuxilaryConfigImpl auxiliary = new M2AuxilaryConfigImpl(folder, problemReporter);
+        M2AuxilaryConfigImpl auxiliary = new M2AuxilaryConfigImpl(folder, true);
         auxprops = new MavenProjectPropsImpl(auxiliary, this);
         profileHandler = new ProjectProfileHandlerImpl(this, auxiliary);
         configProvider = new M2ConfigProvider(this, auxiliary, profileHandler);
         // @PSP's and the like, and PackagingProvider impls, may check project lookup for e.g. NbMavenProject, so init lookup in two stages:
         basicLookup = createBasicLookup(projectState, auxiliary);
-        //here we akways load the MavenProject instance because we need to touch the packaging from pom.
-        completeLookup = LookupProviderSupport.createCompositeLookup(new PackagingTypeDependentLookup(watcher, basicLookup), "Projects/org-netbeans-modules-maven/Lookup");//NOI18N
+        //here we always load the MavenProject instance because we need to touch the packaging from pom.
+        completeLookup = LookupProviderSupport.createCompositeLookup(basicLookup, new PackagingTypeDependentLookup(watcher));
     }
 
     public File getPOMFile() {
@@ -226,7 +260,10 @@ public final class NbMavenProjectImpl implements Project {
             // #135070
             req.setRecursive(false);
             MavenExecutionResult res = embedder.readProjectWithDependencies(req, true);
+            //#215159 clear the project building request, it references multiple Maven Models via the RepositorySession cache
+            //is not used in maven itself, most likely used by m2e only..
             if (!res.hasExceptions()) {
+                res.getProject().setProjectBuildingRequest(null);
                 return res.getProject();
             } else {
                 List<Throwable> exc = res.getExceptions();
@@ -240,6 +277,48 @@ public final class NbMavenProjectImpl implements Project {
             LOG.log(Level.INFO, "Runtime exception thrown while loading maven project at " + getProjectDirectory(), exc); //NOI18N
         }
         return MavenProjectCache.getFallbackProject(this.getPOMFile());
+    }
+    
+    /**
+     * replacement for MavenProject.getParent() which has bad long term memory behaviour. We offset it by recalculating/reparsing everything
+     * therefore should not be used lightly!
+     * pass a MavenProject instance and current configuration and other settings will be applied when loading the parent.
+     * @param project
+     * @return null or the parent mavenproject
+     */
+    
+    public MavenProject loadParentOf(MavenEmbedder embedder, MavenProject project) throws ProjectBuildingException {
+
+        MavenProject parent = null;
+        ProjectBuilder builder = embedder.lookupComponent(ProjectBuilder.class);
+        MavenExecutionRequest req = embedder.createMavenExecutionRequest();
+        M2Configuration active = configProvider.getActiveConfiguration();
+        req.addActiveProfiles(active.getActivatedProfiles());
+        req.setNoSnapshotUpdates(true);
+        req.setUpdateSnapshots(false);
+        req.setInteractiveMode(false);
+        req.setRecursive(false);
+        req.setOffline(true);
+        req.setUserProperties(MavenProjectCache.createSystemPropsForProjectLoading(active.getProperties()));
+
+        ProjectBuildingRequest request = req.getProjectBuildingRequest();
+        request.setRemoteRepositories(project.getRemoteArtifactRepositories());
+        DefaultMaven maven = (DefaultMaven) embedder.lookupComponent(Maven.class);
+        
+        request.setRepositorySession(maven.newRepositorySession(req));
+
+        if (project.getParentFile() != null) {
+            parent = builder.build(project.getParentFile(), request).getProject();
+        } else if (project.getModel().getParent() != null) {
+            parent = builder.build(project.getParentArtifact(), request).getProject();
+        }
+        //clear the project building request, it references multiple Maven Models via the RepositorySession cache
+        //is not used in maven itself, most likely used by m2e only..
+        if (parent != null) {
+            parent.setProjectBuildingRequest(null);
+        }
+        MavenEmbedder.normalizePaths(parent);
+        return parent;
     }
 
     public List<String> getCurrentActiveProfiles() {
@@ -269,8 +348,11 @@ public final class NbMavenProjectImpl implements Project {
         MavenProject mp = project == null ? null : project.get();
         if (mp == null) {
             mp = loadOriginalMavenProject(false);
+            project = new SoftReference<MavenProject>(mp);
+            if (hardReferencingMavenProject) {
+                hardRefProject = mp;
+            }
         }
-        project = new SoftReference<MavenProject>(mp);
         return mp;
     }
     
@@ -285,6 +367,29 @@ public final class NbMavenProjectImpl implements Project {
         }
         return false;
     }
+    
+    /**
+     * open projects should always hard reference the Mavenproject instance to prevent it from
+     * being GCed, the instance will get reloaded almost instantly anyway
+     */
+    void startHardReferencingMavenPoject() {
+        synchronized (this) {
+            hardReferencingMavenProject = true;
+            MavenProject mp = project == null ? null : project.get();
+            hardRefProject = mp;
+        }
+    }
+    /**
+     * open projects should always hard reference the Mavenproject instance to prevent it from
+     * being GCed, the instance will get reloaded almost instantly anyway
+     */
+    void stopHardReferencingMavenPoject() {
+        synchronized (this) {
+            hardReferencingMavenProject = false;
+            hardRefProject = null;
+        }
+    }
+    
 
     @Messages({
         "TXT_RuntimeException=RuntimeException occurred in Apache Maven embedder while loading",
@@ -299,12 +404,19 @@ public final class NbMavenProjectImpl implements Project {
             if (newproject == null) { //null when no pom.xml in project folder..
                 newproject = MavenProjectCache.getFallbackProject(projectFile);
             }
-            MavenExecutionResult res = MavenProjectCache.getExecutionResult(newproject);
-            if (res != null && res.hasExceptions()) { //res is null when there is no pom in the project folder.
-                problemReporter.reportExceptions(res);
-            } else {
-                problemReporter.doArtifactChecks(newproject);
-            }
+            final MavenExecutionResult res = MavenProjectCache.getExecutionResult(newproject);
+            final MavenProject np = newproject;
+            ProblemReporterImpl.RP.post(new Runnable() {
+                //#217286 doArtifactChecks can call FileOwnerQuery and attempt to aquire the project mutex. but we are under synchronization here..
+                @Override
+                public void run() {
+                    if (res != null && res.hasExceptions()) { //res is null when there is no pom in the project folder.
+                        problemReporter.reportExceptions(res);
+                    } else {
+                        problemReporter.doArtifactChecks(np);
+                    }
+                }
+            });
         } finally {
             if (LOG.isLoggable(Level.FINE) && SwingUtilities.isEventDispatchThread()) {
                 LOG.log(Level.FINE, "Project " + getProjectDirectory().getPath() + " loaded in AWT event dispatching thread!", new RuntimeException());
@@ -334,6 +446,9 @@ public final class NbMavenProjectImpl implements Project {
         MavenProject prj = loadOriginalMavenProject(true);
         synchronized (this) {
             project = new SoftReference<MavenProject>(prj);
+            if (hardReferencingMavenProject) {
+                hardRefProject = prj;
+            }
         }
         ACCESSOR.doFireReload(watcher);
         problemReporter.doIDEConfigChecks();
@@ -490,7 +605,7 @@ public final class NbMavenProjectImpl implements Project {
         String prop = PluginPropertyUtils.getPluginProperty(this, Constants.GROUP_APACHE_PLUGINS,
                 Constants.PLUGIN_WAR, //NOI18N
                 "warSourceDirectory", //NOI18N
-                "war"); //NOI18N
+                "war", null); //NOI18N
 
         prop = prop == null ? "src/main/webapp" : prop; //NOI18N
 
@@ -502,7 +617,7 @@ public final class NbMavenProjectImpl implements Project {
         String prop = PluginPropertyUtils.getPluginProperty(this, Constants.GROUP_APACHE_PLUGINS,
                 Constants.PLUGIN_SITE, //NOI18N
                 "siteDirectory", //NOI18N
-                "site"); //NOI18N
+                "site", null); //NOI18N
 
         prop = prop == null ? "src/site" : prop; //NOI18N
 
@@ -514,7 +629,7 @@ public final class NbMavenProjectImpl implements Project {
         String prop = PluginPropertyUtils.getPluginProperty(this, Constants.GROUP_APACHE_PLUGINS,
                 Constants.PLUGIN_EAR, //NOI18N
                 "earSourceDirectory", //NOI18N
-                "ear"); //NOI18N
+                "ear", null); //NOI18N
 
         prop = prop == null ? "src/main/application" : prop; //NOI18N
 
@@ -584,17 +699,27 @@ public final class NbMavenProjectImpl implements Project {
     public Lookup getLookup() {
         return lookup;
     }
+    
+    CopyResourcesOnSave getCopyOnSaveResources() {
+        synchronized (COPYRESOURCES_LOCK) {
+            if (copyResourcesOnSave == null) {
+                copyResourcesOnSave = new CopyResourcesOnSave(watcher, this);
+            }
+            return copyResourcesOnSave;
+        }
+    }
 
     private static class PackagingTypeDependentLookup extends ProxyLookup implements PropertyChangeListener {
 
         private final NbMavenProject watcher;
-        private final Lookup lookup;
         private String packaging;
+        private final Lookup general;
 
         @SuppressWarnings("LeakingThisInConstructor")
-        PackagingTypeDependentLookup(NbMavenProject watcher, Lookup lookup) {
+        PackagingTypeDependentLookup(NbMavenProject watcher) {
             this.watcher = watcher;
-            this.lookup = lookup;
+            //needs to be kept around to prevent recreating instances
+            general = Lookups.forPath("Projects/org-netbeans-modules-maven/Lookup"); //NOI18N
             check();
             watcher.addPropertyChangeListener(this);
         }
@@ -606,7 +731,8 @@ public final class NbMavenProjectImpl implements Project {
             }
             if (!newPackaging.equals(packaging)) {
                 packaging = newPackaging;
-                setLookups(LookupProviderSupport.createCompositeLookup(lookup, "Projects/org-netbeans-modules-maven/" + packaging + "/Lookup"));
+                Lookup pack = Lookups.forPath("Projects/org-netbeans-modules-maven/" + packaging + "/Lookup");
+                setLookups(general, pack);
             }
         }
 
@@ -622,6 +748,7 @@ public final class NbMavenProjectImpl implements Project {
                     this,
                     fileObject,
                     auxiliary,
+                    auxiliary.getProblemProvider(),
                     auxprops,
                     new MavenProjectPropsImpl.Merger(auxprops),
                     profileHandler,
@@ -632,6 +759,7 @@ public final class NbMavenProjectImpl implements Project {
                     UILookupMergerSupport.createProjectOpenHookMerger(null),
                     UILookupMergerSupport.createPrivilegedTemplatesMerger(),
                     UILookupMergerSupport.createRecommendedTemplatesMerger(),
+                    UILookupMergerSupport.createProjectProblemsProviderMerger(),
                     LookupProviderSupport.createSourcesMerger(),
                     ProjectClassPathModifier.extenderForModifier(this),
                     LookupMergerSupport.createClassPathModifierMerger());

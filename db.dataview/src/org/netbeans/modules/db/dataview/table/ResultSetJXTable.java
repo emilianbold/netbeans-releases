@@ -42,21 +42,31 @@
 package org.netbeans.modules.db.dataview.table;
 
 import java.awt.Color;
+import java.awt.datatransfer.StringSelection;
+import java.awt.datatransfer.Transferable;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.sql.Blob;
 import java.sql.Clob;
+import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.DefaultRowSorter;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.RowFilter;
+import javax.swing.RowSorter;
 import javax.swing.SwingUtilities;
+import javax.swing.TransferHandler;
+import javax.swing.plaf.UIResource;
 import javax.swing.table.*;
 import org.jdesktop.swingx.JXTable;
 import org.jdesktop.swingx.JXTableHeader;
@@ -64,15 +74,20 @@ import org.jdesktop.swingx.decorator.ColorHighlighter;
 import org.jdesktop.swingx.decorator.HighlightPredicate;
 import org.jdesktop.swingx.decorator.HighlighterFactory;
 import org.jdesktop.swingx.renderer.CheckBoxProvider;
-import org.jdesktop.swingx.renderer.FormatStringValue;
 import org.jdesktop.swingx.renderer.JRendererCheckBox;
+import org.jdesktop.swingx.renderer.StringValues;
 import org.jdesktop.swingx.table.DatePickerCellEditor;
 import org.netbeans.modules.db.dataview.meta.DBColumn;
 import org.netbeans.modules.db.dataview.output.DataView;
 import org.netbeans.modules.db.dataview.table.celleditor.*;
+import org.netbeans.modules.db.dataview.util.BinaryToStringConverter;
 import org.netbeans.modules.db.dataview.util.DataViewUtils;
 import org.netbeans.modules.db.dataview.util.DateType;
+import org.netbeans.modules.db.dataview.util.TimeType;
 import org.netbeans.modules.db.dataview.util.TimestampType;
+import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
+import org.openide.util.datatransfer.ExClipboard;
 
 /**
  * A better-looking table than JTable, implements JXTable and a decorator to draw empty rows 
@@ -80,6 +95,10 @@ import org.netbeans.modules.db.dataview.util.TimestampType;
  * @author Ahimanikya Satapathy
  */
 public class ResultSetJXTable extends JXTableDecorator {
+
+    private DateFormat timeFormat = new SimpleDateFormat(TimeType.DEFAULT_FOMAT_PATTERN);
+    private DateFormat dateFormat = new SimpleDateFormat(DateType.DEFAULT_FOMAT_PATTERN);
+    private DateFormat timestampFormat = new SimpleDateFormat(TimestampType.DEFAULT_FORMAT_PATTERN);
 
     private String[] columnToolTips;
     private final int multiplier;
@@ -91,6 +110,8 @@ public class ResultSetJXTable extends JXTableDecorator {
 
     @SuppressWarnings("OverridableMethodCallInConstructor")
     public ResultSetJXTable(final DataView dataView) {
+        this.setTransferHandler(new TableTransferHandler());
+
         this.dView = dataView;
 
         setShowGrid(true, true);
@@ -122,6 +143,21 @@ public class ResultSetJXTable extends JXTableDecorator {
         return new JTableHeaderImpl(columnModel);
     }
 
+    @Override
+    protected RowSorter<? extends TableModel> createDefaultRowSorter() {
+        return new StringFallbackRowSorter(this.getModel());
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public <R extends TableModel> void setRowFilter(RowFilter<? super R, ? super Integer> filter) {
+        if(getRowSorter() instanceof DefaultRowSorter) {
+            ((DefaultRowSorter) getRowSorter()).setRowFilter(filter);
+        } else {
+            super.setRowFilter(filter);
+        }
+    }
+
     public void createTableModel(List<Object[]> rows, final JXTableRowHeader rowHeader) {
         assert SwingUtilities.isEventDispatchThread() : "Must be called from AWT thread";  //NOI18N
         assert rows != null;
@@ -139,9 +175,9 @@ public class ResultSetJXTable extends JXTableDecorator {
     protected void setDefaultCellRenderers() {
         setDefaultRenderer(Object.class, new ResultSetCellRenderer());
         setDefaultRenderer(String.class, new ResultSetCellRenderer());
-        setDefaultRenderer(Number.class, new ResultSetCellRenderer(FormatStringValue.NUMBER_TO_STRING, JLabel.RIGHT));
+        setDefaultRenderer(Number.class, new ResultSetCellRenderer(StringValues.NUMBER_TO_STRING, JLabel.RIGHT));
         setDefaultRenderer(Boolean.class, new ResultSetCellRenderer(new CheckBoxProvider()));
-        setDefaultRenderer(java.sql.Date.class, new ResultSetCellRenderer(FormatStringValue.DATE_TO_STRING));
+        setDefaultRenderer(java.sql.Date.class, new ResultSetCellRenderer(StringValues.DATE_TO_STRING));
         setDefaultRenderer(java.sql.Time.class, new ResultSetCellRenderer(ResultSetCellRenderer.TIME_TO_STRING));
         setDefaultRenderer(java.sql.Timestamp.class, new ResultSetCellRenderer(ResultSetCellRenderer.DATETIME_TO_STRING));
         setDefaultRenderer(java.util.Date.class, new ResultSetCellRenderer(ResultSetCellRenderer.DATETIME_TO_STRING));
@@ -285,8 +321,127 @@ public class ResultSetJXTable extends JXTableDecorator {
         return false;
     }
     
-    // This is mainly used for set Tooltip for column headers
+    /**
+     * Quote string for use in TSV (tab-separated values file
+     *
+     * Assumptions: column separator is \t and row separator is \n
+     */
+    protected String quoteIfNecessary(String value) {
+        if (value == null || value.isEmpty()) {
+            return "\"\""; //NOI18N
+        } else if (value.contains("\t") || value.contains("\n") //NOI18N
+                || value.contains("\"")) { //NOI18N
+            return "\"" + value.replace("\"", "\"\"") + "\""; //NOI18N
+        } else {
+            return value;
+        }
+    }
 
+    /**
+     * Convert object to string representation
+     *
+     * @param o object to convert
+     * @param limitSize in case of CLOBs and BLOBs limit to limitSize
+     * bytes/chars
+     * @return string representation of o
+     */
+    protected String convertToClipboardString(Object o, int limitSize) {
+        if (o instanceof Blob) {
+            Blob b = (Blob) o;
+            try {
+                if (b.length() <= limitSize) {
+                    return BinaryToStringConverter.convertToString(
+                            b.getBytes(1, (int) b.length()), 16, false);
+                }
+            } catch (SQLException ex) {
+            }
+        } else if (o instanceof Clob) {
+            Clob c = (Clob) o;
+            try {
+                if (c.length() <= limitSize) {
+                    return c.getSubString(1, (int) c.length());
+                }
+            } catch (SQLException ex) {
+            }
+        } else if (o instanceof java.sql.Time) {
+            return timeFormat.format((java.util.Date) o);
+        } else if (o instanceof java.sql.Date) {
+            return dateFormat.format((java.util.Date) o);
+        } else if (o instanceof java.util.Date) {
+            return timestampFormat.format((java.util.Date) o);
+        } else if (o == null) {
+            return "";  //NOI18N
+        }
+        return o.toString();
+    }
+
+    /**
+     * Create TSV (tab-separated values) string from row data
+     *
+     * @param withHeader include column headers?
+     * @return Transferable for clipboard transfer
+     */
+    private StringSelection createTransferableTSV(boolean withHeader) {
+        try {
+            int[] rows = getSelectedRows();
+            int[] columns;
+            if (getRowSelectionAllowed()) {
+                columns = new int[getColumnCount()];
+                for (int a = 0; a < columns.length; a++) {
+                    columns[a] = a;
+                }
+            } else {
+                columns = getSelectedColumns();
+            }
+            if (rows != null && columns != null) {
+                StringBuilder output = new StringBuilder();
+
+                if (withHeader) {
+                    for (int column = 0; column < columns.length; column++) {
+                        if (column > 0) {
+                            output.append('\t'); //NOI18N
+
+                        }
+                        Object o = getColumnModel().getColumn(column).
+                                getIdentifier();
+                        String s = o != null ? o.toString() : "";
+                        output.append(quoteIfNecessary(s));
+                    }
+                    output.append('\n'); //NOI18N
+
+                }
+
+                for (int row = 0; row < rows.length; row++) {
+                    for (int column = 0; column < columns.length; column++) {
+                        if (column > 0) {
+                            output.append('\t'); //NOI18N
+
+                        }
+                        Object o = getValueAt(rows[row], columns[column]);
+                        // Limit 1 MB/1 Million Characters.
+                        String s = convertToClipboardString(o, 1024 * 1024);
+                        output.append(quoteIfNecessary(s));
+
+                    }
+                    output.append('\n'); //NOI18N
+
+                }
+                return new StringSelection(output.toString());
+            }
+            return null;
+        } catch (ArrayIndexOutOfBoundsException exc) {
+            Exceptions.printStackTrace(exc);
+            return null;
+        }
+    }
+
+    protected void copyRowValues(boolean withHeader) {
+        ExClipboard clipboard = Lookup.getDefault().lookup(ExClipboard.class);
+        StringSelection selection = createTransferableTSV(withHeader);
+        clipboard.setContents(selection, selection);
+    }
+
+    // This is mainly used for set Tooltip for column headers
     private class JTableHeaderImpl extends JXTableHeader {
 
         public JTableHeaderImpl(TableColumnModel cm) {
@@ -310,6 +465,24 @@ public class ResultSetJXTable extends JXTableDecorator {
             }
         }
     }
+
+    private class TableTransferHandler extends TransferHandler
+            implements UIResource {
+
+        /**
+         * Map Transferable to createTransferableTSV from ResultSetJXTable
+         *
+         * This is needed so that CTRL-C Action of JTable gets the same
+         * treatment as the transfer via the copy Methods of DataTableUI
+         */
+        @Override
+        protected Transferable createTransferable(JComponent c) {
+            return createTransferableTSV(false);
+        }
+
+        @Override
+        public int getSourceActions(JComponent c) {
+            return COPY;
+        }
+    }
 }
-
-

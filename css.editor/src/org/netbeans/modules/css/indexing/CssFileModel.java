@@ -41,13 +41,6 @@
  */
 package org.netbeans.modules.css.indexing;
 
-import org.netbeans.modules.css.indexing.api.CssIndex;
-import org.netbeans.modules.css.lib.api.CssParserResult;
-import org.netbeans.modules.css.lib.api.Node;
-import org.netbeans.modules.css.lib.api.NodeType;
-import org.netbeans.modules.css.lib.api.NodeUtil;
-import org.netbeans.modules.css.lib.api.NodeVisitor;
-import org.netbeans.modules.css.refactoring.api.Entry;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -61,8 +54,14 @@ import org.netbeans.lib.editor.util.CharSubSequence;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.css.editor.csl.CssLanguage;
-import org.netbeans.modules.css.editor.api.CssCslParserResult;
+import org.netbeans.modules.css.indexing.api.CssIndex;
+import org.netbeans.modules.css.lib.api.CssParserResult;
 import org.netbeans.modules.css.lib.api.CssTokenId;
+import org.netbeans.modules.css.lib.api.Node;
+import org.netbeans.modules.css.lib.api.NodeType;
+import org.netbeans.modules.css.lib.api.NodeUtil;
+import org.netbeans.modules.css.lib.api.NodeVisitor;
+import org.netbeans.modules.css.refactoring.api.Entry;
 import org.netbeans.modules.css.refactoring.api.RefactoringElementType;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
@@ -91,7 +90,7 @@ public class CssFileModel {
     private Node parseTreeRoot;
 
     public static CssFileModel create(Source source) throws ParseException {
-        final AtomicReference<CssCslParserResult> result = new AtomicReference<CssCslParserResult>();
+        final AtomicReference<CssParserResult> result = new AtomicReference<CssParserResult>();
         final AtomicReference<Snapshot> snapshot = new AtomicReference<Snapshot>();
         ParserManager.parse(Collections.singletonList(source), new UserTask() {
 
@@ -99,13 +98,13 @@ public class CssFileModel {
             public void run(ResultIterator resultIterator) throws Exception {
                 ResultIterator cssRi = WebUtils.getResultIterator(resultIterator, CssLanguage.CSS_MIME_TYPE);
                 snapshot.set(resultIterator.getSnapshot());
-                result.set(cssRi == null ? null : (CssCslParserResult) cssRi.getParserResult());
+                result.set(cssRi == null ? null : (CssParserResult) cssRi.getParserResult());
             }
         });
 
         assert snapshot.get() != null; //at least the top level snapshot should always be available
 
-        return result.get() == null ? new CssFileModel(snapshot.get()) : new CssFileModel(result.get().getWrappedCssParserResult(), snapshot.get());
+        return result.get() == null ? new CssFileModel(snapshot.get()) : new CssFileModel(result.get(), snapshot.get());
     }
 
     public static CssFileModel create(CssParserResult result) {
@@ -254,12 +253,12 @@ public class CssFileModel {
         
         @Override
         public boolean visit(Node node) {
-            if (node.type() == NodeType.imports) {
+            if (node.type() == NodeType.importItem) {
                 Entry entry = getImportedEntry(node);
                 if (entry != null) {
                     getImportsCollectionInstance().add(entry);
                 }
-            } else if (node.type() == NodeType.ruleSet) {
+            } else if (node.type() == NodeType.rule) {
                 currentBodyRange = NodeUtil.getRuleBodyRange(node);
             } else if (NodeUtil.isSelectorNode(node)) {
 
@@ -395,7 +394,7 @@ public class CssFileModel {
         //computed lazily
         private OffsetRange documentRange, documentBodyRange;
         private CharSequence elementText, elementLineText;
-        private int lineOffset;
+        private int lineOffset = -1;
 
         public LazyEntry(String name, OffsetRange range, OffsetRange bodyRange, boolean isVirtual) {
             this.name = name;

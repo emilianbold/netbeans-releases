@@ -96,6 +96,7 @@ import org.openide.util.Cancellable;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
+import org.openide.util.UserQuestionException;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -218,7 +219,14 @@ public final class GlobalFormatAction extends AbstractAction {
 
                     handle.progress(Bundle.LBL_Formatting(FileUtil.getFileDisplayName(current)));
 
-                    final StyledDocument doc = ec.openDocument();
+                    StyledDocument sd;
+                    try {
+                        sd = ec.openDocument();
+                    } catch (UserQuestionException uqe) {
+                        uqe.confirmed();
+                        sd = ec.openDocument();
+                    }
+                    final StyledDocument doc = sd;
                     final Reformat reformat = Reformat.get(doc);
 
                     reformat.lock();

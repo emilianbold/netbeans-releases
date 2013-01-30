@@ -41,9 +41,9 @@
  */
 package org.netbeans.modules.css.editor.module;
 
-import java.util.Collection;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.css.editor.module.spi.Property;
+import org.netbeans.modules.css.lib.api.properties.Properties;
+import org.netbeans.modules.css.lib.api.properties.PropertyDefinition;
 
 /**
  *
@@ -57,26 +57,24 @@ public class CssModuleSupportTest extends NbTestCase {
 
     
     public void testGetProperty() {
-        Collection<Property> p = CssModuleSupport.getProperties("perspective");
+        PropertyDefinition p = Properties.getPropertyDefinition( "perspective");
         assertNotNull(p);
-        assertFalse(p.isEmpty());
-        assertEquals("perspective", p.iterator().next().getName());
+        assertEquals("perspective", p.getName());
         
         //get refered(invisible) property of the same name
-        p = CssModuleSupport.getProperties("perspective", true);
+        p = Properties.getPropertyDefinition( "perspective", true);
         assertNotNull(p);
-        assertFalse(p.isEmpty());
-        assertEquals("@perspective", p.iterator().next().getName());
+        assertEquals("@perspective", p.getName());
     }
     
     public void testAllPropertiesHaveSomeGrammar() {
-        for (Property property : CssModuleSupport.getProperties()) {
+        for (PropertyDefinition property : Properties.getPropertyDefinitions(null)) {
             assertNotNull(property);
             assertNotNull(property.getName());
-            assertNotNull(property.getValueGrammar());
-            assertTrue(String.format("Property %s have empty grammar", property.getName()), !property.getValueGrammar().isEmpty());
+            assertNotNull(property.getGrammar());
+            assertTrue(String.format("Property %s have empty grammar", property.getName()), !property.getGrammar().isEmpty());
+            }
         }
-    }
 
     
 }

@@ -1,22 +1,44 @@
 /*
- * The contents of this file are subject to the terms of the Common Development
- * and Distribution License (the License). You may not use this file except in
- * compliance with the License.
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
- * or http://www.netbeans.org/cddl.txt.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
- * When distributing Covered Code, include this CDDL Header Notice in each file
- * and include the License file at http://www.netbeans.org/cddl.txt.
- * If applicable, add the following below the CDDL Header, with the fields
- * enclosed by brackets [] replaced by your own identifying information:
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Oracle in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.php.dbgp.models;
 
 import java.util.ArrayList;
@@ -53,7 +75,7 @@ import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.util.NbBundle;
 
 public class VariablesModel extends ViewModelSupport
-        implements TreeModel, TableModel, NodeModel 
+        implements TreeModel, TableModel, NodeModel
 {
 
     private static final String EVALUATING    = "TXT_Evaluating";       // NOI18N
@@ -91,8 +113,8 @@ public class VariablesModel extends ViewModelSupport
      * @see org.netbeans.spi.viewmodel.TreeModel#getChildren(java.lang.Object, int, int)
      */
     @Override
-    public Object[] getChildren(Object parent, int from, int to) 
-        throws UnknownTypeException 
+    public Object[] getChildren(Object parent, int from, int to)
+        throws UnknownTypeException
     {
         myReadlock.lock();
         try {
@@ -106,7 +128,7 @@ public class VariablesModel extends ViewModelSupport
                 int end = Math.min( list.size() , to);
                 List<ModelNode> contexts = list.subList(from, end);
                 //Collections.sort( contexts, COMPARATOR );
-                
+
                 return contexts.toArray(new Object[contexts.size()]);
             }
             else if (parent instanceof ModelNode) {
@@ -124,7 +146,7 @@ public class VariablesModel extends ViewModelSupport
         finally {
             myReadlock.unlock();
         }
-        
+
         throw new UnknownTypeException(parent + " " + parent.getClass().getName());
     }
 
@@ -178,8 +200,8 @@ public class VariablesModel extends ViewModelSupport
      * @see org.netbeans.spi.viewmodel.TableModel#getValueAt(java.lang.Object, java.lang.String)
      */
     @Override
-    public Object getValueAt(Object node, String columnID) 
-        throws UnknownTypeException 
+    public Object getValueAt(Object node, String columnID)
+        throws UnknownTypeException
     {
         if ( node instanceof JToolTip ) {
             return getTooltip( ((JToolTip) node), columnID);
@@ -204,7 +226,7 @@ public class VariablesModel extends ViewModelSupport
                 }
                 catch (UnsufficientValueException e) {
                     sendValueCommand( modelNode );
-                    return NbBundle.getMessage( VariablesModel.class , 
+                    return NbBundle.getMessage( VariablesModel.class ,
                             EVALUATING);
                 }
             }
@@ -220,8 +242,8 @@ public class VariablesModel extends ViewModelSupport
      * @see org.netbeans.spi.viewmodel.TableModel#isReadOnly(java.lang.Object, java.lang.String)
      */
     @Override
-    public boolean isReadOnly(Object node, String string) 
-        throws UnknownTypeException 
+    public boolean isReadOnly(Object node, String string)
+        throws UnknownTypeException
     {
         return false;
     }
@@ -230,11 +252,11 @@ public class VariablesModel extends ViewModelSupport
      * @see org.netbeans.spi.viewmodel.TableModel#setValueAt(java.lang.Object, java.lang.String, java.lang.Object)
      */
     @Override
-    public void setValueAt(Object node, String columnID, Object value) 
-        throws UnknownTypeException 
+    public void setValueAt(Object node, String columnID, Object value)
+        throws UnknownTypeException
     {
         assert value instanceof String;
-        
+
         if (Constants.LOCALS_VALUE_COLUMN_ID.equals(columnID)) {
             if (!(node instanceof VariableNode)) {
                 throw new UnknownTypeException(node);
@@ -251,13 +273,13 @@ public class VariablesModel extends ViewModelSupport
                 // TODO : need signal to user about inability to set value
                 return;
             }
-            PropertySetCommand command = new PropertySetCommand( 
+            PropertySetCommand command = new PropertySetCommand(
                     session.getTransactionId() );
             command.setData( (String)value );
             assert node instanceof AbstractVariableNode;
             ((AbstractVariableNode)node).setupCommand( command );
             session.sendCommandLater(command);
-        } 
+        }
     }
 
     /* (non-Javadoc)
@@ -369,12 +391,12 @@ public class VariablesModel extends ViewModelSupport
         }
         return false;
     }
-    
+
     private List<ModelNode> getTopLevelElements(){
         List<ModelNode> result = new LinkedList<ModelNode>();
         for ( ModelNode node :myNodes ){
             if ( node instanceof ContextNode && !((ContextNode) node).isGlobal()){
-                result.addAll( Arrays.asList( 
+                result.addAll( Arrays.asList(
                         node.getChildren( 0 , node.getChildrenSize())));
             }
             else {
@@ -392,13 +414,13 @@ public class VariablesModel extends ViewModelSupport
     {
         Object row = tooltip.getClientProperty(
                 VariablesModel.GET_SHORT_DESCRIPTION);
-        // TODO 
+        // TODO
         if ( row instanceof ModelNode ) {
             return getValueAt(row, columnId).toString();
         }
         throw new UnknownTypeException( tooltip );
     }
-    
+
     private void sendValueCommand( ModelNode modelNode ) {
         if (modelNode instanceof AbstractVariableNode) {
             AbstractVariableNode node = (AbstractVariableNode) modelNode;
@@ -419,15 +441,11 @@ public class VariablesModel extends ViewModelSupport
     private void fireTreeChanged() {
         refresh();
     }
-    
-    private void fireTreeChanged( ModelEvent event) {
-        fireChangeEvents( new ModelEvent[] { event });
-    }
-    
+
     private void fireTableUpdate(Collection<ModelEvent> events) {
         fireChangeEvents(events);
     }
-    
+
     private DebugSession getSession(){
         ContextProvider provider = getContextProvider();
         if ( provider == null ){
@@ -439,27 +457,27 @@ public class VariablesModel extends ViewModelSupport
         }
         return SessionManager.getInstance().getSession(id);
     }
-    
+
     private ContextProvider getContextProvider() {
         return myContextProvider;
     }
-    
+
     /**
-     * This method should check children availability and request them 
-     * is they absent originally ( it relates to max_depth option in 
+     * This method should check children availability and request them
+     * is they absent originally ( it relates to max_depth option in
      * debugger engine ).
      */
     private void childrenRequest( ModelNode modelNode, DebugSession session ) {
         int size = modelNode.getChildrenSize();
         if ( !modelNode.isLeaf() && size == 0 ) {
             assert modelNode instanceof AbstractVariableNode;
-            PropertyGetCommand getCommand = new PropertyGetCommand( 
+            PropertyGetCommand getCommand = new PropertyGetCommand(
                     session.getTransactionId() );
             ((AbstractVariableNode)modelNode).setupCommand( getCommand );
             session.sendCommandLater( getCommand );
         }
     }
-    
+
 
     /**
      * This method should check quantity of retrieved children.
@@ -472,14 +490,14 @@ public class VariablesModel extends ViewModelSupport
         }
         AbstractVariableNode var = (AbstractVariableNode) modelNode;
         if (session != null && !var.isChildrenFilled()) {
-            PropertyGetCommand command = 
+            PropertyGetCommand command =
                 new PropertyGetCommand( session.getTransactionId());
             var.setupFillChildrenCommand( command );
             session.sendCommandLater(command);
         }
     }
 
-    
+
     /*private static class ContextOrder implements Comparator<ModelNode> {
 
         public int compare( ModelNode nodeOne, ModelNode nodeTwo ) {
@@ -488,41 +506,41 @@ public class VariablesModel extends ViewModelSupport
             ContextNode two = (ContextNode) nodeTwo;
             return one.getIndex()-two.getIndex();
         }
-        
+
     }*/
-    
-    public static class ContextNode extends 
+
+    public static class ContextNode extends
         org.netbeans.modules.php.dbgp.models.nodes.ContextNode
     {
         public ContextNode( Context ctx, List<Property> properties ) {
             super(ctx, properties);
         }
-        
+
         void collectUpdates( VariablesModel variablesModel,
                 ContextNode node, Collection<ModelEvent> events )
         {
             boolean hasChanged = false;
-            
-            if ( ( getVariables()== null || getVariables().size() ==0 ) 
-                    && node.getVariables() != null) 
+
+            if ( ( getVariables()== null || getVariables().size() ==0 )
+                    && node.getVariables() != null)
             {
                 setVars( node.getVariables() );
                 hasChanged = true;
             }
             else if (getVariables() != null) {
                 hasChanged = updateExistedChildren(variablesModel, node, events);
-                
+
                 hasChanged = addAbsentChildren(node) || hasChanged ;
             }
 
             if (hasChanged) {
                 events.add(new ModelEvent.NodeChanged( variablesModel, this));
             }
-            
+
         }
     }
-    
-    public static abstract class AbstractVariableNode extends 
+
+    public static abstract class AbstractVariableNode extends
         org.netbeans.modules.php.dbgp.models.nodes.AbstractVariableNode
     {
         protected AbstractVariableNode( Property property,
@@ -536,53 +554,53 @@ public class VariablesModel extends ViewModelSupport
                 VariableNode node, Collection<ModelEvent> events )
         {
             AbstractVariableNode newNode = (AbstractVariableNode)node;
-            boolean hasChanged = false;            
+            boolean hasChanged = false;
             /*
              * Always update property.
              */
             setProperty(newNode.getProperty());
-            
+
             if( updatePage( newNode ) ){
                 if ( newNode.getChildrenSize() >0 ){
                     events.add(new ModelEvent.NodeChanged( variablesModel, this));
                 }
                 return;
             }
-            
+
             if ( !Property.equals(getProperty(), newNode.getProperty() )){
                 hasChanged = true;
             }
-            
+
             if ( (getVariables() == null || getVariables().size() == 0)
-                    && newNode.getVariables() != null) 
+                    && newNode.getVariables() != null)
             {
                 initVariables( newNode.getProperty().getChildren() );
                 hasChanged = true;
             }
             else if (getVariables() != null) {
-                hasChanged = updateExistedChildren(variablesModel, 
+                hasChanged = updateExistedChildren(variablesModel,
                         newNode, events) || hasChanged;
-                
+
                 hasChanged = addAbsentChildren(newNode) || hasChanged ;
             }
 
             if (hasChanged) {
                 events.add(new ModelEvent.NodeChanged( variablesModel, this));
-            }        
+            }
         }
 
     }
-    
+
     //private static final ContextOrder COMPARATOR    = new ContextOrder();
-    
+
     private final ContextProvider myContextProvider;
-    
+
     private List<ModelNode> myNodes;
-    
+
     private ReentrantReadWriteLock myLock = new ReentrantReadWriteLock();
-    
+
     private ReadLock myReadlock = myLock.readLock();
-    
+
     private WriteLock myWritelock = myLock.writeLock();
 
 }

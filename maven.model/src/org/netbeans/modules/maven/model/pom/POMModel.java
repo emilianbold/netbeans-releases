@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.maven.model.pom;
 
+import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentModel;
 
@@ -66,6 +67,21 @@ public abstract class POMModel extends AbstractDocumentModel<POMComponent> {
     @Override
     public void refresh() {
         super.refresh();
+    }
+    
+    public <T> T findComponent(int position, Class<T> clazz, boolean recursive) {
+        Component dc = findComponent(position);
+        while (dc != null) {
+            if (clazz.isAssignableFrom(dc.getClass())) {
+                return (T) dc;
+            }
+            if (recursive) {
+                dc = dc.getParent(); 
+            } else {
+                dc = null;
+            }
+        }
+        return null;
     }
 
 }

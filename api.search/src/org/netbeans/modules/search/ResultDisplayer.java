@@ -41,16 +41,11 @@
  */
 package org.netbeans.modules.search;
 
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
 import javax.swing.JComponent;
 import org.netbeans.modules.search.ui.BasicAbstractResultsPanel;
 import org.netbeans.modules.search.ui.BasicReplaceResultsPanel;
 import org.netbeans.modules.search.ui.BasicSearchResultsPanel;
 import org.netbeans.spi.search.provider.SearchResultsDisplayer;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 
@@ -72,9 +67,6 @@ class ResultDisplayer extends SearchResultsDisplayer<MatchingObject.Def> {
         this.resultModel = new ResultModel(criteria,
                 criteria.getReplaceString());
         this.composition = composition;
-
-        resultModel.setCommonSearchFolder(
-                CommonSearchRoot.find(composition.getRootFiles()));
     }
 
     @Override
@@ -84,11 +76,10 @@ class ResultDisplayer extends SearchResultsDisplayer<MatchingObject.Def> {
         }
         if (criteria.isSearchAndReplace()) {
             resultPanel = new BasicReplaceResultsPanel(resultModel, composition,
-                    composition.getRootFiles(), infoNode);
+                    infoNode);
         } else {
             resultPanel = new BasicSearchResultsPanel(resultModel, composition,
-                    criteria.isFullText(), composition.getRootFiles(),
-                    infoNode);
+                    criteria.isFullText(), infoNode);
         }
         resultPanel.setToolTipText(composition.getScopeDisplayName()
                 + ": " + getTitle());                                   //NOI18N
@@ -138,131 +129,13 @@ class ResultDisplayer extends SearchResultsDisplayer<MatchingObject.Def> {
         resultPanel.searchFinished();
     }
 
-    /**
-     * Class for holding a updating common search root of searched files.
-     */
-    static class CommonSearchRoot {
-
-        /**
-         * Minimal number of folders shown in relative path to a matching file.
-         */
-        private static final int MIN_REL_PATH_LEN = 4;
-        private boolean exists = true;
-        private List<FileObject> path;
-        private FileObject file = null;
-
-        /**
-         * Update path to folder that is common parent of all searched files.
-         */
-        synchronized void update(FileObject fo) {
-
-            if (!exists) {
-                // It is clear that no common path does exist.
-            } else if (exists && file == null) {
-                // Common path has not been initialized yet.
-                initCommonPath(fo);
-            } else if ((FileUtil.isParentOf(file, fo))) {
-                // No need to update, file is under common path.
-            } else {
-                List<FileObject> p = filePathAsList(fo.getParent());
-                path = findCommonPath(path, p);
-                if (path.isEmpty()) {
-                    path = null;
-                    file = null;
-                    exists = false;
-                } else {
-                    file = path.get(path.size() - 1);
-                }
-            }
-        }
-
-        /**
-         * Find common part of two file paths.
-         *
-         * @return Longest common sub-path. If p1 and p2 are equal paths, p1 is
-         * returned.
-         */
-        static List<FileObject> findCommonPath(List<FileObject> p1,
-                List<FileObject> p2) {
-
-            for (Iterator<FileObject> i1 = p1.iterator(),
-                    i2 = p2.iterator(); i1.hasNext() && i2.hasNext();) {
-                FileObject fo1 = i1.next();
-                FileObject fo2 = i2.next();
-                if (!fo1.equals(fo2)) {
-                    return p1.subList(0, p1.indexOf(fo1));
-                }
-            }
-            return p1;
-        }
-
-        /**
-         * Get list describing file path from root (first item) to a file.
-         */
-        static List<FileObject> filePathAsList(FileObject fo) {
-            List<FileObject> path = new LinkedList<FileObject>();
-            for (FileObject p = fo; p != null; p = p.getParent()) {
-                path.add(0, p);
-            }
-            return path;
-        }
-
-        /**
-         * Create initial common path for the first searched file.
-         */
-        private void initCommonPath(FileObject fo) {
-
-            for (FileObject p = fo; p != null; p = p.getParent()) {
-                if (isLikeProjectFolder(p)) {
-                    FileObject projectParent = p.getParent();
-                    if (projectParent != null) {
-                        file = projectParent;
-                        path = filePathAsList(projectParent);
-                        return;
-                    }
-                }
-            }
-            List<FileObject> p = filePathAsList(fo);
-            if (p.size() > MIN_REL_PATH_LEN) {
-                path = p.subList(0, p.size() - MIN_REL_PATH_LEN);
-                file = path.get(path.size() - 1);
-            } else {
-                exists = false;
-            }
-        }
-
-        /**
-         * Return true if folder seems to be a project folder
-         */
-        private boolean isLikeProjectFolder(FileObject folder) {
-            if (folder.getFileObject("src") != null) {
-                return true;
-            } else if (folder.getFileObject("nbproject") != null) {
-                return true;
-            } else {
-                return false;
-            }
-        }
-
-        synchronized FileObject getFileObject() {
-            if (exists) {
-                return file;
-            } else {
-                return null;
-            }
-        }
-
-        private static FileObject find(List<FileObject> roots) {
-            CommonSearchRoot csr = new CommonSearchRoot();
-            for (FileObject f : roots) {
-                csr.update(f);
-            }
-            return csr.getFileObject();
-        }
-    }
-
     @Override
     public void setInfoNode(Node infoNode) {
         this.infoNode = infoNode;
+    }
+
+    @Override
+    public void closed() {
+        resultPanel.closed();
     }
 }

@@ -56,6 +56,7 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.naming.NamingException;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.classpath.JavaClassPathConstants;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.GeneratorUtilities;
@@ -588,10 +589,18 @@ public class CallEjbGenerator {
         if (differentProject) {
 //            Sources sg = ProjectUtils.getSources(target);
 //            SourceGroup[] grp = sg.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-            ProjectClassPathModifier.addProjects(new Project[] {target} , refFO, ClassPath.COMPILE);
+            if (isJEEModule(target)) {
+                ProjectClassPathModifier.addProjects(new Project[] {target} , refFO, JavaClassPathConstants.COMPILE_ONLY);
+            } else {
+                ProjectClassPathModifier.addProjects(new Project[] {target} , refFO, ClassPath.COMPILE);
+            }
         }
     }
     
+    private static boolean isJEEModule(Project target) {
+        return target.getLookup().lookup(J2eeModuleProvider.class) != null;
+    }
+
     private static String getEjbName(FileObject fileObject, final String className) throws IOException {
         MetadataModel<EjbJarMetadata> metadataModel = org.netbeans.modules.j2ee.api.ejbjar.EjbJar.getEjbJar(fileObject).getMetadataModel();
         return metadataModel.runReadAction(new MetadataModelAction<EjbJarMetadata, String>() {

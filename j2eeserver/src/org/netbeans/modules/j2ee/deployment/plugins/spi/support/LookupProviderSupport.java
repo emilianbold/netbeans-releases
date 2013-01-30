@@ -91,8 +91,6 @@ public final class LookupProviderSupport {
         private List<LookupProvider> old = Collections.emptyList();
         private List<Lookup> currentLookups;
 
-        //private Lookup.Result<LookupMerger> mergers;
-        private Reference<LookupListener> listenerRef;
         //#68623: the proxy lookup fires changes only if someone listens on a particular template:
         private List<Lookup.Result<?>> results = new ArrayList<Lookup.Result<?>>();
         

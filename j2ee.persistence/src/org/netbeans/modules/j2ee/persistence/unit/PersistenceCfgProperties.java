@@ -135,6 +135,7 @@ public class PersistenceCfgProperties {
         possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER).put(PersistenceUnitProperties.DROP_JDBC_DDL_FILE, null);
         possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER).put(PersistenceUnitProperties.DDL_GENERATION_MODE, EL_DDL_GEN_MODE);
         possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER).put(PersistenceUnitProperties.WEAVING_CHANGE_TRACKING, TRUE_FALSE);
+        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER).put(PersistenceUnitProperties.UPPERCASE_COLUMN_NAMES, TRUE_FALSE);
         possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER).put("eclipselink.canonicalmodel.prefix", null);//NOI18N
         possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER).put("eclipselink.canonicalmodel.suffix", null);//NOI18N
         possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER).put("eclipselink.canonicalmodel.subpackage", null);//NOI18N
@@ -202,7 +203,9 @@ public class PersistenceCfgProperties {
     
     
     public static Object  getPossiblePropertyValue( Provider provider, String propName ) {
-        if(provider == null) provider = ProviderUtil.ECLIPSELINK_PROVIDER;//TODO, some logic to add, either search for all providers or some other
+        if(provider == null) {
+            provider = ProviderUtil.ECLIPSELINK_PROVIDER;
+        }//TODO, some logic to add, either search for all providers or some other
         Map<String, String[]> firstMap = possiblePropertyValues.get(provider);
         return firstMap != null ? firstMap.get(propName) : null;
     }
@@ -216,8 +219,15 @@ public class PersistenceCfgProperties {
     public static List<String> getKeys(Provider provider){
         //TODO: cache lists?
         ArrayList<String> ret = new ArrayList<String>();
-        if(provider == null || Persistence.VERSION_2_0.equals(ProviderUtil.getVersion(provider)))ret.addAll(possiblePropertyValues.get(null).keySet());
-        if(provider !=null )ret.addAll(possiblePropertyValues.get(provider).keySet());
+        if(provider == null || Persistence.VERSION_2_0.equals(ProviderUtil.getVersion(provider))) {
+            ret.addAll(possiblePropertyValues.get(null).keySet());
+        }
+        if(provider !=null ) {
+            Map<String, String[]> props = possiblePropertyValues.get(provider);
+            if(props!=null) {
+                ret.addAll(props.keySet());
+            }
+        }
         return ret;
     }
     

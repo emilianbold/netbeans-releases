@@ -57,7 +57,7 @@ public class PkgConfigTestCase extends MakeProjectTestBase {
     }
 
     @Test
-    public void testPkgConfig(){
+    public void testPkgConfig() throws Exception {
         if (Utilities.isWindows()) {
             // configure script requires more then 10 minutes
             return;

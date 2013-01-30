@@ -256,7 +256,10 @@ class NewTestSimplePanelGUI extends CndPanelGUI implements ActionListener{
         } else {
             modifiedFileLabel.setVisible(true);
             modifiedFileArea.setVisible(true);
-            modifiedFileArea.setText(FileUtil.getFileDisplayName(MakefileUtils.getMakefile(project)));
+            FileObject makefile = MakefileUtils.getMakefile(project);
+            if(makefile != null) {
+                modifiedFileArea.setText(FileUtil.getFileDisplayName(makefile));
+            }
         }
     }
 
