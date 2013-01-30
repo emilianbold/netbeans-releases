@@ -44,103 +44,16 @@
 
 package org.netbeans.modules.web.project;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import org.netbeans.modules.j2ee.common.J2eeProjectCapabilities;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
-import org.netbeans.modules.j2ee.persistence.dd.common.Persistence;
-import org.netbeans.modules.j2ee.persistence.provider.Provider;
-import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
-import org.netbeans.modules.j2ee.persistence.spi.provider.PersistenceProviderSupplier;
-import org.netbeans.modules.javaee.specs.support.api.JpaProvider;
-import org.netbeans.modules.javaee.specs.support.api.JpaSupport;
+import org.netbeans.modules.j2ee.common.project.AbstractPersistenceProviderSupplier;
 
 /**
  * An implementation of PersistenceProviderSupplier for web project.
  *
  * @author Erno Mononen
  */
-public class WebPersistenceProviderSupplier implements PersistenceProviderSupplier{
-    
-    private final WebProject project;
-    
-    /** Creates a new instance of WebPersistenceProviderSupplier */
+public class WebPersistenceProviderSupplier extends AbstractPersistenceProviderSupplier {
+
     public WebPersistenceProviderSupplier(WebProject project) {
-        this.project = project;
+        super(project);
     }
-    
-    public List<Provider> getSupportedProviders() {
-        // TODO: the implementation of the this method (and whole PersistenceProviderSupplier)
-        // is pretty much identical with the EJB implementation,
-        // should be refactored to some common class.
-        J2eeModuleProvider j2eeModuleProvider = (J2eeModuleProvider) project.getLookup().lookup(J2eeModuleProvider.class);
-        J2eePlatform platform  = Deployment.getDefault().getJ2eePlatform(j2eeModuleProvider.getServerInstanceID());
-        
-        if (platform == null){
-            return Collections.<Provider>emptyList();
-        }
-        List<Provider> result = new ArrayList<Provider>();
-        
-        List<Provider> candidates = new ArrayList<Provider>();
-        // TODO why we are selecting only some of them  ?
-        // can't we just use ProviderUtil.getAllProviders() ?
-        candidates.add(ProviderUtil.HIBERNATE_PROVIDER2_1);
-        candidates.add(ProviderUtil.HIBERNATE_PROVIDER2_0);
-        candidates.add(ProviderUtil.HIBERNATE_PROVIDER);
-        candidates.add(ProviderUtil.TOPLINK_PROVIDER1_0);
-        candidates.add(ProviderUtil.KODO_PROVIDER);
-        candidates.add(ProviderUtil.DATANUCLEUS_PROVIDER);
-        candidates.add(ProviderUtil.OPENJPA_PROVIDER);
-        candidates.add(ProviderUtil.OPENJPA_PROVIDER1_0);
-        candidates.add(ProviderUtil.ECLIPSELINK_PROVIDER); // 2.1
-        candidates.add(ProviderUtil.ECLIPSELINK_PROVIDER2_0);
-        candidates.add(ProviderUtil.ECLIPSELINK_PROVIDER1_0);
-        addPersistenceProviders(candidates, platform, result);
-        
-        return result;
-    }
-    
-    private void addPersistenceProviders(List<Provider> providers, J2eePlatform platform, List<Provider> result){
-        JpaSupport jpaSupport = JpaSupport.getInstance(platform);
-        Map<String, JpaProvider> map = new HashMap<String, JpaProvider>();
-        for (JpaProvider provider : jpaSupport.getProviders()) {
-            map.put(provider.getClassName(), provider);
-        }
-        JpaProvider dprovider = jpaSupport.getDefaultProvider();
-        if(dprovider!=null) {
-            map.put(dprovider.getClassName(), dprovider);
-        }
-        boolean defaultFound = false;
-        for (Provider provider : providers) {
-            JpaProvider jpa = map.get(provider.getProviderClass());
-            if (jpa != null) {
-                String version = ProviderUtil.getVersion(provider);
-                if (version == null
-                        || (version.equals(Persistence.VERSION_2_1) && jpa.isJpa21Supported())
-                        || (version.equals(Persistence.VERSION_2_0) && jpa.isJpa2Supported())
-                        || (version.equals(Persistence.VERSION_1_0) && jpa.isJpa1Supported())) {
-
-                    if (jpa.isDefault() && !defaultFound) {
-                        result.add(0, provider);
-                        defaultFound = true;
-                    } else {
-                        result.add(provider);
-                    }
-                }
-            }
-        }
-        return;
-    }
-    
-    public boolean supportsDefaultProvider() {
-        J2eeProjectCapabilities capabilities = J2eeProjectCapabilities.forProject(project);
-        return capabilities != null && capabilities.hasDefaultPersistenceProvider();
-    }
-    
-
 }
