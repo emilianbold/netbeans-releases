@@ -629,4 +629,60 @@ public class PHPFormatterWrappingTest extends PHPFormatterTestBase {
         options.put(FmtOptions.WRAP_IF_STATEMENT, CodeStyle.WrapStyle.WRAP_ALWAYS);
         reformatFileContents("testfiles/formatting/wrapping/issue222774_12.php", options);
     }
+
+    public void testIssue225535_01() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.WRAP_ASSIGN_OPS, CodeStyle.WrapStyle.WRAP_NEVER);
+        options.put(FmtOptions.WRAP_AFTER_ASSIGN_OPS, false);
+        reformatFileContents("testfiles/formatting/wrapping/issue225535_01.php", options);
+    }
+
+    public void testIssue225535_02() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.WRAP_ASSIGN_OPS, CodeStyle.WrapStyle.WRAP_ALWAYS);
+        options.put(FmtOptions.WRAP_AFTER_ASSIGN_OPS, false);
+        reformatFileContents("testfiles/formatting/wrapping/issue225535_02.php", options);
+    }
+
+    public void testIssue225535_03() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.WRAP_ASSIGN_OPS, CodeStyle.WrapStyle.WRAP_NEVER);
+        options.put(FmtOptions.WRAP_AFTER_ASSIGN_OPS, true);
+        reformatFileContents("testfiles/formatting/wrapping/issue225535_03.php", options);
+    }
+
+    public void testIssue225535_04() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.WRAP_ASSIGN_OPS, CodeStyle.WrapStyle.WRAP_ALWAYS);
+        options.put(FmtOptions.WRAP_AFTER_ASSIGN_OPS, true);
+        reformatFileContents("testfiles/formatting/wrapping/issue225535_04.php", options);
+    }
+
+    public void testIssue225535_05() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.WRAP_ASSIGN_OPS, CodeStyle.WrapStyle.WRAP_NEVER);
+        options.put(FmtOptions.WRAP_AFTER_ASSIGN_OPS, false);
+        reformatFileContents("testfiles/formatting/wrapping/issue225535_05.php", options);
+    }
+
+    public void testIssue225535_06() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.WRAP_ASSIGN_OPS, CodeStyle.WrapStyle.WRAP_ALWAYS);
+        options.put(FmtOptions.WRAP_AFTER_ASSIGN_OPS, false);
+        reformatFileContents("testfiles/formatting/wrapping/issue225535_06.php", options);
+    }
+
+    public void testIssue225535_07() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.WRAP_ASSIGN_OPS, CodeStyle.WrapStyle.WRAP_NEVER);
+        options.put(FmtOptions.WRAP_AFTER_ASSIGN_OPS, true);
+        reformatFileContents("testfiles/formatting/wrapping/issue225535_07.php", options);
+    }
+
+    public void testIssue225535_08() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.WRAP_ASSIGN_OPS, CodeStyle.WrapStyle.WRAP_ALWAYS);
+        options.put(FmtOptions.WRAP_AFTER_ASSIGN_OPS, true);
+        reformatFileContents("testfiles/formatting/wrapping/issue225535_08.php", options);
+    }
 }
