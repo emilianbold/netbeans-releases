@@ -58,11 +58,11 @@ import org.openide.util.LookupEvent;
  */
 final class ExcludingLookup extends org.openide.util.Lookup {
     /** the other lookup that we delegate to */
-    private Lookup delegate;
+    private final Lookup delegate;
 
     /** classes to exclude (Class[]) or just one class (Class) */
-    private Object classes;
-
+    private final Object classes;
+    
     /**
      * Creates new Result object with supplied instances parameter.
      * @param instances to be used to return from the lookup
