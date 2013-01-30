@@ -135,7 +135,7 @@ public final class TypeUtilities {
      * 
      * @param origin functional interface type
      * @return associated method descriptor type or <code>null</code> if the <code>origin</code> is not a functional interface.
-     * @since ???
+     * @since 0.112
      */
     public ExecutableType getDescriptorType(DeclaredType origin) {
         Types types = Types.instance(info.impl.getJavacTask().getContext());

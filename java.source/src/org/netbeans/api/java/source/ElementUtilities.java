@@ -541,6 +541,7 @@ public final class ElementUtilities {
      * 
      * @param e variable to check for effectively final status
      * @return true if the given variable is effectively final or final
+     * @since 0.112
      */
     public boolean isEffectivelyFinal(VariableElement e) {
         return (((Symbol) e).flags() & (Flags.EFFECTIVELY_FINAL | Flags.FINAL)) != 0;

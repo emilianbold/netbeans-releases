@@ -140,6 +140,7 @@ public final class TreeMaker {
      * @param type the annotation type.
      * @param arguments the arguments for this annotation, or an empty list.
      * @see com.sun.source.tree.AnnotationTree
+     * @since 0.112
      */
     public AnnotationTree TypeAnnotation(Tree type, List<? extends ExpressionTree> arguments) {
         return delegate.TypeAnnotation(type, arguments);
@@ -633,6 +634,13 @@ public final class TreeMaker {
         return delegate.LabeledStatement(label, statement);
     }
 
+    /**Creates a new LambdaExpressionTree
+     * 
+     * @param parameters the lambda's formal arguments
+     * @param body the lambda's body
+     * @return the LambdaExpressionTree
+     * @since 0.112
+     */
     public LambdaExpressionTree LambdaExpression(List<? extends VariableTree> parameters, Tree body) {
         return delegate.LambdaExpression(parameters, body);
     }
@@ -650,7 +658,16 @@ public final class TreeMaker {
         return delegate.Literal(value);
     }
     
-    public MemberReferenceTree MemberReference(ReferenceMode refMode, CharSequence name, ExpressionTree expression, List<ExpressionTree> typeArguments) {
+    /**Creates a new MemberReferenceTree.
+     * 
+     * @param refMode the desired {@link ReferenceMode reference mode}
+     * @param expression the class (or expression), from which a member is to be referenced
+     * @param name the name of the referenced member
+     * @param typeArguments the reference's type arguments
+     * @return the MemberReferenceTree
+     * @since 0.112
+     */
+    public MemberReferenceTree MemberReference(ReferenceMode refMode, ExpressionTree expression, CharSequence name, List<ExpressionTree> typeArguments) {
         return delegate.MemberReference(refMode, name, expression, typeArguments);
     }
     

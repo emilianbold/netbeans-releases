@@ -104,7 +104,7 @@ public class LambdaTest extends GeneratorTestMDRCompat {
                 final TreeMaker make = workingCopy.getTreeMaker();
                 new TreeScanner<Void, Void>() {
                     @Override public Void visitLiteral(LiteralTree node, Void p) {
-                        workingCopy.rewrite(node, make.MemberReference(ReferenceMode.INVOKE, "taragui", make.Identifier("Test"), Collections.<ExpressionTree>emptyList()));
+                        workingCopy.rewrite(node, make.MemberReference(ReferenceMode.INVOKE, make.Identifier("Test"), "taragui", Collections.<ExpressionTree>emptyList()));
                         return super.visitLiteral(node, p);
                     }
                 }.scan(workingCopy.getCompilationUnit(), null);
