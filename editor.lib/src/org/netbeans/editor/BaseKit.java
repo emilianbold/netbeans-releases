@@ -1164,8 +1164,14 @@ public class BaseKit extends DefaultEditorKit {
 
                     try {
                     final Position insertionOffset = doc.createPosition(computeInsertionOffset(target.getCaret()), Position.Bias.Backward);
+                    String replacedText = "";
+                    if (Utilities.isSelectionShowing(target.getCaret())) {
+                        int p0 = Math.min(target.getCaret().getDot(), target.getCaret().getMark());
+                        int p1 = Math.max(target.getCaret().getDot(), target.getCaret().getMark());
+                        replacedText = doc.getText(p0, p1 - p0);
+                    }
                     final TypedTextInterceptorsManager.Transaction transaction = TypedTextInterceptorsManager.getInstance().openTransaction(
-                            target, insertionOffset, cmd);
+                            target, insertionOffset, cmd, replacedText);
                     
                     try {
                         if (!transaction.beforeInsertion()) {
