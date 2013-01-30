@@ -103,4 +103,10 @@ public class UnaryOperation extends Expression {
     public void accept(Visitor visitor) {
         visitor.visit(this);
     }
+
+    @Override
+    public String toString() {
+        return "" + getOperator() + getExpression(); //NOI18N
+    }
+
 }

@@ -92,5 +92,15 @@ public class Block extends Statement {
     public void accept(Visitor visitor) {
         visitor.visit(this);
     }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        for (Statement statement : getStatements()) {
+            sb.append(statement).append(" "); //NOI18N
+        }
+        return isCurly() ? "{" + sb + "}" : sb.toString(); //NOI18N
+    }
+
 }
 

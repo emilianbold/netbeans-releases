@@ -96,4 +96,10 @@ public class CatchClause extends Statement {
     public void accept(Visitor visitor) {
         visitor.visit(this);
     }
+
+    @Override
+    public String toString() {
+        return "catch (" + getClassName() + " " + getVariable() + ")" + getBody(); //NOI18N
+    }
+
 }
