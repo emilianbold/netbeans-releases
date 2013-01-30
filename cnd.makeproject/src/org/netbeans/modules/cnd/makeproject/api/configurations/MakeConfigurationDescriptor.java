@@ -101,6 +101,7 @@ import org.netbeans.modules.cnd.utils.FileObjectFilter;
 import org.netbeans.modules.cnd.utils.MIMEExtensions;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.ui.ModalMessageDlg;
+import org.netbeans.modules.dlight.libs.common.PerformanceLogger;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
@@ -1863,10 +1864,14 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             LOGGER.log(Level.INFO, ex.getMessage(), ex);
             return;
         }
+
+        PerformanceLogger.PerformaceAction lsPerformanceEvent = PerformanceLogger.getLogger().start(Folder.LS_FOLDER_PERFORMANCE_EVENT, dir);
         FileObject[] files = dir.getChildren();
         if (files == null) {
+            lsPerformanceEvent.log(0);
             return;
         }
+        lsPerformanceEvent.log(files.length);
 
         final boolean hideBinaryFiles = !MakeOptions.getInstance().getViewBinaryFiles();
         for (FileObject file : files) {
@@ -1911,11 +1916,13 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
                 dirfolder.markRemoved(false);
                 addFilesImpl(antiLoop, dirfolder, file, handle, filesAdded, notify, setModified, fileFilter, useOldSchemeBehavior);
             } else {
+                PerformanceLogger.PerformaceAction performanceEvent = PerformanceLogger.getLogger().start(Folder.CREATE_ITEM_PERFORMANCE_EVENT, file);
                 String path = ProjectSupport.toProperPath(baseDirFO, file, project);
                 Item item = Item.createInBaseDir(baseDirFO, path);
                 if (folder.addItemFromRefreshDir(item, notify, setModified, useOldSchemeBehavior) == item) {
                     filesAdded.add(item);
                 }
+                performanceEvent.log(item);
                 if (handle != null) {
                     handle.progress(item.getPath());
                 }

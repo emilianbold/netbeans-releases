@@ -91,8 +91,8 @@ public final class CacheFolder {
 
     //@NotThreadSafe
     @org.netbeans.api.annotations.common.SuppressWarnings(
-        value="LI_LAZY_INIT_UPDATE_STATIC"
-        /*,justification="Caller already holds a monitor"*/)
+        value="LI_LAZY_INIT_UPDATE_STATIC",
+        justification="Caller already holds a monitor")
     private static void loadSegments(FileObject folder) throws IOException {
         assert Thread.holdsLock(CacheFolder.class);
         if (segments == null) {

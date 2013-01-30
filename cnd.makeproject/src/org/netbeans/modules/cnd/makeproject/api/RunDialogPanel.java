@@ -894,6 +894,7 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
                     exe = CndPathUtilitities.normalizeSlashes(exe);
                     conf.getMakefileConfiguration().getOutput().setValue(exe);
                     updateRunProfile(baseDir, conf.getProfile());
+                    conf.getProfile().setBuildFirst(false);
                     List<Configuration> list = new ArrayList<Configuration>(projectDescriptor.getConfs().getConfigurations());
                     list.add(conf);
                     conf.setDefault(false);
@@ -1016,6 +1017,10 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
                  .setMakefileName(""); //NOI18N
         Project project = ProjectGenerator.createBlankProject(prjParams);
         lastSelectedProject = project;
+        IteratorExtension extension = Lookup.getDefault().lookup(IteratorExtension.class);
+        if (extension != null) {
+            extension.disableModel(project);
+        }
         OpenProjects.getDefault().addPropertyChangeListener(this);
         OpenProjects.getDefault().open(new Project[]{project}, false);
         return project;

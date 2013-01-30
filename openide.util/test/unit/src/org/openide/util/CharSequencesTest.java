@@ -75,6 +75,10 @@ public class CharSequencesTest extends NbTestCase {
         processPattern('a', (char)128);
         processPattern((char)128, '1');
         processPattern((char)128, 'a');
+        processPattern('1', 'a');
+        processPattern('a', '1');
+        processPattern('A', 'a');
+        processPattern('a', 'A');
     }
 
     private void processPattern(char filler, char template){
@@ -137,13 +141,29 @@ public class CharSequencesTest extends NbTestCase {
      */
     @Test
     public void testCreate_CharSequence() {
-        String[] strs = new String[] { "", "1234567", "123456789012345", "12345678901234567890123", "123456789012345678901234", "Русский Текст" };
+        String[] strs = new String[] { "", "1234567", "123456789012345", "12345678901234567890123", "123456789012345678901234",
+                                       "1234567890", "1234567890abcdefghkl", "1234567890ABCDEFGHKLabcdefghkl",
+                                       ".12345678_", "1234567890abcdefghkl", "1234567890ABCDEFGHKLabcdefghkl",
+                                       "Русский                   Текст" };
         for (String str : strs) {
             CharSequence cs = CharSequences.create(str);
             assertEquals(str, cs.toString());
             assertEquals(cs.toString(), str);
             assertEquals(cs.toString(), cs.toString());
             assertTrue(str.contentEquals(cs));
+        }
+        
+        for (int i = 0; i< 1024; i++) {
+            StringBuilder buf = new StringBuilder();
+            for (int j = 0; j< 64; j++) {
+                buf.append(i);
+                String str = buf.toString();
+                CharSequence cs = CharSequences.create(str);
+                assertEquals(str, cs.toString());
+                assertEquals(cs.toString(), str);
+                assertEquals(cs.toString(), cs.toString());
+                assertTrue(str.contentEquals(cs));
+            }
         }
     }
 

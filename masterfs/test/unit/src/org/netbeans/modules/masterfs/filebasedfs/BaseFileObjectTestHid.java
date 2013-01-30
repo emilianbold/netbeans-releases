@@ -718,12 +718,13 @@ public class BaseFileObjectTestHid extends TestBaseHid{
             root.getFileSystem().refresh(false);
             LOG.log(Level.INFO, "Refresh finished and fo is: {0}", fo);
             
-            LOG.log(Level.INFO, "Valid for round {0} is now {1}", new Object[]{validCntr, valid});
+            List<Boolean> validClone = Arrays.asList(valid.toArray(new Boolean[0]));
+            LOG.log(Level.INFO, "Valid for round {0} is now {1}", new Object[]{validCntr, validClone});
             LOG.log(Level.INFO, "Existing file objects {0}", FileObjectFactory.getInstance(fileF).dumpObjects());
-            assertFalse("at least one event: " + valid, valid.isEmpty());
+            assertFalse("at least one event: " + validClone, validClone.isEmpty());
             
-            for (boolean item : valid) {
-                assertTrue("valid=" + valid + ", count=" + cntr, item);
+            for (boolean item : validClone) {
+                assertTrue("valid=" + validClone + ", count=" + cntr, item);
             }
         }
     }

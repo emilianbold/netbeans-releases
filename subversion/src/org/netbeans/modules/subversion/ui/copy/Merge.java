@@ -119,6 +119,10 @@ public class Merge extends CopyDialog implements ItemListener {
         return getSelectedType().isStartRevisionIncluded();
     }
 
+    boolean isIgnoreAncestry () {
+        return getSelectedType().isIgnoreAncestry();
+    }
+
     private MergeType getSelectedType() {
         return (MergeType) getMergePanel().typeComboBox.getSelectedItem();
     }
@@ -327,6 +331,10 @@ public class Merge extends CopyDialog implements ItemListener {
                 getOKButton().setEnabled(startPathValid && endPathValid);
             }        
         }        
+
+        public boolean isIgnoreAncestry () {
+            return false;
+        }
     }
 
     private class MergeTwoFoldersType extends MergeType {
@@ -410,6 +418,11 @@ public class Merge extends CopyDialog implements ItemListener {
         protected void setPreviewLabels() {
             previewPanel.repositoryFolderTextField1.setText(getRepositoryFile().getRepositoryUrl() + "/" + panel.mergeEndUrlComboBox.getEditor().getItem().toString()); // NOI18N
             previewPanel.repositoryFolderTextField2.setText(getRepositoryFile().getRepositoryUrl() + "/" + panel.mergeStartUrlComboBox.getEditor().getItem().toString()); // NOI18N
+        }
+
+        @Override
+        public boolean isIgnoreAncestry () {
+            return panel.cbIgnoreAncestry.isSelected();
         }
         
     }
@@ -502,6 +515,11 @@ public class Merge extends CopyDialog implements ItemListener {
         @Override
         protected void setPreviewLabels() {            
             previewPanel.repositoryFolderTextField.setText(getRepositoryFile().getRepositoryUrl() + org.openide.util.NbBundle.getMessage(Merge.class, "/") + panel.mergeStartUrlComboBox.getEditor().getItem().toString()); // NOI18N
+        }
+
+        @Override
+        public boolean isIgnoreAncestry () {
+            return panel.cbIgnoreAncestry.isSelected();
         }
 
     }
@@ -609,6 +627,11 @@ public class Merge extends CopyDialog implements ItemListener {
         @Override
         protected void setPreviewLabels() {            
             previewPanel.repositoryFolderTextField.setText(getRepositoryFile().getRepositoryUrl() + "/" + panel.mergeEndUrlComboBox.getEditor().getItem().toString()); // NOI18N
+        }
+
+        @Override
+        public boolean isIgnoreAncestry () {
+            return panel.cbIgnoreAncestry.isSelected();
         }
 
     }               

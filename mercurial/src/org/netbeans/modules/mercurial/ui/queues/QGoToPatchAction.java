@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.mercurial.ui.queues;
 
+import java.awt.EventQueue;
 import java.io.File;
 import java.util.List;
 import org.netbeans.modules.mercurial.HgException;
@@ -52,8 +53,7 @@ import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
 import org.netbeans.modules.mercurial.util.HgCommand;
 import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.versioning.spi.VCSContext;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
+import org.netbeans.modules.versioning.util.Utils;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionRegistration;
 import org.openide.nodes.Node;
@@ -83,14 +83,25 @@ public class QGoToPatchAction extends ContextAction {
         final File roots[] = HgUtils.getActionRoots(ctx);
         if (roots == null || roots.length == 0) return;
         final File root = Mercurial.getInstance().getRepositoryRoot(roots[0]);
-        
-        GoToPatch goToPatch = new GoToPatch(root);
-        if (goToPatch.showDialog()) {
-            String patchName = goToPatch.getSelectedPatch();
-            if (patchName != null) {
-                goToPatch(root, patchName == GoToPatch.POP_ALL_PATCHES ? null : patchName);
+        Utils.post(new Runnable() {
+            @Override
+            public void run () {
+                if (QUtils.isMQEnabledExtension(root)) {
+                    EventQueue.invokeLater(new Runnable() {
+                        @Override
+                        public void run () {
+                            GoToPatch goToPatch = new GoToPatch(root);
+                            if (goToPatch.showDialog()) {
+                                String patchName = goToPatch.getSelectedPatch();
+                                if (patchName != null) {
+                                    goToPatch(root, patchName == GoToPatch.POP_ALL_PATCHES ? null : patchName);
+                                }
+                            }
+                        }
+                    });
+                }
             }
-        }
+        });
     }
 
     public void goToPatch (final File root, final String patchName) {

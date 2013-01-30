@@ -108,6 +108,22 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="SuppressWarningsJustification">
+            <api name="common_annotations_api"/>
+            <summary>Added justification attribute to <code>SuppressWarnings</code></summary>
+            <version major="1" minor="19"/>
+            <date day="1" month="2" year="2013"/>
+            <author login="phejl"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Introduced justificatio attribute to specify why it is ok to
+                    suppress a warning.
+                </p>
+            </description>
+            <class package="org.netbeans.api.annotations.common" name="SuppressWarnings"/>
+            <issue number="221381"/>
+        </change>
         <change id="StaticResource">
             <api name="common_annotations_api"/>
             <summary>Added <code>StaticResource</code></summary>

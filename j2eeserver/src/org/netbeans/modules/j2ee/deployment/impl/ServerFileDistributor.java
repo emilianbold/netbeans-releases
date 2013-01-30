@@ -362,7 +362,7 @@ public class ServerFileDistributor extends ServerProgress {
         }
     }
 
-    @org.netbeans.api.annotations.common.SuppressWarnings("REC_CATCH_EXCEPTION") // justification="We rethrow with localized message"
+    @org.netbeans.api.annotations.common.SuppressWarnings(value="REC_CATCH_EXCEPTION", justification="We rethrow with localized message")
     private AppChanges _distributeOnSave(File destDir, TargetModuleID target, Iterable<Artifact> artifacts) throws IOException {
         AppChanges mc = createModuleChangeDescriptor(target);
 

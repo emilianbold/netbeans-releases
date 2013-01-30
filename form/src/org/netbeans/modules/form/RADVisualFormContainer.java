@@ -255,7 +255,7 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
             setAuxValue(FormDesigner.PROP_DESIGNER_SIZE, getDesignerSize());
         }
         getFormModel().fireSyntheticPropertyChanged(this, PROP_FORM_SIZE_POLICY,
-                                        new Integer(old), new Integer(value));
+            Integer.valueOf(old), Integer.valueOf(value));
     }
 
     // ------------------------------------------------------------------------------
@@ -274,7 +274,7 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
             @Override
             public Object getValue() throws
                 IllegalAccessException, IllegalArgumentException, java.lang.reflect.InvocationTargetException {
-                return new Integer(getFormSizePolicy());
+                return Integer.valueOf(getFormSizePolicy());
             }
 
             @Override
@@ -574,11 +574,11 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
         @Override
         public void setAsText(String str) {
             if (names[0].equals(str))
-                setValue(new Integer(0));
+                setValue(Integer.valueOf(0));
             else if (names[1].equals(str))
-                setValue(new Integer(1));
+                setValue(Integer.valueOf(1));
             else if (names[2].equals(str))
-                setValue(new Integer(2));
+                setValue(Integer.valueOf(2));
         }
     }
 }

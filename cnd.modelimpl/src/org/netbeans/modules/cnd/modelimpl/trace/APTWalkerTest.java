@@ -56,8 +56,10 @@ import org.netbeans.modules.cnd.apt.support.APTIncludeHandler.IncludeState;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.support.PostIncludeData;
 import org.netbeans.modules.cnd.apt.support.ResolvedPath;
+import org.netbeans.modules.cnd.apt.support.lang.APTLanguageSupport;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
+import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.platform.ModelSupport;
 
 /**
@@ -90,24 +92,28 @@ public class APTWalkerTest extends APTAbstractWalker {
 
     @Override
     protected boolean needPPTokens() {
-        return APTTraceFlags.INCLUDE_TOKENS_IN_TOKEN_STREAM;
+        return TraceFlags.PARSE_HEADERS_WITH_SOURCES;
     }
     
     @Override
-    protected boolean include(ResolvedPath resolvedPath, APTInclude aptInclude, PostIncludeData postIncludeState) {
+    protected boolean include(ResolvedPath resolvedPath, IncludeState inclState, APTInclude aptInclude, PostIncludeData postIncludeState) {
         resolvingTime += System.currentTimeMillis() - lastTime;
-        if (resolvedPath != null && 
-            getIncludeHandler().pushInclude(resolvedPath.getPath(), aptInclude, resolvedPath.getIndex()) == IncludeState.Success) {
+        if (inclState == IncludeState.Success) {
             try {
-                APTFile apt = APTDriver.findAPTLight(ModelSupport.createFileBuffer(resolvedPath.getFileObject()));
-                APTWalkerTest walker = new APTWalkerTest(apt, getPreprocHandler());
-                walker.visit();
-                resolvingTime += walker.resolvingTime;
+                if (isTokenProducer() && TraceFlags.PARSE_HEADERS_WITH_SOURCES) {
+                    APTFile apt = APTDriver.findAPT(ModelSupport.createFileBuffer(resolvedPath.getFileObject()), APTLanguageSupport.UNKNOWN, APTLanguageSupport.FLAVOR_UNKNOWN);
+                    APTWalkerTest walker = new APTWalkerTest(apt, getPreprocHandler());
+                    includeStream(apt, walker);
+                    resolvingTime += walker.resolvingTime;
+                } else {
+                    APTFile apt = APTDriver.findAPTLight(ModelSupport.createFileBuffer(resolvedPath.getFileObject()));
+                    APTWalkerTest walker = new APTWalkerTest(apt, getPreprocHandler());
+                    walker.visit();
+                    resolvingTime += walker.resolvingTime;
+                }
             } catch (IOException ex) {
-		DiagnosticExceptoins.register(ex);
+                DiagnosticExceptoins.register(ex);
                 APTUtils.LOG.log(Level.SEVERE, "error on include " + resolvedPath, ex);// NOI18N
-            } finally {
-                getIncludeHandler().popInclude(); 
             }
             return (postIncludeState == null) || !postIncludeState.hasPostIncludeMacroState();
         } else {

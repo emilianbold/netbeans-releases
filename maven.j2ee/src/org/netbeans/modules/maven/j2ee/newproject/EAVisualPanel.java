@@ -52,6 +52,7 @@ import org.netbeans.modules.maven.api.MavenValidators;
 import org.netbeans.modules.maven.api.archetype.ProjectInfo;
 import org.netbeans.modules.maven.j2ee.newproject.archetype.J2eeArchetypeFactory;
 import static org.netbeans.modules.maven.j2ee.newproject.Bundle.*;
+import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.netbeans.validation.api.ValidatorUtils;
 import org.netbeans.validation.api.builtin.stringvalidation.StringValidators;
 import org.netbeans.validation.api.ui.ValidationGroup;
@@ -109,7 +110,7 @@ public final class EAVisualPanel extends JPanel  {
     }
 
     void storeSettings(WizardDescriptor d) {
-        File parent = (File) d.getProperty("projdir");
+        File parent = (File) d.getProperty(CommonProjectActions.PROJECT_PARENT_FOLDER);
         Profile profile = helper.getSelectedProfile();
         
         if (profile == null) {

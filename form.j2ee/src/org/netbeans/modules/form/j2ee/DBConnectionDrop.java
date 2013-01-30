@@ -44,6 +44,8 @@
 package org.netbeans.modules.form.j2ee;
 
 import java.awt.dnd.DropTargetDragEvent;
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.db.explorer.DatabaseMetaDataTransfer;
@@ -57,6 +59,7 @@ import org.netbeans.modules.form.RADComponent;
 import org.netbeans.modules.form.palette.PaletteItem;
 import org.netbeans.modules.form.project.ClassSource;
 import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
+import org.netbeans.modules.j2ee.persistence.provider.InvalidPersistenceXmlException;
 import org.netbeans.modules.nbform.project.ClassSourceResolver;
 import org.openide.filesystems.FileObject;
 import org.openide.util.ImageUtilities;
@@ -128,8 +131,14 @@ public class DBConnectionDrop implements NewComponentDrop {
             RADComponent entityManager = model.getMetaComponent(componentId);
             entityManager.getPropertyByName("persistenceUnit").setValue(unit.getName()); // NOI18N
             J2EEUtils.renameComponent(entityManager, true, unit.getName() + "EntityManager", "entityManager"); // NOI18N
-        } catch (Exception ex) {
-            Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
+        } catch (IOException ioex) {
+            Logger.getLogger(DBConnectionDrop.class.getName()).log(Level.INFO, null, ioex);
+        } catch (InvalidPersistenceXmlException ipxex) {
+            Logger.getLogger(DBConnectionDrop.class.getName()).log(Level.INFO, null, ipxex);
+        } catch (IllegalAccessException iaex) {
+            Logger.getLogger(DBConnectionDrop.class.getName()).log(Level.INFO, null, iaex);
+        } catch (InvocationTargetException itex) {
+            Logger.getLogger(DBConnectionDrop.class.getName()).log(Level.INFO, null, itex);
         }
     }
 

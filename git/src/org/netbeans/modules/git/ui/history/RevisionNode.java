@@ -120,7 +120,12 @@ class RevisionNode extends AbstractNode {
 
     @Override
     public Action[] getActions (boolean context) {
-        return null;
+        if (context) return null;
+        if (event == null) {
+            return container.getActions();
+        } else {
+            return event.getActions();
+        }
     }
     
     private void initProperties() {

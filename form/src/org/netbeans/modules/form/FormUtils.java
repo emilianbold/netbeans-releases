@@ -367,7 +367,7 @@ public class FormUtils
      * properties needs to be restricted to "detached write". */
     private static Object[][] propertiesAccess = {
         { "javax.swing.JFrame", CLASS_AND_SUBCLASSES,
-              "defaultCloseOperation", new Integer(FormProperty.DETACHED_WRITE) }
+              "defaultCloseOperation", Integer.valueOf(FormProperty.DETACHED_WRITE) }
     };
 
     /** Table of properties that need the component to be added in the parent,

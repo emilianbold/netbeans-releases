@@ -70,8 +70,8 @@ public final class DocumentBasedIndexManager {
 
     //@GuardedBy("this")
     @org.netbeans.api.annotations.common.SuppressWarnings(
-    value="DMI_COLLECTION_OF_URLS"
-    /*,justification="URLs have never host part"*/)
+    value="DMI_COLLECTION_OF_URLS",
+    justification="URLs have never host part")
     private final Map<URL, Pair<DocumentIndex.Transactional, DocumentIndexCache>> indexes =
             new HashMap<URL, Pair<DocumentIndex.Transactional, DocumentIndexCache>> ();
     //@GuardedBy("this")
@@ -96,8 +96,8 @@ public final class DocumentBasedIndexManager {
 
    @CheckForNull
    @org.netbeans.api.annotations.common.SuppressWarnings(
-    value="DMI_COLLECTION_OF_URLS"
-    /*,justification="URLs have never host part"*/)
+    value="DMI_COLLECTION_OF_URLS",
+    justification="URLs have never host part")
     public synchronized DocumentIndex.Transactional getIndex (final URL root, final Mode mode) throws IOException {
         assert root != null;
         assert PathRegistry.noHostPart(root) : root;

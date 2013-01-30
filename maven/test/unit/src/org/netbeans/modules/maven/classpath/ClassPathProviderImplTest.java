@@ -176,6 +176,46 @@ public class ClassPathProviderImplTest extends NbTestCase {
         assertRoots(cp);
         assertFalse(bcp.toString(), bcp.toString().contains("override.jar"));
     }
+    
+    public void testDontIncludeJDK() throws Exception {
+        TestFileUtils.writeFile(d,
+                "pom.xml",
+                "<project xmlns='http://maven.apache.org/POM/4.0.0'>" +
+                "<modelVersion>4.0.0</modelVersion>" +
+                "<groupId>grp</groupId>" +
+                "<artifactId>art</artifactId>" +
+                "<packaging>jar</packaging>" +
+                "<version>1.0-SNAPSHOT</version>" +
+                "<name>Test</name>" +
+                "<build>\n" +
+                "  <plugins>\n" +
+                "    <plugin>\n" +
+                "      <groupId>org.apache.maven.plugins</groupId>\n" +
+                "      <artifactId>maven-compiler-plugin</artifactId>\n" +
+                "      <version>2.3.2</version>\n" +
+                "      <configuration>\n" +
+                "        <compilerArguments>\n" +
+                "          <bootclasspath>netbeans.ignore.jdk.bootclasspath</bootclasspath>\n" +
+                "        </compilerArguments>\n" +
+                "      </configuration>\n" +
+                "    </plugin>\n" +
+                "  </plugins>\n" +
+                "</build>\n" +
+                "</project>"
+        );
+        FileObject src = FileUtil.createFolder(d, "src/main/java");
+        ClassPath cp = ClassPath.getClassPath(src, ClassPath.BOOT);
+        assertNotNull(cp);
+        for (FileObject fo : cp.getRoots()) {
+            if (fo.getNameExt().equals("rt.jar")) {
+                fail("We don't want rt.jar on boot classpath: " + fo);
+            }
+            FileObject archive = FileUtil.getArchiveFile(fo);
+            if (archive != null && archive.getNameExt().equals("rt.jar")) {
+                fail("We don't want rt.jar on boot classpath: " + archive);
+            }
+        }
+    }
 
     private static void assertRoots(ClassPath cp, FileObject... files) {
         assertNotNull(cp);

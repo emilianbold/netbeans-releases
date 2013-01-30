@@ -52,8 +52,6 @@ import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
 import org.netbeans.modules.mercurial.util.HgCommand;
 import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.versioning.spi.VCSContext;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionRegistration;
 import org.openide.nodes.Node;
@@ -86,6 +84,9 @@ public class QPushAllPatchesAction extends ContextAction {
         new HgProgressSupport() {
             @Override
             protected void perform () {
+                if (!QUtils.isMQEnabledExtension(root)) {
+                    return;
+                }
                 OutputLogger logger = getLogger();
                 try {
                     logger.outputInRed(NbBundle.getMessage(QPushAllPatchesAction.class, "MSG_PUSH_TITLE")); //NOI18N

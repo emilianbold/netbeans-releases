@@ -668,7 +668,7 @@ public class CreateSiteTemplate extends javax.swing.JPanel implements ExplorerMa
 
     }
 
-    @org.netbeans.api.annotations.common.SuppressWarnings("RV_RETURN_VALUE_IGNORED_BAD_PRACTICE") // justification="checking return value of createNewFile() is pointless"
+    @org.netbeans.api.annotations.common.SuppressWarnings(value="RV_RETURN_VALUE_IGNORED_BAD_PRACTICE", justification="checking return value of createNewFile() is pointless")
     private static void createZipFile(File templateFile, ClientSideProject project, Node rootNode) throws IOException {
         if (!templateFile.exists()) {
             templateFile.createNewFile();

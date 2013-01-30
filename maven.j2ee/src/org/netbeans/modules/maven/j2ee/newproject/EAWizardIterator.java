@@ -65,6 +65,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle.Messages;
 import static org.netbeans.modules.maven.j2ee.newproject.Bundle.*;
+import org.netbeans.spi.project.ui.support.CommonProjectActions;
 
 /**
  * This class is responsible for creating new EAR projects
@@ -85,7 +86,7 @@ public class EAWizardIterator extends BaseWizardIterator {
         ProjectInfo web_vi = (ProjectInfo) wiz.getProperty("web_versionInfo"); //NOI18N
         ProjectInfo ejb_vi = (ProjectInfo) wiz.getProperty("ejb_versionInfo"); //NOI18N
         ProjectInfo vi = new ProjectInfo((String) wiz.getProperty("groupId"), (String) wiz.getProperty("artifactId"), (String) wiz.getProperty("version"), (String) wiz.getProperty("package")); //NOI18N
-        File rootFile = FileUtil.normalizeFile((File) wiz.getProperty("projdir")); // NOI18N
+        File rootFile = FileUtil.normalizeFile((File) wiz.getProperty(CommonProjectActions.PROJECT_PARENT_FOLDER)); // NOI18N
         File earFile = FileUtil.normalizeFile((File) wiz.getProperty("ear_projdir")); // NOI18N
         
         ArchetypeWizards.createFromArchetype(rootFile, vi, J2eeArchetypeFactory.getInstance().getAnyArchetypeFor(J2eeModule.Type.RAR), null, true);

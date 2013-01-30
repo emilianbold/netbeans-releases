@@ -73,7 +73,7 @@ public class GuardBlockWalker extends APTWalker {
             if (guardCheck instanceof APTIfndef) {
                 return  ((APTIfndef)guardCheck).getMacroName();
             } else {
-                APTDefine fileOnce = APTUtils.createAPTDefine(getRootFile().getPath().toString());
+                APTDefine fileOnce = APTUtils.createAPTDefine(getCurFile().getPath().toString());
                 fileOnce.getName();
             }
 

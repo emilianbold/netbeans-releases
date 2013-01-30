@@ -514,7 +514,9 @@ public class MultiDataObject extends DataObject {
         //#33244 - copy primary file after the secondary ones
         fo = getPrimaryEntry ().copy (df.getPrimaryFile (), suffix);
         if (fo == null || !fo.isValid()) {
-            throw new IOException("copied file is not valid " + fo); // NOI18N
+            IOException ex = new IOException("copied file is not valid " + fo); // NOI18N
+            Exceptions.attachLocalizedMessage(ex, Bundle.EXC_NO_LONGER_VALID(fo));
+            throw ex;
         }
 
         if (template) {

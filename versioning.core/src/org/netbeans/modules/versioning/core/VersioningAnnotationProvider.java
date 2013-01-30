@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.versioning.core;
 
+import java.awt.EventQueue;
 import org.netbeans.modules.versioning.core.util.VCSSystemProvider.VersioningSystem;
 import org.netbeans.modules.versioning.core.spi.VCSContext;
 import org.openide.filesystems.*;
@@ -230,7 +231,7 @@ public class VersioningAnnotationProvider {
 
         @Override
         public Action createContextAwareInstance(Lookup actionContext) {
-            return new RealVersioningSystemActions(system, Utils.contextForLookup(actionContext));
+            return new RealVersioningSystemActions(system, actionContext);
         }
 
         public void setVersioningSystem(VersioningSystem system) {
@@ -241,12 +242,12 @@ public class VersioningAnnotationProvider {
     private static class RealVersioningSystemActions extends AbstractAction implements Presenter.Popup {
 
         private final VersioningSystem system;
-        private final VCSContext context;
+        private final Lookup lkp;
 
-        public RealVersioningSystemActions(VersioningSystem system, VCSContext context) {
+        public RealVersioningSystemActions(VersioningSystem system, Lookup lkp) {
             super(system.getDisplayName());
             this.system = system;
-            this.context = context;
+            this.lkp = lkp;
         }
 
         @Override
@@ -259,6 +260,7 @@ public class VersioningAnnotationProvider {
             return new VersioningSystemMenuItem();
         }
         
+        @NbBundle.Messages("LBL_PopupMenu_Initializing=Initializing...")
         private class VersioningSystemMenuItem extends JMenu {
         
             private boolean popupContructed;
@@ -270,18 +272,38 @@ public class VersioningAnnotationProvider {
             @Override
             public void setSelected(boolean selected) {
                 if (selected && popupContructed == false) {
-                    // lazy submenu construction
-                    Action [] actions = system.getVCSAnnotator().getActions(context, VCSAnnotator.ActionDestination.PopupMenu);
-                    for (int i = 0; i < actions.length; i++) {
-                        Action action = actions[i];
-                        if (action == null) {
-                            addSeparator();
-                        } else {
-                            JMenuItem item = Utils.toMenuItem(action);
-                            add(item);
-                        }
-                    }
                     popupContructed = true;
+                    JMenuItem item = new JMenuItem(Bundle.LBL_PopupMenu_Initializing());
+                    item.setEnabled(false);
+                    add(item);
+                    Utils.postParallel(new Runnable() {
+                        @Override
+                        public void run () {
+                            VCSContext context = Utils.contextForLookup(lkp);
+                            final Action [] actions = system.getVCSAnnotator().getActions(context, VCSAnnotator.ActionDestination.PopupMenu);
+                            EventQueue.invokeLater(new Runnable() {
+                                @Override
+                                public void run () {
+                                    JPopupMenu popup = getPopupMenu();
+                                    boolean display = popup.isVisible();
+                                    popup.setVisible(false);
+                                    removeAll();
+                                    if (isShowing()) {
+                                        for (int i = 0; i < actions.length; i++) {
+                                            Action action = actions[i];
+                                            if (action == null) {
+                                                addSeparator();
+                                            } else {
+                                                JMenuItem item = Utils.toMenuItem(action);
+                                                add(item);
+                                            }
+                                        }
+                                        popup.setVisible(display);
+                                    }
+                                }
+                            });
+                        }
+                    });
                 }
                 super.setSelected(selected);
             }

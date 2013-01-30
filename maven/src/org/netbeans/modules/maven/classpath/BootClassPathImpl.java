@@ -94,11 +94,13 @@ public final class BootClassPathImpl implements ClassPathImplementation, Propert
         synchronized (LOCK) {
             if (this.resourcesCache == null) {
                 ArrayList<PathResourceImplementation> result = new ArrayList<PathResourceImplementation> ();
-                result.addAll(ecpImpl.getResources());
+                boolean[] includeJDK = { true };
+                result.addAll(ecpImpl.getResources(includeJDK));
                 lastHintValue = project.getAuxProps().get(Constants.HINT_JDK_PLATFORM, true);
-               
-                for (ClassPath.Entry entry : findActivePlatform().getBootstrapLibraries().entries()) {
-                    result.add(ClassPathSupport.createResource(entry.getURL()));
+                if (includeJDK[0]) {
+                    for (ClassPath.Entry entry : findActivePlatform().getBootstrapLibraries().entries()) {
+                        result.add(ClassPathSupport.createResource(entry.getURL()));
+                    }
                 }
                 resourcesCache = Collections.unmodifiableList (result);
             }

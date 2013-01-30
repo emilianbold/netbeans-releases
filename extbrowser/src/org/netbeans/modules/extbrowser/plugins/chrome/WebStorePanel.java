@@ -219,7 +219,6 @@ class WebStorePanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(20, 20, 15, 20);
         add(warningLbl, gridBagConstraints);
 
-        warningTextLbl.setFont(new java.awt.Font("Tahoma", 1, 11)); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(warningTextLbl, org.openide.util.NbBundle.getMessage(WebStorePanel.class, "LBL_ConnectorExtenstion")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
