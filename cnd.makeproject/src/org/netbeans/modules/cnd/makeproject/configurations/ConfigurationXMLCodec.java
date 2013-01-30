@@ -619,10 +619,15 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
                 path = path.substring(2);
             }
             path = getString(adjustOffset(path));
-            PerformanceLogger.PerformaceAction performanceEvent = PerformanceLogger.getLogger().start(Folder.CREATE_ITEM_PERFORMANCE_EVENT, null);
-            Item createItem = createItem(path);
-            currentFolder.addItem(createItem);
-            performanceEvent.log(createItem);
+            PerformanceLogger.PerformaceAction performanceEvent = PerformanceLogger.getLogger().start(Folder.CREATE_ITEM_PERFORMANCE_EVENT, path);
+            Item createItem = null;
+            try {
+                performanceEvent.setTimeOut(Folder.FS_TIME_OUT);
+                createItem = createItem(path);
+                currentFolder.addItem(createItem);
+            } finally {
+                performanceEvent.log(createItem);
+            }
         } else if (element.equals(ItemXMLCodec.ITEM_EXCLUDED_ELEMENT) || element.equals(ItemXMLCodec.EXCLUDED_ELEMENT)) {
             CndUtils.assertNotNullInConsole(currentItemConfiguration, "null currentItemConfiguration"); //NOI18N
             if (currentItemConfiguration != null) {
