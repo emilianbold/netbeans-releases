@@ -821,10 +821,6 @@ public final class TreeUtilities {
         return encodeIdentifierInternal(ident);
     }
 
-    public boolean isExtensionMethodHack(MethodTree mt) {
-        return (((JCMethodDecl) mt).getModifiers().flags & Flags.DEFAULT) != 0;
-    }
-
     static @NonNull CharSequence decodeIdentifierInternal(@NonNull CharSequence text) {
         if (text.charAt(0) != '#') {
             return text;
