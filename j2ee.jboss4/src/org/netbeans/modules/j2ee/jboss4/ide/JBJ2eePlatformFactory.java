@@ -51,7 +51,6 @@ import java.util.WeakHashMap;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule.Type;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import java.io.File;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashSet;
 import java.util.Set;
@@ -78,6 +77,7 @@ import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl2;
 import org.netbeans.modules.j2ee.jboss4.ide.ui.JBPluginUtils;
+import org.netbeans.modules.j2ee.jboss4.ide.ui.JBPluginUtils.Version;
 import org.netbeans.modules.javaee.specs.support.api.JaxWs;
 import org.netbeans.modules.websvc.wsstack.api.WSStack;
 import org.netbeans.modules.websvc.wsstack.spi.WSStackFactory;
@@ -91,7 +91,13 @@ import org.openide.util.lookup.Lookups;
  * @author Kirill Sorokin <Kirill.Sorokin@Sun.COM>
  */
 public class JBJ2eePlatformFactory extends J2eePlatformFactory {
-    
+
+    static final String HIBERNATE_JPA_PROVIDER = "org.hibernate.ejb.HibernatePersistence";
+
+    static final String TOPLINK_JPA_PROVIDER = "oracle.toplink.essentials.ejb.cmp3.EntityManagerFactoryProvider";
+
+    static final String KODO_JPA_PROVIDER = "kodo.persistence.PersistenceProviderImpl";
+
     private static final WeakHashMap<InstanceProperties,J2eePlatformImplImpl> instanceCache = new WeakHashMap<InstanceProperties,J2eePlatformImplImpl>();
     
     public synchronized J2eePlatformImpl getJ2eePlatformImpl(DeploymentManager dm) {
@@ -284,12 +290,25 @@ public class JBJ2eePlatformFactory extends J2eePlatformFactory {
                     (J2eePlatform.TOOL_WSCOMPILE.equals(toolName) || J2eePlatform.TOOL_APP_CLIENT_RUNTIME.equals(toolName)) ) {
                     return true;
             }
-            if ("org.hibernate.ejb.HibernatePersistence".equals(toolName)
-                    || "oracle.toplink.essentials.ejb.cmp3.EntityManagerFactoryProvider".equals(toolName)
-                    || "kodo.persistence.PersistenceProviderImpl".equals(toolName)) {
+
+            if (HIBERNATE_JPA_PROVIDER.equals(toolName)
+                    || TOPLINK_JPA_PROVIDER.equals(toolName)
+                    || KODO_JPA_PROVIDER.equals(toolName)) {
                 return containsPersistenceProvider(toolName);
             }
-            if (properties.isVersion(JBPluginUtils.JBOSS_6_0_0)) {
+
+            if("jpaversionverification".equals(toolName)) { // NOI18N
+                return true;
+            }
+            if("jpa1.0".equals(toolName)) { // NOI18N
+                return true;
+            }
+            if("jpa2.0".equals(toolName)) { // NOI18N
+                return isJpa2Available();
+            }
+
+            Version version = properties.getServerVersion();
+            if (version != null && JBPluginUtils.JBOSS_6_0_0.compareTo(version) <= 0) {
                 if ("hibernatePersistenceProviderIsDefault2.0".equals(toolName)) {
                     return true;
                 }                
@@ -303,6 +322,15 @@ public class JBJ2eePlatformFactory extends J2eePlatformFactory {
             }
 
             return false;
+        }
+
+        public boolean isJpa2Available() {
+            Version version = properties.getServerVersion();
+            return version != null && JBPluginUtils.JBOSS_6_0_0.compareTo(version) <= 0;
+        }
+
+        String getDefaultJpaProvider() {
+            return HIBERNATE_JPA_PROVIDER;
         }
         
         private boolean containsJaxWsLibraries() {
@@ -322,7 +350,7 @@ public class JBJ2eePlatformFactory extends J2eePlatformFactory {
             return false;
         }
 
-        private boolean containsPersistenceProvider(String providerName) {
+        boolean containsPersistenceProvider(String providerName) {
             return containsService(libraries, "javax.persistence.spi.PersistenceProvider", providerName);
         }
         
@@ -487,9 +515,9 @@ public class JBJ2eePlatformFactory extends J2eePlatformFactory {
 
         @Override
         public Lookup getLookup() {
-            WSStack<JaxWs> wsStack=WSStackFactory.createWSStack(JaxWs.class ,
+            WSStack<JaxWs> wsStack = WSStackFactory.createWSStack(JaxWs.class,
                     new JBossJaxWsStack(properties.getRootDir()), WSStack.Source.SERVER);
-            Lookup baseLookup = Lookups.fixed(properties.getRootDir(), wsStack);
+            Lookup baseLookup = Lookups.fixed(properties.getRootDir(), wsStack, new JpaSupportImpl(this));
             return LookupProviderSupport.createCompositeLookup(baseLookup, 
                     "J2EE/DeploymentPlugins/JBoss4/Lookup"); //NOI18N
         }

@@ -86,21 +86,25 @@ public class VariablesOperator extends TopComponentOperator {
      * @throws IllegalAccessException
      * @throws InvocationTargetException
      */
-    public Map<String, Variable> getVariables() throws IllegalAccessException, InvocationTargetException {
-
-        TableModel tm = tblVariables().getModel();
-        org.openide.nodes.Node.Property type, value;
-        Map<String, Variable> variables = new HashMap<String, Variable>();
-        String name;
-        for (int i = 0, max = tm.getRowCount(); i < max; i++) {
-            name = tm.getValueAt(i, 0).toString();
-            if (name.length() > 0) {
-                type = (org.openide.nodes.Node.Property) tm.getValueAt(i, 1);
-                value = (org.openide.nodes.Node.Property) tm.getValueAt(i, 2);
-                variables.put(name, new Variable(name, type.getValue().toString(), value.getValue().toString()));
+    public Object getVariables() throws Exception {
+        return runMapping(new MapAction("getVariables") {
+            @Override
+            public Object map() throws Exception {
+                TableModel tm = tblVariables().getModel();
+                org.openide.nodes.Node.Property type, value;
+                Map<String, Variable> variables = new HashMap<String, Variable>();
+                String name;
+                for (int i = 0, max = tm.getRowCount(); i < max; i++) {
+                    name = tm.getValueAt(i, 0).toString();
+                    if (name.length() > 0) {
+                        type = (org.openide.nodes.Node.Property) tm.getValueAt(i, 1);
+                        value = (org.openide.nodes.Node.Property) tm.getValueAt(i, 2);
+                        variables.put(name, new Variable(name, type.getValue().toString(), value.getValue().toString()));
+                    }
+                }
+                return variables;
             }
-        }
-        return variables;
+        });
     }
 }
 

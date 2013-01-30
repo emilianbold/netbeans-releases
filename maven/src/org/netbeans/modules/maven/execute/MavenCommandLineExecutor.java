@@ -461,10 +461,9 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
     }
 
     private static void printGray(InputOutput io, String text) {
-        OutputColors outputColors = new OutputColors();
         if (IOColorLines.isSupported(io)) {
             try {
-                IOColorLines.println(io, text, outputColors.getSubduedTextColor());
+                IOColorLines.println(io, text, Color.GRAY);
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }

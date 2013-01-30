@@ -279,6 +279,23 @@ public class GeneralHTMLProject extends JellyTestCase {
     }
 
     /**
+     * Opens remote file in editor
+     *
+     * @param fileName remote file name
+     * @param projectName project name
+     */
+    public void openRemoteFile(String fileName, String projectName) {
+        if (projectName == null) {
+            throw new IllegalStateException("YOU MUST OPEN PROJECT FIRST");
+        }
+        Logger.getLogger(GeneralHTMLProject.class.getName()).log(Level.INFO, "Opening file {0}", fileName);
+        Node rootNode = new ProjectsTabOperator().getProjectRootNode(projectName);
+        Node node = new Node(rootNode, "Remote Files|" + fileName);
+        evt.waitNoEvent(1000);
+        node.performPopupAction("Open");
+    }
+
+    /**
      * Returns array of all elements that are selected in browser. List of given
      * elements is retrieved from model, not browser as such
      *
