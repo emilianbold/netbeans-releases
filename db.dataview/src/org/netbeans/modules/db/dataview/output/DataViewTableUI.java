@@ -274,8 +274,8 @@ final class DataViewTableUI extends ResultSetJXTable {
             }
 
             if (e.getSource() == table.getSelectionModel() && table.getRowSelectionAllowed()) {
-                int first = e.getFirstIndex();
-                if (first >= 0 && tablePanel.isEditable()) {
+                boolean rowSelected = table.getSelectedRows().length > 0;
+                if (rowSelected && tablePanel.isEditable()) {
                     tablePanel.enableDeleteBtn(true);
                 } else {
                     tablePanel.enableDeleteBtn(false);
