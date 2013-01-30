@@ -115,4 +115,14 @@ public class FunctionDeclaration extends Statement {
     public void accept(Visitor visitor) {
         visitor.visit(this);
     }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        for (FormalParameter formalParameter : getFormalParameters()) {
+            sb.append(formalParameter).append(","); //NOI18N
+        }
+        return "function " + (isReference() ? "&" : "") + getFunctionName() + "(" + sb.toString() + ")" + getBody(); //NOI18N
+    }
+
 }

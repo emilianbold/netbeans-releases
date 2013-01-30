@@ -75,4 +75,10 @@ public class IgnoreError extends Expression {
     public void accept(Visitor visitor) {
         visitor.visit(this);
     }
+
+    @Override
+    public String toString() {
+        return "@" + getExpression(); //NOI18N
+    }
+
 }

@@ -112,4 +112,14 @@ public class FieldsDeclaration extends BodyDeclaration {
     public void accept(Visitor visitor) {
         visitor.visit(this);
     }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        for (SingleFieldDeclaration singleFieldDeclaration : getFields()) {
+            sb.append(singleFieldDeclaration).append(" "); //NOI18N
+        }
+        return sb.toString();
+    }
+
 }
