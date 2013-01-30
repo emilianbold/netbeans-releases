@@ -153,6 +153,7 @@ public final class FileImpl implements CsmFile,
     }
     
     public static final boolean reportErrors = TraceFlags.REPORT_PARSING_ERRORS | TraceFlags.DEBUG;
+    public static final int PARSE_FILE_TIMEOUT = 30;
     public static final String PARSE_FILE_PERFORMANCE_EVENT = "PARSE_FILE_PERFORMANCE_EVENT"; //NOI18N
     public static final String READ_FILE_PERFORMANCE_EVENT = "READ_FILE_PERFORMANCE_EVENT"; //NOI18N
     private static final boolean reportParse = Boolean.getBoolean("parser.log.parse");
@@ -1047,8 +1048,9 @@ public final class FileImpl implements CsmFile,
 
     private CsmParserResult _parse(ParseDescriptor parseParams) {
         parsingFileContentRef.get().set(parseParams.content);
+        PerformanceLogger.PerformaceAction performanceEvent = PerformanceLogger.getLogger().start(FileImpl.PARSE_FILE_PERFORMANCE_EVENT, getFileObject());
         try {
-            PerformanceLogger.PerformaceAction performanceEvent = PerformanceLogger.getLogger().start(FileImpl.PARSE_FILE_PERFORMANCE_EVENT, getFileObject());
+            performanceEvent.setTimeOut(FileImpl.PARSE_FILE_TIMEOUT);
             Diagnostic.StopWatch sw = TraceFlags.TIMING_PARSE_PER_FILE_DEEP ? new Diagnostic.StopWatch() : null;
             if (reportParse || logState || TraceFlags.DEBUG) {
                 logParse("Parsing", parseParams.getCurrentPreprocHandler()); //NOI18N
@@ -1066,6 +1068,8 @@ public final class FileImpl implements CsmFile,
                     }
                 }
             }
+            return parsing;
+        } finally {
             ProjectBase projectImpl = getProjectImpl(false);
             if (projectImpl != null) {
                 if (projectImpl.isArtificial()) {
@@ -1089,8 +1093,6 @@ public final class FileImpl implements CsmFile,
             } else {
                 performanceEvent.log(lines);
             }
-            return parsing;
-        } finally {
             parsingFileContentRef.get().set(null);
         }
     }
