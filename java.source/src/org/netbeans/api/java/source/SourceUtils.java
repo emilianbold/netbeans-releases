@@ -65,7 +65,6 @@ import javax.lang.model.util.ElementFilter;
 import com.sun.source.tree.*;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
-import com.sun.tools.javac.api.JavacScope;
 import com.sun.tools.javac.api.JavacTaskImpl;
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.Scope.ImportScope;
@@ -191,12 +190,6 @@ public class SourceUtils {
             from = Types.instance(c).upperBound((Type)from);
         }
         return Check.instance(c).checkType(null, (Type)from, (Type)to).getKind() != TypeKind.ERROR;
-    }
-    
-    @Deprecated
-    //XXX: probably not needed anymore, delete
-    public static boolean checkTypesAssignable(@NonNull CompilationInfo info, @NonNull Scope scope, @NonNull TypeMirror from, @NonNull TypeMirror to) {
-        return checkTypesAssignable(info, from, to);
     }
     
     public static TypeMirror getBound(WildcardType wildcardType) {
