@@ -62,4 +62,9 @@ public class ArrayDimension extends Expression {
         visitor.visit(this);
     }
 
+    @Override
+    public String toString() {
+        return "[" + getIndex() + "]"; //NOI18N
+    }
+
 }

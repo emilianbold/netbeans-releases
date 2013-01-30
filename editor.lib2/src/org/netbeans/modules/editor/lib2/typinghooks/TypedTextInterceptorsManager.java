@@ -71,10 +71,10 @@ public final class TypedTextInterceptorsManager {
         return instance;
     }
 
-    public Transaction openTransaction(JTextComponent c, Position offset, String typedText) {
+    public Transaction openTransaction(JTextComponent c, Position offset, String typedText, String replacedText) {
         synchronized (this) {
             if (transaction == null) {
-                transaction = new Transaction(c, offset, typedText);
+                transaction = new Transaction(c, offset, typedText, replacedText);
                 return transaction;
             } else {
                 throw new IllegalStateException("Too many transactions; only one at a time is allowed!"); //NOI18N
@@ -161,8 +161,8 @@ public final class TypedTextInterceptorsManager {
         private final Collection<? extends TypedTextInterceptor> interceptors;
         private int phase = 0;
 
-        private Transaction(JTextComponent c, Position offset, String typedText) {
-            this.context = TypingHooksSpiAccessor.get().createTtiContext(c, offset, typedText);
+        private Transaction(JTextComponent c, Position offset, String typedText, String replacedText) {
+            this.context = TypingHooksSpiAccessor.get().createTtiContext(c, offset, typedText, replacedText);
             this.interceptors = getInterceptors(c.getDocument(), offset);
         }
     } // End of Transaction class

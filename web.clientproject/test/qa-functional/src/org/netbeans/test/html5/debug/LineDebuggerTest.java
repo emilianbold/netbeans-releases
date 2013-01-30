@@ -42,6 +42,7 @@
 package org.netbeans.test.html5.debug;
 
 import java.util.Map;
+import java.util.logging.Level;
 import junit.framework.Test;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.EditorWindowOperator;
@@ -49,12 +50,13 @@ import org.netbeans.jellytools.modules.debugger.actions.ContinueAction;
 import org.netbeans.jellytools.modules.debugger.actions.StepIntoAction;
 import org.netbeans.jellytools.modules.debugger.actions.StepOverAction;
 import org.netbeans.jellytools.modules.debugger.actions.ToggleBreakpointAction;
+import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.test.html5.EmbeddedBrowserOperator;
 
 /**
  *
- * @author vriha
+ * @author Vladimir Riha
  */
 public class LineDebuggerTest extends JavaScriptDebugger {
 
@@ -201,12 +203,20 @@ public class LineDebuggerTest extends JavaScriptDebugger {
 
     @Override
     public void setUp() {
-        cleanBreakpoints();
+        try {
+            cleanBreakpoints();
+        } catch (TimeoutExpiredException e) {
+            LOGGER.log(Level.INFO, "Variables window was not opened");
+        }
     }
 
     @Override
     public void tearDown() {
-        (new EmbeddedBrowserOperator("Web Browser")).close();
+        try {
+            (new EmbeddedBrowserOperator("Web Browser")).close();
+        } catch (TimeoutExpiredException e) {
+            LOGGER.log(Level.INFO, "Embedded browse was not opened");
+        }
     }
 
     /**

@@ -116,4 +116,14 @@ public class NamespaceName extends Expression {
     public void accept(Visitor visitor) {
         visitor.visit(this);
     }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        for (Identifier identifier : getSegments()) {
+            sb.append(identifier).append("\\"); //NOI18N
+        }
+        return (isGlobal() ? "\\" : (isCurrent() ? "namespace " : "")) + sb.toString(); //NOI18N
+    }
+
 }

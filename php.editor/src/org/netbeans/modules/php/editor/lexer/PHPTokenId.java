@@ -150,7 +150,7 @@ public enum PHPTokenId implements TokenId {
     PHP_COMMENT(null, "comment"), //NOI18N
     PHP_COMMENT_START(null, "comment"), //NOI18N
     PHP_COMMENT_END(null, "comment"), //NOI18N
-    PHP_LINE_COMMENT(null, "comment"), //NOI18N
+    PHP_LINE_COMMENT(null, "linecomment"), //NOI18N
     PHPDOC_COMMENT_START(null, "comment"), //NOI18N
     PHPDOC_COMMENT_END(null, "comment"), //NOI18N
     PHPDOC_COMMENT(null, "comment"), //NOI18N

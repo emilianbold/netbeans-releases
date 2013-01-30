@@ -951,6 +951,7 @@ public class TokenFormatter {
                                         countSpaces = docOptions.spaceAroundTernaryOps ? 1 : 0;
                                         break;
                                     case WHITESPACE_BEFORE_ASSIGN_OP:
+                                        indentRule = true;
                                         countSpaces = 0;
                                         if (index > 0 && docOptions.groupMulitilineAssignment
                                                 && formatTokens.get(index - 1).getId() == FormatToken.Kind.ASSIGNMENT_ANCHOR) {
@@ -958,23 +959,19 @@ public class TokenFormatter {
                                             countSpaces = new SpacesCounter(docOptions).count(aaToken);
                                         }
                                         countSpaces = countSpaces + (docOptions.spaceAroundAssignOps ? 1 : 0);
+                                        newLines = 0;
                                         if (!docOptions.wrapAfterAssignOps) {
                                             switch (docOptions.wrapAssignOps) {
                                                 case WRAP_ALWAYS:
-                                                    indentRule = true;
                                                     newLines = 1;
                                                     countSpaces = indent;
                                                     break;
                                                 case WRAP_NEVER:
-                                                    newLines = 0;
                                                     break;
                                                 case WRAP_IF_LONG:
                                                     if (column + 1 + countLengthOfNextSequence(formatTokens, index + 1) > docOptions.margin) {
-                                                        indentRule = true;
                                                         newLines = 1;
                                                         countSpaces = indent;
-                                                    } else {
-                                                        newLines = 0;
                                                     }
                                                     break;
                                                 default:
@@ -983,6 +980,7 @@ public class TokenFormatter {
                                         }
                                         break;
                                     case WHITESPACE_AFTER_ASSIGN_OP:
+                                        indentRule = true;
                                         countSpaces = 0;
                                         if (index > 0 && docOptions.groupMulitilineAssignment
                                                 && formatTokens.get(index - 1).getId() == FormatToken.Kind.ASSIGNMENT_ANCHOR) {
@@ -990,23 +988,19 @@ public class TokenFormatter {
                                             countSpaces = new SpacesCounter(docOptions).count(aaToken);
                                         }
                                         countSpaces = countSpaces + (docOptions.spaceAroundAssignOps ? 1 : 0);
+                                        newLines = 0;
                                         if (docOptions.wrapAfterAssignOps) {
                                             switch (docOptions.wrapAssignOps) {
                                                 case WRAP_ALWAYS:
-                                                    indentRule = true;
                                                     newLines = 1;
                                                     countSpaces = indent;
                                                     break;
                                                 case WRAP_NEVER:
-                                                    newLines = 0;
                                                     break;
                                                 case WRAP_IF_LONG:
                                                     if (column + 1 + countLengthOfNextSequence(formatTokens, index + 1) > docOptions.margin) {
-                                                        indentRule = true;
                                                         newLines = 1;
                                                         countSpaces = indent;
-                                                    } else {
-                                                        newLines = 0;
                                                     }
                                                     break;
                                                 default:
