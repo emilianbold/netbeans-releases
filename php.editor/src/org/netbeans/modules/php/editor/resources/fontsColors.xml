@@ -11,6 +11,7 @@
     <fontcolor name="PHP_CONTENT" foreColor="000000"/>
 
     <fontcolor name="comment" default="comment" />
+    <fontcolor name="linecomment" default="comment" />
     <fontcolor name="phpdockeyword" default="comment">
         <font style="bold"/>
     </fontcolor>
