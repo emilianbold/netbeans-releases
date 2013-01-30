@@ -311,7 +311,9 @@ public class SelectExecutablePanel extends javax.swing.JPanel {
                 }
                 resetList = false;
                 if (selected == null) {
-                    exeList.setSelectedValue(first, true);
+                    if (executableTextField.getText().isEmpty()) {
+                        exeList.setSelectedValue(first, true);
+                    }
                 }
             }
         });
