@@ -55,6 +55,10 @@ import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.modules.maven.api.customizer.ModelHandle2;
 import org.netbeans.modules.maven.api.customizer.support.ComboBoxUpdater;
 import org.netbeans.modules.maven.j2ee.MavenJavaEEConstants;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import static org.netbeans.modules.maven.j2ee.ui.util.Bundle.*;
+import org.openide.util.NbBundle.Messages;
 
 /**
  *
@@ -133,13 +137,36 @@ public final class JavaEEVersionComboBoxUpdater extends ComboBoxUpdater<Profile>
         return Profile.fromPropertiesString(handle.getRawAuxiliaryProperty(MavenJavaEEConstants.HINT_J2EE_VERSION, true));
     }
 
+    @Messages({
+        "WARNING_ChangingJavaEEVersion=<html>You are changing Java EE version. <b>Please be aware about "
+            + "possible consequences</b>. Your project might not be deployable anymore if the selected "
+            + "server doesn't support choosen version.<br><br>Also note that changing this value doesn't "
+            + "make any changes in your project configuration (pom.xml will still reffer to the original "
+            + "Java EE jar file etc.)</html>."
+    })
     @Override
-    public void setValue(Profile value) {
-        if (value != null) {
-            handle.setRawAuxiliaryProperty(MavenJavaEEConstants.HINT_J2EE_VERSION, value.toPropertiesString(), true);
+    public void setValue(Profile profile) {
+        if (WarningPanelSupport.isJavaEEChangeWarningActivated()) {
+            WarningPanel panel = new WarningPanel(WARNING_ChangingJavaEEVersion());
+            NotifyDescriptor dd = new NotifyDescriptor.Message(panel, NotifyDescriptor.OK_CANCEL_OPTION);
+            DialogDisplayer.getDefault().notify(dd);
+
+            if (dd.getValue() == NotifyDescriptor.CANCEL_OPTION) {
+                return;
+            }
+
+            if (panel.disabledWarning()) {
+                WarningPanelSupport.dontShowJavaEEChangeWarning();
+            }
+        }
+
+        final String profileValue;
+        if (profile != null) {
+            profileValue = profile.toPropertiesString();
         } else {
             // If value is null, it means the default value was set --> see ComboBoxUpdater implementation for more details
-            handle.setRawAuxiliaryProperty(MavenJavaEEConstants.HINT_J2EE_VERSION, defaultValue.toPropertiesString(), true);
+            profileValue = defaultValue.toPropertiesString();
         }
+        handle.setRawAuxiliaryProperty(MavenJavaEEConstants.HINT_J2EE_VERSION, profileValue, true);
     }
 }
