@@ -206,6 +206,9 @@ public class ResetCommand extends GitCommand {
                                 } else {
                                     builder.commit();
                                 }
+                                repository.writeMergeHeads(null);
+                                repository.writeMergeCommitMsg(null);
+                                repository.writeCherryPickHead(null);
                             }
                         }
                         if (moveHead && !monitor.isCanceled()) {
