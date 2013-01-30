@@ -58,7 +58,7 @@ public class AbstractLookupTest extends AbstractLookupBaseHid implements Abstrac
     public AbstractLookupTest(java.lang.String testName) {
         super(testName, null);
     }
-
+    
     //
     // Impl of AbstractLookupBaseHid.Impl
     //
