@@ -172,7 +172,7 @@ public class BufferDataInput implements RepositoryDataInput, SharedStringBuffer 
         return unitCodec.maskByRepositoryID(readInt());
     }
 
-    private static final int sharedArrySize = 1024;
+    private static final int sharedArrySize = BUFFER_SIZE;
     private final byte[] sharedByteArray = new byte[sharedArrySize];
     private final char[] sharedCharArray = new char[sharedArrySize];
     

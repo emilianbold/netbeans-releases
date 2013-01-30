@@ -70,7 +70,7 @@ public class RepositoryDataOutputStream extends DataOutputStream implements Repo
         writeInt(unitCodec.unmaskRepositoryID(unitId));
     }
 
-    private static final int sharedArrySize = 1024;
+    private static final int sharedArrySize = BUFFER_SIZE;
     private final byte[] sharedByteArray = new byte[sharedArrySize];
     private final char[] sharedCharArray = new char[sharedArrySize];
     
