@@ -56,6 +56,7 @@ class InterpProtoANSI extends InterpDumb {
     protected static class InterpTypeProtoANSI extends InterpTypeDumb {
 	protected final Actor act_reset_number = new ACT_RESET_NUMBER();
 	protected final Actor act_remember_digit = new ACT_REMEMBER_DIGIT();
+        protected final Actor act_push_number = new ACT_PUSH_NUMBER();
 	protected final Actor act_remember1 = new ACT_REMEMBER1();
 	protected final Actor act_setg = new ACT_SETG();
 
@@ -88,7 +89,7 @@ class InterpProtoANSI extends InterpDumb {
 	    st_esc_lb.setRegular(st_esc_lb, act_regular);
 	    for (char c = '0'; c <= '9'; c++)
 		st_esc_lb.setAction(c, st_esc_lb, act_remember_digit);
-	    st_esc_lb.setAction(';', st_esc_lb, new ACT_PUSH_NUMBER());
+	    st_esc_lb.setAction(';', st_esc_lb, act_push_number);
 	    st_esc_lb.setAction('A', st_base, new ACT_UP());
 	    st_esc_lb.setAction('B', st_base, new ACT_DO());
 	    st_esc_lb.setAction('C', st_base, new ACT_ND());

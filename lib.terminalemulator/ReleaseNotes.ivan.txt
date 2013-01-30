@@ -1,5 +1,15 @@
 207965 - Terminal incorrectly displays prompt string
 187345 - wrong characters in Terminals
+	- Handle unsupported Toolkit.getLockingKeyState().
+	  See comment in InterpProtoANSIX.numLock().
+	- Accept multiple numbers for \ESC[?
+	- Parse \ESC[> family in InterpXTerm but leave actions for
+	  later except for \ESC[>c.
+
+207965 - Terminal incorrectly displays prompt string
+187345 - wrong characters in Terminals
+
+	changeset:   242705:ba366f6407ec
 
 	Emit correct sequences for function, edit, numpad and arrow keys
 	for InterpProtoANSIX ("xterm" and "dtterm").
@@ -31,6 +41,9 @@
 
 207965 - Terminal incorrectly displays prompt string
 187345 - wrong characters in Terminals
+
+	changeset:   242704:6f3266eb5908
+
 	- \ESC[%dl implementation moved from 'ansi' to 'protoansi'.
 
 207965 - Terminal incorrectly displays prompt string

@@ -92,7 +92,7 @@ sequence	mnemonic		termcap op	terminfo	numbers	margin	ansi	dtterm	xterm	Term
 
 \ESC[%dE	CNL (CUrsor Next Line)	-				01N	?	S-	--	S-	N
 \ESC[%dF	CPL (CUrsor Prev Line)	-				01N	?	S-	S-	S-	N
-\ESC[%dG	CHA (Cursor Horiz Abs.)	-		hpa		N		S-	S-	S-	N -> xterm
+\ESC[%dG	CHA (Cursor Horiz Abs.)	-		hpa		N		ST	S-	ST	N -> protoansi
 
 \ESC[%d;%dH	CUP (CUrsor Position)	cm (ho, kh)	cup		?		ST	ST	ST	protoansi
 
@@ -107,11 +107,13 @@ sequence	mnemonic		termcap op	terminfo	numbers	margin	ansi	dtterm	xterm	Term
 
 \ESC[%dS	SU (Scroll Up)		SF (nw)		indn		01N	Y	ST	S-	ST	N surely this is implemented
 \ESC[%dT	SD (Scroll Down)	SR		rin		01N	Y	ST	S-	ST	N surely this is implemented
-\ESC[%dX	ECH (Erase CHaracters)	ec		ech		?		ST	S-	ST	N -> xterm?
+\ESC[%dX	ECH (Erase CHaracters)	ec		ech		?		ST	S-	ST	N -> protoansi
 \ESC[%dZ	CBT <tab back>		bt		cbt		?	?	ST	--	ST	N -> protoansi
 \ESC[%d@	ICH (Insert Character)	ic		ich		01N	-	ST	ST 	ST	protoansi
 
 \ESC[%db	REP (REPeat last graphic char)					-	S?	--	S?	N	exercised by 'alsamixer'
+\ESC[%dd	VPA (Vertical Position Absolute)	vpa		N	-	ST	--	ST	N -> protoansi
+															exercised by 'alsamixer'
 \ESC[%d;%df	HVP (Horiz Vert Pos)	-				?	?	S-	S-	S-	N	same as CUP
 
 \ESC[3g		TBC (TaB Clear)		ct		tbc		03	- 	ST	ST 	ST	N
@@ -216,14 +218,25 @@ sequence	mnemonic		termcap op	terminfo	numbers	margin	ansi	dtterm	xterm	Term
 \ESC[?1049l	~DECRC			te		rmcup		-	-	??	--	ST	N -> xterm?
 
 
-\ESC[?25r	?			ve/vs						--	S-	S-	protoanisx	DEC private restore
-\ESC[?25s	?			ve/vs						--	S-	S-	protoanisx	DEC private save
+\ESC[?%dr	DEC private restore	ve/vs				same as h/l	--	S-	S-	protoanisx
+\ESC[?%ds	DEC private save	ve/vs				same as h/l	--	S-	S-	protoanisx
 
 ----------------------------------------------------------------------------------------------------------------------------------------
 sequence	mnemonic		termcap op	terminfo	numbers	margin	ansi	dtterm	xterm	Term
 ----------------------------------------------------------------------------------------------------------------------------------------
 
 \ESC[!p		DECSTR			is		is2		?	?	--	S-	ST	protoanisx	op_soft_reset()
+
+----------------------------------------------------------------------------------------------------------------------------------------
+sequence	mnemonic		termcap op	terminfo	numbers	margin	ansi	dtterm	xterm	Term
+----------------------------------------------------------------------------------------------------------------------------------------
+
+\ESC[>%dT	reset title feature	-		-		-	?	--	--	S-	N -> xterm
+\ESC[>%dc	secondary DA 		-		-		-	?	--	--	S-	xterm		request terminal id
+\ESC[>%dm	alter key sequences	-		-		-	?	--	--	S-	N -> xterm
+\ESC[>%dn	disable key sequences	-		-		-	?	--	--	S-	N -> xterm
+\ESC[>%dp	cursor hiding		-		-		-	?	--	--	S-	N -> xterm
+\ESC[>%dt	set/reset title modes	-		-		-	?	--	--	S-	N -> xterm
 
 ----------------------------------------------------------------------------------------------------------------------------------------
 sequence	mnemonic		termcap op	terminfo	numbers	margin	ansi	dtterm	xterm	Term

@@ -89,6 +89,7 @@ class InterpProtoANSIX extends InterpProtoANSI {
 	    st_esc_lb.setAction('?', st_esc_lb_q, act_reset_number);
 	    for (char c = '0'; c <= '9'; c++)
 		st_esc_lb_q.setAction(c, st_esc_lb_q, act_remember_digit);
+	    st_esc_lb_q.setAction(';', st_esc_lb_q, act_push_number);
 	    st_esc_lb_q.setAction('h', st_base, act_DEC_private);
 	    st_esc_lb_q.setAction('l', st_base, act_DEC_private);
 	    st_esc_lb_q.setAction('r', st_base, act_DEC_private);
@@ -214,11 +215,14 @@ class InterpProtoANSIX extends InterpProtoANSI {
                     case 5:
                         ai.ops.op_reverse(true);
                         break;
+                    case 12:
+                        // blinking cursor
+                        break;
                     case 25:
                         ai.ops.op_cursor_visible(true);
                         break;
                     default:
-                        return "act_DEC_private: unrecognized cmd " + c;	// NOI18N
+                        return "act_DEC_private: unrecognized code " + n;	// NOI18N
                 }
                 return null;
             }
@@ -231,37 +235,42 @@ class InterpProtoANSIX extends InterpProtoANSI {
                     case 5:
                         ai.ops.op_reverse(false);
                         break;
+                    case 12:
+                        // blinking cursor
+                        break;
                     case 25:
                         ai.ops.op_cursor_visible(false);
                         break;
                     default:
-                        return "act_DEC_private: unrecognized cmd " + c;	// NOI18N
+                        return "act_DEC_private: unrecognized code " + n;	// NOI18N
                 }
                 return null;
             }
             
             private static String decPrivateSave(AbstractInterp ai, char c, int n) {
-			return "act_DEC_private: unrecognized cmd " + c;	// NOI18N
-		} 
+                return "act_DEC_private: unrecognized code " + n;	// NOI18N
+            } 
             
             
             private static String decPrivateRestore(AbstractInterp ai, char c, int n) {
-                
-                return "act_DEC_private: unrecognized cmd " + c;	// NOI18N
+                return "act_DEC_private: unrecognized code " + n;	// NOI18N
             }
             
             @Override
 	    public String action(AbstractInterp ai, char c) {
 		if (ai.noNumber())
 		    return "act_DEC_private: no number";	// NOI18N
-		int n = ai.numberAt(0);
-		switch(c) {
-		    case 'h': return decPrivateSet(ai, c, n);
-		    case 'l': return decPrivateReset(ai, c, n);
-		    case 'r': return decPrivateRestore(ai, c, n);
-		    case 's': return decPrivateSave(ai, c, n);
-		    default:  return "act_DEC_private: unrecognized cmd " + c;	// NOI18N
-		} 
+                for (int nx = 0; nx < ai.nNumbers(); nx++) {
+                    int n = ai.numberAt(nx);
+                    switch(c) {
+                        case 'h': return decPrivateSet(ai, c, n);
+                        case 'l': return decPrivateReset(ai, c, n);
+                        case 'r': return decPrivateRestore(ai, c, n);
+                        case 's': return decPrivateSave(ai, c, n);
+                        default:  return "act_DEC_private: unrecognized cmd " + c;	// NOI18N
+                    } 
+                }
+                return null;
 	    }
 	}
 
@@ -311,8 +320,22 @@ class InterpProtoANSIX extends InterpProtoANSI {
     }
 
     private static boolean numLock() {
+        // getLockingKeyState() seems somewhat unreliable.
+        // Doesn't work:
+        //      Linux w/ Java 6
+        // Works:
+        //          Linux w/ Java 7
+        // All other platforms unknown.
+        //
+        // We return false in cases where it doesn't work because NumLock is 
+        // off by default.
+
         final Toolkit toolkit = Toolkit.getDefaultToolkit();
-        return toolkit.getLockingKeyState(KeyEvent.VK_NUM_LOCK);
+        try {
+            return toolkit.getLockingKeyState(KeyEvent.VK_NUM_LOCK);
+        } catch (UnsupportedOperationException x) {
+            return false;
+        }
     }
 
     /**
