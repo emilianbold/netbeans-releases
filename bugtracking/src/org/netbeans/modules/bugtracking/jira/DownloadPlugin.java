@@ -93,6 +93,10 @@ class DownloadPlugin {
                         notifyError(NbBundle.getMessage(DownloadPlugin.class, "MSG_AlreadyInstalled"),  // NOI18N
                                     NbBundle.getMessage(DownloadPlugin.class, "LBL_Error"));            // NOI18N
                         return;
+                    } else if(updateElement[0] == null) {
+                        notifyError(NbBundle.getMessage(DownloadPlugin.class, "MSG_JiraNotFound"),  // NOI18N
+                                    NbBundle.getMessage(DownloadPlugin.class, "LBL_Error"));            // NOI18N
+                        return;
                     }
                 } finally {
                     ph.finish();
