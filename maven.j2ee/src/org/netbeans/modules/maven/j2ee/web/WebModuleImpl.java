@@ -155,47 +155,35 @@ public class WebModuleImpl extends BaseEEModuleImpl implements WebModuleImplemen
 
     @Override
     public Profile getJ2eeProfile() {
-        Profile propProfile = getPropertyJ2eeProfile();
-        Profile descriptorProfile = getDescriptorJ2eeProfile();
-        if (descriptorProfile != null) {
-            if (descriptorProfile.equals(Profile.JAVA_EE_6_WEB) && propProfile != null && propProfile.equals(Profile.JAVA_EE_6_FULL)) {
-                //override the default in the descriptor value..
-                return propProfile;
-            }
-            return descriptorProfile;
-        } else {
-            if (propProfile != null) {
-                return propProfile;
-            }
-            //has DD but we didn't figure the version??
-            return Profile.JAVA_EE_5;
+        Profile profile = getProfileFromProject();
+        if (profile != null) {
+            return profile;
         }
+
+        Profile descriptorProfile = getProfileFromDescriptor();
+        if (descriptorProfile != null) {
+            return descriptorProfile;
+        }
+
+        return Profile.JAVA_EE_5;
     }
 
-    public Profile getPropertyJ2eeProfile() {
-        //try to apply the hint if it exists.
+    private Profile getProfileFromProject() {
         AuxiliaryProperties prop = project.getLookup().lookup(AuxiliaryProperties.class);
-        if (prop != null) {
-            // you may wonder how this can be null.. the story goes like this:
-            // if called from the J2eeLookupProvider constructor, thus from
-            // project lookup construction loop, the reentrant call to the lookup
-            // doesn't include the AuxProperties instances yet..
-            // too bad.. Not sure how may people use this feature/workaround anyway..
-            String version = prop.get(MavenJavaEEConstants.HINT_J2EE_VERSION, true);
-            if (version != null) {
-                return Profile.fromPropertiesString(version);
-            }
+        String version = prop.get(MavenJavaEEConstants.HINT_J2EE_VERSION, true);
+        if (version != null) {
+            return Profile.fromPropertiesString(version);
         }
         return null;
     }
 
-    public Profile getDescriptorJ2eeProfile() {
+    private Profile getProfileFromDescriptor() {
         DDProvider prov = DDProvider.getDefault();
         FileObject dd = getDeploymentDescriptor();
         if (dd != null) {
             try {
                 WebApp wa = prov.getDDRoot(dd);
-                String waVersion = wa.getVersion() ;
+                String waVersion = wa.getVersion();
 
                 if (WebApp.VERSION_2_4.equals(waVersion)) {
                     return Profile.J2EE_14;
