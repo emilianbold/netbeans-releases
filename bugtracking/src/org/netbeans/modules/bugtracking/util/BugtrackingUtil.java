@@ -418,7 +418,9 @@ public class BugtrackingUtil {
         DelegatingConnector[] connectors = BugtrackingManager.getInstance().getConnectors();
         for (DelegatingConnector c : connectors) {
             // XXX hack
-            if(c.getDelegate().getClass().getName().startsWith("org.netbeans.modules.jira")) {    // NOI18N
+            if(c.getDelegate() != null && 
+               c.getDelegate().getClass().getName().startsWith("org.netbeans.modules.jira")) // NOI18N
+            {    
                 return true;
             }
         }
