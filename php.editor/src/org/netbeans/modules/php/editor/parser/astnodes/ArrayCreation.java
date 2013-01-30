@@ -83,4 +83,14 @@ public class ArrayCreation extends Expression {
     public void accept(Visitor visitor) {
         visitor.visit(this);
     }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        for (ArrayElement arrayElement : getElements()) {
+            sb.append(arrayElement).append(","); //NOI18N
+        }
+        return "array(" + sb + ")"; //NOI18N
+    }
+
 }

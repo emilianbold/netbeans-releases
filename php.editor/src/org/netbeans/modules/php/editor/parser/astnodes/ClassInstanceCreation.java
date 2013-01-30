@@ -90,4 +90,14 @@ public class ClassInstanceCreation extends Expression {
     public void accept(Visitor visitor) {
         visitor.visit(this);
     }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        for (Expression expression : ctorParams()) {
+            sb.append(expression).append(","); //NOI18N
+        }
+        return "new " + getClassName() + "(" + sb + ")"; //NOI18N
+    }
+
 }

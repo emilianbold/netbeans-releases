@@ -39,7 +39,6 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.php.editor.parser.astnodes;
 
 /**
@@ -50,12 +49,11 @@ package org.netbeans.modules.php.editor.parser.astnodes;
 public class ReflectionVariable extends Variable {
 
     public ReflectionVariable(int start, int end, Expression variable) {
-		super(start, end, variable);
-	}
+        super(start, end, variable);
+    }
 
     @Override
     public void accept(Visitor visitor) {
         visitor.visit(this);
     }
-
 }

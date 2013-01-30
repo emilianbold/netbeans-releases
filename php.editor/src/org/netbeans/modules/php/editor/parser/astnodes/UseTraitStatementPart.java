@@ -65,4 +65,9 @@ public class UseTraitStatementPart extends ASTNode {
         visitor.visit(this);
     }
 
+    @Override
+    public String toString() {
+        return "" + getName(); //NOI18N
+    }
+
 }

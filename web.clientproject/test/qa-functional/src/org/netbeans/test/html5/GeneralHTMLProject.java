@@ -78,7 +78,7 @@ public class GeneralHTMLProject extends JellyTestCase {
     public static final String SAMPLES = "Samples";
     public static final String SAMPLES_CATEGORY = "HTML5";
     public static String current_project = "";
-    private static final Logger LOGGER = Logger.getLogger(GeneralHTMLProject.class.getName());
+    public static final Logger LOGGER = Logger.getLogger(GeneralHTMLProject.class.getName());
 
     public GeneralHTMLProject(String arg0) {
         super(arg0);

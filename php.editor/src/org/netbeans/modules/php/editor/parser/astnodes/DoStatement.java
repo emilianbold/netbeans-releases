@@ -83,4 +83,10 @@ public class DoStatement extends Statement {
     public void accept(Visitor visitor) {
         visitor.visit(this);
     }
+
+    @Override
+    public String toString() {
+        return "do " + getBody() + " while (" + getCondition() + ")"; //NOI18N
+    }
+
 }

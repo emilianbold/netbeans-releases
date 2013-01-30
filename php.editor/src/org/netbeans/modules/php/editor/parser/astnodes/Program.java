@@ -91,4 +91,18 @@ public class Program extends ASTNode {
     public void accept(Visitor visitor) {
         visitor.visit(this);
     }
+
+    @Override
+    public String toString() {
+        StringBuilder sbComments = new StringBuilder();
+        for (Comment comment : getComments()) {
+            sbComments.append(comment).append(" "); //NOI18N
+        }
+        StringBuilder sbStatements = new StringBuilder();
+        for (Statement statement : getStatements()) {
+            sbStatements.append(statement).append(" "); //NOI18N
+        }
+        return sbComments.toString() + " *** " + sbStatements.toString(); //NOI18N
+    }
+
 }
