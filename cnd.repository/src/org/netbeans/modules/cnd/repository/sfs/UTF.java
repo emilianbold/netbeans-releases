@@ -99,10 +99,9 @@ public class UTF {
         if (utflen > 65535) {
             throw new UTFDataFormatException("encoded string too long: " + utflen + " bytes"); // NOI18N
         }
-        byte[] bytearr = null;
-        if ((out instanceof SharedStringBuffer) && ((SharedStringBuffer)out).getSharedArrayLehgth() >= utflen+2) {
-            SharedStringBuffer dis = (SharedStringBuffer)out;
-            bytearr = dis.getSharedByteArray();
+        byte[] bytearr;
+        if (out instanceof SharedStringBuffer) {
+            bytearr = ((SharedStringBuffer)out).getSharedByteArray(utflen+2);
         } else {
             bytearr = new byte[utflen+2];
         }
@@ -162,12 +161,12 @@ public class UTF {
      */
     public static CharSequence readCharSequenceUTF(DataInput in) throws IOException {
         int utflen = in.readUnsignedShort();
-        byte[] bytearr = null;
-        char[] chararr = null;
-        if ((in instanceof SharedStringBuffer) && ((SharedStringBuffer)in).getSharedArrayLehgth() >= utflen) {
+        byte[] bytearr;
+        char[] chararr;
+        if (in instanceof SharedStringBuffer) {
             SharedStringBuffer dis = (SharedStringBuffer)in;
-            chararr = dis.getSharedCharArray();
-            bytearr = dis.getSharedByteArray();
+            chararr = dis.getSharedCharArray(utflen);
+            bytearr = dis.getSharedByteArray(utflen);
         } else {
             bytearr = new byte[utflen];
             chararr = new char[utflen];
