@@ -48,6 +48,7 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.CharSequences;
 
 /**
  *
@@ -69,6 +70,7 @@ public class NamingFactoryTest extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
         clearWorkDir();
+        CharSequences.create("");
     }
     
     public void registerSecurityManager() {
