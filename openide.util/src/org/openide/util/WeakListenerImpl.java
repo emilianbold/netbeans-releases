@@ -575,7 +575,7 @@ abstract class WeakListenerImpl implements java.util.EventListener {
                 }
 
                 if (remove == null) {
-                    LOG.log(Level.WARNING, "Can''t remove {0} using method {1} from {2}", new Object[] {ref.listenerClass.getName(), methodName, src});
+                    LOG.log(Level.WARNING, "Can''t remove {0} using method {1}.{2} from {3}", new Object[] {ref.listenerClass.getName(), methodClass.getName(), methodName, src});
                     return;
                 } else {
                     synchronized (LOCK) {
