@@ -2680,7 +2680,7 @@ skip_balanced_Curl
             :
             LCURLY                                                              {if(state.backtracking == 0){action.skip_balanced_curlies(input.LT(0));}}
             (options {greedy=false;}:
-                skip_balanced_Curl | .                                          {if(state.backtracking == 0){action.skip_balanced_curlies(input.LT(0));}}
+                skip_balanced_Curl | ~(RCURLY | LCURLY)                                          {if(state.backtracking == 0){action.skip_balanced_curlies(input.LT(0));}}
             )*
             RCURLY                                                              {if(state.backtracking == 0){action.skip_balanced_curlies(input.LT(0));}}
         ;
