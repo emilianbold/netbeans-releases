@@ -42,12 +42,19 @@
 
 package org.netbeans.modules.php.spi.testing;
 
+import org.netbeans.modules.php.spi.testing.run.TestRunInfo;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.util.List;
+import java.util.Set;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
+import org.netbeans.modules.php.spi.testing.run.TestRunException;
+import org.netbeans.modules.php.spi.testing.run.TestSession;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Parameters;
 
 /**
@@ -112,6 +119,28 @@ public abstract class PhpTestingProvider {
     public boolean isInPhpModule(@NonNull PhpModule phpModule) {
         return true;
     }
+
+    /**
+     * Checks whether the given file is a test file.
+     * @param phpModule the PHP module; never {@code null}
+     * @param fileObj file to be checked
+     * @return {@code true} if the file is a test file
+     */
+    public abstract boolean isTestFile(@NonNull PhpModule phpModule, FileObject fileObj);
+
+    public abstract TestSession runTests(@NonNull PhpModule phpModule, TestRunInfo runInfo) throws TestRunException;
+
+    public abstract Set<Locations.Offset> findSources(@NonNull PhpModule phpModule, FileObject testFile);
+
+    public abstract Set<Locations.Offset> findTests(@NonNull PhpModule phpModule, FileObject testedFile);
+
+    // runs in background
+    public abstract CreateTestsResult createTests(@NonNull PhpModule phpModule, List<FileObject> files);
+
+    public abstract boolean isCodeCoverageSupported(@NonNull PhpModule phpModule);
+
+    @CheckForNull
+    public abstract Locations.Line parseFileFromOutput(String line);
 
     //~ Inner classes
 

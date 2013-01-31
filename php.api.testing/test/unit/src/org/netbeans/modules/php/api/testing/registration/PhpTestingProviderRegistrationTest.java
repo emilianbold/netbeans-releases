@@ -44,9 +44,18 @@ package org.netbeans.modules.php.api.testing.registration;
 
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.testing.PhpTesting;
+import org.netbeans.modules.php.spi.testing.CreateTestsResult;
+import org.netbeans.modules.php.spi.testing.Locations;
 import org.netbeans.modules.php.spi.testing.PhpTestingProvider;
+import org.netbeans.modules.php.spi.testing.run.TestRunException;
+import org.netbeans.modules.php.spi.testing.run.TestRunInfo;
+import org.netbeans.modules.php.spi.testing.run.TestSession;
+import org.openide.filesystems.FileObject;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.test.MockLookup;
 
@@ -100,6 +109,41 @@ public class PhpTestingProviderRegistrationTest extends NbTestCase {
 
         MyTests(String name) {
             super(name, "display name");
+        }
+
+        @Override
+        public boolean isTestFile(PhpModule phpModule, FileObject fileObj) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public TestSession runTests(PhpModule phpModule, TestRunInfo runInfo) throws TestRunException {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public Set<Locations.Offset> findSources(PhpModule phpModule, FileObject testFile) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public Set<Locations.Offset> findTests(PhpModule phpModule, FileObject testedFile) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public CreateTestsResult createTests(PhpModule phpModule, List<FileObject> files) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public boolean isCodeCoverageSupported(PhpModule phpModule) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public Locations.Line parseFileFromOutput(String line) {
+            throw new UnsupportedOperationException("Not supported yet.");
         }
 
     }
