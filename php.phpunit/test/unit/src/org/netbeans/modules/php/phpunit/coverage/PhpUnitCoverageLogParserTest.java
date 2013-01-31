@@ -40,19 +40,21 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.project.ui.codecoverage;
+package org.netbeans.modules.php.phpunit.coverage;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.Reader;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.php.project.ui.codecoverage.CoverageVO;
 import org.netbeans.modules.php.project.ui.codecoverage.CoverageVO.ClassMetricsVO;
 import org.netbeans.modules.php.project.ui.codecoverage.CoverageVO.ClassVO;
 import org.netbeans.modules.php.project.ui.codecoverage.CoverageVO.CoverageMetricsVO;
 import org.netbeans.modules.php.project.ui.codecoverage.CoverageVO.FileMetricsVO;
 import org.netbeans.modules.php.project.ui.codecoverage.CoverageVO.FileVO;
 import org.netbeans.modules.php.project.ui.codecoverage.CoverageVO.LineVO;
+import org.netbeans.modules.php.project.ui.codecoverage.PhpUnitCoverageLogParser;
 
 /**
  * @author Tomas Mysik

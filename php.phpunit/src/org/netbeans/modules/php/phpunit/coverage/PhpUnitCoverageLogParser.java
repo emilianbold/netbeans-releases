@@ -40,7 +40,7 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.project.ui.codecoverage;
+package org.netbeans.modules.php.phpunit.coverage;
 
 import java.io.File;
 import java.io.IOException;
@@ -48,9 +48,9 @@ import java.io.Reader;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.php.api.util.FileUtils;
-import org.netbeans.modules.php.project.ui.codecoverage.CoverageVO.ClassVO;
-import org.netbeans.modules.php.project.ui.codecoverage.CoverageVO.FileVO;
-import org.netbeans.modules.php.project.ui.codecoverage.CoverageVO.LineVO;
+import org.netbeans.modules.php.phpunit.coverage.CoverageVO.ClassVO;
+import org.netbeans.modules.php.phpunit.coverage.CoverageVO.FileVO;
+import org.netbeans.modules.php.phpunit.coverage.CoverageVO.LineVO;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.xml.sax.Attributes;

@@ -40,16 +40,18 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.project.ui.codecoverage;
+package org.netbeans.modules.php.phpunit.coverage;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 
 /**
  * Value objects for code coverage session.
  * @author Tomas Mysik
  */
 public final class CoverageVO {
+
     private final List<FileVO> files = new ArrayList<FileVO>();
     private long generated = -1;
     private String phpUnitVersion;
