@@ -49,6 +49,7 @@ import org.netbeans.api.extexecution.input.LineProcessors;
 import org.netbeans.api.extexecution.print.LineConvertor;
 import org.netbeans.api.extexecution.print.LineConvertors;
 import org.netbeans.modules.php.phpunit.commands.PhpUnit;
+import org.netbeans.modules.php.spi.testing.coverage.Coverage;
 import org.netbeans.modules.php.spi.testing.run.OutputLineHandler;
 import org.netbeans.modules.php.spi.testing.run.TestSession;
 import org.netbeans.modules.php.spi.testing.run.TestSuite;
@@ -62,6 +63,7 @@ public final class TestSessionImpl implements TestSession {
 
     private long time = -1;
     private int tests = -1;
+    private Coverage coverage;
 
 
     public TestSessionImpl(@NullAllowed String customSuitePath) {
@@ -119,6 +121,15 @@ public final class TestSessionImpl implements TestSession {
     @Override
     public OutputLineHandler getOutputLineHandler() {
         return new PhpOutputLineHandler();
+    }
+
+    @Override
+    public Coverage getCoverage() {
+        return coverage;
+    }
+
+    public void setCoverage(Coverage coverage) {
+        this.coverage = coverage;
     }
 
     //~ Inner classes

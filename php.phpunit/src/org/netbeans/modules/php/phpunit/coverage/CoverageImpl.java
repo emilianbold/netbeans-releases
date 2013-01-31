@@ -44,18 +44,19 @@ package org.netbeans.modules.php.phpunit.coverage;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
+import org.netbeans.modules.php.spi.testing.coverage.Coverage;
+import org.netbeans.modules.php.spi.testing.coverage.FileMetrics;
 
 /**
- * Value objects for code coverage session.
- * @author Tomas Mysik
+ * Coverage implementation.
  */
-public final class CoverageVO {
+public final class CoverageImpl implements Coverage {
 
-    private final List<FileVO> files = new ArrayList<FileVO>();
+    private final List<File> files = new ArrayList<File>();
     private long generated = -1;
     private String phpUnitVersion;
-    private CoverageMetricsVO metrics;
+    private CoverageMetricsImpl metrics;
+
 
     public long getGenerated() {
         return generated;
@@ -75,75 +76,86 @@ public final class CoverageVO {
         this.phpUnitVersion = phpUnitVersion;
     }
 
-    public CoverageMetricsVO getMetrics() {
+    CoverageMetricsImpl getMetrics() {
         return metrics;
     }
 
-    public void setMetrics(CoverageMetricsVO metrics) {
+    void setMetrics(CoverageMetricsImpl metrics) {
         assert metrics != null;
         assert this.metrics == null;
         this.metrics = metrics;
     }
 
-    public List<FileVO> getFiles() {
+    @Override
+    public List<File> getFiles() {
         return files;
     }
 
-    public void addFile(FileVO file) {
+    public void addFile(File file) {
         assert file != null;
         files.add(file);
     }
 
-    public static final class FileVO {
-        private final String path;
-        private final List<ClassVO> classes = new ArrayList<ClassVO>();
-        private final List<LineVO> lines = new ArrayList<LineVO>();
-        private FileMetricsVO metrics;
+    //~ Inner classes
 
-        public FileVO(String path) {
+    public static final class FileImpl implements Coverage.File {
+
+        private final String path;
+        private final List<ClassImpl> classes = new ArrayList<ClassImpl>();
+        private final List<Line> lines = new ArrayList<Line>();
+        private FileMetrics metrics;
+
+
+        public FileImpl(String path) {
             assert path != null;
             this.path = path;
         }
 
+        @Override
         public String getPath() {
             return path;
         }
 
-        public FileMetricsVO getMetrics() {
+        @Override
+        public FileMetrics getMetrics() {
             return metrics;
         }
 
-        public void setMetrics(FileMetricsVO metrics) {
+        void setMetrics(FileMetrics metrics) {
             assert metrics != null;
             assert this.metrics == null;
             this.metrics = metrics;
         }
 
-        public List<ClassVO> getClasses() {
+        public List<ClassImpl> getClasses() {
             return classes;
         }
 
-        public void addClass(ClassVO clazz) {
+        public void addClass(ClassImpl clazz) {
             assert clazz != null;
             classes.add(clazz);
         }
 
-        public List<LineVO> getLines() {
+        @Override
+        public List<Line> getLines() {
             return lines;
         }
 
-        public void addLine(LineVO line) {
+        public void addLine(Line line) {
             assert line != null;
             lines.add(line);
         }
+
     }
 
-    public static final class ClassVO {
+    public static final class ClassImpl {
+
         private final String name;
         private final String namespace;
-        private ClassMetricsVO metrics;
+        private ClassMetricsImpl metrics;
 
-        public ClassVO(String name, String namespace) {
+
+        public ClassImpl(String name, String namespace) {
             assert name != null;
             assert namespace != null;
 
@@ -159,11 +171,11 @@ public final class CoverageVO {
             return namespace;
         }
 
-        public ClassMetricsVO getMetrics() {
+        ClassMetricsImpl getMetrics() {
             return metrics;
         }
 
-        public void setMetrics(ClassMetricsVO metrics) {
+        void setMetrics(ClassMetricsImpl metrics) {
             assert metrics != null;
             assert this.metrics == null;
             this.metrics = metrics;
@@ -176,80 +188,28 @@ public final class CoverageVO {
         }
     }
 
-    public static final class LineVO {
-        public final int num;
-        public final String type; // method / stmt / ???
-        public final int count;
+    public static final class LineImpl implements Line {
 
-        public LineVO(int num, String type, int count) {
+        private final int num;
+        private final String type; // method / stmt / ???
+        private final int count;
+
+
+        public LineImpl(int num, String type, int count) {
             this.num = num;
             this.type = type;
             this.count = count;
         }
-    }
 
-    public static class ClassMetricsVO {
-        public final int methods;
-        public final int coveredMethods;
-        public final int statements;
-        public final int coveredStatements;
-        public final int elements;
-        public final int coveredElements;
-
-        public ClassMetricsVO(int methods, int coveredMethods, int statements, int coveredStatements, int elements, int coveredElements) {
-            this.methods = methods;
-            this.coveredMethods = coveredMethods;
-            this.statements = statements;
-            this.coveredStatements = coveredStatements;
-            this.elements = elements;
-            this.coveredElements = coveredElements;
+        @Override
+        public int getNumber() {
+            return num;
         }
 
         @Override
-        public String toString() {
-            return String.format("ClassMetricsVO{methods: %d, coveredMethods: %d, statements: %d, coveredStatements: %d, "
-                    + "elements: %d, coveredElements: %d}",
-                    methods, coveredMethods, statements, coveredStatements, elements, coveredElements);
+        public int getHitCount() {
+            return count;
         }
     }
 
-    public static class FileMetricsVO extends ClassMetricsVO {
-        public final int loc;
-        public final int ncloc;
-        public final int classes;
-
-        public FileMetricsVO(int loc, int ncloc, int classes, int methods, int coveredMethods,
-                int statements, int coveredStatements, int elements, int coveredElements) {
-            super(methods, coveredMethods, statements, coveredStatements, elements, coveredElements);
-
-            this.loc = loc;
-            this.ncloc = ncloc;
-            this.classes = classes;
-        }
-
-        @Override
-        public String toString() {
-            return String.format("FileMetricsVO{loc: %d, ncloc: %d, classes: %d, methods: %d, coveredMethods: %d, "
-                    + "statements: %d, coveredStatements: %d, elements: %d, coveredElements: %d}",
-                    loc, ncloc, classes, methods, coveredMethods, statements, coveredStatements, elements, coveredElements);
-        }
-    }
-
-    public static class CoverageMetricsVO extends FileMetricsVO {
-        public final int files;
-
-        public CoverageMetricsVO(int files, int loc, int ncloc, int classes, int methods, int coveredMethods,
-                int statements, int coveredStatements, int elements, int coveredElements) {
-            super(loc, ncloc, classes, methods, coveredMethods, statements, coveredStatements, elements, coveredElements);
-
-            this.files = files;
-        }
-
-        @Override
-        public String toString() {
-            return String.format("CoverageMetricsVO{files: %d, loc: %d, ncloc: %d, classes: %d, methods: %d, coveredMethods: %d, " // NOI18N
-                    + "statements: %d, coveredStatements: %d, elements: %d, coveredElements: %d}", // NOI18N
-                    files, loc, ncloc, classes, methods, coveredMethods, statements, coveredStatements, elements, coveredElements);
-        }
-    }
 }

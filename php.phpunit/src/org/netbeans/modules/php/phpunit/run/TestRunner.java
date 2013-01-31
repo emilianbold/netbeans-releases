@@ -69,7 +69,7 @@ public final class TestRunner {
         this.phpModule = phpModule;
     }
 
-    public TestSession runTests(TestRunInfo runInfo) throws TestRunException {
+    public TestSessionImpl runTests(TestRunInfo runInfo) throws TestRunException {
         PhpUnit phpUnit = PhpUnit.getForPhpModule(phpModule, true);
         if (phpUnit == null) {
             return null;
@@ -82,7 +82,7 @@ public final class TestRunner {
         return createTestSession(PhpUnit.XML_LOG);
     }
 
-    private TestSession createTestSession(File xmlLog) throws TestRunException {
+    private TestSessionImpl createTestSession(File xmlLog) throws TestRunException {
         Reader reader;
         try {
             // #163633 - php unit always uses utf-8 for its xml logs

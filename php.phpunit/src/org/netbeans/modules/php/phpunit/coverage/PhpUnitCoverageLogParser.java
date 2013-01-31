@@ -48,9 +48,9 @@ import java.io.Reader;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.php.api.util.FileUtils;
-import org.netbeans.modules.php.phpunit.coverage.CoverageVO.ClassVO;
-import org.netbeans.modules.php.phpunit.coverage.CoverageVO.FileVO;
-import org.netbeans.modules.php.phpunit.coverage.CoverageVO.LineVO;
+import org.netbeans.modules.php.phpunit.coverage.CoverageImpl.ClassImpl;
+import org.netbeans.modules.php.phpunit.coverage.CoverageImpl.FileImpl;
+import org.netbeans.modules.php.phpunit.coverage.CoverageImpl.LineImpl;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.xml.sax.Attributes;
@@ -68,19 +68,19 @@ public final class PhpUnitCoverageLogParser extends DefaultHandler {
     private static final Logger LOGGER = Logger.getLogger(PhpUnitCoverageLogParser.class.getName());
 
     private final XMLReader xmlReader;
-    private final CoverageVO coverage;
-    private FileVO file; // actual file
-    private ClassVO clazz; // actual class
+    private final CoverageImpl coverage;
+    private FileImpl file; // actual file
+    private ClassImpl clazz; // actual class
     private Content content = null;
 
-    private PhpUnitCoverageLogParser(CoverageVO coverage) throws SAXException {
+    private PhpUnitCoverageLogParser(CoverageImpl coverage) throws SAXException {
         assert coverage != null;
         this.coverage = coverage;
         xmlReader = FileUtils.createXmlReader();
         xmlReader.setContentHandler(this);
     }
 
-    public static void parse(Reader reader, CoverageVO coverage) {
+    public static void parse(Reader reader, CoverageImpl coverage) {
         try {
             PhpUnitCoverageLogParser parser = new PhpUnitCoverageLogParser(coverage);
             parser.xmlReader.parse(new InputSource(reader));
@@ -133,7 +133,7 @@ public final class PhpUnitCoverageLogParser extends DefaultHandler {
         assert content.equals(Content.COVERAGE);
         assert file == null;
         content = Content.FILE;
-        file = new FileVO(getPath(attributes));
+        file = new FileImpl(getPath(attributes));
         coverage.addFile(file);
     }
 
@@ -142,7 +142,7 @@ public final class PhpUnitCoverageLogParser extends DefaultHandler {
         assert file != null;
         assert clazz == null;
         content = Content.CLASS;
-        clazz = new ClassVO(getName(attributes), getNamespace(attributes));
+        clazz = new ClassImpl(getName(attributes), getNamespace(attributes));
         file.addClass(clazz);
     }
 
@@ -152,7 +152,7 @@ public final class PhpUnitCoverageLogParser extends DefaultHandler {
             case COVERAGE:
                 assert file == null;
                 assert clazz == null;
-                coverage.setMetrics(new CoverageVO.CoverageMetricsVO(
+                coverage.setMetrics(new CoverageMetricsImpl(
                         getFiles(attributes),
                         getLoc(attributes),
                         getNcloc(attributes),
@@ -167,7 +167,7 @@ public final class PhpUnitCoverageLogParser extends DefaultHandler {
             case FILE:
                 assert file != null;
                 assert clazz == null;
-                file.setMetrics(new CoverageVO.FileMetricsVO(
+                file.setMetrics(new FileMetricsImpl(
                         getLoc(attributes),
                         getNcloc(attributes),
                         getClasses(attributes),
@@ -181,7 +181,7 @@ public final class PhpUnitCoverageLogParser extends DefaultHandler {
             case CLASS:
                 assert file != null;
                 assert clazz != null;
-                clazz.setMetrics(new CoverageVO.ClassMetricsVO(
+                clazz.setMetrics(new ClassMetricsImpl(
                         getMethods(attributes),
                         getCoveredMethods(attributes),
                         getStatements(attributes),
@@ -198,7 +198,7 @@ public final class PhpUnitCoverageLogParser extends DefaultHandler {
     private void processLine(Attributes attributes) {
         assert file != null;
         assert clazz == null;
-        file.addLine(new LineVO(
+        file.addLine(new LineImpl(
                 getNum(attributes),
                 getType(attributes),
                 getCount(attributes)));
