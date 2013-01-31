@@ -56,9 +56,7 @@ import com.sun.tools.javac.comp.Env;
 import com.sun.tools.javac.comp.Flow;
 import com.sun.tools.javac.comp.MemberEnter;
 import com.sun.tools.javac.parser.JavacParser;
-import com.sun.tools.javac.parser.ParserFactory;
 import com.sun.tools.javac.parser.LazyDocCommentTable;
-import com.sun.tools.javac.parser.Tokens.Comment;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCBlock;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
@@ -101,7 +99,7 @@ public class PartialReparser {
 
     public JCBlock reparseMethodBody(CompilationUnitTree topLevel, MethodTree methodToReparse, String newBodyText, int annonIndex,
             final Map<? super JCTree,? super LazyDocCommentTable.Entry> docComments) {
-        ParserFactory parserFactory = ParserFactory.instance(context);
+        NBParserFactory parserFactory = (NBParserFactory) NBParserFactory.instance(context);
         CharBuffer buf = CharBuffer.wrap((newBodyText+"\u0000").toCharArray(), 0, newBodyText.length());
         JavacParser parser = (JavacParser) parserFactory.newParser(buf, ((JCBlock)methodToReparse.getBody()).pos, ((JCCompilationUnit)topLevel).endPositions);
         final JCStatement statement = parser.parseStatement();
@@ -157,6 +155,4 @@ public class PartialReparser {
                 (JCClassDecl)ownerClass);
         return methodToReparse.getBody();
     }
-
-
 }

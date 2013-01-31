@@ -94,13 +94,40 @@ public class NBParserFactory extends ParserFactory {
         return new NBJavacParser(this, lexer, keepDocComments, keepLineMap, keepEndPos, cancelService);
     }
 
-    @Override
     public JavacParser newParser(CharSequence input, int startPos, final EndPosTable endPos) {
-        Lexer lexer = scannerFactory.newScanner(input, true);
-        ((Scanner)lexer).seek(startPos);
+        Scanner lexer = scannerFactory.newScanner(input, true);
+        lexer.seek(startPos);
         return new NBJavacParser(this, lexer, true, false, true, cancelService) {
             @Override protected AbstractEndPosTable newEndPosTable(boolean keepEndPositions) {
-                return (AbstractEndPosTable) endPos;
+                return new AbstractEndPosTable() {
+
+                    @Override
+                    protected void storeEnd(JCTree tree, int endpos) {
+                        ((EndPosTableImpl)endPos).storeEnd(tree, endpos);
+                    }
+
+                    @Override
+                    protected <T extends JCTree> T to(T t) {
+                        storeEnd(t, token.endPos);
+                        return t;
+                    }
+
+                    @Override
+                    protected <T extends JCTree> T toP(T t) {
+                        storeEnd(t, S.prevToken().endPos);
+                        return t;
+                    }
+
+                    @Override
+                    public int getEndPos(JCTree tree) {
+                        return endPos.getEndPos(tree);
+                    }
+
+                    @Override
+                    public int replaceTree(JCTree oldtree, JCTree newtree) {
+                        return endPos.replaceTree(oldtree, newtree);
+                    }
+                };
             }
         };
     }
@@ -162,7 +189,8 @@ public class NBParserFactory extends ParserFactory {
         
         public final class EndPosTableImpl extends SimpleEndPosTable {
             @Override public void storeEnd(JCTree tree, int endpos) {
-                super.storeEnd(tree, endpos);
+                if (endpos >= 0)
+                    super.storeEnd(tree, endpos);
             }
         }
     }
