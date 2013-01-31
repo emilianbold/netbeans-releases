@@ -588,7 +588,6 @@ public final class WebProject implements Project {
             cpMod.getClassPathModifier(),
             new WebProjectOperations(this),
             new WebPersistenceProvider(this, evaluator(), cpProvider),
-            new WebPersistenceProviderSupplier(this),
             new WebEMGenStrategyResolver(),
             new WebJPADataSourceSupport(this), 
             Util.createServerStatusProvider(getWebModule()),

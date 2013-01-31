@@ -49,8 +49,8 @@ import java.util.List;
 import java.util.Map;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.common.J2eeProjectCapabilities;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
@@ -60,21 +60,33 @@ import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
 import org.netbeans.modules.j2ee.persistence.spi.provider.PersistenceProviderSupplier;
 import org.netbeans.modules.javaee.specs.support.api.JpaProvider;
 import org.netbeans.modules.javaee.specs.support.api.JpaSupport;
+import org.netbeans.spi.project.ProjectServiceProvider;
 
 /**
  * Common implementation of {@link PersistenceProviderSupplier}. Any project type
- * which need to use {@link PersistenceProviderSupplier} should subclass this one
- * and either put the instance to the project lookup or better use
+ * which need to use {@link PersistenceProviderSupplier} should either put the
+ * instance to the project lookup or better subclass this one and use
  * {@link org.netbeans.spi.project.ProjectServiceProvider} for correct registration.
  *
  * @author Martin Janicek
  */
-public abstract class AbstractPersistenceProviderSupplier implements PersistenceProviderSupplier {
+@ProjectServiceProvider(
+    service =
+        PersistenceProviderSupplier.class,
+    projectType = {
+        "org-netbeans-modules-maven/war",
+        "org-netbeans-modules-maven/ejb",
+        "org-netbeans-modules-maven/app-client",
+        "org-netbeans-modules-web-project",
+        "org-netbeans-modules-j2ee-ejbjarproject"
+    }
+)
+public final class PersistenceProviderSupplierImpl implements PersistenceProviderSupplier {
 
     private final Project project;
 
 
-    protected AbstractPersistenceProviderSupplier(Project project) {
+    public PersistenceProviderSupplierImpl(Project project) {
         this.project = project;
     }
 

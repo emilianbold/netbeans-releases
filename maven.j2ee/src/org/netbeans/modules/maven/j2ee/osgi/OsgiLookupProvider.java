@@ -46,12 +46,13 @@ import java.beans.PropertyChangeListener;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.common.project.PersistenceProviderSupplierImpl;
+import org.netbeans.modules.j2ee.persistence.spi.provider.PersistenceProviderSupplier;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.j2ee.CopyOnSave;
 import org.netbeans.modules.maven.j2ee.EMGSResolverImpl;
 import org.netbeans.modules.maven.j2ee.JPAStuffImpl;
 import org.netbeans.modules.maven.j2ee.JsfSupportHandleImpl;
-import org.netbeans.modules.maven.j2ee.MavenPersistenceProviderSupplier;
 import org.netbeans.modules.maven.j2ee.utils.MavenProjectSupport;
 import org.netbeans.modules.maven.j2ee.web.EntRefContainerImpl;
 import org.netbeans.modules.maven.j2ee.web.MavenWebProjectWebRootProvider;
@@ -78,7 +79,7 @@ public class OsgiLookupProvider implements LookupProvider, PropertyChangeListene
     private Project project;
     private InstanceContent ic;
 
-    private MavenPersistenceProviderSupplier mavenPersistenceProviderSupplier;
+    private PersistenceProviderSupplier persistenceProviderSupplier;
     private MavenWebProjectWebRootProvider mavenWebProjectWebRootProvider;
     private WebReplaceTokenProvider webReplaceTokenProvider;
     private EntRefContainerImpl entRefContainerImpl;
@@ -94,7 +95,7 @@ public class OsgiLookupProvider implements LookupProvider, PropertyChangeListene
         project = baseLookup.lookup(Project.class);
         ic = new InstanceContent();
 
-        mavenPersistenceProviderSupplier = new MavenPersistenceProviderSupplier(project);
+        persistenceProviderSupplier = new PersistenceProviderSupplierImpl(project);
         mavenWebProjectWebRootProvider = new MavenWebProjectWebRootProvider(project);
         webReplaceTokenProvider = new WebReplaceTokenProvider(project);
         entRefContainerImpl = new EntRefContainerImpl(project);
@@ -150,7 +151,7 @@ public class OsgiLookupProvider implements LookupProvider, PropertyChangeListene
     }
 
     private synchronized void removeLookupInstances() {
-        ic.remove(mavenPersistenceProviderSupplier);
+        ic.remove(persistenceProviderSupplier);
         ic.remove(mavenWebProjectWebRootProvider);
         ic.remove(webReplaceTokenProvider);
         ic.remove(entRefContainerImpl);
@@ -178,7 +179,7 @@ public class OsgiLookupProvider implements LookupProvider, PropertyChangeListene
             ic.add(jsfSupportHandle);
             ic.add(jPAStuffImpl);
             ic.add(eMGSResolverImpl);
-            ic.add(mavenPersistenceProviderSupplier);
+            ic.add(persistenceProviderSupplier);
             ic.add(mavenWebProjectWebRootProvider);
         }
     }
