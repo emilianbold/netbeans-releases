@@ -91,8 +91,6 @@ public final class Startup {
      */
     private static final boolean NO_CUSTOMIZATIONS = Boolean.getBoolean("netbeans.plaf.disable.ui.customizations"); //NOI18N
 
-    private static final boolean USE_DARK_THEME = Boolean.getBoolean("netbeans.plaf.dark.theme"); //NOI18N
-
     /** Constant for Nimbus L&F name */
     private static final String NIMBUS="Nimbus";
 
@@ -123,7 +121,7 @@ public final class Startup {
         if (lf instanceof MetalLookAndFeel) {
             //Metal theme must be assigned before using the look and feel
             forceLaf = installTheme(lf);
-        } else if(lf instanceof NimbusLookAndFeel && USE_DARK_THEME) {
+        } else if(lf instanceof NimbusLookAndFeel && isUseDarkTheme()) {
             DarkNimbusTheme.install( lf );
             forceLaf = true;
         }
@@ -233,7 +231,7 @@ public final class Startup {
             themeInstalled = true;
             NbTheme nbTheme = new NbTheme(themeURL, lf);
             MetalLookAndFeel.setCurrentTheme(nbTheme);
-        } else if( USE_DARK_THEME ) {
+        } else if( isUseDarkTheme() ) {
             MetalLookAndFeel.setCurrentTheme( new DarkMetalTheme() );
             themeInstalled = true;
         }
@@ -597,5 +595,8 @@ public final class Startup {
             }
         }
     }
-    
+
+    private static boolean isUseDarkTheme() {
+        return Boolean.getBoolean("netbeans.plaf.dark.theme"); //NOI18N
+    }
 }

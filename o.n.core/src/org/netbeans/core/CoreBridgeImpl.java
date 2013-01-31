@@ -48,13 +48,18 @@ import java.beans.PropertyEditorManager;
 import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 import javax.swing.SwingUtilities;
 import org.netbeans.core.startup.CoreBridge;
 import org.netbeans.core.startup.MainLookup;
 import org.netbeans.core.startup.ManifestSection;
 import org.netbeans.swing.plaf.Startup;
 import org.openide.nodes.NodeOp;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -123,11 +128,13 @@ public final class CoreBridgeImpl extends CoreBridge {
         RequestProcessor.getDefault().post(new Runnable() {
             @Override
             public void run() {
-                if (EventQueue.isDispatchThread()) {
-                    Startup.run(uiClass, uiFontSize, themeURL, NbBundle.getBundle(Startup.class));
-                } else {
-                    EventQueue.invokeLater(this);
-                }
+                final Class uiClassToUse = null == uiClass ? getPreferredUIClass() : uiClass;
+                EventQueue.invokeLater( new Runnable() {
+                    @Override
+                    public void run() {
+                        Startup.run(uiClassToUse, uiFontSize, themeURL, NbBundle.getBundle(Startup.class));
+                    }
+                });
             }
         });
     }
@@ -204,4 +211,24 @@ public final class CoreBridgeImpl extends CoreBridge {
         editorsRegistered = true;
     }
 
+    /**
+     * Checks Preferences for look and feel class name that user selected in Options window.
+     * @return Look and feel class selected in Options window or null.
+     */
+    private static Class getPreferredUIClass() {
+        Preferences prefs = NbPreferences.forModule( CoreBridgeImpl.class );
+        String uiClassName = prefs.get( "laf", null ); //NOI18N
+        if( null == uiClassName )
+            return null;
+        try {
+            Class uiClass = Class.forName( uiClassName );
+            if( prefs.getBoolean( "theme.dark", false ) ) { //NOI18N
+                System.setProperty( "netbeans.plaf.dark.theme", "true" ); //NOI18N
+            }
+            return uiClass;
+        } catch( ClassNotFoundException ex ) {
+            Logger.getLogger( CoreBridgeImpl.class.getName() ).log( Level.INFO, "Cannot use look and feel class: " + uiClassName, ex ); //NOI18N
+        }
+        return null;
+    }
 }
