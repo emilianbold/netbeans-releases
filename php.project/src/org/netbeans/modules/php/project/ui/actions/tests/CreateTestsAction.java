@@ -43,6 +43,8 @@
 package org.netbeans.modules.php.project.ui.actions.tests;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Queue;
@@ -56,6 +58,7 @@ import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.PhpProjectValidator;
+import org.netbeans.modules.php.project.PhpVisibilityQuery;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
 import org.netbeans.modules.php.project.util.PhpProjectUtils;
@@ -189,21 +192,48 @@ public final class CreateTestsAction extends NodeAction {
     void generateTests(final Node[] activatedNodes, final PhpProject phpProject) {
         assert phpProject != null;
 
-        final List<FileObject> files = CommandUtils.getFileObjects(activatedNodes);
+        List<FileObject> files = CommandUtils.getFileObjects(activatedNodes);
         assert !files.isEmpty() : "No files for tests?!";
+        final List<FileObject> sanitizedFiles = new ArrayList<FileObject>(files.size() * 2);
+        sanitizeFiles(sanitizedFiles, files, phpProject, PhpVisibilityQuery.forProject(phpProject));
+        if (sanitizedFiles.isEmpty()) {
+            LOGGER.info("No visible files for creating tests -> exiting.");
+            return;
+        }
 
         final Set<FileObject> succeeded = new HashSet<FileObject>();
         final Set<FileObject> failed = new HashSet<FileObject>();
-        PhpModule phpModule = phpProject.getPhpModule();
-        for (PhpTestingProvider testingProvider : phpProject.getTestingProviders()) {
-            CreateTestsResult result = testingProvider.createTests(phpModule, files);
-            succeeded.addAll(result.getSucceeded());
-            failed.addAll(result.getFailed());
-        }
+        final PhpModule phpModule = phpProject.getPhpModule();
+        FileUtil.runAtomicAction(new Runnable() {
+            @Override
+            public void run() {
+                for (PhpTestingProvider testingProvider : phpProject.getTestingProviders()) {
+                    CreateTestsResult result = testingProvider.createTests(phpModule, sanitizedFiles);
+                    succeeded.addAll(result.getSucceeded());
+                    failed.addAll(result.getFailed());
+                }
+            }
+        });
         showFailures(failed);
         reformat(succeeded);
         open(succeeded);
         refreshTests(ProjectPropertiesSupport.getTestDirectory(phpProject, false));
+    }
+
+    private void sanitizeFiles(List<FileObject> sanitizedFiles, List<FileObject> files, PhpProject phpProject, PhpVisibilityQuery phpVisibilityQuery) {
+        for (FileObject fo : files) {
+            if (fo.isData()
+                    && FileUtils.isPhpFile(fo)
+                    && !CommandUtils.isUnderTests(phpProject, fo, false)
+                    && !CommandUtils.isUnderSelenium(phpProject, fo, false)
+                    && PhpProjectUtils.isVisible(phpVisibilityQuery, fo)) {
+                sanitizedFiles.add(fo);
+            }
+            FileObject[] children = fo.getChildren();
+            if (children.length > 0) {
+                sanitizeFiles(sanitizedFiles, Arrays.asList(children), phpProject, phpVisibilityQuery);
+            }
+        }
     }
 
     private void showFailures(Set<FileObject> files) {
