@@ -562,9 +562,9 @@ import org.openide.util.lookup.ProxyLookup;
         if (icon == null) {
             String resourceId = (String)a.getValue(BaseAction.ICON_RESOURCE_PROPERTY);
             if (resourceId != null) {
-                Image img = ImageUtilities.loadImage(resourceId);
+                ImageIcon img = ImageUtilities.loadImageIcon(resourceId, true);
                 if (img != null) {
-                    a.putValue(Action.SMALL_ICON, new ImageIcon(img));
+                    a.putValue(Action.SMALL_ICON, img);
                 }
             }
         }
