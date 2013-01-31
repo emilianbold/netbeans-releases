@@ -349,7 +349,19 @@ final class Line {
                 attr[cx] = 0;
         }
     }
-    
+
+    public void clearFromTo(Term term, int from, int to) {
+        if (from > length-1)
+            from = length-1;
+        if (to > length-1)
+            to = length-1;
+        for (int cx = from; cx <= to; cx++)
+            charAtPut(cx, ' ');
+        if (attr != null) {
+            for (int cx = from; cx <= to; cx++)
+                attr[cx] = 0;
+        }
+    }
     
     /*
      * Used for selections

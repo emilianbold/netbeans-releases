@@ -1,5 +1,15 @@
 207965 - Terminal incorrectly displays prompt string
 187345 - wrong characters in Terminals
+	Implement
+		\ESC[%dG	CHA
+		\ESC[%dX	ECH
+		\ESC[%dd	VPA
+
+207965 - Terminal incorrectly displays prompt string
+187345 - wrong characters in Terminals
+
+	changeset   : 242706:f2e980336ed7
+
 	- Handle unsupported Toolkit.getLockingKeyState().
 	  See comment in InterpProtoANSIX.numLock().
 	- Accept multiple numbers for \ESC[?

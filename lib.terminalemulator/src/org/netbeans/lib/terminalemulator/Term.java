@@ -4048,6 +4048,78 @@ public class Term extends JComponent implements Accessible {
         public void op_send_chars(String sequence) {
             Term.this.sendChars(sequence.toCharArray(), 0, sequence.length());
         }
+
+        @Override
+        public void op_cha(int col) {
+            // cursor to column
+            if (debugOps()) {
+                System.out.printf("op_cha(col %d)\n", col); // NOI18N
+            }
+
+            // 0 is allowed
+            if (col == 0) {
+                col = 1;
+            }
+
+            // deal with overflow
+            if (col > buf.visibleCols()) {
+                col = buf.visibleCols();
+            }
+
+            cursor_line().setAboutToWrap(false);
+            st.cursor.col = col - 1;
+            // Maybe SHOULD setAboutToWrap(true) if on last column?
+        }
+
+        @Override
+        public void op_vpa(int row) {
+            // cursor to row
+            if (debugOps()) {
+                System.out.printf("op_vpa(row %d)\n", row); // NOI18N
+            }
+
+            // 0 is allowed
+            if (row == 0) {
+                row = 1;
+            }
+
+            // deal with overflow
+            if (row > st.rows) {
+                row = st.rows;
+            }
+
+            cursor_line().setAboutToWrap(false);
+            st.cursor.row = beginx() + row - 1;
+            // Maybe SHOULD setAboutToWrap(true) if on last column?
+        }
+
+        @Override
+        public void op_ech(int n) {
+            // erase characters
+            if (debugOps()) {
+                System.out.printf("op_ech(%d)\n", n); // NOI18N
+            }
+
+            if (n == 0)
+                n = 1;
+
+            Line l = cursor_line();
+            l.clearFromTo(Term.this, l.cellToBuf(metrics, st.cursor.col),
+                                     l.cellToBuf(metrics, st.cursor.col+n-1));
+
+            switch (sel.intersection(st.cursor.row)) {
+                case Sel.INT_NONE:
+                case Sel.INT_ABOVE:
+                case Sel.INT_BELOW:
+                    // nothing to do
+                    break;
+                case Sel.INT_ON:
+                case Sel.INT_STRADDLES:
+                    sel.cancel(true);	// DtTerm behaviour
+                    break;
+            }
+        }
+
     }
 
     /**

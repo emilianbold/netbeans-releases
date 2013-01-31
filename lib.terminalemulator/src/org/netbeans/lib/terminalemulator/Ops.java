@@ -128,4 +128,8 @@ interface Ops {
     public void logCompletedSequence(String toString);
 
     public void op_send_chars(String sequence);
+
+    public void op_cha(int i);
+    public void op_ech(int i);
+    public void op_vpa(int i);
 }

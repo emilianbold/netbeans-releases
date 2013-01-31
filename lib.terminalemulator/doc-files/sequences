@@ -92,7 +92,7 @@ sequence	mnemonic		termcap op	terminfo	numbers	margin	ansi	dtterm	xterm	Term
 
 \ESC[%dE	CNL (CUrsor Next Line)	-				01N	?	S-	--	S-	N
 \ESC[%dF	CPL (CUrsor Prev Line)	-				01N	?	S-	S-	S-	N
-\ESC[%dG	CHA (Cursor Horiz Abs.)	-		hpa		N		ST	S-	ST	N -> protoansi
+\ESC[%dG	CHA (Cursor Horiz Abs.)	-		hpa		N		ST	S-	ST	protoansi
 
 \ESC[%d;%dH	CUP (CUrsor Position)	cm (ho, kh)	cup		?		ST	ST	ST	protoansi
 
@@ -107,12 +107,12 @@ sequence	mnemonic		termcap op	terminfo	numbers	margin	ansi	dtterm	xterm	Term
 
 \ESC[%dS	SU (Scroll Up)		SF (nw)		indn		01N	Y	ST	S-	ST	N surely this is implemented
 \ESC[%dT	SD (Scroll Down)	SR		rin		01N	Y	ST	S-	ST	N surely this is implemented
-\ESC[%dX	ECH (Erase CHaracters)	ec		ech		?		ST	S-	ST	N -> protoansi
+\ESC[%dX	ECH (Erase CHaracters)	ec		ech		?		ST	S-	ST	protoansi
 \ESC[%dZ	CBT <tab back>		bt		cbt		?	?	ST	--	ST	N -> protoansi
 \ESC[%d@	ICH (Insert Character)	ic		ich		01N	-	ST	ST 	ST	protoansi
 
 \ESC[%db	REP (REPeat last graphic char)					-	S?	--	S?	N	exercised by 'alsamixer'
-\ESC[%dd	VPA (Vertical Position Absolute)	vpa		N	-	ST	--	ST	N -> protoansi
+\ESC[%dd	VPA (Vertical Position Absolute)	vpa		N	-	ST	S-	ST	protoansi
 															exercised by 'alsamixer'
 \ESC[%d;%df	HVP (Horiz Vert Pos)	-				?	?	S-	S-	S-	N	same as CUP
 
