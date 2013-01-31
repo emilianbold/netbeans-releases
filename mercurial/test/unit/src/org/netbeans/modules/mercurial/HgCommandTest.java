@@ -201,7 +201,7 @@ public class HgCommandTest extends AbstractHgTestCase {
         commit(mainFile = createFile(mainFol, "file2"));
         // fetch the changes to the clone
         handler.reset("fetch", repoAsList);
-        HgCommand.doFetch(newRepo, new HgURL(getWorkTreeDir()), NULL_LOGGER);
+        HgCommand.doFetch(newRepo, new HgURL(getWorkTreeDir()), null, true, NULL_LOGGER);
         handler.assertResults(1);
 
         Thread.sleep(2000); // give some time so modification timestamps differ
@@ -216,7 +216,7 @@ public class HgCommandTest extends AbstractHgTestCase {
         handler.reset("fetch", repoAsList);
         refreshProbe = new HgCommandTest.RefreshProbe(fileFO);
         refreshProbe.reset();
-        HgCommand.doFetch(newRepo, new HgURL(getWorkTreeDir()), NULL_LOGGER);
+        HgCommand.doFetch(newRepo, new HgURL(getWorkTreeDir()), null, true, NULL_LOGGER);
         refreshProbe.checkRefresh(true);
         handler.assertResults(1);
 
@@ -230,7 +230,7 @@ public class HgCommandTest extends AbstractHgTestCase {
         revision = HgCommand.doTip(getWorkTreeDir(), NULL_LOGGER).getCSetShortID();
         handler.assertResults(0);
         handler.reset("pull", repoAsList);
-        HgCommand.doPull(newRepo, NULL_LOGGER);
+        HgCommand.doPull(newRepo, null, NULL_LOGGER);
         handler.assertResults(1);
 
         // *************** MERGE *************** //
@@ -261,8 +261,8 @@ public class HgCommandTest extends AbstractHgTestCase {
 
         // *************** PULL *************** //
         // prepare - sync changes
-        HgCommand.doFetch(newRepo, new HgURL(getWorkTreeDir()), NULL_LOGGER);
-        HgCommand.doPush(newRepo, new HgURL(getWorkTreeDir()), NULL_LOGGER, false);
+        HgCommand.doFetch(newRepo, new HgURL(getWorkTreeDir()), null, true, NULL_LOGGER);
+        HgCommand.doPush(newRepo, new HgURL(getWorkTreeDir()), null, NULL_LOGGER, false);
         HgCommand.doUpdateAll(getWorkTreeDir(), false, null);
         Thread.sleep(2000); // give some time so modification timestamps differ
         // pull without update - no refresh, refreshed in merge
@@ -271,7 +271,7 @@ public class HgCommandTest extends AbstractHgTestCase {
         handler.reset("pull", repoAsList);
         refreshProbe.reset();
         revision = HgCommand.doTip(getWorkTreeDir(), NULL_LOGGER).getCSetShortID();
-        HgCommand.doPull(newRepo, NULL_LOGGER);
+        HgCommand.doPull(newRepo, null, NULL_LOGGER);
         refreshProbe.checkRefresh(true);
         handler.assertResults(1);
     }

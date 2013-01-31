@@ -691,7 +691,7 @@ public class HgCommand {
      * @return hg pull output
      * @throws org.netbeans.modules.mercurial.HgException
      */
-    public static List<String> doPull(File repository, OutputLogger logger) throws HgException {
+    public static List<String> doPull (File repository, String revision, OutputLogger logger) throws HgException {
         if (repository == null ) return null;
         List<String> command = new ArrayList<String>();
 
@@ -704,6 +704,10 @@ public class HgCommand {
         if (HgModuleConfig.getDefault().isInternalMergeToolEnabled()) {
             command.add(HG_CONFIG_OPTION_CMD);
             command.add(HG_MERGE_SIMPLE_TOOL);
+        }
+        if (revision != null) {
+            command.add(HG_FLAG_REV_CMD);
+            command.add(revision);            
         }
 
         List<String> list;
@@ -722,38 +726,6 @@ public class HgCommand {
             handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_COMMAND_ABORTED"), logger);
         }
         return list;
-    }
-
-    /**
-     * Pull changes from the specified repository and
-     * update working directory.
-     * By default, update will refuse to run if doing so would require
-     * merging or discarding local changes.
-     *
-     * @param File repository of the mercurial repository's root directory
-     * @param String source repository to pull from
-     * @return hg pull output
-     * @throws org.netbeans.modules.mercurial.HgException
-     */
-    public static List<String> doPull(File repository, HgURL from, OutputLogger logger, boolean showSaveCredentialsOption) throws HgException {
-        if (repository == null || from == null) return null;
-
-        InterRepositoryCommand command = new InterRepositoryCommand();
-        command.defaultUrl = new HgConfigFiles(repository).getDefaultPull(false);
-        command.hgCommandType = HG_PULL_CMD;
-        command.logger = logger;
-        command.remoteUrl = from;
-        command.repository = repository;
-        command.additionalOptions.add(HG_VERBOSE_CMD);
-        command.additionalOptions.add(HG_UPDATE_CMD);
-        if (HgModuleConfig.getDefault().isInternalMergeToolEnabled()) {
-            command.additionalOptions.add(HG_CONFIG_OPTION_CMD);
-            command.additionalOptions.add(HG_MERGE_SIMPLE_TOOL);
-        }
-        command.urlPathProperties = new String[] {HgConfigFiles.HG_DEFAULT_PULL_VALUE, HgConfigFiles.HG_DEFAULT_PULL};
-        List<String> retval = command.invoke();
-
-        return retval;
     }
 
     /**
@@ -801,7 +773,7 @@ public class HgCommand {
      * @return hg incoming output
      * @throws org.netbeans.modules.mercurial.HgException
      */
-    public static List<String> doIncoming(File repository, OutputLogger logger) throws HgException {
+    public static List<String> doIncoming(File repository, String revision, OutputLogger logger) throws HgException {
         if (repository == null ) return null;
         List<Object> command = new ArrayList<Object>();
 
@@ -810,6 +782,10 @@ public class HgCommand {
         command.add(HG_VERBOSE_CMD);
         command.add(HG_OPT_REPOSITORY);
         command.add(repository.getAbsolutePath());
+        if (revision != null) {
+            command.add(HG_FLAG_REV_CMD);
+            command.add(revision);            
+        }
 
         List<String> cmdOutput;
         String defaultPull = new HgConfigFiles(repository).getDefaultPull(false);
@@ -839,7 +815,7 @@ public class HgCommand {
      * @return hg incoming output
      * @throws org.netbeans.modules.mercurial.HgException
      */
-    public static List<String> doIncoming(File repository, HgURL from, File bundle, OutputLogger logger, boolean showSaveCredentialsOption) throws HgException {
+    public static List<String> doIncoming(File repository, HgURL from, String revision, File bundle, OutputLogger logger, boolean showSaveCredentialsOption) throws HgException {
         if (repository == null || from == null) return null;
 
         InterRepositoryCommand command = new InterRepositoryCommand();
@@ -849,6 +825,10 @@ public class HgCommand {
         command.outputDetails = false;
         command.remoteUrl = from;
         command.repository = repository;
+        if (revision != null) {
+            command.additionalOptions.add(HG_FLAG_REV_CMD);
+            command.additionalOptions.add(revision);
+        }
         command.additionalOptions.add(HG_VERBOSE_CMD);
         command.showSaveOption = showSaveCredentialsOption;
         if (bundle != null) {
@@ -871,7 +851,7 @@ public class HgCommand {
      * @return hg outgoing output
      * @throws org.netbeans.modules.mercurial.HgException
      */
-    public static List<String> doOutgoing(File repository, HgURL toUrl, OutputLogger logger, boolean showSaveCredentialsOption) throws HgException {
+    public static List<String> doOutgoing(File repository, HgURL toUrl, String revision, OutputLogger logger, boolean showSaveCredentialsOption) throws HgException {
         if (repository == null || toUrl == null) return null;
 
         InterRepositoryCommand command = new InterRepositoryCommand();
@@ -881,6 +861,10 @@ public class HgCommand {
         command.outputDetails = false;
         command.remoteUrl = toUrl;
         command.repository = repository;
+        if (revision != null) {
+            command.additionalOptions.add(HG_FLAG_REV_CMD);
+            command.additionalOptions.add(revision);
+        }
         command.additionalOptions.add(HG_VERBOSE_CMD);
         File tempFolder = Utils.getTempFolder(false);
         try {
@@ -906,7 +890,7 @@ public class HgCommand {
      * @return hg push output
      * @throws org.netbeans.modules.mercurial.HgException
      */
-    public static List<String> doPush(File repository, final HgURL toUrl, OutputLogger logger, boolean showSaveCredentialsOption) throws HgException {
+    public static List<String> doPush(File repository, final HgURL toUrl, String revision, OutputLogger logger, boolean showSaveCredentialsOption) throws HgException {
         if (repository == null || toUrl == null) return null;
 
         InterRepositoryCommand command = new InterRepositoryCommand();
@@ -916,6 +900,10 @@ public class HgCommand {
         command.logger = logger;
         command.remoteUrl = toUrl;
         command.repository = repository;
+        if (revision != null) {
+            command.additionalOptions.add(HG_FLAG_REV_CMD);
+            command.additionalOptions.add(revision);
+        }
         command.urlPathProperties = new String[] {HgConfigFiles.HG_DEFAULT_PUSH};
 
         List<String> retval = command.invoke();
@@ -992,17 +980,8 @@ public class HgCommand {
         }
         return proxy;
     }
-    /**
-     * Run the fetch extension for the specified repository
-     *
-     * @param File repository of the mercurial repository's root directory
-     * @throws org.netbeans.modules.mercurial.HgException
-     */
-    public static List<String> doFetch(File repository, HgURL from, OutputLogger logger) throws HgException {
-        return doFetch(repository, from, true, logger);
-    }
-
-    public static List<String> doFetch(File repository, HgURL from, boolean enableFetchExtension, OutputLogger logger) throws HgException {
+    
+    public static List<String> doFetch(File repository, HgURL from, String revision, boolean enableFetchExtension, OutputLogger logger) throws HgException {
         if (repository == null || from == null) return null;
 
         InterRepositoryCommand command = new InterRepositoryCommand();
@@ -1012,6 +991,10 @@ public class HgCommand {
         command.outputDetails = false;
         command.remoteUrl = from;
         command.repository = repository;
+        if (revision != null) {
+            command.additionalOptions.add(HG_FLAG_REV_CMD);
+            command.additionalOptions.add(revision);
+        }
         command.additionalOptions.add(HG_VERBOSE_CMD);
         if (enableFetchExtension && !"false".equals(System.getProperty("versioning.mercurial.enableFetchExtension"))) { //NOI18N
             command.additionalOptions.add(HG_CONFIG_OPTION_CMD);
