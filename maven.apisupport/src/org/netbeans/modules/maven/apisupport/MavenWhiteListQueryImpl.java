@@ -126,7 +126,7 @@ public class MavenWhiteListQueryImpl implements WhiteListQueryImplementation {
         assert mvn != null;
         MavenProject mp = mvn.getMavenProject();
         //TODO remove the check
-        if (mp.getProperties() == null && mp.getProperties().getProperty("enable.whitelist") == null) {
+        if (mp.getProperties() == null || (mp.getProperties() != null && mp.getProperties().getProperty("enable.whitelist") == null)) {
             //a temporary thing to enable the whitelists for experimentation..
             return null;
         }
