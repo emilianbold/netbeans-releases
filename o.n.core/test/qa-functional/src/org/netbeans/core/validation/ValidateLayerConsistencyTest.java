@@ -324,7 +324,7 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
         }
     }
     
-    
+    @RandomlyFails
     public void testContentCanBeRead () {
         List<String> errors = new ArrayList<String>();
         byte[] buffer = new byte[4096];
