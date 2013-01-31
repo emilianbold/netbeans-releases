@@ -237,7 +237,9 @@ public class BreadCrumbsNodeImpl extends AbstractNode {
                     sb.append("("); //NOI18N
                     sb.append(escape(((ForLoopTree) leaf).getInitializer().toString()));
                     sb.append("; "); //NOI18N
-                    sb.append(escape(((ForLoopTree) leaf).getCondition().toString()));
+                    if (((ForLoopTree) leaf).getCondition() != null) {
+                        sb.append(escape(((ForLoopTree) leaf).getCondition().toString()));
+                    }
                     sb.append("; "); //NOI18N
                     sb.append(escape(((ForLoopTree) leaf).getUpdate().toString()));
                     sb.append(")"); //NOI18N
