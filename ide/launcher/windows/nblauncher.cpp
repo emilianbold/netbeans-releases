@@ -210,7 +210,7 @@ bool NbLauncher::initBaseNames() {
     
     //check baseDir for non-ASCII chars
     for (size_t i = 0; i < baseDir.size(); ++i) {
-        if (!(baseDir[i]>='!' && baseDir[i]<='~')) {
+        if (!(baseDir[i]>=' ' && baseDir[i]<='~')) {
             logErr(false, true, "Cannot be run from folder that contains non-ASCII characters in path.");
             return false;
         }
