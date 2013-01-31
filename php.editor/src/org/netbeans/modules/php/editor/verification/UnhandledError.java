@@ -50,7 +50,7 @@ import org.netbeans.modules.csl.api.Error;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public abstract class AbstractUnhandledError extends AbstractError {
+public abstract class UnhandledError extends AbstractError {
 
     abstract void compute(PHPRuleContext context, List<Error> errors);
 
