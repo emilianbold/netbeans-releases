@@ -719,7 +719,6 @@ public class JavacParser extends Parser {
         JavacTaskImpl javacTask = createJavacTask(cpInfo, diagnosticListener, sourceLevel, false, oraculum, dcc, parser == null ? null : new DefaultCancelService(parser), APTUtils.get(root));
         Context context = javacTask.getContext();
         TreeLoader.preRegister(context, cpInfo, detached);
-        com.sun.tools.javac.main.JavaCompiler.instance(context).keepComments = true;
         return javacTask;
     }
 
@@ -737,6 +736,7 @@ public class JavacParser extends Parser {
         if (!backgroundCompilation) {
             options.add("-Xjcov"); //NOI18N, Make the compiler store end positions
             options.add("-XDallowStringFolding=false"); //NOI18N
+            options.add("-XDkeepComments=true"); //NOI18N
             assert options.add("-XDdev") || true; //NOI18N
         } else {
             options.add("-XDbackgroundCompilation");    //NOI18N
