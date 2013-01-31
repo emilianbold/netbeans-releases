@@ -42,16 +42,17 @@
 
 package org.netbeans.modules.php.spi.testing;
 
+import org.netbeans.modules.php.spi.testing.locate.Locations;
 import org.netbeans.modules.php.spi.testing.run.TestRunInfo;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.util.List;
-import java.util.Set;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
+import org.netbeans.modules.php.spi.testing.locate.TestLocator;
 import org.netbeans.modules.php.spi.testing.run.TestRunException;
 import org.netbeans.modules.php.spi.testing.run.TestSession;
 import org.openide.filesystems.FileObject;
@@ -130,9 +131,7 @@ public abstract class PhpTestingProvider {
 
     public abstract TestSession runTests(@NonNull PhpModule phpModule, TestRunInfo runInfo) throws TestRunException;
 
-    public abstract Set<Locations.Offset> findSources(@NonNull PhpModule phpModule, FileObject testFile);
-
-    public abstract Set<Locations.Offset> findTests(@NonNull PhpModule phpModule, FileObject testedFile);
+    public abstract TestLocator getTestLocator(@NonNull PhpModule phpModule);
 
     // runs in background
     public abstract CreateTestsResult createTests(@NonNull PhpModule phpModule, List<FileObject> files);

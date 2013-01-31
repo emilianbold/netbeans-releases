@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,49 +37,19 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.php.spi.testing.locate;
 
-package org.netbeans.modules.php.project.ui.testrunner;
+import java.util.Set;
+import org.openide.filesystems.FileObject;
 
-import java.awt.event.ActionEvent;
-import javax.swing.AbstractAction;
-import org.netbeans.modules.php.project.util.PhpProjectUtils;
-import org.netbeans.modules.php.spi.testing.locate.Locations;
-import org.openide.filesystems.FileUtil;
-import org.openide.util.NbBundle;
+/**
+ */
+public interface TestLocator {
 
-public class JumpToCallStackAction extends AbstractAction {
-    private static final long serialVersionUID = -14558324203007090L;
+    Set<Locations.Offset> findSources(FileObject testFile);
 
-    private final String callstackFrameInfo;
-    private final Callback callback;
-
-
-    public JumpToCallStackAction(String callstackFrameInfo, Callback callback) {
-        assert callstackFrameInfo != null;
-        this.callstackFrameInfo = callstackFrameInfo;
-        this.callback = callback;
-
-        String name = NbBundle.getMessage(JumpToCallStackAction.class, "LBL_GoToSource");
-        putValue(NAME, name);
-        putValue(SHORT_DESCRIPTION, name);
-    }
-
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        if (callback != null) {
-            Locations.Line location = callback.parseLocation(callstackFrameInfo);
-            if (location != null) {
-                PhpProjectUtils.openFile(FileUtil.toFile(location.getFile()), location.getLine());
-            }
-        }
-    }
-
-    //~ Inner classes
-
-    public interface Callback {
-        Locations.Line parseLocation(String callStack);
-    }
+    Set<Locations.Offset> findTests(FileObject testedFile);
 
 }

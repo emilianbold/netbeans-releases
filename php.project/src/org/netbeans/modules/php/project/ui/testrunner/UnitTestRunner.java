@@ -53,7 +53,7 @@ import org.netbeans.modules.gsf.testrunner.api.Testcase;
 import org.netbeans.modules.gsf.testrunner.api.Trouble;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ui.codecoverage.PhpCoverageProvider;
-import org.netbeans.modules.php.spi.testing.Locations;
+import org.netbeans.modules.php.spi.testing.locate.Locations;
 import org.netbeans.modules.php.spi.testing.PhpTestingProvider;
 import org.netbeans.modules.php.spi.testing.run.TestCase;
 import org.netbeans.modules.php.spi.testing.run.TestCase.Diff;

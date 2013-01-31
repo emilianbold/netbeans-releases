@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.spi.testing;
+package org.netbeans.modules.php.spi.testing.locate;
 
 import org.openide.filesystems.FileObject;
 import org.openide.util.Parameters;

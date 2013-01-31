@@ -56,7 +56,7 @@ import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
 import org.netbeans.modules.php.project.ui.Utils;
 import org.netbeans.modules.php.project.util.PhpProjectUtils;
-import org.netbeans.modules.php.spi.testing.Locations;
+import org.netbeans.modules.php.spi.testing.locate.Locations;
 import org.netbeans.modules.php.spi.testing.PhpTestingProvider;
 import org.netbeans.spi.gototest.TestLocator;
 import org.openide.filesystems.FileObject;
@@ -157,10 +157,11 @@ public class GoToTest implements TestLocator {
         Set<Locations.Offset> phpFiles = Collections.emptySet();
         PhpModule phpModule = project.getPhpModule();
         for (PhpTestingProvider testingProvider : project.getTestingProviders()) {
+            org.netbeans.modules.php.spi.testing.locate.TestLocator testLocator = testingProvider.getTestLocator(phpModule);
             if (searchTest) {
-                phpFiles = testingProvider.findTests(phpModule, file);
+                phpFiles = testLocator.findTests(file);
             } else {
-                phpFiles = testingProvider.findSources(phpModule, file);
+                phpFiles = testLocator.findSources(file);
             }
         }
         if (phpFiles.isEmpty()) {
