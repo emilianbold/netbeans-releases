@@ -47,7 +47,6 @@ package org.netbeans.modules.cnd.repository.sfs;
  */
 public interface SharedStringBuffer {
     public static final int BUFFER_SIZE = 64;
-    byte[] getSharedByteArray();
-    char[] getSharedCharArray();
-    int getSharedArrayLehgth();
+    byte[] getSharedByteArray(int size);
+    char[] getSharedCharArray(int size);
 }
