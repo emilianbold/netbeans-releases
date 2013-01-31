@@ -45,6 +45,7 @@ package org.netbeans.modules.maven.apisupport;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.ref.SoftReference;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -56,8 +57,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.jar.Attributes;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import javax.lang.model.element.ElementKind;
 import javax.swing.event.ChangeEvent;
@@ -65,6 +64,7 @@ import javax.swing.event.ChangeListener;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.component.configurator.expression.ExpressionEvaluator;
+import org.codehaus.plexus.util.IOUtil;
 import org.codehaus.plexus.util.StringUtils;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
 import org.netbeans.api.annotations.common.NonNull;
@@ -78,6 +78,7 @@ import org.netbeans.modules.maven.api.classpath.ProjectSourcesClassPathProvider;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.whitelist.WhiteListQueryImplementation;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakSet;
 
@@ -111,7 +112,7 @@ public class MavenWhiteListQueryImpl implements WhiteListQueryImplementation {
                 if (NbMavenProject.PROP_PROJECT.equals(evt.getPropertyName())) {
                     synchronized (LOCK) {
                         isCached = false;
-                        cacheOrLoad(project);
+                        cacheOrLoad();
                     }
                 }
             }
@@ -131,8 +132,8 @@ public class MavenWhiteListQueryImpl implements WhiteListQueryImplementation {
         }
         ProjectSourcesClassPathProvider prov = project.getLookup().lookup(ProjectSourcesClassPathProvider.class);
         assert prov != null;
-        ClassPath cp = prov.getProjectSourcesClassPath(ClassPath.SOURCE);
-        if (!cp.contains(file)) {
+        ClassPath sourceCp = prov.getProjectSourcesClassPath(ClassPath.SOURCE);
+        if (!sourceCp.contains(file)) {
             return null;
         }     
         
@@ -141,7 +142,7 @@ public class MavenWhiteListQueryImpl implements WhiteListQueryImplementation {
             mvn.addPropertyChangeListener(projectListener);
         }
         
-        Tuple res = cacheOrLoad(project);
+        Tuple res = cacheOrLoad();
         
         MavenWhiteListImplementation val = new MavenWhiteListImplementation(res.privatePackages, res.transitivePackages);
         results.add(val);
@@ -154,21 +155,30 @@ public class MavenWhiteListQueryImpl implements WhiteListQueryImplementation {
     private static final WhiteListQuery.Result OK = new WhiteListQuery.Result();
     
 
-    private Set<String> getAllPackages(JarFile jf) {
+    private Set<String> getAllPackages(FileObject root) {       
         Set<String> toRet = new HashSet<String>();
-        Enumeration<JarEntry> en = jf.entries();
-        while (en.hasMoreElements()) {
-            JarEntry je = en.nextElement();
-            String name = je.getName();
-            if (!je.isDirectory() && name.endsWith(".class") && name.lastIndexOf('/') > -1) {
-                name = name.substring(0, name.lastIndexOf('/'));
-                toRet.add(name.replace('/', '.'));
-            }
-        }
+        processFolder(root, root, toRet);
+        toRet.remove("");
         return toRet;
     }
+    
+    private void processFolder(FileObject root, FileObject folder, Set<String> foundPackages) {
+        Enumeration<? extends FileObject> it = folder.getData(false);
+        while (it.hasMoreElements()) {
+            FileObject fileObject = it.nextElement();
+            if (fileObject.hasExt("class")) {
+                foundPackages.add(folder.getPath().replace('/', '.'));
+                break;
+            }
+        }
+        it = folder.getFolders(false);
+        while (it.hasMoreElements()) {
+            FileObject fileObject = it.nextElement();
+            processFolder(root, fileObject, foundPackages);
+        }
+    }
 
-    private Tuple calculateLists(Project project) {
+    private Tuple calculateLists() {
         //System.out.println("calculate for project=" + project.getProjectDirectory());
         String useOsgiString = PluginPropertyUtils.getPluginProperty(project, MavenNbModuleImpl.GROUPID_MOJO, MavenNbModuleImpl.NBM_PLUGIN, "useOSGiDependencies", null, null);
         boolean useOsgi = useOsgiString != null ? Boolean.parseBoolean(useOsgiString) : false;
@@ -184,27 +194,26 @@ public class MavenWhiteListQueryImpl implements WhiteListQueryImplementation {
                 
         for (Artifact a : mp.getCompileArtifacts()) {
             if (a.getFile() != null) {
-                JarFile jf = null;
-                try {
-                    jf = new JarFile(a.getFile(), false);
-                    Manifest mf = jf.getManifest();
+                FileObject fo = FileUtil.toFileObject(a.getFile());
+                if (fo != null && FileUtil.isArchiveFile(fo)) {
+                    FileObject root = FileUtil.getArchiveRoot(fo);
+                    Manifest mf = getManifest(root);
+
                     if (mf != null && mf.getMainAttributes() != null) {
                         Attributes attrs = mf.getMainAttributes();
                         String osgiexport = attrs.getValue("Export-Package");
                         String osgiprivate = attrs.getValue("Private-Package");
                         String nbmexport = attrs.getValue("OpenIDE-Module-Public-Packages");
-                        Set<String> allpackages = getAllPackages(jf);
+                        Set<String> allpackages = getAllPackages(root);
                         if (nbmexport != null) {
                             String nbmMaven = attrs.getValue("Maven-Class-Path"); //modules built with maven with external libs
                             String friends = attrs.getValue("OpenIDE-Module-Friends");
                             nbms.add(new NBMWrapper(a, allpackages, nbmexport.equals("-") ? null : StringUtils.split(nbmexport, ","),
-                                    friends != null ? StringUtils.split(friends, ",") : null, 
+                                    friends != null ? StringUtils.split(friends, ",") : null,
                                     nbmMaven != null ? StringUtils.split(nbmMaven, " ") : null));
-                        }
-                        else if (useOsgi && osgiexport != null) {
+                        } else if (useOsgi && osgiexport != null) {
                             //TODO
-                        } 
-                        else {
+                        } else {
                             if (a.getDependencyTrail() != null && a.getDependencyTrail().size() > 2) {
                                 unknown.add(new Wrapper(a, allpackages));
                             } else {
@@ -213,16 +222,7 @@ public class MavenWhiteListQueryImpl implements WhiteListQueryImplementation {
                             }
                         }
                     }
-                } catch (IOException ex) {
-                } finally {
-                    if (jf != null) {
-                        try {
-                            jf.close();
-                        } catch (IOException ex) {
-                        }
-                    }
                 }
-                
             }
         }
         
@@ -305,7 +305,7 @@ public class MavenWhiteListQueryImpl implements WhiteListQueryImplementation {
         });
     }
 
-    private Tuple cacheOrLoad(Project project) {
+    private Tuple cacheOrLoad() {
         //compute the effective, known "private" packages that should not be accessible from the file.
 
         synchronized (LOCK) {
@@ -316,13 +316,30 @@ public class MavenWhiteListQueryImpl implements WhiteListQueryImplementation {
                     return new Tuple(set1, set2);
                 }
             }
-            Tuple tup = calculateLists(project);
+            Tuple tup = calculateLists();
             cachePrivatePackages = new SoftReference<Set<String>>(tup.privatePackages);
             cacheTransitivePackages = new SoftReference<Set<String>>(tup.transitivePackages);
             isCached = true;
             fireChangeAllExistingResults(tup.privatePackages, tup.transitivePackages);
             return tup;
         }
+    }
+
+    private Manifest getManifest(FileObject root) {
+        FileObject manifestFo = root.getFileObject("META-INF/MANIFEST.MF");
+        if (manifestFo != null) {
+            InputStream is = null;
+            try {
+                is = manifestFo.getInputStream();
+                return new Manifest(is);
+            } catch (IOException ex) {
+                //Exceptions.printStackTrace(ex);
+            } finally {
+                IOUtil.close(is);
+            }
+        }
+        return null;
+
     }
     
     private static class MavenWhiteListImplementation implements WhiteListImplementation {
