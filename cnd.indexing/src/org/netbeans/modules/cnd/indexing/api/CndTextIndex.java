@@ -60,7 +60,9 @@ public final class CndTextIndex {
     
     public static void put(final CacheLocation location, final CndTextIndexKey key, final Set<String> ids) {
         CndTextIndexImpl index = CndTextIndexManager.get(location);
-        index.put(key, ids);
+        if (index != null) {
+            index.put(key, ids);
+        }
     }
     
     public static Collection<CndTextIndexKey> query(final CacheLocation location, final CharSequence text) {
@@ -80,6 +82,8 @@ public final class CndTextIndex {
     public static void remove(final CacheLocation location, final CndTextIndexKey key) {
         CndTextIndexImpl index = CndTextIndexManager.get(location);
         // TODO: For now just write empty content, need to figure out how to remove records.
-        index.put(key, Collections.EMPTY_SET);
+        if (index != null) {
+            index.put(key, Collections.EMPTY_SET);
+        }
     }
 }
