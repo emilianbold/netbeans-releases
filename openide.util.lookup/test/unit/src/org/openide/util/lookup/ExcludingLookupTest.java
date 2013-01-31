@@ -144,7 +144,7 @@ implements AbstractLookupBaseHid.Impl {
         
         Lookup lookup = Lookups.exclude (this.instanceLookup, new Class[] { exclude });
 
-        assertSize ("Should be pretty lightweight", Collections.singleton (lookup), 16, 
+        assertSize ("Should be pretty lightweight", Collections.singleton (lookup), 24, 
                 new Object[] { this.instanceLookup, exclude });
     }
     public void testSizeOfTheLookupForMultipleFiltersIsHigher () throws Exception {
@@ -154,9 +154,9 @@ implements AbstractLookupBaseHid.Impl {
         
         Lookup lookup = Lookups.exclude (this.instanceLookup, arr);
 
-        assertSize ("Is fatter", Collections.singleton (lookup), 40, 
+        assertSize ("Is fatter", Collections.singleton (lookup), 48, 
                 new Object[] { this.instanceLookup, exclude, exclude2 });
-        assertSize ("But only due to the array", Collections.singleton (lookup), 16, 
+        assertSize ("But only due to the array", Collections.singleton (lookup), 24, 
                 new Object[] { this.instanceLookup, exclude, exclude2, arr });
     }
     
