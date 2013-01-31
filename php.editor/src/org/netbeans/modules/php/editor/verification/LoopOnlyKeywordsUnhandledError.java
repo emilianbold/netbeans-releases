@@ -63,7 +63,7 @@ import org.openide.util.NbBundle.Messages;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class LoopOnlyKeywordsUnhandledError extends AbstractUnhandledError {
+public class LoopOnlyKeywordsUnhandledError extends UnhandledError {
 
     @Override
     void compute(PHPRuleContext context, List<org.netbeans.modules.csl.api.Error> errors) {

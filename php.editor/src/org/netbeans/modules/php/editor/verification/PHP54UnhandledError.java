@@ -68,7 +68,7 @@ import org.openide.util.NbBundle.Messages;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class PHP54UnhandledError extends AbstractUnhandledError {
+public class PHP54UnhandledError extends UnhandledError {
 
     @Override
     void compute(PHPRuleContext context, List<org.netbeans.modules.csl.api.Error> errors) {

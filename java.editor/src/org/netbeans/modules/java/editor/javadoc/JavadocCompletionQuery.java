@@ -755,7 +755,7 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
                         return Utilities.startsWith(e.getSimpleName().toString(), prefix) &&
                                 (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(e)) &&
 //                                isOfKindAndType(asMemberOf(e, t, types), e, kinds, baseType, scope, trees, types) &&
-                                tu.isAccessible(scope, e, t);
+                                trees.isAccessible(scope, e, (DeclaredType)t);
                     case METHOD:
                         String sn = e.getSimpleName().toString();
                         return Utilities.startsWith(sn, prefix) &&
@@ -776,7 +776,7 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
                     case CONSTRUCTOR:
                         return (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(e)) &&
 //                                isOfKindAndType(e.getEnclosingElement().asType(), e, kinds, baseType, scope, trees, types) &&
-                                (tu.isAccessible(scope, e, t) || (elem.getModifiers().contains(Modifier.ABSTRACT) && !e.getModifiers().contains(Modifier.PRIVATE)));
+                                (trees.isAccessible(scope, e, (DeclaredType)t) || (elem.getModifiers().contains(Modifier.ABSTRACT) && !e.getModifiers().contains(Modifier.PRIVATE)));
 //                                &&
 //                                isStatic;
                 }
@@ -858,7 +858,7 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
                         return Utilities.startsWith(e.getEnclosingElement().getSimpleName().toString(), prefix) &&
                                 (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(e)) &&
 //                                (!isStatic || e.getModifiers().contains(STATIC)) &&
-                                tu.isAccessible(scope, e, t);
+                                trees.isAccessible(scope, e, (DeclaredType)t);
 //                    case LOCAL_VARIABLE:
 //                    case EXCEPTION_PARAMETER:
 //                    case PARAMETER:
@@ -881,12 +881,12 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
 //                                !illegalForwardRefs.contains(e) &&
 //                                (!isStatic || e.getModifiers().contains(STATIC)) &&
                                 (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(e)) &&
-                                tu.isAccessible(scope, e, t);
+                                trees.isAccessible(scope, e, (DeclaredType)t);
                     case METHOD:
                         return Utilities.startsWith(e.getSimpleName().toString(), prefix) &&
                                 (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(e)) &&
 //                                (!isStatic || e.getModifiers().contains(STATIC)) &&
-                                tu.isAccessible(scope, e, t);
+                                trees.isAccessible(scope, e, (DeclaredType)t);
                 }
                 return false;
             }

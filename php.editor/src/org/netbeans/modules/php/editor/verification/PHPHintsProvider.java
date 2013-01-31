@@ -130,8 +130,8 @@ public class PHPHintsProvider implements HintsProvider {
             if (unhandledErrors != null) {
                 PHPRuleContext phpRuleContext = initializeContext(context);
                 for (ErrorRule errorRule : unhandledErrors) {
-                    if (errorRule instanceof AbstractUnhandledError) {
-                        AbstractUnhandledError abstractUnhandledError = (AbstractUnhandledError) errorRule;
+                    if (errorRule instanceof UnhandledError) {
+                        UnhandledError abstractUnhandledError = (UnhandledError) errorRule;
                         abstractUnhandledError.compute(phpRuleContext, unhandled);
                     }
                 }
@@ -140,8 +140,8 @@ public class PHPHintsProvider implements HintsProvider {
             if (hintErrors != null) {
                 PHPRuleContext phpRuleContext = initializeContext(context);
                 for (ErrorRule errorRule : hintErrors) {
-                    if (errorRule instanceof AbstractHintError) {
-                        AbstractHintError abstractHintError = (AbstractHintError) errorRule;
+                    if (errorRule instanceof HintError) {
+                        HintError abstractHintError = (HintError) errorRule;
                         abstractHintError.compute(phpRuleContext, hints);
                     }
                 }
