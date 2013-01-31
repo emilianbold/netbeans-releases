@@ -68,11 +68,13 @@ import org.codehaus.plexus.component.configurator.expression.ExpressionEvaluator
 import org.codehaus.plexus.util.StringUtils;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.whitelist.WhiteListQuery;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.PluginPropertyUtils;
+import org.netbeans.modules.maven.api.classpath.ProjectSourcesClassPathProvider;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.whitelist.WhiteListQueryImplementation;
 import org.openide.filesystems.FileObject;
@@ -127,6 +129,12 @@ public class MavenWhiteListQueryImpl implements WhiteListQueryImplementation {
             //a temporary thing to enable the whitelists for experimentation..
             return null;
         }
+        ProjectSourcesClassPathProvider prov = project.getLookup().lookup(ProjectSourcesClassPathProvider.class);
+        assert prov != null;
+        ClassPath cp = prov.getProjectSourcesClassPath(ClassPath.SOURCE);
+        if (!cp.contains(file)) {
+            return null;
+        }     
         
         if (initialized.compareAndSet(false, true)) {
             //TODO listen to classpath changes only?
