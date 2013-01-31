@@ -88,9 +88,9 @@ public class DocumentNode extends AbstractNode {
         children.setModel(model); //this will re-set the children keys
         //re-set model to all its children (stylesheets)
         Node[] nodes = getChildren().getNodes(true); //force create nodes
-        for(Node node : nodes) {
-            StyleSheetNode sn = (StyleSheetNode)node;
-            StyleSheetNode.StyleSheetChildren snChildren = (StyleSheetNode.StyleSheetChildren)sn.getChildren();
+        for (Node node : nodes) {
+            StyleSheetNode sn = (StyleSheetNode) node;
+            StyleSheetNode.StyleSheetChildren snChildren = (StyleSheetNode.StyleSheetChildren) sn.getChildren();
             snChildren.setModel(model);
         }
     }
@@ -103,10 +103,17 @@ public class DocumentNode extends AbstractNode {
         private static boolean first_run = true;
         private Filter filter;
         private DocumentViewModel model;
+        private UserTask refreshKeysTask;
 
         private DocumentChildren(DocumentViewModel model, Filter filter) {
             this.model = model;
             this.filter = filter;
+            this.refreshKeysTask = new UserTask() {
+                @Override
+                public void run(ResultIterator resultIterator) throws Exception {
+                    refreshKeysImpl();
+                }
+            };
         }
 
         private void setModel(DocumentViewModel newModel) {
@@ -121,24 +128,18 @@ public class DocumentNode extends AbstractNode {
         }
 
         private void refreshKeys() {
-            if (first_run) {
-                //postpone the initialization until scanning finishes as we need to wait for some data
-                //to be properly initialized. If CssIndex.create() is called to soon during
-                //the startup then it won't obtain proper source roots
-                try {
-                    ParserManager.parseWhenScanFinished("text/css", new UserTask() {
-                        @Override
-                        public void run(ResultIterator resultIterator) throws Exception {
-                            refreshKeysImpl();
-                            first_run = false;
-                        }
-                    });
-                } catch (ParseException ex) {
-                    Exceptions.printStackTrace(ex);
+            try {
+                if (first_run) {
+                    //postpone the initialization until scanning finishes as we need to wait for some data
+                    //to be properly initialized. If CssIndex.create() is called to soon during
+                    //the startup then it won't obtain proper source roots
+                    first_run = false;
+                    ParserManager.parseWhenScanFinished("text/css", refreshKeysTask); //NOI18N
+                } else {
+                    ParserManager.parse("text/css", refreshKeysTask); //NOI18N
                 }
-
-            } else {
-                refreshKeysImpl();
+            } catch (ParseException ex) {
+                Exceptions.printStackTrace(ex);
             }
         }
 
