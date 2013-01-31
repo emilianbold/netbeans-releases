@@ -127,7 +127,7 @@ public class PhpTestingProviderRegistrationTest extends NbTestCase {
         }
 
         @Override
-        public boolean isCodeCoverageSupported(PhpModule phpModule) {
+        public boolean isCoverageSupported(PhpModule phpModule) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
