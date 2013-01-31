@@ -129,6 +129,7 @@ public abstract class PhpTestingProvider {
      */
     public abstract boolean isTestFile(@NonNull PhpModule phpModule, FileObject fileObj);
 
+    // XXX when to return null and when throw exception?
     @CheckForNull
     public abstract TestSession runTests(@NonNull PhpModule phpModule, TestRunInfo runInfo) throws TestRunException;
 
@@ -137,7 +138,7 @@ public abstract class PhpTestingProvider {
     // runs in background
     public abstract CreateTestsResult createTests(@NonNull PhpModule phpModule, List<FileObject> files);
 
-    public abstract boolean isCodeCoverageSupported(@NonNull PhpModule phpModule);
+    public abstract boolean isCoverageSupported(@NonNull PhpModule phpModule);
 
     @CheckForNull
     public abstract Locations.Line parseFileFromOutput(String line);

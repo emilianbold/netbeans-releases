@@ -39,31 +39,15 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.spi.testing.run;
-
-import java.util.List;
-import org.netbeans.api.annotations.common.CheckForNull;
-import org.netbeans.modules.php.spi.testing.coverage.Coverage;
+package org.netbeans.modules.php.spi.testing.coverage;
 
 /**
  *
  */
-public interface TestSession {
+public interface FileMetrics {
 
-    List<TestSuite> getTestSuites();
-
-    @CheckForNull
-    OutputLineHandler getOutputLineHandler();
-
-    @CheckForNull
-    String getInitMessage();
-    @CheckForNull
-    String getFinishMessage();
-
-    /**
-     * non null if provider.iscoveragesupported
-     * @return
-     */
-    Coverage getCoverage();
+    int getLineCount();
+    int getStatements();
+    int getCoveredStatements();
 
 }
