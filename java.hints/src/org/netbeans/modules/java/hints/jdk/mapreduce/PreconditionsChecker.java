@@ -296,7 +296,7 @@ public class PreconditionsChecker {
 
         @Override
         public Tree visitReturn(ReturnTree that, Trees trees) {
-            if (!this.hasMatcherReturn && that.getExpression().getKind() == Tree.Kind.BOOLEAN_LITERAL
+            if (!this.hasMatcherReturn && that.getExpression() != null && that.getExpression().getKind() == Tree.Kind.BOOLEAN_LITERAL
                     && thisIsMatcherReturn(that, this.getCurrentPath())) {
                 this.hasMatcherReturn = true;
             } else {

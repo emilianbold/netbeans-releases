@@ -1154,4 +1154,20 @@ public class ForLoopToFunctionalHintTest extends NbTestCase {
                 .run(ForLoopToFunctionalHint.class)
                 .assertWarnings();
     }
+    
+    public void testNPEForReturnWithExpressions() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "import java.util.List;" +
+                       "class Test {\n" +
+                       "    public void test(List<Integer> ls) throws Exception {\n" +
+                       "        for(Integer l : ls) {\n" +
+                       "            return ;\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}")
+                .sourceLevel("1.8")
+                .run(ForLoopToFunctionalHint.class)
+                .assertWarnings();
+    }
 }
