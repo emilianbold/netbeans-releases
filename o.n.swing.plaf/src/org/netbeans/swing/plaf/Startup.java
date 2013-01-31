@@ -44,6 +44,7 @@
 
 package org.netbeans.swing.plaf;
 
+import com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel;
 import java.awt.Toolkit;
 import java.util.logging.Logger;
 import org.netbeans.swing.plaf.aqua.AquaLFCustoms;
@@ -63,6 +64,8 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.ResourceBundle;
 import java.util.Set;
+import org.netbeans.swing.plaf.metal.DarkMetalTheme;
+import org.netbeans.swing.plaf.nimbus.DarkNimbusTheme;
 import org.netbeans.swing.plaf.nimbus.NimbusLFCustoms;
 import org.netbeans.swing.plaf.winclassic.WindowsLFCustoms;
 import org.netbeans.swing.plaf.windows8.Windows8LFCustoms;
@@ -87,6 +90,8 @@ public final class Startup {
      * subclass of MetalLookAndFeel.  See issue XXX
      */
     private static final boolean NO_CUSTOMIZATIONS = Boolean.getBoolean("netbeans.plaf.disable.ui.customizations"); //NOI18N
+
+    private static final boolean USE_DARK_THEME = Boolean.getBoolean("netbeans.plaf.dark.theme"); //NOI18N
 
     /** Constant for Nimbus L&F name */
     private static final String NIMBUS="Nimbus";
@@ -114,15 +119,19 @@ public final class Startup {
      */
     private void initialize() {
         LookAndFeel lf = getLookAndFeel();
+        boolean forceLaf = false;
         if (lf instanceof MetalLookAndFeel) {
             //Metal theme must be assigned before using the look and feel
-            installTheme(lf);
+            forceLaf = installTheme(lf);
+        } else if(lf instanceof NimbusLookAndFeel && USE_DARK_THEME) {
+            DarkNimbusTheme.install( lf );
+            forceLaf = true;
         }
         // overall defaults for all LFs
         // defaults for supported LFs
 
         try {
-            if (lf != UIManager.getLookAndFeel()) {
+            if (lf != UIManager.getLookAndFeel() || forceLaf) {
                 UIManager.setLookAndFeel (lf);
             }
         } catch (Exception e) {
@@ -217,12 +226,18 @@ public final class Startup {
         return uiClassName;
     }
 
-    private void installTheme(LookAndFeel lf) {
+    private boolean installTheme(LookAndFeel lf) {
+        boolean themeInstalled = false;
         //Load the theme
         if (themeURL != null) {
-          NbTheme nbTheme = new NbTheme(themeURL, lf);
-          MetalLookAndFeel.setCurrentTheme(nbTheme);
+            themeInstalled = true;
+            NbTheme nbTheme = new NbTheme(themeURL, lf);
+            MetalLookAndFeel.setCurrentTheme(nbTheme);
+        } else if( USE_DARK_THEME ) {
+            MetalLookAndFeel.setCurrentTheme( new DarkMetalTheme() );
+            themeInstalled = true;
         }
+        return themeInstalled;
     }
 
     /** Enables, installs LF customization.  */
