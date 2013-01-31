@@ -93,7 +93,7 @@ public abstract class APTProjectFileBasedWalker extends APTAbstractWalker {
             ProjectBase aStartProject = this.getStartProject();
             if (aStartProject != null) {
                 if (aStartProject.isValid()) {
-                    ProjectBase inclFileOwner = LibraryManager.getInstance(aStartProject).resolveFileProjectOnInclude(aStartProject, getFile(), resolvedPath);
+                    ProjectBase inclFileOwner = aStartProject.getLibraryManager().resolveFileProjectOnInclude(aStartProject, getFile(), resolvedPath);
                     if (inclFileOwner == null) {
                         if (aStartProject.getFileSystem() == resolvedPath.getFileSystem()) {
                             inclFileOwner = aStartProject;
