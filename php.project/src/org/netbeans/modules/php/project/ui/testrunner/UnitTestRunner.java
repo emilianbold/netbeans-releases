@@ -55,6 +55,7 @@ import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ui.codecoverage.PhpCoverageProvider;
 import org.netbeans.modules.php.spi.testing.locate.Locations;
 import org.netbeans.modules.php.spi.testing.PhpTestingProvider;
+import org.netbeans.modules.php.spi.testing.coverage.Coverage;
 import org.netbeans.modules.php.spi.testing.run.TestCase;
 import org.netbeans.modules.php.spi.testing.run.TestCase.Diff;
 import org.netbeans.modules.php.spi.testing.run.TestRunException;
@@ -83,6 +84,7 @@ public final class UnitTestRunner {
     private final TestRunInfo info;
     private final ControllableRerunHandler rerunHandler;
     private final PhpCoverageProvider coverageProvider;
+    private final PhpTestingProvider testingProvider;
 
 
     public UnitTestRunner(PhpProject project, TestRunInfo info, ControllableRerunHandler rerunHandler) {
@@ -95,6 +97,9 @@ public final class UnitTestRunner {
         this.rerunHandler = rerunHandler;
         coverageProvider = project.getLookup().lookup(PhpCoverageProvider.class);
         assert coverageProvider != null;
+        // XXX use all test providers
+        testingProvider = project.getFirstTestingProvider();
+        assert testingProvider != null;
 
         testSession = new TestSession(getOutputTitle(project, info), project, map(info.getSessionType()), new PhpTestRunnerNodeFactory(new CallStackCallback(project)));
         testSession.setRerunHandler(rerunHandler);
@@ -107,9 +112,11 @@ public final class UnitTestRunner {
         try {
             rerunHandler.disable();
             MANAGER.testStarted(testSession);
-            runInternal();
+            org.netbeans.modules.php.spi.testing.run.TestSession session = runInternal();
             // XXX
-            handleCodeCoverage();
+            if (session != null) {
+                handleCodeCoverage(session.getCoverage());
+            }
         } catch (Exception ex) {
             LOGGER.log(Level.SEVERE, null, ex);
         } finally {
@@ -118,21 +125,18 @@ public final class UnitTestRunner {
         }
     }
 
-    private void runInternal() {
-        // XXX run all test providers
-        PhpTestingProvider testingProvider = project.getFirstTestingProvider();
-        assert testingProvider != null;
+    private org.netbeans.modules.php.spi.testing.run.TestSession runInternal() {
         org.netbeans.modules.php.spi.testing.run.TestSession session;
         try {
             session = testingProvider.runTests(project.getPhpModule(), info);
         } catch (TestRunException exc) {
             LOGGER.log(Level.INFO, null, exc);
             MANAGER.displayOutput(testSession, NbBundle.getMessage(UnitTestRunner.class, "MSG_PerhapsError"), true);
-            return;
+            return null;
         }
         if (session == null) {
             // some error occured
-            return;
+            return null;
         }
 
         org.netbeans.modules.php.spi.testing.run.OutputLineHandler outputLineHandler = session.getOutputLineHandler();
@@ -189,6 +193,7 @@ public final class UnitTestRunner {
         if (finishMessage != null) {
             MANAGER.displayOutput(testSession, finishMessage, false);
         }
+        return session;
     }
 
     @NbBundle.Messages("UnitTestRunner.error.noProviders=No PHP testing provider found, install one via Plugins (e.g. PHPUnit).")
@@ -201,33 +206,21 @@ public final class UnitTestRunner {
         return false;
     }
 
-    // XXX
-    private void handleCodeCoverage() {
-//        if (!coverageProvider.isEnabled()) {
-//            return;
-//        }
-//
-//        CoverageVO coverage = new CoverageVO();
-//        try {
-//            PhpUnitCoverageLogParser.parse(new BufferedReader(new InputStreamReader(new FileInputStream(PhpUnit.COVERAGE_LOG), "UTF-8")), coverage);
-//        } catch (FileNotFoundException ex) {
-//            LOGGER.info(String.format("File %s not found. If there are no errors in PHPUnit output (verify in Output window), "
-//                    + "please report an issue (http://www.netbeans.org/issues/).", PhpUnit.COVERAGE_LOG));
-//            return;
-//        } catch (IOException ex) {
-//            LOGGER.log(Level.WARNING, null, ex);
-//            return;
-//        }
-//        if (!PhpUnit.KEEP_LOGS) {
-//            if (!PhpUnit.COVERAGE_LOG.delete()) {
-//                LOGGER.log(Level.INFO, "Cannot delete code coverage log {0}", PhpUnit.COVERAGE_LOG);
-//            }
-//        }
-//        if (info.allTests()) {
-//            coverageProvider.setCoverage(coverage);
-//        } else {
-//            coverageProvider.updateCoverage(coverage);
-//        }
+    private void handleCodeCoverage(Coverage coverage) {
+        if (!coverageProvider.isEnabled()) {
+            return;
+        }
+        if (!testingProvider.isCoverageSupported(project.getPhpModule())) {
+            return;
+        }
+        if (coverage == null) {
+            throw new IllegalStateException("Coverage must be provided by " + testingProvider.getDisplayName() + " [" + testingProvider.getIdentifier() + "]");
+        }
+        if (info.allTests()) {
+            coverageProvider.setCoverage(coverage);
+        } else {
+            coverageProvider.updateCoverage(coverage);
+        }
     }
 
     private String getOutputTitle(PhpProject project, TestRunInfo info) {
