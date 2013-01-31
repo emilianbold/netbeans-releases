@@ -47,14 +47,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.Reader;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.php.project.ui.codecoverage.CoverageVO;
-import org.netbeans.modules.php.project.ui.codecoverage.CoverageVO.ClassMetricsVO;
-import org.netbeans.modules.php.project.ui.codecoverage.CoverageVO.ClassVO;
-import org.netbeans.modules.php.project.ui.codecoverage.CoverageVO.CoverageMetricsVO;
-import org.netbeans.modules.php.project.ui.codecoverage.CoverageVO.FileMetricsVO;
-import org.netbeans.modules.php.project.ui.codecoverage.CoverageVO.FileVO;
-import org.netbeans.modules.php.project.ui.codecoverage.CoverageVO.LineVO;
-import org.netbeans.modules.php.project.ui.codecoverage.PhpUnitCoverageLogParser;
 
 /**
  * @author Tomas Mysik
@@ -67,7 +59,7 @@ public class PhpUnitCoverageLogParserTest extends NbTestCase {
 
     public void testParseLog() throws Exception {
         Reader reader = new BufferedReader(new FileReader(getCoverageLog("phpunit-coverage.xml")));
-        CoverageVO coverage = new CoverageVO();
+        CoverageImpl coverage = new CoverageImpl();
 
         PhpUnitCoverageLogParser.parse(reader, coverage);
 
@@ -75,72 +67,72 @@ public class PhpUnitCoverageLogParserTest extends NbTestCase {
         assertEquals("3.3.1", coverage.getPhpUnitVersion());
         assertEquals(2, coverage.getFiles().size());
 
-        FileVO file = coverage.getFiles().get(0);
+        CoverageImpl.FileImpl file = (CoverageImpl.FileImpl) coverage.getFiles().get(0);
         assertEquals("/home/gapon/NetBeansProjects/PhpProject01/src/hola/Calculator2.php5", file.getPath());
         assertEquals(2, file.getClasses().size());
 
-        ClassVO clazz = file.getClasses().get(0);
+        CoverageImpl.ClassImpl clazz = file.getClasses().get(0);
         assertEquals("Calculator2", clazz.getName());
         assertEquals("global", clazz.getNamespace());
 
-        ClassMetricsVO classMetrics = clazz.getMetrics();
+        ClassMetricsImpl classMetrics = clazz.getMetrics();
         assertNotNull(classMetrics);
-        assertEquals(11, classMetrics.methods);
-        assertEquals(5, classMetrics.coveredMethods);
-        assertEquals(3, classMetrics.statements);
-        assertEquals(2, classMetrics.coveredStatements);
-        assertEquals(7, classMetrics.elements);
-        assertEquals(6, classMetrics.coveredElements);
+        assertEquals(11, classMetrics.getMethods());
+        assertEquals(5, classMetrics.getCoveredMethods());
+        assertEquals(3, classMetrics.getStatements());
+        assertEquals(2, classMetrics.getCoveredStatements());
+        assertEquals(7, classMetrics.getElements());
+        assertEquals(6, classMetrics.getCoveredElements());
 
         assertEquals(4, file.getLines().size());
-        LineVO line = file.getLines().get(0);
-        assertEquals(11, line.num);
-        assertEquals("method", line.type);
-        assertEquals(1, line.count);
+        CoverageImpl.LineImpl line = (CoverageImpl.LineImpl) file.getLines().get(0);
+        assertEquals(11, line.getNumber());
+        assertEquals("method", line.getType());
+        assertEquals(1, line.getHitCount());
 
-        FileMetricsVO fileMetrics = file.getMetrics();
+        FileMetricsImpl fileMetrics = (FileMetricsImpl) file.getMetrics();
         assertNotNull(fileMetrics);
-        assertEquals(32, fileMetrics.loc);
-        assertEquals(18, fileMetrics.ncloc);
-        assertEquals(4, fileMetrics.classes);
-        assertEquals(2, fileMetrics.methods);
-        assertEquals(1, fileMetrics.coveredMethods);
-        assertEquals(5, fileMetrics.statements);
-        assertEquals(3, fileMetrics.coveredStatements);
-        assertEquals(43, fileMetrics.elements);
-        assertEquals(25, fileMetrics.coveredElements);
+        assertEquals(32, fileMetrics.getLineCount());
+        assertEquals(18, fileMetrics.getNcloc());
+        assertEquals(4, fileMetrics.getClasses());
+        assertEquals(2, fileMetrics.getMethods());
+        assertEquals(1, fileMetrics.getCoveredMethods());
+        assertEquals(5, fileMetrics.getStatements());
+        assertEquals(3, fileMetrics.getCoveredStatements());
+        assertEquals(43, fileMetrics.getElements());
+        assertEquals(25, fileMetrics.getCoveredElements());
 
-        file = coverage.getFiles().get(1);
+        file = (CoverageImpl.FileImpl) coverage.getFiles().get(1);
         assertEquals("/home/gapon/NetBeansProjects/PhpProject01/src/Calculator.php", file.getPath());
         assertEquals(1, file.getClasses().size());
         assertEquals(6, file.getLines().size());
 
-        line = file.getLines().get(0);
-        assertEquals(10, line.num);
-        assertEquals("method", line.type);
-        assertEquals(3, line.count);
-        line = file.getLines().get(5);
-        assertEquals(19, line.num);
-        assertEquals("stmt", line.type);
-        assertEquals(0, line.count);
+        line = (CoverageImpl.LineImpl) file.getLines().get(0);
+        assertEquals(10, line.getNumber());
+        assertEquals("method", line.getType());
+        assertEquals(3, line.getHitCount());
+        line = (CoverageImpl.LineImpl) file.getLines().get(5);
+        assertEquals(19, line.getNumber());
+        assertEquals("stmt", line.getType());
+        assertEquals(0, line.getHitCount());
 
-        CoverageMetricsVO coverageMetrics = coverage.getMetrics();
+        CoverageMetricsImpl coverageMetrics = coverage.getMetrics();
         assertNotNull(coverageMetrics);
-        assertEquals(2, coverageMetrics.files);
-        assertEquals(50, coverageMetrics.loc);
-        assertEquals(30, coverageMetrics.ncloc);
-        assertEquals(33, coverageMetrics.classes);
-        assertEquals(1717, coverageMetrics.methods);
-        assertEquals(665, coverageMetrics.coveredMethods);
-        assertEquals(532, coverageMetrics.statements);
-        assertEquals(443, coverageMetrics.coveredStatements);
-        assertEquals(2344, coverageMetrics.elements);
-        assertEquals(1234, coverageMetrics.coveredElements);
+        assertEquals(2, coverageMetrics.getFiles());
+        assertEquals(50, coverageMetrics.getLineCount());
+        assertEquals(30, coverageMetrics.getNcloc());
+        assertEquals(33, coverageMetrics.getClasses());
+        assertEquals(1717, coverageMetrics.getMethods());
+        assertEquals(665, coverageMetrics.getCoveredMethods());
+        assertEquals(532, coverageMetrics.getStatements());
+        assertEquals(443, coverageMetrics.getCoveredStatements());
+        assertEquals(2344, coverageMetrics.getElements());
+        assertEquals(1234, coverageMetrics.getCoveredElements());
     }
 
     public void testParseLogIssue180254() throws Exception {
         Reader reader = new BufferedReader(new FileReader(getCoverageLog("phpunit-coverage-issue180254.xml")));
-        CoverageVO coverage = new CoverageVO();
+        CoverageImpl coverage = new CoverageImpl();
 
         PhpUnitCoverageLogParser.parse(reader, coverage);
 
@@ -148,46 +140,46 @@ public class PhpUnitCoverageLogParserTest extends NbTestCase {
         assertEquals("3.4.6", coverage.getPhpUnitVersion());
         assertEquals(20, coverage.getFiles().size());
 
-        FileVO file = coverage.getFiles().get(0);
+        CoverageImpl.FileImpl file = (CoverageImpl.FileImpl) coverage.getFiles().get(0);
         assertEquals("/usr/local/zend/apache2/htdocs/mysgc/plugins/mcJobqueuePlugin/lib/jobhandler/McJobqueueTestjobHandler.php", file.getPath());
         assertEquals(1, file.getClasses().size());
 
-        ClassVO clazz = file.getClasses().get(0);
+        CoverageImpl.ClassImpl clazz = file.getClasses().get(0);
         assertEquals("McJobqueueTestjobHandler", clazz.getName());
         assertEquals("global", clazz.getNamespace());
 
-        ClassMetricsVO classMetrics = clazz.getMetrics();
+        ClassMetricsImpl classMetrics = clazz.getMetrics();
         assertNotNull(classMetrics);
-        assertEquals(1, classMetrics.methods);
-        assertEquals(1, classMetrics.coveredMethods);
-        assertEquals(2, classMetrics.statements);
-        assertEquals(2, classMetrics.coveredStatements);
-        assertEquals(3, classMetrics.elements);
-        assertEquals(3, classMetrics.coveredElements);
+        assertEquals(1, classMetrics.getMethods());
+        assertEquals(1, classMetrics.getCoveredMethods());
+        assertEquals(2, classMetrics.getStatements());
+        assertEquals(2, classMetrics.getCoveredStatements());
+        assertEquals(3, classMetrics.getElements());
+        assertEquals(3, classMetrics.getCoveredElements());
 
         assertEquals(5, file.getLines().size());
-        LineVO line = file.getLines().get(0);
-        assertEquals(10, line.num);
-        assertEquals("stmt", line.type);
-        assertEquals(1, line.count);
+        CoverageImpl.LineImpl line = (CoverageImpl.LineImpl) file.getLines().get(0);
+        assertEquals(10, line.getNumber());
+        assertEquals("stmt", line.getType());
+        assertEquals(1, line.getHitCount());
 
-        FileMetricsVO fileMetrics = file.getMetrics();
+        FileMetricsImpl fileMetrics = (FileMetricsImpl) file.getMetrics();
         assertNotNull(fileMetrics);
-        assertEquals(13, fileMetrics.loc);
-        assertEquals(7, fileMetrics.ncloc);
-        assertEquals(1, fileMetrics.classes);
-        assertEquals(1, fileMetrics.methods);
-        assertEquals(1, fileMetrics.coveredMethods);
-        assertEquals(4, fileMetrics.statements);
-        assertEquals(4, fileMetrics.coveredStatements);
-        assertEquals(5, fileMetrics.elements);
-        assertEquals(5, fileMetrics.coveredElements);
+        assertEquals(13, fileMetrics.getLineCount());
+        assertEquals(7, fileMetrics.getNcloc());
+        assertEquals(1, fileMetrics.getClasses());
+        assertEquals(1, fileMetrics.getMethods());
+        assertEquals(1, fileMetrics.getCoveredMethods());
+        assertEquals(4, fileMetrics.getStatements());
+        assertEquals(4, fileMetrics.getCoveredStatements());
+        assertEquals(5, fileMetrics.getElements());
+        assertEquals(5, fileMetrics.getCoveredElements());
     }
-
 
     private File getCoverageLog(String filename) throws Exception {
         File coverageLog = new File(getDataDir(), filename);
         assertTrue(coverageLog.isFile());
         return coverageLog;
     }
+
 }

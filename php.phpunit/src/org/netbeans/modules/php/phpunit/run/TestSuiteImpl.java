@@ -74,6 +74,10 @@ public final class TestSuiteImpl implements TestSuite {
         return name;
     }
 
+    public String getFile() {
+        return file;
+    }
+
     @Override
     public FileObject getLocation() {
         if (file == null) {

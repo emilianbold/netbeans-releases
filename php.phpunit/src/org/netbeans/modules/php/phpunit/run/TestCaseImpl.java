@@ -98,6 +98,14 @@ public final class TestCaseImpl implements TestCase {
         return name;
     }
 
+    public String getFile() {
+        return file;
+    }
+
+    public int getLine() {
+        return line;
+    }
+
     @Override
     public Locations.Line getLocation() {
         if (file == null) {

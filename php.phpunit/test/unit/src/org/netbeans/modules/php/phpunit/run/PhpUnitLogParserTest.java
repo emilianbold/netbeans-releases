@@ -47,9 +47,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.Reader;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.gsf.testrunner.api.Status;
-import org.netbeans.modules.php.phpunit.run.TestCaseImpl;
-import org.netbeans.modules.php.phpunit.run.TestSuiteImpl;
+import org.netbeans.modules.php.spi.testing.run.TestCase;
 
 /**
  * @author Tomas Mysik
@@ -62,7 +60,7 @@ public class PhpUnitLogParserTest extends NbTestCase {
 
     public void testParseLogWithMoreSuites() throws Exception {
         Reader reader = new BufferedReader(new FileReader(getLogForMoreSuites()));
-        TestSessionImpl testSession = new TestSessionImpl();
+        TestSessionImpl testSession = new TestSessionImpl(null);
 
         PhpUnitLogParser.parse(reader, testSession);
 
@@ -73,60 +71,60 @@ public class PhpUnitLogParserTest extends NbTestCase {
         assertEquals(3, testSession.getTestSuites().size());
 
         // 1st
-        TestSuiteImpl testSuite = testSession.getTestSuites().get(0);
+        TestSuiteImpl testSuite = (TestSuiteImpl) testSession.getTestSuites().get(0);
         assertEquals("Calculator2Test", testSuite.getName());
         assertEquals("/home/gapon/NetBeansProjects/PhpProject01/tests/hola/Calculator2Test.php", testSuite.getFile());
         assertEquals(11, testSuite.getTime());
         assertEquals(1, testSuite.getTestCases().size());
 
-        TestCaseImpl testCase = testSuite.getTestCases().get(0);
+        TestCaseImpl testCase = (TestCaseImpl) testSuite.getTestCases().get(0);
         assertEquals("testAdd", testCase.getName());
         assertEquals("/home/gapon/NetBeansProjects/PhpProject01/tests/hola/Calculator2Test.php", testCase.getFile());
         assertEquals(43, testCase.getLine());
         assertEquals(11, testCase.getTime());
 
         // 2nd - pending test suite
-        testSuite = testSession.getTestSuites().get(1);
+        testSuite = (TestSuiteImpl) testSession.getTestSuites().get(1);
         assertEquals("NoTestClassTest", testSuite.getName());
         assertEquals(1, testSuite.getTestCases().size());
 
-        testCase = testSuite.getTestCases().get(0);
-        assertEquals(Status.SKIPPED, testCase.getStatus());
+        testCase = (TestCaseImpl) testSuite.getTestCases().get(0);
+        assertEquals(TestCase.Status.SKIPPED, testCase.getStatus());
         assertFalse(testCase.isFailure());
         assertFalse(testCase.isError());
         assertEquals(0, testCase.getStacktrace().length);
 
         // 3rd
-        testSuite = testSession.getTestSuites().get(2);
+        testSuite = (TestSuiteImpl) testSession.getTestSuites().get(2);
         assertEquals("CalculatorTest", testSuite.getName());
         assertEquals(5, testSuite.getTestCases().size());
 
-        testCase = testSuite.getTestCases().get(1);
+        testCase = (TestCaseImpl) testSuite.getTestCases().get(1);
         assertEquals("testAdd2", testCase.getName());
         assertTrue(testCase.isFailure());
         assertFalse(testCase.isError());
-        assertEquals(Status.FAILED, testCase.getStatus());
+        assertEquals(TestCase.Status.FAILED, testCase.getStatus());
         assertEquals(2, testCase.getStacktrace().length);
         assertEquals("Failed asserting that two objects are equal.\n--- Expected\n+++ Actual\n@@ -1,3 +1 @@\n-MyObject Object\n-(\n-)\n+77\n\\ Chybi znak konce radku na konci souboru", testCase.getStacktrace()[0]);
         assertEquals("/home/gapon/NetBeansProjects/PhpProject01/tests/CalculatorTest.php:56", testCase.getStacktrace()[1]);
 
-        testCase = testSuite.getTestCases().get(2);
+        testCase = (TestCaseImpl) testSuite.getTestCases().get(2);
         assertEquals("testAdd3", testCase.getName());
-        assertEquals(Status.FAILED, testCase.getStatus());
+        assertEquals(TestCase.Status.FAILED, testCase.getStatus());
         assertEquals(2, testCase.getStacktrace().length);
         assertEquals("my expected message\nFailed asserting that two strings are equal.\nexpected string <hello>\ndifference      < x???>\ngot string      <hi>", testCase.getStacktrace()[0]);
         assertEquals("/home/gapon/NetBeansProjects/PhpProject01/tests/CalculatorTest.php:64", testCase.getStacktrace()[1]);
 
-        testCase = testSuite.getTestCases().get(3);
+        testCase = (TestCaseImpl) testSuite.getTestCases().get(3);
         assertEquals("testAdd4", testCase.getName());
-        assertEquals(Status.FAILED, testCase.getStatus());
+        assertEquals(TestCase.Status.FAILED, testCase.getStatus());
         assertEquals(2, testCase.getStacktrace().length);
         assertEquals("Failed asserting that <integer:2> matches expected value <integer:3>.", testCase.getStacktrace()[0]);
         assertEquals("/home/gapon/NetBeansProjects/PhpProject01/tests/CalculatorTest.php:75", testCase.getStacktrace()[1]);
 
-        testCase = testSuite.getTestCases().get(4);
+        testCase = (TestCaseImpl) testSuite.getTestCases().get(4);
         assertEquals("testAdd5", testCase.getName());
-        assertEquals(Status.ERROR, testCase.getStatus());
+        assertEquals(TestCase.Status.ERROR, testCase.getStatus());
         assertEquals(3, testCase.getStacktrace().length);
         assertEquals("Exception: my exception", testCase.getStacktrace()[0]);
         assertEquals("/home/gapon/NetBeansProjects/PhpProject01/src/Calculator.php:13", testCase.getStacktrace()[1]);
@@ -135,7 +133,7 @@ public class PhpUnitLogParserTest extends NbTestCase {
 
     public void testParseLogWithOneSuite() throws Exception {
         Reader reader = new BufferedReader(new FileReader(getLogForOneSuite()));
-        TestSessionImpl testSession = new TestSessionImpl();
+        TestSessionImpl testSession = new TestSessionImpl(null);
 
         PhpUnitLogParser.parse(reader, testSession);
 
@@ -146,13 +144,13 @@ public class PhpUnitLogParserTest extends NbTestCase {
         assertEquals(1, testSession.getTestSuites().size());
 
         // 1st
-        TestSuiteImpl testSuite = testSession.getTestSuites().get(0);
+        TestSuiteImpl testSuite = (TestSuiteImpl) testSession.getTestSuites().get(0);
         assertEquals("Calculator2Test", testSuite.getName());
         assertEquals("/home/gapon/NetBeansProjects/PhpProject01/tests/hola/Calculator2Test.php", testSuite.getFile());
         assertEquals(10, testSuite.getTime());
         assertEquals(1, testSuite.getTestCases().size());
 
-        TestCaseImpl testCase = testSuite.getTestCases().get(0);
+        TestCaseImpl testCase = (TestCaseImpl) testSuite.getTestCases().get(0);
         assertEquals("testAdd", testCase.getName());
         assertEquals("/home/gapon/NetBeansProjects/PhpProject01/tests/hola/Calculator2Test.php", testCase.getFile());
         assertEquals(43, testCase.getLine());
@@ -161,91 +159,91 @@ public class PhpUnitLogParserTest extends NbTestCase {
 
     public void testParseLogIssue157846() throws Exception {
         Reader reader = new BufferedReader(new FileReader(new File(getDataDir(), "phpunit-log-issue157846.xml")));
-        TestSessionImpl testSession = new TestSessionImpl();
+        TestSessionImpl testSession = new TestSessionImpl(null);
 
         PhpUnitLogParser.parse(reader, testSession);
 
         assertSame(1, testSession.getTestSuites().size());
-        TestSuiteImpl testSuite = testSession.getTestSuites().get(0);
+        TestSuiteImpl testSuite = (TestSuiteImpl) testSession.getTestSuites().get(0);
         assertEquals("integration_REST_C_CustomersTest", testSuite.getName());
 
         assertSame(1, testSuite.getTestCases().size());
-        TestCaseImpl testCase = testSuite.getTestCases().get(0);
+        TestCaseImpl testCase = (TestCaseImpl) testSuite.getTestCases().get(0);
         assertEquals("testCheckNewRecord", testCase.getName());
 
-        assertEquals(Status.FAILED, testCase.getStatus());
+        assertEquals(TestCase.Status.FAILED, testCase.getStatus());
         assertSame(1, testCase.getStacktrace().length);
     }
 
     public void testParseLogIssue159876() throws Exception {
         Reader reader = new BufferedReader(new FileReader(new File(getDataDir(), "phpunit-log-issue159876.xml")));
-        TestSessionImpl testSession = new TestSessionImpl();
+        TestSessionImpl testSession = new TestSessionImpl(null);
 
         PhpUnitLogParser.parse(reader, testSession);
 
         assertSame(3, testSession.getTestSuites().size());
-        TestSuiteImpl testSuite = testSession.getTestSuites().get(0);
+        TestSuiteImpl testSuite = (TestSuiteImpl) testSession.getTestSuites().get(0);
         assertEquals("LoginTest", testSuite.getName());
         assertEquals("/Library/WebServer/Documents/acalog/tests/EmptyTest.php", testSuite.getFile());
         assertSame(1, testSuite.getTestCases().size());
         assertEquals(TestCaseImpl.skippedTestCase().toString(), testSuite.getTestCases().get(0).toString());
 
-        testSuite = testSession.getTestSuites().get(1);
+        testSuite = (TestSuiteImpl) testSession.getTestSuites().get(1);
         assertEquals("LoginTest: Firefox on Windows", testSuite.getName());
         assertEquals("/Library/WebServer/Documents/acalog/tests/EmptyTest.php", testSuite.getFile());
 
         assertSame(1, testSuite.getTestCases().size());
-        TestCaseImpl testCase = testSuite.getTestCases().get(0);
+        TestCaseImpl testCase = (TestCaseImpl) testSuite.getTestCases().get(0);
         assertEquals("testLogin", testCase.getName());
 
-        testSuite = testSession.getTestSuites().get(2);
+        testSuite = (TestSuiteImpl) testSession.getTestSuites().get(2);
         assertEquals("LoginTest: Internet Explorer on Windows", testSuite.getName());
         assertEquals("/Library/WebServer/Documents/acalog/tests/EmptyTest.php", testSuite.getFile());
 
         assertSame(1, testSuite.getTestCases().size());
-        testCase = testSuite.getTestCases().get(0);
+        testCase = (TestCaseImpl) testSuite.getTestCases().get(0);
         assertEquals("testLogin", testCase.getName());
     }
 
     public void testParseLogIssue169433() throws Exception {
         Reader reader = new BufferedReader(new FileReader(new File(getDataDir(), "phpunit-log-issue169433.xml")));
-        TestSessionImpl testSession = new TestSessionImpl();
+        TestSessionImpl testSession = new TestSessionImpl(null);
 
         PhpUnitLogParser.parse(reader, testSession);
 
         assertSame(4, testSession.getTestSuites().size());
-        TestSuiteImpl testSuite = testSession.getTestSuites().get(0);
+        TestSuiteImpl testSuite = (TestSuiteImpl) testSession.getTestSuites().get(0);
         assertEquals("E2_ConfigTest", testSuite.getName());
         assertEquals("/home/gapon/tmp/buga/SvnIPMCore/ipmcore/tests/ipmcore/lib/e2/E2/E2_ConfigTest.php", testSuite.getFile());
 
         assertSame(4, testSuite.getTestCases().size());
-        TestCaseImpl testCase = testSuite.getTestCases().get(0);
+        TestCaseImpl testCase = (TestCaseImpl) testSuite.getTestCases().get(0);
         assertEquals("test__get", testCase.getName());
-        testCase = testSuite.getTestCases().get(3);
+        testCase = (TestCaseImpl) testSuite.getTestCases().get(3);
         assertEquals("testIterator", testCase.getName());
 
-        testSuite = testSession.getTestSuites().get(1);
+        testSuite = (TestSuiteImpl) testSession.getTestSuites().get(1);
         assertEquals("E2_ConfigTest::testConstructException", testSuite.getName());
         assertEquals("/home/gapon/tmp/buga/SvnIPMCore/ipmcore/tests/ipmcore/lib/e2/E2/E2_ConfigTest.php", testSuite.getFile());
 
         assertSame(3, testSuite.getTestCases().size());
-        testCase = testSuite.getTestCases().get(0);
+        testCase = (TestCaseImpl) testSuite.getTestCases().get(0);
         assertEquals("testConstructException with data set #0", testCase.getName());
-        testCase = testSuite.getTestCases().get(2);
+        testCase = (TestCaseImpl) testSuite.getTestCases().get(2);
         assertEquals("testConstructException with data set #2", testCase.getName());
 
-        testSuite = testSession.getTestSuites().get(3);
+        testSuite = (TestSuiteImpl) testSession.getTestSuites().get(3);
         assertEquals("E2_Crypt_EncryptTest", testSuite.getName());
         assertEquals("/home/gapon/tmp/buga/SvnIPMCore/ipmcore/tests/ipmcore/lib/e2/E2/Crypt/E2_Crypt_McryptTest.php", testSuite.getFile());
 
         assertSame(1, testSuite.getTestCases().size());
-        testCase = testSuite.getTestCases().get(0);
+        testCase = (TestCaseImpl) testSuite.getTestCases().get(0);
         assertEquals("testDecryption", testCase.getName());
     }
 
     public void testParseLogIssue198920() throws Exception {
         Reader reader = new BufferedReader(new FileReader(new File(getDataDir(), "phpunit-log-issue198920.xml")));
-        TestSessionImpl testSession = new TestSessionImpl();
+        TestSessionImpl testSession = new TestSessionImpl(null);
 
         PhpUnitLogParser.parse(reader, testSession);
 
@@ -266,4 +264,5 @@ public class PhpUnitLogParserTest extends NbTestCase {
         assertTrue(xmlLog.isFile());
         return xmlLog;
     }
+
 }

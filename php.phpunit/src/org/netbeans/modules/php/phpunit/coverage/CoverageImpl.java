@@ -210,6 +210,11 @@ public final class CoverageImpl implements Coverage {
         public int getHitCount() {
             return count;
         }
+
+        public String getType() {
+            return type;
+        }
+
     }
 
 }
