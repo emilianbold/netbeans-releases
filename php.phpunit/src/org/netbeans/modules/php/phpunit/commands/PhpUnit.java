@@ -47,31 +47,35 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
-import org.netbeans.api.extexecution.ExternalProcessBuilder;
-import org.netbeans.modules.php.api.editor.PhpClass;
-import org.netbeans.modules.php.project.deprecated.PhpProgram;
+import org.netbeans.api.extexecution.print.LineConvertor;
+import org.netbeans.api.extexecution.print.LineConvertors;
+import org.netbeans.modules.php.api.executable.InvalidPhpExecutableException;
+import org.netbeans.modules.php.api.executable.PhpExecutable;
+import org.netbeans.modules.php.api.executable.PhpExecutableValidator;
+import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.util.FileUtils;
-import org.netbeans.modules.php.api.util.Pair;
-import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.api.util.UiUtils;
-import org.netbeans.modules.php.project.PhpProject;
-import org.netbeans.modules.php.project.ProjectPropertiesSupport;
-import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
-import org.netbeans.modules.php.project.ui.options.PhpOptions;
-import org.netbeans.modules.php.project.util.PhpProjectUtils;
+import org.netbeans.modules.php.api.validation.ValidationResult;
+import static org.netbeans.modules.php.phpunit.commands.SkeletonGenerator.validate;
+import org.netbeans.modules.php.phpunit.options.PhpUnitOptions;
+import org.netbeans.modules.php.phpunit.preferences.PhpUnitPreferences;
+import org.netbeans.modules.php.phpunit.preferences.PhpUnitPreferencesValidator;
+import org.netbeans.modules.php.phpunit.ui.options.PhpUnitOptionsPanelController;
+import org.netbeans.modules.php.spi.testing.run.TestRunException;
+import org.netbeans.modules.php.spi.testing.run.TestRunInfo;
+import org.netbeans.modules.php.spi.testing.run.TestRunInfo.TestInfo;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -84,125 +88,53 @@ import org.openide.util.NbBundle;
 
 /**
  * PHPUnit 3.4+ support.
- * @author Tomas Mysik
  */
-public final class PhpUnit extends PhpProgram {
+public final class PhpUnit {
 
-    private boolean isPhpUnitValid() {
-        return CommandUtils.getPhpUnit(project, true) != null;
-    }
-
-    void run(PhpUnitTestRunInfo info) {
-        if (info == null) {
-            return;
-        }
-
-        // test groups, not for rerun
-        if (!info.isRerun() && ProjectPropertiesSupport.askForTestGroups(project)) {
-            PhpUnit phpUnit = CommandUtils.getPhpUnit(project, false);
-            ConfigFiles configFiles = PhpUnit.getConfigFiles(project, false);
-
-            PhpUnitTestGroupsFetcher testGroupsFetcher = new PhpUnitTestGroupsFetcher(project);
-            boolean success = testGroupsFetcher.fetch(phpUnit.getWorkingDirectory(configFiles, FileUtil.toFile(info.getWorkingDirectory())), configFiles);
-            if (!success) {
-                return;
-            }
-            if (testGroupsFetcher.wasInterrupted()) {
-                return;
-            }
-            testGroupsFetcher.saveSelectedTestGroups();
-        }
-
-        new RunScript(new RunScriptProvider(info)).run();
-    }
-
-    /**
-     * Get valid {@link PhpUnit} instance (script for project if provided or from IDE options) or {@code null}.
-     * @param project project to get PhpUnit for
-     * @param showCustomizer if @code true}, IDE options dialog is shown if the path of PHPUnit is not valid
-     * @return valid {@link PhpUnit} instance or <code>null</code> if the path of PHP Unit is not valid
-     */
-    public static PhpUnit getPhpUnit(PhpProject project, boolean showCustomizer) {
-        // project first
-        try {
-            PhpUnit phpUnit = PhpUnit.forProject(project);
-            if (phpUnit != null) {
-                return phpUnit;
-            }
-        } catch (InvalidPhpProgramException ex) {
-            if (showCustomizer) {
-                PhpProjectUtils.openCustomizer(project, CompositePanelProviderImpl.PHP_UNIT);
-            }
-            return null;
-        }
-        // then general
-        try {
-            return PhpUnit.getDefault();
-        } catch (InvalidPhpProgramException ex) {
-            if (showCustomizer) {
-                UiUtils.invalidScriptProvided(ex.getLocalizedMessage(), PhpUnit.OPTIONS_SUB_PATH);
-            }
-        }
-        return null;
-    }
-
-
-
-
-
-
-    @SuppressWarnings("FieldNameHidesFieldInSuperclass")
     private static final Logger LOGGER = Logger.getLogger(PhpUnit.class.getName());
+
+    static final ExecutionDescriptor.LineConvertorFactory PHPUNIT_LINE_CONVERTOR_FACTORY = new PhpUnitLineConvertorFactory();
 
     public static final String SCRIPT_NAME = "phpunit"; // NOI18N
     public static final String SCRIPT_NAME_LONG = SCRIPT_NAME + FileUtils.getScriptExtension(true);
     // for keeping log files to able to evaluate and fix issues
     public static final boolean KEEP_LOGS = Boolean.getBoolean("nb.php.phpunit.keeplogs"); // NOI18N
-    // options
-    public static final String OPTIONS_SUB_PATH = "PhpUnit"; // NOI18N
-    public static final String OPTIONS_PATH = UiUtils.OPTIONS_PATH + "/" + PhpUnit.OPTIONS_SUB_PATH; // NOI18N
     // test files suffix
     public static final String TEST_CLASS_SUFFIX = "Test"; // NOI18N
     private static final String TEST_FILE_SUFFIX = TEST_CLASS_SUFFIX + ".php"; // NOI18N
     // suite files suffix
     private static final String SUITE_CLASS_SUFFIX = "Suite"; // NOI18N
     private static final String SUITE_FILE_SUFFIX = SUITE_CLASS_SUFFIX + ".php"; // NOI18N
-    // create test
-    private static final String REQUIRE_ONCE_TPL_START = "require_once '"; // NOI18N
-    private static final String REQUIRE_ONCE_TPL_END = "%s';"; // NOI18N
-    private static final String REQUIRE_ONCE_TPL = "require_once '%s';"; // NOI18N
-    private static final String DIRNAME_FILE = ".dirname(__FILE__).'/"; // NOI18N
-    static final String REQUIRE_ONCE_REL_PART = "'" + DIRNAME_FILE; // NOI18N
+
     // cli options
-    public static final String PARAM_JUNIT_LOG = "--log-junit"; // NOI18N
-    public static final String PARAM_FILTER = "--filter"; // NOI18N
-    public static final String PARAM_COVERAGE_LOG = "--coverage-clover"; // NOI18N
-    public static final String PARAM_SKELETON = "--skeleton-test"; // NOI18N
-    public static final String PARAM_LIST_GROUPS = "--list-groups"; // NOI18N
-    public static final String PARAM_GROUP = "--group"; // NOI18N
+    private static final String JUNIT_LOG_PARAM = "--log-junit"; // NOI18N
+    private static final String FILTER_PARAM = "--filter"; // NOI18N
+    private static final String COVERAGE_LOG_PARAM = "--coverage-clover"; // NOI18N
+    private static final String LIST_GROUPS_PARAM = "--list-groups"; // NOI18N
+    private static final String GROUP_PARAM = "--group"; // NOI18N
 
     // bootstrap & config
-    public static final String PARAM_BOOTSTRAP = "--bootstrap"; // NOI18N
+    private static final String BOOTSTRAP_PARAM = "--bootstrap"; // NOI18N
     private static final String BOOTSTRAP_FILENAME = "bootstrap%s.php"; // NOI18N
-    public static final String PARAM_CONFIGURATION = "--configuration"; // NOI18N
+    private static final String CONFIGURATION_PARAM = "--configuration"; // NOI18N
     private static final String CONFIGURATION_FILENAME = "configuration%s.xml"; // NOI18N
 
     // output files
-    public static final File XML_LOG;
-    public static final File COVERAGE_LOG;
+    private static final File XML_LOG;
+    private static final File COVERAGE_LOG;
 
     // suite file
-    public static final String SUITE_NAME = "NetBeansSuite"; // NOI18N
-    public static final String SUITE_RUN = "--run=%s"; // NOI18N
+    private static final String SUITE_NAME = "NetBeansSuite"; // NOI18N
+    private static final String SUITE_RUN = "--run=%s"; // NOI18N
     private static final String SUITE_REL_PATH = "phpunit/" + SUITE_NAME + ".php"; // NOI18N
 
-    // php props
-    private static final char DIRECTORY_SEPARATOR = '/'; // NOI18N
-
-    public static final Pattern LINE_PATTERN = Pattern.compile("(?:.+\\(\\) )?(.+):(\\d+)"); // NOI18N
+    // generating files
+    private static final String DIRNAME_FILE = ".dirname(__FILE__).'/"; // NOI18N
 
     // #200489
     private static volatile File suite; // ok if it is fetched more times
+
+    private final String phpUnitPath;
 
 
     static {
@@ -221,226 +153,282 @@ public final class PhpUnit extends PhpProgram {
         LOGGER.log(Level.FINE, "Directory for PhpUnit logs: {0}", logDirName);
         XML_LOG = new File(logDirName, "nb-phpunit-log.xml"); // NOI18N
         COVERAGE_LOG = new File(logDirName, "nb-phpunit-coverage.xml"); // NOI18N
-     }
-
-    private PhpUnit(String command) {
-        super(command);
     }
 
-    public static File getNbSuite() {
+
+    private PhpUnit(String phpUnitPath) {
+        assert phpUnitPath != null;
+        this.phpUnitPath = phpUnitPath;
+    }
+
+    public static PhpUnit getDefault() throws InvalidPhpExecutableException {
+        String script = PhpUnitOptions.getInstance().getPhpUnitPath();
+        String error = validate(script);
+        if (error != null) {
+            throw new InvalidPhpExecutableException(error);
+        }
+        return new PhpUnit(script);
+    }
+
+    @CheckForNull
+    public static PhpUnit getForPhpModule(PhpModule phpModule, boolean showCustomizer) {
+        // php module first
+        try {
+            PhpUnit phpUnit = getForPhpModule(phpModule);
+            if (phpUnit != null) {
+                return phpUnit;
+            }
+        } catch (InvalidPhpExecutableException ex) {
+            if (showCustomizer) {
+                // XXX
+                //phpModule.openCustomizer(PhpUnitTestingProvider.IDENTIFIER);
+                throw new UnsupportedOperationException("Not implemented yet");
+            }
+            return null;
+        }
+        // then general
+        try {
+            return PhpUnit.getDefault();
+        } catch (InvalidPhpExecutableException ex) {
+            if (showCustomizer) {
+                UiUtils.invalidScriptProvided(ex.getLocalizedMessage(), PhpUnitOptionsPanelController.OPTIONS_SUB_PATH);
+            }
+        }
+        return null;
+    }
+
+    @CheckForNull
+    private static PhpUnit getForPhpModule(PhpModule phpModule) throws InvalidPhpExecutableException {
+        assert phpModule != null;
+        if (!PhpUnitPreferences.isPhpUnitEnabled(phpModule)) {
+            return null;
+        }
+        String phpUnitPath = PhpUnitPreferences.getPhpUnitPath(phpModule);
+        String error = validateForModule(phpModule, phpUnitPath);
+        if (error != null) {
+            throw new InvalidPhpExecutableException(error);
+        }
+        return new PhpUnit(phpUnitPath);
+    }
+
+    @NbBundle.Messages("PhpUnit.script.label=PHPUnit script")
+    public static String validate(String command) {
+        return PhpExecutableValidator.validateCommand(command, Bundle.PhpUnit_script_label());
+    }
+
+    public static String validateForModule(PhpModule phpModule, String command) {
+        String error = validate(command);
+        if (error != null) {
+            return error;
+        }
+        ValidationResult result = new PhpUnitPreferencesValidator()
+                .validate(phpModule)
+                .getResult();
+        if (result.hasErrors()) {
+            return result.getErrors().get(0).getMessage();
+        }
+        if (result.hasWarnings()) {
+            return result.getWarnings().get(0).getMessage();
+        }
+        return null;
+    }
+
+    private static File getNbSuite() {
         if (suite == null) {
-            suite = InstalledFileLocator.getDefault().locate(SUITE_REL_PATH, "org.netbeans.modules.php.project", false);  // NOI18N
+            suite = InstalledFileLocator.getDefault().locate(SUITE_REL_PATH, "org.netbeans.modules.php.phpunit", false);  // NOI18N
+            assert suite != null : "Cannot find NB test suite?!";
         }
         return suite;
     }
 
-    public static PhpUnit getDefault() throws InvalidPhpProgramException {
-        return getCustom(PhpOptions.getInstance().getPhpUnit());
-    }
-
-    public static PhpUnit forProject(PhpProject project) throws InvalidPhpProgramException {
-        File script = ProjectPropertiesSupport.getPhpUnitScript(project);
-        if (script == null) {
+    @CheckForNull
+    public Integer runTests(PhpModule phpModule, TestRunInfo runInfo) throws TestRunException {
+        PhpExecutable phpUnit = getExecutable(phpModule, getOutputTitle(runInfo, PhpUnitPreferences.isSuiteEnabled(phpModule)));
+        if (phpUnit == null) {
             return null;
         }
-        return getCustom(script.getAbsolutePath());
+
+        List<String> params = new ArrayList<String>();
+        // junit log
+        params.add(JUNIT_LOG_PARAM);
+        params.add(XML_LOG.getAbsolutePath());
+        if (PhpUnitPreferences.isBootstrapEnabled(phpModule)) {
+            params.add(BOOTSTRAP_PARAM);
+            params.add(PhpUnitPreferences.getBootstrapPath(phpModule));
+        }
+        if (PhpUnitPreferences.isConfigurationEnabled(phpModule)) {
+            params.add(CONFIGURATION_PARAM);
+            params.add(PhpUnitPreferences.getConfigurationPath(phpModule));
+        }
+        if (runInfo.isCoverageEnabled()) {
+            params.add(COVERAGE_LOG_PARAM);
+            params.add(COVERAGE_LOG.getAbsolutePath());
+        }
+        // XXX test groups
+        // test groups, not for rerun
+//        if (!info.isRerun() && ProjectPropertiesSupport.askForTestGroups(project)) {
+//            PhpUnit phpUnit = CommandUtils.getPhpUnit(project, false);
+//            ConfigFiles configFiles = PhpUnit.getConfigFiles(project, false);
+//
+//            PhpUnitTestGroupsFetcher testGroupsFetcher = new PhpUnitTestGroupsFetcher(project);
+//            boolean success = testGroupsFetcher.fetch(phpUnit.getWorkingDirectory(configFiles, FileUtil.toFile(info.getWorkingDirectory())), configFiles);
+//            if (!success) {
+//                return;
+//            }
+//            if (testGroupsFetcher.wasInterrupted()) {
+//                return;
+//            }
+//            testGroupsFetcher.saveSelectedTestGroups();
+//        }
+//        if (ProjectPropertiesSupport.askForTestGroups(project)) {
+//            if (info.getTestGroups() == null) {
+//                // remember test groups for rerun
+//                info.setTestGroups(ProjectPropertiesSupport.getPhpUnitLastUsedTestGroups(project));
+//            }
+//            externalProcessBuilder = externalProcessBuilder
+//                    .addArgument(PhpUnit.PARAM_GROUP)
+//                    .addArgument(info.getTestGroups());
+//        }
+
+        List<TestInfo> customTests = runInfo.getCustomTests();
+        if (!customTests.isEmpty()) {
+            StringBuilder buffer = new StringBuilder(200);
+            boolean first = true;
+            for (TestInfo test : customTests) {
+                if (!first) {
+                    buffer.append("|"); // NOI18N
+                }
+                buffer.append(test.getName());
+                first = false;
+            }
+            params.add(FILTER_PARAM);
+            params.add(buffer.toString());
+            runInfo.resetCustomTests();
+        }
+
+        if (PhpUnitPreferences.isSuiteEnabled(phpModule)) {
+            // custom suite
+            params.add(PhpUnitPreferences.getSuitePath(phpModule));
+        } else {
+            // standard suite
+            // #218607 - hotfix
+            //params.add(SUITE_NAME)
+            params.add(getNbSuite().getAbsolutePath());
+            params.add(String.format(SUITE_RUN, FileUtil.toFile(runInfo.getStartFile()).getAbsolutePath()));
+        }
+
+        phpUnit.workDir(getWorkingDirectory(phpModule, runInfo.getWorkingDirectory()))
+                .additionalParameters(params);
+        try {
+            return phpUnit.runAndWait(getDescriptor(), "Running tests..."); // NOI18N
+        } catch (CancellationException ex) {
+            // canceled
+            LOGGER.log(Level.FINE, "Test creating cancelled", ex);
+        } catch (ExecutionException ex) {
+            LOGGER.log(Level.INFO, null, ex);
+            UiUtils.processExecutionException(ex, PhpUnitOptionsPanelController.OPTIONS_SUB_PATH);
+            throw new TestRunException(ex);
+        }
+        return null;
     }
 
-    public static PhpUnit getCustom(String command) throws InvalidPhpProgramException {
-        String error = validate(command);
-        if (error != null) {
-            throw new InvalidPhpProgramException(error);
+    @CheckForNull
+    private PhpExecutable getExecutable(PhpModule phpModule, String title) {
+        FileObject sourceDirectory = phpModule.getSourceDirectory();
+        if (sourceDirectory == null) {
+            org.netbeans.modules.php.phpunit.ui.UiUtils.warnNoSources(phpModule.getDisplayName());
+            return null;
         }
-        return new PhpUnit(command);
+
+        return new PhpExecutable(phpUnitPath)
+                .optionsSubcategory(PhpUnitOptionsPanelController.OPTIONS_SUB_PATH)
+                .displayName(title);
     }
 
     private ExecutionDescriptor getDescriptor() {
-        return getExecutionDescriptor()
+        return PhpExecutable.DEFAULT_EXECUTION_DESCRIPTOR
+                .optionsPath(PhpUnitOptionsPanelController.OPTIONS_PATH)
                 .controllable(false)
-                .frontWindow(false);
-    }
-
-    public File generateTest(PhpProject phpProject, ConfigFiles configFiles, PhpClass phpClass, FileObject sourceFo, File workingDirectory) {
-        String className = phpClass.getName();
-        final File testFile = getTestFile(phpProject, sourceFo, className);
-        if (testFile.isFile()) {
-            // already exists
-            return testFile;
-        }
-        final File sourceFile = FileUtil.toFile(sourceFo);
-        final File parent = FileUtil.toFile(sourceFo.getParent());
-
-        // # 205135
-        File generatedFile = getGeneratedFile(className, parent);
-        if (generatedFile.isFile()) {
-            // test already exists, next to source file
-            if (!useExistingTestInSources(generatedFile)) {
-                return null;
-            }
-        } else {
-            // test does not exist yet
-            String fullyQualifiedName = phpClass.getFullyQualifiedName();
-            assert fullyQualifiedName != null : "No FQN for php class: " + phpClass.getName();
-            if (!generateTestInternal(configFiles, fullyQualifiedName, sourceFo, workingDirectory)) {
-                // test not generated
-                return null;
-            }
-        }
-        if (!generatedFile.isFile()) {
-            LOGGER.log(Level.WARNING, "Generated PHPUnit test file {0} was not found.", generatedFile.getName());
-            return null;
-        }
-        return moveAndAdjustGeneratedFile(generatedFile, testFile, sourceFile);
-    }
-
-    private boolean generateTestInternal(ConfigFiles configFiles, String className, FileObject sourceFo, File workingDirectory) {
-        ExternalProcessBuilder externalProcessBuilder = getProcessBuilder()
-                .workingDirectory(workingDirectory);
-        // #179960
-        if (configFiles.bootstrap != null
-                && configFiles.useBootstrapForCreateTests) {
-            externalProcessBuilder = externalProcessBuilder
-                    .addArgument(PhpUnit.PARAM_BOOTSTRAP)
-                    .addArgument(configFiles.bootstrap.getAbsolutePath());
-        }
-        if (configFiles.configuration != null) {
-            externalProcessBuilder = externalProcessBuilder
-                    .addArgument(PhpUnit.PARAM_CONFIGURATION)
-                    .addArgument(configFiles.configuration.getAbsolutePath());
-        }
-        // http://www.phpunit.de/ticket/904
-        if (className.startsWith("\\")) { // NOI18N
-            className = className.substring(1);
-        }
-        externalProcessBuilder = externalProcessBuilder
-                .addArgument(PARAM_SKELETON)
-                .addArgument(className)
-                .addArgument(FileUtil.toFile(sourceFo).getAbsolutePath());
-
-        try {
-            int status = executeAndWait(
-                    externalProcessBuilder,
-                    getDescriptor(),
-                    String.format("%s %s %s %s", getProgram(), PARAM_SKELETON, className, sourceFo.getNameExt())); // NOI18N
-            return status == 0;
-        } catch (CancellationException ex) {
-            // canceled
-        } catch (ExecutionException ex) {
-            UiUtils.processExecutionException(ex, PhpUnit.OPTIONS_SUB_PATH);
-        } catch (InterruptedException ex) {
-            Thread.currentThread().interrupt();
-        }
-        return false;
-    }
-
-    private File moveAndAdjustGeneratedFile(File generatedFile, File testFile, File sourceFile) {
-        assert generatedFile.isFile() : "Generated files must exist: " + generatedFile;
-        assert !testFile.exists() : "Test file cannot exist: " + testFile;
-
-        // create all the parents
-        try {
-            FileUtil.createFolder(testFile.getParentFile());
-        } catch (IOException exc) {
-            // what to do now??
-            LOGGER.log(Level.WARNING, null, exc);
-            return generatedFile;
-        }
-
-        testFile = adjustFileContent(generatedFile, testFile, sourceFile, PhpUnit.getRequireOnce(testFile, sourceFile));
-        if (testFile == null) {
-            return null;
-        }
-        assert testFile.isFile() : "Test file must exist: " + testFile;
-
-        // reformat the file
-        try {
-            PhpProjectUtils.reformatFile(testFile);
-        } catch (IOException ex) {
-            LOGGER.log(Level.INFO, "Cannot reformat file " + testFile, ex);
-        }
-
-        return testFile;
-    }
-
-    private File adjustFileContent(File generatedFile, File testFile, File sourceFile, String requireOnce) {
-        try {
-            // input
-            BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(generatedFile), "UTF-8")); // NOI18N
-
-            try {
-                // output
-                BufferedWriter out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(testFile), "UTF-8")); // NOI18N
-
-                try {
-                    String line;
-                    boolean requireWritten = false;
-                    String filename = sourceFile.getName();
-                    while ((line = in.readLine()) != null) {
-                        if (!requireWritten && PhpUnit.isRequireOnceSourceFile(line.trim(), filename)) {
-                            // original require generated by phpunit
-                            out.write(String.format(REQUIRE_ONCE_TPL, requireOnce).replace("''.", "")); // NOI18N
-                            requireWritten = true;
-                        } else {
-                            out.write(line);
-                        }
-                        out.newLine();
+                .frontWindow(false)
+                .inputVisible(false)
+                .outConvertorFactory(PHPUNIT_LINE_CONVERTOR_FACTORY)
+                .preExecution(new Runnable() {
+                    @Override
+                    public void run() {
+                        cleanupLogFiles();
                     }
-                } finally {
-                    out.flush();
-                    out.close();
-                }
-            } finally {
-                in.close();
-            }
-        } catch (IOException ex) {
-            LOGGER.log(Level.WARNING, null, ex);
-            return null;
+                });
+    }
+
+    // #170120
+    private File getWorkingDirectory(PhpModule phpModule, FileObject defaultWorkDir) {
+        if (PhpUnitPreferences.isConfigurationEnabled(phpModule)) {
+            return new File(PhpUnitPreferences.getConfigurationPath(phpModule));
         }
-
-        if (!generatedFile.delete()) {
-            LOGGER.log(Level.INFO, "Cannot delete generated file {0}", generatedFile);
-        }
-        return testFile;
-    }
-
-    public static File getTestFile(PhpProject project, FileObject source, String className) {
-        assert project != null;
-        assert source != null;
-
-        FileObject sourcesDirectory = ProjectPropertiesSupport.getSourcesDirectory(project);
-        String relativeSourcePath = FileUtil.getRelativePath(sourcesDirectory, source.getParent());
-        assert relativeSourcePath != null : String.format("Relative path must be found for sources %s and folder %s", sourcesDirectory, source.getParent());
-
-        File relativeTestDirectory = PhpProjectUtils.resolveFile(getTestDirectory(project), relativeSourcePath);
-
-        return new File(relativeTestDirectory, PhpUnit.makeTestFile(className));
-    }
-
-    private static File getTestDirectory(PhpProject phpProject) {
-        FileObject testDirectory = ProjectPropertiesSupport.getTestDirectory(phpProject, false);
-        assert testDirectory != null && testDirectory.isValid() : "Valid folder for tests must be found for " + phpProject;
-        return FileUtil.toFile(testDirectory);
-    }
-
-    private File getGeneratedFile(String className, File parent) {
-        return new File(parent, PhpUnit.makeTestFile(className));
+        return FileUtil.toFile(phpModule.getTestDirectory());
     }
 
     @NbBundle.Messages({
-        "# {0} - file name",
-        "PhpUnit.useTestFileInSources=Use the existing test file {0}? If not, no test will be generated for this file."
+        "PhpUnit.run.test.single=PHPUnit (test)",
+        "PhpUnit.run.test.single.custom=PHPUnit (test, custom)",
+        "PhpUnit.run.test.all=PHPUnit (test all)",
+        "PhpUnit.run.test.all.custom=PHPUnit (test all, custom)",
+        "PhpUnit.run.debug.single=PHPUnit (test) (debug)",
+        "PhpUnit.run.debug.single.custom=PHPUnit (test, custom) (debug)",
+        "PhpUnit.run.debug.all=PHPUnit (test all) (debug)",
+        "PhpUnit.run.debug.all.custom=PHPUnit (test all, custom) (debug)",
     })
-    private boolean useExistingTestInSources(File testFile) {
-        NotifyDescriptor.Confirmation confirmation = new NotifyDescriptor.Confirmation(
-                Bundle.PhpUnit_useTestFileInSources(testFile.getName()),
-                NotifyDescriptor.YES_NO_OPTION);
-        return DialogDisplayer.getDefault().notify(confirmation) == NotifyDescriptor.YES_OPTION;
+    private String getOutputTitle(TestRunInfo runInfo, boolean customSuiteEnabled) {
+        boolean allTests = runInfo.allTests();
+        switch (runInfo.getSessionType()) {
+            case TEST:
+                if (allTests && customSuiteEnabled) {
+                    return Bundle.PhpUnit_run_test_all_custom();
+                } else if (allTests) {
+                    return Bundle.PhpUnit_run_test_all();
+                } else if (customSuiteEnabled) {
+                    return Bundle.PhpUnit_run_test_single_custom();
+                }
+                return Bundle.PhpUnit_run_test_single();
+                //break;
+            case DEBUG:
+                if (allTests && customSuiteEnabled) {
+                    return Bundle.PhpUnit_run_debug_all_custom();
+                } else if (allTests) {
+                    return Bundle.PhpUnit_run_debug_all();
+                } else if (customSuiteEnabled) {
+                    return Bundle.PhpUnit_run_debug_single_custom();
+                }
+                return Bundle.PhpUnit_run_debug_single();
+                //break;
+            default:
+                throw new IllegalStateException("Unknown session type: " + runInfo.getSessionType());
+        }
     }
 
-    public static boolean isRequireOnceSourceFile(String line, String filename) {
-        return line.startsWith(REQUIRE_ONCE_TPL_START)
-                && line.endsWith(String.format(REQUIRE_ONCE_TPL_END, filename));
+    void cleanupLogFiles() {
+        if (PhpUnit.XML_LOG.exists()) {
+            if (!PhpUnit.XML_LOG.delete()) {
+                LOGGER.log(Level.INFO, "Cannot delete PHPUnit log {0}", PhpUnit.XML_LOG);
+            }
+        }
+        if (PhpUnit.COVERAGE_LOG.exists()) {
+            if (!PhpUnit.COVERAGE_LOG.delete()) {
+                LOGGER.log(Level.INFO, "Cannot delete code coverage log {0}", PhpUnit.COVERAGE_LOG);
+            }
+        }
     }
+
+
+
+
+
+
+    // php props
+    private static final char DIRECTORY_SEPARATOR = '/'; // NOI18N
+
+    public static final Pattern LINE_PATTERN = Pattern.compile("(?:.+\\(\\) )?(.+):(\\d+)"); // NOI18N
+
 
     public static boolean isTestFile(String fileName) {
         return !fileName.equals(PhpUnit.TEST_FILE_SUFFIX) && fileName.endsWith(PhpUnit.TEST_FILE_SUFFIX);
@@ -494,65 +482,13 @@ public final class PhpUnit extends PhpProgram {
         return testedClass + PhpUnit.SUITE_CLASS_SUFFIX;
     }
 
-    @Override
-    public ExternalProcessBuilder getProcessBuilder() {
-        return super.getProcessBuilder()
-                .workingDirectory(new File(getProgram()).getParentFile());
-    }
-
-    // #170120
-    public File getWorkingDirectory(ConfigFiles configFiles, File defaultWorkingDirectory) {
-        if (configFiles.configuration != null) {
-            return configFiles.configuration.getParentFile();
-        }
-        return defaultWorkingDirectory;
-    }
-
-    public static ConfigFiles getConfigFiles(PhpProject project, boolean withSuite) {
-        List<Pair<String, File>> missingFiles = new LinkedList<Pair<String, File>>();
-        File bootstrap = ProjectPropertiesSupport.getPhpUnitBootstrap(project);
-        if (bootstrap != null
-                && !bootstrap.isFile()) {
-            missingFiles.add(Pair.of(NbBundle.getMessage(PhpUnit.class, "LBL_Bootstrap"), bootstrap));
-            bootstrap = null;
-        }
-
-        File configuration = ProjectPropertiesSupport.getPhpUnitConfiguration(project);
-        if (configuration != null
-                && !configuration.isFile()) {
-            missingFiles.add(Pair.of(NbBundle.getMessage(PhpUnit.class, "LBL_XmlConfiguration"), configuration));
-            configuration = null;
-        }
-
-        File suite = null;
-        if (withSuite) {
-            suite = ProjectPropertiesSupport.getPhpUnitSuite(project);
-            if (suite != null
-                    && !suite.isFile()) {
-                missingFiles.add(Pair.of(NbBundle.getMessage(PhpUnit.class, "LBL_TestSuite"), suite));
-                suite = null;
-            }
-        }
-        warnAboutMissingFiles(missingFiles);
-        return new ConfigFiles(bootstrap, ProjectPropertiesSupport.usePhpUnitBootstrapForCreateTests(project), configuration, suite);
-    }
-
-    public static File getCustomSuite(PhpProject project) {
-        File suite = ProjectPropertiesSupport.getPhpUnitSuite(project);
-        if (suite != null
-                && suite.isFile()) {
-            return suite;
-        }
-        return null;
-    }
-
-    public static File createBootstrapFile(final PhpProject project) {
-        FileObject testDirectory = ProjectPropertiesSupport.getTestDirectory(project, false);
+    public static File createBootstrapFile(final PhpModule phpModule) {
+        FileObject testDirectory = phpModule.getTestDirectory();
         assert testDirectory != null : "Test directory must already be set";
 
         final FileObject configFile = FileUtil.getConfigFile("Templates/PHPUnit/PHPUnitBootstrap"); // NOI18N
         final DataFolder dataFolder = DataFolder.findFolder(testDirectory);
-        final File bootstrapFile = new File(getBootstrapFilepath(project));
+        final File bootstrapFile = new File(getBootstrapFilepath(testDirectory));
         final File[] files = new File[1];
         FileUtil.runAtomicAction(new Runnable() {
             @Override
@@ -561,7 +497,7 @@ public final class PhpUnit extends PhpProgram {
                     DataObject dataTemplate = DataObject.find(configFile);
                     DataObject bootstrap = dataTemplate.createFromTemplate(dataFolder, bootstrapFile.getName() + "~"); // NOI18N
                     assert bootstrap != null;
-                    moveAndAdjustBootstrap(project, FileUtil.toFile(bootstrap.getPrimaryFile()), bootstrapFile);
+                    moveAndAdjustBootstrap(phpModule, FileUtil.toFile(bootstrap.getPrimaryFile()), bootstrapFile);
                     assert bootstrapFile.isFile();
                     files[0] = bootstrapFile;
                     informAboutGeneratedFile(bootstrapFile.getName());
@@ -577,7 +513,7 @@ public final class PhpUnit extends PhpProgram {
         return files[0];
     }
 
-    private static void moveAndAdjustBootstrap(PhpProject project, File tmpBootstrap, File finalBootstrap) {
+    private static void moveAndAdjustBootstrap(PhpModule phpModule, File tmpBootstrap, File finalBootstrap) {
         try {
             // input
             BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(tmpBootstrap), "UTF-8")); // NOI18N
@@ -592,13 +528,13 @@ public final class PhpUnit extends PhpProgram {
                                 // comment about %INCLUDE_PATH%, let's skip it
                                 continue;
                             }
-                            String includePath = ProjectPropertiesSupport.getPropertyEvaluator(project).getProperty(PhpProjectProperties.INCLUDE_PATH);
+                            List<String> includePath = phpModule.getProperties().getIncludePath();
                             assert includePath != null : "Include path should be always present";
                             line = processIncludePath(
                                     finalBootstrap,
                                     line,
                                     includePath,
-                                    FileUtil.toFile(project.getProjectDirectory()));
+                                    FileUtil.toFile(phpModule.getProjectDirectory()));
                         }
                         out.write(line);
                         out.newLine();
@@ -622,33 +558,32 @@ public final class PhpUnit extends PhpProgram {
         FileUtil.refreshFor(finalBootstrap.getParentFile());
     }
 
-    static String processIncludePath(File bootstrap, String line, String includePath, File projectDir) {
-        if (StringUtils.hasText(includePath)) {
-            if (includePath.startsWith(":")) { // NOI18N
-                includePath = includePath.substring(1);
-            }
+    static String processIncludePath(File bootstrap, String line, List<String> includePath, File projectDir) {
+        String resolvedIncludePath = ""; // NOI18N
+        if (!includePath.isEmpty()) {
             StringBuilder buffer = new StringBuilder(200);
-            for (String path : PropertyUtils.tokenizePath(includePath)) {
+            for (String path : includePath) {
+                // XXX perhaps already resolved paths should be here?
                 File reference = PropertyUtils.resolveFile(projectDir, path);
                 buffer.append(".PATH_SEPARATOR"); // NOI18N
                 buffer.append(getDirnameFile(bootstrap, reference));
             }
-            includePath = buffer.toString();
+            resolvedIncludePath = buffer.toString();
         } else {
             // comment out the line
             line = "//" + line; // NOI18N
         }
-        line = line.replace("%INCLUDE_PATH%", includePath); // NOI18N
+        line = line.replace("%INCLUDE_PATH%", resolvedIncludePath); // NOI18N
         return line;
     }
 
-    public static File createConfigurationFile(PhpProject project) {
-        FileObject testDirectory = ProjectPropertiesSupport.getTestDirectory(project, false);
+    public static File createConfigurationFile(PhpModule phpModule) {
+        FileObject testDirectory = phpModule.getTestDirectory();
         assert testDirectory != null : "Test directory must already be set";
 
         final FileObject configFile = FileUtil.getConfigFile("Templates/PHPUnit/PHPUnitConfiguration.xml"); // NOI18N
         final DataFolder dataFolder = DataFolder.findFolder(testDirectory);
-        final File configurationFile = new File(getConfigurationFilepath(project));
+        final File configurationFile = new File(getConfigurationFilepath(testDirectory));
         File file = null;
         try {
             DataObject dataTemplate = DataObject.find(configFile);
@@ -666,38 +601,27 @@ public final class PhpUnit extends PhpProgram {
         return file;
     }
 
+    @NbBundle.Messages({
+        "# {0} - file name",
+        "PhpUnit.generating.success=Following file was generated in project''s test directory:\n\n{0}\n\nThe file is used for running tests so review and modify it if needed."
+    })
     public static void informAboutGeneratedFile(String generatedFile) {
-        DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(NbBundle.getMessage(PhpUnit.class, "MSG_FileGenerated", generatedFile)));
+        DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(Bundle.PhpUnit_generating_success(generatedFile)));
     }
 
+    @NbBundle.Messages({
+        "# {0} - file name",
+        "PhpUnit.generating.failure={0} file was not generated, review IDE log for more information."
+    })
     private static void warnAboutNotGeneratedFile(String file) {
         NotifyDescriptor warning = new NotifyDescriptor.Message(
-                NbBundle.getMessage(PhpUnit.class, "MSG_NotGenerated", file),
-                NotifyDescriptor.WARNING_MESSAGE);
-        DialogDisplayer.getDefault().notifyLater(warning);
-    }
-
-    private static void warnAboutMissingFiles(List<Pair<String, File>> missingFiles) {
-        if (missingFiles.isEmpty()) {
-            return;
-        }
-        StringBuilder buffer = new StringBuilder(100);
-        for (Pair<String, File> pair : missingFiles) {
-            buffer.append(NbBundle.getMessage(PhpUnit.class, "LBL_MissingFile", pair.first, pair.second.getAbsolutePath()));
-            buffer.append("\n"); // NOI18N
-        }
-        NotifyDescriptor warning = new NotifyDescriptor.Message(
-                NbBundle.getMessage(PhpUnit.class, "MSG_MissingFiles", buffer.toString()),
+                Bundle.PhpUnit_generating_failure(file),
                 NotifyDescriptor.WARNING_MESSAGE);
         DialogDisplayer.getDefault().notifyLater(warning);
     }
 
     private static String getDirnameFile(File testFile, File sourceFile) {
         return getRelPath(testFile, sourceFile, ".'", DIRNAME_FILE, "'"); // NOI18N
-    }
-
-    public static String getRequireOnce(File testFile, File sourceFile) {
-        return getRelPath(testFile, sourceFile, "", REQUIRE_ONCE_REL_PART, ""); // NOI18N
     }
 
     // XXX improve this and related method
@@ -718,16 +642,15 @@ public final class PhpUnit extends PhpProgram {
         return relPath.replace(File.separatorChar, DIRECTORY_SEPARATOR);
     }
 
-    private static String getBootstrapFilepath(PhpProject project) {
-        return getFilepath(project, BOOTSTRAP_FILENAME);
+    private static String getBootstrapFilepath(FileObject testDirectory) {
+        return getFilepath(testDirectory, BOOTSTRAP_FILENAME);
     }
 
-    private static String getConfigurationFilepath(PhpProject project) {
-        return getFilepath(project, CONFIGURATION_FILENAME);
+    private static String getConfigurationFilepath(FileObject testDirectory) {
+        return getFilepath(testDirectory, CONFIGURATION_FILENAME);
     }
 
-    private static String getFilepath(PhpProject project, String filename) {
-        FileObject testDirectory = ProjectPropertiesSupport.getTestDirectory(project, false);
+    private static String getFilepath(FileObject testDirectory, String filename) {
         assert testDirectory != null : "Test directory must already be set";
 
         File tests = FileUtil.toFile(testDirectory);
@@ -744,28 +667,14 @@ public final class PhpUnit extends PhpProgram {
         return String.format(filename, i == 0 ? "" : i); // NOI18N
     }
 
-    @NbBundle.Messages("PhpUnit.script.label=PHPUnit script")
-    @Override
-    public String validate() {
-        return FileUtils.validateFile(Bundle.PhpUnit_script_label(), getProgram(), false);
-    }
+    //~ Inner classes
 
-    public static String validate(String command) {
-        return new PhpUnit(command).validate();
-    }
-
-    public static final class ConfigFiles {
-        public final File bootstrap;
-        public final boolean useBootstrapForCreateTests;
-        public final File configuration;
-        public final File suite;
-
-        public ConfigFiles(File bootstrap, boolean useBootstrapForCreateTests, File configuration, File suite) {
-            this.bootstrap = bootstrap;
-            this.useBootstrapForCreateTests = useBootstrapForCreateTests;
-            this.configuration = configuration;
-            this.suite = suite;
+    static final class PhpUnitLineConvertorFactory implements ExecutionDescriptor.LineConvertorFactory {
+        @Override
+        public LineConvertor newLineConvertor() {
+            return LineConvertors.filePattern(null, PhpUnit.LINE_PATTERN, null, 1, 2);
         }
+
     }
 
 }
