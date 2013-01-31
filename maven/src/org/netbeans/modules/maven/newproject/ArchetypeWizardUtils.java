@@ -74,6 +74,7 @@ import org.netbeans.modules.maven.model.pom.Dependency;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import static org.netbeans.modules.maven.newproject.Bundle.*;
 import org.netbeans.modules.maven.options.MavenCommandSettings;
+import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.WizardDescriptor;
 import org.openide.execution.ExecutorTask;
@@ -209,7 +210,7 @@ public class ArchetypeWizardUtils {
         @SuppressWarnings("unchecked")
         Map<String,String> additional = (Map<String,String>) wiz.getProperty(ADDITIONAL_PROPS);
 
-        File projFile = FileUtil.normalizeFile((File) wiz.getProperty("projdir")); // NOI18N
+        File projFile = FileUtil.normalizeFile((File) wiz.getProperty(CommonProjectActions.PROJECT_PARENT_FOLDER)); // NOI18N
         createFromArchetype(projFile, vi, arch, additional, true);
         Set<FileObject> projects = openProjects(projFile, null);
         return projects;

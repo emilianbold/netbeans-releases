@@ -76,4 +76,10 @@ public class SingleFieldDeclaration extends ASTNode {
     public void accept(Visitor visitor) {
         visitor.visit(this);
     }
+
+    @Override
+    public String toString() {
+        return getName() + " = " + getValue(); //NOI18N
+    }
+
 }

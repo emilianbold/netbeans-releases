@@ -197,6 +197,7 @@ public class RecentFileAction extends AbstractAction
         jmi.putClientProperty(PATH_PROP, path);
         jmi.addActionListener(this);
         jmi.setIcon(hItem.getIcon());
+        jmi.setToolTipText(path);
         return jmi;
     }
 

@@ -116,7 +116,7 @@ public class SlowRefreshPreferrableTest extends NbTestCase {
         assertGC("File Object can disappear", ref);
 
         class L extends FileChangeAdapter {
-            int cnt;
+            volatile int cnt;
             FileEvent event;
 
             @Override

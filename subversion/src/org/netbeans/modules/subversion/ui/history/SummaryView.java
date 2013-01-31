@@ -51,7 +51,6 @@ import org.openide.windows.TopComponent;
 import org.openide.nodes.Node;
 import org.netbeans.modules.subversion.util.Context;
 import org.netbeans.modules.subversion.Subversion;
-import org.netbeans.modules.subversion.RepositoryFile;
 import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.ui.update.RevertModifications;
 import org.netbeans.modules.subversion.ui.update.RevertModificationsAction;
@@ -159,12 +158,7 @@ class SummaryView extends AbstractSummaryView implements DiffSetupSource {
                     }
                 });
             }
-            actions.add(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_RollbackChange")) { //NOI18N
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    revertModifications(master, new Object[] { revision });
-                }
-            });
+            actions.addAll(Arrays.asList(revision.getActions()));
             return actions.toArray(new Action[actions.size()]);
         }
 
@@ -234,7 +228,6 @@ class SummaryView extends AbstractSummaryView implements DiffSetupSource {
 
         private final RepositoryRevision.Event event;
         private final SearchHistoryPanel master;
-        private ArrayList<Action> actions;
 
         SvnLogEvent (SearchHistoryPanel master, RepositoryRevision.Event event) {
             this.master = master;
@@ -264,67 +257,17 @@ class SummaryView extends AbstractSummaryView implements DiffSetupSource {
 
         @Override
         public Action[] getUserActions () {
-            if (actions == null) {
-                actions = new ArrayList<Action>();
-                long revisionNumber = event.getLogInfoHeader().getLog().getRevision().getNumber();
-                boolean rollbackToEnabled = event.getFile() != null && event.getChangedPath().getAction() != 'D';
-                boolean rollbackChangeEnabled = event.getFile() != null && (event.getChangedPath().getAction() != 'D' || !event.getFile().exists());
-                boolean viewEnabled = rollbackToEnabled && !event.getFile().isDirectory();
-
-                if (revisionNumber > 1) {
-                    actions.add(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_DiffToPreviousShort")) { //NOI18N
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            diffPrevious(master, event);
-                        }
-                    });
-                }
-                if (rollbackChangeEnabled) {
-                    actions.add(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_RollbackChange")) { //NOI18N
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            revertModifications(master, new Object[] { event });
-                        }
-                    });
-                }
-                if (rollbackToEnabled) {
-                    actions.add(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_RollbackToShort")) { //NOI18N
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            Subversion.getInstance().getParallelRequestProcessor().post(new Runnable() {
-                                @Override
-                                public void run() {
-                                    rollback(event);
-                                }
-                            });
-                        }
-                    });
-                }
-                if (viewEnabled) {
-                    actions.add(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_View")) { //NOI18N
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            Subversion.getInstance().getParallelRequestProcessor().post(new Runnable() {
-                                @Override
-                                public void run() {
-                                    view(event, false);
-                                }
-                            });
-                        }
-                    });
-                    actions.add(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_ShowAnnotations")) { //NOI18N
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            Subversion.getInstance().getParallelRequestProcessor().post(new Runnable() {
-                                @Override
-                                public void run() {
-                                    view(event, true);
-                                }
-                            });
-                        }
-                    });
-                }
+            List<Action> actions = new ArrayList<Action>();
+            long revisionNumber = event.getLogInfoHeader().getLog().getRevision().getNumber();
+            if (revisionNumber > 1) {
+                actions.add(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_DiffToPreviousShort")) { //NOI18N
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        diffPrevious(master, event);
+                    }
+                });
             }
+            actions.addAll(Arrays.asList(event.getActions()));
             return actions.toArray(new Action[actions.size()]);
         }
 
@@ -547,16 +490,7 @@ class SummaryView extends AbstractSummaryView implements DiffSetupSource {
      *
      * @param event
      */
-    static void rollback(RepositoryRevision.Event event) {
-        rollback(new RepositoryRevision.Event[ ]{event});
-    }
-
-    /**
-     * Overwrites local file with this revision.
-     *
-     * @param event
-     */
-    static void rollback(final RepositoryRevision.Event[] events) {
+    private static void rollback(final RepositoryRevision.Event[] events) {
         // TODO: confirmation
         SVNUrl repository = events[0].getLogInfoHeader().getRepositoryRootUrl();
         RequestProcessor rp = Subversion.getInstance().getRequestProcessor(repository);
@@ -593,7 +527,7 @@ class SummaryView extends AbstractSummaryView implements DiffSetupSource {
         revert(master, revisions.toArray(new RepositoryRevision[revisions.size()]), (RepositoryRevision.Event[]) events.toArray(new RepositoryRevision.Event[events.size()]));
     }
 
-    static void revert(final SearchHistoryPanel master, final RepositoryRevision [] revisions, final RepositoryRevision.Event [] events) {
+    private static void revert(final SearchHistoryPanel master, final RepositoryRevision [] revisions, final RepositoryRevision.Event [] events) {
         SVNUrl url;
         try {
             url = master.getSearchRepositoryRootUrl();
@@ -612,14 +546,6 @@ class SummaryView extends AbstractSummaryView implements DiffSetupSource {
     }
 
     private static void revertImpl(SearchHistoryPanel master, RepositoryRevision[] revisions, RepositoryRevision.Event[] events, SvnProgressSupport progress) {
-        SVNUrl url;
-        try {
-            url = master.getSearchRepositoryRootUrl();
-        } catch (SVNClientException ex) {
-            SvnClientExceptionHandler.notifyException(ex, true, true);
-            return;
-        }
-        final RepositoryFile repositoryFile = new RepositoryFile(url, url, SVNRevision.HEAD);
         for (RepositoryRevision revision : revisions) {
             RevertModifications.RevisionInterval revisionInterval = new RevertModifications.RevisionInterval(revision.getLog().getRevision());
             final Context ctx = new Context(master.getRoots());
@@ -641,11 +567,7 @@ class SummaryView extends AbstractSummaryView implements DiffSetupSource {
             drev = ((SvnLogEvent) o).event;
         }
         if (drev != null) {
-            File originFile = drev.getFile();
-            SVNRevision rev = drev.getLogInfoHeader().getLog().getRevision();
-            SVNUrl repoUrl = drev.getLogInfoHeader().getRepositoryRootUrl();
-            SVNUrl fileUrl = repoUrl.appendPath(drev.getChangedPath().getPath());
-            SvnUtils.openInRevision(originFile, repoUrl, fileUrl, rev, rev, showAnnotations);
+            drev.viewFile(showAnnotations);
         }
     }
 

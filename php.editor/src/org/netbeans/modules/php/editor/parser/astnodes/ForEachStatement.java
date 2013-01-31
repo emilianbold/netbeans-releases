@@ -112,4 +112,10 @@ public class ForEachStatement extends Statement {
     public void accept(Visitor visitor) {
         visitor.visit(this);
     }
+
+    @Override
+    public String toString() {
+        return "foreach (" + getExpression() + " as " + getKey() + " => " + getValue() + ")" + getStatement(); //NOI18N
+    }
+
 }

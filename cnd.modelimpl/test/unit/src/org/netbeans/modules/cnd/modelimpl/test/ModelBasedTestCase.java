@@ -49,6 +49,7 @@ import javax.swing.undo.UndoManager;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
+import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.source.CndSourceTestUtilities;
 import org.netbeans.modules.cnd.test.CndBaseTestCase;
@@ -126,6 +127,9 @@ public class ModelBasedTestCase extends CndBaseTestCase {
         assertNotNull("Unresolved data object for file " + testFileObject, testDataObject);//NOI18N
         BaseDocument doc = CndCoreTestUtils.getBaseDocument(testDataObject);
         assertNotNull("Unresolved document for data object " + testDataObject, doc);//NOI18N
+        NativeFileItemSet nfis = testDataObject.getLookup().lookup(NativeFileItemSet.class);
+        assertNotNull("Not found NativeFileItemSet in data object " + testDataObject, nfis);//NOI18N
+        assertNotNull("Not found registered items in NativeFileItemSet " + testDataObject, !nfis.getItems().isEmpty());//NOI18N
         return doc;
     }
     

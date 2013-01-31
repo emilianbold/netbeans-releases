@@ -504,7 +504,7 @@ abstract class Lookup implements ContextProvider {
                 }
                 return l; 
             } catch (IOException e) {
-                e.printStackTrace ();
+                Exceptions.printStackTrace(e);
             }
             throw new InternalError ("Can not read from Meta-inf!");
         }

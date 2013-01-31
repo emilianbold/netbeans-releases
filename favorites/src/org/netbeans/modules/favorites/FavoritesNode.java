@@ -44,15 +44,22 @@
 
 package org.netbeans.modules.favorites;
 
+import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
 import java.beans.PropertyChangeEvent;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
@@ -60,6 +67,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import org.netbeans.api.queries.VisibilityQuery;
+import org.netbeans.modules.favorites.api.Favorites;
 import org.openide.actions.CopyAction;
 import org.openide.actions.CutAction;
 import org.openide.actions.DeleteAction;
@@ -70,6 +78,7 @@ import org.openide.loaders.ChangeableDataFilter;
 import org.openide.loaders.DataFilter;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.loaders.DataShadow;
 import org.openide.loaders.LoaderTransfer;
 import org.openide.nodes.FilterNode;
@@ -82,6 +91,7 @@ import org.openide.nodes.NodeReorderEvent;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.NbCollections;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.datatransfer.PasteType;
@@ -107,8 +117,13 @@ public final class FavoritesNode extends FilterNode implements Index {
             return null;
         // any kind of drop just creates link in Favorites
         DataObject[] dos = LoaderTransfer.getDataObjects(t, LoaderTransfer.DND_COPY_OR_MOVE | LoaderTransfer.CLIPBOARD_CUT);
-        if (dos == null)
+        if (dos == null) {
+            List<File> files = getDraggedFilesList(t);
+            if (!files.isEmpty()) {
+                return new FavoritesExternalPasteType(files);
+            }
             return null;
+        }
         for (DataObject dataObject : dos) {
             if (! Actions.Add.isAllowed(dataObject))
                 return null;
@@ -298,6 +313,69 @@ public final class FavoritesNode extends FilterNode implements Index {
         return new Action[] {Actions.addOnFavoritesNode()};
     }
     
+    /** Drag'n'drop DataFlavor used on Linux for file dragging */
+    private static DataFlavor uriListDataFlavor;
+    /**
+     * Copy&paste from DataFolder
+     */
+    private List<File> getDraggedFilesList( Transferable t ) {
+        try {
+            if( t.isDataFlavorSupported( DataFlavor.javaFileListFlavor ) ) {
+                //windows & mac
+                List<?> fileList = (List<?>) t.getTransferData(DataFlavor.javaFileListFlavor);
+                //#92812 - make sure mac os does not return null value
+                if( null != fileList ) {
+                    return NbCollections.checkedListByCopy(fileList, File.class, true);
+                }
+            } else if( t.isDataFlavorSupported( getUriListDataFlavor() ) ) {
+                //linux
+                String uriList = (String)t.getTransferData( getUriListDataFlavor() );
+                return textURIListToFileList( uriList );
+            }
+        } catch( UnsupportedFlavorException ex ) {
+            Logger.getLogger(FavoritesNode.class.getName()).log(Level.WARNING, null, ex);
+        } catch( IOException ex ) {
+            // Ignore. Can be just "Owner timed out" from sun.awt.X11.XSelection.getData.
+            Logger.getLogger(FavoritesNode.class.getName()).log(Level.FINE, null, ex);
+        }
+        return Collections.<File>emptyList();
+    }
+
+    private DataFlavor getUriListDataFlavor() {
+        if( null == uriListDataFlavor ) {
+            try {
+                uriListDataFlavor = new DataFlavor("text/uri-list;class=java.lang.String");
+            } catch( ClassNotFoundException cnfE ) {
+                //cannot happen
+                throw new AssertionError(cnfE);
+            }
+        }
+        return uriListDataFlavor;
+    }
+
+    private List<File> textURIListToFileList( String data ) {
+        List<File> list = new ArrayList<File>(1);
+        // XXX consider using BufferedReader(StringReader) instead
+        for( StringTokenizer st = new StringTokenizer(data, "\r\n");
+            st.hasMoreTokens();) {
+            String s = st.nextToken();
+            if( s.startsWith("#") ) {
+                // the line is a comment (as per the RFC 2483)
+                continue;
+            }
+            try {
+                URI uri = new URI(s);
+                File file = Utilities.toFile(uri);
+                list.add( file );
+            } catch( java.net.URISyntaxException e ) {
+                // malformed URI
+            } catch( IllegalArgumentException e ) {
+                // the URI is not a valid 'file:' URI
+            }
+        }
+        return list;
+    }
+    
     private static class RootHandle implements Node.Handle {
         static final long serialVersionUID = 1907300072945111595L;
 
@@ -359,18 +437,6 @@ public final class FavoritesNode extends FilterNode implements Index {
         
         @Override
         protected Node[] createNodes(Node node) {
-            FileObject fo = node.getLookup().lookup(FileObject.class);
-            if (fo == null) {
-                DataObject obj = node.getLookup().lookup(DataObject.class);
-                if (obj != null) {
-                    fo = obj.getPrimaryFile();
-                }
-            }
-            if (hideHidden) {
-                if (fo != null && !VisibilityQuery.getDefault().isVisible(fo)) {
-                    return null;
-                }
-            }
             return new Node[] { createFilterNode(node) };
         }
 
@@ -660,6 +726,39 @@ public final class FavoritesNode extends FilterNode implements Index {
                 @Override
                 public void run() {
                     Actions.Add.addToFavorites(Arrays.asList(dos));
+                }
+            });
+            return null;
+        }
+
+    }
+    
+    private static class FavoritesExternalPasteType extends PasteType {
+        private final List<File> files;
+
+        private FavoritesExternalPasteType (List<File> files) {
+            this.files = files;
+        }
+
+        @Override
+        public Transferable paste() throws IOException {
+            Tab.RP.post(new Runnable () {
+                @Override
+                public void run() {
+                    Set<FileObject> fos = new HashSet<FileObject>(files.size());
+                    for (File f : files) {
+                        FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(f));
+                        if (fo != null) {
+                            fos.add(fo);
+                        }
+                    }
+                    if (!fos.isEmpty()) {
+                        try {
+                            Favorites.getDefault().add(fos.toArray(new FileObject[fos.size()]));
+                        } catch (DataObjectNotFoundException ex) {
+                            Logger.getLogger(FavoritesNode.class.getName()).log(Level.INFO, null, ex);
+                        }
+                    }
                 }
             });
             return null;

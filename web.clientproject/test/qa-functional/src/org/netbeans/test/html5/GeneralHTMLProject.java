@@ -47,6 +47,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JTextField;
 import static junit.framework.Assert.fail;
 import org.netbeans.jellytools.*;
 import org.netbeans.jellytools.nodes.Node;
@@ -74,8 +75,10 @@ public class GeneralHTMLProject extends JellyTestCase {
     protected EventTool evt;
     public static final String PROJECT_CATEGORY_NAME = "HTML/JavaScript";
     public static final String PROJECT_NAME = "HTML5 Application";
+    public static final String SAMPLES = "Samples";
+    public static final String SAMPLES_CATEGORY = "HTML5";
     public static String current_project = "";
-    private static final Logger LOGGER = Logger.getLogger(GeneralHTMLProject.class.getName());
+    public static final Logger LOGGER = Logger.getLogger(GeneralHTMLProject.class.getName());
 
     public GeneralHTMLProject(String arg0) {
         super(arg0);
@@ -140,6 +143,48 @@ public class GeneralHTMLProject extends JellyTestCase {
 
         opNewProjectWizard.finish();
         waitScanFinished();
+    }
+
+    /**
+     * Creates new sample project
+     *
+     * @param sampleName name of sample
+     * @param projectName target project name
+     */
+    public void createSampleProject(String sampleName, String projectName) {
+        setProxy();
+        NewProjectWizardOperator opNewProjectWizard = NewProjectWizardOperator.invoke();
+
+        opNewProjectWizard.selectCategory(SAMPLES + "|" + SAMPLES_CATEGORY);
+        opNewProjectWizard.selectProject(sampleName);
+        opNewProjectWizard.next();
+
+        JDialogOperator jdNew = new JDialogOperator("New HTML5 Sample Project");
+        JTextComponentOperator jtName = new JTextComponentOperator(jdNew, sampleName.substring(0, 5));
+        jtName.setText(projectName);
+        opNewProjectWizard.finish();
+        waitScanFinished();
+
+    }
+
+    protected void setProxy() {
+        OptionsOperator optionsOper = OptionsOperator.invoke();
+        optionsOper.selectGeneral();
+        // "Manual Proxy Setting"
+        String hTTPProxyLabel = Bundle.getStringTrimmed(
+                "org.netbeans.core.ui.options.general.Bundle", "CTL_Use_HTTP_Proxy");
+        new JRadioButtonOperator(optionsOper, hTTPProxyLabel).push();
+        // "HTTP Proxy:"
+        String proxyHostLabel = Bundle.getStringTrimmed(
+                "org.netbeans.core.ui.options.general.Bundle", "CTL_Proxy_Host");
+        JLabelOperator jloHost = new JLabelOperator(optionsOper, proxyHostLabel);
+        new JTextFieldOperator((JTextField) jloHost.getLabelFor()).typeText("emea-proxy.uk.oracle.com"); // NOI18N
+        // "Port:"
+        String proxyPortLabel = Bundle.getStringTrimmed(
+                "org.netbeans.core.ui.options.general.Bundle", "CTL_Proxy_Port");
+        JLabelOperator jloPort = new JLabelOperator(optionsOper, proxyPortLabel);
+        new JTextFieldOperator((JTextField) jloPort.getLabelFor()).setText("80"); // NOI18N
+        optionsOper.ok();
     }
 
     /**
@@ -231,6 +276,23 @@ public class GeneralHTMLProject extends JellyTestCase {
             node.select();
             node.performPopupAction("Open");
         }
+    }
+
+    /**
+     * Opens remote file in editor
+     *
+     * @param fileName remote file name
+     * @param projectName project name
+     */
+    public void openRemoteFile(String fileName, String projectName) {
+        if (projectName == null) {
+            throw new IllegalStateException("YOU MUST OPEN PROJECT FIRST");
+        }
+        Logger.getLogger(GeneralHTMLProject.class.getName()).log(Level.INFO, "Opening file {0}", fileName);
+        Node rootNode = new ProjectsTabOperator().getProjectRootNode(projectName);
+        Node node = new Node(rootNode, "Remote Files|" + fileName);
+        evt.waitNoEvent(1000);
+        node.performPopupAction("Open");
     }
 
     /**

@@ -127,6 +127,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
     private File currRepository;
     public static final String PROP_REVISION_CHANGED = "RepositoryBrowserPanel.revision"; //NOI18N
     private final File[] roots;
+    private String branchMergeWith;
 
     public static enum Option {
         DISPLAY_ALL_REPOSITORIES,
@@ -293,6 +294,10 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                 }
             }
         }
+    }
+
+    void displayBrancheMergedStatus (String revision) {
+        this.branchMergeWith = revision;
     }
 
     private static final HashMap<String, Image> cachedIcons = new HashMap<String, Image>(2);
@@ -603,9 +608,19 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
         }
     }
 
+    private static class GitBranchInfo {
+        private final GitBranch branch;
+        private final Boolean mergedStatus;
+
+        public GitBranchInfo (GitBranch branch, Boolean mergedStatus) {
+            this.branch = branch;
+            this.mergedStatus = mergedStatus;
+        }
+    }
+    
     private class BranchesTopChildren extends Children.Keys<BranchNodeType> implements PropertyChangeListener {
         private final File repository;
-        private java.util.Map<String, GitBranch> branches = new TreeMap<String, GitBranch>();
+        private java.util.Map<String, GitBranchInfo> branches = new TreeMap<String, GitBranchInfo>();
         private BranchesNode local, remote;
 
         private BranchesTopChildren (File repository) {
@@ -669,19 +684,40 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
         }
         
         private void refreshBranches (java.util.Map<String, GitBranch> branches) {
+            assert !EventQueue.isDispatchThread();
             if (branches.isEmpty()) {
                 BranchesTopChildren.this.branches.clear();
             } else {
                 branches = new java.util.HashMap<String, GitBranch>(branches);
                 BranchesTopChildren.this.branches.keySet().retainAll(branches.keySet());
-                for (java.util.Map.Entry<String, GitBranch> e : BranchesTopChildren.this.branches.entrySet()) {
+                for (java.util.Map.Entry<String, GitBranchInfo> e : BranchesTopChildren.this.branches.entrySet()) {
                     GitBranch newBranchInfo = branches.get(e.getKey());
                     // do not refresh branches that don't change their active state or head id
-                    if (newBranchInfo != null && (newBranchInfo.getId().equals(e.getValue().getId()) && newBranchInfo.isActive() == e.getValue().isActive())) {
+                    if (newBranchInfo != null && (newBranchInfo.getId().equals(e.getValue().branch.getId()) 
+                            && newBranchInfo.isActive() == e.getValue().branch.isActive())) {
                         branches.remove(e.getKey());
                     }
                 }
-                BranchesTopChildren.this.branches.putAll(branches);
+                GitClient client = null;
+                try {
+                    if (branchMergeWith != null) {
+                        client = Git.getInstance().getClient(repository);
+                    }
+                    for (java.util.Map.Entry<String, GitBranch> e : branches.entrySet()) {
+                        Boolean mergedStatus = null;
+                        if (branchMergeWith != null) {
+                            GitRevisionInfo commonAncestor = client.getCommonAncestor(new String[] { branchMergeWith, e.getValue().getId()}, GitUtils.NULL_PROGRESS_MONITOR);
+                            mergedStatus = commonAncestor.getRevision().equals(e.getValue().getId());
+                        }
+                        BranchesTopChildren.this.branches.put(e.getKey(), new GitBranchInfo(e.getValue(), mergedStatus));
+                    }
+                } catch (GitException ex) {
+                    LOG.log(Level.INFO, null, ex);
+                } finally {
+                    if (client != null) {
+                        client.release();
+                    }
+                }
             }
             if (local != null) {
                 local.refresh();
@@ -708,7 +744,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
     private class BranchesNode extends RepositoryBrowserNode {
         private final BranchNodeType type;
 
-        private BranchesNode (File repository, BranchNodeType type, Map<String, GitBranch> branches) {
+        private BranchesNode (File repository, BranchNodeType type, Map<String, GitBranchInfo> branches) {
             super(new BranchesChildren(type, branches), repository);
             this.type = type;
         }
@@ -738,11 +774,11 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
         }
     }
 
-    private class BranchesChildren extends Children.Keys<GitBranch> {
+    private class BranchesChildren extends Children.Keys<GitBranchInfo> {
         private final BranchNodeType type;
-        private final java.util.Map<String, GitBranch> branches;
+        private final java.util.Map<String, GitBranchInfo> branches;
 
-        private BranchesChildren (BranchNodeType type, java.util.Map<String, GitBranch> branches) {
+        private BranchesChildren (BranchNodeType type, java.util.Map<String, GitBranchInfo> branches) {
             this.type = type;
             this.branches = branches;
         }
@@ -759,7 +795,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
         }
 
         @Override
-        protected Node[] createNodes (GitBranch key) {
+        protected Node[] createNodes (GitBranchInfo key) {
             Node node = getNode();
             while (!(node instanceof RepositoryNode)) {
                 node = node.getParentNode();
@@ -769,12 +805,28 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
         }
 
         private void refreshKeys () {
-            List<GitBranch> keys = new LinkedList<GitBranch>();
-            for (java.util.Map.Entry<String, GitBranch> e : branches.entrySet()) {
-                GitBranch branch = e.getValue();
-                if (type == BranchNodeType.REMOTE && branch.isRemote() || type == BranchNodeType.LOCAL && !branch.isRemote()) {
-                    keys.add(branch);
+            List<GitBranchInfo> keys = new LinkedList<GitBranchInfo>();
+            for (java.util.Map.Entry<String, GitBranchInfo> e : branches.entrySet()) {
+                GitBranchInfo branchInfo = e.getValue();
+                if (type == BranchNodeType.REMOTE && branchInfo.branch.isRemote() 
+                        || type == BranchNodeType.LOCAL && !branchInfo.branch.isRemote()) {
+                    keys.add(branchInfo);
                 }
+            }
+            if (branchMergeWith != null) {
+                keys = new ArrayList<GitBranchInfo>(keys);
+                Collections.sort(keys, new Comparator<GitBranchInfo>() {
+                    @Override
+                    public int compare (GitBranchInfo i1, GitBranchInfo i2) {
+                        assert i1.mergedStatus != null;
+                        assert i2.mergedStatus != null;
+                        int res = i1.mergedStatus.compareTo(i2.mergedStatus);
+                        if (res == 0) {
+                            res = i1.branch.getName().compareToIgnoreCase(i2.branch.getName());
+                        }
+                        return res;
+                    }
+                });
             }
             setKeys(keys);
         }
@@ -788,10 +840,13 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
         private final GitBranch trackedBranch;
         private String lastTrackingMyId;
         private String lastTrackingOtherId;
+        private final Boolean mergeStatus;
 
-        public BranchNode (File repository, GitBranch branch) {
-            super(Children.LEAF, repository, Lookups.singleton(new Revision(branch.getId(), branch.getName())));
+        public BranchNode (File repository, GitBranchInfo branchInfo) {
+            super(Children.LEAF, repository, Lookups.singleton(new Revision(branchInfo.branch.getId(), branchInfo.branch.getName())));
+            GitBranch branch = branchInfo.branch;
             branchName = branch.getName();
+            mergeStatus = branchInfo.mergedStatus;
             branchId = branch.getId();
             trackedBranch = branch.getTrackedBranch();
             setIconBaseWithExtension("org/netbeans/modules/git/resources/icons/branch.png"); //NOI18N
@@ -832,7 +887,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
             if (active && html) {
                 sb.append("<html><strong>").append(branchName).append("</strong>"); //NOI18N
             } else {
-                sb.append(branchName);
+                sb.append(branchName).append(getMergeStatus(mergeStatus));
             }
             if (options.contains(Option.DISPLAY_COMMIT_IDS)) {
                 if (trackedBranch != null) {
@@ -989,6 +1044,15 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                         }
                     });
                 }
+            }
+        }
+
+        @NbBundle.Messages("MSG_BranchMergeStatus.merged= [merged]")
+        private String getMergeStatus (Boolean mergedStatus) {
+            if (Boolean.TRUE.equals(mergedStatus)) {
+                return Bundle.MSG_BranchMergeStatus_merged();
+            } else {
+                return "";
             }
         }
         

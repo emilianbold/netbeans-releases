@@ -43,6 +43,7 @@
 package org.netbeans.modules.php.editor.codegen;
 
 import org.netbeans.modules.php.editor.api.PhpElementKind;
+import org.netbeans.modules.php.editor.parser.astnodes.BodyDeclaration;
 
 /**
  *
@@ -70,8 +71,28 @@ public class Property {
         return modifier;
     }
 
+    public String getAccessor() {
+        return isStatic() ? "self::" : "$$this->"; //NOI18N
+    }
+
+    public String getFluentReturnAccessor() {
+        return isStatic() ? "self" : "$$this"; //NOI18N
+    }
+
+    private boolean isStatic() {
+        return BodyDeclaration.Modifier.isStatic(getModifier());
+    }
+
+    public String getFunctionModifier() {
+        return isStatic() ? "static" : ""; //NOI18N
+    }
+
     public String getName() {
         return name;
+    }
+
+    public String getAccessedName() {
+        return isStatic() ? "$$" + name : name; //NOI18N
     }
 
     public String getType() {

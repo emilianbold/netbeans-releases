@@ -52,6 +52,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.dataview.api.DataView;
+import org.netbeans.modules.db.dataview.api.DataViewPageContext;
 import org.netbeans.modules.db.sql.history.SQLHistoryEntry;
 import org.netbeans.modules.db.sql.history.SQLHistoryManager;
 
@@ -61,8 +62,6 @@ import org.netbeans.modules.db.sql.history.SQLHistoryManager;
  * @author Andrei Badea
  */
 public final class SQLExecuteHelper {
-
-    public static final int DEFAULT_PAGE_SIZE = 20;
 
     private static final Logger LOGGER = Logger.getLogger(SQLExecuteHelper.class.getName());
     private static final boolean LOG = LOGGER.isLoggable(Level.FINE);
@@ -76,7 +75,7 @@ public final class SQLExecuteHelper {
      */
     public static SQLExecutionResults execute(String sqlScript, int startOffset, int endOffset,
             DatabaseConnection conn, SQLExecutionLogger executionLogger) {
-        return execute(sqlScript, startOffset, endOffset, conn, executionLogger, DEFAULT_PAGE_SIZE);
+        return execute(sqlScript, startOffset, endOffset, conn, executionLogger, DataViewPageContext.DEFAULT_PAGE_SIZE);
     }
 
     /**

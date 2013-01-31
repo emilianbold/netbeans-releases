@@ -108,31 +108,31 @@ public class PhpParserErrorTest extends PHPTestBase {
     }
 
     public void testTraits_01() throws Exception {
-        checkErrors("testfiles/traits_01.php");
+        checkErrors("testfiles/parser/traits_01.php");
     }
 
     public void testTraits_02() throws Exception {
-        checkErrors("testfiles/traits_02.php");
+        checkErrors("testfiles/parser/traits_02.php");
     }
 
     public void testTraits_03() throws Exception {
-        checkErrors("testfiles/traits_03.php");
+        checkErrors("testfiles/parser/traits_03.php");
     }
 
     public void testTraits_04() throws Exception {
-        checkErrors("testfiles/traits_04.php");
+        checkErrors("testfiles/parser/traits_04.php");
     }
 
     public void testTraits_05() throws Exception {
-        checkErrors("testfiles/traits_05.php");
+        checkErrors("testfiles/parser/traits_05.php");
     }
 
     public void testTraits_06() throws Exception {
-        checkErrors("testfiles/traits_06.php");
+        checkErrors("testfiles/parser/traits_06.php");
     }
 
     public void testTraits_07() throws Exception {
-        checkErrors("testfiles/traits_07.php");
+        checkErrors("testfiles/parser/traits_07.php");
     }
 
     public void testShortArray_01() throws Exception {

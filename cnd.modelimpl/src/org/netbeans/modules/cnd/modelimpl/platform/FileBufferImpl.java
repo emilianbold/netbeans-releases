@@ -199,6 +199,11 @@ public class FileBufferImpl implements FileBuffer, PropertyChangeListener {
     }
 
     @Override
+    public int getLineCount() throws IOException {
+        return getSnapshot().getLineColumnByOffset(Integer.MAX_VALUE)[0];
+    }
+
+    @Override
     public long lastModified() {
         Document doc = getDocument();
         if (doc != null) {

@@ -72,4 +72,10 @@ public class ReturnStatement extends Statement {
     public void accept(Visitor visitor) {
         visitor.visit(this);
     }
+
+    @Override
+    public String toString() {
+        return "return " + getExpression(); //NOI18N
+    }
+
 }

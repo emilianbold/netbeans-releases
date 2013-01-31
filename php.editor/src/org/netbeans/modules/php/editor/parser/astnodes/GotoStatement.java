@@ -72,4 +72,10 @@ public class GotoStatement extends Statement {
     public void accept(Visitor visitor) {
         visitor.visit(this);
     }
+
+    @Override
+    public String toString() {
+        return "goto " + getLabel(); //NOI18N
+    }
+
 }

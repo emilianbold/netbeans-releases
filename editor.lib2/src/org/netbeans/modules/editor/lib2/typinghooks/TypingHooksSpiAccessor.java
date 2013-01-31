@@ -74,7 +74,7 @@ public abstract class TypingHooksSpiAccessor {
     protected TypingHooksSpiAccessor() {
     }
 
-    public abstract TypedTextInterceptor.MutableContext createTtiContext(JTextComponent c, Position offset, String typedText);
+    public abstract TypedTextInterceptor.MutableContext createTtiContext(JTextComponent c, Position offset, String typedText, String replacedText);
     public abstract Object [] getTtiContextData(TypedTextInterceptor.MutableContext context);
     public abstract void resetTtiContextData(TypedTextInterceptor.MutableContext context);
     

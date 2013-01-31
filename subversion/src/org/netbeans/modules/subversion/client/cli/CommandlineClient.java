@@ -800,7 +800,10 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
         List<String> names = cmd.getPropertyNames();
         List<ISVNProperty> props = new ArrayList<ISVNProperty>(names.size());
         for (String name : names) {
-            props.add(propertyGet(url, name));
+            ISVNProperty prop = propertyGet(url, name);
+            if (prop != null) {
+                props.add(prop);
+            }
         }
         return props.toArray(new ISVNProperty[props.size()]);
     }
@@ -1211,7 +1214,10 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
         List<String> names = cmd.getPropertyNames();
         List<ISVNProperty> props = new ArrayList<ISVNProperty>(names.size());
         for (String name : names) {
-            props.add(propertyGet(url, name));
+            ISVNProperty prop = propertyGet(url, name);
+            if (prop != null) {
+                props.add(prop);
+            }
         }
         return props.toArray(new ISVNProperty[props.size()]);
     }

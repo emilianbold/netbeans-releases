@@ -46,6 +46,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.File;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetEncoder;
 import java.util.List;
 import javax.swing.ComboBoxModel;
 import javax.swing.JFileChooser;
@@ -107,6 +109,9 @@ public class NbBasePanel extends DestinationPanel {
                 DEFAULT_WARNING_INSTALL_INTO_USERDIR);
         setProperty(WARNING_JDK_NOT_RECOMMENDED_VERSION,
                 DEFAULT_WARNING_JDK_NOT_RECOMMENDED_VERSION);
+        
+        setProperty(ERROR_CONTAINS_NON_ASCII_CHARS,
+                DEFAULT_ERROR_CONTAINS_NON_ASCII_CHARS);
     }
     
     @Override
@@ -332,8 +337,16 @@ public class NbBasePanel extends DestinationPanel {
         
         @Override
         protected String validateInput() {
-            String errorMessage = super.validateInput();
+            String errorMessage = super.validateInput();                        
+            
             if (errorMessage == null) {
+                // #222846 - non-ascii characters in installation path
+                File installationFolder = new File(getDestinationPath());
+                CharsetEncoder encoder = Charset.forName("US-ASCII").newEncoder();
+                if (!encoder.canEncode(installationFolder.getAbsolutePath())) {
+                    return StringUtils.format(panel.getProperty(ERROR_CONTAINS_NON_ASCII_CHARS));
+                }
+                
                 errorMessage = panel.getJdkLocationPanel().validateLocation(
                         jdkLocationField.getText().trim());
             }
@@ -507,7 +520,9 @@ public class NbBasePanel extends DestinationPanel {
             "install.into.userdir.storage";
     public static final String WARNING_JDK_NOT_RECOMMENDED_VERSION =
             "jdk.not.recommended.version";
-    
+    public static final String ERROR_CONTAINS_NON_ASCII_CHARS =
+            "error.contains.non.ascii.chars"; // NOI18N
+   
     public static final String DEFAULT_TITLE =
             ResourceUtils.getString(NbBasePanel.class,
             "NBP.title"); // NOI18N
@@ -541,4 +556,7 @@ public class NbBasePanel extends DestinationPanel {
     public static final String DEFAULT_WARNING_JDK_NOT_RECOMMENDED_VERSION =
             ResourceUtils.getString(NbBasePanel.class,
             "NBP.warning.jdk.not.recommended.version"); // NOI18N
+    public static final String DEFAULT_ERROR_CONTAINS_NON_ASCII_CHARS =
+            ResourceUtils.getString(NbBasePanel.class,
+            "NBP.error.contains.non.ascii.chars"); // NOI18N
 }

@@ -533,6 +533,36 @@ No.
     consumption, not for consumption by other parts of the system. The name and
     meaning of this property may change in any release.
     </api>
+    
+    <api name="org.netbeans.io.suspend" category="devel" group="systemproperty" type="export">
+        <p>
+    Native listeners check the <code>org.netbeans.io.suspend</code> property. 
+    If it is set to integer greater than zero, they stop delivering file change events.
+    The list of modified directories is recorded (its size is made available
+    by setting its string value into <code>org.netbeans.io.pending</code> property), 
+    but its processing is suspended. Events are delivered when 
+    <code>org.netbeans.io.suspend</code> property changes its value to <code>0</code>
+    or becomes empty.
+    </p>
+    <p>
+    I/O intensive operations in other NetBeans modules are advised
+    to honour the <code>org.netbeans.io.suspend</code> property as well and
+    suspend their I/O activities too.
+    </p>
+    <p>
+    In order to properly communicate changes to the property between multiple
+    <em>receivers</em> and multiple <em>controllers</em> it is suggested to
+    only manipulate the value under <code>synchronized("org.netbeans.io.suspend".intern())</code>
+    lock. Those changing the value are supposed to increment it by one when they
+    request the suspend and decrement it by one when they want to resume their
+    own suspend.
+    </p>
+    <p>
+    Whenever a change to the state of the property is made,
+    <em>controllers</em> are supposed to 
+    <code>"org.netbeans.io.suspend".intern().notifyAll()</code>.
+    </p>
+    </api>
 </answer>
 
 

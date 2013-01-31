@@ -45,6 +45,7 @@
 package org.netbeans.modules.search;
 
 import java.awt.EventQueue;
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.BufferedReader;
@@ -89,6 +90,10 @@ public final class MatchingObject implements Comparable<MatchingObject>,
     public static final String PROP_INVALIDITY_STATUS =
             "invalidityStatus";                                         //NOI18N
     public static final String PROP_SELECTED = "selected";              //NOI18N
+    /** Fired when the matching object is removed (hidden) from results. */
+    public static final String PROP_REMOVED = "removed";                //NOI18N
+    /** Fired when some child of this object is removed from results. */
+    public static final String PROP_CHILD_REMOVED = "child_removed";    //NOI18N
 
     /** */
     private static final Logger LOG =
@@ -269,6 +274,7 @@ public final class MatchingObject implements Comparable<MatchingObject>,
         }
         dataObject = null;
         nodeDelegate = null;
+        changeSupport.firePropertyChange(PROP_REMOVED, null, null);
     }
 
     private void setInvalid(InvalidityStatus invalidityStatus) {
@@ -535,14 +541,14 @@ public final class MatchingObject implements Comparable<MatchingObject>,
 
         List<Node> detailNodes = new ArrayList<Node>(textDetails.size());
         for (TextDetail txtDetail : textDetails) {
-            detailNodes.add(new TextDetail.DetailNode(txtDetail, false));
+            detailNodes.add(new TextDetail.DetailNode(txtDetail, false, this));
         }
 
         return detailNodes.toArray(new Node[detailNodes.size()]);
     }
 
     public Children getDetailsChildren(boolean replacing) {
-        return new DetailsChildren(replacing);
+        return new DetailsChildren(replacing, resultModel);
     }
 
     /**
@@ -990,6 +996,25 @@ public final class MatchingObject implements Comparable<MatchingObject>,
     }
 
     /**
+     * Remove text detail, update precomputed values, inform listeners.
+     */
+    public void removeDetail(TextDetail textDetail) {
+        boolean removed = textDetails.remove(textDetail);
+        if (removed) {
+            matchesCount = getDetailsCount();
+            resultModel.removeDetailMatch(this, textDetail);
+            changeSupport.firePropertyChange(PROP_CHILD_REMOVED, null, null);
+        }
+    }
+
+    /**
+     * Remove this matching object from its result model and inform listeners.
+     */
+    public void remove() {
+        resultModel.remove(this);
+    }
+
+    /**
      * Bridge between new API and legacy implementation, will be deleted.
      */
     public static class Def {
@@ -1033,14 +1058,27 @@ public final class MatchingObject implements Comparable<MatchingObject>,
 
         private boolean replacing;
 
-        public DetailsChildren(boolean replacing) {
+        public DetailsChildren(boolean replacing, ResultModel model) {
             this.replacing = replacing;
             setKeys(getTextDetails());
+
+            MatchingObject.this.addPropertyChangeListener(PROP_CHILD_REMOVED,
+                    new PropertyChangeListener() {
+                @Override
+                public void propertyChange(PropertyChangeEvent evt) {
+                    update();
+                }
+            });
         }
 
         @Override
         protected Node[] createNodes(TextDetail key) {
-            return new Node[]{new TextDetail.DetailNode(key, replacing)};
+            return new Node[]{new TextDetail.DetailNode(key, replacing,
+                MatchingObject.this)};
+        }
+
+        public void update() {
+            setKeys(getTextDetails());
         }
     }
 

@@ -66,4 +66,5 @@ public interface MakeProjectCustomizer {
     public boolean isDynamicLibraryConfiguration();
     public boolean isArchiverConfiguration();
     public boolean isStandardManagedConfiguration();
+    public boolean isApplicationConfiguration();
 }

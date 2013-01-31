@@ -53,7 +53,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
-import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.apt.structure.APT;
 import org.netbeans.modules.cnd.apt.structure.APTDefine;
 import org.netbeans.modules.cnd.apt.structure.APTError;
@@ -65,6 +64,7 @@ import org.netbeans.modules.cnd.apt.support.lang.APTLanguageFilter;
 import org.netbeans.modules.cnd.apt.support.APTMacroExpandedStream;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.support.APTToken;
+import org.netbeans.modules.cnd.apt.support.APTWalker;
 import org.netbeans.modules.cnd.apt.support.PostIncludeData;
 import org.netbeans.modules.cnd.apt.utils.APTCommentsFilter;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
@@ -75,7 +75,9 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.SimpleOffsetableImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
+import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 
 /**
@@ -124,7 +126,7 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
 
     @Override
     protected boolean needPPTokens() {
-        return APTTraceFlags.INCLUDE_TOKENS_IN_TOKEN_STREAM;
+        return TraceFlags.PARSE_HEADERS_WITH_SOURCES;
     }
 
     public TokenStream getFilteredTokenStream(APTLanguageFilter lang) {
@@ -200,18 +202,40 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
     @Override
     protected FileImpl includeAction(ProjectBase inclFileOwner, CharSequence inclPath, int mode, APTInclude apt, PostIncludeData postIncludeState) throws IOException {
         try {
-            return inclFileOwner.onFileIncluded(getStartProject(), inclPath, getPreprocHandler(), postIncludeState, mode, isTriggerParsingActivity());
+            APTPreprocHandler preprocHandler = getPreprocHandler();
+            FileImpl includedFile = inclFileOwner.prepareIncludedFile(inclFileOwner, inclPath, preprocHandler);
+            if (includedFile != null) {
+                if (isTokenProducer() && TraceFlags.PARSE_HEADERS_WITH_SOURCES) {
+                    APTFile aptFile = includedFile.getFileAPT(true);
+                    APTWalker walker = createIncludedHeaderWalker(aptFile, includedFile);
+                    if (walker != null) {
+                        includedFile.prepareIncludedFileParsingContent();
+                        includeStream(aptFile, walker);
+                    }
+                } else {
+                    inclFileOwner.onFileIncluded(getStartProject(), includedFile, inclPath, preprocHandler, postIncludeState, mode, isTriggerParsingActivity());
+                }
+            }
+            return includedFile;
         } catch (NullPointerException ex) {
             APTUtils.LOG.log(Level.SEVERE, "NPE when processing file " + inclPath, ex);// NOI18N
             DiagnosticExceptoins.register(ex);
-        } finally {
-            getIncludeHandler().popInclude();
         }
         return null;
     }
 
     ////////////////////////////////////////////////////////////////////////////
     // implementation details
+    private APTWalker createIncludedHeaderWalker(APTFile aptFile, FileImpl includedFile) {
+        if (aptFile != null) {
+            return new APTParseFileWalker(this.getStartProject(), aptFile, includedFile, getPreprocHandler(), false, null, null);
+        } else {
+            // in the case file was just removed
+            Utils.LOG.log(Level.INFO, "Can not find or build APT for file {0}", includedFile); //NOI18N
+        }
+        return null;
+    }
+    
     private ErrorDirectiveImpl createError(APTError error) {
         APTToken token = error.getToken();
         SimpleOffsetableImpl pos = getOffsetable(token);

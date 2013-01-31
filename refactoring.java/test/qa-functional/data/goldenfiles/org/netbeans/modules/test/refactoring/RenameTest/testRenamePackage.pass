@@ -106,4 +106,5 @@ public class RenamePkg {
     renamedPkg.RenamePkg a;
 }
 Deleted file:
+
 /renamePkg/RenamePkg.java

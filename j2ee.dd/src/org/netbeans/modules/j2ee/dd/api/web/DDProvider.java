@@ -67,12 +67,12 @@ import org.openide.util.Parameters;
  *
  * @author  Milan Kuchtiak
  */
-
+@org.netbeans.api.annotations.common.SuppressWarnings(value="DMI_COLLECTION_OF_URLS", justification="File URLs only")
 public final class DDProvider {
     private static DDProvider ddProvider;
-    private final Map ddMap;
-    private final Map baseBeanMap;
-    private final Map errorMap;
+    private final Map<URL, WeakReference<WebAppProxy>> ddMap;
+    private final Map<URL, WeakReference<WebApp>> baseBeanMap;
+    private final Map<URL, SAXParseException> errorMap;
     private final FCA fileChangeListener;
   
     private static final Logger LOGGER = Logger.getLogger(DDProvider.class.getName());
@@ -81,9 +81,9 @@ public final class DDProvider {
      * Creates a new instance of DDProvider. 
      */
     private DDProvider() {
-        ddMap = new HashMap(5);
-        baseBeanMap = new HashMap(5);
-        errorMap = new HashMap(5);
+        ddMap = new HashMap<URL, WeakReference<WebAppProxy>>(5);
+        baseBeanMap = new HashMap<URL, WeakReference<WebApp>>(5);
+        errorMap = new HashMap<URL, SAXParseException>(5);
         fileChangeListener = new FCA();
     }
     

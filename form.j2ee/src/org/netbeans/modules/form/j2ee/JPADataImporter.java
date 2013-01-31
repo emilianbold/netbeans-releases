@@ -45,6 +45,8 @@ package org.netbeans.modules.form.j2ee;
 
 import java.awt.Dialog;
 import java.awt.EventQueue;
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.sql.Connection;
 import java.util.concurrent.*;
 import java.util.logging.Level;
@@ -68,6 +70,7 @@ import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EntityMappingsMetadata;
 import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
+import org.netbeans.modules.j2ee.persistence.provider.InvalidPersistenceXmlException;
 import org.netbeans.modules.j2ee.persistence.spi.PersistenceLocationProvider;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -215,7 +218,7 @@ private void connectionComboActionPerformed(java.awt.event.ActionEvent evt) {//G
         if (dd.getValue() != DialogDescriptor.OK_OPTION) return null;
         FutureTask<RADComponent> task = new FutureTask<RADComponent>(new Callable<RADComponent>() {
             @Override
-            public RADComponent call() throws Exception {
+            public RADComponent call() {
                 final RADComponent[] resultList = new RADComponent[1];
                 try {
                     J2EEUtils.DBColumnInfo table = (J2EEUtils.DBColumnInfo)tableCombo.getSelectedItem();
@@ -273,8 +276,14 @@ private void connectionComboActionPerformed(java.awt.event.ActionEvent evt) {//G
                             }
                         }
                     });
-                } catch (Exception ex) {
-                    Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
+                } catch (IOException ioex) {
+                    Logger.getLogger(JPADataImporter.class.getName()).log(Level.INFO, null, ioex);
+                } catch (InvalidPersistenceXmlException ipxex) {
+                    Logger.getLogger(JPADataImporter.class.getName()).log(Level.INFO, null, ipxex);
+                } catch (InterruptedException iex) {
+                    Logger.getLogger(JPADataImporter.class.getName()).log(Level.INFO, null, iex);
+                } catch (InvocationTargetException itex) {
+                    Logger.getLogger(JPADataImporter.class.getName()).log(Level.INFO, null, itex);
                 }
                 return resultList[0];
             }

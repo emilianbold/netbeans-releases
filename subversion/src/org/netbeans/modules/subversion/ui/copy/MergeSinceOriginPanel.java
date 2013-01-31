@@ -85,6 +85,9 @@ public class MergeSinceOriginPanel extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(mergeEndBrowseRevisionButton, org.openide.util.NbBundle.getMessage(MergeSinceOriginPanel.class, "CTL_MergeSincePanel_Browse")); // NOI18N
 
+        org.openide.awt.Mnemonics.setLocalizedText(cbIgnoreAncestry, org.openide.util.NbBundle.getMessage(MergeSinceOriginPanel.class, "CTL_MergePanel_IgnoreAncestry")); // NOI18N
+        cbIgnoreAncestry.setToolTipText(org.openide.util.NbBundle.getMessage(MergeSinceOriginPanel.class, "CTL_MergePanel_IgnoreAncestryTT")); // NOI18N
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -104,6 +107,9 @@ public class MergeSinceOriginPanel extends javax.swing.JPanel {
                     .addComponent(mergeEndUrlComboBox, 0, 309, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(mergeEndBrowseButton))
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(cbIgnoreAncestry)
+                .addGap(0, 0, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -120,7 +126,9 @@ public class MergeSinceOriginPanel extends javax.swing.JPanel {
                         .addComponent(mergeEndRevisionTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addComponent(mergeEndSearchButton)
                         .addComponent(mergeEndBrowseRevisionButton)))
-                .addContainerGap())
+                .addGap(18, 18, 18)
+                .addComponent(cbIgnoreAncestry)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         mergeEndRepositoryFolderLabel.getAccessibleContext().setAccessibleDescription("Repository Folder");
@@ -135,6 +143,7 @@ public class MergeSinceOriginPanel extends javax.swing.JPanel {
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    final javax.swing.JCheckBox cbIgnoreAncestry = new javax.swing.JCheckBox();
     final javax.swing.JLabel mergeAfterRevisionLabel = new javax.swing.JLabel();
     final javax.swing.JButton mergeEndBrowseButton = new javax.swing.JButton();
     final javax.swing.JButton mergeEndBrowseRevisionButton = new javax.swing.JButton();

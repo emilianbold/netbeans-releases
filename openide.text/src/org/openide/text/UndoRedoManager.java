@@ -226,6 +226,7 @@ final class UndoRedoManager extends UndoRedo.Manager {
         if (onSaveTasksEdit != null) {
             onSaveTasksEdit.end();
         }
+        awaitingOnSaveTasks = false;
         checkLogOp("    endSaveActions(): saveActionsEdit", onSaveTasksEdit); // NOI18N
     }
     
@@ -389,12 +390,12 @@ final class UndoRedoManager extends UndoRedo.Manager {
         // This should already be called under document's lock so DocLockedRun not necessary
         assert (edit != null) : "Cannot add null edit"; // NOI18N
         if (awaitingOnSaveTasks) {
-            awaitingOnSaveTasks = false;
             checkLogOp("addEdit-inSaveActions", edit); // NOI18N
             if (onSaveTasksEdit == null) {
                 onSaveTasksEdit = new CompoundEdit();
             }
-            assert onSaveTasksEdit.addEdit(edit) : "Cannot add to saveActionsEdit"; // NOI18N
+            boolean added = onSaveTasksEdit.addEdit(edit);
+            assert added : "Cannot add to saveActionsEdit"; // NOI18N
             return true;
         }
         WrapUndoEdit wrapEdit = new WrapUndoEdit(this, edit); // Wrap the edit

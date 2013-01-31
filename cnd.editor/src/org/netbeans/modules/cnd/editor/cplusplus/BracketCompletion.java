@@ -707,8 +707,8 @@ public class BracketCompletion {
      * @param doc the document
      * @param dotPos position to be tested
      */
-    static boolean posWithinString(BaseDocument doc, int dotPos) {
-        return posWithinQuotes(doc, dotPos, '\"', new CppTokenId[]{CppTokenId.STRING_LITERAL, CppTokenId.RAW_STRING_LITERAL});
+    static boolean posWithinNonRawString(BaseDocument doc, int dotPos) {
+        return posWithinQuotes(doc, dotPos, '\"', new CppTokenId[]{CppTokenId.STRING_LITERAL});
     }
 
     /**

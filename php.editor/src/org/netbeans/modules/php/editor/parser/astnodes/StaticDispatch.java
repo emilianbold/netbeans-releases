@@ -58,4 +58,10 @@ public abstract class StaticDispatch extends VariableBase {
     }
 
     public abstract ASTNode getMember();
+
+    @Override
+    public String toString() {
+        return getClassName() + "::" + getMember(); //NOI18N
+    }
+
 }

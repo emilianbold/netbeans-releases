@@ -132,7 +132,7 @@ public class ReplaceTest extends EditorTestCase {
             new EventTool().waitNoEvent(REPLACE_TIMEOUT);            
             bar.replaceButton().doClick();            
             new EventTool().waitNoEvent(REPLACE_TIMEOUT);            
-            editor.setCaretPosition(12,1);                        
+            editor.setCaretPosition(52,1);                        
             bar.getSearchBar().findCombo().clearText();
             bar.getSearchBar().findCombo().typeText("testReplaceSelectionRepeated");            
             bar.replaceCombo().clearText();
@@ -285,7 +285,7 @@ public class ReplaceTest extends EditorTestCase {
         openDefaultSampleFile();
         try {
             EditorOperator editor = getDefaultSampleEditorOperator();
-            editor.select(20, 24);
+            editor.select(58, 62);
             ReplaceBarOperator bar = ReplaceBarOperator.invoke(editor);
             bar.uncheckAll();
             final SearchBarOperator searchBar = bar.getSearchBar();

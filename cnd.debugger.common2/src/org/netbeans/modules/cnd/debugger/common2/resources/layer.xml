@@ -1064,7 +1064,7 @@ made subject to such option by the copyright holder.
             <file name="MemoryWindow.settings" url="components/MemoryWindow.settings"/>
             <file name="PioTopComponent.settings" url="components/PioTopComponentSettings.xml"/>
             <file name="RegistersWindow.settings" url="components/RegistersWindow.settings"/>
-            <file name="DisassemblerWindow.settings" url="components/DisassemblerWindow.settings"/>
+            <!--<file name="DisassemblerWindow.settings" url="components/DisassemblerWindow.settings"/>-->
         </folder>
 
 	<folder name="Modes">
@@ -1128,7 +1128,7 @@ made subject to such option by the copyright holder.
 	    </folder>
 
 	    <folder name="editor">
-		<file name="DisassemblerWindow.wstcref" url="modes/editor/DisassemblerWindow.wstcref"/>
+		<!--<file name="DisassemblerWindow.wstcref" url="modes/editor/DisassemblerWindow.wstcref"/>-->
 	    </folder>
 	    
 	</folder>
@@ -1143,7 +1143,7 @@ made subject to such option by the copyright holder.
                 <file name="MemoryWindow.wstcgrp" url="groups/debugger/MemoryWindow.wstcgrp"/>
                 <file name="EvaluationWindow.wstcgrp" url="groups/debugger/EvaluationWindow.wstcgrp"/>
                 <file name="RegistersWindow.wstcgrp" url="groups/debugger/RegistersWindow.wstcgrp"/>
-                <file name="DisassemblerWindow.wstcgrp" url="groups/debugger/DisassemblerWindow.wstcgrp"/>
+                <!--<file name="DisassemblerWindow.wstcgrp" url="groups/debugger/DisassemblerWindow.wstcgrp"/>-->
 
             </folder>
 	</folder>

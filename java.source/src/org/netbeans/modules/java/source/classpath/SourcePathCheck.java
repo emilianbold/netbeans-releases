@@ -80,7 +80,7 @@ public class SourcePathCheck extends JavaParserResultTask {
     }
 
     @Override
-    @org.netbeans.api.annotations.common.SuppressWarnings(value={"DMI_COLLECTION_OF_URLS"}/*,justification="URLs have never host part"*/)    //NOI18N
+    @org.netbeans.api.annotations.common.SuppressWarnings(value={"DMI_COLLECTION_OF_URLS"}, justification="URLs have never host part")    //NOI18N
     public void run(final Result result, final SchedulerEvent event) {
         final CompilationInfo info = CompilationInfo.get(result);
         final ClasspathInfo cpInfo = info.getClasspathInfo();
@@ -125,7 +125,7 @@ public class SourcePathCheck extends JavaParserResultTask {
 
     public static final class Factory extends TaskFactory {
 
-        @org.netbeans.api.annotations.common.SuppressWarnings(value={"DMI_COLLECTION_OF_URLS"}/*,justification="URLs have never host part"*/)    //NOI18N
+        @org.netbeans.api.annotations.common.SuppressWarnings(value={"DMI_COLLECTION_OF_URLS"}, justification="URLs have never host part")    //NOI18N
         private final Set<URL> firedFor = new HashSet<URL>();
 
         @Override

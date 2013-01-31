@@ -72,6 +72,7 @@ public class RevisionInfoPanelController {
     private boolean valid;
     private final PropertyChangeSupport support;
     public static final String PROP_VALID = "RevisionInfoPanelController.valid"; //NOI18N
+    private String mergingInto;
 
     public RevisionInfoPanelController (File repository) {
         this.repository = repository;
@@ -98,27 +99,31 @@ public class RevisionInfoPanelController {
         }
     }
 
+    void displayMergedStatus (String revision) {
+        this.mergingInto = revision;
+    }
+
     private void resetInfoFields () {
         panel.taMessage.setText(MSG_LOADING);
         panel.tbAuthor.setText(MSG_LOADING);
         panel.tbRevisionId.setText(MSG_LOADING);
     }
 
-    public void updateInfoFields (String revision, GitRevisionInfo info) {
+    private void updateInfoFields (String revision, GitRevisionInfo info, Boolean revisionMerged) {
         assert EventQueue.isDispatchThread();
         panel.tbAuthor.setText(info.getAuthor().toString());
         if (!panel.tbAuthor.getText().isEmpty()) {
             panel.tbAuthor.setCaretPosition(0);
         }
         if (revision.equals(info.getRevision())) {
-            panel.tbRevisionId.setText(info.getRevision());
+            panel.tbRevisionId.setText(new StringBuilder(info.getRevision()).append(getMergedStatus(revisionMerged)).toString());
         } else {
             if (revision.startsWith(GitUtils.PREFIX_R_HEADS)) { //NOI18N
                 revision = revision.substring(GitUtils.PREFIX_R_HEADS.length());
             } else if (revision.startsWith(GitUtils.PREFIX_R_REMOTES)) { //NOI18N
                 revision = revision.substring(GitUtils.PREFIX_R_REMOTES.length());
             }
-            panel.tbRevisionId.setText(new StringBuilder(revision).append(" (").append(info.getRevision()).append(')').toString()); //NOI18N
+            panel.tbRevisionId.setText(new StringBuilder(revision).append(getMergedStatus(revisionMerged)).append(" (").append(info.getRevision()).append(')').toString()); //NOI18N
         }
         if (!panel.tbRevisionId.getText().isEmpty()) {
             panel.tbRevisionId.setCaretPosition(0);
@@ -151,6 +156,15 @@ public class RevisionInfoPanelController {
         support.removePropertyChangeListener(list);
     }
 
+    @NbBundle.Messages("MSG_RevisionMerged.status= [merged]")
+    private String getMergedStatus (Boolean revisionMerged) {
+        if (Boolean.TRUE.equals(revisionMerged)) {
+            return Bundle.MSG_RevisionMerged_status();
+        } else {
+            return "";
+        }
+    }
+
     private class LoadInfoWorker implements Runnable {
 
         ProgressMonitor.DefaultProgressMonitor monitor = new ProgressMonitor.DefaultProgressMonitor();
@@ -160,6 +174,7 @@ public class RevisionInfoPanelController {
             final String revision = currentCommit;
             GitRevisionInfo revisionInfo;
             GitClient client = null;
+            Boolean mergedStatus = null;
             try {
                 monitor = new ProgressMonitor.DefaultProgressMonitor();
                 if (Thread.interrupted()) {
@@ -167,6 +182,10 @@ public class RevisionInfoPanelController {
                 }
                 client = Git.getInstance().getClient(repository);
                 revisionInfo = client.log(revision, monitor);
+                if (!monitor.isCanceled() && mergingInto != null) {
+                    GitRevisionInfo commonAncestor = client.getCommonAncestor(new String[] { mergingInto, revisionInfo.getRevision() }, monitor);
+                    mergedStatus = commonAncestor.getRevision().equals(revisionInfo.getRevision());
+                }
             } catch (GitException ex) {
                 if (!(ex instanceof GitException.MissingObjectException)) {
                     GitClientExceptionHandler.notifyException(ex, true);
@@ -178,6 +197,7 @@ public class RevisionInfoPanelController {
                 }
             }
             final GitRevisionInfo info = revisionInfo;
+            final Boolean fMergedStatus = mergedStatus;
             final ProgressMonitor.DefaultProgressMonitor m = monitor;
             if (!monitor.isCanceled()) {
                 Mutex.EVENT.readAccess(new Runnable () {
@@ -187,7 +207,7 @@ public class RevisionInfoPanelController {
                             if (info == null) {
                                 setUnknownRevision();
                             } else {
-                                updateInfoFields(revision, info);
+                                updateInfoFields(revision, info, fMergedStatus);
                                 setValid(true);
                             }
                         }

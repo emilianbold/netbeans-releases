@@ -69,7 +69,8 @@ public class InspectionTest extends GeneralHTMLProject {
                 "testStylesAfterSaveWithInsp",
                 "testHighlightedElements",
                 "testInspectionFromNavigator",
-                "testMatchedHighlighted").enableModules(".*").clusters(".*").honorAutoloadEager(true));
+                "testMatchedHighlighted",
+                "testDynamicElementPopulation").enableModules(".*").clusters(".*").honorAutoloadEager(true));
     }
 
     public void testOpenProject() throws Exception {
@@ -254,6 +255,7 @@ public class InspectionTest extends GeneralHTMLProject {
         evt.waitNoEvent(500);
         assertEquals("Unexpected element in CSS Styles", "div .test", co.getSelectedHTMLElementName());
         type(eo, " modification");
+        eo.deleteLine(19);
         eo.save();
         evt.waitNoEvent(500);
         assertEquals("Unexpected element in CSS Styles", "div .test", co.getSelectedHTMLElementName());
@@ -317,6 +319,25 @@ public class InspectionTest extends GeneralHTMLProject {
         eo.deleteLine(19);
         eb.closeWindow();
         eo.save();
+        endTest();
+    }
+
+    /**
+     * Case: Select dynamic element in Navigator and checks if CSS Styles is
+     * populated and if element is marked as dynamic in Navigator
+     */
+    public void testDynamicElementPopulation() {
+        startTest();
+        InspectionTest.current_project = "phonecat" + System.currentTimeMillis();
+        createSampleProject("Responsive Rabbits", InspectionTest.current_project);
+        setRunConfiguration("Embedded WebKit Browser", true, true);
+        runFile(InspectionTest.current_project, "index.html");
+        CSSStylesOperator co = new CSSStylesOperator("index.html");
+        HTMLNavigatorOperator no = new HTMLNavigatorOperator("Navigator");
+        no.focusElement("html|body|div|div|div|div|h1", "0|0|1|0|0|0|0");
+        AppliedRule[] rules = co.getAppliedRules();
+        assertEquals("Unexpected applied rule", ".hero-unit h1", rules[0].selector);
+        assertEquals("Unexpected element selected in Navigator", "[html, body, div, div, div, div, h1]h1;DOM", no.getFocusedElement());
         endTest();
     }
 }

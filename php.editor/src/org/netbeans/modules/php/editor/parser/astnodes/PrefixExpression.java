@@ -101,4 +101,10 @@ public class PrefixExpression extends Expression {
     public void accept(Visitor visitor) {
         visitor.visit(this);
     }
+
+    @Override
+    public String toString() {
+        return "" + getOperator() + getVariable(); //NOI18N
+    }
+
 }

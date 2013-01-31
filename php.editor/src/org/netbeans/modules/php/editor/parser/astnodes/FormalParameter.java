@@ -116,4 +116,10 @@ public class FormalParameter extends ASTNode {
     public void accept(Visitor visitor) {
         visitor.visit(this);
     }
+
+    @Override
+    public String toString() {
+        return getParameterType() + " " + getParameterName() + (isMandatory() ? "" : " = " + getDefaultValue()); //NOI18N
+    }
+
 }

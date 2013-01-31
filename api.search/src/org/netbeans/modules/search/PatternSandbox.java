@@ -60,6 +60,7 @@ import javax.swing.text.Highlighter;
 import org.netbeans.api.search.SearchHistory;
 import org.netbeans.api.search.SearchPattern;
 import org.netbeans.modules.search.ui.FormLayoutHelper;
+import org.netbeans.modules.search.ui.UiUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
@@ -788,8 +789,7 @@ public abstract class PatternSandbox extends JPanel
 
         @Override
         protected String getHintLabelText() {
-            return getText(
-                    "BasicSearchForm.cboxFileNamePattern.tooltip");     //NOI18N
+            return UiUtils.getFileNamePatternsExample(pathRegexp);
         }
     }
 
@@ -801,7 +801,8 @@ public abstract class PatternSandbox extends JPanel
 
         @Override
         public void itemStateChanged(ItemEvent e) {
-            lblHint.setVisible(e.getStateChange() == ItemEvent.DESELECTED);
+            lblHint.setText(UiUtils.getFileNamePatternsExample(
+                    e.getStateChange() == ItemEvent.SELECTED));
         }
     }
 

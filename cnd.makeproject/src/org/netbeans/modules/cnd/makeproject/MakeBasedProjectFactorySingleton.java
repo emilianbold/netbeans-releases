@@ -59,11 +59,13 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectManager.Result;
 import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectHelper;
+import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectLife;
 import org.netbeans.spi.project.ProjectFactory;
 import org.netbeans.spi.project.ProjectFactory2;
 import org.netbeans.spi.project.ProjectState;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
@@ -113,7 +115,7 @@ public final class MakeBasedProjectFactorySingleton implements ProjectFactory2 {
             return null;
         }
         try {
-            Document projectXml = loadProjectXml(projectDirectory);
+            Document projectXml = loadProjectXml(projectFile);
             if (projectXml != null) {
                 Element typeEl = XMLUtil.findElement(projectXml.getDocumentElement(), "type", PROJECT_NS); // NOI18N
                 if (typeEl != null) {
@@ -138,8 +140,16 @@ public final class MakeBasedProjectFactorySingleton implements ProjectFactory2 {
     public Project loadProject(FileObject projectDirectory, ProjectState state) throws IOException {
         FileObject projectFile = projectDirectory.getFileObject(PROJECT_XML_PATH);
         //#54488: Added check for virtual
-        if (projectFile == null || !projectFile.isData() || projectFile.isVirtual()) {
-            LOG.log(Level.FINE, "not concrete data file {0}/nbproject/project.xml", projectDirectory);
+        if (projectFile == null) {
+            LOG.log(Level.FINE, "not found data file {0}/nbproject/project.xml", projectDirectory.getPath()); // NOI18N
+            return null;
+        }
+        if (!projectFile.isData()) {
+            LOG.log(Level.FINE, "not found plain file {0}/nbproject/project.xml", projectDirectory.getPath()); // NOI18N
+            return null;
+        }
+        if (projectFile.isVirtual()) {
+            LOG.log(Level.FINE, "not concrete data file {0}/nbproject/project.xml", projectDirectory.getPath()); // NOI18N
             return null;
         }
         Document projectXml = loadProjectXml(projectFile);

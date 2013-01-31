@@ -99,7 +99,7 @@ public abstract class ProjectTypeStrategy {
             final String groupPath = group.getRootFolder().getPath();
 
             // Two check because of issue #221727
-            if (groupPath.endsWith(File.separator + "test") || groupPath.contains(File.separator + "test" + File.separator)) { // NOI18N
+            if (groupPath.endsWith("/test") || groupPath.contains("/test/")) { // NOI18N
                 reorderedGroup.add(group);
             }
         }

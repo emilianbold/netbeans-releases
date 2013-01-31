@@ -515,8 +515,9 @@ public final class JavaFXPlatformUtils {
      * @return true if location is correct
      */
     public static boolean isRuntimePathCorrect(@NonNull File file) {
-        File rtJar = new File(file.getAbsolutePath() + File.separatorChar + "lib" + File.separatorChar + "jfxrt.jar"); // NOI18N
-        return rtJar.exists();
+        File rtJarPreJDK8 = new File(file.getAbsolutePath() + File.separatorChar + "lib" + File.separatorChar + "jfxrt.jar"); // NOI18N
+        File rtJarFromJDK8 = new File(file.getAbsolutePath() + File.separatorChar + "lib" + File.separatorChar + "ext" + File.separatorChar + "jfxrt.jar"); // NOI18N
+        return rtJarPreJDK8.exists() || rtJarFromJDK8.exists();
     }
 
     /**
@@ -526,11 +527,10 @@ public final class JavaFXPlatformUtils {
      * @return true if location is correct and containing all required artifacts
      */
     public static boolean isRuntimePathCorrectAndComplete(@NonNull File file) {
-        File rtJar1 = new File(file.getAbsolutePath() + File.separatorChar + "lib" + File.separatorChar + "jfxrt.jar"); // NOI18N
         File rtJar2 = new File(file.getAbsolutePath() + File.separatorChar + "lib" + File.separatorChar + "deploy.jar"); // NOI18N
         File rtJar3 = new File(file.getAbsolutePath() + File.separatorChar + "lib" + File.separatorChar + "javaws.jar"); // NOI18N
         File rtJar4 = new File(file.getAbsolutePath() + File.separatorChar + "lib" + File.separatorChar + "plugin.jar"); // NOI18N
-        return rtJar1.exists() && rtJar2.exists() && rtJar3.exists() && rtJar4.exists();
+        return isRuntimePathCorrect(file) && rtJar2.exists() && rtJar3.exists() && rtJar4.exists();
     }
 
 }

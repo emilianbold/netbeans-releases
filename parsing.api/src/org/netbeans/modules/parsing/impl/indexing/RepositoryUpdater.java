@@ -300,8 +300,8 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
      *   added/removed, file is modified, editor tabs are switched, etc).
      */
     @org.netbeans.api.annotations.common.SuppressWarnings(
-        value="DMI_COLLECTION_OF_URLS"
-        /*,justification="URLs have never host part"*/)
+        value="DMI_COLLECTION_OF_URLS",
+        justification="URLs have never host part")
     public void addIndexingJob(
         @NonNull final URL rootUrl,
         @NullAllowed Collection<? extends URL> fileUrls,
@@ -525,8 +525,8 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
     // -----------------------------------------------------------------------
 
     @org.netbeans.api.annotations.common.SuppressWarnings(
-        value="DMI_COLLECTION_OF_URLS"
-        /*,justification="URLs have never host part. Already verified by PathRegistry"*/)
+        value="DMI_COLLECTION_OF_URLS",
+        justification="URLs have never host part. Already verified by PathRegistry")
     @Override
     public void pathsChanged(PathRegistryEvent event) {
         assert event != null;
@@ -1222,24 +1222,24 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
     /* test */ volatile static Source unitTestActiveSource;
 
     @org.netbeans.api.annotations.common.SuppressWarnings(
-        value="DMI_COLLECTION_OF_URLS"
-        /*,justification="URLs have never host part"*/)
+        value="DMI_COLLECTION_OF_URLS",
+        justification="URLs have never host part")
     private final Map<URL, List<URL>>scannedRoots2Dependencies = Collections.synchronizedMap(new TreeMap<URL, List<URL>>(new LexicographicComparator(true)));
     @org.netbeans.api.annotations.common.SuppressWarnings(
-        value="DMI_COLLECTION_OF_URLS"
-        /*,justification="URLs have never host part"*/)
+        value="DMI_COLLECTION_OF_URLS",
+        justification="URLs have never host part")
     private final Map<URL, List<URL>>scannedBinaries2InvDependencies = Collections.synchronizedMap(new HashMap<URL,List<URL>>());
     @org.netbeans.api.annotations.common.SuppressWarnings(
-        value="DMI_COLLECTION_OF_URLS"
-        /*,justification="URLs have never host part"*/)
+        value="DMI_COLLECTION_OF_URLS",
+        justification="URLs have never host part")
     private final Map<URL, List<URL>>scannedRoots2Peers = Collections.synchronizedMap(new TreeMap<URL, List<URL>>(new LexicographicComparator(true)));
     @org.netbeans.api.annotations.common.SuppressWarnings(
-        value="DMI_COLLECTION_OF_URLS"
-        /*,justification="URLs have never host part"*/)
+        value="DMI_COLLECTION_OF_URLS",
+        justification="URLs have never host part")
     private final Set<URL>scannedUnknown = Collections.synchronizedSet(new HashSet<URL>());
     @org.netbeans.api.annotations.common.SuppressWarnings(
-        value="DMI_COLLECTION_OF_URLS"
-        /*,justification="URLs have never host part"*/)
+        value="DMI_COLLECTION_OF_URLS",
+        justification="URLs have never host part")
     private final Set<URL>sourcesForBinaryRoots = Collections.synchronizedSet(new HashSet<URL>());
 
     private volatile State state = State.CREATED;
@@ -1621,8 +1621,8 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
     }
 
     @org.netbeans.api.annotations.common.SuppressWarnings(
-    value="DMI_BLOCKING_METHODS_ON_URL"
-    /*,justification="URLs have never host part"*/)
+    value="DMI_BLOCKING_METHODS_ON_URL",
+    justification="URLs have never host part")
     private static ClassPath.Entry getClassPathEntry (final FileObject root) {
         try {
             if (root != null) {
@@ -1677,8 +1677,8 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
     }
 
     @org.netbeans.api.annotations.common.SuppressWarnings(
-        value={"DMI_COLLECTION_OF_URLS","DMI_BLOCKING_METHODS_ON_URL"}
-        /*,justification="URLs have never host part"*/)
+        value={"DMI_COLLECTION_OF_URLS","DMI_BLOCKING_METHODS_ON_URL"},
+        justification="URLs have never host part")
     private static boolean findDependencies(
             final URL rootURL,
             final DependenciesContext ctx,
@@ -1973,8 +1973,8 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
     }
 
     @org.netbeans.api.annotations.common.SuppressWarnings(
-        value="DMI_COLLECTION_OF_URLS"
-        /*,justification="URLs have never host part"*/)
+        value="DMI_COLLECTION_OF_URLS",
+        justification="URLs have never host part")
     private static void printMap(Map<URL, List<URL>> deps, Level level) {
         Set<URL> sortedRoots = new TreeSet<URL>(C);
         sortedRoots.addAll(deps.keySet());
@@ -1987,8 +1987,8 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
     }
 
     @org.netbeans.api.annotations.common.SuppressWarnings(
-        value="DMI_COLLECTION_OF_URLS"
-        /*,justification="URLs have never host part"*/)
+        value="DMI_COLLECTION_OF_URLS",
+        justification="URLs have never host part")
     private static StringBuilder printMap(Map<URL, List<URL>> deps, StringBuilder sb) {
         Set<URL> sortedRoots = new TreeSet<URL>(C);
         sortedRoots.addAll(deps.keySet());
@@ -3344,8 +3344,8 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         private final Map<URL, List<URL>> scannedRoots2Depencencies;
 
         @org.netbeans.api.annotations.common.SuppressWarnings(
-        value="DMI_COLLECTION_OF_URLS"
-        /*,justification="URLs have never host part"*/)
+        value="DMI_COLLECTION_OF_URLS",
+        justification="URLs have never host part")
         public FileListWork (
                 Map<URL, List<URL>> scannedRoots2Depencencies,
                 URL root, boolean followUpJob,
@@ -3365,8 +3365,8 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
 
         @SuppressWarnings("LeakingThisInConstructor")
         @org.netbeans.api.annotations.common.SuppressWarnings(
-        value="DMI_COLLECTION_OF_URLS"
-        /*,justification="URLs have never host part"*/)
+        value="DMI_COLLECTION_OF_URLS",
+        justification="URLs have never host part")
         public FileListWork (
                 Map<URL, List<URL>> scannedRoots2Depencencies,
                 URL root,
@@ -3427,8 +3427,8 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
 
         @Override
         @org.netbeans.api.annotations.common.SuppressWarnings(
-        value="DMI_BLOCKING_METHODS_ON_URL"
-        /*,justification="URLs have never host part"*/)
+        value="DMI_BLOCKING_METHODS_ON_URL",
+        justification="URLs have never host part")
         public boolean absorb(Work newWork) {
             if (newWork instanceof FileListWork) {
                 FileListWork nflw = (FileListWork) newWork;
@@ -3487,8 +3487,8 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
 
         @Override
         @org.netbeans.api.annotations.common.SuppressWarnings(
-        value="DMI_BLOCKING_METHODS_ON_URL"
-        /*,justification="URLs have never host part"*/)
+        value="DMI_BLOCKING_METHODS_ON_URL",
+        justification="URLs have never host part")
         public boolean absorb(Work newWork) {
             if (newWork instanceof BinaryWork) {
                 return root.equals(((BinaryWork) newWork).root);
@@ -3562,8 +3562,8 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
 
         @Override
         @org.netbeans.api.annotations.common.SuppressWarnings(
-        value="DMI_BLOCKING_METHODS_ON_URL"
-        /*,justification="URLs have never host part"*/)
+        value="DMI_BLOCKING_METHODS_ON_URL",
+        justification="URLs have never host part")
         public boolean absorb(Work newWork) {
             if (newWork instanceof DeleteWork) {
                 DeleteWork ndw = (DeleteWork) newWork;
@@ -3587,8 +3587,8 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         private final Set<URL> sourcesForBinaryRoots;
 
         @org.netbeans.api.annotations.common.SuppressWarnings(
-        value="DMI_COLLECTION_OF_URLS"
-        /*,justification="URLs have never host part"*/)
+        value="DMI_COLLECTION_OF_URLS",
+        justification="URLs have never host part")
         public RefreshCifIndices(
                 Collection<? extends IndexerCache.IndexerInfo<CustomIndexerFactory>> cifInfos,
                 Map<URL, List<URL>> scannedRoots2Depencencies,
@@ -3623,8 +3623,8 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
 
         @Override
         @org.netbeans.api.annotations.common.SuppressWarnings(
-        value="DMI_COLLECTION_OF_URLS"
-        /*,justification="URLs have never host part"*/)
+        value="DMI_COLLECTION_OF_URLS",
+        justification="URLs have never host part")
         protected boolean getDone() {
             switchProgressToDeterminate(scannedRoots2Dependencies.size());
             for(URL root : scannedRoots2Dependencies.keySet()) {
@@ -3758,8 +3758,8 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         private final Set<URL> sourcesForBinaryRoots;
 
         @org.netbeans.api.annotations.common.SuppressWarnings(
-        value="DMI_COLLECTION_OF_URLS"
-        /*,justification="URLs have never host part"*/)
+        value="DMI_COLLECTION_OF_URLS",
+        justification="URLs have never host part")
         public RefreshEifIndices(
                 Collection<? extends IndexerCache.IndexerInfo<EmbeddingIndexerFactory>> eifInfos,
                 Map<URL, List<URL>> scannedRoots2Depencencies,
@@ -3794,8 +3794,8 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
 
         @Override
         @org.netbeans.api.annotations.common.SuppressWarnings(
-        value="DMI_COLLECTION_OF_URLS"
-        /*,justification="URLs have never host part"*/)
+        value="DMI_COLLECTION_OF_URLS",
+        justification="URLs have never host part")
         protected boolean getDone() {
             switchProgressToDeterminate(scannedRoots2Dependencies.size());
             for(URL root : scannedRoots2Dependencies.keySet()) {
@@ -3920,8 +3920,8 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         private Map<URL, Set<FileObject>> checkTimestampFiles;
 
         @org.netbeans.api.annotations.common.SuppressWarnings(
-        value="DMI_COLLECTION_OF_URLS"
-        /*,justification="URLs have never host part"*/)
+        value="DMI_COLLECTION_OF_URLS",
+        justification="URLs have never host part")
         public RefreshWork(
                 Map<URL, List<URL>> scannedRoots2Depencencies,
                 Map<URL, List<URL>> scannedBinaries2InvDependencies,
@@ -3954,8 +3954,8 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         }
 
         @org.netbeans.api.annotations.common.SuppressWarnings(
-        value="DMI_COLLECTION_OF_URLS"
-        /*,justification="URLs have never host part"*/)
+        value="DMI_COLLECTION_OF_URLS",
+        justification="URLs have never host part")
         protected @Override boolean getDone() {
             if (depCtx == null) {
                 depCtx = new DependenciesContext(scannedRoots2Dependencies, scannedBinaries2InvDependencies, scannedRoots2Peers, sourcesForBinaryRoots, false);
@@ -4160,8 +4160,8 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         }
 
         @org.netbeans.api.annotations.common.SuppressWarnings(
-        value="DMI_COLLECTION_OF_URLS"
-        /*,justification="URLs have never host part"*/)
+        value="DMI_COLLECTION_OF_URLS",
+        justification="URLs have never host part")
         private boolean scanRootFiles(Map<URL, Set<FileObject>> files) {
             if (files != null && files.size() > 0) { // #174887
                 for(Iterator<Map.Entry<URL, Set<FileObject>>> it = files.entrySet().iterator(); it.hasNext(); ) {
@@ -4199,8 +4199,8 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         private Level   previousLevel;
 
         @org.netbeans.api.annotations.common.SuppressWarnings(
-        value="DMI_COLLECTION_OF_URLS"
-        /*,justification="URLs have never host part"*/)
+        value="DMI_COLLECTION_OF_URLS",
+        justification="URLs have never host part")
         public RootsWork(
                 Map<URL, List<URL>> scannedRoots2Depencencies,
                 Map<URL,List<URL>> scannedBinaries2InvDependencies,
@@ -4274,8 +4274,8 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
 
         @Override
         @org.netbeans.api.annotations.common.SuppressWarnings(
-        value="DMI_COLLECTION_OF_URLS"
-        /*,justification="URLs have never host part"*/)
+        value="DMI_COLLECTION_OF_URLS",
+        justification="URLs have never host part")
         public boolean getDone() {
             TEST_LOGGER.log(Level.FINEST, "RootsWork-started");       //NOI18N
             if (getCancelRequest().isRaised()) {
@@ -4518,8 +4518,8 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         }
 
         @org.netbeans.api.annotations.common.SuppressWarnings(
-        value="DMI_COLLECTION_OF_URLS"
-        /*,justification="URLs have never host part"*/)
+        value="DMI_COLLECTION_OF_URLS",
+        justification="URLs have never host part")
         private void notifyRootsRemoved (final Set<URL> binaries, final Set<URL> sources) {
             if (!binaries.isEmpty()) {
                 final Collection<? extends BinaryIndexerFactory> binFactories = MimeLookup.getLookup(MimePath.EMPTY).lookupAll(BinaryIndexerFactory.class);
@@ -4682,8 +4682,8 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         }
 
         @org.netbeans.api.annotations.common.SuppressWarnings(
-        value="DMI_COLLECTION_OF_URLS"
-        /*,justification="URLs have never host part"*/)
+        value="DMI_COLLECTION_OF_URLS",
+        justification="URLs have never host part")
         protected final boolean scanSources(DependenciesContext ctx, SourceIndexers indexers, Map<URL, List<URL>> preregisterIn) {
             assert ctx != null;
             long scannedRootsCnt = 0;
@@ -5057,8 +5057,8 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         private final boolean waitForProjects;
 
         @org.netbeans.api.annotations.common.SuppressWarnings(
-        value="DMI_COLLECTION_OF_URLS"
-        /*,justification="URLs have never host part"*/)
+        value="DMI_COLLECTION_OF_URLS",
+        justification="URLs have never host part")
         public InitialRootsWork(
                 Map<URL, List<URL>> scannedRoots2Depencencies,
                 Map<URL,List<URL>>  scannedBinaries2InvDependencies,
@@ -5080,11 +5080,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         }
         
         public @Override boolean getDone() {
-            try {
-                if (indexers == null) {
-                    indexers = SourceIndexers.load(true);
-                }
-
+            try {                
                 if (waitForProjects) {
                     boolean retry = true;
                     suspendProgress(NbBundle.getMessage(RepositoryUpdater.class, "MSG_OpeningProjects"));
@@ -5101,6 +5097,10 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                             retry = false;
                         }
                     }
+                }
+                
+                if (indexers == null) {
+                    indexers = SourceIndexers.load(true);
                 }
 
                 return super.getDone();
@@ -5477,8 +5477,8 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             }
         }
         @org.netbeans.api.annotations.common.SuppressWarnings(
-        value="DMI_COLLECTION_OF_URLS"
-        /*,justification="URLs have never host part"*/)
+        value="DMI_COLLECTION_OF_URLS",
+        justification="URLs have never host part")
         private Work getWork () {
             synchronized (todo) {
                 Work w;
@@ -5581,8 +5581,8 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         private final boolean useInitialState;
 
         @org.netbeans.api.annotations.common.SuppressWarnings(
-        value="DMI_COLLECTION_OF_URLS"
-        /*,justification="URLs have never host part"*/)
+        value="DMI_COLLECTION_OF_URLS",
+        justification="URLs have never host part")
         public DependenciesContext (
                 final Map<URL, List<URL>> scannedRoots2Deps,
                 final Map<URL,List<URL>>  scannedBinaries2InvDependencies,
@@ -5718,24 +5718,24 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
 
         @Override
         @org.netbeans.api.annotations.common.SuppressWarnings(
-        value="DMI_COLLECTION_OF_URLS"
-        /*,justification="URLs have never host part"*/)
+        value="DMI_COLLECTION_OF_URLS",
+        justification="URLs have never host part")
         public synchronized Map<URL, List<URL>> getRootDependencies() {
             return roots2Dependencies;
         }
 
         @Override
         @org.netbeans.api.annotations.common.SuppressWarnings(
-        value="DMI_COLLECTION_OF_URLS"
-        /*,justification="URLs have never host part"*/)
+        value="DMI_COLLECTION_OF_URLS",
+        justification="URLs have never host part")
         public synchronized Map<URL, List<URL>> getBinaryRootDependencies() {
             return binRoots2Dependencies;
         }
         
         @Override
         @org.netbeans.api.annotations.common.SuppressWarnings(
-        value="DMI_COLLECTION_OF_URLS"
-        /*,justification="URLs have never host part"*/)
+        value="DMI_COLLECTION_OF_URLS",
+        justification="URLs have never host part")
         public Map<URL, List<URL>> getRootPeers() {
             return roots2Peers;
         }
@@ -5862,8 +5862,8 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         }
 
         @org.netbeans.api.annotations.common.SuppressWarnings(
-        value="DMI_COLLECTION_OF_URLS"
-        /*,justification="URLs have never host part"*/)
+        value="DMI_COLLECTION_OF_URLS",
+        justification="URLs have never host part")
         public synchronized boolean add(
                 @NonNull final URL root,
                 final boolean sourceRoot,
@@ -5911,8 +5911,8 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         }
 
         @org.netbeans.api.annotations.common.SuppressWarnings(
-        value="DMI_COLLECTION_OF_URLS"
-        /*,justification="URLs have never host part"*/)
+        value="DMI_COLLECTION_OF_URLS",
+        justification="URLs have never host part")
         public synchronized void remove(final Iterable<? extends URL> roots, final boolean sourceRoot) {
             for (URL root : roots) {
                 if (sourceRoot) {
@@ -6077,32 +6077,32 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
 
     //Unit test method
     @org.netbeans.api.annotations.common.SuppressWarnings(
-        value="DMI_COLLECTION_OF_URLS"
-        /*,justification="URLs have never host part"*/)
+        value="DMI_COLLECTION_OF_URLS",
+        justification="URLs have never host part")
     /* test */ Set<URL> getScannedBinaries () {
         return this.scannedBinaries2InvDependencies.keySet();
     }
 
     //Unit test method
     @org.netbeans.api.annotations.common.SuppressWarnings(
-        value="DMI_COLLECTION_OF_URLS"
-        /*,justification="URLs have never host part"*/)
+        value="DMI_COLLECTION_OF_URLS",
+        justification="URLs have never host part")
     /* test */ Set<URL> getScannedSources () {
         return this.scannedRoots2Dependencies.keySet();
     }
 
     //Unit test method
     @org.netbeans.api.annotations.common.SuppressWarnings(
-        value="DMI_COLLECTION_OF_URLS"
-        /*,justification="URLs have never host part"*/)
+        value="DMI_COLLECTION_OF_URLS",
+        justification="URLs have never host part")
     /* test */ Map<URL,List<URL>> getScannedRoots2Dependencies() {
         return this.scannedRoots2Dependencies;
     }
 
     //Unit test method
     @org.netbeans.api.annotations.common.SuppressWarnings(
-        value="DMI_COLLECTION_OF_URLS"
-        /*,justification="URLs have never host part"*/)
+        value="DMI_COLLECTION_OF_URLS",
+        justification="URLs have never host part")
     /* test */ Set<URL> getScannedUnknowns () {
         return this.scannedUnknown;
     }

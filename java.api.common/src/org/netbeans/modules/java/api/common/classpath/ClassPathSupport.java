@@ -48,6 +48,7 @@ import java.io.File;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -101,7 +102,8 @@ public final class ClassPathSupport {
     private ReferenceHelper referenceHelper;
     private AntProjectHelper antProjectHelper;
     private UpdateHelper updateHelper;
-    private static Set<String> wellKnownPaths = new HashSet<String>(Arrays.asList(ProjectProperties.WELL_KNOWN_PATHS));
+    //@GuardedBy("ClassPathSupport.class")
+    private static Set<String> wellKnownPaths;
     private static String antArtifactPrefix = ANT_ARTIFACT_PREFIX;
         
     private Callback callback;
@@ -321,7 +323,7 @@ public final class ClassPathSupport {
     // Private methods ---------------------------------------------------------
 
     private boolean isWellKnownPath( String property ) {
-        return wellKnownPaths == null ? false : wellKnownPaths.contains( property );
+        return getWellKnownPaths().contains( property );
     }
     
     private boolean isAntArtifact( String property ) {        
@@ -330,6 +332,15 @@ public final class ClassPathSupport {
     
     private static boolean isLibrary( String property ) {
         return property.startsWith(LIBRARY_PREFIX) && property.endsWith(LIBRARY_SUFFIX);
+    }
+
+    @NonNull
+    private static synchronized Set<String> getWellKnownPaths() {
+        if (wellKnownPaths == null) {
+             wellKnownPaths = Collections.unmodifiableSet(
+                     new HashSet<String>(Arrays.asList(ProjectProperties.WELL_KNOWN_PATHS)));
+        }
+        return wellKnownPaths;
     }
     
     public static boolean isVariableBasedReference(String ref) {

@@ -496,7 +496,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         final int sourceLine = al == null ? -1 : al.getSourceLineNum();
         
         if (revisionPerLine != null) {
-            final JMenuItem diffMenu = new JMenuItem(loc.getString("CTL_MenuItem_DiffToRevision")); // NOI18N
+            final JMenuItem diffMenu = new JMenuItem(loc.getString("CTL_MenuItem_DiffToPrevious")); // NOI18N
             diffMenu.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
@@ -521,8 +521,25 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
             popupMenu.add(checkoutMenu);
             checkoutMenu.setEnabled(revisionCanBeRolledBack);
 
+            final JMenuItem checkoutPrevItem = new JMenuItem();
+            checkoutPrevItem.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    final PreviousRevisionInvoker pri = new PreviousRevisionInvoker(originalFile, revisionPerLine);
+                    pri.runWithRevision (Git.getInstance().getRequestProcessor(repositoryRoot), new Runnable() {
+                        @Override
+                        public void run() {
+                            String previousRevision = pri.getPreviousRevision();
+                            checkout(originalFile, previousRevision);
+                        }
+                    }, false, null);
+                }
+            });
+            popupMenu.add(checkoutPrevItem);
+            checkoutPrevItem.setVisible(false);
+
             // an action showing annotation for line's revisions
-            final JMenuItem annotationsForSelectedItem = new JMenuItem(NbBundle.getMessage(AnnotationBar.class, "CTL_MenuItem_ShowAnnotationsPrevious", revisionPerLine.getRevision().substring(0, 7))); //NOI18N
+            final JMenuItem annotationsForSelectedItem = new JMenuItem(NbBundle.getMessage(AnnotationBar.class, "CTL_MenuItem_ShowAnnotations", revisionPerLine.getRevision().substring(0, 7))); //NOI18N
             annotationsForSelectedItem.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
@@ -597,31 +614,44 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
                     @Override
                     public void run () {
                         String prevRev = pri.getPreviousRevision();
-                        if (prevRev != null) {
+                        boolean showing = popupMenu.isShowing();
+                        if (prevRev != null && showing) {
+                            popupMenu.setVisible(false);
                             prevRev = prevRev.substring(0, 7);
-                            String format = loc.getString("CTL_MenuItem_ShowAnnotationsPrevious"); // NOI18N
+                            String format = loc.getString("CTL_MenuItem_ShowAnnotationsPrevious.revision"); // NOI18N
                             previousAnnotationsMenu.setText(MessageFormat.format(format, new Object [] { prevRev })); //NOI18N
-                            format = loc.getString("CTL_MenuItem_DiffToRevision"); // NOI18N
+                            format = loc.getString("CTL_MenuItem_DiffToPrevious.revision"); // NOI18N
                             diffMenu.setText(MessageFormat.format(format, new Object [] { prevRev })); //NOI18N
+                            checkoutPrevItem.setText(NbBundle.getMessage(AnnotationBar.class, 
+                                    "CTL_MenuItem_CheckoutPrevious.revision", new Object [] { prevRev })); //NOI18N
+                            popupMenu.setVisible(true);
                         }
                     }
                 }, true, null);
             } else if (hasPrevious) {
                 previousRevision = previousRevision.substring(0, 7);
             }
-            String format = loc.getString("CTL_MenuItem_DiffToRevision"); // NOI18N
-            diffMenu.setText(MessageFormat.format(format, new Object [] { previousRevision == null ? loc.getString("LBL_PreviousRevision") : previousRevision})); //NOI18N
+            String format = loc.getString(previousRevision == null ? "CTL_MenuItem_DiffToPrevious" : "CTL_MenuItem_DiffToPrevious.revision"); // NOI18N
+            diffMenu.setText(MessageFormat.format(format, previousRevision)); //NOI18N
             diffMenu.setVisible(originalFile != null);
             format = loc.getString("CTL_MenuItem_Checkout"); // NOI18N
             checkoutMenu.setText(MessageFormat.format(format, new Object [] { revisionPerLine.getRevision().substring(0, 7) }));
             checkoutMenu.setVisible(true);
             separator.setVisible(true);
-            format = loc.getString("CTL_MenuItem_ShowAnnotationsPrevious"); // NOI18N
             annotationsForSelectedItem.setVisible(originalFile != null && revisionPerLine != null && !revisionPerLine.getRevision().equals(annotatedRevision));
             if (hasPrevious && originalFile != null) {
-                previousAnnotationsMenu.setText(MessageFormat.format(format, new Object [] { previousRevision == null ? loc.getString("LBL_PreviousRevision") : previousRevision})); //NOI18N
+                format = loc.getString(previousRevision == null 
+                        ? "CTL_MenuItem_ShowAnnotationsPrevious" : "CTL_MenuItem_ShowAnnotationsPrevious.revision"); // NOI18N
+                previousAnnotationsMenu.setText(MessageFormat.format(format, previousRevision)); //NOI18N
                 previousAnnotationsMenu.setVisible(true);
                 previousAnnotationsMenu.setEnabled(!"-1".equals(previousRevision)); //NOI18N
+                if (file.equals(originalFile)) {
+                    format = loc.getString(previousRevision == null 
+                            ? "CTL_MenuItem_CheckoutPrevious" : "CTL_MenuItem_CheckoutPrevious.revision"); // NOI18N
+                    checkoutPrevItem.setText(MessageFormat.format(format, previousRevision)); //NOI18N
+                    checkoutPrevItem.setVisible(true);
+                    checkoutPrevItem.setEnabled(true);
+                }
             }
         }
         JMenuItem closeMenu;

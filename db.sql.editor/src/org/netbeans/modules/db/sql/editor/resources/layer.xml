@@ -143,6 +143,19 @@ made subject to such option by the copyright holder.
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="904"/>
                     </file>
+                    <!-- Seperator before 'Select in projects' -->
+                    <file name="sql-separator-3.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="8900"/>
+                    </file>
+                    <!-- Seperator before 'Select connection in services' -->
+                    <file name="sql-separator-4.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="9100"/>
+                    </file>
+                    <file name="org-netbeans-modules-db-sql-editor-ui-actions-SelectInExplorerAction.instance">
+                        <attr name="position" intvalue="9200"/>
+                    </file>
                 </folder>
                 <folder name="BracesMatchers">
                     <file name="org-netbeans-modules-db-sql-editor-SQLBracesMatcherFactory.instance">

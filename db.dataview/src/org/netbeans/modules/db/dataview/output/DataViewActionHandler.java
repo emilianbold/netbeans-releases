@@ -111,6 +111,8 @@ class DataViewActionHandler {
         if (rejectModifications()) {
             int pageSize = dataViewUI.getPageSize();
             dataPage.setPageSize(pageSize);
+            org.netbeans.modules.db.dataview.api.DataViewPageContext
+                    .setStoredPageSize(pageSize);
             dataPage.first();
             dataPage.setTotalRows(-1); // force total row refresh
             execHelper.executeQuery();

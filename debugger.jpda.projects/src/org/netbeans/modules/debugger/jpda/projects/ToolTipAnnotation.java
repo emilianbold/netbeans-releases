@@ -104,11 +104,10 @@ import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.spi.debugger.jpda.EditorContext.Operation;
 
 import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
+import org.openide.util.Exceptions;
 
 
 public class ToolTipAnnotation extends Annotation implements Runnable {
-
-    private static final int TO_STRING_LENGTH_LIMIT = 10000;
 
     private static final Set<String> JAVA_KEYWORDS = new HashSet<String>(Arrays.asList(new String[] {
         "abstract",     "continue",     "for",          "new",  	"switch",
@@ -217,19 +216,7 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
             if (v instanceof ObjectVariable) {
                 tooltipVariable = (ObjectVariable) v;
                 try {
-                    String toString = null;
-                    try {
-                        java.lang.reflect.Method toStringMethod =
-                                v.getClass().getMethod("getToStringValue",  // NOI18N
-                                                       new Class[] { Integer.TYPE });
-                        toStringMethod.setAccessible(true);
-                        toString = (String) toStringMethod.invoke(v, TO_STRING_LENGTH_LIMIT);
-                    } catch (Exception ex) {
-                        ex.printStackTrace();
-                    }
-                    if (toString == null) {
-                        toString = ((ObjectVariable) v).getToStringValue();
-                    }
+                    String toString = tooltipVariable.getToStringValue();
                     toolTipText = expression + " = " +
                         (type.length () == 0 ?
                             "" :
