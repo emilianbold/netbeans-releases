@@ -92,9 +92,14 @@ public class QGoToPatchAction extends ContextAction {
                         public void run () {
                             GoToPatch goToPatch = new GoToPatch(root);
                             if (goToPatch.showDialog()) {
-                                String patchName = goToPatch.getSelectedPatch();
-                                if (patchName != null) {
-                                    goToPatch(root, patchName == GoToPatch.POP_ALL_PATCHES ? null : patchName);
+                                if (goToPatch.isPopAllSelected()) {
+                                    goToPatch(root, null, null);
+                                } else if (goToPatch.getSelectedQueue() != null) {
+                                    Queue q = goToPatch.getSelectedQueue();
+                                    goToPatch(root, q.getName(), null);
+                                } else if (goToPatch.getSelectedPatch() != null) {
+                                    QPatch patch = goToPatch.getSelectedPatch();
+                                    goToPatch(root, patch.getQueue().isActive() ? null : patch.getQueue().getName(), patch.getId());
                                 }
                             }
                         }
@@ -104,7 +109,12 @@ public class QGoToPatchAction extends ContextAction {
         });
     }
 
-    public void goToPatch (final File root, final String patchName) {
+    @NbBundle.Messages({
+        "# {0} - repository name",
+        "# {1} - queue name",
+        "MSG_SwitchingQueue=Switching current queue to {1} in: {0}"
+    })
+    public void goToPatch (final File root, final String queueName, final String patchName) {
         new HgProgressSupport() {
             @Override
             protected void perform () {
@@ -112,10 +122,21 @@ public class QGoToPatchAction extends ContextAction {
                 try {
                     logger.outputInRed(NbBundle.getMessage(QGoToPatchAction.class, "MSG_GOTO_TITLE")); //NOI18N
                     logger.outputInRed(NbBundle.getMessage(QGoToPatchAction.class, "MSG_GOTO_TITLE_SEP")); //NOI18N
-                    if (patchName == null) { // no equals
+                    if (patchName == null || queueName != null) {
                         logger.output(NbBundle.getMessage(QGoToPatchAction.class, "MSG_GOTO_EMPTY_INFO_SEP", root.getAbsolutePath())); //NOI18N
                         HgCommand.qPopPatches(root, null, logger);
-                    } else {
+                    }
+                    if (isCanceled()) {
+                        return;
+                    }
+                    if (queueName != null) {
+                        logger.output(Bundle.MSG_SwitchingQueue(root.getAbsolutePath(), queueName));
+                        HgCommand.qSwitchQueue(root, queueName, logger);
+                    }
+                    if (isCanceled()) {
+                        return;
+                    }
+                    if (patchName != null) {
                         logger.output(NbBundle.getMessage(QGoToPatchAction.class, "MSG_GOTO_INFO_SEP", patchName, root.getAbsolutePath())); //NOI18N
                         List<String> output = HgCommand.qGoToPatch(root, patchName, logger);
                         FailedPatchResolver resolver = new FailedPatchResolver(root, output, logger);

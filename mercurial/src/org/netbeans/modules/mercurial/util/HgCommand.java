@@ -49,6 +49,7 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -71,6 +72,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
@@ -95,6 +97,7 @@ import org.netbeans.modules.mercurial.ui.branch.HgBranch;
 import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
 import org.netbeans.modules.mercurial.ui.log.HgLogMessage.HgRevision;
 import org.netbeans.modules.mercurial.ui.queues.QPatch;
+import org.netbeans.modules.mercurial.ui.queues.Queue;
 import org.netbeans.modules.mercurial.ui.repository.HgURL;
 import org.netbeans.modules.mercurial.ui.repository.Repository;
 import org.netbeans.modules.mercurial.ui.repository.UserCredentialsSupport;
@@ -215,8 +218,11 @@ public class HgCommand {
     private static final String HG_RESOLVE_MARK_RESOLVED = "--mark";   //NOI18N
     
     private static final String HG_MQ_EXT_CMD = "extensions.mq="; //NOI18N
+    private static final String HG_QPATCHES_NAME = "patches"; //NOI18N
+    private static final String HG_QQUEUE_CMD = "qqueue"; //NOI18N
     private static final String HG_QSERIES_CMD = "qseries"; //NOI18N
     private static final String HG_OPT_SUMMARY = "--summary"; //NOI18N
+    private static final String HG_OPT_LIST = "--list"; //NOI18N
     private static final String HG_QGOTO_CMD = "qgoto"; //NOI18N
     private static final String HG_QPOP_CMD = "qpop"; //NOI18N
     private static final String HG_QPUSH_CMD = "qpush"; //NOI18N
@@ -226,6 +232,7 @@ public class HgCommand {
     private static final String HG_OPT_EXCLUDE = "--exclude"; //NOI18N
     private static final String HG_OPT_SHORT = "--short"; //NOI18N
     private static final String HG_QFINISH_CMD = "qfinish"; //NOI18N
+    private static final String QUEUE_ACTIVE = "(active)"; //NOI18N
 
     // TODO: replace this hack
     // Causes /usr/bin/hgmerge script to return when a merge
@@ -447,6 +454,7 @@ public class HgCommand {
         HG_PUSH_CMD,
         HG_RESOLVE_CMD,
         HG_QSERIES_CMD,
+        HG_QQUEUE_CMD,
         HG_STATUS_CMD,
         HG_TAG_CMD,
         HG_TAGS_CMD,
@@ -3411,6 +3419,16 @@ public class HgCommand {
     }
 
     public static QPatch[] qListSeries (File repository) throws HgException {
+        Queue activeQueue = null;
+        for (Queue q : qListQueues(repository)) {
+            if (q.isActive()) {
+                activeQueue = q;
+            }
+        }
+        if (activeQueue == null) {
+            return new QPatch[0];
+        }
+        
         List<String> command = new ArrayList<String>();
 
         command.add(getHgCommand());
@@ -3430,9 +3448,94 @@ public class HgCommand {
         if (list.isEmpty()) {
             patches = new QPatch[0];
         } else {
-            patches = parsePatches(list);
+            patches = parsePatches(list, activeQueue);
         }
         return patches;
+    }
+
+    public static Map<Queue, QPatch[]> qListAvailablePatches (File repository) throws HgException {
+        Map<Queue, QPatch[]> patches = new LinkedHashMap<Queue, QPatch[]>();
+        Map<Queue, QPatch[]> otherPatches = new LinkedHashMap<Queue, QPatch[]>();
+        for (Queue q : qListQueues(repository)) {
+            if (q.isActive()) {
+                patches.put(q, qListSeries(repository));
+            } else {
+                otherPatches.put(q, qListSeries(repository, q.getName()));
+            }
+        }
+        patches.putAll(otherPatches);
+        return patches;
+    }
+
+    private static QPatch[] qListSeries (File repository, String queueName) throws HgException {
+        Queue q = new Queue(queueName, false);
+        List<QPatch> patches = new LinkedList<QPatch>();
+        File seriesFile = getQSeriesFile(repository, queueName);
+        BufferedReader br = null;
+        try {
+            br = new BufferedReader(new FileReader(seriesFile));
+            for (String line = br.readLine(); line != null; line = br.readLine()) {
+                line = line.trim();
+                if (!line.startsWith("#")) {
+                    patches.add(new QPatch(line, null, q, false));
+                }
+            }
+        } catch (IOException ex) {
+            Mercurial.LOG.log(Level.INFO, ex.getMessage());
+            Mercurial.LOG.log(Level.FINE, null, ex);
+        } finally {
+            if (br != null) {
+                try {
+                    br.close();
+                } catch (IOException ex) {
+                }
+            }
+        }
+        return patches.toArray(new QPatch[patches.size()]);
+    }
+
+    public static Queue[] qListQueues (File repository) throws HgException {
+        List<String> command = new ArrayList<String>();
+
+        command.add(getHgCommand());
+        command.add(HG_QQUEUE_CMD);
+        
+        command.add(HG_CONFIG_OPTION_CMD);
+        command.add(HG_MQ_EXT_CMD);
+        command.add(HG_OPT_REPOSITORY);
+        command.add(repository.getAbsolutePath());
+        command.add(HG_OPT_CWD_CMD);
+        command.add(repository.getAbsolutePath());
+        command.add(HG_OPT_LIST);
+        
+        List<String> list = exec(command);
+        Queue[] queues;
+        if (list.isEmpty()) {
+            queues = new Queue[0];
+        } else {
+            queues = parseQueues(list);
+        }
+        return queues;
+    }
+
+    public static void qSwitchQueue (File repository, String queueName, OutputLogger logger) throws HgException {
+        List<String> command = new ArrayList<String>();
+
+        command.add(getHgCommand());
+        command.add(HG_QQUEUE_CMD);
+        
+        command.add(HG_CONFIG_OPTION_CMD);
+        command.add(HG_MQ_EXT_CMD);
+        command.add(HG_OPT_REPOSITORY);
+        command.add(repository.getAbsolutePath());
+        command.add(HG_OPT_CWD_CMD);
+        command.add(repository.getAbsolutePath());
+        command.add(queueName);
+        
+        List<String> list = exec(command);
+        if (!list.isEmpty() && isErrorAbort(list.get(0))) {
+            handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_QQUEUE_SWITCH_FAILED"), logger); //NOI18N
+        }
     }
 
     public static List<String> qPushPatches (File repository, String onTopPatch, OutputLogger logger) throws HgException {
@@ -3505,7 +3608,7 @@ public class HgCommand {
         return list;
     }
 
-    private static QPatch[] parsePatches (List<String> list) {
+    private static QPatch[] parsePatches (List<String> list, Queue q) {
         List<QPatch> patches = new ArrayList<QPatch>(list.size());
         Pattern p = Pattern.compile("^\\s*(\\b\\d+)\\s([AU])\\s([^:]+?):\\s?(.*)$"); //NOI18N
         for (String line : list) {
@@ -3514,13 +3617,30 @@ public class HgCommand {
                 String status = m.group(2);
                 String id = m.group(3);
                 String message = m.group(4);
-                patches.add(new QPatch(id, message, "A".equals(status))); //NOI18N
+                patches.add(new QPatch(id, message, q, "A".equals(status))); //NOI18N
             }
         }
         if (patches.isEmpty() && !list.isEmpty()) {
             Mercurial.LOG.log(Level.INFO, "parsePatches(): No qpatches found: {0}", list);
         }
         return patches.toArray(new QPatch[patches.size()]);
+    }
+
+    private static Queue[] parseQueues (List<String> list) {
+        List<Queue> queues = new ArrayList<Queue>(list.size());
+        for (String line : list) {
+            line = line.trim();
+            boolean active = false;
+            if (line.endsWith(QUEUE_ACTIVE)) {
+                active = true;
+                line = line.substring(0, line.length() - QUEUE_ACTIVE.length()).trim();
+            }
+            queues.add(new Queue(line, active));
+        }
+        if (queues.isEmpty() && !list.isEmpty()) {
+            Mercurial.LOG.log(Level.INFO, "parseQueues(): No qqueue found: {0}", list);
+        }
+        return queues.toArray(new Queue[queues.size()]);
     }
 
     public static void qCreatePatch (File repository, Collection<File> includedFiles, Collection<File> excludedFiles, String patchId, String commitMessage, OutputLogger logger) throws HgException {
@@ -4606,6 +4726,14 @@ public class HgCommand {
             }
         }
         return enc;
+    }
+
+    private static File getQSeriesFile (File repository, String queueName) {
+        String folderName = HG_QPATCHES_NAME;
+        if (!HG_QPATCHES_NAME.equals(queueName)) {
+            folderName += "-" + queueName; //NOI18N
+        }
+        return new File(HgUtils.getHgFolderForRoot(repository), folderName + File.separatorChar + "series");
     }
 
     /**
