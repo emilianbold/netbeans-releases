@@ -77,7 +77,7 @@ public class CastUtils {
             // error in AST
 	    return "operator ???"; // NOI18N
 	}
-	StringBuilder sb = new StringBuilder(operator.getText());
+	StringBuilder sb = new StringBuilder(AstUtil.getText(operator));
 	sb.append(' ');
 	begin:
 	for( AST next = operator.getNextSibling(); next != null; next = next.getNextSibling() ) {
@@ -97,11 +97,11 @@ public class CastUtils {
 		case CPPTokenTypes.LITERAL_const:
                 case CPPTokenTypes.LITERAL___const:    
                 case CPPTokenTypes.LITERAL___const__:
-		    sb.append(next.getText());
+		    sb.append(AstUtil.getText(next));
 		    break;
 		default:
 		    sb.append(' ');
-		    sb.append(next.getText());
+		    sb.append(AstUtil.getText(next));
 	    }
 	}
 	return sb.toString();
@@ -145,7 +145,7 @@ public class CastUtils {
 		addTypeText(child, sb);
 	    }
 	    else {
-		String text = child.getText();
+		CharSequence text = AstUtil.getText(child);
 		assert text != null;
 		assert text.length() > 0;
 		if( sb.length() > 0 ) {

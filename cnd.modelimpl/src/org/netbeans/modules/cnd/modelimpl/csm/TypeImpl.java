@@ -506,7 +506,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
             if( sb.length() > 0 ) {
                 sb.append(' ');
             }
-            sb.append(ast.getText());
+            sb.append(AstUtil.getText(ast));
         }
         int curDepth = 0;
         for( AST token = ast.getFirstChild(); token != null; token = token.getNextSibling() ) {
@@ -752,7 +752,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
                             if (namePart.getType() != CPPTokenTypes.SCOPE) {
                                 if (TraceFlags.DEBUG) {
                                     StringBuilder tokenText = new StringBuilder();
-                                    tokenText.append('[').append(namePart.getText());
+                                    tokenText.append('[').append(AstUtil.getText(namePart));
                                     if (namePart.getNumberOfChildren() == 0) {
                                         tokenText.append(", line=").append(namePart.getLine()); // NOI18N
                                         tokenText.append(", column=").append(namePart.getColumn()); // NOI18N

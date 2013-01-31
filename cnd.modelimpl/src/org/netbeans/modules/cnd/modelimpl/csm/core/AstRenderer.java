@@ -488,7 +488,7 @@ public class AstRenderer {
     private boolean isVariableOrFunctionName(AST name, boolean findVariableOrFunction) {
         CsmAST csmAST = AstUtil.getFirstCsmAST(name);
 
-        StringBuilder varName = new StringBuilder(name.getText());
+        StringBuilder varName = new StringBuilder(AstUtil.getText(name));
         AST next = name.getNextSibling();
         while (next != null) {
             next = skipTemplateParameters(next);
@@ -496,7 +496,7 @@ public class AstRenderer {
                 break;
             }
             name = next;
-            varName.append(name.getText());
+            varName.append(AstUtil.getText(name));
             next = next.getNextSibling();
         }
 
@@ -1303,12 +1303,14 @@ public class AstRenderer {
                     if (namePart.getType() == CPPTokenTypes.CSM_TYPE_BUILTIN ||
                             namePart.getType() == CPPTokenTypes.CSM_TYPE_COMPOUND) {
                         AST builtInType = namePart.getFirstChild();
-                        sb.append(builtInType != null ? builtInType.getText() : "");
+                        if (builtInType != null) {
+                            sb.append(AstUtil.getText(builtInType));
+                        }
                     } else {
-                        sb.append(namePart.getText());
+                        sb.append(AstUtil.getText(namePart));
                     }
                 }
-                return TextCache.getManager().getString(sb.toString());
+                return TextCache.getManager().getString(sb);
             }
         }
         return "";
@@ -1332,7 +1334,7 @@ public class AstRenderer {
                         //assert namePart.getType() == CPPTokenTypes.SCOPE;
                         if (templateDepth == 0 && namePart.getType() != CPPTokenTypes.SCOPE) {
                             StringBuilder tokenText = new StringBuilder();
-                            tokenText.append('[').append(namePart.getText());
+                            tokenText.append('[').append(AstUtil.getText(namePart));
                             if (namePart.getNumberOfChildren() == 0) {
                                 tokenText.append(", line=").append(namePart.getLine()); // NOI18N
                                 tokenText.append(", column=").append(namePart.getColumn()); // NOI18N

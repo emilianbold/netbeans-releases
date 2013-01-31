@@ -176,11 +176,11 @@ public class AstUtil {
                     else {
                         AST first = token.getFirstChild();
                         if( first.getType() == CPPTokenTypes.LITERAL_OPERATOR ) {
-                            StringBuilder sb = new StringBuilder(first.getText());
+                            StringBuilder sb = new StringBuilder(AstUtil.getText(first));
                             sb.append(' ');
                             AST next = first.getNextSibling();
                             if( next != null ) {
-                                sb.append(next.getText());
+                                sb.append(AstUtil.getText(next));
                             }
                             return sb.toString();
                         } else if (first.getType() == CPPTokenTypes.IDENT){
