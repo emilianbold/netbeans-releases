@@ -57,6 +57,7 @@ import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.phpunit.options.PhpUnitOptions;
 import org.netbeans.modules.php.phpunit.preferences.PhpUnitPreferences;
+import org.netbeans.modules.php.phpunit.ui.UiUtils;
 import org.netbeans.modules.php.phpunit.ui.options.PhpUnitOptionsPanelController;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.DialogDisplayer;
@@ -164,7 +165,7 @@ public final class SkeletonGenerator {
     private PhpExecutable getExecutable(PhpModule phpModule, String title, List<String> params) {
         FileObject sourceDirectory = phpModule.getSourceDirectory();
         if (sourceDirectory == null) {
-            warnNoSources(phpModule.getDisplayName());
+            UiUtils.warnNoSources(phpModule.getDisplayName());
             return null;
         }
 
@@ -179,15 +180,6 @@ public final class SkeletonGenerator {
         return PhpExecutable.DEFAULT_EXECUTION_DESCRIPTOR
                 .optionsPath(PhpUnitOptionsPanelController.OPTIONS_PATH)
                 .inputVisible(false);
-    }
-
-    @NbBundle.Messages({
-        "# {0} - project name",
-        "SkeletonGenerator.project.noSources=Project {0} has no Source Files."
-    })
-    private static void warnNoSources(String projectName) {
-        DialogDisplayer.getDefault().notifyLater(
-                new NotifyDescriptor.Message(Bundle.SkeletonGenerator_project_noSources(projectName), NotifyDescriptor.WARNING_MESSAGE));
     }
 
     // https://github.com/sebastianbergmann/phpunit-skeleton-generator/issues/1
