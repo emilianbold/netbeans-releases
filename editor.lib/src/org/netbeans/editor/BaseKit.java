@@ -70,7 +70,6 @@ import javax.swing.text.Element;
 import javax.swing.text.ViewFactory;
 import javax.swing.text.Caret;
 import javax.swing.text.JTextComponent;
-import java.lang.reflect.Method;
 import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
@@ -378,57 +377,6 @@ public class BaseKit extends DefaultEditorKit {
     
     private boolean keyBindingsUpdaterInited;
 
-//    static SettingsChangeListener settingsListener = new SettingsChangeListener() {
-//        public void settingsChange(SettingsChangeEvent evt) {
-//            String settingName = (evt != null) ? evt.getSettingName() : null;
-//
-//            boolean clearActions = (settingName == null
-//                    || SettingsNames.CUSTOM_ACTION_LIST.equals(settingName)
-//                    || SettingsNames.MACRO_MAP.equals(settingName));
-//
-//            if (clearActions || SettingsNames.KEY_BINDING_LIST.equals(settingName)) {
-//                kitKeymaps.clear();
-//            }
-//
-//            if (clearActions) {
-//                kitActions.clear();
-//                kitActionMaps.clear();
-//            } else { // only refresh action settings
-//                Iterator i = kitActions.entrySet().iterator();
-//                while (i.hasNext()) {
-//                    Map.Entry me = (Map.Entry)i.next();
-//                    updateActionSettings((Action[])me.getValue(), evt, (Class)me.getKey());
-//                }
-//            }
-//        }
-//    };
-//
-//    static {
-//        Settings.addSettingsChangeListener(settingsListener);
-//    }
-    
-    private void updateActionSettings(Action[] actions) {
-        for(Action a : actions) {
-            if (a instanceof BaseAction) {
-                for(Method m : a.getClass().getDeclaredMethods()) {
-                    if (m.getName().equals("settingsChange") && m.getParameterTypes().length == 2 && m.getParameterTypes()[1] == Class.class) { //NOI18N
-                        try {
-                            m.setAccessible(true);
-                            m.invoke(a, null, getClass());
-                        } catch (Exception e) {
-                            LOG.log(Level.FINE, null, e);
-                        }
-                        break;
-                    }
-                }
-//                Iterator i = kitActions.entrySet().iterator();
-//                while (i.hasNext()) {
-//                    Map.Entry me = (Map.Entry)i.next();
-//                    updateActionSettings((Action[])me.getValue(), evt, (Class)me.getKey());
-//                }
-            }
-        }
-    }
 
     /**
      * Gets an editor kit from its implemetation class.
@@ -1022,7 +970,6 @@ public class BaseKit extends DefaultEditorKit {
 
                 // At this moment the actions are constructed completely
                 // The actions will be updated now if necessary
-                updateActionSettings(actions);
                 updateActions();
             }
             
