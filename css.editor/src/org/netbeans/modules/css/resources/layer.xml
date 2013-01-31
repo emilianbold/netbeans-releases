@@ -175,6 +175,7 @@
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/css/resources/style_sheet_16.png"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.css.resources.Bundle"/>
                 <attr name="templateCategory" stringvalue="simple-files"/>
+                <attr name="requireProject" boolvalue="false"/>
             </file>
         </folder>
     </folder>

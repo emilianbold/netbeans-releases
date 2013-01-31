@@ -42,7 +42,10 @@
 
 package org.netbeans.modules.maven.apisupport;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.lang.ref.SoftReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -51,17 +54,21 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.jar.Attributes;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import javax.lang.model.element.ElementKind;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.component.configurator.expression.ExpressionEvaluator;
 import org.codehaus.plexus.util.StringUtils;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.whitelist.WhiteListQuery;
 import org.netbeans.modules.maven.api.NbMavenProject;
@@ -69,6 +76,8 @@ import org.netbeans.modules.maven.api.PluginPropertyUtils;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.whitelist.WhiteListQueryImplementation;
 import org.openide.filesystems.FileObject;
+import org.openide.util.RequestProcessor;
+import org.openide.util.WeakSet;
 
 /**
  *
@@ -77,13 +86,39 @@ import org.openide.filesystems.FileObject;
 @ProjectServiceProvider(service = WhiteListQueryImplementation.class, projectType="org-netbeans-modules-maven/" + NbMavenProject.TYPE_NBM)
 public class MavenWhiteListQueryImpl implements WhiteListQueryImplementation {
     private final Project project;
+    //per project caching, share across all project's whitelist results..
+    private SoftReference<Set<String>> cachePrivatePackages;
+    private SoftReference<Set<String>> cacheTransitivePackages;
+    private final Object LOCK = new Object();
+    private boolean isCached = false;
+    private final AtomicBoolean initialized = new AtomicBoolean(false);
+    private final PropertyChangeListener projectListener;
+    private static final RequestProcessor RP = new RequestProcessor(MavenWhiteListQueryImpl.class.getName(), 3);
 
+    private final Set<MavenWhiteListImplementation> results = Collections.synchronizedSet(new WeakSet<MavenWhiteListImplementation>());
+    
+    //TODO add static cache across projects for dependency jar's contents.
+    
     public MavenWhiteListQueryImpl(Project prj) {
         project = prj;
+        projectListener = new PropertyChangeListener() {
+
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                //TODO listen just on changes of classpath??
+                if (NbMavenProject.PROP_PROJECT.equals(evt.getPropertyName())) {
+                    synchronized (LOCK) {
+                        isCached = false;
+                        cacheOrLoad(project);
+                    }
+                }
+            }
+        };
     }
     
     @Override
     public WhiteListImplementation getWhiteList(FileObject file) {
+        //TODO decide if test or main source root.
         NbMavenProject mvn = project.getLookup().lookup(NbMavenProject.class);
         assert mvn != null;
         MavenProject mp = mvn.getMavenProject();
@@ -92,12 +127,52 @@ public class MavenWhiteListQueryImpl implements WhiteListQueryImplementation {
             //a temporary thing to enable the whitelists for experimentation..
             return null;
         }
+        
+        if (initialized.compareAndSet(false, true)) {
+            //TODO listen to classpath changes only?
+            mvn.addPropertyChangeListener(projectListener);
+        }
+        
+        Tuple res = cacheOrLoad(project);
+        
+        MavenWhiteListImplementation val = new MavenWhiteListImplementation(res.privatePackages, res.transitivePackages);
+        results.add(val);
+        //System.out.println("added to results =" + results.size());
+        return val;
+    }
+    
+    private static final WhiteListQuery.RuleDescription PRIVATE_RD = new WhiteListQuery.RuleDescription("private", "Module dependency's private package referenced", null);
+    private static final WhiteListQuery.RuleDescription TRANSITIVE_RD = new WhiteListQuery.RuleDescription("transitive", "Package from transitive module dependency referenced, declare a direct dependency to fix.", null);
+    private static final WhiteListQuery.Result OK = new WhiteListQuery.Result();
+    
+
+    private Set<String> getAllPackages(JarFile jf) {
+        Set<String> toRet = new HashSet<String>();
+        Enumeration<JarEntry> en = jf.entries();
+        while (en.hasMoreElements()) {
+            JarEntry je = en.nextElement();
+            String name = je.getName();
+            if (!je.isDirectory() && name.endsWith(".class") && name.lastIndexOf('/') > -1) {
+                name = name.substring(0, name.lastIndexOf('/'));
+                toRet.add(name.replace('/', '.'));
+            }
+        }
+        return toRet;
+    }
+
+    private Tuple calculateLists(Project project) {
+        //System.out.println("calculate for project=" + project.getProjectDirectory());
         String useOsgiString = PluginPropertyUtils.getPluginProperty(project, MavenNbModuleImpl.GROUPID_MOJO, MavenNbModuleImpl.NBM_PLUGIN, "useOSGiDependencies", null, null);
         boolean useOsgi = useOsgiString != null ? Boolean.parseBoolean(useOsgiString) : false;
         List<NBMWrapper> nbms = new ArrayList<NBMWrapper>();
         List<OSGIWrapper> osgis = new ArrayList<OSGIWrapper>();
         List<Wrapper> directCPs = new ArrayList<Wrapper>();
         List<Wrapper> unknown = new ArrayList<Wrapper>();
+        NbMavenProject mvn = project.getLookup().lookup(NbMavenProject.class);
+        
+        MavenProject mp = mvn.getMavenProject();
+        final Set<String> privatePackages = new HashSet<String>();
+        final Set<String> transitivePackages = new HashSet<String>();
                 
         for (Artifact a : mp.getCompileArtifacts()) {
             if (a.getFile() != null) {
@@ -146,9 +221,6 @@ public class MavenWhiteListQueryImpl implements WhiteListQueryImplementation {
         List<ExplicitDependency> explicits = PluginPropertyUtils.getPluginPropertyBuildable(project, MavenNbModuleImpl.GROUPID_MOJO, MavenNbModuleImpl.NBM_PLUGIN, null, new ExplicitBuilder());
         String codenamebase = PluginPropertyUtils.getPluginProperty(project, MavenNbModuleImpl.GROUPID_MOJO, MavenNbModuleImpl.NBM_PLUGIN, "codeNameBase", null, null);
         
-        //compute the effective, known "private" packages that should not be accessible from the file.
-        final Set<String> privatePackages = new HashSet<String>();
-        final Set<String> transitivePackages = new HashSet<String>();
         //these two are here to remove duplicates, if a package is both private (in one module) and public (in another module)
         // consider the package public for our purposes. better a false negative than false positive here..
         Set<String> nonPrivatePackages = new HashSet<String>();
@@ -203,64 +275,127 @@ public class MavenWhiteListQueryImpl implements WhiteListQueryImplementation {
         //remove all duplicates. only keep the privates we are 100% positive about..
         transitivePackages.removeAll(nonTransitivePackages);
         privatePackages.removeAll(nonPrivatePackages);
-        
-        return new WhiteListImplementation() {
-            private final List<ChangeListener> listeners = new ArrayList<ChangeListener>();
+        return new Tuple(privatePackages, transitivePackages);
+    }
+
+    private void fireChangeAllExistingResults(final Set<String> privatePackages, final Set<String> transitivePackages) {
+        assert Thread.holdsLock(LOCK);
+        final Set<MavenWhiteListImplementation> set;
+        synchronized (results) {
+            set = new HashSet(results);
+        }
+        System.out.println("fire to " + set.size());
+        RP.post(new Runnable() {
             @Override
-            public WhiteListQuery.Result check(org.netbeans.api.java.source.ElementHandle<?> arg0, WhiteListQuery.Operation arg1) {
-                if (!arg1.equals(WhiteListQuery.Operation.USAGE)) {
-                    return OK;
-                }
-                List<WhiteListQuery.RuleDescription> rds = new ArrayList<WhiteListQuery.RuleDescription>();
-                if (arg0.getKind() == ElementKind.CLASS || arg0.getKind() == ElementKind.INTERFACE) {
-                    String qn = arg0.getQualifiedName();
-                    String pack = qn.substring(0, qn.lastIndexOf("."));
-                    if (privatePackages.contains(pack)) {
-                        rds.add(PRIVATE_RD);
+            public void run() {
+                for (MavenWhiteListImplementation res : set) {
+                    if (res != null) {
+                        res.changeData(privatePackages, transitivePackages);
                     }
-                    if (transitivePackages.contains(pack)) {
-                        rds.add(TRANSITIVE_RD);
+                }
+            }
+        });
+    }
+
+    private Tuple cacheOrLoad(Project project) {
+        //compute the effective, known "private" packages that should not be accessible from the file.
+
+        synchronized (LOCK) {
+            if (isCached) {
+                Set<String> set1 = cachePrivatePackages != null ? cachePrivatePackages.get() : null;
+                Set<String> set2 = cacheTransitivePackages != null ? cacheTransitivePackages.get() : null;
+                if (set1 != null && set2 != null) {
+                    return new Tuple(set1, set2);
+                }
+            }
+            Tuple tup = calculateLists(project);
+            cachePrivatePackages = new SoftReference<Set<String>>(tup.privatePackages);
+            cacheTransitivePackages = new SoftReference<Set<String>>(tup.transitivePackages);
+            isCached = true;
+            fireChangeAllExistingResults(tup.privatePackages, tup.transitivePackages);
+            return tup;
+        }
+    }
+    
+    private static class MavenWhiteListImplementation implements WhiteListImplementation {
+        private final List<ChangeListener> listeners = new ArrayList<ChangeListener>();
+        @NonNull
+        private Set<String> privatePackages;
+        @NonNull
+        private Set<String> transitivePackages;
+        private final Object IMPL_LOCK = new Object();
+
+        private MavenWhiteListImplementation(@NonNull Set<String> privatePackages, @NonNull Set<String> transitivePackages) {
+            this.privatePackages = privatePackages;
+            this.transitivePackages = transitivePackages;
+        }
+
+        @Override
+        public WhiteListQuery.Result check(ElementHandle<?> element, WhiteListQuery.Operation operation) {
+            if (!operation.equals(WhiteListQuery.Operation.USAGE)) {
+                return OK;
+            }
+            List<WhiteListQuery.RuleDescription> rds = new ArrayList<WhiteListQuery.RuleDescription>();
+            if (element.getKind() == ElementKind.CLASS || element.getKind() == ElementKind.INTERFACE) {
+                String qn = element.getQualifiedName();
+                if (qn != null && qn.lastIndexOf('.') > 0) {
+                    String pack = qn.substring(0, qn.lastIndexOf("."));
+                    synchronized (IMPL_LOCK) {
+                        if (privatePackages.contains(pack)) {
+                            rds.add(PRIVATE_RD);
+                        }
+                        if (transitivePackages.contains(pack)) {
+                            rds.add(TRANSITIVE_RD);
+                        }
                     }
                     if (!rds.isEmpty()) {
                         return new WhiteListQuery.Result(rds);
                     }
                 }
-                return OK;
             }
+            return OK;
+        }
 
-            @Override
-            public void addChangeListener(ChangeListener listener) {
-                synchronized (listeners) {
-                    listeners.add(listener);
-                }
-            }
-
-            @Override
-            public void removeChangeListener(ChangeListener listener) {
-                synchronized (listeners) {
-                    listeners.remove(listener);
-                }
-            }
-        };
-    }
-    
-    private static final WhiteListQuery.RuleDescription PRIVATE_RD = new WhiteListQuery.RuleDescription("private", "Module dependency's private package referenced", null);
-    private static final WhiteListQuery.RuleDescription TRANSITIVE_RD = new WhiteListQuery.RuleDescription("transitive", "Package from transitive module dependency referenced, declare a direct dependency to fix.", null);
-    private static final WhiteListQuery.Result OK = new WhiteListQuery.Result();
-    
-
-    private Set<String> getAllPackages(JarFile jf) {
-        Set<String> toRet = new HashSet<String>();
-        Enumeration<JarEntry> en = jf.entries();
-        while (en.hasMoreElements()) {
-            JarEntry je = en.nextElement();
-            String name = je.getName();
-            if (!je.isDirectory() && name.endsWith(".class") && name.lastIndexOf('/') > -1) {
-                name = name.substring(0, name.lastIndexOf('/'));
-                toRet.add(name.replace('/', '.'));
+        @Override
+        public void addChangeListener(ChangeListener listener) {
+            synchronized (listeners) {
+                listeners.add(listener);
             }
         }
-        return toRet;
+
+        @Override
+        public void removeChangeListener(ChangeListener listener) {
+            synchronized (listeners) {
+                listeners.remove(listener);
+            }
+        }
+        
+        public void changeData(@NonNull Set<String> privatePackages, @NonNull Set<String> transitivePackages) {
+            synchronized (IMPL_LOCK) {
+                this.privatePackages = privatePackages;
+                this.transitivePackages = transitivePackages;
+            }
+            ArrayList<ChangeListener> changes = new ArrayList<ChangeListener>();
+            synchronized (listeners) {
+                changes.addAll(listeners);
+            }
+            for (ChangeListener change : changes) {
+                change.stateChanged(new ChangeEvent(this));
+            }
+        }
+        
+    }
+    
+    private static class Tuple {
+        Set<String> privatePackages;
+        Set<String> transitivePackages;
+
+        public Tuple(Set<String> privatePackages, Set<String> transitivePackages) {
+            this.privatePackages = privatePackages;
+            this.transitivePackages = transitivePackages;
+        }
+
+        
     }
 
 

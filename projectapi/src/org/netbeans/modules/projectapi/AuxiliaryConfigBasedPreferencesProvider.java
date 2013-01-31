@@ -61,6 +61,7 @@ import java.util.WeakHashMap;
 import java.util.prefs.AbstractPreferences;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
@@ -323,7 +324,7 @@ public class AuxiliaryConfigBasedPreferencesProvider {
         modified = true;
     }
     
-    public static String findCNBForClass(Class<?> cls) {
+    public static String findCNBForClass(@NonNull Class<?> cls) {
         String absolutePath;
         ModuleInfo owner = Modules.getDefault().ownerOf(cls);
         if (owner != null) {
