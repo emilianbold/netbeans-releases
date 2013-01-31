@@ -60,19 +60,15 @@ import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
-import org.netbeans.modules.php.api.util.StringUtils;
-import org.netbeans.modules.php.api.util.UiUtils;
-import org.netbeans.modules.php.project.PhpProject;
-import org.netbeans.modules.php.project.ProjectPropertiesSupport;
+import org.netbeans.modules.php.api.validation.ValidationResult;
 import org.netbeans.modules.php.phpunit.commands.PhpUnit;
-import org.netbeans.modules.php.project.ui.LastUsedFolders;
-import org.netbeans.modules.php.project.ui.Utils;
-import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
+import org.netbeans.modules.php.phpunit.preferences.PhpUnitPreferences;
+import org.netbeans.modules.php.phpunit.preferences.PhpUnitPreferencesValidator;
+import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.awt.Mnemonics;
+import org.openide.filesystems.FileChooserBuilder;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
@@ -82,27 +78,37 @@ import org.openide.util.NbBundle;
  * @author Tomas Mysik
  */
 public final class CustomizerPhpUnit extends JPanel implements HelpCtx.Provider {
+
     private static final long serialVersionUID = 2171421712032630826L;
 
-    private final Category category;
-    private final PhpProjectProperties uiProps;
-    private final PhpProject project;
+    private final ProjectCustomizer.Category category;
+    private final PhpModule phpModule;
 
-    public CustomizerPhpUnit(Category category, PhpModule phpModule) {
 
+    public CustomizerPhpUnit(ProjectCustomizer.Category category, PhpModule phpModule) {
         this.category = category;
-        this.uiProps = uiProps;
-        project = uiProps.getProject();
+        this.phpModule = phpModule;
 
         initComponents();
+        init();
+    }
 
-        initFile(uiProps.getPhpUnitBootstrap(), bootstrapCheckBox, bootstrapTextField);
-        bootstrapForCreateTestsCheckBox.setSelected(uiProps.getPhpUnitBootstrapForCreateTests());
-        initFile(uiProps.getPhpUnitConfiguration(), configurationCheckBox, configurationTextField);
-        initFile(uiProps.getPhpUnitSuite(), suiteCheckBox, suiteTextField);
-        initFile(uiProps.getPhpUnitScript(), scriptCheckBox, scriptTextField);
-        runTestUsingUnitCheckBox.setSelected(uiProps.getPhpUnitRunTestFiles());
-        askForTestGroupsCheckBox.setSelected(uiProps.getPhpUnitAskForTestGroups());
+    private void init() {
+        initFile(PhpUnitPreferences.isBootstrapEnabled(phpModule),
+                PhpUnitPreferences.getBootstrapPath(phpModule),
+                bootstrapCheckBox, bootstrapTextField);
+        bootstrapForCreateTestsCheckBox.setSelected(PhpUnitPreferences.isBootstrapForCreateTests(phpModule));
+        initFile(PhpUnitPreferences.isConfigurationEnabled(phpModule),
+                PhpUnitPreferences.getConfigurationPath(phpModule),
+                configurationCheckBox, configurationTextField);
+        initFile(PhpUnitPreferences.isSuiteEnabled(phpModule),
+                PhpUnitPreferences.getSuitePath(phpModule),
+                suiteCheckBox, suiteTextField);
+        initFile(PhpUnitPreferences.isPhpUnitEnabled(phpModule),
+                PhpUnitPreferences.getPhpUnitPath(phpModule),
+                scriptCheckBox, scriptTextField);
+        runTestUsingUnitCheckBox.setSelected(PhpUnitPreferences.getRunAllTestFiles(phpModule));
+        askForTestGroupsCheckBox.setSelected(PhpUnitPreferences.getAskForTestGroups(phpModule));
 
         enableFile(bootstrapCheckBox.isSelected(), bootstrapLabel, bootstrapTextField, bootstrapGenerateButton, bootstrapBrowseButton, bootstrapForCreateTestsCheckBox);
         enableFile(configurationCheckBox.isSelected(), configurationLabel, configurationTextField, configurationGenerateButton, configurationBrowseButton);
@@ -111,19 +117,17 @@ public final class CustomizerPhpUnit extends JPanel implements HelpCtx.Provider 
 
         addListeners();
         validateData();
+        category.setStoreListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                storeData();
+            }
+        });
     }
-
-    @ProjectCustomizer.CompositeCategoryProvider.Registration(
-        projectType = UiUtils.CUSTOMIZER_PATH,
-        position = 350
-    )
-    public static CompositePanelProviderImpl createPhpUnit() {
-        return new CompositePanelProviderImpl(PHP_UNIT);
-    }
-
 
     @Override
     public HelpCtx getHelpCtx() {
+        // do not change, backward compatibility
         return new HelpCtx("org.netbeans.modules.php.project.ui.customizer.CustomizerPhpUnit"); // NOI18N
     }
 
@@ -133,54 +137,41 @@ public final class CustomizerPhpUnit extends JPanel implements HelpCtx.Provider 
         }
     }
 
-    @NbBundle.Messages("CustomizerPhpUnit.script.label=PHPUnit Script")
     void validateData() {
-        String bootstrap = ""; // NOI18N
-        if (bootstrapCheckBox.isSelected()) {
-            bootstrap = getValidFile(NbBundle.getMessage(CustomizerPhpUnit.class, "LBL_Bootstrap"), bootstrapTextField);
-            if (bootstrap == null) {
-                return;
-            }
+        ValidationResult result = new PhpUnitPreferencesValidator()
+                .validateBootstrap(bootstrapCheckBox.isSelected(), bootstrapTextField.getText())
+                .validateConfiguration(configurationCheckBox.isSelected(), configurationTextField.getText())
+                .validatePhpUnit(scriptCheckBox.isSelected(), scriptTextField.getText())
+                .getResult();
+        for (ValidationResult.Message message : result.getErrors()) {
+            category.setErrorMessage(message.getMessage());
+            category.setValid(false);
+            return;
         }
-        String configuration = ""; // NOI18N
-        if (configurationCheckBox.isSelected()) {
-            configuration = getValidFile(NbBundle.getMessage(CustomizerPhpUnit.class, "LBL_XmlConfiguration"), configurationTextField);
-            if (configuration == null) {
-                return;
-            }
+        for (ValidationResult.Message message : result.getWarnings()) {
+            category.setErrorMessage(message.getMessage());
+            category.setValid(true);
+            return;
         }
-        String suite = ""; // NOI18N
-        if (suiteCheckBox.isSelected()) {
-            suite = getValidFile(NbBundle.getMessage(CustomizerPhpUnit.class, "LBL_TestSuite"), suiteTextField);
-            if (suite == null) {
-                return;
-            }
-        }
-        String script = ""; // NOI18N
-        if (scriptCheckBox.isSelected()) {
-            script = getValidFile(Bundle.CustomizerPhpUnit_script_label(), scriptTextField);
-            if (script == null) {
-                return;
-            }
-        }
-
-        uiProps.setPhpUnitBootstrap(bootstrap);
-        uiProps.setPhpUnitBootstrapForCreateTests(bootstrapForCreateTestsCheckBox.isSelected());
-        uiProps.setPhpUnitConfiguration(configuration);
-        uiProps.setPhpUnitSuite(suite);
-        uiProps.setPhpUnitScript(script);
-        uiProps.setPhpUnitRunTestFiles(runTestUsingUnitCheckBox.isSelected());
-        uiProps.setPhpUnitAskForTestGroups(askForTestGroupsCheckBox.isSelected());
-
         category.setErrorMessage(null);
         category.setValid(true);
     }
 
-    private void initFile(String file, JCheckBox checkBox, JTextField textField) {
-        if (StringUtils.hasText(file)) {
-            checkBox.setSelected(true);
-            textField.setText(file);
-        }
+    void storeData() {
+        PhpUnitPreferences.setBootstrapEnabled(phpModule, bootstrapCheckBox.isSelected());
+        PhpUnitPreferences.setBootstrapPath(phpModule, bootstrapTextField.getText());
+        PhpUnitPreferences.setBootstrapForCreateTests(phpModule, bootstrapForCreateTestsCheckBox.isSelected());
+        PhpUnitPreferences.setConfigurationEnabled(phpModule, configurationCheckBox.isSelected());
+        PhpUnitPreferences.setConfigurationPath(phpModule, configurationTextField.getText());
+        PhpUnitPreferences.setPhpUnitEnabled(phpModule, scriptCheckBox.isSelected());
+        PhpUnitPreferences.setPhpUnitPath(phpModule, scriptTextField.getText());
+        PhpUnitPreferences.setRunAllTestFiles(phpModule, runTestUsingUnitCheckBox.isSelected());
+        PhpUnitPreferences.setAskForTestGroups(phpModule, askForTestGroupsCheckBox.isSelected());
+    }
+
+    private void initFile(boolean enabled, String file, JCheckBox checkBox, JTextField textField) {
+        checkBox.setSelected(enabled);
+        textField.setText(file);
     }
 
     private void addListeners() {
@@ -238,39 +229,13 @@ public final class CustomizerPhpUnit extends JPanel implements HelpCtx.Provider 
         askForTestGroupsCheckBox.addItemListener(validateItemListener);
     }
 
-    private String getValidFile(String name, JTextField textField) {
-        String file = textField.getText();
-        String error = validateFile(file, name);
-        if (error != null) {
-            category.setErrorMessage(error);
-            category.setValid(false);
-            return null;
-        }
-        return file;
-    }
-
-    private String validateFile(String path, String name) {
-        if (!StringUtils.hasText(path)) {
-            return NbBundle.getMessage(CustomizerPhpUnit.class, "MSG_NoFile", name);
-        }
-        File file = new File(path);
-        if (!file.isFile()) {
-            return NbBundle.getMessage(CustomizerPhpUnit.class, "MSG_NotFile", name);
-        } else if (!file.isAbsolute()) {
-            return NbBundle.getMessage(CustomizerPhpUnit.class, "MSG_NotAbsoluteFile", name);
-        } else if (!file.canRead()) {
-            return NbBundle.getMessage(CustomizerPhpUnit.class, "MSG_NotReadableFile", name);
-        }
-        return null;
-    }
-
     private File getDefaultDirectory() {
-        File defaultDirectory = null;
-        FileObject testDirectory = ProjectPropertiesSupport.getTestDirectory(project, false);
+        File defaultDirectory;
+        FileObject testDirectory = phpModule.getTestDirectory();
         if (testDirectory != null) {
             defaultDirectory = FileUtil.toFile(testDirectory);
         } else {
-            FileObject sourcesDirectory = ProjectPropertiesSupport.getSourcesDirectory(project);
+            FileObject sourcesDirectory = phpModule.getSourceDirectory();
             assert sourcesDirectory != null;
             defaultDirectory = FileUtil.toFile(sourcesDirectory);
         }
@@ -278,21 +243,13 @@ public final class CustomizerPhpUnit extends JPanel implements HelpCtx.Provider 
         return defaultDirectory;
     }
 
+    @NbBundle.Messages("CustomizerPhpUnit.error.noTestDir=Test directory is not set yet. Set it in Sources category and save this dialog.")
     private boolean checkTestDirectory() {
-        FileObject testDirectory = ProjectPropertiesSupport.getTestDirectory(project, false);
-        if (testDirectory == null) {
-            if (askQuestion(NbBundle.getMessage(CustomizerPhpUnit.class, "LBL_TestsNotSet", project.getLookup().lookup(ProjectInformation.class).getDisplayName()))) {
-                testDirectory = ProjectPropertiesSupport.getTestDirectory(project, true);
-            }
+        if (phpModule.getTestDirectory() == null) {
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(Bundle.CustomizerPhpUnit_error_noTestDir(), NotifyDescriptor.INFORMATION_MESSAGE));
+            return false;
         }
-        return testDirectory != null;
-    }
-
-    private boolean askQuestion(String question) {
-        NotifyDescriptor confirmation = new NotifyDescriptor.Confirmation(
-                question,
-                NotifyDescriptor.YES_NO_OPTION);
-        return DialogDisplayer.getDefault().notify(confirmation) == NotifyDescriptor.YES_OPTION;
+        return true;
     }
 
     /** This method is called from within the constructor to
@@ -541,9 +498,14 @@ public final class CustomizerPhpUnit extends JPanel implements HelpCtx.Provider 
         getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
+    @NbBundle.Messages("CustomizerPhpUnit.chooser.bootstrap=Select PHPUnit bootstrap file")
     private void bootstrapBrowseButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_bootstrapBrowseButtonActionPerformed
-        File file = Utils.browseFileAction(LastUsedFolders.PHPUNIT_BOOTSTRAP,
-                NbBundle.getMessage(CustomizerPhpUnit.class, "LBL_SelectBootstrap"), getDefaultDirectory());
+        File file = new FileChooserBuilder(CustomizerPhpUnit.class)
+                .setTitle(Bundle.CustomizerPhpUnit_chooser_bootstrap())
+                .setFilesOnly(true)
+                .setDefaultWorkingDirectory(getDefaultDirectory())
+                .forceUseOfDefaultWorkingDirectory(true)
+                .showOpenDialog();
         if (file != null) {
             bootstrapTextField.setText(file.getAbsolutePath());
         }
@@ -551,16 +513,21 @@ public final class CustomizerPhpUnit extends JPanel implements HelpCtx.Provider 
 
     private void bootstrapGenerateButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_bootstrapGenerateButtonActionPerformed
         if (checkTestDirectory()) {
-            File bootstrap = PhpUnit.createBootstrapFile(project);
+            File bootstrap = PhpUnit.createBootstrapFile(phpModule);
             if (bootstrap != null) {
                 bootstrapTextField.setText(bootstrap.getAbsolutePath());
             }
         }
     }//GEN-LAST:event_bootstrapGenerateButtonActionPerformed
 
+    @NbBundle.Messages("CustomizerPhpUnit.chooser.configuration=Select PHPUnit XML configuration file")
     private void configurationBrowseButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_configurationBrowseButtonActionPerformed
-        File file = Utils.browseFileAction(LastUsedFolders.PHPUNIT_CONFIGURATION,
-                NbBundle.getMessage(CustomizerPhpUnit.class, "LBL_SelectConfiguration"), getDefaultDirectory());
+        File file = new FileChooserBuilder(CustomizerPhpUnit.class)
+                .setTitle(Bundle.CustomizerPhpUnit_chooser_configuration())
+                .setFilesOnly(true)
+                .setDefaultWorkingDirectory(getDefaultDirectory())
+                .forceUseOfDefaultWorkingDirectory(true)
+                .showOpenDialog();
         if (file != null) {
             configurationTextField.setText(file.getAbsolutePath());
         }
@@ -568,25 +535,34 @@ public final class CustomizerPhpUnit extends JPanel implements HelpCtx.Provider 
 
     private void configurationGenerateButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_configurationGenerateButtonActionPerformed
         if (checkTestDirectory()) {
-            File configuration = PhpUnit.createConfigurationFile(project);
+            File configuration = PhpUnit.createConfigurationFile(phpModule);
             if (configuration != null) {
                 configurationTextField.setText(configuration.getAbsolutePath());
             }
         }
     }//GEN-LAST:event_configurationGenerateButtonActionPerformed
 
+    @NbBundle.Messages("CustomizerPhpUnit.chooser.suite=Select PHPUnit test suite file")
     private void suiteBrowseButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_suiteBrowseButtonActionPerformed
-        File file = Utils.browseFileAction(LastUsedFolders.PHPUNIT_SUITE,
-                NbBundle.getMessage(CustomizerPhpUnit.class, "LBL_SelectSuite"), getDefaultDirectory());
+        File file = new FileChooserBuilder(CustomizerPhpUnit.class)
+                .setTitle(Bundle.CustomizerPhpUnit_chooser_suite())
+                .setFilesOnly(true)
+                .setDefaultWorkingDirectory(getDefaultDirectory())
+                .forceUseOfDefaultWorkingDirectory(true)
+                .showOpenDialog();
         if (file != null) {
             suiteTextField.setText(file.getAbsolutePath());
         }
     }//GEN-LAST:event_suiteBrowseButtonActionPerformed
 
-    @NbBundle.Messages("CustomizerPhpUnit.script.browse=Select PHPUnit script")
+    @NbBundle.Messages("CustomizerPhpUnit.chooser.phpUnit=Select PHPUnit script")
     private void scriptBrowseButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_scriptBrowseButtonActionPerformed
-        File file = Utils.browseFileAction(LastUsedFolders.PHPUNIT_PROJECT_SCRIPT,
-                Bundle.CustomizerPhpUnit_script_browse(), getDefaultDirectory());
+        File file = new FileChooserBuilder(CustomizerPhpUnit.class)
+                .setTitle(Bundle.CustomizerPhpUnit_chooser_phpUnit())
+                .setFilesOnly(true)
+                .setDefaultWorkingDirectory(getDefaultDirectory())
+                .forceUseOfDefaultWorkingDirectory(true)
+                .showOpenDialog();
         if (file != null) {
             scriptTextField.setText(file.getAbsolutePath());
         }

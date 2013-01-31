@@ -71,7 +71,7 @@ public final class PhpUnitPreferences {
         return getPreferences(phpModule).getBoolean(BOOTSTRAP_ENABLED, false);
     }
 
-    public static void setBoostrapEnabled(PhpModule phpModule, boolean bootstrapEnabled) {
+    public static void setBootstrapEnabled(PhpModule phpModule, boolean bootstrapEnabled) {
         getPreferences(phpModule).putBoolean(BOOTSTRAP_ENABLED, bootstrapEnabled);
     }
 
@@ -79,7 +79,7 @@ public final class PhpUnitPreferences {
         return getPreferences(phpModule).get(BOOTSTRAP_PATH, null);
     }
 
-    public static void setBoostrapPath(PhpModule phpModule, String bootstrapPath) {
+    public static void setBootstrapPath(PhpModule phpModule, String bootstrapPath) {
         getPreferences(phpModule).put(BOOTSTRAP_PATH, bootstrapPath);
     }
 
@@ -87,7 +87,7 @@ public final class PhpUnitPreferences {
         return getPreferences(phpModule).getBoolean(BOOTSTRAP_FOR_CREATE_TESTS, false);
     }
 
-    public static void setBoostrapForCreateTests(PhpModule phpModule, boolean bootstrapEnabled) {
+    public static void setBootstrapForCreateTests(PhpModule phpModule, boolean bootstrapEnabled) {
         getPreferences(phpModule).putBoolean(BOOTSTRAP_FOR_CREATE_TESTS, bootstrapEnabled);
     }
 

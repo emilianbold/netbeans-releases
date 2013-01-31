@@ -73,7 +73,7 @@ public class PhpUnitCustomizer implements ProjectCustomizer.CompositeCategoryPro
 
     @ProjectCustomizer.CompositeCategoryProvider.Registration(
         projectType = UiUtils.CUSTOMIZER_PATH,
-        position = 360
+        position = 350
     )
     public static PhpUnitCustomizer createCustomizer() {
         return new PhpUnitCustomizer();

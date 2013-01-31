@@ -45,36 +45,31 @@ import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.api.validation.ValidationResult;
 import org.openide.util.NbBundle;
 
-public class PhpUnitPreferencesValidator {
+public final class PhpUnitPreferencesValidator {
 
     private final ValidationResult result = new ValidationResult();
 
-
-    public PhpUnitPreferencesValidator validate(boolean bootstrapEnabled, String bootstrapPath,
-            boolean configurationEnabled, String configurationPath, boolean phpUnitEnabled, String phpUnitPath) {
-        validateBootstrap(bootstrapEnabled, bootstrapPath);
-        validateConfiguration(configurationEnabled, configurationPath);
-        validatePhpUnit(phpUnitEnabled, phpUnitPath);
-        return this;
-    }
 
     public ValidationResult getResult() {
         return result;
     }
 
     @NbBundle.Messages("PhpUnitPreferencesValidator.bootstrap.label=Bootstrap")
-    private void validateBootstrap(boolean bootstrapEnabled, String bootstrapPath) {
+    public PhpUnitPreferencesValidator validateBootstrap(boolean bootstrapEnabled, String bootstrapPath) {
         validatePath(bootstrapEnabled, bootstrapPath, Bundle.PhpUnitPreferencesValidator_bootstrap_label(), "bootstrapPath"); // NOI18N
+        return this;
     }
 
     @NbBundle.Messages("PhpUnitPreferencesValidator.configuration.label=XML configuration")
-    private void validateConfiguration(boolean configurationEnabled, String configurationPath) {
+    public PhpUnitPreferencesValidator validateConfiguration(boolean configurationEnabled, String configurationPath) {
         validatePath(configurationEnabled, configurationPath, Bundle.PhpUnitPreferencesValidator_configuration_label(), "configurationPath"); // NOI18N
+        return this;
     }
 
     @NbBundle.Messages("PhpUnitPreferencesValidator.phpUnit.label=Custom PHPUnit")
-    private void validatePhpUnit(boolean phpUnitEnabled, String phpUnitPath) {
+    public PhpUnitPreferencesValidator validatePhpUnit(boolean phpUnitEnabled, String phpUnitPath) {
         validatePath(phpUnitEnabled, phpUnitPath, Bundle.PhpUnitPreferencesValidator_phpUnit_label(), "phpUnitPath"); // NOI18N
+        return this;
     }
 
     private void validatePath(boolean pathEnabled, String path, String label, String source) {
