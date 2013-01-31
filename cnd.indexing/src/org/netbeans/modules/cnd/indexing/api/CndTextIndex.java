@@ -58,7 +58,7 @@ public final class CndTextIndex {
     private CndTextIndex() {
     }
     
-    public static void put(final CacheLocation location, final CndTextIndexKey key, final Set<String> ids) {
+    public static void put(final CacheLocation location, final CndTextIndexKey key, final Set<CharSequence> ids) {
         CndTextIndexImpl index = CndTextIndexManager.get(location);
         if (index != null) {
             index.put(key, ids);
