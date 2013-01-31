@@ -66,32 +66,25 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.api.util.UiUtils;
-import org.netbeans.modules.php.project.environment.PhpEnvironment;
 import org.netbeans.modules.php.phpunit.commands.PhpUnit;
-import org.netbeans.modules.php.phpunit.commands.PhpUnitSkelGen;
-import org.netbeans.modules.php.project.phpunit.ui.options.Bundle;
-import org.netbeans.modules.php.project.ui.LastUsedFolders;
-import org.netbeans.modules.php.project.ui.Utils;
+import org.netbeans.modules.php.phpunit.commands.SkeletonGenerator;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.awt.HtmlBrowser;
-import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileChooserBuilder;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
-/**
- * @author Tomas Mysik
- */
 @NbBundle.Messages("PhpUnitOptionsPanel.keywords.coverage=coverage")
 @OptionsPanelController.Keywords(keywords={"php", "phpunit", "unit testing", "framework", "coverage", "#PhpUnitOptionsPanel.keywords.coverage"},
-        location=UiUtils.OPTIONS_PATH, tabTitle= "#LBL_PHPUnitOptionsName")
+        location=UiUtils.OPTIONS_PATH, tabTitle= "#PhpUnitOptionsPanel.name")
 public class PhpUnitOptionsPanel extends JPanel {
 
-    private static final long serialVersionUID = -6453232134654321L;
+    private static final long serialVersionUID = -846796509345860L;
 
-    private static final String SKEL_GEN_LAST_FOLDER_SUFFIX = ".skelGen"; // NOI18N
+    private static final String PHP_UNIT_LAST_FOLDER_SUFFIX = ".phpUnit"; // NOI18N
+    private static final String SKELETON_GENERATOR_LAST_FOLDER_SUFFIX = ".skeletonGenerator"; // NOI18N
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
 
@@ -113,7 +106,7 @@ public class PhpUnitOptionsPanel extends JPanel {
     private void init() {
         errorLabel.setText(" "); // NOI18N
         phpUnitHintLabel.setText(Bundle.PhpUnitOptionsPanel_phpUnit_hint(PhpUnit.SCRIPT_NAME, PhpUnit.SCRIPT_NAME_LONG));
-        skelGenHintLabel.setText(Bundle.PhpUnitOptionsPanel_skelGen_hint(PhpUnitSkelGen.SCRIPT_NAME, PhpUnitSkelGen.SCRIPT_NAME_LONG));
+        skelGenHintLabel.setText(Bundle.PhpUnitOptionsPanel_skelGen_hint(SkeletonGenerator.SCRIPT_NAME, SkeletonGenerator.SCRIPT_NAME_LONG));
 
         DocumentListener defaultDocumentListener = new DefaultDocumentListener();
         phpUnitTextField.getDocument().addDocumentListener(defaultDocumentListener);
@@ -374,38 +367,47 @@ public class PhpUnitOptionsPanel extends JPanel {
 
     @NbBundle.Messages("PhpUnitOptionsPanel.phpunit.browse.title=Select PHPUnit")
     private void phpUnitBrowseButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_phpUnitBrowseButtonActionPerformed
-        File file = Utils.browseFileAction(LastUsedFolders.PHPUNIT, Bundle.PhpUnitOptionsPanel_phpunit_browse_title());
+        File file = new FileChooserBuilder(PhpUnitOptionsPanel.class.getName() + PHP_UNIT_LAST_FOLDER_SUFFIX)
+                .setFilesOnly(true)
+                .setTitle(Bundle.PhpUnitOptionsPanel_phpunit_browse_title())
+                .showOpenDialog();
         if (file != null) {
             phpUnitTextField.setText(file.getAbsolutePath());
         }
     }//GEN-LAST:event_phpUnitBrowseButtonActionPerformed
 
+    @NbBundle.Messages({
+        "PhpUnitOptionsPanel.phpUnit.search.title=PHPUnit scripts",
+        "PhpUnitOptionsPanel.phpUnit.search.scripts=&PHPUnit scripts:",
+        "PhpUnitOptionsPanel.phpUnit.search.pleaseWaitPart=PHPUnit scripts",
+        "PhpUnitOptionsPanel.phpUnit.search.notFound=No PHPUnit scripts found."
+    })
     private void phpUnitSearchButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_phpUnitSearchButtonActionPerformed
         String phpUnit = UiUtils.SearchWindow.search(new UiUtils.SearchWindow.SearchWindowSupport() {
 
             @Override
             public List<String> detect() {
-                return PhpEnvironment.get().getAllPhpUnits();
+                return FileUtils.findFileOnUsersPath(PhpUnit.SCRIPT_NAME, PhpUnit.SCRIPT_NAME_LONG);
             }
 
             @Override
             public String getWindowTitle() {
-                return NbBundle.getMessage(PhpUnitOptionsPanel.class, "LBL_PhpUnitsTitle");
+                return Bundle.PhpUnitOptionsPanel_phpUnit_search_title();
             }
 
             @Override
             public String getListTitle() {
-                return NbBundle.getMessage(PhpUnitOptionsPanel.class, "LBL_PhpUnits");
+                return Bundle.PhpUnitOptionsPanel_phpUnit_search_scripts();
             }
 
             @Override
             public String getPleaseWaitPart() {
-                return NbBundle.getMessage(PhpUnitOptionsPanel.class, "LBL_PhpUnitsPleaseWaitPart");
+                return Bundle.PhpUnitOptionsPanel_phpUnit_search_pleaseWaitPart();
             }
 
             @Override
             public String getNoItemsFound() {
-                return NbBundle.getMessage(PhpUnitOptionsPanel.class, "LBL_NoPhpUnitsFound");
+                return Bundle.PhpUnitOptionsPanel_phpUnit_search_notFound();
             }
         });
         if (phpUnit != null) {
@@ -441,7 +443,7 @@ public class PhpUnitOptionsPanel extends JPanel {
 
     @NbBundle.Messages("PhpUnitOptionsPanel.skelGen.browse=Select Skeleton Generator script")
     private void skelGenBrowseButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_skelGenBrowseButtonActionPerformed
-        File skelGen = new FileChooserBuilder(PhpUnitOptionsPanel.class.getName() + SKEL_GEN_LAST_FOLDER_SUFFIX)
+        File skelGen = new FileChooserBuilder(PhpUnitOptionsPanel.class.getName() + SKELETON_GENERATOR_LAST_FOLDER_SUFFIX)
                 .setTitle(Bundle.PhpUnitOptionsPanel_skelGen_browse())
                 .setFilesOnly(true)
                 .showOpenDialog();
@@ -461,7 +463,7 @@ public class PhpUnitOptionsPanel extends JPanel {
         String skelGen = UiUtils.SearchWindow.search(new UiUtils.SearchWindow.SearchWindowSupport() {
             @Override
             public List<String> detect() {
-                return FileUtils.findFileOnUsersPath(PhpUnitSkelGen.SCRIPT_NAME, PhpUnitSkelGen.SCRIPT_NAME_LONG);
+                return FileUtils.findFileOnUsersPath(SkeletonGenerator.SCRIPT_NAME, SkeletonGenerator.SCRIPT_NAME_LONG);
             }
             @Override
             public String getWindowTitle() {

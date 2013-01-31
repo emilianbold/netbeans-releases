@@ -42,48 +42,52 @@
 
 package org.netbeans.modules.php.phpunit.ui.options;
 
+import java.awt.EventQueue;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.php.project.deprecated.PhpProgram.InvalidPhpProgramException;
 import org.netbeans.modules.php.api.util.UiUtils;
-import org.netbeans.modules.php.phpunit.commands.PhpUnit;
-import org.netbeans.modules.php.phpunit.commands.PhpUnitSkelGen;
-import org.netbeans.modules.php.project.ui.options.PhpOptions;
+import org.netbeans.modules.php.api.validation.ValidationResult;
+import org.netbeans.modules.php.phpunit.options.PhpUnitOptions;
+import org.netbeans.modules.php.phpunit.options.PhpUnitOptionsValidator;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 
-/**
- * @author Tomas Mysik
- */
 @OptionsPanelController.SubRegistration(
     location=UiUtils.OPTIONS_PATH,
-    id=PhpUnit.OPTIONS_SUB_PATH,
-    displayName="#LBL_PHPUnitOptionsName",
+    id=PhpUnitOptionsPanelController.OPTIONS_SUB_PATH,
+    displayName="#PhpUnitOptionsPanel.name",
 //    toolTip="#LBL_OptionsTooltip"
     position=150
 )
 public class PhpUnitOptionsPanelController extends OptionsPanelController implements ChangeListener {
+
+    public static final String OPTIONS_SUB_PATH = "PhpUnit"; // NOI18N
+    public static final String OPTIONS_PATH = UiUtils.OPTIONS_PATH + "/" + OPTIONS_SUB_PATH; // NOI18N
+
     private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
 
+    // @GuardedBy("EDT")
     private PhpUnitOptionsPanel phpUnitOptionsPanel = null;
     private volatile boolean changed = false;
 
+
     @Override
     public void update() {
-        phpUnitOptionsPanel.setPhpUnit(getPhpOptions().getPhpUnit());
-        phpUnitOptionsPanel.setPhpUnitSkelGen(getPhpOptions().getPhpUnitSkelGen());
+        assert EventQueue.isDispatchThread();
+        getPhpUnitOptionsPanel().setPhpUnit(getPhpUnitOptions().getPhpUnitPath());
+        getPhpUnitOptionsPanel().setPhpUnitSkelGen(getPhpUnitOptions().getSkeletonGeneratorPath());
 
         changed = false;
     }
 
     @Override
     public void applyChanges() {
-        getPhpOptions().setPhpUnit(phpUnitOptionsPanel.getPhpUnit());
-        getPhpOptions().setPhpUnitSkelGen(phpUnitOptionsPanel.getPhpUnitSkelGen());
+        getPhpUnitOptions().setPhpUnitPath(getPhpUnitOptionsPanel().getPhpUnit());
+        getPhpUnitOptions().setSkeletonGeneratorPath(getPhpUnitOptionsPanel().getPhpUnitSkelGen());
 
         changed = false;
     }
@@ -94,22 +98,23 @@ public class PhpUnitOptionsPanelController extends OptionsPanelController implem
 
     @Override
     public boolean isValid() {
-        // phpunit
-        try {
-            PhpUnit.getCustom(phpUnitOptionsPanel.getPhpUnit());
-        } catch (InvalidPhpProgramException ex) {
-            phpUnitOptionsPanel.setWarning(ex.getLocalizedMessage());
+        assert EventQueue.isDispatchThread();
+        PhpUnitOptionsPanel panel = getPhpUnitOptionsPanel();
+        ValidationResult result = new PhpUnitOptionsValidator()
+                .validate(panel.getPhpUnit(), panel.getPhpUnitSkelGen())
+                .getResult();
+        // errors
+        if (result.hasErrors()) {
+            panel.setError(result.getErrors().get(0).getMessage());
+            return false;
+        }
+        // warnings
+        if (result.hasWarnings()) {
+            panel.setWarning(result.getWarnings().get(0).getMessage());
             return true;
         }
-        // skel-gen
-        String warning = PhpUnitSkelGen.validate(phpUnitOptionsPanel.getPhpUnitSkelGen());
-        if (warning != null) {
-            phpUnitOptionsPanel.setWarning(warning);
-            return true;
-        }
-
         // everything ok
-        phpUnitOptionsPanel.setError(" "); // NOI18N
+        panel.setError(" "); // NOI18N
         return true;
     }
 
@@ -120,15 +125,13 @@ public class PhpUnitOptionsPanelController extends OptionsPanelController implem
 
     @Override
     public JComponent getComponent(Lookup masterLookup) {
-        if (phpUnitOptionsPanel == null) {
-            phpUnitOptionsPanel = new PhpUnitOptionsPanel();
-            phpUnitOptionsPanel.addChangeListener(this);
-        }
-        return phpUnitOptionsPanel;
+        assert EventQueue.isDispatchThread();
+        return getPhpUnitOptionsPanel();
     }
 
     @Override
     public HelpCtx getHelpCtx() {
+        // do not change, backward compatibility
         return new HelpCtx("org.netbeans.modules.php.project.phpunit.PhpUnit"); // NOI18N
     }
 
@@ -151,7 +154,17 @@ public class PhpUnitOptionsPanelController extends OptionsPanelController implem
         propertyChangeSupport.firePropertyChange(OptionsPanelController.PROP_VALID, null, null);
     }
 
-    private PhpOptions getPhpOptions() {
-        return PhpOptions.getInstance();
+    private PhpUnitOptionsPanel getPhpUnitOptionsPanel() {
+        assert EventQueue.isDispatchThread();
+        if (phpUnitOptionsPanel == null) {
+            phpUnitOptionsPanel = new PhpUnitOptionsPanel();
+            phpUnitOptionsPanel.addChangeListener(this);
+        }
+        return phpUnitOptionsPanel;
     }
+
+    private PhpUnitOptions getPhpUnitOptions() {
+        return PhpUnitOptions.getInstance();
+    }
+
 }
