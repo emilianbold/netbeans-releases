@@ -63,7 +63,8 @@ public class IssueCacheUtils {
      * @return true if issue was seen otherwise false
      */
     public static boolean wasSeen(IssueImpl issue) {
-        return getCache(issue).wasSeen(issue.getID());
+        IssueCache cache = getCache(issue);
+        return cache != null ? cache.wasSeen(issue.getID()) : true;
     }
 
     /**
@@ -73,8 +74,10 @@ public class IssueCacheUtils {
     public static void switchSeen(IssueImpl issue) {
         try {
             IssueCache cache = getCache(issue);
-            String id = issue.getID();
-            cache.setSeen(id, !cache.wasSeen(id));
+            if(cache != null) {
+                String id = issue.getID();
+                cache.setSeen(id, !cache.wasSeen(id));
+            }
         } catch (IOException ex) {
             BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
         }
@@ -87,14 +90,18 @@ public class IssueCacheUtils {
      */
     public static void setSeen(IssueImpl issue, boolean seen) {
         try {
-            getCache(issue).setSeen(issue.getID(), seen);
+            IssueCache cache = getCache(issue);
+            if(cache != null) {
+                cache.setSeen(issue.getID(), seen);
+            }
         } catch (IOException ex) {
             BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
         }
     }
     
     public static int getStatus(IssueImpl issue) {
-        return getCache(issue).getStatus(issue.getID());
+        IssueCache cache = getCache(issue);
+        return cache != null ? cache.getStatus(issue.getID()) : IssueCache.ISSUE_STATUS_UNKNOWN; 
     }    
 
     /**
@@ -105,13 +112,15 @@ public class IssueCacheUtils {
      * @return
      */
     public static String getRecentChanges(IssueImpl issue) {
-        String changes = getCache(issue).getRecentChanges(issue.getID());
+        IssueCache cache = getCache(issue);
+        String changes = cache != null ? cache.getRecentChanges(issue.getID()) : null;
         if(changes == null) {
             changes = "";
         } else {
             changes = changes.trim();
-    }
-        if(changes.equals("") && getCache(issue).getStatus(issue.getID()) == IssueCache.ISSUE_STATUS_MODIFIED) {
+        }
+        int status = cache != null ? cache.getStatus(issue.getID()) : -1;
+        if(changes.equals("") && status == IssueCache.ISSUE_STATUS_MODIFIED) {
             changes = NbBundle.getMessage(IssueCacheUtils.class, "LBL_IssueModified");
         }
         return changes;
@@ -123,7 +132,10 @@ public class IssueCacheUtils {
      * @param l
      */
     public static void addCacheListener (IssueImpl issue, PropertyChangeListener l) {
-        getCache(issue).addPropertyChangeListener(issue.getIssue(), l);
+        IssueCache cache = getCache(issue);
+        if(cache != null) {
+            cache.addPropertyChangeListener(issue.getIssue(), l);
+        }
     }
 
     /**
@@ -132,7 +144,10 @@ public class IssueCacheUtils {
      * @param l
      */
     public static void removeCacheListener (IssueImpl issue, PropertyChangeListener l) {
-        getCache(issue).removePropertyChangeListener(issue.getIssue(), l);
+        IssueCache cache = getCache(issue);
+        if(cache != null) {
+            cache.removePropertyChangeListener(issue.getIssue(), l);
+        }
     }
 
     private static IssueCache getCache(IssueImpl issue) {

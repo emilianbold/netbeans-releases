@@ -62,6 +62,7 @@ import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.OutputLogger;
 import org.netbeans.modules.mercurial.ui.branch.HgBranch;
+import org.netbeans.modules.mercurial.ui.log.RepositoryRevision.Kind;
 import org.netbeans.modules.mercurial.util.HgCommand;
 import org.netbeans.modules.versioning.util.VCSKenaiAccessor;
 import org.openide.util.NbBundle;
@@ -170,10 +171,20 @@ class SearchExecutor extends HgProgressSupport {
         // traverse in reverse chronological order
         for (int i = logMessages.length - 1; i >= 0; i--) {
             HgLogMessage logMessage = logMessages[i];
-            RepositoryRevision rev = new RepositoryRevision(logMessage, root, master.getRoots(), master.isIncomingSearch(), getBranches(logMessage));
+            RepositoryRevision rev = new RepositoryRevision(logMessage, root, getCurrentRevisionKind(), master.getRoots(), getBranches(logMessage));
             results.add(rev);
         }
         return results;
+    }
+    
+    private Kind getCurrentRevisionKind () {
+        if (master.isIncomingSearch()) {
+            return Kind.INCOMING;
+        } else if (master.isOutSearch()) {
+            return Kind.OUTGOING;
+        } else {
+            return Kind.LOCAL;
+        }
     }
 
     private void checkFinished(final List<RepositoryRevision> results) {

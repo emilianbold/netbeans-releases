@@ -118,7 +118,7 @@ public class FetchAction extends ContextAction {
                     HgProgressSupport support = new HgProgressSupport() {
                         @Override
                         public void perform() {
-                            performFetch(root, this.getLogger());
+                            performFetch(root, null, this.getLogger());
                             canceled[0] = isCanceled();
                         }
                     };
@@ -131,7 +131,7 @@ public class FetchAction extends ContextAction {
         });
     }
 
-    static void performFetch(final File root, OutputLogger logger) {
+    public static void performFetch(final File root, String revision, OutputLogger logger) {
         HgURL pullSource = null;
         try {
             logger.outputInRed(NbBundle.getMessage(FetchAction.class, "MSG_FETCH_TITLE")); // NOI18N
@@ -169,7 +169,7 @@ public class FetchAction extends ContextAction {
             }
 
             List<String> list;
-            list = HgCommand.doFetch(root, pullSource, enableFetch, logger);
+            list = HgCommand.doFetch(root, pullSource, revision, enableFetch, logger);
 
             if (list != null && !list.isEmpty()) {
                 logger.output(HgUtils.replaceHttpPassword(list));

@@ -53,6 +53,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.spi.project.ActionProvider;
@@ -76,6 +77,7 @@ class ActionsUtil {
      * have the command supported it will return array including the project. If there
      * is one project with the command disabled it will return empty array.
      */
+    @NonNull
     public static Project[] getProjectsFromLookup( Lookup lookup, String command ) {    
         // First find out whether there is a project directly in the Lookup
         Set<Project> result = new LinkedHashSet<Project>(); // XXX or use OpenProjectList.projectByDisplayName?

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,46 +37,30 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.mercurial.ui.queues;
 
-import org.openide.util.NbBundle;
-
 /**
  *
- * @author ondra
+ * @author Ondrej Vrabec
  */
-public class QPatch {
+public final class Queue {
+
+    final String name;
+    final boolean active;
+
+    public Queue (String name, boolean active) {
+        this.name = name;
+        this.active = active;
+    }
+
+    public boolean isActive () {
+        return active;
+    }
+
+    public String getName () {
+        return name;
+    }
     
-    public static final String TAG_QTIP = "qtip"; //NOI18N
-    private final String id;
-    private final String message;
-    private final boolean applied;
-    private final Queue queue;
-
-    @NbBundle.Messages("MSG_QPatch_Unknown_Message=Unknown")
-    public QPatch (String id, String message, Queue queue, boolean applied) {
-        this.id = id;
-        this.message = message == null ? Bundle.MSG_QPatch_Unknown_Message() : message;
-        this.queue = queue;
-        this.applied = applied;
-    }
-
-    public String getId () {
-        return id;
-    }
-
-    public String getMessage () {
-        return message;
-    }
-
-    public boolean isApplied () {
-        return applied;
-    }
-
-    public Queue getQueue () {
-        return queue;
-    }
-
 }

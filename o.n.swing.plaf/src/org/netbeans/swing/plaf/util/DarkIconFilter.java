@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,46 +37,52 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.mercurial.ui.queues;
+package org.netbeans.swing.plaf.util;
 
-import org.openide.util.NbBundle;
+import java.awt.Color;
+import java.awt.image.RGBImageFilter;
 
 /**
- *
- * @author ondra
+ * For dark LaFs it inverts icon brightness (=inverts icon image to obtain dark icon,
+ * then inverts its hue to restore original colors).
+ * 
+ * @author P. Somol
  */
-public class QPatch {
-    
-    public static final String TAG_QTIP = "qtip"; //NOI18N
-    private final String id;
-    private final String message;
-    private final boolean applied;
-    private final Queue queue;
+public class DarkIconFilter extends RGBImageFilter {
 
-    @NbBundle.Messages("MSG_QPatch_Unknown_Message=Unknown")
-    public QPatch (String id, String message, Queue queue, boolean applied) {
-        this.id = id;
-        this.message = message == null ? Bundle.MSG_QPatch_Unknown_Message() : message;
-        this.queue = queue;
-        this.applied = applied;
+    /** in dark LaFs brighten all icons; 0.0f = no change, 1.0f = maximum brightening */
+    private static final float DARK_ICON_BRIGHTEN = 0.1f;
+
+    @Override
+    public int filterRGB(int x, int y, int color) {
+        int a = color & 0xff000000;
+        int rgb[] = decode(color);
+        int inverted[] = invert(rgb);
+        int result[] = invertHueBrighten(inverted, DARK_ICON_BRIGHTEN);
+        return a | encode(result);
+   }
+
+    private int[] invert(int[] rgb) {
+        return new int[]{255-rgb[0], 255-rgb[1], 255-rgb[2]};
     }
 
-    public String getId () {
-        return id;
+    private int[] invertHueBrighten(int[] rgb, float brighten) {
+        float hsb[] = new float[3];
+        Color.RGBtoHSB(rgb[0], rgb[1], rgb[2], hsb);
+        return decode(Color.HSBtoRGB(hsb[0] > 0.5f ? hsb[0]-0.5f : hsb[0]+0.5f, hsb[1], hsb[2]+(1.0f-hsb[2])*brighten));
     }
 
-    public String getMessage () {
-        return message;
+    private int[] decode(int rgb) {
+        return new int[]{(rgb & 0x00ff0000) >> 16, (rgb & 0x0000ff00) >> 8, rgb & 0x000000ff};
+    }
+    private int encode(int[] rgb) {
+        return (toBoundaries(rgb[0]) << 16) | (toBoundaries(rgb[1]) << 8) | toBoundaries(rgb[2]);
     }
 
-    public boolean isApplied () {
-        return applied;
-    }
-
-    public Queue getQueue () {
-        return queue;
+    private int toBoundaries(int color) {
+        return Math.max(0,Math.min(255,color));
     }
 
 }
