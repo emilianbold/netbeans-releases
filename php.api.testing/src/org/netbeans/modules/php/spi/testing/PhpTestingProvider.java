@@ -129,6 +129,7 @@ public abstract class PhpTestingProvider {
      */
     public abstract boolean isTestFile(@NonNull PhpModule phpModule, FileObject fileObj);
 
+    @CheckForNull
     public abstract TestSession runTests(@NonNull PhpModule phpModule, TestRunInfo runInfo) throws TestRunException;
 
     public abstract TestLocator getTestLocator(@NonNull PhpModule phpModule);

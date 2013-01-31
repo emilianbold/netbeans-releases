@@ -68,6 +68,7 @@ public final class TestRunInfo {
     private final FileObject workingDirectory;
     private final FileObject startFile;
     private final String testName;
+    private final boolean coverageEnabled;
     private final List<TestInfo> customTests = new CopyOnWriteArrayList<TestInfo>();
     private final Map<String, Object> parameters = new ConcurrentHashMap<String, Object>();
 
@@ -80,7 +81,7 @@ public final class TestRunInfo {
      * @param startFile start file (can be directory)
      * @param testName test name, can be {@code null}
      */
-    private TestRunInfo(SessionType sessionType, FileObject workingDirectory, FileObject startFile, String testName) {
+    private TestRunInfo(SessionType sessionType, FileObject workingDirectory, FileObject startFile, String testName, boolean coverageEnabled) {
         Parameters.notNull("workingDirectory", workingDirectory); // NOI18N
         Parameters.notNull("startFile", startFile); // NOI18N
 
@@ -88,14 +89,15 @@ public final class TestRunInfo {
         this.workingDirectory = workingDirectory;
         this.startFile = startFile;
         this.testName = testName;
+        this.coverageEnabled = coverageEnabled;
     }
 
-    public static TestRunInfo test(FileObject workingDirectory, FileObject startFile, @NullAllowed String testName) {
-        return new TestRunInfo(SessionType.TEST, workingDirectory, startFile, testName);
+    public static TestRunInfo test(FileObject workingDirectory, FileObject startFile, @NullAllowed String testName, boolean coverageEnabled) {
+        return new TestRunInfo(SessionType.TEST, workingDirectory, startFile, testName, coverageEnabled);
     }
 
-    public static TestRunInfo debug(FileObject workingDirectory, FileObject startFile, @NullAllowed String testName) {
-        return new TestRunInfo(SessionType.DEBUG, workingDirectory, startFile, testName);
+    public static TestRunInfo debug(FileObject workingDirectory, FileObject startFile, @NullAllowed String testName, boolean coverageEnabled) {
+        return new TestRunInfo(SessionType.DEBUG, workingDirectory, startFile, testName, coverageEnabled);
     }
 
     public SessionType getSessionType() {
@@ -132,6 +134,14 @@ public final class TestRunInfo {
      */
     public FileObject getWorkingDirectory() {
         return workingDirectory;
+    }
+
+    /**
+     * Return {@code true} if code coverage should be collected (if supported).
+     * @return {@code true} if code coverage should be collected (if supported)
+     */
+    public boolean isCoverageEnabled() {
+        return coverageEnabled;
     }
 
     /**

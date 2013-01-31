@@ -53,6 +53,7 @@ import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.project.PhpActionProvider;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
+import org.netbeans.modules.php.project.ui.codecoverage.PhpCoverageProvider;
 import org.netbeans.modules.php.project.ui.testrunner.ControllableRerunHandler;
 import org.netbeans.modules.php.project.ui.testrunner.UnitTestRunner;
 import org.netbeans.modules.php.spi.testing.run.TestRunInfo;
@@ -69,6 +70,10 @@ class ConfigActionTest extends ConfigAction {
 
     protected ConfigActionTest(PhpProject project) {
         super(project);
+    }
+
+    private PhpCoverageProvider getCoverageProvider() {
+        return project.getLookup().lookup(PhpCoverageProvider.class);
     }
 
     protected FileObject getTestDirectory(boolean showCustomizer) {
@@ -162,9 +167,9 @@ class ConfigActionTest extends ConfigAction {
     @CheckForNull
     private TestRunInfo getProjectTestRunInfo(FileObject testDirectory, boolean debug) {
         if (debug) {
-            return TestRunInfo.debug(testDirectory, testDirectory, null);
+            return TestRunInfo.debug(testDirectory, testDirectory, null, getCoverageProvider().isEnabled());
         }
-        return TestRunInfo.test(testDirectory, testDirectory, null);
+        return TestRunInfo.test(testDirectory, testDirectory, null, getCoverageProvider().isEnabled());
     }
 
     @CheckForNull
@@ -187,9 +192,9 @@ class ConfigActionTest extends ConfigAction {
             name = fileObj.getName();
         }
         if (debug) {
-            return TestRunInfo.debug(workDir, fileObj, name);
+            return TestRunInfo.debug(workDir, fileObj, name, getCoverageProvider().isEnabled());
         }
-        return TestRunInfo.test(workDir, fileObj, name);
+        return TestRunInfo.test(workDir, fileObj, name, getCoverageProvider().isEnabled());
     }
 
     //~ Inner classes

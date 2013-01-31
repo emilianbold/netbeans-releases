@@ -46,4 +46,22 @@ package org.netbeans.modules.php.spi.testing.run;
  */
 public class TestRunException extends Exception {
 
+    private static final long serialVersionUID = -1547687321657L;
+
+
+    public TestRunException() {
+    }
+
+    public TestRunException(String message) {
+        super(message);
+    }
+
+    public TestRunException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
+    public TestRunException(Throwable cause) {
+        super(cause);
+    }
+
 }
