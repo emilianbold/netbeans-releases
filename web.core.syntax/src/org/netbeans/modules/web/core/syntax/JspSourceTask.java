@@ -58,6 +58,7 @@ import org.netbeans.api.jsp.lexer.JspTokenId;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
@@ -158,9 +159,9 @@ public final class JspSourceTask extends ParserResultTask<JspParserResult> {
 
 
         //create the embeddings
-        final Document doc = result.getSnapshot().getSource().getDocument(false);
+        final BaseDocument doc = (BaseDocument)result.getSnapshot().getSource().getDocument(false);
         if(doc != null) {
-            doc.render(new Runnable() {
+            doc.runAtomicAsUser(new Runnable() {
 
                 @Override
                 public void run() {
@@ -176,7 +177,7 @@ public final class JspSourceTask extends ParserResultTask<JspParserResult> {
                         return;
                     }
 
-                    TokenHierarchy<Document> th = TokenHierarchy.get(doc);
+                    TokenHierarchy<BaseDocument> th = TokenHierarchy.get(doc);
                     TokenSequence<JspTokenId> ts = th.tokenSequence(JspTokenId.language());
                     if(ts == null) {
                         return ;

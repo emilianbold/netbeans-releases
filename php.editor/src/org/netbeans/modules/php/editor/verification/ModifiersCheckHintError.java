@@ -70,7 +70,7 @@ import org.openide.util.NbBundle.Messages;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class ModifiersCheckHintError extends AbstractHintError {
+public class ModifiersCheckHintError extends HintError {
     private List<Hint> hints;
     private FileObject fileObject;
     private BaseDocument doc;
