@@ -211,4 +211,8 @@ public class HintsTest extends PHPHintsTestBase {
         checkSuggestion(new AddUseImportSuggestion(), "testIssue224940.php", "echo \"foo $whatever \\n^\";");
     }
 
+    public void testErrorControlOperatorHint() throws Exception {
+        checkHintsInStartEndFile(new ErrorControlOperatorHint(), "testErrorControlOperatorHint.php");
+    }
+
 }
