@@ -22,5 +22,7 @@ $dom = new DOMDocument();
 @$dom->loadHTMLFile("");
 @$dom->loadXML("");
 
+@mkdir(__DIR__);
+
 //END
 ?>
