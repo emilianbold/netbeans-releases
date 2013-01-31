@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.php.phpunit.preferences;
 
+import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.api.validation.ValidationResult;
 import org.openide.util.NbBundle;
@@ -52,6 +53,13 @@ public final class PhpUnitPreferencesValidator {
 
     public ValidationResult getResult() {
         return result;
+    }
+
+    public PhpUnitPreferencesValidator validate(PhpModule phpModule) {
+        validateBootstrap(PhpUnitPreferences.isBootstrapEnabled(phpModule), PhpUnitPreferences.getBootstrapPath(phpModule));
+        validateConfiguration(PhpUnitPreferences.isConfigurationEnabled(phpModule), PhpUnitPreferences.getConfigurationPath(phpModule));
+        validatePhpUnit(PhpUnitPreferences.isPhpUnitEnabled(phpModule), PhpUnitPreferences.getPhpUnitPath(phpModule));
+        return this;
     }
 
     @NbBundle.Messages("PhpUnitPreferencesValidator.bootstrap.label=Bootstrap")
