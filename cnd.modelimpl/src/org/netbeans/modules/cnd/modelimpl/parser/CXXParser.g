@@ -221,19 +221,24 @@ translation_unit:
 statement
 @init                                                                           {if(state.backtracking == 0){action.statement(input.LT(1));}}
     :
-        labeled_statement
-    |
-        expression_or_declaration_statement
-    |
-        compound_statement[false]
-    |
-        selection_statement
-    |
-        iteration_statement
-    |
-        jump_statement
-    |
-        try_block
+        // In standard there is no attribute_specifiers rule before declaration_statement
+        // It's added here to avoid additional predicates
+        attribute_specifiers?
+        (
+            labeled_statement
+        |
+            expression_or_declaration_statement
+        |
+            compound_statement[false]
+        |
+            selection_statement
+        |
+            iteration_statement
+        |
+            jump_statement
+        |
+            try_block
+        )
     ;
 finally                                                                         {if(state.backtracking == 0){action.end_statement(input.LT(0));}}
 
@@ -306,7 +311,7 @@ scope Declaration;
 @init { init_declaration(CTX, blockscope_decl); }
     :                                                                           {action.condition(input.LT(1));}
     (
-        (type_specifier+ declarator EQUAL)=>
+        (attribute_specifiers? type_specifier+ declarator EQUAL)=>
             condition_declaration
     |
         condition_expression
@@ -316,6 +321,7 @@ scope Declaration;
 condition_declaration
 @init                                                                           {if(state.backtracking == 0){action.condition_declaration(input.LT(1));}}
     :
+        attribute_specifiers?
         type_specifier+ declarator 
         EQUAL                                                                   {action.condition(action.CONDITION__EQUAL, input.LT(0));}
         assignment_expression
@@ -378,7 +384,7 @@ for_init_statement
 
 for_range_declaration:
                                                                                 {action.for_range_declaration(input.LT(1));}
-    type_specifier+ declarator                                                  {action.end_for_range_declaration(input.LT(0));}
+    attribute_specifiers? type_specifier+ declarator                            {action.end_for_range_declaration(input.LT(0));}
     ;
 
 for_range_initializer
@@ -660,7 +666,7 @@ static_assert_declaration:
     ;
 
 attribute_declaration:
-        LITERAL_attribute
+        attribute_specifiers SEMICOLON
     ;
 
 decl_specifier
@@ -736,7 +742,7 @@ type_specifier returns [type_specifier_t ts]
             class_specifier
     |
         // enum_specifier start sequence is simple
-        (LITERAL_enum IDENT? LCURLY)=>
+        (LITERAL_enum attribute_specifiers? IDENT? LCURLY)=>
             enum_specifier
     |
         trailing_type_specifier
@@ -849,7 +855,7 @@ elaborated_type_specifier
 @init                                                                           {if(state.backtracking == 0){action.elaborated_type_specifier(input.LT(1));}}
     :                                                                           //{action.elaborated_type_specifier(input.LT(1));}
     (
-        class_key SCOPE?         
+        class_key attribute_specifiers? SCOPE?         
         (
             (IDENT SCOPE) =>
                 nested_name_specifier (simple_template_id_or_IDENT | LITERAL_template simple_template_id_nocheck)
@@ -903,7 +909,7 @@ enum_specifier:
         )
     ;
 enum_head:
-    enum_key 
+    enum_key attribute_specifiers?
     (
         nested_name_specifier IDENT                                             {action.enum_name(input.LT(0));}
     |
@@ -1065,6 +1071,66 @@ linkage_specification [decl_kind kind]:
         )                                                                       {action.end_linkage_specification(input.LT(0));}
     ;
 
+attribute_specifiers:
+        attribute_specifier+
+    ;
+
+attribute_specifier:
+        LSQUARE LSQUARE attribute_list RSQUARE RSQUARE
+    |
+        aligment_specifier
+    ;
+
+aligment_specifier:
+        LITERAL_alignas LPAREN
+        (
+            (type_id)=> type_id
+        |
+            assignment_expression
+        )
+        ELLIPSIS? RPAREN
+    ;
+
+attribute_list:
+        (attribute ELLIPSIS? (COLON (attribute ELLIPSIS?)?)?)?
+    ;
+
+attribute:
+        attribute_token attribute_argument_clouse?
+    ;
+
+attribute_token:
+        IDENT
+    |
+        attribute_scoped_token
+    ;
+
+attribute_scoped_token:
+        attribute_namespace SCOPE IDENT
+    ;
+
+attribute_namespace:
+        IDENT
+    ;
+
+attribute_argument_clouse:
+        LPAREN balanced_tokens RPAREN
+    ;
+
+balanced_tokens:
+        balanced_token+
+    ;
+
+balanced_token:
+        LPAREN balanced_tokens RPAREN
+    |
+        LSQUARE balanced_tokens RSQUARE
+    |
+        LCURLY balanced_tokens RCURLY
+    |
+        ~(RCURLY | LCURLY | LSQUARE | RSQUARE | LPAREN | RPAREN)
+    ;
+
 init_declarator_list
         :                                                                       {action.init_declarator_list(input.LT(1));}
         init_declarator
@@ -1133,7 +1199,7 @@ declarator returns [declarator_type_t type]
 noptr_declarator returns [declarator_type_t type]
     :                                                                           {action.noptr_declarator(input.LT(1));}
         (
-            declarator_id
+            declarator_id attribute_specifiers?
 //                {{ type = $declarator_id.type; }}
         |
             LPAREN                                                              {action.noptr_declarator(action.NOPTR_DECLARATOR__LPAREN, input.LT(0));}
@@ -1148,6 +1214,7 @@ noptr_declarator returns [declarator_type_t type]
             LSQUARE                                                             {action.noptr_declarator(action.NOPTR_DECLARATOR__LSQUARE, input.LT(0));}
             constant_expression? 
             RSQUARE                                                             {action.noptr_declarator(action.NOPTR_DECLARATOR__RSQUARE, input.LT(0));}
+            attribute_specifiers?
 //                {{ type.apply_array($constant_expression.expr); }}
         )*
         trailing_return_type?                                                   {action.end_noptr_declarator(input.LT(0));}
@@ -1362,6 +1429,7 @@ parameters_and_qualifiers returns [ parameters_and_qualifiers_t pq ]
         LPAREN                                                                  {action.parameters_and_qualifiers(action.PARAMETERS_AND_QUALIFIERS__LPAREN, input.LT(0));}
         parameter_declaration_clause 
         RPAREN                                                                  {action.parameters_and_qualifiers(action.PARAMETERS_AND_QUALIFIERS__RPAREN, input.LT(0));}
+        attribute_specifiers?
         cv_qualifier* 
         ref_qualifier? 
         exception_specification?                                                {action.end_parameters_and_qualifiers(input.LT(0));}
@@ -1396,6 +1464,7 @@ parameter_declaration [decl_kind kind]
 scope Declaration;
 @init { init_declaration(CTX, kind); }
     :                                                                           {action.parameter_declaration(input.LT(1));}
+        attribute_specifiers?
         decl_specifier
         decl_specifier*
         universal_declarator? 
@@ -1553,6 +1622,7 @@ optionally_qualified_name
 class_head
     :                                                                           {action.class_head(input.LT(1));}
         class_key 
+        attribute_specifiers?
         optionally_qualified_name? 
         class_virtual_specifier* 
         base_clause?                                                            {action.end_class_head(input.LT(0));}
@@ -1614,7 +1684,7 @@ member_declarator:
 member_declaration [decl_kind kind, boolean class_late_binding_lookup]
 @init                                                                           {if(state.backtracking == 0){action.member_declaration(input.LT(1));}}
     :
-        simple_member_declaration_or_function_definition[kind, class_late_binding_lookup]
+        attribute_specifiers? simple_member_declaration_or_function_definition[kind, class_late_binding_lookup]
     |
         /* this is likely to be covered by decl_specifier/declarator part of member_declarator
             SCOPE? nested_name_specifier LITERAL_template? unqualified_id SEMICOLON
@@ -1742,11 +1812,14 @@ base_specifier_list
         )*                                                                      {action.end_base_specifier_list(input.LT(0));}
     ;
 base_specifier:
+    attribute_specifiers?
+    (
         base_type_specifier
     |
         LITERAL_virtual access_specifier? base_type_specifier
     |
         access_specifier LITERAL_virtual? base_type_specifier
+    )
     ;
 class_or_decltype
     :                                                                           {action.class_or_decltype(input.LT(1));}
@@ -2071,7 +2144,7 @@ exception_declaration
 scope Declaration;
 @init { init_declaration(CTX, blockscope_decl); }
     :
-        type_specifier+ universal_declarator?
+        attribute_specifiers? type_specifier+ universal_declarator?
     |
         ELLIPSIS
     ;
