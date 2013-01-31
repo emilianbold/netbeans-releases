@@ -120,8 +120,8 @@ public final class PhpUnit {
     private static final String CONFIGURATION_FILENAME = "configuration%s.xml"; // NOI18N
 
     // output files
-    private static final File XML_LOG;
-    private static final File COVERAGE_LOG;
+    public static final File XML_LOG;
+    public static final File COVERAGE_LOG;
 
     // suite file
     private static final String SUITE_NAME = "NetBeansSuite"; // NOI18N

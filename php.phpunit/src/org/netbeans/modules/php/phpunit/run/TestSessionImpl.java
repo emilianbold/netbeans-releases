@@ -42,31 +42,37 @@
 
 package org.netbeans.modules.php.phpunit.run;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.modules.gsf.testrunner.api.Status;
-import org.netbeans.modules.php.api.util.StringUtils;
-import org.netbeans.modules.php.spi.testing.run.TestCase;
+import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.api.extexecution.input.LineProcessors;
+import org.netbeans.api.extexecution.print.LineConvertor;
+import org.netbeans.api.extexecution.print.LineConvertors;
+import org.netbeans.modules.php.phpunit.commands.PhpUnit;
+import org.netbeans.modules.php.spi.testing.run.OutputLineHandler;
 import org.netbeans.modules.php.spi.testing.run.TestSession;
 import org.netbeans.modules.php.spi.testing.run.TestSuite;
 import org.openide.util.NbBundle;
+import org.openide.windows.OutputWriter;
 
-/**
- * Value objects for unit test session.
- * <p>
- * All times are in milliseconds.
- * @author Tomas Mysik
- */
 public final class TestSessionImpl implements TestSession {
+
     private final List<TestSuite> testSuites = new ArrayList<TestSuite>();
+    private final String customSuitePath;
+
     private long time = -1;
     private int tests = -1;
+
+
+    public TestSessionImpl(@NullAllowed String customSuitePath) {
+        this.customSuitePath = customSuitePath;
+    }
 
     public void addTestSuite(TestSuite testSuite) {
         testSuites.add(testSuite);
     }
 
+    @Override
     public List<TestSuite> getTestSuites() {
         return testSuites;
     }
@@ -93,13 +99,10 @@ public final class TestSessionImpl implements TestSession {
     })
     @Override
     public String getInitMessage() {
-        if (info.allTests()) {
-            // custom suite?
-            File customSuite = PhpUnit.getCustomSuite(project);
-            if (customSuite != null) {
-                return Bundle.TestSessionImpl_msg_customSuite(customSuite.getAbsolutePath());
-            }
+        if (customSuitePath != null) {
+            return Bundle.TestSessionImpl_msg_customSuite(customSuitePath);
         }
+        return null;
     }
 
     @NbBundle.Messages("TestSessionImpl.msg.output=Full output can be found in Output window.")
@@ -111,6 +114,24 @@ public final class TestSessionImpl implements TestSession {
     @Override
     public String toString() {
         return String.format("TestSessionImpl{time: %d, tests: %d, suites: %d}", time, tests, testSuites.size());
+    }
+
+    @Override
+    public OutputLineHandler getOutputLineHandler() {
+        return new PhpOutputLineHandler();
+    }
+
+    //~ Inner classes
+
+    private static final class PhpOutputLineHandler implements OutputLineHandler {
+
+        private static final LineConvertor CONVERTOR = LineConvertors.filePattern(null, PhpUnit.LINE_PATTERN, null, 1, 2);
+
+
+        @Override
+        public void handleLine(OutputWriter out, String text) {
+            LineProcessors.printing(out, CONVERTOR, true).processLine(text);
+        }
     }
 
 }

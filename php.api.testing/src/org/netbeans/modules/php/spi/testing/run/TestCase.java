@@ -43,6 +43,7 @@ package org.netbeans.modules.php.spi.testing.run;
 
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.php.api.util.StringUtils;
+import org.netbeans.modules.php.spi.testing.locate.Locations;
 
 /**
  *
@@ -65,7 +66,7 @@ public interface TestCase {
     @CheckForNull
     String getClassName();
     @CheckForNull
-    String getLocation();
+    Locations.Line getLocation();
     // in ms
     long getTime();
     String[] getStacktrace();

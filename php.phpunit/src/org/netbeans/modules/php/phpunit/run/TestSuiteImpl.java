@@ -39,23 +39,74 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.spi.testing.run;
+package org.netbeans.modules.php.phpunit.run;
 
+import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.modules.php.spi.testing.run.TestCase;
+import org.netbeans.modules.php.spi.testing.run.TestSuite;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
-/**
- *
- */
-public interface TestSuite {
+public final class TestSuiteImpl implements TestSuite {
 
-    String getName();
-    @CheckForNull
-    FileObject getLocation();
-    // in ms
-    long getTime();
+    private final List<TestCase> testCases = new ArrayList<TestCase>();
+    private final String name;
+    private final String file;
+    private final long time;
 
-    List<TestCase> getTestCases();
+
+    public TestSuiteImpl(String name, String file, long time) {
+        assert name != null;
+        assert file != null;
+        this.name = name;
+        this.file = file;
+        this.time = time;
+    }
+
+    void addTestCase(TestCase testCase) {
+        testCases.add(testCase);
+    }
+
+    @Override
+    public String getName() {
+        return name;
+    }
+
+    @Override
+    public FileObject getLocation() {
+        if (file == null) {
+            return null;
+        }
+        File f = new File(file);
+        if (!f.isFile()) {
+            return null;
+        }
+        return FileUtil.toFileObject(f);
+    }
+
+    @Override
+    public List<TestCase> getTestCases() {
+        checkTestCases();
+        return testCases;
+    }
+
+    @Override
+    public long getTime() {
+        return time;
+    }
+
+    private void checkTestCases() {
+        if (!testCases.isEmpty()) {
+            return;
+        }
+        testCases.add(TestCaseImpl.skippedTestCase());
+    }
+
+    @Override
+    public String toString() {
+        return String.format("TestSuiteImpl{name: %s, file: %s, time: %d, cases: %d}", name, file, time, testCases.size());
+    }
 
 }
