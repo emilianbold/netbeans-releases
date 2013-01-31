@@ -14,6 +14,15 @@
                         <specification-version>1.43</specification-version>
                     </run-dependency>
                 </dependency>
+		<dependency>
+                    <code-name-base>org.netbeans.api.annotations.common</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.15</specification-version>
+                    </run-dependency>
+                </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.api.java.classpath</code-name-base>
                     <build-prerequisite/>
@@ -67,6 +76,24 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.java.lexer</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.21</specification-version>
+                    </run-dependency>
+                </dependency>
+		<dependency>
+                    <code-name-base>org.netbeans.modules.parsing.api</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.56</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.java.project</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -81,6 +108,15 @@
                     <compile-dependency/>
                     <run-dependency>
                         <specification-version>0.109</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.lexer</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>2</release-version>
+                        <specification-version>1.49</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -99,6 +135,15 @@
                     <run-dependency>
                         <release-version>1</release-version>
                         <specification-version>1.65</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.spi.editor.hints</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>0-1</release-version>
+                        <specification-version>1.28</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -123,6 +168,14 @@
                     <compile-dependency/>
                     <run-dependency>
                         <specification-version>8.5</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.openide.text</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>6.54</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
