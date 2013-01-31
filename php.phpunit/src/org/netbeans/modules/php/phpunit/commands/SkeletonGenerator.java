@@ -46,6 +46,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.modules.php.api.executable.InvalidPhpExecutableException;
@@ -53,10 +55,10 @@ import org.netbeans.modules.php.api.executable.PhpExecutable;
 import org.netbeans.modules.php.api.executable.PhpExecutableValidator;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.util.FileUtils;
-import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.phpunit.options.PhpUnitOptions;
 import org.netbeans.modules.php.phpunit.preferences.PhpUnitPreferences;
 import org.netbeans.modules.php.phpunit.ui.options.PhpUnitOptionsPanelController;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
@@ -67,6 +69,8 @@ import org.openide.util.NbBundle;
  * Represents <tt>phpunit-skelgen</tt> command line tool.
  */
 public final class SkeletonGenerator {
+
+    private static final Logger LOGGER = Logger.getLogger(SkeletonGenerator.class.getName());
 
     public static final String SCRIPT_NAME = "phpunit-skelgen"; // NOI18N
     public static final String SCRIPT_NAME_LONG = SCRIPT_NAME + FileUtils.getScriptExtension(true);
@@ -108,14 +112,19 @@ public final class SkeletonGenerator {
         "# {0} - file name",
         "SkeletonGenerator.test.generating=Creating test file for {0}"
     })
-    public File generateTest(PhpModule phpModule, String sourceClassName, File sourceClassFile, String testClassName, File testClassFile) {
-        if (testClassFile.isFile()) {
-            // file already exists
-            return testClassFile;
+    public FileObject generateTest(PhpModule phpModule, FileObject sourceClassFile, String sourceClassName) throws ExecutionException {
+        String relativePath = PropertyUtils.relativizeFile(FileUtil.toFile(phpModule.getSourceDirectory()), FileUtil.toFile(sourceClassFile));
+        assert relativePath != null;
+        assert !relativePath.startsWith("../") : "Unexpected relative path: " + relativePath + " for " + phpModule.getSourceDirectory() + " and " + sourceClassFile;
+        File testFile = PropertyUtils.resolveFile(FileUtil.toFile(phpModule.getTestDirectory()), relativePath);
+        FileObject testFo = FileUtil.toFileObject(testFile);
+        if (testFo != null && testFo.isValid()) {
+            return testFo;
         }
-        if (!ensureTestFolderExists(testClassFile)) {
+        if (!ensureTestFolderExists(testFile)) {
             return null;
         }
+        String testClassName = PhpUnit.makeTestClass(sourceClassName);
         List<String> params = new ArrayList<String>();
         if (PhpUnitPreferences.isBootstrapEnabled(phpModule)
                 && PhpUnitPreferences.isBootstrapForCreateTests(phpModule)) {
@@ -125,11 +134,11 @@ public final class SkeletonGenerator {
         params.add(TEST_PARAM);
         params.add(SEPARATOR_PARAM);
         params.add(sanitizeClassName(sourceClassName));
-        params.add(sourceClassFile.getAbsolutePath());
+        params.add(FileUtil.toFile(sourceClassFile).getAbsolutePath());
         params.add(sanitizeClassName(testClassName));
-        params.add(testClassFile.getAbsolutePath());
+        params.add(testFile.getAbsolutePath());
 
-        PhpExecutable skelGen = getExecutable(phpModule, Bundle.SkeletonGenerator_test_generating(sourceClassFile.getName()), params);
+        PhpExecutable skelGen = getExecutable(phpModule, Bundle.SkeletonGenerator_test_generating(sourceClassFile.getNameExt()), params);
         if (skelGen == null) {
             return null;
         }
@@ -138,13 +147,14 @@ public final class SkeletonGenerator {
             if (status != null
                     && status == 0) {
                 // refresh fs
-                FileUtil.refreshFor(testClassFile.getParentFile());
-                return testClassFile;
+                FileUtil.refreshFor(testFile.getParentFile());
+                testFo = FileUtil.toFileObject(testFile);
+                assert testFo != null : "FileObject must be found for " + testFile;
+                return testFo;
             }
         } catch (CancellationException ex) {
             // canceled
-        } catch (ExecutionException ex) {
-            UiUtils.processExecutionException(ex, PhpUnitOptionsPanelController.OPTIONS_SUB_PATH);
+            LOGGER.log(Level.FINE, "Test creating cancelled", ex);
         }
         return null;
     }
