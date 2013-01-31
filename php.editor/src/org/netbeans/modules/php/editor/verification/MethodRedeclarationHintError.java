@@ -64,7 +64,7 @@ import org.openide.util.NbBundle.Messages;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class MethodRedeclarationHintError extends AbstractHintError {
+public class MethodRedeclarationHintError extends HintError {
 
     private FileObject fileObject;
     private List<Hint> hints;
