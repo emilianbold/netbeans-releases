@@ -50,7 +50,7 @@ import org.netbeans.modules.csl.api.Hint;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public abstract class AbstractHintError extends AbstractError {
+public abstract class HintError extends AbstractError {
 
     abstract void compute(PHPRuleContext context, List<Hint> hints);
 
