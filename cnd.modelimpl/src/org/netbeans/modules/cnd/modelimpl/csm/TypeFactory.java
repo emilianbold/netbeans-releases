@@ -257,8 +257,9 @@ public class TypeFactory {
                         StringBuilder sb = new StringBuilder();
                         for( AST namePart = tokFirstId; namePart != null; namePart = namePart.getNextSibling() ) {
                             if( templateDepth == 0 && namePart.getType() == CPPTokenTypes.IDENT ) {
-                                sb.append(namePart.getText());
-                                l.add(NameCache.getManager().getString(AstUtil.getText(namePart)));
+                                CharSequence text = AstUtil.getText(namePart);
+                                sb.append(text);
+                                l.add(NameCache.getManager().getString(text));
                                 //l.add(namePart.getText());
                             } else if( namePart.getType() == CPPTokenTypes.LESSTHAN ) {
                                 // the beginning of template parameters
@@ -283,7 +284,7 @@ public class TypeFactory {
                                     } else {
                                         if (TraceFlags.DEBUG) {
                                             StringBuilder tokenText = new StringBuilder();
-                                            tokenText.append('[').append(namePart.getText());
+                                            tokenText.append('[').append(AstUtil.getText(namePart));
                                             if (namePart.getNumberOfChildren() == 0) {
                                                 tokenText.append(", line=").append(namePart.getLine()); // NOI18N
                                                 tokenText.append(", column=").append(namePart.getColumn()); // NOI18N

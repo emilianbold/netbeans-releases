@@ -65,6 +65,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableBase;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.ExpressionStatementImpl;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.openide.util.CharSequences;
 
 /**
@@ -118,7 +119,7 @@ public class TemplateUtils {
                     paramsNumber++;
                 }
             } else if (child != null && child.getType() == CPPTokenTypes.LITERAL_template) {
-                sb.append(child.getText());
+                sb.append(AstUtil.getText(child));
                 sb.append('<');
                 AST grandChild = child.getFirstChild();
                 if (grandChild != null) {
