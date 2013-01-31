@@ -196,16 +196,20 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
     }
     
     public void addOccurrence(OffsetRange offsetRange) {
-        boolean isThere = false;
-        for (Occurrence occurrence : occurrences) {
-            if (occurrence.getOffsetRange().equals(offsetRange)) {
-                isThere = true;
-                break;
-            }
-        }
-        if (!isThere) {
-            occurrences.add(new OccurrenceImpl(offsetRange, this));
-        }
+//        boolean isThere = false;
+//        for (Occurrence occurrence : occurrences) {
+//            if (occurrence.getOffsetRange().equals(offsetRange)) {
+//                isThere = true;
+//                break;
+//            }
+//        }
+//        if (!isThere) {
+//            occurrences.add(new OccurrenceImpl(offsetRange, this));
+//        }
+         OccurrenceImpl occurrence = new OccurrenceImpl(offsetRange, this);
+         if (!occurrences.contains(occurrence)) {
+            occurrences.add(occurrence);
+         }
     }
     
     public void addAssignment(Collection<TypeUsage> typeNames, int offset){
