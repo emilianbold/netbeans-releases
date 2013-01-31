@@ -44,6 +44,7 @@ package org.netbeans.modules.java.hints.jdk.mapreduce;
 import com.sun.source.tree.EnhancedForLoopTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
+import javax.lang.model.SourceVersion;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
@@ -61,9 +62,14 @@ import org.openide.util.NbBundle.Messages;
 })
 public class ForLoopToFunctionalHint {
 
+    static boolean DISABLE_CHECK_FOR_STREAM = false;
+    
     @TriggerTreeKind(Tree.Kind.ENHANCED_FOR_LOOP)
     @Messages("ERR_ForLoopToFunctionalHint=Can use functional operations")
     public static ErrorDescription computeWarning(HintContext ctx) {
+        if (ctx.getInfo().getSourceVersion().compareTo(SourceVersion.RELEASE_8) < 0) return null;
+        if (ctx.getInfo().getElements().getTypeElement("java.util.stream.Streams") == null && !DISABLE_CHECK_FOR_STREAM) return null;
+        
         PreconditionsChecker pc = new PreconditionsChecker(ctx.getPath().getLeaf(), ctx.getInfo());
         if (pc.isSafeToRefactor()) {
             Fix fix = new FixImpl(ctx.getInfo(), ctx.getPath(), null).toEditorFix();

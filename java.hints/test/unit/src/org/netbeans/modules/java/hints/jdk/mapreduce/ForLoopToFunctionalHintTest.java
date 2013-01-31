@@ -96,6 +96,30 @@ public class ForLoopToFunctionalHintTest extends NbTestCase {
                 + "    }\n"
                 + "}");
     }
+    
+    public void testDisableWhenNot8() throws Exception {
+        HintTest.create()
+                .input("package testdemo;\n"
+                + "\n"
+                + "import java.util.Arrays;\n"
+                + "import java.util.List;\n"
+                + "\n"
+                + "class TestDemo {\n"
+                + "\n"
+                + "    public static void main(String[] args) {\n"
+                + "        new TestDemo().test(Arrays.asList(1, 2, 3));\n"
+                + "    }\n"
+                + "\n"
+                + "    public void test(List<Integer> ls) {        \n"
+                + "        for (Integer l : ls) \n"
+                + "            System.out.println(l);\n"
+                + "        \n"
+                + "    }\n"
+                + "}")
+                .sourceLevel("1.7")
+                .run(ForLoopToFunctionalHint.class)
+                .assertWarnings();
+    }
 
     public void testChainingMapForEachcConvert() throws Exception {
         HintTest.create()
@@ -1169,5 +1193,10 @@ public class ForLoopToFunctionalHintTest extends NbTestCase {
                 .sourceLevel("1.8")
                 .run(ForLoopToFunctionalHint.class)
                 .assertWarnings();
+    }
+    
+    {
+        //to ensure the tests can run against JDK7:
+        ForLoopToFunctionalHint.DISABLE_CHECK_FOR_STREAM = true;
     }
 }
