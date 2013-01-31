@@ -42,33 +42,25 @@
 
 package org.netbeans.modules.php.project.ui.actions.tests;
 
-import java.io.File;
 import java.io.IOException;
-import java.util.Collection;
-import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.php.api.editor.EditorSupport;
-import org.netbeans.modules.php.api.editor.PhpClass;
+import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.util.FileUtils;
-import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.PhpProjectValidator;
-import org.netbeans.modules.php.project.PhpVisibilityQuery;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
-import org.netbeans.modules.php.project.phpunit.PhpUnit;
-import org.netbeans.modules.php.project.phpunit.PhpUnit.ConfigFiles;
-import org.netbeans.modules.php.project.phpunit.PhpUnitSkelGen;
 import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
 import org.netbeans.modules.php.project.util.PhpProjectUtils;
+import org.netbeans.modules.php.spi.testing.CreateTestsResult;
+import org.netbeans.modules.php.spi.testing.PhpTestingProvider;
 import org.openide.DialogDisplayer;
 import org.openide.LifecycleManager;
 import org.openide.NotifyDescriptor;
@@ -76,7 +68,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.actions.NodeAction;
@@ -91,7 +82,7 @@ public final class CreateTestsAction extends NodeAction {
 
     private static final Logger LOGGER = Logger.getLogger(CreateTestsAction.class.getName());
 
-    private static final RequestProcessor RP = new RequestProcessor("Generate PHP Unit tests", 1); // NOI18N
+    private static final RequestProcessor RP = new RequestProcessor("Generate PHP unit tests", 1); // NOI18N
     static final Queue<Runnable> RUNNABLES = new ConcurrentLinkedQueue<Runnable>();
     private static final RequestProcessor.Task TASK = RP.create(new Runnable() {
         @Override
@@ -123,17 +114,10 @@ public final class CreateTestsAction extends NodeAction {
         final PhpProject phpProject = PhpProjectUtils.getPhpProject(activatedNodes[0]);
         assert phpProject != null : "PHP project must be found for " + activatedNodes[0];
 
-        // programs available?
-        PhpUnitSkelGen skelGen = CommandUtils.getPhpUnitSkelGen(false);
-        PhpUnit phpUnit = CommandUtils.getPhpUnit(phpProject, false);
-        if (skelGen == null && phpUnit == null) {
-            // prefer skelGen, show customizer
-            CommandUtils.getPhpUnitSkelGen(true);
-            return;
-        }
         if (ProjectPropertiesSupport.getTestDirectory(phpProject, true) == null) {
             return;
         }
+        // XXX check any testing provider is present
 
         RUNNABLES.add(new Runnable() {
             @Override
@@ -208,80 +192,18 @@ public final class CreateTestsAction extends NodeAction {
         final List<FileObject> files = CommandUtils.getFileObjects(activatedNodes);
         assert !files.isEmpty() : "No files for tests?!";
 
-        final Set<FileObject> proceeded = new HashSet<FileObject>();
+        final Set<FileObject> succeeded = new HashSet<FileObject>();
         final Set<FileObject> failed = new HashSet<FileObject>();
-        final Set<File> toOpen = new HashSet<File>();
-        FileUtil.runAtomicAction(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    final PhpVisibilityQuery phpVisibilityQuery = PhpVisibilityQuery.forProject(phpProject);
-                    for (FileObject fo : files) {
-                        generateTest(phpProject, phpVisibilityQuery, fo, proceeded, failed, toOpen);
-                        Enumeration<? extends FileObject> children = fo.getChildren(true);
-                        while (children.hasMoreElements()) {
-                            generateTest(phpProject, phpVisibilityQuery, children.nextElement(), proceeded, failed, toOpen);
-                        }
-                    }
-                } catch (ExecutionException ex) {
-                    LOGGER.log(Level.INFO, null, ex);
-                    UiUtils.processExecutionException(ex);
-                }
-            }
-        });
-
+        PhpModule phpModule = phpProject.getPhpModule();
+        for (PhpTestingProvider testingProvider : phpProject.getTestingProviders()) {
+            CreateTestsResult result = testingProvider.createTests(phpModule, files);
+            succeeded.addAll(result.getSucceeded());
+            failed.addAll(result.getFailed());
+        }
         showFailures(failed);
-        reformat(toOpen);
-        open(toOpen);
+        reformat(succeeded);
+        open(succeeded);
         refreshTests(ProjectPropertiesSupport.getTestDirectory(phpProject, false));
-    }
-
-    private void generateTest(PhpProject phpProject, PhpVisibilityQuery phpVisibilityQuery, FileObject sourceFo,
-            Set<FileObject> proceeded, Set<FileObject> failed, Set<File> toOpen) throws ExecutionException {
-        if (sourceFo.isFolder()
-                || !FileUtils.isPhpFile(sourceFo)
-                || proceeded.contains(sourceFo)
-                || CommandUtils.isUnderTests(phpProject, sourceFo, false)
-                || CommandUtils.isUnderSelenium(phpProject, sourceFo, false)
-                || !PhpProjectUtils.isVisible(phpVisibilityQuery, sourceFo)) {
-            return;
-        }
-        proceeded.add(sourceFo);
-
-        final TestGenerator testGenerator = getTestGenerator(phpProject, sourceFo);
-
-        // find out the name of a class(es)
-        EditorSupport editorSupport = Lookup.getDefault().lookup(EditorSupport.class);
-        assert editorSupport != null : "Editor support must exist";
-        Collection<PhpClass> classes = editorSupport.getClasses(sourceFo);
-        if (classes.isEmpty()) {
-            failed.add(sourceFo);
-            return;
-        }
-        for (PhpClass phpClass : classes) {
-            File testFile = testGenerator.generateTest(phpClass);
-            if (testFile != null) {
-                toOpen.add(testFile);
-            } else {
-                // test not generated
-                failed.add(sourceFo);
-            }
-        }
-    }
-
-    private TestGenerator getTestGenerator(PhpProject phpProject, FileObject source) {
-        ConfigFiles configFiles = PhpUnit.getConfigFiles(phpProject, false);
-        PhpUnitSkelGen skelGen = CommandUtils.getPhpUnitSkelGen(false);
-        if (skelGen != null) {
-            // phpunit-skel-gen is preferred
-            LOGGER.log(Level.FINE, "Using phpunit-skel-gen for generating a test for {0}", source.getNameExt());
-            return new PhpUnitSkelGenTestGenerator(skelGen, phpProject, source, configFiles);
-        }
-        LOGGER.log(Level.FINE, "Using phpunit-skel-gen for generating a test for {0}", source.getNameExt());
-        PhpUnit phpUnit = CommandUtils.getPhpUnit(phpProject, false);
-        File parent = FileUtil.toFile(source.getParent());
-        File workingDirectory = phpUnit.getWorkingDirectory(configFiles, parent);
-        return new PhpUnitTestGenerator(phpUnit, phpProject, source, configFiles, workingDirectory);
     }
 
     private void showFailures(Set<FileObject> files) {
@@ -297,20 +219,20 @@ public final class CreateTestsAction extends NodeAction {
                 NbBundle.getMessage(CreateTestsAction.class, "MSG_TestNotGenerated", sb.toString()), NotifyDescriptor.WARNING_MESSAGE));
     }
 
-    private void reformat(Set<File> files) {
-        for (File file : files) {
+    private void reformat(Set<FileObject> files) {
+        for (FileObject file : files) {
             try {
-                PhpProjectUtils.reformatFile(file);
+                PhpProjectUtils.reformatFile(FileUtil.toFile(file));
             } catch (IOException ex) {
                 LOGGER.log(Level.INFO, "Cannot reformat file " + file, ex);
             }
         }
     }
 
-    private void open(Set<File> files) {
-        for (File file : files) {
-            assert file.isFile() : "File must be given to open: " + file;
-            PhpProjectUtils.openFile(file);
+    private void open(Set<FileObject> files) {
+        for (FileObject file : files) {
+            assert file.isData() : "File must be given to open: " + file;
+            PhpProjectUtils.openFile(FileUtil.toFile(file));
         }
     }
 
@@ -321,59 +243,6 @@ public final class CreateTestsAction extends NodeAction {
                 FileUtil.refreshFor(FileUtil.toFile(testDir));
             }
         });
-    }
-
-    //~ Inner classes
-
-    private interface TestGenerator {
-        File generateTest(PhpClass phpClass);
-    }
-
-    private static final class PhpUnitTestGenerator implements TestGenerator {
-
-        private final PhpUnit phpUnit;
-        private final PhpProject phpProject;
-        private final FileObject source;
-        private final ConfigFiles configFiles;
-        private final File workingDirectory;
-
-
-        public PhpUnitTestGenerator(PhpUnit phpUnit, PhpProject phpProject, FileObject source, ConfigFiles configFiles, File workingDirectory) {
-            this.phpUnit = phpUnit;
-            this.phpProject = phpProject;
-            this.source = source;
-            this.configFiles = configFiles;
-            this.workingDirectory = workingDirectory;
-        }
-
-        @Override
-        public File generateTest(PhpClass phpClass) {
-            return phpUnit.generateTest(phpProject, configFiles, phpClass, source, workingDirectory);
-        }
-
-    }
-
-    private static final class PhpUnitSkelGenTestGenerator implements TestGenerator {
-
-        private final PhpUnitSkelGen skelGen;
-        private final PhpProject phpProject;
-        private final FileObject source;
-        private final ConfigFiles configFiles;
-
-
-        public PhpUnitSkelGenTestGenerator(PhpUnitSkelGen skelGen, PhpProject phpProject, FileObject source, ConfigFiles configFiles) {
-            this.skelGen = skelGen;
-            this.phpProject = phpProject;
-            this.source = source;
-            this.configFiles = configFiles;
-        }
-
-        @Override
-        public File generateTest(PhpClass phpClass) {
-            return skelGen.generateTest(configFiles, phpClass.getFullyQualifiedName(), FileUtil.toFile(source),
-                    phpClass.getFullyQualifiedName() + PhpUnit.TEST_CLASS_SUFFIX, PhpUnit.getTestFile(phpProject, source, phpClass.getName()));
-        }
-
     }
 
 }

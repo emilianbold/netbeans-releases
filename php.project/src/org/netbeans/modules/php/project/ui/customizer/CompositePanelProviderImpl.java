@@ -71,7 +71,6 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
     public static final String PHP_INCLUDE_PATH = "PhpIncludePath"; // NOI18N
     public static final String IGNORE_PATH = "IgnorePath"; // NOI18N
     public static final String FRAMEWORKS = "Frameworks"; // NOI18N
-    public static final String PHP_UNIT = "PhpUnit"; // NOI18N
 
     private final String name;
     private final Map<ProjectCustomizer.Category, PhpModuleCustomizerExtender> frameworkCategories;
@@ -125,12 +124,6 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
                     NbBundle.getMessage(CustomizerProviderImpl.class, "LBL_Config_Frameworks"),
                     null,
                     subcategories.toArray(new ProjectCustomizer.Category[subcategories.size()]));
-        } else if (PHP_UNIT.equals(name)) {
-            toReturn = ProjectCustomizer.Category.create(
-                    PHP_UNIT,
-                    NbBundle.getMessage(CustomizerProviderImpl.class, "LBL_Config_PhpUnit"),
-                    null,
-                    categories);
         }
         assert toReturn != null : "No category for name: " + name;
         return toReturn;
@@ -150,8 +143,6 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
             return new CustomizerIgnorePath(category, uiProps);
         } else if (FRAMEWORKS.equals(nm)) {
             return new JPanel();
-        } else if (PHP_UNIT.equals(nm)) {
-            return new CustomizerPhpUnit(category, uiProps);
         }
         // possibly framework?
         if (frameworkCategories != null) {
@@ -202,14 +193,6 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
     )
     public static CompositePanelProviderImpl createFrameworks() {
         return new CompositePanelProviderImpl(FRAMEWORKS);
-    }
-
-    @ProjectCustomizer.CompositeCategoryProvider.Registration(
-        projectType = UiUtils.CUSTOMIZER_PATH,
-        position = 350
-    )
-    public static CompositePanelProviderImpl createPhpUnit() {
-        return new CompositePanelProviderImpl(PHP_UNIT);
     }
 
 //o.n.m.javascript.libraries     Projects/o-n-m-php-project/Customizer/o-n-m-javascript-libraries-ui-customizer-JSLibraryCustomizerProvider.instance @375

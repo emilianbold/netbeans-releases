@@ -43,28 +43,23 @@
 package org.netbeans.modules.php.project.ui.actions.tests;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Comparator;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.php.api.editor.EditorSupport;
-import org.netbeans.modules.php.api.editor.PhpClass;
+import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.util.FileUtils;
-import org.netbeans.modules.php.api.util.Pair;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.PhpProjectValidator;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
-import org.netbeans.modules.php.project.phpunit.PhpUnit;
 import org.netbeans.modules.php.project.ui.Utils;
 import org.netbeans.modules.php.project.util.PhpProjectUtils;
+import org.netbeans.modules.php.spi.testing.Locations;
+import org.netbeans.modules.php.spi.testing.PhpTestingProvider;
 import org.netbeans.spi.gototest.TestLocator;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -134,8 +129,11 @@ public class GoToTest implements TestLocator {
         }
 
         if (CommandUtils.isUnderTests(project, fo, false)) {
-            if (PhpUnit.isTestOrSuiteFile(fo.getNameExt())) {
-                return FileType.TEST;
+            PhpModule phpModule = project.getPhpModule();
+            for (PhpTestingProvider testingProvider : project.getTestingProviders()) {
+                if (testingProvider.isTestFile(phpModule, fo)) {
+                    return FileType.TEST;
+                }
             }
         } else if (CommandUtils.isUnderSources(project, fo)) {
             return FileType.TESTED;
@@ -156,60 +154,32 @@ public class GoToTest implements TestLocator {
         if (sourceRoot == null) {
             return null;
         }
-        EditorSupport editorSupport = Lookup.getDefault().lookup(EditorSupport.class);
-        assert editorSupport != null : "Editor support must exist";
-
-        Set<Pair<FileObject, Integer>> phpFiles = new TreeSet<Pair<FileObject, Integer>>(new Comparator<Pair<FileObject, Integer>>() {
-            @Override
-            public int compare(Pair<FileObject, Integer> o1, Pair<FileObject, Integer> o2) {
-                return o1.first.getPath().compareTo(o2.first.getPath());
-            }
-        });
-        for (PhpClass phpClass : editorSupport.getClasses(file)) {
-            //        name,   FQ name
-            List<Pair<String, String>> classes = new ArrayList<Pair<String, String>>();
+        Set<Locations.Offset> phpFiles = Collections.emptySet();
+        PhpModule phpModule = project.getPhpModule();
+        for (PhpTestingProvider testingProvider : project.getTestingProviders()) {
             if (searchTest) {
-                // FooTest
-                classes.add(Pair.of(PhpUnit.makeTestClass(phpClass.getName()), PhpUnit.makeTestClass(phpClass.getFullyQualifiedName())));
-                // FooSuite
-                classes.add(Pair.of(PhpUnit.makeSuiteClass(phpClass.getName()), PhpUnit.makeSuiteClass(phpClass.getFullyQualifiedName())));
+                phpFiles = testingProvider.findTests(phpModule, file);
             } else {
-                if (!PhpUnit.isTestOrSuiteClass(phpClass.getName())) {
-                    continue;
-                }
-                String fullyQualifiedName = phpClass.getFullyQualifiedName();
-                assert fullyQualifiedName != null : "No FQN for php class: " + phpClass.getName();
-                classes.add(Pair.of(PhpUnit.getTestedClass(phpClass.getName()), PhpUnit.getTestedClass(fullyQualifiedName)));
-            }
-
-            for (Pair<String, String> namePair : classes) {
-                Collection<Pair<FileObject, Integer>> files = editorSupport.filesForClass(sourceRoot, new PhpClass(namePair.first, namePair.second, -1));
-                for (Pair<FileObject, Integer> pair : files) {
-                    FileObject fileObject = pair.first;
-                    if (FileUtils.isPhpFile(fileObject)
-                            && FileUtil.isParentOf(sourceRoot, fileObject)) {
-                        phpFiles.add(pair);
-                    }
-                }
+                phpFiles = testingProvider.findSources(phpModule, file);
             }
         }
         if (phpFiles.isEmpty()) {
             return new LocationResult(NbBundle.getMessage(GoToTest.class, searchTest ? "MSG_TestNotFound" : "MSG_SrcNotFound", file.getNameExt()));
         }
         if (phpFiles.size() == 1) {
-            Pair<FileObject, Integer> source = phpFiles.iterator().next();
-            return new LocationResult(source.first, source.second);
+            Locations.Offset source = phpFiles.iterator().next();
+            return new LocationResult(source.getFile(), source.getOffset());
         }
         List<FileObject> files = new ArrayList<FileObject>(phpFiles.size());
-        for (Pair<FileObject, Integer> pair : phpFiles) {
-            files.add(pair.first);
+        for (Locations.Offset location : phpFiles) {
+            files.add(location.getFile());
         }
         FileObject selected = SelectFilePanel.open(sourceRoot, files);
         if (selected != null) {
             int offset = -1;
-            for (Pair<FileObject, Integer> pair : phpFiles) {
-                if (selected.equals(pair.first)) {
-                    offset = pair.second;
+            for (Locations.Offset location : phpFiles) {
+                if (selected.equals(location.getFile())) {
+                    offset = location.getOffset();
                     break;
                 }
             }

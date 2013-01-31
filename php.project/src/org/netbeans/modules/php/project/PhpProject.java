@@ -62,6 +62,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
@@ -76,6 +77,7 @@ import org.netbeans.api.search.provider.SearchInfoUtils;
 import org.netbeans.api.search.provider.SearchListener;
 import org.netbeans.modules.php.api.framework.PhpFrameworks;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
+import org.netbeans.modules.php.api.testing.PhpTesting;
 import org.netbeans.modules.php.project.api.PhpSeleniumProvider;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
 import org.netbeans.modules.php.project.classpath.BasePathSupport;
@@ -94,6 +96,7 @@ import org.netbeans.modules.php.project.ui.options.PhpOptions;
 import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.netbeans.modules.php.spi.framework.PhpFrameworkProvider;
 import org.netbeans.modules.php.spi.framework.PhpModuleIgnoredFilesExtender;
+import org.netbeans.modules.php.spi.testing.PhpTestingProvider;
 import org.netbeans.modules.web.common.spi.ProjectWebRootProvider;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.AntBasedProjectRegistration;
@@ -504,6 +507,27 @@ public final class PhpProject implements Project {
             // #209206 - also, likely some files are newly hidden/visible
             fireIgnoredFilesChange();
         }
+    }
+
+    // XXX performance, listener
+    public List<PhpTestingProvider> getTestingProviders() {
+        List<PhpTestingProvider> allProviders = PhpTesting.getTestingProviders();
+        List<PhpTestingProvider> projectProviders = new ArrayList<PhpTestingProvider>(allProviders.size());
+        PhpModule phpModule = getPhpModule();
+        for (PhpTestingProvider provider : allProviders) {
+            if (provider.isInPhpModule(phpModule)) {
+                projectProviders.add(provider);
+            }
+        }
+        return projectProviders;
+    }
+
+    @CheckForNull
+    public PhpTestingProvider getFirstTestingProvider() {
+        for (PhpTestingProvider testingProvider : getTestingProviders()) {
+            return testingProvider;
+        }
+        return null;
     }
 
     public String getName() {

@@ -51,6 +51,13 @@ import org.openide.nodes.Node;
 
 public class PhpTestRunnerNodeFactory extends TestRunnerNodeFactory {
 
+    private final JumpToCallStackAction.Callback callback;
+
+
+    public PhpTestRunnerNodeFactory(JumpToCallStackAction.Callback callback) {
+        this.callback = callback;
+    }
+
     @Override
     public Node createTestMethodNode(Testcase testcase, Project project) {
         return new TestMethodNode(testcase, project);
@@ -58,7 +65,7 @@ public class PhpTestRunnerNodeFactory extends TestRunnerNodeFactory {
 
     @Override
     public Node createCallstackFrameNode(String frameInfo, String displayName) {
-        return new PhpCallstackFrameNode(frameInfo, displayName);
+        return new PhpCallstackFrameNode(frameInfo, displayName, callback);
     }
 
     @Override

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,36 +37,18 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.php.project.ui.testrunner;
 
-package org.netbeans.modules.php.project.environment;
-
-import java.util.Collections;
-import java.util.List;
+import org.netbeans.modules.gsf.testrunner.api.RerunHandler;
 
 /**
- * Class for unknown PHP environment, that means unsupported OS.
- * @author Tomas Mysik
+ *
  */
-final class UnknownPhpEnvironment extends PhpEnvironment {
+public interface ControllableRerunHandler extends RerunHandler {
 
-    protected UnknownPhpEnvironment() {
-    }
-
-    @Override
-    protected List<DocumentRoot> getDocumentRoots(String projectName) {
-        return Collections.<DocumentRoot>emptyList();
-    }
-
-    @Override
-    public List<String> getAllPhpInterpreters() {
-        return Collections.<String>emptyList();
-    }
-
-    @Override
-    public String getAnyPhpInterpreter() {
-        return null;
-    }
+    void enable();
+    void disable();
 
 }
