@@ -42,80 +42,73 @@
 package org.netbeans.modules.php.phpunit.commands;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
-import org.netbeans.api.extexecution.ExternalProcessBuilder;
-import org.netbeans.modules.php.project.deprecated.PhpProgram;
+import org.netbeans.modules.php.api.executable.InvalidPhpExecutableException;
+import org.netbeans.modules.php.api.executable.PhpExecutable;
+import org.netbeans.modules.php.api.executable.PhpExecutableValidator;
+import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.api.util.UiUtils;
-import org.netbeans.modules.php.project.ui.options.PhpOptions;
+import org.netbeans.modules.php.phpunit.options.PhpUnitOptions;
+import org.netbeans.modules.php.phpunit.preferences.PhpUnitPreferences;
+import org.netbeans.modules.php.phpunit.ui.options.PhpUnitOptionsPanelController;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 /**
  * Represents <tt>phpunit-skelgen</tt> command line tool.
  */
-public final class PhpUnitSkelGen extends PhpProgram {
-
-    /**
-     * Get valid {@link PhpUnitSkelGen} instance (path from IDE options used) or {@code null}.
-     * @param showCustomizer if @code true}, IDE options dialog is shown if the path of PhpUnitSkelGen is not valid
-     * @return valid {@link PhpUnitSkelGen} instance or <code>null</code> if the path of PhpUnitSkelGen is not valid
-     */
-    public static PhpUnitSkelGen getPhpUnitSkelGen(boolean showCustomizer) {
-        try {
-            return PhpUnitSkelGen.getDefault();
-        } catch (InvalidPhpProgramException ex) {
-            if (showCustomizer) {
-                UiUtils.invalidScriptProvided(ex.getLocalizedMessage(), PhpUnit.OPTIONS_SUB_PATH);
-            }
-        }
-        return null;
-    }
-
+public final class SkeletonGenerator {
 
     public static final String SCRIPT_NAME = "phpunit-skelgen"; // NOI18N
     public static final String SCRIPT_NAME_LONG = SCRIPT_NAME + FileUtils.getScriptExtension(true);
 
+    // params
     private static final String BOOTSTRAP_PARAM = "--bootstrap"; // NOI18N
     private static final String TEST_PARAM = "--test"; // NOI18N
     private static final String SEPARATOR_PARAM = "--"; // NOI18N
 
+    private final String skelGenPath;
 
-    private PhpUnitSkelGen(String command) {
-        super(command);
+
+    private SkeletonGenerator(String skelGenPath) {
+        assert skelGenPath != null;
+        this.skelGenPath = skelGenPath;
     }
 
     /**
-     * Get the default, <b>valid only</b> PhpUnitSkelGen script.
-     * @return the default, <b>valid only</b> PhpUnitSkelGen script.
-     * @throws InvalidPhpProgramException if PhpUnitSkelGen script is not valid.
+     * Get the default, <b>valid only</b> SkeletonGenerator script.
+     * @return the default, <b>valid only</b> SkeletonGenerator script
+     * @throws InvalidPhpExecutableException if SkeletonGenerator script is not valid.
      */
-    public static PhpUnitSkelGen getDefault() throws InvalidPhpProgramException {
-        String script = PhpOptions.getInstance().getPhpUnitSkelGen();
+    public static SkeletonGenerator getDefault() throws InvalidPhpExecutableException {
+        String script = PhpUnitOptions.getInstance().getSkeletonGeneratorPath();
         String error = validate(script);
         if (error != null) {
-            throw new InvalidPhpProgramException(error);
+            throw new InvalidPhpExecutableException(error);
         }
-        return new PhpUnitSkelGen(script);
+        return new SkeletonGenerator(script);
     }
 
+    @NbBundle.Messages("SkeletonGenerator.script.label=Skeleton generator script")
     public static String validate(String command) {
-        return new PhpUnitSkelGen(command).validate();
-    }
-
-    @NbBundle.Messages("PhpUnitSkelGen.script.label=Skeleton generator script")
-    @Override
-    public String validate() {
-        return FileUtils.validateFile(Bundle.PhpUnitSkelGen_script_label(), getProgram(), false);
+        return PhpExecutableValidator.validateCommand(command, Bundle.SkeletonGenerator_script_label());
     }
 
     @NbBundle.Messages({
+        "SkeletonGenerator.test.title=Skeleton Generator",
         "# {0} - file name",
-        "PhpUnitSkelGen.test.generating=Creating test file for {0}"
+        "SkeletonGenerator.test.generating=Creating test file for {0}"
     })
-    public File generateTest(PhpUnit.ConfigFiles configFiles, String sourceClassName, File sourceClassFile, String testClassName, File testClassFile) {
+    public File generateTest(PhpModule phpModule, String sourceClassName, File sourceClassFile, String testClassName, File testClassFile) {
         if (testClassFile.isFile()) {
             // file already exists
             return testClassFile;
@@ -123,30 +116,27 @@ public final class PhpUnitSkelGen extends PhpProgram {
         if (!ensureTestFolderExists(testClassFile)) {
             return null;
         }
-        ExternalProcessBuilder processBuilder = getProcessBuilder();
-        if (configFiles.bootstrap != null
-                && configFiles.useBootstrapForCreateTests) {
-            processBuilder = processBuilder
-                    .addArgument(BOOTSTRAP_PARAM)
-                    .addArgument(configFiles.bootstrap.getAbsolutePath());
+        List<String> params = new ArrayList<String>();
+        if (PhpUnitPreferences.isBootstrapEnabled(phpModule)
+                && PhpUnitPreferences.isBootstrapForCreateTests(phpModule)) {
+            params.add(BOOTSTRAP_PARAM);
+            params.add(PhpUnitPreferences.getBootstrapPath(phpModule));
         }
-        processBuilder = processBuilder
-                .addArgument(TEST_PARAM)
-                .addArgument(SEPARATOR_PARAM)
-                .addArgument(sanitizeClassName(sourceClassName))
-                .addArgument(sourceClassFile.getAbsolutePath())
-                .addArgument(sanitizeClassName(testClassName))
-                .addArgument(testClassFile.getAbsolutePath());
-        ExecutionDescriptor executionDescriptor = getExecutionDescriptor()
-                .inputVisible(false)
-                .frontWindow(true)
-                .optionsPath(PhpUnit.OPTIONS_PATH);
+        params.add(TEST_PARAM);
+        params.add(SEPARATOR_PARAM);
+        params.add(sanitizeClassName(sourceClassName));
+        params.add(sourceClassFile.getAbsolutePath());
+        params.add(sanitizeClassName(testClassName));
+        params.add(testClassFile.getAbsolutePath());
+
+        PhpExecutable skelGen = getExecutable(phpModule, Bundle.SkeletonGenerator_test_generating(sourceClassFile.getName()), params);
+        if (skelGen == null) {
+            return null;
+        }
         try {
-            int status = executeAndWait(
-                    processBuilder,
-                    executionDescriptor,
-                    Bundle.PhpUnitSkelGen_test_generating(sourceClassName));
-            if (status == 0) {
+            Integer status = skelGen.runAndWait(getDescriptor(), "Generating test..."); // NOI18N
+            if (status != null
+                    && status == 0) {
                 // refresh fs
                 FileUtil.refreshFor(testClassFile.getParentFile());
                 return testClassFile;
@@ -154,11 +144,39 @@ public final class PhpUnitSkelGen extends PhpProgram {
         } catch (CancellationException ex) {
             // canceled
         } catch (ExecutionException ex) {
-            UiUtils.processExecutionException(ex, PhpUnit.OPTIONS_SUB_PATH);
-        } catch (InterruptedException ex) {
-            Thread.currentThread().interrupt();
+            UiUtils.processExecutionException(ex, PhpUnitOptionsPanelController.OPTIONS_SUB_PATH);
         }
         return null;
+    }
+
+    @CheckForNull
+    private PhpExecutable getExecutable(PhpModule phpModule, String title, List<String> params) {
+        FileObject sourceDirectory = phpModule.getSourceDirectory();
+        if (sourceDirectory == null) {
+            warnNoSources(phpModule.getDisplayName());
+            return null;
+        }
+
+        return new PhpExecutable(skelGenPath)
+                .optionsSubcategory(PhpUnitOptionsPanelController.OPTIONS_SUB_PATH)
+                .workDir(FileUtil.toFile(sourceDirectory))
+                .displayName(title)
+                .additionalParameters(params);
+    }
+
+    private ExecutionDescriptor getDescriptor() {
+        return PhpExecutable.DEFAULT_EXECUTION_DESCRIPTOR
+                .optionsPath(PhpUnitOptionsPanelController.OPTIONS_PATH)
+                .inputVisible(false);
+    }
+
+    @NbBundle.Messages({
+        "# {0} - project name",
+        "SkeletonGenerator.project.noSources=Project {0} has no Source Files."
+    })
+    private static void warnNoSources(String projectName) {
+        DialogDisplayer.getDefault().notifyLater(
+                new NotifyDescriptor.Message(Bundle.SkeletonGenerator_project_noSources(projectName), NotifyDescriptor.WARNING_MESSAGE));
     }
 
     // https://github.com/sebastianbergmann/phpunit-skeleton-generator/issues/1
