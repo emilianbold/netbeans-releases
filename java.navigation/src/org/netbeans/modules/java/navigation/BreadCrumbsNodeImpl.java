@@ -374,7 +374,11 @@ public class BreadCrumbsNodeImpl extends AbstractNode {
         @Override
         protected boolean createKeys(final List<Node> toPopulate) {
             try {
-                JavaSource.forFileObject(tph.getFileObject()).runUserActionTask(new Task<CompilationController>() {
+                JavaSource js = JavaSource.forFileObject(tph.getFileObject());
+                
+                if (js == null) return true;
+                
+                js.runUserActionTask(new Task<CompilationController>() {
                     @Override public void run(final CompilationController cc) throws Exception {
                         cc.toPhase(Phase.RESOLVED); //XXX: resolved?
 
