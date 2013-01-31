@@ -113,7 +113,6 @@ public final class UnitTestRunner {
             rerunHandler.disable();
             MANAGER.testStarted(testSession);
             org.netbeans.modules.php.spi.testing.run.TestSession session = runInternal();
-            // XXX
             if (session != null) {
                 handleCodeCoverage(session.getCoverage());
             }
@@ -214,7 +213,8 @@ public final class UnitTestRunner {
             return;
         }
         if (coverage == null) {
-            throw new IllegalStateException("Coverage must be provided by " + testingProvider.getDisplayName() + " [" + testingProvider.getIdentifier() + "]");
+            // some error
+            return;
         }
         if (info.allTests()) {
             coverageProvider.setCoverage(coverage);

@@ -61,9 +61,10 @@ public interface TestSession {
     String getFinishMessage();
 
     /**
-     * non null if provider.iscoveragesupported
+     * non null if provider.iscoveragesupported or if error
      * @return
      */
+    @CheckForNull
     Coverage getCoverage();
 
 }
