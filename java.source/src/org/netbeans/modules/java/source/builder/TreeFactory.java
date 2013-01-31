@@ -1458,6 +1458,34 @@ public class TreeFactory {
         return copy;
     }
     
+    public LambdaExpressionTree addLambdaParameter(LambdaExpressionTree method, VariableTree parameter) {
+        return modifyLambdaParameter(method, -1, parameter, Operation.ADD);
+    }
+
+    public LambdaExpressionTree insertLambdaParameter(LambdaExpressionTree method, int index, VariableTree parameter) {
+        return modifyLambdaParameter(method, index, parameter, Operation.ADD);
+    }
+    
+    public LambdaExpressionTree removeLambdaParameter(LambdaExpressionTree method, VariableTree parameter) {
+        return modifyLambdaParameter(method, -1, parameter, Operation.REMOVE);
+    }
+
+    public LambdaExpressionTree removeLambdaParameter(LambdaExpressionTree method, int index) {
+        return modifyLambdaParameter(method, index, null, Operation.REMOVE);
+    }
+    
+    private LambdaExpressionTree modifyLambdaParameter(LambdaExpressionTree method, int index, VariableTree parameter, Operation op) {
+        LambdaExpressionTree copy = LambdaExpression(
+                c(method.getParameters(), index, parameter, op),
+                method.getBody()
+        );
+        return copy;
+    }
+    
+    public LambdaExpressionTree setLambdaBody(LambdaExpressionTree method, Tree newBody) {
+        return LambdaExpression(method.getParameters(),newBody);
+    }
+    
     private <E extends Tree> List<E> c(List<? extends E> originalList, int index, E item, Operation operation) {
         List<E> copy = new ArrayList<E>(originalList);
         switch (operation) {

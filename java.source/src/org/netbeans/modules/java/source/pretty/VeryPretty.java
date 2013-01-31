@@ -805,7 +805,8 @@ public final class VeryPretty extends JCTree.Visitor {
                 print(tree.vartype);
             }
         }
-        needSpace();
+        if (tree.vartype != null) //should also check the flags?
+            needSpace();
         if (!ERROR.contentEquals(tree.name))
             print(tree.name);
         if (tree.init != null) {

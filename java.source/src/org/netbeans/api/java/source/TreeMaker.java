@@ -3099,4 +3099,76 @@ public final class TreeMaker {
         }
 
     }
+
+    /**
+     * Appends specified element <tt>parameter</tt>
+     * to the end of parameters list.
+     *
+     * @param  method        lambda expression tree containing parameters list.
+     * @param  parameter     element to be appended to parameters list.
+     * @return lambda expression tree with modified parameters.
+     * @since 0.112
+     */
+    public LambdaExpressionTree addLambdaParameter(LambdaExpressionTree method, VariableTree parameter) {
+        return delegate.addLambdaParameter(method, parameter);
+    }
+    
+    /**
+     * Inserts the specified element <tt>parameter</tt> 
+     * at the specified position in parameters list.
+     *
+     * @param  method lambda expression tree containing parameters list.
+     * @param  index  index at which the specified elements is to be inserted.
+     * @param  parameter   element to be inserted to parameters list.
+     * @return lambda expression  tree with modified parameters.
+     *
+     * @throws    IndexOutOfBoundsException if the index is out of range
+     *		  (index &lt; 0 || index &gt; size()).
+     * @since 0.112
+     */
+    public LambdaExpressionTree insertLambdaParameter(LambdaExpressionTree method, int index, VariableTree parameter) {
+        return delegate.insertLambdaParameter(method, index, parameter);
+    }
+    
+    /**
+     * Removes the first occurrence in parameters list of the specified 
+     * elements. If this list do not contain the element, it is
+     * unchanged.
+     *
+     * @param   method lambda expression tree containing parameters list.
+     * @param   parameter   element to be removed from this list, if present.
+     * @return  lambda expression tree with modified parameters and type parameters.
+     * @since 0.112
+     */
+    public LambdaExpressionTree removeLambdaParameter(LambdaExpressionTree method, VariableTree parameter) {
+        return delegate.removeLambdaParameter(method, parameter);
+    }
+    
+    /**
+     * Removes the element at the specified position in parameters list.
+     * Returns the modified lambda expression tree.
+     *
+     * @param   method lambda expression tree containing parameters list.
+     * @param   index  the index of the element to be removed.
+     * @return  method tree with modified parameters.
+     * 
+     * @throws IndexOutOfBoundsException if the index is out of range (index
+     *            &lt; 0 || index &gt;= size()).
+     * @since 0.112
+     */
+    public LambdaExpressionTree removeLambdaParameter(LambdaExpressionTree method, int index) {
+        return delegate.removeLambdaParameter(method, index);
+    }
+    
+    /**Creates a new lambda expression as a copy of the given lambda expression
+     * with the specified body.
+     * 
+     * @param method the source lambda expression
+     * @param newBody the new body
+     * @return new lambda expression tree with the new body
+     * @since 0.112
+     */
+    public LambdaExpressionTree setLambdaBody(LambdaExpressionTree method, Tree newBody) {
+        return delegate.setLambdaBody(method, newBody);
+    }
 }

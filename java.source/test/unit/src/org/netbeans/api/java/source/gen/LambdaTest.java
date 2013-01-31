@@ -43,14 +43,20 @@
  */
 package org.netbeans.api.java.source.gen;
 
+import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberReferenceTree.ReferenceMode;
+import com.sun.source.tree.ReturnTree;
+import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreeScanner;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
+import java.util.EnumSet;
+import javax.lang.model.element.Modifier;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
@@ -106,6 +112,363 @@ public class LambdaTest extends GeneratorTestMDRCompat {
                     @Override public Void visitLiteral(LiteralTree node, Void p) {
                         workingCopy.rewrite(node, make.MemberReference(ReferenceMode.INVOKE, make.Identifier("Test"), "taragui", Collections.<ExpressionTree>emptyList()));
                         return super.visitLiteral(node, p);
+                    }
+                }.scan(workingCopy.getCompilationUnit(), null);
+            }
+
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    public void testBasicLambdaDiff() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n" +
+            "    public static void taragui() {\n" +
+            "        ChangeListener l = (e) -> {};\n" + 
+            "    }\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n" +
+            "    public static void taragui() {\n" +
+            "        ChangeListener l = (f) -> {};\n" + 
+            "    }\n" +
+            "}\n";
+        JavaSource src = getJavaSource(testFile);
+        
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(final WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                final TreeMaker make = workingCopy.getTreeMaker();
+                new TreeScanner<Void, Void>() {
+                    @Override public Void visitVariable(VariableTree node, Void p) {
+                        if (node.getName().contentEquals("e")) {
+                            workingCopy.rewrite(node, make.setLabel(node, "f"));
+                        }
+                        return super.visitVariable(node, p);
+                    }
+                }.scan(workingCopy.getCompilationUnit(), null);
+            }
+
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    public void testAddFirstLambdaParam() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n" +
+            "    public static void taragui() {\n" +
+            "        ChangeListener l = () -> {};\n" + 
+            "    }\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n" +
+            "    public static void taragui() {\n" +
+            "        ChangeListener l = (e) -> {};\n" + 
+            "    }\n" +
+            "}\n";
+        JavaSource src = getJavaSource(testFile);
+        
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(final WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                final TreeMaker make = workingCopy.getTreeMaker();
+                new TreeScanner<Void, Void>() {
+                    @Override public Void visitLambdaExpression(LambdaExpressionTree node, Void p) {
+                        workingCopy.rewrite(node, make.addLambdaParameter(node, make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), "e", null, null)));
+                        return super.visitLambdaExpression(node, p);
+                    }
+                }.scan(workingCopy.getCompilationUnit(), null);
+            }
+
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    public void testAddSecondLambdaParam() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n" +
+            "    public static void taragui() {\n" +
+            "        ChangeListener l = (e) -> {};\n" + 
+            "    }\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n" +
+            "    public static void taragui() {\n" +
+            "        ChangeListener l = (e, f) -> {};\n" + 
+            "    }\n" +
+            "}\n";
+        JavaSource src = getJavaSource(testFile);
+        
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(final WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                final TreeMaker make = workingCopy.getTreeMaker();
+                new TreeScanner<Void, Void>() {
+                    @Override public Void visitLambdaExpression(LambdaExpressionTree node, Void p) {
+                        workingCopy.rewrite(node, make.addLambdaParameter(node, make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), "f", null, null)));
+                        return super.visitLambdaExpression(node, p);
+                    }
+                }.scan(workingCopy.getCompilationUnit(), null);
+            }
+
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    public void testPrependSecondLambdaParam() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n" +
+            "    public static void taragui() {\n" +
+            "        ChangeListener l = (e) -> {};\n" + 
+            "    }\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n" +
+            "    public static void taragui() {\n" +
+            "        ChangeListener l = (f, e) -> {};\n" + 
+            "    }\n" +
+            "}\n";
+        JavaSource src = getJavaSource(testFile);
+        
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(final WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                final TreeMaker make = workingCopy.getTreeMaker();
+                new TreeScanner<Void, Void>() {
+                    @Override public Void visitLambdaExpression(LambdaExpressionTree node, Void p) {
+                        workingCopy.rewrite(node, make.insertLambdaParameter(node, 0, make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), "f", null, null)));
+                        return super.visitLambdaExpression(node, p);
+                    }
+                }.scan(workingCopy.getCompilationUnit(), null);
+            }
+
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    public void testRemoveFirstLambdaParam() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n" +
+            "    public static void taragui() {\n" +
+            "        ChangeListener l = (e, f) -> {};\n" + 
+            "    }\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n" +
+            "    public static void taragui() {\n" +
+            "        ChangeListener l = (f) -> {};\n" + 
+            "    }\n" +
+            "}\n";
+        JavaSource src = getJavaSource(testFile);
+        
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(final WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                final TreeMaker make = workingCopy.getTreeMaker();
+                new TreeScanner<Void, Void>() {
+                    @Override public Void visitLambdaExpression(LambdaExpressionTree node, Void p) {
+                        workingCopy.rewrite(node, make.removeLambdaParameter(node, 0));
+                        return super.visitLambdaExpression(node, p);
+                    }
+                }.scan(workingCopy.getCompilationUnit(), null);
+            }
+
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    public void testRemoveSecondLambdaParam() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n" +
+            "    public static void taragui() {\n" +
+            "        ChangeListener l = (e, f) -> {};\n" + 
+            "    }\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n" +
+            "    public static void taragui() {\n" +
+            "        ChangeListener l = (e) -> {};\n" + 
+            "    }\n" +
+            "}\n";
+        JavaSource src = getJavaSource(testFile);
+        
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(final WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                final TreeMaker make = workingCopy.getTreeMaker();
+                new TreeScanner<Void, Void>() {
+                    @Override public Void visitLambdaExpression(LambdaExpressionTree node, Void p) {
+                        workingCopy.rewrite(node, make.removeLambdaParameter(node, 1));
+                        return super.visitLambdaExpression(node, p);
+                    }
+                }.scan(workingCopy.getCompilationUnit(), null);
+            }
+
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    public void testOnlyLambdaParam() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n" +
+            "    public static void taragui() {\n" +
+            "        ChangeListener l = (e) -> {};\n" + 
+            "    }\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n" +
+            "    public static void taragui() {\n" +
+            "        ChangeListener l = () -> {};\n" + 
+            "    }\n" +
+            "}\n";
+        JavaSource src = getJavaSource(testFile);
+        
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(final WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                final TreeMaker make = workingCopy.getTreeMaker();
+                new TreeScanner<Void, Void>() {
+                    @Override public Void visitLambdaExpression(LambdaExpressionTree node, Void p) {
+                        workingCopy.rewrite(node, make.removeLambdaParameter(node, 0));
+                        return super.visitLambdaExpression(node, p);
+                    }
+                }.scan(workingCopy.getCompilationUnit(), null);
+            }
+
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    public void testLambdaFullBody2Expression() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n" +
+            "    public static void taragui() {\n" +
+            "        ChangeListener l = (e) -> {return 1;};\n" + 
+            "    }\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n" +
+            "    public static void taragui() {\n" +
+            "        ChangeListener l = (e) -> 1;\n" + 
+            "    }\n" +
+            "}\n";
+        JavaSource src = getJavaSource(testFile);
+        
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(final WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                final TreeMaker make = workingCopy.getTreeMaker();
+                new TreeScanner<Void, Void>() {
+                    @Override public Void visitLambdaExpression(LambdaExpressionTree node, Void p) {
+                        ReturnTree t = (ReturnTree) ((BlockTree) node.getBody()).getStatements().get(0);
+                        workingCopy.rewrite(node, make.setLambdaBody(node, t.getExpression()));
+                        return super.visitLambdaExpression(node, p);
+                    }
+                }.scan(workingCopy.getCompilationUnit(), null);
+            }
+
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    public void testLambdaExpression2FullBody() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n" +
+            "    public static void taragui() {\n" +
+            "        ChangeListener l = (e) -> 1;\n" + 
+            "    }\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n" +
+            "    public static void taragui() {\n" +
+            "        ChangeListener l = (e) -> {\n" +
+            "            return 1;\n" +
+            "        };\n" + 
+            "    }\n" +
+            "}\n";
+        JavaSource src = getJavaSource(testFile);
+        
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(final WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                final TreeMaker make = workingCopy.getTreeMaker();
+                new TreeScanner<Void, Void>() {
+                    @Override public Void visitLambdaExpression(LambdaExpressionTree node, Void p) {
+                        workingCopy.rewrite(node, make.setLambdaBody(node, make.Block(Collections.singletonList(make.Return((ExpressionTree) node.getBody())), false)));
+                        return super.visitLambdaExpression(node, p);
                     }
                 }.scan(workingCopy.getCompilationUnit(), null);
             }

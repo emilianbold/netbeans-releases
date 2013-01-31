@@ -1980,6 +1980,47 @@ public class CasualDiff {
             diffIdent((JCIdent) oldTident, (JCIdent) newTident, bounds);
         }
     }
+    
+    protected int diffLambda(JCLambda oldT, JCLambda newT, int[] bounds) {
+        int localPointer = bounds[0];
+        int posHint;
+        if (oldT.params.isEmpty()) {
+            // compute the position. Find the parameters closing ')', its
+            // start position is important for us. This is used when 
+            // there was not any parameter in original tree.
+            int startOffset = oldT.pos;
+
+            moveFwdToToken(tokenSequence, startOffset, JavaTokenId.RPAREN);
+            posHint = tokenSequence.offset();
+        } else {
+            // take the position of the first old parameter
+            posHint = oldT.params.iterator().next().getStartPosition();
+        }
+        if (!listsMatch(oldT.params, newT.params)) {
+            copyTo(localPointer, posHint);
+            int old = printer.setPrec(TreeInfo.noPrec);
+            parameterPrint = true;
+            Name oldEnclClassName = printer.enclClassName;
+            printer.enclClassName = null;
+            localPointer = diffParameterList(oldT.params, newT.params, null, posHint, Measure.MEMBER);
+            printer.enclClassName = oldEnclClassName;
+            parameterPrint = false;
+            printer.setPrec(old);
+        }
+        //make sure the ')' is printed:
+        moveFwdToToken(tokenSequence, oldT.params.isEmpty() ? posHint : endPos(oldT.params.last()), JavaTokenId.RPAREN);
+        tokenSequence.moveNext();
+        posHint = tokenSequence.offset();
+        if (localPointer < posHint)
+            copyTo(localPointer, localPointer = posHint);
+        if (oldT.body != null && newT.body != null) {
+            int[] bodyBounds = getBounds(oldT.body);
+            copyTo(localPointer, bodyBounds[0]);
+            localPointer = diffTree(oldT.body, newT.body, bodyBounds);
+        }
+        copyTo(localPointer, bounds[1]);
+        return bounds[1];
+    }
 
     protected int diffFieldGroup(FieldGroupTree oldT, FieldGroupTree newT, int[] bounds) {
         if (!listsMatch(oldT.getVariables(), newT.getVariables())) {
@@ -3446,6 +3487,9 @@ public class CasualDiff {
               break;
           case TYPEUNION:
               retVal = diffUnionType((JCTypeUnion) oldT, (JCTypeUnion) newT, elementBounds);
+              break;
+          case LAMBDA:
+              retVal = diffLambda((JCLambda) oldT, (JCLambda) newT, elementBounds);
               break;
           default:
               // handle special cases like field groups and enum constants
