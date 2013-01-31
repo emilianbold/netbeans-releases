@@ -61,6 +61,8 @@ import org.netbeans.modules.php.spi.testing.run.TestRunException;
 import org.netbeans.modules.php.spi.testing.run.TestRunInfo;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.windows.OutputWriter;
 
@@ -108,6 +110,8 @@ public final class UnitTestRunner {
             runInternal();
             // XXX
             handleCodeCoverage();
+        } catch (Exception ex) {
+            LOGGER.log(Level.SEVERE, null, ex);
         } finally {
             MANAGER.sessionFinished(testSession);
             rerunHandler.enable();
@@ -248,13 +252,13 @@ public final class UnitTestRunner {
     }
 
     private String getLocation(TestCase testCase, org.netbeans.modules.php.spi.testing.run.TestSuite testSuite) {
-        String location = testCase.getLocation();
-        if (location != null) {
-            return location;
+        Locations.Line locationWithLine = testCase.getLocation();
+        if (locationWithLine != null) {
+            return FileUtil.toFile(locationWithLine.getFile()).getAbsolutePath();
         }
-        location = testSuite.getLocation();
+        FileObject location = testSuite.getLocation();
         assert location != null;
-        return location;
+        return FileUtil.toFile(location).getAbsolutePath();
     }
 
     //~ Mappers
