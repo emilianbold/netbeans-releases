@@ -70,7 +70,8 @@ public class NamingFactoryTest extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
         clearWorkDir();
-        CharSequences.create("");
+        Object res = CharSequences.create("0123456789012345678901234567890123456789");
+        assertTrue("Contains Byte: " + res.getClass(), res.getClass().getName().contains("Byte"));
     }
     
     public void registerSecurityManager() {
