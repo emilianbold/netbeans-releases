@@ -41,8 +41,10 @@
  */
 package org.netbeans.modules.cnd.discovery.performance;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ScheduledFuture;
@@ -52,12 +54,14 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.dlight.libs.common.PerformanceLogger;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
@@ -275,10 +279,29 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
     }
     
     private void notifyProblem(final int problem, final String details) {
+        final List<Project> list = new ArrayList<Project>();
+        synchronized(projects) {
+            list.addAll(projects);
+        }
+        boolean remoteBuildHost = false;
+        boolean remoteSources = false;
+        for (Project project : list) {
+            RemoteProject remoteProject = project.getLookup().lookup(RemoteProject.class);
+            ExecutionEnvironment developmentHost = remoteProject.getDevelopmentHost();
+            if (developmentHost.isRemote()) {
+                remoteBuildHost = true;
+            }
+            ExecutionEnvironment sourceFileSystemHost = remoteProject.getSourceFileSystemHost();
+            if (sourceFileSystemHost.isRemote()) {
+                remoteSources = true;
+            }
+        }
+        final boolean isRemoteBuildHost = remoteBuildHost;
+        final boolean isRemoteSources = remoteSources;
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                NotifyProjectProblem.showNotification(PerformanceIssueDetector.this, problem, details);
+                NotifyProjectProblem.showNotification(PerformanceIssueDetector.this, problem, details, isRemoteBuildHost, isRemoteSources);
             }
         });
     }
