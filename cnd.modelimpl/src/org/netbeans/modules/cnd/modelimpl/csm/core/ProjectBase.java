@@ -206,6 +206,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         weakGraphContainer = new WeakContainer<GraphContainer>(this, graphStorageKey);
         includedFileContainer = new IncludedFileContainer(this);
         initFields();
+        libraryManager = LibraryManager.getInstance(this);
     }
 
     /*package*/final void initFields() {
@@ -451,6 +452,10 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
     public final CacheLocation getCacheLocation() {
         return cacheLocation;
+    }
+    
+    public final LibraryManager getLibraryManager() {
+        return libraryManager;
     }
 
     public static CacheLocation getCacheLocation(NativeProject project) {
@@ -3609,6 +3614,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     private final CharSequence uniqueName;
     private final int unitId;
     private final CacheLocation cacheLocation;
+    private final LibraryManager libraryManager;
     private final Map<CharSequence, CsmUID<CsmNamespace>> namespaces;
     private final Key classifierStorageKey;
 
@@ -3721,6 +3727,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
         this.FAKE_GLOBAL_NAMESPACE = NamespaceImpl.create(this, true);
         this.hasFileSystemProblems = aStream.readBoolean();
+        this.libraryManager = LibraryManager.getInstance(this);
     }
 
     public int getUnitId() {

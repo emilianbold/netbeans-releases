@@ -227,7 +227,7 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
                 int type2 = token.getType();
                 switch (type2) {
                     case CPPTokenTypes.IDENT:
-                        id = new StringBuilder(token.getText());
+                        id = new StringBuilder(AstUtil.getText(token));
                         break;
                     case CPPTokenTypes.GREATERTHAN:
                         level--;
