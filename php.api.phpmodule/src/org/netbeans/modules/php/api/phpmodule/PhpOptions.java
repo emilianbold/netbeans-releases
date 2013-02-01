@@ -59,4 +59,12 @@ public interface PhpOptions {
      * @see PhpInterpreter#getDefault()
      */
     String getPhpInterpreter();
+
+    /**
+     * Get debugger session ID.
+     * @return debugger session ID
+     * @since 2.12
+     */
+    String getDebuggerSessionId();
+
 }
