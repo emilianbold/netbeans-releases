@@ -154,6 +154,10 @@ public class CSSUpdater {
         if (serverUrl == null) {
             return;
         }
+        String mimeType = fileObject.getMIMEType();
+        if (mimeType.equals("text/html")) { // Should we be more strict, i.e., !mimeType.equals("text/css")? // NOI18N
+            return; // Issue 225630
+        }
         StyleSheetHeader header = sheetsMap.get(serverUrl.toString());
         if (header != null) {
             webKit.getCSS().setStyleSheetText(header.getStyleSheetId(), content);

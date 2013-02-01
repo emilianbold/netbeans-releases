@@ -61,7 +61,7 @@ public class MakeProjectLifeImpl implements MakeProjectLife {
                  detector = new PerformanceIssueDetector();
                  PerformanceLogger.getLogger().addPerformanceListener(detector);
              }
-             detector.stop(project);
+             detector.start(project);
         }
     }
 

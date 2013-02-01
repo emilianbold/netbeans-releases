@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.discovery.performance;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -75,6 +76,7 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
     private final Map<String,ReadEntry> readPerformance = new HashMap<String,ReadEntry>();
     private final Map<String,CreateEntry> createPerformance = new HashMap<String,CreateEntry>();
     private final Map<String,ParseEntry> parsePerformance = new HashMap<String,ParseEntry>();
+    private final Map<FileObject,PerformanceLogger.PerformanceEvent> parseTimeOut = new HashMap<FileObject,PerformanceLogger.PerformanceEvent>();
     private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
     private final ScheduledFuture<?> periodicTask;
     private static final int SCHEDULE = 15; // period in seconds
@@ -194,15 +196,17 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
     }
 
     private void processGetItemFileObject(PerformanceLogger.PerformanceEvent event) {
-        if (event.getAttrs().length == 0) {
-            //TODO: process timeout
-            return;
-        }
         Item item = (Item) event.getSource();
         long time = event.getTime();
+        String path = item.getAbsPath();
+        if (event.getAttrs().length == 0) {
+            //TODO: process timeout
+            LOG.log(timeOutLevel, "Timeout {0}s of find file object {1}", new Object[]{time/NANO_TO_SEC, path}); //NOI18N
+            return;
+        }
+        String dirName = CndPathUtilitities.getDirName(path);
         long cpu = event.getCpuTime();
         long user = event.getUserTime();
-        String dirName = CndPathUtilitities.getDirName(item.getAbsolutePath());
         lock.writeLock().lock();
         try {
             CreateEntry entry = createPerformance.get(dirName);
@@ -255,6 +259,12 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
         if (event.getAttrs().length == 0) {
             //TODO: process timeout
             LOG.log(timeOutLevel, "Timeout {0}s of parsing file{1}", new Object[]{time/NANO_TO_SEC, fo.getPath()}); //NOI18N
+            lock.writeLock().lock();
+            try {
+                parseTimeOut.put(fo, event);
+            } finally {
+                lock.writeLock().unlock();
+            }
             return;
         }
         int readLines = ((Integer) event.getAttrs()[0]).intValue();
@@ -263,6 +273,7 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
         String dirName = CndPathUtilitities.getDirName(fo.getPath());
         lock.writeLock().lock();
         try {
+            parseTimeOut.remove(fo);
             ParseEntry entry = parsePerformance.get(dirName);
             if (entry == null) {
                 entry = new ParseEntry();
@@ -311,6 +322,7 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
             analyzeCreateItems();
             analyzeReadFile();
             analyzeParseFile();
+            analyzeInfiniteParseFile();
         } catch (Throwable ex) {
             ex.printStackTrace(System.err);
         } finally {
@@ -448,6 +460,40 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
         }
         LOG.log(level, "Average parsing speed is {0} Lines/s Lines {1} Time {2} ms CPU {3} ms User {4} ms", //NOI18N
                 new Object[]{format(parseSpeed), format(lines), format(time/NANO_TO_MILLI), format(cpu/NANO_TO_MILLI), format(user/NANO_TO_MILLI)});
+    }
+
+    @Messages({
+         "# {0} - table"
+        ,"Details.infinite.files.parse=The parsing of the files:\n"
+                                     +"<table><tbody>\n"
+                                     +"<tr><th>File</th><th>Time, s</th><tr>\n"
+                                     +"{0}\n"
+                                     +"</tbody></table>\n"
+                                     +"are nether finished or consumes too much time.<br>\n"
+        ,"# {0} - file"
+        ,"# {1} - time"
+        ,"Details.infinite.file.parse=<tr><td>{0}</td><td>{1}</td>\n"
+    })
+    private void analyzeInfiniteParseFile() {
+        StringBuilder buf = new StringBuilder();
+        Iterator<Map.Entry<FileObject, PerformanceLogger.PerformanceEvent>> iterator = parseTimeOut.entrySet().iterator();
+        while(iterator.hasNext()) {
+            Map.Entry<FileObject, PerformanceLogger.PerformanceEvent> entry = iterator.next();
+            FileObject fo = entry.getKey();
+            PerformanceLogger.PerformanceEvent event = entry.getValue();
+            long delta = (System.nanoTime() - event.getStartTime())/NANO_TO_SEC;
+            if (delta > 100) {
+                iterator.remove();
+                buf.append(Bundle.Details_infinite_file_parse(fo.getPath(), format(delta)));
+                LOG.log(Level.INFO, "Too long file {0} parsing time {1}s. Probably parser has infinite loop or file is too big", new Object[]{fo.getPath(), format(delta)}); //NOI18N
+            }
+        }
+        if (buf.length() > 0) {
+            if (!CndUtils.isUnitTestMode() && !CndUtils.isStandalone()) {
+                String details = Bundle.Details_infinite_files_parse(buf.toString());
+                notifyProblem(NotifyProjectProblem.INFINITE_PARSE_PROBLEM, details);
+            }
+        }
     }
 
     private String format(long val) {

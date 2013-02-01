@@ -60,8 +60,8 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDesc
 import org.netbeans.modules.cnd.makeproject.configurations.ConfigurationXMLReader;
 import org.netbeans.modules.cnd.makeproject.platform.Platforms;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.ComponentType;
 import org.netbeans.modules.cnd.utils.ui.UIGesturesSupport;
-import org.netbeans.modules.dlight.util.usagetracking.SunStudioUserCounter;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -327,7 +327,7 @@ public class ConfigurationDescriptorProvider {
             platform = "UNKNOWN_PLATFORM"; // NOI18N
         }
 
-        String ideType = SunStudioUserCounter.getIDEType().getTag();
+        String ideType = ComponentType.OSS_IDE.getTag();
         if (USG_PROJECT_CREATE_CND.equals(msg)) {
             // stop here
             UIGesturesSupport.submit(msg, type, flavor, family, host, platform, "USER_PROJECT", ideType); //NOI18N
