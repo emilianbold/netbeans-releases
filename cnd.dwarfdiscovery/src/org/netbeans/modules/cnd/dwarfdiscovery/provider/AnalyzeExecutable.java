@@ -312,6 +312,11 @@ public class AnalyzeExecutable extends BaseDwarfProvider {
                     }
                     return new ArrayList<String>(myDependencies);
                 }
+
+                @Override
+                public List<String> getBuildArtifacts() {
+                    return null;
+                }
                 
                 @Override
                 public List<SourceFileProperties> getSourcesConfiguration() {
