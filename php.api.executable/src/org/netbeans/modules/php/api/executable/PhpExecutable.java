@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.php.api.executable;
 
+import java.awt.EventQueue;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -52,7 +53,10 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -71,9 +75,19 @@ import org.netbeans.api.extexecution.ExternalProcessBuilder;
 import org.netbeans.api.extexecution.input.InputProcessor;
 import org.netbeans.api.extexecution.input.InputProcessors;
 import org.netbeans.api.progress.ProgressUtils;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.queries.FileEncodingQuery;
+import org.netbeans.modules.php.api.phpmodule.PhpOptions;
 import org.netbeans.modules.php.api.util.Pair;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.api.util.UiUtils;
+import org.netbeans.modules.php.spi.executable.DebugStarter;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileObject;
+import org.openide.util.Cancellable;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 import org.openide.util.Utilities;
@@ -85,6 +99,8 @@ import org.openide.windows.InputOutput;
 public final class PhpExecutable {
 
     private static final Logger LOGGER = Logger.getLogger(PhpExecutable.class.getName());
+
+    private static final Project DUMMY_PROJECT = new DummyProject();
 
     /**
      * The {@link InputProcessorFactory input processor factory} that strips any
@@ -137,6 +153,7 @@ public final class PhpExecutable {
     private File fileOutput = null;
     private boolean fileOutputOnly = false;
     private boolean noInfo = false;
+    private boolean debug = false;
 
 
     /**
@@ -475,7 +492,7 @@ public final class PhpExecutable {
     public Integer runAndWait(@NonNull ExecutionDescriptor executionDescriptor, @NullAllowed ExecutionDescriptor.InputProcessorFactory outProcessorFactory,
             @NonNull final String progressMessage) throws ExecutionException {
         Parameters.notNull("progressMessage", progressMessage); // NOI18N
-        final Future<Integer> result = run(executionDescriptor);
+        final Future<Integer> result = run(executionDescriptor, outProcessorFactory);
         if (result == null) {
             return null;
         }
@@ -505,6 +522,137 @@ public final class PhpExecutable {
         return getResult(result);
     }
 
+    /**
+     * Debug this executable with the {@link #DEFAULT_EXECUTION_DESCRIPTOR default execution descriptor}, <b>blocking but not blocking the UI thread</b>
+     * (it displays progress dialog if it is running in it).
+     * @param startFile the start file
+     * @return exit code of the process or {@code null} if any error occured
+     * @throws ExecutionException if any error occurs
+     * @see #debug(FileObject, ExecutionDescriptor)
+     * @see #debug(FileObject, ExecutionDescriptor, ExecutionDescriptor.InputProcessorFactory)
+     */
+    @CheckForNull
+    public Integer debug(@NonNull FileObject startFile) throws ExecutionException {
+        return debug(startFile, DEFAULT_EXECUTION_DESCRIPTOR);
+    }
+
+    /**
+     * Debug this executable with the given execution descriptor, <b>blocking but not blocking the UI thread</b>
+     * (it displays progress dialog if it is running in it).
+     * @param startFile the start file
+     * @param executionDescriptor execution descriptor to be used
+     * @return exit code of the process or {@code null} if any error occured
+     * @throws ExecutionException if any error occurs
+     * @see #debug(FileObject)
+     * @see #debug(FileObject, ExecutionDescriptor, ExecutionDescriptor.InputProcessorFactory)
+     */
+    @CheckForNull
+    public Integer debug(@NonNull FileObject startFile, @NonNull ExecutionDescriptor executionDescriptor) throws ExecutionException {
+        return debug(startFile, executionDescriptor, null);
+    }
+
+    /**
+     * Debug this executable with the given execution descriptor and optional output processor factory, <b>blocking but not blocking the UI thread</b>
+     * (it displays progress dialog if it is running in it).
+     * @param startFile the start file
+     * @param executionDescriptor execution descriptor to be used
+     * @param outProcessorFactory output processor factory to be used, can be {@code null}
+     * @return exit code of the process or {@code null} if any error occured
+     * @throws ExecutionException if any error occurs
+     * @see #debug(FileObject)
+     * @see #debug(FileObject, ExecutionDescriptor)
+     */
+    @NbBundle.Messages("PhpExecutable.debug.progress=Debugging...")
+    @CheckForNull
+    public Integer debug(@NonNull final FileObject startFile, @NonNull final ExecutionDescriptor executionDescriptor,
+            final @NullAllowed ExecutionDescriptor.InputProcessorFactory outProcessorFactory) throws ExecutionException {
+        if (!EventQueue.isDispatchThread()) {
+            return debugInternal(startFile, executionDescriptor, outProcessorFactory);
+        }
+        // ui thread
+        final AtomicReference<Integer> executionResult = new AtomicReference<Integer>();
+        final AtomicReference<ExecutionException> executionException = new AtomicReference<ExecutionException>();
+        ProgressUtils.showProgressDialogAndRun(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    executionResult.set(debugInternal(startFile, executionDescriptor, outProcessorFactory));
+                } catch (ExecutionException ex) {
+                    executionException.set(ex);
+                }
+            }
+        }, Bundle.PhpExecutable_debug_progress());
+        if (executionException.get() != null) {
+            throw executionException.get();
+        }
+        return executionResult.get();
+    }
+
+    @CheckForNull
+    Integer debugInternal(@NonNull FileObject startFile, final @NonNull ExecutionDescriptor executionDescriptor,
+            final @NullAllowed ExecutionDescriptor.InputProcessorFactory outProcessorFactory) throws ExecutionException {
+        if (EventQueue.isDispatchThread()) {
+            throw new IllegalStateException("Debugging cannot be called from the UI thread");
+        }
+        debug = true;
+        DebugStarter dbgStarter =  Lookup.getDefault().lookup(DebugStarter.class);
+        assert dbgStarter != null;
+        if (dbgStarter.isAlreadyRunning()) {
+            if (warnNoMoreDebugSession()) {
+                dbgStarter.stop();
+                return debug(startFile, executionDescriptor, outProcessorFactory);
+            }
+        }
+        final AtomicReference<Future<Integer>> result = new AtomicReference<Future<Integer>>();
+        final CountDownLatch countDownLatch = new CountDownLatch(1);
+        Callable<Cancellable> task = new Callable<Cancellable>() {
+            @Override
+            public Cancellable call() throws Exception {
+                try {
+                    result.set(PhpExecutable.this.run(executionDescriptor, outProcessorFactory));
+                } finally {
+                    countDownLatch.countDown();
+                }
+                return new Cancellable() {
+                    @Override
+                    public boolean cancel() {
+                        Future<Integer> res = result.get();
+                        if (res != null) {
+                            return res.cancel(true);
+                        }
+                        return true;
+                    }
+                };
+            }
+        };
+        Project project = FileOwnerQuery.getOwner(startFile);
+        DebugStarter.Properties props = new DebugStarter.Properties.Builder()
+                .setStartFile(startFile)
+                .setCloseSession(true)
+                .setEncoding(FileEncodingQuery.getEncoding(startFile).name())
+                .build();
+        dbgStarter.start(project != null ? project : DUMMY_PROJECT, task, props);
+        try {
+            countDownLatch.await();
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+        }
+        Future<Integer> res = result.get();
+        if (res == null) {
+            return null;
+        }
+        // wait for debugger to finish
+        try {
+            res.get();
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+        } catch (CancellationException ex) {
+            // debugger ends correctly
+            return 0;
+        }
+        return 1;
+    }
+
     @CheckForNull
     private ExternalProcessBuilder getProcessBuilder() {
         ExternalProcessBuilder processBuilder = createProcessBuilder();
@@ -526,6 +674,9 @@ public final class PhpExecutable {
             processBuilder = processBuilder.addEnvironmentVariable(variable.getKey(), variable.getValue());
         }
         processBuilder = processBuilder.redirectErrorStream(redirectErrorStream);
+        if (debug) {
+            processBuilder = processBuilder.addEnvironmentVariable("XDEBUG_CONFIG", "idekey=" + Lookup.getDefault().lookup(PhpOptions.class).getDebuggerSessionId()); // NOI18N
+        }
         return processBuilder;
     }
 
@@ -659,6 +810,12 @@ public final class PhpExecutable {
         };
     }
 
+    @NbBundle.Messages("PhpExecutable.debug.noMoreSessions=Debugger session is already running. Restart?")
+    private static boolean warnNoMoreDebugSession() {
+        NotifyDescriptor descriptor = new NotifyDescriptor.Confirmation(Bundle.PhpExecutable_debug_noMoreSessions(), NotifyDescriptor.OK_CANCEL_OPTION);
+        return DialogDisplayer.getDefault().notify(descriptor) == NotifyDescriptor.OK_OPTION;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder(200);
@@ -755,6 +912,21 @@ public final class PhpExecutable {
         @Override
         public void close() throws IOException {
             outputStream.close();
+        }
+
+    }
+
+    // needed for php debugger, used as a key in session map
+    static final class DummyProject implements Project {
+
+        @Override
+        public FileObject getProjectDirectory() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public Lookup getLookup() {
+            return Lookup.EMPTY;
         }
 
     }
