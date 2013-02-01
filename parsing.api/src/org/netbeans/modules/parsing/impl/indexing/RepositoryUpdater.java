@@ -4242,7 +4242,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             }
             boolean found = false;
             for (URL u : roots) {
-                if (!u.getPath().contains("jsstubs/allstubs.zip")) {
+                if (!u.getPath().contains("/jsstubs/")) {
                     found = true;
                     break;
                 }
