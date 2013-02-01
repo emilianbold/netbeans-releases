@@ -75,13 +75,13 @@ public class PhpUnitTestLocator implements TestLocator {
     @Override
     public Set<Locations.Offset> findSources(FileObject testFile) {
         assert phpModule.getSourceDirectory() != null : "Source directory must exist";
-        return find(phpModule.getSourceDirectory(), testFile, true);
+        return find(phpModule.getSourceDirectory(), testFile, false);
     }
 
     @Override
     public Set<Locations.Offset> findTests(FileObject testedFile) {
         assert phpModule.getTestDirectory() != null : "Test directory must exist";
-        return find(phpModule.getTestDirectory(), testedFile, false);
+        return find(phpModule.getTestDirectory(), testedFile, true);
     }
 
     private Set<Locations.Offset> find(FileObject sourceRoot, FileObject file, boolean searchTest) {
