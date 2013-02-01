@@ -404,8 +404,8 @@ public class GitCommitPanel extends VCSCommitPanel<GitFileNode> {
             String lastCanceledCommitMessage = GitModuleConfig.getDefault().getLastCanceledCommitMessage();
 
             DefaultCommitParameters parameters = new GitCommitParameters(preferences, 
-                    lastCanceledCommitMessage.isEmpty() && mergeCommitMessage != null
-                    ? mergeCommitMessage : lastCanceledCommitMessage, user);
+                    mergeCommitMessage == null ? lastCanceledCommitMessage : mergeCommitMessage,
+                    mergeCommitMessage != null, user);
 
             Collection<GitHook> hooks = VCSHooks.getInstance().getHooks(GitHook.class);
             GitHookContext hooksCtx = new GitHookContext(roots, null, new GitHookContext.LogEntry[]{});

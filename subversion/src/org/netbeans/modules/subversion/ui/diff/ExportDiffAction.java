@@ -66,7 +66,6 @@ import org.openide.awt.StatusDisplayer;
 import java.io.*;
 import java.util.*;
 import java.util.List;
-import java.util.logging.Level;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.netbeans.modules.proxy.Base64Encoder;
 import org.netbeans.modules.versioning.util.ExportDiffSupport;
@@ -207,8 +206,10 @@ public class ExportDiffAction extends ContextAction {
             setups = new ArrayList<Setup>(files.length);
             for (int i = 0; i < files.length; i++) {
                 File file = files[i];
-                Setup setup = new Setup(file, null, Setup.DIFFTYPE_LOCAL);
-                setups.add(setup);
+                if (!Subversion.getInstance().getStatusCache().getStatus(file).isDirectory()) {
+                    Setup setup = new Setup(file, null, Setup.DIFFTYPE_LOCAL);
+                    setups.add(setup);
+                }
             }
         }
         exportDiff(setups, destination, root, progress);
@@ -274,7 +275,8 @@ public class ExportDiffAction extends ContextAction {
             exportedFiles = i;
             success = true;
         } catch (IOException ex) {
-            Subversion.LOG.log(Level.INFO, NbBundle.getMessage(ExportDiffAction.class, "BK3003"), ex);
+            SvnClientExceptionHandler.notifyException(new Exception(NbBundle.getMessage(ExportDiffAction.class, "BK3003", //NOI18N
+                    ex.getLocalizedMessage()), ex), true, false);
         } finally {
             if (out != null) {
                 try {

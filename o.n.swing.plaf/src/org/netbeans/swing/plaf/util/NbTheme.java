@@ -61,6 +61,7 @@ import java.awt.*;
 import java.net.URL;
 import java.util.HashSet;
 import java.util.StringTokenizer;
+import javax.swing.plaf.metal.DefaultMetalTheme;
 
 /** An extension of javax.swing.plaf.metal.DefaultMetalTheme which can read a an xml
  * file named <code>themes.xml</code> and apply the theme defined in XML.  NbTheme
@@ -79,7 +80,7 @@ import java.util.StringTokenizer;
  * @author Jiri Mzourek, Tim Boudreau
  * @see http://ui.netbeans.org/docs/ui/themes/themes.html
  */
-public class NbTheme extends MetalTheme implements org.xml.sax.DocumentHandler {
+public class NbTheme extends DefaultMetalTheme implements org.xml.sax.DocumentHandler {
     
     /** The unqualified name for the theme file to use. */    
     public static final  String THEMEFILE_NAME = "themes.xml"; // NOI18N
@@ -150,7 +151,7 @@ public class NbTheme extends MetalTheme implements org.xml.sax.DocumentHandler {
     public NbTheme(URL themeURL, LookAndFeel lf) {
         this.themeURL = themeURL;
         defaults = lf.getDefaults();
-        initThemeDefaults();
+//        initThemeDefaults();
         parseTheme();
         UIManager.getDefaults().putAll (defaults);
     }

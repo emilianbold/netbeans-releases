@@ -49,6 +49,7 @@
 
 #include <string>
 #include <windows.h>
+#include <cstddef>
 #include "cmdargs.h"
 #include "shlobj.h"
 

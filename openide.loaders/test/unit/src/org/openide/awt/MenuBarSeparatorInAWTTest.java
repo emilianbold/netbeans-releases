@@ -112,7 +112,14 @@ public class MenuBarSeparatorInAWTTest extends NbTestCase {
 
         assertEquals("Three component", 3, run.arr.length);
         assertTrue("2nd is JSeparator", run.arr[1] instanceof JSeparator);
-    }
+
+        try {
+            new JSeparator();
+            fail( "JSeparator must be created in EDT.");
+        } catch( AssertionError e ) {
+            //expected
+        }
+}
 
 
 
@@ -122,13 +129,6 @@ public class MenuBarSeparatorInAWTTest extends NbTestCase {
         static Throwable wrong;
 
         public MyLaF() {
-            if (!Thread.currentThread().getName().contains("AWT-")) {
-                try {
-                    assertTrue("Created only in AWT", EventQueue.isDispatchThread());
-                } catch (Throwable t) {
-                    wrong = t;
-                }
-            }
             cnt++;
         }
 
@@ -147,7 +147,8 @@ public class MenuBarSeparatorInAWTTest extends NbTestCase {
             return new UIDefaults() {
                 @Override
                 public Object get(Object key) {
-                    assertAWT();
+                    if( "SeparatorUI".equals( key ) )
+                        assertAWT();
                     return del.get(key);
                 }
             };
