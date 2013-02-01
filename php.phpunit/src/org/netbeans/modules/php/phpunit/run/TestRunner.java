@@ -50,6 +50,7 @@ import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.phpunit.commands.PhpUnit;
 import org.netbeans.modules.php.phpunit.preferences.PhpUnitPreferences;
@@ -68,6 +69,7 @@ public final class TestRunner {
         this.phpModule = phpModule;
     }
 
+    @CheckForNull
     public TestSessionImpl runTests(TestRunInfo runInfo) throws TestRunException {
         PhpUnit phpUnit = PhpUnit.getForPhpModule(phpModule, true);
         if (phpUnit == null) {
