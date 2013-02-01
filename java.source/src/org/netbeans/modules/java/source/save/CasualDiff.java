@@ -1731,6 +1731,50 @@ public class CasualDiff {
         copyTo(localPointer, bounds[1]);
         return bounds[1];
     }
+    
+    protected int diffMemberReference(JCMemberReference oldT, JCMemberReference newT, int[] bounds) {
+        int localPointer = bounds[0];
+        int[] exprBounds = getBounds(oldT.expr);
+        copyTo(localPointer, exprBounds[0]);
+        localPointer = diffTree(oldT.expr, newT.expr, exprBounds);
+        tokenSequence.move(exprBounds[1]);
+        moveToSrcRelevant(tokenSequence, Direction.FORWARD);
+        if (tokenSequence.token() != null && tokenSequence.token().id() == JavaTokenId.COLONCOLON) {
+            moveToSrcRelevant(tokenSequence, Direction.FORWARD);
+            copyTo(localPointer, localPointer = tokenSequence.offset());
+        }
+        com.sun.tools.javac.util.List<JCExpression> oldTypePar = oldT.typeargs != null ? oldT.typeargs : com.sun.tools.javac.util.List.<JCExpression>nil();
+        com.sun.tools.javac.util.List<JCExpression> newTypePar = newT.typeargs != null ? newT.typeargs : com.sun.tools.javac.util.List.<JCExpression>nil();
+        if (!listsMatch(oldTypePar, newTypePar)) {
+            int insertHint;
+            if (oldTypePar.nonEmpty() && newTypePar.nonEmpty()) {
+                insertHint = oldTypePar.head.pos;
+            } else {
+                insertHint = localPointer;
+            }
+            copyTo(localPointer, localPointer = insertHint);
+            boolean parens = oldTypePar.isEmpty() && newTypePar.nonEmpty();
+            localPointer = diffParameterList(oldTypePar, newTypePar,
+                    parens ? new JavaTokenId[] { JavaTokenId.LT, JavaTokenId.GT } : null,
+                    localPointer, Measure.ARGUMENT);
+            if (oldTypePar.nonEmpty()) {
+                tokenSequence.move(endPos(oldTypePar.last()));
+                moveToSrcRelevant(tokenSequence, Direction.FORWARD);
+                moveToSrcRelevant(tokenSequence, Direction.FORWARD);//skips > and any subsequent unimportant tokens
+                int end = tokenSequence.offset();
+                if (newTypePar.nonEmpty())
+                    copyTo(localPointer, end);
+                localPointer = end;
+            }
+        }
+        if (nameChanged(oldT.name, newT.name)) {
+            printer.print(newT.name);
+            diffInfo.put(localPointer, NbBundle.getMessage(CasualDiff.class,"TXT_UpdateReferenceTo",oldT.name));
+            localPointer = localPointer + oldT.name.length();
+        }
+        copyTo(localPointer, bounds[1]);
+        return bounds[1];
+    }
 
     protected int diffSelect(JCFieldAccess oldT, JCFieldAccess newT, int[] bounds) {
         return diffSelect(oldT, newT, bounds, null, null);
@@ -3490,6 +3534,9 @@ public class CasualDiff {
               break;
           case LAMBDA:
               retVal = diffLambda((JCLambda) oldT, (JCLambda) newT, elementBounds);
+              break;
+          case REFERENCE:
+              retVal = diffMemberReference((JCMemberReference) oldT, (JCMemberReference) newT, elementBounds);
               break;
           default:
               // handle special cases like field groups and enum constants

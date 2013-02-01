@@ -667,7 +667,7 @@ public final class TreeMaker {
      * @return the MemberReferenceTree
      * @since 0.112
      */
-    public MemberReferenceTree MemberReference(ReferenceMode refMode, ExpressionTree expression, CharSequence name, List<ExpressionTree> typeArguments) {
+    public MemberReferenceTree MemberReference(ReferenceMode refMode, ExpressionTree expression, CharSequence name, List<? extends ExpressionTree> typeArguments) {
         return delegate.MemberReference(refMode, name, expression, typeArguments);
     }
     
@@ -2610,7 +2610,7 @@ public final class TreeMaker {
      * <tt>aLabel</tt> argument. Throws <tt>IllegalArgumentException</tt> if
      * <tt>node</tt>'s kind is invalid. Valid <tt>node</tt>'s kinds are:<br>
      * BREAK, CLASS, CONTINUE, IDENTIFIER, LABELED_STATEMENT,
-     * MEMBER_SELECT, METHOD, TYPE_PARAMETER, VARIABLE.<p>
+     * MEMBER_SELECT, METHOD, TYPE_PARAMETER, VARIABLE, MEMBER_REFERENCE (since 0.112).<p>
      *
      * Consider you want to change name of  method <tt>fooMet</tt> to
      * <tt>fooMethod</tt>:
@@ -2737,6 +2737,16 @@ public final class TreeMaker {
                 N clone = (N) MemberSelect(
                         (ExpressionTree) t.getExpression(),
                         aLabel
+                        );
+                return clone;
+            }
+            case MEMBER_REFERENCE: {
+                MemberReferenceTree t = (MemberReferenceTree) node;
+                N clone = (N) MemberReference(
+                        t.getMode(),
+                        t.getQualifierExpression(),
+                        aLabel,
+                        t.getTypeArguments()
                         );
                 return clone;
             }

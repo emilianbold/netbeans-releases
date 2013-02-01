@@ -488,11 +488,18 @@ public class TreeFactory {
         return make.at(NOPOS).MethodDef((Symbol.MethodSymbol)element, (JCBlock)body);
     }
 
-    public MemberReferenceTree MemberReference(ReferenceMode refMode, CharSequence name, ExpressionTree expression, List<ExpressionTree> typeArguments) {
-        ListBuffer<JCExpression> targs = new ListBuffer<JCExpression>();
-        for (ExpressionTree t : typeArguments)
-            targs.append((JCExpression)t);
-        return make.at(NOPOS).Reference(refMode, names.fromString(name.toString()), (JCExpression) expression, targs.toList());
+    public MemberReferenceTree MemberReference(ReferenceMode refMode, CharSequence name, ExpressionTree expression, List<? extends ExpressionTree> typeArguments) {
+        ListBuffer<JCExpression> targs;
+        
+        if (typeArguments != null) {
+            targs = new ListBuffer<JCExpression>();
+            for (ExpressionTree t : typeArguments)
+                targs.append((JCExpression)t);
+        } else {
+            targs = null;
+        }
+        
+        return make.at(NOPOS).Reference(refMode, names.fromString(name.toString()), (JCExpression) expression, targs != null ? targs.toList() : null);
     }
     
     public ModifiersTree Modifiers(Set<Modifier> flagset, List<? extends AnnotationTree> annotations) {
