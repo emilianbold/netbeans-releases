@@ -292,7 +292,6 @@ public class MavenWhiteListQueryImpl implements WhiteListQueryImplementation {
         synchronized (results) {
             set = new HashSet(results);
         }
-        System.out.println("fire to " + set.size());
         RP.post(new Runnable() {
             @Override
             public void run() {
@@ -463,10 +462,10 @@ public class MavenWhiteListQueryImpl implements WhiteListQueryImplementation {
                 //no public packages.
             } else {
                 for (String pub : publicPackages) {
-                    if (pub.endsWith(".*")) {
-                        subPublic.add(pub.substring(0, pub.length() - ".*".length()));
-                    } else {
-                        eqPublic.add(pub);
+                    if (pub.endsWith(".**")) {
+                        subPublic.add(pub.substring(0, pub.length() - ".**".length()));
+                    } else if (pub.endsWith(".*")) {
+                        eqPublic.add(pub.substring(0, pub.length() - ".*".length()));
                     }
                 }
             }
