@@ -145,7 +145,8 @@ abstract class WebKitBreakpointManager implements PropertyChangeListener {
         implements Debugger.Listener, ChangeListener {
         
         private final LineBreakpoint lb;
-        private volatile org.netbeans.modules.web.webkit.debugging.api.debugger.Breakpoint b;
+        private org.netbeans.modules.web.webkit.debugging.api.debugger.Breakpoint b;
+        private final Object brkptLock = new Object();
         private final AtomicBoolean lineChanged = new AtomicBoolean(false);
         private final AtomicBoolean resubmitting = new AtomicBoolean(false);
         private final ThreadLocal<Boolean> ignoreLineUpdate = new ThreadLocal<Boolean>();
@@ -160,8 +161,10 @@ abstract class WebKitBreakpointManager implements PropertyChangeListener {
 
         @Override
         public void add() {
-            if (b != null) {
-                return ;
+            synchronized (brkptLock) {
+                if (b != null) {
+                    return ;
+                }
             }
             URL curl = d.getConnectionURL();
             if (curl != null) {
@@ -183,7 +186,9 @@ abstract class WebKitBreakpointManager implements PropertyChangeListener {
                     } else {
                         lb.setInvalid(Bundle.MSG_BRKP_Unresolved());
                     }
-                    b = br;
+                    synchronized (brkptLock) {
+                        b = br;
+                    }
                     d.addListener(this);
                 }
             }
@@ -191,27 +196,40 @@ abstract class WebKitBreakpointManager implements PropertyChangeListener {
 
         @Override
         public void remove() {
-            if (b == null) {
-                return ;
+            org.netbeans.modules.web.webkit.debugging.api.debugger.Breakpoint brkpt;
+            synchronized (brkptLock) {
+                brkpt = b;
+                if (brkpt == null) {
+                    return ;
+                }
             }
-            b.removePropertyChangeListener(this);
+            brkpt.removePropertyChangeListener(this);
             d.removeListener(this);
             if (d.isEnabled()) {
-                d.removeLineBreakpoint(b);
+                d.removeLineBreakpoint(brkpt);
             }
-            b = null;
+            synchronized (brkptLock) {
+                b = null;
+            }
             lb.resetValidity();
         }
         
         private void resubmit() {
-            if (b != null) {
-                d.removeLineBreakpoint(b);
+            org.netbeans.modules.web.webkit.debugging.api.debugger.Breakpoint brkpt;
+            synchronized (brkptLock) {
+                brkpt = b;
+            }
+            if (brkpt != null) {
+                d.removeLineBreakpoint(brkpt);
                 URL curl = d.getConnectionURL();
                 if (curl != null) {
                     String url = lb.getURLString(pc.getProject(), curl);
                     url = reformatFileURL(url);
                     resubmitting.set(false);
-                    b = d.addLineBreakpoint(url, lb.getLine().getLineNumber(), 0);
+                    brkpt = d.addLineBreakpoint(url, lb.getLine().getLineNumber(), 0);
+                    synchronized (brkptLock) {
+                        b = brkpt;
+                    }
                 }
             }
         }
@@ -264,7 +282,14 @@ abstract class WebKitBreakpointManager implements PropertyChangeListener {
                     // Ignore location update 
                     return ;
                 }
-                int lineNumber = (int) b.getLineNumber();
+                org.netbeans.modules.web.webkit.debugging.api.debugger.Breakpoint brkpt;
+                synchronized (brkptLock) {
+                    brkpt = b;
+                }
+                if (brkpt == null) {
+                    return ;
+                }
+                int lineNumber = (int) brkpt.getLineNumber();
                 ignoreLineUpdate.set(Boolean.TRUE);
                 try {
                     lb.setLine(lineNumber);

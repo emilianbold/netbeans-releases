@@ -118,7 +118,7 @@ public class BreakpointActionProvider extends ActionsProviderSupport
                 break;
             }
         }
-
+        add = add && MiscEditorUtil.isInJavaScript(line);
         if ( add ) {
             DebuggerManager.getDebuggerManager().addBreakpoint(
                     new LineBreakpoint(line));
