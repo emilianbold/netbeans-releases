@@ -107,12 +107,14 @@ public class IndexedElement extends JsElementImpl {
         elementDocument.addPair(JsIndex.FIELD_IS_GLOBAL, (ModelUtils.isGlobal(object.getParent()) ? "1" : "0"), true, true);
         elementDocument.addPair(JsIndex.FIELD_OFFSET, Integer.toString(object.getOffset()), true, true);            
         elementDocument.addPair(JsIndex.FIELD_FLAG, Integer.toString(Flag.getFlag(object)), false, true);
+        StringBuilder sb = new StringBuilder();
         for (JsObject property : object.getProperties().values()) {
             if (!property.getModifiers().contains(Modifier.PRIVATE)) {
-                elementDocument.addPair(JsIndex.FIELD_PROPERTY, codeProperty(property), false, true);
+                sb.append(codeProperty(property)).append("#@#");
             }
         }
-        StringBuilder sb = new StringBuilder();
+        elementDocument.addPair(JsIndex.FIELD_PROPERTY, sb.toString(), false, true);
+        sb = new StringBuilder();
         for (TypeUsage type : object.getAssignments()) {
             sb.append(type.getType());
             sb.append(":"); //NOI18N
@@ -167,8 +169,14 @@ public class IndexedElement extends JsElementImpl {
     public static Collection<IndexedElement> createProperties(IndexResult indexResult, String fqn) {
         Collection<IndexedElement> result = new ArrayList<IndexedElement>();
         FileObject fo = indexResult.getFile();
-        for(String sProperty : indexResult.getValues(JsIndex.FIELD_PROPERTY)) {
-            result.add(decodeProperty(sProperty, fo, fqn));
+        for(String sProperties : indexResult.getValues(JsIndex.FIELD_PROPERTY)) {
+            String[] split = sProperties.split("#@#");
+            for (int i = 0; i < split.length; i++) {
+                if  (!split[i].isEmpty()) {
+                    result.add(decodeProperty(split[i], fo, fqn));
+                }
+            }
+            
         }
         return result;
     }
