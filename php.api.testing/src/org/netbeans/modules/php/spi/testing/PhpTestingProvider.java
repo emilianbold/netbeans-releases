@@ -57,7 +57,6 @@ import org.netbeans.modules.php.spi.testing.locate.TestLocator;
 import org.netbeans.modules.php.spi.testing.run.TestRunException;
 import org.netbeans.modules.php.spi.testing.run.TestSession;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Parameters;
 
 /**
  * Encapsulates a PHP testing provider. Provider might be interested in storing
@@ -69,34 +68,14 @@ import org.openide.util.Parameters;
  * <p>Instances of this class are registered in the <code>{@value org.netbeans.modules.php.api.testing.PhpTesting#TESTING_PATH}</code>
  * in the module layer.</p>
  */
-public abstract class PhpTestingProvider {
-
-    private final String identifier;
-    private final String displayName;
-
-
-    /**
-     * Creates a new PHP testing provider with an identigfier, a name and display name.
-     *
-     * @param  identifier the <b>non-localized (usually english)</b> identifier of this PHP testing provider (e.g., "PHPUnit"); never {@code null}
-     * @param  displayName the display name of the provider, should be localized; never {@code null}
-     */
-    public PhpTestingProvider(@NonNull String identifier, @NonNull String displayName) {
-        Parameters.notNull("identifier", identifier); // NOI18N
-        Parameters.notNull("displayName", displayName); // NOI18N
-
-        this.identifier = identifier;
-        this.displayName = displayName;
-    }
+public interface PhpTestingProvider {
 
     /**
      * Returns the <b>non-localized (usually english)</b> identifier of this PHP testing provider.
      *
      * @return the <b>non-localized (usually english)</b> identifier; never {@code null}.
      */
-    public final String getIdentifier() {
-        return identifier;
-    }
+    String getIdentifier();
 
     /**
      * Returns the display name of this PHP testing provider. The display name is used
@@ -104,9 +83,7 @@ public abstract class PhpTestingProvider {
      *
      * @return the display name; never {@code null}
      */
-    public final String getDisplayName() {
-        return displayName;
-    }
+    String getDisplayName();
 
     /**
      * Finds out whether the provider can <i>test</i> the given PHP module.
@@ -118,9 +95,7 @@ public abstract class PhpTestingProvider {
      * @param  phpModule the PHP module; never {@code null}
      * @return {@code true} if this PHP module can be <i>tested</i> by this testing provider, {@code false} otherwise
      */
-    public boolean isInPhpModule(@NonNull PhpModule phpModule) {
-        return true;
-    }
+    boolean isInPhpModule(@NonNull PhpModule phpModule);
 
     /**
      * Checks whether the given file is a test file.
@@ -128,21 +103,21 @@ public abstract class PhpTestingProvider {
      * @param fileObj file to be checked
      * @return {@code true} if the file is a test file
      */
-    public abstract boolean isTestFile(@NonNull PhpModule phpModule, FileObject fileObj);
+    boolean isTestFile(@NonNull PhpModule phpModule, FileObject fileObj);
 
     // XXX when to return null and when throw exception?
     @CheckForNull
-    public abstract TestSession runTests(@NonNull PhpModule phpModule, TestRunInfo runInfo) throws TestRunException;
+    TestSession runTests(@NonNull PhpModule phpModule, TestRunInfo runInfo) throws TestRunException;
 
-    public abstract TestLocator getTestLocator(@NonNull PhpModule phpModule);
+    TestLocator getTestLocator(@NonNull PhpModule phpModule);
 
     // runs in background
-    public abstract CreateTestsResult createTests(@NonNull PhpModule phpModule, List<FileObject> files);
+    CreateTestsResult createTests(@NonNull PhpModule phpModule, List<FileObject> files);
 
-    public abstract boolean isCoverageSupported(@NonNull PhpModule phpModule);
+    boolean isCoverageSupported(@NonNull PhpModule phpModule);
 
     @CheckForNull
-    public abstract Locations.Line parseFileFromOutput(String line);
+    Locations.Line parseFileFromOutput(String line);
 
     //~ Inner classes
 

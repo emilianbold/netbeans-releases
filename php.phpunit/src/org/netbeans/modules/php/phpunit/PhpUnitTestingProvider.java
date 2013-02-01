@@ -66,21 +66,32 @@ import org.openide.util.NbBundle;
 /**
  * Testing provider for PhpUnit.
  */
-public final class PhpUnitTestingProvider extends PhpTestingProvider {
+public final class PhpUnitTestingProvider implements PhpTestingProvider {
 
     public static final String IDENTIFIER = "PhpUnit"; // NOI18N
 
     private static final PhpUnitTestingProvider INSTANCE = new PhpUnitTestingProvider();
 
 
-    @NbBundle.Messages("PhpUnitTestingProvider.name=PHPUnit")
-    public PhpUnitTestingProvider() {
-        super(IDENTIFIER, Bundle.PhpUnitTestingProvider_name());
-    }
-
     @PhpTestingProvider.Registration(position=100)
     public static PhpUnitTestingProvider getInstance() {
         return INSTANCE;
+    }
+
+    @Override
+    public String getIdentifier() {
+        return IDENTIFIER;
+    }
+
+    @NbBundle.Messages("PhpUnitTestingProvider.name=PHPUnit")
+    @Override
+    public String getDisplayName() {
+        return Bundle.PhpUnitTestingProvider_name();
+    }
+
+    @Override
+    public boolean isInPhpModule(PhpModule phpModule) {
+        return true;
     }
 
     @Override

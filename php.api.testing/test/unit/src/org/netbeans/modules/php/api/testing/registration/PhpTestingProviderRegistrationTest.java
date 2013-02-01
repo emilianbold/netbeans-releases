@@ -99,16 +99,39 @@ public class PhpTestingProviderRegistrationTest extends NbTestCase {
         }
     }
 
+    /**
+     *
+     */
     @PhpTestingProvider.Registration(position=100)
-    public static final class MyTests extends PhpTestingProvider {
+    public static final class MyTests implements PhpTestingProvider {
+
         static int factoryCalls = 0;
 
+        private final String identifier;
+        private final String displayName;
+
         public MyTests() {
-            super(CONSTRUCTOR, "display name");
+            this(CONSTRUCTOR);
         }
 
         MyTests(String name) {
-            super(name, "display name");
+            identifier = name;
+            displayName = "display name";
+        }
+
+        @Override
+        public String getIdentifier() {
+            return identifier;
+        }
+
+        @Override
+        public String getDisplayName() {
+            return displayName;
+        }
+
+        @Override
+        public boolean isInPhpModule(PhpModule phpModule) {
+            throw new UnsupportedOperationException("Not supported yet.");
         }
 
         @Override
