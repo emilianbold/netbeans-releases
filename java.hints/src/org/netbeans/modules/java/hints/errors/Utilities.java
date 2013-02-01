@@ -189,22 +189,20 @@ public class Utilities {
     }
 
     private static String guessLiteralName(String str) {
-        StringBuffer sb = new StringBuffer();
-        if(str.length() == 0)
+        if(str.isEmpty())
             return null;
+        StringBuilder sb = new StringBuilder();
         char first = str.charAt(0);
         if(Character.isJavaIdentifierStart(str.charAt(0)))
             sb.append(first);
 
-        for (int i = 1; i < str.length(); i++) {
+        for (int i = 0; i < str.length(); i++) {
             char ch = str.charAt(i);
             if(ch == ' ') {
                 sb.append('_');
-                continue;
-            }
-            if (Character.isJavaIdentifierPart(ch))
+            } else if (sb.length() == 0 ? Character.isJavaIdentifierStart(ch) : Character.isJavaIdentifierPart(ch))
                 sb.append(ch);
-            if (i > 40)
+            if (sb.length() > 40)
                 break;
         }
         if (sb.length() == 0)

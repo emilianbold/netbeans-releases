@@ -123,6 +123,10 @@ public class UtilitiesTest extends NbTestCase {
         performNameGuessTest("package test; public class Test {public void t() {getIssueDate(|);} public int getIssueDate() {return 0;}}", "issueDate");
     }
     
+    public void test225532() throws Exception {
+        performNameGuessTest("package test; public class Test {public void t() { String str = \"127.|0.0.1\";} }", "string");
+    }
+    
     public void testShortName1() throws Exception {
         //TODO: better display name:
         performShortNameTest("package test; public class Test { public void t(Object... obj) { | }}", "((boolean[]) obj)[i]", "...(boolean)[]");
