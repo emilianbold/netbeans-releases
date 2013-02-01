@@ -42,7 +42,6 @@
 package org.netbeans.test.php.cc;
 
 import junit.framework.Test;
-import org.netbeans.jellytools.JellyTestCase;
 import static org.netbeans.jellytools.JellyTestCase.emptyConfiguration;
 import org.netbeans.junit.NbModuleSuite;
 
@@ -50,13 +49,10 @@ import org.netbeans.junit.NbModuleSuite;
  *
  * @author Vladimir Riha
  */
-public class CompletionSuite extends JellyTestCase {
-
-    public CompletionSuite(String name) {
-        super(name);
-    }
+public class CompletionSuite {
 
     public static Test suite() {
+        
         NbModuleSuite.Configuration conf = emptyConfiguration();
         conf = conf.addTest(testCC.class,
                 "CreateApplication",
@@ -70,37 +66,35 @@ public class CompletionSuite extends JellyTestCase {
                 "Verify_keywords_code_completion",
                 "Verify_code_completion_after_extends_keyword",
                 "Verify_code_completion_with_a_single_option",
-                "Verify_JavaDoc_window",
                 "Verify_code_completion_after_EXTENDS",
                 "Verify_code_completion_in_slash_slash_comments",
                 "Verify_code_completion_in_slash_star_comments",
-                "Verify_code_completion_in_slash_star_star_comments");
-        conf = conf.addTest(testCCAliases.class, "VerifyAliases");
-        conf = conf.addTest(testCCClever.class, "CreateApplication", "CleverTryCatch");
-        conf = conf.addTest(testCCConstructorsAndDestructors.class, "CreateApplication", "Issue141873");
-        conf = conf.addTest(testCCExceptionAfterInvokation.class, "CreateApplication", "Issue141855");
-        conf = conf.addTest(testCCIfSpacesInExpression.class, "CreateApplication", "Issue141881");
-        conf = conf.addTest(testCCInDetail.class, "CreateApplication",
+                "Verify_code_completion_in_slash_star_star_comments")
+                .addTest(testCCAliases.class, "VerifyAliases")
+                .addTest(testCCClever.class, "CreateApplication", "CleverTryCatch")
+                .addTest(testCCConstructorsAndDestructors.class, "CreateApplication", "Issue141873")
+                .addTest(testCCExceptionAfterInvokation.class, "CreateApplication", "Issue141855")
+                .addTest(testCCIfSpacesInExpression.class, "CreateApplication", "Issue141881")
+                .addTest(testCCInDetail.class, "CreateApplication",
                 "CreatePHPFile",
                 "testPhp54ArrayDereferencing",
                 "DetailedCodeCompletionTestingPartOne",
                 "DetailedCodeCompletionTestingPartTwo",
                 "DetailedCodeCompletionTestingPartThree",
                 "testPhp54Callable",
-                "testPhp54AnonymousObject");
-        conf = conf.addTest(testCCNamespaces.class, "CreateApplication",
+                "testPhp54AnonymousObject")
+                .addTest(testCCNamespaces.class, "CreateApplication",
                 "testCCNamespaceSameFile",
                 "testCCClassNamespaceSameFile",
                 "testCCNamespaceDiffFile",
-                "testCCClassNamespaceDiffFile");
-        conf = conf.addTest(testCCPhpDoc.class, "automaticCommentGenerationOnFunction", "automaticCommentGenerationOnClassVariable");
-        conf = conf.addTest(testCCSorting.class, "CreateApplication", "Issue141866");
-
-        conf = conf.addTest(testCCTraits.class, "CreateApplication",
+                "testCCClassNamespaceDiffFile")
+                .addTest(testCCPhpDoc.class, "automaticCommentGenerationOnFunction", "automaticCommentGenerationOnClassVariable")
+                .addTest(testCCSorting.class, "CreateApplication", "Issue141866")
+                .addTest(testCCTraits.class, "CreateApplication",
                 "testPhp54TraitsSameFile",
-                "testPhp54TraitsDifferentFile");
-        conf = conf.addTest(testCConEmptyLine.class, "CreateApplication", "Issue141854");
-        conf = conf.addTest(testCCSorting.class, "CreateApplication", "Issue141880");
+                "testPhp54TraitsDifferentFile")
+                .addTest(testCConEmptyLine.class, "CreateApplication", "Issue141854")
+                .addTest(testCCSorting.class, "CreateApplication", "Issue141880");
         return conf.suite();
     }
 }
