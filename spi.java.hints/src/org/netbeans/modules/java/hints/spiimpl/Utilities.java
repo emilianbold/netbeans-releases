@@ -1241,7 +1241,7 @@ public class Utilities {
         }
 
         @Override
-        public JCVariableDecl formalParameter() {
+        public JCVariableDecl formalParameter(boolean lambdaParam) {
             if (token.kind == TokenKind.IDENTIFIER) {
                 if (token.name().startsWith(dollar)) {
                     com.sun.tools.javac.util.Name name = token.name();
@@ -1255,7 +1255,7 @@ public class Utilities {
                 }
             }
 
-            return super.formalParameter();
+            return super.formalParameter(lambdaParam);
         }
 
         @Override
