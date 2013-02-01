@@ -138,6 +138,7 @@
                 <friend>com.sun.tools.ide.remote.projectui</friend>
                 <friend>com.sun.tools.odb</friend>
                 <friend>com.sun.tools.sendto</friend>
+                <friend>com.sun.tools.swdev.sunstudio.server</friend>
                 <friend>com.sun.tools.tuxedo.codemodel.bridge</friend>
                 <friend>com.sun.tools.tuxedo.completion</friend>
                 <friend>com.sun.tools.tuxedo.componentproject</friend>
