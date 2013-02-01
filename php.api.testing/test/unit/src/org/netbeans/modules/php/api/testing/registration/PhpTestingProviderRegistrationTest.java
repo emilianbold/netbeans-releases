@@ -161,7 +161,12 @@ public class PhpTestingProviderRegistrationTest extends NbTestCase {
 
         @Override
         public TestLocator getTestLocator(PhpModule phpModule) {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public String getCustomizerCategoryName() {
+            throw new UnsupportedOperationException("Not supported yet.");
         }
 
     }

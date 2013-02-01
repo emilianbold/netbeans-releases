@@ -97,6 +97,9 @@ public interface PhpTestingProvider {
      */
     boolean isInPhpModule(@NonNull PhpModule phpModule);
 
+    @CheckForNull
+    String getCustomizerCategoryName();
+
     /**
      * Checks whether the given file is a test file.
      * @param phpModule the PHP module; never {@code null}

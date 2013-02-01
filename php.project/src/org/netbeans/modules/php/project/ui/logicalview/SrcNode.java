@@ -169,10 +169,11 @@ public class SrcNode extends FilterNode {
         // customizer - open sources for source node, phpunit for test node
         Action customizeAction = null;
         if (isTest) {
-            PhpTestingProvider testingProvider = project.getFirstTestingProvider();
-            if (testingProvider != null) {
-                // XXX improve, do not use identifier?
-                customizeAction = new PhpLogicalViewProvider.CustomizeProjectAction(project, testingProvider.getIdentifier());
+            for (PhpTestingProvider testingProvider : project.getTestingProviders()) {
+                String customizerCategoryName = testingProvider.getCustomizerCategoryName();
+                if (customizerCategoryName != null) {
+                    customizeAction = new PhpLogicalViewProvider.CustomizeProjectAction(project, customizerCategoryName);
+                }
             }
         } else {
             customizeAction = CommonProjectActions.customizeProjectAction();

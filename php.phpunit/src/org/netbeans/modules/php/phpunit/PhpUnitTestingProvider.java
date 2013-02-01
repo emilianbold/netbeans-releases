@@ -90,6 +90,11 @@ public final class PhpUnitTestingProvider implements PhpTestingProvider {
     }
 
     @Override
+    public String getCustomizerCategoryName() {
+        return IDENTIFIER;
+    }
+
+    @Override
     public boolean isInPhpModule(PhpModule phpModule) {
         return true;
     }
