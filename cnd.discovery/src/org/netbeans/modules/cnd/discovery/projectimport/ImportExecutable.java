@@ -722,33 +722,54 @@ public class ImportExecutable implements PropertyChangeListener {
         return null;
     }
 
-    static void gatherSubFolders(File d, HashSet<String> set, Map<String,String> result){
+    static void gatherSubFolders(File startFolder, HashSet<String> set, Map<String,String> result){
         if (!DLL_FILE_SEARCH) {
             return;
         }
-        if (CndPathUtilitities.isIgnoredFolder(d)){
-            return;
-        }
-        if (d.exists() && d.isDirectory() && d.canRead()){
-            String canPath;
-            try {
-                canPath = d.getCanonicalPath();
-            } catch (IOException ex) {
-                return;
-            }
-            if (!set.contains(canPath)){
-                set.add(canPath);
-                File[] ff = d.listFiles();
-                if (ff != null) {
-                    for (int i = 0; i < ff.length; i++) {
-                        String name = ff[i].getName();
-                        if (result.containsKey(name)) {
-                           result.put(name, ff[i].getAbsolutePath());
+        List<File> down = new ArrayList<File>();
+        down.add(startFolder);
+        while(!down.isEmpty()) {
+            ArrayList<File> next = new ArrayList<File>();
+            for (File file : down) {
+                if (CndPathUtilitities.isIgnoredFolder(file)){
+                    continue;
+                }
+                if (file.exists() && file.isDirectory() && file.canRead()){
+                    String canPath;
+                    try {
+                        canPath = file.getCanonicalPath();
+                    } catch (IOException ex) {
+                        continue;
+                    }
+                    if (!set.contains(canPath)){
+                        set.add(canPath);
+                        File[] fileList = file.listFiles();
+                        if (fileList != null) {
+                            for (int i = 0; i < fileList.length; i++) {
+                                if (fileList[i].isDirectory()) {
+                                    next.add(fileList[i]);
+                                } else {
+                                    String name = fileList[i].getName();
+                                    if (result.containsKey(name)) {
+                                       result.put(name, fileList[i].getAbsolutePath());
+                                       boolean finished = true;
+                                       for(String path : result.values()) {
+                                           if (path == null || path.isEmpty()) {
+                                               finished = false;
+                                               break;
+                                           }
+                                       }
+                                       if (finished) {
+                                           return;
+                                       }
+                                    }
+                                }
+                            }
                         }
-                        gatherSubFolders(ff[i], set, result);
                     }
                 }
             }
+            down = next;
         }
     }
 
