@@ -91,7 +91,7 @@ public class PerformanceLogger {
          * Event will be automatically logged after time out.
          * By default time out is infinite.
          * The automatic logging does not prevent final logging by method log.
-         * It is ensured that timeout event is sent before regular logging event or does not be sent.
+         * It is ensured that timeout event is sent before regular logging event or is not sent.
          * 
          * @param timeOut in seconds
          */
