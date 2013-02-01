@@ -569,9 +569,11 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
         //DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(var.getValue()));
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
+                boolean isMinimized = false;
                 if (preferences.getBoolean("show_evaluator_result", true)) {
                     TopComponent view = WindowManager.getDefault().findTopComponent("localsView"); // NOI18N [TODO]
                     view.open();
+                    isMinimized = WindowManager.getDefault().isTopComponentMinimized(view);
                     view.requestActive();
                 } else {
                     if (resultView == null) {
@@ -579,10 +581,13 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
                     }
                     if (result != null) {
                         resultView.open();
+                        isMinimized = WindowManager.getDefault().isTopComponentMinimized(resultView);
                         resultView.requestActive();
                     }
                 }
-                getInstance().requestActive();
+                if (!isMinimized) {
+                    getInstance().requestActive();
+                }
                 fireResultChange();
             }
         });
