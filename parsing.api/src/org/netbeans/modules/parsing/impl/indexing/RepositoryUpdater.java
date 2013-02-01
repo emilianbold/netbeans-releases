@@ -120,6 +120,7 @@ import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
+import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Cancellable;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -4240,14 +4241,44 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             if (!shouldDoNothing || roots.isEmpty() || getCancelRequest().isRaised()) {
                 return;
             }
-            boolean found = false;
+            int stubCount = 0;
+            // ignore all files, which reside in IDE installation (in various clusters)
+            // the ignored files must be located 1 subdirectory beneath the cluster 
+            // directory
             for (URL u : roots) {
-                if (!u.getPath().contains("jsstubs/allstubs.zip")) {
-                    found = true;
+                String path = u.getPath();
+                if (path == null || !path.endsWith("stubs.zip!/")) { // NOI18N
                     break;
                 }
+                FileObject f = URLMapper.findFileObject(u);
+                if (f == null) {
+                    break;
+                }
+                // !/ is a root inside archive, get the archive which encapsulates it -> normal FS
+                FileObject archive = FileUtil.getArchiveFile(f);
+                File archiveFile;
+                // quick check - if the archive is not on OS FS, bail out.
+                if (archive == null || 
+                    ((archiveFile = FileUtil.toFile(archive)) == null)) {
+                    break;
+                }
+                // 1 level up = dir-in-cluster. 2 levels up = cluster dir
+                FileObject parent = archive.getParent();
+                if (parent == null) {
+                    break;
+                }
+                parent = parent.getParent();
+                if (parent == null) {
+                    break;
+                }
+                String clusterPath = FileUtil.getRelativePath(parent, archive);
+                File file = InstalledFileLocator.getDefault().locate(clusterPath, null, false);
+                if (file == null || !file.equals(archiveFile)) {
+                    break;
+                }
+                stubCount++;
             }
-            if (!found) {
+            if (stubCount == roots.size()) {
                 return;
             }
             if (previousLevel == null) {
