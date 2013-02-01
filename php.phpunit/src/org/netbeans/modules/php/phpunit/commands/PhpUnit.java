@@ -320,7 +320,10 @@ public final class PhpUnit {
         phpUnit.workDir(getWorkingDirectory(phpModule, runInfo.getWorkingDirectory()))
                 .additionalParameters(params);
         try {
-            return phpUnit.runAndWait(getDescriptor(), "Running tests..."); // NOI18N
+            if (runInfo.getSessionType() == TestRunInfo.SessionType.TEST) {
+                return phpUnit.runAndWait(getDescriptor(), "Running tests..."); // NOI18N
+            }
+            return phpUnit.debug(runInfo.getStartFile(), getDescriptor(), null);
         } catch (CancellationException ex) {
             // canceled
             LOGGER.log(Level.FINE, "Test creating cancelled", ex);
