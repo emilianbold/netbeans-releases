@@ -393,7 +393,7 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
          */
         private static final String ICON = "org/netbeans/modules/j2ee/weblogic9/resources/16x16.gif"; // NOI18N
 
-        private static final String J2EE_API_DOC    = "docs/javaee6-doc-api.zip";    // NOI18N
+        private static final String J2EE_API_DOC    = "docs/javaee-doc-api.jar";    // NOI18N
 
         private final Set<Type> moduleTypes = new HashSet<Type>();
 

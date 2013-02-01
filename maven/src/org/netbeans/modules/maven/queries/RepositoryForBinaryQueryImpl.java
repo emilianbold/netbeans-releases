@@ -791,7 +791,7 @@ public class RepositoryForBinaryQueryImpl extends AbstractMavenForBinaryQueryImp
         @Override
         public URL[] getRoots() {
             try {
-                File j2eeDoc = InstalledFileLocator.getDefault().locate("docs/javaee6-doc-api.zip", "org.netbeans.modules.j2ee.platform", false); // NOI18N
+                File j2eeDoc = InstalledFileLocator.getDefault().locate("docs/javaee-doc-api.jar", "org.netbeans.modules.j2ee.platform", false); // NOI18N
                 if (j2eeDoc != null) {
                     URL url = FileUtil.getArchiveRoot(Utilities.toURI(j2eeDoc).toURL());
                     url = new URL(url + "docs/api/"); //NOI18N

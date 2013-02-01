@@ -119,7 +119,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
                             new String[]{EE6_INSTANCES_PATH, EE6WC_INSTANCES_PATH},
                             null,
                             true, 
-                            new String[]{"docs/javaee6-doc-api.zip"}, // NOI18N
+                            new String[]{"docs/javaee-doc-api.jar"}, // NOI18N
                             new String[]{"--nopassword"}, // NOI18N
                             new CommandFactory()  {
 
@@ -154,7 +154,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
                             org.openide.util.NbBundle.getMessage(GlassfishInstanceProvider.class,
                                 "STR_PRELUDE_SERVER_NAME", new Object[]{}), // NOI18N
                             false,
-                            new String[]{"docs/javaee6-doc-api.zip"}, // NOI18N
+                            new String[]{"docs/javaee-doc-api.jar"}, // NOI18N
                             null,
                             new CommandFactory()  {
 
