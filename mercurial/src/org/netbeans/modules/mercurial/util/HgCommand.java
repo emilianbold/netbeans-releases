@@ -102,7 +102,6 @@ import org.netbeans.modules.mercurial.ui.repository.HgURL;
 import org.netbeans.modules.mercurial.ui.repository.Repository;
 import org.netbeans.modules.mercurial.ui.repository.UserCredentialsSupport;
 import org.netbeans.modules.mercurial.ui.tag.HgTag;
-import org.netbeans.modules.versioning.util.IndexingBridge;
 import org.netbeans.modules.versioning.util.KeyringSupport;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.filesystems.FileUtil;
@@ -401,20 +400,6 @@ public class HgCommand {
         }
         MAX_COMMANDLINE_SIZE = maxCmdSize;
     }
-
-    private static final HashSet<String> GUARDED_COMMANDS = new HashSet<String>(Arrays.asList(
-            HG_BACKOUT_CMD,
-            HG_CLONE_CMD,
-            HG_IMPORT_CMD,
-            HG_FETCH_CMD,
-            HG_PULL_CMD,
-            HG_MERGE_CMD,
-            HG_QGOTO_CMD,
-            HG_QPOP_CMD,
-            HG_QPUSH_CMD,
-            HG_UNBUNDLE_CMD,
-            HG_UPDATE_ALL_CMD
-    ));
 
     private static final HashSet<String> WORKING_COPY_PARENT_MODIFYING_COMMANDS = new HashSet<String>(Arrays.asList(
         HG_BACKOUT_CMD,
@@ -2475,14 +2460,7 @@ public class HgCommand {
         for(File f: revertFiles){
             command.add(f.getAbsolutePath());
         }
-        List<String> list;
-        Callable<List<String>> callable = new Callable<List<String>>() {
-            @Override
-            public List<String> call() throws Exception {
-                return exec(command);
-            }
-        };
-        list = runWithoutIndexing(callable, revertFiles, HG_REVERT_CMD);
+        List<String> list = exec(command);
         if (!list.isEmpty() && isErrorNoChangeNeeded(list.get(0)))
             handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_REVERT_FAILED"), logger);
     }
@@ -2509,14 +2487,7 @@ public class HgCommand {
         for (File f : revertFiles){
             command.add(f.getAbsolutePath());
         }
-        List<String> list;
-        Callable<List<String>> callable = new Callable<List<String>>() {
-            @Override
-            public List<String> call() throws Exception {
-                return exec(command);
-            }
-        };
-        list = runWithoutIndexing(callable, revertFiles, HG_PURGE_CMD);
+        List<String> list = exec(command);
         if (!list.isEmpty())
             handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_REVERT_FAILED"), logger);
     }
@@ -3791,17 +3762,7 @@ public class HgCommand {
                 Callable<List<String>> callable = new Callable<List<String>>() {
                     @Override
                     public List<String> call () throws HgException {
-                        if (isGuardedCommand(hgCommand) && repository != null) {
-                            // indexing is supposed to be disabled for the time the command is running
-                            return runWithoutIndexing(new Callable<List<String>>() {
-                                @Override
-                                public List<String> call() throws Exception {
-                                    return exec(commandLine, pb);
-                                }
-                            }, Collections.singletonList(repository), hgCommand);
-                        } else {
-                            return exec(commandLine, pb);
-                        }
+                        return exec(commandLine, pb);
                     }
                 };
                 if (repository != null) {
@@ -4612,15 +4573,6 @@ public class HgCommand {
         return commandName;
     }
 
-    /**
-     * Returns true if the hgCommand belongs among guarded commands for which indexing shall be disabled
-     * @param hgCommand
-     * @return
-     */
-    private static boolean isGuardedCommand(String hgCommand) {
-        return GUARDED_COMMANDS.contains(hgCommand);
-    }
-
     private static boolean changesParents (String hgCommand) {
         return WORKING_COPY_PARENT_MODIFYING_COMMANDS.contains(hgCommand);
     }
@@ -4648,21 +4600,6 @@ public class HgCommand {
             }
         }
         return repositoryFile;
-    }
-
-    private static List<String> runWithoutIndexing(Callable<List<String>> callable, List<File> files, String hgCommand) throws HgException {
-        try {
-            if (Mercurial.LOG.isLoggable(Level.FINER)) {
-                Mercurial.LOG.log(Level.FINER, "Running command with disabled indexing: [hg {0}] on {1}", //NOI18N
-                        new Object[] {hgCommand, files});
-            }
-            return IndexingBridge.getInstance().runWithoutIndexing(callable, files.toArray(new File[files.size()]));
-        } catch (HgException ex) {
-            throw ex;
-        } catch (Exception ex) {
-            Mercurial.LOG.log(Level.INFO, "Cannot run command hg " + hgCommand + " without indexing", ex); //NOI18N
-            throw new HgException("Cannot run command hg " + hgCommand + " due to: " + ex.getMessage()); //NOI18N
-        }
     }
 
     private static final Set<File> loggedRepositories = new HashSet<File>();

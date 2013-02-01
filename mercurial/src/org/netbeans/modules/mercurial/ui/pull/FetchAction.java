@@ -50,13 +50,13 @@ import org.netbeans.modules.mercurial.HgException;
 import org.netbeans.modules.mercurial.util.HgCommand;
 import org.netbeans.modules.mercurial.util.HgUtils;
 import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.util.RequestProcessor;
 
 import java.io.File;
 import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.config.HgConfigFiles;
@@ -131,7 +131,7 @@ public class FetchAction extends ContextAction {
         });
     }
 
-    public static void performFetch(final File root, String revision, OutputLogger logger) {
+    public static void performFetch(final File root, final String revision, final OutputLogger logger) {
         HgURL pullSource = null;
         try {
             logger.outputInRed(NbBundle.getMessage(FetchAction.class, "MSG_FETCH_TITLE")); // NOI18N
@@ -168,8 +168,14 @@ public class FetchAction extends ContextAction {
                 }
             }
 
-            List<String> list;
-            list = HgCommand.doFetch(root, pullSource, revision, enableFetch, logger);
+            final HgURL from = pullSource;
+            final boolean enableExtension = enableFetch;
+            List<String> list = HgUtils.runWithoutIndexing(new Callable<List<String>>() {
+                @Override
+                public List<String> call () throws Exception {
+                    return HgCommand.doFetch(root, from, revision, enableExtension, logger);
+                }
+            }, root);
 
             if (list != null && !list.isEmpty()) {
                 logger.output(HgUtils.replaceHttpPassword(list));

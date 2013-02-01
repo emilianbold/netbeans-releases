@@ -44,6 +44,7 @@ package org.netbeans.modules.mercurial.ui.queues;
 import java.awt.EventQueue;
 import java.io.File;
 import java.util.List;
+import java.util.concurrent.Callable;
 import org.netbeans.modules.mercurial.HgException;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.Mercurial;
@@ -118,30 +119,41 @@ public class QGoToPatchAction extends ContextAction {
         new HgProgressSupport() {
             @Override
             protected void perform () {
-                OutputLogger logger = getLogger();
+                final OutputLogger logger = getLogger();
                 try {
                     logger.outputInRed(NbBundle.getMessage(QGoToPatchAction.class, "MSG_GOTO_TITLE")); //NOI18N
                     logger.outputInRed(NbBundle.getMessage(QGoToPatchAction.class, "MSG_GOTO_TITLE_SEP")); //NOI18N
-                    if (patchName == null || queueName != null) {
-                        logger.output(NbBundle.getMessage(QGoToPatchAction.class, "MSG_GOTO_EMPTY_INFO_SEP", root.getAbsolutePath())); //NOI18N
-                        HgCommand.qPopPatches(root, null, logger);
-                    }
-                    if (isCanceled()) {
+                    if (!HgUtils.runWithoutIndexing(new Callable<Boolean>() {
+                        @Override
+                        public Boolean call () throws Exception {
+                            if (patchName == null || queueName != null) {
+                                logger.output(NbBundle.getMessage(QGoToPatchAction.class, "MSG_GOTO_EMPTY_INFO_SEP", root.getAbsolutePath())); //NOI18N
+                                HgCommand.qPopPatches(root, null, logger);
+                            }
+                            if (isCanceled()) {
+                                return false;
+                            }
+                            if (queueName != null) {
+                                logger.output(Bundle.MSG_SwitchingQueue(root.getAbsolutePath(), queueName));
+                                HgCommand.qSwitchQueue(root, queueName, logger);
+                            }
+                            if (isCanceled()) {
+                                return false;
+                            }
+                            if (patchName != null) {
+                                logger.output(NbBundle.getMessage(QGoToPatchAction.class, "MSG_GOTO_INFO_SEP", patchName, root.getAbsolutePath())); //NOI18N
+                                List<String> output = HgCommand.qGoToPatch(root, patchName, logger);
+                                FailedPatchResolver resolver = new FailedPatchResolver(root, output, logger);
+                                resolver.resolveFailure();
+                                logger.output(output);
+                            }
+                            return true;
+                        }
+                    }, root)) {
+                        // do not continue, canceled
+                        logger.outputInRed(NbBundle.getMessage(QGoToPatchAction.class, "MSG_GOTO_DONE")); // NOI18N
+                        logger.output(""); // NOI18N
                         return;
-                    }
-                    if (queueName != null) {
-                        logger.output(Bundle.MSG_SwitchingQueue(root.getAbsolutePath(), queueName));
-                        HgCommand.qSwitchQueue(root, queueName, logger);
-                    }
-                    if (isCanceled()) {
-                        return;
-                    }
-                    if (patchName != null) {
-                        logger.output(NbBundle.getMessage(QGoToPatchAction.class, "MSG_GOTO_INFO_SEP", patchName, root.getAbsolutePath())); //NOI18N
-                        List<String> output = HgCommand.qGoToPatch(root, patchName, logger);
-                        FailedPatchResolver resolver = new FailedPatchResolver(root, output, logger);
-                        resolver.resolveFailure();
-                        logger.output(output);
                     }
                     Mercurial.getInstance().refreshOpenedFiles(root);
                     HgLogMessage parent = HgCommand.getParents(root, null, null).get(0);

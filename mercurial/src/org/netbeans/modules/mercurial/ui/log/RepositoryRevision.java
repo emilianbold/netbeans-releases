@@ -237,7 +237,7 @@ public class RepositoryRevision {
         HgProgressSupport supp = new HgProgressSupport() {
             @Override
             protected void perform () {
-                PullAction.getDefaultAndPerformPull(repositoryRoot, revision, getLogger());
+                PullAction.getDefaultAndPerformPull(repositoryRoot, revision, this);
             }
         };
         supp.start(Mercurial.getInstance().getRequestProcessor(repositoryRoot), repositoryRoot, Bundle.MSG_SearchHistory_pulling(revision));

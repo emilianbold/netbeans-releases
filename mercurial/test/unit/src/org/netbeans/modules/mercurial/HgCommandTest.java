@@ -44,8 +44,10 @@ package org.netbeans.modules.mercurial;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -53,8 +55,8 @@ import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertTrue;
 import org.netbeans.junit.MockServices;
 import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
-import org.netbeans.modules.mercurial.ui.repository.HgURL;
 import org.netbeans.modules.mercurial.util.HgCommand;
+import org.netbeans.modules.mercurial.util.HgUtils;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -113,167 +115,91 @@ public class HgCommandTest extends AbstractHgTestCase {
         CommandHandler handler = new CommandHandler();
         Mercurial.LOG.addHandler(handler);
         Mercurial.LOG.setLevel(Level.ALL);
-        File newRepo = new File(getTempDir(), "repo");
+        final File newRepo = new File(getTempDir(), "repo");
         List<File> repoAsList = Collections.singletonList(newRepo);
-        handler.reset("clone", repoAsList);
+        handler.reset(repoAsList);
         commit(getWorkTreeDir());
-        HgCommand.doClone(getWorkTreeDir(), newRepo, NULL_LOGGER);
+        HgUtils.runWithoutIndexing(new Callable<Void>() {
+            @Override
+            public Void call () throws Exception {
+                return null;
+            }
+        }, newRepo);
         handler.assertResults(1);
         
         handler.reset();
-        getCache().refresh(newRepo);
-        handler.assertResults(0);
-
-        FileObject fileFO;
-        handler.reset();
-        File fol = new File(newRepo, "folder1");
-        fol.mkdirs();
-        File file = new File(fol, "file1");
-        file.createNewFile();
-        fileFO = FileUtil.toFileObject(FileUtil.normalizeFile(file));
-        FileObject folderFO = fileFO.getParent();
-        FileObject repoFO = folderFO.getParent();
+        handler.reset(Collections.<File>emptyList());
+        HgUtils.runWithoutIndexing(new Callable<Void>() {
+            @Override
+            public Void call () throws Exception {
+                return null;
+            }
+        });
+        handler.assertResults(1);
         
-        HgCommand.doAdd(newRepo, file, NULL_LOGGER);
-        HgCommand.doCommit(newRepo, Collections.singletonList(file), "blabla", NULL_LOGGER);
-        String revision = HgCommand.doTip(newRepo, NULL_LOGGER).getCSetShortID();
-        write(file, "hello");
-        HgCommand.doCommit(newRepo, Collections.singletonList(file), "blabla", NULL_LOGGER);
-        handler.assertResults(0);
-
-        // *************** REVERT *************** //
-        Thread.sleep(2000); // give some time so modification timestamps differ
-
-        RefreshProbe refreshProbe = new RefreshProbe(fileFO);
-        handler.reset("revert", Collections.singletonList(fol));
-        refreshProbe.reset();
-        HgCommand.doRevert(newRepo, Collections.singletonList(fol), revision, false, NULL_LOGGER);
-        refreshProbe.checkRefresh(true);
-        handler.assertResults(1);
-
-        // *************** REVERT *************** //
-        Thread.sleep(2000); // give some time so modification timestamps differ
-        
-        handler.reset("revert", Collections.singletonList(fol));
-        refreshProbe.reset();
-        HgCommand.doRevert(newRepo, Collections.singletonList(fol), null, false, NULL_LOGGER);
-        refreshProbe.checkRefresh(true);
-        handler.assertResults(1);
-
-        // *************** UPDATE *************** //
-        Thread.sleep(2000); // give some time so modification timestamps differ
-
-        handler.reset("update", repoAsList);
-        refreshProbe.reset();
-        HgCommand.doUpdateAll(newRepo, true, revision);
-        refreshProbe.checkRefresh(true);
-        handler.assertResults(1);
-
-        // *************** UPDATE *************** //
-        Thread.sleep(2000); // give some time so modification timestamps differ
-
-        handler.reset("update", repoAsList);
-        refreshProbe.reset();
-        HgCommand.doUpdateAll(newRepo, true, "tip");
-        refreshProbe.checkRefresh(true);
-        handler.assertResults(1);
-
-        // *************** BACKOUT *************** //
-        Thread.sleep(2000); // give some time so modification timestamps differ
-
-        handler.reset("backout", repoAsList);
-        write(file, "backout test");
-        revision = HgCommand.doTip(newRepo, NULL_LOGGER).getCSetShortID();
-        HgCommand.doCommit(newRepo, Collections.singletonList(file), "backout test", NULL_LOGGER);
-        Thread.sleep(2000); // give some time so modification timestamps differ
-        String message = "Backout";
-        refreshProbe.reset();
-        HgCommand.doBackout(newRepo, "tip", false, message, NULL_LOGGER);
-        refreshProbe.checkRefresh(true);
-        assertEquals(message, HgCommand.doTip(newRepo, NULL_LOGGER).getMessage());
-        handler.assertResults(1);
-
-        // *************** INTER-REPOSITORY-COMMANDS *************** //
-
-        // create a file in original repo
-        File mainFol = createFolder("folder2");
-        File mainFile;
-        commit(mainFile = createFile(mainFol, "file2"));
-        // fetch the changes to the clone
-        handler.reset("fetch", repoAsList);
-        HgCommand.doFetch(newRepo, new HgURL(getWorkTreeDir()), null, true, NULL_LOGGER);
-        handler.assertResults(1);
-
-        Thread.sleep(2000); // give some time so modification timestamps differ
-        folderFO = repoFO.getFileObject(mainFol.getName());
-        fileFO = folderFO.getFileObject(mainFile.getName());
-
-        // *************** FETCH *************** //
-        // do changes in the default repo
-        write(mainFile, "fetch test");
-        commit(mainFile);
-        // fetch
-        handler.reset("fetch", repoAsList);
-        refreshProbe = new HgCommandTest.RefreshProbe(fileFO);
-        refreshProbe.reset();
-        HgCommand.doFetch(newRepo, new HgURL(getWorkTreeDir()), null, true, NULL_LOGGER);
-        refreshProbe.checkRefresh(true);
-        handler.assertResults(1);
-
-        Thread.sleep(2000); // give some time so modification timestamps differ
-
-        // *************** PULL *************** //
-        // pull without update - no refresh, refreshed in merge
         handler.reset();
-        write(mainFile, "pull test");
-        commit(mainFile);
-        revision = HgCommand.doTip(getWorkTreeDir(), NULL_LOGGER).getCSetShortID();
-        handler.assertResults(0);
-        handler.reset("pull", repoAsList);
-        HgCommand.doPull(newRepo, null, NULL_LOGGER);
+        handler.reset(Arrays.asList(newRepo, newRepo, newRepo));
+        HgUtils.runWithoutIndexing(new Callable<Void>() {
+            @Override
+            public Void call () throws Exception {
+                return null;
+            }
+        }, newRepo, newRepo, newRepo);
         handler.assertResults(1);
-
-        // *************** MERGE *************** //
-        Thread.sleep(2000); // give some time so modification timestamps differ
-
-        handler.reset("merge", repoAsList);
-        refreshProbe.reset();
-        HgCommand.doMerge(newRepo, revision);
-        refreshProbe.checkRefresh(true);
-        HgCommand.doCommit(newRepo, Collections.EMPTY_LIST, "after merge", NULL_LOGGER);
+        
+        // recursive call should not be a problem
+        handler.reset();
+        final File f = new File(newRepo, "aaa");
+        handler.reset(Arrays.asList(f));
+        HgUtils.runWithoutIndexing(new Callable<Void>() {
+            @Override
+            public Void call () throws Exception {
+                return HgUtils.runWithoutIndexing(new Callable<Void>() {
+                    @Override
+                    public Void call () throws Exception {
+                        return null;
+                    }
+                }, f);
+            }
+        }, f);
         handler.assertResults(1);
-
-        // *************** IMPORT DIFF *************** //
-        Thread.sleep(2000); // give some time so modification timestamps differ
-
-        write(mainFile, "import diff test");
-        commit(mainFile);
-        revision = HgCommand.doTip(getWorkTreeDir(), NULL_LOGGER).getCSetShortID();
-        File diffFile = new File(getTempDir(), "export.patch");
-        HgCommand.doExport(getWorkTreeDir(), revision, diffFile.getAbsolutePath(), NULL_LOGGER);
-        assertTrue(diffFile.exists());
-
-        handler.reset("import", repoAsList);
-        refreshProbe.reset();
-        HgCommand.doImport(newRepo, diffFile, NULL_LOGGER);
-        refreshProbe.checkRefresh(true);
+        
+        // recursive call does not permit different roots
+        handler.reset();
+        handler.reset(Arrays.asList(newRepo));
+        HgUtils.runWithoutIndexing(new Callable<Void>() {
+            @Override
+            public Void call () throws Exception {
+                return HgUtils.runWithoutIndexing(new Callable<Void>() {
+                    @Override
+                    public Void call () throws Exception {
+                        return null;
+                    }
+                }, f);
+            }
+        }, newRepo);
         handler.assertResults(1);
-
-        // *************** PULL *************** //
-        // prepare - sync changes
-        HgCommand.doFetch(newRepo, new HgURL(getWorkTreeDir()), null, true, NULL_LOGGER);
-        HgCommand.doPush(newRepo, new HgURL(getWorkTreeDir()), null, NULL_LOGGER, false);
-        HgCommand.doUpdateAll(getWorkTreeDir(), false, null);
-        Thread.sleep(2000); // give some time so modification timestamps differ
-        // pull without update - no refresh, refreshed in merge
-        write(mainFile, "pull test with refresh");
-        commit(mainFile);
-        handler.reset("pull", repoAsList);
-        refreshProbe.reset();
-        revision = HgCommand.doTip(getWorkTreeDir(), NULL_LOGGER).getCSetShortID();
-        HgCommand.doPull(newRepo, null, NULL_LOGGER);
-        refreshProbe.checkRefresh(true);
-        handler.assertResults(1);
+        
+        HgUtils.runWithoutIndexing(new Callable<Void>() {
+            @Override
+            public Void call () throws Exception {
+                boolean error = false;
+                try {
+                    return HgUtils.runWithoutIndexing(new Callable<Void>() {
+                        @Override
+                        public Void call () throws Exception {
+                            return null;
+                        }
+                    }, newRepo);
+                } catch (AssertionError err) {
+                    assertTrue(err.getMessage().startsWith("Recursive call does not permit different roots"));
+                    error = true;
+                }
+                assertTrue(error);
+                return null;
+            }
+        }, f);
+        
     }
 
     public void testDisableIBInFSEvents () throws Exception {
@@ -309,15 +235,13 @@ public class HgCommandTest extends AbstractHgTestCase {
 
     private class CommandHandler extends Handler {
 
-        private String expectedCommand;
         private int occurrences;
         private boolean commandInvoked;
         List files;
         List<File> expectedFiles;
 
-        public void reset (String expectedCommand, List<File> expectedFiles) {
+        public void reset (List<File> expectedFiles) {
             reset();
-            this.expectedCommand = expectedCommand;
             this.expectedFiles = expectedFiles;
         }
 
@@ -328,13 +252,12 @@ public class HgCommandTest extends AbstractHgTestCase {
 
         @Override
         public void publish(LogRecord record) {
-            if (record.getMessage().startsWith("Running command with disabled indexing:")) {
+            if (record.getMessage().startsWith("Running block with disabled indexing:")) {
                 ++occurrences;
-                if (record.getParameters() != null && record.getParameters().length > 1
-                        && record.getParameters()[0].toString().equals(expectedCommand)) {
+                if (record.getParameters() != null && record.getParameters().length > 0) {
                     commandInvoked = true;
-                    if (record.getParameters()[1] instanceof List) {
-                        files = (List)record.getParameters()[1];
+                    if (record.getParameters()[0] instanceof List) {
+                        files = (List) record.getParameters()[0];
                     }
                 }
             }

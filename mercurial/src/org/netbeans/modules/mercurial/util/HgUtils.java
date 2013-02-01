@@ -85,6 +85,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
+import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -101,6 +102,7 @@ import org.openide.filesystems.FileLock;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.queries.SharabilityQuery;
+import org.netbeans.modules.mercurial.HgException;
 import org.netbeans.modules.mercurial.HgException.HgCommandCanceledException;
 import org.netbeans.modules.mercurial.HgFileNode;
 import org.netbeans.modules.mercurial.OutputLogger;
@@ -110,6 +112,7 @@ import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
 import org.netbeans.modules.mercurial.ui.log.HgLogMessage.HgRevision;
 import org.netbeans.modules.versioning.diff.DiffUtils;
 import org.netbeans.modules.versioning.util.FileSelector;
+import org.netbeans.modules.versioning.util.IndexingBridge;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.text.Line;
@@ -1821,5 +1824,55 @@ itor tabs #66700).
             }
         }
         return branchHeadsMap;
+    }
+
+    public static <T> T runWithoutIndexing (Callable<T> callable, List<File> files) throws HgException {
+        return runWithoutIndexing(callable, files.toArray(new File[files.size()]));
+    }
+
+    static ThreadLocal<Set<File>> indexingFiles = new ThreadLocal<Set<File>>();
+    public static <T> T runWithoutIndexing (Callable<T> callable, File... files) throws HgException {
+        try {
+            Set<File> recursiveRoots = indexingFiles.get();
+            if (recursiveRoots != null) {
+                assert indexingFilesSubtree(recursiveRoots, files) 
+                        : "Recursive call does not permit different roots: " 
+                        + recursiveRoots + " vs. " + Arrays.asList(files);
+                return callable.call();
+            } else {
+                try {
+                    if (Mercurial.LOG.isLoggable(Level.FINER)) {
+                        Mercurial.LOG.log(Level.FINER, "Running block with disabled indexing: on {0}", Arrays.asList(files)); //NOI18N
+                    }
+                    indexingFiles.set(new HashSet<File>(Arrays.asList(files)));
+                    return IndexingBridge.getInstance().runWithoutIndexing(callable, files);
+                } finally {
+                    indexingFiles.remove();
+                }
+            }
+        } catch (HgException ex) {
+            throw ex;
+        } catch (Exception ex) {
+            Mercurial.LOG.log(Level.INFO, "Cannot run block without indexing", ex); //NOI18N
+            throw new HgException("Cannot run without indexing due to: " + ex.getMessage()); //NOI18N
+        }
+    }
+
+    private static boolean indexingFilesSubtree (Set<File> recursiveRoots, File[] files) {
+        for (File f : files) {
+            if (!recursiveRoots.contains(f)) {
+                boolean contained = false;
+                for (File root : recursiveRoots) {
+                    if (Utils.isAncestorOrEqual(root, f)) {
+                        contained = true;
+                        break;
+                    }
+                }
+                if (!contained) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 }

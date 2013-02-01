@@ -43,6 +43,7 @@ package org.netbeans.modules.mercurial.ui.queues;
 
 import java.io.File;
 import java.util.List;
+import java.util.concurrent.Callable;
 import org.netbeans.modules.mercurial.HgException;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.Mercurial;
@@ -87,12 +88,17 @@ public class QPushAllPatchesAction extends ContextAction {
                 if (!QUtils.isMQEnabledExtension(root)) {
                     return;
                 }
-                OutputLogger logger = getLogger();
+                final OutputLogger logger = getLogger();
                 try {
                     logger.outputInRed(NbBundle.getMessage(QPushAllPatchesAction.class, "MSG_PUSH_TITLE")); //NOI18N
                     logger.outputInRed(NbBundle.getMessage(QPushAllPatchesAction.class, "MSG_PUSH_TITLE_SEP")); //NOI18N
                     logger.output(NbBundle.getMessage(QPushAllPatchesAction.class, "MSG_PUSH_INFO_SEP", root.getAbsolutePath())); //NOI18N
-                    List<String> output = HgCommand.qPushPatches(root, null, logger);
+                    List<String> output = HgUtils.runWithoutIndexing(new Callable<List<String>>() {
+                        @Override
+                        public List<String> call () throws Exception {
+                            return HgCommand.qPushPatches(root, null, logger);
+                        }
+                    }, roots);
                     FailedPatchResolver resolver = new FailedPatchResolver(root, output, logger);
                     resolver.resolveFailure();
                     logger.output(output);

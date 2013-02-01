@@ -100,7 +100,7 @@ public class PullCurrentBranchAction extends ContextAction {
                         HgProgressSupport support = new HgProgressSupport() {
                             @Override
                             public void perform() {
-                                PullAction.getDefaultAndPerformPull(root, branch, this.getLogger());
+                                PullAction.getDefaultAndPerformPull(root, branch, this);
                                 canceled[0] = isCanceled();
                             }
                         };
