@@ -319,13 +319,13 @@ public class Utilities {
         case IDENTIFIER:
             return ((IdentifierTree) et).getName().toString();
         case METHOD_INVOCATION:
-            return getName(((MethodInvocationTree) et).getMethodSelect());
+            return getNameRaw(((MethodInvocationTree) et).getMethodSelect());
         case MEMBER_SELECT:
             return ((MemberSelectTree) et).getIdentifier().toString();
         case NEW_CLASS:
-            return firstToLower(getName(((NewClassTree) et).getIdentifier()));
+            return firstToLower(getNameRaw(((NewClassTree) et).getIdentifier()));
         case PARAMETERIZED_TYPE:
-            return firstToLower(getName(((ParameterizedTypeTree) et).getType()));
+            return firstToLower(getNameRaw(((ParameterizedTypeTree) et).getType()));
         case STRING_LITERAL:
             String name = guessLiteralName((String) ((LiteralTree) et).getValue());
             if(name == null) {
