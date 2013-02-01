@@ -455,20 +455,25 @@ public class MavenWhiteListQueryImpl implements WhiteListQueryImplementation {
 
         public NBMWrapper(Artifact art, Set<String> allPackages, String[] publicPackages, String[] friends, String[] mavenCP) {
             super(art, allPackages);
-            this.publicPackages = publicPackages;
             this.friends = friends != null ? Arrays.asList(friends) : Collections.<String>emptyList();
             this.mavenCP = mavenCP != null ? Arrays.asList(mavenCP) : Collections.<String>emptyList();
+            Set<String> packs = new HashSet<String>();
             if (publicPackages == null) {
                 //no public packages.
             } else {
                 for (String pub : publicPackages) {
+                    pub = pub.trim();
+                    packs.add(pub);
                     if (pub.endsWith(".**")) {
-                        subPublic.add(pub.substring(0, pub.length() - ".**".length()));
+                        String sub = pub.substring(0, pub.length() - ".**".length());
+                        subPublic.add(sub);
                     } else if (pub.endsWith(".*")) {
-                        eqPublic.add(pub.substring(0, pub.length() - ".*".length()));
+                        String eq = pub.substring(0, pub.length() - ".*".length());
+                        eqPublic.add(eq);
                     }
                 }
             }
+            this.publicPackages = packs.toArray(new String[0]);
         }
 
         boolean isFriend(String codenamebase) {
