@@ -179,7 +179,7 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
     private static final String PERSISTENCE_API_JAR_MATCHER_1 = "javax.javaee" + ServerUtilities.GFV3_VERSION_MATCHER; // NOI18N
     private static final String PERSISTENCE_API_JAR_MATCHER_2 = "javax.persistence" + ServerUtilities.GFV3_VERSION_MATCHER; // NOI18N
         
-    private static final String PERSISTENCE_JAVADOC = "javaee6-doc-api.zip"; // NOI18N
+    private static final String PERSISTENCE_JAVADOC = "javaee-doc-api.jar"; // NOI18N
     
     private static boolean ensureEclipseLinkSupport(String installRoot) {
         List<URL> libraryList = new ArrayList<URL>();
@@ -268,7 +268,7 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
     private static final String JAVA_EE_6_LIB = "Java-EE-GlassFish-v3"; // NOI18N
     private static final String JAVA_EE_5_LIB = "Java-EE-GlassFish-v3-Prelude"; // NOI18N
 
-    private static final String JAVA_EE_JAVADOC = "javaee6-doc-api.zip"; // NOI18N
+    private static final String JAVA_EE_JAVADOC = "javaee-doc-api.jar"; // NOI18N
 
     private static boolean ensureGlassFishApiSupport(GlassFishServer server) {
         String installRoot = server.getServerRoot();
