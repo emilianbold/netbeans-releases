@@ -109,6 +109,9 @@ public final class PhpUnitTestingProvider extends PhpTestingProvider {
     @Override
     public TestSession runTests(PhpModule phpModule, TestRunInfo runInfo) throws TestRunException {
         TestSessionImpl testSession = new TestRunner(phpModule).runTests(runInfo);
+        if (testSession == null) {
+            return null;
+        }
         if (runInfo.isCoverageEnabled()) {
             testSession.setCoverage(new CoverageProvider().getCoverage());
         }
