@@ -277,12 +277,12 @@ public class DelegateMethodGenerator implements CodeGenerator {
         final VariableElement field = ScanUtils.checkElement(controller, fieldHandle.resolve(controller));
         assert origin != null && field != null;
         final ElementUtilities eu = controller.getElementUtilities();
-        final TreeUtilities tu = controller.getTreeUtilities();
+        final Trees trees = controller.getTrees();
         final Scope scope = controller.getTreeUtilities().scopeFor(caretOffset);
         ElementUtilities.ElementAcceptor acceptor = new ElementUtilities.ElementAcceptor() {
             @Override
             public boolean accept(Element e, TypeMirror type) {
-                if (e.getKind() == ElementKind.METHOD && tu.isAccessible(scope, e, type)) {
+                if (e.getKind() == ElementKind.METHOD && trees.isAccessible(scope, e, (DeclaredType)type)) {
                     Element impl = eu.getImplementationOf((ExecutableElement)e, origin);
                     return impl == null || (!impl.getModifiers().contains(Modifier.FINAL) && impl.getEnclosingElement() != origin);                    
                 }

@@ -122,4 +122,10 @@ public class Assignment extends Expression {
     public void accept(Visitor visitor) {
         visitor.visit(this);
     }
+
+    @Override
+    public String toString() {
+        return getLeftHandSide() + " " + getOperator() + " " + getRightHandSide(); //NOI18N
+    }
+
 }

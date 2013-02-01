@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,26 +37,16 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.editor.verification;
-
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-import org.netbeans.modules.csl.api.Hint;
+package org.netbeans.modules.cnd.spi.utils;
 
 /**
  *
- * @author Ondrej Brejla <obrejla@netbeans.org>
+ * @author inikiforov
  */
-public abstract class AbstractHintError extends AbstractError {
-
-    abstract void compute(PHPRuleContext context, List<Hint> hints);
-
-    @Override
-    public Set<?> getCodes() {
-        return Collections.singleton(PHPHintsProvider.ErrorType.HINT_ERRORS);
-    }
-
+public interface ComponentVersionProvider {
+    
+    String getVersion(String component);
+    
 }

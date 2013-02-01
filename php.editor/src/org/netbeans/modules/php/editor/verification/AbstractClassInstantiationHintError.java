@@ -65,7 +65,7 @@ import org.openide.util.NbBundle.Messages;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class AbstractClassInstantiationHintError extends AbstractHintError {
+public class AbstractClassInstantiationHintError extends HintError {
 
     @Override
     void compute(PHPRuleContext context, List<Hint> hints) {

@@ -96,6 +96,7 @@ public class Folder implements FileChangeListener, ChangeListener {
     public static final String DEFAULT_FOLDER_NAME = "f"; // NOI18N
     public static final String DEFAULT_FOLDER_DISPLAY_NAME = getString("NewFolderName");
     public static final String DEFAULT_TEST_FOLDER_DISPLAY_NAME = getString("NewTestFolderName");
+    public static final int FS_TIME_OUT = 15;
     public static final String LS_FOLDER_PERFORMANCE_EVENT = "LS_FOLDER_PERFORMANCE_EVENT"; //NOI18N
     public static final String CREATE_ITEM_PERFORMANCE_EVENT = "CREATE_ITEM_PERFORMANCE_EVENT"; //NOI18N
     public static final String GET_ITEM_FILE_OBJECT_PERFORMANCE_EVENT = "GET_ITEM_FILE_OBJECT_PERFORMANCE_EVENT"; //NOI18N
@@ -283,9 +284,14 @@ public class Folder implements FileChangeListener, ChangeListener {
                         log.log(Level.FINE, "------------adding {2} item {0} in {1}", new Object[]{file.getPath(), getPath(), useOldSchemeBehavior ? "included" : "excluded"}); // NOI18N
                     }
                     PerformanceLogger.PerformaceAction performanceEvent = PerformanceLogger.getLogger().start(CREATE_ITEM_PERFORMANCE_EVENT, file);
-                    Item item = Item.createInFileSystem(configurationDescriptor.getBaseDirFileSystem(), path);
-                    addItemFromRefreshDir(item, true, true, useOldSchemeBehavior);
-                    performanceEvent.log(item);
+                    Item item = null;
+                    try {
+                        performanceEvent.setTimeOut(FS_TIME_OUT);
+                        item = Item.createInFileSystem(configurationDescriptor.getBaseDirFileSystem(), path);
+                        addItemFromRefreshDir(item, true, true, useOldSchemeBehavior);
+                    } finally {
+                        performanceEvent.log(item);
+                    }
                 }
             }
         }

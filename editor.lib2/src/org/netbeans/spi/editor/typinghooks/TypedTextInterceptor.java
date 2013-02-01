@@ -303,22 +303,36 @@ public interface TypedTextInterceptor {
             this.caretPosition = caretPosition;
         }
 
+        /**
+         * Gets the replaced text. This is the text that was selected
+         * by the user and it is replaced by inserted text.
+         *
+         * <p>The selected text is removed from document before <code>insert</code> method.
+         *
+         * @return The replaced text.
+         */
+        public String getReplacedText() {
+            return replacedText;
+        }
+
         // -------------------------------------------------------------------
         // Private implementation
         // -------------------------------------------------------------------
 
         private String insertionText = null;
+        private String replacedText = null;
         private int caretPosition = -1;
         
-        private MutableContext(JTextComponent c, Position offset, String typedText) {
+        private MutableContext(JTextComponent c, Position offset, String typedText, String replacedText) {
             super(c, offset, typedText);
+            this.replacedText = replacedText;
         }
 
         private static final class Accessor extends TypingHooksSpiAccessor {
 
             @Override
-            public MutableContext createTtiContext(JTextComponent c, Position offset, String typedText) {
-                return new MutableContext(c, offset, typedText);
+            public MutableContext createTtiContext(JTextComponent c, Position offset, String typedText, String replacedText) {
+                return new MutableContext(c, offset, typedText, replacedText);
             }
 
             @Override

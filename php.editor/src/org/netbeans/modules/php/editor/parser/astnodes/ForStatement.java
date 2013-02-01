@@ -143,4 +143,22 @@ public class ForStatement extends Statement {
     public void accept(Visitor visitor) {
         visitor.visit(this);
     }
+
+    @Override
+    public String toString() {
+        StringBuilder sbInit = new StringBuilder();
+        for (Expression expression : getInitializers()) {
+            sbInit.append(expression).append(","); //NOI18N
+        }
+        StringBuilder sbCond = new StringBuilder();
+        for (Expression expression : getConditions()) {
+            sbCond.append(expression).append(","); //NOI18N
+        }
+        StringBuilder sbUpd = new StringBuilder();
+        for (Expression expression : getUpdaters()) {
+            sbUpd.append(expression).append(","); //NOI18N
+        }
+        return "for (" + sbInit + ";" + sbCond + ";" + sbUpd + ")" + getBody(); //NOI18N
+    }
+
 }

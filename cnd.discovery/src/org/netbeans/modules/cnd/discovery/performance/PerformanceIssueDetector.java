@@ -41,8 +41,10 @@
  */
 package org.netbeans.modules.cnd.discovery.performance;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ScheduledFuture;
@@ -52,12 +54,14 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.dlight.libs.common.PerformanceLogger;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
@@ -74,11 +78,14 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
     private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
     private final ScheduledFuture<?> periodicTask;
     private static final int SCHEDULE = 15; // period in seconds
+    private static final long NANO_TO_SEC = 1000*1000*1000;
+    private static final long NANO_TO_MILLI = 1000*1000;
     private boolean slowItemCreation = false;
     private boolean slowFileRead = false;
     private boolean slowParsed = false;
     private static final Logger LOG = Logger.getLogger(PerformanceIssueDetector.class.getName());
     private static final Level level = Level.FINE;
+    private static final Level timeOutLevel = Level.INFO;
 
     public PerformanceIssueDetector() {
         if (PerformanceLogger.isProfilingEnabled()) {
@@ -124,6 +131,11 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
         FileObject fo = (FileObject) event.getSource();
         String dirName = fo.getPath();
         long time = event.getTime();
+        if (event.getAttrs().length == 0) {
+            //TODO: process timeout
+            LOG.log(timeOutLevel, "Timeout {0}s of directory list {1}", new Object[]{time/NANO_TO_SEC, dirName}); //NOI18N
+            return;
+        }
         long cpu = event.getCpuTime();
         long user = event.getUserTime();
         lock.writeLock().lock();
@@ -143,15 +155,26 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
     }
 
     private void processCreateItem(PerformanceLogger.PerformanceEvent event) {
-        String dirName;
-        if (event.getSource() != null) {
+        String path;
+        if (event.getSource() instanceof FileObject) {
             FileObject fo = (FileObject) event.getSource();
-            dirName = CndPathUtilitities.getDirName(fo.getPath());
+            path = fo.getPath();
+        } else {
+            path = (String)event.getSource();
+        }
+        long time = event.getTime();
+        if (event.getAttrs().length == 0) {
+            //TODO: process timeout
+            LOG.log(timeOutLevel, "Timeout {0}s of create project item {1}", new Object[]{time/NANO_TO_SEC, path}); //NOI18N
+            return;
+        }
+        String dirName;
+        if (event.getSource() instanceof FileObject) {
+            dirName = CndPathUtilitities.getDirName(path);
         } else {
             Item item = (Item) event.getAttrs()[0];
             dirName = CndPathUtilitities.getDirName(item.getAbsolutePath());
         }
-        long time = event.getTime();
         long cpu = event.getCpuTime();
         long user = event.getUserTime();
         lock.writeLock().lock();
@@ -171,6 +194,10 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
     }
 
     private void processGetItemFileObject(PerformanceLogger.PerformanceEvent event) {
+        if (event.getAttrs().length == 0) {
+            //TODO: process timeout
+            return;
+        }
         Item item = (Item) event.getSource();
         long time = event.getTime();
         long cpu = event.getCpuTime();
@@ -194,9 +221,13 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
 
     private void processRead(PerformanceLogger.PerformanceEvent event) {
         FileObject fo = (FileObject) event.getSource();
+        long time = event.getTime();
+        if (event.getAttrs().length == 0) {
+            //TODO: process timeout
+            return;
+        }
         int readChars = ((Integer) event.getAttrs()[0]).intValue();
         int readLines = ((Integer) event.getAttrs()[1]).intValue();
-        long time = event.getTime();
         long cpu = event.getCpuTime();
         long user = event.getUserTime();
         String dirName = CndPathUtilitities.getDirName(fo.getPath());
@@ -220,8 +251,13 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
     
     private void processParse(PerformanceLogger.PerformanceEvent event) {
         FileObject fo = (FileObject) event.getSource();
-        int readLines = ((Integer) event.getAttrs()[0]).intValue();
         long time = event.getTime();
+        if (event.getAttrs().length == 0) {
+            //TODO: process timeout
+            LOG.log(timeOutLevel, "Timeout {0}s of parsing file{1}", new Object[]{time/NANO_TO_SEC, fo.getPath()}); //NOI18N
+            return;
+        }
+        int readLines = ((Integer) event.getAttrs()[0]).intValue();
         long cpu = event.getCpuTime();
         long user = event.getUserTime();
         String dirName = CndPathUtilitities.getDirName(fo.getPath());
@@ -243,10 +279,29 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
     }
     
     private void notifyProblem(final int problem, final String details) {
+        final List<Project> list = new ArrayList<Project>();
+        synchronized(projects) {
+            list.addAll(projects);
+        }
+        boolean remoteBuildHost = false;
+        boolean remoteSources = false;
+        for (Project project : list) {
+            RemoteProject remoteProject = project.getLookup().lookup(RemoteProject.class);
+            ExecutionEnvironment developmentHost = remoteProject.getDevelopmentHost();
+            if (developmentHost.isRemote()) {
+                remoteBuildHost = true;
+            }
+            ExecutionEnvironment sourceFileSystemHost = remoteProject.getSourceFileSystemHost();
+            if (sourceFileSystemHost.isRemote()) {
+                remoteSources = true;
+            }
+        }
+        final boolean isRemoteBuildHost = remoteBuildHost;
+        final boolean isRemoteSources = remoteSources;
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                NotifyProjectProblem.showNotification(PerformanceIssueDetector.this, problem, details);
+                NotifyProjectProblem.showNotification(PerformanceIssueDetector.this, problem, details, isRemoteBuildHost, isRemoteSources);
             }
         });
     }
@@ -285,8 +340,8 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
         if (time <= 0) {
             return;
         }
-        long wallTime = time/1000/1000/1000;
-        long creationSpeed = (itemCount*1000*1000*1000)/time;
+        long wallTime = time/NANO_TO_SEC;
+        long creationSpeed = (itemCount*NANO_TO_SEC)/time;
         if (wallTime > 15 && itemCount > 100 && creationSpeed < 100) {
             if (!slowItemCreation) {
                 slowItemCreation = true;
@@ -298,7 +353,7 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
             }
         }
         LOG.log(level, "Average item creatoin speed is {0} item/s Created {1} items Time {2} ms CPU {3} ms User {4} ms", //NOI18N
-                new Object[]{format(creationSpeed), format(itemCount), format(time/1000/1000), format(cpu/1000/1000), format(user/1000/1000)});
+                new Object[]{format(creationSpeed), format(itemCount), format(time/NANO_TO_MILLI), format(cpu/NANO_TO_MILLI), format(user/NANO_TO_MILLI)});
     }
     
     @Messages({
@@ -327,7 +382,7 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
         if (time <= 0) {
             return;
         }
-        long wallTime = time/1000/1000/1000;
+        long wallTime = time/NANO_TO_SEC;
         long readSpeed = (read*1000*1000)/time;
         if (wallTime > 100 && fileCount > 100 && readSpeed < 100) {
             if (!slowFileRead) {
@@ -340,7 +395,7 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
             }
         }
         LOG.log(level, "Average file reading speed is {0} Kb/s Read {1} Kb Time {2} ms CPU {3} ms User {4} ms", //NOI18N
-                new Object[]{format(readSpeed), format(read/1000), format(time/1000/1000), format(cpu/1000/1000), format(user/1000/1000)});
+                new Object[]{format(readSpeed), format(read/1000), format(time/NANO_TO_MILLI), format(cpu/NANO_TO_MILLI), format(user/NANO_TO_MILLI)});
     }
     
     @Messages({
@@ -372,8 +427,8 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
         if (time <= 0) {
             return;
         }
-        long wallTime = time/1000/1000/1000;
-        long cpuTime = cpu/1000/1000/1000;
+        long wallTime = time/NANO_TO_SEC;
+        long cpuTime = cpu/NANO_TO_SEC;
         if (wallTime <= 0 ) {
             return;
         }
@@ -392,7 +447,7 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
             }
         }
         LOG.log(level, "Average parsing speed is {0} Lines/s Lines {1} Time {2} ms CPU {3} ms User {4} ms", //NOI18N
-                new Object[]{format(parseSpeed), format(lines), format(time/1000/1000), format(cpu/1000/1000), format(user/1000/1000)});
+                new Object[]{format(parseSpeed), format(lines), format(time/NANO_TO_MILLI), format(cpu/NANO_TO_MILLI), format(user/NANO_TO_MILLI)});
     }
 
     private String format(long val) {

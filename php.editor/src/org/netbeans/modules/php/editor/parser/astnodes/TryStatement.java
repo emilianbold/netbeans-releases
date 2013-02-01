@@ -99,4 +99,14 @@ public class TryStatement extends Statement {
     public void accept(Visitor visitor) {
         visitor.visit(this);
     }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        for (CatchClause catchClause : getCatchClauses()) {
+            sb.append(catchClause);
+        }
+        return "try" + getBody() + sb.toString(); //NOI18N
+    }
+
 }

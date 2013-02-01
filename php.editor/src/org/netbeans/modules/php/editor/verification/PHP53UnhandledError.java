@@ -70,7 +70,7 @@ import org.openide.util.NbBundle.Messages;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class PHP53UnhandledError extends AbstractUnhandledError {
+public class PHP53UnhandledError extends UnhandledError {
 
     @Override
     void compute(PHPRuleContext context, List<Error> errors) {

@@ -47,13 +47,12 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.CharConversionException;
+import java.io.File;
 import java.io.IOException;
 import javax.swing.AbstractButton;
 import javax.swing.JLabel;
 import javax.swing.UIManager;
-import org.netbeans.modules.search.BasicSearchCriteria;
 import org.netbeans.modules.search.BasicSearchProvider;
-import org.netbeans.spi.search.SearchScopeDefinition;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 import org.openide.xml.XMLUtil;
@@ -137,6 +136,26 @@ public class UiUtils {
             } catch (CharConversionException cce) {
                 return s;
             }
+        }
+    }
+
+    /**
+     * Get an example of file name patterns.
+     *
+     * @param regexp True to get example or regular expression pattern, false to
+     * get example of standard pattern.
+     */
+    public static String getFileNamePatternsExample(boolean regexp) {
+        if (regexp) {
+            String separator = ("\\".equals(File.separator)) //NOI18N
+                    ? "\\\\" //NOI18N
+                    : File.separator;
+            return NbBundle.getMessage(BasicSearchProvider.class,
+                    "BasicSearchForm.cboxFileNamePattern.example.re", //NOI18N
+                    separator);
+        } else {
+            return NbBundle.getMessage(BasicSearchProvider.class,
+                    "BasicSearchForm.cboxFileNamePattern.example");     //NOI18N
         }
     }
 }

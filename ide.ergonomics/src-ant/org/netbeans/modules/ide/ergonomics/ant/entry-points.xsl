@@ -313,10 +313,6 @@ made subject to such option by the copyright holder.
         </xsl:element>
     </xsl:template>
     <xsl:template match="folder" mode="options-adv">
-        <xsl:element name="folder">
-            <xsl:attribute name="name"><xsl:value-of select="@name"/></xsl:attribute>
-            <xsl:apply-templates mode="options-adv"/>
-        </xsl:element>
     </xsl:template>
     <xsl:template match="attr[@name='controller']" mode="options-adv">
         <xsl:element name="attr">

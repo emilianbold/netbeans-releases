@@ -42,6 +42,7 @@
 package org.netbeans.test.html5.debug;
 
 import java.util.Map;
+import java.util.logging.Level;
 import junit.framework.Test;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.EditorWindowOperator;
@@ -49,12 +50,13 @@ import org.netbeans.jellytools.modules.debugger.actions.ContinueAction;
 import org.netbeans.jellytools.modules.debugger.actions.StepIntoAction;
 import org.netbeans.jellytools.modules.debugger.actions.StepOverAction;
 import org.netbeans.jellytools.modules.debugger.actions.ToggleBreakpointAction;
+import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.test.html5.EmbeddedBrowserOperator;
 
 /**
  *
- * @author vriha
+ * @author Vladimir Riha
  */
 public class LineDebuggerTest extends JavaScriptDebugger {
 
@@ -66,10 +68,10 @@ public class LineDebuggerTest extends JavaScriptDebugger {
         return NbModuleSuite.create(
                 NbModuleSuite.createConfiguration(LineDebuggerTest.class).addTest(
                 "testOpenProject",
+                "testBreakpointRemoteFile",
                 "testDebugModifications",
                 "testDebugNoModifications",
-                "testDeleteBreakpoint",
-                "testBreakpointRemoteFile").enableModules(".*").clusters(".*").honorAutoloadEager(true));
+                "testDeleteBreakpoint").enableModules(".*").clusters(".*").honorAutoloadEager(true));
     }
 
     public void testOpenProject() throws Exception {
@@ -108,11 +110,13 @@ public class LineDebuggerTest extends JavaScriptDebugger {
 
         assertEquals("Unexpected file opened at breakpoint", "debug.html", currentFile.getName());
         assertEquals("Debugger stopped at wrong line", 14, currentFile.getLineNumber());
+        waitForVariable("step", vo);
         assertEquals("Step variable is unexpected", "1", ((Map<String, Variable>) vo.getVariables()).get("step").value);
 
         new ContinueAction().perform();
         currentFile = EditorWindowOperator.getEditor();
         vo = new VariablesOperator("Variables");
+        waitForVariable("step", vo);
         assertEquals("Unexpected file opened at breakpoint", "linebp.js", currentFile.getName());
         assertEquals("Debugger stopped at wrong line", 4, currentFile.getLineNumber());
         assertEquals("Step variable is unexpected", "2", ((Map<String, Variable>) vo.getVariables()).get("step").value);
@@ -123,12 +127,14 @@ public class LineDebuggerTest extends JavaScriptDebugger {
         currentFile = EditorWindowOperator.getEditor();
         vo = new VariablesOperator("Variables");
         assertEquals("Debugger stopped at wrong line", 7, currentFile.getLineNumber());
+        waitForVariable("step", vo);
         assertEquals("Step variable is unexpected", "3", ((Map<String, Variable>) vo.getVariables()).get("step").value);
 
         new ContinueAction().perform();
         currentFile = EditorWindowOperator.getEditor();
         vo = new VariablesOperator("Variables");
         assertEquals("Debugger stopped at wrong line", 15, currentFile.getLineNumber());
+        waitForVariable("step", vo);
         assertEquals("Step variable is unexpected", "4", ((Map<String, Variable>) vo.getVariables()).get("step").value);
 
         new StepOverAction().perform();
@@ -136,6 +142,7 @@ public class LineDebuggerTest extends JavaScriptDebugger {
         currentFile = EditorWindowOperator.getEditor();
         vo = new VariablesOperator("Variables");
         assertEquals("Debugger stopped at wrong line", 17, currentFile.getLineNumber());
+        waitForVariable("step", vo);
         assertEquals("Step variable is unexpected", "5", ((Map<String, Variable>) vo.getVariables()).get("step").value);
 
         new StepIntoAction().perform();
@@ -143,6 +150,7 @@ public class LineDebuggerTest extends JavaScriptDebugger {
         currentFile = EditorWindowOperator.getEditor();
         vo = new VariablesOperator("Variables");
         assertEquals("Debugger stopped at wrong line", 25, currentFile.getLineNumber());
+        waitForVariable("step", vo);
         assertEquals("Step variable is unexpected", "5", ((Map<String, Variable>) vo.getVariables()).get("step").value);
 
         endTest();
@@ -201,12 +209,20 @@ public class LineDebuggerTest extends JavaScriptDebugger {
 
     @Override
     public void setUp() {
-        cleanBreakpoints();
+        try {
+            cleanBreakpoints();
+        } catch (TimeoutExpiredException e) {
+            LOGGER.log(Level.INFO, "Variables window was not opened");
+        }
     }
 
     @Override
     public void tearDown() {
-        (new EmbeddedBrowserOperator("Web Browser")).close();
+        try {
+            (new EmbeddedBrowserOperator("Web Browser")).close();
+        } catch (TimeoutExpiredException e) {
+            LOGGER.log(Level.INFO, "Embedded browse was not opened");
+        }
     }
 
     /**
@@ -232,7 +248,7 @@ public class LineDebuggerTest extends JavaScriptDebugger {
         new ContinueAction().perform();
         currentFile.close();
         runFile(LineDebuggerTest.current_project, "debug.html");
-        evt.waitNoEvent(100);
+        evt.waitNoEvent(300);
         new ContinueAction().perform();
         currentFile = EditorWindowOperator.getEditor();
         assertEquals("Unexpected file opened at breakpoint", "debug.html", currentFile.getName());
@@ -247,13 +263,13 @@ public class LineDebuggerTest extends JavaScriptDebugger {
     public void testBreakpointRemoteFile() throws Exception {
         startTest();
         openRemoteFile("common.js", LineDebuggerTest.current_project);
+        openFile("debug.html", LineDebuggerTest.current_project);
+        runFile(LineDebuggerTest.current_project, "debug.html");
         EditorOperator eo = new EditorOperator("common.js");
         setLineBreakpoint(eo, "document.write(msg);");
         eo.close();
-        openFile("debug.html", LineDebuggerTest.current_project);
-        runFile(LineDebuggerTest.current_project, "debug.html");
         runFile(LineDebuggerTest.current_project, "debug.html"); // issue 225407 workaround
-        evt.waitNoEvent(300);
+        evt.waitNoEvent(1000);
         EditorOperator currentFile = EditorWindowOperator.getEditor();
         assertEquals("Unexpected file opened at breakpoint", "common.js [r/o]", currentFile.getName());
         assertEquals("Debugger stopped at wrong line", 424, currentFile.getLineNumber());

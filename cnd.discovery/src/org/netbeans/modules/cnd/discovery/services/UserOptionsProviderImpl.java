@@ -67,6 +67,7 @@ import org.netbeans.modules.cnd.makeproject.spi.configurations.PkgConfigManager.
 import org.netbeans.modules.cnd.makeproject.spi.configurations.UserOptionsProvider;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
 import org.openide.util.CharSequences;
@@ -237,8 +238,10 @@ public class UserOptionsProviderImpl implements UserOptionsProvider {
         synchronized(pkgConfigs){
             pkg = pkgConfigs.get(hostKey);
             if (pkg == null) {
-                pkg = PkgConfigManager.getDefault().getPkgConfig(env);
-                pkgConfigs.put(hostKey, pkg);
+                if (ConnectionManager.getInstance().isConnectedTo(env)) {
+                    pkg = PkgConfigManager.getDefault().getPkgConfig(env);
+                    pkgConfigs.put(hostKey, pkg);
+                }
             }
         }
         return pkg;
@@ -284,9 +287,11 @@ public class UserOptionsProviderImpl implements UserOptionsProvider {
         }
         if (readFlags && findPkg != null) {
             PkgConfig configs = getPkgConfig(getExecutionEnvironment(conf));
-            PackageConfiguration config = configs.getPkgConfig(findPkg);
-            if (config != null){
-                return config;
+            if (configs != null) {
+                PackageConfiguration config = configs.getPkgConfig(findPkg);
+                if (config != null){
+                    return config;
+                }
             }
         }
         return null;

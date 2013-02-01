@@ -43,9 +43,7 @@ package org.netbeans.performance.scanning;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.StringTokenizer;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -57,6 +55,9 @@ import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.jellytools.NewProjectWizardOperator;
+import org.netbeans.jellytools.OptionsOperator;
+import org.netbeans.jellytools.WizardOperator;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbPerformanceTest.PerformanceData;
 import org.netbeans.junit.NbTestCase;
@@ -84,6 +85,7 @@ public class ScanProjectPerfTest extends NbTestCase {
     protected void setUp() throws IOException, InterruptedException {
         clearWorkDir();
         System.setProperty("netbeans.user", getWorkDirPath());
+        System.setProperty("grails.home","/space/grails/"); //NOI18N
     }
 
     @Override
@@ -96,12 +98,6 @@ public class ScanProjectPerfTest extends NbTestCase {
                     "jEdit41.zip",
                     "jEdit");
     }
-
-//    public void testScanNigelsFreeForm() throws IOException, ExecutionException, InterruptedException {
-//        scanProject("http://beetle.czech.sun.com/~pf124312/nigel.zip",
-//                    "Clean.zip",
-//                    "clean/projects/ST");
-//    }
 
     public void testPhpProject() throws IOException, ExecutionException, InterruptedException {
         scanProject("http://netbeans.org/projects/performance/downloads/download/Mediawiki-1_FitnessViaSamples.14.0-nbproject.zip",
@@ -122,12 +118,34 @@ public class ScanProjectPerfTest extends NbTestCase {
                     "tomcat6.zip",
                     "tomcat6");
     }
-
-//    public void testOpenJdk7() throws IOException, ExecutionException, InterruptedException {
-//        scanProject("http://beetle.czech.sun.com/~pf124312/openjdk-7-ea-src-b63-02_jul_2009.zip",
-//                    "openjdk.zip",
-//                    "openjdk/jdk/make/netbeans/world");
-//    }
+    
+    public void testGroovyGrails() throws IOException, ExecutionException, InterruptedException {
+        System.setProperty("grails.home","/space/grails/"); //NOI18N
+        NewProjectWizardOperator npwo = NewProjectWizardOperator.invoke();
+        npwo.selectCategory("Groovy"); // XXX use Bundle.getString instead
+        npwo.selectProject("Grails Application");
+        try {
+            npwo.next();
+            wait(5000);
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+        WizardOperator wo = new WizardOperator("New Project");
+        wo.cancel(); 
+        
+        OptionsOperator optionsOper = OptionsOperator.invoke();
+        optionsOper.selectMiscellaneous();
+              
+        
+        optionsOper.ok();
+        
+               
+        scanProject("http://netbeans.org/projects/performance/downloads/download/gravl-0.4.zip",
+                    "gravl-0.4.zip",
+                    "gravl-0.4");
+    }
+    
+    
 
     private void scanProject(
             final String networkFileLoc,
