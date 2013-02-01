@@ -55,7 +55,6 @@ import org.netbeans.modules.php.phpunit.commands.PhpUnit;
 import org.netbeans.modules.php.phpunit.preferences.PhpUnitPreferences;
 import org.netbeans.modules.php.spi.testing.run.TestRunException;
 import org.netbeans.modules.php.spi.testing.run.TestRunInfo;
-import org.netbeans.modules.php.spi.testing.run.TestSession;
 
 public final class TestRunner {
 
@@ -116,34 +115,5 @@ public final class TestRunner {
                 + "please report an issue (http://www.netbeans.org/issues/).", PhpUnit.XML_LOG));
         throw new TestRunException(cause);
     }
-
-//
-//    private void handleCodeCoverage() {
-//        if (!isCoverageEnabled()) {
-//            return;
-//        }
-//
-//        CoverageVO coverage = new CoverageVO();
-//        try {
-//            PhpUnitCoverageLogParser.parse(new BufferedReader(new InputStreamReader(new FileInputStream(PhpUnit.COVERAGE_LOG), "UTF-8")), coverage);
-//        } catch (FileNotFoundException ex) {
-//            LOGGER.info(String.format("File %s not found. If there are no errors in PHPUnit output (verify in Output window), "
-//                    + "please report an issue (http://www.netbeans.org/issues/).", PhpUnit.COVERAGE_LOG));
-//            return;
-//        } catch (IOException ex) {
-//            LOGGER.log(Level.WARNING, null, ex);
-//            return;
-//        }
-//        if (!PhpUnit.KEEP_LOGS) {
-//            if (!PhpUnit.COVERAGE_LOG.delete()) {
-//                LOGGER.log(Level.INFO, "Cannot delete code coverage log {0}", PhpUnit.COVERAGE_LOG);
-//            }
-//        }
-//        if (info.allTests()) {
-//            coverageProvider.setCoverage(coverage);
-//        } else {
-//            coverageProvider.updateCoverage(coverage);
-//        }
-//    }
 
 }
