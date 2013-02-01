@@ -45,15 +45,15 @@ package org.netbeans.modules.php.dbgp;
 
 import java.util.concurrent.Callable;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.php.project.spi.XDebugStarter;
+import org.netbeans.modules.php.spi.executable.DebugStarter;
 import org.openide.util.Cancellable;
 
 /**
  * @author Radek Matous
  *
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.php.project.spi.XDebugStarter.class)
-public class DebuggerImpl implements XDebugStarter {
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.php.spi.executable.DebugStarter.class)
+public class DebuggerImpl implements DebugStarter {
     static String SESSION_ID = "netbeans-PHP-DBGP-Session";// NOI18N
     static String ENGINE_ID = SESSION_ID + "/" + "PHP-Engine";// NOI18N
 
@@ -61,7 +61,7 @@ public class DebuggerImpl implements XDebugStarter {
      * @see org.netbeans.modules.php.dbgp.api.Debugger#debug()
      */
     @Override
-    public void start(Project project, Callable<Cancellable> run, XDebugStarter.Properties properties) {
+    public void start(Project project, Callable<Cancellable> run, DebugStarter.Properties properties) {
         SessionManager.getInstance().startNewSession(project, run, properties);
     }
 
