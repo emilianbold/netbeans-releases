@@ -280,6 +280,16 @@ public class MavenWhiteListQueryImpl implements WhiteListQueryImplementation {
             }
         }
         
+        //now remove all packages from bootclasspath that clash with private/transitive packages..
+        // happens for javax.swing for example which is part of the tabcontrol module
+        ClassPath boot = project.getLookup().lookup(ProjectSourcesClassPathProvider.class).getProjectSourcesClassPath(ClassPath.BOOT);
+        Set<String> bootCP = new HashSet<String>();
+        for (FileObject fo : boot.getRoots()) {
+            bootCP.addAll(getAllPackages(fo));
+        }
+        transitivePackages.removeAll(bootCP);
+        privatePackages.removeAll(bootCP);
+        
         //remove all duplicates. only keep the privates we are 100% positive about..
         transitivePackages.removeAll(nonTransitivePackages);
         privatePackages.removeAll(nonPrivatePackages);
