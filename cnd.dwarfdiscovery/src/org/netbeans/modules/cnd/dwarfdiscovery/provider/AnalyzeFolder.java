@@ -228,6 +228,11 @@ public class AnalyzeFolder extends BaseDwarfProvider {
                 public List<String> getDependencies() {
                     return null;
                 }
+
+                @Override
+                public List<String> getBuildArtifacts() {
+                    return null;
+                }
                 
                 @Override
                 public List<SourceFileProperties> getSourcesConfiguration() {

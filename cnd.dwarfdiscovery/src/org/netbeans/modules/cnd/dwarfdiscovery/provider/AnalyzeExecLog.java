@@ -48,6 +48,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -283,6 +284,11 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
                 }
 
                 @Override
+                public List<String> getBuildArtifacts() {
+                    return null;
+                }
+
+                @Override
                 public List<SourceFileProperties> getSourcesConfiguration() {
                     if (myFileProperties == null) {
                         String set = (String) getProperty(EXEC_LOG_KEY).getValue();
@@ -318,6 +324,7 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
         private final Set<String> C_NAMES;
         private final Set<String> CPP_NAMES;
         private final Set<String> FORTRAN_NAMES;
+        private final Set<String> LIBREARIES_NAMES;
 
         public ExecLogReader(String fileName, String root, ProjectProxy project) {
             if (root.length() > 0) {
@@ -333,6 +340,9 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
             C_NAMES = DiscoveryUtils.getCompilerNames(project, PredefinedToolKind.CCompiler);
             CPP_NAMES = DiscoveryUtils.getCompilerNames(project, PredefinedToolKind.CCCompiler);
             FORTRAN_NAMES = DiscoveryUtils.getCompilerNames(project, PredefinedToolKind.FortranCompiler);
+            LIBREARIES_NAMES = new HashSet<String>();
+            LIBREARIES_NAMES.add("ld"); //NOI18N
+            LIBREARIES_NAMES.add("ar"); //NOI18N
         }
         
         private PathMap getPathMapper(ProjectProxy project) {
@@ -460,6 +470,9 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
                 language = LanguageKind.CPP;
             } else if (FORTRAN_NAMES.contains(compiler)) {
                 language = LanguageKind.Fortran;
+            } else if (LIBREARIES_NAMES.contains(compiler)) {
+                processLibrary(compiler, args, storage);
+                return;
             } else {
                 language = LanguageKind.Unknown;
             }
@@ -600,6 +613,43 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
                     continue;
                 }
             }
+        }
+        
+        private void processLibrary(String tool, List<String> args, CompileLineStorage storage) {
+            //TODO: get library name
+/*            
+called: /usr/ccs/bin/ld
+	/var/tmp/alsimon-cnd-test-downloads/pkg-config-0.25/glib-1.2.10/gmodule
+	/usr/ccs/bin/ld
+	-zld32=-S/tmp/lib_link.1359732141.24769.01/libldstab_ws.so
+	-zld64=-S/tmp/lib_link.1359732141.24769.01/amd64/libldstab_ws.so
+	-zld32=-S/tmp/lib_link.1359732141.24769.01/libld_annotate.so
+	-zld64=-S/tmp/lib_link.1359732141.24769.01/amd64/libld_annotate.so
+	/opt/solarisstudio12.3/prod/lib/crti.o
+	/opt/solarisstudio12.3/prod/lib/crt1.o
+	/opt/solarisstudio12.3/prod/lib/values-xa.o
+	testgmodule.o
+	./.libs/libgmodule.a
+	../.libs/libglib.a
+	-o
+	testgmodule
+	-Y
+	P,/opt/solarisstudio12.3/prod/lib:/usr/ccs/lib:/lib:/usr/lib
+	-Qy
+	-lc
+	/opt/solarisstudio12.3/prod/lib/crtn.o
+
+called: /usr/ccs/bin/ar
+	/var/tmp/alsimon-cnd-test-downloads/pkg-config-0.25/popt
+	ar
+	cru
+	.libs/libpopt.a
+	.libs/popt.o
+	.libs/poptconfig.o
+	.libs/popthelp.o
+	.libs/poptparse.o
+	.libs/findme.o
+*/            
         }
     }
     
