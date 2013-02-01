@@ -462,6 +462,9 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl2 {
             public void run() {
                 libraryProvider.setJavaEELibraryImplementation(
                         lib, pf.getLibraryName());
+
+                lib.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_JAVADOC,
+                        dm.getProperties().getJavadocs());
                 firePropertyChange(PROP_LIBRARIES, null, libraries.clone());
             }
         });

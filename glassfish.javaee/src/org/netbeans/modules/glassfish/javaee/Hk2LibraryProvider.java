@@ -43,6 +43,7 @@ package org.netbeans.modules.glassfish.javaee;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -60,6 +61,7 @@ import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.j2ee.deployment.common.api.J2eeLibraryTypeProvider;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
+import org.openide.filesystems.FileUtil;
 
 /**
  * GlassFish bundled libraries provider.
@@ -429,8 +431,16 @@ public class Hk2LibraryProvider /*implements JaxRsStackSupportImplementation*/ {
         for (GlassFishLibrary gfLib : gfLibs) {
             if (namePattern.matcher(gfLib.getLibraryID()).matches()) {
                 lib.setName(libraryName);
+                List<URL> cp = new ArrayList<URL>();
+                for (URL url : gfLib.getClasspath()) {
+                    if (FileUtil.isArchiveFile(url)) {
+                        cp.add(FileUtil.getArchiveRoot(url));
+                    } else {
+                        cp.add(url);
+                    }
+                }
                 lib.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_CLASSPATH,
-                        gfLib.getClasspath());
+                        cp);
                 lib.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_JAVADOC,
                         gfLib.getJavadocs());
             }
