@@ -190,10 +190,8 @@ public class Utilities {
     private static String guessLiteralName(String str) {
         if(str.isEmpty())
             return null;
+        
         StringBuilder sb = new StringBuilder();
-        char first = str.charAt(0);
-        if(Character.isJavaIdentifierStart(str.charAt(0)))
-            sb.append(first);
 
         for (int i = 0; i < str.length(); i++) {
             char ch = str.charAt(i);
@@ -376,7 +374,7 @@ public class Utilities {
         char last = Character.toLowerCase(name.charAt(0));
 
         for (int i = 1; i < name.length(); i++) {
-            if (toLower && Character.isUpperCase(name.charAt(i))) {
+            if (toLower && (Character.isUpperCase(name.charAt(i)) || name.charAt(i) == '_')) {
                 result.append(Character.toLowerCase(last));
             } else {
                 result.append(last);
@@ -386,7 +384,7 @@ public class Utilities {
 
         }
 
-        result.append(last);
+        result.append(toLower ? Character.toLowerCase(last) : last);
         
         if (SourceVersion.isKeyword(result)) {
             return "a" + name;

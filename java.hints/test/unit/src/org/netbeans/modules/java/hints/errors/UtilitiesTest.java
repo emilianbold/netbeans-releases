@@ -123,6 +123,10 @@ public class UtilitiesTest extends NbTestCase {
         performNameGuessTest("package test; public class Test {public void t() { String str = \"127.|0.0.1\";} }", "string");
     }
     
+    public void test225541() throws Exception {
+        performNameGuessTest("package test; public class Test {public void t() { String str = \"UPL|OAD_IMAGE_TO_FRIEND_PAGE\";} }", "upload_image_to_friend_page");
+    }
+    
     public void testShortName1() throws Exception {
         //TODO: better display name:
         performShortNameTest("package test; public class Test { public void t(Object... obj) { | }}", "((boolean[]) obj)[i]", "...(boolean)[]");
@@ -141,6 +145,7 @@ public class UtilitiesTest extends NbTestCase {
         assertEquals("SOME_HTML_CONSTANT", Utilities.toConstantName("someHTMLConstant"));
         assertEquals("CAPITAL_START", Utilities.toConstantName("CapitalStart"));
         assertEquals("", Utilities.toConstantName(""));
+        assertEquals("UPLOAD_IMAGE_TO_FRIEND_PAGE", Utilities.toConstantName("upload_image_to_friend_page"));
     }
     
     public void testCapturedTypeArray164543() throws Exception {
