@@ -532,11 +532,26 @@ rule
         input.consume(); //consume the RBRACE as well
         }
     
+less_rule
+        
+    :   ( (cssClass ws?) | less_mixin_declaration ) 
+        LBRACE ws? syncToDeclarationsRule
+            declarations
+        RBRACE
+        ws?
+    ;
+    	catch[ RecognitionException rce] {
+        reportError(rce);
+        consumeUntil(input, BitSet.of(RBRACE));
+        input.consume(); //consume the RBRACE as well
+        }
+
 declarations
     :
         //Allow empty rule. Allows? multiple semicolons
-        //http://en.wikipedia.org/wiki/CSS_filter#Star_hack
-        (declaration)? (SEMI ws? (declaration)?)*
+        //http://en.wikipedia.org/wiki/CSS_filter#Star_hack        
+        declaration? 
+        ( ( ( SEMI ws? ) | less_rule )  declaration?)* 
     ;
     
 selectorsGroup
@@ -551,7 +566,7 @@ selector
 simpleSelectorSequence
 	:   
         //using typeSelector even for the universal selector since the lookahead would have to be 3 (IDENT PIPE (IDENT|STAR) :-(
-	(  typeSelector ((esPred)=>elementSubsequent)* )
+	( typeSelector ((esPred)=>elementSubsequent)* )
 	| 
 	( ((esPred)=>elementSubsequent)+ )
 	;
@@ -687,7 +702,8 @@ propertyValue
 //since the rule matches epsilon it will always be entered
 syncToDeclarationsRule
     @init {
-        syncToSet(BitSet.of(IDENT, RBRACE, STAR));
+        //why sync to DOT? - LESS allows class rules nested
+        syncToSet(BitSet.of(IDENT, RBRACE, STAR, DOT)); 
     }
     	:	
     	;

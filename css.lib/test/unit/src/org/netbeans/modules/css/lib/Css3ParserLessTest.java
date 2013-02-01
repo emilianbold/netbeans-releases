@@ -155,12 +155,12 @@ public class Css3ParserLessTest extends CssTestBase {
 //        NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
     }
-    
+
     public void testGuardedMixins() {
         String source =
-                ".mixin (@a) when (@a > 10), (@a = -10) {\n" +
-                    "  background-color: black;\n" +
-                "}";
+                ".mixin (@a) when (@a > 10), (@a = -10) {\n"
+                + "  background-color: black;\n"
+                + "}";
         ;
 
         CssParserResult result = TestUtil.parse(source);
@@ -168,13 +168,12 @@ public class Css3ParserLessTest extends CssTestBase {
 //        NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
     }
-   
+
     public void testGuardedMixins2() {
         String source =
-                ".truth (@a) when (@a) { }\n" +
-                ".truth (@a) when (@a = true) { }\n" + 
-                ".mixin (@a) when (@media = mobile) { } \n";
-                
+                ".truth (@a) when (@a) { }\n"
+                + ".truth (@a) when (@a = true) { }\n"
+                + ".mixin (@a) when (@media = mobile) { } \n";
         ;
 
         CssParserResult result = TestUtil.parse(source);
@@ -182,11 +181,10 @@ public class Css3ParserLessTest extends CssTestBase {
 //        NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
     }
-    
+
     public void testGuardedMixinIsFunction() {
         String source =
                 ".mixin (@a, @b: 0) when (isnumber(@b)) { }\n";
-                
         ;
 
         CssParserResult result = TestUtil.parse(source);
@@ -194,7 +192,7 @@ public class Css3ParserLessTest extends CssTestBase {
         NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
     }
-    
+
     public void testGuardedMixinNotOperator() {
         String source =
                 ".mixin (@b) when not (@b > 0) { }\n";
@@ -202,7 +200,52 @@ public class Css3ParserLessTest extends CssTestBase {
 
         CssParserResult result = TestUtil.parse(source);
 
+//        NodeUtil.dumpTree(result.getParseTree());
+        assertResultOK(result);
+    }
+
+    public void testFunctions() {
+        String source = ".class {\n"
+                + "  width: percentage(0.5);\n"
+                + "  color: saturate(@base, 5%);\n"
+                + "  background-color: spin(lighten(@base, 25%), 8);\n"
+                + "}";
+        CssParserResult result = TestUtil.parse(source);
+
+//        NodeUtil.dumpTree(result.getParseTree());
+        assertResultOK(result);
+    }
+
+    public void testRulesNesting() {
+        String source = "#header {\n"
+                + "  color: black;\n"
+                + "  .navigation {\n"
+                + "    font-size: 12px;\n"
+                + "  }\n"
+                + "  font-size: 10px;\n"
+                + "  .navigation (@a) {\n"
+                + "    font-size: 12px;\n"
+                + "  }\n"
+                + "}";
+        CssParserResult result = TestUtil.parse(source);
+
+//        NodeUtil.dumpTree(result.getParseTree());
+        assertResultOK(result);
+
+    }
+
+    public void testAmpCombinatorInNestedRules() {
+        String source = "#header        { color: black;\n"
+                + "  .navigation  { font-size: 12px }\n"
+                + "  .logo        { width: 300px;\n"
+                + "    &:hover    { text-decoration: none }\n"
+                + "  }\n"
+                + "}";
+        
+         CssParserResult result = TestUtil.parse(source);
+
         NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
+
     }
 }

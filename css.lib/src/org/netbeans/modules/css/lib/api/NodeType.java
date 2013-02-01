@@ -368,6 +368,8 @@ public enum NodeType {
     less_condition,
     less_condition_operator,
     less_function_in_condition,
-    less_fn_name;
+    less_fn_name,
+    
+    less_rule;
     
 }
