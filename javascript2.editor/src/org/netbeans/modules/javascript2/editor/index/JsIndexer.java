@@ -59,6 +59,7 @@ import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexer;
 import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
+import org.netbeans.modules.parsing.spi.indexing.support.IndexDocument;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexingSupport;
 import org.openide.util.Parameters;
 
@@ -98,7 +99,8 @@ public class JsIndexer extends EmbeddingIndexer {
     private void storeObject(JsObject object, IndexingSupport support, Indexable indexable) {
         if (object.isDeclared() || object.getName().equals("prototype")) {
             // if it's delcared, then store in the index as new document.
-            support.addDocument(IndexedElement.createDocument(object, support, indexable));
+            IndexDocument document = IndexedElement.createDocument(object, support, indexable);
+            support.addDocument(document);
         }
         // look for all other properties. Even if the object doesn't have to be delcared in the file
         // there can be declared it's properties or methods
