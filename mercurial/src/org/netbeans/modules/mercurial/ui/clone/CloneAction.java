@@ -57,6 +57,7 @@ import java.io.FileWriter;
 import java.io.PrintWriter;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -181,7 +182,12 @@ public class CloneAction extends ContextAction {
                     logger.outputInRed(
                             NbBundle.getMessage(CloneAction.class,
                             "MSG_CLONE_TITLE_SEP")); // NOI18N
-                    List<String> list = HgCommand.doClone(source, target, logger);
+                    List<String> list = HgUtils.runWithoutIndexing(new Callable<List<String>>() {
+                        @Override
+                        public List<String> call () throws Exception {
+                            return HgCommand.doClone(source, target, getLogger());
+                        }
+                    }, target);
                     if (!HgUtils.getHgFolderForRoot(target).isDirectory() || list.contains("transaction abort!")) { //NOI18N
                         // does not seem to be really cloned
                         logger.output(list);
