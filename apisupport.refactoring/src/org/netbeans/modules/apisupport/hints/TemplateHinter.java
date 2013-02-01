@@ -151,6 +151,7 @@ public class TemplateHinter implements Hinter {
                         if (category != null) {
                             params.put("category", category.split(", ?"));
                         }
+                        params.put("requireProject", file.getAttribute("requireProject"));
                         ModifiersTree nue = ctx.addAnnotation(wc, modifiers, TemplateRegistration.class.getName(), TemplateRegistrations.class.getName(), params);
                         ctx.delete(file);
                         wc.rewrite(modifiers, GeneratorUtilities.get(wc).importFQNs(nue));

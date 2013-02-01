@@ -59,6 +59,7 @@ made subject to such option by the copyright holder.
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/xsl/resources/templates/stylesheet.html"/>
                 <attr name="templateCategory" stringvalue="XML"/>
                 <attr name="templateWizardIterator" newvalue="org.netbeans.modules.xsl.wizard.XSLWizardIterator"/>
+                <attr name="requireProject" boolvalue="false"/>
             </file>
         </folder> <!-- XML -->
     </folder> <!-- Templates -->

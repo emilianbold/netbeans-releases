@@ -50,9 +50,7 @@ import javax.swing.*;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -64,7 +62,6 @@ import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.OutputLogger;
 import org.netbeans.modules.mercurial.ui.merge.MergeAction;
 import org.netbeans.modules.mercurial.ui.actions.ContextAction;
-import org.netbeans.modules.mercurial.ui.branch.HgBranch;
 import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
 import org.netbeans.modules.mercurial.util.HgCommand;
 import org.netbeans.modules.mercurial.util.HgProjectUtils;
@@ -73,7 +70,6 @@ import org.netbeans.modules.mercurial.util.HgUtils;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.netbeans.modules.mercurial.ui.repository.HgURL;
 import org.openide.DialogDescriptor;
 import org.openide.nodes.Node;
@@ -131,7 +127,7 @@ public class PullAction extends ContextAction {
                     HgProgressSupport support = new HgProgressSupport() {
                         @Override
                         public void perform() {
-                            getDefaultAndPerformPull(context, repository, this.getLogger());
+                            getDefaultAndPerformPull(repository, null, this.getLogger());
                             canceled[0] = isCanceled();
                         }
                     };
@@ -203,7 +199,7 @@ public class PullAction extends ContextAction {
         logger.output("");
     }
 
-    static void getDefaultAndPerformPull(VCSContext ctx, File root, OutputLogger logger) {
+    public static void getDefaultAndPerformPull(File root, String revision, OutputLogger logger) {
         final String pullSourceString = HgRepositoryContextCache.getInstance().getPullDefault(root);
         // If the repository has no default pull path then inform user
         if (isNullOrEmpty(pullSourceString)) {
@@ -239,7 +235,7 @@ public class PullAction extends ContextAction {
             pullType = PullType.OTHER;
         }
         final String toPrjName = HgProjectUtils.getProjectName(root);
-        performPull(pullType, ctx, root, pullSource, fromPrjName, toPrjName, logger);
+        performPull(pullType, root, pullSource, fromPrjName, toPrjName, revision, logger);
     }
 
     private static void notifyDefaultPullUrlNotSpecified(OutputLogger logger) {
@@ -273,14 +269,13 @@ public class PullAction extends ContextAction {
     /**
      *
      * @param type
-     * @param ctx
      * @param root
      * @param pullSource password is nulled
      * @param fromPrjName
      * @param toPrjName
      * @param logger
      */
-    static void performPull(PullType type, VCSContext ctx, File root, HgURL pullSource, String fromPrjName, String toPrjName, OutputLogger logger) {
+    static void performPull(PullType type, File root, HgURL pullSource, String fromPrjName, String toPrjName, String revision, OutputLogger logger) {
         if(root == null || pullSource == null) return;
         File bundleFile = null; 
         
@@ -303,7 +298,7 @@ public class PullAction extends ContextAction {
 
             List<String> listIncoming;
             if(type == PullType.LOCAL){
-                listIncoming = HgCommand.doIncoming(root, logger);
+                listIncoming = HgCommand.doIncoming(root, revision, logger);
             }else{
                 for (int i = 0; i < 10000; i++) {
                     if (!new File(root.getParentFile(), root.getName() + "_bundle" + i).exists()) { // NOI18N
@@ -311,7 +306,7 @@ public class PullAction extends ContextAction {
                         break;
                     }
                 }
-                listIncoming = HgCommand.doIncoming(root, pullSource, bundleFile, logger, false);
+                listIncoming = HgCommand.doIncoming(root, pullSource, revision, bundleFile, logger, false);
             }
             if (listIncoming == null || listIncoming.isEmpty()) return;
             
@@ -336,7 +331,7 @@ public class PullAction extends ContextAction {
                 list = listIncoming;
             } else {
                 if(type == PullType.LOCAL){
-                    list = HgCommand.doPull(root, logger);
+                    list = HgCommand.doPull(root, revision, logger);
                 }else{
                     list = HgCommand.doUnbundle(root, bundleFile, logger);
                 }
