@@ -624,6 +624,7 @@ simple_declaration_or_function_definition [decl_kind kind]
 scope Declaration;
 @init                                                                           {if(state.backtracking == 0){action.simple_declaration(input.LT(1));}}
     :
+        gnu_attribute_specifiers?
                                                                                 {action.decl_specifiers(input.LT(1));}
         decl_specifier*                                                         {action.end_decl_specifiers(input.LT(0));}
         (
@@ -666,7 +667,7 @@ static_assert_declaration:
     ;
 
 attribute_declaration:
-        attribute_specifiers SEMICOLON
+        cpp11_attribute_specifiers SEMICOLON
     ;
 
 decl_specifier
@@ -844,7 +845,7 @@ elaborated_type_specifier:
 
 decltype_specifier
     :
-    LITERAL_decltype                                                            {action.decltype_specifier(input.LT(0));}
+    (literal_decltype | literal_typeof)                                         {action.decltype_specifier(input.LT(0));}
     LPAREN                                                                      {action.decltype_specifier(action.DECLTYPE_SPECIFIER__LPAREN, input.LT(0));}
     expression 
     RPAREN                                                                      {action.decltype_specifier(action.DECLTYPE_SPECIFIER__RPAREN, input.LT(0));}
@@ -988,7 +989,8 @@ namespace_definition:
         LITERAL_namespace                                                       {action.namespace_declaration($LITERAL_namespace);}
         (   
             IDENT                                                               {action.namespace_name($IDENT);}
-        )? 
+        )?
+        gnu_attribute_specifiers?
         LCURLY                                                                  {action.namespace_body($LCURLY);}
         namespace_body 
         RCURLY                                                                  {action.end_namespace_body($RCURLY);} 
@@ -1057,7 +1059,7 @@ using_directive:
 
 
 asm_definition:
-        LITERAL_asm LPAREN STRING_LITERAL RPAREN SEMICOLON                      {action.asm_definition($LITERAL_asm, $LPAREN, $STRING_LITERAL, $RPAREN, $SEMICOLON);}
+        literal_asm LPAREN STRING_LITERAL RPAREN SEMICOLON                      //{action.asm_definition($LITERAL_asm, $LPAREN, $STRING_LITERAL, $RPAREN, $SEMICOLON);}
     ;
 
 linkage_specification [decl_kind kind]:
@@ -1072,6 +1074,10 @@ linkage_specification [decl_kind kind]:
     ;
 
 attribute_specifiers:
+        (attribute_specifier | gnu_attribute_specifier)+
+    ;
+
+cpp11_attribute_specifiers:
         attribute_specifier+
     ;
 
@@ -1131,6 +1137,16 @@ balanced_token:
         ~(RCURLY | LCURLY | LSQUARE | RSQUARE | LPAREN | RPAREN)
     ;
 
+gnu_attribute_specifiers:
+        gnu_attribute_specifier+
+    ;
+
+gnu_attribute_specifier:
+        LITERAL___attribute__ LPAREN balanced_tokens RPAREN
+    |
+        LITERAL___extension__
+    ;
+
 init_declarator_list
         :                                                                       {action.init_declarator_list(input.LT(1));}
         init_declarator
@@ -1185,7 +1201,7 @@ declarator returns [declarator_type_t type]
     :                                                                           {action.declarator(input.LT(1));}
     (
         (ptr_operator)=>
-            ptr_operator nested=declarator
+            ptr_operator literal_restrict? nested=declarator
 //                {{ type = $nested.type;
 //                   type.apply_ptr($ptr_operator.type);
 //                }}
@@ -1273,7 +1289,7 @@ abstract_declarator returns [declarator_type_t type]
         //{{ type = $noptr_abstract_declarator.type; }}
         trailing_return_type?
     |
-        ptr_operator ((abstract_declarator) => abstract_declarator)? // review: predicate to avoid ambiguity around ELLIPSIS
+        ptr_operator literal_restrict? ((abstract_declarator) => abstract_declarator)? // review: predicate to avoid ambiguity around ELLIPSIS
 //            {{ type = $decl.type;
 //               type.apply_ptr($ptr_operator.type);
 //            }}
@@ -1337,7 +1353,7 @@ greedy_nonptr_declarator returns [declarator_type_t type]
     :                                                                           {action.greedy_nonptr_declarator(input.LT(1));}
     (
         (
-            declarator_id
+            declarator_id attribute_specifiers?
                 //{{ type = $declarator_id.type; }}
         |
             LPAREN                                                              {action.greedy_nonptr_declarator(action.GREEDY_NONPTR_DECLARATOR__LPAREN, input.LT(0));}
@@ -1381,7 +1397,7 @@ ptr_operator returns [ declarator_type_t type ]
     ;
 
 cv_qualifier returns [ qualifier_t qual ]:
-        LITERAL_const                                                           {action.cv_qualifier(action.CV_QUALIFIER__CONST, input.LT(0));}
+        literal_const                                                           {action.cv_qualifier(action.CV_QUALIFIER__CONST, input.LT(0));}
         //{{ qual = LITERAL_const; }}
     |
         LITERAL_volatile                                                        {action.cv_qualifier(action.CV_QUALIFIER__VOLATILE, input.LT(0));}
@@ -1653,6 +1669,68 @@ member_specification[boolean class_late_binding_lookup]
     ;
 finally                                                                         {if(state.backtracking == 0){action.end_member_specification(input.LT(0));}}
 
+protected
+literal_asm : LITERAL_asm | LITERAL__asm | LITERAL___asm|LITERAL___asm__;
+
+protected
+literal_cdecl : LITERAL__cdecl | LITERAL___cdecl;
+
+protected
+literal_const : LITERAL_const | LITERAL___const | LITERAL___const__;
+
+protected
+literal_declspec : LITERAL__declspec | LITERAL___declspec;
+
+protected
+literal_far : LITERAL__far | LITERAL___far;
+
+protected
+literal_inline : LITERAL_inline | LITERAL__inline | LITERAL___inline | LITERAL___inline__ | LITERAL___forceinline;
+
+protected
+literal_int64 : LITERAL__int64 | LITERAL___int64;
+
+protected
+literal_signed: LITERAL_signed | LITERAL___signed | LITERAL___signed__;
+
+protected
+literal_unsigned: LITERAL_unsigned | LITERAL___unsigned__;
+
+protected
+literal_near : LITERAL__near | LITERAL___near;
+
+protected
+literal_pascal : LITERAL_pascal | LITERAL__pascal | LITERAL___pascal;
+
+protected
+literal_stdcall : LITERAL__stdcall | LITERAL___stdcall;
+
+protected
+literal_clrcall : LITERAL___clrcall;
+
+protected
+literal_volatile : LITERAL_volatile | LITERAL___volatile | LITERAL___volatile__;
+
+protected
+literal_typeof : LITERAL_typeof | LITERAL___typeof | LITERAL___typeof__ ;
+
+protected
+literal_restrict : LITERAL_restrict | LITERAL___restrict | LITERAL___restrict__;
+
+protected
+literal_complex : LITERAL__Complex | LITERAL___complex__ | LITERAL___complex;
+
+protected
+literal_attribute : LITERAL___attribute | LITERAL___attribute__;
+
+protected
+literal_try : LITERAL_try | LITERAL___try;
+
+protected
+literal_finally : LITERAL___finally;
+
+protected
+literal_decltype : LITERAL_decltype | LITERAL___decltype;
 
 /*
  * original rule (part that was rewritten)
@@ -2152,9 +2230,9 @@ throw_expression:
         LITERAL_throw assignment_expression? 
     ;
 exception_specification:
-        dynamic_exception_specification
+        dynamic_exception_specification gnu_attribute_specifiers?
     |
-        noexcept_specification
+        noexcept_specification gnu_attribute_specifiers?
     ;
 dynamic_exception_specification:
         LITERAL_throw LPAREN type_id_list? RPAREN 
@@ -2627,7 +2705,7 @@ lookahead_tokenset_arg_syms
         MODEQUAL|TIMESEQUAL|BITWISEOREQUAL|BITWISEXOREQUAL|DOT|MOD|
         POINTERTO|QUESTIONMARK|COLON|SCOPE|DOTMBR|POINTERTOMBR|COMMA|ELLIPSIS|
         LITERAL_typedef|LITERAL_extern|LITERAL_static|LITERAL_auto|LITERAL_register|LITERAL___thread|
-        LITERAL_const|LITERAL_volatile|LITERAL_struct|LITERAL_union|LITERAL_class|LITERAL_enum|LITERAL_typename|
+        literal_const|LITERAL_volatile|LITERAL_struct|LITERAL_union|LITERAL_class|LITERAL_enum|LITERAL_typename|
         LITERAL___offsetof|LITERAL___alignof|LITERAL_throw|LITERAL_wchar_t|LITERAL_typeid|
         LITERAL_const_cast|LITERAL_static_cast|LITERAL_dynamic_cast|LITERAL_reinterpret_cast|
         LITERAL_bool|LITERAL_true|LITERAL_false|
