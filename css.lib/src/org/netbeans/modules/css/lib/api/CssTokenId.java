@@ -203,16 +203,23 @@ public enum CssTokenId implements TokenId {
     CONTAINS(Css3Lexer.CONTAINS, OPERATORS),
     
     FONT_FACE_SYM(Css3Lexer.FONT_FACE_SYM, AT_RULE_SYMBOL),
-    HASH_CHAR_ONLY(Css3Lexer.T__117, OTHERS),
+    HASH_CHAR_ONLY(Css3Lexer.T__121, OTHERS),
     
     /**
      * '...' in less_args_list rule
      */
-    LESS_VARARG(Css3Lexer.T__118, OTHERS),
+    LESS_VARARG(Css3Lexer.T__122, OTHERS),
     /**
      * '@rest...' in less_args_list rule
      */
-    LESS_REST(Css3Lexer.T__119, OTHERS),
+    LESS_REST(Css3Lexer.T__123, OTHERS),
+    
+    /**
+     * WHEN keyword in guarded mixin
+     * .mixin (@a) "when" (@a > 10), (@a < -10) { ... }
+     */
+    LESS_WHEN(Css3Lexer.LESS_WHEN, OTHERS),
+    
     
     MOZ_DOCUMENT_SYM(Css3Lexer.MOZ_DOCUMENT_SYM, AT_RULE_SYMBOL),
     MOZ_DOMAIN(Css3Lexer.MOZ_DOMAIN, URIS),

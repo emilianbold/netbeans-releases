@@ -362,6 +362,12 @@ public enum NodeType {
     /**
      * .box-shadow ("@x: 0", @y: 0, @blur: 1px, @color: #000)
      */
-    less_arg;
+    less_arg,
+    
+    less_mixin_guarded,
+    less_condition,
+    less_condition_operator,
+    less_function_in_condition,
+    less_fn_name;
     
 }

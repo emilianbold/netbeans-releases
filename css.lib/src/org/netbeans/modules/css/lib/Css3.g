@@ -794,7 +794,7 @@ less_variable_declaration
     ;
     
 less_variable
-    : AT_IDENT
+    : AT_IDENT | MEDIA_SYM //TODO add all meaningful at-rules here
     ;
 
 less_function
@@ -822,7 +822,7 @@ less_expression_operator
 //normal mixin has common css syntax: .mixin so cannot be distinguished from a css class
 less_mixin_declaration
     :
-    cssClass ws? LPAREN less_args_list? RPAREN ws? less_mixin_guarded?
+    cssClass ws? LPAREN less_args_list? RPAREN ws? (less_mixin_guarded ws?)?
     ;
     
 //.box-shadow ("@x: 0, @y: 0, @blur: 1px, @color: #000")
@@ -843,17 +843,38 @@ less_arg
 //.mixin (@a) "when (@a > 10), (@a < -10)" { ... }
 less_mixin_guarded
     :
-    'when' less_condition (COMMA ws? less_condition)
+    LESS_WHEN ws? less_condition ( (COMMA | AND) ws? less_condition)*
     ;
     
+//.truth (@a) when (@a) { ... }
+//.truth (@a) when (@a = true) { ... }
 less_condition
     :
-    less_variable ( less_condition_operator ( less_expression | less_variable ) )    
+    (NOT ws?)?
+    LPAREN ws? 
+        (
+            less_function_in_condition ws?
+            |
+            ( less_variable (ws? less_condition_operator ws? less_expression)?)  
+        )        
+    RPAREN
     ;
     
+//.mixin (@a, @b: 0) when ("isnumber(@b)") { ... }
+less_function_in_condition
+    :
+    less_fn_name ws? LPAREN ws? less_variable ws? RPAREN
+    ;
+
+//.mixin (@a, @b: 0) when ("isnumber"(@b)) { ... }
+less_fn_name
+    :
+    IDENT
+    ;
+
 less_condition_operator
     :
-    GREATER | GREATER_OR_EQ | OPEQ | LESS | LESS_OR_EQ | 'AND' | 
+    GREATER | GREATER_OR_EQ | OPEQ | LESS | LESS_OR_EQ
     ;
 
 //*** END OF LESS SYNTAX ***
@@ -1180,9 +1201,9 @@ TILDE		: '~'       ;
 PIPE            : '|'       ;
 
 LESS            : '<'       ;
-GREATER_OR_EQ   : '>='       ;
-LESS            : '<'       ;
-LESS_OR_EQ      : '=<'       ;
+GREATER_OR_EQ   : '>='      ;
+LESS_OR_EQ      : '=<'      ;
+LESS_WHEN       : 'WHEN'    ;
 
 // -----------------
 // Literal strings. Delimited by either ' or "
