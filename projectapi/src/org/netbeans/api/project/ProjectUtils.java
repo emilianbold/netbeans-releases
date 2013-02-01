@@ -60,6 +60,7 @@ import java.util.prefs.Preferences;
 import javax.swing.Icon;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.projectapi.AuxiliaryConfigBasedPreferencesProvider;
 import org.netbeans.modules.projectapi.AuxiliaryConfigImpl;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
@@ -97,7 +98,7 @@ public class ProjectUtils {
      * @return some information about it
      * @see Project#getLookup
      */
-    public static ProjectInformation getInformation(Project p) {
+    public static ProjectInformation getInformation(@NonNull Project p) {
         Lookup l = p.getLookup();
         ProjectInformation pi = l.lookup(ProjectInformation.class);
         return new AnnotateIconProxyProjectInformation(pi != null ? pi : new BasicInformation(p));
@@ -112,7 +113,7 @@ public class ProjectUtils {
      * @return a list of sources for it
      * @see Project#getLookup
      */
-    public static Sources getSources(Project p) {
+    public static Sources getSources(@NonNull Project p) {
         Lookup l = p.getLookup();
         Sources s = l.lookup(Sources.class);
         if (s != null) {
@@ -181,7 +182,7 @@ public class ProjectUtils {
      * @return {@link Preferences} for the given project
      * @since 1.16
      */
-    public static Preferences getPreferences(Project project, Class clazz, boolean shared) {
+    public static Preferences getPreferences(@NonNull Project project, @NonNull Class clazz, boolean shared) {
         Parameters.notNull("project", project);
         Parameters.notNull("clazz", clazz);
         
@@ -195,7 +196,7 @@ public class ProjectUtils {
      * @param master the original master project (for use with candidate param)
      * @param candidate a candidate added subproject for master, or null
      */
-    private static boolean visit(Map<Project,Boolean> encountered, Project curr, Project master, Project candidate) {
+    private static boolean visit(@NonNull Map<Project,Boolean> encountered, @NonNull Project curr, Project master, @NullAllowed Project candidate) {
         if (encountered.containsKey(curr)) {
             if (encountered.get(curr)) {
                 return false;
@@ -376,7 +377,7 @@ public class ProjectUtils {
      * @return an auxiliary configuration handle
      * @since org.netbeans.modules.projectapi/1 1.17
      */
-    public static AuxiliaryConfiguration getAuxiliaryConfiguration(Project project) {
+    public static AuxiliaryConfiguration getAuxiliaryConfiguration(@NonNull Project project) {
         Parameters.notNull("project", project);
         return new AuxiliaryConfigImpl(project);
     }
@@ -395,7 +396,7 @@ public class ProjectUtils {
      * @throws IOException if no such directory could be created
      * @since org.netbeans.modules.projectapi/1 1.26
      */
-    public static FileObject getCacheDirectory(Project project, Class<?> owner) throws IOException {
+    public static FileObject getCacheDirectory(@NonNull Project project, @NonNull Class<?> owner) throws IOException {
         FileObject d;
         CacheDirectoryProvider cdp = project.getLookup().lookup(CacheDirectoryProvider.class);
         if (cdp != null) {

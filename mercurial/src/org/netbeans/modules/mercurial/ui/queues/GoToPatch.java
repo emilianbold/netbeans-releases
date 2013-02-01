@@ -45,10 +45,17 @@ import java.awt.Component;
 import java.awt.Dialog;
 import java.awt.EventQueue;
 import java.io.File;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import javax.swing.BorderFactory;
 import javax.swing.DefaultListCellRenderer;
+import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.UIManager;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.netbeans.modules.mercurial.HgException;
@@ -59,6 +66,7 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.awt.Mnemonics;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
 /**
@@ -72,8 +80,10 @@ class GoToPatch {
     private HgProgressSupport support;
     private static final String GETTING_PATCHES = NbBundle.getMessage(GoToPatch.class, "LBL_GoToPatch.loadingPatches"); //NOI18N
     private static final String NO_PATCHES = NbBundle.getMessage(GoToPatch.class, "LBL_GoToPatch.noPatches"); //NOI18N
-    public static final String POP_ALL_PATCHES = NbBundle.getMessage(GoToPatch.class, "LBL_GoToPatch.popAllPatches"); //NOI18N
     private QPatch onTopPatch;
+    private static final String SEP = "--------------------------------------------"; //NOI18N
+    private static final String ICON_QUEUE_PATH = "org/netbeans/modules/mercurial/resources/icons/queue.png"; //NOI18N
+    private static final Icon icon = ImageUtilities.loadImageIcon(ICON_QUEUE_PATH, true);
 
     public GoToPatch (File repository) {
         this.repository = repository;
@@ -93,13 +103,18 @@ class GoToPatch {
             @Override
             public void valueChanged (ListSelectionEvent e) {
                 if (!e.getValueIsAdjusting()) {
-                    Object selectedPatch = panel.lstPatches.getSelectedValue();
-                    okButton.setEnabled(selectedPatch == POP_ALL_PATCHES && onTopPatch != null // anything to pop?
-                            || selectedPatch instanceof QPatch && onTopPatch != selectedPatch);
-                    if (selectedPatch == POP_ALL_PATCHES && onTopPatch == null) {
+                    Object selectedObject = panel.lstPatches.getSelectedValue();
+                    Queue selectedQueue = selectedObject instanceof Queue ? ((Queue) selectedObject) : null;
+                    okButton.setEnabled(true);
+                    if (selectedQueue != null && selectedQueue.isActive() && onTopPatch == null) {
                         setInfo(NbBundle.getMessage(GoToPatch.class, "PatchSeriesPanel.lblInfo.noAppliedPatches")); //NOI18N
-                    } else if (selectedPatch instanceof QPatch && onTopPatch == selectedPatch) {
+                        okButton.setEnabled(false);
+                    } else if (selectedObject instanceof QPatch && onTopPatch == selectedObject) {
                         setInfo(NbBundle.getMessage(GoToPatch.class, "PatchSeriesPanel.lblInfo.alreadyOnTop")); //NOI18N
+                        okButton.setEnabled(false);
+                    } else if (selectedObject == null || selectedObject == SEP) {
+                        okButton.setEnabled(false);
+                        setInfo(null);
                     } else {
                         setInfo(null);
                     }
@@ -130,17 +145,17 @@ class GoToPatch {
         support = new HgProgressSupport() {
             @Override
             protected void perform () {
-                QPatch[] patches = null;
+                Map<Queue, QPatch[]> patches = null;
                 try {
-                    patches = HgCommand.qListSeries(repository);
+                    patches = HgCommand.qListAvailablePatches(repository);
                 } catch (HgException ex) {
                 
                 } finally {
-                    final QPatch[] qPatches = patches;
+                    final Map<Queue, QPatch[]> qPatches = patches;
                     EventQueue.invokeLater(new Runnable() {
                         @Override
                         public void run () {
-                            displayPatches(qPatches);
+                            displayResults(qPatches);
                         }
                     });
                 }
@@ -149,20 +164,25 @@ class GoToPatch {
         support.start(Mercurial.getInstance().getRequestProcessor(repository), repository, GETTING_PATCHES);
     }
 
-    private void displayPatches (QPatch[] patches) {
-        if (patches == null || patches.length == 0) {
+    private void displayResults (Map<Queue, QPatch[]> patches) {
+        if (patches == null || patches.isEmpty()) {
             panel.lstPatches.setListData(new String[] { NO_PATCHES });
         } else {
-            Object[] toAdd = new Object[patches.length + 1];
-            toAdd[0] = POP_ALL_PATCHES;
-            for (int i = 0; i < patches.length; ) {
-                QPatch p = patches[i];
-                toAdd[++i] = p;
-                if (p.isApplied()) {
-                    onTopPatch = p;
+            List<Object> toAdd = new LinkedList<Object>();
+            for (Map.Entry<Queue, QPatch[]> e : patches.entrySet()) {
+                if (!toAdd.isEmpty()) {
+                    toAdd.add(SEP);
+                }
+                Queue q = e.getKey();
+                toAdd.add(q);
+                for (QPatch p : e.getValue()) {
+                    toAdd.add(p);
+                    if (p.isApplied()) {
+                        onTopPatch = p;
+                    }
                 }
             }
-            panel.lstPatches.setListData(toAdd);
+            panel.lstPatches.setListData(toAdd.toArray(new Object[toAdd.size()]));
             panel.lstPatches.setEnabled(true);
             if (onTopPatch == null) {
                 panel.lstPatches.setSelectedIndex(1);
@@ -173,23 +193,47 @@ class GoToPatch {
         }
     }
 
-    String getSelectedPatch () {
-        String retval = null;
+    boolean isPopAllSelected () {
+        Object selectedObject = panel.lstPatches.getSelectedValue();
+        Queue selectedQueue = selectedObject instanceof Queue ? ((Queue) selectedObject) : null;
+        return selectedQueue != null && selectedQueue.isActive();
+    }
+    
+    QPatch getSelectedPatch () {
+        QPatch retval = null;
         Object selected = panel.lstPatches.getSelectedValue();
         if (selected instanceof QPatch) {
-            retval = ((QPatch) selected).getId();
-        } else if (selected == POP_ALL_PATCHES) {
-            retval = POP_ALL_PATCHES;
+            retval = (QPatch) selected;
+        }
+        return retval;
+    }
+    
+    Queue getSelectedQueue () {
+        Queue retval = null;
+        Object selected = panel.lstPatches.getSelectedValue();
+        if (selected instanceof Queue) {
+            retval = (Queue) selected;
         }
         return retval;
     }
 
+    @NbBundle.Messages({
+        "# {0} - queue name", "Queue_name_active=<strong>{0}</strong> (active queue)",
+        "# {0} - queue name", "Queue_name_inactive={0} (inactive queue)",
+        "# {0} - queue name", "MSG_QPatch_differentQueue=<html>Patch from a different queue - {0}.<br>"
+            + "Will switch the active queue and go to this patch.</html>",
+        "MSG_Queue_active_TT=<html>Queue is active.<br>Will pop all applied patches.</html>",
+        "MSG_Queue_inactive_TT=<html>Queue is inactive.<br>Will become the active queue.</html>"
+    })
     private static class PatchRenderer extends DefaultListCellRenderer {
 
         @Override
         public Component getListCellRendererComponent (JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             String tooltip = null;
+            boolean isPatch = false;
+            boolean isQueue = false;
             if (value instanceof QPatch) {
+                isPatch = true;
                 QPatch patch = (QPatch) value;
                 StringBuilder sb = new StringBuilder(100);
                 if (patch.isApplied()) {
@@ -203,13 +247,35 @@ class GoToPatch {
                     sb.append("</html>"); //NOI18N
                 }
                 value = sb.toString();
-                if (!patch.getMessage().trim().isEmpty()) {
+                if (!patch.getQueue().isActive()) {
+                    tooltip = Bundle.MSG_QPatch_differentQueue(patch.getQueue().getName());
+                } else if (!patch.getMessage().trim().isEmpty()) {
                     tooltip = patch.getMessage();
                 }
+            } else if (value instanceof Queue) {
+                Queue q = (Queue) value;
+                StringBuilder sb = new StringBuilder(50).append("<html>"); //NOI18N
+                sb.append(q.isActive() ? Bundle.Queue_name_active(q.getName()) : Bundle.Queue_name_inactive(q.getName()));
+                sb.append("</html>"); //NOI18N
+                tooltip = q.isActive() ? Bundle.MSG_Queue_active_TT() : Bundle.MSG_Queue_inactive_TT();
+                value = sb.toString();
+                isQueue = true;
             }
             Component comp = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
             if (comp instanceof JComponent) {
-                ((JComponent) comp).setToolTipText(tooltip);
+                JComponent jcomp = (JComponent) comp;
+                jcomp.setToolTipText(tooltip);
+                if (isPatch) {
+                    jcomp.setBorder(BorderFactory.createEmptyBorder(0, 32, 0, 0));
+                } else if (isQueue) {
+                    if (comp instanceof JLabel) {
+                        ((JLabel) comp).setIcon(icon);
+                    }
+                } else {
+                    if (comp instanceof JLabel && !isSelected) {
+                        ((JLabel) comp).setForeground(UIManager.getColor("Label.disabledForeground"));
+                    }
+                }
             }
             return comp;
         }

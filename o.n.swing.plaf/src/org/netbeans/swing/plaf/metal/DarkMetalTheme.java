@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,53 +37,79 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.mercurial.ui.queues;
+package org.netbeans.swing.plaf.metal;
 
-import java.io.File;
-import org.netbeans.modules.mercurial.Mercurial;
-import org.netbeans.modules.mercurial.ui.actions.ContextAction;
-import org.netbeans.modules.mercurial.util.HgUtils;
-import org.netbeans.modules.versioning.spi.VCSContext;
-import org.netbeans.modules.versioning.util.Utils;
-import org.openide.awt.ActionID;
-import org.openide.awt.ActionRegistration;
-import org.openide.nodes.Node;
-import org.openide.util.actions.SystemAction;
+import javax.swing.UIDefaults;
+import javax.swing.UIManager;
+import javax.swing.plaf.ColorUIResource;
+import javax.swing.plaf.metal.DefaultMetalTheme;
+import org.netbeans.swing.plaf.util.DarkIconFilter;
 
 /**
  *
- * @author ondra
+ * @author S. Aubrecht, P. Somol
  */
-@ActionID(id = "org.netbeans.modules.mercurial.ui.queues.QPopAllPatchesAction", category = "Mercurial/Queues")
-@ActionRegistration(displayName = "#CTL_MenuItem_QPopAllPatches")
-public class QPopAllAction extends ContextAction {
+public class DarkMetalTheme extends DefaultMetalTheme {
+
+    private final ColorUIResource primary1 = new ColorUIResource( 121, 121, 125 );
+    private final ColorUIResource primary2 = new ColorUIResource( 71, 71, 75 );
+    private final ColorUIResource primary3 = new ColorUIResource( 99, 99, 99 );
+    private final ColorUIResource secondary1 = new ColorUIResource( 113, 113, 113 );
+    private final ColorUIResource secondary2 = new ColorUIResource( 91, 91, 95 );
+    private final ColorUIResource secondary3 = new ColorUIResource( 51, 51, 55 );
+    private final ColorUIResource black = new ColorUIResource( 222, 222, 222 );
+    private final ColorUIResource white = new ColorUIResource( 18, 30, 49 );
 
     @Override
-    protected boolean enable (Node[] nodes) {
-        return HgUtils.isFromHgRepository(HgUtils.getCurrentContext(nodes));
+    public String getName() {
+        return "NetBeans Dark Theme";
     }
 
     @Override
-    protected String getBaseName (Node[] nodes) {
-        return "CTL_MenuItem_QPopAllPatches"; //NOI18N
+    public void addCustomEntriesToTable( UIDefaults table ) {
+        super.addCustomEntriesToTable( table );
+        table.put( "nb.imageicon.filter", new DarkIconFilter() ); //NOI18N
     }
 
     @Override
-    protected void performContextAction (Node[] nodes) {
-        VCSContext ctx = HgUtils.getCurrentContext(nodes);
-        final File roots[] = HgUtils.getActionRoots(ctx);
-        if (roots == null || roots.length == 0) return;
-        final File root = Mercurial.getInstance().getRepositoryRoot(roots[0]);
-        
-        Utils.post(new Runnable() {
-            @Override
-            public void run () {
-                if (QUtils.isMQEnabledExtension(root)) {
-                    SystemAction.get(QGoToPatchAction.class).goToPatch(root, null, null);
-                }
-            }
-        });
+    protected ColorUIResource getPrimary1() {
+        return primary1;
+    }
+
+    @Override
+    protected ColorUIResource getPrimary2() {
+        return primary2;
+    }
+
+    @Override
+    protected ColorUIResource getPrimary3() {
+        return primary3;
+    }
+
+    @Override
+    protected ColorUIResource getSecondary1() {
+        return secondary1;
+    }
+
+    @Override
+    protected ColorUIResource getSecondary2() {
+        return secondary2;
+    }
+
+    @Override
+    protected ColorUIResource getSecondary3() {
+        return secondary3;
+    }
+
+    @Override
+    protected ColorUIResource getWhite() {
+        return white;
+    }
+
+    @Override
+    protected ColorUIResource getBlack() {
+        return black;
     }
 }
