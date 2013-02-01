@@ -118,9 +118,9 @@ import org.netbeans.modules.cnd.spi.toolchain.CompilerSetFactory;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.NamedRunnable;
+import org.netbeans.modules.cnd.utils.OSSComponentUsages;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.cnd.utils.ui.ModalMessageDlg;
-import org.netbeans.modules.dlight.util.usagetracking.SunStudioUserCounter;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
@@ -1574,8 +1574,8 @@ public final class MakeActionProvider implements ActionProvider {
         }
 
         // user counting mode
-        if (cs != null && cs.getCompilerFlavor().isSunStudioCompiler() && !CndUtils.isUnitTestMode()) {
-            SunStudioUserCounter.countIDE(cs.getDirectory(), execEnv);
+        if (!CndUtils.isUnitTestMode()) {
+            OSSComponentUsages.countIDEUsage();
         }
         if (runBTA) {
             if (CndUtils.isUnitTestMode() || CndUtils.isStandalone()) {
