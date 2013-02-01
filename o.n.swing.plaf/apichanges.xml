@@ -49,6 +49,24 @@ made subject to such option by the copyright holder.
     <apidef name="plaf">Look And Feel Customization</apidef>
 </apidefs>
 <changes>
+    <change id="dark-theme">
+        <api name="plaf"/>
+        <summary>Support for dark theme fro Metal and Nimbus look and feel.</summary>
+        <version major="1" minor="32"/>
+        <date day="31" month="1" year="2013"/>
+        <author login="saubrecht"/>
+        <compatibility
+            addition="yes"
+            binary="compatible" deletion="no" deprecation="no"
+            modification="no" semantic="compatible" source="compatible"
+        />
+        <description>
+            <p>When using Nimbus or Metal look and feel then system property
+                netbeans.plaf.dark.theme=true will switch to dark color theme
+                which nicely fits to 'Norway Today' editor color schema.
+            </p>
+        </description>
+    </change>
     <change id="windows8-lfcustoms">
         <api name="plaf"/>
         <summary>New look and feel customizations for Windows 8</summary>

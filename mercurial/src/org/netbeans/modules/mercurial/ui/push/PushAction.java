@@ -73,7 +73,6 @@ import org.openide.DialogDescriptor;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
 import static org.netbeans.modules.mercurial.util.HgUtils.isNullOrEmpty;
 import org.openide.filesystems.FileUtil;
@@ -124,7 +123,7 @@ public class PushAction extends ContextAction {
                     HgProgressSupport support = new HgProgressSupport() {
                         @Override
                         public void perform() {
-                            getDefaultAndPerformPush(repository, this.getLogger());
+                            getDefaultAndPerformPush(repository, null, this.getLogger());
                             canceled[0] = isCanceled();
                         }
                     };
@@ -137,7 +136,7 @@ public class PushAction extends ContextAction {
         });
     }
 
-    public static void getDefaultAndPerformPush(File root, OutputLogger logger) {
+    public static void getDefaultAndPerformPush(File root, String revisionToPush, OutputLogger logger) {
         // If the repository has no default push path then inform user
         String tmpPushPath = HgRepositoryContextCache.getInstance().getPushDefault(root);
         if (isNullOrEmpty(tmpPushPath)) {
@@ -165,7 +164,7 @@ public class PushAction extends ContextAction {
         final String toPrjName = pushTarget.isFile()
                                  ? HgProjectUtils.getProjectName(new File(pushTarget.getPath()))
                                  : null;
-        performPush(root, pushTarget, fromPrjName, toPrjName, logger, true);
+        performPush(root, pushTarget, fromPrjName, toPrjName, revisionToPush, logger, true);
 
     }
 
@@ -206,7 +205,7 @@ public class PushAction extends ContextAction {
      * @param logger
      * @param showSaveCredsOption
      */
-    static void performPush(File root, HgURL pushUrl, String fromPrjName, String toPrjName, OutputLogger logger, boolean showSaveCredsOption) {
+    static void performPush(File root, HgURL pushUrl, String fromPrjName, String toPrjName, String revision, OutputLogger logger, boolean showSaveCredsOption) {
         try {
             boolean bLocalPush = pushUrl.isFile();
             String pushPath = bLocalPush ? pushUrl.getPath() : null;
@@ -231,7 +230,7 @@ public class PushAction extends ContextAction {
                                            : pushUrl));
             }
 
-            List<String> listOutgoing = HgCommand.doOutgoing(root, pushUrl, logger, showSaveCredsOption);
+            List<String> listOutgoing = HgCommand.doOutgoing(root, pushUrl, revision, logger, showSaveCredsOption);
             if ((listOutgoing == null) || listOutgoing.isEmpty()) {
                 return;
             }
@@ -282,7 +281,7 @@ public class PushAction extends ContextAction {
                         // XXX handle veto
                     }
                 }
-                list = HgCommand.doPush(root, pushUrl, logger, showSaveCredsOption);
+                list = HgCommand.doPush(root, pushUrl, revision, logger, showSaveCredsOption);
             }
             if (!list.isEmpty() && (HgCommand.isErrorAbortPush(list.get(list.size() - 1))
                     || list.size() > 1 && HgCommand.isErrorAbortPush(list.get(list.size() - 2)))) {

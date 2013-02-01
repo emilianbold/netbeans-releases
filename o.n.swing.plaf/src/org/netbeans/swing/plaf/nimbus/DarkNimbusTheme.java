@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,46 +37,36 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.mercurial.ui.queues;
+package org.netbeans.swing.plaf.nimbus;
 
-import org.openide.util.NbBundle;
+import java.awt.Color;
+import javax.swing.LookAndFeel;
+import javax.swing.UIManager;
+import org.netbeans.swing.plaf.util.DarkIconFilter;
 
 /**
  *
- * @author ondra
+ * @author S. Aubrecht
  */
-public class QPatch {
-    
-    public static final String TAG_QTIP = "qtip"; //NOI18N
-    private final String id;
-    private final String message;
-    private final boolean applied;
-    private final Queue queue;
+public class DarkNimbusTheme {
 
-    @NbBundle.Messages("MSG_QPatch_Unknown_Message=Unknown")
-    public QPatch (String id, String message, Queue queue, boolean applied) {
-        this.id = id;
-        this.message = message == null ? Bundle.MSG_QPatch_Unknown_Message() : message;
-        this.queue = queue;
-        this.applied = applied;
+    public static void install( LookAndFeel laf ) {
+        UIManager.put( "control", new Color( 128, 128, 128) );
+        UIManager.put( "info", new Color(128,128,128) );
+        UIManager.put( "nimbusBase", new Color( 18, 30, 49) );
+        UIManager.put( "nimbusAlertYellow", new Color( 248, 187, 0) );
+        UIManager.put( "nimbusDisabledText", new Color( 128, 128, 128) );
+        UIManager.put( "nimbusFocus", new Color(115,164,209) );
+        UIManager.put( "nimbusGreen", new Color(176,179,50) );
+        UIManager.put( "nimbusInfoBlue", new Color( 66, 139, 221) );
+        UIManager.put( "nimbusLightBackground", new Color( 18, 30, 49) );
+        UIManager.put( "nimbusOrange", new Color(191,98,4) );
+        UIManager.put( "nimbusRed", new Color(169,46,34) );
+        UIManager.put( "nimbusSelectedText", new Color( 255, 255, 255) );
+        UIManager.put( "nimbusSelectionBackground", new Color( 104, 93, 156) );
+        UIManager.put( "text", new Color( 230, 230, 230) );
+        UIManager.put( "nb.imageicon.filter", new DarkIconFilter() );
     }
-
-    public String getId () {
-        return id;
-    }
-
-    public String getMessage () {
-        return message;
-    }
-
-    public boolean isApplied () {
-        return applied;
-    }
-
-    public Queue getQueue () {
-        return queue;
-    }
-
 }

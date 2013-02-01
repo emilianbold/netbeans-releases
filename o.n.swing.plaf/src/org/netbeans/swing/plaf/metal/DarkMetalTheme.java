@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,60 +37,79 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.model.impl;
+package org.netbeans.swing.plaf.metal;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.javascript2.editor.model.JsObject;
-import org.netbeans.modules.javascript2.editor.model.Occurrence;
+import javax.swing.UIDefaults;
+import javax.swing.UIManager;
+import javax.swing.plaf.ColorUIResource;
+import javax.swing.plaf.metal.DefaultMetalTheme;
+import org.netbeans.swing.plaf.util.DarkIconFilter;
 
 /**
  *
- * @author Petr Pisl
+ * @author S. Aubrecht, P. Somol
  */
-public class OccurrenceImpl implements Occurrence {
+public class DarkMetalTheme extends DefaultMetalTheme {
 
-    private final OffsetRange offsetRange;
-    private final List<JsObject> declarations;
-    
-    public OccurrenceImpl(final OffsetRange offsetRange, final JsObject declaration) {
-        this.offsetRange = offsetRange;
-        this.declarations = new ArrayList<JsObject>(1);
-        this.declarations.add(declaration);
-    }
-    
-    @Override
-    public OffsetRange getOffsetRange() {
-        return offsetRange;
-    }
+    private final ColorUIResource primary1 = new ColorUIResource( 121, 121, 125 );
+    private final ColorUIResource primary2 = new ColorUIResource( 71, 71, 75 );
+    private final ColorUIResource primary3 = new ColorUIResource( 99, 99, 99 );
+    private final ColorUIResource secondary1 = new ColorUIResource( 113, 113, 113 );
+    private final ColorUIResource secondary2 = new ColorUIResource( 91, 91, 95 );
+    private final ColorUIResource secondary3 = new ColorUIResource( 51, 51, 55 );
+    private final ColorUIResource black = new ColorUIResource( 222, 222, 222 );
+    private final ColorUIResource white = new ColorUIResource( 18, 30, 49 );
 
     @Override
-    public Collection<? extends JsObject> getDeclarations() {
-        return declarations;
-    }
-    
-    @Override
-    public int hashCode() {
-        return offsetRange.hashCode();
+    public String getName() {
+        return "NetBeans Dark Theme";
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final OccurrenceImpl other = (OccurrenceImpl) obj;
-        if (this.offsetRange != other.offsetRange && (this.offsetRange == null || !this.offsetRange.equals(other.offsetRange))) {
-            return false;
-        }
-        return true;
+    public void addCustomEntriesToTable( UIDefaults table ) {
+        super.addCustomEntriesToTable( table );
+        table.put( "nb.imageicon.filter", new DarkIconFilter() ); //NOI18N
     }
-    
+
+    @Override
+    protected ColorUIResource getPrimary1() {
+        return primary1;
+    }
+
+    @Override
+    protected ColorUIResource getPrimary2() {
+        return primary2;
+    }
+
+    @Override
+    protected ColorUIResource getPrimary3() {
+        return primary3;
+    }
+
+    @Override
+    protected ColorUIResource getSecondary1() {
+        return secondary1;
+    }
+
+    @Override
+    protected ColorUIResource getSecondary2() {
+        return secondary2;
+    }
+
+    @Override
+    protected ColorUIResource getSecondary3() {
+        return secondary3;
+    }
+
+    @Override
+    protected ColorUIResource getWhite() {
+        return white;
+    }
+
+    @Override
+    protected ColorUIResource getBlack() {
+        return black;
+    }
 }

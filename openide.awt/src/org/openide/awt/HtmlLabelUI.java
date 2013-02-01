@@ -400,7 +400,9 @@ class HtmlLabelUI extends LabelUI {
     static Color ensureContrastingColor(Color fg, Color bg) {
         if (bg == null) {
             if (isNimbus()) {
-                bg = Color.WHITE;
+                bg = UIManager.getColor( "textBackground" ); //NOI18N
+                if( null == bg )
+                    bg = Color.WHITE;
             } else {
                 bg = UIManager.getColor("text"); //NOI18N
 
@@ -411,9 +413,11 @@ class HtmlLabelUI extends LabelUI {
         }
         if (fg == null) {
             if (isNimbus()) {
-                fg = Color.BLACK;
+                fg = UIManager.getColor( "textForeground" ); //NOI18N
+                if( null == fg )
+                    fg = Color.BLACK;
             } else {
-                fg = UIManager.getColor("textText");
+                fg = UIManager.getColor("textText"); //NOI18N
                 if (fg == null) {
                     fg = Color.BLACK;
                 }
