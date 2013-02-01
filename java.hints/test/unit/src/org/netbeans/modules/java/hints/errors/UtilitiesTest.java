@@ -119,6 +119,18 @@ public class UtilitiesTest extends NbTestCase {
         performNameGuessTest("package test; public class Test {public void t() {t(this);}}", 54, "aThis");
     }
     
+    public void test225641() throws Exception {
+        performNameGuessTest("package test; public class Test {public void t() {getIssueDate(|);} public int getIssueDate() {return 0;}}", "issueDate");
+    }
+    
+    public void test225532() throws Exception {
+        performNameGuessTest("package test; public class Test {public void t() { String str = \"127.|0.0.1\";} }", "string");
+    }
+    
+    public void test225541() throws Exception {
+        performNameGuessTest("package test; public class Test {public void t() { String str = \"UPL|OAD_IMAGE_TO_FRIEND_PAGE\";} }", "upload_image_to_friend_page");
+    }
+    
     public void testShortName1() throws Exception {
         //TODO: better display name:
         performShortNameTest("package test; public class Test { public void t(Object... obj) { | }}", "((boolean[]) obj)[i]", "...(boolean)[]");
@@ -137,6 +149,7 @@ public class UtilitiesTest extends NbTestCase {
         assertEquals("SOME_HTML_CONSTANT", Utilities.toConstantName("someHTMLConstant"));
         assertEquals("CAPITAL_START", Utilities.toConstantName("CapitalStart"));
         assertEquals("", Utilities.toConstantName(""));
+        assertEquals("UPLOAD_IMAGE_TO_FRIEND_PAGE", Utilities.toConstantName("upload_image_to_friend_page"));
     }
     
     public void testCapturedTypeArray164543() throws Exception {
@@ -210,6 +223,14 @@ public class UtilitiesTest extends NbTestCase {
     }
     
     private CompilationInfo info;
+    
+    private void performNameGuessTest(String code, String desiredName) throws Exception {
+        int scopePos = code.indexOf('|');
+
+        assertTrue(scopePos > -1);
+        
+        performNameGuessTest(code.replace("|", ""), scopePos, desiredName);
+    }
     
     private void performNameGuessTest(String code, int position, String desiredName) throws Exception {
         prepareTest(code);
