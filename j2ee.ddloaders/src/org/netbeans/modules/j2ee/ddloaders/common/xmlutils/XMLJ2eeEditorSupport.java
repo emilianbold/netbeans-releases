@@ -238,7 +238,10 @@ public class XMLJ2eeEditorSupport extends DataEditorSupport
             }
             super.saveDocument();
             //moved from Env.save()
-            getDataObject().setModified (false);
+// DataObject.setModified() already called as part of super.saveDocument(). The save action is now asynchronous
+// in the IDE and super.saveDocument() checks for possible extra document modifications performed during save
+// and sets the DO.modified flag accordingly.
+//            getDataObject().setModified (false);
         } catch (UnsupportedEncodingException ex) {
             // ask user what next?
             String message = NbBundle.getMessage(XMLJ2eeEditorSupport.class,"TEXT_SAVE_AS_UTF", enc);
@@ -287,7 +290,10 @@ public class XMLJ2eeEditorSupport extends DataEditorSupport
 
                     super.saveDocument();
                     //moved from Env.save()
-                    getDataObject().setModified (false);
+// DataObject.setModified() already called as part of super.saveDocument(). The save action is now asynchronous
+// and super.saveDocument() checks for possible extra document modifications performed during save
+// and sets the DO.modified flag accordingly.
+//                    getDataObject().setModified (false);
 
                 } catch (BadLocationException lex) {
                     Exceptions.printStackTrace(lex);

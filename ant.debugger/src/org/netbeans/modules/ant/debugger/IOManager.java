@@ -49,6 +49,7 @@ import java.util.Hashtable;
 import java.util.LinkedList;
 import javax.swing.SwingUtilities;
 import org.openide.awt.StatusDisplayer;
+import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
@@ -119,7 +120,7 @@ public class IOManager {
                                     debuggerOut.close ();
                                 StatusDisplayer.getDefault ().setStatusText (t.text);
                             } catch (IOException ex) {
-                                ex.printStackTrace ();
+                                Exceptions.printStackTrace(ex);
                             }
                         }
                     }

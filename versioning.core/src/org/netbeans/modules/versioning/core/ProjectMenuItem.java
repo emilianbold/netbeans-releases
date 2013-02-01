@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.versioning.core;
 
+import java.awt.EventQueue;
 import org.openide.util.actions.Presenter;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.NbBundle;
@@ -147,7 +148,7 @@ public class ProjectMenuItem extends AbstractAction implements Presenter.Popup {
         return owners;
     }
     
-    private JComponent [] createVersioningSystemItems (VersioningSystem vs, Node[] nodes, boolean displayConnectAction) {
+    private Action [] createVersioningSystemActions (VersioningSystem vs, Node[] nodes, boolean displayConnectAction) {
         VCSContext ctx = VCSContext.forNodes(nodes);
         Action [] actions = null;
         if (displayConnectAction && ctx.getRootFiles().size() == 1) {
@@ -171,17 +172,7 @@ public class ProjectMenuItem extends AbstractAction implements Presenter.Popup {
                 actions = an.getActions(ctx, VCSAnnotator.ActionDestination.PopupMenu);
             }
         }
-        JComponent [] items = new JComponent[actions.length];
-        int i = 0;
-        for (Action action : actions) {
-            if (action == null) {
-                items[i++] = Utils.createJSeparator();
-            } else {
-                JMenuItem item = createmenuItem(action);
-                items[i++] = item;
-            }
-        }
-        return items;
+        return actions;
     }
 
     private JMenuItem createmenuItem(Action action) {
@@ -250,46 +241,76 @@ public class ProjectMenuItem extends AbstractAction implements Presenter.Popup {
         }
 
         @Override
+        @NbBundle.Messages("LBL_ProjectPopupMenu_Initializing=Initializing...")
         public JPopupMenu getPopupMenu() {
             if (!initialized) {
                 // clear created items
                 super.removeAll();
-                if (owner == null) {
-                    // default Versioning menu (Import into...)
-                    List<VersioningSystem> vcs = new ArrayList<VersioningSystem>(Arrays.asList(VersioningManager.getInstance().getVersioningSystems()));
-                    Collections.sort(vcs, new VersioningMainMenu.ByDisplayNameComparator());
-                    boolean added = false;
-                    for (VersioningSystem vs : vcs) {
-                        if (vs.isLocalHistory()) {
-                            continue;
+                JMenuItem item = new JMenuItem(Bundle.LBL_PopupMenu_Initializing());
+                item.setEnabled(false);
+                add(item);
+                Utils.postParallel(new Runnable() {
+                    @Override
+                    public void run () {
+                        final Action[] actions;
+                        if (owner == null) {
+                            // default Versioning menu (Import into...)
+                            List<VersioningSystem> vcs = new ArrayList<VersioningSystem>(Arrays.asList(VersioningManager.getInstance().getVersioningSystems()));
+                            Collections.sort(vcs, new VersioningMainMenu.ByDisplayNameComparator());
+                            List<Action> allvsActions = new ArrayList<Action>(50);
+                            for (VersioningSystem vs : vcs) {
+                                if (vs.isLocalHistory()) {
+                                    continue;
+                                }
+                                Action[] vsActions = createVersioningSystemActions(vs, nodes, true);
+                                if (vsActions != null) {
+                                    allvsActions.addAll(Arrays.asList(vsActions));
+                                }
+                            }
+                            actions = allvsActions.toArray(new Action[allvsActions.size()]);
+                        } else {
+                            // specific versioning system menu
+                            actions = createVersioningSystemActions(owner, nodes, false);
                         }
-                        if(addVersioningSystemItems(vs, nodes, true)) {
-                            added = true;
-                        }
+                        EventQueue.invokeLater(new Runnable() {
+                            @Override
+                            public void run () {
+                                JPopupMenu popup = getPopupMenu();
+                                boolean display = popup.isVisible();
+                                popup.setVisible(false);
+                                removeAll();
+                                if (isShowing()) {
+                                    addVersioningSystemItems(actions);
+                                    if (owner == null) {
+                                        if (actions != null && actions.length > 0) {
+                                            addSeparator();
+                                            add(createmenuItem(SystemAction.get(PatchAction.class)));
+                                        } else {
+                                            JMenuItem item = new JMenuItem();
+                                            Mnemonics.setLocalizedText(item, NbBundle.getMessage(VersioningMainMenu.class, "LBL_NoneAvailable"));  // NOI18N                                 
+                                            item.setEnabled(false);
+                                            add(item);
+                                        }
+                                    }
+                                    popup.setVisible(display);
+                                }
+                            }
+                        });
                     }
-                    if(added) {
-                        addSeparator();
-                        add(createmenuItem(SystemAction.get(PatchAction.class)));
-                    } else {
-                        JMenuItem item = new JMenuItem();
-                        Mnemonics.setLocalizedText(item, NbBundle.getMessage(VersioningMainMenu.class, "LBL_NoneAvailable"));  // NOI18N                                 
-                        item.setEnabled(false);
-                        add(item);
-                    }
-                } else {
-                    // specific versioning system menu
-                    addVersioningSystemItems(owner, nodes, false);
-                }
+                });
                 initialized = true;
             }
             return super.getPopupMenu();
         }
 
-        private boolean addVersioningSystemItems (VersioningSystem vs, Node[] nodes, boolean displayConnectAction) {
-            JComponent[] items = createVersioningSystemItems(vs, nodes, displayConnectAction);
-            if (items != null && items.length > 0) {
-                for (JComponent item : items) {
-                    add(item);
+        private boolean addVersioningSystemItems (Action[] actions) {
+            if (actions != null && actions.length > 0) {
+                for (Action action : actions) {
+                    if (action == null) {
+                        add(Utils.createJSeparator());
+                    } else {
+                        add(createmenuItem(action));
+                    }
                 }
                 return true;
             }

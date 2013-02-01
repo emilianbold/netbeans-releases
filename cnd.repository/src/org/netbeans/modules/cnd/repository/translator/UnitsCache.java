@@ -340,14 +340,24 @@ import org.openide.util.NbBundle;
             try {
                 if (masterIndexLock != null) {
                     masterIndexLock.release();
+                    masterIndexLock = null;
                 }
+            } catch (IOException e) {
+                e.printStackTrace(System.err);
+            }
+            try {
                 if (channel != null) {
                     channel.close();
+                    channel = null;
                 }
+            } catch (IOException e) {
+                e.printStackTrace(System.err);
+            }
+            try {
                 if (randomAccessFile != null) {
                     randomAccessFile.close();
+                    randomAccessFile = null;
                 }
-
             } catch (IOException e) {
                 e.printStackTrace(System.err);
             }
@@ -575,7 +585,7 @@ import org.openide.util.NbBundle;
             RequiredUnit unit = new RequiredUnit(stream, unitCodec);
             units.add(unit);
             if (Stats.TRACE_REPOSITORY_TRANSLATOR) {
-                trace("\t\tRead req. unit %d %s ts=%d\n", unit.getUnitId(), unit.getName(), unit.getTimestamp()); // NOI18N
+                trace("\t\tRead req. unit %d ts=%d\n", unit.getUnitId(), unit.getTimestamp()); // NOI18N
             }
         }
         return units;

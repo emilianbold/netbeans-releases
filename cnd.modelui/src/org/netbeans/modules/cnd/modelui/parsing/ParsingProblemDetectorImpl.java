@@ -152,7 +152,7 @@ public class ParsingProblemDetectorImpl implements ParsingProblemDetector {
         int usedMemory = (int) ((runtime.totalMemory() - runtime.freeMemory()) / Mb);
         if (maxMemory - usedMemory < memoryThreshold) {
             isDialogShown = true;
-            LOG.log(Level.INFO, "Lack of Memory, Heap Size={0}Mb, Used Memory={1}Mb", new Object[]{maxMemory, usedMemory});
+            LOG.log(Level.INFO, "Lack of Memory, Heap Size={0}Mb, Used Memory={1}Mb", new Object[]{maxMemory, usedMemory}); //NOI18N
             SwingUtilities.invokeLater(new Runnable() {
                 @Override
                 public void run() {
@@ -173,13 +173,9 @@ public class ParsingProblemDetectorImpl implements ParsingProblemDetector {
         if (TIMING) {
             int lines = 0;
             if (file instanceof FileImpl) {
-                int[] lineColumnByOffset = null;
                 try {
-                    lineColumnByOffset = ((FileImpl) file).getBuffer().getLineColumnByOffset(Integer.MAX_VALUE);
+                    lines = ((FileImpl) file).getBuffer().getLineCount();
                 } catch (IOException ex) {
-                }
-                if (lineColumnByOffset != null && lineColumnByOffset[0] > 0) {
-                    lines = lineColumnByOffset[0];
                 }
             }
             lineCount += lines;

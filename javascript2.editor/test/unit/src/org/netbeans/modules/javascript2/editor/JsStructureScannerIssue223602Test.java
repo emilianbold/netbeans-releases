@@ -43,7 +43,6 @@ package org.netbeans.modules.javascript2.editor;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -76,7 +75,7 @@ public class JsStructureScannerIssue223602Test extends JsTestBase {
     
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {
-        List<FileObject> cpRoots = new LinkedList<FileObject>(Arrays.asList(ClasspathProviderImplAccessor.getJsStubs()));
+        List<FileObject> cpRoots = new LinkedList<FileObject>(ClasspathProviderImplAccessor.getJsStubs());
         
         cpRoots.add(FileUtil.toFileObject(new File(getDataDir(), "/testfiles/structure/issue223602")));
         return Collections.singletonMap(

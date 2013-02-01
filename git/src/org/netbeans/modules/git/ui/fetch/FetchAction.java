@@ -56,13 +56,14 @@ import org.netbeans.libs.git.GitTransportUpdate;
 import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.client.GitClientExceptionHandler;
 import org.netbeans.modules.git.client.GitProgressSupport;
+import org.netbeans.modules.git.ui.actions.SingleRepositoryAction;
 import org.netbeans.modules.git.ui.repository.RepositoryInfo;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionRegistration;
-import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor.Task;
 
 /**
  *
@@ -70,7 +71,7 @@ import org.openide.util.NbBundle;
  */
 @ActionID(id = "org.netbeans.modules.git.ui.fetch.FetchAction", category = "Git")
 @ActionRegistration(displayName = "#LBL_FetchAction_Name")
-public class FetchAction extends GetRemoteChangesAction {
+public class FetchAction extends SingleRepositoryAction {
 
     @Override
     protected void performAction (File repository, File[] roots, VCSContext context) {
@@ -106,7 +107,10 @@ public class FetchAction extends GetRemoteChangesAction {
         });
     }
     
-    public void fetch (File repository, final String target, final List<String> fetchRefSpecs, final String remoteNameToUpdate) {
+    @NbBundle.Messages({
+        "# {0} - repository name", "LBL_FetchAction.progressName=Fetching - {0}"
+    })
+    public Task fetch (File repository, final String target, final List<String> fetchRefSpecs, final String remoteNameToUpdate) {
         GitProgressSupport supp = new GitProgressSupport() {
             @Override
             protected void perform () {
@@ -124,13 +128,13 @@ public class FetchAction extends GetRemoteChangesAction {
                         }
                     }
                     Map<String, GitTransportUpdate> updates = client.fetch(target, fetchRefSpecs, getProgressMonitor());
-                    log(updates, getLogger());
+                    FetchUtils.log(updates, getLogger());
                 } catch (GitException ex) {
                     GitClientExceptionHandler.notifyException(ex, true);
                 }
             }
         };
-        supp.start(Git.getInstance().getRequestProcessor(repository), repository, NbBundle.getMessage(FetchAction.class, "LBL_FetchAction.progressName")); //NOI18N
+        return supp.start(Git.getInstance().getRequestProcessor(repository), repository, Bundle.LBL_FetchAction_progressName(repository.getName()));
     }
     
     static GitRemoteConfig prepareConfig (GitRemoteConfig original, String remoteName, String remoteUri, List<String> fetchRefSpecs) {

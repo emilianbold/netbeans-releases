@@ -89,7 +89,7 @@ public class JsIndexingPerformanceTest extends JellyTestCase {
                 clusters(".*").
                 enableModules(".*").
                 failOnException(Level.INFO).
-                failOnMessage(Level.SEVERE);
+                failOnMessage(Level.SEVERE).honorAutoloadEager(true);
         conf = conf.addTest("testIndexingTime");
         return NbModuleSuite.create(conf);
     }

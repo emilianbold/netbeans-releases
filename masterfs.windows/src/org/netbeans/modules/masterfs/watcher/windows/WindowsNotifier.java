@@ -303,7 +303,7 @@ public final class WindowsNotifier extends Notifier<Void> {
         
         String root = null;
 
-        if (path.charAt(1) == ':') { // classic drive letter (e.g. C:\)
+        if (path.length() > 3 && path.charAt(1) == ':') { // classic drive letter (e.g. C:\)
             root = path.substring(0, 3).replace('/', '\\');
             if (root.charAt(2) != '\\') {
                 throw new IOException("wrong path: " + path);

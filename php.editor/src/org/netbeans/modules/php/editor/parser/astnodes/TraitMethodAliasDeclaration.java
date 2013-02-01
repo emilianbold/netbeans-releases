@@ -87,4 +87,9 @@ public class TraitMethodAliasDeclaration extends Statement {
         visitor.visit(this);
     }
 
+    @Override
+    public String toString() {
+        return getTraitName() + "::" + getOldMethodName() + " as " + getModifier() + " " + getNewMethodName(); //NOI8N
+    }
+
 }

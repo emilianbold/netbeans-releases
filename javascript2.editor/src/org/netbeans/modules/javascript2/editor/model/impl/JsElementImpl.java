@@ -115,6 +115,8 @@ public abstract class JsElementImpl implements JsElement {
             case FIELD:
                 result = ElementKind.FIELD;
                 break;
+            default:
+                break;
         }
         return result;
     }

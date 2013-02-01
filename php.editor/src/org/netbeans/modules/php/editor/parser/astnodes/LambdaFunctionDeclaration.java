@@ -124,4 +124,21 @@ public class LambdaFunctionDeclaration extends Expression {
     public void accept(Visitor visitor) {
         visitor.visit(this);
     }
+
+    @Override
+    public String toString() {
+        StringBuilder sbParams = new StringBuilder();
+        for (FormalParameter formalParameter : getFormalParameters()) {
+            sbParams.append(formalParameter).append(","); //NOI18N
+        }
+        StringBuilder sbLex = new StringBuilder();
+        for (Expression expression : getLexicalVariables()) {
+            sbLex.append(expression).append(","); //NOI18N
+        }
+        return (isStatic() ? "static " : " ")
+                + "function" + (isReference() ? " & " : "") + "(" + sbParams.toString() + ")"
+                + (sbLex.length() > 0 ? " use (" + sbLex.toString() + ")" : "")
+                + getBody(); //NOI18N
+    }
+
 }

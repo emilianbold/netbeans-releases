@@ -285,13 +285,14 @@ public final class ElementUtilities {
                 case LONG:
                 case SHORT:
                 case VOID:
-                    Type t = Symtab.instance(ctx).classType;
+                    Symtab syms = Symtab.instance(ctx);
+                    Type t = syms.classType;
                     com.sun.tools.javac.util.List<Type> typeargs = Source.instance(ctx).allowGenerics() ?
                         com.sun.tools.javac.util.List.of((Type)type) :
                         com.sun.tools.javac.util.List.<Type>nil();
                     t = new ClassType(t.getEnclosingType(), typeargs, t.tsym);
                     Element classPseudoMember = new VarSymbol(Flags.STATIC | Flags.PUBLIC | Flags.FINAL, Names.instance(ctx)._class, t, ((Type)type).tsym);
-                    if (acceptor == null || acceptor.accept(classPseudoMember, type))
+                    if (acceptor == null || acceptor.accept(classPseudoMember, syms.objectType))
                         members.add(classPseudoMember);
                     break;
                 case ARRAY:
@@ -299,13 +300,14 @@ public final class ElementUtilities {
                         if (acceptor == null || acceptor.accept(member, type))
                             members.add(member);
                     }
-                    t = Symtab.instance(ctx).classType;
+                    syms = Symtab.instance(ctx);
+                    t = syms.classType;
                     typeargs = Source.instance(ctx).allowGenerics() ?
                         com.sun.tools.javac.util.List.of((Type)type) :
                         com.sun.tools.javac.util.List.<Type>nil();
                     t = new ClassType(t.getEnclosingType(), typeargs, t.tsym);
                     classPseudoMember = new VarSymbol(Flags.STATIC | Flags.PUBLIC | Flags.FINAL, Names.instance(ctx)._class, t, ((Type)type).tsym);
-                    if (acceptor == null || acceptor.accept(classPseudoMember, type))
+                    if (acceptor == null || acceptor.accept(classPseudoMember, syms.objectType))
                         members.add(classPseudoMember);
                     break;
             }

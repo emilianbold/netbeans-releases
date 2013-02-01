@@ -39,7 +39,6 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.php.editor.parser.astnodes;
 
 import java.util.ArrayList;
@@ -53,50 +52,58 @@ import java.util.List;
  */
 public class StaticStatement extends Statement {
 
-	private ArrayList<Expression> expressions = new ArrayList<Expression>();
+    private ArrayList<Expression> expressions = new ArrayList<Expression>();
 
-        private StaticStatement(int start, int end, Expression[] expressions) {
-		super(start, end);
+    private StaticStatement(int start, int end, Expression[] expressions) {
+        super(start, end);
+        if (expressions == null) {
+            throw new IllegalArgumentException();
+        }
+        for (Expression expression : expressions) {
+            this.expressions.add(expression);
+        }
+    }
 
-		if (expressions == null) {
-			throw new IllegalArgumentException();
-		}
-		for (Expression expression : expressions) {
-			this.expressions.add(expression);
-		}
-	}
+    public StaticStatement(int start, int end, List<Exception> expressions) {
+        this(start, end, expressions == null ? null : (Expression[]) expressions.toArray(new Expression[expressions.size()]));
+    }
 
-        public StaticStatement(int start, int end,  List<Exception> expressions) {
-		this(start, end, expressions == null ? null : (Expression[]) expressions.toArray(new Expression[expressions.size()]));
-	}
+    /**
+     * @return the variables that participate in the static call
+     */
+    public Variable[] getVariables() {
+        List<Variable> vars = new LinkedList<Variable>();
+        for (Expression node : this.expressions) {
+            if (node instanceof Variable) {
+                vars.add((Variable) node);
+            } else {
+                assert node instanceof Assignment;
+                Assignment ass = (Assignment) node;
+                vars.add((Variable) ass.getLeftHandSide());
+            }
+        }
+        return (Variable[]) vars.toArray(new Variable[vars.size()]);
+    }
 
-        /**
-	 * @return the variables that participate in the static call
-	 */
-	public Variable[] getVariables() {
+    /**
+     * @return expression list of the static statement
+     */
+    public List<Expression> getExpressions() {
+        return this.expressions;
+    }
 
-		List<Variable> vars = new LinkedList<Variable>();
-		for (Expression node : this.expressions) {
-			if (node instanceof Variable) {
-				vars.add((Variable)node);
-			} else {
-				assert node instanceof Assignment;
-				Assignment ass = (Assignment) node;
-				vars.add((Variable)ass.getLeftHandSide());
-			}
-		}
-		return (Variable[]) vars.toArray(new Variable[vars.size()]);
-	}
-
-        /**
-	 * @return expression list of the static statement
-	 */
-	public List<Expression> getExpressions() {
-		return this.expressions;
-	}
-
-        @Override
+    @Override
     public void accept(Visitor visitor) {
         visitor.visit(this);
     }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        for (Expression expression : getExpressions()) {
+            sb.append(expression).append(","); //NOI18N
+        }
+        return "static " + sb.toString(); //NOI18N
+    }
+
 }

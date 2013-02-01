@@ -46,6 +46,9 @@ package org.mycompany.wizard.panels;
 
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
+import java.io.File;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetEncoder;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.SystemUtils;
@@ -71,6 +74,9 @@ public class HelloWorldPanel extends DestinationPanel {
                 DEFAULT_DESTINATION_LABEL_TEXT);
         setProperty(DESTINATION_BUTTON_TEXT_PROPERTY,
                 DEFAULT_DESTINATION_BUTTON_TEXT);
+        
+        setProperty(ERROR_CONTAINS_NON_ASCII_CHARS,
+                DEFAULT_ERROR_CONTAINS_NON_ASCII_CHARS);
     }
 
     @Override
@@ -105,6 +111,7 @@ public class HelloWorldPanel extends DestinationPanel {
             this.panel = panel;
         }
 
+        @Override
         public SwingUi getSwingUi(SwingContainer container) {
             if (swingUi == null) {
                 swingUi = new HelloWorldPanelSwingUi(panel, container);
@@ -166,6 +173,16 @@ public class HelloWorldPanel extends DestinationPanel {
         @Override
         protected String validateInput() {
             String errorMessage = super.validateInput();
+            
+            if (errorMessage == null) {
+                // #222846 - non-ascii characters in installation path
+                File installationFolder = new File(getDestinationPath());
+                CharsetEncoder encoder = Charset.forName("US-ASCII").newEncoder();
+                if (!encoder.canEncode(installationFolder.getAbsolutePath())) {
+                    return StringUtils.format(panel.getProperty(ERROR_CONTAINS_NON_ASCII_CHARS));
+                }
+            }
+            
             return errorMessage;
         }
 
@@ -197,6 +214,13 @@ public class HelloWorldPanel extends DestinationPanel {
     }
     /////////////////////////////////////////////////////////////////////////////////
     // Constants
+    public static final String CREATE_DESKTOP_SHORTCUT_PROPERTY =
+            "create.desktop.shortcut";
+    public static final String CREATE_START_MENU_SHORTCUT_PROPERTY =
+            "create.start.menu.shortcut";    
+    public static final String ERROR_CONTAINS_NON_ASCII_CHARS =
+            "error.contains.non.ascii.chars"; // NOI18N
+    
     public static final String DEFAULT_TITLE =
             ResourceUtils.getString(HelloWorldPanel.class,
             "P.title"); // NOI18N
@@ -221,8 +245,7 @@ public class HelloWorldPanel extends DestinationPanel {
     public static final String CREATE_START_MENU_SHORTCUT_NAME_MAC =
             ResourceUtils.getString(HelloWorldPanel.class,
             "P.create.start.menu.shortcut.macosx"); // NOI18N
-    public static final String CREATE_DESKTOP_SHORTCUT_PROPERTY =
-            "create.desktop.shortcut";
-    public static final String CREATE_START_MENU_SHORTCUT_PROPERTY =
-            "create.start.menu.shortcut";
+    public static final String DEFAULT_ERROR_CONTAINS_NON_ASCII_CHARS =
+            ResourceUtils.getString(HelloWorldPanel.class,
+            "P.error.contains.non.ascii.chars"); // NOI18N   
 }

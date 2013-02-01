@@ -503,4 +503,7 @@ public interface CXXParserAction extends CsmParserProvider.CsmParseCallback {
     void end_expression(Token token);
     void constant_expression(Token token);
     void end_constant_expression(Token token);
+    
+    void skip_balanced_curlies(Token token);
+    
 }

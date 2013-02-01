@@ -52,6 +52,7 @@ import java.util.List;
 import org.netbeans.api.debugger.Properties;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.openide.awt.StatusDisplayer;
+import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
@@ -192,7 +193,7 @@ public class IOManager {
                                // if ((t.where & STATUS_OUT) != 0)
                                     StatusDisplayer.getDefault ().setStatusText (t.text);
                             } catch (IOException ex) {
-                                ex.printStackTrace ();
+                                Exceptions.printStackTrace(ex);
                             }
                             if (closed) {
                                 debuggerOut.close ();

@@ -183,14 +183,18 @@ public class HighlightsViewUtils {
         switch (direction) {
             case View.EAST:
                 if (offset == -1) { // Entering view from the left.
-                    retOffset = viewStartOffset;
+                    // Assuming TextLayout only holds RTL or LTR text (HighlightsViewFactory should ensure)
+                    retOffset = textLayout.isLeftToRight()
+                            ? viewStartOffset
+                            : viewStartOffset + viewLength - 1;
                 } else { // Regular offset
                     int index = offset - viewStartOffset;
                     if (index >= 0 && index <= viewLength) {
                         currentHit = TextHitInfo.afterOffset(index);
                         nextHit = textLayout.getNextRightHit(currentHit);
-                        if (nextHit != null) {
-                            retOffset = viewStartOffset + nextHit.getInsertionIndex();
+                        int insertionIndex;
+                        if (nextHit != null && (insertionIndex = nextHit.getInsertionIndex()) != viewLength) {
+                            retOffset = viewStartOffset + insertionIndex;
                         } // Leave retOffset == -1
                     } // Leave retOffset == -1
                 }
@@ -198,14 +202,20 @@ public class HighlightsViewUtils {
 
             case View.WEST:
                 if (offset == -1) { // Entering view from the right
-                    retOffset = viewStartOffset + viewLength - 1;
+                    retOffset = textLayout.isLeftToRight()
+                            ? viewStartOffset + viewLength - 1
+                            : viewStartOffset;
                 } else { // Regular offset
                     int index = offset - viewStartOffset;
                     if (index >= 0 && index <= viewLength) {
                         currentHit = TextHitInfo.afterOffset(index);
                         nextHit = textLayout.getNextLeftHit(currentHit);
                         if (nextHit != null) {
-                            retOffset = viewStartOffset + nextHit.getInsertionIndex();
+                            int insertionIndex = nextHit.getInsertionIndex();
+                            // Handle RTL
+                            if (textLayout.isLeftToRight() || insertionIndex != viewLength) {
+                                retOffset = viewStartOffset + insertionIndex;
+                            }
                         } // Leave retOffset == -1
                     } // Leave retOffset == -1
                 }

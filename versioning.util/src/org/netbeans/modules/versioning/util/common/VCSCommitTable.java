@@ -346,52 +346,67 @@ public class VCSCommitTable<F extends VCSFileNode> implements AncestorListener, 
         JPopupMenu menu = new JPopupMenu();
         JMenuItem item;
 
-        boolean onlyIncluded = true;
+        boolean containsExcluded = false;
+        boolean containsIncluded = false;
         for (int rowIndex : table.getSelectedRows()) {
             if (modifier.getExcludedOption().equals(tableModel.getOption(sorter.modelIndex(rowIndex)))) {
-                onlyIncluded = false;
-                break;
+                containsExcluded = true;
+            } else {
+                containsIncluded = true;
             }
         }
-        final boolean include = !onlyIncluded;
-        item = menu.add(new AbstractAction(include ? modifier.getMessage(VCSCommitPanelModifier.BundleMessage.FILE_TABLE_INCLUDE_ACTION_NAME)
-                : modifier.getMessage(VCSCommitPanelModifier.BundleMessage.FILE_TABLE_EXCLUDE_ACTION_NAME)) {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                int[] rows = table.getSelectedRows();
-                int rowCount = table.getRowCount();
-                for (int i = 0; i < rows.length; ++i) {
-                    rows[i] = sorter.modelIndex(rows[i]);
+        if (containsExcluded) {
+            item = menu.add(new AbstractAction(modifier.getMessage(VCSCommitPanelModifier.BundleMessage.FILE_TABLE_INCLUDE_ACTION_NAME)) {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    setIncluded(true);
                 }
-                tableModel.setIncluded(rows, include);
-                // WA for table sorter, keep the selection
-                if (rowCount == table.getRowCount()) {
-                    for (int i = 0; i < rows.length; ++i) {
-                        table.getSelectionModel().addSelectionInterval(sorter.viewIndex(rows[i]), sorter.viewIndex(rows[i]));
-                    }
-                }
-            }
 
-            @Override
-            public boolean isEnabled() {
-                return editable;
-            }
-        });
-        Mnemonics.setLocalizedText(item, item.getText());
+                @Override
+                public boolean isEnabled() {
+                    return editable;
+                }
+            });
+            Mnemonics.setLocalizedText(item, item.getText());
+        }
+        if (containsIncluded) {
+            item = menu.add(new AbstractAction(modifier.getMessage(VCSCommitPanelModifier.BundleMessage.FILE_TABLE_EXCLUDE_ACTION_NAME)) {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    setIncluded(false);
+                }
+
+                @Override
+                public boolean isEnabled() {
+                    return editable;
+                }
+            });
+            Mnemonics.setLocalizedText(item, item.getText());
+        }
         item = menu.add(new AbstractAction(NbBundle.getMessage(VCSCommitTable.class, "CTL_CommitTable_DiffAction")) { // NOI18N
             @Override
             public void actionPerformed(ActionEvent e) {
-                int[] rows = table.getSelectedRows();
-                VCSFileNode[] nodes = new VCSFileNode[rows.length];
-                for (int i = 0; i < rows.length; ++i) {
-                    nodes[i] = tableModel.getNode(sorter.modelIndex(rows[i]));
-                }
-                commitPanel.openDiff(nodes);
+                openDiff();
             }
         });
         Mnemonics.setLocalizedText(item, item.getText());
         item.setEnabled(commitPanel != null);
         return menu;
+    }
+
+    private void setIncluded (boolean included) {
+        int[] rows = table.getSelectedRows();
+        int rowCount = table.getRowCount();
+        for (int i = 0; i < rows.length; ++i) {
+            rows[i] = sorter.modelIndex(rows[i]);
+        }
+        tableModel.setIncluded(rows, included);
+        // WA for table sorter, keep the selection
+        if (rowCount == table.getRowCount()) {
+            for (int i = 0; i < rows.length; ++i) {
+                table.getSelectionModel().addSelectionInterval(sorter.viewIndex(rows[i]), sorter.viewIndex(rows[i]));
+            }
+        }
     }
 
     @Override
@@ -418,7 +433,9 @@ public class VCSCommitTable<F extends VCSFileNode> implements AncestorListener, 
 
     @Override
     public void mouseClicked(MouseEvent e) {
-        // not interested
+        if (e.getClickCount() == 2) {
+            openDiff();
+        }
     }
 
     public void setCommitPanel(VCSCommitPanel panel) {
@@ -431,6 +448,15 @@ public class VCSCommitTable<F extends VCSFileNode> implements AncestorListener, 
 
     VCSCommitPanelModifier getCommitModifier () {
         return modifier;
+    }
+
+    private void openDiff () {
+        int[] rows = table.getSelectedRows();
+        VCSFileNode[] nodes = new VCSFileNode[rows.length];
+        for (int i = 0; i < rows.length; ++i) {
+            nodes[i] = tableModel.getNode(sorter.modelIndex(rows[i]));
+        }
+        commitPanel.openDiff(nodes);
     }
 
     private class CommitStringsCellRenderer extends DefaultTableCellRenderer {

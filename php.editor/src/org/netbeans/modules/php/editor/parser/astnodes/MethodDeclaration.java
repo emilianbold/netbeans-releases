@@ -76,4 +76,10 @@ public class MethodDeclaration extends BodyDeclaration {
     public void accept(Visitor visitor) {
         visitor.visit(this);
     }
+
+    @Override
+    public String toString() {
+        return "" + getFunction(); //NOI18N
+    }
+
 }

@@ -137,5 +137,11 @@ public class InfixExpression extends Expression {
     public void accept(Visitor visitor) {
         visitor.visit(this);
     }
+
+    @Override
+    public String toString() {
+        return getLeft() + " " + getOperator() + " " + getRight(); //NOI18N
+    }
+
 }
 

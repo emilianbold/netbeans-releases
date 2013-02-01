@@ -44,11 +44,17 @@
 package org.netbeans.modules.git.ui.history;
 
 import java.awt.EventQueue;
+import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
+import java.io.IOException;
 import java.text.DateFormat;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.libs.git.GitBranch;
 import org.netbeans.modules.git.client.GitClient;
@@ -61,9 +67,15 @@ import org.netbeans.libs.git.progress.ProgressMonitor;
 import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.client.GitClientExceptionHandler;
 import org.netbeans.modules.git.client.GitProgressSupport;
+import org.netbeans.modules.git.ui.diff.ExportCommitAction;
+import org.netbeans.modules.git.ui.revert.RevertCommitAction;
+import org.netbeans.modules.git.ui.tag.CreateTagAction;
+import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.spi.VersioningSupport;
 import org.netbeans.modules.versioning.util.Utils;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.actions.SystemAction;
 
 public class RepositoryRevision {
 
@@ -180,6 +192,34 @@ public class RepositoryRevision {
         return repositoryRoot;
     }
     
+    Action[] getActions () {
+        List<Action> actions = new ArrayList<Action>();
+        actions.add(new AbstractAction(NbBundle.getMessage(RepositoryRevision.class, "CTL_SummaryView_TagCommit")) { //NOI18N
+            @Override
+            public void actionPerformed (ActionEvent e) {
+                CreateTagAction action = SystemAction.get(CreateTagAction.class);
+                action.createTag(repositoryRoot, getLog().getRevision());
+            }
+        });
+        if (getLog().getParents().length < 2) {
+            actions.add(new AbstractAction(NbBundle.getMessage(ExportCommitAction.class, "LBL_ExportCommitAction_PopupName")) { //NOI18N
+                @Override
+                public void actionPerformed (ActionEvent e) {
+                    ExportCommitAction action = SystemAction.get(ExportCommitAction.class);
+                    action.exportCommit(repositoryRoot, getLog().getRevision());
+                }
+            });
+            actions.add(new AbstractAction(NbBundle.getMessage(RevertCommitAction.class, "LBL_RevertCommitAction_PopupName")) { //NOI18N
+                @Override
+                public void actionPerformed (ActionEvent e) {
+                    RevertCommitAction action = SystemAction.get(RevertCommitAction.class);
+                    action.revert(repositoryRoot, selectionRoots, getLog().getRevision());
+                }
+            });
+        }
+        return actions.toArray(new Action[actions.size()]);
+    }
+    
     public class Event implements Comparable<Event> {
         /**
          * The file or folder that this event is about. It may be null if the File cannot be computed.
@@ -267,6 +307,45 @@ public class RepositoryRevision {
 
         String getOriginalPath () {
             return originalPath;
+        }
+        
+        Action[] getActions () {
+            List<Action> actions = new ArrayList<Action>();
+            boolean viewEnabled = getFile() != null && getAction() != 'D';
+            if (viewEnabled) {
+                actions.add(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_View")) { // NOI18N
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        new GitProgressSupport() {
+                            @Override
+                            protected void perform () {
+                                openFile(false, getProgressMonitor());
+                            }
+                        }.start(Git.getInstance().getRequestProcessor(), repositoryRoot, NbBundle.getMessage(SummaryView.class, "MSG_SummaryView.openingFilesFromHistory")); //NOI18N
+                    }
+                });
+                actions.add(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_ShowAnnotations")) { // NOI18N
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        new GitProgressSupport() {
+                            @Override
+                            protected void perform () {
+                                openFile(true, getProgressMonitor());
+                            }
+                        }.start(Git.getInstance().getRequestProcessor(), repositoryRoot, NbBundle.getMessage(SummaryView.class, "MSG_SummaryView.openingFilesFromHistory")); //NOI18N
+                    }
+                });
+            }
+            return actions.toArray(new Action[actions.size()]);
+        }
+
+        void openFile (boolean showAnnotations, ProgressMonitor pm) {
+            try {
+                String revision = getLogInfoHeader().getLog().getRevision();
+                GitUtils.openInRevision(getFile(), -1, revision, showAnnotations, pm);
+            } catch (IOException ex) {
+                Logger.getLogger(RepositoryRevision.class.getName()).log(Level.FINE, null, ex);
+            }
         }
     }
     

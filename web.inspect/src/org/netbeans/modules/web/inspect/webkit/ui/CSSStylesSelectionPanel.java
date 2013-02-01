@@ -68,6 +68,8 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -139,13 +141,13 @@ public class CSSStylesSelectionPanel extends JPanel {
     /** Request processor used by this class. */
     static final RequestProcessor RP = new RequestProcessor(CSSStylesSelectionPanel.class);
     /** Lookup of this panel. */
-    private Lookup lookup;
+    private transient Lookup lookup;
     /** The current inspected page. */
-    private WebKitPageModel pageModel;
+    private transient WebKitPageModel pageModel;
     /** The current inspected node. */
-    private Node inspectedNode;
+    private transient Node inspectedNode;
     /** Page model listener. */
-    private Listener listener;
+    private transient Listener listener;
     /** Property Summary view. */
     private TreeTableView propertyPane;
     /** Explorer manager for Property Summary. */
@@ -330,6 +332,7 @@ public class CSSStylesSelectionPanel extends JPanel {
      *
      * @return Style Cascade section.
      */
+    @org.netbeans.api.annotations.common.SuppressWarnings(value="SE_NO_SUITABLE_CONSTRUCTOR_FOR_EXTERNALIZATION", justification="The instances are never serialized.") // NOI18N
     private JPanel initRulePane() {
         rulePane = new ListView() {
             {
@@ -460,7 +463,9 @@ public class CSSStylesSelectionPanel extends JPanel {
                     if (otherId != null && otherId.equals(id)) {
                         try {
                             rulePaneManager.setSelectedNodes(new Node[] { root });
-                        } catch (PropertyVetoException ex) {}
+                        } catch (PropertyVetoException ex) {
+                            Logger.getLogger(CSSStylesSelectionPanel.class.getName()).log(Level.FINEST, null, ex);
+                        }
                         return true;
                     }
                 }

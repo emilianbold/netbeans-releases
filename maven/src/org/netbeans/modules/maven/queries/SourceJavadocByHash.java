@@ -51,7 +51,6 @@ import org.codehaus.plexus.util.StringUtils;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.maven.api.FileUtilities;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.NbPreferences;
 
 /**

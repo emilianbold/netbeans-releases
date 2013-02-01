@@ -68,14 +68,14 @@ import org.openide.util.NbPreferences;
 *
 * @author Ales Novak, Petr Jiricka
 */
-public class HttpServerSettings {
+public final class HttpServerSettings {
     private static HttpServerSettings INSTANCE = new HttpServerSettings();
     private static  BeanNode view = null;
 
     private static final int MAX_START_RETRIES = 20;
     private static int currentRetries = 0;
 
-    protected static EventListenerList listenerList = new EventListenerList();
+    protected static final EventListenerList listenerList = new EventListenerList();
 
     /** Has this been initialized ?
     *  Becomes true if a "running" getter or setter is called
@@ -88,7 +88,7 @@ public class HttpServerSettings {
     public static final int SERVER_STARTUP_TIMEOUT = 3000;
 
     /** constant for local host */
-    public  static final String LOCALHOST = "local"; // NOI18N
+    public static final String LOCALHOST = "local"; // NOI18N
     /** constant for any host */
     public static final String ANYHOST = "any"; // NOI18N
 
@@ -136,7 +136,7 @@ public class HttpServerSettings {
         return httpLock;
     }
 
-    private  HttpServerSettings() {
+    private HttpServerSettings() {
     }
 
     public static HttpServerSettings getDefault() {

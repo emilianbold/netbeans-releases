@@ -43,6 +43,8 @@
 package org.netbeans.modules.derby;
 
 import javax.swing.Action;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.actions.DeleteAction;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -91,8 +93,20 @@ class DerbyDatabaseNode extends AbstractNode implements Comparable {
     }
     
     @Override
+    @NbBundle.Messages({
+        "# {0} - Database name",
+        "MSG_Confirm_DB_Delete=Really delete database {0}?",
+        "MSG_Confirm_DB_Delete_Title=Delete Database"})
     public void destroy() {
-        server.dropDatabase(database);
+        NotifyDescriptor d =
+                new NotifyDescriptor.Confirmation(
+                Bundle.MSG_Confirm_DB_Delete(database),
+                Bundle.MSG_Confirm_DB_Delete_Title(),
+                NotifyDescriptor.YES_NO_OPTION);
+        Object result = DialogDisplayer.getDefault().notify(d);
+        if (NotifyDescriptor.OK_OPTION.equals(result)) {
+            server.dropDatabase(database);
+        }
     }
     
     @Override

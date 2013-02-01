@@ -209,7 +209,9 @@ public class MergeAction extends ContextAction {
                          endRevision,
                          file,
                          false,
-                         recursive);                              
+                         recursive,
+                         false,
+                         merge.isIgnoreAncestry());                              
 
         } catch (SVNClientException ex) {
             support.annotate(ex);

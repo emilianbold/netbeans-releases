@@ -131,7 +131,7 @@ public class DatasourceSupport {
     public Set<Datasource> getDatasources() throws ConfigurationException {
         
         HashSet<Datasource> projectDS = new HashSet<Datasource>();
-        Datasources dss = getDatasourcesGraph();
+        Datasources dss = getDatasourcesGraph(false);
         if (dss != null) {
             LocalTxDatasource ltxds[] = datasources.getLocalTxDatasource();
             for (int i = 0; i < ltxds.length; i++) {
@@ -155,7 +155,7 @@ public class DatasourceSupport {
      *
      * @return Datasources graph or null if the jboss-ds.xml file is not parseable.
      */
-    private synchronized Datasources getDatasourcesGraph() {
+    private synchronized Datasources getDatasourcesGraph(boolean create) {
         
         try {
             if (datasourcesFile.exists()) {
@@ -168,11 +168,13 @@ public class DatasourceSupport {
                 } catch (RuntimeException re) {
                     // jboss-ds.xml is not parseable, do nothing
                 }
-            } else {
+            } else if (create) {
                 // create jboss-ds.xml if it does not exist yet
                 datasources = new Datasources();
                 ResourceConfigurationHelper.writeFile(datasourcesFile, datasources);
                 ensureDatasourcesFOExists();
+            } else {
+                datasources = null;
             }
         } catch (ConfigurationException ce) {
             Exceptions.printStackTrace(ce);
@@ -270,7 +272,7 @@ public class DatasourceSupport {
                 byte[] docString = doc.getText(0, doc.getLength()).getBytes();
                 newDatasources = Datasources.createGraph(new ByteArrayInputStream(docString));
             } catch (RuntimeException e) {
-                Datasources oldDatasources = getDatasourcesGraph();
+                Datasources oldDatasources = getDatasourcesGraph(true);
                 if (oldDatasources == null) {
                     // neither the old graph is parseable, there is not much we can do here
                     // TODO: should we notify the user?
@@ -325,7 +327,7 @@ public class DatasourceSupport {
     
     private void ensureDatasourcesFileExists() {
         if (!datasourcesFile.exists())
-            getDatasourcesGraph();
+            getDatasourcesGraph(true);
     }
 
 }

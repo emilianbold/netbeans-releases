@@ -44,6 +44,7 @@ package org.netbeans.modules.debugger.jpda.visual;
 import com.sun.jdi.ArrayReference;
 import com.sun.jdi.ArrayType;
 import com.sun.jdi.BooleanValue;
+import com.sun.jdi.ClassLoaderReference;
 import com.sun.jdi.ClassNotLoadedException;
 import com.sun.jdi.ClassObjectReference;
 import com.sun.jdi.ClassType;
@@ -152,18 +153,62 @@ public class RemoteServices {
         }
     }
     
+    private static ObjectReference getBootstrapClassLoader(ThreadReference tawt, VirtualMachine vm) throws InvalidTypeException, ClassNotLoadedException, IncompatibleThreadStateException, InvocationException, IOException, PropertyVetoException, InternalExceptionWrapper, VMDisconnectedExceptionWrapper, ObjectCollectedExceptionWrapper, UnsupportedOperationExceptionWrapper, ClassNotPreparedExceptionWrapper {
+        /* Run this code:
+            ClassLoader cl = ClassLoader.getSystemClassLoader();
+            ClassLoader bcl;
+            do {
+                bcl = cl;
+                cl = cl.getParent();
+            } while (cl != null);
+            return bcl;
+         */
+        ClassType classLoaderClass = getClass(vm, ClassLoader.class.getName());
+        Method getSystemClassLoader = ClassTypeWrapper.concreteMethodByName(classLoaderClass, "getSystemClassLoader", "()Ljava/lang/ClassLoader;");
+        ObjectReference cl = (ObjectReference) ClassTypeWrapper.invokeMethod(classLoaderClass, tawt, getSystemClassLoader, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
+        Method getParent = ClassTypeWrapper.concreteMethodByName(classLoaderClass, "getParent", "()Ljava/lang/ClassLoader;");
+        ObjectReference bcl;
+        do {
+            bcl = cl;
+            if ("sun.misc.Launcher$AppClassLoader".equals(cl.referenceType().name())) {     // NOI18N
+                break;
+            }
+            cl = (ObjectReference) ObjectReferenceWrapper.invokeMethod(cl, tawt, getParent, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
+        } while (cl != null);
+        return bcl;
+    }
+    
+    private static ObjectReference getContextClassLoader(ThreadReference tawt, VirtualMachine vm) throws InvalidTypeException, ClassNotLoadedException, IncompatibleThreadStateException, InvocationException, IOException, PropertyVetoException, InternalExceptionWrapper, VMDisconnectedExceptionWrapper, ObjectCollectedExceptionWrapper, UnsupportedOperationExceptionWrapper, ClassNotPreparedExceptionWrapper {
+        ReferenceType threadType = tawt.referenceType();
+        Method getContextCl = ClassTypeWrapper.concreteMethodByName((ClassType) threadType, "getContextClassLoader", "()Ljava/lang/ClassLoader;");
+        ObjectReference cl = (ObjectReference) ObjectReferenceWrapper.invokeMethod(tawt, tawt, getContextCl, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
+        ClassType classLoaderClass = null;
+        if (cl == null) {
+            classLoaderClass = getClass(vm, ClassLoader.class.getName());
+            Method getSystemClassLoader = ClassTypeWrapper.concreteMethodByName(classLoaderClass, "getSystemClassLoader", "()Ljava/lang/ClassLoader;");
+            cl = (ObjectReference) ClassTypeWrapper.invokeMethod(classLoaderClass, tawt, getSystemClassLoader, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
+        }
+        return cl;
+    }
+    
+    private static ObjectReference getQuantumTookitClassLoader(VirtualMachine vm) throws InternalExceptionWrapper, VMDisconnectedExceptionWrapper, ObjectCollectedExceptionWrapper {
+        ClassType classQuantumToolkit = getClass(vm, "com.sun.javafx.tk.quantum.QuantumToolkit");
+        if (classQuantumToolkit == null) {
+            return null;
+        }
+        ClassLoaderReference cl = ReferenceTypeWrapper.classLoader(classQuantumToolkit);
+        return cl;
+    }
+    
     public static ClassObjectReference uploadBasicClasses(JPDAThreadImpl t, ServiceType sType) throws InvalidTypeException, ClassNotLoadedException, IncompatibleThreadStateException, InvocationException, IOException, PropertyVetoException, InternalExceptionWrapper, VMDisconnectedExceptionWrapper, ObjectCollectedExceptionWrapper, UnsupportedOperationExceptionWrapper, ClassNotPreparedExceptionWrapper {
         ThreadReference tawt = t.getThreadReference();
         VirtualMachine vm = tawt.virtualMachine();
         
-        ReferenceType threadType = tawt.referenceType();
-        Method getContextCl = ClassTypeWrapper.concreteMethodByName((ClassType) threadType, "getContextClassLoader", "()Ljava/lang/ClassLoader;");
         t.notifyMethodInvoking();
         try {
             ClassObjectReference basicClass = null;
             t.accessLock.writeLock().lock();
             try {
-                ObjectReference cl = (ObjectReference) ObjectReferenceWrapper.invokeMethod(tawt, tawt, getContextCl, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
                 List<RemoteClass> remoteClasses = getRemoteClasses();
                 for (RemoteClass rc : remoteClasses) {
                     String className = rc.name;
@@ -180,14 +225,16 @@ public class RemoteServices {
                 }
                 // Suppose that when there's the basic class loaded, there are all.
                 if (basicClass == null) {  // Load the classes only if there's not the basic one.
-                    ClassType classLoaderClass = null;
-                    if (cl != null) {
-                        classLoaderClass = (ClassType) ObjectReferenceWrapper.referenceType(cl);
+                    ObjectReference cl;
+                    if (sType == ServiceType.AWT) {
+                        cl = getBootstrapClassLoader(tawt, vm);
                     } else {
-                        classLoaderClass = getClass(vm, ClassLoader.class.getName());
-                        Method getSystemClassLoader = ClassTypeWrapper.concreteMethodByName(classLoaderClass, "getSystemClassLoader", "()Ljava/lang/ClassLoader;");
-                        cl = (ObjectReference) ClassTypeWrapper.invokeMethod(classLoaderClass, tawt, getSystemClassLoader, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
+                        cl = getQuantumTookitClassLoader(vm);
+                        if (cl == null) {
+                            cl = getContextClassLoader(tawt, vm);
+                        }
                     }
+                    ClassType classLoaderClass = (ClassType) ObjectReferenceWrapper.referenceType(cl);
 
                     for (RemoteClass rc : remoteClasses) {
                         String className = rc.name;
@@ -982,6 +1029,9 @@ public class RemoteServices {
                 clazz = c;
                 break;
             }
+        }
+        if (clazz == null && classList.size() > 0) {
+            clazz = classList.get(0);
         }
         return (ClassType) clazz;
     }

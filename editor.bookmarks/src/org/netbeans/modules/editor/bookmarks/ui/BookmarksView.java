@@ -352,7 +352,7 @@ implements BookmarkManagerListener, PropertyChangeListener, ExplorerManager.Prov
         if (tableView != null) {
             BookmarksTable table = tableView.getTable();
             BookmarksTableModel model = (BookmarksTableModel) table.getModel();
-            for (int i = model.getEntryCount(); i >= 0; i--) {
+            for (int i = model.getEntryCount() - 1; i >= 0; i--) {
                 if (evt.getChange(model.getEntry(i).getBookmarkInfo()) != null) {
                     model.fireTableRowsUpdated(i, i);
                 }

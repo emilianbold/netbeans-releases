@@ -42,15 +42,21 @@
 package org.netbeans.modules.php.editor.verification;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.csl.api.Hint;
+import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.editor.model.FileScope;
 import org.netbeans.modules.php.editor.model.FunctionScope;
 import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.modules.php.editor.model.TypeScope;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
+import org.netbeans.modules.php.editor.parser.astnodes.IfStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.Statement;
+import org.netbeans.modules.php.editor.parser.astnodes.SwitchCase;
+import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle.Messages;
 
@@ -58,10 +64,11 @@ import org.openide.util.NbBundle.Messages;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class MethodRedeclarationHintError extends AbstractHintError {
+public class MethodRedeclarationHintError extends HintError {
 
     private FileObject fileObject;
     private List<Hint> hints;
+    private Set<Statement> conditionStatements = Collections.emptySet();
 
     @Override
     void compute(PHPRuleContext context, List<Hint> hints) {
@@ -73,10 +80,39 @@ public class MethodRedeclarationHintError extends AbstractHintError {
         fileObject = phpParseResult.getSnapshot().getSource().getFileObject();
         if (fileScope != null && fileObject != null) {
             this.hints = hints;
+            CheckVisitor checkVisitor = new CheckVisitor();
+            phpParseResult.getProgram().accept(checkVisitor);
+            conditionStatements = checkVisitor.getConditionStatements();
             checkTypeScopes(ModelUtils.getDeclaredClasses(fileScope));
             checkTypeScopes(ModelUtils.getDeclaredInterfaces(fileScope));
             checkDeclaredFunctions(ModelUtils.getDeclaredFunctions(fileScope));
         }
+    }
+
+    private static final class CheckVisitor extends DefaultVisitor {
+        private final Set<Statement> conditionStatements = new HashSet<Statement>();
+
+        public Set<Statement> getConditionStatements() {
+            return new HashSet<Statement>(conditionStatements);
+        }
+
+        @Override
+        public void visit(IfStatement node) {
+            addStatement(node.getTrueStatement());
+            addStatement(node.getFalseStatement());
+        }
+
+        @Override
+        public void visit(SwitchCase node) {
+            addStatement(node);
+        }
+
+        private void addStatement(Statement statement) {
+            if (statement != null) {
+                conditionStatements.add(statement);
+            }
+        }
+
     }
 
     private void checkTypeScopes(Collection<? extends TypeScope> typeScopes) {
@@ -92,13 +128,27 @@ public class MethodRedeclarationHintError extends AbstractHintError {
     private void checkDeclaredFunctions(Collection<? extends FunctionScope> declaredFunctions) {
         Set<String> declaredMethodNames = new HashSet<String>();
         for (FunctionScope functionScope : declaredFunctions) {
-            String methodName = functionScope.getName();
-            if (declaredMethodNames.contains(methodName)) {
-                hints.add(new Hint(this, Bundle.MethodRedeclarationCustom(methodName), fileObject, functionScope.getNameRange(), null, 500));
-            } else {
-                declaredMethodNames.add(methodName);
+            if (!isInConditionStatament(functionScope)) {
+                String methodName = functionScope.getName();
+                if (declaredMethodNames.contains(methodName)) {
+                    hints.add(new Hint(this, Bundle.MethodRedeclarationCustom(methodName), fileObject, functionScope.getNameRange(), null, 500));
+                } else {
+                    declaredMethodNames.add(methodName);
+                }
             }
         }
+    }
+
+    private boolean isInConditionStatament(FunctionScope functionScope) {
+        boolean result = false;
+        for (Statement statement : conditionStatements) {
+            OffsetRange statementOffsetRange = new OffsetRange(statement.getStartOffset(), statement.getEndOffset());
+            if (statementOffsetRange.containsInclusive(functionScope.getOffset())) {
+                result = true;
+                break;
+            }
+        }
+        return result;
     }
 
     @Override

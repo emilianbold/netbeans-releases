@@ -237,7 +237,9 @@ public class BreadCrumbsNodeImpl extends AbstractNode {
                     sb.append("("); //NOI18N
                     sb.append(escape(((ForLoopTree) leaf).getInitializer().toString()));
                     sb.append("; "); //NOI18N
-                    sb.append(escape(((ForLoopTree) leaf).getCondition().toString()));
+                    if (((ForLoopTree) leaf).getCondition() != null) {
+                        sb.append(escape(((ForLoopTree) leaf).getCondition().toString()));
+                    }
                     sb.append("; "); //NOI18N
                     sb.append(escape(((ForLoopTree) leaf).getUpdate().toString()));
                     sb.append(")"); //NOI18N
@@ -372,7 +374,11 @@ public class BreadCrumbsNodeImpl extends AbstractNode {
         @Override
         protected boolean createKeys(final List<Node> toPopulate) {
             try {
-                JavaSource.forFileObject(tph.getFileObject()).runUserActionTask(new Task<CompilationController>() {
+                JavaSource js = JavaSource.forFileObject(tph.getFileObject());
+                
+                if (js == null) return true;
+                
+                js.runUserActionTask(new Task<CompilationController>() {
                     @Override public void run(final CompilationController cc) throws Exception {
                         cc.toPhase(Phase.RESOLVED); //XXX: resolved?
 

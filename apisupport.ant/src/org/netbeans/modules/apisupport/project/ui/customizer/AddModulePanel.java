@@ -207,6 +207,7 @@ public final class AddModulePanel extends JPanel {
         filterValue.setEnabled(false);
         moduleList.setEnabled(false);
         showNonAPIModules.setEnabled(false);
+        matchCaseValue.setEnabled(false);
         final String lastFilter = filterValue.getText();
         filterValue.setText(UIUtil.WAIT_VALUE);
         moduleList.setModel(UIUtil.createListWaitModel());
@@ -223,6 +224,7 @@ public final class AddModulePanel extends JPanel {
                         moduleList.setEnabled(true);
                         filterValue.setEnabled(true);
                         showNonAPIModules.setEnabled(true);
+                        matchCaseValue.setEnabled(true);
                         filterValue.setText(lastFilter);
                         if (!FILTER_DESCRIPTION.equals(lastFilter)) {
                             search();
@@ -238,6 +240,7 @@ public final class AddModulePanel extends JPanel {
     
     private void showDescription() {
         StyledDocument doc = descValue.getStyledDocument();
+        final Boolean matchCase = matchCaseValue.isSelected();
         try {
             doc.remove(0, doc.getLength());
             ModuleDependency[] deps = getSelectedDependencies();
@@ -256,7 +259,7 @@ public final class AddModulePanel extends JPanel {
                 doc.insertString(doc.getLength(), getMessage("TEXT_matching_filter_contents"), bold);
                 doc.insertString(doc.getLength(), "\n", null); // NOI18N
                 if (filterText.length() > 0) {
-                    String filterTextLC = filterText.toLowerCase(Locale.US);
+                    String filterTextLC = matchCase?filterText:filterText.toLowerCase(Locale.US);
                     Style match = doc.addStyle(null, null);
                     match.addAttribute(StyleConstants.Background, new Color(246, 248, 139));
                     boolean isEven = false;
@@ -268,7 +271,7 @@ public final class AddModulePanel extends JPanel {
                     for (String hit : filterer.getMatchesFor(filterText, deps[0])) {
                         int loc = doc.getLength();
                         doc.insertString(loc, hit, (isEven ? even : null));
-                        int start = hit.toLowerCase(Locale.US).indexOf(filterTextLC);
+                        int start = (matchCase?hit:hit.toLowerCase(Locale.US)).indexOf(filterTextLC);
                         while (start != -1) {
                             doc.setCharacterAttributes(loc + start, filterTextLC.length(), match, true);
                             start = hit.toLowerCase(Locale.US).indexOf(filterTextLC, start + 1);
@@ -316,6 +319,7 @@ public final class AddModulePanel extends JPanel {
     private void search() {
         cancelFilterTask();
         final String text = filterValue.getText();
+        final Boolean matchCase = matchCaseValue.isSelected();
         if (text.length() == 0) {
             moduleList.setModel(universeModules);
             moduleList.setSelectedIndex(0);
@@ -327,7 +331,7 @@ public final class AddModulePanel extends JPanel {
                     if (_filterer == null) {
                         return;
                     }
-                    final Set<ModuleDependency> matches = _filterer.getMatches(text);
+                    final Set<ModuleDependency> matches = _filterer.getMatches(text, matchCase);
                     synchronized (AddModulePanel.this) {
                         filterTask = null;
                     }
@@ -407,6 +411,7 @@ public final class AddModulePanel extends JPanel {
         descValue = new javax.swing.JTextPane();
         showJavadocButton = new javax.swing.JButton();
         showNonAPIModules = new javax.swing.JCheckBox();
+        matchCaseValue = new javax.swing.JCheckBox();
 
         setBorder(javax.swing.BorderFactory.createEmptyBorder(6, 6, 6, 6));
         setPreferredSize(new java.awt.Dimension(500, 450));
@@ -500,10 +505,24 @@ public final class AddModulePanel extends JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.gridwidth = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(8, 0, 0, 0);
         add(showNonAPIModules, gridBagConstraints);
+
+        org.openide.awt.Mnemonics.setLocalizedText(matchCaseValue, org.openide.util.NbBundle.getMessage(AddModulePanel.class, "CTL_MatchCase"));
+        matchCaseValue.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        matchCaseValue.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                matchCaseValueActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(9, 6, 0, 0);
+        add(matchCaseValue, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
     
     private void showNonAPIModulesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showNonAPIModulesActionPerformed
@@ -513,6 +532,10 @@ public final class AddModulePanel extends JPanel {
     private void showJavadoc(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showJavadoc
         HtmlBrowser.URLDisplayer.getDefault().showURL(currectJavadoc);
     }//GEN-LAST:event_showJavadoc
+
+    private void matchCaseValueActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_matchCaseValueActionPerformed
+        fillUpUniverseModules();
+    }//GEN-LAST:event_matchCaseValueActionPerformed
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -521,6 +544,7 @@ public final class AddModulePanel extends JPanel {
     private javax.swing.JScrollPane descValueSP;
     private javax.swing.JLabel filter;
     javax.swing.JTextField filterValue;
+    private javax.swing.JCheckBox matchCaseValue;
     private javax.swing.JLabel moduleLabel;
     javax.swing.JList moduleList;
     private javax.swing.JScrollPane moduleSP;

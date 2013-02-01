@@ -38,6 +38,7 @@
 package org.netbeans.modules.search;
 
 import java.awt.EventQueue;
+import java.beans.PropertyChangeEvent;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
@@ -46,9 +47,11 @@ import java.net.URI;
 import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.api.queries.FileEncodingQuery;
+import org.netbeans.api.search.SearchPattern;
 import org.netbeans.api.search.SearchRoot;
 import org.netbeans.api.search.SearchScopeOptions;
 import org.netbeans.api.search.provider.SearchInfo;
@@ -64,6 +67,7 @@ import org.netbeans.spi.search.provider.SearchComposition;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
 
 /**
  * @author jhavlin
@@ -143,6 +147,56 @@ public class MatchingObjectTest extends NbTestCase {
                 replaceInFilePreserveCase("writing\ndTA", "dta", "data"));
         assertEquals("writing\r\ndATA",
                 replaceInFilePreserveCase("writing\r\ndTA", "dta", "data"));
+    }
+
+    public void testRemoveOnlyChild() throws IOException {
+
+        MatchingObject mo = prepareMatchingObject(1);
+        final AtomicBoolean removed = new AtomicBoolean(false);
+        mo.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (MatchingObject.PROP_REMOVED.equals(evt.getPropertyName())) {
+                    removed.set(true);
+                }
+            }
+        });
+        mo.removeDetail(mo.getTextDetails().get(0));
+        assertTrue(removed.get());
+    }
+
+    public void testRemoveOneOfChilds() throws IOException {
+
+        MatchingObject mo = prepareMatchingObject(2);
+        final AtomicBoolean childRemoved = new AtomicBoolean(false);
+        mo.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (MatchingObject.PROP_CHILD_REMOVED.equals(
+                        evt.getPropertyName())) {
+                    childRemoved.set(true);
+                }
+            }
+        });
+        mo.removeDetail(mo.getTextDetails().get(0));
+        assertTrue(childRemoved.get());
+    }
+
+    private MatchingObject prepareMatchingObject(int numTextDetails)
+            throws IOException {
+        ResultModel rm = new org.netbeans.modules.search.ResultModel(
+                new BasicSearchCriteria(), null);
+        FileObject fo = FileUtil.createMemoryFileSystem().getRoot()
+                .createData("test.tst");
+        List<TextDetail> details = new LinkedList<TextDetail>();
+        for (int i = 0; i < numTextDetails; i++) {
+            TextDetail td = new TextDetail(DataObject.find(fo),
+                    SearchPattern.create("test", false, false, false));
+            details.add(td);
+        }
+        rm.objectFound(fo, Charset.defaultCharset(), details);
+        MatchingObject mo = rm.getMatchingObjects().get(0);
+        return mo;
     }
 
     /**

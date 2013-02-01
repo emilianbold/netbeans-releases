@@ -564,7 +564,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
     private VariableElement staticInstanceOf(String typeName, String name) {
         try {
             if (cInfo != null) {
-                final TreeUtilities tu = cInfo.getTreeUtilities();
+                final Trees trees = cInfo.getTrees();
                 TypeMirror type = type(typeName);
                 VariableElement closest = null;
                 int distance = Integer.MAX_VALUE;
@@ -578,7 +578,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                             public boolean accept(Element e, TypeMirror t) {
                                 return e.getKind().isField() && !ERROR.contentEquals(e.getSimpleName()) && !CLASS.contentEquals(e.getSimpleName()) &&
                                         (!isStatic || e.getModifiers().contains(Modifier.STATIC)) &&
-                                        tu.isAccessible(scope, e, t) &&
+                                        trees.isAccessible(scope, e, (DeclaredType)t) &&
                                         (e.getKind().isField() && types.isAssignable(((VariableElement)e).asType(), dType) || e.getKind() == ElementKind.METHOD && types.isAssignable(((ExecutableElement)e).getReturnType(), dType));
                             }
                         };
@@ -997,7 +997,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                                         if (illegalForwardRefs.contains(e))
                                             return false;
                                     default:
-                                        return (!isStatic || e.getModifiers().contains(Modifier.STATIC)) && tu.isAccessible(scope, e, t);
+                                        return (!isStatic || e.getModifiers().contains(Modifier.STATIC)) && tu.isAccessible(scope, e, (DeclaredType)t);
                                     }
                                 }
                             };

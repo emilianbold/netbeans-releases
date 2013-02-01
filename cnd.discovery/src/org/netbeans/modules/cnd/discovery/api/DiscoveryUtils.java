@@ -119,12 +119,13 @@ public class DiscoveryUtils {
         return new HashMap<String,String>();
     }
 
-    public static List<String> scanCommandLine(String line){
+    public static List<String> scanCommandLine(String line, LogOrigin isScriptOutput){
         List<String> res = new ArrayList<String>();
         int i = 0;
         StringBuilder current = new StringBuilder();
         boolean isSingleQuoteMode = false;
         boolean isDoubleQuoteMode = false;
+        boolean isParen = false;
         while (i < line.length()) {
             char c = line.charAt(i);
             i++;
@@ -135,6 +136,7 @@ public class DiscoveryUtils {
                     } else if (!isDoubleQuoteMode) {
                         isSingleQuoteMode = true;
                     }
+                    isParen = false;
                     current.append(c);
                     break;
                 case '\"': // NOI18N
@@ -143,6 +145,7 @@ public class DiscoveryUtils {
                     } else if (!isSingleQuoteMode) {
                         isDoubleQuoteMode = true;
                     }
+                    isParen = false;
                     current.append(c);
                     break;
                 case ' ': // NOI18N
@@ -152,12 +155,26 @@ public class DiscoveryUtils {
                     if (isSingleQuoteMode || isDoubleQuoteMode) {
                         current.append(c);
                         break;
+                    } else if (isParen && isScriptOutput == LogOrigin.DwarfCompileLine) {
+                        current.append(c);
                     } else {
                         if (current.length()>0) {
                             res.add(current.toString());
                             current.setLength(0);
                         }
                     }
+                    break;
+                case '(': // NOI18N
+                    if (!(isSingleQuoteMode || isDoubleQuoteMode)) {
+                        isParen = true;
+                    }
+                    current.append(c);
+                    break;
+                case ')': // NOI18N
+                    if (!(isSingleQuoteMode || isDoubleQuoteMode)) {
+                        isParen = false;
+                    }
+                    current.append(c);
                     break;
                 default:
                     current.append(c);
@@ -254,7 +271,7 @@ public class DiscoveryUtils {
      * parse compile line
      */
     public static List<String> gatherCompilerLine(String line, LogOrigin isScriptOutput, List<String> userIncludes, Map<String, String> userMacros, List<String> undefinedMacros, Set<String> libraries, List<String> languageArtifacts, ProjectBridge bridge, boolean isCpp){
-        List<String> list = DiscoveryUtils.scanCommandLine(line);
+        List<String> list = DiscoveryUtils.scanCommandLine(line, isScriptOutput);
         boolean hasQuotes = false;
         for(String s : list){
             if (s.startsWith("\"")){  //NOI18N
@@ -351,16 +368,18 @@ public class DiscoveryUtils {
                             if (value.length() >= 2 &&
                                (value.charAt(0) == '\'' && value.charAt(value.length()-1) == '\'' || // NOI18N
                                 value.charAt(0) == '"' && value.charAt(value.length()-1) == '"' )) { // NOI18N
-                                value = value.substring(1,value.length()-1);
+                                value = DiscoveryUtils.removeEscape(value.substring(1,value.length()-1));
                             }
                             break;
                         case ExecLog:
                             // do nothing
                             break;
                     }
-                    addDef(macro.substring(0,i), value, userMacros, undefinedMacros);
+                    String key = removeEscape(macro.substring(0,i));
+                    addDef(key, value, userMacros, undefinedMacros);
                 } else {
-                    addDef(macro, null, userMacros, undefinedMacros);
+                    String key = removeEscape(macro);
+                    addDef(key, null, userMacros, undefinedMacros);
                 }
             } else if (option.startsWith("-U")){ // NOI18N
                 String macro = option.substring(2);
@@ -486,10 +505,12 @@ public class DiscoveryUtils {
                 // Specify explicitly the language for the following input files (rather than letting the compiler choose a default based on the file name suffix).
                 if (st.hasNext()){
                     String lang = st.next();
-                    if (languageArtifacts != null) {
-                        languageArtifacts.add(lang);
-                    }
+                    languageArtifacts.add(lang);
                 }
+            } else if (option.equals("-xc")){ // NOI18N
+                languageArtifacts.add("c"); // NOI18N	
+            } else if (option.equals("-xc++")){ // NOI18N
+                languageArtifacts.add("c++"); // NOI18N
             } else if (option.equals("-std=c89")){ // NOI18N
                 languageArtifacts.add("c89"); // NOI18N
             } else if (option.equals("-xc99") || // NOI18N
@@ -606,7 +627,31 @@ public class DiscoveryUtils {
         }
         return path;
     }
-    
+
+    // reverse of the CndPathUtilitities.escapeOddCharacters(String s)
+    public static String removeEscape(String s) {
+        int n = s.length();
+        StringBuilder ret = new StringBuilder(n);
+        char prev = 0;
+        for (int i = 0; i < n; i++) {
+            char c = s.charAt(i);
+            if ((c == ' ') || (c == '\t') || // NOI18N
+                    (c == ':') || //(c == '\'') || // NOI18N
+                    (c == '*') || //(c == '\"') || // NOI18N
+                    (c == '[') || (c == ']') || // NOI18N
+                    (c == '(') || (c == ')') || // NOI18N
+                    (c == ';')) { // NOI18N
+                if (prev == '\\') { // NOI18N
+                    ret.setLength(ret.length()-1);
+                }
+            }
+            ret.append(c);
+            prev = c;
+        }
+        return ret.toString();
+    }
+                    
+                    
     public enum LogOrigin {
         BuildLog,
         DwarfCompileLine,

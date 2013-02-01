@@ -399,11 +399,13 @@ public class GitCommitPanel extends VCSCommitPanel<GitFileNode> {
 
         private final File repository;
 
-        static GitCommitPanel create(File[] roots, File repository, GitUser user) {
+        static GitCommitPanel create(File[] roots, File repository, GitUser user, String mergeCommitMessage) {
             Preferences preferences = GitModuleConfig.getDefault().getPreferences();
             String lastCanceledCommitMessage = GitModuleConfig.getDefault().getLastCanceledCommitMessage();
 
-            DefaultCommitParameters parameters = new GitCommitParameters(preferences, lastCanceledCommitMessage, user);
+            DefaultCommitParameters parameters = new GitCommitParameters(preferences, 
+                    lastCanceledCommitMessage.isEmpty() && mergeCommitMessage != null
+                    ? mergeCommitMessage : lastCanceledCommitMessage, user);
 
             Collection<GitHook> hooks = VCSHooks.getInstance().getHooks(GitHook.class);
             GitHookContext hooksCtx = new GitHookContext(roots, null, new GitHookContext.LogEntry[]{});

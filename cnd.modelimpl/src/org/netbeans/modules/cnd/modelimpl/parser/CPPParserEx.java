@@ -72,12 +72,8 @@ import org.netbeans.modules.cnd.antlr.*;
 import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.util.Hashtable;
 import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
-import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.support.APTToken;
-import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
-import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPParser;
 import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
@@ -95,7 +91,7 @@ import org.openide.util.CharSequences;
 public class CPPParserEx extends CPPParser {
 
     private boolean lazyCompound = TraceFlags.EXCLUDE_COMPOUND;
-    private final CppParserActionEx action;
+    protected final CppParserActionEx action;
     
     private static class AstFactoryEx extends org.netbeans.modules.cnd.antlr.ASTFactory {
 
@@ -140,7 +136,12 @@ public class CPPParserEx extends CPPParser {
     public static CPPParserEx getInstance(CsmFile file, TokenStream ts, int flags, CppParserActionEx callback) {
         assert (ts != null);
         assert (file != null);
-        CPPParserEx parser = new CPPParserEx(ts, callback);
+        CPPParserEx parser;
+        if (TraceFlags.PARSE_HEADERS_WITH_SOURCES) {
+            parser = new CPPStraightParserEx(ts, callback);
+        } else {
+            parser = new CPPParserEx(ts, callback);
+        }
         parser.init(file.getName().toString(), flags);
         return parser;
     }
@@ -155,112 +156,6 @@ public class CPPParserEx extends CPPParser {
         super.init(filename, flags);
     }
 
-    private void onIncludeToken(Token t) {
-        if (TraceFlags.PARSE_HEADERS_WITH_SOURCES) {
-            if (t instanceof APTToken) {
-                APTToken aptToken = (APTToken) t;
-                APTPreprocHandler.State stateBefore = (APTPreprocHandler.State) aptToken.getProperty(APTPreprocHandler.State.class);
-                CsmFile inclFile = (CsmFile) aptToken.getProperty(CsmFile.class);
-                if (stateBefore != null && inclFile != null) {
-                    try {
-                        action.pushFile(inclFile);
-                        assert inclFile instanceof FileImpl;
-                        ((FileImpl) inclFile).parseOnInclude(stateBefore, action);
-                    } finally {
-                        CsmFile popFile = action.popFile();
-                        assert popFile == inclFile;
-                    }
-                }
-            }
-        }
-    }
-
-    // Number of active markers
-    private int nMarkers = 0;    
-    @Override
-    public int mark() {
-        nMarkers++;
-        return super.mark();
-    }
-
-    @Override
-    public void rewind(int pos) {
-        nMarkers--;
-        super.rewind(pos);
-    }
-        
-    @Override
-    public int LA(int i) {
-        if (APTTraceFlags.INCLUDE_TOKENS_IN_TOKEN_STREAM) {
-            final int newIndex = skipIncludeTokensIfNeeded(i);
-            int LA = super.LA(newIndex);
-            assert !isIncludeToken(LA) : super.LT(newIndex) + " not expected";
-            return LA;
-        } else {
-            return super.LA(i);
-        }
-    }
-
-    @Override
-    public Token LT(int i) {
-        if (APTTraceFlags.INCLUDE_TOKENS_IN_TOKEN_STREAM) {
-            Token LT = super.LT(skipIncludeTokensIfNeeded(i));
-            assert !isIncludeToken(LT.getType()) : LT + " not expected ";
-            return LT;
-        } else {
-            return super.LT(i);
-        }
-    }
-    
-    @Override
-    public void consume() {
-        if (APTTraceFlags.INCLUDE_TOKENS_IN_TOKEN_STREAM) {
-            assert !isIncludeToken(super.LA(1)) : super.LT(1) + " not expected ";
-            super.consume();
-            // consume following includes as well
-            while (isIncludeToken(super.LA(1))) {
-                Token t = super.LT(1);
-                onIncludeToken(t);
-                super.consume();
-            }      
-        } else {
-            super.consume();
-        }
-    }
-
-    private int skipIncludeTokensIfNeeded(int i) {
-        if (i == 0) {
-            assert !isIncludeToken(super.LA(0)) : super.LT(0) + " not expected ";
-            return 0;
-        }
-        int superIndex = 0;
-        int nonIncludeTokens = 0;
-        do {
-            superIndex++;
-            int LA = super.LA(superIndex);
-            assert LA == super.LA(superIndex) : "how can LA be different?";
-            if (isIncludeToken(LA)) {
-                if (nMarkers == 0 && superIndex == 1 && guessing == 0) {
-                    // consume if the first an no markers
-                    Token t = super.LT(1);
-                    assert isIncludeToken(t.getType()) : t + " not expected ";
-                    onIncludeToken(t);
-                    assert super.LT(1) == t : t + " have to be the same as " + super.LT(1);
-                    super.consume();
-                    superIndex = 0;
-                }
-            } else {
-                nonIncludeTokens++;
-            }
-        } while (nonIncludeTokens < i);
-        assert (superIndex >= i) && nonIncludeTokens == i : "LA(" + i + ") => LA(" + superIndex + ") " + nonIncludeTokens + ")" + super.LT(superIndex);
-        return superIndex;
-    }
-    
-    private static boolean isIncludeToken(int LA) {
-        return LA == APTTokenTypes.INCLUDE || LA == APTTokenTypes.INCLUDE_NEXT;
-    }
-    
     private static boolean equals(CharSequence s1, CharSequence s2) {
         return CharSequences.comparator().compare(s1, s2) == 0;
     }

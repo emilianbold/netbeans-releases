@@ -85,4 +85,10 @@ public class UseStatementPart extends ASTNode {
     public void accept(Visitor visitor) {
         visitor.visit(this);
     }
+
+    @Override
+    public String toString() {
+        return getName() + (getAlias() == null ? "" : " as " + getAlias()); //NOI18N
+    }
+
 }

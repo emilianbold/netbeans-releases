@@ -57,7 +57,6 @@ import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.modules.versioning.history.HistoryAction;
 import org.netbeans.modules.versioning.spi.VCSHistoryProvider;
 import org.netbeans.modules.versioning.util.FileUtils;
-import org.openide.nodes.Node;
 import org.openide.util.*;
 import org.tigris.subversion.svnclientadapter.*;
 
@@ -101,7 +100,7 @@ public class HistoryProvider implements VCSHistoryProvider {
                     continue;
                 }
                 
-                ISVNLogMessage[] messages;
+                ISVNLogMessage[] messages = null;
                 if ((fi.getStatus() == FileInformation.STATUS_VERSIONED_ADDEDLOCALLY) &&
                      fi.getEntry(file).isCopied()) 
                 {
@@ -109,17 +108,19 @@ public class HistoryProvider implements VCSHistoryProvider {
                     SVNUrl copyUrl = info.getCopyUrl();
                     repoUrl = info.getRepository();
                     
-                    messages = 
-                        client.getLogMessages(
-                                copyUrl, 
-                                fromDate == null ? 
-                                    new SVNRevision.Number(1) : 
-                                    new SVNRevision.DateSpec(fromDate),
-                                    SVNRevision.HEAD
-                                );
-                    file2Copy.put(file, copyUrl);
-                    
-                } else {
+                    if (copyUrl != null) {
+                        messages = 
+                            client.getLogMessages(
+                                    copyUrl, 
+                                    fromDate == null ? 
+                                        new SVNRevision.Number(1) : 
+                                        new SVNRevision.DateSpec(fromDate),
+                                        SVNRevision.HEAD
+                                    );
+                        file2Copy.put(file, copyUrl);
+                    }
+                }
+                if (messages == null) {
                     messages = 
                         client.getLogMessages(
                                     file, 

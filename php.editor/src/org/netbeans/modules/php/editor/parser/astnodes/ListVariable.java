@@ -81,4 +81,14 @@ public class ListVariable extends VariableBase {
     public void accept(Visitor visitor) {
         visitor.visit(this);
     }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        for (VariableBase variableBase : getVariables()) {
+            sb.append(variableBase).append(","); //NOI18N
+        }
+        return "list(" + sb.toString() + ")"; //NOI18N
+    }
+
 }

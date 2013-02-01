@@ -511,6 +511,10 @@ public class DestinationPanel extends ErrorMessagePanel {
                 destinationField.setText(newDestination);
             }
         }
+        
+        public String getDestinationPath() {
+            return destinationField.getText().trim();
+        }
     }
     
     /////////////////////////////////////////////////////////////////////////////////
@@ -549,7 +553,7 @@ public class DestinationPanel extends ErrorMessagePanel {
     public static final String ERROR_CONTAINS_AMPERSAND_PROPERTY =
             "error.contains.ampersand"; // NOI18N
     public static final String ERROR_CONTAINS_WRONG_CHAR_PROPERTY =
-            "error.contains.wrong.char"; // NOI18N
+            "error.contains.wrong.char"; // NOI18N  
     public static final String ERROR_MATCHES_PROHIBITED_REGEXP =
             "error.matches.prohibited.regexp";//NOI18N
     public static final String ERROR_NOT_ABSOLUTE_PROPERTY =

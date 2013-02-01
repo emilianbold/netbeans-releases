@@ -82,8 +82,8 @@ final class AddModuleFilter {
     /**
      * Find matches for a search string.
      */
-    public Set<ModuleDependency> getMatches(String text) {
-        String textLC = text.toLowerCase(Locale.ENGLISH);
+    public Set<ModuleDependency> getMatches(String text, Boolean matchCase) {
+        String textLC = matchCase?text:text.toLowerCase(Locale.ENGLISH);
         List<Set<ModuleDependency>> matches = new ArrayList<Set<ModuleDependency>>(3);
         for (int i = 0; i < 3; i++) {
             // Within groups, just sort by module display name:
@@ -95,7 +95,7 @@ final class AddModuleFilter {
             }
             int matchLevel = 3;
             for (String tok : dep.getFilterTokens(dependingModuleCNB)) {
-                String token = tok.toLowerCase(Locale.ENGLISH);
+                String token = matchCase?tok:tok.toLowerCase(Locale.ENGLISH);
                 // Presort by relevance (#71995):
                 if (token.equals(textLC) || token.endsWith("." + textLC)) { // NOI18N
                     // Exact match (possibly after dot).

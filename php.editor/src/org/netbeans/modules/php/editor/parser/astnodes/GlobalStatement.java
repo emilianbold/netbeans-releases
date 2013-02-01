@@ -81,4 +81,14 @@ public class GlobalStatement extends Statement {
     public void accept(Visitor visitor) {
         visitor.visit(this);
     }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        for (Variable variable : getVariables()) {
+            sb.append(variable).append(","); //NOI18N
+        }
+        return "global " + sb.toString(); //NOI18N
+    }
+
 }

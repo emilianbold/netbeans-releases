@@ -101,6 +101,7 @@ import org.netbeans.modules.cnd.utils.FileObjectFilter;
 import org.netbeans.modules.cnd.utils.MIMEExtensions;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.ui.ModalMessageDlg;
+import org.netbeans.modules.dlight.libs.common.PerformanceLogger;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
@@ -1863,9 +1864,17 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             LOGGER.log(Level.INFO, ex.getMessage(), ex);
             return;
         }
-        FileObject[] files = dir.getChildren();
-        if (files == null) {
-            return;
+
+        PerformanceLogger.PerformaceAction lsPerformanceEvent = PerformanceLogger.getLogger().start(Folder.LS_FOLDER_PERFORMANCE_EVENT, dir);
+        FileObject[] files = null;
+        try {
+            lsPerformanceEvent.setTimeOut(Folder.FS_TIME_OUT);
+            files = dir.getChildren();
+            if (files == null) {
+                return;
+            }
+        } finally {
+            lsPerformanceEvent.log(files== null ? 0 : files.length);
         }
 
         final boolean hideBinaryFiles = !MakeOptions.getInstance().getViewBinaryFiles();
@@ -1911,10 +1920,17 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
                 dirfolder.markRemoved(false);
                 addFilesImpl(antiLoop, dirfolder, file, handle, filesAdded, notify, setModified, fileFilter, useOldSchemeBehavior);
             } else {
-                String path = ProjectSupport.toProperPath(baseDirFO, file, project);
-                Item item = Item.createInBaseDir(baseDirFO, path);
-                if (folder.addItemFromRefreshDir(item, notify, setModified, useOldSchemeBehavior) == item) {
-                    filesAdded.add(item);
+                PerformanceLogger.PerformaceAction performanceEvent = PerformanceLogger.getLogger().start(Folder.CREATE_ITEM_PERFORMANCE_EVENT, file);
+                Item item = null;
+                try {
+                    performanceEvent.setTimeOut(Folder.FS_TIME_OUT);
+                    String path = ProjectSupport.toProperPath(baseDirFO, file, project);
+                    item = Item.createInBaseDir(baseDirFO, path);
+                    if (folder.addItemFromRefreshDir(item, notify, setModified, useOldSchemeBehavior) == item) {
+                        filesAdded.add(item);
+                    }
+                } finally {
+                    performanceEvent.log(item);
                 }
                 if (handle != null) {
                     handle.progress(item.getPath());
