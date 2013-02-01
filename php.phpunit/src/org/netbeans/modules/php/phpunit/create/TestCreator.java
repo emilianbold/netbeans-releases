@@ -55,7 +55,7 @@ import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.phpunit.commands.SkeletonGenerator;
 import org.netbeans.modules.php.phpunit.ui.options.PhpUnitOptionsPanelController;
-import org.netbeans.modules.php.spi.testing.CreateTestsResult;
+import org.netbeans.modules.php.spi.testing.create.CreateTestsResult;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 

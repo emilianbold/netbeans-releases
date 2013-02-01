@@ -83,6 +83,7 @@
                 <package>org.netbeans.modules.php.api.testing</package>
                 <package>org.netbeans.modules.php.spi.testing</package>
                 <package>org.netbeans.modules.php.spi.testing.coverage</package>
+                <package>org.netbeans.modules.php.spi.testing.create</package>
                 <package>org.netbeans.modules.php.spi.testing.locate</package>
                 <package>org.netbeans.modules.php.spi.testing.run</package>
             </friend-packages>
