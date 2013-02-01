@@ -41,6 +41,7 @@
  */
 package org.netbeans.test.html5.debug;
 
+import java.util.Map;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.modules.debugger.BreakpointsWindowOperator;
 import org.netbeans.jellytools.modules.debugger.actions.ToggleBreakpointAction;
@@ -54,6 +55,8 @@ import org.netbeans.test.html5.GeneralHTMLProject;
  * @author Vladimir Riha
  */
 public class JavaScriptDebugger extends GeneralHTMLProject {
+
+    public static final int VARIABLES_TIMEOUTS = 2000;
 
     public JavaScriptDebugger(String arg0) {
         super(arg0);
@@ -95,5 +98,35 @@ public class JavaScriptDebugger extends GeneralHTMLProject {
     public void cleanBreakpoints() {
         BreakpointsWindowOperator window = BreakpointsWindowOperator.invoke();
         new DeleteAllBreakpointsAction().performPopup(window);
+    }
+
+    /**
+     * Waits for variable to appear in Variables window (since Variables is
+     * minimized by default, there could be "loading" message).
+     *
+     * @param expectedVariable
+     * @param vo
+     */
+    public void waitForVariable(final String expectedVariable, final VariablesOperator vo) {
+        try {
+            Waiter waiter = new Waiter(new Waitable() {
+                @Override
+                public Object actionProduced(Object obj) {
+                    try {
+                        return ((Map<String, Variable>) vo.getVariables()).get(expectedVariable) != null ? Boolean.TRUE : null;
+                    } catch (Exception ex) {
+                        return null;
+                    }
+                }
+
+                @Override
+                public String getDescription() {
+                    return ("Wait for Variables to contain " + expectedVariable);
+                }
+            });
+            waiter.getTimeouts().setTimeout("Waiter.WaitingTime", VARIABLES_TIMEOUTS);
+            waiter.waitAction(null);
+        } catch (InterruptedException e) {
+        }
     }
 }
