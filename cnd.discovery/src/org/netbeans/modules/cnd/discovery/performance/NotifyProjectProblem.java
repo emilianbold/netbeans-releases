@@ -111,11 +111,28 @@ import org.openide.util.NbBundle.Messages;
                                                 +"</ul>\n"
                                                 +"Details:<br>\n"
                                                 +"{1}"
+    ,"NotifyProjectProblem.infinite.parse.message.text=Infinite File Parsing"
+    ,"NotifyProjectProblem.infinite.parse.adviceL.text=<li>Exclude files from code assistance</li>\n"
+                                                     +"<li>Filter out files from project</li>\n"
+                                                     +"<li>Open the project on a more powerful computer by using VNC or X11 forwarding</li>\n"
+    ,"NotifyProjectProblem.infinite.parse.adviceR.text=<li>Exclude files from code assistance</li>\n"
+                                                     +"<li>Filter out files from project</li>\n"
+                                                     +"<li>Open the project on a more powerful computer by using VNC or X11 forwarding</li>\n"
+    ,"# {0} - advice"
+    ,"# {1} - details"
+    ,"NotifyProjectProblem.infinite.parse.explanation.text=The IDE has detected infinite files parsing, which is caused by a bug in the IDE or too big files.<br>\n"
+                                                         +"To resolve this problem, you can try:<br>\n"
+                                                         +"<ul>\n"
+                                                         +"{0}"
+                                                         +"</ul>\n"
+                                                         +"Details:<br>\n"
+                                                         +"{1}"
 })
 public class NotifyProjectProblem extends javax.swing.JPanel {
     public static final int CREATE_PROBLEM = 1;
     public static final int READ_PROBLEM = 2;
     public static final int PARSE_PROBLEM = 3;
+    public static final int INFINITE_PARSE_PROBLEM = 4;
 
     /**
      * Creates new form NotifyProjectProblem
@@ -164,6 +181,17 @@ public class NotifyProjectProblem extends javax.swing.JPanel {
                 }
                 explanation = Bundle.NotifyProjectProblem_parse_explanation_text(advice, details);
                 shortDescription = Bundle.NotifyProjectProblem_parse_message_text();
+                break;
+            }
+            case INFINITE_PARSE_PROBLEM: {
+                String advice;
+                if (isRemoteSources) {
+                    advice = Bundle.NotifyProjectProblem_infinite_parse_adviceR_text();
+                } else {
+                    advice = Bundle.NotifyProjectProblem_infinite_parse_adviceL_text();
+                }
+                explanation = Bundle.NotifyProjectProblem_infinite_parse_explanation_text(advice, details);
+                shortDescription = Bundle.NotifyProjectProblem_infinite_parse_message_text();
                 break;
             }
             default:
