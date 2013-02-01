@@ -138,7 +138,7 @@ class ConfigActionTest extends ConfigAction {
 
     @Override
     public void debugFile(final Lookup context) {
-        TestRunInfo testRunInfo = getTestRunInfo(context, false);
+        TestRunInfo testRunInfo = getTestRunInfo(context, true);
         if (testRunInfo == null) {
             // XXX
             return;
