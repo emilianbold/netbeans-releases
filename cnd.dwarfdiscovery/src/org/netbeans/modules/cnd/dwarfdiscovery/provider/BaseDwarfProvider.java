@@ -121,13 +121,14 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
         isStoped.set(true);
     }
 
-    protected List<SourceFileProperties> getSourceFileProperties(String[] objFileName, Progress progress, ProjectProxy project, Set<String> dlls, CompileLineStorage storage){
+    protected List<SourceFileProperties> getSourceFileProperties(String[] objFileName, Progress progress, ProjectProxy project,
+            Set<String> dlls, List<String> buildArtifacts, CompileLineStorage storage){
         CountDownLatch countDownLatch = new CountDownLatch(objFileName.length);
         RequestProcessor rp = new RequestProcessor("Parallel analyzing", CndUtils.getNumberCndWorkerThreads()); // NOI18N
         try{
             Map<String,SourceFileProperties> map = new ConcurrentHashMap<String,SourceFileProperties>();
             for (String file : objFileName) {
-                MyRunnable r = new MyRunnable(countDownLatch, file, map, progress, project, dlls, storage);
+                MyRunnable r = new MyRunnable(countDownLatch, file, map, progress, project, dlls, buildArtifacts, storage);
                 rp.post(r);
             }
             try {
@@ -253,7 +254,7 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
         return null;
     }
         
-    private boolean processObjectFile(String file, Map<String, SourceFileProperties> map, Progress progress, ProjectProxy project, Set<String> dlls, CompileLineStorage storage) {
+    private boolean processObjectFile(String file, Map<String, SourceFileProperties> map, Progress progress, ProjectProxy project, Set<String> dlls, List<String> buildArtifacts, CompileLineStorage storage) {
         if (isStoped.get()) {
             return true;
         }
@@ -278,7 +279,7 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
             }
         }
         FileSystem fileSystem  = getFileSystem(project);
-        for (SourceFileProperties f : getSourceFileProperties(file, map, project, dlls, storage)) {
+        for (SourceFileProperties f : getSourceFileProperties(file, map, project, dlls, buildArtifacts, storage)) {
             if (isStoped.get()) {
                 break;
             }
@@ -622,7 +623,7 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
         return bestRoot;
     }
 
-    protected List<SourceFileProperties> getSourceFileProperties(String objFileName, Map<String, SourceFileProperties> map, ProjectProxy project, Set<String> dlls, CompileLineStorage storage) {
+    protected List<SourceFileProperties> getSourceFileProperties(String objFileName, Map<String, SourceFileProperties> map, ProjectProxy project, Set<String> dlls, List<String> buildArtifacts, CompileLineStorage storage) {
         List<SourceFileProperties> list = new ArrayList<SourceFileProperties>();
         Dwarf dump = null;
         try {
@@ -739,15 +740,18 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
         private final CountDownLatch countDownLatch;
         private final ProjectProxy project;
         private final Set<String> dlls;
+        private final List<String> buildArtifacts;
         private final CompileLineStorage storage;
 
-        private MyRunnable(CountDownLatch countDownLatch, String file, Map<String, SourceFileProperties> map, Progress progress, ProjectProxy project, Set<String> dlls, CompileLineStorage storage){
+        private MyRunnable(CountDownLatch countDownLatch, String file, Map<String, SourceFileProperties> map, Progress progress, ProjectProxy project,
+                Set<String> dlls, List<String> buildArtifacts, CompileLineStorage storage){
             this.file = file;
             this.map = map;
             this.progress = progress;
             this.countDownLatch = countDownLatch;
             this.project = project;
             this.dlls = dlls;
+            this.buildArtifacts = buildArtifacts;
             this.storage = storage;
         }
         @Override
@@ -755,7 +759,7 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
             try {
                 if (!isStoped.get()) {
                     Thread.currentThread().setName("Parallel analyzing "+file); // NOI18N
-                    processObjectFile(file, map, progress, project, dlls, storage);
+                    processObjectFile(file, map, progress, project, dlls, buildArtifacts, storage);
                 }
             } finally {
                 countDownLatch.countDown();
