@@ -242,21 +242,22 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
     }
 
     @Override
-    protected List<SourceFileProperties> getSourceFileProperties(String objFileName, Map<String, SourceFileProperties> map, ProjectProxy project, Set<String> dlls, CompileLineStorage storage) {
+    protected List<SourceFileProperties> getSourceFileProperties(String objFileName, Map<String, SourceFileProperties> map, ProjectProxy project, Set<String> dlls, List<String> buildArtifacts, CompileLineStorage storage) {
         ProviderProperty p = getProperty(RESTRICT_COMPILE_ROOT);
         String root = "";
         if (p != null) {
             root = (String) p.getValue();
         }
-        List<SourceFileProperties> res = runLogReader(objFileName, root, progress, project, storage);
+        List<SourceFileProperties> res = runLogReader(objFileName, root, progress, project, buildArtifacts, storage);
         progress = null;
         return res;
 
     }
 
-    private List<SourceFileProperties> runLogReader(String objFileName, String root, Progress progress, ProjectProxy project, CompileLineStorage storage) {
+    private List<SourceFileProperties> runLogReader(String objFileName, String root, Progress progress, ProjectProxy project, List<String> buildArtifacts, CompileLineStorage storage) {
         ExecLogReader clrf = new ExecLogReader(objFileName, root, project);
         List<SourceFileProperties> list = clrf.getResults(progress, isStoped, storage);
+        buildArtifacts.addAll(clrf.getArtifacts(progress, isStoped, storage));
         return list;
     }
     private Progress progress;
@@ -271,6 +272,7 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
             Configuration conf = new Configuration() {
 
                 private List<SourceFileProperties> myFileProperties;
+                private List<String> myBuildArtifacts;
                 private List<String> myIncludedFiles = new ArrayList<String>();
 
                 @Override
@@ -285,15 +287,23 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
 
                 @Override
                 public List<String> getBuildArtifacts() {
-                    return null;
+                    if (myBuildArtifacts == null) {
+                        myBuildArtifacts = Collections.synchronizedList(new ArrayList<String>());
+                        String set = (String) getProperty(EXEC_LOG_KEY).getValue();
+                        if (set != null && set.length() > 0) {
+                            myFileProperties = getSourceFileProperties(new String[]{set}, null, project, null, myBuildArtifacts, new CompileLineStorage());
+                        }
+                    }
+                    return myBuildArtifacts;
                 }
 
                 @Override
                 public List<SourceFileProperties> getSourcesConfiguration() {
                     if (myFileProperties == null) {
+                        myBuildArtifacts = Collections.synchronizedList(new ArrayList<String>());
                         String set = (String) getProperty(EXEC_LOG_KEY).getValue();
                         if (set != null && set.length() > 0) {
-                            myFileProperties = getSourceFileProperties(new String[]{set}, null, project, null, new CompileLineStorage());
+                            myFileProperties = getSourceFileProperties(new String[]{set}, null, project, null, myBuildArtifacts, new CompileLineStorage());
                         }
                     }
                     return myFileProperties;
@@ -317,6 +327,7 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
         private final String root;
         private final String fileName;
         private List<SourceFileProperties> result;
+        private List<String> buildArtifacts;
         private final ProjectProxy project;
         private final PathMap pathMapper;
         private final FileSystem fileSystem;
@@ -381,6 +392,7 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
 
         private void run(Progress progress, AtomicBoolean isStoped, CompileLineStorage storage) {
             result = new ArrayList<SourceFileProperties>();
+            buildArtifacts = new ArrayList<String>();
             File file = new File(fileName);
             if (file.exists() && file.canRead()) {
                 try {
@@ -453,6 +465,13 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
                 run(progress, isStoped, storage);
             }
             return result;
+        }
+
+        public List<String> getArtifacts(Progress progress, AtomicBoolean isStoped, CompileLineStorage storage) {
+            if (buildArtifacts == null) {
+                run(progress, isStoped, storage);
+            }
+            return buildArtifacts;
         }
         
         private void addSources(String tool, List<String> args, CompileLineStorage storage) {
@@ -617,39 +636,77 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
         
         private void processLibrary(String tool, List<String> args, CompileLineStorage storage) {
             //TODO: get library name
-/*            
-called: /usr/ccs/bin/ld
-	/var/tmp/alsimon-cnd-test-downloads/pkg-config-0.25/glib-1.2.10/gmodule
-	/usr/ccs/bin/ld
-	-zld32=-S/tmp/lib_link.1359732141.24769.01/libldstab_ws.so
-	-zld64=-S/tmp/lib_link.1359732141.24769.01/amd64/libldstab_ws.so
-	-zld32=-S/tmp/lib_link.1359732141.24769.01/libld_annotate.so
-	-zld64=-S/tmp/lib_link.1359732141.24769.01/amd64/libld_annotate.so
-	/opt/solarisstudio12.3/prod/lib/crti.o
-	/opt/solarisstudio12.3/prod/lib/crt1.o
-	/opt/solarisstudio12.3/prod/lib/values-xa.o
-	testgmodule.o
-	./.libs/libgmodule.a
-	../.libs/libglib.a
-	-o
-	testgmodule
-	-Y
-	P,/opt/solarisstudio12.3/prod/lib:/usr/ccs/lib:/lib:/usr/lib
-	-Qy
-	-lc
-	/opt/solarisstudio12.3/prod/lib/crtn.o
-
-called: /usr/ccs/bin/ar
-	/var/tmp/alsimon-cnd-test-downloads/pkg-config-0.25/popt
-	ar
-	cru
-	.libs/libpopt.a
-	.libs/popt.o
-	.libs/poptconfig.o
-	.libs/popthelp.o
-	.libs/poptparse.o
-	.libs/findme.o
-*/            
+            if ("ar".equals(tool)) { // NOI18N
+                // static library
+                //called: /usr/ccs/bin/ar
+                //        /var/tmp/alsimon-cnd-test-downloads/pkg-config-0.25/popt
+                //        ar
+                //        cru
+                //        .libs/libpopt.a
+                //        .libs/popt.o
+                //        .libs/poptconfig.o
+            } else if ("ld".equals(tool)) { // NOI18N
+                // executable or dynamic library
+                //called: /usr/ccs/bin/ld
+                //        /var/tmp/alsimon-cnd-test-downloads/pkg-config-0.25/glib-1.2.10/gmodule
+                //        /usr/ccs/bin/ld
+                //        -zld32=-S/tmp/lib_link.1359732141.24769.01/libldstab_ws.so
+                //        /opt/solarisstudio12.3/prod/lib/crti.o
+                //        testgmodule.o
+                //        ./.libs/libgmodule.a
+                //        ../.libs/libglib.a
+                //        -o
+                //        testgmodule
+                //        -Y
+                //        P,/opt/solarisstudio12.3/prod/lib:/usr/ccs/lib:/lib:/usr/lib
+                //        -Qy
+                //        -lc
+                //        /opt/solarisstudio12.3/prod/lib/crtn.o
+                Iterator<String> iterator = args.iterator();
+                if (!iterator.hasNext()) {
+                    return;
+                }
+                String compilePath = iterator.next();
+                if (pathMapper != null) {
+                    String anCompilePath = pathMapper.getLocalPath(compilePath);
+                    if (anCompilePath != null) {
+                        compilePath = anCompilePath;
+                    }
+                }
+                if (!iterator.hasNext()) {
+                    return;
+                }
+                // skip tool
+                iterator.next();
+                String binary = null;
+                while(iterator.hasNext()) {
+                    String option = iterator.next();
+                    if ("-o".equals(option)) { // NOI18N
+                        if (iterator.hasNext()) {
+                            binary = iterator.next();
+                            break;
+                        }
+                    }
+                }
+                if (binary != null) {
+                    String fullName;
+                    if (binary.startsWith("/")){  //NOI18N
+                        if (pathMapper != null) {
+                            String mapped = pathMapper.getLocalPath(binary);
+                            if (mapped != null) {
+                                binary = mapped;
+                            }
+                        }
+                        fullName = binary;
+                    } else {
+                        fullName = compilePath+"/"+binary; //NOI18N
+                    }
+                    FileObject f = fileSystem.findResource(fullName);
+                    if (f != null && f.isValid() && f.isData()) {
+                        buildArtifacts.add(fullName);
+                    }
+                }
+            }
         }
     }
     

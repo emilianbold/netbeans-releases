@@ -1337,6 +1337,17 @@ public class ImportProject implements PropertyChangeListener {
                 try {
                     done = true;
                     extension.apply(map, makeProject);
+                    if (false) {
+                        List<String> buildArtifacts = (List<String>) map.get(DiscoveryWizardDescriptor.BUILD_ARTIFACTS);
+                        if (buildArtifacts != null) {
+                            ConfigurationDescriptorProvider pdp = makeProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
+                            MakeConfigurationDescriptor makeConfigurationDescriptor = pdp.getConfigurationDescriptor();
+                            Folder externalFileItems = makeConfigurationDescriptor.getExternalFileItems();
+                            for(String binary : buildArtifacts) {
+                                externalFileItems.addItem(Item.createInFileSystem(makeConfigurationDescriptor.getBaseDirFileSystem(),binary));
+                            }
+                        }
+                    }
                     importResult.put(Step.DiscoveryLog, State.Successful);
                 } catch (IOException ex) {
                     ex.printStackTrace(System.err);
