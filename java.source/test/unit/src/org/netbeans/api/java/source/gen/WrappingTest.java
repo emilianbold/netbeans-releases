@@ -183,6 +183,28 @@ public class WrappingTest extends GeneratorTestMDRCompat {
         FmtOptions.wrapThrowsList, WrapStyle.WRAP_ALWAYS.name());
     }
     
+    public void testWrapMethod3() throws Exception {
+        String code = "package hierbas.del.litoral;\n\n" +
+            "import java.util.concurrent.atomic.AtomicBoolean;\n\n" +
+            "public class Test {\n" +
+            "}\n";
+        runWrappingTest(code, new Task<WorkingCopy>() {
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+                ExpressionTree parsed = workingCopy.getTreeUtilities().parseExpression("new Object() { public <T> void test(java.lang.Class<T> c) { } }", new SourcePositions[1]);
+                parsed = GeneratorUtilities.get(workingCopy).importFQNs(parsed);
+                MethodTree method = (MethodTree) ((NewClassTree) parsed).getClassBody().getMembers().get(0);
+                workingCopy.rewrite(clazz, make.addClassMember(clazz, method));
+            }
+        },
+        FmtOptions.wrapMethodParams, WrapStyle.WRAP_ALWAYS.name(),
+        FmtOptions.wrapThrowsKeyword, WrapStyle.WRAP_ALWAYS.name(),
+        FmtOptions.wrapThrowsList, WrapStyle.WRAP_ALWAYS.name());
+    }
+    
     private void runWrappingTest(String code, Task<WorkingCopy> task, String... settings) throws Exception {
         Map<String, String> originalSettings = alterSettings(FmtOptions.blankLinesAfterClassHeader, "0", FmtOptions.blankLinesBeforeMethods, "0");
         
