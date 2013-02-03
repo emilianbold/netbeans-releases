@@ -58,6 +58,7 @@ class Attr {
     private final static int BGCOLORf = 0;
     private final static int BGCOLORw = 5;
     private final static int BGCOLORm = 0xf;
+    @SuppressWarnings("PointlessBitwiseExpression")
     public final static int BGCOLOR = BGCOLORm << BGCOLORf;
 
     private final static int FGCOLORf = BGCOLORf + BGCOLORw;
@@ -105,6 +106,7 @@ class Attr {
      * attr = Attr.setBackgroundColor(attr, 7);
      */
 
+    @SuppressWarnings("PointlessBitwiseExpression")
     public static int setBackgroundColor(int attr, int code) {
 	code &= BGCOLORm;	// throw all but lowest relevant bits away
 	attr &= ~ BGCOLOR;	// 0 out existing bits
@@ -134,6 +136,7 @@ class Attr {
     /**
      * Use this to get at the BG color value embedded in an attr.
      */
+    @SuppressWarnings("PointlessBitwiseExpression")
     public static int backgroundColor(int attr) {
 	return (attr >> BGCOLORf) & BGCOLORm;
     }

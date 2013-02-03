@@ -225,6 +225,10 @@ final class Line {
     public StringBuffer stringBuffer() {
         // only used for word finding
         // Grrr, why don't we have: new StringBuffer(buf, 0, length);
+
+        // This gets passed on to WordDelineator which is part of the public API
+        @SuppressWarnings("StringBufferMayBeStringBuilder")
+
         StringBuffer sb = new StringBuffer(length);
         return sb.append(buf, 0, length);
     }
@@ -260,12 +264,14 @@ final class Line {
         capacity = new_capacity;
     }
 
-    private void fillGap(int col) {
+    private void fillGap(int col, int eraseAttr) {
         // fill any newly opened gap (between length and col) with SP
-        // Don't need to do anything for 'attr' because it's naturally
-        // initialized to 0
         for (int cx = length; cx < col; cx++)
             charAtPut(cx, ' ');
+        if (haveAttributes(eraseAttr)) {
+            for (int cx = length; cx < col; cx++)
+                attr[col] = eraseAttr;
+        }
     }
     
     /**
@@ -278,7 +284,7 @@ final class Line {
         if (column >= length) {
             new_length = column+1;
             ensureCapacity(term, new_length);
-            fillGap(column);
+            fillGap(column, 0);                 // SHOULD be eraseAttr?
         } else {
             ensureCapacity(term, new_length);
             System.arraycopy(buf, column, buf, column + 1, length - column);
@@ -299,10 +305,10 @@ final class Line {
      * Generic addition and modification.
      * Line will grow to accomodate column.
      */
-    public void setCharAt(Term term, char c, int column, int a) {
+    public void setCharAt(Term term, char c, int column, int a, int eraseAttr) {
         if (column >= length) {
             ensureCapacity(term, column+1);
-            fillGap(column);
+            fillGap(column, eraseAttr);
             length = column+1;
         }
         term.checkForMultiCell(c);
@@ -325,42 +331,48 @@ final class Line {
         length--;
     }
     
-    public void clearToEndFrom(Term term, int col) {
-        ensureCapacity(term, col+1);
-        fillGap(col);
+    public void clearToEndFrom(Term term, int from, int end, int eraseAttr) {
+        ensureCapacity(term, end+1);
+        fillGap(end, eraseAttr);
 
         // Grrr, why is there a System.arrayCopy() but no System.arrayClear()?
-        for (int cx = col; cx < length; cx++)
+        for (int cx = from; cx <= end; cx++)
             charAtPut(cx, ' ');
-        if (attr != null) {
-            for (int cx = col; cx < length; cx++)
-                attr[cx] = 0;
+        if (haveAttributes(eraseAttr)) {
+            for (int cx = from; cx <= end; cx++)
+                attr[cx] = eraseAttr;
         }
-        length = col;
+        length = end+1;
     }
 
-    public void clearTo(Term term, int col) {
-        if (col > length-1)
-            col = length-1;
+    public void clearTo(Term term, int col, int eraseAttr) {
+        ensureCapacity(term, col+1);
+        fillGap(col, eraseAttr);
+
         for (int cx = 0; cx <= col; cx++)
             charAtPut(cx, ' ');
-        if (attr != null) {
+        if (haveAttributes(eraseAttr)) {
             for (int cx = 0; cx <= col; cx++)
-                attr[cx] = 0;
+                attr[cx] = eraseAttr;
         }
+        if (length < col+1)
+            length = col+1;
     }
 
-    public void clearFromTo(Term term, int from, int to) {
-        if (from > length-1)
-            from = length-1;
-        if (to > length-1)
-            to = length-1;
+    public void clearFromTo(Term term, int from, int to, int eraseAttr) {
+        if (from > to)
+            return;
+        ensureCapacity(term, to+1);
+        fillGap(to, eraseAttr);
+
         for (int cx = from; cx <= to; cx++)
             charAtPut(cx, ' ');
-        if (attr != null) {
+        if (haveAttributes(eraseAttr)) {
             for (int cx = from; cx <= to; cx++)
-                attr[cx] = 0;
+                attr[cx] = eraseAttr;
         }
+        if (length < to+1)
+            length = to+1;
     }
     
     /*

@@ -1,5 +1,13 @@
 207965 - Terminal incorrectly displays prompt string
 187345 - wrong characters in Terminals
+	Fix EL (Erase in Line) and ECH (Erase CHaracters) especially wrt
+	retaining background color in erased regions.
+
+207965 - Terminal incorrectly displays prompt string
+187345 - wrong characters in Terminals
+
+	changeset   : 242708:8e56a4a57a11
+
 	While fixing cursor show/hide discovered that the real problem is
 	that for DEC private actions didn't correct handle multiple
 	;-separated numbers - last one was dropped.

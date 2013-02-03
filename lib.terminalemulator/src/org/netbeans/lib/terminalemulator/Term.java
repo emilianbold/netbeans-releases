@@ -3321,7 +3321,8 @@ public class Term extends JComponent implements Accessible {
             // Fall thru
             }
 
-            l.setCharAt(Term.this, c, insertion_col, st.attr);	// overstrike
+            l.setCharAt(Term.this, c, insertion_col,
+                        st.attr, Attr.backgroundColor(st.attr));	// overstrike
             st.cursor.col += cwidth;
 
             if (st.cursor.col >= buf.visibleCols() && !horizontally_scrollable) {
@@ -3601,13 +3602,21 @@ public class Term extends JComponent implements Accessible {
             Line l = cursor_line();
             switch (code) {
                 case 0:         // from cursor to end
-                    l.clearToEndFrom(Term.this, l.cellToBuf(metrics, st.cursor.col));
+                    l.clearToEndFrom(Term.this,
+                                     l.cellToBuf(metrics, st.cursor.col),
+                                     buf.visibleCols()-1,
+                                     Attr.backgroundColor(st.attr));
                     break;
                 case 1:         // from beginning to cursor (inclusive)
-                    l.clearTo(Term.this, l.cellToBuf(metrics, st.cursor.col));
+                    l.clearTo(Term.this,
+                              l.cellToBuf(metrics, st.cursor.col),
+                              Attr.backgroundColor(st.attr));
                     break;
                 case 2:         // whole line
-                    l.clearToEndFrom(Term.this, 0);
+                    l.clearToEndFrom(Term.this,
+                                     0,
+                                     buf.visibleCols()-1,
+                                     Attr.backgroundColor(st.attr));
                     break;
             }
             switch (sel.intersection(st.cursor.row)) {
@@ -3862,7 +3871,7 @@ public class Term extends JComponent implements Accessible {
         @Override
         public void op_setG(int gx, int fx) {
             if (debugOps()) {
-                System.out.printf("op_setG(%d, %d)", gx, fx); // NOI18N
+                System.out.printf("op_setG(%d, %d)\n", gx, fx); // NOI18N
             }
             Term.this.st.setG(gx, fx);
         }
@@ -3870,7 +3879,7 @@ public class Term extends JComponent implements Accessible {
         @Override
         public void op_selectGL(int gx) {
             if (debugOps()) {
-                System.out.printf("op_selectGL(%d)", gx); // NOI18N
+                System.out.printf("op_selectGL(%d)\n", gx); // NOI18N
             }
             Term.this.st.selectGL(gx);
         }
@@ -4104,8 +4113,11 @@ public class Term extends JComponent implements Accessible {
                 n = 1;
 
             Line l = cursor_line();
-            l.clearFromTo(Term.this, l.cellToBuf(metrics, st.cursor.col),
-                                     l.cellToBuf(metrics, st.cursor.col+n-1));
+            int from = l.cellToBuf(metrics, st.cursor.col);
+            int to = l.cellToBuf(metrics, st.cursor.col+n-1);
+            if (debugOps())
+                System.out.printf("op_ech() from %d  to %d\n", from, to); // NOI18N
+            l.clearFromTo(Term.this, from, to, Attr.backgroundColor(st.attr));
 
             switch (sel.intersection(st.cursor.row)) {
                 case Sel.INT_NONE:
