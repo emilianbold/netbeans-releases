@@ -388,10 +388,10 @@ public final class HighlightsViewFactory extends EditorViewFactory implements Hi
             sb.append("offset=").append(offset).append(", "); // NOI18N
         }
         sb.append("lineIndex=").append(lineIndex). // NOI18N
-                append(", lineEndOffset=").append(lineEndOffset). // NOI18N
-                append(", charType=").append(charType). // NOI18N
-                append(", nextTabOrRTLOffset=").append(nextTabOrRTLOffset). // NOI18N
-                append(", nextCharType=").append(nextCharType); // NOI18N
+                append(", lineEndOffset=").append(lineEndOffset); // NOI18N
+//                append(", charType=").append(charType). // NOI18N
+//                append(", nextTabOrRTLOffset=").append(nextTabOrRTLOffset). // NOI18N
+//                append(", nextCharType=").append(nextCharType); // NOI18N
         return sb.toString();
     }
 
