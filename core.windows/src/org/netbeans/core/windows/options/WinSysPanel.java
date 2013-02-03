@@ -44,15 +44,27 @@
 
 package org.netbeans.core.windows.options;
 
+import com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.util.ArrayList;
 import java.util.prefs.Preferences;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.JTabbedPane;
+import javax.swing.LookAndFeel;
 import javax.swing.UIManager;
+import javax.swing.UIManager.LookAndFeelInfo;
+import javax.swing.plaf.metal.MetalLookAndFeel;
 import org.netbeans.api.options.OptionsDisplayer;
+import org.netbeans.core.CoreBridgeImpl;
 import org.netbeans.core.windows.FloatingWindowTransparencyManager;
 import org.netbeans.core.windows.nativeaccess.NativeWindowSystem;
 import org.netbeans.spi.options.OptionsPanelController;
+import org.openide.LifecycleManager;
+import org.openide.awt.NotificationDisplayer;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.Utilities;
@@ -68,6 +80,8 @@ final class WinSysPanel extends javax.swing.JPanel {
 
     private boolean defMultiRow;
     private int defTabPlacement;
+    private int defaultLookAndFeelIndex;
+    private final ArrayList<LookAndFeelInfo> lafs = new ArrayList<LookAndFeelInfo>( 10 );
     
     WinSysPanel(final WinSysOptionsPanelController controller) {
         this.controller = controller;
@@ -81,6 +95,19 @@ final class WinSysPanel extends javax.swing.JPanel {
 
             @Override
             public void itemStateChanged(ItemEvent e) {
+                controller.changed();
+            }
+        });
+        initLookAndFeel();
+        DefaultComboBoxModel model = new DefaultComboBoxModel();
+        for( LookAndFeelInfo li : lafs ) {
+            model.addElement( li.getName() );
+        }
+        comboLaf.setModel( model );
+        comboLaf.addItemListener( new ItemListener() {
+
+            @Override
+            public void itemStateChanged( ItemEvent e ) {
                 controller.changed();
             }
         });
@@ -118,6 +145,10 @@ final class WinSysPanel extends javax.swing.JPanel {
         jLabel3 = new javax.swing.JLabel();
         panelLaF = new javax.swing.JPanel();
         checkMaximizeNativeLaF = new javax.swing.JCheckBox();
+        panelLaFCombo = new javax.swing.JPanel();
+        comboLaf = new javax.swing.JComboBox();
+        lblLaf = new javax.swing.JLabel();
+        lblRestart = new javax.swing.JLabel();
 
         setBorder(javax.swing.BorderFactory.createEmptyBorder(10, 10, 10, 10));
         setLayout(new java.awt.GridBagLayout());
@@ -323,12 +354,29 @@ final class WinSysPanel extends javax.swing.JPanel {
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridy = 7;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
         add(panelLaF, gridBagConstraints);
+
+        panelLaFCombo.setLayout(new java.awt.BorderLayout(3, 0));
+        panelLaFCombo.add(comboLaf, java.awt.BorderLayout.CENTER);
+
+        org.openide.awt.Mnemonics.setLocalizedText(lblLaf, NbBundle.getMessage(WinSysPanel.class, "WinSysPanel.lblLaf.text")); // NOI18N
+        panelLaFCombo.add(lblLaf, java.awt.BorderLayout.WEST);
+
+        org.openide.awt.Mnemonics.setLocalizedText(lblRestart, NbBundle.getMessage(WinSysPanel.class, "WinSysPanel.lblRestart.text")); // NOI18N
+        panelLaFCombo.add(lblRestart, java.awt.BorderLayout.LINE_END);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
+        add(panelLaFCombo, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
     private void isDragImageActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_isDragImageActionPerformed
@@ -391,6 +439,9 @@ private void isSnappingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
                 radioTop.setSelected(true);
             }
         }
+
+        defaultLookAndFeelIndex = lafs.indexOf( getCurrentLaF() );
+        comboLaf.setSelectedIndex( defaultLookAndFeelIndex );
     }
 
     boolean store() {
@@ -422,6 +473,14 @@ private void isSnappingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
             tabPlacement = JTabbedPane.RIGHT;
         prefs.putInt( WinSysPrefs.DOCUMENT_TABS_PLACEMENT, tabPlacement );
         needsWinsysRefresh |= tabPlacement != defTabPlacement;
+
+        int selLaFIndex = comboLaf.getSelectedIndex();
+        if( selLaFIndex != defaultLookAndFeelIndex ) {
+            LookAndFeelInfo li = lafs.get( comboLaf.getSelectedIndex() );
+            NbPreferences.forModule( CoreBridgeImpl.class ).put( "laf", li.getClassName() ); //NOI18N
+            NbPreferences.forModule( CoreBridgeImpl.class ).putBoolean( "theme.dark", li == DARK_METAL || li == DARK_NIMBUS ); //NOI18N
+            askForRestart();
+        }
 
         return needsWinsysRefresh;
     }
@@ -478,6 +537,7 @@ private void isSnappingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.JCheckBox checkMaximizeNativeLaF;
     private javax.swing.JCheckBox checkMultiRow;
+    private javax.swing.JComboBox comboLaf;
     private javax.swing.JCheckBox isAlphaFloating;
     private javax.swing.JCheckBox isCloseActivatesMostRecentDocument;
     private javax.swing.JCheckBox isDragImage;
@@ -490,8 +550,11 @@ private void isSnappingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     private javax.swing.JLabel jLabel3;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JSeparator jSeparator2;
+    private javax.swing.JLabel lblLaf;
+    private javax.swing.JLabel lblRestart;
     private javax.swing.JPanel panelDocTabs;
     private javax.swing.JPanel panelLaF;
+    private javax.swing.JPanel panelLaFCombo;
     private javax.swing.JPanel panelSeparator;
     private javax.swing.JPanel panelSeparator1;
     private javax.swing.JRadioButton radioBottom;
@@ -499,4 +562,56 @@ private void isSnappingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     private javax.swing.JRadioButton radioRight;
     private javax.swing.JRadioButton radioTop;
     // End of variables declaration//GEN-END:variables
+
+
+    private void initLookAndFeel() {
+        lafs.clear();
+        for( LookAndFeelInfo i : UIManager.getInstalledLookAndFeels() ) {
+            lafs.add( i );
+            if( MetalLookAndFeel.class.getName().equals( i.getClassName() ) ) {
+                lafs.add( DARK_METAL );
+            } else if( NimbusLookAndFeel.class.getName().equals( i.getClassName() ) ) {
+                lafs.add( DARK_NIMBUS );
+            }
+        }
+    }
+
+    private LookAndFeelInfo getCurrentLaF() {
+        boolean darkTheme = Boolean.getBoolean("netbeans.plaf.dark.theme"); //NOI18N
+        LookAndFeelInfo currentLaf = null;
+        String currentLAFClassName = UIManager.getLookAndFeel().getClass().getName();
+        for( LookAndFeelInfo li : lafs ) {
+            if( currentLAFClassName.equals( li.getClassName() ) ) {
+                currentLaf = li;
+                if( darkTheme ) {
+                    if( MetalLookAndFeel.class.getName().equals( currentLAFClassName ) ) {
+                        li = DARK_METAL;
+                    } else if( NimbusLookAndFeel.class.getName().equals( currentLAFClassName ) ) {
+                        li = DARK_NIMBUS;
+                    }
+                }
+            }
+        }
+        return currentLaf;
+    }
+
+    static final LookAndFeelInfo DARK_METAL = new UIManager.LookAndFeelInfo( NbBundle.getMessage(WinSysPanel.class, "Laf_DARK_METAL"), MetalLookAndFeel.class.getName() );
+    static final LookAndFeelInfo DARK_NIMBUS = new UIManager.LookAndFeelInfo( NbBundle.getMessage(WinSysPanel.class, "Laf_DARK_NIMBUS"), NimbusLookAndFeel.class.getName() );
+
+    private static boolean askedAlready = false;
+    private void askForRestart() {
+        if( askedAlready )
+            return;
+        askedAlready = true;
+        NotificationDisplayer.getDefault().notify( NbBundle.getMessage(WinSysPanel.class, "Hint_RESTART_IDE"),
+                ImageUtilities.loadImageIcon( "org/netbeans/core/windows/resources/restart.png", true ), //NOI18N
+                NbBundle.getMessage(WinSysPanel.class, "Descr_Restart"), new ActionListener() {
+
+            @Override
+            public void actionPerformed( ActionEvent e ) {
+                LifecycleManager.getDefault().markForRestart();
+                LifecycleManager.getDefault().exit();
+            }
+        });
+    }
 }

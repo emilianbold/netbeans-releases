@@ -41,6 +41,7 @@
  */
 package org.netbeans.performance.scanning;
 
+import java.awt.Component;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
@@ -49,6 +50,7 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import javax.swing.JDialog;
 import org.netbeans.junit.NbPerformanceTest.PerformanceData;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
@@ -61,6 +63,9 @@ import org.netbeans.api.java.source.Task;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.jellytools.NewProjectWizardOperator;
+import org.netbeans.jellytools.WizardOperator;
+import org.netbeans.jemmy.operators.JDialogOperator;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
 
@@ -94,14 +99,14 @@ public class ScanSeveralProjectsPerfTest extends NbTestCase {
             throws IOException, ExecutionException, InterruptedException
     {
         String[][] files = {
+                { "http://netbeans.org/projects/performance/downloads/download/gravl-0.4.zip",
+                            "gravl-0.4.zip",
+                            "gravl-0.4"},
+      
                 { "http://hg.netbeans.org/binaries/BBD005CDF8785223376257BD3E211C7C51A821E7-jEdit41.zip",
                             "jEdit41.zip",
                             "jEdit"
                 },
-//                { "http://beetle.czech.sun.com/~pf124312/nigel.zip",
-//                            "Clean.zip",
-//                            "clean/projects/ST"
-//                },
                 { "http://netbeans.org/projects/performance/downloads/download/Mediawiki-1_FitnessViaSamples.14.0-nbproject.zip",
                         "Mediawiki-1_FitnessViaSamples.14.0-nbproject.zip",
                         "mediawiki-1.14.0"
@@ -114,10 +119,22 @@ public class ScanSeveralProjectsPerfTest extends NbTestCase {
                             "BigWebProject.zip",
                             "FrankioskiProject"
                 }
-//                { "http://beetle.czech.sun.com/~pf124312/openjdk-7-ea-src-b63-02_jul_2009.zip",
-//                        "openjdk.zip",
-//                        "openjdk/jdk/make/netbeans/world" }
             };
+        
+        System.setProperty("grails.home","/space/grails/"); //NOI18N
+        NewProjectWizardOperator npwo = NewProjectWizardOperator.invoke();
+        npwo.selectCategory("Groovy"); // XXX use Bundle.getString instead
+        npwo.selectProject("Grails Application");
+        try {
+            npwo.next();
+            wait(5000);
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+        WizardOperator wo = new WizardOperator("New Project");
+        wo.cancel();        
+        
+        
         for (String[] row : files) {
             final String networkFileLoc = row[0];
             final String compressedProject = row[1];

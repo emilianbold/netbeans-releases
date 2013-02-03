@@ -52,7 +52,7 @@ import org.openide.util.Lookup;
  */
 public final class OSSComponentUsages {
 
-    public static final String IDE = "ide"; //NOI18N
+    public static final String IDE = "IDE"; //NOI18N
     public static final String GIZMO = "gizmo"; //NOI18N
     public static final String CODE_ANALYZER = "analytics"; //NOI18N
     public static final String DESKTOP_DISTRIBUTION = "winide"; //NOI18N

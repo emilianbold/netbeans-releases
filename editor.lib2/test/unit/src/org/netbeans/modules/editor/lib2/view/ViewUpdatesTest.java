@@ -76,8 +76,9 @@ public class ViewUpdatesTest extends NbTestCase {
 //        includes.add("testModsWithHighlights");
 //        includes.add("testLongHighlightedLine");
 //        includes.add("testRemoveAtBeginning");
-        includes.add("testRemoveTrailingWhitespace");
-        filterTests(includes);
+//        includes.add("testRemoveTrailingWhitespace");
+        includes.add("testRemoveSpanningEndOfPartial");
+//        filterTests(includes);
     }
 
     private void filterTests(List<String> includeTestNames) {
@@ -1750,6 +1751,99 @@ ViewBuilder.RebuildCause.INIT_PARAGRAPHS,
             1, NL_VIEW /* e:11 */
         );
 
+        ViewUpdatesTesting.setTestValues();
+    }
+
+    public void testRemoveSpanningEndOfPartial() throws Exception {
+        loggingOn();
+        ViewUpdatesTesting.setTestValues(ViewUpdatesTesting.NO_OP_TEST_VALUE);
+        JEditorPane pane = ViewUpdatesTesting.createPane();
+        Document doc = pane.getDocument();
+        final DocumentView docView = DocumentView.get(pane);
+        final PositionsBag highlights = ViewUpdatesTesting.getSingleHighlightingLayer(pane);
+        int offset;
+        String text;
+        int cRegionStartOffset;
+        int cRegionEndOffset;
+        
+        offset = 0;
+        //      0123 456789 0123 456789 0123 4567 890
+        text = "abc\ndefgh\nijk\nlmnop\nrst\nuvw\nxyz";
+        ViewUpdatesTesting.setTestValues(
+/*rebuildCause*/        ViewBuilder.RebuildCause.MOD_UPDATE,
+/*createLocalViews*/    true,
+/*startCreationOffset*/ 0,
+/*matchOffset*/         offset + text.length(),
+/*endCreationOffset*/   offset + text.length() + 1, // includes '\n'
+/*bmReuseOffset*/       0,
+/*bmReusePView*/        docView.getParagraphView(0),
+/*bmReuseLocalIndex*/   0,
+/*amReuseOffset*/       offset + text.length(),
+/*amReusePIndex*/       0,
+/*amReusePView*/        docView.getParagraphView(0),
+/*amReuseLocalIndex*/   0 // Could reuse NewlineView
+        );
+        doc.insertString(offset, text, null);
+        ViewUpdatesTesting.checkViews(docView, 0, -1,
+            3, HI_VIEW,
+            1, NL_VIEW /* e:4 */,
+            5, HI_VIEW,
+            1, NL_VIEW /* e:10 */,
+            3, HI_VIEW,
+            1, NL_VIEW /* e:14 */,
+            5, HI_VIEW,
+            1, NL_VIEW /* e:20 */,
+            3, HI_VIEW,
+            1, NL_VIEW /* e:24 */,
+            3, HI_VIEW,
+            1, NL_VIEW /* e:28 */,
+            3, HI_VIEW,
+            1, NL_VIEW /* e:32 */
+        );
+
+        ViewUpdatesTesting.setTestValues(ViewUpdatesTesting.NO_OP_TEST_VALUE);
+        ViewUpdatesTesting.setViewBounds(pane, 6, 19);
+        pane.modelToView(7); // Init
+        docView.ensureAllParagraphsChildrenAndLayoutValid();
+        ViewUpdatesTesting.checkIntegrity(pane);
+        ViewUpdatesTesting.checkViews(docView, 6, -1,
+            3, HI_VIEW,
+            1, NL_VIEW /* e:10 */,
+            3, HI_VIEW,
+            1, NL_VIEW /* e:14 */,
+            5, HI_VIEW
+        );
+
+        ParagraphView pView1 = docView.getParagraphView(1);
+        ParagraphView pView2 = docView.getParagraphView(2);
+        int removeLength = 12;
+        offset = pView1.getStartOffset() + 3; // Remove before NL
+        assert (offset == 13) : "offset=" + offset;
+//        cRegionStartOffset = offset;
+//        cRegionEndOffset = offset + removeLength;
+//        docView.op.viewUpdates.extendCharRebuildRegion(OffsetRegion.create(doc, cRegionStartOffset, cRegionEndOffset));
+        ViewUpdatesTesting.setTestValues(
+/*rebuildCause*/        ViewBuilder.RebuildCause.MOD_UPDATE,
+/*createLocalViews*/    true,
+/*startCreationOffset*/ pView1.getStartOffset(),
+/*matchOffset*/         pView1.getEndOffset() - 1,
+/*endCreationOffset*/   pView1.getEndOffset() - 1,
+/*bmReuseOffset*/       pView1.getStartOffset(),
+/*bmReusePView*/        pView1,
+/*bmReuseLocalIndex*/   0,
+/*amReuseOffset*/       Integer.MAX_VALUE,
+/*amReusePIndex*/       3,
+/*amReusePView*/        null,
+/*amReuseLocalIndex*/   0 // Could reuse NewlineView
+        );
+        doc.remove(offset, removeLength);
+        ViewUpdatesTesting.checkViews(docView, 6, -1,
+            3, HI_VIEW,
+            1, NL_VIEW /* e:4 */,
+            3, HI_VIEW
+        );
+
+        ViewUpdatesTesting.checkIntegrity(pane);
         ViewUpdatesTesting.setTestValues();
     }
 

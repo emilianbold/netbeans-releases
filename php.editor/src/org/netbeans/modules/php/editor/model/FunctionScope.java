@@ -57,6 +57,6 @@ public interface FunctionScope extends Scope, VariableScope, FullyQualifiedEleme
     List<? extends ParameterElement> getParameters();
     Collection<? extends String> getReturnTypeNames();
     Collection<? extends TypeScope> getReturnTypes();
-    Collection<? extends TypeScope> getReturnTypes(boolean resolve);
+    Collection<? extends TypeScope> getReturnTypes(boolean resolve, Collection<? extends TypeScope> callerTypes);
 
 }

@@ -46,8 +46,12 @@ package org.netbeans.modules.search;
 
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.FlowLayout;
+import java.awt.Dimension;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.awt.ItemSelectable;
+import java.awt.SystemColor;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -58,6 +62,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.JTextComponent;
@@ -140,6 +145,8 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
         }
         useCurrentlySelectedText();
         setSearchCriteriaValues();
+        updateTextToFindInfo();
+        updateFileNamePatternInfo();
     }
 
     /**
@@ -223,6 +230,8 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
         cboxTextToFind = ComponentUtils.adjustComboForSearchPattern(new JComboBox());
         lblTextToFind.setLabelFor(cboxTextToFind.getComponent());
         btnTestTextToFind = new JButton();
+        lblTextToFindHint = new JLabel();
+        lblTextToFindHint.setForeground(SystemColor.controlDkShadow);
 
         if (searchAndReplace) {
             lblReplacement = new JLabel();
@@ -239,6 +248,8 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
         lblScope.setLabelFor(cboxScope.getComponent());
 
         lblFileNamePattern = new JLabel();
+        lblFileNameHint = new JLabel();
+        lblFileNameHint.setForeground(SystemColor.controlDkShadow);
         cboxFileNamePattern = ComponentUtils.adjustComboForFileName(
                 new JComboBox());
         lblFileNamePattern.setLabelFor(cboxFileNamePattern.getComponent());
@@ -271,14 +282,19 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
 
         formPanel = new SearchFormPanel();
         formPanel.addRow(lblTextToFind, cboxTextToFind.getComponent());
+        formPanel.addRow(new JLabel(), lblTextToFindHint);
         initContainingTextOptionsRow(searchAndReplace);
         if (searchAndReplace) {
             formPanel.addRow(lblReplacement, cboxReplacement);
         }
+        formPanel.addSeparator();
         formPanel.addRow(lblScope, cboxScope.getComponent());
+        formPanel.addSeparator();
         formPanel.addRow(lblFileNamePattern,
                 cboxFileNamePattern.getComponent());
+        formPanel.addRow(new JLabel(), lblFileNameHint);
         initScopeOptionsRow(searchAndReplace);
+        formPanel.addEmptyLine();
     }
 
     /**
@@ -299,11 +315,10 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
 
             formPanel.addRow(new JLabel(), jp);
         } else {
-            jp.setLayout(new FlowLayout(FlowLayout.LEADING, 0, 0));
+            jp.setLayout(new BoxLayout(jp, BoxLayout.LINE_AXIS));
             jp.add(chkCaseSensitive);
             jp.add(chkWholeWords);
             jp.add(new CheckBoxWithButtonPanel(chkRegexp, btnTestTextToFind));
-            jp.setMaximumSize(jp.getPreferredSize());
             formPanel.addRow(new JLabel(), jp);
         }
     }
@@ -424,6 +439,7 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
                         cboxFileNamePattern.getFileNamePattern());
                 searchCriteria.setFileNameRegexp(
                         cboxFileNamePattern.isRegularExpression());
+                updateFileNamePatternInfo();
             }
         });
 
@@ -496,6 +512,7 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
                 && cboxFileNamePattern.getComponent().getItemCount() != 0) {
             cboxFileNamePattern.getComponent().setSelectedIndex(0);
         }
+        cboxFileNamePattern.setRegularExpression(memory.isFilePathRegex());
         if (cboxReplacement != null && cboxReplacement.getItemCount() != 0) {
             cboxReplacement.setSelectedIndex(0);
         }
@@ -608,7 +625,7 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
             if (cboxReplacement != null){
                 updateReplacePatternColor();
             }
-            setTextToFindToolTip();
+            updateTextToFindInfo();
         } else if (toggle == chkPreserveCase) {
             searchCriteria.setPreserveCase(selected);
         } else {
@@ -616,15 +633,18 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
         }
     }
 
-    private void setTextToFindToolTip() {
-        String t;
-        if (searchCriteria.isRegexp()) {
-            t = null;
-        } else {
-            t = UiUtils.getText(
-                    "BasicSearchForm.cboxTextToFind.tooltip");          //NOI18N
-        }
-        cboxTextToFind.getComponent().setToolTipText(t);
+    private void updateTextToFindInfo() {
+        String bungleKey = (searchCriteria.isRegexp())
+                ? "BasicSearchForm.cboxTextToFind.info.re" //NOI18N
+                : "BasicSearchForm.cboxTextToFind.info";   //NOI18N
+        String text = UiUtils.getText(bungleKey);
+        cboxTextToFind.getComponent().setToolTipText(text);
+        lblTextToFindHint.setText(text);
+    }
+
+    private void updateFileNamePatternInfo() {
+        lblFileNameHint.setText(UiUtils.getFileNamePatternsExample(
+                cboxFileNamePattern.isRegularExpression()));
     }
 
     /**
@@ -726,7 +746,7 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
         } else {
           
         }
-        setTextToFindToolTip();
+        updateTextToFindInfo();
     }
 
     private void lclz(AbstractButton ab, String msg) {
@@ -751,8 +771,10 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
     protected SearchFormPanel formPanel;
     private JButton btnTestTextToFind;
     private JLabel lblTextToFind;
+    private JLabel lblTextToFindHint;
     private ScopeController cboxScope;
     private JLabel lblFileNamePattern;    
+    private JLabel lblFileNameHint;
     private JLabel lblScope;
     private JLabel lblReplacement;
     private Color errorTextColor, defaultTextColor;
@@ -766,18 +788,60 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
     private final class SearchFormPanel extends JPanel {
 
         private FormLayoutHelper flh;
+        private int row = 0;
 
         public SearchFormPanel() {
             super();
-            this.flh = new FormLayoutHelper(this,
-                    FormLayoutHelper.DEFAULT_COLUMN,
-                    FormLayoutHelper.DEFAULT_COLUMN);
-            flh.setAllGaps(true);
+            setLayout(new GridBagLayout());
+            setBorder(new EmptyBorder(5, 5, 5, 5));
         }
 
         public void addRow(JComponent label, JComponent component) {
 
-            flh.addRow(label, component);
+            GridBagConstraints c = new GridBagConstraints();
+            c.gridx = 0;
+            c.anchor = GridBagConstraints.NORTHWEST;
+            c.gridy = row;
+            c.weightx = 0;
+            c.weighty = 0;
+            c.insets = new Insets(5, 5, 5, 5);
+            add(label, c);
+
+            c.gridx = 1;
+            c.weightx = 1;
+            c.fill = GridBagConstraints.HORIZONTAL;
+            add(component, c);
+
+            row++;
+        }
+
+        public void addSeparator() {
+            GridBagConstraints c = new GridBagConstraints();
+            c.gridx = 0;
+            c.gridy = row;
+            c.gridwidth = 2;
+            c.weightx = 1;
+            c.insets = new Insets(5, 5, 5, 5);
+            c.fill = GridBagConstraints.HORIZONTAL;
+            JSeparator separator = new JSeparator(JSeparator.HORIZONTAL);
+            separator.setForeground(SystemColor.controlShadow);
+            add(separator, c);
+            row++;
+        }
+
+        public void addEmptyLine() {
+            GridBagConstraints c = new GridBagConstraints();
+            c.gridx = 0;
+            c.gridy = row;
+            c.gridwidth = 2;
+            c.fill = GridBagConstraints.HORIZONTAL;
+            c.weighty = 1;
+            c.weightx = 0.1;
+            JLabel emptyLabel = new JLabel();
+            emptyLabel.setPreferredSize(new Dimension(0, 0));
+            emptyLabel.setMinimumSize(new Dimension(0, 0));
+            add(emptyLabel, c);
+            row++;
         }
     }
 

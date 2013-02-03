@@ -45,6 +45,8 @@
 package org.netbeans.spi.project.ui.templates.support;
 
 import java.io.IOException;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
@@ -263,12 +265,12 @@ public class Templates {
      * The user is prompted to choose a location for the new file and a name.
      * Instantiation is handled by {@link DataObject#createFromTemplate}.
      * @param project The project to work on.
-     * @param folders a nonempty list of possible roots to create the new file in
+     * @param folders a nonempty list of possible roots to create the new file in,
+     * or an empty list if {@code project} is null
      * @return a builder which can be used to customize and then create the target chooser
      * @since org.netbeans.modules.projectuiapi/1 1.45
      */
-    public static SimpleTargetChooserBuilder buildSimpleTargetChooser(Project project, SourceGroup[] folders) {
-        Parameters.notNull("project", project);
+    public static SimpleTargetChooserBuilder buildSimpleTargetChooser(@NullAllowed Project project, @NonNull SourceGroup[] folders) {
         Parameters.notNull("folders", folders);
         return new SimpleTargetChooserBuilder(project, folders);
     }
@@ -279,11 +281,13 @@ public class Templates {
      * @since org.netbeans.modules.projectuiapi/1 1.45
      */
     public static final class SimpleTargetChooserBuilder {
+        @NullAllowed
         final Project project;
+        @NonNull
         final SourceGroup[] folders;
         WizardDescriptor.Panel<WizardDescriptor> bottomPanel;
         boolean freeFileExtension;
-        SimpleTargetChooserBuilder(Project project, SourceGroup[] folders) {
+        SimpleTargetChooserBuilder(@NullAllowed Project project, @NonNull SourceGroup[] folders) {
             this.project = project;
             this.folders = folders;
         }

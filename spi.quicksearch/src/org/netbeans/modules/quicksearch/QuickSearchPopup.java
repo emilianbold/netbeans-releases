@@ -55,6 +55,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
@@ -541,7 +542,7 @@ private void jList1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:even
         shouldBeVisible = shouldBeVisible || areNoResults;
 
         hintLabel.setText(getHintText());
-        boolean isNarrowed = CommandEvaluator.getEvalCat() != null && searchedNotEmpty;
+        boolean isNarrowed = CommandEvaluator.getEvalCats().size() == 1 && searchedNotEmpty;
         hintSep.setVisible(isNarrowed);
         hintLabel.setVisible(isNarrowed);
         shouldBeVisible = shouldBeVisible || isNarrowed;
@@ -550,12 +551,12 @@ private void jList1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:even
     }
 
     private String getHintText () {
-        ProviderModel.Category evalCat = CommandEvaluator.getEvalCat();
-        if (evalCat == null) {
+        Set<ProviderModel.Category> evalCats = CommandEvaluator.getEvalCats();
+        if (evalCats.size() != 1) {
             return null;
         }
         return NbBundle.getMessage(QuickSearchPopup.class, "QuickSearchPopup.hintLabel.text",
-                evalCat.getDisplayName(), SearchResultRender.getKeyStrokeAsText(
+                evalCats.iterator().next().getDisplayName(), SearchResultRender.getKeyStrokeAsText(
                 comboBar.getKeyStroke()));
     }
 

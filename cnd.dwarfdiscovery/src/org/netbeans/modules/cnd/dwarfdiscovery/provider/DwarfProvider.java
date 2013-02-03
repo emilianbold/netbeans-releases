@@ -145,13 +145,18 @@ abstract public class DwarfProvider extends BaseDwarfProvider {
                 public List<String> getDependencies() {
                     return null;
                 }
+
+                @Override
+                public List<String> getBuildArtifacts() {
+                    return null;
+                }
                 
                 @Override
                 public List<SourceFileProperties> getSourcesConfiguration() {
                     if (myFileProperties == null){
                         String[] objFileNames = (String[])getProperty(EXECUTABLES_KEY).getValue();
                         if (objFileNames != null) {
-                            myFileProperties = getSourceFileProperties(objFileNames,null, project, null, new CompileLineStorage());
+                            myFileProperties = getSourceFileProperties(objFileNames,null, project, null, null, new CompileLineStorage());
                         }
                     }
                     return myFileProperties;

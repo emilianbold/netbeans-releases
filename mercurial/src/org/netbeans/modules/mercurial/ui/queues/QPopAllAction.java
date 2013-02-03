@@ -81,7 +81,7 @@ public class QPopAllAction extends ContextAction {
             @Override
             public void run () {
                 if (QUtils.isMQEnabledExtension(root)) {
-                    SystemAction.get(QGoToPatchAction.class).goToPatch(root, null);
+                    SystemAction.get(QGoToPatchAction.class).goToPatch(root, null, null);
                 }
             }
         });

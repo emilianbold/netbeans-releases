@@ -49,6 +49,7 @@ import java.io.File;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
 import org.netbeans.modules.mercurial.HgException;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.Mercurial;
@@ -61,8 +62,6 @@ import org.netbeans.modules.mercurial.ui.log.RepositoryRevision;
 import org.netbeans.modules.mercurial.ui.merge.MergeAction;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
 
 /**
@@ -136,7 +135,7 @@ public class BackoutAction extends ContextAction {
                         return;
                     }
                 }
-                String commitMsgStr = commitMsg.replaceAll(HG_BACKOUT_REVISION_REPLACE, revStr); //NOI18N
+                final String commitMsgStr = commitMsg.replaceAll(HG_BACKOUT_REVISION_REPLACE, revStr); //NOI18N
                 if (revStr == null) {
                     try {
                         revStr = HgCommand.getParent(root, null, null).getChangesetId();
@@ -145,7 +144,7 @@ public class BackoutAction extends ContextAction {
                         return;
                     }
                 }
-                OutputLogger logger = getLogger();
+                final OutputLogger logger = getLogger();
                 try {
                     logger.outputInRed(
                                 NbBundle.getMessage(BackoutAction.class,
@@ -156,58 +155,66 @@ public class BackoutAction extends ContextAction {
                     logger.output(
                                 NbBundle.getMessage(BackoutAction.class,
                                 "MSG_BACKOUT_INFO_SEP", revStr, root.getAbsolutePath())); // NOI18N
-                    List<String> list = HgCommand.doBackout(root, revStr, doMerge, commitMsgStr, logger);
-                    
-                    if(list != null && !list.isEmpty()){ 
-                        boolean bMergeNeededDueToBackout = HgCommand.isBackoutMergeNeededMsg(list.get(list.size() - 1));
-                        if(bMergeNeededDueToBackout){
-                            list.remove(list.size() - 1);
-                            list.remove(list.size() - 1);
-                        }
-                        logger.output(list);                            
-                        
-                        if(HgCommand.isUncommittedChangesBackout(list.get(0))){
-                            logger.outputInRed(
-                                    NbBundle.getMessage(BackoutAction.class,
-                                    "MSG_UNCOMMITTED_CHANGES_BACKOUT"));     // NOI18N           
-                            return;
-                        } else if(HgCommand.isMergeChangesetBackout(list.get(0))){
-                            logger.outputInRed(
-                                    NbBundle.getMessage(BackoutAction.class,
-                                    "MSG_MERGE_CSET_BACKOUT",revStr));     // NOI18N        
-                            return;
-                        } else if(HgCommand.isNoRevStrip(list.get(0))){
-                            logger.outputInRed(
-                                    NbBundle.getMessage(BackoutAction.class,
-                                    "MSG_NO_REV_BACKOUT",revStr));     // NOI18N        
-                            return;
-                        }
-                        
-                        // Handle Merge - both automatic and merge with conflicts
-                        boolean bConfirmMerge = false;
-                        boolean warnMoreHeads = true;
-                        if (bMergeNeededDueToBackout) {
-                            bConfirmMerge = HgUtils.confirmDialog(
-                                    BackoutAction.class, "MSG_BACKOUT_MERGE_CONFIRM_TITLE", "MSG_BACKOUT_MERGE_CONFIRM_QUERY"); // NOI18N
-                            warnMoreHeads = false;
-                        }
-                        if (bConfirmMerge) {
-                            logger.output(""); // NOI18N
-                            logger.outputInRed(NbBundle.getMessage(BackoutAction.class, "MSG_BACKOUT_MERGE_DO")); // NOI18N
-                            MergeAction.doMergeAction(root, null, logger);
-                        } else {
-                            HgLogMessage[] heads = HgCommand.getHeadRevisionsInfo(root, true, OutputLogger.getLogger(null));
-                            Map<String, Collection<HgLogMessage>> branchHeads = HgUtils.sortByBranch(heads);
-                            if (!branchHeads.isEmpty()) {
-                                MergeAction.displayMergeWarning(branchHeads, logger, warnMoreHeads);
+                    final String revision = revStr;
+                    HgUtils.runWithoutIndexing(new Callable<Void>() {
+
+                        @Override
+                        public Void call () throws HgException {
+                            List<String> list = HgCommand.doBackout(root, revision, doMerge, commitMsgStr, logger);
+                            if(list != null && !list.isEmpty()){ 
+                                boolean bMergeNeededDueToBackout = HgCommand.isBackoutMergeNeededMsg(list.get(list.size() - 1));
+                                if(bMergeNeededDueToBackout){
+                                    list.remove(list.size() - 1);
+                                    list.remove(list.size() - 1);
+                                }
+                                logger.output(list);                            
+
+                                if(HgCommand.isUncommittedChangesBackout(list.get(0))){
+                                    logger.outputInRed(
+                                            NbBundle.getMessage(BackoutAction.class,
+                                            "MSG_UNCOMMITTED_CHANGES_BACKOUT"));     // NOI18N           
+                                    return null;
+                                } else if(HgCommand.isMergeChangesetBackout(list.get(0))){
+                                    logger.outputInRed(
+                                            NbBundle.getMessage(BackoutAction.class,
+                                            "MSG_MERGE_CSET_BACKOUT", revision));     // NOI18N        
+                                    return null;
+                                } else if(HgCommand.isNoRevStrip(list.get(0))){
+                                    logger.outputInRed(
+                                            NbBundle.getMessage(BackoutAction.class,
+                                            "MSG_NO_REV_BACKOUT", revision));     // NOI18N        
+                                    return null;
+                                }
+
+                                // Handle Merge - both automatic and merge with conflicts
+                                boolean bConfirmMerge = false;
+                                boolean warnMoreHeads = true;
+                                if (bMergeNeededDueToBackout) {
+                                    bConfirmMerge = HgUtils.confirmDialog(
+                                            BackoutAction.class, "MSG_BACKOUT_MERGE_CONFIRM_TITLE", "MSG_BACKOUT_MERGE_CONFIRM_QUERY"); // NOI18N
+                                    warnMoreHeads = false;
+                                }
+                                if (bConfirmMerge) {
+                                    logger.output(""); // NOI18N
+                                    logger.outputInRed(NbBundle.getMessage(BackoutAction.class, "MSG_BACKOUT_MERGE_DO")); // NOI18N
+                                    MergeAction.doMergeAction(root, null, logger);
+                                } else {
+                                    HgLogMessage[] heads = HgCommand.getHeadRevisionsInfo(root, true, OutputLogger.getLogger(null));
+                                    Map<String, Collection<HgLogMessage>> branchHeads = HgUtils.sortByBranch(heads);
+                                    if (!branchHeads.isEmpty()) {
+                                        MergeAction.displayMergeWarning(branchHeads, logger, warnMoreHeads);
+                                    }
+                                }
+                                if(ctx != null){
+                                    HgUtils.forceStatusRefreshProject(ctx);
+                                }else if(repoRev != null){
+                                    HgUtils.forceStatusRefresh(root);
+                                }
                             }
+                            return null;
                         }
-                        if(ctx != null){
-                            HgUtils.forceStatusRefreshProject(ctx);
-                        }else if(repoRev != null){
-                            HgUtils.forceStatusRefresh(root);
-                        }
-                    }
+
+                    }, root);
                 } catch (HgException.HgCommandCanceledException ex) {
                     // canceled by user, do nothing
                 } catch (HgException ex) {

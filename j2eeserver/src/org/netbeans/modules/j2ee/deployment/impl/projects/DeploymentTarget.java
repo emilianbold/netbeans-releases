@@ -244,6 +244,8 @@ public final class DeploymentTarget {
         // prefer the matched
         if (tmid != null) {
             urlString = tmid.getWebURL();
+        } else if (children == null || children.length == 0) {
+            urlString = module.getWebURL();
         }
         
         return urlString;

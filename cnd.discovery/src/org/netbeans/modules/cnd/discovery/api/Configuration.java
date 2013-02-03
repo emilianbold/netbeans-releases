@@ -64,6 +64,11 @@ public interface Configuration {
     List<String> getDependencies();
 
     /**
+     * Returns build artifacts: binaries and libraries
+     */
+    List<String> getBuildArtifacts();
+
+    /**
      * Returns list of source files properties. 
      */
     List<SourceFileProperties> getSourcesConfiguration();

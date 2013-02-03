@@ -61,17 +61,16 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.DialogDisplayer;
 import org.openide.DialogDescriptor;
-import org.openide.NotifyDescriptor;
 import java.awt.event.ActionListener;
 import java.awt.Dialog;
 import java.util.Collection;
 import java.util.Map;
+import java.util.concurrent.Callable;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
-import javax.swing.filechooser.FileFilter;
 import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
 import org.netbeans.modules.mercurial.ui.merge.MergeAction;
 import org.netbeans.modules.versioning.util.AccessibleJFileChooser;
@@ -138,72 +137,17 @@ public class ImportDiffAction extends ContextAction {
                     final File patchFile = fileChooser.getSelectedFile();
 
                     HgModuleConfig.getDefault().setImportFolder(patchFile.getParent());
-                    if (patchFile != null) {
-                        RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(root);
-                        HgProgressSupport support = new HgProgressSupport() {
-                            @Override
-                            public void perform() {
-                                OutputLogger logger = getLogger();
-                                if (asBundle.isSelected()) {
-                                    performUnbundle(root, patchFile);
-                                } else if (asPatch.isSelected()) {
-                                    performImport(root, patchFile, logger);
-                                }
-                            }
-
-                            private void performUnbundle(File root, File bundleFile) {
-                                OutputLogger logger = getLogger();
-                                try {
-                                    logger.outputInRed(NbBundle.getMessage(ImportDiffAction.class, "MSG_UNBUNDLE_TITLE")); // NOI18N
-                                    logger.outputInRed(NbBundle.getMessage(ImportDiffAction.class, "MSG_UNBUNDLE_TITLE_SEP")); // NOI18N
-                                    List<String> list = HgCommand.doUnbundle(root, bundleFile, logger);
-                                    if (list != null && !list.isEmpty()) {
-                                        List<String> updatedFilesList = list;
-                                        logger.output(HgUtils.replaceHttpPassword(list));
-                                        // Handle Merge - both automatic and merge with conflicts
-                                        boolean bMergeNeededDueToPull = HgCommand.isMergeNeededMsg(list.get(list.size() - 1));
-                                        boolean bConfirmMerge = false;
-                                        boolean warnMoreHeads = true;
-                                        if (bMergeNeededDueToPull) {
-                                            bConfirmMerge = HgUtils.confirmDialog(
-                                                    ImportDiffAction.class, "MSG_UNBUNDLE_MERGE_CONFIRM_TITLE", "MSG_UNBUNDLE_MERGE_CONFIRM_QUERY"); // NOI18N
-                                            warnMoreHeads = false;
-                                        } else {
-                                            boolean bOutStandingUncommittedMerges = HgCommand.isMergeAbortUncommittedMsg(list.get(list.size() - 1));
-                                            if (bOutStandingUncommittedMerges) {
-                                                bConfirmMerge = HgUtils.confirmDialog(
-                                                        ImportDiffAction.class, "MSG_UNBUNDLE_MERGE_CONFIRM_TITLE", "MSG_UNBUNDLE_MERGE_UNCOMMITTED_CONFIRM_QUERY"); // NOI18N
-                                            }
-                                        }
-                                        if (bConfirmMerge) {
-                                            logger.output(""); // NOI18N
-                                            logger.outputInRed(NbBundle.getMessage(ImportDiffAction.class, "MSG_UNBUNDLE_MERGE_DO")); // NOI18N
-                                            updatedFilesList = MergeAction.doMergeAction(root, null, logger);
-                                        } else {
-                                            HgLogMessage[] heads = HgCommand.getHeadRevisionsInfo(root, true, OutputLogger.getLogger(null));
-                                            Map<String, Collection<HgLogMessage>> branchHeads = HgUtils.sortByBranch(heads);
-                                            if (!branchHeads.isEmpty()) {
-                                                MergeAction.displayMergeWarning(branchHeads, logger, warnMoreHeads);
-                                            }
-                                        }
-                                        boolean fileUpdated = isUpdated(updatedFilesList);
-                                        if (fileUpdated) {
-                                            HgUtils.notifyUpdatedFiles(root, updatedFilesList);
-                                            HgUtils.forceStatusRefresh(root);
-                                        }
-                                    }
-                                } catch (HgException.HgCommandCanceledException ex) {
-                                    // canceled by user, do nothing
-                                } catch (HgException ex) {
-                                    HgUtils.notifyException(ex);
-                                } finally {
-                                    logger.outputInRed(NbBundle.getMessage(ImportDiffAction.class, "MSG_UNBUNDLE_DONE")); // NOI18N
-                                    logger.output(""); // NOI18N
-                                }
-                            }
-                        };
-                        support.start(rp, root, org.openide.util.NbBundle.getMessage(ImportDiffAction.class, "LBL_ImportDiff_Progress")); // NOI18N
+                    RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(root);
+                    ImportDiffProgressSupport.Kind kind;
+                    if (asBundle.isSelected()) {
+                        kind = ImportDiffProgressSupport.Kind.BUNDLE;
+                    } else if (asPatch.isSelected()) {
+                        kind = ImportDiffProgressSupport.Kind.PATCH;
+                    } else {
+                        kind = null;
                     }
+                    HgProgressSupport support = new ImportDiffProgressSupport(root, patchFile, kind);
+                    support.start(rp, root, org.openide.util.NbBundle.getMessage(ImportDiffAction.class, "LBL_ImportDiff_Progress")); // NOI18N
                 }
                 dialog.dispose();
             }
@@ -211,37 +155,127 @@ public class ImportDiffAction extends ContextAction {
         dialog.setVisible(true);
     }
 
-    private static boolean isUpdated (List<String> list) {
-        boolean updated = false;
-        for (String s : list) {
-            if (s.contains("getting ") || s.startsWith("merging ")) { //NOI18N
-                updated = true;
-                break;
+    private static class ImportDiffProgressSupport extends HgProgressSupport {
+
+        private final File patchFile;
+        private final File repository;
+        private final Kind kind;
+        
+        static enum Kind {
+            PATCH,
+            BUNDLE
+        }
+
+        public ImportDiffProgressSupport (File repository, File patchFile, Kind kind) {
+            this.repository = repository;
+            this.patchFile = patchFile;
+            this.kind = kind;
+        }
+        
+        @Override
+        public void perform() {
+            if (kind == Kind.BUNDLE) {
+                performUnbundle();
+            } else if (kind == Kind.PATCH) {
+                performImport();
             }
         }
-        return updated;
-    }
 
-    private static void performImport(final File repository, File patchFile, OutputLogger logger) {
-        try {
-            logger.outputInRed(
-                    NbBundle.getMessage(ImportDiffAction.class,
-                    "MSG_IMPORT_TITLE")); // NOI18N
-            logger.outputInRed(
-                    NbBundle.getMessage(ImportDiffAction.class,
-                    "MSG_IMPORT_TITLE_SEP")); // NOI18N
+        private void performUnbundle () {
+            final OutputLogger logger = getLogger();
+            try {
+                logger.outputInRed(NbBundle.getMessage(ImportDiffAction.class, "MSG_UNBUNDLE_TITLE")); // NOI18N
+                logger.outputInRed(NbBundle.getMessage(ImportDiffAction.class, "MSG_UNBUNDLE_TITLE_SEP")); // NOI18N
+                HgUtils.runWithoutIndexing(new Callable<Void>() {
+                    @Override
+                    public Void call () throws Exception {
+                        List<String> list = HgCommand.doUnbundle(repository, patchFile, logger);
+                        if (list != null && !list.isEmpty()) {
+                            List<String> updatedFilesList = list;
+                            logger.output(HgUtils.replaceHttpPassword(list));
+                            // Handle Merge - both automatic and merge with conflicts
+                            boolean bMergeNeededDueToPull = HgCommand.isMergeNeededMsg(list.get(list.size() - 1));
+                            boolean bConfirmMerge = false;
+                            boolean warnMoreHeads = true;
+                            if (bMergeNeededDueToPull) {
+                                bConfirmMerge = HgUtils.confirmDialog(
+                                        ImportDiffAction.class, "MSG_UNBUNDLE_MERGE_CONFIRM_TITLE", "MSG_UNBUNDLE_MERGE_CONFIRM_QUERY"); // NOI18N
+                                warnMoreHeads = false;
+                            } else {
+                                boolean bOutStandingUncommittedMerges = HgCommand.isMergeAbortUncommittedMsg(list.get(list.size() - 1));
+                                if (bOutStandingUncommittedMerges) {
+                                    bConfirmMerge = HgUtils.confirmDialog(
+                                            ImportDiffAction.class, "MSG_UNBUNDLE_MERGE_CONFIRM_TITLE", "MSG_UNBUNDLE_MERGE_UNCOMMITTED_CONFIRM_QUERY"); // NOI18N
+                                }
+                            }
+                            if (bConfirmMerge) {
+                                logger.output(""); // NOI18N
+                                logger.outputInRed(NbBundle.getMessage(ImportDiffAction.class, "MSG_UNBUNDLE_MERGE_DO")); // NOI18N
+                                updatedFilesList = MergeAction.doMergeAction(repository, null, logger);
+                            } else {
+                                HgLogMessage[] heads = HgCommand.getHeadRevisionsInfo(repository, true, OutputLogger.getLogger(null));
+                                Map<String, Collection<HgLogMessage>> branchHeads = HgUtils.sortByBranch(heads);
+                                if (!branchHeads.isEmpty()) {
+                                    MergeAction.displayMergeWarning(branchHeads, logger, warnMoreHeads);
+                                }
+                            }
+                            boolean fileUpdated = isUpdated(updatedFilesList);
+                            if (fileUpdated) {
+                                HgUtils.notifyUpdatedFiles(repository, updatedFilesList);
+                                HgUtils.forceStatusRefresh(repository);
+                            }
+                        }
+                        return null;
+                    }
+                }, repository);
+            } catch (HgException.HgCommandCanceledException ex) {
+                // canceled by user, do nothing
+            } catch (HgException ex) {
+                HgUtils.notifyException(ex);
+            } finally {
+                logger.outputInRed(NbBundle.getMessage(ImportDiffAction.class, "MSG_UNBUNDLE_DONE")); // NOI18N
+                logger.output(""); // NOI18N
+            }
+        }
 
-            List<String> list = HgCommand.doImport(repository, patchFile, logger);
-            Mercurial.getInstance().changesetChanged(repository);
-            logger.output(list); // NOI18N
+        private void performImport () {
+            final OutputLogger logger = getLogger();
+            try {
+                logger.outputInRed(
+                        NbBundle.getMessage(ImportDiffAction.class,
+                        "MSG_IMPORT_TITLE")); // NOI18N
+                logger.outputInRed(
+                        NbBundle.getMessage(ImportDiffAction.class,
+                        "MSG_IMPORT_TITLE_SEP")); // NOI18N
 
-        } catch (HgException.HgCommandCanceledException ex) {
-            // canceled by user, do nothing
-        } catch (HgException ex) {
-            HgUtils.notifyException(ex);
-        } finally {
-            logger.outputInRed(NbBundle.getMessage(ImportDiffAction.class, "MSG_IMPORT_DONE")); // NOI18N
-            logger.output(""); // NOI18N
+                HgUtils.runWithoutIndexing(new Callable<Void>() {
+                    @Override
+                    public Void call () throws Exception {
+                        List<String> list = HgCommand.doImport(repository, patchFile, logger);
+                        Mercurial.getInstance().changesetChanged(repository);
+                        logger.output(list);
+                        return null;
+                    }
+                }, repository);
+            } catch (HgException.HgCommandCanceledException ex) {
+                // canceled by user, do nothing
+            } catch (HgException ex) {
+                HgUtils.notifyException(ex);
+            } finally {
+                logger.outputInRed(NbBundle.getMessage(ImportDiffAction.class, "MSG_IMPORT_DONE")); // NOI18N
+                logger.output(""); // NOI18N
+            }
+        }
+
+        private static boolean isUpdated (List<String> list) {
+            boolean updated = false;
+            for (String s : list) {
+                if (s.contains("getting ") || s.startsWith("merging ")) { //NOI18N
+                    updated = true;
+                    break;
+                }
+            }
+            return updated;
         }
     }
 }

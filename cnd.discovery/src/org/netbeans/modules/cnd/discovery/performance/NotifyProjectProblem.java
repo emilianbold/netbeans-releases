@@ -61,46 +61,78 @@ import org.openide.util.NbBundle.Messages;
     "NotifyProjectProblem.title.text=Detected Project Performance Issues"
     ,"NotifyProjectProblem.action.text=details"
     ,"NotifyProjectProblem.open.message.text=Slow Project Opening"
-    ,"# {0} - details"
+    ,"NotifyProjectProblem.open.adviceL.text=<li>Copy the project to the local file system</li>\n"
+                                           +"<li>Copy the project to a faster file system</li>\n"
+                                           +"<li>Copy the project to the memory file system</li>\n"
+                                           +"<li>Turn off encryption, virus scanning, compressing, snapshoting for the project</li>\n"
+    ,"NotifyProjectProblem.open.adviceR.text=<li>Use VNC or X11 forwarding instead of remote</li>\n"
+                                           +"<li>Copy the project to the local file system</li>\n"
+    ,"# {0} - advice"
+    ,"# {1} - details"
     ,"NotifyProjectProblem.open.explanation.text=The IDE has detected slowness while opening the project, which is caused by slow file system.<br>\n"
-                                          +"To resolve this problem, you can try:<br>\n"
-                                          +"<ul>\n"
-                                          +"<li>copy project to the local file system</li>\n"
-                                          +"<li>use remote project</li>\n"
-                                          +"<li>use VNC</li>\n"
-                                          +"<li>use full remote project</li>\n"
-                                          +"</ul>\n"
-                                          +"Details:<br>\n"
-                                          +"{0}"
+                                               +"To resolve this problem, you can try:<br>\n"
+                                               +"<ul>\n"
+                                               +"{0}"
+                                               +"</ul>\n"
+                                               +"Details:<br>\n"
+                                               +"{1}"
     ,"NotifyProjectProblem.read.message.text=Slow Project Files Reading"
-    ,"# {0} - details"
+    ,"NotifyProjectProblem.read.adviceL.text=<li>Copy the project to the local file system</li>\n"
+                                           +"<li>Copy the project to a faster file system</li>\n"
+                                           +"<li>Copy the project to the memory file system</li>\n"
+                                           +"<li>Turn off encryption, virus scanning, compressing, snapshoting for the project</li>\n"
+    ,"NotifyProjectProblem.read.adviceR.text=<li>Use VNC or X11 forwarding instead of remote</li>\n"
+                                           +"<li>Copy the project to the local file system</li>\n"
+    ,"# {0} - advice"
+    ,"# {1} - details"
     ,"NotifyProjectProblem.read.explanation.text=The IDE has detected slowness while reading project files, which is caused by slow file system.<br>\n"
-                                          +"To resolve this problem, you can try:<br>\n"
-                                          +"<ul>\n"
-                                          +"<li>copy project to the local file system</li>\n"
-                                          +"<li>use remote project</li>\n"
-                                          +"<li>use VNC</li>\n"
-                                          +"<li>use full remote project</li>\n"
-                                          +"</ul>\n"
-                                          +"Details:<br>\n"
-                                          +"{0}"
+                                               +"To resolve this problem, you can try:<br>\n"
+                                               +"<ul>\n"
+                                               +"{0}"
+                                               +"</ul>\n"
+                                               +"Details:<br>\n"
+                                               +"{1}"
     ,"NotifyProjectProblem.parse.message.text=Slow Project Indexing"
-    ,"# {0} - details"
+    ,"NotifyProjectProblem.parse.adviceL.text=<li>Copy the project to the local file system</li>\n"
+                                            +"<li>Copy the project to a faster file system</li>\n"
+                                            +"<li>Copy the project to the memory file system</li>\n"
+                                            +"<li>Turn off encryption, virus scanning, compressing, snapshoting for the project</li>\n"
+                                            +"<li>Open the project on a more powerful computer by using VNC or X11 forwarding</li>\n"
+                                            +"<li>Locate the IDE cache on the memory file system</li>\n"
+                                            +"<li>Use the relocatable C/C++ index</li>\n"
+    ,"NotifyProjectProblem.parse.adviceR.text=<li>Use VNC or X11 forwarding instead of remote</li>\n"
+                                            +"<li>Copy the project to the local file system</li>\n"
+    ,"# {0} - advice"
+    ,"# {1} - details"
     ,"NotifyProjectProblem.parse.explanation.text=The IDE has detected slowness while parsing project files, which is caused by slow file system.<br>\n"
-                                          +"To resolve this problem, you can try:<br>\n"
-                                          +"<ul>\n"
-                                          +"<li>copy project to the local file system</li>\n"
-                                          +"<li>use remote project</li>\n"
-                                          +"<li>use VNC</li>\n"
-                                          +"<li>use full remote project</li>\n"
-                                          +"</ul>\n"
-                                          +"Details:<br>\n"
-                                          +"{0}"
+                                                +"To resolve this problem, you can try:<br>\n"
+                                                +"<ul>\n"
+                                                +"{0}"
+                                                +"</ul>\n"
+                                                +"Details:<br>\n"
+                                                +"{1}"
+    ,"NotifyProjectProblem.infinite.parse.message.text=Infinite File Parsing"
+    ,"NotifyProjectProblem.infinite.parse.adviceL.text=<li>Exclude files from code assistance</li>\n"
+                                                     +"<li>Filter out files from project</li>\n"
+                                                     +"<li>Open the project on a more powerful computer by using VNC or X11 forwarding</li>\n"
+    ,"NotifyProjectProblem.infinite.parse.adviceR.text=<li>Exclude files from code assistance</li>\n"
+                                                     +"<li>Filter out files from project</li>\n"
+                                                     +"<li>Open the project on a more powerful computer by using VNC or X11 forwarding</li>\n"
+    ,"# {0} - advice"
+    ,"# {1} - details"
+    ,"NotifyProjectProblem.infinite.parse.explanation.text=The IDE has detected infinite files parsing, which is caused by a bug in the IDE or too big files.<br>\n"
+                                                         +"To resolve this problem, you can try:<br>\n"
+                                                         +"<ul>\n"
+                                                         +"{0}"
+                                                         +"</ul>\n"
+                                                         +"Details:<br>\n"
+                                                         +"{1}"
 })
 public class NotifyProjectProblem extends javax.swing.JPanel {
     public static final int CREATE_PROBLEM = 1;
     public static final int READ_PROBLEM = 2;
     public static final int PARSE_PROBLEM = 3;
+    public static final int INFINITE_PARSE_PROBLEM = 4;
 
     /**
      * Creates new form NotifyProjectProblem
@@ -112,23 +144,56 @@ public class NotifyProjectProblem extends javax.swing.JPanel {
         explanation.setText(details);
     }
 
-    public static void showNotification(final PerformanceIssueDetector detector, int problem, final String details) {
+    public static void showNotification(final PerformanceIssueDetector detector, int problem, final String details,
+            boolean isRemoteBuildHost, boolean isRemoteSources) {
         
         final String explanation;
         final String shortDescription;
         switch (problem) {
-            case CREATE_PROBLEM:
-                explanation = Bundle.NotifyProjectProblem_open_explanation_text(details);
+            case CREATE_PROBLEM: {
+                String advice;
+                if (isRemoteSources) {
+                    advice = Bundle.NotifyProjectProblem_open_adviceR_text();
+                } else {
+                    advice = Bundle.NotifyProjectProblem_open_adviceL_text();
+                }
+                explanation = Bundle.NotifyProjectProblem_open_explanation_text(advice, details);
                 shortDescription = Bundle.NotifyProjectProblem_open_message_text();
                 break;
-            case READ_PROBLEM:
-                explanation = Bundle.NotifyProjectProblem_read_explanation_text(details);
+            }
+            case READ_PROBLEM: {
+                String advice;
+                if (isRemoteSources) {
+                    advice = Bundle.NotifyProjectProblem_read_adviceR_text();
+                } else {
+                    advice = Bundle.NotifyProjectProblem_read_adviceL_text();
+                }
+                explanation = Bundle.NotifyProjectProblem_read_explanation_text(advice, details);
                 shortDescription = Bundle.NotifyProjectProblem_read_message_text();
                 break;
-            case PARSE_PROBLEM:
-                explanation = Bundle.NotifyProjectProblem_parse_explanation_text(details);
+            }
+            case PARSE_PROBLEM: {
+                String advice;
+                if (isRemoteSources) {
+                    advice = Bundle.NotifyProjectProblem_parse_adviceR_text();
+                } else {
+                    advice = Bundle.NotifyProjectProblem_parse_adviceL_text();
+                }
+                explanation = Bundle.NotifyProjectProblem_parse_explanation_text(advice, details);
                 shortDescription = Bundle.NotifyProjectProblem_parse_message_text();
                 break;
+            }
+            case INFINITE_PARSE_PROBLEM: {
+                String advice;
+                if (isRemoteSources) {
+                    advice = Bundle.NotifyProjectProblem_infinite_parse_adviceR_text();
+                } else {
+                    advice = Bundle.NotifyProjectProblem_infinite_parse_adviceL_text();
+                }
+                explanation = Bundle.NotifyProjectProblem_infinite_parse_explanation_text(advice, details);
+                shortDescription = Bundle.NotifyProjectProblem_infinite_parse_message_text();
+                break;
+            }
             default:
                 throw new IllegalArgumentException();
         }
@@ -178,6 +243,7 @@ public class NotifyProjectProblem extends javax.swing.JPanel {
         scrollPane = new javax.swing.JScrollPane();
         explanation = new javax.swing.JTextPane();
 
+        setPreferredSize(new java.awt.Dimension(450, 350));
         setLayout(new java.awt.BorderLayout());
 
         scrollPane.setViewportView(explanation);

@@ -189,22 +189,18 @@ public class Utilities {
     }
 
     private static String guessLiteralName(String str) {
-        StringBuffer sb = new StringBuffer();
-        if(str.length() == 0)
+        if(str.isEmpty())
             return null;
-        char first = str.charAt(0);
-        if(Character.isJavaIdentifierStart(str.charAt(0)))
-            sb.append(first);
+        
+        StringBuilder sb = new StringBuilder();
 
-        for (int i = 1; i < str.length(); i++) {
+        for (int i = 0; i < str.length(); i++) {
             char ch = str.charAt(i);
             if(ch == ' ') {
                 sb.append('_');
-                continue;
-            }
-            if (Character.isJavaIdentifierPart(ch))
+            } else if (sb.length() == 0 ? Character.isJavaIdentifierStart(ch) : Character.isJavaIdentifierPart(ch))
                 sb.append(ch);
-            if (i > 40)
+            if (sb.length() > 40)
                 break;
         }
         if (sb.length() == 0)
@@ -324,13 +320,13 @@ public class Utilities {
         case IDENTIFIER:
             return ((IdentifierTree) et).getName().toString();
         case METHOD_INVOCATION:
-            return getName(((MethodInvocationTree) et).getMethodSelect());
+            return getNameRaw(((MethodInvocationTree) et).getMethodSelect());
         case MEMBER_SELECT:
             return ((MemberSelectTree) et).getIdentifier().toString();
         case NEW_CLASS:
-            return firstToLower(getName(((NewClassTree) et).getIdentifier()));
+            return firstToLower(getNameRaw(((NewClassTree) et).getIdentifier()));
         case PARAMETERIZED_TYPE:
-            return firstToLower(getName(((ParameterizedTypeTree) et).getType()));
+            return firstToLower(getNameRaw(((ParameterizedTypeTree) et).getType()));
         case STRING_LITERAL:
             String name = guessLiteralName((String) ((LiteralTree) et).getValue());
             if(name == null) {
@@ -379,7 +375,7 @@ public class Utilities {
         char last = Character.toLowerCase(name.charAt(0));
 
         for (int i = 1; i < name.length(); i++) {
-            if (toLower && Character.isUpperCase(name.charAt(i))) {
+            if (toLower && (Character.isUpperCase(name.charAt(i)) || name.charAt(i) == '_')) {
                 result.append(Character.toLowerCase(last));
             } else {
                 result.append(last);
@@ -389,7 +385,7 @@ public class Utilities {
 
         }
 
-        result.append(last);
+        result.append(toLower ? Character.toLowerCase(last) : last);
         
         if (SourceVersion.isKeyword(result)) {
             return "a" + name;

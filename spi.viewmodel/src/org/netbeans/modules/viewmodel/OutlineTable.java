@@ -123,6 +123,7 @@ ExplorerManager.Provider, PropertyChangeListener {
     private boolean             isDefaultColumnAdded;
     private int                 defaultColumnIndex; // The index of the tree column
     private boolean             ignoreMove; // Whether to ignore column movement events
+    private boolean             isSettingModelUp; // Whether a model is being set up
     //private List                expandedPaths = new ArrayList ();
     TreeModelRoot               currentTreeModelRoot; // Accessed from test
     
@@ -350,6 +351,8 @@ ExplorerManager.Provider, PropertyChangeListener {
      * @param models
      */
     public void setModel (Models.CompoundModel model, MessageFormat treeNodeDisplayFormat) {
+        isSettingModelUp = true;
+        try {
         // 2) save current settings (like columns, expanded paths)
         //List ep = treeTable.getExpandedPaths ();
         if (currentTreeModelRoot == null || currentTreeModelRoot.getTreeNodeDisplayFormat() == null) {
@@ -447,6 +450,9 @@ ExplorerManager.Provider, PropertyChangeListener {
         // Sort of hack(?) After close/open of the view the table becomes empty,
         // it looks like the root node stays unexpanded for some reason.
         //treeTable.expandNode(rootNode);
+        } finally {
+            isSettingModelUp = false;
+        }
     }
     
     /**
@@ -455,6 +461,8 @@ ExplorerManager.Provider, PropertyChangeListener {
      * @param models
      */
     public void setModel (HyperCompoundModel model, MessageFormat treeNodeDisplayFormat) {
+        isSettingModelUp = true;
+        try {
         // 2) save current settings (like columns, expanded paths)
         //List ep = treeTable.getExpandedPaths ();
         if (currentTreeModelRoot == null || currentTreeModelRoot.getTreeNodeDisplayFormat() == null) {
@@ -508,6 +516,9 @@ ExplorerManager.Provider, PropertyChangeListener {
         /* We must not call children here - it can take a long time...
          * the expansion is performed in TreeModelNode.TreeModelChildren.applyChildren()
          */
+        } finally {
+            isSettingModelUp = false;
+        }
     }
 
     @Override
@@ -1089,6 +1100,10 @@ ExplorerManager.Provider, PropertyChangeListener {
         public void propertyChange(PropertyChangeEvent evt) {
             TableColumn[] columns = (TableColumn[]) evt.getNewValue();
             if (columns == null) {
+                if (currentTreeModelRoot != null && !isSettingModelUp) {
+                    // Refreshing a set up table, need to save the column widths
+                    saveWidths();
+                }
                 tableColumns = null;
             } else if (!ignoreCreateDefaultColumnsFromModel) {
                 // Update the columns after they are reset:

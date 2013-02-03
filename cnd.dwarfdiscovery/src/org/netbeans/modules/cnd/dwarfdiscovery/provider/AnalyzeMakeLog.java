@@ -252,7 +252,7 @@ public class AnalyzeMakeLog extends BaseDwarfProvider {
     }
 
     @Override
-    protected List<SourceFileProperties> getSourceFileProperties(String objFileName, Map<String,SourceFileProperties> map, ProjectProxy project, Set<String> dlls, CompileLineStorage storage){
+    protected List<SourceFileProperties> getSourceFileProperties(String objFileName, Map<String,SourceFileProperties> map, ProjectProxy project, Set<String> dlls, List<String> buildArtifacts, CompileLineStorage storage){
         ProviderProperty p = getProperty(RESTRICT_COMPILE_ROOT);
         String root = "";
         if (p != null) {
@@ -291,6 +291,11 @@ public class AnalyzeMakeLog extends BaseDwarfProvider {
                 public List<String> getDependencies() {
                     return null;
                 }
+
+                @Override
+                public List<String> getBuildArtifacts() {
+                    return null;
+                }
                 
                 @Override
                 public List<SourceFileProperties> getSourcesConfiguration() {
@@ -300,7 +305,7 @@ public class AnalyzeMakeLog extends BaseDwarfProvider {
                             set = detectMakeLog(project);
                         }
                         if (set != null && set.length() > 0) {
-                            myFileProperties = getSourceFileProperties(new String[]{set},null, project, null, new CompileLineStorage());
+                            myFileProperties = getSourceFileProperties(new String[]{set},null, project, null, null, new CompileLineStorage());
                         }
                     }
                     return myFileProperties;

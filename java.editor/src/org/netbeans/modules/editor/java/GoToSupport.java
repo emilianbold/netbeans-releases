@@ -555,7 +555,7 @@ public class GoToSupport {
         for (Element member : selectElm.getEnclosedElements()) {
             if (member.getModifiers().contains(Modifier.STATIC)
                     && mName.contentEquals(member.getSimpleName())
-                    && javac.getTreeUtilities().isAccessible(clazzScope, member, clazzMir)) {
+                    && trees.isAccessible(clazzScope, member, (DeclaredType)clazzMir)) {
                 return member;
             }
         }

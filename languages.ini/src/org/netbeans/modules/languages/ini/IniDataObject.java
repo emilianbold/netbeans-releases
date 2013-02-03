@@ -48,6 +48,7 @@ import java.io.IOException;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
 import static org.netbeans.modules.languages.ini.IniDataObject.ACTIONS;
+import org.netbeans.modules.languages.ini.csl.IniLanguageConfig;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionReferences;
@@ -65,8 +66,12 @@ import org.openide.util.NbBundle.Messages;
 import org.openide.windows.TopComponent;
 
 @Messages("INIResolver=INI Files")
-@MIMEResolver.ExtensionRegistration(displayName = "#INIResolver", mimeType = IniLanguageProvider.MIME_TYPE, position = 133, extension = {"ini", "INI"})
-@Registration(displayName = "org.netbeans.modules.languages.ini.resources.Bundle#Loaders/text/x-ini/Factories/IniDataLoader.instance", iconBase = "org/netbeans/modules/languages/ini/resources/ini_file_16.png", mimeType =IniLanguageProvider.MIME_TYPE)
+@MIMEResolver.ExtensionRegistration(displayName = "#INIResolver", mimeType = IniLanguageConfig.MIME_TYPE, position = 133, extension = {"ini", "INI"})
+@Registration(
+        displayName = "org.netbeans.modules.languages.ini.resources.Bundle#Loaders/text/x-ini/Factories/IniDataLoader.instance",
+        iconBase = "org/netbeans/modules/languages/ini/resources/ini_file_16.png",
+        mimeType = IniLanguageConfig.MIME_TYPE,
+        position = 1500)
 @ActionReferences(value = {
     @ActionReference(id = @ActionID(category = "System", id = "org.openide.actions.OpenAction"), path = ACTIONS, position = 100, separatorAfter = 200),
     @ActionReference(id = @ActionID(category = "Edit", id = "org.openide.actions.CutAction"), path = ACTIONS, position = 300),
@@ -80,11 +85,11 @@ import org.openide.windows.TopComponent;
 
 public class IniDataObject extends MultiDataObject {
     private static final long serialVersionUID = 46532134863231L;
-    static final String ACTIONS = "Loaders/" + IniLanguageProvider.MIME_TYPE + "/Actions";
+    static final String ACTIONS = "Loaders/" + IniLanguageConfig.MIME_TYPE + "/Actions";
 
     public IniDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException, IOException {
         super(pf, loader);
-        registerEditor(IniLanguageProvider.MIME_TYPE, true);
+        registerEditor(IniLanguageConfig.MIME_TYPE, true);
     }
 
     @Override
@@ -103,7 +108,7 @@ public class IniDataObject extends MultiDataObject {
             displayName="#Source",
             iconBase="org/netbeans/modules/languages/ini/resources/ini_file_16.png",
             persistenceType=TopComponent.PERSISTENCE_ONLY_OPENED,
-            mimeType=IniLanguageProvider.MIME_TYPE,
+            mimeType=IniLanguageConfig.MIME_TYPE,
             preferredID="ini.source",
             position=1
     )

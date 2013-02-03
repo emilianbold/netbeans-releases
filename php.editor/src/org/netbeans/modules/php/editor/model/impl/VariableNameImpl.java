@@ -122,7 +122,7 @@ class VariableNameImpl extends ScopeImpl implements VariableName {
                 toName(variable), inScope.getFile(), toOffsetRange(variable), globallyVisible);
     }
     VariableNameImpl(Scope inScope, String name, Union2<String/*url*/, FileObject> file, OffsetRange offsetRange, boolean globallyVisible) {
-        super(inScope, name, file, offsetRange, PhpElementKind.VARIABLE);
+        super(inScope, name, file, offsetRange, PhpElementKind.VARIABLE, false);
         this.globallyVisible = globallyVisible;
     }
 

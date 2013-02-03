@@ -63,178 +63,182 @@ public class PHP53FeaturesTest extends PHPLexerTestBase {
     }
 
     public void testGoto_01() throws Exception {
-        performTest("jump01");
+        performTest("lexer/jump01");
     }
 
     public void testGoto_02() throws Exception {
-        performTest("jump02");
+        performTest("lexer/jump02");
     }
 
     public void testGoto_03() throws Exception {
-        performTest("jump03");
+        performTest("lexer/jump03");
     }
 
     public void testGoto_04() throws Exception {
-        performTest("jump04");
+        performTest("lexer/jump04");
     }
 
     public void testGoto_05() throws Exception {
-        performTest("jump05");
+        performTest("lexer/jump05");
     }
 
     public void testGoto_06() throws Exception {
-        performTest("jump06");
+        performTest("lexer/jump06");
     }
 
     public void testGoto_07() throws Exception {
-        performTest("jump07");
+        performTest("lexer/jump07");
     }
 
     public void testGoto_08() throws Exception {
-        performTest("jump08");
+        performTest("lexer/jump08");
     }
 
     public void testGoto_09() throws Exception {
-        performTest("jump09");
+        performTest("lexer/jump09");
     }
 
     public void testGoto_10() throws Exception {
-        performTest("jump10");
+        performTest("lexer/jump10");
     }
 
     public void testGoto_11() throws Exception {
-        performTest("jump11");
+        performTest("lexer/jump11");
     }
 
     public void testGoto_12() throws Exception {
-        performTest("jump12");
+        performTest("lexer/jump12");
     }
 
     public void testGoto_13() throws Exception {
-        performTest("jump13");
+        performTest("lexer/jump13");
     }
 
     public void testNowDoc_00() throws Exception {
-        performTest("nowdoc_000");
+        performTest("lexer/nowdoc_000");
     }
 
     public void testNowDoc_01() throws Exception {
-        performTest("nowdoc_001");
+        performTest("lexer/nowdoc_001");
     }
 
     public void testNowDoc_02() throws Exception {
-        performTest("nowdoc_002");
+        performTest("lexer/nowdoc_002");
     }
 
     public void testNowDoc_03() throws Exception {
-        performTest("nowdoc_003");
+        performTest("lexer/nowdoc_003");
     }
 
     public void testNowDoc_04() throws Exception {
-        performTest("nowdoc_004");
+        performTest("lexer/nowdoc_004");
     }
 
     public void testNowDoc_05() throws Exception {
-        performTest("nowdoc_005");
+        performTest("lexer/nowdoc_005");
     }
 
     public void testNowDoc_06() throws Exception {
-        performTest("nowdoc_006");
+        performTest("lexer/nowdoc_006");
     }
 
     public void testNowDoc_07() throws Exception {
-        performTest("nowdoc_007");
+        performTest("lexer/nowdoc_007");
     }
 
     public void testNowDoc_08() throws Exception {
-        performTest("nowdoc_008");
+        performTest("lexer/nowdoc_008");
     }
 
     public void testNowDoc_09() throws Exception {
-        performTest("nowdoc_009");
+        performTest("lexer/nowdoc_009");
     }
 
     public void testNowDoc_10() throws Exception {
-        performTest("nowdoc_010");
+        performTest("lexer/nowdoc_010");
     }
 
     public void testNowDoc_11() throws Exception {
-        performTest("nowdoc_011");
+        performTest("lexer/nowdoc_011");
     }
 
     public void testNowDoc_12() throws Exception {
-        performTest("nowdoc_012");
+        performTest("lexer/nowdoc_012");
     }
 
     public void testNowDoc_13() throws Exception {
-        performTest("nowdoc_013");
+        performTest("lexer/nowdoc_013");
     }
 
     public void testNowDoc_14() throws Exception {
-        performTest("nowdoc_014");
+        performTest("lexer/nowdoc_014");
     }
 
     public void testNowDoc_15() throws Exception {
-        performTest("nowdoc_015");
+        performTest("lexer/nowdoc_015");
     }
 
     public void testHereDoc53_01() throws Exception {
-        performTest("heredoc_001");
+        performTest("lexer/heredoc_001");
     }
 
     public void testHereDoc53_02() throws Exception {
-        performTest("heredoc_002");
+        performTest("lexer/heredoc_002");
     }
 
     public void testHereDoc53_03() throws Exception {
-        performTest("heredoc_003");
+        performTest("lexer/heredoc_003");
     }
 
     public void testHereDoc53_04() throws Exception {
-        performTest("heredoc_004");
+        performTest("lexer/heredoc_004");
     }
 
     public void testHereDoc53_05() throws Exception {
-        performTest("heredoc_005");
+        performTest("lexer/heredoc_005");
     }
 
     public void testHereDoc53_06() throws Exception {
-        performTest("heredoc_006");
+        performTest("lexer/heredoc_006");
     }
 
     public void testHereDoc53_07() throws Exception {
-        performTest("heredoc_007");
+        performTest("lexer/heredoc_007");
     }
 
     public void testHereDoc53_08() throws Exception {
-        performTest("heredoc_008");
+        performTest("lexer/heredoc_008");
     }
 
     public void testHereDoc53_09() throws Exception {
-        performTest("heredoc_009");
+        performTest("lexer/heredoc_009");
     }
 
     public void testHereDoc53_10() throws Exception {
-        performTest("heredoc_010");
+        performTest("lexer/heredoc_010");
     }
 
     public void testHereDoc53_11() throws Exception {
-        performTest("heredoc_011");
+        performTest("lexer/heredoc_011");
     }
 
     public void testHereDoc53_12() throws Exception {
-        performTest("heredoc_012");
+        performTest("lexer/heredoc_012");
     }
 
     public void testHereDoc53_13() throws Exception {
-        performTest("heredoc_013");
+        performTest("lexer/heredoc_013");
     }
 
     public void testHereDoc53_14() throws Exception {
-        performTest("heredoc_014");
+        performTest("lexer/heredoc_014");
     }
 
     public void testHereDoc53_15() throws Exception {
-        performTest("heredoc_015");
+        performTest("lexer/heredoc_015");
+    }
+
+    public void testIssue225549() throws Exception {
+        performTest("lexer/issue225549");
     }
 }

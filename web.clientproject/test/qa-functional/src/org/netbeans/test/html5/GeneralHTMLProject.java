@@ -78,7 +78,7 @@ public class GeneralHTMLProject extends JellyTestCase {
     public static final String SAMPLES = "Samples";
     public static final String SAMPLES_CATEGORY = "HTML5";
     public static String current_project = "";
-    private static final Logger LOGGER = Logger.getLogger(GeneralHTMLProject.class.getName());
+    public static final Logger LOGGER = Logger.getLogger(GeneralHTMLProject.class.getName());
 
     public GeneralHTMLProject(String arg0) {
         super(arg0);
@@ -276,6 +276,23 @@ public class GeneralHTMLProject extends JellyTestCase {
             node.select();
             node.performPopupAction("Open");
         }
+    }
+
+    /**
+     * Opens remote file in editor
+     *
+     * @param fileName remote file name
+     * @param projectName project name
+     */
+    public void openRemoteFile(String fileName, String projectName) {
+        if (projectName == null) {
+            throw new IllegalStateException("YOU MUST OPEN PROJECT FIRST");
+        }
+        Logger.getLogger(GeneralHTMLProject.class.getName()).log(Level.INFO, "Opening file {0}", fileName);
+        Node rootNode = new ProjectsTabOperator().getProjectRootNode(projectName);
+        Node node = new Node(rootNode, "Remote Files|" + fileName);
+        evt.waitNoEvent(1000);
+        node.performPopupAction("Open");
     }
 
     /**

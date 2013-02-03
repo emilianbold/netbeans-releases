@@ -73,16 +73,10 @@ public class PHPHintsProvider implements HintsProvider {
 
     @Override
     public void computeHints(HintsManager mgr, RuleContext context, List<Hint> hints) {
-        ParserResult info = context.parserResult;
         Map<?, List<? extends Rule.AstRule>> allHints = mgr.getHints(false, context);
         List<? extends AstRule> modelHints = allHints.get(DEFAULT_HINTS);
         if (modelHints != null) {
-            assert (context instanceof PHPRuleContext);
-            PHPRuleContext ruleContext = (PHPRuleContext) context;
-            PHPParseResult result = (PHPParseResult) info;
-            final Model model = result.getModel();
-            FileScope modelScope = model.getFileScope();
-            ruleContext.fileScope = modelScope;
+            PHPRuleContext ruleContext = initializeContext(context);
             for (AstRule astRule : modelHints) {
                 if (mgr.isEnabled(astRule)) {
                     if (astRule instanceof PHPRuleWithPreferences) {
@@ -103,16 +97,7 @@ public class PHPHintsProvider implements HintsProvider {
         Map<?, List<? extends Rule.AstRule>> allHints = mgr.getSuggestions();
         List<? extends AstRule> modelHints = allHints.get(DEFAULT_SUGGESTIONS);
         if (modelHints != null) {
-            assert (context instanceof PHPRuleContext);
-            PHPRuleContext ruleContext = (PHPRuleContext) context;
-            ParserResult info = context.parserResult;
-            if (!(info instanceof PHPParseResult)) {
-                return;
-            }
-            PHPParseResult result = (PHPParseResult) info;
-            final Model model = result.getModel();
-            FileScope modelScope = model.getFileScope();
-            ruleContext.fileScope = modelScope;
+            PHPRuleContext ruleContext = initializeContext(context);
             for (AstRule astRule : modelHints) {
                 if (mgr.isEnabled(astRule)) {
                     if (astRule instanceof AbstractSuggestion) {
@@ -145,8 +130,8 @@ public class PHPHintsProvider implements HintsProvider {
             if (unhandledErrors != null) {
                 PHPRuleContext phpRuleContext = initializeContext(context);
                 for (ErrorRule errorRule : unhandledErrors) {
-                    if (errorRule instanceof AbstractUnhandledError) {
-                        AbstractUnhandledError abstractUnhandledError = (AbstractUnhandledError) errorRule;
+                    if (errorRule instanceof UnhandledError) {
+                        UnhandledError abstractUnhandledError = (UnhandledError) errorRule;
                         abstractUnhandledError.compute(phpRuleContext, unhandled);
                     }
                 }
@@ -155,8 +140,8 @@ public class PHPHintsProvider implements HintsProvider {
             if (hintErrors != null) {
                 PHPRuleContext phpRuleContext = initializeContext(context);
                 for (ErrorRule errorRule : hintErrors) {
-                    if (errorRule instanceof AbstractHintError) {
-                        AbstractHintError abstractHintError = (AbstractHintError) errorRule;
+                    if (errorRule instanceof HintError) {
+                        HintError abstractHintError = (HintError) errorRule;
                         abstractHintError.compute(phpRuleContext, hints);
                     }
                 }

@@ -41,18 +41,23 @@
  */
 package org.netbeans.modules.php.composer.commands;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Future;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
+import org.netbeans.api.extexecution.input.InputProcessor;
 import org.netbeans.modules.php.api.executable.InvalidPhpExecutableException;
 import org.netbeans.modules.php.api.executable.PhpExecutable;
 import org.netbeans.modules.php.api.executable.PhpExecutableValidator;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.composer.options.ComposerOptions;
+import org.netbeans.modules.php.composer.output.model.SearchResult;
+import org.netbeans.modules.php.composer.output.parsers.Parsers;
 import org.netbeans.modules.php.composer.ui.options.ComposerOptionsPanelController;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -69,23 +74,29 @@ public final class Composer {
     public static final String NAME = "composer"; // NOI18N
     public static final String LONG_NAME = NAME + ".phar"; // NOI18N
 
-    private static final String LOCK_FILENAME = "composer.json"; // NOI18N
+    private static final String COMPOSER_FILENAME = "composer.json"; // NOI18N
 
     // commands
     private static final String INIT_COMMAND = "init"; // NOI18N
     private static final String INSTALL_COMMAND = "install"; // NOI18N
     private static final String UPDATE_COMMAND = "update"; // NOI18N
+    private static final String REQUIRE_COMMAND = "require"; // NOI18N
     private static final String VALIDATE_COMMAND = "validate"; // NOI18N
     private static final String SELF_UPDATE_COMMAND = "self-update"; // NOI18N
+    private static final String SEARCH_COMMAND = "search"; // NOI18N
+    private static final String SHOW_COMMAND = "show"; // NOI18N
     // params
-    private static final List<String> DEFAULT_PARAMS = Arrays.asList(
-        "--ansi", // NOI18N
-        "--no-interaction" // NOI18N
-    );
+    private static final String ANSI_PARAM = "--ansi"; // NOI18N
+    private static final String NO_INTERACTION_PARAM = "--no-interaction"; // NOI18N
     private static final String NAME_PARAM = "--name=%s"; // NOI18N
     private static final String AUTHOR_PARAM = "--author=%s <%s>"; // NOI18N
     private static final String DESCRIPTION_PARAM = "--description=%s"; // NOI18N
     private static final String DEV_PARAM = "--dev"; // NOI18N
+    private static final String ONLY_NAME_PARAM = "--only-name"; // NOI18N
+    private static final List<String> DEFAULT_PARAMS = Arrays.asList(
+        ANSI_PARAM,
+        NO_INTERACTION_PARAM
+    );
 
     private final String composerPath;
 
@@ -113,16 +124,24 @@ public final class Composer {
         return PhpExecutableValidator.validateCommand(composerPath, Bundle.Composer_script_label());
     }
 
+    public Future<Integer> initIfNotPresent(PhpModule phpModule) {
+        FileObject configFile = getComposerConfigFile(phpModule);
+        if (configFile != null && configFile.isValid()) {
+            return null;
+        }
+        return init(phpModule);
+    }
+
     @NbBundle.Messages({
         "Composer.run.init=Composer (init)",
-        "Composer.lockFile.exists=Composer lock file already exists - overwrite it?",
+        "Composer.file.exists=Composer config file already exists - overwrite it?",
         "# {0} - project name",
         "Composer.init.description=Description of project {0}."
     })
     public Future<Integer> init(PhpModule phpModule) {
-        FileObject lockFile = getLockFile(phpModule);
-        if (lockFile != null && lockFile.isValid()) {
-            if (!userConfirmation(phpModule.getDisplayName(), Bundle.Composer_lockFile_exists())) {
+        FileObject configFile = getComposerConfigFile(phpModule);
+        if (configFile != null && configFile.isValid()) {
+            if (!userConfirmation(phpModule.getDisplayName(), Bundle.Composer_file_exists())) {
                 return null;
             }
         }
@@ -163,6 +182,19 @@ public final class Composer {
         return runCommand(phpModule, UPDATE_COMMAND, Bundle.Composer_run_updateDev(), Collections.singletonList(DEV_PARAM));
     }
 
+    @NbBundle.Messages("Composer.run.require=Composer (require)")
+    public Future<Integer> require(PhpModule phpModule, String... packages) {
+        return runCommand(phpModule, REQUIRE_COMMAND, Bundle.Composer_run_require(), Arrays.asList(packages));
+    }
+
+    @NbBundle.Messages("Composer.run.requireDev=Composer (require dev)")
+    public Future<Integer> requireDev(PhpModule phpModule, String... packages) {
+        List<String> params = new ArrayList<String>(packages.length + 1);
+        params.add(DEV_PARAM);
+        params.addAll(Arrays.asList(packages));
+        return runCommand(phpModule, REQUIRE_COMMAND, Bundle.Composer_run_require(), params);
+    }
+
     @NbBundle.Messages("Composer.run.validate=Composer (validate)")
     public Future<Integer> validate(PhpModule phpModule) {
         return runCommand(phpModule, VALIDATE_COMMAND, Bundle.Composer_run_validate());
@@ -173,11 +205,90 @@ public final class Composer {
         return runCommand(null, SELF_UPDATE_COMMAND, Bundle.Composer_run_selfUpdate());
     }
 
+    @NbBundle.Messages("Composer.run.search=Composer (search)")
+    public Future<Integer> search(PhpModule phpModule, String token, boolean onlyName, final OutputProcessor<SearchResult> outputProcessor) {
+        PhpExecutable composer = getComposerExecutable(phpModule, Bundle.Composer_run_search());
+        if (composer == null) {
+            return null;
+        }
+        // params
+        List<String> defaultParams = new ArrayList<String>(DEFAULT_PARAMS);
+        defaultParams.remove(ANSI_PARAM);
+        List<String> params = new ArrayList<String>(2);
+        if (onlyName) {
+            params.add(ONLY_NAME_PARAM);
+        }
+        params.add(token);
+        composer = composer
+                .additionalParameters(mergeParameters(SEARCH_COMMAND, defaultParams, params))
+                // avoid parser confusion
+                .redirectErrorStream(false);
+        // descriptor
+        ExecutionDescriptor descriptor = getDescriptor(phpModule)
+                .frontWindow(false);
+        // run
+        return composer
+                .run(descriptor, new ExecutionDescriptor.InputProcessorFactory() {
+                    @Override
+                    public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
+                        return new OutputProcessorImpl(new OutputParser() {
+                            @Override
+                            public void parse(char[] chars) {
+                                for (SearchResult result : Parsers.parseSearch(new String(chars))) {
+                                    outputProcessor.process(result);
+                                }
+                            }
+                        });
+                    }
+                });
+    }
+
+    @NbBundle.Messages("Composer.run.show=Composer (show)")
+    public Future<Integer> show(PhpModule phpModule, String name, final OutputProcessor<String> outputProcessor) {
+        PhpExecutable composer = getComposerExecutable(phpModule, Bundle.Composer_run_show());
+        if (composer == null) {
+            return null;
+        }
+        // params
+        List<String> defaultParams = new ArrayList<String>(DEFAULT_PARAMS);
+        defaultParams.remove(ANSI_PARAM);
+        composer = composer
+                .additionalParameters(mergeParameters(SHOW_COMMAND, defaultParams, Collections.singletonList(name)))
+                // avoid parser confusion
+                .redirectErrorStream(false);
+        // descriptor
+        ExecutionDescriptor descriptor = getDescriptor(phpModule)
+                .frontWindow(false);
+        // run
+        return composer
+                .run(descriptor, new ExecutionDescriptor.InputProcessorFactory() {
+                    @Override
+                    public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
+                        return new OutputProcessorImpl(new OutputParser() {
+                            @Override
+                            public void parse(char[] chars) {
+                                outputProcessor.process(new String(chars));
+                            }
+                        });
+                    }
+                });
+    }
+
     private Future<Integer> runCommand(PhpModule phpModule, String command, String title) {
         return runCommand(phpModule, command, title, Collections.<String>emptyList());
     }
 
     private Future<Integer> runCommand(PhpModule phpModule, String command, String title, List<String> commandParams) {
+        PhpExecutable composer = getComposerExecutable(phpModule, title);
+        if (composer == null) {
+            return null;
+        }
+        return composer
+                .additionalParameters(mergeParameters(command, DEFAULT_PARAMS, commandParams))
+                .run(getDescriptor(phpModule));
+    }
+
+    private PhpExecutable getComposerExecutable(PhpModule phpModule, String title) {
         FileObject sourceDirectory = null;
         if (phpModule != null) {
             sourceDirectory = phpModule.getSourceDirectory();
@@ -188,26 +299,39 @@ public final class Composer {
         }
         PhpExecutable composer = new PhpExecutable(composerPath)
                 .optionsSubcategory(ComposerOptionsPanelController.OPTIONS_SUBPATH)
-                .displayName(title)
-                .additionalParameters(getAllParameters(command, commandParams));
+                .displayName(title);
         if (sourceDirectory != null) {
             composer.workDir(FileUtil.toFile(sourceDirectory));
         }
-        return composer.run(getDescriptor());
+        return composer;
     }
 
-    private List<String> getAllParameters(String command, List<String> commandParams) {
-        List<String> allParams = new ArrayList<String>(DEFAULT_PARAMS.size() + commandParams.size() + 1);
-        allParams.addAll(DEFAULT_PARAMS);
+    private List<String> mergeParameters(String command, List<String> defaultParams, List<String> commandParams) {
+        List<String> allParams = new ArrayList<String>(defaultParams.size() + commandParams.size() + 1);
+        allParams.addAll(defaultParams);
         allParams.add(command);
         allParams.addAll(commandParams);
         return allParams;
     }
 
-    private ExecutionDescriptor getDescriptor() {
-        return PhpExecutable.DEFAULT_EXECUTION_DESCRIPTOR
+    private ExecutionDescriptor getDescriptor(@NullAllowed PhpModule phpModule) {
+        ExecutionDescriptor descriptor = PhpExecutable.DEFAULT_EXECUTION_DESCRIPTOR
                 .optionsPath(ComposerOptionsPanelController.getOptionsPath())
                 .inputVisible(false);
+        if (phpModule != null) {
+            final FileObject sourceDirectory = phpModule.getSourceDirectory();
+            if (sourceDirectory != null) {
+                descriptor = descriptor
+                        .postExecution(new Runnable() {
+                            @Override
+                            public void run() {
+                                // refresh sources after running command
+                                sourceDirectory.refresh();
+                            }
+                        });
+            }
+        }
+        return descriptor;
     }
 
     @NbBundle.Messages({
@@ -219,18 +343,54 @@ public final class Composer {
                 new NotifyDescriptor.Message(Bundle.Composer_project_noSources(projectName), NotifyDescriptor.WARNING_MESSAGE));
     }
 
-    private FileObject getLockFile(PhpModule phpModule) {
+    private FileObject getComposerConfigFile(PhpModule phpModule) {
         FileObject sourceDirectory = phpModule.getSourceDirectory();
         if (sourceDirectory == null) {
             // broken project
             return null;
         }
-        return sourceDirectory.getFileObject(LOCK_FILENAME);
+        return sourceDirectory.getFileObject(COMPOSER_FILENAME);
     }
 
     private boolean userConfirmation(String title, String question) {
         NotifyDescriptor confirmation = new DialogDescriptor.Confirmation(question, title, DialogDescriptor.YES_NO_OPTION);
         return DialogDisplayer.getDefault().notify(confirmation) == DialogDescriptor.YES_OPTION;
+    }
+
+    //~ Inner classes
+
+    public interface OutputProcessor<T> {
+        void process(T item);
+    }
+
+    private interface OutputParser {
+        void parse(char[] chars);
+    }
+
+    private static final class OutputProcessorImpl implements InputProcessor {
+
+        private final OutputParser outputParser;
+
+
+        public OutputProcessorImpl(OutputParser outputParser) {
+            this.outputParser = outputParser;
+        }
+
+        @Override
+        public void processInput(char[] chars) throws IOException {
+            outputParser.parse(chars);
+        }
+
+        @Override
+        public void reset() throws IOException {
+            // noop
+        }
+
+        @Override
+        public void close() throws IOException {
+            // noop
+        }
+
     }
 
 }

@@ -49,6 +49,7 @@ import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 import com.sun.source.util.TreeScanner;
+import com.sun.source.util.Trees;
 import com.sun.tools.javac.api.JavacScope;
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.Symbol;
@@ -66,6 +67,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.*;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.UnionType;
@@ -571,15 +573,10 @@ public final class TreeUtilities {
      * @param member the member to be checked
      * @param type the type for which to check if the member is accessible
      * @return true if {@code member} is accessible in {@code type}
+     * @deprecated since 0.111, {@link Trees#isAccessible(Scope, Element, DeclaredType)} should be used instead.
      */
     public boolean isAccessible(Scope scope, Element member, TypeMirror type) {
-        if (scope instanceof JavacScope 
-                && member instanceof Symbol 
-                && type instanceof Type) {
-            Resolve resolve = Resolve.instance(info.impl.getJavacTask().getContext());
-	    return resolve.isAccessible(((JavacScope)scope).getEnv(), (Type)type, (Symbol)member);  
-        } else 
-            return false;
+        return type instanceof DeclaredType ? info.getTrees().isAccessible(scope, member, (DeclaredType)type) : false;
     }
     
     /**Checks whether the given scope is in "static" context.

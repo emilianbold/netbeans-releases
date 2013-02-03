@@ -44,8 +44,10 @@ package org.netbeans.modules.dlight.libs.common;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -73,13 +75,31 @@ public class PerformanceLogger {
     public static boolean isCpuTimeProfilingAvailable() {
         return CPU_TIME_AVAILABLE;
     }
-    
+
     public final class PerformaceAction {
 
+        /**
+         * Log event.
+         * 
+         * @param extra additional attributes
+         */
         public void log(Object... extra) {
             PerformanceLogger.INSANCE.log(this, extra);
         }
-        //<editor-fold defaultstate="collapsed" desc="Private Implemenration">
+        
+        /**
+         * Event will be automatically logged after time out.
+         * By default time out is infinite.
+         * The automatic logging does not prevent final logging by method log.
+         * It is ensured that timeout event is sent before regular logging event or is not sent.
+         * 
+         * @param timeOut in seconds
+         */
+        public void setTimeOut(int timeOut) {
+            PerformanceLogger.INSANCE.setTimeOut(this, timeOut);
+        }
+        
+        //<editor-fold defaultstate="collapsed" desc="Private Implementation">
         private final String id;
         private final Object source;
         private final long start;
@@ -129,6 +149,12 @@ public class PerformanceLogger {
 
         /**
          *
+         * @return event start time in nanoseconds
+         */
+        long getStartTime();
+
+        /**
+         *
          * @return wall time from start to log event in nanoseconds
          */
         long getTime();
@@ -157,7 +183,7 @@ public class PerformanceLogger {
         void processEvent(PerformanceEvent event);
     }
     
-    //<editor-fold defaultstate="collapsed" desc="Private Implemenration">
+    //<editor-fold defaultstate="collapsed" desc="Private Implementation">
     private static final boolean PROFILING_ENABLED;
     private static final boolean CPU_TIME_AVAILABLE;
     private static final ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
@@ -184,6 +210,7 @@ public class PerformanceLogger {
     private final List<PerformanceListener> listeners = new ArrayList<PerformanceListener>();
     private final ReentrantReadWriteLock lineLock = new ReentrantReadWriteLock();
     private final LinkedList<PerformanceEvent> line = new LinkedList<PerformanceEvent>();
+    private final Map<PerformaceAction, Integer> register = new HashMap<PerformaceAction, Integer>();
     private final ScheduledFuture<?> periodicTask;
     private static final int SCHEDULE = 1; // period in seconds
 
@@ -214,6 +241,26 @@ public class PerformanceLogger {
                                 listenersLock.readLock().unlock();
                             }
                         } else {
+                            List<PerformaceAction> toSend = null;
+                            lineLock.writeLock().lock();
+                            try {
+                                if (!register.isEmpty()) {
+                                    toSend = new ArrayList<PerformaceAction>();
+                                    for(Map.Entry<PerformaceAction, Integer> entry : register.entrySet()) {
+                                        long delta = System.nanoTime() - entry.getKey().start;
+                                        if (delta/1000/1000/1000 > entry.getValue()) {
+                                            toSend.add(entry.getKey());
+                                        }
+                                    }
+                                }
+                            } finally {
+                                lineLock.writeLock().unlock();
+                            }
+                            if (toSend != null && !toSend.isEmpty()) {
+                                for(PerformaceAction action : toSend) {
+                                    logTimeOut(action);
+                                }
+                            }
                             return;
                         }
                     }
@@ -221,6 +268,18 @@ public class PerformanceLogger {
             }, SCHEDULE, SCHEDULE, TimeUnit.SECONDS);
         } else {
             periodicTask = null;
+        }
+    }
+    
+
+    private void setTimeOut(PerformaceAction action, int timeOut) {
+        if (PROFILING_ENABLED) {
+            lineLock.writeLock().lock();
+            try {
+                register.put(action, timeOut);
+            } finally {
+                lineLock.writeLock().unlock();
+            }
         }
     }
 
@@ -238,9 +297,10 @@ public class PerformanceLogger {
                 cpuTime = 0;
                 userTime = 0;
             }
-            PerformanceEvent event = new PerformanceEventImpl(action.id, action.source, delta, cpuTime, userTime, usedMemeory, extra);
+            PerformanceEvent event = new PerformanceEventImpl(action.id, action.source, action.start, delta, cpuTime, userTime, usedMemeory, extra);
             lineLock.writeLock().lock();
             try {
+                register.remove(action);
                 line.addFirst(event);
             } finally {
                 lineLock.writeLock().unlock();
@@ -248,6 +308,25 @@ public class PerformanceLogger {
         }
     }
     
+    private void logTimeOut(PerformaceAction action) {
+        if (PROFILING_ENABLED) {
+            long delta = System.nanoTime() - action.start;
+            Runtime runtime = Runtime.getRuntime();
+            long usedMemeory = runtime.totalMemory() - runtime.freeMemory();
+            long cpuTime = 0;
+            long userTime = 0;
+            PerformanceEvent event = new PerformanceEventImpl(action.id, action.source, action.start, delta, cpuTime, userTime, usedMemeory, new Object[0]);
+            lineLock.writeLock().lock();
+            try {
+                Integer remove = register.remove(action);
+                if (remove != null) {
+                    line.addFirst(event);
+                }
+            } finally {
+                lineLock.writeLock().unlock();
+            }
+        }
+    }
     //</editor-fold>
 
     public static PerformanceLogger getLogger() {
@@ -281,15 +360,17 @@ public class PerformanceLogger {
 
         private final String id;
         private final Object source;
+        private final long startTime;
         private final long time;
         private final long cpu;
         private final long user;
         private final Object[] extra;
         private final long usedMemeory;
 
-        private PerformanceEventImpl(String id, Object source, long time, long cpu, long user, long usedMemeory, Object[] extra) {
+        private PerformanceEventImpl(String id, Object source, long startTime, long time, long cpu, long user, long usedMemeory, Object[] extra) {
             this.id = id;
             this.source = source;
+            this.startTime = startTime;
             this.time = time;
             this.cpu = cpu;
             this.user = user;
@@ -310,6 +391,11 @@ public class PerformanceLogger {
         @Override
         public Object[] getAttrs() {
             return extra;
+        }
+
+        @Override
+        public long getStartTime() {
+            return startTime;
         }
 
         @Override

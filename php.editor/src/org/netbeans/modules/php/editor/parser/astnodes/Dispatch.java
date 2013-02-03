@@ -70,4 +70,10 @@ public abstract class Dispatch extends VariableBase {
      * @return the property of the dispatch
      */
     public abstract VariableBase getMember();
+
+    @Override
+    public String toString() {
+        return getDispatcher() + "->" + getMember(); //NOI18N
+    }
+
 }

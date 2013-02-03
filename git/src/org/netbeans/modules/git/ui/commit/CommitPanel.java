@@ -74,7 +74,7 @@ public class CommitPanel extends javax.swing.JPanel {
     private UndoRedoSupport um; 
 
     /** Creates new form CommitPanel */
-    public CommitPanel(GitCommitParameters parameters, String commitMessage, String user) {
+    public CommitPanel(GitCommitParameters parameters, String commitMessage, boolean preferredMessage, String user) {
         this.parameters = parameters;
         
         initComponents();
@@ -98,7 +98,7 @@ public class CommitPanel extends javax.swing.JPanel {
         setCaretPosition(commiterComboBox);
         
         Spellchecker.register (messageTextArea);  
-        initCommitMessage(commitMessage);
+        initCommitMessage(commitMessage, preferredMessage);
     }
 
     private void setCaretPosition(JComboBox cbo) {
@@ -108,23 +108,25 @@ public class CommitPanel extends javax.swing.JPanel {
         }
     }
     
-    private void initCommitMessage (String commitMessage) {
+    private void initCommitMessage (String commitMessage, boolean preferred) {
         TemplateSelector ts = new TemplateSelector(parameters.getPreferences());
         if(commitMessage != null) {
             messageTextArea.setText(commitMessage);
         }
-        if (ts.isAutofill()) {
-            messageTextArea.setText(ts.getTemplate());
-        } else {
-            String lastCommitMessage = parameters.getLastCanceledCommitMessage();
-            if (lastCommitMessage.isEmpty() && new StringSelector.RecentMessageSelector(parameters.getPreferences()).isAutoFill()) {
-                List<String> messages = parameters.getCommitMessages();
-                if (messages.size() > 0) {
-                    lastCommitMessage = messages.get(0);
+        if (!preferred) {
+            if (ts.isAutofill()) {
+                messageTextArea.setText(ts.getTemplate());
+            } else {
+                String lastCommitMessage = parameters.getLastCanceledCommitMessage();
+                if (lastCommitMessage.isEmpty() && new StringSelector.RecentMessageSelector(parameters.getPreferences()).isAutoFill()) {
+                    List<String> messages = parameters.getCommitMessages();
+                    if (messages.size() > 0) {
+                        lastCommitMessage = messages.get(0);
+                    }
                 }
-            }
-            if (!lastCommitMessage.isEmpty()) {
-                messageTextArea.setText(lastCommitMessage);
+                if (!lastCommitMessage.isEmpty()) {
+                    messageTextArea.setText(lastCommitMessage);
+                }
             }
         }
         messageTextArea.selectAll();

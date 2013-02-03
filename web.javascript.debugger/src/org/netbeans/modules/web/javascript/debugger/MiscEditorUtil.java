@@ -53,16 +53,22 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
+import javax.swing.text.AbstractDocument;
 import javax.swing.text.Document;
+import javax.swing.text.StyledDocument;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.editor.DialogBinding;
+import org.netbeans.api.lexer.LanguagePath;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.project.Project;
 import org.netbeans.editor.EditorUI;
 import org.netbeans.modules.web.common.api.RemoteFileCache;
@@ -81,6 +87,7 @@ import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.Line;
+import org.openide.text.NbDocument;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -270,6 +277,70 @@ public final class MiscEditorUtil {
             return null;
         }
         return EditorContextDispatcher.getDefault().getCurrentLine();
+    }
+    
+    /**
+     * Test whether the line is in JavaScript source.
+     * @param line The line to test
+     * @return <code>true</code> when the line is in JavaScript source, <code>false</code> otherwise.
+     */
+    public static boolean isInJavaScript(Line line) {
+        LOG.log(Level.FINER, "\nisInJavaScript({0}):", line);
+        FileObject fo = line.getLookup().lookup(FileObject.class);
+        if (isJavascriptSource(fo)) {
+            LOG.fine("is JavaScript source file => true");
+            return true;
+        }
+        EditorCookie editorCookie = line.getLookup().lookup(EditorCookie.class);
+        StyledDocument document = editorCookie.getDocument();
+        Boolean isJS = null;
+        ((AbstractDocument) document).readLock();
+        try {
+            TokenHierarchy<Document> th = TokenHierarchy.get((Document) document);
+            int ln = line.getLineNumber();
+            int offset = NbDocument.findLineOffset(document, ln);
+            int maxOffset = document.getLength() - 1;
+            int maxLine = NbDocument.findLineNumber(document, maxOffset);
+            int offset2;
+            if (ln + 1 > maxLine) {
+                offset2 = maxOffset;
+            } else {
+                offset2 = NbDocument.findLineOffset(document, ln+1) - 1;
+            }
+            // The line has offsets <offset, offset2>
+            Set<LanguagePath> languagePaths = th.languagePaths();
+            for (LanguagePath lp : languagePaths) {
+                List<TokenSequence<?>> tsl = th.tokenSequenceList(lp, offset, offset2);
+                for (TokenSequence ts : tsl) {
+                    if (ts.moveNext()) {
+                        int to = ts.offset();
+                        if (LOG.isLoggable(Level.FINER)) {
+                            LOG.finer("Token offset = "+to+", offsets = <"+offset+", "+offset2+">, mimeType = "+ts.language().mimeType());
+                        }
+                        if (!(offset <= to && to < offset2)) {
+                            continue;
+                        }
+                        TokenSequence ets;
+                        ets = ts.embedded();
+                        if (ets != null) {
+                            ts = ets;
+                        }
+                        String mimeType = ts.language().mimeType();
+                        LOG.log(Level.FINER, "Have language {0}", mimeType);
+                        if (isJS == null && JAVASCRIPT_MIME_TYPE.equals(mimeType)) {
+                            isJS = true;
+                            if (!LOG.isLoggable(Level.FINER)) {
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        } finally {
+            ((AbstractDocument) document).readUnlock();
+        }
+        LOG.log(Level.FINER, "isJS = {0}", isJS);
+        return isJS != null && isJS;
     }
 
     public static boolean isHTMLSource(final FileObject fo) {
