@@ -260,7 +260,7 @@ class InterpProtoANSIX extends InterpProtoANSI {
 	    public String action(AbstractInterp ai, char c) {
 		if (ai.noNumber())
 		    return "act_DEC_private: no number";	// NOI18N
-                for (int nx = 0; nx < ai.nNumbers(); nx++) {
+                for (int nx = 0; nx <= ai.nNumbers(); nx++) {
                     int n = ai.numberAt(nx);
                     switch(c) {
                         case 'h': return decPrivateSet(ai, c, n);

@@ -1,5 +1,14 @@
 207965 - Terminal incorrectly displays prompt string
 187345 - wrong characters in Terminals
+	While fixing cursor show/hide discovered that the real problem is
+	that for DEC private actions didn't correct handle multiple
+	;-separated numbers - last one was dropped.
+
+207965 - Terminal incorrectly displays prompt string
+187345 - wrong characters in Terminals
+
+	changeset   : 242707:b9d72096f34f
+
 	Implement
 		\ESC[%dG	CHA
 		\ESC[%dX	ECH
