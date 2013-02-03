@@ -162,9 +162,9 @@ public class ClientJavaSourceHelper {
         /* TODO : Jersey library should be added into classpath if requiresJersey is true
          * below is Jersey 1.X based code which requires Jersey in the project's classpath.
          * New implementation should extend project's classpth with Jersey
-         * library if requiresJersey is true and for non JEE7 profile projects.
+         * library if requiresJersey is true and for non Java EE 7 profile projects.
          * Probably two Jersey versions are required because Jersey 2.X
-         * is based on JAX-RS 2.0 which is not supported by JEE6.... 
+         * is based on JAX-RS 2.0 which is not supported by Java EE 6.... 
          */ 
         try {
             handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(ClientJavaSourceHelper.class, "MSG_creatingRESTClient"));

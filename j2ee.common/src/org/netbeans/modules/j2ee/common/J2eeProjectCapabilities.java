@@ -106,7 +106,7 @@ public final class J2eeProjectCapabilities {
 
     /**
      * EJB 3.0 functionality is supported in EjbJar project which is targeting
-     * JEE5 or JEE6 platform.
+     * Java EE 5 or Java EE 6 platform.
      */
     public boolean isEjb30Supported() {
         J2eeModule.Type moduleType = provider.getJ2eeModule().getType();
@@ -117,7 +117,7 @@ public final class J2eeProjectCapabilities {
 
     /**
      * EJB 3.1 functionality is supported in EjbJar and Web project which is targeting
-     * full JEE6 platform.
+     * full Java EE 6 platform.
      */
     public boolean isEjb31Supported() {
         J2eeModule.Type moduleType = provider.getJ2eeModule().getType();
@@ -127,7 +127,7 @@ public final class J2eeProjectCapabilities {
     }
 
     /**
-     * EJB 3.1 Lite functionality is supported in Web project targeting JEE6
+     * EJB 3.1 Lite functionality is supported in Web project targeting Java EE 6
      * web profile and wherever full EJB 3.1 is supported.
      */
     public boolean isEjb31LiteSupported() {
@@ -138,9 +138,9 @@ public final class J2eeProjectCapabilities {
 
     /**
      * EJB 3.2 functionality is supported in EjbJar and Web project which is targeting
-     * full JavaEE7 platform.
+     * full Java EE 7 platform.
      *
-     * @return {@code true} if the project is targeting full JavaEE7 platform
+     * @return {@code true} if the project is targeting full Java EE 7 platform
      * @since 1.76
      */
     public boolean isEjb32Supported() {
@@ -150,10 +150,10 @@ public final class J2eeProjectCapabilities {
     }
 
     /**
-     * EJB 3.2 Lite functionality is supported in Web project targeting JEE7
+     * EJB 3.2 Lite functionality is supported in Web project targeting Java EE 7
      * web profile and wherever full EJB 3.2 is supported.
      *
-     * @return {@code true} if the project is targeting full or web profile JavaEE7 platform
+     * @return {@code true} if the project is targeting full or web profile Java EE 7 platform
      * @since 1.76
      */
     public boolean isEjb32LiteSupported() {
