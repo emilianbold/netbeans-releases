@@ -188,7 +188,7 @@ public class CloneAction extends ContextAction {
                             return HgCommand.doClone(source, target, getLogger());
                         }
                     }, target);
-                    if (!HgUtils.getHgFolderForRoot(target).isDirectory() || list.contains("transaction abort!")) { //NOI18N
+                    if (!new File(HgUtils.getHgFolderForRoot(target), HgConfigFiles.HG_RC_FILE).canRead() || list.contains("transaction abort!")) { //NOI18N
                         // does not seem to be really cloned
                         logger.output(list);
                         Mercurial.LOG.log(Level.WARNING, "Hg clone seems to fail: {0}", list); //NOI18N
@@ -280,6 +280,9 @@ public class CloneAction extends ContextAction {
                  * automatically").
                  */
                 String defaultPull = hgConfigFiles.getDefaultPull(false);
+                if (defaultPull == null) {
+                    return;
+                }
                 HgURL defaultPullURL;
                 try {
                     defaultPullURL = new HgURL(defaultPull);
