@@ -98,7 +98,7 @@ sequence	mnemonic		termcap op	terminfo	numbers	margin	ansi	dtterm	xterm	Term
 
 \ESC[%dI	CHT <tab forward>	ta				?	?	ST	--	ST	N
 
-\ESC[%dJ	ED (Erase in Display)	cd (cl)		ed, clear	012		ST	ST 	ST	protoansi    op_cl a bit of a mess in Term
+\ESC[%dJ	ED (Erase in Display)	cd (cl)		ed, clear	012		ST	ST 	ST	protoansi
 \ESC[%dK	EL (Erase in Line)	ce		el		012 		ST	ST	ST	protoansi
 
 \ESC[%dL	IL (Insert Lines)	al (AL, kI) 	il		? 		ST	ST	ST	protoansi

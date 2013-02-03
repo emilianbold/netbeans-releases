@@ -79,7 +79,11 @@ final class Line {
         wrapped = false;
         about_to_wrap = false;
     }
-    
+
+    public void reset(Term term, int end, int eraseAttr) {
+        reset();
+        clearToEndFrom(term, 0, end, eraseAttr);
+    }
     
     public int capacity() {
         return capacity;

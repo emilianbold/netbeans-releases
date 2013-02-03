@@ -3573,18 +3573,6 @@ public class Term extends JComponent implements Accessible {
         }
 
 	@Override
-        public void op_cl() {
-            // clear screen and home cursor
-            if (debugOps()) {
-                System.out.println("op_cl"); // NOI18N
-            }
-            cursor_line().setAboutToWrap(false);
-            clear();
-            st.cursor.row = beginx();
-            st.cursor.col = 0;
-        }
-
-	@Override
         public void op_ce() {
             // clear to end of line
             if (debugOps()) {
@@ -3649,6 +3637,71 @@ public class Term extends JComponent implements Accessible {
                     // nothing to do
                     break;
                 case Sel.INT_BELOW:
+                case Sel.INT_ON:
+                case Sel.INT_STRADDLES:
+                    sel.cancel(true);	// DtTerm behaviour
+                    break;
+            }
+        }
+
+	@Override
+        public void op_cl() {
+            // clear screen and home cursor
+            if (debugOps()) {
+                System.out.println("op_cl"); // NOI18N
+            }
+            cursor_line().setAboutToWrap(false);
+            clear();
+            st.cursor.row = beginx();
+            st.cursor.col = 0;
+        }
+
+        public void op_ed(int code) {
+            // Erase in Line
+            if (debugOps()) {
+                System.out.printf("op_ed(%d)\n", code); // NOI18N
+            }
+            Line l;
+            switch (code) {
+                case 0:         // from cursor to end
+                    l = cursor_line();
+                    // l.setAboutToWrap(false);
+                    l.clearToEndFrom(Term.this,
+                                     l.cellToBuf(metrics, st.cursor.col),
+                                     buf.visibleCols()-1,
+                                     Attr.backgroundColor(st.attr));
+                    for (int lx = st.cursor.row+1; lx < beginx() + st.rows; lx++) {
+                        l = buf.lineAt(lx);
+                        // l.setAboutToWrap(false);
+                        l.reset(Term.this, buf.visibleCols()-1, Attr.backgroundColor(st.attr));
+                    }
+                    break;
+                case 1:         // from beginning to cursor (inclusive)
+                    for (int lx = beginx(); lx < st.cursor.row; lx++) {
+                        l = buf.lineAt(lx);
+                        // l.setAboutToWrap(false);
+                        l.reset(Term.this, buf.visibleCols()-1, Attr.backgroundColor(st.attr));
+                    }
+                    l = cursor_line();
+                    // l.setAboutToWrap(false);
+                    l.clearTo(Term.this,
+                              l.cellToBuf(metrics, st.cursor.col),
+                              Attr.backgroundColor(st.attr));
+                    break;
+                case 2:         // whole screen
+                    for (int lx = beginx(); lx < beginx() + st.rows; lx++) {
+                        l = buf.lineAt(lx);
+                        // l.setAboutToWrap(false);
+                        l.reset(Term.this, buf.visibleCols()-1, Attr.backgroundColor(st.attr));
+                    }
+                    break;
+            }
+            switch (sel.intersection(st.cursor.row)) {
+                case Sel.INT_NONE:
+                case Sel.INT_ABOVE:
+                case Sel.INT_BELOW:
+                    // nothing to do
+                    break;
                 case Sel.INT_ON:
                 case Sel.INT_STRADDLES:
                     sel.cancel(true);	// DtTerm behaviour
@@ -4044,13 +4097,16 @@ public class Term extends JComponent implements Accessible {
         }
 
         @Override
-        public void logUnrecognizedSequence(String toString) {
-            Term.this.logUnrecognizedSequence(toString);
+        public void logUnrecognizedSequence(String sequence) {
+            if (debugOps()) {
+                System.out.printf("Unrecognized sequence '%s'\n", sequence); // NOI18N
+            }
+            Term.this.logUnrecognizedSequence(sequence);
         }
 
         @Override
-        public void logCompletedSequence(String toString) {
-            Term.this.logCompletedSequence(toString);
+        public void logCompletedSequence(String sequence) {
+            Term.this.logCompletedSequence(sequence);
         }
 
         @Override

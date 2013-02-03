@@ -311,14 +311,18 @@ class InterpProtoANSI extends InterpDumb {
 	    @Override
 	    public String action(AbstractInterp ai, char c) {
 		if (ai.noNumber()) {
-		    ai.ops.op_cd();
+		    ai.ops.op_ed(0);
 		} else {
-		    int count = ai.numberAt(0);
-		    if (count == 1) {
-			return "ACT J: count of 1 not supported";	// NOI18N
-		    } else if (count == 2) {
-			ai.ops.op_cl();
-		    } 
+		    final int code = ai.numberAt(0);
+                    switch (code) {
+                        case 0:
+                        case 1:
+                        case 2:
+                            ai.ops.op_ed(code);
+                            break;
+                        default:
+                            return "ACT J: count of > 2 not supported";	// NOI18N
+                    }
 		} 
 		return null;
 	    }

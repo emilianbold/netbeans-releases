@@ -132,4 +132,5 @@ interface Ops {
     public void op_cha(int i);
     public void op_ech(int i);
     public void op_vpa(int i);
+    public void op_ed(int i);
 }

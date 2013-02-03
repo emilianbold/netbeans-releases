@@ -1,5 +1,14 @@
 207965 - Terminal incorrectly displays prompt string
 187345 - wrong characters in Terminals
+	
+	Implement ED (Erase in Display) and reimplement \ESC[%dJ in terms
+	of op_ed() instead of op_cd() or op_cl().
+
+207965 - Terminal incorrectly displays prompt string
+187345 - wrong characters in Terminals
+
+	changeset:   242709:a0c447ec4b2c
+
 	Fix EL (Erase in Line) and ECH (Erase CHaracters) especially wrt
 	retaining background color in erased regions.
 
