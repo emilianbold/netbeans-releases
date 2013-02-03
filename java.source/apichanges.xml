@@ -118,7 +118,10 @@ is the proper place.
              <description>
                  Added several new methods to support Java 8 features. Namely: <code>ElementUtilities.isEffectivelyFinal</code>,
                  <code>TreeMaker.TypeAnnotation</code>, <code>TreeMaker.LambdaExpression</code>,
+                 <code>TreeMaker.addLambdaParameter</code>, <code>TreeMaker.insertLambdaParameter</code>,
+                 <code>TreeMaker.removeLambdaParameter</code>, <code>TreeMaker.setLambdaBody</code>,
                  <code>TreeMaker.MemberReference</code> and <code>TypeUtilities.getDescriptorType</code>.
+                 <code>TreeMaker.setLabel</code> was updated to understand MemberReferences.
              </description>
              <issue number="225533"/>
         </change>
