@@ -53,6 +53,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -60,12 +61,15 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.apache.lucene.document.Field;
+import org.apache.lucene.document.Fieldable;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.parsing.impl.indexing.lucene.DocumentBasedIndexManager;
 import org.netbeans.modules.parsing.lucene.support.DocumentIndex;
 import org.netbeans.modules.parsing.lucene.support.DocumentIndexCache;
 import org.netbeans.modules.parsing.lucene.support.IndexDocument;
+import org.netbeans.modules.parsing.lucene.support.IndexManager;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.openide.util.Parameters;
 import org.openide.util.Utilities;
@@ -123,8 +127,15 @@ public final class ClusteredIndexables {
             return new BitSetIterable(cluster);
     }
 
+    @NonNull
     public static AttachableDocumentIndexCache createDocumentIndexCache() {
         return new DocumentIndexCacheImpl();
+    }
+
+    @NonNull
+    public static IndexDocument createDocument(@NonNull final String primaryKey) {
+        Parameters.notNull("primaryKey", primaryKey);   //NOI18N
+        return new DocumentStore.MemoryIndexDocument(primaryKey);
     }
 
     public static interface AttachableDocumentIndexCache extends DocumentIndexCache {
@@ -255,9 +266,9 @@ public final class ClusteredIndexables {
         private ClusteredIndexables indexIndexables;
         private BitSet deleteFromDeleted;
         private BitSet deleteFromIndex;
-        private List<IndexDocument> toAdd;
+        private DocumentStore toAdd;
         private List<String> toDeleteOutOfOrder;
-        private Reference<List[]> dataRef;
+        private Reference<Collection[]> dataRef;
 
         private volatile Pair<Long,StackTraceElement[]> attachDeleteStackTrace;
         private volatile Pair<Long,StackTraceElement[]> attachIndexStackTrace;
@@ -310,6 +321,9 @@ public final class ClusteredIndexables {
 
         @Override
         public boolean addDocument(IndexDocument document) {
+            if (!(document instanceof DocumentStore.MemoryIndexDocument)) {
+                throw new IllegalArgumentException(document.getClass().getName());
+            }
             final boolean shouldFlush = init();
             handleDelete(
                 indexIndexables,
@@ -411,25 +425,25 @@ public final class ClusteredIndexables {
                     deleteFromDeleted == null &&
                     deleteFromIndex == null;
                 assert dataRef == null;
-                toAdd = new ArrayList<IndexDocument>();
+                toAdd = new DocumentStore();
                 toDeleteOutOfOrder = new ArrayList<String>();
                 deleteFromDeleted = new BitSet();
                 deleteFromIndex = new BitSet();
                 dataRef = new ClearReference(
-                        new List[] {toAdd, toDeleteOutOfOrder},
+                        new Collection[] {toAdd, toDeleteOutOfOrder},
                         this);
             }
             return dataRef.get() == null;
         }
     }
 
-    private static final class ClearReference extends SoftReference<List[]> implements Runnable, Callable<Void> {
+    private static final class ClearReference extends SoftReference<Collection[]> implements Runnable, Callable<Void> {
 
         private final DocumentIndexCacheImpl owner;
         private final AtomicInteger state = new AtomicInteger();
 
         public ClearReference(
-                @NonNull final List[] data,
+                @NonNull final Collection[] data,
                 @NonNull final DocumentIndexCacheImpl owner) {
             super(data, Utilities.activeReferenceQueue());
             Parameters.notNull("data", data);   //NOI18N
@@ -664,6 +678,240 @@ public final class ClusteredIndexables {
         }
     }
 
+    private static final class DocumentStore implements Collection<IndexDocument>{
 
+        private static final int INITIAL_DOC_COUNT = 100;
+        private static final int INITIAL_DATA_SIZE = 1<<10;
+
+        private final Map<String,Integer> fieldNames;
+        private int[] docs;
+        private char[] data;
+        private int nameIndex;
+        private int docsPointer;
+        private int dataPointer;
+
+
+        DocumentStore() {
+            fieldNames = new LinkedHashMap<String, Integer>();
+            docs = new int[INITIAL_DOC_COUNT];
+            data = new char[INITIAL_DATA_SIZE];
+
+        }
+
+        @Override
+        public boolean add(@NonNull final IndexDocument doc) {
+            if (!(doc instanceof MemoryIndexDocument)) {
+                throw new IllegalArgumentException();
+            }
+            for (Fieldable fld : ((MemoryIndexDocument)doc).getFields()) {
+                final String fldName = fld.name();
+                final boolean stored = fld.isStored();
+                final boolean indexed = fld.isIndexed();
+                final String fldValue = fld.stringValue();
+                int index;
+                Integer indexBoxed = fieldNames.get(fldName);
+                if (indexBoxed == null) {
+                    index = nameIndex++;
+                    fieldNames.put(fldName, index);
+                } else {
+                    index = indexBoxed;
+                }
+                index = (index << 3) | (stored ? 4 : 0) | (indexed ? 2 : 0) | 1;
+
+                if (docs.length < docsPointer + 2) {
+                    int[] newdocs = new int[docs.length << 1];
+                    System.arraycopy(docs, 0, newdocs, 0, docs.length);
+                    docs = newdocs;
+                }
+                docs[docsPointer] = index;
+                docs[docsPointer + 1] = dataPointer;
+                docsPointer += 2;
+                if (data.length < dataPointer + fldValue.length()) {
+                    char[] newdata = new char[data.length << 1];
+                    System.arraycopy(data, 0, newdata, 0, data.length);
+                    data = newdata;
+                }
+                fldValue.getChars(0, fldValue.length(), data, dataPointer);
+                dataPointer += fldValue.length();
+            }
+            if (docs.length < docsPointer + 1) {
+                int[] newdocs = new int[docs.length << 1];
+                System.arraycopy(docs, 0, newdocs, 0, docs.length);
+                docs = newdocs;
+            }
+            docs[docsPointer++] = 0;
+            return true;
+        }
+
+        @Override
+        public Iterator<IndexDocument> iterator() {
+            return new It();
+        }
+
+        @Override
+        public boolean isEmpty() {
+            return docsPointer == 0;
+        }
+
+        @Override
+        public void clear() {
+            fieldNames.clear();
+            docs = new int[INITIAL_DOC_COUNT];
+            data = new char[INITIAL_DATA_SIZE];
+            docsPointer = 0;
+            dataPointer = 0;
+        }
+
+        @Override
+        public int size() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public boolean contains(Object o) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Object[] toArray() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public <T> T[] toArray(T[] a) {
+            throw new UnsupportedOperationException();
+        }
+       
+        @Override
+        public boolean remove(Object o) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public boolean containsAll(Collection<?> c) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public boolean addAll(Collection<? extends IndexDocument> c) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public boolean removeAll(Collection<?> c) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public boolean retainAll(Collection<?> c) {
+            throw new UnsupportedOperationException();
+        }
+
+        private class It implements Iterator<IndexDocument> {
+
+            private int cur = 0;
+            private final List<String> names;
+
+            It() {
+                names = new ArrayList<String>(fieldNames.keySet());
+            }
+
+            @Override
+            public boolean hasNext() {
+                return cur<docsPointer;
+            }
+
+            /**
+             * Todo: Perf: non needed creation of IndexDocument, single can be used.
+             */
+            @Override
+            public IndexDocument next() {
+                IndexDocument doc = null;
+                int nameIndex;
+                while ((nameIndex=docs[cur++]) != 0) {
+                    final boolean stored = (nameIndex & 4) == 4;
+                    final boolean indexed = (nameIndex & 2) == 2;
+                    nameIndex >>>= 3;
+                    final int dataStart = docs[cur++];
+                    final int dataEnd = docs[cur] != 0 ?
+                            docs[cur+1] :
+                            cur+1 == docsPointer ?
+                                dataPointer :
+                                docs[cur+2];
+                    final String value = new String (data,dataStart, dataEnd - dataStart);
+                    if (doc == null) {
+                        assert "_sn".equals(names.get(nameIndex));  //NOI18N
+                        doc = IndexManager.createDocument(value);
+                    }
+                    doc.addPair(
+                            names.get(nameIndex),
+                            value,
+                            indexed,
+                            stored);
+                }
+                return doc;
+            }
+
+            @Override
+            public void remove() {
+            }
+        }
+
+        private static final class MemoryIndexDocument implements IndexDocument {
+
+            private static final String FIELD_PRIMARY_KEY = "_sn";  //NOI18N
+            private static final String[] EMPTY = new String[0];
+
+            private final List<Fieldable> fields = new ArrayList<Fieldable>();
+
+            MemoryIndexDocument(@NonNull final String primaryKey) {
+                Parameters.notNull("primaryKey", primaryKey);   //NOI18N
+                fields.add(sourceNameField(primaryKey));
+            }
+
+            public List<Fieldable> getFields() {
+                return fields;
+            }
+
+            @Override
+            public String getPrimaryKey() {
+                return getValue(FIELD_PRIMARY_KEY);
+            }
+
+            @Override
+            public void addPair(String key, String value, boolean searchable, boolean stored) {
+                final Field field = new Field (key, value,
+                        stored ? Field.Store.YES : Field.Store.NO,
+                        searchable ? Field.Index.NOT_ANALYZED_NO_NORMS : Field.Index.NO);
+                fields.add (field);
+            }
+
+            @Override
+            public String getValue(String key) {
+                for (Fieldable field : fields) {
+                    if (field.name().equals(key)) {
+                        return field.stringValue();
+                    }
+                }
+                return null;
+            }
+
+            @Override
+            public String[] getValues(String key) {
+                final List<String> result = new ArrayList<String>();
+                for (Fieldable field : fields) {
+                    if (field.name().equals(key)) {
+                        result.add(field.stringValue());
+                    }
+                }
+                return result.toArray(result.isEmpty() ? EMPTY : new String[result.size()]);
+            }
+
+            private Fieldable sourceNameField(@NonNull String primaryKey) {
+                return new Field(FIELD_PRIMARY_KEY, primaryKey, Field.Store.YES, Field.Index.NOT_ANALYZED_NO_NORMS);
+            }
+        }
+
+    }
 
 }
