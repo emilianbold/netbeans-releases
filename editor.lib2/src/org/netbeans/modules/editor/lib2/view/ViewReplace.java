@@ -62,10 +62,14 @@ final class ViewReplace<V extends EditorView, CV extends EditorView> {
     private int removeCount; // 16 + 4 = 20 bytes
 
     private List<CV> added; // 20 + 4 = 24 bytes
+    
+    private final int childViewCount; // 24 + 4 = 28 bytes
 
     ViewReplace(V view) {
         assert (view != null);
         this.view = view;
+        // Cache child view count since the view is not going to change during views rebuild.
+        this.childViewCount = view.getViewCount();
     }
     
     void add(CV childView) {
@@ -99,7 +103,7 @@ final class ViewReplace<V extends EditorView, CV extends EditorView> {
     }
 
     void setRemoveCount(int removeCount) {
-        if (index + removeCount > view.getViewCount()) {
+        if (index + removeCount > childViewCount) {
             throw new IllegalStateException("removeCount=" + removeCount + ", this:\n" + this);
         }
         this.removeCount = removeCount;
@@ -114,7 +118,11 @@ final class ViewReplace<V extends EditorView, CV extends EditorView> {
     }
     
     void removeTillEnd() {
-        setRemoveCount(view.getViewCount() - index);
+        setRemoveCount(childViewCount - index);
+    }
+    
+    boolean isRemovedTillEnd() {
+        return (index + removeCount == childViewCount);
     }
 
     boolean isChanged() {
@@ -122,7 +130,7 @@ final class ViewReplace<V extends EditorView, CV extends EditorView> {
     }
     
     boolean isMakingViewEmpty() {
-        return index == 0 && getRemoveCount() == view.getViewCount() && addedSize() == 0;
+        return index == 0 && getRemoveCount() == childViewCount && addedSize() == 0;
     }
 
     @Override
