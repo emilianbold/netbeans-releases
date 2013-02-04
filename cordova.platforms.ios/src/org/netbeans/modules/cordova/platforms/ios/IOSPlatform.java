@@ -55,6 +55,7 @@ import org.netbeans.modules.cordova.platforms.SDK;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.EditableProperties;
 import org.openide.util.Exceptions;
+import org.openide.util.Utilities;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -67,6 +68,7 @@ public class IOSPlatform implements MobilePlatform {
 
     private transient final java.beans.PropertyChangeSupport propertyChangeSupport = new java.beans.PropertyChangeSupport(this);
     private String sdkLocation;
+    private SDK DEFAULT = new IOSSDK("Simulator - iOS 6.0", "iphonesimulator6.0");
     
     public String getType() {
         return PlatformManager.IOS_TYPE;
@@ -114,7 +116,9 @@ public class IOSPlatform implements MobilePlatform {
 
     @Override
     public SDK getPrefferedTarget() {
-        return getSDKs().iterator().next();
+        if (Utilities.isMac())
+            return getSDKs().iterator().next();
+        return DEFAULT;
     }
 
     @Override

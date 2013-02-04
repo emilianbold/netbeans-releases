@@ -89,7 +89,7 @@ public class IOSSDK implements SDK {
         return result;
     }
 
-    private IOSSDK(String name, String identifier) {
+    IOSSDK(String name, String identifier) {
         this.name = name;
         this.identifier = identifier;
     }
