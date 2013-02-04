@@ -153,7 +153,6 @@ public final class PhpExecutable {
     private File fileOutput = null;
     private boolean fileOutputOnly = false;
     private boolean noInfo = false;
-    private boolean debug = false;
 
 
     /**
@@ -424,25 +423,7 @@ public final class PhpExecutable {
     @CheckForNull
     public Future<Integer> run(@NonNull ExecutionDescriptor executionDescriptor, @NullAllowed ExecutionDescriptor.InputProcessorFactory outProcessorFactory) {
         Parameters.notNull("executionDescriptor", executionDescriptor); // NOI18N
-        String error;
-        if (validationHandler == null) {
-            error = PhpExecutableValidator.validateCommand(executable, executableName);
-        } else {
-            error = PhpExecutableValidator.validateCommand(executable, validationHandler);
-        }
-        if (error != null) {
-            if (warnUser) {
-                // optionsSubcategory should be taken from executionDescriptor (unfortunately not possible)
-                UiUtils.invalidScriptProvided(error, optionsSubcategory);
-            }
-            return null;
-        }
-        ExternalProcessBuilder processBuilder = getProcessBuilder();
-        if (processBuilder == null) {
-            return null;
-        }
-        executionDescriptor = getExecutionDescriptor(executionDescriptor, outProcessorFactory);
-        return ExecutionService.newService(processBuilder, executionDescriptor, getDisplayName()).run();
+        return runInternal(executionDescriptor, outProcessorFactory, false);
     }
 
     /**
@@ -594,7 +575,6 @@ public final class PhpExecutable {
         if (EventQueue.isDispatchThread()) {
             throw new IllegalStateException("Debugging cannot be called from the UI thread");
         }
-        debug = true;
         DebugStarter dbgStarter =  Lookup.getDefault().lookup(DebugStarter.class);
         assert dbgStarter != null;
         if (dbgStarter.isAlreadyRunning()) {
@@ -609,7 +589,7 @@ public final class PhpExecutable {
             @Override
             public Cancellable call() throws Exception {
                 try {
-                    result.set(PhpExecutable.this.run(executionDescriptor, outProcessorFactory));
+                    result.set(PhpExecutable.this.runInternal(executionDescriptor, outProcessorFactory, true));
                 } finally {
                     countDownLatch.countDown();
                 }
@@ -654,7 +634,31 @@ public final class PhpExecutable {
     }
 
     @CheckForNull
-    private ExternalProcessBuilder getProcessBuilder() {
+    private Future<Integer> runInternal(ExecutionDescriptor executionDescriptor, ExecutionDescriptor.InputProcessorFactory outProcessorFactory, boolean debug) {
+        Parameters.notNull("executionDescriptor", executionDescriptor); // NOI18N
+        String error;
+        if (validationHandler == null) {
+            error = PhpExecutableValidator.validateCommand(executable, executableName);
+        } else {
+            error = PhpExecutableValidator.validateCommand(executable, validationHandler);
+        }
+        if (error != null) {
+            if (warnUser) {
+                // optionsSubcategory should be taken from executionDescriptor (unfortunately not possible)
+                UiUtils.invalidScriptProvided(error, optionsSubcategory);
+            }
+            return null;
+        }
+        ExternalProcessBuilder processBuilder = getProcessBuilder(debug);
+        if (processBuilder == null) {
+            return null;
+        }
+        executionDescriptor = getExecutionDescriptor(executionDescriptor, outProcessorFactory);
+        return ExecutionService.newService(processBuilder, executionDescriptor, getDisplayName()).run();
+    }
+
+    @CheckForNull
+    private ExternalProcessBuilder getProcessBuilder(boolean debug) {
         ExternalProcessBuilder processBuilder = createProcessBuilder();
         if (processBuilder == null) {
             return null;
