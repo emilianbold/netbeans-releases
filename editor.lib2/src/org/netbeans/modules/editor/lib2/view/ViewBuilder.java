@@ -1234,7 +1234,7 @@ final class ViewBuilder {
             for (; pIndex < endIndex; pIndex++) {
                 ParagraphView pView = docView.getParagraphView(pIndex);
                 Shape pAlloc = docView.getChildAllocation(pIndex, docViewRect);
-                if (!pView.isChildrenNull()) {
+                if (pView.isChildrenNull()) {
                     LOG.info("Null children for accurate span at pIndex=" + // NOI18N
                         pIndex + "\nviewBuilder:\n" + this); // NOI18N
 //                        "\n\ndocView:\n" + docView.toStringDetailNeedsLock()); // NOI18N
