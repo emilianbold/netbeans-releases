@@ -42,15 +42,14 @@
 
 package org.netbeans.modules.cnd.dwarfdiscovery.provider;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.regex.Pattern;
 import junit.framework.TestCase;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryUtils;
+import org.netbeans.modules.cnd.discovery.api.DiscoveryUtils.Artifacts;
 import org.netbeans.modules.cnd.discovery.api.ItemProperties;
 import org.netbeans.modules.cnd.dwarfdiscovery.provider.LogReader.CommandLineSource;
 
@@ -923,15 +922,12 @@ public class LogReaderTest extends TestCase {
     }
 
     private String processLine(String[] line, DiscoveryUtils.LogOrigin isScriptOutput) {
-        List<String> userIncludes = new ArrayList<String>();
-        Map<String, String> userMacros = new TreeMap<String, String>();
-        List<String> undefs = new ArrayList<String>();
-        List<String> languageArtifacts = new ArrayList<String>();
-        String what = DiscoveryUtils.gatherCompilerLine(Arrays.asList(line).iterator(), isScriptOutput, userIncludes, userMacros, undefs, null, languageArtifacts, null, false).get(0);
+        Artifacts artifacts = new Artifacts();
+        String what = DiscoveryUtils.gatherCompilerLine(Arrays.asList(line).iterator(), isScriptOutput, artifacts, null, false).get(0);
         StringBuilder res = new StringBuilder();
         res.append("Source:").append(what).append("\n");
         res.append("Macros:");
-        for (Map.Entry<String, String> entry : userMacros.entrySet()) {
+        for (Map.Entry<String, String> entry : new TreeMap<String,String>(artifacts.userMacros).entrySet()) {
             res.append("\n");
             res.append(entry.getKey());
             if (entry.getValue() != null) {
@@ -939,15 +935,15 @@ public class LogReaderTest extends TestCase {
                 res.append(entry.getValue());
             }
         }
-        if (!undefs.isEmpty()) {
+        if (!artifacts.undefinedMacros.isEmpty()) {
             res.append("\nUndefs:");
-            for (String undef : undefs) {
+            for (String undef : artifacts.undefinedMacros) {
                 res.append("\n");
                 res.append(undef);
             }
         }
         res.append("\nPaths:");
-        for (String path : userIncludes) {
+        for (String path : artifacts.userIncludes) {
             res.append("\n");
             res.append(path);
         }
@@ -955,18 +951,15 @@ public class LogReaderTest extends TestCase {
     }
     
     private String processLine(String line, DiscoveryUtils.LogOrigin isScriptOutput) {
-        List<String> userIncludes = new ArrayList<String>();
-        Map<String, String> userMacros = new TreeMap<String, String>();
-        List<String> undefs = new ArrayList<String>();
-        List<String> languageArtifacts = new ArrayList<String>();
         line = LogReader.trimBackApostropheCalls(line, null);
         Pattern pattern = Pattern.compile(";|\\|\\||&&"); // ;, ||, && //NOI18N
         String[] cmds = pattern.split(line);
-        String what = DiscoveryUtils.gatherCompilerLine(cmds[0], isScriptOutput, userIncludes, userMacros, undefs, null, languageArtifacts, null, false).get(0);
+        Artifacts artifacts = new Artifacts();
+        String what = DiscoveryUtils.gatherCompilerLine(cmds[0], isScriptOutput, artifacts, null, false).get(0);
         StringBuilder res = new StringBuilder();
         res.append("Source:").append(what).append("\n");
         res.append("Macros:");
-        for (Map.Entry<String, String> entry : userMacros.entrySet()) {
+        for (Map.Entry<String, String> entry : new TreeMap<String,String>(artifacts.userMacros).entrySet()) {
             res.append("\n");
             res.append(entry.getKey());
             if (entry.getValue() != null) {
@@ -974,15 +967,15 @@ public class LogReaderTest extends TestCase {
                 res.append(entry.getValue());
             }
         }
-        if (!undefs.isEmpty()) {
+        if (!artifacts.undefinedMacros.isEmpty()) {
             res.append("\nUndefs:");
-            for (String undef : undefs) {
+            for (String undef : artifacts.undefinedMacros) {
                 res.append("\n");
                 res.append(undef);
             }
         }
         res.append("\nPaths:");
-        for (String path : userIncludes) {
+        for (String path : artifacts.userIncludes) {
             res.append("\n");
             res.append(path);
         }
@@ -1036,23 +1029,18 @@ public class LogReaderTest extends TestCase {
         } else {
             assertNotSame(ItemProperties.LanguageKind.Unknown, li.getLanguage());
         }
-        List<String> userIncludes = new ArrayList<String>();
-        Map<String, String> userMacros = new HashMap<String, String>();
-        List<String> undefs = new ArrayList<String>();
-        List<String> languageArtifacts = new ArrayList<String>();
-        List<String> sourcesList = DiscoveryUtils.gatherCompilerLine(line, DiscoveryUtils.LogOrigin.BuildLog, userIncludes, userMacros, undefs, null, languageArtifacts, null, false);
+        Artifacts artifacts = new Artifacts();
+        List<String> sourcesList = DiscoveryUtils.gatherCompilerLine(line, DiscoveryUtils.LogOrigin.BuildLog, artifacts, null, false);
         assertTrue(sourcesList.size() == size);
         for(String what :sourcesList) {
-            CommandLineSource cs = new CommandLineSource(li, languageArtifacts, "/", what, userIncludes, userMacros, undefs, null);
+            CommandLineSource cs = new CommandLineSource(li, artifacts.languageArtifacts, "/", what, artifacts.userIncludes, artifacts.userMacros, artifacts.undefinedMacros, null);
             assertEquals(ct, cs.getLanguageKind());
         }
     }
 
     private void testLanguageArtifact(String artifact, String line) {
-        List<String> userIncludes = new ArrayList<String>();
-        Map<String, String> userMacros = new HashMap<String, String>();
-        List<String> languageArtifacts = new ArrayList<String>();
-        DiscoveryUtils.gatherCompilerLine(line, DiscoveryUtils.LogOrigin.BuildLog, userIncludes, userMacros, null, null, languageArtifacts, null, false);
-        assert languageArtifacts.contains(artifact);
+        Artifacts artifacts = new Artifacts();
+        DiscoveryUtils.gatherCompilerLine(line, DiscoveryUtils.LogOrigin.BuildLog, artifacts, null, false);
+        assert artifacts.languageArtifacts.contains(artifact);
     }
 }

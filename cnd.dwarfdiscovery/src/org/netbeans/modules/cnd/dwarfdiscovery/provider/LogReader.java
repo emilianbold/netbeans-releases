@@ -64,6 +64,7 @@ import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryUtils;
+import org.netbeans.modules.cnd.discovery.api.DiscoveryUtils.Artifacts;
 import org.netbeans.modules.cnd.discovery.api.ItemProperties;
 import org.netbeans.modules.cnd.discovery.api.Progress;
 import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
@@ -99,6 +100,7 @@ public class LogReader {
     private final String root;
     private final String fileName;
     private List<SourceFileProperties> result;
+    private List<String> buildArtifacts;
     private final PathMap pathMapper;
     private final ProjectProxy project;
     private final CompilerSettings compilerSettings;
@@ -247,6 +249,7 @@ public class LogReader {
         }
         Pattern pattern = Pattern.compile(";|\\|\\||&&"); // ;, ||, && //NOI18N
         result = new ArrayList<SourceFileProperties>();
+        buildArtifacts = new ArrayList<String>();
         File file = new File(fileName);
         if (file.exists() && file.canRead()){
             try {
@@ -334,7 +337,21 @@ public class LogReader {
         }
         return result;
     }
-
+    public List<String> getArtifacts(Progress progress, AtomicBoolean isStoped, CompileLineStorage storage) {
+        if (buildArtifacts == null) {
+            // XXX
+            setWorkingDir(root);
+            run(progress, isStoped, storage);
+            if (subFolders != null) {
+                subFolders.clear();
+                subFolders = null;
+                findBase.clear();
+                findBase = null;
+            }
+        }
+        return buildArtifacts;
+    }
+    
     private final ArrayList<List<String>> makeStack = new ArrayList<List<String>>();
 
     private int getMakeLevel(String line){
@@ -850,12 +867,8 @@ public class LogReader {
 
     private void gatherLine(LineInfo li, CompileLineStorage storage) {
         String line = li.compileLine;
-        List<String> userIncludes = new ArrayList<String>();
-        Map<String, String> userMacros = new HashMap<String, String>();
-        List<String> undefinedMacros = new ArrayList<String>();
-        List<String> languageArtifacts = new ArrayList<String>();
-        List<String> sourcesList = DiscoveryUtils.gatherCompilerLine(line, DiscoveryUtils.LogOrigin.BuildLog, userIncludes, userMacros, undefinedMacros,
-                null, languageArtifacts, compilerSettings.getProjectBridge(), li.compilerType == CompilerType.CPP);
+        Artifacts artifacts = new Artifacts();
+        List<String> sourcesList = DiscoveryUtils.gatherCompilerLine(line, DiscoveryUtils.LogOrigin.BuildLog, artifacts, compilerSettings.getProjectBridge(), li.compilerType == CompilerType.CPP);
         for(String what : sourcesList) {
             if (what == null){
                 continue;
@@ -874,13 +887,13 @@ public class LogReader {
             } else {
                 file = workingDir+"/"+what;  //NOI18N
             }
-            List<String> userIncludesCached = new ArrayList<String>(userIncludes.size());
-            for(String s : userIncludes){
+            List<String> userIncludesCached = new ArrayList<String>(artifacts.userIncludes.size());
+            for(String s : artifacts.userIncludes){
                 s = convertWindowsRelativePath(s);
                 userIncludesCached.add(PathCache.getString(s));
             }
-            Map<String, String> userMacrosCached = new HashMap<String, String>(userMacros.size());
-            for(Map.Entry<String,String> e : userMacros.entrySet()){
+            Map<String, String> userMacrosCached = new HashMap<String, String>(artifacts.userMacros.size());
+            for(Map.Entry<String,String> e : artifacts.userMacros.entrySet()){
                 if (e.getValue() == null) {
                     userMacrosCached.put(PathCache.getString(e.getKey()), null);
                 } else {
@@ -892,7 +905,7 @@ public class LogReader {
                 if (DwarfSource.LOG.isLoggable(Level.FINE)) {
                     DwarfSource.LOG.log(Level.FINE, "**** Gotcha: {0}", file);
                 }
-                result.add(new CommandLineSource(li, languageArtifacts, workingDir, what, userIncludesCached, userMacrosCached, undefinedMacros, storage));
+                result.add(new CommandLineSource(li, artifacts.languageArtifacts, workingDir, what, userIncludesCached, userMacrosCached, artifacts.undefinedMacros, storage));
                 continue;
             }
             if (!isRelative) {
@@ -904,7 +917,7 @@ public class LogReader {
                         if (DwarfSource.LOG.isLoggable(Level.FINE)) {
                             DwarfSource.LOG.log(Level.FINE, "**** Gotcha: {0}", file);
                         }
-                        result.add(new CommandLineSource(li, languageArtifacts, workingDir, what, userIncludesCached, userMacrosCached, undefinedMacros, storage));
+                        result.add(new CommandLineSource(li, artifacts.languageArtifacts, workingDir, what, userIncludesCached, userMacrosCached, artifacts.undefinedMacros, storage));
                         continue;
                     }
                 }
@@ -916,14 +929,14 @@ public class LogReader {
                     if (DwarfSource.LOG.isLoggable(Level.FINE)) {
                         DwarfSource.LOG.log(Level.FINE, "**** Gotcha guess: {0}", file);
                     }
-                    result.add(new CommandLineSource(li, languageArtifacts, guessWorkingDir, what, userIncludesCached, userMacrosCached, undefinedMacros, storage));
+                    result.add(new CommandLineSource(li, artifacts.languageArtifacts, guessWorkingDir, what, userIncludesCached, userMacrosCached, artifacts.undefinedMacros, storage));
                     continue;
                 }
             }
             if (DwarfSource.LOG.isLoggable(Level.FINE)) {
                 DwarfSource.LOG.log(Level.FINE, "**** Not found {0}", file); //NOI18N
             }
-            if (!what.startsWith("/") && userIncludes.size()+userMacros.size() > 0){  //NOI18N
+            if (!what.startsWith("/") && artifacts.userIncludes.size()+artifacts.userMacros.size() > 0){  //NOI18N
                 List<String> res = findFiles(what);
                 if (res == null || res.isEmpty()) {
                     if (DwarfSource.LOG.isLoggable(Level.FINE)) {
@@ -931,7 +944,7 @@ public class LogReader {
                     }
                 } else {
                     if (res.size() == 1) {
-                        result.add(new CommandLineSource(li, languageArtifacts, res.get(0), what, userIncludes, userMacros, undefinedMacros, storage));
+                        result.add(new CommandLineSource(li, artifacts.languageArtifacts, res.get(0), what, userIncludesCached, userMacrosCached, artifacts.undefinedMacros, storage));
                         if (DwarfSource.LOG.isLoggable(Level.FINE)) {
                             DwarfSource.LOG.log(Level.FINE, "** Gotcha: {0}{1}{2}", new Object[]{res.get(0), File.separator, what});
                         }
@@ -946,6 +959,38 @@ public class LogReader {
                 }
                 if (DwarfSource.LOG.isLoggable(Level.FINE)) {
                     DwarfSource.LOG.log(Level.FINE, "{0} [{1}]", new Object[]{line.length() > 120 ? line.substring(0,117) + ">>>" : line, what}); //NOI18N
+                }
+            }
+        }
+        if (artifacts.output != null) {
+            String what = artifacts.output;
+            String baseName = CndPathUtilitities.getBaseName(what);
+            if (!(baseName.endsWith(".exe") || baseName.indexOf(".") < 0)) {
+                return;
+            }
+            String file;
+            boolean isRelative = true;
+            if (isPathAbsolute(what)){
+                what = convertWindowsRelativePath(what);
+                isRelative = false;
+                file = what;
+            } else {
+                file = workingDir+"/"+what;  //NOI18N
+            }
+            File f = new File(file);
+            if (f.exists() && f.isFile()) {
+                if (!buildArtifacts.contains(file)) {
+                    buildArtifacts.add(file);
+                }
+            } else if (!isRelative) {
+                file = convertPath(what);
+                if (!file.equals(what)) {
+                    f = new File(file);
+                    if (f.exists() && f.isFile()) {
+                        if (!buildArtifacts.contains(file)) {
+                            buildArtifacts.add(file);
+                        }
+                    }
                 }
             }
         }

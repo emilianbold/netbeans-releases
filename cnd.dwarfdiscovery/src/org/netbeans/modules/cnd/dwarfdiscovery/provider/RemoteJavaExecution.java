@@ -22,6 +22,7 @@ import java.util.logging.Logger;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryUtils;
+import org.netbeans.modules.cnd.discovery.api.DiscoveryUtils.Artifacts;
 import org.netbeans.modules.cnd.dwarfdump.CompileLineService;
 import org.netbeans.modules.cnd.dwarfdump.CompileLineService.SourceFile;
 import org.netbeans.modules.cnd.dwarfdump.LddService;
@@ -226,11 +227,8 @@ public class RemoteJavaExecution {
     public String getSourceRoot(List<SourceFile> compileLines) {
         TreeMap<String,AtomicInteger> realRoots = new TreeMap<String,AtomicInteger>();
         for(SourceFile file : compileLines) {
-            List<String> userIncludes = new ArrayList<String>();
-            Map<String, String> userMacros = new HashMap<String, String>();
-            List<String> undefinedMacros = new ArrayList<String>();
-            List<String> languageArtifacts = new ArrayList<String>();
-            List<String> sourcesList = DiscoveryUtils.gatherCompilerLine(file.getCompileLine(), DiscoveryUtils.LogOrigin.DwarfCompileLine, userIncludes, userMacros, undefinedMacros, null, languageArtifacts, null, true);
+            Artifacts artifacts = new Artifacts();
+            List<String> sourcesList = DiscoveryUtils.gatherCompilerLine(file.getCompileLine(), DiscoveryUtils.LogOrigin.DwarfCompileLine, artifacts, null, true);
             for(String what : sourcesList) {
                 if (what == null){
                     continue;

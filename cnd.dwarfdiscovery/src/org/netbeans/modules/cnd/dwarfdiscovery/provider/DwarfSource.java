@@ -62,6 +62,7 @@ import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryUtils;
+import org.netbeans.modules.cnd.discovery.api.DiscoveryUtils.Artifacts;
 import org.netbeans.modules.cnd.discovery.api.ItemProperties;
 import org.netbeans.modules.cnd.discovery.api.SourceFileProperties;
 import org.netbeans.modules.cnd.dwarfdiscovery.provider.BaseDwarfProvider.GrepEntry;
@@ -489,20 +490,16 @@ public class DwarfSource extends RelocatableImpl implements SourceFileProperties
         if (DwarfSource.LOG.isLoggable(Level.FINE)) {
             DwarfSource.LOG.log(Level.FINE, "Process command line {0}", line); // NOI18N
         }
-        List<String> aUserIncludes = new ArrayList<String>();
-        Map<String, String> aUserMacros = new HashMap<String, String>();
-        List<String> languageArtifacts = new ArrayList<String>();
-        List<String> aUndefinedMacros = new ArrayList<String>();
-        DiscoveryUtils.gatherCompilerLine(line, DiscoveryUtils.LogOrigin.DwarfCompileLine, aUserIncludes, aUserMacros, aUndefinedMacros,
-                null, languageArtifacts, compilerSettings.getProjectBridge(), this.language == LanguageKind.CPP);
-        for(String s : aUserIncludes) {
+        Artifacts artifacts = new Artifacts();
+        DiscoveryUtils.gatherCompilerLine(line, DiscoveryUtils.LogOrigin.DwarfCompileLine, artifacts, compilerSettings.getProjectBridge(), this.language == LanguageKind.CPP);
+        for(String s : artifacts.userIncludes) {
             String include = PathCache.getString(s);
             addUserIncludePath(include);
         }
-        for(String s : aUndefinedMacros) {
+        for(String s : artifacts.undefinedMacros) {
             undefinedMacros.add(PathCache.getString(s));
         }
-        for(Map.Entry<String, String> entry : aUserMacros.entrySet()) {
+        for(Map.Entry<String, String> entry : artifacts.userMacros.entrySet()) {
             userMacros.put(PathCache.getString(entry.getKey()), entry.getValue());
         }
     }
