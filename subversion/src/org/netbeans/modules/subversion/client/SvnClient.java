@@ -54,6 +54,4 @@ import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
  */
 public interface SvnClient extends ISVNClientAdapter, Cancellable, SvnClientDescriptor {
 
-    public void setIndexingBridgeDisabled (boolean disabled);
-
 }
