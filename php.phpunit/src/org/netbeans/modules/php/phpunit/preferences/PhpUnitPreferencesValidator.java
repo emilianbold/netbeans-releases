@@ -58,6 +58,7 @@ public final class PhpUnitPreferencesValidator {
     public PhpUnitPreferencesValidator validate(PhpModule phpModule) {
         validateBootstrap(PhpUnitPreferences.isBootstrapEnabled(phpModule), PhpUnitPreferences.getBootstrapPath(phpModule));
         validateConfiguration(PhpUnitPreferences.isConfigurationEnabled(phpModule), PhpUnitPreferences.getConfigurationPath(phpModule));
+        validateCustomSuite(PhpUnitPreferences.isCustomSuiteEnabled(phpModule), PhpUnitPreferences.getCustomSuitePath(phpModule));
         validatePhpUnit(PhpUnitPreferences.isPhpUnitEnabled(phpModule), PhpUnitPreferences.getPhpUnitPath(phpModule));
         return this;
     }
@@ -71,6 +72,12 @@ public final class PhpUnitPreferencesValidator {
     @NbBundle.Messages("PhpUnitPreferencesValidator.configuration.label=XML configuration")
     public PhpUnitPreferencesValidator validateConfiguration(boolean configurationEnabled, String configurationPath) {
         validatePath(configurationEnabled, configurationPath, Bundle.PhpUnitPreferencesValidator_configuration_label(), "configurationPath"); // NOI18N
+        return this;
+    }
+
+    @NbBundle.Messages("PhpUnitPreferencesValidator.customSuite.label=Custom suite")
+    public PhpUnitPreferencesValidator validateCustomSuite(boolean customSuiteEnabled, String customSuitePath) {
+        validatePath(customSuiteEnabled, customSuitePath, Bundle.PhpUnitPreferencesValidator_customSuite_label(), "customSuitePath"); // NOI18N
         return this;
     }
 

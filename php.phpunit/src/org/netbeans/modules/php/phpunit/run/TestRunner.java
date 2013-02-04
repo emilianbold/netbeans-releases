@@ -105,8 +105,8 @@ public final class TestRunner {
     }
 
     private String getCustomTestSuite() {
-        if (PhpUnitPreferences.isSuiteEnabled(phpModule)) {
-            return PhpUnitPreferences.getSuitePath(phpModule);
+        if (PhpUnitPreferences.isCustomSuiteEnabled(phpModule)) {
+            return PhpUnitPreferences.getCustomSuitePath(phpModule);
         }
         return null;
     }

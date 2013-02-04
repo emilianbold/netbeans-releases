@@ -101,8 +101,8 @@ public final class CustomizerPhpUnit extends JPanel implements HelpCtx.Provider 
         initFile(PhpUnitPreferences.isConfigurationEnabled(phpModule),
                 PhpUnitPreferences.getConfigurationPath(phpModule),
                 configurationCheckBox, configurationTextField);
-        initFile(PhpUnitPreferences.isSuiteEnabled(phpModule),
-                PhpUnitPreferences.getSuitePath(phpModule),
+        initFile(PhpUnitPreferences.isCustomSuiteEnabled(phpModule),
+                PhpUnitPreferences.getCustomSuitePath(phpModule),
                 suiteCheckBox, suiteTextField);
         initFile(PhpUnitPreferences.isPhpUnitEnabled(phpModule),
                 PhpUnitPreferences.getPhpUnitPath(phpModule),
@@ -141,6 +141,7 @@ public final class CustomizerPhpUnit extends JPanel implements HelpCtx.Provider 
         ValidationResult result = new PhpUnitPreferencesValidator()
                 .validateBootstrap(bootstrapCheckBox.isSelected(), bootstrapTextField.getText())
                 .validateConfiguration(configurationCheckBox.isSelected(), configurationTextField.getText())
+                .validateCustomSuite(suiteCheckBox.isSelected(), suiteTextField.getText())
                 .validatePhpUnit(scriptCheckBox.isSelected(), scriptTextField.getText())
                 .getResult();
         for (ValidationResult.Message message : result.getErrors()) {
@@ -163,6 +164,8 @@ public final class CustomizerPhpUnit extends JPanel implements HelpCtx.Provider 
         PhpUnitPreferences.setBootstrapForCreateTests(phpModule, bootstrapForCreateTestsCheckBox.isSelected());
         PhpUnitPreferences.setConfigurationEnabled(phpModule, configurationCheckBox.isSelected());
         PhpUnitPreferences.setConfigurationPath(phpModule, configurationTextField.getText());
+        PhpUnitPreferences.setCustomSuiteEnabled(phpModule, suiteCheckBox.isSelected());
+        PhpUnitPreferences.setCustomSuitePath(phpModule, suiteTextField.getText());
         PhpUnitPreferences.setPhpUnitEnabled(phpModule, scriptCheckBox.isSelected());
         PhpUnitPreferences.setPhpUnitPath(phpModule, scriptTextField.getText());
         PhpUnitPreferences.setRunAllTestFiles(phpModule, runTestUsingUnitCheckBox.isSelected());

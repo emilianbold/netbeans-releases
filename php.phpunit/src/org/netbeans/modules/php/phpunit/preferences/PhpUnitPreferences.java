@@ -56,8 +56,8 @@ public final class PhpUnitPreferences {
     private static final String BOOTSTRAP_FOR_CREATE_TESTS = "bootstrap.create.tests"; // NOI18N
     private static final String CONFIGURATION_ENABLED = "configuration.enabled"; // NOI18N
     private static final String CONFIGURATION_PATH = "configuration.path"; // NOI18N
-    private static final String SUITE_ENABLED = "suite.enabled"; // NOI18N
-    private static final String SUITE_PATH = "suite.path"; // NOI18N
+    private static final String CUSTOM_SUITE_ENABLED = "customSuite.enabled"; // NOI18N
+    private static final String CUSTOM_SUITE_PATH = "customSuite.path"; // NOI18N
     private static final String PHP_UNIT_ENABLED = "phpUnit.enabled"; // NOI18N
     private static final String PHP_UNIT_PATH = "phpUnit.path"; // NOI18N
     private static final String RUN_ALL_TEST_FILES = "test.run.all"; // NOI18N
@@ -107,20 +107,20 @@ public final class PhpUnitPreferences {
         getPreferences(phpModule).put(CONFIGURATION_PATH, configurationPath);
     }
 
-    public static boolean isSuiteEnabled(PhpModule phpModule) {
-        return getPreferences(phpModule).getBoolean(SUITE_ENABLED, false);
+    public static boolean isCustomSuiteEnabled(PhpModule phpModule) {
+        return getPreferences(phpModule).getBoolean(CUSTOM_SUITE_ENABLED, false);
     }
 
-    public static void setSuiteEnabled(PhpModule phpModule, boolean suiteEnabled) {
-        getPreferences(phpModule).putBoolean(SUITE_ENABLED, suiteEnabled);
+    public static void setCustomSuiteEnabled(PhpModule phpModule, boolean customSuiteEnabled) {
+        getPreferences(phpModule).putBoolean(CUSTOM_SUITE_ENABLED, customSuiteEnabled);
     }
 
-    public static String getSuitePath(PhpModule phpModule) {
-        return getPreferences(phpModule).get(SUITE_PATH, null);
+    public static String getCustomSuitePath(PhpModule phpModule) {
+        return getPreferences(phpModule).get(CUSTOM_SUITE_PATH, null);
     }
 
-    public static void setSuitePath(PhpModule phpModule, String suitePath) {
-        getPreferences(phpModule).put(SUITE_PATH, suitePath);
+    public static void setCustomSuitePath(PhpModule phpModule, String customSuitePath) {
+        getPreferences(phpModule).put(CUSTOM_SUITE_PATH, customSuitePath);
     }
 
     public static boolean isPhpUnitEnabled(PhpModule phpModule) {

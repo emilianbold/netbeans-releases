@@ -243,7 +243,7 @@ public final class PhpUnit {
 
     @CheckForNull
     public Integer runTests(PhpModule phpModule, TestRunInfo runInfo) throws TestRunException {
-        PhpExecutable phpUnit = getExecutable(phpModule, getOutputTitle(runInfo, PhpUnitPreferences.isSuiteEnabled(phpModule)));
+        PhpExecutable phpUnit = getExecutable(phpModule, getOutputTitle(runInfo, PhpUnitPreferences.isCustomSuiteEnabled(phpModule)));
         if (phpUnit == null) {
             return null;
         }
@@ -306,9 +306,9 @@ public final class PhpUnit {
             runInfo.resetCustomTests();
         }
 
-        if (PhpUnitPreferences.isSuiteEnabled(phpModule)) {
+        if (PhpUnitPreferences.isCustomSuiteEnabled(phpModule)) {
             // custom suite
-            params.add(PhpUnitPreferences.getSuitePath(phpModule));
+            params.add(PhpUnitPreferences.getCustomSuitePath(phpModule));
         } else {
             // standard suite
             // #218607 - hotfix
