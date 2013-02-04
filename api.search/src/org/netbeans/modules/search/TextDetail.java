@@ -78,6 +78,7 @@ import org.openide.text.Line.ShowOpenType;
 import org.openide.text.Line.ShowVisibilityType;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.datatransfer.PasteType;
 import org.openide.util.lookup.Lookups;
 import org.openide.windows.OutputEvent;
@@ -94,6 +95,8 @@ public final class TextDetail implements Selectable {
 
     private static final Logger LOG = Logger.getLogger(
             TextDetail.class.getName());
+    private static final RequestProcessor RP =
+            new RequestProcessor(TextDetail.class);
     /** Property name which indicates this detail to show. */
     public static final int DH_SHOW = 1;
     /** Property name which indicates this detail to go to. */
@@ -474,7 +477,12 @@ public final class TextDetail implements Selectable {
             // get the Line object. Later - if the user jumps to the document,
             // changes it and saves - the Line objects are not created for the
             // original set of lines.
-            txtDetail.prepareLine();
+            RP.post(new Runnable() { // run in background - see bug #225632
+                @Override
+                public void run() {
+                    DetailNode.this.txtDetail.prepareLine();
+                }
+            });
             txtDetail.addChangeListener(new ChangeListener() {
                 @Override
                 public void stateChanged(ChangeEvent e) {
