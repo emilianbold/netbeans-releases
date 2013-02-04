@@ -51,6 +51,7 @@ import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IfTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ParenthesizedTree;
+import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
@@ -60,6 +61,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Map;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.type.TypeKind;
@@ -635,6 +637,49 @@ public class MoveTreeTest extends GeneratorTestBase {
                 VariableTree param = workingCopy.getTreeMaker().Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), "a", var.getType(), null);
 
                 workingCopy.rewrite(method, make.addMethodParameter(method, param));
+            }
+
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    public void testSkipBlockStatement225686() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n" +
+            "    public int taragui() {\n" +
+            "        String str1 = null;\n" +
+            "        String str2 = null;\n" +
+            "        String str3 = null;\n" +
+            "    }\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n" +
+            "    public int taragui() {\n" +
+            "        {\n" +
+            "            String str1 = null;\n" +
+            "            String str3 = null;\n" +
+            "        }\n" +
+            "    }\n" +
+            "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+                MethodTree method = (MethodTree) clazz.getMembers().get(1);
+                TreeMaker make = workingCopy.getTreeMaker();
+
+                workingCopy.rewrite(method.getBody(), make.Block(Collections.singletonList(make.removeBlockStatement(method.getBody(), 1)), false));
             }
 
         };

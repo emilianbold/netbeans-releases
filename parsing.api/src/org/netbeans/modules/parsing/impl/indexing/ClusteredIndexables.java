@@ -734,7 +734,7 @@ public final class ClusteredIndexables {
                 docs[docsPointer + 1] = dataPointer;
                 docsPointer += 2;
                 if (data.length < dataPointer + fldValue.length()) {
-                    char[] newdata = new char[data.length << 1];
+                    char[] newdata = new char[newLength(data.length,dataPointer + fldValue.length())];
                     System.arraycopy(data, 0, newdata, 0, data.length);
                     data = newdata;
                     res = data.length<<1 > DATA_CACHE_SIZE;
@@ -820,6 +820,15 @@ public final class ClusteredIndexables {
         @Override
         public boolean retainAll(Collection<?> c) {
             throw new UnsupportedOperationException();
+        }
+
+        private static int newLength(
+                int currentLength,
+                final int minimalLength) {
+            do {
+                currentLength <<= 1;
+            } while (currentLength < minimalLength);
+            return currentLength;
         }
 
         private class It implements Iterator<IndexDocument> {

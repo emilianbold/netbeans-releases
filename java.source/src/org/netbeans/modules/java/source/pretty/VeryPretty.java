@@ -43,9 +43,11 @@
  */
 package org.netbeans.modules.java.source.pretty;
 
+import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
 import static com.sun.source.tree.Tree.*;
 import com.sun.source.tree.VariableTree;
@@ -297,6 +299,26 @@ public final class VeryPretty extends JCTree.Visitor {
             if (!oldTrees.contains(t)) return false;
             if (t.getKind() == Kind.ARRAY_TYPE) {
                 return false;//XXX #197584: C-like array are cannot be copied as old trees.
+            }
+        }
+        
+        if (toPrint.size() > 1) {
+            //verify that all the toPrint trees belong to the same parent, and appear
+            //in the same uninterrupted order under that parent:
+            TreePath tp = TreePath.getPath(diffContext.mainUnit, toPrint.get(0));
+            TreePath parent = tp.getParentPath();
+            
+            if (parent == null) return false; //XXX: should not happen, right?
+            if (parent.getLeaf().getKind() != Kind.BLOCK) return false; //TODO: CaseTree
+            
+            java.util.List<? extends StatementTree> statements = ((BlockTree) parent.getLeaf()).getStatements();
+            
+            int startIndex = statements.indexOf(toPrint.get(0));
+            
+            if (startIndex < 0) return false; //XXX: should not happen
+            
+            for (JCTree t : toPrint) {
+                if (statements.get(startIndex++) != t) return false;
             }
         }
 
