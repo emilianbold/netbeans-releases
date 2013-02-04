@@ -76,7 +76,6 @@ import org.netbeans.libs.git.progress.NotificationListener;
 import org.netbeans.libs.git.progress.ProgressMonitor;
 import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.ui.repository.RepositoryInfo;
-import org.netbeans.modules.versioning.util.IndexingBridge;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.util.NetworkSettings;
 import org.openide.util.RequestProcessor;
@@ -121,18 +120,6 @@ public final class GitClient {
             "removeRemote", //NOI18N - i guess there's no need to mke this an exclusive command
             "setCallback", //NOI18N
             "setRemote")); //NOI18N - i guess there's no need to mke this an exclusive command
-    /**
-     * Commands that need to run in indexing bridge. i.e. they modify the working copy and may generate a lot of FS events
-     */
-    private static final HashSet<String> INDEXING_BRIDGE_COMMANDS = new HashSet<String>(Arrays.asList("checkout", //NOI18N
-            "checkout", //NOI18N
-            "checkoutRevision", //NOI18N
-            "merge", //NOI18N
-            "pull", //NOI18N
-            "remove", //NOI18N
-            "reset", //NOI18N
-            "revert", //NOI18N
-            "clean")); //NOI18N
     /**
      * Commands triggering last cached timestamp of the index file. This means that after every command that somehow modifies the index, we need to refresh the timestamp
      * otherwise a FS event will come to Interceptor and trigger the full scan.
@@ -201,14 +188,12 @@ public final class GitClient {
     private static final Logger LOG = Logger.getLogger(GitClient.class.getName());
     private final File repositoryRoot;
     private boolean released;
-    private final ThreadLocal<Boolean> indexingBridgeDisabled;
 
     public GitClient (File repository, GitProgressSupport progressSupport, boolean handleAuthenticationIssues) throws GitException {
         this.repositoryRoot = repository;
         delegate = GitRepository.getInstance(repository).createClient();
         this.progressSupport = progressSupport;
         this.handleAuthenticationIssues = handleAuthenticationIssues;
-        this.indexingBridgeDisabled = new ThreadLocal<Boolean>();
     }
     
     public void add (final File[] roots, final ProgressMonitor monitor) throws GitException {
@@ -705,10 +690,6 @@ public final class GitClient {
         }, "unignore"); //NOI18N
     }
 
-    public void setIndexingBridgeDisabled (boolean disabled) {
-        indexingBridgeDisabled.set(disabled);
-    }
-
     private static class CleanTask implements Runnable {
 
         @Override
@@ -808,12 +789,12 @@ public final class GitClient {
                             }
                         }
                     };
-                    if (!Boolean.TRUE.equals(indexingBridgeDisabled.get()) && runsWithBlockedIndexing(methodName)) {
-                        LOG.log(Level.FINER, "Running command in indexing bridge: {0} on {1}", new Object[] { methodName, repositoryRoot.getAbsolutePath() }); //NOI18N
-                        return IndexingBridge.getInstance().runWithoutIndexing(callable, roots.length > 0 ? roots : new File[] { repositoryRoot });
-                    } else {
-                        return callable.call();
-                    }
+                    return callable.call();
+//                    if (!Boolean.TRUE.equals(indexingBridgeDisabled.get()) && runsWithBlockedIndexing(methodName)) {
+//                        LOG.log(Level.FINER, "Running command in indexing bridge: {0} on {1}", new Object[] { methodName, repositoryRoot.getAbsolutePath() }); //NOI18N
+//                        return IndexingBridge.getInstance().runWithoutIndexing(callable, roots.length > 0 ? roots : new File[] { repositoryRoot });
+//                    } else {
+//                    }
                 }
             };
             try {
@@ -835,10 +816,6 @@ public final class GitClient {
 
     private static boolean isExclusiveRepositoryAccess (String commandName) {
         return !PARALLELIZABLE_COMMANDS.contains(commandName);
-    }
-
-    private static boolean runsWithBlockedIndexing (String commandName) {
-        return INDEXING_BRIDGE_COMMANDS.contains(commandName);
     }
 
     private static boolean modifiesWorkingTree (String commandName) {

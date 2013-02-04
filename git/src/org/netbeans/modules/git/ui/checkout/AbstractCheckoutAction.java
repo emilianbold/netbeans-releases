@@ -49,6 +49,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JButton;
@@ -90,7 +91,7 @@ public abstract class AbstractCheckoutAction extends SingleRepositoryAction {
                     Collection<File> seenRoots = Git.getInstance().getSeenRoots(repository);
                     final Set<String> seenPaths = new HashSet<String>(GitUtils.getRelativePaths(repository, seenRoots.toArray(new File[seenRoots.size()])));
                     try {
-                        GitClient client = getClient();
+                        final GitClient client = getClient();
                         revision = checkout.getRevision();
                         if (checkout.isCreateBranchSelected()) {
                             revision = checkout.getBranchName();
@@ -121,16 +122,23 @@ public abstract class AbstractCheckoutAction extends SingleRepositoryAction {
                             }
                         });
                         client.addNotificationListener(new DefaultFileListener(new File[] { repository }));
-                        LOG.log(Level.FINE, "Checking out commit: {0}", revision); //NOI18N
-                        try {
-                            client.checkoutRevision(revision, true, getProgressMonitor());
-                        } catch (GitException.CheckoutConflictException ex) {
-                            if (LOG.isLoggable(Level.FINE)) {
-                                LOG.log(Level.FINE, "Conflicts during checkout: {0} - {1}", new Object[] { repository, Arrays.asList(ex.getConflicts()) }); //NOI18N
+                        GitUtils.runWithoutIndexing(new Callable<Void>() {
+
+                            @Override
+                            public Void call () throws Exception {
+                                LOG.log(Level.FINE, "Checking out commit: {0}", revision); //NOI18N
+                                try {
+                                    client.checkoutRevision(revision, true, getProgressMonitor());
+                                } catch (GitException.CheckoutConflictException ex) {
+                                    if (LOG.isLoggable(Level.FINE)) {
+                                        LOG.log(Level.FINE, "Conflicts during checkout: {0} - {1}", new Object[] { repository, Arrays.asList(ex.getConflicts()) }); //NOI18N
+                                    }
+                                    File[] conflicts = getFilesInConflict(ex.getConflicts());
+                                    resolveConflicts(conflicts);
+                                }
+                                return null;
                             }
-                            File[] conflicts = getFilesInConflict(ex.getConflicts());
-                            resolveConflicts(conflicts);
-                        }
+                        }, repository);
                     } catch (GitException ex) {
                         GitClientExceptionHandler.notifyException(ex, true);
                     } finally {
