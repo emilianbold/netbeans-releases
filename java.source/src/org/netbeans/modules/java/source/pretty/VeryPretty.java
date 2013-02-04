@@ -46,8 +46,8 @@ package org.netbeans.modules.java.source.pretty;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
-import com.sun.source.tree.MethodTree
-import com.sun.source.tree.StatementTree;;
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
 import static com.sun.source.tree.Tree.*;
 import com.sun.source.tree.VariableTree;
