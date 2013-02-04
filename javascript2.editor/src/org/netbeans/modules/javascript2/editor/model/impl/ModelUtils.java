@@ -223,14 +223,11 @@ public class ModelUtils {
         return result;
     }
     
-//    public static Map<Integer, DeclarationScope> offsetMap = new HashMap<Integer, DeclarationScope>();
     public static DeclarationScope getDeclarationScope(DeclarationScope scope, int offset) {
         
-        long start = System.currentTimeMillis();
         DeclarationScopeImpl dScope = (DeclarationScopeImpl)scope;
-        DeclarationScope result = null; //offsetMap.get(offset);
+        DeclarationScope result = null; 
         if (result == null) {
-            DeclarationScope function = null;
             if (dScope.getOffsetRange().containsInclusive(offset)) {
                 result = dScope;
                 boolean deep = true;
@@ -246,10 +243,6 @@ public class ModelUtils {
                     }
                 }
             }
-        }
-        long end = System.currentTimeMillis();
-        if ((end - start) > 10) {
-            System.out.println("getdeclarationScope trvla: " + (end - start) + ": " + offset);
         }
         return result;
     }
