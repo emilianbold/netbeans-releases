@@ -475,7 +475,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                                 final TypeMirror enclType = enclClass != null ? enclClass.asType() : null;
                                 ElementUtilities.ElementAcceptor acceptor = new ElementUtilities.ElementAcceptor() {
                                     public boolean accept(Element e, TypeMirror t) {
-                                        return (!isStatic || e.getModifiers().contains(STATIC) || e.getKind() == CONSTRUCTOR) && trees.isAccessible(scope, e, (DeclaredType)(isSuperCall && enclType != null ? enclType : t));
+                                        return (!isStatic || e.getModifiers().contains(STATIC) || e.getKind() == CONSTRUCTOR) && (t.getKind() != TypeKind.DECLARED || trees.isAccessible(scope, e, (DeclaredType)(isSuperCall && enclType != null ? enclType : t)));
                                     }
                                 };
                                 params = getMatchingParams(controller, type, controller.getElementUtilities().getMembers(type, acceptor), ((MemberSelectTree)mid).getIdentifier().toString(), types, controller.getTypes());
@@ -3436,7 +3436,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                         final TypeMirror enclType = enclClass != null ? enclClass.asType() : null;
                         ElementUtilities.ElementAcceptor acceptor = new ElementUtilities.ElementAcceptor() {
                             public boolean accept(Element e, TypeMirror t) {
-                                return (!isStatic || e.getModifiers().contains(STATIC) || e.getKind() == CONSTRUCTOR) && trees.isAccessible(scope, e, (DeclaredType)(isSuperCall && enclType != null ? enclType : t));
+                                return (!isStatic || e.getModifiers().contains(STATIC) || e.getKind() == CONSTRUCTOR) && (t.getKind() != TypeKind.DECLARED || trees.isAccessible(scope, e, (DeclaredType)(isSuperCall && enclType != null ? enclType : t)));
                             }
                         };
                         methods = getMatchingExecutables(type, controller.getElementUtilities().getMembers(type, acceptor), ((MemberSelectTree)mid).getIdentifier().toString(), types, controller.getTypes());
@@ -5390,9 +5390,11 @@ public class JavaCompletionProvider implements CompletionProvider {
             public boolean isAccessible(Scope scope, Element member, TypeMirror type, boolean selectSuper) {
                 if (!checkAccessibility)
                     return true;
+                if (type.getKind() != TypeKind.DECLARED)
+                    return member.getModifiers().contains(PUBLIC);
                 if (getController().getTrees().isAccessible(scope, member, (DeclaredType)type))
                     return true;
-                return selectSuper && type.getKind() == TypeKind.DECLARED
+                return selectSuper
                         && member.getModifiers().contains(PROTECTED) && !member.getModifiers().contains(STATIC)
                         && !member.getKind().isClass() && !member.getKind().isInterface()
                         && getController().getTrees().isAccessible(scope, (TypeElement)((DeclaredType)type).asElement())
