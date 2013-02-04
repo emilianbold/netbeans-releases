@@ -65,6 +65,7 @@ import org.netbeans.modules.cnd.discovery.api.ApplicableImpl;
 import org.netbeans.modules.cnd.discovery.api.Configuration;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryExtensionInterface;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryUtils;
+import org.netbeans.modules.cnd.discovery.api.DiscoveryUtils.Artifacts;
 import org.netbeans.modules.cnd.discovery.api.ItemProperties;
 import org.netbeans.modules.cnd.discovery.api.ItemProperties.LanguageKind;
 import org.netbeans.modules.cnd.discovery.api.Progress;
@@ -514,12 +515,8 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
                 // skip tool
                 iterator.next();
             }
-            List<String> aUserIncludes = new ArrayList<String>();
-            Map<String,String> aUserMacros = new HashMap<String, String>();
-            List<String> aUndefinedMacros= new ArrayList<String>();
-            List<String> languageArtifacts = new ArrayList<String>();
-            List<String> sourcesList = DiscoveryUtils.gatherCompilerLine(iterator, DiscoveryUtils.LogOrigin.ExecLog, aUserIncludes, aUserMacros, aUndefinedMacros,
-                    null, languageArtifacts, compilerSettings.getProjectBridge(), language == LanguageKind.CPP);
+            Artifacts artifacts = new Artifacts();
+            List<String> sourcesList = DiscoveryUtils.gatherCompilerLine(iterator, DiscoveryUtils.LogOrigin.ExecLog, artifacts, compilerSettings.getProjectBridge(), language == LanguageKind.CPP);
             for (String what : sourcesList) {
                 if (what == null) {
                     continue;
@@ -531,8 +528,8 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
                 }
                 String fullName;
                 String sourceName;
-                List<String> userIncludes = new ArrayList<String>(aUserIncludes.size());
-                for(String s : aUserIncludes){
+                List<String> userIncludes = new ArrayList<String>(artifacts.userIncludes.size());
+                for(String s : artifacts.userIncludes){
                     if (s.startsWith("/") && pathMapper != null) { // NOI18N
                         String mapped = pathMapper.getLocalPath(s);
                         if (mapped != null) {
@@ -541,8 +538,8 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
                     }
                     userIncludes.add(PathCache.getString(s));
                 }
-                Map<String, String> userMacros = new HashMap<String, String>(aUserMacros.size());
-                for(Map.Entry<String,String> e : aUserMacros.entrySet()){
+                Map<String, String> userMacros = new HashMap<String, String>(artifacts.userMacros.size());
+                for(Map.Entry<String,String> e : artifacts.userMacros.entrySet()){
                     if (e.getValue() == null) {
                         userMacros.put(PathCache.getString(e.getKey()), null);
                     } else {
@@ -565,9 +562,9 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
                 FileObject f = fileSystem.findResource(fullName);
                 if (f != null && f.isValid() && f.isData()) {
                     fullName = PathCache.getString(f.getPath());
-                    if (languageArtifacts.contains("c")) { // NOI18N
+                    if (artifacts.languageArtifacts.contains("c")) { // NOI18N
                         language = ItemProperties.LanguageKind.C;
-                    } else if (languageArtifacts.contains("c++")) { // NOI18N
+                    } else if (artifacts.languageArtifacts.contains("c++")) { // NOI18N
                         language = ItemProperties.LanguageKind.CPP;
                     } else {
                         if (language == LanguageKind.Unknown) {
@@ -593,8 +590,8 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
                     res.language = language;
                     res.userIncludes = userIncludes;
                     res.userMacros = userMacros;
-                    res.undefinedMacros = aUndefinedMacros;
-                    for(String lang : languageArtifacts) {
+                    res.undefinedMacros = artifacts.undefinedMacros;
+                    for(String lang : artifacts.languageArtifacts) {
                         if ("c89".equals(lang)) { //NOI18N
                             res.standard = ItemProperties.LanguageStandard.C89;
                         } else if ("c99".equals(lang)) { //NOI18N
@@ -702,6 +699,14 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
                         fullName = compilePath+"/"+binary; //NOI18N
                     }
                     FileObject f = fileSystem.findResource(fullName);
+                    if (f == null) {
+                        // probably it is just created binary. Try to refresh folder.
+                        FileObject folder = fileSystem.findResource(compilePath);
+                        if (folder != null && folder.isValid() && folder.isFolder()) {
+                            folder.refresh();
+                            f = fileSystem.findResource(fullName);
+                        }
+                    }
                     if (f != null && f.isValid() && f.isData()) {
                         buildArtifacts.add(fullName);
                     }

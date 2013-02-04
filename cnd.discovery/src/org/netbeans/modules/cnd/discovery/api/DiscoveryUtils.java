@@ -47,6 +47,7 @@ package org.netbeans.modules.cnd.discovery.api;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -270,7 +271,7 @@ public class DiscoveryUtils {
     /**
      * parse compile line
      */
-    public static List<String> gatherCompilerLine(String line, LogOrigin isScriptOutput, List<String> userIncludes, Map<String, String> userMacros, List<String> undefinedMacros, Set<String> libraries, List<String> languageArtifacts, ProjectBridge bridge, boolean isCpp){
+    public static List<String> gatherCompilerLine(String line, LogOrigin isScriptOutput, Artifacts artifacts, ProjectBridge bridge, boolean isCpp){
         List<String> list = DiscoveryUtils.scanCommandLine(line, isScriptOutput);
         boolean hasQuotes = false;
         for(String s : list){
@@ -308,12 +309,12 @@ public class DiscoveryUtils {
                 st.next();
             }
         }
-        return gatherCompilerLine(st, isScriptOutput, userIncludes, userMacros, undefinedMacros, libraries, languageArtifacts, bridge, isCpp);
+        return gatherCompilerLine(st, isScriptOutput, artifacts, bridge, isCpp);
     }
     /**
      * parse compile line
      */
-    public static List<String> gatherCompilerLine( Iterator<String> st, LogOrigin isScriptOutput, List<String> userIncludes, Map<String, String> userMacros, List<String> undefinedMacros, Set<String> libraries, List<String> languageArtifacts, ProjectBridge bridge, boolean isCpp){
+    public static List<String> gatherCompilerLine( Iterator<String> st, LogOrigin isScriptOutput, Artifacts artifacts, ProjectBridge bridge, boolean isCpp){
         boolean TRACE = false;
         String option; 
         List<String> what = new ArrayList<String>(1);
@@ -376,10 +377,10 @@ public class DiscoveryUtils {
                             break;
                     }
                     String key = removeEscape(macro.substring(0,i));
-                    addDef(key, value, userMacros, undefinedMacros);
+                    addDef(key, value, artifacts.userMacros, artifacts.undefinedMacros);
                 } else {
                     String key = removeEscape(macro);
-                    addDef(key, null, userMacros, undefinedMacros);
+                    addDef(key, null, artifacts.userMacros, artifacts.undefinedMacros);
                 }
             } else if (option.startsWith("-U")){ // NOI18N
                 String macro = option.substring(2);
@@ -387,35 +388,35 @@ public class DiscoveryUtils {
                     macro = st.next();
                 }
                 macro = removeQuotes(macro);
-                addUndef(macro, userMacros, undefinedMacros);
+                addUndef(macro, artifacts.userMacros, artifacts.undefinedMacros);
             } else if (option.startsWith("-I")){ // NOI18N
                 String path = option.substring(2);
                 if (path.length()==0 && st.hasNext()){
                     path = st.next();
                 }
                 path = removeQuotes(path);
-                userIncludes.add(path);
+                artifacts.userIncludes.add(path);
             } else if (option.startsWith("-isystem")){ // NOI18N
                 String path = option.substring(8);
                 if (path.length()==0 && st.hasNext()){
                     path = st.next();
                 }
                 path = removeQuotes(path);
-                userIncludes.add(path);
+                artifacts.userIncludes.add(path);
             } else if (option.startsWith("-include")){ // NOI18N
                 String path = option.substring(8);
                 if (path.length()==0 && st.hasNext()){
                     path = st.next();
                 }
                 path = removeQuotes(path);
-                userIncludes.add(path);
+                artifacts.userIncludes.add(path);
             } else if (option.startsWith("-imacros")){ // NOI18N
                 String path = option.substring(8);
                 if (path.length()==0 && st.hasNext()){
                     path = st.next();
                 }
                 path = removeQuotes(path);
-                userIncludes.add(path);
+                artifacts.userIncludes.add(path);
             } else if (option.startsWith("-Y")){ // NOI18N
                 String defaultSearchPath = option.substring(2);
                 if (defaultSearchPath.length()==0 && st.hasNext()){
@@ -424,7 +425,7 @@ public class DiscoveryUtils {
                 if (defaultSearchPath.startsWith("I,")){ // NOI18N
                     defaultSearchPath = defaultSearchPath.substring(2);
                     defaultSearchPath = removeQuotes(defaultSearchPath);
-                    userIncludes.add(defaultSearchPath);
+                    artifacts.userIncludes.add(defaultSearchPath);
                 }
             } else if (option.startsWith("-idirafter")){ // NOI18N
                 //Search dir for header files, but do it after all directories specified with -I and the standard system directories have been exhausted.
@@ -472,8 +473,8 @@ public class DiscoveryUtils {
                     lib = st.next();
                 }
                 // library
-                if (lib.length()>0 && libraries != null){
-                    libraries.add(lib);
+                if (lib.length()>0){
+                    artifacts.libraries.add(lib);
                 }
             } else if (option.equals("-L")){ // NOI18N
                 // Skip library search path
@@ -493,7 +494,7 @@ public class DiscoveryUtils {
             } else if (option.equals("-o")){ // NOI18N
                 // Skip result
                 if (st.hasNext()){
-                    st.next();
+                    artifacts.output = st.next();
                 }
             // generation 2 of params
             } else if (option.equals("-z")){ // NOI18N
@@ -505,24 +506,24 @@ public class DiscoveryUtils {
                 // Specify explicitly the language for the following input files (rather than letting the compiler choose a default based on the file name suffix).
                 if (st.hasNext()){
                     String lang = st.next();
-                    languageArtifacts.add(lang);
+                    artifacts.languageArtifacts.add(lang);
                 }
             } else if (option.equals("-xc")){ // NOI18N
-                languageArtifacts.add("c");
+                artifacts.languageArtifacts.add("c");
             } else if (option.equals("-xc++")){ // NOI18N
-                languageArtifacts.add("c++");
+                artifacts.languageArtifacts.add("c++");
             } else if (option.equals("-std=c89")){ // NOI18N
-                languageArtifacts.add("c89"); // NOI18N
+                artifacts.languageArtifacts.add("c89"); // NOI18N
             } else if (option.equals("-xc99") || // NOI18N
                        option.equals("-std=c99")){ // NOI18N
-                languageArtifacts.add("c99"); // NOI18N
+                artifacts.languageArtifacts.add("c99"); // NOI18N
             } else if (option.equals("-std=c++0x") || // NOI18N
                        option.equals("-std=c++11") || // NOI18N
                        option.equals("-std=gnu++0x") || // NOI18N
                        option.equals("-std=gnu++11")){ // NOI18N
-                languageArtifacts.add("c++11"); // NOI18N
+                artifacts.languageArtifacts.add("c++11"); // NOI18N
             } else if (option.equals("-std=c++98")){ // NOI18N
-                languageArtifacts.add("c++98"); // NOI18N
+                artifacts.languageArtifacts.add("c++98"); // NOI18N
             } else if (option.equals("-xMF")){ // NOI18N
                 // ignore dependency output file
                 if (st.hasNext()){
@@ -549,7 +550,7 @@ public class DiscoveryUtils {
                     st.next();
                 }
             } else if (option.startsWith("-")){ // NOI18N
-                addMacrosByFlags(option, userMacros, undefinedMacros, bridge, isCpp);
+                addMacrosByFlags(option, artifacts.userMacros, artifacts.undefinedMacros, bridge, isCpp);
             } else if (option.startsWith("ccfe")){ // NOI18N
                 // Skip option
             } else if (option.startsWith(">")){ // NOI18N
@@ -656,5 +657,16 @@ public class DiscoveryUtils {
         BuildLog,
         DwarfCompileLine,
         ExecLog
+    }
+    
+    public static final class Artifacts {
+        public final List<String> userIncludes = new ArrayList<String>();
+        public final Map<String, String> userMacros = new HashMap<String, String>();
+        public final List<String> undefinedMacros = new ArrayList<String>();
+        public final Set<String> libraries = new HashSet<String>();
+        public final List<String> languageArtifacts = new ArrayList<String>();
+        public String output;
+        public Artifacts() {
+        }
     }
 }

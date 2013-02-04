@@ -1311,17 +1311,7 @@ public class ImportProject implements PropertyChangeListener {
                 try {
                     done = true;
                     extension.apply(map, makeProject);
-                    if (false) {
-                        List<String> buildArtifacts = (List<String>) map.get(DiscoveryWizardDescriptor.BUILD_ARTIFACTS);
-                        if (buildArtifacts != null) {
-                            ConfigurationDescriptorProvider pdp = makeProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
-                            MakeConfigurationDescriptor makeConfigurationDescriptor = pdp.getConfigurationDescriptor();
-                            Folder externalFileItems = makeConfigurationDescriptor.getExternalFileItems();
-                            for(String binary : buildArtifacts) {
-                                externalFileItems.addItem(Item.createInFileSystem(makeConfigurationDescriptor.getBaseDirFileSystem(),binary));
-                            }
-                        }
-                    }
+                    setBuildResults((List<String>) map.get(DiscoveryWizardDescriptor.BUILD_ARTIFACTS));
                     importResult.put(Step.DiscoveryLog, State.Successful);
                 } catch (IOException ex) {
                     ex.printStackTrace(System.err);
@@ -1336,6 +1326,31 @@ public class ImportProject implements PropertyChangeListener {
         return done;
     }
 
+    private void setBuildResults(List<String> buildArtifacts) {
+        if (buildArtifacts == null || buildArtifacts.isEmpty()) {
+            return;
+        }
+        ConfigurationDescriptorProvider pdp = makeProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
+        MakeConfigurationDescriptor makeConfigurationDescriptor = pdp.getConfigurationDescriptor();
+        if (buildArtifacts.size() == 1) {
+            MakeConfiguration activeConfiguration = makeConfigurationDescriptor.getActiveConfiguration();
+            if (activeConfiguration != null) {
+                String value = activeConfiguration.getMakefileConfiguration().getOutput().getValue();
+                if (value == null || value.isEmpty()) {
+                    buildResult = buildArtifacts.get(0);
+                    buildResult = ProjectSupport.toProperPath(projectFolder.getPath(), CndPathUtilitities.naturalizeSlashes(buildResult), pathMode);
+                    buildResult = CndPathUtilitities.normalizeSlashes(buildResult);
+                    activeConfiguration.getMakefileConfiguration().getOutput().setValue(buildResult);
+                }
+            }
+        }
+        //Folder externalFileItems = makeConfigurationDescriptor.getExternalFileItems();
+        //for(String binary : buildArtifacts) {
+        //    externalFileItems.addItem(Item.createInFileSystem(makeConfigurationDescriptor.getBaseDirFileSystem(),binary));
+        //}
+     }
+
+    
     private boolean discoveryByDwarfOrBuildLog(boolean done) {
         final DiscoveryExtensionInterface extension = (DiscoveryExtensionInterface) Lookup.getDefault().lookup(IteratorExtension.class);
         if (extension != null) {
@@ -1387,6 +1402,7 @@ public class ImportProject implements PropertyChangeListener {
                 try {
                     done = true;
                     extension.apply(map, makeProject);
+                    setBuildResults((List<String>) map.get(DiscoveryWizardDescriptor.BUILD_ARTIFACTS));
                     importResult.put(Step.DiscoveryLog, State.Successful);
                 } catch (IOException ex) {
                     ex.printStackTrace(System.err);
