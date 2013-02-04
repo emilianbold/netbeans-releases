@@ -51,14 +51,19 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
+import org.netbeans.api.extexecution.input.InputProcessor;
+import org.netbeans.api.extexecution.input.InputProcessors;
+import org.netbeans.api.extexecution.input.LineProcessor;
 import org.netbeans.api.extexecution.print.LineConvertor;
 import org.netbeans.api.extexecution.print.LineConvertors;
 import org.netbeans.modules.php.api.executable.InvalidPhpExecutableException;
@@ -66,12 +71,14 @@ import org.netbeans.modules.php.api.executable.PhpExecutable;
 import org.netbeans.modules.php.api.executable.PhpExecutableValidator;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.util.FileUtils;
+import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.api.validation.ValidationResult;
 import static org.netbeans.modules.php.phpunit.commands.SkeletonGenerator.validate;
 import org.netbeans.modules.php.phpunit.options.PhpUnitOptions;
 import org.netbeans.modules.php.phpunit.preferences.PhpUnitPreferences;
 import org.netbeans.modules.php.phpunit.preferences.PhpUnitPreferencesValidator;
+import org.netbeans.modules.php.phpunit.ui.PhpUnitTestGroupsPanel;
 import org.netbeans.modules.php.phpunit.ui.options.PhpUnitOptionsPanelController;
 import org.netbeans.modules.php.spi.testing.run.TestRunException;
 import org.netbeans.modules.php.spi.testing.run.TestRunInfo;
@@ -130,6 +137,9 @@ public final class PhpUnit {
 
     // generating files
     private static final String DIRNAME_FILE = ".dirname(__FILE__).'/"; // NOI18N
+
+    // run info params
+    private static final String PHP_UNIT_GROUPS_PARAM = "phpUnit.groups"; // NOI18N
 
     // #200489
     private static volatile File suite; // ok if it is fetched more times
@@ -249,47 +259,41 @@ public final class PhpUnit {
         }
 
         List<String> params = new ArrayList<String>();
-        // junit log
         params.add(JUNIT_LOG_PARAM);
         params.add(XML_LOG.getAbsolutePath());
-        if (PhpUnitPreferences.isBootstrapEnabled(phpModule)) {
-            params.add(BOOTSTRAP_PARAM);
-            params.add(PhpUnitPreferences.getBootstrapPath(phpModule));
-        }
-        if (PhpUnitPreferences.isConfigurationEnabled(phpModule)) {
-            params.add(CONFIGURATION_PARAM);
-            params.add(PhpUnitPreferences.getConfigurationPath(phpModule));
-        }
+        addBootstrap(phpModule, params);
+        addConfiguration(phpModule, params);
         if (runInfo.isCoverageEnabled()) {
             params.add(COVERAGE_LOG_PARAM);
             params.add(COVERAGE_LOG.getAbsolutePath());
         }
-        // XXX test groups
         // test groups, not for rerun
-//        if (!info.isRerun() && ProjectPropertiesSupport.askForTestGroups(project)) {
-//            PhpUnit phpUnit = CommandUtils.getPhpUnit(project, false);
-//            ConfigFiles configFiles = PhpUnit.getConfigFiles(project, false);
-//
-//            PhpUnitTestGroupsFetcher testGroupsFetcher = new PhpUnitTestGroupsFetcher(project);
-//            boolean success = testGroupsFetcher.fetch(phpUnit.getWorkingDirectory(configFiles, FileUtil.toFile(info.getWorkingDirectory())), configFiles);
-//            if (!success) {
-//                return;
-//            }
-//            if (testGroupsFetcher.wasInterrupted()) {
-//                return;
-//            }
-//            testGroupsFetcher.saveSelectedTestGroups();
-//        }
-//        if (ProjectPropertiesSupport.askForTestGroups(project)) {
-//            if (info.getTestGroups() == null) {
-//                // remember test groups for rerun
-//                info.setTestGroups(ProjectPropertiesSupport.getPhpUnitLastUsedTestGroups(project));
-//            }
-//            externalProcessBuilder = externalProcessBuilder
-//                    .addArgument(PhpUnit.PARAM_GROUP)
-//                    .addArgument(info.getTestGroups());
-//        }
-
+        if (PhpUnitPreferences.getAskForTestGroups(phpModule)) {
+            List<String> testGroups;
+            if (runInfo.isRerun()) {
+                @SuppressWarnings("unchecked")
+                List<String> savedGroups = runInfo.getParameter(PHP_UNIT_GROUPS_PARAM, List.class);
+                testGroups = savedGroups;
+            } else {
+                // ask user
+                List<String> allTestGroups = getTestGroups(phpModule, runInfo);
+                if (allTestGroups == null) {
+                    // some error
+                    return null;
+                }
+                testGroups = PhpUnitTestGroupsPanel.showDialog(allTestGroups, PhpUnitPreferences.getTestGroups(phpModule));
+                if (testGroups != null) {
+                    PhpUnitPreferences.setTestGroups(phpModule, testGroups);
+                    runInfo.setParameter(PHP_UNIT_GROUPS_PARAM, testGroups);
+                }
+            }
+            if (testGroups != null
+                    && !testGroups.isEmpty()) {
+                params.add(GROUP_PARAM);
+                params.add(StringUtils.implode(testGroups, ",")); // NOI18N
+            }
+        }
+        // custom tests
         List<TestInfo> customTests = runInfo.getCustomTests();
         if (!customTests.isEmpty()) {
             StringBuilder buffer = new StringBuilder(200);
@@ -335,6 +339,42 @@ public final class PhpUnit {
         return null;
     }
 
+    @NbBundle.Messages("PhpUnit.fetch.testGroups=PHPUnit (test-groups)")
+    @CheckForNull
+    private List<String> getTestGroups(PhpModule phpModule, TestRunInfo runInfo) throws TestRunException {
+        PhpExecutable phpUnit = getExecutable(phpModule, Bundle.PhpUnit_fetch_testGroups());
+        assert phpUnit != null;
+
+        phpUnit.workDir(FileUtil.toFile(runInfo.getWorkingDirectory()));
+
+        List<String> params = new ArrayList<String>();
+        addBootstrap(phpModule, params);
+        addConfiguration(phpModule, params);
+        params.add(LIST_GROUPS_PARAM);
+        // list test groups from the current workdir
+        params.add("."); // NOI18N
+        phpUnit.additionalParameters(params);
+
+        TestGroupsOutputProcessorFactory testGroupsProcessorFactory = new TestGroupsOutputProcessorFactory();
+        try {
+            phpUnit.runAndWait(getDescriptor(), testGroupsProcessorFactory, "Fetching test groups..."); // NOI18N
+            if (!testGroupsProcessorFactory.hasTestGroups()
+                    && testGroupsProcessorFactory.hasOutput) {
+                // some error
+                throw new TestRunException("Test groups cannot be listed. Review Output window for details.");
+            }
+            return testGroupsProcessorFactory.getTestGroups();
+        } catch (CancellationException ex) {
+            // canceled
+            LOGGER.log(Level.FINE, "Test creating cancelled", ex);
+        } catch (ExecutionException ex) {
+            LOGGER.log(Level.INFO, null, ex);
+            UiUtils.processExecutionException(ex, PhpUnitOptionsPanelController.OPTIONS_SUB_PATH);
+            throw new TestRunException(ex);
+        }
+        return null;
+    }
+
     @CheckForNull
     private PhpExecutable getExecutable(PhpModule phpModule, String title) {
         FileObject sourceDirectory = phpModule.getSourceDirectory();
@@ -346,6 +386,20 @@ public final class PhpUnit {
         return new PhpExecutable(phpUnitPath)
                 .optionsSubcategory(PhpUnitOptionsPanelController.OPTIONS_SUB_PATH)
                 .displayName(title);
+    }
+
+    private void addBootstrap(PhpModule phpModule, List<String> params) {
+        if (PhpUnitPreferences.isBootstrapEnabled(phpModule)) {
+            params.add(BOOTSTRAP_PARAM);
+            params.add(PhpUnitPreferences.getBootstrapPath(phpModule));
+        }
+    }
+
+    private void addConfiguration(PhpModule phpModule, List<String> params) {
+        if (PhpUnitPreferences.isConfigurationEnabled(phpModule)) {
+            params.add(CONFIGURATION_PARAM);
+            params.add(PhpUnitPreferences.getConfigurationPath(phpModule));
+        }
     }
 
     private ExecutionDescriptor getDescriptor() {
@@ -376,10 +430,10 @@ public final class PhpUnit {
         "PhpUnit.run.test.single.custom=PHPUnit (test, custom)",
         "PhpUnit.run.test.all=PHPUnit (test all)",
         "PhpUnit.run.test.all.custom=PHPUnit (test all, custom)",
-        "PhpUnit.run.debug.single=PHPUnit (debug)",
-        "PhpUnit.run.debug.single.custom=PHPUnit (debug, custom)",
-        "PhpUnit.run.debug.all=PHPUnit (debug all)",
-        "PhpUnit.run.debug.all.custom=PHPUnit (debug all, custom)",
+        "PhpUnit.debug.single=PHPUnit (debug)",
+        "PhpUnit.debug.single.custom=PHPUnit (debug, custom)",
+        "PhpUnit.debug.all=PHPUnit (debug all)",
+        "PhpUnit.debug.all.custom=PHPUnit (debug all, custom)",
     })
     private String getOutputTitle(TestRunInfo runInfo, boolean customSuiteEnabled) {
         boolean allTests = runInfo.allTests();
@@ -396,13 +450,13 @@ public final class PhpUnit {
                 //break;
             case DEBUG:
                 if (allTests && customSuiteEnabled) {
-                    return Bundle.PhpUnit_run_debug_all_custom();
+                    return Bundle.PhpUnit_debug_all_custom();
                 } else if (allTests) {
-                    return Bundle.PhpUnit_run_debug_all();
+                    return Bundle.PhpUnit_debug_all();
                 } else if (customSuiteEnabled) {
-                    return Bundle.PhpUnit_run_debug_single_custom();
+                    return Bundle.PhpUnit_debug_single_custom();
                 }
-                return Bundle.PhpUnit_run_debug_single();
+                return Bundle.PhpUnit_debug_single();
                 //break;
             default:
                 throw new IllegalStateException("Unknown session type: " + runInfo.getSessionType());
@@ -676,6 +730,48 @@ public final class PhpUnit {
         @Override
         public LineConvertor newLineConvertor() {
             return LineConvertors.filePattern(null, PhpUnit.LINE_PATTERN, null, 1, 2);
+        }
+
+    }
+
+    private static final class TestGroupsOutputProcessorFactory implements ExecutionDescriptor.InputProcessorFactory {
+
+        private final Pattern testGroupName = Pattern.compile("^\\s-\\s(.*)$"); // NOI18N
+        private final List<String> testGroups = Collections.synchronizedList(new ArrayList<String>());
+
+        private volatile boolean hasOutput = false;
+
+
+        @Override
+        public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
+            return InputProcessors.bridge(new LineProcessor() {
+                @Override
+                public void processLine(String line) {
+                    hasOutput = true;
+                    Matcher matcher = testGroupName.matcher(line);
+                    if (matcher.matches()) {
+                        testGroups.add(matcher.group(1).trim());
+                    }
+                }
+                @Override
+                public void reset() {
+                }
+                @Override
+                public void close() {
+                }
+            });
+        }
+
+        public List<String> getTestGroups() {
+            return testGroups;
+        }
+
+        public boolean hasTestGroups() {
+            return !testGroups.isEmpty();
+        }
+
+        public boolean hasOutput() {
+            return hasOutput;
         }
 
     }
