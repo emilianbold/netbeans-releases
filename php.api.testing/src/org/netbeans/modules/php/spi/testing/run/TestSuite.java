@@ -46,16 +46,34 @@ import org.netbeans.api.annotations.common.CheckForNull;
 import org.openide.filesystems.FileObject;
 
 /**
- *
+ * Interface for a test suite.
  */
 public interface TestSuite {
 
+    /**
+     * Get the name of this test suite.
+     * @return the name of this test suite
+     */
     String getName();
+
+    /**
+     * Get the location of this test suite. Can be {@code null}
+     * if not known.
+     * @return the location of this test suite, {@code null} if not known
+     */
     @CheckForNull
     FileObject getLocation();
-    // in ms
+
+    /**
+     * Get time of this suite run, in milliseconds.
+     * @return time of this suite run, in milliseconds
+     */
     long getTime();
 
+    /**
+     * Get all test cases of this test suite.
+     * @return all test cases, can be empty list but never {@code null}
+     */
     List<TestCase> getTestCases();
 
 }

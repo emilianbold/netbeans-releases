@@ -42,24 +42,37 @@
 package org.netbeans.modules.php.spi.testing.run;
 
 /**
- *
+ * Exception that represents a failure in running tests,
+ * e.g. log file with results cannot be parsed.
  */
 public class TestRunException extends Exception {
 
     private static final long serialVersionUID = -1547687321657L;
 
 
+    /**
+     * {@inheritDoc}
+     */
     public TestRunException() {
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public TestRunException(String message) {
         super(message);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public TestRunException(String message, Throwable cause) {
         super(message, cause);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public TestRunException(Throwable cause) {
         super(cause);
     }

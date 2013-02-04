@@ -44,24 +44,56 @@ package org.netbeans.modules.php.spi.testing.coverage;
 import java.util.List;
 
 /**
- *
+ * Interface representing code coverage.
  */
 public interface Coverage {
 
+    /**
+     * Get list of code coverage data for individual files.
+     * @return list of code coverage data for individual files
+     */
     List<File> getFiles();
 
+    /**
+     * Code coverage data for individual file.
+     */
     interface File {
 
+        /**
+         * Get file path.
+         * @return file path
+         */
         String getPath();
 
+        /**
+         * Get file metrics.
+         * @return file metrics
+         */
         FileMetrics getMetrics();
 
+        /**
+         * Get line data.
+         * @return line data
+         */
         List<Line> getLines();
 
     }
 
+    /**
+     * Code coverage data for individual line of a file.
+     */
     interface Line {
+
+        /**
+         * Get line number.
+         * @return line number
+         */
         int getNumber();
+
+        /**
+         * Get number of test hits for this line.
+         * @return number of test hits for this line
+         */
         int getHitCount();
 
     }

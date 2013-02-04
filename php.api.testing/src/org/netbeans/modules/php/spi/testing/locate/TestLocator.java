@@ -45,11 +45,30 @@ import java.util.Set;
 import org.openide.filesystems.FileObject;
 
 /**
+ * This interface serves for finding:
+ * <ul>
+ * <li>a test file for a tested (source) file, and</li>
+ * <li>a tested (source) file for a test file.</li>
+ * </ul>
  */
 public interface TestLocator {
 
+    /**
+     * Find all source files with their offsets (use {@code -1} if not known)
+     * for the given test file. If more files are found, user can select the proper
+     * one from a dialog.
+     * @param testFile test file to search source files for
+     * @return all source files for the given test file
+     */
     Set<Locations.Offset> findSources(FileObject testFile);
 
+    /**
+     * Find all test files with their offsets (use {@code -1} if not known)
+     * for the given tested (source) file. If more files are found, user can select the proper
+     * one from a dialog.
+     * @param testedFile tested (source) file to search test files for
+     * @return all test files for the given tested (source) file
+     */
     Set<Locations.Offset> findTests(FileObject testedFile);
 
 }

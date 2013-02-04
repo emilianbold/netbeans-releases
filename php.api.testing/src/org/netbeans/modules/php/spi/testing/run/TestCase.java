@@ -42,14 +42,18 @@
 package org.netbeans.modules.php.spi.testing.run;
 
 import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.spi.testing.locate.Locations;
 
 /**
- *
+ * Interface for a test case.
  */
 public interface TestCase {
 
+    /**
+     * Possible statuses of test case.
+     */
     enum Status {
         PASSED,
         PENDING,
@@ -61,42 +65,112 @@ public interface TestCase {
         IGNORED,
     }
 
+    /**
+     * Get type of this test case, typically identifier of this testing provider.
+     * @return type of this test case, typically identifier of this testing provider
+     */
     String getType();
+
+    /**
+     * Get name of this test case.
+     * @return name of this test case
+     */
     String getName();
+
+    /**
+     * Get class name of this test case, can be {@code null} if not known.
+     * @return class name of this test case, can be {@code null} if not known
+     */
     @CheckForNull
     String getClassName();
+
+    /**
+     * Get location of this test case, can be {@code null} if not known.
+     * @return location of this test case, can be {@code null} if not known
+     */
     @CheckForNull
     Locations.Line getLocation();
-    // in ms
-    long getTime();
-    String[] getStacktrace();
-    boolean isError();
 
+    /**
+     * Get time of this test case run, in milliseconds.
+     * @return time of this test case run, in milliseconds
+     */
+    long getTime();
+
+    /**
+     * Get status of this test case.
+     * @return status of this test case
+     */
     Status getStatus();
 
+    /**
+     * Get stack trace if this test case for the failure. The first item in the array is treated as the failure message.
+     * @return stack trace if this test case for the failure
+     */
+    String[] getStackTrace();
+
+    /**
+     * Get {@code true} if this test case failed, {@code false} otherwise.
+     * <p>
+     * <b>This method is called only if there is any stack trace {@link #getStackTrace() returned}.</b>
+     * @return {@code true} if this test case failed, {@code false} otherwise
+     * @see #getStackTrace()
+     */
+    boolean isError();
+
+    /**
+     * Get difference for the test failure.
+     * <p>
+     * <b>This method is called only if there is any stack trace {@link #getStackTrace() returned}.</b>
+     * @return difference for the test failure
+     * @see #getStackTrace()
+     */
     Diff getDiff();
 
     //~ Inner classes
 
-    public static final class Diff {
+    /**
+     * Difference for the test failure.
+     */
+    final class Diff {
 
         private final String expected;
         private final String actual;
 
 
-        public Diff(String expected, String actual) {
+        /**
+         * Create new difference for the test failure.
+         * @param expected the expected value
+         * @param actual actual value
+         */
+        public Diff(@NullAllowed String expected, @NullAllowed String actual) {
             this.expected = expected;
             this.actual = actual;
         }
 
+        /**
+         * Get the expected value, can be {@code null}.
+         * @return the expected value, can be {@code null}
+         */
+        @CheckForNull
         public String getExpected() {
             return expected;
         }
 
+        /**
+         * Get the actual value, can be {@code null}.
+         * @return the actual value, can be {@code null}
+         */
+        @CheckForNull
         public String getActual() {
             return actual;
         }
 
+        /**
+         * Check validity of this difference, it means that expected
+         * or actual value must contain any characters.
+         * @return {@code true} if expected or actual value contains any characters
+         */
         public boolean isValid() {
             return StringUtils.hasText(expected) || StringUtils.hasText(actual);
         }

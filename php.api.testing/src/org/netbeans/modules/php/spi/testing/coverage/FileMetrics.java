@@ -42,12 +42,26 @@
 package org.netbeans.modules.php.spi.testing.coverage;
 
 /**
- *
+ * Code coverage data for individual file.
  */
 public interface FileMetrics {
 
+    /**
+     * Get number of lines.
+     * @return number of lines
+     */
     int getLineCount();
+
+    /**
+     * Get number of all statements in this file.
+     * @return number of all statements in this file
+     */
     int getStatements();
+
+    /**
+     * Get number of covered (tested) statements in this file.
+     * @return number of covered (tested) statements in this file
+     */
     int getCoveredStatements();
 
 }

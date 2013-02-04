@@ -41,11 +41,12 @@
  */
 package org.netbeans.modules.php.spi.testing.locate;
 
+import org.netbeans.api.annotations.common.NonNull;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Parameters;
 
 /**
- *
+ * This class contains several representations of a location.
  */
 public final class Locations {
 
@@ -54,21 +55,38 @@ public final class Locations {
 
     //~ Inner classes
 
+    /**
+     * Location with a line number.
+     */
     public static final class Line {
 
         private final FileObject file;
         private final int line;
 
-        public Line(FileObject file, int line) {
+
+        /**
+         * Create new location.
+         * @param file file
+         * @param line line number, can be e.g. -1 if not known
+         */
+        public Line(@NonNull FileObject file, int line) {
             Parameters.notNull("file", file);
             this.file = file;
             this.line = line;
         }
 
+        /**
+         * Get the file of this location.
+         * @return the file of this location
+         */
         public FileObject getFile() {
             return file;
         }
 
+        /**
+         * Get the line of this location.
+         * @return the line of this location, can be e.g. -1 if not known
+         */
         public int getLine() {
             return line;
         }
@@ -80,21 +98,38 @@ public final class Locations {
 
     }
 
+    /**
+     * Location with an offset.
+     */
     public static final class Offset {
 
         private final FileObject file;
         private final int offset;
 
-        public Offset(FileObject file, int offset) {
+
+        /**
+         * Create new location.
+         * @param file file
+         * @param offset offset, can be e.g. -1 if not known
+         */
+        public Offset(@NonNull FileObject file, int offset) {
             Parameters.notNull("file", file);
             this.file = file;
             this.offset = offset;
         }
 
+        /**
+         * Get the file of this location.
+         * @return the file of this location
+         */
         public FileObject getFile() {
             return file;
         }
 
+        /**
+         * Get the offset of this location.
+         * @return the offset of this location, can be e.g. -1 if not known
+         */
         public int getOffset() {
             return offset;
         }

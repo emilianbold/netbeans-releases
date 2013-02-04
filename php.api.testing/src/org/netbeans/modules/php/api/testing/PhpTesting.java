@@ -79,7 +79,7 @@ public final class PhpTesting {
 
     /**
      * Add {@link LookupListener listener} to be notified when testing providers change
-     * (new provider added, existing removed).
+     * (new provider added, existing one removed).
      * <p>
      * To avoid memory leaks, do not forget to {@link #removeTestingProvidersListener(LookupListener) remove} the listener.
      * @param listener {@link LookupListener listener} to be added

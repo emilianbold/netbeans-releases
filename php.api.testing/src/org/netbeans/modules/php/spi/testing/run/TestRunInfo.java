@@ -59,8 +59,17 @@ import org.openide.util.Parameters;
  */
 public final class TestRunInfo {
 
+    /**
+     * Session type.
+     */
     public static enum SessionType {
+        /**
+         * Normal run.
+         */
         TEST,
+        /**
+         * Run under debugger.
+         */
         DEBUG,
     }
 
@@ -77,11 +86,14 @@ public final class TestRunInfo {
 
     /**
      * Create new info about test run.
+     * @param sessionType run or debug
      * @param workingDirectory working directory
      * @param startFile start file (can be directory)
      * @param testName test name, can be {@code null}
+     * @param coverageEnabled {@code true} if the coverage is enabled and should be collected
      */
     private TestRunInfo(SessionType sessionType, FileObject workingDirectory, FileObject startFile, String testName, boolean coverageEnabled) {
+        Parameters.notNull("sessionType", sessionType); // NOI18N
         Parameters.notNull("workingDirectory", workingDirectory); // NOI18N
         Parameters.notNull("startFile", startFile); // NOI18N
 
@@ -92,14 +104,34 @@ public final class TestRunInfo {
         this.coverageEnabled = coverageEnabled;
     }
 
+    /**
+     * Create new info about test {@link SessionType#TEST normal} run.
+     * @param workingDirectory working directory
+     * @param startFile start file (can be directory)
+     * @param testName test name, can be {@code null}
+     * @param coverageEnabled {@code true} if the coverage is enabled and should be collected
+     * @return new info about test {@link SessionType#TEST normal} run
+     */
     public static TestRunInfo test(FileObject workingDirectory, FileObject startFile, @NullAllowed String testName, boolean coverageEnabled) {
         return new TestRunInfo(SessionType.TEST, workingDirectory, startFile, testName, coverageEnabled);
     }
 
+    /**
+     * Create new info about test {@link SessionType#DEBUG debug} run.
+     * @param workingDirectory working directory
+     * @param startFile start file (can be directory)
+     * @param testName test name, can be {@code null}
+     * @param coverageEnabled {@code true} if the coverage is enabled and should be collected
+     * @return new info about test {@link SessionType#DEBUG debug} run
+     */
     public static TestRunInfo debug(FileObject workingDirectory, FileObject startFile, @NullAllowed String testName, boolean coverageEnabled) {
         return new TestRunInfo(SessionType.DEBUG, workingDirectory, startFile, testName, coverageEnabled);
     }
 
+    /**
+     * Get session type.
+     * @return session type
+     */
     public SessionType getSessionType() {
         return sessionType;
     }
@@ -187,6 +219,13 @@ public final class TestRunInfo {
         this.rerun = rerun;
     }
 
+    /**
+     * Get custom parameter previously stored using {@link #setParameter(String, Object) store} method.
+     * @param <T> type of the parameter
+     * @param key key of the parameter
+     * @param type type of the parameter
+     * @return parameter value or {@code null} if not found
+     */
     public <T> T getParameter(String key, Class<T> type) {
         Parameters.notEmpty("key", key); // NOI18N
         Parameters.notNull("type", type); // NOI18N
@@ -197,12 +236,21 @@ public final class TestRunInfo {
         return type.cast(param);
     }
 
+    /**
+     * Set custom parameter.
+     * @param key key of the parameter
+     * @param value value of the parameter
+     */
     public void setParameter(String key, Object value) {
         Parameters.notEmpty("key", key); // NOI18N
         Parameters.notNull("value", value); // NOI18N
         parameters.put(key, value);
     }
 
+    /**
+     * Remove custom parameter.
+     * @param key key of the parameter
+     */
     public void removeParameter(String key) {
         Parameters.notEmpty("key", key); // NOI18N
         parameters.remove(key);
@@ -210,6 +258,9 @@ public final class TestRunInfo {
 
     //~ Inner classes
 
+    /**
+     * Class representing information about a test.
+     */
     public static final class TestInfo {
 
         private final String type;
@@ -218,28 +269,52 @@ public final class TestRunInfo {
         private final String location;
 
 
+        /**
+         * Create new information about a test.
+         * @param type type of the test, typically an identifier of the testing provider
+         * @param name name of the test
+         * @param className class name, can be {@code null}
+         * @param location location, can be {@code null}
+         */
         public TestInfo(String type, String name, @NullAllowed String className, @NullAllowed String location) {
             Parameters.notEmpty("type", name);
             Parameters.notEmpty("name", name);
+
             this.type = type;
             this.name = name;
             this.className = className;
             this.location = location;
         }
 
+        /**
+         * Get the type of the test, typically an identifier of the testing provider.
+         * @return the type of the test, typically an identifier of the testing provider
+         */
         public String getType() {
             return type;
         }
 
+        /**
+         * Get the name of the test.
+         * @return name of the test
+         */
         public String getName() {
             return name;
         }
 
+        /**
+         * Get the class name, can be {@code null}.
+         * @return class name, can be {@code null}
+         */
         @CheckForNull
         public String getClassName() {
             return className;
         }
 
+        /**
+         * Get the location, can be {@code null}.
+         * @return location, can be {@code null}
+         */
         @CheckForNull
         public String getLocation() {
             return location;

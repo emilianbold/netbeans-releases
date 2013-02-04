@@ -45,22 +45,36 @@ import java.util.Set;
 import org.openide.filesystems.FileObject;
 
 /**
- *
+ * Result of creating tests.
  */
 public final class CreateTestsResult {
 
     private final Set<FileObject> succeeded;
     private final Set<FileObject> failed;
 
+
+    /**
+     * Create new result.
+     * @param succeeded set of files tests were created for
+     * @param failed set of files tests were NOT created for
+     */
     public CreateTestsResult(Set<FileObject> succeeded, Set<FileObject> failed) {
         this.succeeded = succeeded;
         this.failed = failed;
     }
 
+    /**
+     * Get set of files tests were created for.
+     * @return set of files tests were created for
+     */
     public Set<FileObject> getSucceeded() {
         return succeeded;
     }
 
+    /**
+     * Get set of files tests were NOT created for.
+     * @return set of files tests were NOT created for
+     */
     public Set<FileObject> getFailed() {
         return failed;
     }

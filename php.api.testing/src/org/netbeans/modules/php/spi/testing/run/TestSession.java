@@ -46,23 +46,43 @@ import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.php.spi.testing.coverage.Coverage;
 
 /**
- *
+ * Interface for a test session.
  */
 public interface TestSession {
 
+    /**
+     * Get all test suites of this test session.
+     * @return all test suites, can be empty list but never {@code null}
+     */
     List<TestSuite> getTestSuites();
 
+    /**
+     * Get line handler to use for printing while running tests.
+     * @return line handler to use for printing while running tests, can be {@code null}
+     */
     @CheckForNull
     OutputLineHandler getOutputLineHandler();
 
+    /**
+     * Get message that is print before tests start.
+     * @return message that is print before tests start, can be {@code null}
+     */
     @CheckForNull
     String getInitMessage();
+
+    /**
+     * Get message that is print after tests finish.
+     * @return message that is print after tests finish, can be {@code null}
+     */
     @CheckForNull
     String getFinishMessage();
 
     /**
-     * non null if provider.iscoveragesupported or if error
-     * @return
+     * Get code coverage data if {@link org.netbeans.modules.php.spi.testing.PhpTestingProvider#isCoverageSupported(org.netbeans.modules.php.api.phpmodule.PhpModule) supported}
+     * by this testing provider, {@code null} otherwise.
+     * @return code coverage data if {@link org.netbeans.modules.php.spi.testing.PhpTestingProvider#isCoverageSupported(org.netbeans.modules.php.api.phpmodule.PhpModule) supported}
+     *         by this testing provider, {@code null} otherwise
+     * @see org.netbeans.modules.php.spi.testing.PhpTestingProvider#isCoverageSupported(org.netbeans.modules.php.api.phpmodule.PhpModule)
      */
     @CheckForNull
     Coverage getCoverage();

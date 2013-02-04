@@ -72,7 +72,6 @@ public interface PhpTestingProvider {
 
     /**
      * Returns the <b>non-localized (usually english)</b> identifier of this PHP testing provider.
-     *
      * @return the <b>non-localized (usually english)</b> identifier; never {@code null}.
      */
     String getIdentifier();
@@ -80,7 +79,6 @@ public interface PhpTestingProvider {
     /**
      * Returns the display name of this PHP testing provider. The display name is used
      * in the UI.
-     *
      * @return the display name; never {@code null}
      */
     String getDisplayName();
@@ -89,14 +87,16 @@ public interface PhpTestingProvider {
      * Finds out whether the provider can <i>test</i> the given PHP module.
      * <p>
      * <b>This method should be as fast as possible.</b>
-     * <p>
-     * The default implementation simply returns {@code true} as it is acceptable in most of the cases.
-     *
      * @param  phpModule the PHP module; never {@code null}
      * @return {@code true} if this PHP module can be <i>tested</i> by this testing provider, {@code false} otherwise
      */
     boolean isInPhpModule(@NonNull PhpModule phpModule);
 
+    /**
+     * If this provider has a customizer, returns its category name. If not,
+     * returns {@code null}.
+     * @return the customizer category name or {@code null}
+     */
     @CheckForNull
     String getCustomizerCategoryName();
 
@@ -108,17 +108,49 @@ public interface PhpTestingProvider {
      */
     boolean isTestFile(@NonNull PhpModule phpModule, FileObject fileObj);
 
-    // XXX when to return null and when throw exception?
+    /**
+     * Run tests for the given {@link TestRunInfo info} and return test session or {@code null} if the session cannot be
+     * obtained, e.g. if there is some error in the setup (in such case, open the setup panel and return {@code null}
+     * rather than throwin an {@link TestRunException exception}).
+     * <p>
+     * This method is always called in a background thread.
+     * @param phpModule the PHP module; never {@code null}
+     * @param runInfo info about the test run; never {@code null}
+     * @return test session or {@code null} if the session cannot be obtained
+     * @throws TestRunException if any error occurs during the test run, e.g. some resource is not available
+     */
     @CheckForNull
     TestSession runTests(@NonNull PhpModule phpModule, TestRunInfo runInfo) throws TestRunException;
 
+    /**
+     * Gets test locator for this provider.
+     * @param phpModule the PHP module; never {@code null}
+     * @return the test locator, never {@code null}
+     */
     TestLocator getTestLocator(@NonNull PhpModule phpModule);
 
-    // runs in background
+    /**
+     * Creates tests for the given files and returns info about test creating.
+     * <p>
+     * This method is always called in a background thread.
+     * @param phpModule the PHP module; never {@code null}
+     * @param files source file the tests should be created for
+     * @return info about test creating
+     */
     CreateTestsResult createTests(@NonNull PhpModule phpModule, List<FileObject> files);
 
+    /**
+     * Checks whether this provider supports code coverage.
+     * @param phpModule the PHP module; never {@code null}
+     * @return {@code true} if this provider supports code coverage, {@code false} otherwise
+     */
     boolean isCoverageSupported(@NonNull PhpModule phpModule);
 
+    /**
+     * Tries to parse the given input and finds a file with a line in it.
+     * @param line input text to be parsed
+     * @return info about the file and line if the parsing was successful, {@code null} otherwise
+     */
     @CheckForNull
     Locations.Line parseFileFromOutput(String line);
 

@@ -43,13 +43,16 @@ package org.netbeans.modules.php.spi.testing.run;
 
 import org.openide.windows.OutputWriter;
 
+/**
+ * Line handler to use for printing while running tests.
+ * It can be used e.g. for creating a hyperlinks for files.
+ */
 public interface OutputLineHandler {
 
     /**
-     * Prints the given <code>text</code> to the given <code>out</code>.
-     *
-     * @param out the output where to print.
-     * @param text the text (line) to print.
+     * Print the given {@code text} to the given {@code out}.
+     * @param out the output where to print
+     * @param text the text (line) to print
      */
     void handleLine(OutputWriter out, String text);
 
