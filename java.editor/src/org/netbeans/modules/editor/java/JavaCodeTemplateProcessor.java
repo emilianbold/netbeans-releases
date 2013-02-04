@@ -243,7 +243,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                                 int idx = 0;
                                 while ((idx < selection.length()) && (selection.charAt(idx) <= ' '))
                                     idx++;
-                                final StringBuilder selectionText = new StringBuilder(parameter.getValue());
+                                final StringBuilder selectionText = new StringBuilder(parameter.getValue().trim());
                                 final int caretOffset = component.getSelectionStart() + idx;
                                 final StringBuilder sb = new StringBuilder();
                                 final Trees trees = cInfo.getTrees();
