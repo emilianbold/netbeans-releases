@@ -41,8 +41,10 @@
  */
 package org.netbeans.modules.php.phpunit.preferences;
 
+import java.util.List;
 import java.util.prefs.Preferences;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
+import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.phpunit.PhpUnitTestingProvider;
 
 /**
@@ -62,6 +64,8 @@ public final class PhpUnitPreferences {
     private static final String PHP_UNIT_PATH = "phpUnit.path"; // NOI18N
     private static final String RUN_ALL_TEST_FILES = "test.run.all"; // NOI18N
     private static final String ASK_FOR_TEST_GROUPS = "test.groups.ask"; // NOI18N
+    private static final String TEST_GROUPS = "test.groups"; // NOI18N
+    private static final String TEST_GROUPS_DELIMITER = ","; // NOI18N
 
 
     private PhpUnitPreferences() {
@@ -153,6 +157,14 @@ public final class PhpUnitPreferences {
 
     public static void setAskForTestGroups(PhpModule phpModule, boolean askForTestGroups) {
         getPreferences(phpModule).putBoolean(ASK_FOR_TEST_GROUPS, askForTestGroups);
+    }
+
+    public static List<String> getTestGroups(PhpModule phpModule) {
+        return StringUtils.explode(getPreferences(phpModule).get(TEST_GROUPS, null), TEST_GROUPS_DELIMITER);
+    }
+
+    public static void setTestGroups(PhpModule phpModule, List<String> testGroups) {
+        getPreferences(phpModule).put(TEST_GROUPS, StringUtils.implode(testGroups, TEST_GROUPS_DELIMITER));
     }
 
     private static Preferences getPreferences(PhpModule module) {
