@@ -46,12 +46,11 @@ import org.netbeans.modules.git.client.GitClientExceptionHandler;
 import java.io.File;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
+import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitException;
-import org.netbeans.libs.git.progress.FileListener;
 import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.client.GitProgressSupport;
 import org.netbeans.modules.git.ui.actions.GitAction;
@@ -80,20 +79,24 @@ public class ResetAction extends SingleRepositoryAction {
 
                 @Override
                 protected void perform () {
-                    final Collection<File> notifiedFiles = new HashSet<File>();
                     try {
-                        org.netbeans.modules.git.client.GitClient client = getClient();
+                        final org.netbeans.modules.git.client.GitClient client = getClient();
                         if (reset.getType() == GitClient.ResetType.HARD) {
-                            client.addNotificationListener(new FileListener() {
-                                @Override
-                                public void notifyFile (File file, String relativePathToRoot) {
-                                    notifiedFiles.add(file);
-                                }
-                            });
+                            client.addNotificationListener(new DefaultFileListener(new File[] { repository }));
                         }
                         client.addNotificationListener(new DefaultFileListener(new File[] { repository }));
                         LOG.log(Level.FINE, "Reset head, revision: {0}", reset.getRevision()); //NOI18N
-                        client.reset(reset.getRevision(), reset.getType(), getProgressMonitor());
+                        if (reset.getType() == GitClient.ResetType.HARD) {
+                            GitUtils.runWithoutIndexing(new Callable<Void>() {
+                                @Override
+                                public Void call () throws Exception {
+                                    client.reset(reset.getRevision(), reset.getType(), getProgressMonitor());
+                                    return null;
+                                }
+                            }, repository);
+                        } else {
+                            client.reset(reset.getRevision(), reset.getType(), getProgressMonitor());
+                        }
                     } catch (GitException ex) {
                         GitClientExceptionHandler.notifyException(ex, true);
                     } finally {
