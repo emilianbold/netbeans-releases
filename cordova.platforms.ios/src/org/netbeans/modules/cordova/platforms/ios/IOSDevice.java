@@ -113,7 +113,10 @@ public enum IOSDevice implements Device {
     @Override
     public void openUrl(String url) {
         try {
-            ProcessUtils.callProcess("killall", true, "MobileSafari");
+            try {
+                ProcessUtils.callProcess("killall", true, "MobileSafari");
+            } catch (IOException ex) {
+            }
             String sim = InstalledFileLocator.getDefault().locate("bin/ios-sim", "org.netbeans.modules.cordova.platforms.ios", false).getPath();
             String retVal = ProcessUtils.callProcess(sim, true, "launch", "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/" + getIPhoneSimName() +".sdk/Applications/MobileSafari.app", "--exit", "--args", "-u", url); //NOI18N
             LOG.finest(retVal);
