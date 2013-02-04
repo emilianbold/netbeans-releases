@@ -207,8 +207,8 @@ public class RepositoryForBinaryQueryImpl extends AbstractMavenForBinaryQueryImp
         }
         
         //hack for javaee6 jar docs which we ship with netbeans and which are not in any maven repository
-        if (binRoot.getPath().endsWith("/javax/javaee-api/6.0/javaee-api-6.0.jar")
-         || binRoot.getPath().endsWith("/javax/javaee-web-api/6.0/javaee-web-api-6.0.jar")) { //NOI18N
+        if (binRoot.getPath().endsWith("/javax/javaee-api/7.0-b72/javaee-api-7.0-b72.jar")
+         || binRoot.getPath().endsWith("/javax/javaee-web-api/7.0-b72/javaee-web-api-7.0-b72.jar")) { //NOI18N
             return new Javaee6Result();
         }
         
