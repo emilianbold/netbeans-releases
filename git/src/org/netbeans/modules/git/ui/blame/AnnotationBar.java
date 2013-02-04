@@ -539,7 +539,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
             checkoutPrevItem.setVisible(false);
 
             // an action showing annotation for line's revisions
-            final JMenuItem annotationsForSelectedItem = new JMenuItem(NbBundle.getMessage(AnnotationBar.class, "CTL_MenuItem_ShowAnnotations", revisionPerLine.getRevision().substring(0, 7))); //NOI18N
+            final JMenuItem annotationsForSelectedItem = new JMenuItem(NbBundle.getMessage(AnnotationBar.class, "CTL_MenuItem_ShowAnnotationsFor", revisionPerLine.getRevision().substring(0, 7))); //NOI18N
             annotationsForSelectedItem.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
