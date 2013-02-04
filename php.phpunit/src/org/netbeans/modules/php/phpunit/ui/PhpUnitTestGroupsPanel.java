@@ -41,27 +41,80 @@
  */
 package org.netbeans.modules.php.phpunit.ui;
 
+import java.awt.EventQueue;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import javax.swing.JPanel;
-import javax.swing.table.DefaultTableModel;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
+import javax.swing.table.AbstractTableModel;
+import javax.swing.table.TableModel;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.openide.DialogDisplayer;
+import org.openide.NotificationLineSupport;
+import org.openide.NotifyDescriptor;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 
 /**
  * UI for selecting PhpUnit test groups.
  */
-public class PhpUnitTestGroupsPanel extends JPanel {
+public final class PhpUnitTestGroupsPanel extends JPanel {
 
     private static final long serialVersionUID = 6576832132135L;
 
-    private final DefaultTableModel tableModel;
+    private final List<String> selectedGroups;
+    // @GuardedBy("EDT")
+    private final GroupsTableModel tableModel;
 
-    public PhpUnitTestGroupsPanel(DefaultTableModel tableModel) {
-        this.tableModel = tableModel;
+
+    private PhpUnitTestGroupsPanel(List<String> allGroups, List<String> selectedGroups) {
+        assert EventQueue.isDispatchThread();
+        assert allGroups != null;
+        assert selectedGroups != null;
+
+        this.selectedGroups = selectedGroups;
+        tableModel = new GroupsTableModel(allGroups, selectedGroups);
 
         initComponents();
+        init();
+    }
 
-        selectAllTestGroupsCheckBox.setText(NbBundle.getMessage(PhpUnitTestGroupsPanel.class, "LBL_SelectAllTestGroups"));
+    @NbBundle.Messages("PhpUnitTestGroupsPanel.dialog.title=Test Groups")
+    @CheckForNull
+    public static List<String> showDialog(List<String> allGroups, List<String> selectedGroups) {
+        final List<String> allGroupsCopy = new CopyOnWriteArrayList<String>(allGroups);
+        final List<String> selectedGroupsCopy = new CopyOnWriteArrayList<String>(selectedGroups);
+        return Mutex.EVENT.readAccess(new Mutex.Action<List<String>>() {
+            @Override
+            public List<String> run() {
+                assert EventQueue.isDispatchThread();
+                PhpUnitTestGroupsPanel panel = new PhpUnitTestGroupsPanel(allGroupsCopy, selectedGroupsCopy);
+                NotifyDescriptor notifyDescriptor = new NotifyDescriptor(panel,
+                        Bundle.PhpUnitTestGroupsPanel_dialog_title(),
+                        NotifyDescriptor.OK_CANCEL_OPTION,
+                        NotifyDescriptor.PLAIN_MESSAGE, null, NotifyDescriptor.OK_OPTION);
+                NotificationLineSupport notificationLineSupport = notifyDescriptor.createNotificationLineSupport();
+                panel.tableModel.addTableModelListener(new TestGroupsTableModelListener(notificationLineSupport));
+                if (DialogDisplayer.getDefault().notify(notifyDescriptor) != NotifyDescriptor.OK_OPTION) {
+                    return null;
+                }
+                return panel.getSelectedGroups();
+            }
+        });
+    }
+
+    @NbBundle.Messages("PhpUnitTestGroupsPanel.groups.select.all=Select all test groups")
+    private void init() {
+        assert EventQueue.isDispatchThread();
+        selectAllTestGroupsCheckBox.setText(Bundle.PhpUnitTestGroupsPanel_groups_select_all());
         testGroupsTable.setTableHeader(null);
+        testGroupsTable.setModel(tableModel);
         setFocusable(true);
+    }
+
+    private List<String> getSelectedGroups() {
+        return selectedGroups;
     }
 
     /** This method is called from within the constructor to
@@ -78,7 +131,6 @@ public class PhpUnitTestGroupsPanel extends JPanel {
         selectTestGroupLabel = new javax.swing.JLabel();
         selectAllTestGroupsCheckBox = new javax.swing.JCheckBox();
 
-        testGroupsTable.setModel(tableModel);
         testGroupsTable.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_NEXT_COLUMN);
         testGroupsTable.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         testGroupsScrollPane.setViewportView(testGroupsTable);
@@ -115,21 +167,23 @@ public class PhpUnitTestGroupsPanel extends JPanel {
         );
     }// </editor-fold>//GEN-END:initComponents
 
+    @NbBundle.Messages("PhpUnitTestGroupsPanel.groups.select.none=Select no test groups")
     private void selectAllTestGroupsCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_selectAllTestGroupsCheckBoxActionPerformed
-        Boolean selectAllGroups = null;
-        String labelSelector = null;
+        assert EventQueue.isDispatchThread();
+        boolean selectAllGroups;
+        String label;
         if (selectAllTestGroupsCheckBox.isSelected()) {
-            selectAllGroups = Boolean.TRUE;
-            labelSelector = "LBL_SelectNoTestGroups"; // NOI18N
+            selectAllGroups = true;
+            label = Bundle.PhpUnitTestGroupsPanel_groups_select_none();
         } else {
-            selectAllGroups = Boolean.FALSE;
-            labelSelector = "LBL_SelectAllTestGroups"; // NOI18N
+            selectAllGroups = false;
+            label = Bundle.PhpUnitTestGroupsPanel_groups_select_all();
         }
 
         for (int i = 0; i < tableModel.getRowCount(); i++) {
             tableModel.setValueAt(selectAllGroups, i, 1);
         }
-        selectAllTestGroupsCheckBox.setText(NbBundle.getMessage(PhpUnitTestGroupsPanel.class, labelSelector));
+        selectAllTestGroupsCheckBox.setText(label);
     }//GEN-LAST:event_selectAllTestGroupsCheckBoxActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -138,4 +192,97 @@ public class PhpUnitTestGroupsPanel extends JPanel {
     private javax.swing.JScrollPane testGroupsScrollPane;
     private javax.swing.JTable testGroupsTable;
     // End of variables declaration//GEN-END:variables
+
+    //~ Inner classes
+
+    private static final class GroupsTableModel extends AbstractTableModel {
+
+        private static final long serialVersionUID = 2346465465423157L;
+
+        private final Class<?>[] types = new Class<?>[] {String.class, Boolean.class};
+
+        private final List<String> allGroups;
+        private final List<String> selectedGroups;
+
+
+        public GroupsTableModel(List<String> allGroups, List<String> selectedGroups) {
+            this.allGroups = allGroups;
+            this.selectedGroups = selectedGroups;
+        }
+
+        @Override
+        public Class<?> getColumnClass(int columnIndex) {
+            return types[columnIndex];
+        }
+
+        @Override
+        public boolean isCellEditable(int row, int col) {
+            return col == 0 ? false : true;
+        }
+
+        @Override
+        public int getRowCount() {
+            return allGroups.size();
+        }
+
+        @Override
+        public int getColumnCount() {
+            return 2;
+        }
+
+        @Override
+        public Object getValueAt(int rowIndex, int columnIndex) {
+            if (columnIndex == 0) {
+                // name
+                return allGroups.get(rowIndex);
+            } else if (columnIndex == 1) {
+                // selected or not?
+                return selectedGroups.contains(allGroups.get(rowIndex));
+            }
+            throw new IllegalStateException("Unknown column index: " + columnIndex);
+        }
+
+        @Override
+        public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
+            if (columnIndex == 1) {
+                Boolean selected = (Boolean) aValue;
+                String group = allGroups.get(rowIndex);
+                if (selected) {
+                    selectedGroups.add(group);
+                } else {
+                    selectedGroups.remove(group);
+                }
+                fireTableCellUpdated(rowIndex, columnIndex);
+                return;
+            }
+            throw new IllegalStateException("Unknown column index: " + columnIndex);
+        }
+
+    }
+
+    private static final class TestGroupsTableModelListener implements TableModelListener {
+
+        private final NotificationLineSupport notificationLineSupport;
+
+
+        public TestGroupsTableModelListener(NotificationLineSupport notificationLineSupport) {
+            this.notificationLineSupport = notificationLineSupport;
+        }
+
+        @Override
+        @NbBundle.Messages("PhpUnitTestGroupsPanel.groups.selected.none=All tests will be executed.")
+        public void tableChanged(TableModelEvent e) {
+            TableModel tableModel = (TableModel) e.getSource();
+            for (int i = 0; i < tableModel.getRowCount(); i++) {
+                Boolean isRowChecked = (Boolean) tableModel.getValueAt(i, 1);
+                if (isRowChecked) {
+                    notificationLineSupport.clearMessages();
+                    return;
+                }
+            }
+            notificationLineSupport.setInformationMessage(Bundle.PhpUnitTestGroupsPanel_groups_selected_none());
+        }
+
+    }
+
 }
