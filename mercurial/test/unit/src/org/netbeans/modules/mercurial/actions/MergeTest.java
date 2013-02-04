@@ -120,7 +120,7 @@ public class MergeTest extends AbstractHgTestCase {
             @Override
             public void run() {
                 try {
-                    MergeAction.handleMergeOutput(newRepo, list, true, NULL_LOGGER);
+                    MergeAction.handleMergeOutput(newRepo, list, NULL_LOGGER);
                 } catch (HgException ex) {
                     Exceptions.printStackTrace(ex);
                 }

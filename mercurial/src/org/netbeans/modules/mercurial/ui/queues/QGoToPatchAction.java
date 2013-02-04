@@ -44,6 +44,7 @@ package org.netbeans.modules.mercurial.ui.queues;
 import java.awt.EventQueue;
 import java.io.File;
 import java.util.List;
+import java.util.MissingResourceException;
 import java.util.concurrent.Callable;
 import org.netbeans.modules.mercurial.HgException;
 import org.netbeans.modules.mercurial.HgProgressSupport;
@@ -127,8 +128,7 @@ public class QGoToPatchAction extends ContextAction {
                         @Override
                         public Boolean call () throws Exception {
                             if (patchName == null || queueName != null) {
-                                logger.output(NbBundle.getMessage(QGoToPatchAction.class, "MSG_GOTO_EMPTY_INFO_SEP", root.getAbsolutePath())); //NOI18N
-                                HgCommand.qPopPatches(root, null, logger);
+                                popAllPatches(root, logger);
                             }
                             if (isCanceled()) {
                                 return false;
@@ -142,10 +142,7 @@ public class QGoToPatchAction extends ContextAction {
                             }
                             if (patchName != null) {
                                 logger.output(NbBundle.getMessage(QGoToPatchAction.class, "MSG_GOTO_INFO_SEP", patchName, root.getAbsolutePath())); //NOI18N
-                                List<String> output = HgCommand.qGoToPatch(root, patchName, logger);
-                                FailedPatchResolver resolver = new FailedPatchResolver(root, output, logger);
-                                resolver.resolveFailure();
-                                logger.output(output);
+                                applyPatch(root, patchName, logger);
                             }
                             return true;
                         }
@@ -168,6 +165,18 @@ public class QGoToPatchAction extends ContextAction {
                 }
             }
         }.start(Mercurial.getInstance().getRequestProcessor(root), root, NbBundle.getMessage(QGoToPatchAction.class, "LBL_QGoToPatchAction.progress")); //NOI18N
+    }
+
+    public void applyPatch (File repository, String patchName, OutputLogger logger) throws HgException {
+        List<String> output = HgCommand.qGoToPatch(repository, patchName, logger);
+        FailedPatchResolver resolver = new FailedPatchResolver(repository, output, logger);
+        resolver.resolveFailure();
+        logger.output(output);
+    }
+
+    public void popAllPatches (File repository, OutputLogger logger) throws HgException, MissingResourceException {
+        logger.output(NbBundle.getMessage(QGoToPatchAction.class, "MSG_GOTO_EMPTY_INFO_SEP", repository.getAbsolutePath())); //NOI18N
+        HgCommand.qPopPatches(repository, null, logger);
     }
     
 }

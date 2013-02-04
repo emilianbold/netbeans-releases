@@ -65,6 +65,8 @@ import org.netbeans.modules.mercurial.OutputLogger;
 import org.netbeans.modules.mercurial.ui.merge.MergeAction;
 import org.netbeans.modules.mercurial.ui.actions.ContextAction;
 import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
+import org.netbeans.modules.mercurial.ui.queues.QGoToPatchAction;
+import org.netbeans.modules.mercurial.ui.queues.QPatch;
 import org.netbeans.modules.mercurial.util.HgCommand;
 import org.netbeans.modules.mercurial.util.HgProjectUtils;
 import org.netbeans.modules.mercurial.util.HgRepositoryContextCache;
@@ -77,6 +79,7 @@ import org.openide.DialogDescriptor;
 import org.openide.nodes.Node;
 import static org.netbeans.modules.mercurial.util.HgUtils.isNullOrEmpty;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.actions.SystemAction;
 
 /**
  * Pull action for mercurial:
@@ -140,18 +143,16 @@ public class PullAction extends ContextAction {
             public void run() {
                 for (File repositoryRoot : repositoryRoots) {
                     final File repository = repositoryRoot;
-                    final boolean[] canceled = new boolean[1];
                     // run every repository fetch in its own support with its own output window
                     RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(repository);
                     HgProgressSupport support = new HgProgressSupport() {
                         @Override
                         public void perform() {
                             getDefaultAndPerformPull(repository, null, this);
-                            canceled[0] = isCanceled();
                         }
                     };
                     support.start(rp, repository, org.openide.util.NbBundle.getMessage(PullAction.class, "MSG_PULL_PROGRESS")).waitFinished(); //NOI18N
-                    if (canceled[0]) {
+                    if (support.isCanceled()) {
                         break;
                     }
                 }
@@ -295,6 +296,11 @@ public class PullAction extends ContextAction {
      * @param toPrjName
      * @param logger
      */
+    @NbBundle.Messages({
+        "MSG_PullAction.popingPatches=Popping applied patches",
+        "MSG_PullAction.pulling=Pulling changesets",
+        "MSG_PullAction.pushingPatches=Pushing patches",
+    })
     static void performPull(final PullType type, final File root, final HgURL pullSource, final String fromPrjName, final String toPrjName, final String revision, final HgProgressSupport supp) {
         if(root == null || pullSource == null) return;
         File bundleFile = null; 
@@ -351,10 +357,20 @@ public class PullAction extends ContextAction {
                 logger.output(HgUtils.replaceHttpPassword(listIncoming));
                 logCommand(fromPrjName, logger, pullSource, toPrjName, root);
             } else {
+                final QPatch topPatch = FetchAction.selectPatch(root);
                 final File fileToUnbundle = bundleFile;
                 HgUtils.runWithoutIndexing(new Callable<Void>() {
                     @Override
                     public Void call () throws Exception {
+                        if (topPatch != null) {
+                            supp.setDisplayName(Bundle.MSG_PullAction_popingPatches());
+                            SystemAction.get(QGoToPatchAction.class).popAllPatches(root, logger);
+                            supp.setDisplayName(Bundle.MSG_PullAction_pulling());
+                            logger.output(""); // NOI18N
+                        }
+                        if (supp.isCanceled()) {
+                            return null;
+                        }
                         List<String> list;
                         if(type == PullType.LOCAL){
                             list = HgCommand.doPull(root, revision, logger);
@@ -369,33 +385,43 @@ public class PullAction extends ContextAction {
                             logCommand(fromPrjName, logger, pullSource, toPrjName, root);
                             
                             // Handle Merge - both automatic and merge with conflicts
-                            boolean bMergeNeededDueToPull = HgCommand.isMergeNeededMsg(list.get(list.size() - 1));
+                            boolean bMergeNeeded = HgCommand.isMergeNeededMsg(list.get(list.size() - 1));
                             boolean bConfirmMerge = false;
                             boolean warnMoreHeads = true;
-                            if(bMergeNeededDueToPull){
-                                bConfirmMerge = HgUtils.confirmDialog(
-                                    PullAction.class, "MSG_PULL_MERGE_CONFIRM_TITLE", "MSG_PULL_MERGE_CONFIRM_QUERY"); // NOI18N
-                                warnMoreHeads = false;
-                            } else {
-                                boolean bOutStandingUncommittedMerges = HgCommand.isMergeAbortUncommittedMsg(list.get(list.size() - 1));
-                                if(bOutStandingUncommittedMerges){
+                            if (!supp.isCanceled()) {
+                                if (bMergeNeeded) {
                                     bConfirmMerge = HgUtils.confirmDialog(
-                                        PullAction.class, "MSG_PULL_MERGE_CONFIRM_TITLE", "MSG_PULL_MERGE_UNCOMMITTED_CONFIRM_QUERY"); // NOI18N
+                                        PullAction.class, "MSG_PULL_MERGE_CONFIRM_TITLE", "MSG_PULL_MERGE_CONFIRM_QUERY"); // NOI18N
+                                    warnMoreHeads = false;
+                                } else {
+                                    bMergeNeeded = HgCommand.isMergeAbortUncommittedMsg(list.get(list.size() - 1));
+                                    if (bMergeNeeded) {
+                                        bConfirmMerge = HgUtils.confirmDialog(
+                                            PullAction.class, "MSG_PULL_MERGE_CONFIRM_TITLE", "MSG_PULL_MERGE_UNCOMMITTED_CONFIRM_QUERY"); // NOI18N
+                                    }
                                 }
                             }
+                            boolean finished = !bMergeNeeded;
                             if (bConfirmMerge) {
                                 logger.output(""); // NOI18N
                                 logger.outputInRed(NbBundle.getMessage(PullAction.class, "MSG_PULL_MERGE_DO")); // NOI18N
                                 MergeAction.doMergeAction(root, null, logger);
-                            } else {
-                                HgLogMessage[] heads = HgCommand.getHeadRevisionsInfo(root, true, OutputLogger.getLogger(null));
-                                Map<String, Collection<HgLogMessage>> branchHeads = HgUtils.sortByBranch(heads);
-                                if (!branchHeads.isEmpty()) {
-                                    MergeAction.displayMergeWarning(branchHeads, logger, warnMoreHeads);
-                                }
+                            } else if (!supp.isCanceled() && finished && topPatch != null) {
+                                logger.output(""); // NOI18N
+                                supp.setDisplayName(Bundle.MSG_PullAction_pushingPatches());
+                                SystemAction.get(QGoToPatchAction.class).applyPatch(root, topPatch.getId(), logger);
+                                HgLogMessage parent = HgCommand.getParents(root, null, null).get(0);
+                                logger.output(""); // NOI18N
+                                HgUtils.logHgLog(parent, logger);
+                            }
+                            HgLogMessage[] heads = HgCommand.getHeadRevisionsInfo(root, true, OutputLogger.getLogger(null));
+                            Map<String, Collection<HgLogMessage>> branchHeads = HgUtils.sortByBranch(heads);
+                            if (!branchHeads.isEmpty()) {
+                                MergeAction.displayMergeWarning(branchHeads, logger, warnMoreHeads && !supp.isCanceled());
                             }
                         }
 
+                        Mercurial.getInstance().refreshOpenedFiles(root);
                         HgUtils.notifyUpdatedFiles(root, list);
                         HgUtils.forceStatusRefresh(root);
                         return null;

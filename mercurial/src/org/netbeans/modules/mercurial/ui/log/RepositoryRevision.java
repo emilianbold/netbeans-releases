@@ -248,7 +248,7 @@ public class RepositoryRevision {
         HgProgressSupport supp = new HgProgressSupport() {
             @Override
             protected void perform () {
-                FetchAction.performFetch(repositoryRoot, revision, getLogger());
+                FetchAction.performFetch(repositoryRoot, revision, this);
             }
         };
         supp.start(Mercurial.getInstance().getRequestProcessor(repositoryRoot), repositoryRoot, Bundle.MSG_SearchHistory_fetching(revision));
