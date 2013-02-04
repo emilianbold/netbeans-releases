@@ -162,7 +162,7 @@ public final class UnitTestRunner {
                 testCase.setTimeMillis(kase.getTime());
                 testCase.setStatus(map(kase.getStatus()));
 
-                String[] stacktrace = kase.getStacktrace();
+                String[] stacktrace = kase.getStackTrace();
                 if (stacktrace.length > 0) {
                     boolean isError = kase.isError();
                     Trouble trouble = new Trouble(isError);

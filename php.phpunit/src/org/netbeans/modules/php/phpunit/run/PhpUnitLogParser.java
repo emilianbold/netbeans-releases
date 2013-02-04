@@ -230,7 +230,7 @@ public final class PhpUnitLogParser extends DefaultHandler {
             }
         }
         // #157846
-        if (testCase.getStacktrace().length == 0) {
+        if (testCase.getStackTrace().length == 0) {
             testCase.addStacktrace(buffer.toString().trim());
         }
     }

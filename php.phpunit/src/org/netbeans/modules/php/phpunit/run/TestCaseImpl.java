@@ -124,7 +124,7 @@ public final class TestCaseImpl implements TestCase {
     }
 
     @Override
-    public String[] getStacktrace() {
+    public String[] getStackTrace() {
         return stacktrace.toArray(new String[stacktrace.size()]);
     }
 
