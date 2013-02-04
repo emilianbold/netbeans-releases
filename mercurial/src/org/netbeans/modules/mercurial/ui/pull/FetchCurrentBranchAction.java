@@ -91,7 +91,6 @@ public class FetchCurrentBranchAction extends ContextAction {
             public void run() {
                 for (File repositoryRoot : repositoryRoots) {
                     final File root = repositoryRoot;
-                    final boolean[] canceled = new boolean[1];
                     final String branch;
                     try {
                         branch = HgCommand.getBranch(root);
@@ -100,12 +99,11 @@ public class FetchCurrentBranchAction extends ContextAction {
                         HgProgressSupport support = new HgProgressSupport() {
                             @Override
                             public void perform() {
-                                FetchAction.performFetch(root, branch, this.getLogger());
-                                canceled[0] = isCanceled();
+                                FetchAction.performFetch(root, branch, this);
                             }
                         };
                         support.start(rp, root, Bundle.MSG_FETCH_BRANCH_PROGRESS(branch)).waitFinished();
-                        if (canceled[0]) {
+                        if (support.isCanceled()) {
                             break;
                         }
                     } catch (HgException.HgCommandCanceledException ex) {

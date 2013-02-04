@@ -47,6 +47,7 @@ package org.netbeans.modules.subversion.ui.copy;
 import java.awt.EventQueue;
 import java.io.File;
 import java.util.List;
+import java.util.concurrent.Callable;
 import org.netbeans.modules.subversion.FileInformation;
 import org.netbeans.modules.subversion.RepositoryFile;
 import org.netbeans.modules.subversion.Subversion;
@@ -166,13 +167,24 @@ public class SwitchToAction extends ContextAction {
                     ContextAction.ProgressSupport support = new ContextAction.ProgressSupport(SwitchToAction.this, nodes) {
                         @Override
                         public void perform() {
-                            for (File root : roots) {
-                                RepositoryFile toRepositoryFile = switchTo.getRepositoryFile();
-                                if (root.isFile() && roots.length > 1) {
-                                    // change the filename ONLY for multi-file data objects, not for folders
-                                    toRepositoryFile = toRepositoryFile.replaceLastSegment(root.getName(), 0);
-                                }
-                                performSwitch(toRepositoryFile, root, this);
+                            final ContextAction.ProgressSupport supp = this;
+                            try {
+                                SvnUtils.runWithoutIndexing(new Callable<Void>() {
+                                    @Override
+                                    public Void call () throws Exception {
+                                        for (File root : roots) {
+                                            RepositoryFile toRepositoryFile = switchTo.getRepositoryFile();
+                                            if (root.isFile() && roots.length > 1) {
+                                                // change the filename ONLY for multi-file data objects, not for folders
+                                                toRepositoryFile = toRepositoryFile.replaceLastSegment(root.getName(), 0);
+                                            }
+                                            performSwitch(toRepositoryFile, root, supp);
+                                        }
+                                        return null;
+                                    }
+                                }, roots);
+                            } catch (SVNClientException ex) {
+                                SvnClientExceptionHandler.notifyException(ex, true, false);
                             }
                         }
                     };

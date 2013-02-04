@@ -91,7 +91,6 @@ public class PullCurrentBranchAction extends ContextAction {
             public void run() {
                 for (File repositoryRoot : repositoryRoots) {
                     final File root = repositoryRoot;
-                    final boolean[] canceled = new boolean[1];
                     final String branch;
                     try {
                         branch = HgCommand.getBranch(root);
@@ -101,11 +100,10 @@ public class PullCurrentBranchAction extends ContextAction {
                             @Override
                             public void perform() {
                                 PullAction.getDefaultAndPerformPull(root, branch, this);
-                                canceled[0] = isCanceled();
                             }
                         };
                         support.start(rp, root, Bundle.MSG_PULL_BRANCH_PROGRESS(branch)).waitFinished();
-                        if (canceled[0]) {
+                        if (support.isCanceled()) {
                             break;
                         }
                     } catch (HgException.HgCommandCanceledException ex) {

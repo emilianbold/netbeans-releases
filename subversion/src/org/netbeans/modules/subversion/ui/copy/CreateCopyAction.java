@@ -46,6 +46,7 @@ package org.netbeans.modules.subversion.ui.copy;
 
 import java.awt.EventQueue;
 import java.io.File;
+import java.util.concurrent.Callable;
 import org.netbeans.modules.subversion.FileInformation;
 import org.netbeans.modules.subversion.RepositoryFile;
 import org.netbeans.modules.subversion.Subversion;
@@ -196,11 +197,11 @@ public class CreateCopyAction extends ContextAction {
      * @param support
      * @param roots
      */
-    private void performCopy(CreateCopy createCopy, SvnProgressSupport support, File[] roots) {
+    private void performCopy(final CreateCopy createCopy, final SvnProgressSupport support, final File[] roots) {
         if (roots == null) {
             return;
         }
-        RepositoryFile toRepositoryFile = createCopy.getToRepositoryFile();                
+        final RepositoryFile toRepositoryFile = createCopy.getToRepositoryFile();                
 
         try {                
             SvnClient client;
@@ -247,15 +248,23 @@ public class CreateCopyAction extends ContextAction {
             }
 
             if(createCopy.switchTo()) {
-                if(roots != null && roots.length > 1) {
-                    // more roots menas we copyied a multifile dataobject - see getActionRoots(ctx)
-                    // lets also switch all of them
-                    for (File file : roots) {
-                        SwitchToAction.performSwitch(getToRepositoryFile(toRepositoryFile, file), file, support);
+                final boolean rootsPresent = roots.length > 1;
+                File[] indexingRoots = rootsPresent ? roots : new File[] { createCopy.getLocalFile() };
+                SvnUtils.runWithoutIndexing(new Callable<Void>() {
+                    @Override
+                    public Void call () throws Exception {
+                        if (rootsPresent) {
+                            // more roots menas we copyied a multifile dataobject - see getActionRoots(ctx)
+                            // lets also switch all of them
+                            for (File file : roots) {
+                                SwitchToAction.performSwitch(getToRepositoryFile(toRepositoryFile, file), file, support);
+                            }
+                        } else {
+                            SwitchToAction.performSwitch(toRepositoryFile, createCopy.getLocalFile(), support);
+                        }
+                        return null;
                     }
-                } else {
-                    SwitchToAction.performSwitch(toRepositoryFile, createCopy.getLocalFile(), support);
-                }
+                }, indexingRoots);
             }            
         } catch (SVNClientException ex) {
             support.annotate(ex);

@@ -166,13 +166,15 @@ public class MergeAction extends ContextAction {
         
         if (listMerge != null && !listMerge.isEmpty()) {
             logger.output(listMerge);
-            handleMergeOutput(root, listMerge, true, logger);
+            if (handleMergeOutput(root, listMerge, logger)) {
+                logger.outputInRed(NbBundle.getMessage(MergeAction.class, "MSG_MERGE_DONE")); //NOI18N
+            }
         }
         return listMerge;
     }
 
-    public static void handleMergeOutput(File root, List<String> listMerge, boolean bDone, OutputLogger logger) throws HgException {
-        if (listMerge == null || listMerge.isEmpty()) return;
+    public static boolean handleMergeOutput(File root, List<String> listMerge, OutputLogger logger) throws HgException {
+        if (listMerge == null || listMerge.isEmpty()) return true;
 
         Boolean bConflicts = false;
         Boolean bMergeFailed = false;
@@ -230,10 +232,7 @@ public class MergeAction extends ContextAction {
             logger.outputInRed(NbBundle.getMessage(MergeAction.class, "MSG_MERGE_DONE_CONFLICTS")); // NOI18N
             DialogDisplayer.getDefault().notify(new DialogDescriptor.Message(NbBundle.getMessage(MergeAction.class, "MSG_Merge.ConflictsCreated"))); //NOI18N
         }
-        if (!bMergeFailed && !bConflicts && bDone) {
-            logger.outputInRed(NbBundle.getMessage(MergeAction.class,
-                    "MSG_MERGE_DONE")); // NOI18N
-        }
+        return !bMergeFailed && !bConflicts;
     }
 
     public static void printMergeWarning(List<String> list, OutputLogger logger){
