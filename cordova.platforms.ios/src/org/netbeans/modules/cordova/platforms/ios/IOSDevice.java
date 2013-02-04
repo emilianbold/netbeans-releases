@@ -43,6 +43,7 @@ package org.netbeans.modules.cordova.platforms.ios;
 
 import java.io.IOException;
 import java.util.Properties;
+import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cordova.platforms.Device;
 import org.netbeans.modules.cordova.platforms.MobilePlatform;
@@ -67,6 +68,8 @@ public enum IOSDevice implements Device {
     
     String displayName;
     String args;
+    
+    private Logger LOG = Logger.getLogger(IOSDevice.class.getName());
 
     IOSDevice(String name, String args) {
         this.displayName = name;
@@ -110,8 +113,10 @@ public enum IOSDevice implements Device {
     @Override
     public void openUrl(String url) {
         try {
+            ProcessUtils.callProcess("killall", true, "MobileSafari");
             String sim = InstalledFileLocator.getDefault().locate("bin/ios-sim", "org.netbeans.modules.cordova.platforms.ios", false).getPath();
-            String a = ProcessUtils.callProcess(sim, false, "launch", "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/" + getIPhoneSimName() +".sdk/Applications/MobileSafari.app", "--args", "-u", url); //NOI18N
+            String retVal = ProcessUtils.callProcess(sim, true, "launch", "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/" + getIPhoneSimName() +".sdk/Applications/MobileSafari.app", "--exit", "--args", "-u", url); //NOI18N
+            LOG.finest(retVal);
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
