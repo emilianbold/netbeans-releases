@@ -1680,6 +1680,14 @@ public class JsFormatterTest extends JsTestBase {
         reformatFileContents("testfiles/formatter/issue224246.js",new IndentPrefs(4, 4));
     }
 
+    public void testIssue225654Partial() throws Exception {
+        reformatFileContents("testfiles/formatter/issue225654_partial.js", Collections.<String, Object>emptyMap());
+    }
+
+    public void testIssue225654Full() throws Exception {
+        reformatFileContents("testfiles/formatter/issue225654_full.js",new IndentPrefs(4, 4));
+    }
+
     // test from original formatter
 
     public void testSemi01() throws Exception {

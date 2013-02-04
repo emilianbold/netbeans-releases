@@ -131,7 +131,7 @@ public class JsFormatter implements Formatter {
                 }
 
                 FormatTokenStream tokenStream = FormatTokenStream.create(
-                        ts, context.startOffset(), context.endOffset());
+                        ts, 0/*context.startOffset()*/, context.endOffset());
                 LOGGER.log(Level.INFO, "Format token stream creation: {0} ms",
                         (System.nanoTime() - startTime) / 1000000);
 
@@ -159,11 +159,16 @@ public class JsFormatter implements Formatter {
                         LOGGER.log(Level.FINE, token.toString());
                     }
                 }
+
+                boolean started = false;
                 boolean firstTokenFound = false;
                 Stack<FormatContext.ContinuationBlock> continuations = new Stack<FormatContext.ContinuationBlock>();
 
                 for (int i = 0; i < tokens.size(); i++) {
                     FormatToken token = tokens.get(i);
+                    if (!token.isVirtual() && token.getOffset() >= context.startOffset()) {
+                        started = true;
+                    }
 
                     if (processed.remove(token)) {
                         continue;
@@ -225,9 +230,9 @@ public class JsFormatter implements Formatter {
                                 + CodeStyle.get(formatContext).getInitialIndent();
                     }
 
-                    if (token.getKind() == FormatToken.Kind.BLOCK_COMMENT
+                    if (started && (token.getKind() == FormatToken.Kind.BLOCK_COMMENT
                             || token.getKind() == FormatToken.Kind.DOC_COMMENT
-                            || token.getKind() == FormatToken.Kind.LINE_COMMENT) {
+                            || token.getKind() == FormatToken.Kind.LINE_COMMENT)) {
                         try {
                             int indent = context.lineIndent(context.lineStartOffset(
                                     formatContext.getDocumentOffset(token.getOffset()) + formatContext.getOffsetDiff()));
@@ -235,9 +240,9 @@ public class JsFormatter implements Formatter {
                         } catch (BadLocationException ex) {
                             LOGGER.log(Level.INFO, null, ex);
                         }
-                    } else if (token.getKind().isSpaceMarker()) {
+                    } else if (started && token.getKind().isSpaceMarker()) {
                         formatSpace(tokens, i, formatContext);
-                    } else if (token.getKind().isLineWrapMarker()) {
+                    } else if (started && token.getKind().isLineWrapMarker()) {
                         formatLineWrap(tokens, i, formatContext, initialIndent,
                                 continuationIndent, continuations);
                     } else if (token.getKind().isIndentationMarker()) {
@@ -245,7 +250,7 @@ public class JsFormatter implements Formatter {
                     } else if (token.getKind() == FormatToken.Kind.SOURCE_START
                             || token.getKind() == FormatToken.Kind.EOL) {
                         // XXX refactor eol token WRAP_IF_LONG handling
-                        if (token.getKind() != FormatToken.Kind.SOURCE_START) {
+                        if (started && token.getKind() != FormatToken.Kind.SOURCE_START) {
                             // search for token which will be present just before eol
                             FormatToken tokenBeforeEol = null;
                             for (int j = i - 1; j >= 0; j--) {
@@ -268,9 +273,10 @@ public class JsFormatter implements Formatter {
                             }
                         }
 
-                        // remove trailing spaces
-                        removeTrailingSpaces(tokens, i, formatContext, token, templateEdit);
-
+                        if (started) {
+                            // remove trailing spaces
+                            removeTrailingSpaces(tokens, i, formatContext, token, templateEdit);
+                        }
                         if (token.getKind() != FormatToken.Kind.SOURCE_START) {
                             formatContext.setCurrentLineStart(token.getOffset()
                                     + 1 + formatContext.getOffsetDiff());
@@ -291,6 +297,9 @@ public class JsFormatter implements Formatter {
                         for (int j = i + 1; j < tokens.size(); j++) {
                             FormatToken nextToken = tokens.get(j);
                             if (!nextToken.isVirtual()) {
+                                if (nextToken.getOffset() >= context.startOffset()) {
+                                    started = true;
+                                }
                                 if (nextToken.getKind() != FormatToken.Kind.WHITESPACE) {
                                     indentationEnd = nextToken;
                                     if (indentationStart == null) {
@@ -319,9 +328,11 @@ public class JsFormatter implements Formatter {
                                 updateContinuation(formatContext, token, continuations);
                             }
                             indentationSize += continuationIndent * continuationLevel;
-                            formatContext.indentLine(
-                                    indentationStart.getOffset(), indentationSize,
-                                    checkIndentation(doc, token, indentationEnd, formatContext, context, indentationSize));
+                            if (started) {
+                                formatContext.indentLine(
+                                        indentationStart.getOffset(), indentationSize,
+                                        checkIndentation(doc, token, indentationEnd, formatContext, context, indentationSize));
+                            }
                         }
                     }
                 }
