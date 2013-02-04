@@ -51,6 +51,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.validation.adapters.WizardDescriptorAdapter;
+import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.j2ee.MavenJavaEEConstants;
 import static org.netbeans.modules.maven.j2ee.ui.wizard.Bundle.*;
 import org.netbeans.modules.maven.j2ee.utils.MavenProjectSupport;
@@ -89,6 +90,7 @@ public abstract class BaseWizardIterator implements WizardDescriptor.BackgroundI
         AuxiliaryProperties props = project.getLookup().lookup(AuxiliaryProperties.class);
         props.put(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_ID, instanceID, false);
         props.put(MavenJavaEEConstants.HINT_J2EE_VERSION, j2eeVersion, true);
+        props.put(Constants.HINT_JDK_PLATFORM, null, true);
     }
 
     protected void saveServerToPom(Project project) {
