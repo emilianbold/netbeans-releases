@@ -940,7 +940,7 @@ public class SvnUtils {
         return info;
     }
 
-    public static void rollback (File file, SVNUrl repoUrl, SVNUrl fileUrl, SVNRevision.Number revision, boolean wasDeleted, OutputLogger logger) {
+    public static void rollback (File file, SVNUrl repoUrl, SVNUrl fileUrl, SVNRevision revision, boolean wasDeleted, OutputLogger logger) {
         if (wasDeleted) {
             // it was deleted, lets delete it again
             if (file.exists()) {
@@ -960,7 +960,7 @@ public class SvnUtils {
         OutputStream os = null;
         InputStream is = null;
         try {
-            File oldFile = VersionsCache.getInstance().getFileRevision(repoUrl, fileUrl, Long.toString(revision.getNumber()), file.getName());
+            File oldFile = VersionsCache.getInstance().getFileRevision(repoUrl, fileUrl, revision.toString(), file.getName());
             FileObject fo = FileUtil.toFileObject(file);
             if (fo == null) {
                 fo = FileUtil.toFileObject(parent).createData(file.getName());

@@ -498,6 +498,10 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         }
     }
 
+    @NbBundle.Messages({
+        "# {0} - revision number", "MSG_RollbackTo.menuItem=Rollback to {0}",
+        "MSG_RollbackToPrevious.menuItem=Rollback to previous Revision"
+    })
     private JPopupMenu createPopup(MouseEvent e) {
         final ResourceBundle loc = NbBundle.getBundle(AnnotationBar.class);
         final JPopupMenu popupMenu = new JPopupMenu();
@@ -513,7 +517,8 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         final String revisionPerLine = al == null ? null : al.getRevision();
         // used in menu Revert
         final File file = getCurrentFile();
-        final boolean revisionCanBeRolledBack = al == null || referencedFile != null ? false : al.canBeRolledBack();
+        boolean revisionCanBeReverted = al == null || referencedFile != null ? false : al.canBeRolledBack();
+        boolean revisionCanBeRolledBack = al == null || file == null ? false : al.canBeRolledBack();
         
         diffMenu.addActionListener(new ActionListener() {
             @Override
@@ -527,15 +532,49 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         });
         popupMenu.add(diffMenu);
 
-        JMenuItem rollbackMenu = new JMenuItem(loc.getString("CTL_MenuItem_Revert"));
-        rollbackMenu.addActionListener(new ActionListener() {
+        JMenuItem revertMenu = new JMenuItem(loc.getString("CTL_MenuItem_Revert"));
+        revertMenu.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 revert(file, revisionPerLine);
             }
         });
+        popupMenu.add(revertMenu);
+        revertMenu.setEnabled(revisionCanBeReverted);
+        
+        // an action reverting file's content
+        JMenuItem rollbackMenu = new JMenuItem();
+        rollbackMenu.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                Subversion.getInstance().getRequestProcessor().post(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (revisionPerLine != null) {
+                            rollback(file, revisionPerLine);
+                        }
+                    }
+                });
+            }
+        });
         popupMenu.add(rollbackMenu);
-        rollbackMenu.setEnabled(revisionCanBeRolledBack);
+        rollbackMenu.setVisible(false);
+        JMenuItem rollbackToPreviousMenu = new JMenuItem(Bundle.MSG_RollbackToPrevious_menuItem());
+        rollbackToPreviousMenu.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                Subversion.getInstance().getRequestProcessor().post(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (revisionPerLine != null) {
+                            rollback(file, getPreviousRevision(revisionPerLine));
+                        }
+                    }
+                });
+            }
+        });
+        popupMenu.add(rollbackToPreviousMenu);
+        rollbackToPreviousMenu.setVisible(false);
 
         // an action showing annotation for previous revisions
         final JMenuItem previousAnnotationsMenu = new JMenuItem();
@@ -582,7 +621,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         popupMenu.add(menu);
 
         diffMenu.setVisible(false);
-        rollbackMenu.setVisible(false);
+        revertMenu.setVisible(false);
         if (revisionPerLine != null) {
             String previousRevision;
             if ((previousRevision = getPreviousRevision(revisionPerLine)) != null) {
@@ -592,7 +631,10 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
                 previousAnnotationsMenu.setText(loc.getString("CTL_MenuItem_ShowAnnotationsPrevious")); //NOI18N
                 previousAnnotationsMenu.setVisible(file != null);
             }
+            revertMenu.setVisible(true);
+            rollbackMenu.setText(Bundle.MSG_RollbackTo_menuItem(revisionPerLine));
             rollbackMenu.setVisible(true);
+            rollbackToPreviousMenu.setVisible(revisionCanBeRolledBack);
         }
 
         return popupMenu;
@@ -623,6 +665,32 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
             }
         };
         support.start(rp, url, NbBundle.getMessage(AnnotationBar.class, "MSG_Revert_Progress")); // NOI18N
+    }
+
+    @NbBundle.Messages("MSG_Rollback_Progress=Rolling back...")
+    private void rollback (final File file, String revision) {
+        final SVNUrl repoUrl;
+        final SVNUrl fileUrl;
+        final SVNRevision svnRev;
+        try {
+            repoUrl = SvnUtils.getRepositoryRootUrl(file);
+            fileUrl = SvnUtils.getRepositoryUrl(file);
+            svnRev = SVNRevision.getRevision(revision);
+        } catch (SVNClientException ex) {
+            SvnClientExceptionHandler.notifyException(ex, true, true);
+            return;
+        } catch (ParseException ex) {
+            Subversion.LOG.log(Level.WARNING, null, ex);
+            return;
+        }
+        RequestProcessor rp = Subversion.getInstance().getRequestProcessor(repoUrl);
+        SvnProgressSupport support = new SvnProgressSupport() {
+            @Override
+            public void perform() {
+                SvnUtils.rollback(file, repoUrl, fileUrl, svnRev, false, getLogger());
+            }
+        };
+        support.start(rp, repoUrl, Bundle.MSG_Rollback_Progress());
     }
 
     private void showPreviousAnnotations(final File file, String revision) {
