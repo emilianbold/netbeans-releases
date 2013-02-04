@@ -1,5 +1,14 @@
 207965 - Terminal incorrectly displays prompt string
 187345 - wrong characters in Terminals
+
+	Implement
+		CBT (Cursor Backward Tabulation)\ESC[%dZ op_cbt
+		CHT (Cursor Horizontal Tab) 	\ESC[%dI op_cht
+
+207965 - Terminal incorrectly displays prompt string
+187345 - wrong characters in Terminals
+
+	changeset   : 242710:7d3b4c76fb2a
 	
 	Implement ED (Erase in Display) and reimplement \ESC[%dJ in terms
 	of op_ed() instead of op_cd() or op_cl().

@@ -96,11 +96,13 @@ class InterpProtoANSI extends InterpDumb {
 	    st_esc_lb.setAction('D', st_base, new ACT_BC());
 	    st_esc_lb.setAction('G', st_base, new ACT_CHA());
 	    st_esc_lb.setAction('H', st_base, new ACT_HO());
+	    st_esc_lb.setAction('I', st_base, new ACT_CHT());
 	    st_esc_lb.setAction('J', st_base, new ACT_J());
 	    st_esc_lb.setAction('K', st_base, new ACT_K());
 	    st_esc_lb.setAction('L', st_base, new ACT_AL());
 	    st_esc_lb.setAction('M', st_base, new ACT_DL());
 	    st_esc_lb.setAction('X', st_base, new ACT_ECH());
+	    st_esc_lb.setAction('Z', st_base, new ACT_CBT());
 	    st_esc_lb.setAction('@', st_base, new ACT_IC());
 	    st_esc_lb.setAction('d', st_base, new ACT_VPA());
 	    st_esc_lb.setAction('h', st_base, new ACT_SM());
@@ -120,6 +122,7 @@ class InterpProtoANSI extends InterpDumb {
 		return null;
 	    }
 	}
+
 	static final class ACT_ECH implements Actor {
 	    @Override
 	    public String action(AbstractInterp ai, char c) {
@@ -130,6 +133,29 @@ class InterpProtoANSI extends InterpDumb {
 		return null;
 	    }
 	}
+
+	static final class ACT_CBT implements Actor {
+	    @Override
+	    public String action(AbstractInterp ai, char c) {
+		if (ai.noNumber())
+		    ai.ops.op_cbt(1);
+		else
+		    ai.ops.op_cbt(ai.numberAt(0));
+		return null;
+	    }
+	}
+
+	static final class ACT_CHT implements Actor {
+	    @Override
+	    public String action(AbstractInterp ai, char c) {
+		if (ai.noNumber())
+		    ai.ops.op_cht(1);
+		else
+		    ai.ops.op_cht(ai.numberAt(0));
+		return null;
+	    }
+	}
+
 	static final class ACT_VPA implements Actor {
 	    @Override
 	    public String action(AbstractInterp ai, char c) {

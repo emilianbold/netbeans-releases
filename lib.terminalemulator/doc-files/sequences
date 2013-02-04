@@ -96,7 +96,7 @@ sequence	mnemonic		termcap op	terminfo	numbers	margin	ansi	dtterm	xterm	Term
 
 \ESC[%d;%dH	CUP (CUrsor Position)	cm (ho, kh)	cup		?		ST	ST	ST	protoansi
 
-\ESC[%dI	CHT <tab forward>	ta				?	?	ST	--	ST	N
+\ESC[%dI	CHT <tab forward>	ta		ht?		N	?	ST	--	ST	protoansi
 
 \ESC[%dJ	ED (Erase in Display)	cd (cl)		ed, clear	012		ST	ST 	ST	protoansi
 \ESC[%dK	EL (Erase in Line)	ce		el		012 		ST	ST	ST	protoansi
@@ -105,10 +105,10 @@ sequence	mnemonic		termcap op	terminfo	numbers	margin	ansi	dtterm	xterm	Term
 \ESC[%dM	DL (Delete Lines)	dl		dl		01N		ST	ST	ST	protoansi
 \ESC[%dP	DCH (Delete CHaracters)	dc (DC)		dch		01N		ST	ST 	ST	protoansi
 
-\ESC[%dS	SU (Scroll Up)		SF (nw)		indn		01N	Y	ST	S-	ST	N surely this is implemented
-\ESC[%dT	SD (Scroll Down)	SR		rin		01N	Y	ST	S-	ST	N surely this is implemented
+\ESC[%dS	SU (Scroll Up)		SF (nw)		indn		01N	Y	ST	S-	ST	N surely this is implemented? use AL/DL instead
+\ESC[%dT	SD (Scroll Down)	SR		rin		01N	Y	ST	S-	ST	N surely this is implemented? use AL/DL instead
 \ESC[%dX	ECH (Erase CHaracters)	ec		ech		?		ST	S-	ST	protoansi
-\ESC[%dZ	CBT <tab back>		bt		cbt		?	?	ST	--	ST	N -> protoansi
+\ESC[%dZ	CBT <tab back>		bt		cbt		N	?	ST	--	ST	protoansi
 \ESC[%d@	ICH (Insert Character)	ic		ich		01N	-	ST	ST 	ST	protoansi
 
 \ESC[%db	REP (REPeat last graphic char)					-	S?	--	S?	N	exercised by 'alsamixer'
@@ -194,7 +194,7 @@ sequence	mnemonic		termcap op	terminfo	numbers	margin	ansi	dtterm	xterm	Term
 \ESC[?25h	SM/DECTCEM (Show cursor)
 					ve,vs				-	-	??	S-	ST	N
 \ESC[?25h	SM/DECTCEM (Enable cursor visible)
-					ve,vs		cvvis				-~	ST	ST	N -> xterm?
+					ve,vs		cvvis				-~	ST	ST	protoansix
 \ESC[?1034h	set 8th bit on meta key?		smm				??	??	??	N
 \ESC[?1049h	~DECSC			ti		smcup		-	-	?-	--	ST	N
 					mm				-	-	?-	--	ST	N
@@ -208,9 +208,9 @@ sequence	mnemonic		termcap op	terminfo	numbers	margin	ansi	dtterm	xterm	Term
 					is				-	-	??	S-	?T	N
 \ESC[?5l	RM/DECSCNM (Disable reverse video)
 					vb				?	?	??	ST	ST	N	used for flashing
-\ESC[?12l	RM (Reset Mode) DECRST	ve, vs						-~	S-	ST	protoansix	DEC private reset
+\ESC[?12l	RM (Reset Mode) DECRST	ve, vs						-~	S-	ST	protoansix
 \ESC[?25l	RM/DECTCEM (Disable cursor visible)
-					vi		civis				-~	ST	ST	? -> xterm?
+					vi		civis				-~	ST	ST	protoansix
 \ESC[?45l	disable reverse autowrap
 					is				-	-	??	ST	--	N
 \ESC[?1034l	don't set 8th bit on meta key?
@@ -218,8 +218,8 @@ sequence	mnemonic		termcap op	terminfo	numbers	margin	ansi	dtterm	xterm	Term
 \ESC[?1049l	~DECRC			te		rmcup		-	-	??	--	ST	N -> xterm?
 
 
-\ESC[?%dr	DEC private restore	ve/vs				same as h/l	--	S-	S-	protoanisx
-\ESC[?%ds	DEC private save	ve/vs				same as h/l	--	S-	S-	protoanisx
+\ESC[?%dr	DEC private restore	ve/vs				same as h/l	--	S-	S-	protoansix
+\ESC[?%ds	DEC private save	ve/vs				same as h/l	--	S-	S-	protoansix
 
 ----------------------------------------------------------------------------------------------------------------------------------------
 sequence	mnemonic		termcap op	terminfo	numbers	margin	ansi	dtterm	xterm	Term

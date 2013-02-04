@@ -129,8 +129,10 @@ interface Ops {
 
     public void op_send_chars(String sequence);
 
-    public void op_cha(int i);
-    public void op_ech(int i);
-    public void op_vpa(int i);
-    public void op_ed(int i);
+    public void op_cha(int i);          // Cursor Horizontal Absolute
+    public void op_ech(int i);          // Erase CHaracters
+    public void op_vpa(int i);          // Vertical Position Absolute     
+    public void op_ed(int i);           // Erase in Display
+    public void op_cbt(int n);          // Cursor Backward Tabulation
+    public void op_cht(int n);          // Cursor Horizontal Tabulation
 }

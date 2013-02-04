@@ -3456,28 +3456,69 @@ public class Term extends JComponent implements Accessible {
 	@Override
         public void op_tab() {
             // TAB/HT
-            // SHOULD do something better with tabs near the end of the line
-            // On the other hand, that's how ANSI terminals are supposed
-            // to behave
 
             if (debugOps()) {
                 System.out.println("op_tab"); // NOI18N
             }
+            cht();
+        }
+        
+        private boolean cht() {
+            // SHOULD do something better with tabs near the end of the line
+            // On the other hand, that's how ANSI terminals are supposed
+            // to behave
             if (st.cursor.col == buf.visibleCols() - 1 && !horizontally_scrollable) {
-                return;
+                return false;
             }
 
             Line l = cursor_line();
             int insert_col = l.cellToBuf(metrics, st.cursor.col);
-            // OLD l.setCharAt(Term.this, ' ', insert_col, st.attr);
             st.cursor.col++;
             insert_col++;
-            // no need to re-apply cellToBuf to cursor since we're only adding 1-wide ' '
             while ((st.cursor.col < buf.visibleCols() - 1 || horizontally_scrollable) &&
                     (st.cursor.col % tab_size) != 0) {
-                // OLD cursor_line().setCharAt(Term.this, ' ', insert_col, st.attr);
                 st.cursor.col++;
                 insert_col++;
+            }
+            return true;
+        }
+
+        private boolean cbt() {
+            if (st.cursor.col <= 0)
+                return false;
+
+            Line l = cursor_line();
+            int insert_col = l.cellToBuf(metrics, st.cursor.col);
+            st.cursor.col--;
+            insert_col--;
+            while ((st.cursor.col > 0) &&
+                    st.cursor.col % tab_size != 0) {
+                st.cursor.col--;
+                insert_col--;
+            }
+
+            return true;
+        }
+
+        @Override
+        public void op_cbt(int n) {
+            if (debugOps()) {
+                System.out.printf("op_cbt(%d)\n", n); // NOI18N
+            }
+            while (n-- > 0) {
+                if (!cbt())
+                    break;
+            }
+        }
+
+        @Override
+        public void op_cht(int n) {
+            if (debugOps()) {
+                System.out.printf("op_cht(%d)\n", n); // NOI18N
+            }
+            while (n-- > 0) {
+                if (!cht())
+                    break;
             }
         }
 
