@@ -141,6 +141,10 @@ public final class PhpUnit {
     // run info params
     private static final String PHP_UNIT_GROUPS_PARAM = "phpUnit.groups"; // NOI18N
 
+    private static final char DIRECTORY_SEPARATOR = '/'; // NOI18N
+
+    public static final Pattern LINE_PATTERN = Pattern.compile("(?:.+\\(\\) )?(.+):(\\d+)"); // NOI18N
+
     // #200489
     private static volatile File suite; // ok if it is fetched more times
 
@@ -476,16 +480,7 @@ public final class PhpUnit {
         }
     }
 
-
-
-
-
-
-    // php props
-    private static final char DIRECTORY_SEPARATOR = '/'; // NOI18N
-
-    public static final Pattern LINE_PATTERN = Pattern.compile("(?:.+\\(\\) )?(.+):(\\d+)"); // NOI18N
-
+    //~ Static helper methods
 
     public static boolean isTestFile(String fileName) {
         return !fileName.equals(PhpUnit.TEST_FILE_SUFFIX) && fileName.endsWith(PhpUnit.TEST_FILE_SUFFIX);
@@ -654,7 +649,9 @@ public final class PhpUnit {
         if (file == null) {
             // no file generated
             warnAboutNotGeneratedFile(configurationFile.getName());
+            return null;
         }
+        FileUtil.refreshFor(file.getParentFile());
         return file;
     }
 
