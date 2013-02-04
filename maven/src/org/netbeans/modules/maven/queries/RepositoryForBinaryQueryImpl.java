@@ -204,10 +204,10 @@ public class RepositoryForBinaryQueryImpl extends AbstractMavenForBinaryQueryImp
             return null;
         }
 
-        //hack for javaee6 jar docs which we ship with netbeans and which are not in any maven repository
+        // Hack for Java EE jar docs which we ship with netbeans and which are not in any maven repository
         if (binRoot.getPath().endsWith("/javax/javaee-api/7.0-b72/javaee-api-7.0-b72.jar")
          || binRoot.getPath().endsWith("/javax/javaee-web-api/7.0-b72/javaee-web-api-7.0-b72.jar")) { //NOI18N
-            return new Javaee6Result();
+            return new JavaEEJavadocResult();
         }
 
         WeakReference<JavadocResult> cached = javadocCache.get(url);
@@ -764,10 +764,7 @@ public class RepositoryForBinaryQueryImpl extends AbstractMavenForBinaryQueryImp
     }
 
 
-    private static class Javaee6Result implements JavadocForBinaryQuery.Result {
-
-        Javaee6Result() {
-        }
+    private static class JavaEEJavadocResult implements JavadocForBinaryQuery.Result {
 
         @Override
         public void addChangeListener(ChangeListener changeListener) {
