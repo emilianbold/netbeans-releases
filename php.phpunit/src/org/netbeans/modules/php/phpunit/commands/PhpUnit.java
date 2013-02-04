@@ -376,10 +376,10 @@ public final class PhpUnit {
         "PhpUnit.run.test.single.custom=PHPUnit (test, custom)",
         "PhpUnit.run.test.all=PHPUnit (test all)",
         "PhpUnit.run.test.all.custom=PHPUnit (test all, custom)",
-        "PhpUnit.run.debug.single=PHPUnit (test) (debug)",
-        "PhpUnit.run.debug.single.custom=PHPUnit (test, custom) (debug)",
-        "PhpUnit.run.debug.all=PHPUnit (test all) (debug)",
-        "PhpUnit.run.debug.all.custom=PHPUnit (test all, custom) (debug)",
+        "PhpUnit.run.debug.single=PHPUnit (debug)",
+        "PhpUnit.run.debug.single.custom=PHPUnit (debug, custom)",
+        "PhpUnit.run.debug.all=PHPUnit (debug all)",
+        "PhpUnit.run.debug.all.custom=PHPUnit (debug all, custom)",
     })
     private String getOutputTitle(TestRunInfo runInfo, boolean customSuiteEnabled) {
         boolean allTests = runInfo.allTests();
