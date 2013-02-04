@@ -965,7 +965,7 @@ public class LogReader {
         if (artifacts.output != null) {
             String what = artifacts.output;
             String baseName = CndPathUtilitities.getBaseName(what);
-            if (!(baseName.endsWith(".exe") || baseName.indexOf(".") < 0)) {
+            if (!(baseName.endsWith(".exe") || baseName.indexOf(".") < 0)) { //NOI18N
                 return;
             }
             String file;
