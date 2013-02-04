@@ -47,6 +47,7 @@ import java.io.File;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.git.client.GitClient;
@@ -56,6 +57,7 @@ import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.client.GitProgressSupport;
 import org.netbeans.modules.git.ui.actions.GitAction;
 import org.netbeans.modules.git.ui.actions.SingleRepositoryAction;
+import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.awt.ActionID;
@@ -87,7 +89,7 @@ public class CheckoutPathsAction extends SingleRepositoryAction {
             protected void perform () {
                 final Collection<File> notifiedFiles = new HashSet<File>();
                 try {
-                    GitClient client = getClient();
+                    final GitClient client = getClient();
                     client.addNotificationListener(new FileListener() {
                         @Override
                         public void notifyFile (File file, String relativePathToRoot) {
@@ -95,22 +97,29 @@ public class CheckoutPathsAction extends SingleRepositoryAction {
                         }
                     });
                     client.addNotificationListener(new DefaultFileListener(roots));
-                    File[][] split = Utils.splitFlatOthers(roots);
-                    for (int c = 0; c < split.length; c++) {
-                        File[] splitRoots = split[c];
-                        if (splitRoots.length == 0) {
-                            continue;
+                    final File[][] split = Utils.splitFlatOthers(roots);
+                    GitUtils.runWithoutIndexing(new Callable<Void>() {
+
+                        @Override
+                        public Void call () throws Exception {
+                            for (int c = 0; c < split.length; c++) {
+                                File[] splitRoots = split[c];
+                                if (splitRoots.length == 0) {
+                                    continue;
+                                }
+                                if (c == 1) {
+                                    // recursive
+                                    LOG.log(Level.FINE, "Checking out paths recursively, revision: {0}", revision); //NOI18N
+                                    client.checkout(splitRoots, revision, true, getProgressMonitor());
+                                } else {
+                                    // not recursive, list only direct descendants
+                                    LOG.log(Level.FINE, "Checking out paths non-recursively, revision: {0}", revision); //NOI18N
+                                    client.checkout(splitRoots, revision, false, getProgressMonitor());
+                                }
+                            }
+                            return null;
                         }
-                        if (c == 1) {
-                            // recursive
-                            LOG.log(Level.FINE, "Checking out paths recursively, revision: {0}", revision); //NOI18N
-                            client.checkout(splitRoots, revision, true, getProgressMonitor());
-                        } else {
-                            // not recursive, list only direct descendants
-                            LOG.log(Level.FINE, "Checking out paths non-recursively, revision: {0}", revision); //NOI18N
-                            client.checkout(splitRoots, revision, false, getProgressMonitor());
-                        }
-                    }
+                    }, roots);
                 } catch (GitException ex) {
                     GitClientExceptionHandler.notifyException(ex, true);
                 } finally {

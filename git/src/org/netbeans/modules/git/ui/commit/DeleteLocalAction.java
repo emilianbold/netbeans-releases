@@ -48,6 +48,7 @@ import java.io.File;
 import java.util.EnumSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
@@ -105,29 +106,42 @@ public final class DeleteLocalAction extends GitAction {
         GitProgressSupport support = new GitProgressSupport.NoOutputLogging() {
             @Override
             public void perform() {
-                Map<File, Set<File>> sortedFiles = GitUtils.sortByRepository(files);
-                FileListener list = new FileListener() {
-                    @Override
-                    public void notifyFile (File file, String relativePathToRoot) {
-                        setProgress(file.getName());
-                    }
-                };
-                for (Map.Entry<File, Set<File>> e : sortedFiles.entrySet()) {
-                    File root = e.getKey();
-                    GitClient client = null;
-                    try {
-                        client = Git.getInstance().getClient(root);
-                        client.addNotificationListener(list);
-                        File[] roots = e.getValue().toArray(new File[e.getValue().size()]);
-                        client.reset(roots, GitUtils.HEAD, false, getProgressMonitor());
-                        client.clean(roots, getProgressMonitor());
-                    } catch (GitException ex) {
-                        LOG.log(Level.INFO, null, ex);
-                    } finally {
-                        if (client != null) {
-                            client.release();
+                final Map<File, Set<File>> sortedFiles = GitUtils.sortByRepository(files);
+                try {
+                    GitUtils.runWithoutIndexing(new Callable<Void>() {
+                        @Override
+                        public Void call () throws Exception {
+                            FileListener list = new FileListener() {
+                                @Override
+                                public void notifyFile (File file, String relativePathToRoot) {
+                                    setProgress(file.getName());
+                                }
+                            };
+                            for (Map.Entry<File, Set<File>> e : sortedFiles.entrySet()) {
+                                if (isCanceled()) {
+                                    return null;
+                                }
+                                File root = e.getKey();
+                                GitClient client = null;
+                                try {
+                                    client = Git.getInstance().getClient(root);
+                                    client.addNotificationListener(list);
+                                    File[] roots = e.getValue().toArray(new File[e.getValue().size()]);
+                                    client.reset(roots, GitUtils.HEAD, false, getProgressMonitor());
+                                    client.clean(roots, getProgressMonitor());
+                                } catch (GitException ex) {
+                                    LOG.log(Level.INFO, null, ex);
+                                } finally {
+                                    if (client != null) {
+                                        client.release();
+                                    }
+                                }
+                            }
+                            return null;
                         }
-                    }
+                    }, files.toArray(new File[files.size()]));
+                } catch (GitException ex) {
+                    LOG.log(Level.INFO, null, ex);
                 }
             }
         };

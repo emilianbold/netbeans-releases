@@ -151,7 +151,6 @@ class FilesystemInterceptor extends VCSInterceptor {
             GitClient client = null;
             try {
                 client = git.getClient(root);
-                client.setIndexingBridgeDisabled(true);
                 client.reset(new File[] { file }, GitUtils.HEAD, true, GitUtils.NULL_PROGRESS_MONITOR);
             } catch (GitException.MissingObjectException ex) {
                 if (!GitUtils.HEAD.equals(ex.getObjectName())) {
@@ -203,7 +202,6 @@ class FilesystemInterceptor extends VCSInterceptor {
         try {
             if (GitUtils.getGitFolderForRoot(root).exists()) {
                 client = git.getClient(root);
-                client.setIndexingBridgeDisabled(true);
                 client.remove(new File[] { file }, false, GitUtils.NULL_PROGRESS_MONITOR);
             } else if (file.exists()) {
                 Utils.deleteRecursively(file);
@@ -263,7 +261,6 @@ class FilesystemInterceptor extends VCSInterceptor {
             if (root != null && root.equals(dstRoot) && !cache.getStatus(to).containsStatus(Status.NOTVERSIONED_EXCLUDED)) {
                 // target does not lie under ignored folder and is in the same repo as src
                 client = git.getClient(root);
-                client.setIndexingBridgeDisabled(true);
                 if (equalPathsIgnoreCase(from, to)) {
                     // must do rename --after because the files/paths equal on Win or Mac
                     if (!from.renameTo(to)) {
@@ -280,7 +277,6 @@ class FilesystemInterceptor extends VCSInterceptor {
                 }
                 if (root != null) {
                     client = git.getClient(root);
-                    client.setIndexingBridgeDisabled(true);
                     client.remove(new File[] { from }, true, GitUtils.NULL_PROGRESS_MONITOR);
                 }
             }

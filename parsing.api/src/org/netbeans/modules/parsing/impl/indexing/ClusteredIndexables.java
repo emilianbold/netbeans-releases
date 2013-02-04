@@ -324,13 +324,13 @@ public final class ClusteredIndexables {
             if (!(document instanceof DocumentStore.MemoryIndexDocument)) {
                 throw new IllegalArgumentException(document.getClass().getName());
             }
-            final boolean shouldFlush = init();
+            boolean shouldFlush = init();
             handleDelete(
                 indexIndexables,
                 deleteFromIndex,
                 toDeleteOutOfOrder,
                 document.getPrimaryKey());
-            toAdd.add(document);
+            shouldFlush |= toAdd.addDocument(document);
             return shouldFlush;
         }
 
@@ -682,6 +682,7 @@ public final class ClusteredIndexables {
 
         private static final int INITIAL_DOC_COUNT = 100;
         private static final int INITIAL_DATA_SIZE = 1<<10;
+        private static final long DATA_CACHE_SIZE = (long) (Runtime.getRuntime().maxMemory() * 0.1);
 
         private final Map<String,Integer> fieldNames;
         private int[] docs;
@@ -700,6 +701,12 @@ public final class ClusteredIndexables {
 
         @Override
         public boolean add(@NonNull final IndexDocument doc) {
+            addDocument(doc);
+            return true;
+        }
+        
+        boolean addDocument(@NonNull final IndexDocument doc) {
+            boolean res = false;
             if (!(doc instanceof MemoryIndexDocument)) {
                 throw new IllegalArgumentException();
             }
@@ -730,6 +737,14 @@ public final class ClusteredIndexables {
                     char[] newdata = new char[data.length << 1];
                     System.arraycopy(data, 0, newdata, 0, data.length);
                     data = newdata;
+                    res = data.length<<1 > DATA_CACHE_SIZE;
+                    LOG.log(
+                        Level.FINE,
+                        "New data size: {0}, flush: {1}",   //NOI18N
+                        new Object[] {
+                            newdata.length,
+                            res
+                        });
                 }
                 fldValue.getChars(0, fldValue.length(), data, dataPointer);
                 dataPointer += fldValue.length();
@@ -740,7 +755,7 @@ public final class ClusteredIndexables {
                 docs = newdocs;
             }
             docs[docsPointer++] = 0;
-            return true;
+            return res;
         }
 
         @Override

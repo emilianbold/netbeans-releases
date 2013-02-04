@@ -42,6 +42,7 @@
 package org.netbeans.modules.dlight.libs.common;
 
 import java.lang.management.ManagementFactory;
+import java.lang.management.RuntimeMXBean;
 import java.lang.management.ThreadMXBean;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -189,7 +190,23 @@ public class PerformanceLogger {
     private static final ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
     
     static {
-        PROFILING_ENABLED = "true".equals(System.getProperty("dlight.libs.common.profiling.enabled", "true")); // NOI18N;
+        boolean isDebugMode = false;
+        RuntimeMXBean runtime = ManagementFactory.getRuntimeMXBean();
+        try {
+            List<String> args = runtime.getInputArguments();
+            if (args.contains("-Xdebug")) { //NOI18N
+                isDebugMode = true;
+            }
+        } catch (SecurityException ex) {
+        }
+        String enabled = System.getProperty("dlight.libs.common.profiling.enabled", "auto"); //NOI18N
+        if ("true".equals(enabled)) { //NOI18N
+            PROFILING_ENABLED = true;
+        } else if ("false".equals(enabled)) { //NOI18N
+            PROFILING_ENABLED = false;
+        } else {
+            PROFILING_ENABLED = !isDebugMode;
+        }
         boolean cpu = true;
         if (PROFILING_ENABLED) {
             try {

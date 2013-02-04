@@ -49,6 +49,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.git.client.GitClient;
@@ -108,11 +109,10 @@ public class PullAction extends SingleRepositoryAction {
         GitProgressSupport supp = new GitProgressSupport() {
             @Override
             protected void perform () {
-                File repository = getRepositoryRoot();
+                final File repository = getRepositoryRoot();
                 LOG.log(Level.FINE, "Pulling {0}/{1} from {2}", new Object[] { fetchRefSpecs, branchToMerge, target }); //NOI18N
                 try {
-                    boolean cont;
-                    GitClient client = getClient();
+                    final GitClient client = getClient();
                     if (remoteNameToUpdate != null) {
                         GitRemoteConfig config = client.getRemote(remoteNameToUpdate, getProgressMonitor());
                         if (isCanceled()) {
@@ -124,20 +124,27 @@ public class PullAction extends SingleRepositoryAction {
                             return;
                         }
                     }
-                    MergeRevisionAction.MergeResultProcessor mrp = new MergeRevisionAction.MergeResultProcessor(client, repository, branchToMerge, getLogger(), getProgressMonitor());
-                    do {
-                        cont = false;
-                        try {
-                            GitPullResult result = client.pull(target, fetchRefSpecs, branchToMerge, getProgressMonitor());
-                            FetchUtils.log(result.getFetchResult(), getLogger());
-                            mrp.processResult(result.getMergeResult());
-                        } catch (GitException.CheckoutConflictException ex) {
-                            if (LOG.isLoggable(Level.FINE)) {
-                                LOG.log(Level.FINE, "Local modifications in WT during merge: {0} - {1}", new Object[] { repository, Arrays.asList(ex.getConflicts()) }); //NOI18N
-                            }
-                            cont = mrp.resolveLocalChanges(ex.getConflicts());
+                    GitUtils.runWithoutIndexing(new Callable<Void>() {
+                        @Override
+                        public Void call () throws Exception {
+                            boolean cont;
+                            MergeRevisionAction.MergeResultProcessor mrp = new MergeRevisionAction.MergeResultProcessor(client, repository, branchToMerge, getLogger(), getProgressMonitor());
+                            do {
+                                cont = false;
+                                try {
+                                    GitPullResult result = client.pull(target, fetchRefSpecs, branchToMerge, getProgressMonitor());
+                                    FetchUtils.log(result.getFetchResult(), getLogger());
+                                    mrp.processResult(result.getMergeResult());
+                                } catch (GitException.CheckoutConflictException ex) {
+                                    if (LOG.isLoggable(Level.FINE)) {
+                                        LOG.log(Level.FINE, "Local modifications in WT during merge: {0} - {1}", new Object[] { repository, Arrays.asList(ex.getConflicts()) }); //NOI18N
+                                    }
+                                    cont = mrp.resolveLocalChanges(ex.getConflicts());
+                                }
+                            } while (cont);
+                            return null;
                         }
-                    } while (cont);
+                    }, repository);
                 } catch (GitException ex) {
                     GitClientExceptionHandler.notifyException(ex, true);
                 } finally {

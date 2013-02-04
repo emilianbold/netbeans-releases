@@ -60,11 +60,13 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.libs.git.GitBranch;
+import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitRevisionInfo;
 import org.netbeans.libs.git.progress.ProgressMonitor;
 import org.netbeans.modules.git.FileInformation;
@@ -81,6 +83,7 @@ import org.netbeans.modules.git.ui.status.StatusAction;
 import org.netbeans.modules.versioning.diff.DiffUtils;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.util.FileSelector;
+import org.netbeans.modules.versioning.util.IndexingBridge;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
@@ -782,6 +785,55 @@ public final class GitUtils {
 
     public static String getPushTagRefSpec (String tagName) {
         return MessageFormat.format(REF_TAG_PUSHSPEC_PATTERN, tagName);
+    }
+
+    public static <T> T runWithoutIndexing (Callable<T> callable, List<File> files) throws GitException {
+        return runWithoutIndexing(callable, files.toArray(new File[files.size()]));
+    }
+
+    static ThreadLocal<Set<File>> indexingFiles = new ThreadLocal<Set<File>>();
+    public static <T> T runWithoutIndexing (Callable<T> callable, File... files) throws GitException {
+        try {
+            Set<File> recursiveRoots = indexingFiles.get();
+            if (recursiveRoots != null) {
+                assert indexingFilesSubtree(recursiveRoots, files) 
+                        : "Recursive call does not permit different roots: " 
+                        + recursiveRoots + " vs. " + Arrays.asList(files);
+                return callable.call();
+            } else {
+                try {
+                    if (Git.LOG.isLoggable(Level.FINER)) {
+                        Git.LOG.log(Level.FINER, "Running block in indexing bridge: on {0}", Arrays.asList(files)); //NOI18N
+                    }
+                    indexingFiles.set(new HashSet<File>(Arrays.asList(files)));
+                    return IndexingBridge.getInstance().runWithoutIndexing(callable, files);
+                } finally {
+                    indexingFiles.remove();
+                }
+            }
+        } catch (GitException ex) {
+            throw ex;
+        } catch (Exception ex) {
+            throw new GitException("Cannot run without indexing due to: " + ex.getMessage(), ex); //NOI18N
+        }
+    }
+
+    private static boolean indexingFilesSubtree (Set<File> recursiveRoots, File[] files) {
+        for (File f : files) {
+            if (!recursiveRoots.contains(f)) {
+                boolean contained = false;
+                for (File root : recursiveRoots) {
+                    if (Utils.isAncestorOrEqual(root, f)) {
+                        contained = true;
+                        break;
+                    }
+                }
+                if (!contained) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     private static class NullProgressMonitor extends ProgressMonitor {
