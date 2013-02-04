@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.javascript2.editor.model;
 
+import java.text.MessageFormat;
 import jdk.nashorn.internal.ir.FunctionNode;
 import jdk.nashorn.internal.ir.Node;
 import java.util.ArrayList;
@@ -89,7 +90,9 @@ public final class Model {
             long startResolve = System.currentTimeMillis();
             resolveLocalTypes(getGlobalObject(), parserResult.getDocumentationHolder());
             long end = System.currentTimeMillis();
-            LOGGER.log(Level.FINE, "Building model took {0}ms. Resolving types took {1}ms", new Object[]{(end - start), (end - startResolve)});
+            if(LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.fine(MessageFormat.format("Building model took {0}ms. Resolving types took {1}ms", new Object[]{(end - start), (end - startResolve)}));
+            }
         }
         return visitor;
     }
