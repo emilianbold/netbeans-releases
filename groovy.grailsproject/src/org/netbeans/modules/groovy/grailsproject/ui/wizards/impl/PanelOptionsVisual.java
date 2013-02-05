@@ -52,7 +52,6 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.groovy.grails.api.GrailsPlatform;
-import org.netbeans.modules.groovy.grailsproject.ui.wizards.GrailsProjectWizardIterator;
 import org.netbeans.modules.groovy.support.api.GroovySettings;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
@@ -86,7 +85,7 @@ public class PanelOptionsVisual extends SettingsPanel implements ChangeListener 
     boolean valid(WizardDescriptor wizardDescriptor) {
         if(!GrailsPlatform.getDefault().isConfigured()) {
             wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
-                NbBundle.getMessage(GrailsProjectWizardIterator.class,
+                NbBundle.getMessage(PanelOptionsVisual.class,
                 "NewGrailsProjectWizardIterator.NoGrailsServerConfigured"));
             return false;
         }
