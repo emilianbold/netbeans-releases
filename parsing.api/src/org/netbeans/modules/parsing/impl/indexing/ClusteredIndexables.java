@@ -689,7 +689,7 @@ public final class ClusteredIndexables {
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Added IndexDocuments Collection (optimized for high number of fields).">
-    private static final class DocumentStore implements Collection<IndexDocument>{
+    /*test*/ static final class DocumentStore extends AbstractCollection<IndexDocument>{
 
         private static final int INITIAL_DOC_COUNT = 100;
         private static final int INITIAL_DATA_SIZE = 1<<10;
@@ -701,6 +701,7 @@ public final class ClusteredIndexables {
         private int nameIndex;
         private int docsPointer;
         private int dataPointer;
+        private int size;
 
 
         DocumentStore() {
@@ -766,6 +767,7 @@ public final class ClusteredIndexables {
                 docs = newdocs;
             }
             docs[docsPointer++] = 0;
+            size++;
             return res;
         }
 
@@ -775,62 +777,24 @@ public final class ClusteredIndexables {
         }
 
         @Override
-        public boolean isEmpty() {
-            return docsPointer == 0;
-        }
-
-        @Override
         public void clear() {
             fieldNames.clear();
             docs = new int[INITIAL_DOC_COUNT];
             data = new char[INITIAL_DATA_SIZE];
             docsPointer = 0;
             dataPointer = 0;
+            nameIndex = 0;
+            size = 0;
         }
 
         @Override
         public int size() {
-            throw new UnsupportedOperationException();
+            return size;
         }
-
-        @Override
-        public boolean contains(Object o) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public Object[] toArray() {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public <T> T[] toArray(T[] a) {
-            throw new UnsupportedOperationException();
-        }
-       
+               
         @Override
         public boolean remove(Object o) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public boolean containsAll(Collection<?> c) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public boolean addAll(Collection<? extends IndexDocument> c) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public boolean removeAll(Collection<?> c) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public boolean retainAll(Collection<?> c) {
-            throw new UnsupportedOperationException();
+            throw new UnsupportedOperationException("Remove not supported.");   //NOI18N
         }
 
         private static int newLength(
@@ -862,6 +826,9 @@ public final class ClusteredIndexables {
              */
             @Override
             public IndexDocument next() {
+                if (cur>=docsPointer) {
+                    throw new NoSuchElementException();
+                }
                 IndexDocument doc = null;
                 int nameIndex;
                 while ((nameIndex=docs[cur++]) != 0) {
