@@ -115,7 +115,7 @@ public abstract class AbstractGroovyExtender implements GroovyExtender {
     /**
      * Add groovy-all.jar on classpath
      */
-    private boolean addClasspath() {
+    protected final boolean addClasspath() {
         Library groovyAllLib = LibraryManager.getDefault().getLibrary("groovy-all"); // NOI18N
         if (groovyAllLib != null) {
             try {
@@ -139,7 +139,7 @@ public abstract class AbstractGroovyExtender implements GroovyExtender {
     /**
      * Removes groovy-all library from classpath
      */
-    private boolean removeClasspath() {
+    protected final boolean removeClasspath() {
         Library groovyAllLib = LibraryManager.getDefault().getLibrary("groovy-all"); // NOI18N
         if (groovyAllLib != null) {
             try {
@@ -161,7 +161,7 @@ public abstract class AbstractGroovyExtender implements GroovyExtender {
     /**
      * Add *.groovy to excludes
      */
-    private boolean addExcludes() {
+    protected final boolean addExcludes() {
         try {
             EditableProperties props = getEditableProperties(project, PROJECT_PROPERTIES_PATH);
             String exclude = props.getProperty(EXCLUDE_PROPERTY);
@@ -179,7 +179,7 @@ public abstract class AbstractGroovyExtender implements GroovyExtender {
     /**
      * Removes *.groovy from excludes
      */
-    private boolean removeExcludes() {
+    protected final boolean removeExcludes() {
         try {
             EditableProperties props = getEditableProperties(project, PROJECT_PROPERTIES_PATH);
             String exclude = props.getProperty(EXCLUDE_PROPERTY);
@@ -198,7 +198,7 @@ public abstract class AbstractGroovyExtender implements GroovyExtender {
     /**
      * Wrap javac into groovyc using imported groovy-build.xml
      */
-    private boolean addBuildScript() {
+    protected final boolean addBuildScript() {
         AntBuildExtender extender = project.getLookup().lookup(AntBuildExtender.class);
         if (extender != null && extender.getExtensibleTargets().contains(EXTENSIBLE_TARGET_NAME)) {
             AntBuildExtender.Extension extension = extender.getExtension(GROOVY_EXTENSION_ID);
@@ -223,7 +223,7 @@ public abstract class AbstractGroovyExtender implements GroovyExtender {
         return false;
     }
 
-    private boolean removeBuildScript() {
+    protected final boolean removeBuildScript() {
         AntBuildExtender extender = project.getLookup().lookup(AntBuildExtender.class);
         if (extender != null && extender.getExtensibleTargets().contains(EXTENSIBLE_TARGET_NAME)) {
             AntBuildExtender.Extension extension = extender.getExtension(GROOVY_EXTENSION_ID);
@@ -254,7 +254,7 @@ public abstract class AbstractGroovyExtender implements GroovyExtender {
     /**
      * Disables compile on save
      */
-    private boolean addDisableCompileOnSaveProperty() {
+    protected final boolean addDisableCompileOnSaveProperty() {
         try {
             EditableProperties props = getEditableProperties(project, PROJECT_PROPERTIES_PATH);
             props.put(DISABLE_COMPILE_ON_SAVE, "true");
@@ -269,7 +269,7 @@ public abstract class AbstractGroovyExtender implements GroovyExtender {
     /**
      * Enabled compile on save
      */
-    private boolean removeDisableCompileOnSaveProperty() {
+    protected final boolean removeDisableCompileOnSaveProperty() {
         try {
             EditableProperties props = getEditableProperties(project, PROJECT_PROPERTIES_PATH);
             props.remove(DISABLE_COMPILE_ON_SAVE);
