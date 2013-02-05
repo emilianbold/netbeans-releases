@@ -79,10 +79,12 @@ import org.netbeans.modules.web.inspect.CSSUtils;
 import org.netbeans.modules.web.inspect.PageInspectorImpl;
 import org.netbeans.modules.web.inspect.PageModel;
 import org.netbeans.modules.web.inspect.actions.Resource;
+import org.netbeans.modules.web.inspect.webkit.RemoteStyleSheetCache;
 import org.netbeans.modules.web.inspect.webkit.Utilities;
 import org.netbeans.modules.web.inspect.webkit.WebKitPageModel;
 import org.netbeans.modules.web.webkit.debugging.api.css.CSS;
 import org.netbeans.modules.web.webkit.debugging.api.css.Rule;
+import org.netbeans.modules.web.webkit.debugging.api.css.StyleSheetBody;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -169,6 +171,7 @@ public class CSSStylesPanel extends JPanel implements PageModel.CSSStylesView {
             pageModel.removePropertyChangeListener(getListener());
             pageModel.getWebKit().getCSS().removeListener(getListener());
         }
+        RemoteStyleSheetCache.getDefault().clear();
         if (page instanceof WebKitPageModel) {
             pageModel = (WebKitPageModel)page;
         } else {
@@ -263,6 +266,10 @@ public class CSSStylesPanel extends JPanel implements PageModel.CSSStylesView {
                                 project = pageModel.getProject();
                             }
                             FileObject fob = new Resource(project, resourceName).toFileObject();
+                            if (fob == null) {
+                                StyleSheetBody body = rule.getParentStyleSheet();
+                                fob = RemoteStyleSheetCache.getDefault().getFileObject(body);
+                            }
                             if (fob == null) {
                                 controller.setNoRuleState();
                             } else {
