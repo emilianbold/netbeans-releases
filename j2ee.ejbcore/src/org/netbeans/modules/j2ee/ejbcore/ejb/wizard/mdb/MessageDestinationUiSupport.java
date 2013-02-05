@@ -47,6 +47,7 @@ package org.netbeans.modules.j2ee.ejbcore.ejb.wizard.mdb;
 import java.awt.Component;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -60,11 +61,18 @@ import javax.swing.DefaultListCellRenderer;
 import javax.swing.JComboBox;
 import javax.swing.JList;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.core.api.support.progress.ProgressSupport;
 import org.netbeans.modules.j2ee.core.api.support.progress.ProgressSupport.Context;
-import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
+import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
+import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination.Type;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
+import org.netbeans.modules.javaee.resources.api.JmsDestination;
+import org.netbeans.modules.javaee.resources.api.model.JndiResourcesModel;
+import org.netbeans.modules.javaee.resources.api.model.JndiResourcesModelSupport;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotificationLineSupport;
@@ -79,7 +87,7 @@ import org.openide.util.NbBundle;
  * @author Tomas Mysik
  */
 public abstract class MessageDestinationUiSupport {
-    
+
     /**
      * Get module and server message destinations.
      * <p>
@@ -87,7 +95,7 @@ public abstract class MessageDestinationUiSupport {
      * @param j2eeModuleProvider 
      * @return holder with both module and server message destinations.
      */
-    public static DestinationsHolder getDestinations(final J2eeModuleProvider j2eeModuleProvider) {
+    public static DestinationsHolder getDestinations(final Project project, final J2eeModuleProvider j2eeModuleProvider) {
         assert j2eeModuleProvider != null;
         final DestinationsHolder holder = new DestinationsHolder();
         
@@ -99,7 +107,7 @@ public abstract class MessageDestinationUiSupport {
                     String msg = NbBundle.getMessage(MessageDestinationUiSupport.class, "MSG_RetrievingDestinations");
                     actionContext.progress(msg);
                     try {
-                        holder.setModuleDestinations(j2eeModuleProvider.getConfigSupport().getMessageDestinations());
+                        holder.setModuleDestinations(getProjectMessageDestinations(project, j2eeModuleProvider));
                         holder.setServerDestinations(j2eeModuleProvider.getConfigSupport().getServerMessageDestinations());
                     } catch (ConfigurationException ex) {
                         Exceptions.printStackTrace(ex);
@@ -231,6 +239,51 @@ public abstract class MessageDestinationUiSupport {
         
         return messageDestinations[0];
     }
+
+    public static Set<MessageDestination> getProjectMessageDestinations(Project project, J2eeModuleProvider j2eeModuleProvider) {
+        final Set<MessageDestination> allDestinations = new HashSet<MessageDestination>();
+
+        try {
+            // server specific, deployable destinations
+            allDestinations.addAll(j2eeModuleProvider.getConfigSupport().getMessageDestinations());
+        } catch (ConfigurationException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+
+        // by project defined JNDI destinations
+        JndiResourcesModelSupport support = new JndiResourcesModelSupport(project);
+        try {
+            support.getModel().runReadAction(new MetadataModelAction<JndiResourcesModel, Void>() {
+                @Override
+                public Void run(JndiResourcesModel metadata) throws Exception {
+                    for (final JmsDestination jmsDestination : metadata.getJmsDestinations()) {
+                        allDestinations.add(new MessageDestination() {
+                            @Override
+                            public String getName() {
+                                return jmsDestination.getName();
+                            }
+                            @Override
+                            public Type getType() {
+                                if ("javax.ejb.Topic".equals(jmsDestination.getClassName())) { //NOI18N
+                                    return Type.TOPIC;
+                                } else {
+                                    return Type.QUEUE;
+                                }
+                            }
+                        });
+                    }
+                    return null;
+                }
+            });
+        } catch (MetadataModelException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+
+        return allDestinations;
+    }
+
     
     /**
      * Holder for message destinations (module- and server-).

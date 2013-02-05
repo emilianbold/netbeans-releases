@@ -147,9 +147,9 @@ public class SendJMSMessageCodeGenerator implements CodeGenerator {
             final Project enterpriseProject = FileOwnerQuery.getOwner(srcFile);
             final EnterpriseReferenceContainer erc = enterpriseProject.getLookup().lookup(EnterpriseReferenceContainer.class);
             J2eeModuleProvider provider = enterpriseProject.getLookup().lookup(J2eeModuleProvider.class);
-            
+
             MessageDestinationUiSupport.DestinationsHolder holder = 
-                    SendJMSMessageUiSupport.getDestinations(provider);
+                    SendJMSMessageUiSupport.getDestinations(enterpriseProject, provider);
             final SendJmsMessagePanel sendJmsMessagePanel = SendJmsMessagePanel.newInstance(
                     provider,
                     holder.getModuleDestinations(),
@@ -231,7 +231,7 @@ public class SendJMSMessageCodeGenerator implements CodeGenerator {
             NotifyDescriptor.ERROR_MESSAGE);
             DialogDisplayer.getDefault().notify(notifyDescriptor);
     }
-    
+
     private static boolean isEnable(FileObject fileObject, TypeElement typeElement) {
         Project project = FileOwnerQuery.getOwner(fileObject);
         if (project == null) {

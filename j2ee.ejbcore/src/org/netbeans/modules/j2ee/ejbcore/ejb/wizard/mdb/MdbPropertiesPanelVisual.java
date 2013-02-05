@@ -217,15 +217,20 @@ public class MdbPropertiesPanelVisual extends javax.swing.JPanel {
             case QUEUE:
                 setProperty(ActivationConfigProperties.ACKNOWLEDGE_MODE, AcknowledgeMode.AUTO_ACKNOWLEDGE);
                 setProperty(ActivationConfigProperties.DESTINATION_TYPE, DestinationType.QUEUE);
+                if (eeProjectCapabilities.isEjb32Supported()) {
+                    setProperty(ActivationConfigProperties.DESTINATION_LOOKUP, destination.getName());
+                }
                 break;
 
             case TOPIC:
                 setProperty(ActivationConfigProperties.ACKNOWLEDGE_MODE, AcknowledgeMode.AUTO_ACKNOWLEDGE);
                 setProperty(ActivationConfigProperties.CLIENT_ID, destination.getName());
-                setProperty(ActivationConfigProperties.DESTINATION_LOOKUP, destination.getName());
                 setProperty(ActivationConfigProperties.DESTINATION_TYPE, DestinationType.TOPIC);
                 setProperty(ActivationConfigProperties.SUBSCRIPTION_DURABILITY, SubscriptionDurability.DURABLE);
-                setProperty(ActivationConfigProperties.SUBSCRIPTION_NAME, destination.getName());
+                    setProperty(ActivationConfigProperties.SUBSCRIPTION_NAME, destination.getName());
+                if (eeProjectCapabilities.isEjb32Supported()) {
+                    setProperty(ActivationConfigProperties.DESTINATION_LOOKUP, destination.getName());
+                }
                 break;
 
             default:
