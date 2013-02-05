@@ -104,7 +104,9 @@ public class GoToRuleSourceAction extends NodeAction {
                     lookup.lookup(org.netbeans.modules.web.webkit.debugging.api.css.Rule.class);
             if (rule != null) {
                 Resource resource = lookup.lookup(Resource.class);
-                enabled = (resource != null) && (resource.toFileObject() != null);
+                enabled = (resource != null)
+                    && ((resource.toFileObject() != null)
+                            || rule.getParentStyleSheet() != null);
             }
         }
         return enabled;
