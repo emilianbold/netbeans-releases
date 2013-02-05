@@ -137,7 +137,7 @@ public class FetchAction extends ContextAction {
     @NbBundle.Messages({
         "MSG_FetchAction.popingPatches=Popping applied patches",
         "MSG_FetchAction.fetching=Fetching changesets",
-        "MSG_FetchAction.pushingPatches=Pushing patches",
+        "MSG_FetchAction.pushingPatches=Pushing patches"
     })
     public static void performFetch(final File root, final String revision, final HgProgressSupport supp) {
         final OutputLogger logger = supp.getLogger();
