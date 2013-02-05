@@ -95,13 +95,14 @@ public final class ClusteredIndexables {
      * Creates new ClusteredIndexables
      * @param indexables, requires a list with fast {@link List#get(int)} as it heavily calls it.
      */
-    public ClusteredIndexables(List<Indexable> indexables) {
+    public ClusteredIndexables(@NonNull final List<Indexable> indexables) {
         Parameters.notNull("indexables", indexables); //NOI18N  
         this.indexables = indexables;        
         this.sorted = new BitSet(indexables.size());
     }
 
-    public Iterable<Indexable> getIndexablesFor(String mimeType) {
+    @NonNull
+    public Iterable<Indexable> getIndexablesFor(@NullAllowed String mimeType) {
             if (mimeType == null) {
                 mimeType = ALL_MIME_TYPES;
             }
@@ -738,23 +739,19 @@ public final class ClusteredIndexables {
                 index = (index << 3) | (stored ? 4 : 0) | (indexed ? 2 : 0) | 1;
 
                 if (docs.length < docsPointer + 2) {
-                    int[] newdocs = new int[docs.length << 1];
-                    System.arraycopy(docs, 0, newdocs, 0, docs.length);
-                    docs = newdocs;
+                    docs = Arrays.copyOf(docs, docs.length << 1);
                 }
                 docs[docsPointer] = index;
                 docs[docsPointer + 1] = dataPointer;
                 docsPointer += 2;
                 if (data.length < dataPointer + fldValue.length()) {
-                    char[] newdata = new char[newLength(data.length,dataPointer + fldValue.length())];
-                    System.arraycopy(data, 0, newdata, 0, data.length);
-                    data = newdata;
+                    data = Arrays.copyOf(data, newLength(data.length,dataPointer + fldValue.length()));
                     res = data.length<<1 > DATA_CACHE_SIZE;
                     LOG.log(
                         Level.FINE,
                         "New data size: {0}, flush: {1}",   //NOI18N
                         new Object[] {
-                            newdata.length,
+                            data.length,
                             res
                         });
                 }
@@ -762,9 +759,7 @@ public final class ClusteredIndexables {
                 dataPointer += fldValue.length();
             }
             if (docs.length < docsPointer + 1) {
-                int[] newdocs = new int[docs.length << 1];
-                System.arraycopy(docs, 0, newdocs, 0, docs.length);
-                docs = newdocs;
+                docs = Arrays.copyOf(docs, docs.length << 1);
             }
             docs[docsPointer++] = 0;
             size++;
