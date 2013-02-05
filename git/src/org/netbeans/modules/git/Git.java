@@ -61,7 +61,9 @@ import java.util.logging.Logger;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.modules.git.client.CredentialsCallback;
 import org.netbeans.modules.git.client.GitClient;
+import org.netbeans.modules.git.ui.shelve.ShelveChangesAction;
 import org.netbeans.modules.git.utils.GitUtils;
+import org.netbeans.modules.versioning.shelve.ShelveChangesActionsRegistry;
 import org.netbeans.modules.versioning.spi.VCSAnnotator;
 import org.netbeans.modules.versioning.spi.VersioningSupport;
 import org.netbeans.modules.versioning.util.RootsToFile;
@@ -129,10 +131,16 @@ public final class Git {
         ModuleLifecycleManager.getInstance().disableOtherModules();
     }
 
-    void registerGitVCS(GitVCS gitVCS) {
+    void registerGitVCS(final GitVCS gitVCS) {
         this.gitVCS = gitVCS;
         fileStatusCache.addPropertyChangeListener(gitVCS);
         addPropertyChangeListener(gitVCS);
+        getRequestProcessor().post(new Runnable() {
+            @Override
+            public void run () {
+                ShelveChangesActionsRegistry.getInstance().registerAction(gitVCS, ShelveChangesAction.getProvider());
+            }
+        });
     }
 
     public VCSAnnotator getVCSAnnotator() {
