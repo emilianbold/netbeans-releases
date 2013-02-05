@@ -47,6 +47,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
+import javax.swing.text.BadLocationException;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintSeverity;
 import org.netbeans.modules.csl.api.Rule.AstRule;
@@ -56,9 +57,20 @@ import org.netbeans.modules.csl.api.RuleContext;
  *
  * @author Radek Matous
  */
-public abstract class AbstractHint implements AstRule {
+public abstract class AbstractHint implements AstRule, CaretSensitive {
+    private int caretOffset;
 
     abstract void compute(PHPRuleContext context, List<Hint> hints);
+
+    @Override
+    public void compute(PHPRuleContext context, List<Hint> hints, int caretOffset) throws BadLocationException {
+        this.caretOffset = caretOffset;
+        compute(context, hints);
+    }
+
+    public int getCaretOffset() {
+        return caretOffset;
+    }
 
     @Override
     public Set<? extends Object> getKinds() {
