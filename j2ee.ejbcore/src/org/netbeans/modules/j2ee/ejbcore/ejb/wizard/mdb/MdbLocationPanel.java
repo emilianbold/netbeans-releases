@@ -172,7 +172,8 @@ public class MdbLocationPanel implements WizardDescriptor.FinishablePanel {
         if (locationPanel == null) {
             Project project = Templates.getProject(wizardDescriptor);
             J2eeModuleProvider j2eeModuleProvider = project.getLookup().lookup(J2eeModuleProvider.class);
-            MessageDestinationUiSupport.DestinationsHolder holder = MessageDestinationUiSupport.getDestinations(j2eeModuleProvider);
+            MessageDestinationUiSupport.DestinationsHolder holder =
+                    MessageDestinationUiSupport.getDestinations(project, j2eeModuleProvider);
             locationPanel = MdbLocationPanelVisual.newInstance(
                     j2eeModuleProvider,
                     holder.getModuleDestinations(),

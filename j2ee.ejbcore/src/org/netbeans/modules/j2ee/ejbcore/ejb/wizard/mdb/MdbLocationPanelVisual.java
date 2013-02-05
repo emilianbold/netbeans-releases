@@ -52,16 +52,16 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.openide.WizardDescriptor;
-import org.openide.util.Exceptions;
 
 /**
  * Panel for specifying message destination. Project or server message destination can be chosen.
  * @author Tomas Mysik
  */
+@SuppressWarnings("serial") // not used to be serialized
 public class MdbLocationPanelVisual extends javax.swing.JPanel {
     
     public static final String CHANGED = MdbLocationPanelVisual.class.getName() + ".CHANGED";
-    
+
     private final J2eeModuleProvider provider;
     private final Set<MessageDestination> moduleDestinations;
     private final Set<MessageDestination> serverDestinations;
@@ -70,7 +70,7 @@ public class MdbLocationPanelVisual extends javax.swing.JPanel {
     // private because correct initialization is needed
     private MdbLocationPanelVisual(J2eeModuleProvider provider, Set<MessageDestination> moduleDestinations, Set<MessageDestination> serverDestinations) {
         initComponents();
-        
+
         this.provider = provider;
         this.moduleDestinations = moduleDestinations;
         this.serverDestinations = serverDestinations;
@@ -84,8 +84,8 @@ public class MdbLocationPanelVisual extends javax.swing.JPanel {
      * @param serverDestinations server message destinations.
      * @return MessageEJBWizardVisualPanel instance.
      */
-    public static MdbLocationPanelVisual newInstance(final J2eeModuleProvider provider, final Set<MessageDestination> moduleDestinations,
-            final Set<MessageDestination> serverDestinations) {
+    public static MdbLocationPanelVisual newInstance(final J2eeModuleProvider provider,
+            final Set<MessageDestination> moduleDestinations, final Set<MessageDestination> serverDestinations) {
         MdbLocationPanelVisual mdp = new MdbLocationPanelVisual(provider, moduleDestinations, serverDestinations);
         mdp.initialize();
         return mdp;
@@ -172,7 +172,7 @@ public class MdbLocationPanelVisual extends javax.swing.JPanel {
     void store(WizardDescriptor descriptor) {
         descriptor.putProperty(MdbWizard.PROP_DESTINATION_TYPE, getDestination());
     }
-    
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
