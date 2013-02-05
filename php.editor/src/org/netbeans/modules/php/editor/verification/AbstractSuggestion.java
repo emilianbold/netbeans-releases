@@ -56,9 +56,7 @@ import org.netbeans.modules.csl.api.RuleContext;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public abstract class AbstractSuggestion implements AstRule {
-
-    abstract void compute(PHPRuleContext context, List<Hint> suggestions, int caretOffset) throws BadLocationException;
+public abstract class AbstractSuggestion implements AstRule, CaretSensitive {
 
     @Override
     public Set<?> getKinds() {

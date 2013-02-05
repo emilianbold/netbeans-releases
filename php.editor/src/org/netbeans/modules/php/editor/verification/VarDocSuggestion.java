@@ -92,7 +92,7 @@ public class VarDocSuggestion extends AbstractSuggestion {
     }
 
     @Override
-    void compute(PHPRuleContext context, List<Hint> hints, int caretOffset) throws BadLocationException {
+    public void compute(PHPRuleContext context, List<Hint> hints, int caretOffset) throws BadLocationException {
         final BaseDocument doc = context.doc;
         int lineBegin = caretOffset > 0 ? Utilities.getRowStart(doc, caretOffset) : -1;
         int lineEnd = (lineBegin != -1) ? Utilities.getRowEnd(doc, caretOffset) : -1;

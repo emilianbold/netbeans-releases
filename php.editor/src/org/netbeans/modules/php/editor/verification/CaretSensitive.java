@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,34 +37,18 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.php.editor.verification;
 
-import org.netbeans.api.annotations.common.NullAllowed;
-import org.netbeans.modules.csl.api.RuleContext;
-import org.netbeans.modules.php.editor.api.ElementQuery;
-import org.netbeans.modules.php.editor.api.ElementQueryFactory;
-import org.netbeans.modules.php.editor.model.FileScope;
-import org.netbeans.modules.php.editor.parser.PHPParseResult;
+import java.util.List;
+import javax.swing.text.BadLocationException;
+import org.netbeans.modules.csl.api.Hint;
 
 /**
  *
- * @author Tomasz.Slota@Sun.COM
+ * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class PHPRuleContext extends RuleContext {
-    private ElementQuery.Index index;
-    @NullAllowed
-    FileScope fileScope;
-
-    public ElementQuery.Index getIndex() {
-        if (index == null) {
-            if (parserResult instanceof PHPParseResult) {
-                index = ElementQueryFactory.getIndexQuery((PHPParseResult) parserResult);
-            }
-        }
-        return index;
-    }
-
+public interface CaretSensitive {
+    void compute(PHPRuleContext context, List<Hint> hints, int caretOffset) throws BadLocationException;
 }

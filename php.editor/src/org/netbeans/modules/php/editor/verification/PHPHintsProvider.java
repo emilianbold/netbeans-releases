@@ -100,8 +100,8 @@ public class PHPHintsProvider implements HintsProvider {
             PHPRuleContext ruleContext = initializeContext(context);
             for (AstRule astRule : modelHints) {
                 if (mgr.isEnabled(astRule)) {
-                    if (astRule instanceof AbstractSuggestion) {
-                        AbstractSuggestion suggestion = (AbstractSuggestion) astRule;
+                    if (astRule instanceof CaretSensitive) {
+                        CaretSensitive suggestion = (CaretSensitive) astRule;
                         try {
                             suggestion.compute(ruleContext, suggestions, caretOffset);
                         } catch (BadLocationException ex) {

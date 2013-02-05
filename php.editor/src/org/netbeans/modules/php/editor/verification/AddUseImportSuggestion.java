@@ -113,7 +113,7 @@ public class AddUseImportSuggestion extends AbstractSuggestion {
     }
 
     @Override
-    void compute(PHPRuleContext context, List<Hint> hints, int caretOffset) throws BadLocationException {
+    public void compute(PHPRuleContext context, List<Hint> hints, int caretOffset) throws BadLocationException {
         PHPParseResult phpParseResult = (PHPParseResult) context.parserResult;
         if (phpParseResult.getProgram() == null) {
             return;

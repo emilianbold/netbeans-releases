@@ -76,7 +76,7 @@ public class IdenticalComparisonSuggestion extends AbstractSuggestion {
     private static final String HINT_ID = "Identical.Comparison.Hint"; //NOI18N
 
     @Override
-    void compute(PHPRuleContext context, List<Hint> hints, int caretOffset) throws BadLocationException {
+    public void compute(PHPRuleContext context, List<Hint> hints, int caretOffset) throws BadLocationException {
         PHPParseResult phpParseResult = (PHPParseResult) context.parserResult;
         if (phpParseResult.getProgram() == null) {
             return;
