@@ -117,7 +117,10 @@ public class WikiEditPanel extends WikiPanel {
     @Override
     public void setWikiFormatText(String wikiFormatText) {
         this.wikiFormatText = wikiFormatText;
-        String htmlText = WikiUtils.getHtmlFormatText(wikiFormatText, wikiLanguage);
+        String htmlText = null;
+        if(Boolean.getBoolean("bugtracking.useWikiEditPanel")) {
+            WikiUtils.getHtmlFormatText(wikiFormatText, wikiLanguage);
+        }
         if (htmlText != null) {
             this.htmlFormatText = htmlText;
             textPreview.setContentType(CONTENT_HTML);
