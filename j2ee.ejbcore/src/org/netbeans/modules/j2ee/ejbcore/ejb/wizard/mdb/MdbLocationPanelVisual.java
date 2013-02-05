@@ -47,7 +47,10 @@ package org.netbeans.modules.j2ee.ejbcore.ejb.wizard.mdb;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Set;
+import javax.swing.ComboBoxModel;
+import javax.swing.DefaultComboBoxModel;
 import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
+import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination.Type;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
@@ -97,7 +100,30 @@ public class MdbLocationPanelVisual extends javax.swing.JPanel {
      */
     public MessageDestination getDestination() {
         if (projectDestinationsRadio.isSelected()) {
-            return (MessageDestination) projectDestinationsCombo.getSelectedItem();
+            if (projectDestinationsCombo.getSelectedItem() == null
+                    || ((String) projectDestinationsCombo.getSelectedItem()).isEmpty()) {
+                return null;
+            } else {
+                final String selectedDestination = (String) projectDestinationsCombo.getSelectedItem();
+                for (MessageDestination messageDestination : moduleDestinations) {
+                    if (messageDestination.getName().equals(selectedDestination)) {
+                        // predefined project's message destinations
+                        return messageDestination;
+                    }
+                }
+                // message destination is unknown
+                return new MessageDestination() {
+                    @Override
+                    public String getName() {
+                        return selectedDestination;
+                    }
+                    @Override
+                    public Type getType() {
+                        // we don't know anything about the destination type, just return some one
+                        return Type.QUEUE;
+                    }
+                };
+            }
         } else if (serverDestinationsRadio.isSelected()) {
             return (MessageDestination) serverDestinationsCombo.getSelectedItem();
         }
@@ -112,7 +138,11 @@ public class MdbLocationPanelVisual extends javax.swing.JPanel {
             return false;
         }
     }
-    
+
+    private static ComboBoxModel getProjectDestinationComboModel() {
+        return new PDComboModel();
+    }
+
     private void initialize() {
         registerListeners();
         setupAddButton();
@@ -199,6 +229,9 @@ public class MdbLocationPanelVisual extends javax.swing.JPanel {
         serverDestinationsRadio.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         serverDestinationsRadio.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
+        projectDestinationsCombo.setEditable(true);
+        projectDestinationsCombo.setModel(getProjectDestinationComboModel());
+
         org.openide.awt.Mnemonics.setLocalizedText(addButton, org.openide.util.NbBundle.getMessage(MdbLocationPanelVisual.class, "LBL_Add")); // NOI18N
         addButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -257,5 +290,20 @@ public class MdbLocationPanelVisual extends javax.swing.JPanel {
     private javax.swing.JComboBox serverDestinationsCombo;
     private javax.swing.JRadioButton serverDestinationsRadio;
     // End of variables declaration//GEN-END:variables
+
+    @SuppressWarnings("serial") // not used to be serialized
+    private static class PDComboModel extends DefaultComboBoxModel {
+
+        @Override
+        public Object getSelectedItem() {
+            Object selectedItem = super.getSelectedItem();
+            if (selectedItem instanceof MessageDestination) {
+                return ((MessageDestination) selectedItem).getName();
+            } else {
+                return selectedItem;
+            }
+        }
+
+    }
 
 }
