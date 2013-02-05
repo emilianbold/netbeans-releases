@@ -104,8 +104,8 @@ public class PHPHintsProvider implements HintsProvider {
                         PHPRuleWithPreferences icm = (PHPRuleWithPreferences) defaultHintOnLine;
                         icm.setPreferences(mgr.getPreferences(defaultHintOnLine));
                     }
-                    if (defaultHintOnLine instanceof CaretSensitive) {
-                        CaretSensitive icm = (CaretSensitive) defaultHintOnLine;
+                    if (defaultHintOnLine instanceof CaretSensitiveRule) {
+                        CaretSensitiveRule icm = (CaretSensitiveRule) defaultHintOnLine;
                         try {
                             icm.compute(ruleContext, suggestions, caretOffset);
                         } catch (BadLocationException ex) {
@@ -121,8 +121,8 @@ public class PHPHintsProvider implements HintsProvider {
             PHPRuleContext ruleContext = initializeContext(context);
             for (AstRule astRule : modelHints) {
                 if (mgr.isEnabled(astRule)) {
-                    if (astRule instanceof CaretSensitive) {
-                        CaretSensitive suggestion = (CaretSensitive) astRule;
+                    if (astRule instanceof CaretSensitiveRule) {
+                        CaretSensitiveRule suggestion = (CaretSensitiveRule) astRule;
                         try {
                             suggestion.compute(ruleContext, suggestions, caretOffset);
                         } catch (BadLocationException ex) {

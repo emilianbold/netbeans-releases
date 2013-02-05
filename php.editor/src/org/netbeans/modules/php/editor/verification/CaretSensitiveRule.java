@@ -44,11 +44,12 @@ package org.netbeans.modules.php.editor.verification;
 import java.util.List;
 import javax.swing.text.BadLocationException;
 import org.netbeans.modules.csl.api.Hint;
+import org.netbeans.modules.csl.api.Rule.AstRule;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public interface CaretSensitive {
+public interface CaretSensitiveRule extends AstRule {
     void compute(PHPRuleContext context, List<Hint> hints, int caretOffset) throws BadLocationException;
 }

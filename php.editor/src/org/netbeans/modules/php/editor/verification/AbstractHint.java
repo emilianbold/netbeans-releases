@@ -50,14 +50,13 @@ import javax.swing.JComponent;
 import javax.swing.text.BadLocationException;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintSeverity;
-import org.netbeans.modules.csl.api.Rule.AstRule;
 import org.netbeans.modules.csl.api.RuleContext;
 
 /**
  *
  * @author Radek Matous
  */
-public abstract class AbstractHint implements AstRule, CaretSensitive {
+public abstract class AbstractHint implements CaretSensitiveRule {
     private int caretOffset;
 
     abstract void compute(PHPRuleContext context, List<Hint> hints);

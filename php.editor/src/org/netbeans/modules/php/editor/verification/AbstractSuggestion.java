@@ -42,21 +42,17 @@
 package org.netbeans.modules.php.editor.verification;
 
 import java.util.Collections;
-import java.util.List;
 import java.util.Set;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
-import javax.swing.text.BadLocationException;
-import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintSeverity;
-import org.netbeans.modules.csl.api.Rule.AstRule;
 import org.netbeans.modules.csl.api.RuleContext;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public abstract class AbstractSuggestion implements AstRule, CaretSensitive {
+public abstract class AbstractSuggestion implements CaretSensitiveRule {
 
     @Override
     public Set<?> getKinds() {
