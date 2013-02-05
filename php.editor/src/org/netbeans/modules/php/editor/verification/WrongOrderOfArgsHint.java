@@ -69,7 +69,7 @@ import org.openide.util.NbBundle.Messages;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class WrongOrderOfArgsHint extends AbstractHint {
+public class WrongOrderOfArgsHint extends HintRule {
 
     private static final String HINT_ID = "Wrong.Order.Of.Args.Hint"; //NOI18N
 

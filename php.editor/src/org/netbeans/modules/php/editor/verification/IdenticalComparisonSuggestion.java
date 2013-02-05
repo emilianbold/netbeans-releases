@@ -71,7 +71,7 @@ import org.openide.util.NbBundle.Messages;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class IdenticalComparisonSuggestion extends AbstractSuggestion {
+public class IdenticalComparisonSuggestion extends SuggestionRule {
 
     private static final String HINT_ID = "Identical.Comparison.Hint"; //NOI18N
 

@@ -79,12 +79,12 @@ public class PHPHintsProvider implements HintsProvider {
             PHPRuleContext ruleContext = initializeContext(context);
             for (AstRule astRule : modelHints) {
                 if (mgr.isEnabled(astRule)) {
-                    if (astRule instanceof PHPRuleWithPreferences) {
-                        PHPRuleWithPreferences icm = (PHPRuleWithPreferences) astRule;
+                    if (astRule instanceof CustomisableRule) {
+                        CustomisableRule icm = (CustomisableRule) astRule;
                         icm.setPreferences(mgr.getPreferences(astRule));
                     }
-                    if (astRule instanceof AbstractHint) {
-                        AbstractHint icm = (AbstractHint) astRule;
+                    if (astRule instanceof HintRule) {
+                        HintRule icm = (HintRule) astRule;
                         icm.compute(ruleContext, hints);
                     }
                 }
@@ -100,8 +100,8 @@ public class PHPHintsProvider implements HintsProvider {
             PHPRuleContext ruleContext = initializeContext(context);
             for (AstRule defaultHintOnLine : defaultHintsOnLine) {
                 if (mgr.isEnabled(defaultHintOnLine)) {
-                    if (defaultHintOnLine instanceof PHPRuleWithPreferences) {
-                        PHPRuleWithPreferences icm = (PHPRuleWithPreferences) defaultHintOnLine;
+                    if (defaultHintOnLine instanceof CustomisableRule) {
+                        CustomisableRule icm = (CustomisableRule) defaultHintOnLine;
                         icm.setPreferences(mgr.getPreferences(defaultHintOnLine));
                     }
                     if (defaultHintOnLine instanceof CaretSensitiveRule) {
@@ -151,8 +151,8 @@ public class PHPHintsProvider implements HintsProvider {
             if (unhandledErrors != null) {
                 PHPRuleContext phpRuleContext = initializeContext(context);
                 for (ErrorRule errorRule : unhandledErrors) {
-                    if (errorRule instanceof UnhandledError) {
-                        UnhandledError abstractUnhandledError = (UnhandledError) errorRule;
+                    if (errorRule instanceof UnhandledErrorRule) {
+                        UnhandledErrorRule abstractUnhandledError = (UnhandledErrorRule) errorRule;
                         abstractUnhandledError.compute(phpRuleContext, unhandled);
                     }
                 }
@@ -161,8 +161,8 @@ public class PHPHintsProvider implements HintsProvider {
             if (hintErrors != null) {
                 PHPRuleContext phpRuleContext = initializeContext(context);
                 for (ErrorRule errorRule : hintErrors) {
-                    if (errorRule instanceof HintError) {
-                        HintError abstractHintError = (HintError) errorRule;
+                    if (errorRule instanceof HintErrorRule) {
+                        HintErrorRule abstractHintError = (HintErrorRule) errorRule;
                         abstractHintError.compute(phpRuleContext, hints);
                     }
                 }

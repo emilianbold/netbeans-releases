@@ -70,7 +70,7 @@ import org.openide.util.NbBundle;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class ErrorControlOperatorHint extends AbstractHint {
+public class ErrorControlOperatorHint extends HintRule {
     private static final String HINT_ID = "error.control.operator.hint"; //NOI18N
     private static final Set<IgnoreErrorValidator> IGNORE_ERROR_VALIDATORS = new HashSet<IgnoreErrorValidator>();
     static {

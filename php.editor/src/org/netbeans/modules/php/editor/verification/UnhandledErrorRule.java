@@ -41,29 +41,22 @@
  */
 package org.netbeans.modules.php.editor.verification;
 
-import org.netbeans.modules.csl.api.HintSeverity;
-import org.netbeans.modules.csl.api.Rule.ErrorRule;
-import org.netbeans.modules.csl.api.RuleContext;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+import org.netbeans.modules.csl.api.Error;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public abstract class AbstractError implements ErrorRule {
+public abstract class UnhandledErrorRule extends ErrorRule {
+
+    abstract void compute(PHPRuleContext context, List<Error> errors);
 
     @Override
-    public boolean appliesTo(RuleContext context) {
-        return context instanceof PHPRuleContext;
-    }
-
-    @Override
-    public boolean showInTasklist() {
-        return false;
-    }
-
-    @Override
-    public HintSeverity getDefaultSeverity() {
-        return HintSeverity.ERROR;
+    public Set<?> getCodes() {
+        return Collections.singleton(PHPHintsProvider.ErrorType.UNHANDLED_ERRORS);
     }
 
 }

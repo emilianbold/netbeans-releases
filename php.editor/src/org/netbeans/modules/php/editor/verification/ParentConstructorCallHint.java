@@ -62,7 +62,7 @@ import org.openide.util.NbBundle;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class ParentConstructorCallHint extends AbstractHint {
+public class ParentConstructorCallHint extends HintRule {
     private static final String HINT_ID = "Parent.Constructor.Call.Hint"; //NOI18N
     private List<Hint> hints;
 

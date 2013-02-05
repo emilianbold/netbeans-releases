@@ -65,7 +65,7 @@ import org.openide.util.NbBundle.Messages;
 /**
  * @author Radek Matous, Ondrej Brejla
  */
-public class TypeRedeclarationHintError extends HintError {
+public class TypeRedeclarationHintError extends HintErrorRule {
     private Set<Statement> conditionStatements = Collections.emptySet();
     private FileObject fileObject;
     private List<Hint> hints;

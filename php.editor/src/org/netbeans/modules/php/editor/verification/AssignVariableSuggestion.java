@@ -73,7 +73,7 @@ import org.openide.util.NbBundle.Messages;
  *
  * @author Radek Matous
  */
-public class AssignVariableSuggestion extends AbstractSuggestion {
+public class AssignVariableSuggestion extends SuggestionRule {
 
     private static final List<String> LANGUAGE_CUNSTRUCTS = new ArrayList<String>(Arrays.asList(new String[] {"die", "exit"})); //NOI18N
 

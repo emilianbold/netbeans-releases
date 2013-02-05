@@ -67,7 +67,7 @@ import org.openide.util.NbBundle;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public abstract class BracesHint extends AbstractHint {
+public abstract class BracesHint extends HintRule {
 
     @Override
     void compute(PHPRuleContext context, List<Hint> hints) {

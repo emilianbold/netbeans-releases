@@ -41,47 +41,59 @@
  */
 package org.netbeans.modules.php.editor.verification;
 
-import java.util.Collections;
-import java.util.Set;
-import java.util.prefs.Preferences;
-import javax.swing.JComponent;
-import org.netbeans.modules.csl.api.HintSeverity;
-import org.netbeans.modules.csl.api.RuleContext;
+import org.netbeans.modules.csl.api.Error.Badging;
+import org.netbeans.modules.csl.api.Severity;
+import org.openide.filesystems.FileObject;
 
 /**
+ * Class encapsulating errors caused by verification package.
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public abstract class AbstractSuggestion implements CaretSensitiveRule {
+public abstract class VerificationError implements Badging {
+    private final FileObject fileObject;
+    private final int startOffset;
+    private final int endOffset;
 
-    @Override
-    public Set<?> getKinds() {
-        return Collections.singleton(PHPHintsProvider.DEFAULT_SUGGESTIONS);
+    public VerificationError(FileObject fileObject, int startOffset, int endOffset) {
+        this.fileObject = fileObject;
+        this.startOffset = startOffset;
+        this.endOffset = endOffset;
     }
 
     @Override
-    public boolean getDefaultEnabled() {
+    public boolean showExplorerBadge() {
         return true;
     }
 
     @Override
-    public JComponent getCustomizer(Preferences node) {
-        return null;
+    public FileObject getFile() {
+        return fileObject;
     }
 
     @Override
-    public boolean appliesTo(RuleContext context) {
-        return context instanceof PHPRuleContext;
+    public int getStartPosition() {
+        return startOffset;
     }
 
     @Override
-    public boolean showInTasklist() {
-        return false;
+    public int getEndPosition() {
+        return endOffset;
     }
 
     @Override
-    public HintSeverity getDefaultSeverity() {
-        return HintSeverity.CURRENT_LINE_WARNING;
+    public boolean isLineError() {
+        return true;
+    }
+
+    @Override
+    public Severity getSeverity() {
+        return Severity.ERROR;
+    }
+
+    @Override
+    public Object[] getParameters() {
+        return new Object[]{};
     }
 
 }

@@ -70,7 +70,7 @@ import org.openide.util.NbBundle.Messages;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class AccidentalAssignmentHint extends AbstractHint implements PHPRuleWithPreferences {
+public class AccidentalAssignmentHint extends HintRule implements CustomisableRule {
 
     private static final String HINT_ID = "Accidental.Assignment.Hint"; //NOI18N
     private static final String CHECK_ASSIGNMENTS_IN_SUB_STATEMENTS = "php.verification.check.assignments.in.sub.statements"; //NOI18N

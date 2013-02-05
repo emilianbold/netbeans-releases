@@ -69,7 +69,7 @@ import org.openide.util.NbBundle;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class UnreachableStatementHint extends AbstractHint {
+public class UnreachableStatementHint extends HintRule {
     private static final String HINT_ID = "Unreachable.Statement.Hint"; //NOI18N
 
     @Override

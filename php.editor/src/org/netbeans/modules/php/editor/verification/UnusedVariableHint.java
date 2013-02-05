@@ -115,7 +115,7 @@ import org.openide.util.NbBundle.Messages;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class UnusedVariableHint extends AbstractHint implements PHPRuleWithPreferences {
+public class UnusedVariableHint extends HintRule implements CustomisableRule {
 
     private static final String HINT_ID = "Unused.Variable.Hint"; //NOI18N
     private static final String CHECK_UNUSED_FORMAL_PARAMETERS = "php.verification.check.unused.formal.parameters"; //NOI18N

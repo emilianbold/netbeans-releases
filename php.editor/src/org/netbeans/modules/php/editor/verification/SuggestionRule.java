@@ -41,59 +41,47 @@
  */
 package org.netbeans.modules.php.editor.verification;
 
-import org.netbeans.modules.csl.api.Error.Badging;
-import org.netbeans.modules.csl.api.Severity;
-import org.openide.filesystems.FileObject;
+import java.util.Collections;
+import java.util.Set;
+import java.util.prefs.Preferences;
+import javax.swing.JComponent;
+import org.netbeans.modules.csl.api.HintSeverity;
+import org.netbeans.modules.csl.api.RuleContext;
 
 /**
- * Class encapsulating errors caused by verification package.
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public abstract class PHPVerificationError implements Badging {
-    private final FileObject fileObject;
-    private final int startOffset;
-    private final int endOffset;
+public abstract class SuggestionRule implements CaretSensitiveRule {
 
-    public PHPVerificationError(FileObject fileObject, int startOffset, int endOffset) {
-        this.fileObject = fileObject;
-        this.startOffset = startOffset;
-        this.endOffset = endOffset;
+    @Override
+    public Set<?> getKinds() {
+        return Collections.singleton(PHPHintsProvider.DEFAULT_SUGGESTIONS);
     }
 
     @Override
-    public boolean showExplorerBadge() {
+    public boolean getDefaultEnabled() {
         return true;
     }
 
     @Override
-    public FileObject getFile() {
-        return fileObject;
+    public JComponent getCustomizer(Preferences node) {
+        return null;
     }
 
     @Override
-    public int getStartPosition() {
-        return startOffset;
+    public boolean appliesTo(RuleContext context) {
+        return context instanceof PHPRuleContext;
     }
 
     @Override
-    public int getEndPosition() {
-        return endOffset;
+    public boolean showInTasklist() {
+        return false;
     }
 
     @Override
-    public boolean isLineError() {
-        return true;
-    }
-
-    @Override
-    public Severity getSeverity() {
-        return Severity.ERROR;
-    }
-
-    @Override
-    public Object[] getParameters() {
-        return new Object[]{};
+    public HintSeverity getDefaultSeverity() {
+        return HintSeverity.CURRENT_LINE_WARNING;
     }
 
 }

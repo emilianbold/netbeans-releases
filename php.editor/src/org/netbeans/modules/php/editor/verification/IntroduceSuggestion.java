@@ -106,7 +106,7 @@ import org.openide.util.NbBundle.Messages;
 /**
  * @author Radek Matous
  */
-public class IntroduceSuggestion extends AbstractSuggestion {
+public class IntroduceSuggestion extends SuggestionRule {
 
     private static final String UNKNOWN_FILE_NAME = "?"; //NOI18N
 

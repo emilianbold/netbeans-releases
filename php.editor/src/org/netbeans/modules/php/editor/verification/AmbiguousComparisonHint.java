@@ -72,7 +72,7 @@ import org.openide.util.NbBundle.Messages;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class AmbiguousComparisonHint extends AbstractHint {
+public class AmbiguousComparisonHint extends HintRule {
 
     private static final String HINT_ID = "Ambiguous.Comparison.Hint"; //NOI18N
 

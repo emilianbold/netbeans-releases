@@ -63,7 +63,7 @@ import org.openide.util.NbBundle;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public abstract class SuperglobalsHint extends AbstractHint {
+public abstract class SuperglobalsHint extends HintRule {
 
     @Override
     void compute(PHPRuleContext context, List<Hint> hints) {

@@ -71,7 +71,7 @@ import org.openide.util.NbBundle.Messages;
 /**
  * @author Radek Matous
  */
-public class VarDocSuggestion extends AbstractSuggestion {
+public class VarDocSuggestion extends SuggestionRule {
     private static ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
 
     @Override

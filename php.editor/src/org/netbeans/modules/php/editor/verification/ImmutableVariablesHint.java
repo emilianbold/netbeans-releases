@@ -84,7 +84,7 @@ import org.openide.util.NbBundle.Messages;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class ImmutableVariablesHint extends AbstractHint implements PHPRuleWithPreferences {
+public class ImmutableVariablesHint extends HintRule implements CustomisableRule {
 
     private static final String HINT_ID = "Immutable.Variables.Hint"; //NOI18N
     private static final String NUMBER_OF_ALLOWED_ASSIGNMENTS = "php.verification.number.of.allowed.assignments"; //NOI18N

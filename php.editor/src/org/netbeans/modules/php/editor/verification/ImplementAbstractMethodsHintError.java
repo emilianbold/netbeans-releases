@@ -93,7 +93,7 @@ import org.openide.util.NbBundle.Messages;
 /**
  * @author Radek Matous, Ondrej Brejla
  */
-public class ImplementAbstractMethodsHintError extends HintError {
+public class ImplementAbstractMethodsHintError extends HintErrorRule {
 
     private static final String ABSTRACT_PREFIX = "abstract "; //NOI18N
     private static final Logger LOGGER = Logger.getLogger(ImplementAbstractMethodsHintError.class.getName());

@@ -63,7 +63,7 @@ import org.openide.util.NbBundle.Messages;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class LoopOnlyKeywordsUnhandledError extends UnhandledError {
+public class LoopOnlyKeywordsUnhandledError extends UnhandledErrorRule {
 
     @Override
     void compute(PHPRuleContext context, List<org.netbeans.modules.csl.api.Error> errors) {
@@ -87,13 +87,13 @@ public class LoopOnlyKeywordsUnhandledError extends UnhandledError {
         private final FileObject fileObject;
         private static final String CONTINUE = "continue"; //NOI18N
         private static final String BREAK = "break"; //NOI18N
-        private final List<PHPVerificationError> errors = new ArrayList<PHPVerificationError>();
+        private final List<VerificationError> errors = new ArrayList<VerificationError>();
 
         public CheckVisitor(FileObject fileObject) {
             this.fileObject = fileObject;
         }
 
-        public Collection<PHPVerificationError> getErrors() {
+        public Collection<VerificationError> getErrors() {
             return Collections.unmodifiableCollection(errors);
         }
 
@@ -150,7 +150,7 @@ public class LoopOnlyKeywordsUnhandledError extends UnhandledError {
 
     }
 
-    private static class LoopOnlyKeywordsError extends PHPVerificationError {
+    private static class LoopOnlyKeywordsError extends VerificationError {
 
         private static final String KEY = "Loop.Only.Keywors.Error"; //NOI18N
         private final String nameOfKeyword;

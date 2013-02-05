@@ -66,7 +66,7 @@ import org.openide.util.NbBundle;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class NestedBlocksHint extends AbstractHint implements PHPRuleWithPreferences {
+public class NestedBlocksHint extends HintRule implements CustomisableRule {
     private static final String HINT_ID = "Nested.Blocks.Hint"; //NOI18N
     private static final String NUMBER_OF_ALLOWED_NESTED_BLOCKS = "php.verification.number.of.allowed.nested.blocks"; //NOI18N
     private static final int DEFAULT_NUMBER_OF_ALLOWED_NESTED_BLOCKS = 2;

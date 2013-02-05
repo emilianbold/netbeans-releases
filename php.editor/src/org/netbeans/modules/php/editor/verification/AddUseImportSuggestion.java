@@ -89,7 +89,7 @@ import org.openide.util.NbBundle.Messages;
  *
  * @author Radek Matous
  */
-public class AddUseImportSuggestion extends AbstractSuggestion {
+public class AddUseImportSuggestion extends SuggestionRule {
 
     public AddUseImportSuggestion() {
         super();

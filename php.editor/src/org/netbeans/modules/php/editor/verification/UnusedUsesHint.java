@@ -64,7 +64,7 @@ import org.openide.util.NbBundle.Messages;
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
 @Messages("UnsedUsesHintDisp=Unused Use Statement")
-public class UnusedUsesHint extends AbstractHint {
+public class UnusedUsesHint extends HintRule {
 
     private static final String HINT_ID = "Unused.Uses.Hint"; //NOI18N
 

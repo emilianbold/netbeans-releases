@@ -59,7 +59,7 @@ import org.openide.util.NbBundle;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class EmptyStatementHint extends AbstractHint {
+public class EmptyStatementHint extends HintRule {
     private static final String HINT_ID = "Empty.Statement.Hint"; //NOI18N
 
     @Override
