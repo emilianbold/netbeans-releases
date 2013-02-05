@@ -56,7 +56,9 @@ import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.web.inspect.CSSUtils;
 import org.netbeans.modules.web.inspect.actions.Resource;
+import org.netbeans.modules.web.inspect.webkit.RemoteStyleSheetCache;
 import org.netbeans.modules.web.inspect.webkit.Utilities;
+import org.netbeans.modules.web.webkit.debugging.api.css.StyleSheetBody;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
@@ -78,6 +80,13 @@ public class GoToRuleSourceAction extends NodeAction {
                 lookup.lookup(org.netbeans.modules.web.webkit.debugging.api.css.Rule.class);
         Resource resource = lookup.lookup(Resource.class);
         FileObject fob = resource.toFileObject();
+        if (fob == null) {
+            StyleSheetBody body = rule.getParentStyleSheet();
+            fob = RemoteStyleSheetCache.getDefault().getFileObject(body);
+            if (fob == null) {
+                return;
+            }
+        }
         try {
             Source source = Source.create(fob);
             ParserManager.parse(Collections.singleton(source), new GoToRuleTask(rule, fob));
