@@ -68,6 +68,8 @@ public class CSS {
     private ResponseCallback callback;
     /** Registered listeners. */
     private List<Listener> listeners = new CopyOnWriteArrayList<Listener>();
+    /** Cache of style-sheets. */
+    private Map<String, StyleSheetBody> styleSheets = new HashMap<String, StyleSheetBody>();
 
     /**
      * Creates a new wrapper for the CSS domain of WebKit Remote Debugging Protocol.
@@ -124,6 +126,12 @@ public class CSS {
      */
     public StyleSheetBody getStyleSheet(String styleSheetId) {
         StyleSheetBody body = null;
+        synchronized (this) {
+            body = styleSheets.get(styleSheetId);
+            if (body != null) {
+                return body;
+            }
+        }
         JSONObject params = new JSONObject();
         params.put("styleSheetId", styleSheetId); // NOI18N
         Response response = transport.sendBlockingCommand(new Command("CSS.getStyleSheet", params)); // NOI18N
@@ -132,6 +140,9 @@ public class CSS {
             if (result != null) {
                 JSONObject sheetInfo = (JSONObject)result.get("styleSheet"); // NOI18N
                 body = new StyleSheetBody(sheetInfo);
+                synchronized (this) {
+                    styleSheets.put(styleSheetId, body);
+                }
             }
         }
         return body;
@@ -265,6 +276,18 @@ public class CSS {
             JSONObject result = response.getResult();
             if (result != null) {
                 matchedStyles = new MatchedStyles(result);
+                for (Rule rule : matchedStyles.getMatchedRules()) {
+                    String styleSheetId = rule.getStyle().getId().getStyleSheetId();
+                    StyleSheetBody body = getStyleSheet(styleSheetId);
+                    rule.setParentStyleSheet(body);
+                }
+                for (InheritedStyleEntry entry : matchedStyles.getInheritedRules()) {
+                    for (Rule rule : entry.getMatchedRules()) {
+                        String styleSheetId = rule.getStyle().getId().getStyleSheetId();
+                        StyleSheetBody body = getStyleSheet(styleSheetId);
+                        rule.setParentStyleSheet(body);                        
+                    }
+                }
             }
         }
         return matchedStyles;
@@ -438,7 +461,17 @@ public class CSS {
     void handleStyleSheetChanged(JSONObject params) {
         styleSheetChanged.set(true);
         String styleSheetId = (String)params.get("styleSheetId"); // NOI18N
+        synchronized (this) {
+            styleSheets.remove(styleSheetId);
+        }
         notifyStyleSheetChanged(styleSheetId);
+    }
+
+    /**
+     * Resets cached data.
+     */
+    public synchronized void reset() {
+        styleSheets.clear();
     }
 
     /**
@@ -481,6 +514,10 @@ public class CSS {
                 handleMediaQuertResultChanged(params);
             } else if ("CSS.styleSheetChanged".equals(method)) { // NOI18N
                 handleStyleSheetChanged(params);
+            } else if ("DOM.documentUpdated".equals(method)) { // NOI18N
+                synchronized (this) {
+                    styleSheets.clear();
+                }
             }
         }
 
