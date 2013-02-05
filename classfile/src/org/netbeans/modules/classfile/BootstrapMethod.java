@@ -1,9 +1,7 @@
 /*
- * CPNameAndTypeInfo.java
- *
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -29,7 +27,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2013 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 2013 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -50,64 +48,57 @@
 
 package org.netbeans.modules.classfile;
 
+import java.io.DataInputStream;
+import java.io.IOException;
 
 /**
- * A class representing the CONSTANT_MethodHandle constant pool type.
+ * An InnerClass attribute of a classfile.
  *
- * @author Thomas Ball
+ * @author  Thomas Ball
  * @since 1.40
  */
-public class CPMethodHandleInfo extends CPEntry {
-    ReferenceKind referenceKind;
-    int iReference;
+public final class BootstrapMethod {
 
-    CPMethodHandleInfo(ConstantPool pool, int referenceKind,int iReference) {
-	super(pool);
-        this.referenceKind = ReferenceKind.from(referenceKind);
-        this.iReference = iReference;
+    int methodRef;
+    int[] arguments;
+
+    static BootstrapMethod[] loadBootstrapMethod(DataInputStream in, ConstantPool pool)
+      throws IOException {
+        int n = in.readUnsignedShort();
+        BootstrapMethod[] innerClasses = new BootstrapMethod[n];
+        for (int i = 0; i < n; i++)
+            innerClasses[i] = new BootstrapMethod(in, pool);
+        return innerClasses;
     }
 
-    public int getTag() {
-	return ConstantPool.CONSTANT_MethodHandle;
+    BootstrapMethod(DataInputStream in, ConstantPool pool) throws IOException {
+        this.methodRef = in.readUnsignedShort();
+        int args = in.readUnsignedShort();
+        arguments = new int[args];
+        for (int i = 0; i < args; i++) {
+            arguments[i] = in.readUnsignedShort();
+        }
     }
 
-    public ReferenceKind getReferenceKind() {
-        return referenceKind;
+    public int getMethodRef() {
+        return methodRef;
     }
 
-    public int getReference() {
-        return iReference;
+    public int[] getArguments() {
+        return arguments.clone();
     }
 
     @Override
     public String toString() {
-        return getClass().getName() + ": kind=" + referenceKind + //NOI18N
-            ", index=" + iReference; //NOI18N
-    }
-    
-    public enum ReferenceKind {
-        getField(1),
-        getStatic(2),
-        putField(3),
-        putStatic(4),
-        invokeVirtual(5),
-        invokeStatic(6),
-        invokeSpecial(7),
-        newInvokeSpecial(8),
-        invokeInterface(9);
-        
-        private final int kindInt;
-
-        private ReferenceKind(int kindInt) {
-            this.kindInt = kindInt;
+        StringBuilder sb = new StringBuilder();
+        sb.append("bootstrapmethod=");
+        sb.append(methodRef);
+        sb.append("(");
+        for (int i = 0; i < arguments.length; i++) {
+            if (i > 0) sb.append(", ");
+            sb.append(arguments[i]);
         }
-        
-        static ReferenceKind from(int referenceKind) {
-            for (ReferenceKind k : values()) {
-                if (k.kindInt == referenceKind) return k;
-            }
-            
-            throw new IllegalStateException("Unknown ref kind: " + referenceKind);
-        }
+        sb.append(")");
+        return sb.toString();
     }
 }

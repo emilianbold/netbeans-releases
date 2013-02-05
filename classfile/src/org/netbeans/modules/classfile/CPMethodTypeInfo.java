@@ -66,7 +66,11 @@ public class CPMethodTypeInfo extends CPEntry {
     }
 
     public int getTag() {
-	return ConstantPool.CONSTANT_MethodHandle;
+	return ConstantPool.CONSTANT_MethodType;
+    }
+
+    public int getDescriptor() {
+        return iDescriptor;
     }
 
     @Override

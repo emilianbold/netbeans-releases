@@ -39,11 +39,12 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package regression;
+package org.netbeans.modules.classfile;
 
 import java.io.InputStream;
+import java.util.Arrays;
 import junit.framework.TestCase;
-import org.netbeans.modules.classfile.ClassFile;
+import org.netbeans.modules.classfile.CPMethodHandleInfo.ReferenceKind;
 
 /**
  *
@@ -59,6 +60,21 @@ public class JDK8ClassFilesTest extends TestCase {
         InputStream classData = 
             getClass().getResourceAsStream("datafiles/WithLambda.classx");
         ClassFile classFile = new ClassFile(classData);
-        classFile.toString();
+        CPInvokeDynamicInfo invokeDynamic = (CPInvokeDynamicInfo) classFile.getConstantPool().get(2);
+        assertEquals(ConstantPool.CONSTANT_InvokeDynamic, invokeDynamic.getTag());
+        BootstrapMethod bootstrapMethod = classFile.getBootstrapMethods().get(invokeDynamic.getBootstrapMethod());
+        assertEquals("[23, 24, 25]", Arrays.toString(bootstrapMethod.getArguments()));
+        CPMethodHandleInfo bootstrapMH = (CPMethodHandleInfo) classFile.getConstantPool().get(bootstrapMethod.getMethodRef());
+        assertEquals(ConstantPool.CONSTANT_MethodHandle, bootstrapMH.getTag());
+        assertEquals(ReferenceKind.invokeStatic, bootstrapMH.getReferenceKind());
+        CPMethodInfo bootstrapMethodInfo = (CPMethodInfo) classFile.getConstantPool().get(bootstrapMH.getReference());
+        assertEquals("CallSite metaFactory(MethodHandles$Lookup,String,MethodType,MethodHandle,MethodHandle,MethodType)", bootstrapMethodInfo.getFullMethodName());
+        CPNameAndTypeInfo nameAndType = (CPNameAndTypeInfo) classFile.getConstantPool().get(invokeDynamic.getNameAndType());
+        assertEquals("()Ljava/lang/Runnable;", nameAndType.getDescriptor());
+        assertEquals("lambda", nameAndType.getName());
+        CPMethodTypeInfo methodType = (CPMethodTypeInfo) classFile.getConstantPool().get(25);
+        assertEquals(ConstantPool.CONSTANT_MethodType, methodType.getTag());
+        CPUTF8Info descriptor = (CPUTF8Info) classFile.getConstantPool().get(methodType.getDescriptor());
+        assertEquals("()V", descriptor.getName());
     }
 }

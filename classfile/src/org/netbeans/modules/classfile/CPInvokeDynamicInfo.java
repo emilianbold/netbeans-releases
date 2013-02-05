@@ -68,7 +68,15 @@ public class CPInvokeDynamicInfo extends CPEntry {
     }
 
     public int getTag() {
-	return ConstantPool.CONSTANT_NameAndType;
+	return ConstantPool.CONSTANT_InvokeDynamic;
+    }
+    
+    public int getBootstrapMethod() {
+        return iBootstrapMethod;
+    }
+    
+    public int getNameAndType() {
+        return iNameAndType;
     }
 
     @Override
