@@ -91,7 +91,10 @@ import org.openide.util.NbBundle.Messages;
         displayName = "#LBL_DisplayName_GroovyScript",
         iconBase = "org/netbeans/modules/groovy/support/resources/GroovyFile16x16.png",
         description = "/org/netbeans/modules/groovy/support/resources/GroovyScript.html",
-        category = {"groovy", "java-main-class"}),
+        category = {
+            "groovy",
+            "java-main-class"
+        }),
 
     @TemplateRegistration(
         folder = "Groovy",
@@ -101,7 +104,10 @@ import org.openide.util.NbBundle.Messages;
         displayName = "#LBL_DisplayName_GroovyClass",
         iconBase = "org/netbeans/modules/groovy/support/resources/GroovyFile16x16.png",
         description = "/org/netbeans/modules/groovy/support/resources/GroovyClass.html",
-        category = {"groovy", "java-main-class"})
+        category = {
+            "groovy",
+            "java-main-class"
+        })
 })
 public class GroovyFileWizardIterator implements WizardDescriptor.ProgressInstantiatingIterator {
 
@@ -136,7 +142,7 @@ public class GroovyFileWizardIterator implements WizardDescriptor.ProgressInstan
         return strategy.moveSourceFolderAsFirst(groups);
     }
 
-    private WizardDescriptor.Panel[] createPanels (WizardDescriptor wizardDescriptor) {
+    private WizardDescriptor.Panel[] createPanels(WizardDescriptor wizardDescriptor) {
         Sources sources = ProjectUtils.getSources(project);
         List<SourceGroup> sourceGroups = GroovySources.getGroovySourceGroups(sources);
 
@@ -160,7 +166,7 @@ public class GroovyFileWizardIterator implements WizardDescriptor.ProgressInstan
         if (before == null) {
             before = new String[0];
         } else if (before.length > 0) {
-            diff = ("...".equals (before[before.length - 1])) ? 1 : 0; // NOI18N
+            diff = ("...".equals(before[before.length - 1])) ? 1 : 0; // NOI18N
         }
         String[] res = new String[ (before.length - diff) + panels.length];
         for (int i = 0; i < res.length; i++) {
@@ -216,14 +222,14 @@ public class GroovyFileWizardIterator implements WizardDescriptor.ProgressInstan
 
         this.wiz = wiz;
         index = 0;
-        panels = createPanels( wiz );
+        panels = createPanels(wiz);
         // Make sure list of steps is accurate.
         String[] beforeSteps = null;
-        Object prop = wiz.getProperty (WizardDescriptor.PROP_CONTENT_DATA); // NOI18N
+        Object prop = wiz.getProperty(WizardDescriptor.PROP_CONTENT_DATA); // NOI18N
         if (prop != null && prop instanceof String[]) {
-            beforeSteps = (String[])prop;
+            beforeSteps = (String[]) prop;
         }
-        String[] steps = createSteps (beforeSteps, panels);
+        String[] steps = createSteps(beforeSteps, panels);
         for (int i = 0; i < panels.length; i++) {
             Component c = panels[i].getComponent();
             if (steps[i] == null) {
@@ -233,7 +239,7 @@ public class GroovyFileWizardIterator implements WizardDescriptor.ProgressInstan
                 steps[i] = c.getName();
             }
             if (c instanceof JComponent) { // assume Swing components
-                JComponent jc = (JComponent)c;
+                JComponent jc = (JComponent) c;
                 // Step #.
                 jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, Integer.valueOf(i)); // NOI18N
                 // Step name (actually the whole list for reference).
@@ -259,7 +265,7 @@ public class GroovyFileWizardIterator implements WizardDescriptor.ProgressInstan
     }
 
     @Override
-    public void uninitialize (WizardDescriptor wiz) {
+    public void uninitialize(WizardDescriptor wiz) {
         this.wiz = null;
         panels = null;
     }
@@ -280,12 +286,16 @@ public class GroovyFileWizardIterator implements WizardDescriptor.ProgressInstan
     }
     @Override
     public void nextPanel() {
-        if (!hasNext()) throw new NoSuchElementException();
+        if (!hasNext()) {
+            throw new NoSuchElementException();
+        }
         index++;
     }
     @Override
     public void previousPanel() {
-        if (!hasPrevious()) throw new NoSuchElementException();
+        if (!hasPrevious()) {
+            throw new NoSuchElementException();
+        }
         index--;
     }
     @Override
