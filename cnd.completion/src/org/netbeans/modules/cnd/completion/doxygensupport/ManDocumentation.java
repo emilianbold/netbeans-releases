@@ -60,11 +60,14 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.zip.GZIPInputStream;
 import javax.swing.Action;
+import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
+import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.project.NativeProjectSupport.NativeExitStatus;
 import org.netbeans.modules.cnd.api.project.NativeProject;
@@ -109,6 +112,13 @@ public class ManDocumentation {
     public static CompletionDocumentation getDocumentation(CsmObject obj, CsmFile file) throws IOException {
         if (CsmKindUtilities.isFunction(obj) && !CsmKindUtilities.isClassMember(obj)) {
             return getDocumentation(((CsmFunction) obj).getName().toString(), file);
+        } else if (CsmKindUtilities.isClass(obj)) {
+            return getDocumentation(((CsmClass) obj).getName().toString(), file);
+        } else if (CsmKindUtilities.isClassMember(obj)) {
+            CsmScope scope = ((CsmMember) obj).getScope();
+            if (CsmKindUtilities.isClass(scope)) {
+                return getDocumentation(((CsmClass) scope).getName().toString(), file);
+            }
         }
         return null;
     }
