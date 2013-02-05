@@ -94,6 +94,27 @@ public class PHPHintsProvider implements HintsProvider {
 
     @Override
     public void computeSuggestions(HintsManager mgr, RuleContext context, List<Hint> suggestions, int caretOffset) {
+        Map<?, List<? extends AstRule>> hintsOnLine = mgr.getHints(true, context);
+        List<? extends AstRule> defaultHintsOnLine = hintsOnLine.get(DEFAULT_HINTS);
+        if (defaultHintsOnLine != null) {
+            PHPRuleContext ruleContext = initializeContext(context);
+            for (AstRule defaultHintOnLine : defaultHintsOnLine) {
+                if (mgr.isEnabled(defaultHintOnLine)) {
+                    if (defaultHintOnLine instanceof PHPRuleWithPreferences) {
+                        PHPRuleWithPreferences icm = (PHPRuleWithPreferences) defaultHintOnLine;
+                        icm.setPreferences(mgr.getPreferences(defaultHintOnLine));
+                    }
+                    if (defaultHintOnLine instanceof CaretSensitive) {
+                        CaretSensitive icm = (CaretSensitive) defaultHintOnLine;
+                        try {
+                            icm.compute(ruleContext, suggestions, caretOffset);
+                        } catch (BadLocationException ex) {
+                            return;
+                        }
+                    }
+                }
+            }
+        }
         Map<?, List<? extends Rule.AstRule>> allHints = mgr.getSuggestions();
         List<? extends AstRule> modelHints = allHints.get(DEFAULT_SUGGESTIONS);
         if (modelHints != null) {
