@@ -95,13 +95,14 @@ public final class ClusteredIndexables {
      * Creates new ClusteredIndexables
      * @param indexables, requires a list with fast {@link List#get(int)} as it heavily calls it.
      */
-    public ClusteredIndexables(List<Indexable> indexables) {
+    public ClusteredIndexables(@NonNull final List<Indexable> indexables) {
         Parameters.notNull("indexables", indexables); //NOI18N  
         this.indexables = indexables;        
         this.sorted = new BitSet(indexables.size());
     }
 
-    public Iterable<Indexable> getIndexablesFor(String mimeType) {
+    @NonNull
+    public Iterable<Indexable> getIndexablesFor(@NullAllowed String mimeType) {
             if (mimeType == null) {
                 mimeType = ALL_MIME_TYPES;
             }
