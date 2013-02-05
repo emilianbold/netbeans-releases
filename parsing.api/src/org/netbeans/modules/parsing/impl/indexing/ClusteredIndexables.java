@@ -166,7 +166,8 @@ public final class ClusteredIndexables {
     private static interface IndexedIterator<T> extends Iterator<T> {
         int index();
     }
-    
+
+    //<editor-fold defaultstate="collapsed" desc="All Indexables">
     private static final class AllIndexablesIt implements IndexedIterator<Indexable> {
 
         private final Iterator<? extends Indexable> delegate;
@@ -199,7 +200,7 @@ public final class ClusteredIndexables {
         }
         
     }
-
+    
     private final class AllIndexables implements Iterable<Indexable> {
 
         @Override
@@ -208,7 +209,9 @@ public final class ClusteredIndexables {
         }
 
     }
+    //</editor-fold>
 
+    //<editor-fold defaultstate="collapsed" desc="BitSet Based Indexables">
     private final class BitSetIterator implements IndexedIterator<Indexable> {
 
         private final BitSet bs;
@@ -259,7 +262,9 @@ public final class ClusteredIndexables {
             return ClusteredIndexables.this.currentIt = new BitSetIterator(bs);
         }
     }
+    //</editor-fold>
 
+    //<editor-fold defaultstate="collapsed" desc="DocumentIndexCache Implementation">
     private static final class DocumentIndexCacheImpl implements AttachableDocumentIndexCache {
       
         private ClusteredIndexables deleteIndexables;
@@ -436,7 +441,9 @@ public final class ClusteredIndexables {
             return dataRef.get() == null;
         }
     }
+    //</editor-fold>
 
+    //<editor-fold defaultstate="collapsed" desc="Flushing Soft Reference">
     private static final class ClearReference extends SoftReference<Collection[]> implements Runnable, Callable<Void> {
 
         private final DocumentIndexCacheImpl owner;
@@ -480,7 +487,9 @@ public final class ClusteredIndexables {
             return null;
         }
     }
-    
+    //</editor-fold>
+
+    //<editor-fold defaultstate="collapsed" desc="Removed Keys Collection">
     private static class RemovedCollection extends AbstractCollection<String> {
         
         private final List<? extends String> outOfOrder;
@@ -677,7 +686,9 @@ public final class ClusteredIndexables {
             
         }
     }
+    //</editor-fold>
 
+    //<editor-fold defaultstate="collapsed" desc="Added IndexDocuments Collection (optimized for high number of fields).">
     private static final class DocumentStore implements Collection<IndexDocument>{
 
         private static final int INITIAL_DOC_COUNT = 100;
@@ -831,6 +842,7 @@ public final class ClusteredIndexables {
             return currentLength;
         }
 
+        //<editor-fold defaultstate="collapsed" desc="Added IndexDocuments Iterator">
         private class It implements Iterator<IndexDocument> {
 
             private int cur = 0;
@@ -880,7 +892,9 @@ public final class ClusteredIndexables {
             public void remove() {
             }
         }
+        //</editor-fold>
 
+        //<editor-fold defaultstate="collapsed" desc="In Memory IndexDocument (in to cache)">
         private static final class MemoryIndexDocument implements IndexDocument {
 
             private static final String FIELD_PRIMARY_KEY = "_sn";  //NOI18N
@@ -935,7 +949,9 @@ public final class ClusteredIndexables {
                 return new Field(FIELD_PRIMARY_KEY, primaryKey, Field.Store.YES, Field.Index.NOT_ANALYZED_NO_NORMS);
             }
         }
+        //</editor-fold>
 
     }
+    //</editor-fold>
 
 }
