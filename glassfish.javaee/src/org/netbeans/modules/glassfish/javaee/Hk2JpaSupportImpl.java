@@ -101,10 +101,10 @@ public class Hk2JpaSupportImpl implements JpaSupportImplementation {
     /**
      * GlassFish JPA support matrix:<p/><table>
      * <tr><th>GlassFish</th><th>JPA 1.0</th><th>JPA 2.0</th><th>JPA 2.1</th></tr>
-     * <tr><th>V1</th><td>YES</td>NO</td>NO</td></tr>
-     * <tr><th>V2</th><td>YES</td>NO</td>NO</td></tr>
-     * <tr><th>V3</th><td>YES</td>YES</td>NO</td></tr>
-     * <tr><th>V4</th><td>YES</td>YES</td>YES</td></tr>
+     * <tr><th>V1</th><td>YES</td><td>NO</td><td>NO</td></tr>
+     * <tr><th>V2</th><td>YES</td><td>NO</td><td>NO</td></tr>
+     * <tr><th>V3</th><td>YES</td><td>YES</td><td>NO</td></tr>
+     * <tr><th>V4</th><td>YES</td><td>YES</td><td>YES</td></tr>
      * </table>
      */
     private static final JpaSupportVector jpaSupport[]
