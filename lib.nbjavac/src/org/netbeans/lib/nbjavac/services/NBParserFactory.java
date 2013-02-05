@@ -57,6 +57,7 @@ import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.Name;
 import com.sun.tools.javac.util.Names;
+import com.sun.tools.javac.util.Position;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Stack;
@@ -97,6 +98,7 @@ public class NBParserFactory extends ParserFactory {
     public JavacParser newParser(CharSequence input, int startPos, final EndPosTable endPos) {
         Scanner lexer = scannerFactory.newScanner(input, true);
         lexer.seek(startPos);
+        ((NBJavacParser.EndPosTableImpl)endPos).resetErrorEndPos();
         return new NBJavacParser(this, lexer, true, false, true, cancelService) {
             @Override protected AbstractEndPosTable newEndPosTable(boolean keepEndPositions) {
                 return new AbstractEndPosTable() {
@@ -188,6 +190,11 @@ public class NBParserFactory extends ParserFactory {
         }
         
         public final class EndPosTableImpl extends SimpleEndPosTable {
+            
+            private void resetErrorEndPos() {
+                errorEndPos = Position.NOPOS;
+            }
+            
             @Override public void storeEnd(JCTree tree, int endpos) {
                 if (endpos >= 0)
                     super.storeEnd(tree, endpos);
