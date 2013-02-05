@@ -108,7 +108,7 @@ public final class ExternalBrowserPlugin {
     private ExternalBrowserPlugin() {
         listeners = new CopyOnWriteArrayList<MessageListener>();
         try {
-            server = new WebSocketServer(new InetSocketAddress(PORT), new BrowserPluginHandler());
+            server = new WebSocketServer(new InetSocketAddress("localhost", PORT), new BrowserPluginHandler()); // NOI18N
             server.start();
 
             Thread shutdown = new Thread(){

@@ -354,6 +354,10 @@ made subject to such option by the copyright holder.
                 <folder name="suggestions">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.hints.resources.Bundle"/>
                 </folder>
+                
+                <folder name="testing">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.hints.resources.Bundle"/>
+                </folder>
             </folder>
 
             <folder name="suggestions">
