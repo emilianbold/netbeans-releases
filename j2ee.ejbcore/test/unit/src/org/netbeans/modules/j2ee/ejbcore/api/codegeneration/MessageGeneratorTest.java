@@ -50,6 +50,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.netbeans.modules.j2ee.common.J2eeProjectCapabilities;
 import org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException;
 import org.netbeans.modules.j2ee.dd.api.ejb.ActivationConfig;
 import org.netbeans.modules.j2ee.dd.api.ejb.ActivationConfigProperty;
@@ -175,7 +176,8 @@ public class MessageGeneratorTest extends TestBase {
         
         // Queue based MessageDriven EJB in Java EE 5 defined in annotation
         MessageDestination messageDestination = new MessageDestinationImpl("TestMessageDestination", MessageDestination.Type.QUEUE);
-        MdbPropertiesPanelVisual panel = new MdbPropertiesPanelVisual(null);
+        J2eeProjectCapabilities j2eeProjectCapabilities = J2eeProjectCapabilities.forProject(testModule.getProject());
+        MdbPropertiesPanelVisual panel = new MdbPropertiesPanelVisual(j2eeProjectCapabilities);
         panel.setDefaultProperties(messageDestination);
         Map<String, String> properties = panel.getProperties();
         MessageGenerator generator = new MessageGenerator("TestMDBQueueBean", packageFileObject, messageDestination, true, properties, true);
@@ -212,7 +214,8 @@ public class MessageGeneratorTest extends TestBase {
 
         // Queue based MessageDriven EJB in Java EE 7 defined in annotation
         MessageDestination messageDestination = new MessageDestinationImpl("TestMessageDestination", MessageDestination.Type.QUEUE);
-        MdbPropertiesPanelVisual panel = new MdbPropertiesPanelVisual(null);
+        J2eeProjectCapabilities j2eeProjectCapabilities = J2eeProjectCapabilities.forProject(testModule.getProject());
+        MdbPropertiesPanelVisual panel = new MdbPropertiesPanelVisual(j2eeProjectCapabilities);
         panel.setDefaultProperties(messageDestination);
         Map<String, String> properties = panel.getProperties();
 
@@ -262,5 +265,5 @@ public class MessageGeneratorTest extends TestBase {
         }
         
     }
-    
+
 }
