@@ -46,19 +46,34 @@ package org.netbeans.modules.j2ee.ejbcore.ejb.wizard.mdb;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.IOException;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.SourceUtils;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
 import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.ejbcore.ejb.wizard.MultiTargetChooserPanel;
 import org.netbeans.modules.j2ee.ejbcore.naming.EJBNameOptions;
+import org.netbeans.spi.java.classpath.ClassPathProvider;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.ChangeSupport;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 
 public class MdbLocationPanel implements WizardDescriptor.FinishablePanel {
 
@@ -84,6 +99,9 @@ public class MdbLocationPanel implements WizardDescriptor.FinishablePanel {
         changeSupport.removeChangeListener(changeListener);
     }
 
+    @Messages({
+        "MdbLocationPanel.warn.scanning.in.progress=Scanning in progress, message destination don't have to be complete"
+    })
     @Override
     public boolean isValid() {
         Project project = Templates.getProject(wizardDescriptor);
@@ -105,25 +123,24 @@ public class MdbLocationPanel implements WizardDescriptor.FinishablePanel {
             }
         }
 
-        //TODO: RETOUCHE waitScanFinished
-//        if (JavaMetamodel.getManager().isScanInProgress()) {
-//            if (!isWaitingForScan) {
-//                isWaitingForScan = true;
-//                RequestProcessor.getDefault().post(new Runnable() {
-//                    public void run() {
-//                        JavaMetamodel.getManager().waitScanFinished();
-//                        fireChangeEvent();
-//                    }
-//                });
-//            }
-//            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(MessageEJBWizardPanel.class,"scanning-in-progress")); //NOI18N
-//            return false;
-//        }
-
-        // XXX add the following checks
-        // p.getName = valid NmToken
-        // p.getName not already in module
-        // remote and or local is selected
+        if (SourceUtils.isScanInProgress()) {
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, Bundle.MdbLocationPanel_warn_scanning_in_progress());
+            ClasspathInfo classPathInfo = getClassPathInfo(project);
+            JavaSource javaSource = JavaSource.create(classPathInfo);
+            try {
+                javaSource.runWhenScanFinished(new Task<CompilationController>() {
+                    @Override
+                    public void run(CompilationController parameter) throws Exception {
+                        fireChangeEvent();
+                    }
+                }, true);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            if (locationPanel.getDestination() == null || locationPanel.getDestination().getName().isEmpty()) {
+                return false;
+            }
+        }
 
         // component/panel validation
         getComponent();
@@ -133,12 +150,11 @@ public class MdbLocationPanel implements WizardDescriptor.FinishablePanel {
                     NbBundle.getMessage(MdbLocationPanel.class, "ERR_NoDestinationSelected"));
             return false;
         }
-        // XXX warn about missing server (or error? or not needed?)
+
         if (!locationPanel.isServerConfigured()) {
             wizardDescriptor.putProperty(
                     WizardDescriptor.PROP_ERROR_MESSAGE, //NOI18N
                     NbBundle.getMessage(MdbLocationPanel.class, "ERR_MissingServer"));
-            //return false;
         }
         return true;
     }
@@ -194,5 +210,39 @@ public class MdbLocationPanel implements WizardDescriptor.FinishablePanel {
      */
     public MessageDestination getDestination() {
         return locationPanel.getDestination();
+    }
+
+    private ClasspathInfo getClassPathInfo(Project project) {
+        return ClasspathInfo.create(
+                getClassPath(project, ClassPath.BOOT),
+                getClassPath(project, ClassPath.COMPILE),
+                getClassPath(project, ClassPath.SOURCE));
+    }
+
+    /**
+     * Returns classpath for given type.
+     * @param type a classpath type such as {@link ClassPath#COMPILE}
+     * @return generated read-only project's classpath of given type
+     */
+    private static ClassPath getClassPath(Project project, String type) {
+        ClassPathProvider provider = project.getLookup().lookup(ClassPathProvider.class);
+        if (provider == null) {
+            return null;
+        }
+
+        Sources sources = ProjectUtils.getSources(project);
+        if (sources == null) {
+            return null;
+        }
+
+        SourceGroup[] sourceGroups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA); //NOII18N
+        ClassPath[] paths = new ClassPath[sourceGroups.length];
+        int i = 0;
+        for (SourceGroup sourceGroup : sourceGroups) {
+            FileObject rootFolder = sourceGroup.getRootFolder();
+            paths[i] = provider.findClassPath(rootFolder, type);
+            i++;
+        }
+        return ClassPathSupport.createProxyClassPath(paths);
     }
 }
