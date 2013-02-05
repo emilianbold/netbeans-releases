@@ -489,8 +489,10 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl2 {
                             new Hk2JaxWsStack(gfRootStr, this), WSStack.Source.SERVER);
                     WSStack<JaxRpc> rpcStack = WSStackFactory.createWSStack(JaxRpc.class,
                             new Hk2JaxRpcStack(gfRootStr), WSStack.Source.SERVER);
-                    Lookup baseLookup = Lookups.fixed(gfRootStr, new JaxRsStackSupportImpl(),
-                            wsStack, rpcStack);
+                    Lookup baseLookup = Lookups.fixed(gfRootStr,
+                            new JaxRsStackSupportImpl(), wsStack, rpcStack,
+                            new Hk2JpaSupportImpl(
+                            dm.getCommonServerSupport().getInstance()));
                     lkp = LookupProviderSupport.createCompositeLookup(baseLookup, pf.getLookupKey());
                 }
             }
