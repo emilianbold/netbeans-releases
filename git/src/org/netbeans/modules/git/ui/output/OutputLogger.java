@@ -232,6 +232,14 @@ public class OutputLogger {
         public Action getOpenOutputAction() {
             return null;
         }
+
+        @Override
+        public void outputFile (String message, File file, int linkStartPosition) {
+        }
+
+        @Override
+        public void outputInRed (String msg) {
+        }
     }
 
 }
