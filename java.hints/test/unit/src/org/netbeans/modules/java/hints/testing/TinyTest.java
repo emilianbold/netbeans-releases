@@ -153,4 +153,64 @@ public class TinyTest extends NbTestCase {
                 .findWarning("4:15-4:27:verifier:" + Bundle.ERR_assertEqualsForArrays())
                 .assertFixes();
     }
+
+    public void testAssertEqualsMismatchedConstantVSReal() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "import junit.framework.Assert;\n" +
+                       "public class Test {\n" +
+                       "    private void test(int actual) {\n" +
+                       "        Assert.assertEquals(actual, 0);\n" +
+                       "    }\n" +
+                       "}\n")
+                .classpath(FileUtil.getArchiveRoot(Assert.class.getProtectionDomain().getCodeSource().getLocation()))
+                .run(Tiny.class)
+                .findWarning("4:15-4:27:verifier:" + Bundle.ERR_assertEqualsMismatchedConstantVSReal())
+                .applyFix()
+                .assertCompilable()
+                .assertOutput("package test;\n" +
+                              "import junit.framework.Assert;\n" +
+                              "public class Test {\n" +
+                              "    private void test(int actual) {\n" +
+                              "        Assert.assertEquals(0, actual);\n" +
+                              "    }\n" +
+                              "}\n");
+    }
+    
+    public void testAssertEqualsMismatchedConstantVSReal2() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "import junit.framework.Assert;\n" +
+                       "public class Test {\n" +
+                       "    private void test(String actual) {\n" +
+                       "        Assert.assertEquals(\"a\", actual, \"golden\");\n" +
+                       "    }\n" +
+                       "}\n")
+                .classpath(FileUtil.getArchiveRoot(Assert.class.getProtectionDomain().getCodeSource().getLocation()))
+                .run(Tiny.class)
+                .findWarning("4:15-4:27:verifier:" + Bundle.ERR_assertEqualsMismatchedConstantVSReal())
+                .applyFix()
+                .assertCompilable()
+                .assertOutput("package test;\n" +
+                              "import junit.framework.Assert;\n" +
+                              "public class Test {\n" +
+                              "    private void test(String actual) {\n" +
+                              "        Assert.assertEquals(\"a\", \"golden\", actual);\n" +
+                              "    }\n" +
+                              "}\n");
+    }
+    
+    public void testAssertEqualsMismatchedConstantVSRealCorrect() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "import junit.framework.Assert;\n" +
+                       "public class Test {\n" +
+                       "    private void test(String actual) {\n" +
+                       "        Assert.assertEquals(\"a\", \"golden\", actual);\n" +
+                       "    }\n" +
+                       "}\n")
+                .classpath(FileUtil.getArchiveRoot(Assert.class.getProtectionDomain().getCodeSource().getLocation()))
+                .run(Tiny.class)
+                .assertWarnings();
+    }
 }

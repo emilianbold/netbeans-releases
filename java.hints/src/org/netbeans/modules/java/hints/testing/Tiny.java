@@ -41,12 +41,15 @@
  */
 package org.netbeans.modules.java.hints.testing;
 
+import com.sun.source.util.TreePath;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
+import org.netbeans.modules.java.hints.ArithmeticUtilities;
+import org.netbeans.modules.java.hints.errors.Utilities;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.java.hints.ConstraintVariableType;
@@ -54,6 +57,7 @@ import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.java.hints.Hint;
 import org.netbeans.spi.java.hints.HintContext;
 import org.netbeans.spi.java.hints.JavaFixUtilities;
+import org.netbeans.spi.java.hints.MatcherUtilities;
 import org.netbeans.spi.java.hints.TriggerPattern;
 import org.netbeans.spi.java.hints.TriggerPatterns;
 import org.openide.util.NbBundle.Messages;
@@ -65,7 +69,11 @@ import org.openide.util.NbBundle.Messages;
 @Messages({"DN_assertEqualsForArrays=assertEquals for array parameters",
            "DESC_assertEqualsForArrays=Warns about assertEquals whose parameters are arrays",
            "ERR_assertEqualsForArrays=Invoking Assert.assertEquals on arrays",
-           "FIX_assertEqualsForArrays=Use Assert.assertArrayEquals"})
+           "FIX_assertEqualsForArrays=Use Assert.assertArrayEquals",
+           "DN_assertEqualsMismatchedConstantVSReal=Incorrect order of parameters of Assert.assertEquals",
+           "DESC_assertEqualsMismatchedConstantVSReal=Incorrect order of parameters of Assert.assertEquals",
+           "ERR_assertEqualsMismatchedConstantVSReal=Order of parameters of Assert.assertEquals incorrect",
+           "FIX_assertEqualsMismatchedConstantVSReal=Flip parameters of Assert.assertEquals"})
 public class Tiny {
 
     @Hint(displayName="#DN_assertEqualsForArrays",
@@ -283,5 +291,42 @@ public class Tiny {
         } else {
             return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), Bundle.ERR_assertEqualsForArrays());
         }
+    }
+    
+    @Hint(displayName="#DN_assertEqualsMismatchedConstantVSReal",
+          description="#DESC_assertEqualsMismatchedConstantVSReal",
+          category="testing",
+          suppressWarnings="MisorderedAssertEqualsArguments")
+    @TriggerPatterns({
+        @TriggerPattern(value="junit.framework.Assert.assertEquals($expected, $actual)"),
+        @TriggerPattern(value="junit.framework.Assert.assertEquals($message, $expected, $actual)",
+                        constraints=@ConstraintVariableType(variable="$message", type="java.lang.String")
+                       ),
+        @TriggerPattern(value="org.junit.Assert.assertEquals($expected, $actual)"),
+        @TriggerPattern(value="org.junit.Assert.assertEquals($message, $expected, $actual)",
+                        constraints=@ConstraintVariableType(variable="$message", type="java.lang.String")
+                       )
+    })
+    public static ErrorDescription mismatchedConstantVSReal(HintContext ctx) {
+        if (isConstant(ctx, "$expected") || !isConstant(ctx, "$actual")) return null;
+        if (!MatcherUtilities.matches(ctx, ctx.getPath(), "$method($arguments$)", true)) return null;
+        
+        String targetPattern = null;
+        
+        if (ctx.getVariables().containsKey("$message")) {
+            targetPattern = "$method($message, $actual, $expected)";
+        } else {
+            targetPattern = "$method($actual, $expected)";
+        }
+        
+        Fix fix = JavaFixUtilities.rewriteFix(ctx, Bundle.FIX_assertEqualsMismatchedConstantVSReal(), ctx.getPath(), targetPattern);
+
+        return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), Bundle.ERR_assertEqualsMismatchedConstantVSReal(), fix);
+    }
+    
+    private static boolean isConstant(HintContext ctx, String variable) {
+        TreePath variablePath = ctx.getVariables().get(variable);
+        
+        return Utilities.isConstantString(ctx.getInfo(), variablePath, true) || ArithmeticUtilities.compute(ctx.getInfo(), variablePath, true) != null;
     }
 }
