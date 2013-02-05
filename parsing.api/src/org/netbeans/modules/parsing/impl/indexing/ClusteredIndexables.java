@@ -166,7 +166,8 @@ public final class ClusteredIndexables {
     private static interface IndexedIterator<T> extends Iterator<T> {
         int index();
     }
-    
+
+    //<editor-fold defaultstate="collapsed" desc="All Indexables">
     private static final class AllIndexablesIt implements IndexedIterator<Indexable> {
 
         private final Iterator<? extends Indexable> delegate;
@@ -199,7 +200,7 @@ public final class ClusteredIndexables {
         }
         
     }
-
+    
     private final class AllIndexables implements Iterable<Indexable> {
 
         @Override
@@ -208,7 +209,9 @@ public final class ClusteredIndexables {
         }
 
     }
+    //</editor-fold>
 
+    //<editor-fold defaultstate="collapsed" desc="BitSet Based Indexables">
     private final class BitSetIterator implements IndexedIterator<Indexable> {
 
         private final BitSet bs;
@@ -259,7 +262,9 @@ public final class ClusteredIndexables {
             return ClusteredIndexables.this.currentIt = new BitSetIterator(bs);
         }
     }
+    //</editor-fold>
 
+    //<editor-fold defaultstate="collapsed" desc="DocumentIndexCache Implementation">
     private static final class DocumentIndexCacheImpl implements AttachableDocumentIndexCache {
       
         private ClusteredIndexables deleteIndexables;
@@ -436,7 +441,9 @@ public final class ClusteredIndexables {
             return dataRef.get() == null;
         }
     }
+    //</editor-fold>
 
+    //<editor-fold defaultstate="collapsed" desc="Flushing Soft Reference">
     private static final class ClearReference extends SoftReference<Collection[]> implements Runnable, Callable<Void> {
 
         private final DocumentIndexCacheImpl owner;
@@ -480,7 +487,9 @@ public final class ClusteredIndexables {
             return null;
         }
     }
-    
+    //</editor-fold>
+
+    //<editor-fold defaultstate="collapsed" desc="Removed Keys Collection">
     private static class RemovedCollection extends AbstractCollection<String> {
         
         private final List<? extends String> outOfOrder;
@@ -677,8 +686,10 @@ public final class ClusteredIndexables {
             
         }
     }
+    //</editor-fold>
 
-    private static final class DocumentStore implements Collection<IndexDocument>{
+    //<editor-fold defaultstate="collapsed" desc="Added IndexDocuments Collection (optimized for high number of fields).">
+    /*test*/ static final class DocumentStore extends AbstractCollection<IndexDocument>{
 
         private static final int INITIAL_DOC_COUNT = 100;
         private static final int INITIAL_DATA_SIZE = 1<<10;
@@ -690,6 +701,7 @@ public final class ClusteredIndexables {
         private int nameIndex;
         private int docsPointer;
         private int dataPointer;
+        private int size;
 
 
         DocumentStore() {
@@ -755,6 +767,7 @@ public final class ClusteredIndexables {
                 docs = newdocs;
             }
             docs[docsPointer++] = 0;
+            size++;
             return res;
         }
 
@@ -764,62 +777,24 @@ public final class ClusteredIndexables {
         }
 
         @Override
-        public boolean isEmpty() {
-            return docsPointer == 0;
-        }
-
-        @Override
         public void clear() {
             fieldNames.clear();
             docs = new int[INITIAL_DOC_COUNT];
             data = new char[INITIAL_DATA_SIZE];
             docsPointer = 0;
             dataPointer = 0;
+            nameIndex = 0;
+            size = 0;
         }
 
         @Override
         public int size() {
-            throw new UnsupportedOperationException();
+            return size;
         }
-
-        @Override
-        public boolean contains(Object o) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public Object[] toArray() {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public <T> T[] toArray(T[] a) {
-            throw new UnsupportedOperationException();
-        }
-       
+               
         @Override
         public boolean remove(Object o) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public boolean containsAll(Collection<?> c) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public boolean addAll(Collection<? extends IndexDocument> c) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public boolean removeAll(Collection<?> c) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public boolean retainAll(Collection<?> c) {
-            throw new UnsupportedOperationException();
+            throw new UnsupportedOperationException("Remove not supported.");   //NOI18N
         }
 
         private static int newLength(
@@ -831,6 +806,7 @@ public final class ClusteredIndexables {
             return currentLength;
         }
 
+        //<editor-fold defaultstate="collapsed" desc="Added IndexDocuments Iterator">
         private class It implements Iterator<IndexDocument> {
 
             private int cur = 0;
@@ -850,6 +826,9 @@ public final class ClusteredIndexables {
              */
             @Override
             public IndexDocument next() {
+                if (cur>=docsPointer) {
+                    throw new NoSuchElementException();
+                }
                 IndexDocument doc = null;
                 int nameIndex;
                 while ((nameIndex=docs[cur++]) != 0) {
@@ -880,7 +859,9 @@ public final class ClusteredIndexables {
             public void remove() {
             }
         }
+        //</editor-fold>
 
+        //<editor-fold defaultstate="collapsed" desc="In Memory IndexDocument (in to cache)">
         private static final class MemoryIndexDocument implements IndexDocument {
 
             private static final String FIELD_PRIMARY_KEY = "_sn";  //NOI18N
@@ -935,7 +916,9 @@ public final class ClusteredIndexables {
                 return new Field(FIELD_PRIMARY_KEY, primaryKey, Field.Store.YES, Field.Index.NOT_ANALYZED_NO_NORMS);
             }
         }
+        //</editor-fold>
 
     }
+    //</editor-fold>
 
 }
