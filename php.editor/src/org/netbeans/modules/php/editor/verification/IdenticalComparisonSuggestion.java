@@ -129,22 +129,14 @@ public class IdenticalComparisonSuggestion extends AbstractSuggestion {
 
         @Override
         public void scan(ASTNode node) {
-            if (node != null && (isBefore(node.getStartOffset(), lineRange.getEnd()))) {
+            if (node != null && (VerificationUtils.isBefore(node.getStartOffset(), lineRange.getEnd()))) {
                 super.scan(node);
             }
         }
 
-        private boolean isBefore(int carret, int end) {
-            return carret <= end;
-        }
-
-        private boolean isBetween(int carret, OffsetRange lineRange) {
-            return carret >= lineRange.getStart() && carret <= lineRange.getEnd();
-        }
-
         @Override
         public void visit(InfixExpression node) {
-            if (isBetween(node.getStartOffset(), lineRange)) {
+            if (VerificationUtils.isInside(node.getStartOffset(), lineRange)) {
                 processExpression(node);
             }
         }

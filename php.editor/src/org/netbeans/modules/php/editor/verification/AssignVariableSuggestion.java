@@ -135,14 +135,14 @@ public class AssignVariableSuggestion extends AbstractSuggestion {
 
         @Override
         public void scan(ASTNode node) {
-            if (node != null && (isBefore(node.getStartOffset(), lineEnd) || fix != null)) {
+            if (node != null && (VerificationUtils.isBefore(node.getStartOffset(), lineEnd) || fix != null)) {
                 super.scan(node);
             }
         }
 
         @Override
         public void visit(ExpressionStatement node) {
-            if (isInside(node.getStartOffset(), lineBegin, lineEnd)) {
+            if (VerificationUtils.isInside(node.getStartOffset(), lineBegin, lineEnd)) {
                 Expression expression = node.getExpression();
                 if (expression instanceof IgnoreError) {
                     expression = ((IgnoreError) expression).getExpression();
@@ -310,14 +310,6 @@ public class AssignVariableSuggestion extends AbstractSuggestion {
         protected String getVariableName() {
             return super.getVariableName(guessName);
         }
-    }
-
-    private static boolean isInside(int carret, int left, int right) {
-        return carret >= left && carret <= right;
-    }
-
-    private static boolean isBefore(int carret, int margin) {
-        return carret <= margin;
     }
 
     private static String firstToLower(String name) {

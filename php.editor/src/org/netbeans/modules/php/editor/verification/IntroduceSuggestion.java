@@ -170,14 +170,14 @@ public class IntroduceSuggestion extends AbstractSuggestion {
 
         @Override
         public void scan(ASTNode node) {
-            if (node != null && (isBefore(node.getStartOffset(), lineEnd))) {
+            if (node != null && (VerificationUtils.isBefore(node.getStartOffset(), lineEnd))) {
                 super.scan(node);
             }
         }
 
         @Override
         public void visit(ClassInstanceCreation instanceCreation) {
-            if (isInside(instanceCreation.getStartOffset(), lineBegin, lineEnd)) {
+            if (VerificationUtils.isInside(instanceCreation.getStartOffset(), lineBegin, lineEnd)) {
                 String clzName = CodeUtils.extractClassName(instanceCreation.getClassName());
                 clzName = (clzName != null && clzName.trim().length() > 0) ? clzName : null;
                 ElementQuery.Index index = model.getIndexScope().getIndex();
@@ -197,7 +197,7 @@ public class IntroduceSuggestion extends AbstractSuggestion {
 
         @Override
         public void visit(MethodInvocation methodInvocation) {
-            if (isInside(methodInvocation.getStartOffset(), lineBegin, lineEnd)) {
+            if (VerificationUtils.isInside(methodInvocation.getStartOffset(), lineBegin, lineEnd)) {
                 String methName = CodeUtils.extractFunctionName(methodInvocation.getMethod());
                 if (StringUtils.hasText(methName)) {
                     Collection<? extends TypeScope> allTypes = ModelUtils.resolveType(model, methodInvocation);
@@ -220,7 +220,7 @@ public class IntroduceSuggestion extends AbstractSuggestion {
 
         @Override
         public void visit(StaticMethodInvocation methodInvocation) {
-            if (isInside(methodInvocation.getStartOffset(), lineBegin, lineEnd)) {
+            if (VerificationUtils.isInside(methodInvocation.getStartOffset(), lineBegin, lineEnd)) {
                 String methName = CodeUtils.extractFunctionName(methodInvocation.getMethod());
                 String clzName = CodeUtils.extractUnqualifiedClassName(methodInvocation);
 
@@ -247,7 +247,7 @@ public class IntroduceSuggestion extends AbstractSuggestion {
 
         @Override
         public void visit(FieldAccess fieldAccess) {
-            if (isInside(fieldAccess.getStartOffset(), lineBegin, lineEnd)) {
+            if (VerificationUtils.isInside(fieldAccess.getStartOffset(), lineBegin, lineEnd)) {
                 String fieldName = CodeUtils.extractVariableName(fieldAccess.getField());
                 if (StringUtils.hasText(fieldName)) {
                     Collection<? extends TypeScope> allTypes = ModelUtils.resolveType(model, fieldAccess);
@@ -271,7 +271,7 @@ public class IntroduceSuggestion extends AbstractSuggestion {
 
         @Override
         public void visit(StaticFieldAccess fieldAccess) {
-            if (isInside(fieldAccess.getStartOffset(), lineBegin, lineEnd)) {
+            if (VerificationUtils.isInside(fieldAccess.getStartOffset(), lineBegin, lineEnd)) {
                 final Variable field = fieldAccess.getField();
                 String clzName = CodeUtils.extractUnqualifiedClassName(fieldAccess);
                 if (clzName != null) {
@@ -307,7 +307,7 @@ public class IntroduceSuggestion extends AbstractSuggestion {
 
         @Override
         public void visit(StaticConstantAccess staticConstantAccess) {
-            if (isInside(staticConstantAccess.getStartOffset(), lineBegin, lineEnd)) {
+            if (VerificationUtils.isInside(staticConstantAccess.getStartOffset(), lineBegin, lineEnd)) {
                 String constName = staticConstantAccess.getConstant().getName();
                 String clzName = CodeUtils.extractUnqualifiedClassName(staticConstantAccess);
 
@@ -706,14 +706,6 @@ public class IntroduceSuggestion extends AbstractSuggestion {
         public boolean isSafe() {
             return true;
         }
-    }
-
-    private static boolean isInside(int carret, int left, int right) {
-        return carret >= left && carret <= right;
-    }
-
-    private static boolean isBefore(int carret, int margin) {
-        return carret <= margin;
     }
 
     private static String getParameters(final List<Expression> parameters) {

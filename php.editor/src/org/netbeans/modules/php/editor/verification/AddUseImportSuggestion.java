@@ -135,14 +135,6 @@ public class AddUseImportSuggestion extends AbstractSuggestion {
         }
     }
 
-    private static boolean isInside(int carret, int left, int right) {
-        return carret >= left && carret <= right;
-    }
-
-    private static boolean isBefore(int carret, int margin) {
-        return carret <= margin;
-    }
-
     private class CheckVisitor extends DefaultTreePathVisitor {
 
         private int lineBegin;
@@ -164,14 +156,14 @@ public class AddUseImportSuggestion extends AbstractSuggestion {
 
         @Override
         public void scan(ASTNode node) {
-            if (node != null && (isBefore(node.getStartOffset(), lineEnd))) {
+            if (node != null && (VerificationUtils.isBefore(node.getStartOffset(), lineEnd))) {
                 super.scan(node);
             }
         }
 
         @Override
         public void visit(NamespaceName node) {
-            if (isInside(node.getStartOffset(), lineBegin, lineEnd)) {
+            if (VerificationUtils.isInside(node.getStartOffset(), lineBegin, lineEnd)) {
                 NamespaceDeclaration currenNamespace = null;
                 List<ASTNode> path = getPath();
                 ASTNode parentNode = path.get(0);
@@ -213,7 +205,7 @@ public class AddUseImportSuggestion extends AbstractSuggestion {
 
         @Override
         public void visit(Scalar node) {
-            if (isInside(node.getStartOffset(), lineBegin, lineEnd)) {
+            if (VerificationUtils.isInside(node.getStartOffset(), lineBegin, lineEnd)) {
                 NamespaceDeclaration currenNamespace = null;
                 for (ASTNode oneNode : getPath()) {
                     if (oneNode instanceof NamespaceDeclaration) {
