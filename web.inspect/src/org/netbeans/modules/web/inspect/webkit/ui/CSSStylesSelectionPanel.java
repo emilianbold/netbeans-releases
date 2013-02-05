@@ -973,12 +973,14 @@ public class CSSStylesSelectionPanel extends JPanel {
                 Resource ruleOrigin = node.getLookup().lookup(Resource.class);
                 if (ruleOrigin != null) {
                     FileObject fob = ruleOrigin.toFileObject();
-                    if (fob != null) {
-                        String fileName = fob.getNameExt();
-                        // Source line seems to be 0-based (i.e. is 0 for the first line).
-                        int sourceLine = rule.getSourceLine() + 1;
-                        ruleLocation = fileName + ":" + sourceLine; // NOI18N
+                    if (fob == null) {
+                        ruleLocation = rule.getSourceURL();
+                    } else {
+                        ruleLocation = fob.getNameExt();
                     }
+                    // Source line seems to be 0-based (i.e. is 0 for the first line).    
+                    int sourceLine = rule.getSourceLine() + 1;
+                    ruleLocation += ":" + sourceLine; // NOI18N
                 }
                 ruleLocationLabel.setVisible(ruleLocation != null);
                 if (ruleLocation != null) {
