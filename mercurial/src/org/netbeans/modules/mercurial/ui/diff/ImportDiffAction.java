@@ -211,7 +211,10 @@ public class ImportDiffAction extends ContextAction {
                             if (bConfirmMerge) {
                                 logger.output(""); // NOI18N
                                 logger.outputInRed(NbBundle.getMessage(ImportDiffAction.class, "MSG_UNBUNDLE_MERGE_DO")); // NOI18N
-                                updatedFilesList = MergeAction.doMergeAction(repository, null, logger);
+                                List<String> mergeResult = MergeAction.doMergeAction(repository, null, logger);
+                                if (mergeResult != null) {
+                                    updatedFilesList.addAll(mergeResult);
+                                }
                             } else {
                                 HgLogMessage[] heads = HgCommand.getHeadRevisionsInfo(repository, true, OutputLogger.getLogger(null));
                                 Map<String, Collection<HgLogMessage>> branchHeads = HgUtils.sortByBranch(heads);

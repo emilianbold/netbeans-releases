@@ -201,7 +201,9 @@ public abstract class RefactoringTask extends UserTask implements Runnable {
                             // This can happen in situation with dynamic type:
                             //    * def abc = new SomeClassName()
                             //    * abc.method()
-                            return new MethodRefactoringElement(fileObject, leafParent);
+                            return null;
+                            // We have to improve type interference for dynamic types --> see issue 219905
+                            // return new MethodRefactoringElement(fileObject, leafParent);
                         }
                     }
 

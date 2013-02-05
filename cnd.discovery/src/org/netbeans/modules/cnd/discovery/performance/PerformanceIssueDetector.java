@@ -298,13 +298,17 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
         boolean remoteSources = false;
         for (Project project : list) {
             RemoteProject remoteProject = project.getLookup().lookup(RemoteProject.class);
-            ExecutionEnvironment developmentHost = remoteProject.getDevelopmentHost();
-            if (developmentHost.isRemote()) {
-                remoteBuildHost = true;
-            }
-            ExecutionEnvironment sourceFileSystemHost = remoteProject.getSourceFileSystemHost();
-            if (sourceFileSystemHost.isRemote()) {
-                remoteSources = true;
+            if (remoteProject != null) {
+                ExecutionEnvironment developmentHost = remoteProject.getDevelopmentHost();
+                if (developmentHost != null) {
+                    if (developmentHost.isRemote()) {
+                        remoteBuildHost = true;
+                    }
+                }
+                ExecutionEnvironment sourceFileSystemHost = remoteProject.getSourceFileSystemHost();
+                if (sourceFileSystemHost.isRemote()) {
+                    remoteSources = true;
+                }
             }
         }
         final boolean isRemoteBuildHost = remoteBuildHost;

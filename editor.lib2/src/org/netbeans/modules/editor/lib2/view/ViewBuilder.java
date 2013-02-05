@@ -816,7 +816,6 @@ final class ViewBuilder {
                 // Only the bottommost highlights-view-factory should always respect the the limitOffset.
                 EditorView createdView = null;
                 int createdViewEndOffset;
-                boolean creationFailed = false;
                 if (createLocalViews) { // Regular views creation
                     // Prepare original view if possible
                     EditorView origView; // null means no view to reuse
@@ -893,7 +892,6 @@ final class ViewBuilder {
                     
                     createdView = state.factory.createView(creationOffset, limitOffset, forcedLimit, origView, nextOrigViewOffset);
                     if (createdView == null) { // Creation refused
-                        creationFailed = true;
                         createdViewEndOffset = -1; // Ignored; will not reach updateLine()
                     } else {
                         int viewLength = createdView.getLength();
@@ -902,13 +900,11 @@ final class ViewBuilder {
                     }
 
                 } else { // Do not create local views
+                    // createdViewEndOffset may be -1 to signal that factory does not want to create view here.
                     createdViewEndOffset = state.factory.viewEndOffset(creationOffset, limitOffset, forcedLimit);
-                    if (createdViewEndOffset == -1) { // Refused => Use a next factory
-                        creationFailed = true;
-                    }
                 }
 
-                if (creationFailed) {
+                if (createdViewEndOffset == -1) { // View creation refused by this factory
                     // Rescan the factory at next offset since it may request another view creation
                     // within the area which may lower limitOffset
                     state.updateNextViewStartOffset(creationOffset + 1);
@@ -916,7 +912,7 @@ final class ViewBuilder {
                         forcedLimit = true;
                         limitOffset = state.nextViewStartOffset;
                     }
-                    continue;
+                    continue; // Continue with next factory to possibly create a view
                 }
 
                 updateLine(createdViewEndOffset);
@@ -1234,7 +1230,7 @@ final class ViewBuilder {
             for (; pIndex < endIndex; pIndex++) {
                 ParagraphView pView = docView.getParagraphView(pIndex);
                 Shape pAlloc = docView.getChildAllocation(pIndex, docViewRect);
-                if (!pView.isChildrenNull()) {
+                if (pView.isChildrenNull()) {
                     LOG.info("Null children for accurate span at pIndex=" + // NOI18N
                         pIndex + "\nviewBuilder:\n" + this); // NOI18N
 //                        "\n\ndocView:\n" + docView.toStringDetailNeedsLock()); // NOI18N

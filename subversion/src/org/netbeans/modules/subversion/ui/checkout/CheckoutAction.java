@@ -48,6 +48,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import org.netbeans.modules.subversion.util.CheckoutCompleted;
 import java.io.File;
+import java.util.concurrent.Callable;
 import org.netbeans.modules.subversion.RepositoryFile;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.SvnModuleConfig;
@@ -55,6 +56,7 @@ import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.client.SvnClient;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.ui.wizards.*;
+import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
@@ -193,6 +195,7 @@ public final class CheckoutAction implements ActionListener, HelpCtx.Provider {
                                 final SvnProgressSupport support)
     throws SVNClientException
     {
+        final File[] destinations = new File[repositoryFiles.length];
         for (int i = 0; i < repositoryFiles.length; i++) {
             File destination;
             if(!atWorkingDirLevel) {
@@ -204,18 +207,25 @@ public final class CheckoutAction implements ActionListener, HelpCtx.Provider {
             } else {
                 destination = workingDir;
             }
-            if(support!=null && support.isCanceled()) { 
-                return;
-            }
-            if(doExport) {
-                client.doExport(repositoryFiles[i].getFileUrl(), destination, repositoryFiles[i].getRevision(), true);
-            } else {
-                client.checkout(repositoryFiles[i].getFileUrl(), destination, repositoryFiles[i].getRevision(), true);
-            }
-            if(support!=null && support.isCanceled()) {
-                return;                
-            }            
+            destinations[i] = destination;
         }
+        SvnUtils.runWithoutIndexing(new Callable<Void>() {
+            @Override
+            public Void call () throws Exception {
+                for (int i = 0; i < repositoryFiles.length; i++) {
+                    File destination = destinations[i];
+                    if(support!=null && support.isCanceled()) { 
+                        return null;
+                    }
+                    if(doExport) {
+                        client.doExport(repositoryFiles[i].getFileUrl(), destination, repositoryFiles[i].getRevision(), true);
+                    } else {
+                        client.checkout(repositoryFiles[i].getFileUrl(), destination, repositoryFiles[i].getRevision(), true);
+                    }
+                }
+                return null;
+            }
+        }, destinations);
     }
 
     private static void showCheckoutCompletet(

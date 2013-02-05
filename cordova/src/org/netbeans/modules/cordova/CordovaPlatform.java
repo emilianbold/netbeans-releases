@@ -70,7 +70,11 @@ public class CordovaPlatform {
     }
     
     public String getSdkLocation() {
-        return NbPreferences.forModule(CordovaPlatform.class).get(CORDOVA_SDK_ROOT_PREF, null);
+        String sdkLoc = NbPreferences.forModule(CordovaPlatform.class).get(CORDOVA_SDK_ROOT_PREF, null);
+        if (sdkLoc != null && sdkLoc.trim().isEmpty()) {
+            sdkLoc = null;
+        }
+        return sdkLoc;
     }
 
     public void setSdkLocation(String sdkLocation) {
