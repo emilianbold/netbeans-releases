@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.odcs.tasks.issue;
 
+import com.tasktop.c2c.server.tasks.domain.AbstractDomainObject;
 import org.netbeans.modules.bugtracking.util.AttachmentsPanel;
 import com.tasktop.c2c.server.tasks.domain.Keyword;
 import com.tasktop.c2c.server.tasks.domain.Milestone;
@@ -1129,7 +1130,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             } else if(value instanceof TaskStatus) {
                 value = ((TaskStatus) value).getValue();
             } else {
-                assert value instanceof String : "Wrong value";                 // NOI18N
+                assert value instanceof String : "Wrong value type : " + value.getClass().getName(); // NOI18N
             }
             return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
         }
