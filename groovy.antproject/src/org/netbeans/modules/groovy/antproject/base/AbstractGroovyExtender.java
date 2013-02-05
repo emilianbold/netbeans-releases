@@ -93,8 +93,10 @@ public abstract class AbstractGroovyExtender implements GroovyExtender {
 
 
     /**
-     * Checks only build script extension, not classpath, not excludes
-     * @return true if build script is modified with groovy extension
+     * Checks if the project has groovy activated. Please be aware that this method
+     * checks only build script extension, not ClassPath nor excludes
+     *
+     * @return true if the project has modified build-impl.xml with groovy extension
      */
     @Override
     public boolean isActive() {
@@ -113,7 +115,7 @@ public abstract class AbstractGroovyExtender implements GroovyExtender {
     }
 
     /**
-     * Add groovy-all.jar on classpath
+     * Add groovy-all.jar to the project ClassPath.
      */
     protected final boolean addClasspath() {
         Library groovyAllLib = LibraryManager.getDefault().getLibrary("groovy-all"); // NOI18N
@@ -137,7 +139,8 @@ public abstract class AbstractGroovyExtender implements GroovyExtender {
     }
 
     /**
-     * Removes groovy-all library from classpath
+     * Inverse operation to {@link #addClasspath()}.
+     * Removes groovy-all.jar from project ClassPath.
      */
     protected final boolean removeClasspath() {
         Library groovyAllLib = LibraryManager.getDefault().getLibrary("groovy-all"); // NOI18N
@@ -159,7 +162,7 @@ public abstract class AbstractGroovyExtender implements GroovyExtender {
     }
 
     /**
-     * Add *.groovy to excludes
+     * Add **\/*.groovy to build.classes.excludes.
      */
     protected final boolean addExcludes() {
         try {
@@ -177,7 +180,8 @@ public abstract class AbstractGroovyExtender implements GroovyExtender {
     }
 
     /**
-     * Removes *.groovy from excludes
+     * Inverse operation to {@link #addExcludes()}.
+     * Remove **\/*.groovy from build.classes.excludes.
      */
     protected final boolean removeExcludes() {
         try {
@@ -196,7 +200,11 @@ public abstract class AbstractGroovyExtender implements GroovyExtender {
     }
 
     /**
-     * Wrap javac into groovyc using imported groovy-build.xml
+     * Wraps javac into the groovyc using imported groovy-build.xml. Adds groovy-build.xml
+     * to the project, modifies build-impl.xml with respect to groovy compiler. This method
+     * has to be call on every project that needs to compile groovy scripts/classes.
+     *
+     * @return true if the groovy extension were successfully applied, false otherwise
      */
     protected final boolean addBuildScript() {
         AntBuildExtender extender = project.getLookup().lookup(AntBuildExtender.class);
@@ -223,6 +231,13 @@ public abstract class AbstractGroovyExtender implements GroovyExtender {
         return false;
     }
 
+    /**
+     * Inverse operation to {@link #addBuildScript()}. Removes groovy-build.xml
+     * from the project and reverts changes in build-impl.xml related to groovy
+     * activation.
+     *
+     * @return true if the groovy extension in build scripts were successfully deactivated
+     */
     protected final boolean removeBuildScript() {
         AntBuildExtender extender = project.getLookup().lookup(AntBuildExtender.class);
         if (extender != null && extender.getExtensibleTargets().contains(EXTENSIBLE_TARGET_NAME)) {
@@ -252,7 +267,9 @@ public abstract class AbstractGroovyExtender implements GroovyExtender {
     }
 
     /**
-     * Disables compile on save
+     * Disables compile on save for the project.
+     *
+     * @return true if CoS were disabled, false otherwise
      */
     protected final boolean addDisableCompileOnSaveProperty() {
         try {
@@ -267,7 +284,10 @@ public abstract class AbstractGroovyExtender implements GroovyExtender {
     }
 
     /**
-     * Enabled compile on save
+     * Inverse operation to {@link #addDisableCompileOnSaveProperty()}.
+     * Enabled compile on save for the project.
+     *
+     * @return true if CoS were enabled, false otherwise
      */
     protected final boolean removeDisableCompileOnSaveProperty() {
         try {
