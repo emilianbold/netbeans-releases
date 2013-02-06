@@ -113,7 +113,7 @@ public class AddUseImportSuggestion extends SuggestionRule {
     }
 
     @Override
-    public void compute(PHPRuleContext context, List<Hint> hints, int caretOffset) throws BadLocationException {
+    public void compute(PHPRuleContext context, List<Hint> hints) throws BadLocationException {
         PHPParseResult phpParseResult = (PHPParseResult) context.parserResult;
         if (phpParseResult.getProgram() == null) {
             return;
@@ -122,7 +122,7 @@ public class AddUseImportSuggestion extends SuggestionRule {
         if (fileObject == null || CodeUtils.isPhp52(fileObject)) {
             return;
         }
-
+        int caretOffset = getCaretOffset();
         final BaseDocument doc = context.doc;
         int lineBegin;
         int lineEnd;

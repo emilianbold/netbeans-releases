@@ -47,7 +47,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
-import javax.swing.text.BadLocationException;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintSeverity;
 import org.netbeans.modules.csl.api.RuleContext;
@@ -62,9 +61,8 @@ public abstract class HintRule implements CaretSensitiveRule {
     abstract void compute(PHPRuleContext context, List<Hint> hints);
 
     @Override
-    public void compute(PHPRuleContext context, List<Hint> hints, int caretOffset) throws BadLocationException {
+    public void setCaretOffset(int caretOffset) {
         this.caretOffset = caretOffset;
-        compute(context, hints);
     }
 
     public int getCaretOffset() {

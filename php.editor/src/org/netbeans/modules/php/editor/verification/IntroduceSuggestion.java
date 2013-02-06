@@ -128,7 +128,7 @@ public class IntroduceSuggestion extends SuggestionRule {
     }
 
     @Override
-    public void compute(PHPRuleContext context, List<Hint> hints, int caretOffset) throws BadLocationException {
+    public void compute(PHPRuleContext context, List<Hint> hints) throws BadLocationException {
         PHPParseResult phpParseResult = (PHPParseResult) context.parserResult;
         if (phpParseResult.getProgram() == null) {
             return;
@@ -137,6 +137,7 @@ public class IntroduceSuggestion extends SuggestionRule {
         if (fileObject == null) {
             return;
         }
+        int caretOffset = getCaretOffset();
         final BaseDocument doc = context.doc;
         int lineBegin;
         int lineEnd;

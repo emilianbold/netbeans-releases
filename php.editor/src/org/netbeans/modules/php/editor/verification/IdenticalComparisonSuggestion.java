@@ -76,12 +76,13 @@ public class IdenticalComparisonSuggestion extends SuggestionRule {
     private static final String HINT_ID = "Identical.Comparison.Hint"; //NOI18N
 
     @Override
-    public void compute(PHPRuleContext context, List<Hint> hints, int caretOffset) throws BadLocationException {
+    public void compute(PHPRuleContext context, List<Hint> hints) throws BadLocationException {
         PHPParseResult phpParseResult = (PHPParseResult) context.parserResult;
         if (phpParseResult.getProgram() == null) {
             return;
         }
         final BaseDocument doc = context.doc;
+        int caretOffset = getCaretOffset();
         int lineBegin = caretOffset > 0 ? Utilities.getRowStart(doc, caretOffset) : -1;
         int lineEnd = (lineBegin != -1) ? Utilities.getRowEnd(doc, caretOffset) : -1;
         if (lineBegin != -1 && lineEnd != -1 && caretOffset >= lineBegin) {

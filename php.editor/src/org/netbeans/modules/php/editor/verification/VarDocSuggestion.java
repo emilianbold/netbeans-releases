@@ -92,8 +92,9 @@ public class VarDocSuggestion extends SuggestionRule {
     }
 
     @Override
-    public void compute(PHPRuleContext context, List<Hint> hints, int caretOffset) throws BadLocationException {
+    public void compute(PHPRuleContext context, List<Hint> hints) throws BadLocationException {
         final BaseDocument doc = context.doc;
+        int caretOffset = getCaretOffset();
         int lineBegin = caretOffset > 0 ? Utilities.getRowStart(doc, caretOffset) : -1;
         int lineEnd = (lineBegin != -1) ? Utilities.getRowEnd(doc, caretOffset) : -1;
         FileObject fileObject = context.parserResult.getSnapshot().getSource().getFileObject();

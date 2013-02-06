@@ -42,9 +42,12 @@
 package org.netbeans.modules.php.editor.verification;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
+import javax.swing.text.BadLocationException;
+import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintSeverity;
 import org.netbeans.modules.csl.api.RuleContext;
 
@@ -53,6 +56,18 @@ import org.netbeans.modules.csl.api.RuleContext;
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
 public abstract class SuggestionRule implements CaretSensitiveRule {
+    private int caretOffset;
+
+    abstract void compute(PHPRuleContext context, List<Hint> suggestions) throws BadLocationException;
+
+    @Override
+    public void setCaretOffset(int caretOffset) {
+        this.caretOffset = caretOffset;
+    }
+
+    public int getCaretOffset() {
+        return caretOffset;
+    }
 
     @Override
     public Set<?> getKinds() {

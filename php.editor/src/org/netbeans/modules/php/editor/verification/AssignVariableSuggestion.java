@@ -95,7 +95,7 @@ public class AssignVariableSuggestion extends SuggestionRule {
     }
 
     @Override
-    public void compute(PHPRuleContext context, List<Hint> hints, int caretOffset) throws BadLocationException {
+    public void compute(PHPRuleContext context, List<Hint> hints) throws BadLocationException {
         PHPParseResult phpParseResult = (PHPParseResult) context.parserResult;
         if (phpParseResult.getProgram() == null) {
             return;
@@ -104,6 +104,7 @@ public class AssignVariableSuggestion extends SuggestionRule {
         if (fileObject == null) {
             return;
         }
+        int caretOffset = getCaretOffset();
         int lineBegin = caretOffset > 0 ? Utilities.getRowStart(context.doc, caretOffset) : -1;
         int lineEnd = (lineBegin != -1) ? Utilities.getRowEnd(context.doc, caretOffset) : -1;
         if (lineBegin != -1 && lineEnd != -1 && caretOffset > lineBegin) {

@@ -44,12 +44,13 @@ package org.netbeans.modules.php.editor.verification;
 
 import java.util.prefs.Preferences;
 import org.netbeans.modules.csl.api.Rule.AstRule;
+import org.netbeans.modules.csl.api.Rule.UserConfigurableRule;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public interface CustomisableRule extends AstRule {
+public interface CustomisableRule extends AstRule, UserConfigurableRule {
 
     void setPreferences(Preferences prefs);
 
