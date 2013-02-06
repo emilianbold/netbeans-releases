@@ -51,6 +51,7 @@ import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.phpmodule.PhpModuleProperties;
+import org.netbeans.modules.php.project.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
@@ -178,6 +179,11 @@ public class PhpModuleImpl extends PhpModule {
         if (PROPERTY_FRAMEWORKS.equals(propertyChangeEvent.getPropertyName())) {
             phpProject.resetFrameworks();
         }
+    }
+
+    @Override
+    public void openCustomizer(String category) {
+        phpProject.getLookup().lookup(CustomizerProviderImpl.class).showCustomizer(category);
     }
 
 }
