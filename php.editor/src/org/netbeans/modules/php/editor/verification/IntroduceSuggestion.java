@@ -128,7 +128,7 @@ public class IntroduceSuggestion extends SuggestionRule {
     }
 
     @Override
-    public void compute(PHPRuleContext context, List<Hint> hints) throws BadLocationException {
+    public void compute(PHPRuleContext context, List<Hint> hints) {
         PHPParseResult phpParseResult = (PHPParseResult) context.parserResult;
         if (phpParseResult.getProgram() == null) {
             return;
@@ -139,13 +139,10 @@ public class IntroduceSuggestion extends SuggestionRule {
         }
         int caretOffset = getCaretOffset();
         final BaseDocument doc = context.doc;
-        int lineBegin;
-        int lineEnd;
-        lineBegin = caretOffset > 0 ? Utilities.getRowStart(doc, caretOffset) : -1;
-        lineEnd = (lineBegin != -1) ? Utilities.getRowEnd(doc, caretOffset) : -1;
-        if (lineBegin != -1 && lineEnd != -1 && caretOffset > lineBegin) {
+        OffsetRange lineBounds = VerificationUtils.createLineBounds(caretOffset, doc);
+        if (lineBounds.containsInclusive(caretOffset)) {
             final Model model = phpParseResult.getModel();
-            IntroduceFixVisitor introduceFixVisitor = new IntroduceFixVisitor(model, lineBegin, lineEnd);
+            IntroduceFixVisitor introduceFixVisitor = new IntroduceFixVisitor(model, lineBounds);
             phpParseResult.getProgram().accept(introduceFixVisitor);
             IntroduceFix variableFix = introduceFixVisitor.getIntroduceFix();
             if (variableFix != null) {
@@ -158,27 +155,25 @@ public class IntroduceSuggestion extends SuggestionRule {
 
     private static class IntroduceFixVisitor extends DefaultTreePathVisitor {
 
-        private int lineBegin;
-        private int lineEnd;
         private IntroduceFix fix;
         private Model model;
+        private final OffsetRange lineBounds;
 
-        IntroduceFixVisitor(Model model, int lineBegin, int lineEnd) {
-            this.lineBegin = lineBegin;
-            this.lineEnd = lineEnd;
+        IntroduceFixVisitor(Model model, OffsetRange lineBounds) {
+            this.lineBounds = lineBounds;
             this.model = model;
         }
 
         @Override
         public void scan(ASTNode node) {
-            if (node != null && (VerificationUtils.isBefore(node.getStartOffset(), lineEnd))) {
+            if (node != null && (VerificationUtils.isBefore(node.getStartOffset(), lineBounds.getEnd()))) {
                 super.scan(node);
             }
         }
 
         @Override
         public void visit(ClassInstanceCreation instanceCreation) {
-            if (VerificationUtils.isInside(instanceCreation.getStartOffset(), lineBegin, lineEnd)) {
+            if (lineBounds.containsInclusive(instanceCreation.getStartOffset())) {
                 String clzName = CodeUtils.extractClassName(instanceCreation.getClassName());
                 clzName = (clzName != null && clzName.trim().length() > 0) ? clzName : null;
                 ElementQuery.Index index = model.getIndexScope().getIndex();
@@ -198,7 +193,7 @@ public class IntroduceSuggestion extends SuggestionRule {
 
         @Override
         public void visit(MethodInvocation methodInvocation) {
-            if (VerificationUtils.isInside(methodInvocation.getStartOffset(), lineBegin, lineEnd)) {
+            if (lineBounds.containsInclusive(methodInvocation.getStartOffset())) {
                 String methName = CodeUtils.extractFunctionName(methodInvocation.getMethod());
                 if (StringUtils.hasText(methName)) {
                     Collection<? extends TypeScope> allTypes = ModelUtils.resolveType(model, methodInvocation);
@@ -221,7 +216,7 @@ public class IntroduceSuggestion extends SuggestionRule {
 
         @Override
         public void visit(StaticMethodInvocation methodInvocation) {
-            if (VerificationUtils.isInside(methodInvocation.getStartOffset(), lineBegin, lineEnd)) {
+            if (lineBounds.containsInclusive(methodInvocation.getStartOffset())) {
                 String methName = CodeUtils.extractFunctionName(methodInvocation.getMethod());
                 String clzName = CodeUtils.extractUnqualifiedClassName(methodInvocation);
 
@@ -248,7 +243,7 @@ public class IntroduceSuggestion extends SuggestionRule {
 
         @Override
         public void visit(FieldAccess fieldAccess) {
-            if (VerificationUtils.isInside(fieldAccess.getStartOffset(), lineBegin, lineEnd)) {
+            if (lineBounds.containsInclusive(fieldAccess.getStartOffset())) {
                 String fieldName = CodeUtils.extractVariableName(fieldAccess.getField());
                 if (StringUtils.hasText(fieldName)) {
                     Collection<? extends TypeScope> allTypes = ModelUtils.resolveType(model, fieldAccess);
@@ -272,7 +267,7 @@ public class IntroduceSuggestion extends SuggestionRule {
 
         @Override
         public void visit(StaticFieldAccess fieldAccess) {
-            if (VerificationUtils.isInside(fieldAccess.getStartOffset(), lineBegin, lineEnd)) {
+            if (lineBounds.containsInclusive(fieldAccess.getStartOffset())) {
                 final Variable field = fieldAccess.getField();
                 String clzName = CodeUtils.extractUnqualifiedClassName(fieldAccess);
                 if (clzName != null) {
@@ -308,7 +303,7 @@ public class IntroduceSuggestion extends SuggestionRule {
 
         @Override
         public void visit(StaticConstantAccess staticConstantAccess) {
-            if (VerificationUtils.isInside(staticConstantAccess.getStartOffset(), lineBegin, lineEnd)) {
+            if (lineBounds.containsInclusive(staticConstantAccess.getStartOffset())) {
                 String constName = staticConstantAccess.getConstant().getName();
                 String clzName = CodeUtils.extractUnqualifiedClassName(staticConstantAccess);
 

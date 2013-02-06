@@ -45,10 +45,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.Utilities;
 import org.netbeans.modules.csl.api.EditList;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintFix;
@@ -95,7 +93,7 @@ public class AssignVariableSuggestion extends SuggestionRule {
     }
 
     @Override
-    public void compute(PHPRuleContext context, List<Hint> hints) throws BadLocationException {
+    public void compute(PHPRuleContext context, List<Hint> hints) {
         PHPParseResult phpParseResult = (PHPParseResult) context.parserResult;
         if (phpParseResult.getProgram() == null) {
             return;
@@ -105,10 +103,9 @@ public class AssignVariableSuggestion extends SuggestionRule {
             return;
         }
         int caretOffset = getCaretOffset();
-        int lineBegin = caretOffset > 0 ? Utilities.getRowStart(context.doc, caretOffset) : -1;
-        int lineEnd = (lineBegin != -1) ? Utilities.getRowEnd(context.doc, caretOffset) : -1;
-        if (lineBegin != -1 && lineEnd != -1 && caretOffset > lineBegin) {
-            IntroduceFixVisitor introduceFixVisitor = new IntroduceFixVisitor(context.doc, lineBegin, lineEnd);
+        OffsetRange lineBounds = VerificationUtils.createLineBounds(caretOffset, context.doc);
+        if (lineBounds.containsInclusive(caretOffset)) {
+            IntroduceFixVisitor introduceFixVisitor = new IntroduceFixVisitor(context.doc, lineBounds);
             phpParseResult.getProgram().accept(introduceFixVisitor);
             IntroduceFix variableFix = introduceFixVisitor.getIntroduceFix();
             if (variableFix != null) {
@@ -121,29 +118,27 @@ public class AssignVariableSuggestion extends SuggestionRule {
 
     private class IntroduceFixVisitor extends DefaultVisitor {
 
-        private int lineBegin;
-        private int lineEnd;
         private BaseDocument doc;
         private IntroduceFix fix;
         private List<Variable> variables;
+        private final OffsetRange lineBounds;
 
-        IntroduceFixVisitor(BaseDocument doc, int lineBegin, int lineEnd) {
+        IntroduceFixVisitor(BaseDocument doc, OffsetRange lineBounds) {
             this.doc = doc;
-            this.lineBegin = lineBegin;
-            this.lineEnd = lineEnd;
+            this.lineBounds = lineBounds;
             this.variables = new ArrayList<Variable>();
         }
 
         @Override
         public void scan(ASTNode node) {
-            if (node != null && (VerificationUtils.isBefore(node.getStartOffset(), lineEnd) || fix != null)) {
+            if (node != null && (VerificationUtils.isBefore(node.getStartOffset(), lineBounds.getEnd()) || fix != null)) {
                 super.scan(node);
             }
         }
 
         @Override
         public void visit(ExpressionStatement node) {
-            if (VerificationUtils.isInside(node.getStartOffset(), lineBegin, lineEnd)) {
+            if (lineBounds.containsInclusive(node.getStartOffset())) {
                 Expression expression = node.getExpression();
                 if (expression instanceof IgnoreError) {
                     expression = ((IgnoreError) expression).getExpression();

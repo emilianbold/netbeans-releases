@@ -44,9 +44,7 @@ package org.netbeans.modules.php.editor.verification;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
-import javax.swing.text.BadLocationException;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.Utilities;
 import org.netbeans.modules.csl.api.EditList;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintFix;
@@ -76,21 +74,20 @@ public class IdenticalComparisonSuggestion extends SuggestionRule {
     private static final String HINT_ID = "Identical.Comparison.Hint"; //NOI18N
 
     @Override
-    public void compute(PHPRuleContext context, List<Hint> hints) throws BadLocationException {
+    public void compute(PHPRuleContext context, List<Hint> hints) {
         PHPParseResult phpParseResult = (PHPParseResult) context.parserResult;
         if (phpParseResult.getProgram() == null) {
             return;
         }
         final BaseDocument doc = context.doc;
         int caretOffset = getCaretOffset();
-        int lineBegin = caretOffset > 0 ? Utilities.getRowStart(doc, caretOffset) : -1;
-        int lineEnd = (lineBegin != -1) ? Utilities.getRowEnd(doc, caretOffset) : -1;
-        if (lineBegin != -1 && lineEnd != -1 && caretOffset >= lineBegin) {
+        OffsetRange lineBounds = VerificationUtils.createLineBounds(caretOffset, doc);
+        if (lineBounds.containsInclusive(caretOffset)) {
             FileObject fileObject = phpParseResult.getSnapshot().getSource().getFileObject();
             if (fileObject == null) {
                 return;
             }
-            CheckVisitor checkVisitor = new CheckVisitor(fileObject, phpParseResult.getModel(), context.doc, new OffsetRange(lineBegin, lineEnd));
+            CheckVisitor checkVisitor = new CheckVisitor(fileObject, phpParseResult.getModel(), context.doc, lineBounds);
             phpParseResult.getProgram().accept(checkVisitor);
             hints.addAll(checkVisitor.getHints());
         }
@@ -137,7 +134,7 @@ public class IdenticalComparisonSuggestion extends SuggestionRule {
 
         @Override
         public void visit(InfixExpression node) {
-            if (VerificationUtils.isInside(node.getStartOffset(), lineRange)) {
+            if (lineRange.containsInclusive(node.getStartOffset())) {
                 processExpression(node);
             }
         }

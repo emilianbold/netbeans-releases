@@ -58,15 +58,6 @@ public final class VerificationUtils {
     private VerificationUtils() {
     }
 
-    public static boolean isInside(int caret, OffsetRange lineRange) {
-        assert lineRange != null;
-        return isInside(caret, lineRange.getStart(), lineRange.getEnd());
-    }
-
-    public static boolean isInside(int caret, int left, int right) {
-        return caret >= left && caret <= right;
-    }
-
     public static boolean isBefore(int caret, int margin) {
         return caret <= margin;
     }

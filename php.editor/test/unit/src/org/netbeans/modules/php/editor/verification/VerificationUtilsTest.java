@@ -41,8 +41,6 @@
  */
 package org.netbeans.modules.php.editor.verification;
 
-import org.netbeans.modules.csl.api.OffsetRange;
-
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
@@ -69,77 +67,6 @@ public class VerificationUtilsTest extends PHPHintsTestBase {
         int caret = 20;
         int margin = 10;
         assert !VerificationUtils.isBefore(caret, margin);
-    }
-
-    public void testIsInsideWithOffsetRangeLowerOut() {
-        int caret = 10;
-        OffsetRange or = new OffsetRange(20, 30);
-        assert !VerificationUtils.isInside(caret, or);
-    }
-
-    public void testIsInsideWithOffsetRangeUpperOut() {
-        int caret = 40;
-        OffsetRange or = new OffsetRange(20, 30);
-        assert !VerificationUtils.isInside(caret, or);
-    }
-
-    public void testIsInsideWithOffsetRangeLowerOn() {
-        int caret = 20;
-        OffsetRange or = new OffsetRange(20, 30);
-        assert VerificationUtils.isInside(caret, or);
-    }
-
-    public void testIsInsideWithOffsetRangeUpperOn() {
-        int caret = 30;
-        OffsetRange or = new OffsetRange(20, 30);
-        assert VerificationUtils.isInside(caret, or);
-    }
-
-    public void testIsInsideWithOffsetRangeInside() {
-        int caret = 25;
-        OffsetRange or = new OffsetRange(20, 30);
-        assert VerificationUtils.isInside(caret, or);
-    }
-
-    public void testIsInsideWithOffsetRangeNone() {
-        int caret = 25;
-        OffsetRange or = OffsetRange.NONE;
-        assert !VerificationUtils.isInside(caret, or);
-    }
-
-    public void testIsInsideLowerOut() {
-        int caret = 10;
-        int lower = 20;
-        int upper = 30;
-        assert !VerificationUtils.isInside(caret, lower, upper);
-    }
-
-    public void testIsInsideUpperOut() {
-        int caret = 40;
-        int lower = 20;
-        int upper = 30;
-        assert !VerificationUtils.isInside(caret, lower, upper);
-    }
-
-    public void testIsInsideLowerOn() {
-        int caret = 20;
-        int lower = 20;
-        int upper = 30;
-        assert VerificationUtils.isInside(caret, lower, upper);
-    }
-
-    public void testIsInsideUpperOn() {
-        int caret = 30;
-        int lower = 20;
-        int upper = 30;
-        assert VerificationUtils.isInside(caret, lower, upper);
-    }
-
-    public void testIsInsideInside() {
-        int caret = 25;
-        int lower = 20;
-        int upper = 30;
-        assert VerificationUtils.isInside(caret, lower, upper);
     }
 
 }

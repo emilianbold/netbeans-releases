@@ -47,7 +47,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import javax.swing.text.BadLocationException;
 import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintsProvider;
@@ -263,11 +262,7 @@ public class PHPHintsProvider implements HintsProvider {
         public void invoke(Rule rule, PHPRuleContext ruleContext, List<Hint> suggestions) {
             if (rule instanceof SuggestionRule) {
                 SuggestionRule suggestionRule = (SuggestionRule) rule;
-                try {
-                    suggestionRule.compute(ruleContext, suggestions);
-                } catch (BadLocationException ex) {
-                    // no-op #172881 - copied from previous implementation
-                }
+                suggestionRule.compute(ruleContext, suggestions);
             }
         }
 
