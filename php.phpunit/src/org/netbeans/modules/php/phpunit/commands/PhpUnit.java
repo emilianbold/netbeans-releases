@@ -410,6 +410,7 @@ public final class PhpUnit {
                 .optionsPath(PhpUnitOptionsPanelController.OPTIONS_PATH)
                 .controllable(false)
                 .frontWindow(false)
+                .frontWindowOnError(false)
                 .inputVisible(false)
                 .outConvertorFactory(PHPUNIT_LINE_CONVERTOR_FACTORY)
                 .preExecution(new Runnable() {
