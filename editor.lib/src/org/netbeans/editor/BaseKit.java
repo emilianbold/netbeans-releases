@@ -879,7 +879,6 @@ public class BaseKit extends DefaultEditorKit {
                    new PreviousWordAction(selectionPreviousWordAction),
                    new ActionFactory.RemoveWordNextAction(),
                    new ActionFactory.RemoveWordPreviousAction(),
-                   new ActionFactory.ToggleHighlightSearchAction(),
                    new ActionFactory.ToggleRectangularSelectionAction(),
 
                    // Self test actions

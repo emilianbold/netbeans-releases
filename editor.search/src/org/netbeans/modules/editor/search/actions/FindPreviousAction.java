@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,24 +37,40 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.editor.search;
+package org.netbeans.modules.editor.search.actions;
 
-import org.junit.Test;
-import static org.junit.Assert.*;
-import org.netbeans.modules.editor.search.SearchPropertiesSupport.SearchProperties;
+import java.awt.event.ActionEvent;
+import javax.swing.text.JTextComponent;
+import org.netbeans.api.editor.EditorActionRegistration;
+import org.netbeans.editor.BaseKit;
+import org.netbeans.editor.EditorUI;
+import org.netbeans.modules.editor.search.EditorFindSupport;
+import org.netbeans.modules.editor.search.SearchNbEditorKit;
+import org.netbeans.spi.editor.AbstractEditorAction;
 
-public class SearchPropertiesSupportTest {
-    
-    public SearchPropertiesSupportTest() {
+// NOI18N
+
+@EditorActionRegistration(name = BaseKit.findPreviousAction, iconResource = "org/netbeans/modules/editor/search/resources/find_previous.png") // NOI18N
+public class FindPreviousAction extends AbstractEditorAction {
+    static final long serialVersionUID = -43746947902694926L;
+
+    public FindPreviousAction() {
+        super();
     }
-    
-    @Test
-    public void testSearchReplacePropertiesDifference() {
-        SearchProperties searchProperties = SearchPropertiesSupport.getSearchProperties();
-        assertFalse((Boolean) searchProperties.getProperty(EditorFindSupport.FIND_MATCH_CASE));
-        searchProperties = SearchPropertiesSupport.getReplaceProperties();
-        assertTrue((Boolean) searchProperties.getProperty(EditorFindSupport.FIND_MATCH_CASE));
+
+    @Override
+    public void actionPerformed(ActionEvent evt, JTextComponent target) {
+        if (target != null) {
+            EditorUI eui = org.netbeans.editor.Utilities.getEditorUI(target);
+            if (eui.getComponent().getClientProperty("AsTextField") == null) {
+                //NOI18N
+                EditorFindSupport.getInstance().setFocusedTextComponent(eui.getComponent());
+            }
+            SearchNbEditorKit.openFindIfNecessary(eui, evt);
+            EditorFindSupport.getInstance().find(null, true);
+        }
     }
+
 }

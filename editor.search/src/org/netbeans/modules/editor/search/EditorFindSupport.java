@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.editor.lib2.search;
+package org.netbeans.modules.editor.search;
 
 import java.awt.Insets;
 import java.awt.Rectangle;
@@ -73,7 +73,7 @@ import org.netbeans.modules.editor.lib2.ComponentUtils;
 import org.netbeans.modules.editor.lib2.DocUtils;
 import org.netbeans.modules.editor.lib2.highlighting.BlockHighlighting;
 import org.netbeans.modules.editor.lib2.highlighting.Factory;
-import org.netbeans.modules.editor.lib2.search.DocumentFinder.FindReplaceResult;
+import org.netbeans.modules.editor.search.DocumentFinder.FindReplaceResult;
 import org.openide.util.NbBundle;
 
 /**

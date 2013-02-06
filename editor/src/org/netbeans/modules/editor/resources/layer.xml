@@ -72,23 +72,6 @@ made subject to such option by the copyright holder.
                 <attr name="position" intvalue="1440"/>
             </file>
             
-            <file name="org-netbeans-modules-editor-MainMenuAction$FindSelectionAction.instance">
-                <attr name="position" intvalue="1600"/>
-            </file>
-            
-            <file name="org-netbeans-modules-editor-MainMenuAction$FindNextAction.instance">
-                <attr name="position" intvalue="1700"/>
-            </file>
-        
-            <file name="org-netbeans-modules-editor-MainMenuAction$FindPreviousAction.instance">
-                <attr name="position" intvalue="1800"/>
-            </file>
-            
-            <file name="SeparatorAfterFindPrevious.instance">
-                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                <attr name="position" intvalue="1900"/>
-            </file>
-            
             <file name="SeparatorAfterProjectsSearch.instance">
                 <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                 <attr name="position" intvalue="3000"/>
@@ -288,18 +271,6 @@ made subject to such option by the copyright holder.
                 <file name="Separator-before-find-previous.instance">
                     <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                     <attr name="position" intvalue="5000"/>
-                </file>
-                <file name="find-selection">
-                    <attr name="position" intvalue="6000"/>
-                </file>
-                <file name="find-previous">
-                    <attr name="position" intvalue="7000"/>
-                </file>
-                <file name="find-next">
-                    <attr name="position" intvalue="8000"/>
-                </file>
-                <file name="toggle-highlight-search">
-                    <attr name="position" intvalue="9000"/>
                 </file>
                 <file name="toggle-rectangular-selection">
                     <attr name="position" intvalue="9500"/>
