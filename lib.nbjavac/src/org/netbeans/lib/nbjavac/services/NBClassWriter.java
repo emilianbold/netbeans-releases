@@ -41,10 +41,20 @@
  */
 package org.netbeans.lib.nbjavac.services;
 
+import com.sun.tools.javac.code.Attribute;
+import com.sun.tools.javac.code.Attribute.RetentionPolicy;
+import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
+import com.sun.tools.javac.code.Symbol.MethodSymbol;
+import com.sun.tools.javac.code.Symbol.VarSymbol;
+import com.sun.tools.javac.code.Type;
+import com.sun.tools.javac.code.TypeTag;
+import com.sun.tools.javac.code.Types;
 import com.sun.tools.javac.jvm.ClassWriter;
 import com.sun.tools.javac.jvm.Target;
 import com.sun.tools.javac.util.Context;
+import com.sun.tools.javac.util.List;
+import com.sun.tools.javac.util.ListBuffer;
 
 /**
  *
@@ -62,14 +72,29 @@ public class NBClassWriter extends ClassWriter {
 
     private final NBNames nbNames;
     private final Target target;
-
+    private final Types types;
+    private boolean preserveErrors = false;
 
     protected NBClassWriter(Context context) {
         super(context);
         nbNames = NBNames.instance(context);
         target = Target.instance(context);
+        types = Types.instance(context);
     }
 
+    @Override
+    protected void assembleSig(Type type) {
+        Type uType = type.unannotatedType();
+        if (preserveErrors && uType.hasTag(TypeTag.ERROR)) {
+            sigbuf.appendByte('R');
+            assembleClassSig(uType);
+            sigbuf.appendByte(';');
+        } else {
+            super.assembleSig(type);
+        }
+    }
+
+    
     @Override
     protected int writeExtraClassAttributes(ClassSymbol c) {
         if (!target.hasEnclosingMethodAttribute())
@@ -78,4 +103,77 @@ public class NBClassWriter extends ClassWriter {
             return 0;
     }
 
+    @Override
+    protected int writeExtraMemberAttributes(Symbol sym) {
+        int attrCount = 0;
+        if (sym.externalType(types).isErroneous()) {
+            int rsIdx = writeAttr(nbNames._org_netbeans_TypeSignature);
+            try {
+                preserveErrors = true;
+                databuf.appendChar(pool.put(typeSig(sym.type)));
+            } finally {
+                preserveErrors = false;
+            }
+            endAttr(rsIdx);
+            attrCount++;
+        }
+        return attrCount;
+    }
+
+    @Override
+    protected int writeExtraParameterAttributes(MethodSymbol m) {
+        boolean hasSourceLevel = false;
+        if (m.params != null) for (VarSymbol s : m.params) {
+            for (Attribute.Compound a : s.getRawAttributes()) {
+                if (types.getRetention(a) == RetentionPolicy.SOURCE) {
+                    hasSourceLevel = true;
+                    break;
+                }
+            }
+        }
+        int attrCount = 0;
+        if (hasSourceLevel) {
+            int attrIndex = writeAttr(nbNames._org_netbeans_SourceLevelParameterAnnotations);
+            databuf.appendByte(m.params.length());
+            for (VarSymbol s : m.params) {
+                ListBuffer<Attribute.Compound> buf = new ListBuffer<Attribute.Compound>();
+                for (Attribute.Compound a : s.getRawAttributes())
+                    if (types.getRetention(a) == RetentionPolicy.SOURCE)
+                        buf.append(a);
+                databuf.appendChar(buf.length());
+                for (Attribute.Compound a : buf)
+                    writeCompoundAttribute(a);
+            }
+            endAttr(attrIndex);
+            attrCount++;
+        }
+        if (m.code == null && m.params != null && m.params.nonEmpty()) {
+            int attrIndex = writeAttr(nbNames._org_netbeans_ParameterNames);
+            for (VarSymbol s : m.params)
+                databuf.appendChar(pool.put(s.name));
+            endAttr(attrIndex);
+            attrCount++;
+        }
+        return attrCount;
+    }
+
+    @Override
+    protected int writeExtraJavaAnnotations(List<Attribute.Compound> attrs) {
+        ListBuffer<Attribute.Compound> sourceLevel = new ListBuffer<Attribute.Compound>();
+        for (Attribute.Compound a : attrs) {
+            if (types.getRetention(a) == RetentionPolicy.SOURCE) {
+                sourceLevel.append(a);
+            }
+        }
+        int attrCount = 0;
+        if (sourceLevel.nonEmpty()) {
+            int attrIndex = writeAttr(nbNames._org_netbeans_SourceLevelAnnotations);
+            databuf.appendChar(sourceLevel.length());
+            for (Attribute.Compound a : sourceLevel)
+                writeCompoundAttribute(a);
+            endAttr(attrIndex);
+            attrCount++;
+        }
+        return attrCount;
+    }
 }

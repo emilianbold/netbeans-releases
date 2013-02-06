@@ -43,10 +43,14 @@ package org.netbeans.lib.nbjavac.services;
 
 import java.util.Set;
 import com.sun.tools.javac.code.Symbol;
+import com.sun.tools.javac.code.Symbol.MethodSymbol;
+import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.jvm.ClassFile.Version;
 import com.sun.tools.javac.jvm.ClassReader;
 import com.sun.tools.javac.util.Context;
+import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.Name;
+import com.sun.tools.javac.util.Names;
 import com.sun.tools.javadoc.JavadocClassReader;
 
 /**
@@ -63,11 +67,13 @@ public class NBClassReader extends JavadocClassReader {
         });
     }
 
+    private final Names names;
     private final NBNames nbNames;
 
     public NBClassReader(Context context, boolean loadDocEnv) {
         super(context, loadDocEnv);
 
+        names = Names.instance(context);
         nbNames = NBNames.instance(context);
 
         NBAttributeReader[] readers = {
@@ -76,6 +82,41 @@ public class NBClassReader extends JavadocClassReader {
                     int newbp = bp + attrLen;
                     readEnclosingMethodAttr(sym);
                     bp = newbp;
+                }
+            },
+            new NBAttributeReader(nbNames._org_netbeans_TypeSignature, Version.V49, CLASS_OR_MEMBER_ATTRIBUTE) {
+                protected void read(Symbol sym, int attrLen) {
+                    sym.type = readType(nextChar());
+                }
+            },
+            new NBAttributeReader(nbNames._org_netbeans_ParameterNames, Version.V49, CLASS_OR_MEMBER_ATTRIBUTE) {
+                protected void read(Symbol sym, int attrLen) {
+                    int newbp = bp + attrLen;
+                    List<Name> parameterNames = List.nil();
+                    int numParams = 0;
+                    if (sym.type != null) {
+                        List<Type> parameterTypes = sym.type.getParameterTypes();
+                        if (parameterTypes != null)
+                            numParams = parameterTypes.length();
+                    }
+                    for (int i = 0; i < numParams; i++) {
+                        if (bp < newbp - 1)
+                            parameterNames = parameterNames.prepend(readName(nextChar()));
+                    }
+                    parameterNames = parameterNames.reverse();
+                    while(parameterNames.length() < numParams)
+                        parameterNames = parameterNames.prepend(names.empty);
+                    ((MethodSymbol)sym).savedParameterNames = parameterNames;
+                }
+            },
+            new NBAttributeReader(nbNames._org_netbeans_SourceLevelAnnotations, Version.V49, CLASS_OR_MEMBER_ATTRIBUTE) {
+                protected void read(Symbol sym, int attrLen) {
+                    attachAnnotations(sym);
+                }
+            },
+            new NBAttributeReader(nbNames._org_netbeans_SourceLevelParameterAnnotations, Version.V49, CLASS_OR_MEMBER_ATTRIBUTE) {
+                protected void read(Symbol sym, int attrLen) {
+                    attachParameterAnnotations(sym);
                 }
             },
         };
