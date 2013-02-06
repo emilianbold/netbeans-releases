@@ -85,9 +85,7 @@ public final class ClusteredIndexables {
 
     public static final String DELETE = "ci-delete-set";    //NOI18N
     public static final String INDEX = "ci-index-set";      //NOI18N
-
-    private static final Logger LOG = Logger.getLogger(ClusteredIndexables.class.getName());
-
+    
     // -----------------------------------------------------------------------
     // Public implementation
     // -----------------------------------------------------------------------
@@ -148,7 +146,12 @@ public final class ClusteredIndexables {
     // -----------------------------------------------------------------------
     // Private implementation
     // -----------------------------------------------------------------------
+    private static final Logger LOG = Logger.getLogger(ClusteredIndexables.class.getName());
     private static final String ALL_MIME_TYPES = ""; //NOI18N
+    private static final String PROP_CACHE_HEAP_RATIO = "ClusteredIndexables.cacheHeapRatio";  //NOI18N
+    private static final double DEFAULT_CACHE_HEAP_RATIO = 0.1;
+    private static final long DATA_CACHE_SIZE = (long) 
+            (Runtime.getRuntime().maxMemory() * getCacheHeapRatio());
     private final List<Indexable> indexables;
     private final BitSet sorted;
     private final Map<String, BitSet> mimeTypeClusters = new HashMap<String, BitSet>();
@@ -163,6 +166,28 @@ public final class ClusteredIndexables {
     private int current() {
         final IndexedIterator tmpIt = currentIt;
         return tmpIt == null ? -1 : tmpIt.index();
+    }
+
+    private static double getCacheHeapRatio() {
+        final String sval = System.getProperty(PROP_CACHE_HEAP_RATIO);
+        if (sval != null) {
+            try {
+                final double val = Double.valueOf(sval);
+                if (val < 0.05 || val > 1.0) {
+                    throw new NumberFormatException();
+                }
+                return val;
+            } catch (NumberFormatException nfe) {
+                LOG.log(
+                  Level.INFO,
+                  "Invalid value of {0} property: {1}", //NOI18N
+                  new Object[] {
+                      PROP_CACHE_HEAP_RATIO,
+                      sval
+                  });
+            }
+        }
+        return DEFAULT_CACHE_HEAP_RATIO;
     }
 
     private static interface IndexedIterator<T> extends Iterator<T> {
@@ -452,7 +477,7 @@ public final class ClusteredIndexables {
                     deleteFromDeleted == null &&
                     deleteFromIndex == null;
                 assert dataRef == null;
-                toAdd = new DocumentStore();
+                toAdd = new DocumentStore(DATA_CACHE_SIZE);
                 toDeleteOutOfOrder = new ArrayList<String>();
                 deleteFromDeleted = new BitSet();
                 deleteFromIndex = new BitSet();
@@ -808,8 +833,8 @@ public final class ClusteredIndexables {
 
         private static final int INITIAL_DOC_COUNT = 100;
         private static final int INITIAL_DATA_SIZE = 1<<10;
-        private static final long DATA_CACHE_SIZE = (long) (Runtime.getRuntime().maxMemory() * 0.1);
 
+        private final long dataCacheSize;
         private final Map<String,Integer> fieldNames;
         private int[] docs;
         private char[] data;
@@ -819,11 +844,15 @@ public final class ClusteredIndexables {
         private int size;
 
 
-        DocumentStore() {
-            fieldNames = new LinkedHashMap<String, Integer>();
-            docs = new int[INITIAL_DOC_COUNT];
-            data = new char[INITIAL_DATA_SIZE];
-
+        DocumentStore(final long dataCacheSize) {
+            this.dataCacheSize = dataCacheSize;
+            this.fieldNames = new LinkedHashMap<String, Integer>();
+            this.docs = new int[INITIAL_DOC_COUNT];
+            this.data = new char[INITIAL_DATA_SIZE];
+            LOG.log(
+                Level.FINE,
+                "DocumentStore flush size: {0}",    //NOI18N
+                dataCacheSize);
         }
 
         @Override
@@ -860,7 +889,7 @@ public final class ClusteredIndexables {
                 docsPointer += 2;
                 if (data.length < dataPointer + fldValue.length()) {
                     data = Arrays.copyOf(data, newLength(data.length,dataPointer + fldValue.length()));
-                    res = data.length<<1 > DATA_CACHE_SIZE;
+                    res = data.length<<1 > dataCacheSize;
                     LOG.log(
                         Level.FINE,
                         "New data size: {0}, flush: {1}",   //NOI18N
