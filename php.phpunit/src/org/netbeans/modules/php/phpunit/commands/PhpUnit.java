@@ -424,9 +424,9 @@ public final class PhpUnit {
     // #170120
     private File getWorkingDirectory(PhpModule phpModule, FileObject defaultWorkDir) {
         if (PhpUnitPreferences.isConfigurationEnabled(phpModule)) {
-            return new File(PhpUnitPreferences.getConfigurationPath(phpModule));
+            return new File(PhpUnitPreferences.getConfigurationPath(phpModule)).getParentFile();
         }
-        return FileUtil.toFile(phpModule.getTestDirectory());
+        return FileUtil.toFile(defaultWorkDir);
     }
 
     @NbBundle.Messages({
