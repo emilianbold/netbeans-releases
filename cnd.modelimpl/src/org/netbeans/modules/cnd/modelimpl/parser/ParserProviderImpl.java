@@ -42,6 +42,8 @@
 
 package org.netbeans.modules.cnd.modelimpl.parser;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import org.antlr.runtime.tree.CommonTree;
@@ -375,8 +377,6 @@ public final class ParserProviderImpl extends CsmParserProvider {
             CXXParserActionEx cppCallback = (CXXParserActionEx)callback;
             if (cppCallback == null) {
                 cppCallback = new CXXParserActionImpl(params);
-            } else {
-                cppCallback.pushFile(file);
             }            
             if (cppCallback instanceof CXXParserActionImpl) {
                 objects = ((CXXParserActionImpl) cppCallback).getObjectsMap();
@@ -738,11 +738,13 @@ public final class ParserProviderImpl extends CsmParserProvider {
                     CsmFile inclFile = (CsmFile) aptToken.getProperty(CsmFile.class);
                     if (inclFile != null) {
                         if (preInclude == Boolean.TRUE) {
+                            if (TRACE) System.err.println(" >>> " + inclFile.getAbsolutePath());
                             cppCallback.pushFile(inclFile);
                             assert inclFile instanceof FileImpl;
                         } else {
                             CsmFile popFile = cppCallback.popFile();
-                            assert popFile == inclFile;
+                            if (TRACE) System.err.println(" <<< " + popFile.getAbsolutePath());
+                            assert popFile == inclFile : "EXPECTED: " + inclFile + "\n POPED: " + popFile;
                         }
                     }
                 }
