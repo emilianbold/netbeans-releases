@@ -77,7 +77,6 @@ import org.netbeans.api.search.provider.SearchInfoUtils;
 import org.netbeans.api.search.provider.SearchListener;
 import org.netbeans.modules.php.api.framework.PhpFrameworks;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
-import org.netbeans.modules.php.api.testing.PhpTesting;
 import org.netbeans.modules.php.project.api.PhpSeleniumProvider;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
 import org.netbeans.modules.php.project.classpath.BasePathSupport;
@@ -509,17 +508,12 @@ public final class PhpProject implements Project {
         }
     }
 
-    // XXX performance, listener
+    TestingProviders lookupTestingProviders() {
+        return getLookup().lookup(TestingProviders.class);
+    }
+
     public List<PhpTestingProvider> getTestingProviders() {
-        List<PhpTestingProvider> allProviders = PhpTesting.getTestingProviders();
-        List<PhpTestingProvider> projectProviders = new ArrayList<PhpTestingProvider>(allProviders.size());
-        PhpModule phpModule = getPhpModule();
-        for (PhpTestingProvider provider : allProviders) {
-            if (provider.isInPhpModule(phpModule)) {
-                projectProviders.add(provider);
-            }
-        }
-        return projectProviders;
+        return lookupTestingProviders().getTestingProviders();
     }
 
     @CheckForNull
@@ -599,6 +593,7 @@ public final class PhpProject implements Project {
 
     private Lookup createLookup(AuxiliaryConfiguration configuration) {
         PhpProjectEncodingQueryImpl phpProjectEncodingQueryImpl = new PhpProjectEncodingQueryImpl(getEvaluator());
+        PhpModule phpModule = new PhpModuleImpl(this);
         return Lookups.fixed(new Object[] {
                 this,
                 CopySupport.getInstance(this),
@@ -607,10 +602,11 @@ public final class PhpProject implements Project {
                 new Info(),
                 configuration,
                 new PhpOpenedHook(),
+                new TestingProviders(phpModule),
                 new PhpProjectXmlSavedHook(),
                 new PhpActionProvider(this),
                 new PhpConfigurationProvider(this),
-                new PhpModuleImpl(this),
+                phpModule,
                 PhpLanguagePropertiesAccessor.getDefault().createForProject(this),
                 new PhpEditorExtender(this),
                 helper.createCacheDirectoryProvider(),
@@ -689,7 +685,10 @@ public final class PhpProject implements Project {
         @Override
         protected void projectOpened() {
             new ProjectUpgrader(PhpProject.this).upgrade();
+
             reinitFolders();
+
+            lookupTestingProviders().projectOpened();
 
             resetFrameworks();
             LOGGER.log(Level.FINE, "Adding frameworks listener for {0}", getName());
@@ -732,6 +731,8 @@ public final class PhpProject implements Project {
         @Override
         protected void projectClosed() {
             try {
+                lookupTestingProviders().projectClosed();
+
                 LOGGER.log(Level.FINE, "Removing frameworks listener for {0}", getName());
                 PhpFrameworks.removeFrameworksListener(frameworksListener);
 
