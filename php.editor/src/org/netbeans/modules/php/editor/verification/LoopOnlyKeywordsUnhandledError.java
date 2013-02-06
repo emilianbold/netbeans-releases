@@ -45,7 +45,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.BreakStatement;
@@ -72,15 +71,11 @@ public class LoopOnlyKeywordsUnhandledError extends UnhandledErrorRule {
             return;
         }
         FileObject fileObject = phpParseResult.getSnapshot().getSource().getFileObject();
-        if (fileObject != null && appliesTo(fileObject)) {
+        if (fileObject != null) {
             LoopOnlyKeywordsUnhandledError.CheckVisitor checkVisitor = new LoopOnlyKeywordsUnhandledError.CheckVisitor(fileObject);
             phpParseResult.getProgram().accept(checkVisitor);
             errors.addAll(checkVisitor.getErrors());
         }
-    }
-
-    private boolean appliesTo(FileObject fileObject) {
-        return CodeUtils.isPhp52(fileObject);
     }
 
     private static class CheckVisitor extends DefaultTreePathVisitor {
