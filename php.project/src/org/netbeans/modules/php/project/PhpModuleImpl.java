@@ -74,12 +74,12 @@ public class PhpModuleImpl extends PhpModule {
 
     @Override
     public String getName() {
-        return phpProject.getLookup().lookup(ProjectInformation.class).getName();
+        return ProjectUtils.getInformation(phpProject).getName();
     }
 
     @Override
     public String getDisplayName() {
-        return phpProject.getLookup().lookup(ProjectInformation.class).getDisplayName();
+        return ProjectUtils.getInformation(phpProject).getDisplayName();
     }
 
     @Override
