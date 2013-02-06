@@ -60,11 +60,11 @@ public class SftpConfigurationValidatorTest extends NbTestCase {
 
     public SftpConfigurationValidatorTest(String name) {
         super(name);
-        File xmlLog = new File(getDataDir(), "phpunit-log-one-suite.xml");
-        assertTrue(xmlLog.isFile());
+        File dummyTxt = new File(getDataDir(), "dummy.txt");
+        assertTrue(dummyTxt.isFile());
 
-        identityFile = xmlLog.getAbsolutePath();
-        knownHostsFile = xmlLog.getAbsolutePath();
+        identityFile = dummyTxt.getAbsolutePath();
+        knownHostsFile = dummyTxt.getAbsolutePath();
     }
 
     public void testValidate() {

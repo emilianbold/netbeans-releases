@@ -59,7 +59,7 @@ import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.PhpVisibilityQuery;
 import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
-import org.netbeans.modules.php.project.ui.codecoverage.CoverageVO.FileVO;
+import org.netbeans.modules.php.spi.testing.coverage.Coverage;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -78,7 +78,7 @@ public final class PhpCoverageProvider implements CoverageProvider {
     // GuardedBy(this)
     private Boolean enabled = null;
     // GuardedBy(lock)
-    private CoverageVO coverage = null;
+    private Coverage coverage = null;
 
     public PhpCoverageProvider(PhpProject project) {
         assert project != null;
@@ -87,7 +87,7 @@ public final class PhpCoverageProvider implements CoverageProvider {
         phpVisibilityQuery = PhpVisibilityQuery.forProject(project);
     }
 
-    public void setCoverage(CoverageVO coverage) {
+    public void setCoverage(Coverage coverage) {
         assert coverage != null;
         assert isEnabled() : "Coverage provider must be enabled";
         synchronized (lock) {
@@ -96,18 +96,18 @@ public final class PhpCoverageProvider implements CoverageProvider {
         CoverageManager.INSTANCE.resultsUpdated(project, this);
     }
 
-    public void updateCoverage(CoverageVO partialCoverage) {
+    public void updateCoverage(Coverage partialCoverage) {
         assert partialCoverage != null;
         assert isEnabled() : "Coverage provider must be enabled";
 
-        CoverageVO newCoverage = getCoverage();
+        Coverage newCoverage = getCoverage();
         if (newCoverage == null) {
             setCoverage(partialCoverage);
             return;
         }
 
-        List<FileVO> originalFiles = newCoverage.getFiles();
-        for (FileVO file : partialCoverage.getFiles()) {
+        List<Coverage.File> originalFiles = newCoverage.getFiles();
+        for (Coverage.File file : partialCoverage.getFiles()) {
             boolean newFile = true;
             for (int i = 0; i < originalFiles.size(); ++i) {
                 if (file.getPath().equals(originalFiles.get(i).getPath())) {
@@ -180,7 +180,7 @@ public final class PhpCoverageProvider implements CoverageProvider {
     @Override
     public FileCoverageDetails getDetails(FileObject fo, Document doc) {
         assert fo != null;
-        CoverageVO cov = getCoverage();
+        Coverage cov = getCoverage();
         if (cov == null) {
             return null;
         }
@@ -190,7 +190,7 @@ public final class PhpCoverageProvider implements CoverageProvider {
 
         // XXX optimize - hold files in a linked hash map
         String path = FileUtil.toFile(fo).getAbsolutePath();
-        for (FileVO file : cov.getFiles()) {
+        for (Coverage.File file : cov.getFiles()) {
             if (path.equals(file.getPath())) {
                 return new PhpFileCoverageDetails(fo, file);
             }
@@ -200,13 +200,13 @@ public final class PhpCoverageProvider implements CoverageProvider {
 
     @Override
     public List<FileCoverageSummary> getResults() {
-        CoverageVO cov = getCoverage();
+        Coverage cov = getCoverage();
         if (cov == null) {
             return null;
         }
 
         List<FileCoverageSummary> result = new ArrayList<FileCoverageSummary>(cov.getFiles().size());
-        for (FileVO file : cov.getFiles()) {
+        for (Coverage.File file : cov.getFiles()) {
             if (isUnderneathSourcesOnlyAndVisible(file.getPath())) {
                 result.add(getFileCoverageSummary(file));
             }
@@ -219,22 +219,22 @@ public final class PhpCoverageProvider implements CoverageProvider {
         return null;
     }
 
-    private CoverageVO getCoverage() {
-        CoverageVO cov = null;
+    private Coverage getCoverage() {
+        Coverage cov;
         synchronized (lock) {
             cov = coverage;
         }
         return cov;
     }
 
-    static FileCoverageSummary getFileCoverageSummary(FileVO file) {
+    static FileCoverageSummary getFileCoverageSummary(Coverage.File file) {
         assert file != null;
         FileObject fo = FileUtil.toFileObject(new File(file.getPath()));
         return new FileCoverageSummary(
                 fo,
                 fo.getNameExt(),
-                file.getMetrics().statements,
-                file.getMetrics().coveredStatements,
+                file.getMetrics().getStatements(),
+                file.getMetrics().getCoveredStatements(),
                 -1,
                 -1);
     }

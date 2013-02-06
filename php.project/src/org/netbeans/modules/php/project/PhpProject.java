@@ -56,12 +56,13 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Icon;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
@@ -74,7 +75,6 @@ import org.netbeans.api.search.SearchScopeOptions;
 import org.netbeans.api.search.provider.SearchInfo;
 import org.netbeans.api.search.provider.SearchInfoUtils;
 import org.netbeans.api.search.provider.SearchListener;
-import org.netbeans.modules.php.api.framework.PhpFrameworks;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.project.api.PhpSeleniumProvider;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
@@ -94,6 +94,7 @@ import org.netbeans.modules.php.project.ui.options.PhpOptions;
 import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.netbeans.modules.php.spi.framework.PhpFrameworkProvider;
 import org.netbeans.modules.php.spi.framework.PhpModuleIgnoredFilesExtender;
+import org.netbeans.modules.php.spi.testing.PhpTestingProvider;
 import org.netbeans.modules.web.common.spi.ProjectWebRootProvider;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.AntBasedProjectRegistration;
@@ -122,8 +123,6 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
-import org.openide.util.LookupEvent;
-import org.openide.util.LookupListener;
 import org.openide.util.Mutex;
 import org.openide.util.WeakListeners;
 import org.openide.util.WeakSet;
@@ -174,11 +173,11 @@ public final class PhpProject implements Project {
     // changes in ignored files - special case because of PhpVisibilityQuery
     final ChangeSupport ignoredFoldersChangeSupport = new ChangeSupport(this);
 
-    // frameworks
-    private volatile boolean frameworksDirty = true;
-    final List<PhpFrameworkProvider> frameworks = new CopyOnWriteArrayList<PhpFrameworkProvider>();
+    final Frameworks frameworks;
+    final TestingProviders testingProviders;
+    private final ChangeListener frameworksListener;
+
     volatile FileChangeListener sourceDirectoryFileChangeListener = null;
-    private final LookupListener frameworksListener = new FrameworksListener();
 
     // project's property changes
     public static final String PROP_FRAMEWORKS = "frameworks"; // NOI18N
@@ -197,8 +196,15 @@ public final class PhpProject implements Project {
         sourceRoots = SourceRoots.create(updateHelper, eval, refHelper, SourceRoots.Type.SOURCES);
         testRoots = SourceRoots.create(updateHelper, eval, refHelper, SourceRoots.Type.TESTS);
         seleniumRoots = SourceRoots.create(updateHelper, eval, refHelper, SourceRoots.Type.SELENIUM);
-        lookup = createLookup(configuration);
 
+        PhpModuleImpl phpModule = new PhpModuleImpl(this);
+        frameworks = new Frameworks(phpModule);
+        testingProviders = new TestingProviders(phpModule);
+
+        // lookup
+        lookup = createLookup(configuration, phpModule);
+
+        // listeners
         addWeakPropertyEvaluatorListener(projectPropertiesListener);
         helper.addAntProjectListener(WeakListeners.create(AntProjectListener.class, phpAntProjectListener, helper));
         sourceRoots.addPropertyChangeListener(new PropertyChangeListener() {
@@ -207,6 +213,13 @@ public final class PhpProject implements Project {
                 sourceDirectoryFileChangeListener = null;
             }
         });
+        frameworksListener = new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                fireFrameworksChange();
+            }
+        };
+        frameworks.addChangeListener(WeakListeners.change(frameworksListener, frameworks));
     }
 
     @Override
@@ -355,7 +368,7 @@ public final class PhpProject implements Project {
     }
 
     public PhpModule getPhpModule() {
-        PhpModule phpModule = getLookup().lookup(PhpModule.class);
+        PhpModule phpModule = getLookup().lookup(PhpModuleImpl.class);
         assert phpModule != null;
         return phpModule;
     }
@@ -459,30 +472,22 @@ public final class PhpProject implements Project {
     }
 
     public List<PhpFrameworkProvider> getFrameworks() {
-        if (PhpProjectValidator.isFatallyBroken(this)) {
-            // corrupted project
-            return Collections.emptyList();
+        return frameworks.getFrameworks();
+    }
+
+    public void resetFrameworks() {
+        List<PhpFrameworkProvider> oldFrameworkProviders = getFrameworks();
+        frameworks.resetFrameworks();
+        List<PhpFrameworkProvider> newFrameworkProviders = getFrameworks();
+        if (!oldFrameworkProviders.equals(newFrameworkProviders)) {
+            fireFrameworksChange();
         }
-        if (frameworksDirty) {
-            synchronized (frameworks) {
-                if (frameworksDirty) {
-                    frameworksDirty = false;
-                    List<PhpFrameworkProvider> newFrameworks = new LinkedList<PhpFrameworkProvider>();
-                    PhpModule phpModule = getPhpModule();
-                    for (PhpFrameworkProvider frameworkProvider : PhpFrameworks.getFrameworks()) {
-                        if (frameworkProvider.isInPhpModule(phpModule)) {
-                            if (LOGGER.isLoggable(Level.FINE)) {
-                                LOGGER.fine(String.format("Adding framework %s for project %s", frameworkProvider.getIdentifier(), getName()));
-                            }
-                            newFrameworks.add(frameworkProvider);
-                        }
-                    }
-                    frameworks.clear();
-                    frameworks.addAll(newFrameworks);
-                }
-            }
-        }
-        return new ArrayList<PhpFrameworkProvider>(frameworks);
+    }
+
+    void fireFrameworksChange() {
+        propertyChangeSupport.firePropertyChange(PROP_FRAMEWORKS, null, null);
+        // #209206 - also, likely some files are newly hidden/visible
+        fireIgnoredFilesChange();
     }
 
     public boolean hasConfigFiles() {
@@ -495,15 +500,16 @@ public final class PhpProject implements Project {
         return false;
     }
 
-    public void resetFrameworks() {
-        List<PhpFrameworkProvider> oldFrameworkProviders = getFrameworks();
-        frameworksDirty = true;
-        List<PhpFrameworkProvider> newFrameworkProviders = getFrameworks();
-        if (!oldFrameworkProviders.equals(newFrameworkProviders)) {
-            propertyChangeSupport.firePropertyChange(PROP_FRAMEWORKS, null, null);
-            // #209206 - also, likely some files are newly hidden/visible
-            fireIgnoredFilesChange();
+    public List<PhpTestingProvider> getTestingProviders() {
+        return testingProviders.getTestingProviders();
+    }
+
+    @CheckForNull
+    public PhpTestingProvider getFirstTestingProvider() {
+        for (PhpTestingProvider testingProvider : getTestingProviders()) {
+            return testingProvider;
         }
+        return null;
     }
 
     public String getName() {
@@ -573,7 +579,7 @@ public final class PhpProject implements Project {
         return getLookup().lookup(CopySupport.class);
     }
 
-    private Lookup createLookup(AuxiliaryConfiguration configuration) {
+    private Lookup createLookup(AuxiliaryConfiguration configuration, PhpModule phpModule) {
         PhpProjectEncodingQueryImpl phpProjectEncodingQueryImpl = new PhpProjectEncodingQueryImpl(getEvaluator());
         return Lookups.fixed(new Object[] {
                 this,
@@ -586,7 +592,7 @@ public final class PhpProject implements Project {
                 new PhpProjectXmlSavedHook(),
                 new PhpActionProvider(this),
                 new PhpConfigurationProvider(this),
-                new PhpModuleImpl(this),
+                phpModule,
                 PhpLanguagePropertiesAccessor.getDefault().createForProject(this),
                 new PhpEditorExtender(this),
                 helper.createCacheDirectoryProvider(),
@@ -664,12 +670,13 @@ public final class PhpProject implements Project {
     private final class PhpOpenedHook extends ProjectOpenedHook {
         @Override
         protected void projectOpened() {
+            new ProjectUpgrader(PhpProject.this).upgrade();
+
+            testingProviders.projectOpened();
+            frameworks.projectOpened();
+
             reinitFolders();
 
-            resetFrameworks();
-            LOGGER.log(Level.FINE, "Adding frameworks listener for {0}", getName());
-            PhpFrameworks.addFrameworksListener(frameworksListener);
-            List<PhpFrameworkProvider> frameworkProviders = getFrameworks();
             getName();
 
             PhpOptions.getInstance().ensurePhpGlobalIncludePath();
@@ -688,18 +695,11 @@ public final class PhpProject implements Project {
                 PhpCoverageProvider.notifyProjectOpened(PhpProject.this);
             }
 
-            // frameworks
-            PhpModule phpModule = getPhpModule();
-            assert phpModule != null;
-            for (PhpFrameworkProvider frameworkProvider : frameworkProviders) {
-                frameworkProvider.phpModuleOpened(phpModule);
-            }
-
             // #187060 - exception in projectOpened => project IS NOT opened (so move it at the end of the hook)
             getCopySupport().projectOpened();
 
             // log usage
-            PhpProjectUtils.logUsage(PhpProject.class, "USG_PROJECT_OPEN_PHP", Arrays.asList(PhpProjectUtils.getFrameworksForUsage(frameworkProviders))); // NOI18N
+            PhpProjectUtils.logUsage(PhpProject.class, "USG_PROJECT_OPEN_PHP", Arrays.asList(PhpProjectUtils.getFrameworksForUsage(frameworks.getFrameworks()))); // NOI18N
             // #192386
             LOGGER.finest("PROJECT_OPENED_FINISHED");
         }
@@ -707,9 +707,8 @@ public final class PhpProject implements Project {
         @Override
         protected void projectClosed() {
             try {
-                LOGGER.log(Level.FINE, "Removing frameworks listener for {0}", getName());
-                PhpFrameworks.removeFrameworksListener(frameworksListener);
-
+                testingProviders.projectClosed();
+                frameworks.projectClosed();
 
                 ClassPathProviderImpl cpProvider = lookup.lookup(ClassPathProviderImpl.class);
                 ClassPath[] bootClassPaths = cpProvider.getProjectClassPaths(PhpSourcePath.BOOT_CP);
@@ -717,13 +716,6 @@ public final class PhpProject implements Project {
                 GlobalPathRegistry.getDefault().unregister(PhpSourcePath.SOURCE_CP, cpProvider.getProjectClassPaths(PhpSourcePath.SOURCE_CP));
                 for (ClassPath classPath : bootClassPaths) {
                     IncludePathClassPathProvider.removeProjectIncludePath(classPath);
-                }
-
-                // frameworks
-                PhpModule phpModule = getPhpModule();
-                assert phpModule != null;
-                for (PhpFrameworkProvider frameworkProvider : getFrameworks()) {
-                    frameworkProvider.phpModuleClosed(phpModule);
                 }
 
                 // internal web server
@@ -846,14 +838,6 @@ public final class PhpProject implements Project {
 
         void processFileChange() {
             LOGGER.fine("file change, frameworks back to null");
-            resetFrameworks();
-        }
-    }
-
-    private final class FrameworksListener implements LookupListener {
-        @Override
-        public void resultChanged(LookupEvent ev) {
-            LOGGER.fine("frameworks change, frameworks back to null");
             resetFrameworks();
         }
     }
