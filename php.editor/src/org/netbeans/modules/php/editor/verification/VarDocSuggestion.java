@@ -47,6 +47,8 @@ import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
@@ -71,7 +73,8 @@ import org.openide.util.NbBundle.Messages;
 /**
  * @author Radek Matous
  */
-public class VarDocSuggestion extends AbstractSuggestion {
+public class VarDocSuggestion extends SuggestionRule {
+    private static final Logger LOGGER = Logger.getLogger(VarDocSuggestion.class.getName());
     private static ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
 
     @Override
@@ -92,37 +95,41 @@ public class VarDocSuggestion extends AbstractSuggestion {
     }
 
     @Override
-    void compute(PHPRuleContext context, List<Hint> hints, int caretOffset) throws BadLocationException {
+    public void compute(PHPRuleContext context, List<Hint> hints) {
         final BaseDocument doc = context.doc;
-        int lineBegin = caretOffset > 0 ? Utilities.getRowStart(doc, caretOffset) : -1;
-        int lineEnd = (lineBegin != -1) ? Utilities.getRowEnd(doc, caretOffset) : -1;
+        int caretOffset = getCaretOffset();
+        OffsetRange lineBounds = VerificationUtils.createLineBounds(caretOffset, doc);
         FileObject fileObject = context.parserResult.getSnapshot().getSource().getFileObject();
-        if (lineBegin != -1 && lineEnd != -1 && caretOffset > lineBegin && fileObject != null) {
-            String identifier = Utilities.getIdentifier(doc, caretOffset);
-            if (identifier != null && identifier.startsWith("$")) {
-                PHPParseResult parseResult = (PHPParseResult) context.parserResult;
-                Model model = parseResult.getModel();
-                VariableScope variableScope = model.getVariableScope(caretOffset);
-                if (variableScope != null) {
-                    int wordStart = Utilities.getWordStart(doc, caretOffset);
-                    int wordEnd = Utilities.getWordEnd(doc, caretOffset);
-                    VariableName variable = ModelUtils.getFirst(variableScope.getDeclaredVariables(), identifier);
-                    if (variable != null && (wordEnd - wordStart) == identifier.length()) {
-                        final OffsetRange identifierRange = new OffsetRange(wordStart, wordEnd);
-                        int offset = identifierRange.getEnd();
-                        if (variable.getTypes(offset).isEmpty()) {
-                            Collection<? extends String> typeNames = variable.getTypeNames(offset);
-                            for (String type : typeNames) {
-                                if (!type.contains(VariousUtils.PRE_OPERATION_TYPE_DELIMITER)) { //NOI18N
-                                    return;
+        if (lineBounds.containsInclusive(caretOffset) && fileObject != null) {
+            try {
+                String identifier = Utilities.getIdentifier(doc, caretOffset);
+                if (identifier != null && identifier.startsWith("$")) {
+                    PHPParseResult parseResult = (PHPParseResult) context.parserResult;
+                    Model model = parseResult.getModel();
+                    VariableScope variableScope = model.getVariableScope(caretOffset);
+                    if (variableScope != null) {
+                        int wordStart = Utilities.getWordStart(doc, caretOffset);
+                        int wordEnd = Utilities.getWordEnd(doc, caretOffset);
+                        VariableName variable = ModelUtils.getFirst(variableScope.getDeclaredVariables(), identifier);
+                        if (variable != null && (wordEnd - wordStart) == identifier.length()) {
+                            final OffsetRange identifierRange = new OffsetRange(wordStart, wordEnd);
+                            int offset = identifierRange.getEnd();
+                            if (variable.getTypes(offset).isEmpty()) {
+                                Collection<? extends String> typeNames = variable.getTypeNames(offset);
+                                for (String type : typeNames) {
+                                    if (!type.contains(VariousUtils.PRE_OPERATION_TYPE_DELIMITER)) { //NOI18N
+                                        return;
+                                    }
                                 }
+                                hints.add(new Hint(VarDocSuggestion.this, getDisplayName(),
+                                        fileObject, identifierRange,
+                                        Collections.<HintFix>singletonList(new Fix(context, variable)), 500));
                             }
-                            hints.add(new Hint(VarDocSuggestion.this, getDisplayName(),
-                                    fileObject, identifierRange,
-                                    Collections.<HintFix>singletonList(new Fix(context, variable)), 500));
                         }
                     }
                 }
+            } catch (BadLocationException ex) {
+                LOGGER.log(Level.WARNING, null, ex);
             }
         }
     }

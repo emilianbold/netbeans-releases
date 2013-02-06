@@ -45,10 +45,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.Utilities;
 import org.netbeans.modules.csl.api.EditList;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintFix;
@@ -73,7 +71,7 @@ import org.openide.util.NbBundle.Messages;
  *
  * @author Radek Matous
  */
-public class AssignVariableSuggestion extends AbstractSuggestion {
+public class AssignVariableSuggestion extends SuggestionRule {
 
     private static final List<String> LANGUAGE_CUNSTRUCTS = new ArrayList<String>(Arrays.asList(new String[] {"die", "exit"})); //NOI18N
 
@@ -95,7 +93,7 @@ public class AssignVariableSuggestion extends AbstractSuggestion {
     }
 
     @Override
-    void compute(PHPRuleContext context, List<Hint> hints, int caretOffset) throws BadLocationException {
+    public void compute(PHPRuleContext context, List<Hint> hints) {
         PHPParseResult phpParseResult = (PHPParseResult) context.parserResult;
         if (phpParseResult.getProgram() == null) {
             return;
@@ -104,10 +102,10 @@ public class AssignVariableSuggestion extends AbstractSuggestion {
         if (fileObject == null) {
             return;
         }
-        int lineBegin = caretOffset > 0 ? Utilities.getRowStart(context.doc, caretOffset) : -1;
-        int lineEnd = (lineBegin != -1) ? Utilities.getRowEnd(context.doc, caretOffset) : -1;
-        if (lineBegin != -1 && lineEnd != -1 && caretOffset > lineBegin) {
-            IntroduceFixVisitor introduceFixVisitor = new IntroduceFixVisitor(context.doc, lineBegin, lineEnd);
+        int caretOffset = getCaretOffset();
+        OffsetRange lineBounds = VerificationUtils.createLineBounds(caretOffset, context.doc);
+        if (lineBounds.containsInclusive(caretOffset)) {
+            IntroduceFixVisitor introduceFixVisitor = new IntroduceFixVisitor(context.doc, lineBounds);
             phpParseResult.getProgram().accept(introduceFixVisitor);
             IntroduceFix variableFix = introduceFixVisitor.getIntroduceFix();
             if (variableFix != null) {
@@ -120,29 +118,27 @@ public class AssignVariableSuggestion extends AbstractSuggestion {
 
     private class IntroduceFixVisitor extends DefaultVisitor {
 
-        private int lineBegin;
-        private int lineEnd;
         private BaseDocument doc;
         private IntroduceFix fix;
         private List<Variable> variables;
+        private final OffsetRange lineBounds;
 
-        IntroduceFixVisitor(BaseDocument doc, int lineBegin, int lineEnd) {
+        IntroduceFixVisitor(BaseDocument doc, OffsetRange lineBounds) {
             this.doc = doc;
-            this.lineBegin = lineBegin;
-            this.lineEnd = lineEnd;
+            this.lineBounds = lineBounds;
             this.variables = new ArrayList<Variable>();
         }
 
         @Override
         public void scan(ASTNode node) {
-            if (node != null && (isBefore(node.getStartOffset(), lineEnd) || fix != null)) {
+            if (node != null && (VerificationUtils.isBefore(node.getStartOffset(), lineBounds.getEnd()) || fix != null)) {
                 super.scan(node);
             }
         }
 
         @Override
         public void visit(ExpressionStatement node) {
-            if (isInside(node.getStartOffset(), lineBegin, lineEnd)) {
+            if (lineBounds.containsInclusive(node.getStartOffset())) {
                 Expression expression = node.getExpression();
                 if (expression instanceof IgnoreError) {
                     expression = ((IgnoreError) expression).getExpression();
@@ -310,14 +306,6 @@ public class AssignVariableSuggestion extends AbstractSuggestion {
         protected String getVariableName() {
             return super.getVariableName(guessName);
         }
-    }
-
-    private static boolean isInside(int carret, int left, int right) {
-        return carret >= left && carret <= right;
-    }
-
-    private static boolean isBefore(int carret, int margin) {
-        return carret <= margin;
     }
 
     private static String firstToLower(String name) {

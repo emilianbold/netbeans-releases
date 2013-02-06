@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,57 +37,36 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.editor.verification;
-
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-import java.util.prefs.Preferences;
-import javax.swing.JComponent;
-import javax.swing.text.BadLocationException;
-import org.netbeans.modules.csl.api.Hint;
-import org.netbeans.modules.csl.api.HintSeverity;
-import org.netbeans.modules.csl.api.Rule.AstRule;
-import org.netbeans.modules.csl.api.RuleContext;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public abstract class AbstractSuggestion implements AstRule {
+public class VerificationUtilsTest extends PHPHintsTestBase {
 
-    abstract void compute(PHPRuleContext context, List<Hint> suggestions, int caretOffset) throws BadLocationException;
-
-    @Override
-    public Set<?> getKinds() {
-        return Collections.singleton(PHPHintsProvider.DEFAULT_SUGGESTIONS);
+    public VerificationUtilsTest(String testName) {
+        super(testName);
     }
 
-    @Override
-    public boolean getDefaultEnabled() {
-        return true;
+    public void testIsBeforeOnMargin() {
+        int caret = 10;
+        int margin = 10;
+        assert VerificationUtils.isBefore(caret, margin);
     }
 
-    @Override
-    public JComponent getCustomizer(Preferences node) {
-        return null;
+    public void testIsBeforeLowerThanMargin() {
+        int caret = 5;
+        int margin = 10;
+        assert VerificationUtils.isBefore(caret, margin);
     }
 
-    @Override
-    public boolean appliesTo(RuleContext context) {
-        return context instanceof PHPRuleContext;
-    }
-
-    @Override
-    public boolean showInTasklist() {
-        return false;
-    }
-
-    @Override
-    public HintSeverity getDefaultSeverity() {
-        return HintSeverity.CURRENT_LINE_WARNING;
+    public void testIsBeforeGreaterThatMargin() {
+        int caret = 20;
+        int margin = 10;
+        assert !VerificationUtils.isBefore(caret, margin);
     }
 
 }

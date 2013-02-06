@@ -50,7 +50,6 @@ import org.netbeans.modules.csl.api.EditList;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintFix;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.csl.api.Rule;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.Block;
 import org.netbeans.modules.php.editor.parser.astnodes.DoStatement;
@@ -67,10 +66,10 @@ import org.openide.util.NbBundle;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public abstract class BracesHint extends AbstractHint {
+public abstract class BracesHint extends HintRule {
 
     @Override
-    void compute(PHPRuleContext context, List<Hint> hints) {
+    public void compute(PHPRuleContext context, List<Hint> hints) {
         PHPParseResult phpParseResult = (PHPParseResult) context.parserResult;
         if (phpParseResult.getProgram() != null) {
             FileObject fileObject = phpParseResult.getSnapshot().getSource().getFileObject();
@@ -322,7 +321,7 @@ public abstract class BracesHint extends AbstractHint {
         private final List<Hint> hints;
         private final BaseDocument baseDocument;
         private final FileObject fileObject;
-        private final Rule bracesHint;
+        private final BracesHint bracesHint;
 
         private CheckVisitor(BracesHint bracesHint, FileObject fileObject, BaseDocument baseDocument) {
             this.bracesHint = bracesHint;
@@ -333,7 +332,9 @@ public abstract class BracesHint extends AbstractHint {
 
         protected void addHint(Statement enclosingStatement, Statement node, String description) {
             OffsetRange offsetRange = new OffsetRange(node.getStartOffset(), node.getEndOffset());
-            hints.add(new Hint(bracesHint, description, fileObject, offsetRange, Collections.<HintFix>singletonList(new Fix(enclosingStatement, node, baseDocument)), 500));
+            if (bracesHint.showHint(offsetRange, baseDocument)) {
+                hints.add(new Hint(bracesHint, description, fileObject, offsetRange, Collections.<HintFix>singletonList(new Fix(enclosingStatement, node, baseDocument)), 500));
+            }
         }
 
         public List<Hint> getHints() {

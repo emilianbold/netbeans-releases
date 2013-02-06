@@ -70,7 +70,7 @@ import org.openide.util.NbBundle.Messages;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class AccidentalAssignmentHint extends AbstractHint implements PHPRuleWithPreferences {
+public class AccidentalAssignmentHint extends HintRule implements CustomisableRule {
 
     private static final String HINT_ID = "Accidental.Assignment.Hint"; //NOI18N
     private static final String CHECK_ASSIGNMENTS_IN_SUB_STATEMENTS = "php.verification.check.assignments.in.sub.statements"; //NOI18N
@@ -81,7 +81,7 @@ public class AccidentalAssignmentHint extends AbstractHint implements PHPRuleWit
     private Preferences preferences;
 
     @Override
-    void compute(PHPRuleContext context, List<Hint> hints) {
+    public void compute(PHPRuleContext context, List<Hint> hints) {
         PHPParseResult phpParseResult = (PHPParseResult) context.parserResult;
         if (phpParseResult.getProgram() == null) {
             return;
@@ -120,7 +120,14 @@ public class AccidentalAssignmentHint extends AbstractHint implements PHPRuleWit
         })
         private void createHint(Assignment assignment) {
             OffsetRange offsetRange = new OffsetRange(assignment.getStartOffset(), assignment.getEndOffset());
-            hints.add(new Hint(AccidentalAssignmentHint.this, Bundle.AccidentalAssignmentHintCustom(asText(assignment)), fileObject, offsetRange, createFixes(assignment), 500));
+            if (showHint(offsetRange, doc)) {
+                hints.add(new Hint(
+                        AccidentalAssignmentHint.this,
+                        Bundle.AccidentalAssignmentHintCustom(asText(assignment)),
+                        fileObject,
+                        offsetRange,
+                        createFixes(assignment), 500));
+            }
         }
 
         private String asText(Assignment assignment) {

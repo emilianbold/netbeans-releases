@@ -64,14 +64,14 @@ import org.openide.util.NbBundle.Messages;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class MethodRedeclarationHintError extends HintError {
+public class MethodRedeclarationHintError extends HintErrorRule {
 
     private FileObject fileObject;
     private List<Hint> hints;
     private Set<Statement> conditionStatements = Collections.emptySet();
 
     @Override
-    void compute(PHPRuleContext context, List<Hint> hints) {
+    public void compute(PHPRuleContext context, List<Hint> hints) {
         PHPParseResult phpParseResult = (PHPParseResult) context.parserResult;
         if (phpParseResult.getProgram() == null) {
             return;

@@ -72,12 +72,12 @@ import org.openide.util.NbBundle.Messages;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class AmbiguousComparisonHint extends AbstractHint {
+public class AmbiguousComparisonHint extends HintRule {
 
     private static final String HINT_ID = "Ambiguous.Comparison.Hint"; //NOI18N
 
     @Override
-    void compute(final PHPRuleContext context, final List<Hint> hints) {
+    public void compute(final PHPRuleContext context, final List<Hint> hints) {
         final PHPParseResult phpParseResult = (PHPParseResult) context.parserResult;
         if (phpParseResult.getProgram() == null) {
             return;
@@ -112,13 +112,15 @@ public class AmbiguousComparisonHint extends AbstractHint {
         @Messages("AmbiguousComparisonHintCustom=Possible accidental comparison found. Check if you wanted to use '=' instead.")
         private void createHint(final InfixExpression node) {
             final OffsetRange offsetRange = new OffsetRange(node.getStartOffset(), node.getEndOffset());
-            hints.add(new Hint(
-                    AmbiguousComparisonHint.this,
-                    Bundle.AmbiguousComparisonHintCustom(),
-                    fileObject,
-                    offsetRange,
-                    Collections.<HintFix>singletonList(new AssignmentHintFix(doc, node)),
-                    500));
+            if (showHint(offsetRange, doc)) {
+                hints.add(new Hint(
+                        AmbiguousComparisonHint.this,
+                        Bundle.AmbiguousComparisonHintCustom(),
+                        fileObject,
+                        offsetRange,
+                        Collections.<HintFix>singletonList(new AssignmentHintFix(doc, node)),
+                        500));
+            }
         }
 
         @Override

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,63 +37,46 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.editor.verification;
 
-import org.netbeans.modules.csl.api.Error.Badging;
-import org.netbeans.modules.csl.api.Severity;
-import org.openide.filesystems.FileObject;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.text.BadLocationException;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.Utilities;
+import org.netbeans.modules.csl.api.OffsetRange;
 
 /**
- * Class encapsulating errors caused by verification package.
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public abstract class PHPVerificationError implements Badging {
-    private final FileObject fileObject;
-    private final int startOffset;
-    private final int endOffset;
+public final class VerificationUtils {
+    private static final Logger LOGGER = Logger.getLogger(VerificationUtils.class.getName());
 
-    public PHPVerificationError(FileObject fileObject, int startOffset, int endOffset) {
-        this.fileObject = fileObject;
-        this.startOffset = startOffset;
-        this.endOffset = endOffset;
+    private VerificationUtils() {
     }
 
-    @Override
-    public boolean showExplorerBadge() {
-        return true;
+    public static boolean isBefore(int caret, int margin) {
+        return caret <= margin;
     }
 
-    @Override
-    public FileObject getFile() {
-        return fileObject;
-    }
-
-    @Override
-    public int getStartPosition() {
-        return startOffset;
-    }
-
-    @Override
-    public int getEndPosition() {
-        return endOffset;
-    }
-
-    @Override
-    public boolean isLineError() {
-        return true;
-    }
-
-    @Override
-    public Severity getSeverity() {
-        return Severity.ERROR;
-    }
-
-    @Override
-    public Object[] getParameters() {
-        return new Object[]{};
+    public static OffsetRange createLineBounds(int caretOffset, BaseDocument doc) {
+        assert doc != null;
+        OffsetRange result = OffsetRange.NONE;
+        if (caretOffset != -1) {
+            try {
+                int lineBegin = caretOffset > 0 ? Utilities.getRowStart(doc, caretOffset) : -1;
+                int lineEnd = (lineBegin != -1) ? Utilities.getRowEnd(doc, caretOffset) : -1;
+                if (lineBegin != -1 && lineEnd != -1 && lineBegin <= lineEnd) {
+                    result = new OffsetRange(lineBegin, lineEnd);
+                }
+            } catch (BadLocationException ex) {
+                LOGGER.log(Level.WARNING, null, ex);
+            }
+        }
+        return result;
     }
 
 }

@@ -42,29 +42,16 @@
 
 package org.netbeans.modules.php.editor.verification;
 
-import org.netbeans.api.annotations.common.NullAllowed;
-import org.netbeans.modules.csl.api.RuleContext;
-import org.netbeans.modules.php.editor.api.ElementQuery;
-import org.netbeans.modules.php.editor.api.ElementQueryFactory;
-import org.netbeans.modules.php.editor.model.FileScope;
-import org.netbeans.modules.php.editor.parser.PHPParseResult;
+import java.util.prefs.Preferences;
+import org.netbeans.modules.csl.api.Rule.AstRule;
+import org.netbeans.modules.csl.api.Rule.UserConfigurableRule;
 
 /**
  *
- * @author Tomasz.Slota@Sun.COM
+ * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class PHPRuleContext extends RuleContext {
-    private ElementQuery.Index index;
-    @NullAllowed
-    FileScope fileScope;
+public interface CustomisableRule extends AstRule, UserConfigurableRule {
 
-    public ElementQuery.Index getIndex() {
-        if (index == null) {
-            if (parserResult instanceof PHPParseResult) {
-                index = ElementQueryFactory.getIndexQuery((PHPParseResult) parserResult);
-            }
-        }
-        return index;
-    }
+    void setPreferences(Preferences prefs);
 
 }

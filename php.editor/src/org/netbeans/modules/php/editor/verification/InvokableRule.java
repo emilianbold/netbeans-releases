@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,56 +37,18 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.php.editor.verification;
 
-import java.util.Collections;
 import java.util.List;
-import java.util.Set;
-import java.util.prefs.Preferences;
-import javax.swing.JComponent;
-import org.netbeans.modules.csl.api.Hint;
-import org.netbeans.modules.csl.api.HintSeverity;
-import org.netbeans.modules.csl.api.Rule.AstRule;
-import org.netbeans.modules.csl.api.RuleContext;
 
 /**
  *
- * @author Radek Matous
+ * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public abstract class AbstractHint implements AstRule {
+public interface InvokableRule<T> {
 
-    abstract void compute(PHPRuleContext context, List<Hint> hints);
+    void compute(PHPRuleContext context, List<T> result);
 
-    @Override
-    public Set<? extends Object> getKinds() {
-        return Collections.singleton(PHPHintsProvider.DEFAULT_HINTS);
-    }
-
-    @Override
-    public boolean getDefaultEnabled() {
-        return true;
-    }
-
-    @Override
-    public JComponent getCustomizer(Preferences node) {
-        return null;
-    }
-
-    @Override
-    public boolean appliesTo(RuleContext context) {
-        return context instanceof PHPRuleContext;
-    }
-
-    @Override
-    public boolean showInTasklist() {
-        return false;
-    }
-
-    @Override
-    public HintSeverity getDefaultSeverity() {
-        return HintSeverity.WARNING;
-    }
 }

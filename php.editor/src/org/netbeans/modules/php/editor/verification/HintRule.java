@@ -37,34 +37,73 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.php.editor.verification;
 
-import org.netbeans.api.annotations.common.NullAllowed;
+import java.util.Collections;
+import java.util.Set;
+import java.util.prefs.Preferences;
+import javax.swing.JComponent;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.csl.api.Hint;
+import org.netbeans.modules.csl.api.HintSeverity;
+import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.RuleContext;
-import org.netbeans.modules.php.editor.api.ElementQuery;
-import org.netbeans.modules.php.editor.api.ElementQueryFactory;
-import org.netbeans.modules.php.editor.model.FileScope;
-import org.netbeans.modules.php.editor.parser.PHPParseResult;
 
 /**
  *
- * @author Tomasz.Slota@Sun.COM
+ * @author Radek Matous
  */
-public class PHPRuleContext extends RuleContext {
-    private ElementQuery.Index index;
-    @NullAllowed
-    FileScope fileScope;
+public abstract class HintRule implements CaretSensitiveRule, InvokableRule<Hint> {
+    private int caretOffset;
+    private OffsetRange lineBounds;
 
-    public ElementQuery.Index getIndex() {
-        if (index == null) {
-            if (parserResult instanceof PHPParseResult) {
-                index = ElementQueryFactory.getIndexQuery((PHPParseResult) parserResult);
-            }
-        }
-        return index;
+    @Override
+    public void setCaretOffset(int caretOffset) {
+        this.caretOffset = caretOffset;
     }
 
+    protected boolean showHint(OffsetRange hintOffsetRange, BaseDocument doc) {
+        OffsetRange currentLineBounds = getLineBounds(doc);
+        return currentLineBounds == OffsetRange.NONE || hintOffsetRange.overlaps(currentLineBounds);
+    }
+
+    private synchronized OffsetRange getLineBounds(BaseDocument doc) {
+        if (lineBounds == null) {
+            lineBounds = VerificationUtils.createLineBounds(caretOffset, doc);
+        }
+        return lineBounds;
+    }
+
+    @Override
+    public Set<? extends Object> getKinds() {
+        return Collections.singleton(PHPHintsProvider.DEFAULT_HINTS);
+    }
+
+    @Override
+    public boolean getDefaultEnabled() {
+        return true;
+    }
+
+    @Override
+    public JComponent getCustomizer(Preferences node) {
+        return null;
+    }
+
+    @Override
+    public boolean appliesTo(RuleContext context) {
+        return context instanceof PHPRuleContext;
+    }
+
+    @Override
+    public boolean showInTasklist() {
+        return false;
+    }
+
+    @Override
+    public HintSeverity getDefaultSeverity() {
+        return HintSeverity.WARNING;
+    }
 }

@@ -43,9 +43,9 @@ package org.netbeans.modules.php.editor.verification;
 
 import java.util.Collection;
 import java.util.List;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.csl.api.Rule;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.api.elements.ParameterElement;
 import org.netbeans.modules.php.editor.model.ClassScope;
@@ -62,16 +62,19 @@ import org.openide.util.NbBundle;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class ParentConstructorCallHint extends AbstractHint {
+public class ParentConstructorCallHint extends HintRule {
     private static final String HINT_ID = "Parent.Constructor.Call.Hint"; //NOI18N
     private List<Hint> hints;
+    private BaseDocument baseDocument;
+    private FileObject fileObject;
 
     @Override
-    void compute(PHPRuleContext context, List<Hint> hints) {
+    public void compute(PHPRuleContext context, List<Hint> hints) {
         this.hints = hints;
         PHPParseResult phpParseResult = (PHPParseResult) context.parserResult;
+        baseDocument = context.doc;
         if (phpParseResult.getProgram() != null) {
-            FileObject fileObject = phpParseResult.getSnapshot().getSource().getFileObject();
+            fileObject = phpParseResult.getSnapshot().getSource().getFileObject();
             if (fileObject != null) {
                 checkHints(phpParseResult, fileObject);
             }
@@ -87,9 +90,20 @@ public class ParentConstructorCallHint extends AbstractHint {
                 ParametersDescriptor parametersDescriptor = new ParametersDescriptor(overriddenConstructor.getParameters());
                 CheckVisitor checkVisitor = new CheckVisitor(constructor.getOffset());
                 phpParseResult.getProgram().accept(checkVisitor);
-                HintsCreator hintsCreator = new HintsCreator(hints, this, parametersDescriptor, fileObject, constructor.getNameRange());
-                hintsCreator.create(checkVisitor.getConstructorCallDescriptor());
+                createHint(checkVisitor.getConstructorCallDescriptor(), parametersDescriptor, constructor.getNameRange());
             }
+        }
+    }
+
+    private void createHint(ConstructorCallDescriptor constructorCallDescriptor, ParametersDescriptor parametersDescriptor, OffsetRange offsetRange) {
+        if (constructorCallDescriptor.shouldBeHinted(parametersDescriptor) && showHint(offsetRange, baseDocument)) {
+            hints.add(new Hint(
+                    this,
+                    constructorCallDescriptor.createMessage(parametersDescriptor),
+                    fileObject,
+                    offsetRange,
+                    null,
+                    500));
         }
     }
 
@@ -140,35 +154,6 @@ public class ParentConstructorCallHint extends AbstractHint {
                 if (functionName.equals("__construct")) { //NOI18N
                     constructorCallDescriptor = new ConstructorCallDescriptor(ConstructorCallDescriptor.Description.IS_CALLED, node.getMethod().getParameters().size());
                 }
-            }
-        }
-
-    }
-
-    private static final class HintsCreator {
-        private final List<Hint> hints;
-        private final Rule rule;
-        private final ParametersDescriptor parametersDescriptor;
-        private final FileObject fileObject;
-        private final OffsetRange offsetRange;
-
-        public HintsCreator(List<Hint> hints, Rule rule, ParametersDescriptor parametersDescriptor, FileObject fileObject, OffsetRange offsetRange) {
-            this.hints = hints;
-            this.rule = rule;
-            this.parametersDescriptor = parametersDescriptor;
-            this.fileObject = fileObject;
-            this.offsetRange = offsetRange;
-        }
-
-        private void create(ConstructorCallDescriptor constructorCallDescriptor) {
-            if (constructorCallDescriptor.shouldBeHinted(parametersDescriptor)) {
-                hints.add(new Hint(
-                        rule,
-                        constructorCallDescriptor.createMessage(parametersDescriptor),
-                        fileObject,
-                        offsetRange,
-                        null,
-                        500));
             }
         }
 

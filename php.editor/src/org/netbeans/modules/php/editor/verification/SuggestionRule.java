@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,19 +37,62 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.php.editor.verification;
 
+import java.util.Collections;
+import java.util.Set;
 import java.util.prefs.Preferences;
+import javax.swing.JComponent;
+import org.netbeans.modules.csl.api.Hint;
+import org.netbeans.modules.csl.api.HintSeverity;
+import org.netbeans.modules.csl.api.RuleContext;
 
 /**
  *
- * @author Tomasz.Slota@Sun.COM
+ * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public interface PHPRuleWithPreferences {
+public abstract class SuggestionRule implements CaretSensitiveRule, InvokableRule<Hint> {
+    private int caretOffset;
 
-    void setPreferences(Preferences prefs);
+    @Override
+    public void setCaretOffset(int caretOffset) {
+        this.caretOffset = caretOffset;
+    }
+
+    public int getCaretOffset() {
+        return caretOffset;
+    }
+
+    @Override
+    public Set<?> getKinds() {
+        return Collections.singleton(PHPHintsProvider.DEFAULT_SUGGESTIONS);
+    }
+
+    @Override
+    public boolean getDefaultEnabled() {
+        return true;
+    }
+
+    @Override
+    public JComponent getCustomizer(Preferences node) {
+        return null;
+    }
+
+    @Override
+    public boolean appliesTo(RuleContext context) {
+        return context instanceof PHPRuleContext;
+    }
+
+    @Override
+    public boolean showInTasklist() {
+        return false;
+    }
+
+    @Override
+    public HintSeverity getDefaultSeverity() {
+        return HintSeverity.CURRENT_LINE_WARNING;
+    }
 
 }

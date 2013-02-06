@@ -44,6 +44,7 @@ package org.netbeans.modules.php.editor.verification;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.editor.CodeUtils;
@@ -63,15 +64,15 @@ import org.openide.util.NbBundle;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public abstract class SuperglobalsHint extends AbstractHint {
+public abstract class SuperglobalsHint extends HintRule {
 
     @Override
-    void compute(PHPRuleContext context, List<Hint> hints) {
+    public void compute(PHPRuleContext context, List<Hint> hints) {
         PHPParseResult phpParseResult = (PHPParseResult) context.parserResult;
         if (phpParseResult.getProgram() != null) {
             FileObject fileObject = phpParseResult.getSnapshot().getSource().getFileObject();
             if (fileObject != null) {
-                CheckVisitor checkVisitor = new CheckVisitor(this, fileObject);
+                CheckVisitor checkVisitor = new CheckVisitor(this, fileObject, context.doc);
                 phpParseResult.getProgram().accept(checkVisitor);
                 hints.addAll(checkVisitor.getHints());
             }
@@ -180,13 +181,15 @@ public abstract class SuperglobalsHint extends AbstractHint {
     private static final class CheckVisitor extends DefaultTreePathVisitor {
         private final SuperglobalsHint superglobalsHint;
         private final FileObject fileObject;
+        private final BaseDocument baseDocument;
         private final LinkedList<Hint> hints;
 
-        private CheckVisitor(SuperglobalsHint superglobalsHint, FileObject fileObject) {
+        private CheckVisitor(SuperglobalsHint superglobalsHint, FileObject fileObject, BaseDocument baseDocument) {
             assert superglobalsHint != null;
             assert fileObject != null;
             this.superglobalsHint = superglobalsHint;
             this.fileObject = fileObject;
+            this.baseDocument = baseDocument;
             this.hints = new LinkedList<Hint>();
         }
 
@@ -211,7 +214,9 @@ public abstract class SuperglobalsHint extends AbstractHint {
         protected void addHint(ASTNode node) {
             assert node != null;
             OffsetRange offsetRange = new OffsetRange(node.getStartOffset(), node.getEndOffset());
-            hints.add(new Hint(superglobalsHint, Bundle.SuperglobalHintText(superglobalsHint.getSuperglobalName()), fileObject, offsetRange, null, 500));
+            if (superglobalsHint.showHint(offsetRange, baseDocument)) {
+                hints.add(new Hint(superglobalsHint, Bundle.SuperglobalHintText(superglobalsHint.getSuperglobalName()), fileObject, offsetRange, null, 500));
+            }
         }
 
         protected boolean isValidAccess() {

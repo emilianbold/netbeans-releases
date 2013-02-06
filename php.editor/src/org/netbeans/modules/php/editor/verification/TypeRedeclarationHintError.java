@@ -65,7 +65,7 @@ import org.openide.util.NbBundle.Messages;
 /**
  * @author Radek Matous, Ondrej Brejla
  */
-public class TypeRedeclarationHintError extends HintError {
+public class TypeRedeclarationHintError extends HintErrorRule {
     private Set<Statement> conditionStatements = Collections.emptySet();
     private FileObject fileObject;
     private List<Hint> hints;
@@ -77,7 +77,7 @@ public class TypeRedeclarationHintError extends HintError {
         "# {0} - Type name",
         "TypeRedeclarationDesc=Type \"{0}\" has been already declared"
     })
-    void compute(PHPRuleContext context, List<Hint> hints) {
+    public void compute(PHPRuleContext context, List<Hint> hints) {
         PHPParseResult phpParseResult = (PHPParseResult) context.parserResult;
         if (phpParseResult.getProgram() == null) {
             return;

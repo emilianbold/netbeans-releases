@@ -70,7 +70,7 @@ import org.openide.util.NbBundle;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class ErrorControlOperatorHint extends AbstractHint {
+public class ErrorControlOperatorHint extends HintRule {
     private static final String HINT_ID = "error.control.operator.hint"; //NOI18N
     private static final Set<IgnoreErrorValidator> IGNORE_ERROR_VALIDATORS = new HashSet<IgnoreErrorValidator>();
     static {
@@ -86,7 +86,7 @@ public class ErrorControlOperatorHint extends AbstractHint {
     }
 
     @Override
-    void compute(PHPRuleContext context, List<Hint> hints) {
+    public void compute(PHPRuleContext context, List<Hint> hints) {
         PHPParseResult phpParseResult = (PHPParseResult) context.parserResult;
         if (phpParseResult.getProgram() != null) {
             FileObject fileObject = phpParseResult.getSnapshot().getSource().getFileObject();
@@ -120,7 +120,13 @@ public class ErrorControlOperatorHint extends AbstractHint {
         public void visit(IgnoreError node) {
             super.visit(node);
             if (!isValidCase(node)) {
-                OffsetRange offsetRange = new OffsetRange(node.getStartOffset(), node.getEndOffset());
+                createHint(node);
+            }
+        }
+
+        private void createHint(IgnoreError node) {
+            OffsetRange offsetRange = new OffsetRange(node.getStartOffset(), node.getEndOffset());
+            if (showHint(offsetRange, baseDocument)) {
                 hints.add(new Hint(
                         ErrorControlOperatorHint.this,
                         Bundle.ErrorControlOperatorHintText(),

@@ -41,22 +41,59 @@
  */
 package org.netbeans.modules.php.editor.verification;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-import org.netbeans.modules.csl.api.Hint;
+import org.netbeans.modules.csl.api.Error.Badging;
+import org.netbeans.modules.csl.api.Severity;
+import org.openide.filesystems.FileObject;
 
 /**
+ * Class encapsulating errors caused by verification package.
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public abstract class HintError extends AbstractError {
+public abstract class VerificationError implements Badging {
+    private final FileObject fileObject;
+    private final int startOffset;
+    private final int endOffset;
 
-    abstract void compute(PHPRuleContext context, List<Hint> hints);
+    public VerificationError(FileObject fileObject, int startOffset, int endOffset) {
+        this.fileObject = fileObject;
+        this.startOffset = startOffset;
+        this.endOffset = endOffset;
+    }
 
     @Override
-    public Set<?> getCodes() {
-        return Collections.singleton(PHPHintsProvider.ErrorType.HINT_ERRORS);
+    public boolean showExplorerBadge() {
+        return true;
+    }
+
+    @Override
+    public FileObject getFile() {
+        return fileObject;
+    }
+
+    @Override
+    public int getStartPosition() {
+        return startOffset;
+    }
+
+    @Override
+    public int getEndPosition() {
+        return endOffset;
+    }
+
+    @Override
+    public boolean isLineError() {
+        return true;
+    }
+
+    @Override
+    public Severity getSeverity() {
+        return Severity.ERROR;
+    }
+
+    @Override
+    public Object[] getParameters() {
+        return new Object[]{};
     }
 
 }

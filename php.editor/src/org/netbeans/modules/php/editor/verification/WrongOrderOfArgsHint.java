@@ -69,12 +69,12 @@ import org.openide.util.NbBundle.Messages;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class WrongOrderOfArgsHint extends AbstractHint {
+public class WrongOrderOfArgsHint extends HintRule {
 
     private static final String HINT_ID = "Wrong.Order.Of.Args.Hint"; //NOI18N
 
     @Override
-    void compute(PHPRuleContext context, List<Hint> hints) {
+    public void compute(PHPRuleContext context, List<Hint> hints) {
         PHPParseResult phpParseResult = (PHPParseResult) context.parserResult;
         if (phpParseResult.getProgram() == null) {
             return;
@@ -113,7 +113,10 @@ public class WrongOrderOfArgsHint extends AbstractHint {
         @Messages("WrongOrderOfArgsDesc=Wrong order of arguments")
         private void processWrongFunction(FunctionDeclaration node) {
             RearrangeParametersFix hintFix = new RearrangeParametersFix(doc, node, tokenHierarchy);
-            hints.add(new Hint(WrongOrderOfArgsHint.this, Bundle.WrongOrderOfArgsDesc(), fileObject, hintFix.getOffsetRange(), Collections.<HintFix>singletonList(hintFix), 500));
+            OffsetRange offsetRange = hintFix.getOffsetRange();
+            if (showHint(offsetRange, doc)) {
+                hints.add(new Hint(WrongOrderOfArgsHint.this, Bundle.WrongOrderOfArgsDesc(), fileObject, offsetRange, Collections.<HintFix>singletonList(hintFix), 500));
+            }
         }
 
         @Override
