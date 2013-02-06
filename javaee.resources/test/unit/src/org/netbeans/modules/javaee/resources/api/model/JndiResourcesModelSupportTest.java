@@ -41,32 +41,38 @@
  */
 package org.netbeans.modules.javaee.resources.api.model;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.lang.ref.WeakReference;
+import java.util.Collections;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
-import org.netbeans.modules.j2ee.metadata.model.spi.MetadataModelFactory;
-import org.netbeans.modules.javaee.resources.impl.model.JndiResourcesModelImpl;
+import org.netbeans.modules.javaee.resources.TestBase;
 
 /**
- * Factory for obtaining of the JndiResourceModel. Entry point by getting JNDI resources.
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public class JndiResourcesModelFactory {
+public class JndiResourcesModelSupportTest extends TestBase {
 
-    private static final Logger LOGGER = Logger.getLogger(JndiResourcesModelFactory.class.getName());
-
-    private JndiResourcesModelFactory() {
+    public JndiResourcesModelSupportTest(String name) {
+        super(name);
     }
 
-    /**
-     * Creates new JndiResourcesModel for given {@link JndiResourcesModelUnit}.
-     * @param unit {@link JndiResourcesModelUnit} of involved project
-     * @return newly created JndiResourcesModel
-     */
-    public static MetadataModel<JndiResourcesModel> createMetaModel(JndiResourcesModelUnit unit) {
-        LOGGER.log(Level.FINE, "Creating metadata model for model unit: {0}", unit);
-        return MetadataModelFactory.createMetadataModel(JndiResourcesModelImpl.createMetaModel(unit));
+    public void testModelCreation() throws Exception {
+        MetadataModel<JndiResourcesModel> model = JndiResourcesModelSupport.getModel(project);
+        assertNotNull(model);
+    }
+
+    public void testModelSupportCaching() throws Exception {
+        JndiResourcesModelSupport.getModel(project);
+        WeakReference<MetadataModel<JndiResourcesModel>> reference = JndiResourcesModelSupport.MODELS.get(project);
+        assertNotNull(reference.get());
+    }
+
+    public void testModelSupportCacheEmptying() throws Exception {
+        JndiResourcesModelSupport.getModel(project);
+        WeakReference<MetadataModel<JndiResourcesModel>> reference = JndiResourcesModelSupport.MODELS.get(project);
+        assertNotNull(reference.get());
+        project = null;
+        assertGC("JndiResourcesModelSupport cache was not freed: ", reference, Collections.singleton(JndiResourcesModelSupport.MODELS));
     }
 
 }

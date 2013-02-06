@@ -240,7 +240,7 @@ public abstract class MessageDestinationUiSupport {
         return messageDestinations[0];
     }
 
-    public static Set<MessageDestination> getProjectMessageDestinations(Project project, J2eeModuleProvider j2eeModuleProvider) {
+    public static Set<MessageDestination> getProjectMessageDestinations(Project p, J2eeModuleProvider j2eeModuleProvider) {
         final Set<MessageDestination> allDestinations = new HashSet<MessageDestination>();
 
         try {
@@ -251,9 +251,8 @@ public abstract class MessageDestinationUiSupport {
         }
 
         // by project defined JNDI destinations
-        JndiResourcesModelSupport support = new JndiResourcesModelSupport(project);
         try {
-            support.getModel().runReadAction(new MetadataModelAction<JndiResourcesModel, Void>() {
+            JndiResourcesModelSupport.getModel(p).runReadAction(new MetadataModelAction<JndiResourcesModel, Void>() {
                 @Override
                 public Void run(JndiResourcesModel metadata) throws Exception {
                     for (final JmsDestination jmsDestination : metadata.getJmsDestinations()) {
