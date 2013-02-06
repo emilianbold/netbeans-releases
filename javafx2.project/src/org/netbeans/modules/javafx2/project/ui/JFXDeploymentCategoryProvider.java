@@ -56,8 +56,6 @@ public final class JFXDeploymentCategoryProvider implements ProjectCustomizer.Co
 
     private static final String CAT_DEPLOYMENT = "Deployment"; // NOI18N
     
-    private static JFXProjectProperties jfxProps = null;
-   
     @Override
     public Category createCategory(Lookup context) {
         boolean fxProjectEnabled = true;
@@ -68,7 +66,6 @@ public final class JFXDeploymentCategoryProvider implements ProjectCustomizer.Co
                     && !JFXProjectProperties.isTrue(j2sepe.evaluator().getProperty(JFXProjectProperties.JAVAFX_PRELOADER)); //NOI18N
         }
         if(fxProjectEnabled) {
-            jfxProps = JFXProjectProperties.getInstancePerSession(context, CAT_DEPLOYMENT);
             return ProjectCustomizer.Category.create(CAT_DEPLOYMENT,
                     NbBundle.getMessage(JFXDeploymentCategoryProvider.class, "LBL_Category_Deployment"), null); //NOI18N
         }
@@ -77,7 +74,7 @@ public final class JFXDeploymentCategoryProvider implements ProjectCustomizer.Co
 
     @Override
     public JComponent createComponent(Category category, Lookup context) {
-        return new JFXDeploymentPanel(jfxProps);
+        return new JFXDeploymentPanel(JFXProjectProperties.getInstance(context));
     }
 
 }
