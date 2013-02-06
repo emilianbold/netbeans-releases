@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.editor.lib2.search;
+package org.netbeans.modules.editor.search;
 
 import java.util.Map;
 import java.util.MissingResourceException;

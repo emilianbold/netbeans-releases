@@ -45,7 +45,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.prefs.Preferences;
-import org.netbeans.modules.editor.lib2.search.EditorFindSupport;
 import org.openide.util.NbPreferences;
 
 public final class SearchPropertiesSupport {

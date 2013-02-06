@@ -46,6 +46,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Random;
+import static junit.framework.Assert.assertFalse;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.parsing.lucene.support.IndexDocument;
@@ -56,13 +57,16 @@ import org.netbeans.modules.parsing.lucene.support.IndexDocument;
  */
 public class DocumentStoreTest extends NbTestCase {
 
+    private static final long CACHE_SIZE =
+            (long) (Runtime.getRuntime().maxMemory() * 0.1);
+
     public DocumentStoreTest(@NonNull final String name) {
         super(name);
     }
 
     public void testBasicOperations() {
         final int testSize = 100000;
-        final Collection<IndexDocument> store = new ClusteredIndexables.DocumentStore();
+        final Collection<IndexDocument> store = new ClusteredIndexables.DocumentStore(CACHE_SIZE);
         final String path = getWorkDirPath();
         for (int i=0; i<testSize; i++) {
             store.add(fill(ClusteredIndexables.createDocument(
@@ -116,7 +120,7 @@ public class DocumentStoreTest extends NbTestCase {
     }
 
     public void testLargeFieldDocumentAdded() {
-        final ClusteredIndexables.DocumentStore store = new ClusteredIndexables.DocumentStore();
+        final ClusteredIndexables.DocumentStore store = new ClusteredIndexables.DocumentStore(CACHE_SIZE);
         final IndexDocument doc = ClusteredIndexables.createDocument(getWorkDirPath());
         final String bigValue = newRandomString(16<<10);
         doc.addPair("big", bigValue, true, true);               //NOI18N
@@ -132,7 +136,7 @@ public class DocumentStoreTest extends NbTestCase {
     }
 
     public void testFieldOnBoundsAdded() {
-        final ClusteredIndexables.DocumentStore store = new ClusteredIndexables.DocumentStore();
+        final ClusteredIndexables.DocumentStore store = new ClusteredIndexables.DocumentStore(CACHE_SIZE);
         final String value = newRandomString(2<<10);
         final String padding = newRandomString(1<<4);
         final IndexDocument doc = ClusteredIndexables.createDocument(value);
@@ -148,7 +152,7 @@ public class DocumentStoreTest extends NbTestCase {
     }
 
     public void testIterator() {
-        final ClusteredIndexables.DocumentStore store = new ClusteredIndexables.DocumentStore();
+        final ClusteredIndexables.DocumentStore store = new ClusteredIndexables.DocumentStore(CACHE_SIZE);
         final Iterator<IndexDocument> it = store.iterator();
         assertFalse(it.hasNext());
         boolean thrown = false;
@@ -158,6 +162,18 @@ public class DocumentStoreTest extends NbTestCase {
             thrown = true;
         }
         assertTrue(thrown);
+    }
+
+    public void testCacheFlush() {
+        final ClusteredIndexables.DocumentStore store = new ClusteredIndexables.DocumentStore(4<<10);   //4KB
+        final String val = newRandomString((1<<9)); //1KB
+        assertFalse(store.addDocument(ClusteredIndexables.createDocument(val)));
+        assertFalse(store.addDocument(ClusteredIndexables.createDocument(val)));
+        assertFalse(store.addDocument(ClusteredIndexables.createDocument(val)));
+        assertFalse(store.addDocument(ClusteredIndexables.createDocument(val)));
+        assertTrue(store.addDocument(ClusteredIndexables.createDocument(val)));
+        store.clear();
+        assertFalse(store.addDocument(ClusteredIndexables.createDocument(val)));
     }
 
     @NonNull

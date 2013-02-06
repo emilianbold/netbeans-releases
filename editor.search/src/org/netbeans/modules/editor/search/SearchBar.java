@@ -72,7 +72,6 @@ import org.netbeans.api.search.SearchPattern;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.MultiKeymap;
-import org.netbeans.modules.editor.lib2.search.EditorFindSupport;
 import org.netbeans.modules.editor.search.SearchPropertiesSupport.SearchProperties;
 import org.openide.awt.CloseButtonFactory;
 import org.openide.awt.Mnemonics;
@@ -185,7 +184,7 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
         leftSeparator.setOrientation(SwingConstants.VERTICAL);
         add(leftSeparator);
 
-        findPreviousButton = createFindButton("org/netbeans/modules/editor/resources/find_previous.png", "CTL_FindPrevious"); // NOI18N
+        findPreviousButton = createFindButton("org/netbeans/modules/editor/search/resources/find_previous.png", "CTL_FindPrevious"); // NOI18N
         findPreviousButton.addActionListener(new ActionListener() {
 
             @Override
@@ -194,7 +193,7 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
             }
         });
         add(findPreviousButton);
-        findNextButton = createFindButton("org/netbeans/modules/editor/resources/find_next.png", "CTL_FindNext"); // NOI18N
+        findNextButton = createFindButton("org/netbeans/modules/editor/search/resources/find_next.png", "CTL_FindNext"); // NOI18N
         findNextButton.addActionListener(new ActionListener() {
 
             @Override

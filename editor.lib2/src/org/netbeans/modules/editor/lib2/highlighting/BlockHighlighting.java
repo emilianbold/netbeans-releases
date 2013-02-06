@@ -55,7 +55,6 @@ import javax.swing.text.SimpleAttributeSet;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.settings.AttributesUtilities;
 import org.netbeans.api.editor.settings.FontColorSettings;
-import org.netbeans.modules.editor.lib2.search.EditorFindSupport;
 import org.netbeans.spi.editor.highlighting.HighlightsChangeEvent;
 import org.netbeans.spi.editor.highlighting.HighlightsChangeListener;
 import org.netbeans.spi.editor.highlighting.support.AbstractHighlightsContainer;
@@ -83,7 +82,6 @@ public class BlockHighlighting extends AbstractHighlightsContainer implements Hi
         this.bag = new PositionsBag(document);
         this.bag.addHighlightsChangeListener(this);
         
-        EditorFindSupport.getInstance().hookLayer(this, component);
     }
 
     public String getLayerTypeId() {

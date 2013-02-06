@@ -40,8 +40,9 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.editor.lib2.search;
+package org.netbeans.modules.editor.search;
 
+import org.netbeans.modules.editor.search.EditorFindSupport;
 import java.util.HashMap;
 import java.util.Map;
 import javax.swing.JTextArea;

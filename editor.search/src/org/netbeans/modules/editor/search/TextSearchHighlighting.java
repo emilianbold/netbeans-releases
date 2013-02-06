@@ -42,10 +42,11 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.editor.lib2.highlighting;
+package org.netbeans.modules.editor.search;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.DocumentEvent;
@@ -53,16 +54,23 @@ import javax.swing.event.DocumentListener;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import javax.swing.text.EditorKit;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.SimpleAttributeSet;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.editor.settings.FontColorNames;
 import org.netbeans.api.editor.settings.FontColorSettings;
-import org.netbeans.modules.editor.lib2.search.EditorFindSupport;
+import org.netbeans.modules.editor.lib2.highlighting.BlockHighlighting;
+import static org.netbeans.modules.editor.lib2.highlighting.Factory.BLOCK_SEARCH_LAYER;
+import static org.netbeans.modules.editor.lib2.highlighting.Factory.INC_SEARCH_LAYER;
 import org.netbeans.spi.editor.highlighting.HighlightsChangeEvent;
 import org.netbeans.spi.editor.highlighting.HighlightsChangeListener;
+import org.netbeans.spi.editor.highlighting.HighlightsLayer;
+import org.netbeans.spi.editor.highlighting.HighlightsLayerFactory;
 import org.netbeans.spi.editor.highlighting.HighlightsSequence;
+import org.netbeans.spi.editor.highlighting.ZOrder;
 import org.netbeans.spi.editor.highlighting.support.AbstractHighlightsContainer;
 import org.netbeans.spi.editor.highlighting.support.OffsetsBag;
 import org.openide.util.RequestProcessor;
@@ -87,7 +95,7 @@ public class TextSearchHighlighting extends AbstractHighlightsContainer implemen
     /** Creates a new instance of TextSearchHighlighting */
     public TextSearchHighlighting(JTextComponent component) {
         // Determine the mime type
-        String mimeType = BlockHighlighting.getMimeType(component);
+        String mimeType = getMimeType(component);
         this.mimePath = mimeType == null ? MimePath.EMPTY : MimePath.parse(mimeType);
         
         this.component = component;
@@ -187,4 +195,52 @@ public class TextSearchHighlighting extends AbstractHighlightsContainer implemen
         AttributeSet attribs = fcs.getFontColors(FontColorNames.HIGHLIGHT_SEARCH_COLORING);
         return attribs == null ? SimpleAttributeSet.EMPTY : attribs;
     }
+
+    /* package */ static String getMimeType(JTextComponent component) {
+        Document doc = component.getDocument();
+        String mimeType = (String) doc.getProperty("mimeType"); //NOI18N
+        if (mimeType == null) {
+            EditorKit kit = component.getUI().getEditorKit(component);
+            if (kit != null) {
+                mimeType = kit.getContentType();
+            }
+        }
+        return mimeType;
+    }
+
+    @MimeRegistration(mimeType = "", service = HighlightsLayerFactory.class)
+    public static final class FactoryImpl implements HighlightsLayerFactory {
+
+        public final class SearchBlockHighlighting extends BlockHighlighting {
+            public SearchBlockHighlighting(String layerId, JTextComponent component) {
+                super(layerId,component);
+                EditorFindSupport.getInstance().hookLayer(this, component);
+            }
+        }
+
+        @Override
+        public HighlightsLayer[] createLayers(HighlightsLayerFactory.Context context) {
+            ArrayList<HighlightsLayer> layers = new ArrayList<HighlightsLayer>();
+            layers.add(HighlightsLayer.create(
+                    TextSearchHighlighting.LAYER_TYPE_ID,
+                    ZOrder.SHOW_OFF_RACK.forPosition(200),
+                    true,
+                    new TextSearchHighlighting(context.getComponent())));
+
+            layers.add(HighlightsLayer.create(
+                    BLOCK_SEARCH_LAYER,
+                    ZOrder.SHOW_OFF_RACK.forPosition(100),
+                    true,
+                    new SearchBlockHighlighting(BLOCK_SEARCH_LAYER, context.getComponent())));
+
+            layers.add(HighlightsLayer.create(
+                    INC_SEARCH_LAYER,
+                    ZOrder.SHOW_OFF_RACK.forPosition(300),
+                    true,
+                    new SearchBlockHighlighting(INC_SEARCH_LAYER, context.getComponent())));
+
+            return layers.toArray(new HighlightsLayer[layers.size()]);
+        }
+
+    } // End of FactoryImpl class
 }

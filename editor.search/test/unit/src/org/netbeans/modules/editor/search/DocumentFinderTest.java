@@ -39,8 +39,10 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.editor.lib2.search;
+package org.netbeans.modules.editor.search;
 
+import org.netbeans.modules.editor.search.DocumentFinder;
+import org.netbeans.modules.editor.search.EditorFindSupport;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import java.util.HashMap;
@@ -48,7 +50,7 @@ import java.util.Map;
 import javax.swing.JTextArea;
 import org.junit.Test;
 import static org.junit.Assert.*;
-import org.netbeans.modules.editor.lib2.search.DocumentFinder.FindReplaceResult;
+import org.netbeans.modules.editor.search.DocumentFinder.FindReplaceResult;
 
 /**
  * @author Milutin Kristofic
