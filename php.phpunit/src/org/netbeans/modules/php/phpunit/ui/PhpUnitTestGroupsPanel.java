@@ -42,7 +42,10 @@
 package org.netbeans.modules.php.phpunit.ui;
 
 import java.awt.EventQueue;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import javax.swing.JPanel;
 import javax.swing.event.TableModelEvent;
@@ -63,7 +66,8 @@ public final class PhpUnitTestGroupsPanel extends JPanel {
 
     private static final long serialVersionUID = 6576832132135L;
 
-    private final List<String> selectedGroups;
+    // @GuardedBy("EDT")
+    private final Set<String> selectedGroups;
     // @GuardedBy("EDT")
     private final GroupsTableModel tableModel;
 
@@ -73,8 +77,8 @@ public final class PhpUnitTestGroupsPanel extends JPanel {
         assert allGroups != null;
         assert selectedGroups != null;
 
-        this.selectedGroups = selectedGroups;
-        tableModel = new GroupsTableModel(allGroups, selectedGroups);
+        this.selectedGroups = new HashSet<String>(selectedGroups);
+        tableModel = new GroupsTableModel(allGroups, this.selectedGroups);
 
         initComponents();
         init();
@@ -114,7 +118,8 @@ public final class PhpUnitTestGroupsPanel extends JPanel {
     }
 
     private List<String> getSelectedGroups() {
-        return selectedGroups;
+        assert EventQueue.isDispatchThread();
+        return new ArrayList<String>(selectedGroups);
     }
 
     /** This method is called from within the constructor to
@@ -201,11 +206,14 @@ public final class PhpUnitTestGroupsPanel extends JPanel {
 
         private final Class<?>[] types = new Class<?>[] {String.class, Boolean.class};
 
+        // @GuardedBy("EDT")
         private final List<String> allGroups;
-        private final List<String> selectedGroups;
+        // @GuardedBy("EDT")
+        private final Set<String> selectedGroups;
 
 
-        public GroupsTableModel(List<String> allGroups, List<String> selectedGroups) {
+        public GroupsTableModel(List<String> allGroups, Set<String> selectedGroups) {
+            assert EventQueue.isDispatchThread();
             this.allGroups = allGroups;
             this.selectedGroups = selectedGroups;
         }
@@ -222,6 +230,7 @@ public final class PhpUnitTestGroupsPanel extends JPanel {
 
         @Override
         public int getRowCount() {
+            assert EventQueue.isDispatchThread();
             return allGroups.size();
         }
 
@@ -232,6 +241,7 @@ public final class PhpUnitTestGroupsPanel extends JPanel {
 
         @Override
         public Object getValueAt(int rowIndex, int columnIndex) {
+            assert EventQueue.isDispatchThread();
             if (columnIndex == 0) {
                 // name
                 return allGroups.get(rowIndex);
@@ -244,6 +254,7 @@ public final class PhpUnitTestGroupsPanel extends JPanel {
 
         @Override
         public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
+            assert EventQueue.isDispatchThread();
             if (columnIndex == 1) {
                 Boolean selected = (Boolean) aValue;
                 String group = allGroups.get(rowIndex);
