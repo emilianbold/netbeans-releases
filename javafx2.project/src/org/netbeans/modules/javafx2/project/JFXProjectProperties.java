@@ -166,6 +166,8 @@ public final class JFXProjectProperties {
     public static final String ADD_DESKTOP_SHORTCUT = "javafx.deploy.adddesktopshortcut"; // NOI18N
     public static final String ADD_STARTMENU_SHORTCUT = "javafx.deploy.addstartmenushortcut"; // NOI18N
     public static final String ICON_FILE = "javafx.deploy.icon"; // NOI18N
+    public static final String NATIVE_ICON_FILE = "javafx.deploy.icon.native"; // NOI18N
+    public static final String SPLASH_IMAGE_FILE = "javafx.deploy.splash"; // NOI18N
     public static final String PERMISSIONS_ELEVATED = "javafx.deploy.permissionselevated"; // NOI18N
 
     // Deployment - signing
@@ -298,11 +300,29 @@ public final class JFXProjectProperties {
     public JToggleButton.ToggleButtonModel getAddStartMenuShortcutModel() {
         return addStartMenuShortcut;
     }
-    Document iconDocument;
-    public Document getIconDocumentModel() {
-        return iconDocument;
-    }
 
+    String wsIconPath;
+    String splashImagePath;
+    String nativeIconPath;
+    public String getWSIconPath() {
+        return wsIconPath;
+    }
+    public void setWSIconPath(String path) {
+        this.wsIconPath = path;
+    }
+    public String getSplashImagePath() {
+        return splashImagePath;
+    }
+    public void setSplashImagePath(String path) {
+        this.splashImagePath = path;
+    }
+    public String getNativeIconPath() {
+        return nativeIconPath;
+    }
+    public void setNativeIconPath(String path) {
+        this.nativeIconPath = path;
+    }
+    
     // Deployment - Signing
     public enum SigningType {
         NOSIGN("notsigned"), // NOI18N
@@ -570,15 +590,15 @@ public final class JFXProjectProperties {
             installPermanently = fxPropGroup.createToggleButtonModel(evaluator, INSTALL_PERMANENTLY);
             addDesktopShortcut = fxPropGroup.createToggleButtonModel(evaluator, ADD_DESKTOP_SHORTCUT);
             addStartMenuShortcut = fxPropGroup.createToggleButtonModel(evaluator, ADD_STARTMENU_SHORTCUT);
-            iconDocument = fxPropGroup.createStringDocument(evaluator, ICON_FILE);
-
+            
             // CustomizerRun
             CONFIGS = new JFXConfigs();
             CONFIGS.read();
             initPreloaderArtifacts(project, CONFIGS);
             CONFIGS.setActive(evaluator.getProperty(ProjectProperties.PROP_PROJECT_CONFIGURATION_CONFIG));
             preloaderClassModel = new PreloaderClassComboBoxModel();
-            
+
+            initIcons(evaluator);
             initSigning(evaluator);
             initNativeBundling(evaluator);
             initResources(evaluator, project, CONFIGS);
@@ -878,6 +898,10 @@ public final class JFXProjectProperties {
         // store native bundling info
         editableProps.setProperty(JAVAFX_NATIVE_BUNDLING_ENABLED, nativeBundlingEnabled ? "true" : "false"); //NOI18N
         editableProps.setProperty(JAVAFX_NATIVE_BUNDLING_TYPE, nativeBundlingType.getString().toLowerCase());
+        // store icons
+        setOrRemove(editableProps, ICON_FILE, wsIconPath);
+        setOrRemove(editableProps, SPLASH_IMAGE_FILE, splashImagePath);
+        setOrRemove(editableProps, NATIVE_ICON_FILE, nativeIconPath);
         // store resources
         storeResources(editableProps);
         // store JavaScript callbacks
@@ -982,6 +1006,12 @@ public final class JFXProjectProperties {
         }
     }
 
+    private void initIcons(PropertyEvaluator eval) {
+        wsIconPath = eval.getProperty(ICON_FILE);
+        splashImagePath = eval.getProperty(SPLASH_IMAGE_FILE);
+        nativeIconPath = eval.getProperty(NATIVE_ICON_FILE);
+    }
+    
     private void initSigning(PropertyEvaluator eval) {
         String enabled = eval.getProperty(JAVAFX_SIGNING_ENABLED);
         String signedProp = eval.getProperty(JAVAFX_SIGNING_TYPE);
