@@ -54,7 +54,7 @@ import org.netbeans.modules.csl.api.RuleContext;
 
 /**
  *
- * @author Radek Matous
+ * @author Ondrej Brejla <obrejla@netbeans.org>
  */
 public abstract class HintRule implements CaretSensitiveRule, InvokableRule<Hint> {
     private int caretOffset;
@@ -70,7 +70,7 @@ public abstract class HintRule implements CaretSensitiveRule, InvokableRule<Hint
         return currentLineBounds == OffsetRange.NONE || hintOffsetRange.overlaps(currentLineBounds);
     }
 
-    private synchronized OffsetRange getLineBounds(BaseDocument doc) {
+    private OffsetRange getLineBounds(BaseDocument doc) {
         if (lineBounds == null) {
             lineBounds = VerificationUtils.createLineBounds(caretOffset, doc);
         }
