@@ -240,7 +240,7 @@ made subject to such option by the copyright holder.
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>4</release-version>
-                        <specification-version>1.80</specification-version>
+                        <specification-version>1.97</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -333,6 +333,14 @@ made subject to such option by the copyright holder.
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.web.browser.api</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.7</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -512,6 +520,14 @@ made subject to such option by the copyright holder.
                     <compile-dependency/>
                     <run-dependency>
                         <specification-version>6.2</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.web.clientproject.api</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.16</specification-version>
                     </run-dependency>
                 </dependency>
             </module-dependencies>

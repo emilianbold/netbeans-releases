@@ -531,20 +531,18 @@ public abstract class J2eeModuleProvider {
          * performed for the provider associated with this support.
          * 
          * @param listener listener to add
-         * @since 1.91
+         * @since 1.97
          */
-        // XXX commented out - there does not seem to be any client for 7.3
-        //public void addDeployOnSaveListener( DeployOnSaveListener listener );
+        public void addDeployOnSaveListener( DeployOnSaveListener listener );
 
         /**
          * Removes the listener listening for deploy on save.
          * 
          * @param listener listener to remove
          * @see #addDeployOnSaveListener(org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider.DeployOnSaveListener)
-         * @since 1.91
+         * @since 1.97
          */
-        // XXX commented out - there does not seem to be any client for 7.3
-        //public void removeDeployOnSaveListener( DeployOnSaveListener listener );
+        public void removeDeployOnSaveListener( DeployOnSaveListener listener );
 
         /**
          * Retrieves message destinations stored in the module.
@@ -723,6 +721,25 @@ public abstract class J2eeModuleProvider {
          */
         public void bindEjbReferenceForEjb(String ejbName, String ejbType,
                 String referenceName, String jndiName) throws ConfigurationException;
+
+        /**
+         * The listener interface to listen for deploy on save operations.
+         *
+         * @since 1.97
+         */
+        public static interface DeployOnSaveListener {
+
+            /**
+             * Invoked when a deploy on save operation has been successfully
+             * performed by the infrastructure.
+             *
+             * @param artifacts artifacts affected by the deploy
+             */
+            public void deployed(Iterable<ArtifactListener.Artifact> artifacts);
+
+        }
+
+
     }
 
     /**
