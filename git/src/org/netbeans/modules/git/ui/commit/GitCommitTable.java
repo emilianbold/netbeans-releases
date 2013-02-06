@@ -58,6 +58,7 @@ public class GitCommitTable extends VCSCommitTable<GitFileNode> {
 
     private String errroMessage;
     private boolean emptyAllowed;
+    private boolean amend;
     
     public GitCommitTable() {
         this(true, false);
@@ -76,6 +77,9 @@ public class GitCommitTable extends VCSCommitTable<GitFileNode> {
         boolean ret = false;        
         errroMessage = null;
         boolean isEmpty = true;
+        if (amend) {
+            return true;
+        }
         for(GitFileNode fileNode : list) {                        
             
             VCSCommitOptions co = fileNode.getCommitOptions();
@@ -108,5 +112,13 @@ public class GitCommitTable extends VCSCommitTable<GitFileNode> {
     public String getErrorMessage() {
         return errroMessage;
     }    
+
+    public boolean isAmend() {
+        return amend;
+    }
+
+    public void setAmend(boolean amend) {
+        this.amend = amend;
+    }
     
 }
