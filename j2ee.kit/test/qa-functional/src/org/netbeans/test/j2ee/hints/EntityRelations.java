@@ -351,6 +351,7 @@ public class EntityRelations extends J2eeTestCase {
         final RequestProcessor.Task task = RP.create(posted);
         HintsHandler handl = new HintsHandler(delay, task);
         Logger logger = Logger.getLogger(AnnotationHolder.class.getName());
+        Level oldLevel = logger.getLevel();
         logger.setLevel(Level.FINE);
         try {
             boolean notReady = true;
@@ -370,6 +371,7 @@ public class EntityRelations extends J2eeTestCase {
             throw new JemmyException("REFRESH DID NOT FINISHED IN " + repeat * delay + " SECONDS", intExc);
         } finally {
             logger.removeHandler(handl);
+            logger.setLevel(oldLevel);
         }
     }
 
