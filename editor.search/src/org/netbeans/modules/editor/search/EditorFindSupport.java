@@ -772,7 +772,7 @@ public final class EditorFindSupport {
 
                 int actualPos = wrapSearch ? 0 : c.getCaret().getDot();
 
-                int pos = (blockSearch && blockSearchStartOffset > -1) ? ( backSearch ? blockSearchEndOffset : blockSearchStartOffset) : (backSearch? -1 : actualPos); // actual position
+                int pos = (blockSearch && blockSearchStartOffset > -1) ? ( backSearch ? blockSearchEndOffset : blockSearchStartOffset) : (backSearch? 0 : actualPos); // actual position
 
                 while (true) {
                     blockSearchEndOffset = getBlockEndOffset();
