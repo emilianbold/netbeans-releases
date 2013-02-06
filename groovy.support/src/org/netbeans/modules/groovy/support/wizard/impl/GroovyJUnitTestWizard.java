@@ -40,16 +40,13 @@
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.groovy.support.wizard;
+package org.netbeans.modules.groovy.support.wizard.impl;
 
 import java.awt.BorderLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionListener;
-import java.io.IOException;
-import java.util.Collections;
 import java.util.List;
 import java.util.ResourceBundle;
-import java.util.Set;
 import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
@@ -59,25 +56,17 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JTextArea;
 import javax.swing.text.JTextComponent;
-import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.templates.TemplateRegistration;
 import org.netbeans.api.templates.TemplateRegistrations;
-import org.netbeans.modules.groovy.support.api.GroovySources;
-import org.netbeans.modules.groovy.support.spi.GroovyExtender;
-import org.netbeans.modules.groovy.support.wizard.impl.AntProjectTypeStrategy;
-import org.netbeans.modules.groovy.support.wizard.impl.MavenProjectTypeStrategy;
+import org.netbeans.modules.groovy.support.wizard.AbstractGroovyWizard;
+import org.netbeans.modules.groovy.support.wizard.JUnit;
 import org.netbeans.modules.gsf.testrunner.api.SelfResizingPanel;
-import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.WizardDescriptor;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataFolder;
-import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
 
 /**
@@ -106,7 +95,11 @@ import org.openide.util.NbBundle;
         displayName = "Groovy JUnit Test",
         iconBase = "org/netbeans/modules/groovy/support/resources/GroovyFile16x16.png",
         description = "/org/netbeans/modules/groovy/support/resources/GroovyJUnitTest.html",
-        category = {"groovy", "java-main-class"}),
+        category = {
+            "groovy",
+            "java-main-class"
+        }
+    ),
 
     @TemplateRegistration(
         folder = "Groovy",
@@ -115,7 +108,8 @@ import org.openide.util.NbBundle;
         scriptEngine = "freemarker",
         iconBase = "org/netbeans/modules/groovy/support/resources/GroovyFile16x16.png",
         description = "/org/netbeans/modules/groovy/support/resources/GroovyJUnitTest.html",
-        category = "invisible"),
+        category = "invisible"
+    ),
 
     @TemplateRegistration(
         folder = "Groovy",
@@ -124,43 +118,43 @@ import org.openide.util.NbBundle;
         scriptEngine = "freemarker",
         iconBase = "org/netbeans/modules/groovy/support/resources/GroovyFile16x16.png",
         description = "/org/netbeans/modules/groovy/support/resources/GroovyJUnitTest.html",
-        category = "invisible")
+        category = "invisible"
+    )
 })
-public final class GroovyJUnitTestWizardIterator extends GroovyFileWizardIterator {
+public final class GroovyJUnitTestWizard extends AbstractGroovyWizard {
 
-    private static final ResourceBundle BUNDLE = NbBundle.getBundle(GroovyJUnitTestWizardIterator.class);
+    private static final ResourceBundle BUNDLE = NbBundle.getBundle(GroovyJUnitTestWizard.class);
 
 
-    private GroovyJUnitTestWizardIterator() {
+    private GroovyJUnitTestWizard() {
     }
 
     @Override
-    protected List<SourceGroup> getOrderedSourcesGroups(WizardDescriptor wizardDescriptor, List<SourceGroup> groups) {
-        if (!strategy.existsGroovyTestFolder(groups)) {
+    protected List<SourceGroup> getSourceGroups() {
+        List<SourceGroup> sourceGroups = retrieveGroups();
+
+        if (!strategy.existsGroovyTestFolder(sourceGroups)) {
             strategy.createGroovyTestFolder();
 
             // Retrieve the source groups again, but now with a newly created /test/groovy folder
-            groups = GroovySources.getGroovySourceGroups(ProjectUtils.getSources(project));
+            sourceGroups = retrieveGroups();
         }
 
-        final List<SourceGroup> testSourceGroups = strategy.getOnlyTestSourceGroups(groups);
+        final List<SourceGroup> testSourceGroups = strategy.getOnlyTestSourceGroups(sourceGroups);
         if (!testSourceGroups.isEmpty()) {
             return testSourceGroups;
         } else {
-            return groups;
+            return sourceGroups;
         }
     }
 
     @Override
-    public Set instantiate(ProgressHandle handle) throws IOException {
-        handle.start();
-        handle.progress(NbBundle.getMessage(GroovyJUnitTestWizardIterator.class, "LBL_NewGroovyFileWizardIterator_WizardProgress_CreatingFile")); // NOI18N
-
+    protected FileObject findCorrectTemplate() {
         JUnit currentJUnit = strategy.findJUnitVersion();
         if (currentJUnit == JUnit.NOT_DECLARED) {
             JUnit jUnitToUse = askUserWhichJUnitToUse();
             if (jUnitToUse == null) {
-                return Collections.emptySet();
+                return super.findCorrectTemplate();
             }
 
             strategy.setjUnitVersion(jUnitToUse);
@@ -169,31 +163,7 @@ public final class GroovyJUnitTestWizardIterator extends GroovyFileWizardIterato
             strategy.setjUnitVersion(currentJUnit);
         }
 
-        FileObject template = strategy.findTemplate(wiz);
-        FileObject targetFolder = Templates.getTargetFolder(wiz);
-        String targetName = Templates.getTargetName(wiz);
-
-        DataFolder dFolder = DataFolder.findFolder(targetFolder);
-        DataObject dTemplate = DataObject.find(template);
-
-        String pkgName = getPackageName(targetFolder);
-        DataObject dobj;
-        if (pkgName == null) {
-            dobj = dTemplate.createFromTemplate(dFolder, targetName);
-        } else {
-            dobj = dTemplate.createFromTemplate(dFolder, targetName, Collections.singletonMap("package", pkgName)); // NOI18N
-        }
-
-        FileObject createdFile = dobj.getPrimaryFile();
-
-        GroovyExtender extender = Templates.getProject(wiz).getLookup().lookup(GroovyExtender.class);
-        if (extender != null && !extender.isActive()) {
-            extender.activate();
-        }
-
-        handle.finish();
-
-        return Collections.singleton(createdFile);
+        return strategy.findTemplate(wiz);
     }
 
     private JUnit askUserWhichJUnitToUse() {
