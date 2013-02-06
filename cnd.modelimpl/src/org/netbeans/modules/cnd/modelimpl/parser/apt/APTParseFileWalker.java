@@ -64,7 +64,6 @@ import org.netbeans.modules.cnd.apt.support.lang.APTLanguageFilter;
 import org.netbeans.modules.cnd.apt.support.APTMacroExpandedStream;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.support.APTToken;
-import org.netbeans.modules.cnd.apt.support.APTWalker;
 import org.netbeans.modules.cnd.apt.support.PostIncludeData;
 import org.netbeans.modules.cnd.apt.utils.APTCommentsFilter;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
@@ -207,9 +206,10 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
             if (includedFile != null) {
                 if (isTokenProducer() && TraceFlags.PARSE_HEADERS_WITH_SOURCES) {
                     APTFile aptFile = includedFile.getFileAPT(true);
-                    APTWalker walker = createIncludedHeaderWalker(aptFile, includedFile);
+                    APTParseFileWalker walker = createIncludedHeaderWalker(aptFile, includedFile);
                     if (walker != null) {
-                        includedFile.prepareIncludedFileParsingContent();
+                        FileContent inclFileContent = includedFile.prepareIncludedFileParsingContent();
+                        walker.setFileContent(inclFileContent);
                         includeStream(aptFile, walker);
                     }
                 } else {
@@ -226,9 +226,9 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
 
     ////////////////////////////////////////////////////////////////////////////
     // implementation details
-    private APTWalker createIncludedHeaderWalker(APTFile aptFile, FileImpl includedFile) {
+    private APTParseFileWalker createIncludedHeaderWalker(APTFile aptFile, FileImpl includedFile) {
         if (aptFile != null) {
-            return new APTParseFileWalker(this.getStartProject(), aptFile, includedFile, getPreprocHandler(), false, null, null);
+            return new APTParseFileWalker(this.getStartProject(), aptFile, includedFile, getPreprocHandler(), this.triggerParsingActivity, null, null);
         } else {
             // in the case file was just removed
             Utils.LOG.log(Level.INFO, "Can not find or build APT for file {0}", includedFile); //NOI18N
