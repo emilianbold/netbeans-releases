@@ -146,6 +146,11 @@ public class BracketCompletionTestCase extends EditorBase  {
         typeCharactersInText("    R\"delim()|delim\"  ", "BB", "    R\"BBdelim()BB|delim\"  ");
     }
 
+    // ------- Test of . to -> completion
+    public void testThisDotToArrow() {
+        setDefaultsOptions();
+        typeCharactersInText("this|", ".", "this->|");
+    }
 
     // ------- Tests for completion of right parenthesis ')' -------------
     
@@ -186,6 +191,17 @@ public class BracketCompletionTestCase extends EditorBase  {
         );
     }
 
+    public void testNotSkipRPAREN() throws Exception {
+        // #225194 - incorrect skipping of right parent 
+        setDefaultsOptions();
+        typeCharactersInText(
+                " if ((n == 0|) {\n"
+                + " }",
+                ")",
+                " if ((n == 0)) {\n"
+                + " }");
+    }
+    
     public void testRightParenNoSkipNonBracketChar() {
         setDefaultsOptions();
         typeCharactersInText("m()| ", ")", "m())| ");
@@ -588,6 +604,22 @@ public class BracketCompletionTestCase extends EditorBase  {
                 "// test line comment \'|\n");
     }
 
+    public void testNoGT() {
+        setDefaultsOptions();
+        typeCharactersInText(
+                "if (a |)\n",
+                "<",
+                "if (a <|)\n");
+    }
+    
+    public void testNoGTInString() {
+        setDefaultsOptions();
+        typeCharactersInText(
+                "\"hello |\"\n",
+                "<",
+                "\"hello <|\"\n");
+    }
+    
     public void testSystemInclude() throws Exception {
         setDefaultsOptions();
         typeCharactersInText(
@@ -596,6 +628,30 @@ public class BracketCompletionTestCase extends EditorBase  {
                 "#include <|>\n");
     }
 
+    public void testSystemIncludeEOF() throws Exception {
+        setDefaultsOptions();
+        typeCharactersInText(
+                "#include |",
+                "<",
+                "#include <|>");
+    }
+    
+    public void testSkipSystemInclude() throws Exception {
+        setDefaultsOptions();
+        typeCharactersInText(
+                "#include <math.h|>\n",
+                ">",
+                "#include <math.h>|\n");
+    }
+    
+    public void testNotSkipSystemInclude() throws Exception {
+        setDefaultsOptions();
+        typeCharactersInText(
+                "#include <math|.h>\n",
+                ">",
+                "#include <math>|.h>\n");
+    }
+    
     public void testUserInclude() throws Exception {
         setDefaultsOptions();
         typeCharactersInText(
@@ -603,6 +659,21 @@ public class BracketCompletionTestCase extends EditorBase  {
                 "#include \"|\"\n");
     }
 
+    public void testUserIncludeEOF() throws Exception {
+        setDefaultsOptions();
+        typeCharactersInText(
+                "#include |", "\"",
+                "#include \"|\"");
+    }
+    
+    public void testSkipUserInclude() throws Exception {
+        setDefaultsOptions();
+        typeCharactersInText(
+                "#include \"h.h|\"\n",
+                "\"",
+                "#include \"h.h\"|\n");
+    }
+    
     public void testArray() throws Exception {
         setDefaultsOptions();
         typeCharactersInText(

@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.cnd.discovery.performance;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -61,6 +62,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.dlight.libs.common.PerformanceLogger;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.filesystems.FileObject;
@@ -118,6 +120,8 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
     public void processEvent(PerformanceLogger.PerformanceEvent event) {
         if (Folder.LS_FOLDER_PERFORMANCE_EVENT.equals(event.getId())) {
             processCreateFolder(event);
+        } else if (CndFileUtils.LS_FOLDER_UTILS_PERFORMANCE_EVENT.equals(event.getId())) {
+            processCreateFolderIO(event);
         } else if (Folder.CREATE_ITEM_PERFORMANCE_EVENT.equals(event.getId())) {
             processCreateItem(event);
         } else if (Folder.GET_ITEM_FILE_OBJECT_PERFORMANCE_EVENT.equals(event.getId())) {
@@ -131,6 +135,33 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
     
     private void processCreateFolder(PerformanceLogger.PerformanceEvent event) {
         FileObject fo = (FileObject) event.getSource();
+        String dirName = fo.getPath();
+        long time = event.getTime();
+        if (event.getAttrs().length == 0) {
+            //TODO: process timeout
+            LOG.log(timeOutLevel, "Timeout {0}s of directory list {1}", new Object[]{time/NANO_TO_SEC, dirName}); //NOI18N
+            return;
+        }
+        long cpu = event.getCpuTime();
+        long user = event.getUserTime();
+        lock.writeLock().lock();
+        try {
+            CreateEntry entry = createPerformance.get(dirName);
+            if (entry == null) {
+                entry = new CreateEntry();
+                createPerformance.put(dirName, entry);
+            }
+            entry.number++;
+            entry.time += time;
+            entry.cpu += cpu;
+            entry.user += user;
+        } finally {
+            lock.writeLock().unlock();
+        }
+    }
+
+    private void processCreateFolderIO(PerformanceLogger.PerformanceEvent event) {
+        File fo = (File) event.getSource();
         String dirName = fo.getPath();
         long time = event.getTime();
         if (event.getAttrs().length == 0) {
