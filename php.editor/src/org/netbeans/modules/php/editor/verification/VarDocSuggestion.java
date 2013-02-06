@@ -95,7 +95,7 @@ public class VarDocSuggestion extends SuggestionRule {
     }
 
     @Override
-    public void compute(PHPRuleContext context, List<Hint> hints) {
+    public void invoke(PHPRuleContext context, List<Hint> hints) {
         final BaseDocument doc = context.doc;
         int caretOffset = getCaretOffset();
         OffsetRange lineBounds = VerificationUtils.createLineBounds(caretOffset, doc);

@@ -71,7 +71,7 @@ import org.openide.util.NbBundle.Messages;
 public class PHP54UnhandledError extends UnhandledErrorRule {
 
     @Override
-    public void compute(PHPRuleContext context, List<org.netbeans.modules.csl.api.Error> errors) {
+    public void invoke(PHPRuleContext context, List<org.netbeans.modules.csl.api.Error> errors) {
         PHPParseResult phpParseResult = (PHPParseResult) context.parserResult;
         if (phpParseResult.getProgram() == null) {
             return;

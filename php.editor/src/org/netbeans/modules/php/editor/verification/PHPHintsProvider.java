@@ -184,7 +184,7 @@ public class PHPHintsProvider implements HintsProvider {
             if (rule instanceof InvokableRule) {
                 adjuster.adjust(rule);
                 InvokableRule<T> invokableRule = (InvokableRule<T>) rule;
-                invokableRule.compute(ruleContext, result);
+                invokableRule.invoke(ruleContext, result);
             }
         }
 

@@ -49,6 +49,6 @@ import java.util.List;
  */
 public interface InvokableRule<T> {
 
-    void compute(PHPRuleContext context, List<T> result);
+    void invoke(PHPRuleContext context, List<T> result);
 
 }

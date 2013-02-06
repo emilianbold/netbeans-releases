@@ -76,7 +76,7 @@ public class NestedBlocksHint extends HintRule implements CustomisableRule {
     private Preferences preferences;
 
     @Override
-    public void compute(PHPRuleContext context, List<Hint> hints) {
+    public void invoke(PHPRuleContext context, List<Hint> hints) {
         PHPParseResult phpParseResult = (PHPParseResult) context.parserResult;
         if (phpParseResult.getProgram() != null) {
             FileObject fileObject = phpParseResult.getSnapshot().getSource().getFileObject();
