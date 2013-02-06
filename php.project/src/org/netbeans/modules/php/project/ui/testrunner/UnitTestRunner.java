@@ -68,12 +68,9 @@ import org.openide.util.NbBundle;
 import org.openide.windows.OutputWriter;
 
 /**
- * Test runner UI for PHP unit tests. One must call {@link #start()} first
- * and after the test results are available, {@link #showResults()} will show them.
+ * Test runner UI for PHP unit tests.
  * <p>
- * Currently, only PHPUnit is supported.
  * All the times are in milliseconds.
- * @author Tomas Mysik
  */
 public final class UnitTestRunner {
     private static final Logger LOGGER = Logger.getLogger(UnitTestRunner.class.getName());

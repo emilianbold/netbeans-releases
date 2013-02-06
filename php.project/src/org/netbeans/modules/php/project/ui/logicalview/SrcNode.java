@@ -166,7 +166,7 @@ public class SrcNode extends FilterNode {
         actions.add(null);
         actions.add(SystemAction.get(ToolsAction.class));
         actions.add(null);
-        // customizer - open sources for source node, phpunit for test node
+        // customizer - open sources for source node, testing for test node
         Action customizeAction = null;
         if (isTest) {
             for (PhpTestingProvider testingProvider : project.getTestingProviders()) {

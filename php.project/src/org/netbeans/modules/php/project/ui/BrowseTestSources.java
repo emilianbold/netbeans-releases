@@ -124,6 +124,7 @@ public class BrowseTestSources extends JPanel {
         return testSourcesTextField.getText();
     }
 
+    @NbBundle.Messages("BrowseTestSources.includePath.info=Testing provider classes (e.g. PHPUnit) should be available on Global Include Path (see Tools > Options > PHP).")
     void validateTestSources() {
         assert notificationLineSupport != null;
 
@@ -142,7 +143,7 @@ public class BrowseTestSources extends JPanel {
             return;
         }
 
-        notificationLineSupport.setInformationMessage(NbBundle.getMessage(BrowseTestSources.class, "LBL_PhpUnitIncludePathInfo"));
+        notificationLineSupport.setInformationMessage(Bundle.BrowseTestSources_includePath_info());
         dialogDescriptor.setValid(true);
     }
 

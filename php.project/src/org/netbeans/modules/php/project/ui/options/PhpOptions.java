@@ -100,8 +100,6 @@ public final class PhpOptions {
     private static final PhpOptions INSTANCE = new PhpOptions();
 
     private volatile boolean phpInterpreterSearched = false;
-    private volatile boolean phpUnitSearched = false;
-    private volatile boolean phpUnitSkelGenSearched = false;
     private volatile boolean phpGlobalIncludePathEnsured = false;
 
     private PhpOptions() {
