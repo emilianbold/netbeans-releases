@@ -41,18 +41,20 @@
  */
 package org.netbeans.modules.php.phpunit.preferences;
 
+import java.io.File;
 import java.util.List;
 import java.util.prefs.Preferences;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.phpunit.PhpUnitTestingProvider;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.openide.filesystems.FileUtil;
 
 /**
  * PhpUnit preferences specific for each PHP module.
  */
 public final class PhpUnitPreferences {
 
-    // XXX backward compatibility
     private static final String BOOTSTRAP_ENABLED = "bootstrap.enabled"; // NOI18N
     private static final String BOOTSTRAP_PATH = "bootstrap.path"; // NOI18N
     private static final String BOOTSTRAP_FOR_CREATE_TESTS = "bootstrap.create.tests"; // NOI18N
@@ -80,11 +82,11 @@ public final class PhpUnitPreferences {
     }
 
     public static String getBootstrapPath(PhpModule phpModule) {
-        return getPreferences(phpModule).get(BOOTSTRAP_PATH, null);
+        return resolvePath(phpModule, getPreferences(phpModule).get(BOOTSTRAP_PATH, null));
     }
 
     public static void setBootstrapPath(PhpModule phpModule, String bootstrapPath) {
-        getPreferences(phpModule).put(BOOTSTRAP_PATH, bootstrapPath);
+        getPreferences(phpModule).put(BOOTSTRAP_PATH, relativizePath(phpModule, bootstrapPath));
     }
 
     public static boolean isBootstrapForCreateTests(PhpModule phpModule) {
@@ -104,11 +106,11 @@ public final class PhpUnitPreferences {
     }
 
     public static String getConfigurationPath(PhpModule phpModule) {
-        return getPreferences(phpModule).get(CONFIGURATION_PATH, null);
+        return resolvePath(phpModule, getPreferences(phpModule).get(CONFIGURATION_PATH, null));
     }
 
     public static void setConfigurationPath(PhpModule phpModule, String configurationPath) {
-        getPreferences(phpModule).put(CONFIGURATION_PATH, configurationPath);
+        getPreferences(phpModule).put(CONFIGURATION_PATH, relativizePath(phpModule, configurationPath));
     }
 
     public static boolean isCustomSuiteEnabled(PhpModule phpModule) {
@@ -120,11 +122,11 @@ public final class PhpUnitPreferences {
     }
 
     public static String getCustomSuitePath(PhpModule phpModule) {
-        return getPreferences(phpModule).get(CUSTOM_SUITE_PATH, null);
+        return resolvePath(phpModule, getPreferences(phpModule).get(CUSTOM_SUITE_PATH, null));
     }
 
     public static void setCustomSuitePath(PhpModule phpModule, String customSuitePath) {
-        getPreferences(phpModule).put(CUSTOM_SUITE_PATH, customSuitePath);
+        getPreferences(phpModule).put(CUSTOM_SUITE_PATH, relativizePath(phpModule, customSuitePath));
     }
 
     public static boolean isPhpUnitEnabled(PhpModule phpModule) {
@@ -136,11 +138,11 @@ public final class PhpUnitPreferences {
     }
 
     public static String getPhpUnitPath(PhpModule phpModule) {
-        return getPreferences(phpModule).get(PHP_UNIT_PATH, null);
+        return resolvePath(phpModule, getPreferences(phpModule).get(PHP_UNIT_PATH, null));
     }
 
     public static void setPhpUnitPath(PhpModule phpModule, String phpUnitPath) {
-        getPreferences(phpModule).put(PHP_UNIT_PATH, phpUnitPath);
+        getPreferences(phpModule).put(PHP_UNIT_PATH, relativizePath(phpModule, phpUnitPath));
     }
 
     public static boolean getRunAllTestFiles(PhpModule phpModule) {
@@ -169,6 +171,26 @@ public final class PhpUnitPreferences {
 
     private static Preferences getPreferences(PhpModule module) {
         return module.getPreferences(PhpUnitTestingProvider.class, true);
+    }
+
+    private static String relativizePath(PhpModule phpModule, String filePath) {
+        if (!StringUtils.hasText(filePath)) {
+            return ""; // NOI18N
+        }
+        File file = new File(filePath);
+        String path = PropertyUtils.relativizeFile(FileUtil.toFile(phpModule.getProjectDirectory()), file);
+        if (path == null) {
+            // sorry, cannot be relativized
+            path = file.getAbsolutePath();
+        }
+        return path;
+    }
+
+    private static String resolvePath(PhpModule phpModule, String filePath) {
+        if (!StringUtils.hasText(filePath)) {
+            return null;
+        }
+        return PropertyUtils.resolveFile(FileUtil.toFile(phpModule.getProjectDirectory()), filePath).getAbsolutePath();
     }
 
 }
