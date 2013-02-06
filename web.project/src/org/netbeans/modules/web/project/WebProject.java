@@ -162,7 +162,7 @@ import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
 import org.netbeans.modules.web.browser.api.BrowserSupport;
 import org.netbeans.modules.web.browser.api.WebBrowser;
 import org.netbeans.modules.web.browser.spi.PageInspectorCustomizer;
-import org.netbeans.modules.web.clientproject.spi.URLDisplayerImplementation;
+import org.netbeans.modules.web.browser.spi.URLDisplayerImplementation;
 import org.netbeans.modules.web.common.api.WebUtils;
 import org.netbeans.modules.web.common.spi.ServerURLMappingImplementation;
 import org.netbeans.modules.web.project.api.WebProjectUtilities;

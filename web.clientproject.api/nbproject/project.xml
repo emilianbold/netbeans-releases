@@ -135,7 +135,6 @@
                 </test-type>
             </test-dependencies>
             <friend-packages>
-                <friend>org.netbeans.modules.ant.browsetask</friend>
                 <friend>org.netbeans.modules.cordova</friend>
                 <friend>org.netbeans.modules.cordova.platforms</friend>
                 <friend>org.netbeans.modules.cordova.platforms.android</friend>

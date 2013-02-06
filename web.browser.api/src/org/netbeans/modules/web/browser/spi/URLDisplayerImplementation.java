@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.clientproject.spi;
+package org.netbeans.modules.web.browser.spi;
 
 import java.net.URL;
 import org.openide.filesystems.FileObject;
@@ -48,7 +48,7 @@ import org.openide.filesystems.FileObject;
  * Contract allowing project types to implement opening of project files
  * in a browser. At the moment used only by Java Web project type.
  *
- * @since 1.16
+ * @since 1.7
  */
 public interface URLDisplayerImplementation {
 

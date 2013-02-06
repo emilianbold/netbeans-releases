@@ -51,7 +51,7 @@ import java.net.URL;
 import org.apache.tools.ant.*;
 
 import org.openide.awt.HtmlBrowser;
-import org.netbeans.modules.web.clientproject.spi.URLDisplayerImplementation;
+import org.netbeans.modules.web.browser.spi.URLDisplayerImplementation;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
