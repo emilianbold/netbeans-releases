@@ -61,15 +61,16 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.Fieldable;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.parsing.impl.indexing.lucene.DocumentBasedIndexManager;
+import org.netbeans.modules.parsing.lucene.support.Convertor;
 import org.netbeans.modules.parsing.lucene.support.DocumentIndex;
 import org.netbeans.modules.parsing.lucene.support.DocumentIndexCache;
 import org.netbeans.modules.parsing.lucene.support.IndexDocument;
-import org.netbeans.modules.parsing.lucene.support.IndexManager;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.openide.util.Parameters;
 import org.openide.util.Utilities;
@@ -84,9 +85,7 @@ public final class ClusteredIndexables {
 
     public static final String DELETE = "ci-delete-set";    //NOI18N
     public static final String INDEX = "ci-index-set";      //NOI18N
-
-    private static final Logger LOG = Logger.getLogger(ClusteredIndexables.class.getName());
-
+    
     // -----------------------------------------------------------------------
     // Public implementation
     // -----------------------------------------------------------------------
@@ -136,10 +135,10 @@ public final class ClusteredIndexables {
     @NonNull
     public static IndexDocument createDocument(@NonNull final String primaryKey) {
         Parameters.notNull("primaryKey", primaryKey);   //NOI18N
-        return new DocumentStore.MemoryIndexDocument(primaryKey);
+        return new MemIndexDocument(primaryKey);
     }
 
-    public static interface AttachableDocumentIndexCache extends DocumentIndexCache {
+    public static interface AttachableDocumentIndexCache extends DocumentIndexCache.WithCustomIndexDocument {
         void attach(@NonNull final String mode, @NonNull final ClusteredIndexables ci);
         void detach();
     }
@@ -147,7 +146,12 @@ public final class ClusteredIndexables {
     // -----------------------------------------------------------------------
     // Private implementation
     // -----------------------------------------------------------------------
+    private static final Logger LOG = Logger.getLogger(ClusteredIndexables.class.getName());
     private static final String ALL_MIME_TYPES = ""; //NOI18N
+    private static final String PROP_CACHE_HEAP_RATIO = "ClusteredIndexables.cacheHeapRatio";  //NOI18N
+    private static final double DEFAULT_CACHE_HEAP_RATIO = 0.1;
+    private static final long DATA_CACHE_SIZE = (long) 
+            (Runtime.getRuntime().maxMemory() * getCacheHeapRatio());
     private final List<Indexable> indexables;
     private final BitSet sorted;
     private final Map<String, BitSet> mimeTypeClusters = new HashMap<String, BitSet>();
@@ -162,6 +166,28 @@ public final class ClusteredIndexables {
     private int current() {
         final IndexedIterator tmpIt = currentIt;
         return tmpIt == null ? -1 : tmpIt.index();
+    }
+
+    private static double getCacheHeapRatio() {
+        final String sval = System.getProperty(PROP_CACHE_HEAP_RATIO);
+        if (sval != null) {
+            try {
+                final double val = Double.valueOf(sval);
+                if (val < 0.05 || val > 1.0) {
+                    throw new NumberFormatException();
+                }
+                return val;
+            } catch (NumberFormatException nfe) {
+                LOG.log(
+                  Level.INFO,
+                  "Invalid value of {0} property: {1}", //NOI18N
+                  new Object[] {
+                      PROP_CACHE_HEAP_RATIO,
+                      sval
+                  });
+            }
+        }
+        return DEFAULT_CACHE_HEAP_RATIO;
     }
 
     private static interface IndexedIterator<T> extends Iterator<T> {
@@ -267,6 +293,16 @@ public final class ClusteredIndexables {
 
     //<editor-fold defaultstate="collapsed" desc="DocumentIndexCache Implementation">
     private static final class DocumentIndexCacheImpl implements AttachableDocumentIndexCache {
+
+        private static final Convertor<IndexDocument, Document> ADD_CONVERTOR =
+                new Convertor<IndexDocument, Document>() {
+                    @NonNull
+                    @Override
+                    public Document convert(@NonNull final IndexDocument doc) {
+                        final ReusableIndexDocument rdoc = (ReusableIndexDocument) doc;
+                        return rdoc.doc;
+                    }
+                };
       
         private ClusteredIndexables deleteIndexables;
         private ClusteredIndexables indexIndexables;
@@ -327,7 +363,7 @@ public final class ClusteredIndexables {
 
         @Override
         public boolean addDocument(IndexDocument document) {
-            if (!(document instanceof DocumentStore.MemoryIndexDocument)) {
+            if (!(document instanceof MemIndexDocument)) {
                 throw new IllegalArgumentException(document.getClass().getName());
             }
             boolean shouldFlush = init();
@@ -381,6 +417,16 @@ public final class ClusteredIndexables {
             return toAdd != null ? toAdd : Collections.<IndexDocument>emptySet();
         }
 
+        @Override
+        public Convertor<IndexDocument, Document> createAddConvertor() {
+            return ADD_CONVERTOR;
+        }
+
+        @Override
+        public Convertor<Document, IndexDocument> createQueryConvertor() {
+            return null;
+        }
+
         private static void ensureNotReBound(
                 @NullAllowed final ClusteredIndexables oldCi,
                 @NonNull final ClusteredIndexables newCi) {
@@ -431,7 +477,7 @@ public final class ClusteredIndexables {
                     deleteFromDeleted == null &&
                     deleteFromIndex == null;
                 assert dataRef == null;
-                toAdd = new DocumentStore();
+                toAdd = new DocumentStore(DATA_CACHE_SIZE);
                 toDeleteOutOfOrder = new ArrayList<String>();
                 deleteFromDeleted = new BitSet();
                 deleteFromIndex = new BitSet();
@@ -689,13 +735,106 @@ public final class ClusteredIndexables {
     }
     //</editor-fold>
 
+    //<editor-fold defaultstate="collapsed" desc="Input IndexDocument (inserted into cache)">
+    private static final class MemIndexDocument implements IndexDocument {
+
+        private static final String[] EMPTY = new String[0];
+        static final String FIELD_PRIMARY_KEY = "_sn";  //NOI18N
+
+        private final List<Fieldable> fields = new ArrayList<Fieldable>();
+
+        MemIndexDocument(@NonNull final String primaryKey) {
+            Parameters.notNull("primaryKey", primaryKey);   //NOI18N
+            fields.add(sourceNameField(primaryKey));
+        }
+
+        public List<Fieldable> getFields() {
+            return fields;
+        }
+
+        @Override
+        public String getPrimaryKey() {
+            return getValue(FIELD_PRIMARY_KEY);
+        }
+
+        @Override
+        public void addPair(String key, String value, boolean searchable, boolean stored) {
+            final Field field = new Field (key, value,
+                    stored ? Field.Store.YES : Field.Store.NO,
+                    searchable ? Field.Index.NOT_ANALYZED_NO_NORMS : Field.Index.NO);
+            fields.add (field);
+        }
+
+        @Override
+        public String getValue(String key) {
+            for (Fieldable field : fields) {
+                if (field.name().equals(key)) {
+                    return field.stringValue();
+                }
+            }
+            return null;
+        }
+
+        @Override
+        public String[] getValues(String key) {
+            final List<String> result = new ArrayList<String>();
+            for (Fieldable field : fields) {
+                if (field.name().equals(key)) {
+                    result.add(field.stringValue());
+                }
+            }
+            return result.toArray(result.isEmpty() ? EMPTY : new String[result.size()]);
+        }
+
+        private Fieldable sourceNameField(@NonNull String primaryKey) {
+            return new Field(FIELD_PRIMARY_KEY, primaryKey, Field.Store.YES, Field.Index.NOT_ANALYZED_NO_NORMS);
+        }
+    }
+    //</editor-fold>
+
+    //<editor-fold defaultstate="collapsed" desc="Output IndexDocument (output of the cache)">
+    //@NotThreadSafe
+    private static final class ReusableIndexDocument implements IndexDocument {
+
+        private final Document doc = new Document();
+
+        @Override
+        public String getPrimaryKey() {
+            return doc.get(MemIndexDocument.FIELD_PRIMARY_KEY);
+        }
+
+        @Override
+        public String getValue(String key) {
+            return doc.get(key);
+        }
+
+        @Override
+        public String[] getValues(String key) {
+            return doc.getValues(key);
+        }
+
+        @Override
+        public void addPair(String key, String value, boolean searchable, boolean stored) {
+            doc.add(new Field (
+                key,
+                value,
+                stored ? Field.Store.YES : Field.Store.NO,
+                searchable ? Field.Index.NOT_ANALYZED_NO_NORMS : Field.Index.NO));
+        }
+
+        void clear() {
+            doc.getFields().clear();
+        }
+    }
+    //</editor-fold>
+
     //<editor-fold defaultstate="collapsed" desc="Added IndexDocuments Collection (optimized for high number of fields).">
     /*test*/ static final class DocumentStore extends AbstractCollection<IndexDocument>{
 
         private static final int INITIAL_DOC_COUNT = 100;
         private static final int INITIAL_DATA_SIZE = 1<<10;
-        private static final long DATA_CACHE_SIZE = (long) (Runtime.getRuntime().maxMemory() * 0.1);
 
+        private final long dataCacheSize;
         private final Map<String,Integer> fieldNames;
         private int[] docs;
         private char[] data;
@@ -705,11 +844,15 @@ public final class ClusteredIndexables {
         private int size;
 
 
-        DocumentStore() {
-            fieldNames = new LinkedHashMap<String, Integer>();
-            docs = new int[INITIAL_DOC_COUNT];
-            data = new char[INITIAL_DATA_SIZE];
-
+        DocumentStore(final long dataCacheSize) {
+            this.dataCacheSize = dataCacheSize;
+            this.fieldNames = new LinkedHashMap<String, Integer>();
+            this.docs = new int[INITIAL_DOC_COUNT];
+            this.data = new char[INITIAL_DATA_SIZE];
+            LOG.log(
+                Level.FINE,
+                "DocumentStore flush size: {0}",    //NOI18N
+                dataCacheSize);
         }
 
         @Override
@@ -720,10 +863,10 @@ public final class ClusteredIndexables {
         
         boolean addDocument(@NonNull final IndexDocument doc) {
             boolean res = false;
-            if (!(doc instanceof MemoryIndexDocument)) {
+            if (!(doc instanceof MemIndexDocument)) {
                 throw new IllegalArgumentException();
             }
-            for (Fieldable fld : ((MemoryIndexDocument)doc).getFields()) {
+            for (Fieldable fld : ((MemIndexDocument)doc).getFields()) {
                 final String fldName = fld.name();
                 final boolean stored = fld.isStored();
                 final boolean indexed = fld.isIndexed();
@@ -746,7 +889,7 @@ public final class ClusteredIndexables {
                 docsPointer += 2;
                 if (data.length < dataPointer + fldValue.length()) {
                     data = Arrays.copyOf(data, newLength(data.length,dataPointer + fldValue.length()));
-                    res = data.length<<1 > DATA_CACHE_SIZE;
+                    res = data.length<<1 > dataCacheSize;
                     LOG.log(
                         Level.FINE,
                         "New data size: {0}, flush: {1}",   //NOI18N
@@ -806,25 +949,24 @@ public final class ClusteredIndexables {
 
             private int cur = 0;
             private final List<String> names;
+            private final ReusableIndexDocument doc;
 
             It() {
                 names = new ArrayList<String>(fieldNames.keySet());
+                doc = new ReusableIndexDocument();
             }
 
             @Override
             public boolean hasNext() {
                 return cur<docsPointer;
             }
-
-            /**
-             * Todo: Perf: non needed creation of IndexDocument, single can be used.
-             */
+            
             @Override
             public IndexDocument next() {
                 if (cur>=docsPointer) {
                     throw new NoSuchElementException();
                 }
-                IndexDocument doc = null;
+                doc.clear();
                 int nameIndex;
                 while ((nameIndex=docs[cur++]) != 0) {
                     final boolean stored = (nameIndex & 4) == 4;
@@ -837,10 +979,6 @@ public final class ClusteredIndexables {
                                 dataPointer :
                                 docs[cur+2];
                     final String value = new String (data,dataStart, dataEnd - dataStart);
-                    if (doc == null) {
-                        assert "_sn".equals(names.get(nameIndex));  //NOI18N
-                        doc = IndexManager.createDocument(value);
-                    }
                     doc.addPair(
                             names.get(nameIndex),
                             value,
@@ -854,65 +992,7 @@ public final class ClusteredIndexables {
             public void remove() {
             }
         }
-        //</editor-fold>
-
-        //<editor-fold defaultstate="collapsed" desc="In Memory IndexDocument (in to cache)">
-        private static final class MemoryIndexDocument implements IndexDocument {
-
-            private static final String FIELD_PRIMARY_KEY = "_sn";  //NOI18N
-            private static final String[] EMPTY = new String[0];
-
-            private final List<Fieldable> fields = new ArrayList<Fieldable>();
-
-            MemoryIndexDocument(@NonNull final String primaryKey) {
-                Parameters.notNull("primaryKey", primaryKey);   //NOI18N
-                fields.add(sourceNameField(primaryKey));
-            }
-
-            public List<Fieldable> getFields() {
-                return fields;
-            }
-
-            @Override
-            public String getPrimaryKey() {
-                return getValue(FIELD_PRIMARY_KEY);
-            }
-
-            @Override
-            public void addPair(String key, String value, boolean searchable, boolean stored) {
-                final Field field = new Field (key, value,
-                        stored ? Field.Store.YES : Field.Store.NO,
-                        searchable ? Field.Index.NOT_ANALYZED_NO_NORMS : Field.Index.NO);
-                fields.add (field);
-            }
-
-            @Override
-            public String getValue(String key) {
-                for (Fieldable field : fields) {
-                    if (field.name().equals(key)) {
-                        return field.stringValue();
-                    }
-                }
-                return null;
-            }
-
-            @Override
-            public String[] getValues(String key) {
-                final List<String> result = new ArrayList<String>();
-                for (Fieldable field : fields) {
-                    if (field.name().equals(key)) {
-                        result.add(field.stringValue());
-                    }
-                }
-                return result.toArray(result.isEmpty() ? EMPTY : new String[result.size()]);
-            }
-
-            private Fieldable sourceNameField(@NonNull String primaryKey) {
-                return new Field(FIELD_PRIMARY_KEY, primaryKey, Field.Store.YES, Field.Index.NOT_ANALYZED_NO_NORMS);
-            }
-        }
-        //</editor-fold>
-
+        //</editor-fold>        
     }
     //</editor-fold>
 

@@ -42,6 +42,8 @@
 package org.netbeans.modules.parsing.lucene.support;
 
 import java.util.Collection;
+import org.apache.lucene.document.Document;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 
 /**
@@ -88,5 +90,32 @@ public interface DocumentIndexCache {
      */
     @NonNull
     Collection<? extends IndexDocument> getAddedDocuments();
+
+
+    /**
+     * Cache which allows custom {@link IndexDocument}s implementations.
+     * @since 2.22
+     */
+    interface WithCustomIndexDocument extends DocumentIndexCache {
+        /**
+         * Creates a {@link Convertor} from custom {@link IndexDocument} implementation.
+         * The returned {@link Convertor} translates the custom {@link IndexDocument}s
+         * returned by the {@link DocumentIndexCache#getAddedDocuments()} to {@link Document}s.
+         * @return the {@link Convertor} or null if a default convertor, converting from
+         * {@link IndexDocument}s created by {@link IndexManager#createDocument}, should be used.
+         */
+        @CheckForNull
+        Convertor<IndexDocument, Document> createAddConvertor();
+
+        /**
+         * Creates a {@link Convertor} to custom {@link IndexDocument} implementation.
+         * The returned {@link Convertor} translates the {@link Document}s
+         * created by the {@link Index#query} to custom {@link IndexDocument}s.
+         * @return the {@link Convertor} or null if a default convertor, converting to
+         * {@link IndexDocument}s created by {@link IndexManager#createDocument}, should be used.
+         */
+        @CheckForNull
+        Convertor<Document, IndexDocument> createQueryConvertor();
+    }
 
 }
