@@ -42,9 +42,6 @@
 
 package org.netbeans.modules.php.project.ui;
 
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.FocusTraversalPolicy;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.GroupLayout;
@@ -124,7 +121,7 @@ public class BrowseTestSources extends JPanel {
         return testSourcesTextField.getText();
     }
 
-    @NbBundle.Messages("BrowseTestSources.includePath.info=Testing provider classes (e.g. PHPUnit) should be available on Global Include Path (see Tools > Options > PHP).")
+    @NbBundle.Messages("BrowseTestSources.includePath.info=Add testing provider classes (e.g. PHPUnit) to Global Include Path (Tools > Options > PHP).")
     void validateTestSources() {
         assert notificationLineSupport != null;
 
@@ -161,13 +158,12 @@ public class BrowseTestSources extends JPanel {
         testSourcesTextField = new JTextField();
         testSourcesBrowseButton = new JButton();
 
-        setFocusTraversalPolicy(null);
-
         Mnemonics.setLocalizedText(infoLabel, "dummy"); // NOI18N
 
         testSourcesLabel.setLabelFor(testSourcesTextField);
-        Mnemonics.setLocalizedText(testSourcesLabel, NbBundle.getMessage(BrowseTestSources.class, "BrowseTestSources.testSourcesLabel.text"));
-        Mnemonics.setLocalizedText(testSourcesBrowseButton, NbBundle.getMessage(BrowseTestSources.class, "BrowseTestSources.testSourcesBrowseButton.text"));
+        Mnemonics.setLocalizedText(testSourcesLabel, NbBundle.getMessage(BrowseTestSources.class, "BrowseTestSources.testSourcesLabel.text")); // NOI18N
+
+        Mnemonics.setLocalizedText(testSourcesBrowseButton, NbBundle.getMessage(BrowseTestSources.class, "BrowseTestSources.testSourcesBrowseButton.text")); // NOI18N
         testSourcesBrowseButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 testSourcesBrowseButtonActionPerformed(evt);
@@ -185,7 +181,7 @@ public class BrowseTestSources extends JPanel {
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(testSourcesLabel)
                         .addPreferredGap(ComponentPlacement.RELATED)
-                        .addComponent(testSourcesTextField, GroupLayout.DEFAULT_SIZE, 188, Short.MAX_VALUE)
+                        .addComponent(testSourcesTextField, GroupLayout.DEFAULT_SIZE, 336, Short.MAX_VALUE)
                         .addPreferredGap(ComponentPlacement.RELATED)
                         .addComponent(testSourcesBrowseButton)))
                 .addContainerGap())
