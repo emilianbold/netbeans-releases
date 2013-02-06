@@ -51,6 +51,10 @@ import java.net.URL;
 import org.apache.tools.ant.*;
 
 import org.openide.awt.HtmlBrowser;
+import org.netbeans.modules.web.clientproject.spi.URLDisplayerImplementation;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  * Opens a web browser.
@@ -68,6 +72,16 @@ public class NbBrowse extends Task {
         file = f;
     }
 
+    private File context;
+    public void setContext(File f) {
+        context = f;
+    }
+
+    private String urlPath;
+    public void setUrlPath(String s) {
+        urlPath = s;
+    }
+
     public void execute() throws BuildException {
         if (url != null ^ file == null) throw new BuildException("You must define the url or file attributes", getLocation());
         if (url == null) {
@@ -75,7 +89,30 @@ public class NbBrowse extends Task {
         }
         log("Browsing: " + url);
         try {
-            HtmlBrowser.URLDisplayer.getDefault().showURL(new URL(url));
+            URL u = new URL(url);
+            URL appRoot = null;
+            if (context != null) {
+                FileObject fo = FileUtil.toFileObject(context);
+                org.netbeans.api.project.Project p = null;
+                if (fo != null) {
+                    p = FileOwnerQuery.getOwner(fo);
+                }
+                if (urlPath != null && urlPath.length() > 0) {
+                    if (!url.endsWith(urlPath)) {
+                        throw new BuildException("The urlPath("+urlPath+") is not part of the url("+url+")", getLocation());
+                    }
+                    appRoot = new URL(url.substring(0, url.length()-urlPath.length()));
+                }
+                if (p != null) {
+                    URLDisplayerImplementation urlDisplayer = (URLDisplayerImplementation)
+                            p.getLookup().lookup(URLDisplayerImplementation.class);
+                    if (urlDisplayer != null) {
+                        urlDisplayer.showURL(appRoot != null ? appRoot : u, u, fo);
+                        return;
+                    }
+                }
+            }
+            HtmlBrowser.URLDisplayer.getDefault().showURL(u);
         } catch (MalformedURLException e) {
             throw new BuildException(e, getLocation());
         }

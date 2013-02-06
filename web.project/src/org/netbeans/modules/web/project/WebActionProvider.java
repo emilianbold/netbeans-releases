@@ -309,6 +309,14 @@ public class WebActionProvider extends BaseActionProvider {
     })
     @Override
     public String[] getTargetNames(String command, Lookup context, Properties p, boolean doJavaChecks) throws IllegalArgumentException {
+        // set context for advanced nbbrowse task:
+        FileObject fo = context.lookup(FileObject.class);
+        if (fo == null) {
+            fo = getProject().getProjectDirectory();
+        }
+        String ctx = FileUtil.toFile(fo).getAbsolutePath();
+        p.setProperty("browser.context", ctx);
+
         if (command.equals(COMMAND_RUN_SINGLE) ||command.equals(COMMAND_RUN) ||
             command.equals(WebProjectConstants.COMMAND_REDEPLOY) ||command.equals(COMMAND_DEBUG) ||
             command.equals(COMMAND_DEBUG_SINGLE) || command.equals(JavaProjectConstants.COMMAND_DEBUG_FIX) ||
