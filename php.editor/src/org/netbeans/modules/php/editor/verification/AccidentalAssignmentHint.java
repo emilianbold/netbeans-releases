@@ -120,7 +120,14 @@ public class AccidentalAssignmentHint extends HintRule implements CustomisableRu
         })
         private void createHint(Assignment assignment) {
             OffsetRange offsetRange = new OffsetRange(assignment.getStartOffset(), assignment.getEndOffset());
-            hints.add(new Hint(AccidentalAssignmentHint.this, Bundle.AccidentalAssignmentHintCustom(asText(assignment)), fileObject, offsetRange, createFixes(assignment), 500));
+            if (showHint(offsetRange, doc)) {
+                hints.add(new Hint(
+                        AccidentalAssignmentHint.this,
+                        Bundle.AccidentalAssignmentHintCustom(asText(assignment)),
+                        fileObject,
+                        offsetRange,
+                        createFixes(assignment), 500));
+            }
         }
 
         private String asText(Assignment assignment) {

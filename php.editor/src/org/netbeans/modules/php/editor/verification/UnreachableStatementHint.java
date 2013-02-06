@@ -44,6 +44,7 @@ package org.netbeans.modules.php.editor.verification;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Stack;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
@@ -78,7 +79,7 @@ public class UnreachableStatementHint extends HintRule {
         if (phpParseResult.getProgram() != null) {
             FileObject fileObject = phpParseResult.getSnapshot().getSource().getFileObject();
             if (fileObject != null) {
-                CheckVisitor checkVisitor = new CheckVisitor(fileObject);
+                CheckVisitor checkVisitor = new CheckVisitor(fileObject, context.doc);
                 phpParseResult.getProgram().accept(checkVisitor);
                 hints.addAll(checkVisitor.getHints());
             }
@@ -87,26 +88,35 @@ public class UnreachableStatementHint extends HintRule {
 
     private final class CheckVisitor extends DefaultVisitor {
         private final FileObject fileObject;
+        private final BaseDocument baseDocument;
         private final Stack<CheckedBlock> blocks;
         private final List<CheckedBlock> processedBlocks;
+        private final List<Hint> hints;
 
-        public CheckVisitor(FileObject fileObject) {
+        public CheckVisitor(FileObject fileObject, BaseDocument baseDocument) {
             this.fileObject = fileObject;
+            this.baseDocument = baseDocument;
             blocks = new Stack<CheckedBlock>();
             processedBlocks = new LinkedList<CheckedBlock>();
+            hints = new LinkedList<Hint>();
         }
 
-        @NbBundle.Messages("UnreachableStatementHintText=Unreachable Statement")
         public List<Hint> getHints() {
-            List<Hint> hints = new LinkedList<Hint>();
             for (CheckedBlock checkedBlock : processedBlocks) {
                 ASTNode unreachableStatement = checkedBlock.getUnreachableStatement();
                 if (unreachableStatement != null) {
-                    OffsetRange offsetRange = new OffsetRange(unreachableStatement.getStartOffset(), unreachableStatement.getEndOffset());
-                    hints.add(new Hint(UnreachableStatementHint.this, Bundle.UnreachableStatementHintText(), fileObject, offsetRange, null, 500));
+                    createHint(unreachableStatement);
                 }
             }
             return hints;
+        }
+
+        @NbBundle.Messages("UnreachableStatementHintText=Unreachable Statement")
+        private void createHint(ASTNode unreachableStatement) {
+            OffsetRange offsetRange = new OffsetRange(unreachableStatement.getStartOffset(), unreachableStatement.getEndOffset());
+            if (showHint(offsetRange, baseDocument)) {
+                hints.add(new Hint(UnreachableStatementHint.this, Bundle.UnreachableStatementHintText(), fileObject, offsetRange, null, 500));
+            }
         }
 
         @Override

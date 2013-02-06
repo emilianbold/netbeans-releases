@@ -95,7 +95,13 @@ public class EmptyStatementHint extends HintRule {
         public void visit(EmptyStatement node) {
             super.visit(node);
             if (isSemicolon(node)) {
-                OffsetRange offsetRange = new OffsetRange(node.getStartOffset(), node.getEndOffset());
+                createHint(node);
+            }
+        }
+
+        private void createHint(EmptyStatement node) {
+            OffsetRange offsetRange = new OffsetRange(node.getStartOffset(), node.getEndOffset());
+            if (showHint(offsetRange, baseDocument)) {
                 hints.add(new Hint(
                         EmptyStatementHint.this,
                         Bundle.EmptyStatementHintText(),

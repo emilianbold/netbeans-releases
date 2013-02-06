@@ -49,6 +49,7 @@ import java.util.Stack;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
 import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintSeverity;
 import org.netbeans.modules.csl.api.OffsetRange;
@@ -143,7 +144,7 @@ public class UnusedVariableHint extends HintRule implements CustomisableRule {
         }
         FileObject fileObject = phpParseResult.getSnapshot().getSource().getFileObject();
         if (fileObject != null) {
-            CheckVisitor checkVisitor = new CheckVisitor(fileObject);
+            CheckVisitor checkVisitor = new CheckVisitor(fileObject, context.doc);
             phpParseResult.getProgram().accept(checkVisitor);
             hints.addAll(checkVisitor.getHints());
         }
@@ -155,29 +156,38 @@ public class UnusedVariableHint extends HintRule implements CustomisableRule {
         private final Map<ASTNode, List<HintVariable>> unusedVariables = new HashMap<ASTNode, List<HintVariable>>();
         private final Map<ASTNode, List<HintVariable>> usedVariables = new HashMap<ASTNode, List<HintVariable>>();
         private final FileObject fileObject;
+        private final BaseDocument baseDocument;
+        private final List<Hint> hints;
         private boolean forceVariableAsUsed;
         private boolean forceVariableAsUnused;
 
-        public CheckVisitor(FileObject fileObject) {
+        public CheckVisitor(FileObject fileObject, BaseDocument baseDocument) {
             this.fileObject = fileObject;
+            this.baseDocument = baseDocument;
+            hints = new LinkedList<Hint>();
+        }
+
+        public List<Hint> getHints() {
+            for (ASTNode scopeNode : unusedVariables.keySet()) {
+                List<HintVariable> scopeVariables = unusedVariables.get(scopeNode);
+                for (HintVariable variable : scopeVariables) {
+                    createHint(variable);
+                }
+            }
+            return hints;
         }
 
         @Messages({
             "# {0} - Name of the variable",
             "UnusedVariableHintCustom=Variable ${0} seems to be unused in its scope"
         })
-        public List<Hint> getHints() {
-            List<Hint> hints = new LinkedList<Hint>();
-            for (ASTNode scopeNode : unusedVariables.keySet()) {
-                List<HintVariable> scopeVariables = unusedVariables.get(scopeNode);
-                for (HintVariable variable : scopeVariables) {
-                    int start = variable.getStartOffset();
-                    int end = variable.getEndOffset();
-                    OffsetRange offsetRange = new OffsetRange(start, end);
-                    hints.add(new Hint(UnusedVariableHint.this, Bundle.UnusedVariableHintCustom(variable.getName()), fileObject, offsetRange, null, 500));
-                }
+        private void createHint(HintVariable variable) {
+            int start = variable.getStartOffset();
+            int end = variable.getEndOffset();
+            OffsetRange offsetRange = new OffsetRange(start, end);
+            if (showHint(offsetRange, baseDocument)) {
+                hints.add(new Hint(UnusedVariableHint.this, Bundle.UnusedVariableHintCustom(variable.getName()), fileObject, offsetRange, null, 500));
             }
-            return hints;
         }
 
         @CheckForNull

@@ -52,6 +52,7 @@ import java.util.Stack;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
 import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintSeverity;
 import org.netbeans.modules.csl.api.OffsetRange;
@@ -130,7 +131,7 @@ public class UninitializedVariableHint extends HintRule implements CustomisableR
         if (fileObject == null) {
             return;
         }
-        CheckVisitor checkVisitor = new CheckVisitor(fileObject, phpParseResult.getModel());
+        CheckVisitor checkVisitor = new CheckVisitor(fileObject, phpParseResult.getModel(), context.doc);
         phpParseResult.getProgram().accept(checkVisitor);
         hints.addAll(checkVisitor.getHints());
     }
@@ -144,10 +145,12 @@ public class UninitializedVariableHint extends HintRule implements CustomisableR
         private final List<Hint> hints = new LinkedList<Hint>();
         private final Model model;
         private final Map<String, Set<BaseFunctionElement>> invocationCache = new HashMap<String, Set<BaseFunctionElement>>();
+        private final BaseDocument baseDocument;
 
-        private CheckVisitor(FileObject fileObject, Model model) {
+        private CheckVisitor(FileObject fileObject, Model model, BaseDocument baseDocument) {
             this.fileObject = fileObject;
             this.model = model;
+            this.baseDocument = baseDocument;
         }
 
         private Collection<? extends Hint> getHints() {
@@ -157,15 +160,21 @@ public class UninitializedVariableHint extends HintRule implements CustomisableR
             return hints;
         }
 
+        private void createHints(List<Variable> uninitializedVariables) {
+            for (Variable variable : uninitializedVariables) {
+                createHint(variable);
+            }
+        }
+
         @Messages({
             "# {0} - Name of the variable",
             "UninitializedVariableVariableHintCustom=Variable ${0} seems to be uninitialized"
         })
-        private void createHints(List<Variable> uninitializedVariables) {
-            for (Variable variable : uninitializedVariables) {
-                int start = variable.getStartOffset() + 1;
-                int end = variable.getEndOffset();
-                OffsetRange offsetRange = new OffsetRange(start, end);
+        private void createHint(Variable variable) {
+            int start = variable.getStartOffset() + 1;
+            int end = variable.getEndOffset();
+            OffsetRange offsetRange = new OffsetRange(start, end);
+            if (showHint(offsetRange, baseDocument)) {
                 hints.add(new Hint(UninitializedVariableHint.this, Bundle.UninitializedVariableVariableHintCustom(getVariableName(variable)), fileObject, offsetRange, null, 500));
             }
         }

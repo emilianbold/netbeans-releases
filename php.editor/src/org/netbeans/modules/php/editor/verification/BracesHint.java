@@ -50,7 +50,6 @@ import org.netbeans.modules.csl.api.EditList;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintFix;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.csl.api.Rule;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.Block;
 import org.netbeans.modules.php.editor.parser.astnodes.DoStatement;
@@ -322,7 +321,7 @@ public abstract class BracesHint extends HintRule {
         private final List<Hint> hints;
         private final BaseDocument baseDocument;
         private final FileObject fileObject;
-        private final Rule bracesHint;
+        private final BracesHint bracesHint;
 
         private CheckVisitor(BracesHint bracesHint, FileObject fileObject, BaseDocument baseDocument) {
             this.bracesHint = bracesHint;
@@ -333,7 +332,9 @@ public abstract class BracesHint extends HintRule {
 
         protected void addHint(Statement enclosingStatement, Statement node, String description) {
             OffsetRange offsetRange = new OffsetRange(node.getStartOffset(), node.getEndOffset());
-            hints.add(new Hint(bracesHint, description, fileObject, offsetRange, Collections.<HintFix>singletonList(new Fix(enclosingStatement, node, baseDocument)), 500));
+            if (bracesHint.showHint(offsetRange, baseDocument)) {
+                hints.add(new Hint(bracesHint, description, fileObject, offsetRange, Collections.<HintFix>singletonList(new Fix(enclosingStatement, node, baseDocument)), 500));
+            }
         }
 
         public List<Hint> getHints() {

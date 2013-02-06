@@ -120,7 +120,13 @@ public class ErrorControlOperatorHint extends HintRule {
         public void visit(IgnoreError node) {
             super.visit(node);
             if (!isValidCase(node)) {
-                OffsetRange offsetRange = new OffsetRange(node.getStartOffset(), node.getEndOffset());
+                createHint(node);
+            }
+        }
+
+        private void createHint(IgnoreError node) {
+            OffsetRange offsetRange = new OffsetRange(node.getStartOffset(), node.getEndOffset());
+            if (showHint(offsetRange, baseDocument)) {
                 hints.add(new Hint(
                         ErrorControlOperatorHint.this,
                         Bundle.ErrorControlOperatorHintText(),

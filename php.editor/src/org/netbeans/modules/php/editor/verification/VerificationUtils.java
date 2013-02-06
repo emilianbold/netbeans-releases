@@ -41,6 +41,11 @@
  */
 package org.netbeans.modules.php.editor.verification;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.text.BadLocationException;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.Utilities;
 import org.netbeans.modules.csl.api.OffsetRange;
 
 /**
@@ -48,6 +53,7 @@ import org.netbeans.modules.csl.api.OffsetRange;
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
 public final class VerificationUtils {
+    private static final Logger LOGGER = Logger.getLogger(VerificationUtils.class.getName());
 
     private VerificationUtils() {
     }
@@ -63,6 +69,23 @@ public final class VerificationUtils {
 
     public static boolean isBefore(int caret, int margin) {
         return caret <= margin;
+    }
+
+    public static OffsetRange createLineBounds(int caretOffset, BaseDocument doc) {
+        assert doc != null;
+        OffsetRange result = OffsetRange.NONE;
+        if (caretOffset != -1) {
+            try {
+                int lineBegin = caretOffset > 0 ? Utilities.getRowStart(doc, caretOffset) : -1;
+                int lineEnd = (lineBegin != -1) ? Utilities.getRowEnd(doc, caretOffset) : -1;
+                if (lineBegin != -1 && lineEnd != -1 && lineBegin <= lineEnd) {
+                    result = new OffsetRange(lineBegin, lineEnd);
+                }
+            } catch (BadLocationException ex) {
+                LOGGER.log(Level.WARNING, null, ex);
+            }
+        }
+        return result;
     }
 
 }

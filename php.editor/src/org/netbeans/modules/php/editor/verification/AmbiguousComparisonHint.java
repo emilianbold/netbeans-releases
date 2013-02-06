@@ -112,13 +112,15 @@ public class AmbiguousComparisonHint extends HintRule {
         @Messages("AmbiguousComparisonHintCustom=Possible accidental comparison found. Check if you wanted to use '=' instead.")
         private void createHint(final InfixExpression node) {
             final OffsetRange offsetRange = new OffsetRange(node.getStartOffset(), node.getEndOffset());
-            hints.add(new Hint(
-                    AmbiguousComparisonHint.this,
-                    Bundle.AmbiguousComparisonHintCustom(),
-                    fileObject,
-                    offsetRange,
-                    Collections.<HintFix>singletonList(new AssignmentHintFix(doc, node)),
-                    500));
+            if (showHint(offsetRange, doc)) {
+                hints.add(new Hint(
+                        AmbiguousComparisonHint.this,
+                        Bundle.AmbiguousComparisonHintCustom(),
+                        fileObject,
+                        offsetRange,
+                        Collections.<HintFix>singletonList(new AssignmentHintFix(doc, node)),
+                        500));
+            }
         }
 
         @Override

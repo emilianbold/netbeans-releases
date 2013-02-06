@@ -47,8 +47,10 @@ import java.util.List;
 import java.util.Set;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintSeverity;
+import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.RuleContext;
 
 /**
@@ -57,6 +59,7 @@ import org.netbeans.modules.csl.api.RuleContext;
  */
 public abstract class HintRule implements CaretSensitiveRule {
     private int caretOffset;
+    private OffsetRange lineBounds;
 
     abstract void compute(PHPRuleContext context, List<Hint> hints);
 
@@ -65,8 +68,16 @@ public abstract class HintRule implements CaretSensitiveRule {
         this.caretOffset = caretOffset;
     }
 
-    public int getCaretOffset() {
-        return caretOffset;
+    protected boolean showHint(OffsetRange hintOffsetRange, BaseDocument doc) {
+        OffsetRange currentLineBounds = getLineBounds(doc);
+        return currentLineBounds == OffsetRange.NONE || hintOffsetRange.overlaps(currentLineBounds);
+    }
+
+    private synchronized OffsetRange getLineBounds(BaseDocument doc) {
+        if (lineBounds == null) {
+            lineBounds = VerificationUtils.createLineBounds(caretOffset, doc);
+        }
+        return lineBounds;
     }
 
     @Override

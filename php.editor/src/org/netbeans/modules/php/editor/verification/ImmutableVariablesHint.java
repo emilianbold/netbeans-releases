@@ -50,6 +50,7 @@ import java.util.Stack;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
 import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintSeverity;
 import org.netbeans.modules.csl.api.OffsetRange;
@@ -115,7 +116,7 @@ public class ImmutableVariablesHint extends HintRule implements CustomisableRule
         if (fileObject == null) {
             return;
         }
-        CheckVisitor checkVisitor = new CheckVisitor(fileObject);
+        CheckVisitor checkVisitor = new CheckVisitor(fileObject, context.doc);
         phpParseResult.getProgram().accept(checkVisitor);
         hints.addAll(checkVisitor.getHints());
     }
@@ -123,14 +124,16 @@ public class ImmutableVariablesHint extends HintRule implements CustomisableRule
     private class CheckVisitor extends DefaultVisitor {
 
         private final FileObject fileObject;
+        private final BaseDocument baseDocument;
         private final Stack<ASTNode> parentNodes = new Stack<ASTNode>();
         private final Map<ASTNode, Map<String, List<Variable>>> assignments = new HashMap<ASTNode, Map<String, List<Variable>>>();
         private final List<Hint> hints = new LinkedList<Hint>();
         private boolean variableAssignment;
         private final int numberOfAllowedAssignments;
 
-        public CheckVisitor(FileObject fileObject) {
+        public CheckVisitor(FileObject fileObject, BaseDocument baseDocument) {
             this.fileObject = fileObject;
+            this.baseDocument = baseDocument;
             this.numberOfAllowedAssignments = getNumberOfAllowedAssignments(preferences);
         }
 
@@ -163,14 +166,20 @@ public class ImmutableVariablesHint extends HintRule implements CustomisableRule
         })
         private void createHints(List<Variable> variables) {
             for (Variable variable : variables) {
-                int start = variable.getStartOffset() + 1;
-                int end = variable.getEndOffset();
-                OffsetRange offsetRange = new OffsetRange(start, end);
+                createHint(variable, variables.size());
+            }
+        }
+
+        private void createHint(Variable variable, int numberOfAssignments) {
+            int start = variable.getStartOffset() + 1;
+            int end = variable.getEndOffset();
+            OffsetRange offsetRange = new OffsetRange(start, end);
+            if (showHint(offsetRange, baseDocument)) {
                 Identifier variableIdentifier = getIdentifier(variable);
                 String variableName = variableIdentifier == null ? "?" : variableIdentifier.getName(); //NOI18N
                 hints.add(new Hint(
                         ImmutableVariablesHint.this,
-                        Bundle.ImmutableVariablesHintCustom(numberOfAllowedAssignments, variables.size(), variableName),
+                        Bundle.ImmutableVariablesHintCustom(numberOfAllowedAssignments, numberOfAssignments, variableName),
                         fileObject,
                         offsetRange,
                         null,
