@@ -69,6 +69,7 @@ import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.FontColorNames;
 import org.netbeans.api.editor.settings.SimpleValueNames;
+import org.netbeans.modules.editor.lib.NavigationHistory;
 import org.netbeans.modules.editor.lib2.ComponentUtils;
 import org.netbeans.modules.editor.lib2.DocUtils;
 import org.netbeans.modules.editor.lib2.highlighting.BlockHighlighting;
@@ -683,6 +684,11 @@ public final class EditorFindSupport {
                     doc.remove(startOffset, len);
                 }
                 if (s != null && s.length() > 0) {
+                    try {
+                        NavigationHistory.getEdits().markWaypoint(c, startOffset, false, true);
+                    } catch (BadLocationException e) {
+                        LOG.log(Level.WARNING, "Can't add position to the history of edits.", e); //NOI18N
+                    }
                     doc.insertString(startOffset, s, null);
                     if (startOffset == blockSearchStartOffset) { // Replaced at begining of block
                         blockSearchStartPos = doc.createPosition(startOffset);
@@ -801,6 +807,11 @@ public final class EditorFindSupport {
                     } else { // can and will insert the new string
                         if (replaceWith != null && replaceWith.length() > 0) {
                             int offset = blk[0];
+                            try {
+                                NavigationHistory.getEdits().markWaypoint(c, offset, false, true);
+                            } catch (BadLocationException e) {
+                                LOG.log(Level.WARNING, "Can't add position to the history of edits.", e); //NOI18N
+                            }
                             doc.insertString(offset, replaceWith, null);
                             if (offset == blockSearchStartOffset) { // Replaced at begining of block
                                 blockSearchStartPos = doc.createPosition(offset);
