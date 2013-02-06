@@ -43,6 +43,7 @@ package org.netbeans.modules.search.project;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import javax.swing.Icon;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
@@ -66,6 +67,7 @@ public class SearchScopeCurrentProject extends SearchScopeDefinition {
     private PropertyChangeListener pcl;
     private boolean applicable = true;
     private String name = null;
+    private Icon icon;
     private Project project = null;
 
     public SearchScopeCurrentProject() {
@@ -104,9 +106,11 @@ public class SearchScopeCurrentProject extends SearchScopeDefinition {
             applicable = true;
             name = NbBundle.getMessage(SearchScopeCurrentProject.class,
                     "SearchScopeCurrentProject", shortName(project));   //NOI18N
+            icon = ProjectUtils.getInformation(project).getIcon();
         } else {
             applicable = false;
             name = "";                                                  //NOI18N
+            icon = null;
         }
         notifyListeners();
     }
@@ -163,5 +167,10 @@ public class SearchScopeCurrentProject extends SearchScopeDefinition {
         applicable = false;
         name = null;
         project = null;
+    }
+
+    @Override
+    public Icon getIcon() {
+        return icon;
     }
 }

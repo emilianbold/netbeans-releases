@@ -751,7 +751,7 @@ type_specifier returns [type_specifier_t ts]
 finally                                                                         {if(state.backtracking == 0){action.end_type_specifier(input.LT(0));}}
 
 trailing_type_specifier
-@init                                                                           {action.trailing_type_specifier(input.LT(1));}
+@init                                                                           {if(state.backtracking == 0){action.trailing_type_specifier(input.LT(1));}}
     :   
         simple_type_specifier
     |
@@ -761,7 +761,7 @@ trailing_type_specifier
     |
         cv_qualifier
     ;
-finally                                                                         {action.end_trailing_type_specifier(input.LT(0));}
+finally                                                                         {if(state.backtracking == 0){action.end_trailing_type_specifier(input.LT(0));}}
 
 simple_type_specifier returns [type_specifier_t ts_val]
 scope QualName;

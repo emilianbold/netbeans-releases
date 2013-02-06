@@ -342,8 +342,22 @@ public final class GitClient {
      * @throws GitException an unexpected error occurs
      */
     public GitRevisionInfo commit(File[] roots, String commitMessage, GitUser author, GitUser commiter, ProgressMonitor monitor) throws GitException {
+        return commit(roots, commitMessage, author, commiter, false, monitor);
+    }
+    
+    /**
+     * Commits all changes made in the index to all files under the given roots
+     * @param roots files or folders to recursively commit.
+     * @param commitMessage commit message
+     * @param author person who is the author of the changes to be committed
+     * @param commiter person who is committing the changes, may not be the same person as author.
+     * @param amend amends and modifies the last commit instead of adding a completely new commit
+     * @param monitor progress monitor
+     * @throws GitException an unexpected error occurs
+     */
+    public GitRevisionInfo commit(File[] roots, String commitMessage, GitUser author, GitUser commiter, boolean amend, ProgressMonitor monitor) throws GitException {
         Repository repository = gitRepository.getRepository();
-        CommitCommand cmd = new CommitCommand(repository, getClassFactory(), roots, commitMessage, author, commiter, monitor);
+        CommitCommand cmd = new CommitCommand(repository, getClassFactory(), roots, commitMessage, author, commiter, amend, monitor);
         cmd.execute();
         return cmd.revision;
     }
