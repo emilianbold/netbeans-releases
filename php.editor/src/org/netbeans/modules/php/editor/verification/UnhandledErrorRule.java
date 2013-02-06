@@ -42,7 +42,6 @@
 package org.netbeans.modules.php.editor.verification;
 
 import java.util.Collections;
-import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.csl.api.Error;
 
@@ -50,9 +49,7 @@ import org.netbeans.modules.csl.api.Error;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public abstract class UnhandledErrorRule extends ErrorRule {
-
-    abstract void compute(PHPRuleContext context, List<Error> errors);
+public abstract class UnhandledErrorRule extends ErrorRule implements InvokableRule<Error> {
 
     @Override
     public Set<?> getCodes() {

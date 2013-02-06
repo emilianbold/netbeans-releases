@@ -66,7 +66,7 @@ import org.openide.util.NbBundle.Messages;
 public class LoopOnlyKeywordsUnhandledError extends UnhandledErrorRule {
 
     @Override
-    void compute(PHPRuleContext context, List<org.netbeans.modules.csl.api.Error> errors) {
+    public void compute(PHPRuleContext context, List<org.netbeans.modules.csl.api.Error> errors) {
         PHPParseResult phpParseResult = (PHPParseResult) context.parserResult;
         if (phpParseResult.getProgram() == null) {
             return;

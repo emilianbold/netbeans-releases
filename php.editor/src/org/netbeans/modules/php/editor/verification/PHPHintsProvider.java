@@ -77,23 +77,23 @@ public class PHPHintsProvider implements HintsProvider {
     public void computeHints(HintsManager mgr, RuleContext context, List<Hint> hints) {
         Map<?, List<? extends Rule.AstRule>> allHints = mgr.getHints(false, context);
         List<? extends AstRule> modelHints = allHints.get(DEFAULT_HINTS);
-        RulesRunner rulesRunner = new RulesRunner(mgr, initializeContext(context), hints);
-        rulesRunner.run(modelHints, new PreferencesAdjuster(mgr), new HintsInvoker());
+        RulesRunner<Hint> rulesRunner = new RulesRunnerImpl<Hint>(mgr, initializeContext(context), hints);
+        rulesRunner.run(modelHints, new PreferencesAdjuster(mgr));
     }
 
     @Override
     public void computeSuggestions(HintsManager mgr, RuleContext context, List<Hint> suggestions, int caretOffset) {
-        RulesRunner rulesRunner = new RulesRunner(mgr, initializeContext(context), suggestions);
+        RulesRunner<Hint> rulesRunner = new RulesRunnerImpl<Hint>(mgr, initializeContext(context), suggestions);
         RuleAdjuster forAllAdjusters = new ForAllAdjusters(Arrays.asList(new PreferencesAdjuster(mgr), new CaretOffsetAdjuster(caretOffset)));
         Map<?, List<? extends AstRule>> hintsOnLine = mgr.getHints(true, context);
         List<? extends AstRule> defaultHintsOnLine = hintsOnLine.get(DEFAULT_HINTS);
         if (defaultHintsOnLine != null) {
-            rulesRunner.run(defaultHintsOnLine, forAllAdjusters, new HintsInvoker());
+            rulesRunner.run(defaultHintsOnLine, forAllAdjusters);
         }
         Map<?, List<? extends Rule.AstRule>> allHints = mgr.getSuggestions();
         List<? extends AstRule> modelHints = allHints.get(DEFAULT_SUGGESTIONS);
         if (modelHints != null) {
-            rulesRunner.run(modelHints, forAllAdjusters, new SuggestionInvoker());
+            rulesRunner.run(modelHints, forAllAdjusters);
         }
     }
 
@@ -110,14 +110,15 @@ public class PHPHintsProvider implements HintsProvider {
         }
         Map<?, List<? extends ErrorRule>> allErrors = manager.getErrors();
         if (allErrors != null) {
-            RulesRunner rulesRunner = new RulesRunner(manager, initializeContext(context), hints);
             List<? extends ErrorRule> unhandledErrors = allErrors.get(ErrorType.UNHANDLED_ERRORS);
             if (unhandledErrors != null) {
-                rulesRunner.run(unhandledErrors, RuleAdjuster.NONE, new UnhandledErrorInvoker());
+                RulesRunner<Error> rulesRunner = new RulesRunnerImpl<Error>(manager, initializeContext(context), unhandled);
+                rulesRunner.run(unhandledErrors, RuleAdjuster.NONE);
             }
             List<? extends ErrorRule> hintErrors = allErrors.get(ErrorType.HINT_ERRORS);
             if (hintErrors != null) {
-                rulesRunner.run(hintErrors, RuleAdjuster.NONE, new HintErrorInvoker());
+                RulesRunner<Hint> rulesRunner = new RulesRunnerImpl<Hint>(manager, initializeContext(context), hints);
+                rulesRunner.run(hintErrors, RuleAdjuster.NONE);
             }
         }
     }
@@ -147,18 +148,23 @@ public class PHPHintsProvider implements HintsProvider {
         return new PHPRuleContext();
     }
 
-    private final class RulesRunner {
+    private interface RulesRunner<T> {
+        void run(List<? extends Rule> rules, RuleAdjuster adjuster);
+    }
+
+    private final class RulesRunnerImpl<T> implements RulesRunner<T> {
         private final HintsManager hintManager;
         private final PHPRuleContext ruleContext;
-        private final List<Hint> hints;
+        private final List<T> result;
 
-        public RulesRunner(HintsManager hintManager, PHPRuleContext ruleContext, List<Hint> hints) {
+        public RulesRunnerImpl(HintsManager hintManager, PHPRuleContext ruleContext, List<T> result) {
             this.hintManager = hintManager;
             this.ruleContext = ruleContext;
-            this.hints = hints;
+            this.result = result;
         }
 
-        public void run(List<? extends Rule> rules, RuleAdjuster adjuster, RuleInvoker invoker) {
+        @Override
+        public void run(List<? extends Rule> rules, RuleAdjuster adjuster) {
             for (Rule rule : rules) {
                 if (cancel) {
                     break;
@@ -166,14 +172,19 @@ public class PHPHintsProvider implements HintsProvider {
                 if (rule instanceof AstRule) {
                     AstRule astRule = (AstRule) rule;
                     if (hintManager.isEnabled(astRule)) {
-                        adjuster.adjust(astRule);
-                        invoker.invoke(astRule, ruleContext, hints);
+                        adjustAndInvoke(rule, adjuster);
                     }
+                } else if (rule instanceof ErrorRule) {
+                    adjustAndInvoke(rule, adjuster);
                 }
-                if (rule instanceof ErrorRule) {
-                    adjuster.adjust(rule);
-                    invoker.invoke(rule, ruleContext, hints);
-                }
+            }
+        }
+
+        private void adjustAndInvoke(Rule rule, RuleAdjuster adjuster) {
+            if (rule instanceof InvokableRule) {
+                adjuster.adjust(rule);
+                InvokableRule<T> invokableRule = (InvokableRule<T>) rule;
+                invokableRule.compute(ruleContext, result);
             }
         }
 
@@ -235,58 +246,6 @@ public class PHPHintsProvider implements HintsProvider {
             if (rule instanceof CustomisableRule) {
                 CustomisableRule icm = (CustomisableRule) rule;
                 icm.setPreferences(hintManager.getPreferences(icm));
-            }
-        }
-
-    }
-
-    private interface RuleInvoker<T> {
-        void invoke(Rule rule, PHPRuleContext ruleContext, List<T> hints);
-    }
-
-    private static final class HintsInvoker implements RuleInvoker<Hint> {
-
-        @Override
-        public void invoke(Rule rule, PHPRuleContext ruleContext, List<Hint> hints) {
-            if (rule instanceof HintRule) {
-                HintRule hintRule = (HintRule) rule;
-                hintRule.compute(ruleContext, hints);
-            }
-        }
-
-    }
-
-    private static final class SuggestionInvoker implements RuleInvoker<Hint> {
-
-        @Override
-        public void invoke(Rule rule, PHPRuleContext ruleContext, List<Hint> suggestions) {
-            if (rule instanceof SuggestionRule) {
-                SuggestionRule suggestionRule = (SuggestionRule) rule;
-                suggestionRule.compute(ruleContext, suggestions);
-            }
-        }
-
-    }
-
-    private static final class UnhandledErrorInvoker implements RuleInvoker<Error> {
-
-        @Override
-        public void invoke(Rule rule, PHPRuleContext ruleContext, List<Error> errors) {
-            if (rule instanceof UnhandledErrorRule) {
-                UnhandledErrorRule abstractUnhandledError = (UnhandledErrorRule) rule;
-                abstractUnhandledError.compute(ruleContext, errors);
-            }
-        }
-
-    }
-
-    private static final class HintErrorInvoker implements RuleInvoker<Hint> {
-
-        @Override
-        public void invoke(Rule rule, PHPRuleContext ruleContext, List<Hint> hints) {
-            if (rule instanceof HintErrorRule) {
-                HintErrorRule abstractHintError = (HintErrorRule) rule;
-                abstractHintError.compute(ruleContext, hints);
             }
         }
 

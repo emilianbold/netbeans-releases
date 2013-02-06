@@ -69,7 +69,7 @@ public class ParentConstructorCallHint extends HintRule {
     private FileObject fileObject;
 
     @Override
-    void compute(PHPRuleContext context, List<Hint> hints) {
+    public void compute(PHPRuleContext context, List<Hint> hints) {
         this.hints = hints;
         PHPParseResult phpParseResult = (PHPParseResult) context.parserResult;
         baseDocument = context.doc;

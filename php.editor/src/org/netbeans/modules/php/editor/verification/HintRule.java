@@ -43,7 +43,6 @@
 package org.netbeans.modules.php.editor.verification;
 
 import java.util.Collections;
-import java.util.List;
 import java.util.Set;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
@@ -57,11 +56,9 @@ import org.netbeans.modules.csl.api.RuleContext;
  *
  * @author Radek Matous
  */
-public abstract class HintRule implements CaretSensitiveRule {
+public abstract class HintRule implements CaretSensitiveRule, InvokableRule<Hint> {
     private int caretOffset;
     private OffsetRange lineBounds;
-
-    abstract void compute(PHPRuleContext context, List<Hint> hints);
 
     @Override
     public void setCaretOffset(int caretOffset) {

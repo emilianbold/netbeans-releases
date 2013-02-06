@@ -73,7 +73,7 @@ import org.openide.util.NbBundle.Messages;
 public class PHP53UnhandledError extends UnhandledErrorRule {
 
     @Override
-    void compute(PHPRuleContext context, List<Error> errors) {
+    public void compute(PHPRuleContext context, List<Error> errors) {
         PHPParseResult phpParseResult = (PHPParseResult) context.parserResult;
         if (phpParseResult.getProgram() == null) {
             return;
