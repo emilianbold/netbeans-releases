@@ -67,6 +67,7 @@ import org.netbeans.modules.php.editor.parser.PHPParseResult;
 public class PHPHintsProvider implements HintsProvider {
     public static final String DEFAULT_HINTS = "default.hints"; //NOI18N
     public static final String DEFAULT_SUGGESTIONS = "default.suggestions"; //NOI18N
+    private volatile boolean cancel = false;
 
     enum ErrorType {
         UNHANDLED_ERRORS,
@@ -134,6 +135,7 @@ public class PHPHintsProvider implements HintsProvider {
 
     @Override
     public void cancel() {
+        cancel = true;
     }
 
     @Override
@@ -146,7 +148,7 @@ public class PHPHintsProvider implements HintsProvider {
         return new PHPRuleContext();
     }
 
-    private static final class RulesRunner {
+    private final class RulesRunner {
         private final HintsManager hintManager;
         private final PHPRuleContext ruleContext;
         private final List<Hint> hints;
@@ -159,6 +161,9 @@ public class PHPHintsProvider implements HintsProvider {
 
         public void run(List<? extends Rule> rules, RuleAdjuster adjuster, RuleInvoker invoker) {
             for (Rule rule : rules) {
+                if (cancel) {
+                    break;
+                }
                 if (rule instanceof AstRule) {
                     AstRule astRule = (AstRule) rule;
                     if (hintManager.isEnabled(astRule)) {
