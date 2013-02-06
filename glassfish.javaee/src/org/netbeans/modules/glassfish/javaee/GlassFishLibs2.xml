@@ -60,6 +60,7 @@ Portions Copyrighted 2012 Sun Microsystems, Inc.
             </fileset>
         </classpath>
         <javadocs>
+            <lookup path="docs/javaee-doc-api.jar"/>
         </javadocs>
         <sources>
         </sources>
