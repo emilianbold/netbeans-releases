@@ -105,6 +105,27 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="SearchScopeDefinition_getIcon">
+            <api name="api.search"/>
+            <summary>Added method getIcon to class SearchScopeDefinition</summary>
+            <version major="1" minor="10"/>
+            <date day="29" month="1" year="2013"/>
+            <author login="jhavlin"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Search scope can define an icon that will be shown in the
+                    UI, usually in the combo box for search scope selection.
+                </p>
+                <p>
+                    To use a custom scope icon, override method
+                    SearchScopeDefinition.getIcon().
+                </p>
+            </description>
+            <class package="org.netbeans.spi.search" name="SearchScopeDefinition"/>
+            <issue number="222406"/>
+        </change>
+
         <change id="ReplaceHistory">
             <api name="api.search"/>
             <summary>Added ReplacePattern and replace history to SearchHistory class</summary>

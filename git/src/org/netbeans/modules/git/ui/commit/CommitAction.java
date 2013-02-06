@@ -200,6 +200,8 @@ public class CommitAction extends SingleRepositoryAction {
                 String message = parameters.getCommitMessage();
                 GitUser author = parameters.getAuthor();
                 GitUser commiter = parameters.getCommiter();
+                boolean amend = parameters.isAmend();
+                
                 Collection<GitHook> hooks = panel.getHooks();
                 try {
 
@@ -219,7 +221,7 @@ public class CommitAction extends SingleRepositoryAction {
                     String origMessage = message;
                     message = beforeCommitHook(commitCandidates, hooks, message);
 
-                    GitRevisionInfo info = commit(commitCandidates, message, author, commiter);
+                    GitRevisionInfo info = commit(commitCandidates, message, author, commiter, amend);
 
                     GitModuleConfig.getDefault().putRecentCommitAuthors(GitCommitParameters.getUserString(author));
                     GitModuleConfig.getDefault().putRecentCommiter(GitCommitParameters.getUserString(commiter));
@@ -314,11 +316,11 @@ public class CommitAction extends SingleRepositoryAction {
             }
         }
 
-        private GitRevisionInfo commit (List<File> commitCandidates, String message, GitUser author, GitUser commiter) throws GitException {
+        private GitRevisionInfo commit (List<File> commitCandidates, String message, GitUser author, GitUser commiter, boolean amend) throws GitException {
             try {
                 GitRevisionInfo info = getClient().commit(
                         state == GitRepositoryState.MERGING_RESOLVED ? new File[0] : commitCandidates.toArray(new File[commitCandidates.size()]),
-                        message, author, commiter, getProgressMonitor());
+                        message, author, commiter, amend, getProgressMonitor());
                 printInfo(info);
                 return info;
             } catch (GitException ex) {

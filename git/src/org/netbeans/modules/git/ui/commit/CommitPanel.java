@@ -72,6 +72,8 @@ import org.openide.util.NbBundle;
 public class CommitPanel extends javax.swing.JPanel {
     private final GitCommitParameters parameters;
     private UndoRedoSupport um; 
+    private String headCommitMessage;
+    private boolean commitMessageAmended;
 
     /** Creates new form CommitPanel */
     public CommitPanel(GitCommitParameters parameters, String commitMessage, boolean preferredMessage, String user) {
@@ -168,25 +170,37 @@ public class CommitPanel extends javax.swing.JPanel {
         jLabel3 = new javax.swing.JLabel();
         templatesLabel = parameters.getMessagesTemplateLink(messageTextArea);
         recentLabel = parameters.getRecentMessagesLink(messageTextArea);
+        amendCheckBox = new javax.swing.JCheckBox();
 
         messageLabel.setLabelFor(messageTextArea);
-        messageLabel.setText(org.openide.util.NbBundle.getMessage(CommitPanel.class, "CommitPanel.messageLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(messageLabel, org.openide.util.NbBundle.getMessage(CommitPanel.class, "CommitPanel.messageLabel.text")); // NOI18N
 
         messageTextArea.setColumns(20);
         messageTextArea.setRows(5);
         jScrollPane1.setViewportView(messageTextArea);
 
-        jLabel2.setText(org.openide.util.NbBundle.getMessage(CommitPanel.class, "CommitPanel.jLabel2.text")); // NOI18N
+        jLabel2.setLabelFor(authorComboBox);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(CommitPanel.class, "CommitPanel.jLabel2.text")); // NOI18N
 
         authorComboBox.setEditable(true);
 
         commiterComboBox.setEditable(true);
 
-        jLabel3.setText(org.openide.util.NbBundle.getMessage(CommitPanel.class, "CommitPanel.jLabel3.text")); // NOI18N
+        jLabel3.setLabelFor(commiterComboBox);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(CommitPanel.class, "CommitPanel.jLabel3.text")); // NOI18N
 
-        templatesLabel.setText(org.openide.util.NbBundle.getMessage(CommitPanel.class, "CommitPanel.templatesLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(templatesLabel, org.openide.util.NbBundle.getMessage(CommitPanel.class, "CommitPanel.templatesLabel.text")); // NOI18N
 
-        recentLabel.setText(org.openide.util.NbBundle.getMessage(CommitPanel.class, "CommitPanel.recentLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(recentLabel, org.openide.util.NbBundle.getMessage(CommitPanel.class, "CommitPanel.recentLabel.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(amendCheckBox, org.openide.util.NbBundle.getMessage(CommitPanel.class, "CommitPanel.amendCheckBox.text")); // NOI18N
+        amendCheckBox.setToolTipText(org.openide.util.NbBundle.getMessage(CommitPanel.class, "CommitPanel.amendCheckBox.TTtext")); // NOI18N
+        amendCheckBox.setEnabled(false);
+        amendCheckBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                amendCheckBoxActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -195,21 +209,25 @@ public class CommitPanel extends javax.swing.JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 585, Short.MAX_VALUE)
+                    .addComponent(jScrollPane1)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(messageLabel)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 465, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 355, Short.MAX_VALUE)
                         .addComponent(recentLabel)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(templatesLabel))
+                        .addComponent(templatesLabel)
+                        .addGap(57, 57, 57))
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jLabel2)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(authorComboBox, 0, 219, Short.MAX_VALUE)
+                        .addComponent(authorComboBox, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jLabel3)
                         .addGap(18, 18, 18)
-                        .addComponent(commiterComboBox, 0, 219, Short.MAX_VALUE)))
+                        .addComponent(commiterComboBox, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(amendCheckBox)
+                        .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -221,19 +239,29 @@ public class CommitPanel extends javax.swing.JPanel {
                     .addComponent(templatesLabel)
                     .addComponent(recentLabel))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 113, Short.MAX_VALUE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 92, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel2)
                     .addComponent(jLabel3)
                     .addComponent(authorComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(commiterComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(amendCheckBox)
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
 
+    private void amendCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_amendCheckBoxActionPerformed
+        if (amendCheckBox.isSelected() && !commitMessageAmended) {
+            this.messageTextArea.setText(headCommitMessage);
+            commitMessageAmended = true;
+        }
+    }//GEN-LAST:event_amendCheckBoxActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    javax.swing.JCheckBox amendCheckBox;
     final javax.swing.JComboBox authorComboBox = new javax.swing.JComboBox();
     final javax.swing.JComboBox commiterComboBox = new javax.swing.JComboBox();
     private javax.swing.JLabel jLabel2;
@@ -247,6 +275,15 @@ public class CommitPanel extends javax.swing.JPanel {
 
     private String getMessage(String msgKey) {
         return NbBundle.getMessage(CommitPanel.class, msgKey);
+    }
+
+    public String getHeadCommitMessage() {
+        return headCommitMessage;
+    }
+
+    public void setHeadCommitMessage(String headCommitMessage) {
+        this.headCommitMessage = headCommitMessage;
+        this.amendCheckBox.setEnabled(true);
     }
 
     private ComboBoxModel prepareUserModel (List<String> authors, String user) {

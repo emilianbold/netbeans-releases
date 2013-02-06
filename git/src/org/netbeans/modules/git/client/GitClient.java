@@ -275,11 +275,15 @@ public final class GitClient {
     }
     
     public GitRevisionInfo commit (final File[] roots, final String commitMessage, final GitUser author, final GitUser commiter, final ProgressMonitor monitor) throws GitException {
+        return commit(roots, commitMessage, author, commiter, false, monitor);
+    }
+    
+    public GitRevisionInfo commit (final File[] roots, final String commitMessage, final GitUser author, final GitUser commiter, final boolean amend, final ProgressMonitor monitor) throws GitException {
         return new CommandInvoker().runMethod(new Callable<GitRevisionInfo>() {
 
             @Override
             public GitRevisionInfo call () throws Exception {
-                return delegate.commit(roots, commitMessage, author, commiter, monitor);
+                return delegate.commit(roots, commitMessage, author, commiter, amend, monitor);
             }
         }, "commit", roots); //NOI18N
     }

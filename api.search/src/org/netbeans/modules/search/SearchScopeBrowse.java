@@ -46,6 +46,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+import javax.swing.Icon;
+import javax.swing.UIManager;
 import org.netbeans.api.search.SearchRoot;
 import org.netbeans.api.search.SearchScopeOptions;
 import org.netbeans.api.search.provider.SearchInfo;
@@ -59,6 +61,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileChooserBuilder;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
 /**
@@ -71,9 +74,22 @@ import org.openide.util.NbBundle;
  */
 public class SearchScopeBrowse {
 
+    private static final String ICON_KEY_UIMANAGER_NB =
+            "Nb.Explorer.Folder.openedIcon";                            //NOI18N
+    private static final Icon ICON;
+
     private static FileObject[] roots = null;
     private SearchScopeDefinition browseScope = new BrowseScope();
     private SearchScopeDefinition getLastScope = new GetLastScope();
+
+    static {
+        Icon icon = UIManager.getIcon(ICON_KEY_UIMANAGER_NB);
+        if (icon == null) {
+            icon = ImageUtilities.loadImageIcon(
+                    "org/openide/loaders/defaultFolder.gif", false);    //NOI18N
+        }
+        ICON = icon;
+    }
 
     /**
      * Search Scope with title "Browse..." that can open file chooser to get
@@ -123,6 +139,11 @@ public class SearchScopeBrowse {
             chooseRoots();
             notifyListeners();
         }
+
+        @Override
+        public Icon getIcon() {
+            return ICON;
+        }
     }
 
     /**
@@ -163,6 +184,11 @@ public class SearchScopeBrowse {
 
         @Override
         public void clean() {
+        }
+
+        @Override
+        public Icon getIcon() {
+            return ICON;
         }
     }
 

@@ -46,6 +46,7 @@ package org.netbeans.spi.search;
 
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.Icon;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.CheckForNull;
@@ -169,5 +170,16 @@ public abstract class SearchScopeDefinition {
      * Default implementation does nothing.
      */
     public void selected() {
+    }
+
+    /**
+     * Get icon to show in the combo box. The default implementation returns
+     * null.
+     *
+     * @since api.search/1.10
+     * @return The icon, or null.
+     */
+    public @CheckForNull Icon getIcon() {
+        return null;
     }
 }
