@@ -62,10 +62,13 @@ import org.netbeans.modules.javaee.resources.spi.model.JndiResourcesModelProvide
  */
 class JndiResourcesModelProviderImpl implements JndiResourcesModelProvider {
 
-    private final AnnotationModelHelper modelHelper;
     private PersistentObjectManager<JmsDestinationImpl> jmsDestinationManager;
+    private PersistentObjectManager<JmsDestinationsImpl> jmsDestinationsManager;
+
+    private final AnnotationModelHelper modelHelper;
     private final AtomicBoolean isDirty = new AtomicBoolean(true);
-    private Map<JndiResource.Type, List<? extends JndiResource>> cachedResources = new EnumMap<JndiResource.Type, List<? extends JndiResource>>(JndiResource.Type.class);
+    private Map<JndiResource.Type, List<? extends JndiResource>> cachedResources =
+            new EnumMap<JndiResource.Type, List<? extends JndiResource>>(JndiResource.Type.class);
 
     public JndiResourcesModelProviderImpl(JndiResourcesModelImpl jndiResourcesModelImplementation) {
         this.modelHelper = jndiResourcesModelImplementation.getHelper();
@@ -95,6 +98,9 @@ class JndiResourcesModelProviderImpl implements JndiResourcesModelProvider {
 
         List<JmsDestination> result = new ArrayList<JmsDestination>();
         result.addAll(getJmsDestinationManager().getObjects());
+        for (JmsDestinationsImpl jmsDestinationsImpl : getJmsDestinationsManager().getObjects()) {
+            result.addAll(jmsDestinationsImpl.getJmsDestinations());
+        }
         setCachedResult(JndiResource.Type.JMS_DESTINATION, result);
         return result;
     }
@@ -104,6 +110,13 @@ class JndiResourcesModelProviderImpl implements JndiResourcesModelProvider {
             jmsDestinationManager = modelHelper.createPersistentObjectManager(new JndiResourcesObjectProviders.JmsDestinationProvider(modelHelper));
         }
         return jmsDestinationManager;
+    }
+
+    private synchronized PersistentObjectManager<JmsDestinationsImpl> getJmsDestinationsManager() {
+        if (jmsDestinationsManager == null) {
+            jmsDestinationsManager = modelHelper.createPersistentObjectManager(new JndiResourcesObjectProviders.JmsDestinationsProvider(modelHelper));
+        }
+        return jmsDestinationsManager;
     }
 
     private void addIndexListener() {

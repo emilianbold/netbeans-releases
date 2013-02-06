@@ -43,10 +43,8 @@ package org.netbeans.modules.javaee.resources.impl.model;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -74,6 +72,18 @@ public class JndiResourcesObjectProviders {
         @Override
         public JmsDestinationImpl createObject(AnnotationModelHelper helper, TypeElement typeElement) {
             return new JmsDestinationImpl(helper, typeElement);
+        }
+    }
+
+    static final class JmsDestinationsProvider extends AbstractProvider<JmsDestinationsImpl> {
+
+        public JmsDestinationsProvider(AnnotationModelHelper helper) {
+            super(helper, JndiResourcesDefinition.ANN_JMS_DESTINATIONS);
+        }
+
+        @Override
+        JmsDestinationsImpl createObject(AnnotationModelHelper helper, TypeElement typeElement) {
+            return new JmsDestinationsImpl(helper, typeElement);
         }
     }
 

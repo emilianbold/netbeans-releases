@@ -53,21 +53,16 @@ import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser.Pa
 import org.netbeans.modules.javaee.resources.api.JmsDestination;
 import org.netbeans.modules.javaee.resources.api.JndiResourcesDefinition;
 import org.netbeans.modules.javaee.resources.api.model.Location;
+import org.netbeans.modules.javaee.resources.api.model.Refreshable;
 
 /**
  * Implementation of the JmsDestination resource.
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public final class JmsDestinationImpl extends PersistentObject implements JmsDestination {
+public final class JmsDestinationImpl extends PersistentObject implements JmsDestination, Refreshable {
 
-    private String description;
-    private String name;
-    private String className;
-    private String destinationName;
-    private String resourceAdapterName;
-    private String[] properties;
-    private Location location;
+    private SimpleImpl holder;
 
     protected JmsDestinationImpl(AnnotationModelHelper helper, TypeElement typeElement) {
         super(helper, typeElement);
@@ -77,37 +72,37 @@ public final class JmsDestinationImpl extends PersistentObject implements JmsDes
 
     @Override
     public String getDescription() {
-        return description;
+        return holder.description;
     }
 
     @Override
     public String getName() {
-        return name;
+        return holder.name;
     }
 
     @Override
     public String getClassName() {
-        return className;
+        return holder.className;
     }
 
     @Override
     public String getDestinationName() {
-        return destinationName;
+        return holder.destinationName;
     }
 
     @Override
     public String getResourceAdapterName() {
-        return resourceAdapterName;
+        return holder.resourceAdapterName;
     }
 
     @Override
     public String[] getProperties() {
-        return properties;
+        return holder.properties;
     }
 
     @Override
     public Location getLocation() {
-        return location;
+        return holder.location;
     }
 
     @Override
@@ -116,12 +111,12 @@ public final class JmsDestinationImpl extends PersistentObject implements JmsDes
         if (annotationMirror == null) {
             return false;
         }
-        parseAnnotation(annotationMirror);
+        holder = parseAnnotation(getHelper(), annotationMirror);
         return true;
     }
 
-    private void parseAnnotation(AnnotationMirror annotationMirror) {
-        AnnotationParser parser = AnnotationParser.create(getHelper());
+    protected static SimpleImpl parseAnnotation(AnnotationModelHelper helper, AnnotationMirror annotationMirror) {
+        AnnotationParser parser = AnnotationParser.create(helper);
         parser.expectString("className", null); //NOI18N
         parser.expectString("description", parser.defaultValue("")); //NOI18N
         parser.expectString("destinationName", parser.defaultValue("")); //NOI18N
@@ -132,13 +127,14 @@ public final class JmsDestinationImpl extends PersistentObject implements JmsDes
         parser.expectString("resourceAdapterName", parser.defaultValue("")); //NOI18N
         ParseResult result = parser.parse(annotationMirror);
 
-        description = result.get("description", String.class);
-        destinationName = result.get("destinationName", String.class);
-        className = result.get("className", String.class);
-        name = result.get("name", String.class);
-        resourceAdapterName = result.get("resourceAdapterName", String.class);
-        properties = result.get("properties", String[].class);
-        location = LocationHelper.getClassLocation(getHelper(), className);
+        String description = result.get("description", String.class);
+        String destinationName = result.get("destinationName", String.class);
+        String className = result.get("className", String.class);
+        String name = result.get("name", String.class);
+        String resourceAdapterName = result.get("resourceAdapterName", String.class);
+        String[] properties = result.get("properties", String[].class);
+        Location location = LocationHelper.getClassLocation(helper, className);
+        return new SimpleImpl(description, name, className, destinationName, resourceAdapterName, properties, location);
     }
 
     private static Map<String, ? extends AnnotationMirror> getAllAnnotationTypes(AnnotationModelHelper helper, TypeElement type) {
@@ -148,6 +144,62 @@ public final class JmsDestinationImpl extends PersistentObject implements JmsDes
     private static AnnotationMirror getSpecificAnnotationMirror(Map<String, ? extends AnnotationMirror> types) {
         AnnotationMirror annotationMirror = types.get(JndiResourcesDefinition.ANN_JMS_DESTINATION);
         return annotationMirror;
+    }
+
+    protected static class SimpleImpl implements JmsDestination {
+        private final String description;
+        private final String name;
+        private final String className;
+        private final String destinationName;
+        private final String resourceAdapterName;
+        private final String[] properties;
+        private final Location location;
+
+        public SimpleImpl(String description, String name, String className, String destinationName,
+                String resourceAdapterName, String[] properties, Location location) {
+            this.description = description;
+            this.name = name;
+            this.className = className;
+            this.destinationName = destinationName;
+            this.resourceAdapterName = resourceAdapterName;
+            this.properties = properties;
+            this.location = location;
+        }
+
+        @Override
+        public String getDescription() {
+            return description;
+        }
+
+        @Override
+        public String getName() {
+            return name;
+        }
+
+        @Override
+        public String getClassName() {
+            return className;
+        }
+
+        @Override
+        public String getDestinationName() {
+            return destinationName;
+        }
+
+        @Override
+        public String getResourceAdapterName() {
+            return resourceAdapterName;
+        }
+
+        @Override
+        public String[] getProperties() {
+            return properties;
+        }
+
+        @Override
+        public Location getLocation() {
+            return location;
+        }
     }
 
 }

@@ -41,27 +41,19 @@
  */
 package org.netbeans.modules.javaee.resources.api;
 
-import org.netbeans.modules.javaee.resources.api.model.Location;
+import java.util.List;
 
 /**
- * Describes single JNDI resource as defined in the chapter EE.5.19.2 of the JavaEE 7 platform specification.
+ * Describes single JmsDestinations JNDI resource which holds several JmsDestination.
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public interface JndiResource {
+public interface JmsDestinations extends JndiResource {
 
     /**
-     * Returns location of the JNDI resource definition - its file and offset.
-     * @return location of the resource definition
+     * JmsDestination defined inside the JMSDesinationsDefinition annotation.
+     * @return array of JmsDestination
      */
-    Location getLocation();
+    List<JmsDestination> getJmsDestinations();
 
-    public enum Type {
-        DATA_SOURCE,
-        JMS_DESTINATION,
-        JMS_CONNECTION_FACTORY,
-        MAIL_SESSION,
-        CONNECTOR_RESOURCE,
-        ADMINISTRED_OBJECT
-    }
 }

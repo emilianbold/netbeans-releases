@@ -53,6 +53,7 @@ public class JndiResourcesDefinition {
     public static final String ANN_DATA_SOURCE = "javax.annotation.sql.DataSourceDefinition"; //NOI18N
     public static final String ANN_JMS_CONNECTION_FACTORY = "javax.jms.JMSConnectionFactoryDefinition"; //NOI18N
     public static final String ANN_JMS_DESTINATION = "javax.jms.JMSDestinationDefinition"; //NOI18N
+    public static final String ANN_JMS_DESTINATIONS = "javax.jms.JMSDestinationDefinitions"; //NOI18N
     //public static final String ANN_MAIL_SESSION = ".MailSessionDefinition"; //NOI18N
     public static final String ANN_CONNECTION_RESOURCE = "javax.resource.ConnectorResourceDefinition"; //NOI18N
     public static final String ANN_ADMINISTRED_OBJECT = "javax.resource.AdministeredObjectDefinition"; //NOI18N
