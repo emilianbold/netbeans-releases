@@ -136,7 +136,7 @@ public final class GitModuleConfig {
     public void setLastCanceledCommitMessage(String message) {
         lastCanceledCommitMessage = message;
     }
-    
+
     /**
      * @param paths collection of paths, of File.getAbsolutePath()
      */
