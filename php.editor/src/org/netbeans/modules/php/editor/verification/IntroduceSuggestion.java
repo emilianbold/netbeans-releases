@@ -128,7 +128,7 @@ public class IntroduceSuggestion extends SuggestionRule {
     }
 
     @Override
-    public void compute(PHPRuleContext context, List<Hint> hints) {
+    public void invoke(PHPRuleContext context, List<Hint> hints) {
         PHPParseResult phpParseResult = (PHPParseResult) context.parserResult;
         if (phpParseResult.getProgram() == null) {
             return;

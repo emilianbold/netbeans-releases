@@ -74,7 +74,7 @@ public class IdenticalComparisonSuggestion extends SuggestionRule {
     private static final String HINT_ID = "Identical.Comparison.Hint"; //NOI18N
 
     @Override
-    public void compute(PHPRuleContext context, List<Hint> hints) {
+    public void invoke(PHPRuleContext context, List<Hint> hints) {
         PHPParseResult phpParseResult = (PHPParseResult) context.parserResult;
         if (phpParseResult.getProgram() == null) {
             return;

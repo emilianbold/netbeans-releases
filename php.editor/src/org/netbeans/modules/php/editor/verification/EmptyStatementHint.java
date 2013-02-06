@@ -63,7 +63,7 @@ public class EmptyStatementHint extends HintRule {
     private static final String HINT_ID = "Empty.Statement.Hint"; //NOI18N
 
     @Override
-    public void compute(PHPRuleContext context, List<Hint> hints) {
+    public void invoke(PHPRuleContext context, List<Hint> hints) {
         PHPParseResult phpParseResult = (PHPParseResult) context.parserResult;
         if (phpParseResult.getProgram() != null) {
             FileObject fileObject = phpParseResult.getSnapshot().getSource().getFileObject();

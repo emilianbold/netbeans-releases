@@ -72,7 +72,7 @@ public class UnusedUsesHint extends HintRule {
     private FileObject fileObject;
 
     @Override
-    public void compute(PHPRuleContext context, List<Hint> allHints) {
+    public void invoke(PHPRuleContext context, List<Hint> allHints) {
         PHPParseResult phpParseResult = (PHPParseResult) context.parserResult;
         if (phpParseResult.getProgram() == null) {
             return;

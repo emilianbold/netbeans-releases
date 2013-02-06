@@ -77,7 +77,7 @@ public class TypeRedeclarationHintError extends HintErrorRule {
         "# {0} - Type name",
         "TypeRedeclarationDesc=Type \"{0}\" has been already declared"
     })
-    public void compute(PHPRuleContext context, List<Hint> hints) {
+    public void invoke(PHPRuleContext context, List<Hint> hints) {
         PHPParseResult phpParseResult = (PHPParseResult) context.parserResult;
         if (phpParseResult.getProgram() == null) {
             return;
