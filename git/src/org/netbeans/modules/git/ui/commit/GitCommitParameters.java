@@ -88,6 +88,7 @@ public class GitCommitParameters extends DefaultCommitParameters implements Item
             
             ((JTextField) panel.authorComboBox.getEditor().getEditorComponent()).getDocument().addDocumentListener(this);
             ((JTextField) panel.commiterComboBox.getEditor().getEditorComponent()).getDocument().addDocumentListener(this);
+            panel.amendCheckBox.addItemListener(this);
             panel.authorComboBox.addItemListener(this);
             panel.commiterComboBox.addItemListener(this);
         }
@@ -125,6 +126,10 @@ public class GitCommitParameters extends DefaultCommitParameters implements Item
     @Override
     public String getCommitMessage() {
         return ((CommitPanel) getPanel()).messageTextArea.getText();
+    }
+
+    public boolean isAmend() {
+        return getPanel().amendCheckBox.isSelected();
     }
     
     public GitUser getAuthor() {

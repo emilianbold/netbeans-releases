@@ -56,9 +56,7 @@ import org.eclipse.jgit.dircache.DirCacheEntry;
 import org.eclipse.jgit.lib.*;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.treewalk.TreeWalk;
-import org.eclipse.jgit.treewalk.WorkingTreeOptions;
 import org.eclipse.jgit.treewalk.filter.PathFilter;
-import org.eclipse.jgit.util.io.AutoCRLFOutputStream;
 import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitStatus;
@@ -619,5 +617,53 @@ public class CommitTest extends AbstractGitTestCase {
             assertEquals("a\nb\n", new String(loader.getBytes()));
             assertEquals(e1.getObjectId(), walk.getObjectId(0));
         }
+    }
+    
+    public void testAmendCommit () throws Exception {
+        repository.getConfig().setString("user", null, "name", "John");
+        repository.getConfig().setString("user", null, "email", "john@git.com");
+        repository.getConfig().save();
+
+        File dir = new File(workDir, "testdir");
+        File newOne = new File(dir, "test.txt");
+        File another = new File(dir, "test2.txt");
+        dir.mkdirs();
+        write(newOne, "content1");
+        write(another, "content2");
+
+        GitClient client = getClient(workDir);
+        client.add(new File[] { newOne, another }, NULL_PROGRESS_MONITOR);
+        GitRevisionInfo info = client.commit(new File[] { newOne, another }, "initial commit", null, null, NULL_PROGRESS_MONITOR);
+        Map<File, GitStatus> statuses = client.getStatus(new File[] { newOne, another }, NULL_PROGRESS_MONITOR);
+        assertStatus(statuses, workDir, newOne, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
+        assertStatus(statuses, workDir, another, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
+        
+        write(newOne, "modification1");
+        write(another, "modification2");
+
+        client.add(new File[] { newOne, another }, NULL_PROGRESS_MONITOR);
+        GitRevisionInfo lastCommit = client.commit(new File[] { newOne }, "second commit", null, null, false, NULL_PROGRESS_MONITOR);
+        statuses = client.getStatus(new File[] { workDir }, NULL_PROGRESS_MONITOR);
+        assertStatus(statuses, workDir, newOne, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
+        assertStatus(statuses, workDir, another, true, GitStatus.Status.STATUS_MODIFIED, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_MODIFIED, false);
+        Map<File, GitFileInfo> modifiedFiles = lastCommit.getModifiedFiles();
+        assertTrue(modifiedFiles.get(newOne).getStatus().equals(Status.MODIFIED));
+        assertNull(modifiedFiles.get(another));
+
+        assertEquals(1, lastCommit.getParents().length);
+        assertEquals(info.getRevision(), lastCommit.getParents()[0]);
+        assertEquals(lastCommit.getRevision(), client.getBranches(false, NULL_PROGRESS_MONITOR).get("master").getId());
+        
+        lastCommit = client.commit(new File[] { newOne, another }, "second commit, modified message", null, null, true, NULL_PROGRESS_MONITOR);
+        statuses = client.getStatus(new File[] { workDir }, NULL_PROGRESS_MONITOR);
+        assertStatus(statuses, workDir, newOne, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
+        assertStatus(statuses, workDir, another, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
+        modifiedFiles = lastCommit.getModifiedFiles();
+        assertTrue(modifiedFiles.get(newOne).getStatus().equals(Status.MODIFIED));
+        assertTrue(modifiedFiles.get(another).getStatus().equals(Status.MODIFIED));
+
+        assertEquals(1, lastCommit.getParents().length);
+        assertEquals(info.getRevision(), lastCommit.getParents()[0]);
+        assertEquals(lastCommit.getRevision(), client.getBranches(false, NULL_PROGRESS_MONITOR).get("master").getId());
     }
 }
