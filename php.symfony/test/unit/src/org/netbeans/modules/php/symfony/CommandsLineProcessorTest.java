@@ -174,5 +174,10 @@ public class CommandsLineProcessorTest extends NbTestCase {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
+        @Override
+        public void openCustomizer(String category) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
     }
 }
