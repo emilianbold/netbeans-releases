@@ -688,6 +688,7 @@ public final class PhpProject implements Project {
     private final class PhpOpenedHook extends ProjectOpenedHook {
         @Override
         protected void projectOpened() {
+            new ProjectUpgrader(PhpProject.this).upgrade();
             reinitFolders();
 
             resetFrameworks();
