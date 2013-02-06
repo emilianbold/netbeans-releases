@@ -9,8 +9,5 @@ nbproject/private/private.properties
 src/
 src/conf/
 src/java/
-src/conf/ejb-jar.xml
 src/conf/MANIFEST.MF
-src/conf/sun-ejb-jar.xml
-test/
 build.xml
