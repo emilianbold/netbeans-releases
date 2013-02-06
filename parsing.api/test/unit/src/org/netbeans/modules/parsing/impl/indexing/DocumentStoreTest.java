@@ -41,15 +41,25 @@
  */
 package org.netbeans.modules.parsing.impl.indexing;
 
+import java.io.File;
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Random;
-import static junit.framework.Assert.assertFalse;
+import org.apache.lucene.analysis.KeywordAnalyzer;
+import org.apache.lucene.document.Document;
+import org.apache.lucene.search.Query;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.parsing.lucene.support.Convertor;
+import org.netbeans.modules.parsing.lucene.support.Index;
 import org.netbeans.modules.parsing.lucene.support.IndexDocument;
+import org.netbeans.modules.parsing.lucene.support.IndexManager;
 
 /**
  *
@@ -62,6 +72,12 @@ public class DocumentStoreTest extends NbTestCase {
 
     public DocumentStoreTest(@NonNull final String name) {
         super(name);
+    }
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        clearWorkDir();
     }
 
     public void testBasicOperations() {
@@ -174,6 +190,70 @@ public class DocumentStoreTest extends NbTestCase {
         assertTrue(store.addDocument(ClusteredIndexables.createDocument(val)));
         store.clear();
         assertFalse(store.addDocument(ClusteredIndexables.createDocument(val)));
+    }
+
+
+    public void testPerformance() throws IOException {
+        final boolean packed = true;
+        final int size = 500000;
+        final File wd = getWorkDir();
+        final Index index = IndexManager.createIndex(wd, new KeywordAnalyzer());
+        final Pair<Collection<? extends IndexDocument>,Convertor<IndexDocument, Document>> p =
+                packed ?
+                createPackedData(size) :
+                createDefaultData(size);
+        final long st = System.currentTimeMillis();
+        index.store(
+            p.first,
+            Collections.<String>emptySet(),
+            p.second,
+            new Convertor<String, Query>() {
+                @Override
+                public Query convert(String p) {
+                    return null;
+                }
+            },
+            true);
+        final long et = System.currentTimeMillis();
+        System.out.println(p.first.getClass().getSimpleName() + " : " + (et-st));
+        index.close();
+    }
+
+    private Pair<Collection<? extends IndexDocument>,Convertor<IndexDocument, Document>> createDefaultData (
+            final int size) {
+        final Collection<IndexDocument> toAdd = new ArrayList<IndexDocument>(size);
+        for (int i=0; i < size; i++) {
+            final IndexDocument doc = IndexManager.createDocument(Integer.toString(i));
+            toAdd.add(fill(doc,i));
+        }
+        try {
+            final Class<?> clz = Class.forName("org.netbeans.modules.parsing.lucene.Convertors");   //NOI18N
+            final Method m = clz.getDeclaredMethod("newIndexDocumentToDocumentConvertor");   //NOI18N
+            m.setAccessible(true);
+            @SuppressWarnings("unchecked")
+            final Convertor<IndexDocument, Document> c = (Convertor<IndexDocument, Document>) m.invoke(m);
+            return Pair.<Collection<? extends IndexDocument>,Convertor<IndexDocument, Document>>of(toAdd,c);
+        } catch (IllegalAccessException e) {
+            throw new AssertionError(e);
+        } catch (InvocationTargetException e) {
+            throw new AssertionError(e);
+        } catch (NoSuchMethodException e) {
+            throw new AssertionError(e);
+        } catch (ClassNotFoundException e) {
+            throw new AssertionError(e);
+        }
+    }
+
+    private Pair<Collection<? extends IndexDocument>,Convertor<IndexDocument, Document>> createPackedData (
+            final int size) {
+        final Collection<IndexDocument> toAdd = new ClusteredIndexables.DocumentStore(CACHE_SIZE);
+        for (int i=0; i < size; i++) {
+            final IndexDocument doc = ClusteredIndexables.createDocument(Integer.toString(i));
+            toAdd.add(fill(doc,i));
+        }
+        return Pair.<Collection<? extends IndexDocument>,Convertor<IndexDocument, Document>>of(
+            toAdd,
+            ClusteredIndexables.createDocumentIndexCache().createAddConvertor());
     }
 
     @NonNull
