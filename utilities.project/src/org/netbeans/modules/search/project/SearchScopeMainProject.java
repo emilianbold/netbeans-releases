@@ -44,7 +44,10 @@
 
 package org.netbeans.modules.search.project;
 
+import javax.swing.Icon;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.api.search.provider.SearchInfo;
 import org.netbeans.api.search.provider.SearchInfoUtils;
@@ -103,5 +106,16 @@ final class SearchScopeMainProject extends AbstractProjectSearchScope {
     public int getPriority() {
         return 100;
     }
-    
+
+    @Override
+    public Icon getIcon() {
+        Project p = OpenProjects.getDefault().getMainProject();
+        if (p != null) {
+            ProjectInformation pi = ProjectUtils.getInformation(p);
+            if (pi != null) {
+                return pi.getIcon();
+            }
+        }
+        return null;
+    }
 }

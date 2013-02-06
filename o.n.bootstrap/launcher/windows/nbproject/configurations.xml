@@ -95,8 +95,8 @@
           <stripSymbols>true</stripSymbols>
           <architecture>2</architecture>
           <incDir>
-            <pElem>C:/Program Files/Java/jdk1.6.0_30/include</pElem>
-            <pElem>C:/Program Files/Java/jdk1.6.0_30/include/win32</pElem>
+            <pElem>C:/Program Files/Java/jdk1.6.0_38/include</pElem>
+            <pElem>C:/Program Files/Java/jdk1.6.0_38/include/win32</pElem>
           </incDir>
           <commandLine>-mno-cygwin -static-libgcc -static-libstdc++</commandLine>
           <preprocessorList>

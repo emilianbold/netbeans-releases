@@ -108,6 +108,7 @@ function classpath() {
     fi
     
 
+    CP=${CP}${path_sep}${ide}/modules/org-netbeans-modules-jumpto.jar
     CP=${CP}${path_sep}${ide}/modules/org-netbeans-modules-projectuiapi.jar
     CP=${CP}${path_sep}${ide}/modules/org-netbeans-modules-projectapi.jar
     CP=${CP}${path_sep}${ide}/modules/org-netbeans-modules-projectui.jar
