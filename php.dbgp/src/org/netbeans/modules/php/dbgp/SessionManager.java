@@ -50,7 +50,7 @@ import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.php.project.api.PhpProjectUtils;
-import org.netbeans.modules.php.project.spi.XDebugStarter;
+import org.netbeans.modules.php.spi.executable.DebugStarter;
 import org.netbeans.spi.debugger.DebuggerEngineProvider;
 import org.openide.util.Cancellable;
 
@@ -70,16 +70,16 @@ public class SessionManager  {
         serverThread = new ServerThread();
     }
 
-    public void startNewSession(Project project, Callable<Cancellable> run, XDebugStarter.Properties properties) {
-        assert properties.startFile != null;
+    public void startNewSession(Project project, Callable<Cancellable> run, DebugStarter.Properties properties) {
+        assert properties.getStartFile() != null;
         SessionId sessionId = SessionManager.getSessionId(project);
         if (sessionId == null) {
-            sessionId = new SessionId(properties.startFile, project);
+            sessionId = new SessionId(properties.getStartFile(), project);
             DebuggerOptions options = new DebuggerOptions();
-            options.debugForFirstPageOnly = properties.closeSession;
-            options.pathMapping = properties.pathMapping;
-            options.debugProxy = properties.debugProxy;
-            options.projectEncoding = properties.projectEncoding;
+            options.debugForFirstPageOnly = properties.isCloseSession();
+            options.pathMapping = properties.getPathMapping();
+            options.debugProxy = properties.getDebugProxy();
+            options.projectEncoding = properties.getEncoding();
             startSession(sessionId, options, run);
             long started = System.currentTimeMillis();
             if (!sessionId.isInitialized(true)) {

@@ -59,11 +59,11 @@ import org.openide.util.NbBundle;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class EmptyStatementHint extends AbstractHint {
+public class EmptyStatementHint extends HintRule {
     private static final String HINT_ID = "Empty.Statement.Hint"; //NOI18N
 
     @Override
-    void compute(PHPRuleContext context, List<Hint> hints) {
+    public void invoke(PHPRuleContext context, List<Hint> hints) {
         PHPParseResult phpParseResult = (PHPParseResult) context.parserResult;
         if (phpParseResult.getProgram() != null) {
             FileObject fileObject = phpParseResult.getSnapshot().getSource().getFileObject();
@@ -95,7 +95,13 @@ public class EmptyStatementHint extends AbstractHint {
         public void visit(EmptyStatement node) {
             super.visit(node);
             if (isSemicolon(node)) {
-                OffsetRange offsetRange = new OffsetRange(node.getStartOffset(), node.getEndOffset());
+                createHint(node);
+            }
+        }
+
+        private void createHint(EmptyStatement node) {
+            OffsetRange offsetRange = new OffsetRange(node.getStartOffset(), node.getEndOffset());
+            if (showHint(offsetRange, baseDocument)) {
                 hints.add(new Hint(
                         EmptyStatementHint.this,
                         Bundle.EmptyStatementHintText(),

@@ -47,17 +47,22 @@ import org.netbeans.modules.gsf.testrunner.api.CallstackFrameNode;
 
 public class PhpCallstackFrameNode extends CallstackFrameNode {
 
-    public PhpCallstackFrameNode(String frameInfo, String displayName) {
+    private final JumpToCallStackAction.Callback callback;
+
+
+    public PhpCallstackFrameNode(String frameInfo, String displayName, JumpToCallStackAction.Callback callback) {
         super(frameInfo, displayName);
+        this.callback = callback;
     }
 
     @Override
     public Action getPreferredAction() {
-        return new JumpToCallStackAction(frameInfo);
+        return new JumpToCallStackAction(frameInfo, callback);
     }
 
     @Override
     public Action[] getActions(boolean context) {
-        return new Action[] {new JumpToCallStackAction(frameInfo)};
+        return new Action[] {new JumpToCallStackAction(frameInfo, callback)};
     }
+
 }

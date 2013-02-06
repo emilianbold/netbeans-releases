@@ -54,4 +54,10 @@ public class PhpOptionsImpl implements org.netbeans.modules.php.api.phpmodule.Ph
     public String getPhpInterpreter() {
         return PhpOptions.getInstance().getPhpInterpreter();
     }
+
+    @Override
+    public String getDebuggerSessionId() {
+        return PhpOptions.getInstance().getDebuggerSessionId();
+    }
+
 }

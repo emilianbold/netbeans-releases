@@ -50,11 +50,13 @@ import org.netbeans.modules.php.api.framework.BadgeIcon;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.phpmodule.PhpModuleProperties;
 import org.netbeans.modules.php.api.util.FileUtils;
+import org.netbeans.modules.php.spi.editor.EditorExtender;
 import org.netbeans.modules.php.spi.framework.PhpFrameworkProvider;
 import org.netbeans.modules.php.spi.framework.PhpModuleActionsExtender;
 import org.netbeans.modules.php.spi.framework.PhpModuleExtender;
 import org.netbeans.modules.php.spi.framework.PhpModuleIgnoredFilesExtender;
 import org.netbeans.modules.php.spi.framework.commands.FrameworkCommandSupport;
+import org.netbeans.modules.php.zend2.editor.Zend2EditorExtender;
 import org.netbeans.modules.php.zend2.ui.actions.Zend2PhpModuleActionsExtender;
 import org.netbeans.modules.php.zend2.ui.wizards.Zend2PhpModuleExtender;
 import org.openide.filesystems.FileObject;
@@ -163,6 +165,11 @@ public final class Zend2PhpFrameworkProvider extends PhpFrameworkProvider {
     @Override
     public FrameworkCommandSupport getFrameworkCommandSupport(PhpModule phpModule) {
         return null;
+    }
+
+    @Override
+    public EditorExtender getEditorExtender(PhpModule phpModule) {
+        return new Zend2EditorExtender();
     }
 
 }

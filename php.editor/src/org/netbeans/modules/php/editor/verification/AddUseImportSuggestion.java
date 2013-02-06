@@ -89,7 +89,7 @@ import org.openide.util.NbBundle.Messages;
  *
  * @author Radek Matous
  */
-public class AddUseImportSuggestion extends AbstractSuggestion {
+public class AddUseImportSuggestion extends SuggestionRule {
 
     public AddUseImportSuggestion() {
         super();
@@ -113,7 +113,7 @@ public class AddUseImportSuggestion extends AbstractSuggestion {
     }
 
     @Override
-    void compute(PHPRuleContext context, List<Hint> hints, int caretOffset) throws BadLocationException {
+    public void invoke(PHPRuleContext context, List<Hint> hints) {
         PHPParseResult phpParseResult = (PHPParseResult) context.parserResult;
         if (phpParseResult.getProgram() == null) {
             return;
@@ -122,39 +122,26 @@ public class AddUseImportSuggestion extends AbstractSuggestion {
         if (fileObject == null || CodeUtils.isPhp52(fileObject)) {
             return;
         }
-
+        int caretOffset = getCaretOffset();
         final BaseDocument doc = context.doc;
-        int lineBegin;
-        int lineEnd;
-        lineBegin = caretOffset > 0 ? Utilities.getRowStart(doc, caretOffset) : -1;
-        lineEnd = (lineBegin != -1) ? Utilities.getRowEnd(doc, caretOffset) : -1;
-        if (lineBegin != -1 && lineEnd != -1 && caretOffset > lineBegin) {
-            CheckVisitor checkVisitor = new CheckVisitor(context, doc, lineBegin, lineEnd);
+        OffsetRange lineBounds = VerificationUtils.createLineBounds(caretOffset, doc);
+        if (lineBounds.containsInclusive(caretOffset)) {
+            CheckVisitor checkVisitor = new CheckVisitor(context, doc, lineBounds);
             phpParseResult.getProgram().accept(checkVisitor);
             hints.addAll(checkVisitor.getHints());
         }
     }
 
-    private static boolean isInside(int carret, int left, int right) {
-        return carret >= left && carret <= right;
-    }
-
-    private static boolean isBefore(int carret, int margin) {
-        return carret <= margin;
-    }
-
     private class CheckVisitor extends DefaultTreePathVisitor {
 
-        private int lineBegin;
-        private int lineEnd;
         private BaseDocument doc;
         private PHPRuleContext context;
         private Collection<Hint> hints = new ArrayList<Hint>();
+        private final OffsetRange lineBounds;
 
-        CheckVisitor(PHPRuleContext context, BaseDocument doc, int lineBegin, int lineEnd) {
+        CheckVisitor(PHPRuleContext context, BaseDocument doc, OffsetRange lineBounds) {
             this.doc = doc;
-            this.lineBegin = lineBegin;
-            this.lineEnd = lineEnd;
+            this.lineBounds = lineBounds;
             this.context = context;
         }
 
@@ -164,14 +151,14 @@ public class AddUseImportSuggestion extends AbstractSuggestion {
 
         @Override
         public void scan(ASTNode node) {
-            if (node != null && (isBefore(node.getStartOffset(), lineEnd))) {
+            if (node != null && (VerificationUtils.isBefore(node.getStartOffset(), lineBounds.getEnd()))) {
                 super.scan(node);
             }
         }
 
         @Override
         public void visit(NamespaceName node) {
-            if (isInside(node.getStartOffset(), lineBegin, lineEnd)) {
+            if (lineBounds.containsInclusive(node.getStartOffset())) {
                 NamespaceDeclaration currenNamespace = null;
                 List<ASTNode> path = getPath();
                 ASTNode parentNode = path.get(0);
@@ -213,7 +200,7 @@ public class AddUseImportSuggestion extends AbstractSuggestion {
 
         @Override
         public void visit(Scalar node) {
-            if (isInside(node.getStartOffset(), lineBegin, lineEnd)) {
+            if (lineBounds.containsInclusive(node.getStartOffset())) {
                 NamespaceDeclaration currenNamespace = null;
                 for (ASTNode oneNode : getPath()) {
                     if (oneNode instanceof NamespaceDeclaration) {

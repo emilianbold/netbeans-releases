@@ -64,27 +64,39 @@ import org.openide.util.NbBundle.Messages;
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
 @Messages("UnsedUsesHintDisp=Unused Use Statement")
-public class UnusedUsesHint extends AbstractHint {
+public class UnusedUsesHint extends HintRule {
 
     private static final String HINT_ID = "Unused.Uses.Hint"; //NOI18N
+    private List<Hint> hints;
+    private BaseDocument baseDocument;
+    private FileObject fileObject;
 
     @Override
-    void compute(PHPRuleContext context, List<Hint> hints) {
+    public void invoke(PHPRuleContext context, List<Hint> allHints) {
         PHPParseResult phpParseResult = (PHPParseResult) context.parserResult;
         if (phpParseResult.getProgram() == null) {
             return;
         }
-        FileObject fileObject = phpParseResult.getSnapshot().getSource().getFileObject();
+        fileObject = phpParseResult.getSnapshot().getSource().getFileObject();
         if (fileObject == null || CodeUtils.isPhp52(fileObject)) {
             return;
         }
+        hints = allHints;
+        baseDocument = context.doc;
         for (UnusedOffsetRanges unusedOffsetRanges : new UnusedUsesCollector(phpParseResult).collect()) {
+            createHint(unusedOffsetRanges);
+        }
+    }
+
+    private void createHint(UnusedOffsetRanges unusedOffsetRanges) {
+        OffsetRange offsetRange = unusedOffsetRanges.getRangeToVisualise();
+        if (showHint(offsetRange, baseDocument)) {
             hints.add(new Hint(
                     UnusedUsesHint.this,
                     Bundle.UnsedUsesHintDisp(),
                     fileObject,
-                    unusedOffsetRanges.getRangeToVisualise(),
-                    createHintFixes(context.doc, unusedOffsetRanges),
+                    offsetRange,
+                    createHintFixes(baseDocument, unusedOffsetRanges),
                     500));
         }
     }
