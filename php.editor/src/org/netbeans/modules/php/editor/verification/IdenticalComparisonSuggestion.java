@@ -44,9 +44,7 @@ package org.netbeans.modules.php.editor.verification;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
-import javax.swing.text.BadLocationException;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.Utilities;
 import org.netbeans.modules.csl.api.EditList;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintFix;
@@ -71,25 +69,25 @@ import org.openide.util.NbBundle.Messages;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class IdenticalComparisonSuggestion extends AbstractSuggestion {
+public class IdenticalComparisonSuggestion extends SuggestionRule {
 
     private static final String HINT_ID = "Identical.Comparison.Hint"; //NOI18N
 
     @Override
-    void compute(PHPRuleContext context, List<Hint> hints, int caretOffset) throws BadLocationException {
+    public void invoke(PHPRuleContext context, List<Hint> hints) {
         PHPParseResult phpParseResult = (PHPParseResult) context.parserResult;
         if (phpParseResult.getProgram() == null) {
             return;
         }
         final BaseDocument doc = context.doc;
-        int lineBegin = caretOffset > 0 ? Utilities.getRowStart(doc, caretOffset) : -1;
-        int lineEnd = (lineBegin != -1) ? Utilities.getRowEnd(doc, caretOffset) : -1;
-        if (lineBegin != -1 && lineEnd != -1 && caretOffset >= lineBegin) {
+        int caretOffset = getCaretOffset();
+        OffsetRange lineBounds = VerificationUtils.createLineBounds(caretOffset, doc);
+        if (lineBounds.containsInclusive(caretOffset)) {
             FileObject fileObject = phpParseResult.getSnapshot().getSource().getFileObject();
             if (fileObject == null) {
                 return;
             }
-            CheckVisitor checkVisitor = new CheckVisitor(fileObject, phpParseResult.getModel(), context.doc, new OffsetRange(lineBegin, lineEnd));
+            CheckVisitor checkVisitor = new CheckVisitor(fileObject, phpParseResult.getModel(), context.doc, lineBounds);
             phpParseResult.getProgram().accept(checkVisitor);
             hints.addAll(checkVisitor.getHints());
         }
@@ -129,22 +127,14 @@ public class IdenticalComparisonSuggestion extends AbstractSuggestion {
 
         @Override
         public void scan(ASTNode node) {
-            if (node != null && (isBefore(node.getStartOffset(), lineRange.getEnd()))) {
+            if (node != null && (VerificationUtils.isBefore(node.getStartOffset(), lineRange.getEnd()))) {
                 super.scan(node);
             }
         }
 
-        private boolean isBefore(int carret, int end) {
-            return carret <= end;
-        }
-
-        private boolean isBetween(int carret, OffsetRange lineRange) {
-            return carret >= lineRange.getStart() && carret <= lineRange.getEnd();
-        }
-
         @Override
         public void visit(InfixExpression node) {
-            if (isBetween(node.getStartOffset(), lineRange)) {
+            if (lineRange.containsInclusive(node.getStartOffset())) {
                 processExpression(node);
             }
         }

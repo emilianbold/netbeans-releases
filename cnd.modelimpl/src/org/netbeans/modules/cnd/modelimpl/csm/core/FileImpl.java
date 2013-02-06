@@ -146,10 +146,11 @@ public final class FileImpl implements CsmFile,
         return parsingFileContentRef.get().get();
     }
     
-    public void prepareIncludedFileParsingContent() {
+    public FileContent prepareIncludedFileParsingContent() {
         if (getParsingFileContent() == null) {
             parsingFileContentRef.get().set(FileContent.getHardReferenceBasedCopy(this.currentFileContent, true));
         }
+        return getParsingFileContent();
     }
     
     public static final boolean reportErrors = TraceFlags.REPORT_PARSING_ERRORS | TraceFlags.DEBUG;

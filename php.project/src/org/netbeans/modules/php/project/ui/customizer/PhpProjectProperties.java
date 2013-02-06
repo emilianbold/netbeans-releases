@@ -120,14 +120,6 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
     public static final String ASP_TAGS = "tags.asp"; // NOI18N
     public static final String PHP_VERSION = "php.version"; // NOI18N
     public static final String IGNORE_PATH = "ignore.path"; // NOI18N
-    public static final String PHP_UNIT_BOOTSTRAP = "phpunit.bootstrap"; // NOI18N
-    public static final String PHP_UNIT_BOOTSTRAP_FOR_CREATE_TESTS = "phpunit.bootstrap.create.tests"; // NOI18N
-    public static final String PHP_UNIT_CONFIGURATION = "phpunit.configuration"; // NOI18N
-    public static final String PHP_UNIT_SUITE = "phpunit.suite"; // NOI18N
-    public static final String PHP_UNIT_SCRIPT = "phpunit.script"; // NOI18N
-    public static final String PHP_UNIT_RUN_TEST_FILES = "phpunit.run.test.files"; // NOI18N
-    public static final String PHP_UNIT_ASK_FOR_TEST_GROUPS = "phpunit.test.groups.ask"; // NOI18N
-    public static final String PHP_UNIT_LAST_USED_TEST_GROUPS = "phpunit.test.groups.last.used"; // NOI18N
 
     public static final String DEBUG_PATH_MAPPING_SEPARATOR = "||NB||"; // NOI18N
 
@@ -233,14 +225,6 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
     private String shortTags;
     private String aspTags;
     private String phpVersion;
-    private String phpUnitBootstrap;
-    private Boolean phpUnitBootstrapForCreateTests;
-    private String phpUnitConfiguration;
-    private String phpUnitSuite;
-    private String phpUnitScript;
-    private Boolean phpUnitRunTestFiles;
-    private Boolean phpUnitAskForTestGroups;
-    private String phpUnitLastUsedTestGroups;
     private Set<PhpModuleCustomizerExtender> customizerExtenders;
 
     // CustomizerRun
@@ -420,106 +404,6 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
         return ignorePathListRenderer;
     }
 
-    public String getPhpUnitBootstrap() {
-        if (phpUnitBootstrap == null) {
-            File bootstrap = ProjectPropertiesSupport.getPhpUnitBootstrap(project);
-            if (bootstrap != null) {
-                phpUnitBootstrap = bootstrap.getAbsolutePath();
-            }
-        }
-        return phpUnitBootstrap;
-    }
-
-    public void setPhpUnitBootstrap(String phpUnitBootstrap) {
-        this.phpUnitBootstrap = phpUnitBootstrap;
-    }
-
-    public boolean getPhpUnitBootstrapForCreateTests() {
-        if (phpUnitBootstrapForCreateTests == null) {
-            phpUnitBootstrapForCreateTests = ProjectPropertiesSupport.usePhpUnitBootstrapForCreateTests(project);
-        }
-        return phpUnitBootstrapForCreateTests;
-    }
-
-    public void setPhpUnitBootstrapForCreateTests(Boolean phpUnitBootstrapForCreateTests) {
-        this.phpUnitBootstrapForCreateTests = phpUnitBootstrapForCreateTests;
-    }
-
-    public String getPhpUnitConfiguration() {
-        if (phpUnitConfiguration == null) {
-            File configuration = ProjectPropertiesSupport.getPhpUnitConfiguration(project);
-            if (configuration != null) {
-                phpUnitConfiguration = configuration.getAbsolutePath();
-            }
-        }
-        return phpUnitConfiguration;
-    }
-
-    public void setPhpUnitConfiguration(String phpUnitConfiguration) {
-        this.phpUnitConfiguration = phpUnitConfiguration;
-    }
-
-    public String getPhpUnitSuite() {
-        if (phpUnitSuite == null) {
-            File suite = ProjectPropertiesSupport.getPhpUnitSuite(project);
-            if (suite != null) {
-                phpUnitSuite = suite.getAbsolutePath();
-            }
-        }
-        return phpUnitSuite;
-    }
-
-    public void setPhpUnitSuite(String phpUnitSuite) {
-        this.phpUnitSuite = phpUnitSuite;
-    }
-
-    public String getPhpUnitScript() {
-        if (phpUnitScript == null) {
-            File script = ProjectPropertiesSupport.getPhpUnitScript(project);
-            if (script != null) {
-                phpUnitScript = script.getAbsolutePath();
-            }
-        }
-        return phpUnitScript;
-    }
-
-    public void setPhpUnitScript(String phpUnitScript) {
-        this.phpUnitScript = phpUnitScript;
-    }
-
-    public Boolean getPhpUnitRunTestFiles() {
-        if (phpUnitRunTestFiles == null) {
-            phpUnitRunTestFiles = ProjectPropertiesSupport.runAllTestFilesUsingPhpUnit(project);
-        }
-        return phpUnitRunTestFiles;
-    }
-
-    public void setPhpUnitRunTestFiles(Boolean phpUnitRunTestFiles) {
-        this.phpUnitRunTestFiles = phpUnitRunTestFiles;
-    }
-
-    public Boolean getPhpUnitAskForTestGroups() {
-        if (phpUnitAskForTestGroups == null) {
-            phpUnitAskForTestGroups = ProjectPropertiesSupport.askForTestGroups(project);
-        }
-        return phpUnitAskForTestGroups;
-    }
-
-    public void setPhpUnitAskForTestGroups(Boolean phpUnitAskForTestGroups) {
-        this.phpUnitAskForTestGroups = phpUnitAskForTestGroups;
-    }
-
-    public String getPhpUnitLastUsedTestGroups() {
-        if (phpUnitLastUsedTestGroups == null) {
-            phpUnitLastUsedTestGroups = ProjectPropertiesSupport.getPhpUnitLastUsedTestGroups(project);
-        }
-        return phpUnitLastUsedTestGroups;
-    }
-
-    public void setPhpUnitLastUsedTestGroups(String phpUnitLastUsedTestGroups) {
-        this.phpUnitLastUsedTestGroups = phpUnitLastUsedTestGroups;
-    }
-
     public void addCustomizerExtender(PhpModuleCustomizerExtender customizerExtender) {
         if (customizerExtenders == null) {
             customizerExtenders = new HashSet<PhpModuleCustomizerExtender>();
@@ -639,32 +523,6 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
         // ignore path
         if (ignorePath != null) {
             projectProperties.setProperty(IGNORE_PATH, ignorePath);
-        }
-
-        // phpunit
-        if (phpUnitBootstrap != null) {
-            projectProperties.setProperty(PHP_UNIT_BOOTSTRAP, relativizeFile(phpUnitBootstrap));
-        }
-        if (phpUnitBootstrapForCreateTests != null) {
-            projectProperties.setProperty(PHP_UNIT_BOOTSTRAP_FOR_CREATE_TESTS, phpUnitBootstrapForCreateTests.toString());
-        }
-        if (phpUnitConfiguration != null) {
-            projectProperties.setProperty(PHP_UNIT_CONFIGURATION, relativizeFile(phpUnitConfiguration));
-        }
-        if (phpUnitSuite != null) {
-            projectProperties.setProperty(PHP_UNIT_SUITE, relativizeFile(phpUnitSuite));
-        }
-        if (phpUnitScript != null) {
-            projectProperties.setProperty(PHP_UNIT_SCRIPT, relativizeFile(phpUnitScript));
-        }
-        if (phpUnitRunTestFiles != null) {
-            projectProperties.setProperty(PHP_UNIT_RUN_TEST_FILES, phpUnitRunTestFiles.toString());
-        }
-        if (phpUnitAskForTestGroups != null) {
-            projectProperties.setProperty(PHP_UNIT_ASK_FOR_TEST_GROUPS, phpUnitAskForTestGroups.toString());
-        }
-        if (phpUnitLastUsedTestGroups != null) {
-            projectProperties.setProperty(PHP_UNIT_LAST_USED_TEST_GROUPS, phpUnitLastUsedTestGroups);
         }
 
         // configs

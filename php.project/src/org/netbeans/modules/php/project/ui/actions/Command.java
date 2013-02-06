@@ -42,13 +42,14 @@
 package org.netbeans.modules.php.project.ui.actions;
 
 import java.util.logging.Logger;
+import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.PhpProjectValidator;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
-import org.netbeans.modules.php.project.phpunit.PhpUnit;
 import org.netbeans.modules.php.project.ui.Utils;
 import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
 import org.netbeans.modules.php.project.ui.actions.support.ConfigAction;
+import org.netbeans.modules.php.spi.testing.PhpTestingProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 
@@ -114,8 +115,11 @@ public abstract class Command {
             return false;
         }
         // #188770
-        if (fileObj.getName().endsWith(PhpUnit.TEST_CLASS_SUFFIX) && ProjectPropertiesSupport.runAllTestFilesUsingPhpUnit(project)) {
-            return true;
+        PhpModule phpModule = project.getPhpModule();
+        for (PhpTestingProvider provider : project.getTestingProviders()) {
+            if (provider.isTestFile(phpModule, fileObj)) {
+                return true;
+            }
         }
         return CommandUtils.isUnderTests(project, fileObj, false);
     }

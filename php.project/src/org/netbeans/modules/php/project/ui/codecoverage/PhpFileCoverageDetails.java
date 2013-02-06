@@ -45,8 +45,7 @@ package org.netbeans.modules.php.project.ui.codecoverage;
 import org.netbeans.modules.gsf.codecoverage.api.CoverageType;
 import org.netbeans.modules.gsf.codecoverage.api.FileCoverageDetails;
 import org.netbeans.modules.gsf.codecoverage.api.FileCoverageSummary;
-import org.netbeans.modules.php.project.ui.codecoverage.CoverageVO.FileVO;
-import org.netbeans.modules.php.project.ui.codecoverage.CoverageVO.LineVO;
+import org.netbeans.modules.php.spi.testing.coverage.Coverage;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -55,10 +54,10 @@ import org.openide.filesystems.FileUtil;
  */
 public class PhpFileCoverageDetails implements FileCoverageDetails {
     private final FileObject fo;
-    private final FileVO file;
+    private final Coverage.File file;
     private final long generated;
 
-    public PhpFileCoverageDetails(FileObject fo, FileVO file) {
+    public PhpFileCoverageDetails(FileObject fo, Coverage.File file) {
         assert fo != null;
         assert file != null;
 
@@ -74,7 +73,7 @@ public class PhpFileCoverageDetails implements FileCoverageDetails {
 
     @Override
     public int getLineCount() {
-        return file.getMetrics().loc;
+        return file.getMetrics().getLineCount();
     }
 
     @Override
@@ -97,9 +96,9 @@ public class PhpFileCoverageDetails implements FileCoverageDetails {
         lineNo++;
         // XXX when to return CoverageType.INFERRED?
         // XXX optimize - hold lines in hash map
-        for (LineVO line : file.getLines()) {
-            if (line.num == lineNo) {
-                if (line.count > 0) {
+        for (Coverage.Line line : file.getLines()) {
+            if (line.getNumber() == lineNo) {
+                if (line.getHitCount() > 0) {
                     return CoverageType.COVERED;
                 } else {
                     return CoverageType.NOT_COVERED;
@@ -112,9 +111,9 @@ public class PhpFileCoverageDetails implements FileCoverageDetails {
     @Override
     public int getHitCount(int lineNo) {
         lineNo++;
-        for (LineVO line : file.getLines()) {
-            if (line.num == lineNo) {
-                return line.count;
+        for (Coverage.Line line : file.getLines()) {
+            if (line.getNumber() == lineNo) {
+                return line.getHitCount();
             }
         }
         return 0;

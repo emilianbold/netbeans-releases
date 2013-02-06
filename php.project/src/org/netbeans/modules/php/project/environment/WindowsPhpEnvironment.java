@@ -90,11 +90,6 @@ final class WindowsPhpEnvironment extends PhpEnvironment {
         return getAllPhpInterpreters(PHP);
     }
 
-    @Override
-    public List<String> getAllPhpUnits() {
-        return FileUtils.findFileOnUsersPath("phpunit.bat"); // NOI18N
-    }
-
     /**
      * Get FS roots without {@link #isFloppy(File) floppy drives}.
      * @return list of FS roots, never {@code null}.

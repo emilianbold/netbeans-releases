@@ -121,7 +121,8 @@ public class FileComponentIncludes extends FileComponent implements Persistent, 
 
     void clean() {
         _clearIncludes();
-        put();
+        // PUT have to be done by owner
+//        put();
     }
 
     private void _clearIncludes() {
@@ -149,7 +150,8 @@ public class FileComponentIncludes extends FileComponent implements Persistent, 
         } finally {
             includesLock.writeLock().unlock();
         }
-        put();
+        // PUT have to be done by owner
+//        put();
         return !brokenIncludes.isEmpty();
     }
 
@@ -238,7 +240,8 @@ public class FileComponentIncludes extends FileComponent implements Persistent, 
         } finally {
             includesLock.writeLock().unlock();
         }
-        put();
+        // PUT have to be done by owner
+//        put();
     }
 
 }

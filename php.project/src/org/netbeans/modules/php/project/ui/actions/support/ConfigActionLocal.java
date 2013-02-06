@@ -51,7 +51,7 @@ import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.runconfigs.RunConfigLocal;
 import org.netbeans.modules.php.project.runconfigs.validation.RunConfigLocalValidator;
-import org.netbeans.modules.php.project.spi.XDebugStarter;
+import org.netbeans.modules.php.spi.executable.DebugStarter;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.DebugUrl;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.XDebugUrlArguments;
 import org.openide.awt.HtmlBrowser;
@@ -150,7 +150,7 @@ class ConfigActionLocal extends ConfigAction {
 
 
         //temporary; after narrowing deps. will be changed
-        XDebugStarter dbgStarter = XDebugStarterFactory.getInstance();
+        DebugStarter dbgStarter = XDebugStarterFactory.getInstance();
         if (dbgStarter != null) {
             if (dbgStarter.isAlreadyRunning()) {
                 if (CommandUtils.warnNoMoreDebugSession()) {
@@ -249,7 +249,7 @@ class ConfigActionLocal extends ConfigAction {
             }
         };
 
-        XDebugStarter dbgStarter = XDebugStarterFactory.getInstance();
+        DebugStarter dbgStarter = XDebugStarterFactory.getInstance();
         if (dbgStarter != null) {
             if (dbgStarter.isAlreadyRunning()) {
                 if (CommandUtils.warnNoMoreDebugSession()) {
@@ -266,16 +266,17 @@ class ConfigActionLocal extends ConfigAction {
         // hook for subclasses
     }
 
-    private void startDebugger(final XDebugStarter dbgStarter, final Runnable initDebuggingCode, Cancellable cancellable,
+    private void startDebugger(final DebugStarter dbgStarter, final Runnable initDebuggingCode, Cancellable cancellable,
             final FileObject debuggedFile) {
         Callable<Cancellable> initDebuggingCallable = Executors.callable(initDebuggingCode, cancellable);
         // XXX run config
-        XDebugStarter.Properties props = XDebugStarter.Properties.create(
-                debuggedFile,
-                false,
-                ProjectPropertiesSupport.getDebugPathMapping(project),
-                ProjectPropertiesSupport.getDebugProxy(project),
-                ProjectPropertiesSupport.getEncoding(project));
+        DebugStarter.Properties props = new DebugStarter.Properties.Builder()
+                .setStartFile(debuggedFile)
+                .setCloseSession(false)
+                .setPathMapping(ProjectPropertiesSupport.getDebugPathMapping(project))
+                .setDebugProxy(ProjectPropertiesSupport.getDebugProxy(project))
+                .setEncoding(ProjectPropertiesSupport.getEncoding(project))
+                .build();
         dbgStarter.start(project, initDebuggingCallable, props);
     }
 
