@@ -43,7 +43,7 @@
  */
 package org.netbeans.modules.php.project.ui.actions.support;
 
-import org.netbeans.modules.php.project.spi.XDebugStarter;
+import org.netbeans.modules.php.spi.executable.DebugStarter;
 import org.openide.util.Lookup;
 import org.openide.util.Union2;
 
@@ -53,19 +53,19 @@ import org.openide.util.Union2;
  *
  */
 public final class XDebugStarterFactory {
-    private static Union2<XDebugStarter, Boolean> INSTANCE;
+    private static Union2<DebugStarter, Boolean> INSTANCE;
 
     private XDebugStarterFactory() {
     }
 
-    public static XDebugStarter getInstance() {
+    public static DebugStarter getInstance() {
         boolean init;
         synchronized (XDebugStarterFactory.class) {
             init = (INSTANCE == null);
         }
         if (init) {
             //TODO add lookup listener
-            XDebugStarter debugStarter = Lookup.getDefault().lookup(XDebugStarter.class);
+            DebugStarter debugStarter = Lookup.getDefault().lookup(DebugStarter.class);
             if (debugStarter != null) {
                 INSTANCE = Union2.createFirst(debugStarter);
             } else {

@@ -127,6 +127,13 @@ public abstract class PhpModule {
     public abstract Preferences getPreferences(Class<?> clazz, boolean shared);
 
     /**
+     * Open Project Properties dialog for this PHP module with the given category.
+     * @param category category to be preselected
+     * @since 2.12
+     */
+    public abstract void openCustomizer(String category);
+
+    /**
      * A way for informing PHP module that something has changed.
      * @param propertyChangeEvent property change event
      * @since 2.4
