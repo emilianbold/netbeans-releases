@@ -44,10 +44,13 @@
 
 package org.netbeans.modules.search.project;
 
+import javax.swing.Icon;
+import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.api.search.provider.SearchInfo;
 import org.netbeans.api.search.provider.SearchInfoUtils;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
 /**
@@ -56,7 +59,16 @@ import org.openide.util.NbBundle;
  * @author  Marian Petras
  */
 final class SearchScopeOpenProjects extends AbstractProjectSearchScope {
-    
+
+    @StaticResource
+    private static final String ALL_PROJECTS_ICON =
+            "org/netbeans/modules/search/project/resources/all_projects.png"; //NOI18N
+    private static final Icon ICON;
+
+    static {
+        ICON = ImageUtilities.loadImageIcon(ALL_PROJECTS_ICON, false);
+    }
+
     SearchScopeOpenProjects() {
         super(OpenProjects.PROPERTY_OPEN_PROJECTS);
     }
@@ -110,5 +122,10 @@ final class SearchScopeOpenProjects extends AbstractProjectSearchScope {
     @Override
     public int getPriority() {
         return 200;
+    }
+
+    @Override
+    public Icon getIcon() {
+        return ICON;
     }
 }
