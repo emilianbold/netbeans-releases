@@ -74,6 +74,7 @@ import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.api.validation.ValidationResult;
+import org.netbeans.modules.php.phpunit.PhpUnitTestingProvider;
 import static org.netbeans.modules.php.phpunit.commands.SkeletonGenerator.validate;
 import org.netbeans.modules.php.phpunit.options.PhpUnitOptions;
 import org.netbeans.modules.php.phpunit.preferences.PhpUnitPreferences;
@@ -186,7 +187,15 @@ public final class PhpUnit {
 
     @CheckForNull
     public static PhpUnit getForPhpModule(PhpModule phpModule, boolean showCustomizer) {
-        // php module first
+        // first try the default phpunit, because of validation
+        InvalidPhpExecutableException defaultPhpUnitExc = null;
+        PhpUnit defaultPhpUnit = null;
+        try {
+            defaultPhpUnit = PhpUnit.getDefault();
+        } catch (InvalidPhpExecutableException ex) {
+            defaultPhpUnitExc = ex;
+        }
+        // now, php module
         try {
             PhpUnit phpUnit = getForPhpModule(phpModule);
             if (phpUnit != null) {
@@ -194,35 +203,29 @@ public final class PhpUnit {
             }
         } catch (InvalidPhpExecutableException ex) {
             if (showCustomizer) {
-                // XXX
-                //phpModule.openCustomizer(PhpUnitTestingProvider.IDENTIFIER);
-                throw new UnsupportedOperationException("Not implemented yet");
-            }
-            return null;
-        }
-        // then general
-        try {
-            return PhpUnit.getDefault();
-        } catch (InvalidPhpExecutableException ex) {
-            if (showCustomizer) {
-                UiUtils.invalidScriptProvided(ex.getLocalizedMessage(), PhpUnitOptionsPanelController.OPTIONS_SUB_PATH);
+                phpModule.openCustomizer(PhpUnitTestingProvider.getInstance().getCustomizerCategoryName());
+                defaultPhpUnitExc = null;
             }
         }
-        return null;
+        if (defaultPhpUnitExc != null
+                && showCustomizer) {
+            UiUtils.invalidScriptProvided(defaultPhpUnitExc.getLocalizedMessage(), PhpUnitOptionsPanelController.OPTIONS_SUB_PATH);
+        }
+        return defaultPhpUnit;
     }
 
     @CheckForNull
     private static PhpUnit getForPhpModule(PhpModule phpModule) throws InvalidPhpExecutableException {
         assert phpModule != null;
-        if (!PhpUnitPreferences.isPhpUnitEnabled(phpModule)) {
-            return null;
-        }
-        String phpUnitPath = PhpUnitPreferences.getPhpUnitPath(phpModule);
-        String error = validateForModule(phpModule, phpUnitPath);
+        String error = validateForModule(phpModule);
         if (error != null) {
             throw new InvalidPhpExecutableException(error);
         }
-        return new PhpUnit(phpUnitPath);
+        if (!PhpUnitPreferences.isPhpUnitEnabled(phpModule)) {
+            return null;
+        }
+        // we have project specific phpunit
+        return new PhpUnit(PhpUnitPreferences.getPhpUnitPath(phpModule));
     }
 
     @NbBundle.Messages("PhpUnit.script.label=PHPUnit script")
@@ -230,11 +233,7 @@ public final class PhpUnit {
         return PhpExecutableValidator.validateCommand(command, Bundle.PhpUnit_script_label());
     }
 
-    public static String validateForModule(PhpModule phpModule, String command) {
-        String error = validate(command);
-        if (error != null) {
-            return error;
-        }
+    public static String validateForModule(PhpModule phpModule) {
         ValidationResult result = new PhpUnitPreferencesValidator()
                 .validate(phpModule)
                 .getResult();
