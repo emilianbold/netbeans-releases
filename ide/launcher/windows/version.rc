@@ -74,7 +74,6 @@ BEGIN
             VALUE "Full Version",     BUILD_ID      "\0"
             VALUE "InternalName",     INTERNAL_NAME "\0"
             VALUE "LegalCopyright",   COPYRIGHT     "\0"
-            VALUE "OriginalFilename", FNAME         "\0"
             VALUE "ProductName",      NAME          "\0"
             VALUE "ProductVersion",   VER           "\0"
         END

@@ -51,7 +51,6 @@
 #include <windows.h>
 #include <cstddef>
 #include "cmdargs.h"
-#include "shlobj.h"
 
 class NbLauncher {
 protected:
