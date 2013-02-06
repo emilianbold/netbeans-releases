@@ -383,8 +383,7 @@ public class WebProjectUtilities {
     }
     
     private static FileObject createWelcomeFile(FileObject webFolder, Profile profile) throws IOException {
-        FileObject template = profile != null &&
-                (profile.equals(Profile.JAVA_EE_7_WEB) || profile.equals(Profile.JAVA_EE_7_FULL)) ? 
+        FileObject template = profile != null && Util.isAtLeastJavaEE7Web(profile) ?
                 FileUtil.getConfigFile( "Templates/JSP_Servlet/Html.html" ) :
                 FileUtil.getConfigFile( "Templates/JSP_Servlet/JSP.jsp" ); // NOI18N
         

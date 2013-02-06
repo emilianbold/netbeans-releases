@@ -254,6 +254,20 @@ public class Util {
     }
 
     /**
+     * Find out if the version of the given profile is at least Java EE 7 Web or
+     * higher. Please be aware that Java EE 7 Web is considered as lower than Java
+     * EE 7 Full.
+     *
+     * @param profile profile that we want to compare
+     * @return true if the version of the given profile is Java EE 7 Web or
+     *         higher, false otherwise
+     * @since 1.79
+     */
+    public static boolean isAtLeastJavaEE7Web(@NonNull Profile profile) {
+        return isVersionEqualOrHigher(profile, Profile.JAVA_EE_7_WEB);
+    }
+
+    /**
      * Compares if the first given profile has equal or higher Java EE version
      * in comparison to the second profile.
      *
