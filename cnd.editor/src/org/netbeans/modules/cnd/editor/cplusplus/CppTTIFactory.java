@@ -80,6 +80,7 @@ public class CppTTIFactory implements TypedTextInterceptor.Factory {
 
     private static class TypedTextInterceptorImpl implements TypedTextInterceptor {
         private CppTypingCompletion.ExtraText rawStringText = null;
+        private int caretPosition;
         public TypedTextInterceptorImpl() {
         }
 
@@ -87,6 +88,7 @@ public class CppTTIFactory implements TypedTextInterceptor.Factory {
         public boolean beforeInsert(Context context) throws BadLocationException {
             // reset flag
             rawStringText = null;
+            caretPosition = -1;
             return false;
         }
 
@@ -97,6 +99,22 @@ public class CppTTIFactory implements TypedTextInterceptor.Factory {
                 return;
             }
             rawStringText = CppTypingCompletion.checkRawStringInsertion(context);
+            if (rawStringText == null) {
+            char insertedChar = context.getText().charAt(0);
+                switch(insertedChar) {
+                case '(':
+                case '[':
+                case '<':
+                        BracketCompletion.completeOpeningBracket(context);
+                    break;
+                case ')':
+                case ']':
+                case '>':
+                        caretPosition = BracketCompletion.skipClosingBracket(context);
+                    break;
+                }
+                // TODO: completeQuote and moveSemicolon should be moved here as well
+            }
         }
 
         @Override
@@ -127,6 +145,9 @@ public class CppTTIFactory implements TypedTextInterceptor.Factory {
                                 context.getComponent().setCaretPosition(caretPosition);
                             }
                         }
+                    } else if (caretPosition != -1) {
+                        context.getComponent().setCaretPosition(caretPosition);
+                        caretPosition = -1;
                     } else {
                         int offset = context.getOffset();
                         String typedText = context.getText();
