@@ -3697,6 +3697,7 @@ public class Term extends JComponent implements Accessible {
             st.cursor.col = 0;
         }
 
+        @Override
         public void op_ed(int code) {
             // Erase in Line
             if (debugOps()) {
@@ -3880,25 +3881,57 @@ public class Term extends JComponent implements Accessible {
 
 	@Override
         public void op_up(int count) {
-            // cursor up
+            // cursor up - scroll
             if (debugOps()) {
                 System.out.println("op_up(" + count + ")"); // NOI18N
+            }
+            op_ri(count);
+        }
+
+        @Override
+        public void op_ri(int count) {
+            // cursor up - scroll
+            if (debugOps()) {
+                System.out.printf("op_ri(%d)\n", count);
             }
             boolean old_atw = cursor_line().setAboutToWrap(false);
             Line l;
             while (count-- > 0) {
-                st.cursor.row--;
-                if (st.cursor.row < st.firstx) {
-                    st.cursor.row = st.firstx;
+                if (st.cursor.row == st.firstx + topMargin()) {
                     // scroll down, Rotate a line from bottom to top
-                    if (!do_margins) {
-                        l = buf.moveLineFromTo(buf.nlines - 1, st.cursor.row);
-                    } else {
-                        l = buf.moveLineFromTo(st.firstx + botMargin(), st.cursor.row);
-                    }
+                    l = buf.moveLineFromTo(st.firstx + botMargin(), st.cursor.row);
                     l.reset();
-                // SHOULD note and do something about the selection?
+                    // SHOULD note and do something about the selection?
+                } else {
+                    st.cursor.row--;
+                    if (st.cursor.row < st.firstx)
+                        st.cursor.row = st.firstx;
                 }
+            }
+            cursor_line().setAboutToWrap(old_atw);
+        }
+
+        @Override
+        public void op_cuu(int count) {
+            // cursor up - no scroll
+            if (debugOps()) {
+                System.out.printf("op_cu(%d)\n", count);
+            }
+            boolean old_atw = cursor_line().setAboutToWrap(false);
+
+            st.cursor.row -= count;
+
+            if (topMargin() == 0) {
+                if (st.cursor.row < st.firstx)
+                    st.cursor.row = st.firstx;
+            } else {
+                // only adjust if we were below the margin to begin with.
+                // if we were above the margin it's OK to go up but still
+                // need to test against absolute top of screen.
+                if (st.cursor.row == st.firstx + topMargin() - 1)
+                    st.cursor.row += 1;
+                else if (st.cursor.row < st.firstx)
+                    st.cursor.row = st.firstx;
             }
             cursor_line().setAboutToWrap(old_atw);
         }

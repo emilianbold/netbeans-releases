@@ -2,6 +2,15 @@
 187345 - wrong characters in Terminals
 
 	Implement
+		RI (Reverse Index)	\ESCM		scrolls
+		CUU (Cursor up)		\ESC[%dA	doesn't scroll
+	using op_ri() and op_cuu(). op_up() maps to op_ri() for bwd
+	compatibility.
+
+207965 - Terminal incorrectly displays prompt string
+187345 - wrong characters in Terminals
+
+	Implement
 		CBT (Cursor Backward Tabulation)\ESC[%dZ op_cbt
 		CHT (Cursor Horizontal Tab) 	\ESC[%dI op_cht
 

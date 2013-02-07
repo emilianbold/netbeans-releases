@@ -83,7 +83,7 @@ interface Ops {
     public void op_ho(); // cursor home (upper left of the screen)
     public void op_ic(int count); // insert character
     public void op_nd(int count); // cursor right (non-destructive space)
-    public void op_up(int count); // cursor up
+    public void op_up(int count); // cursor up (scrolls)
     public void op_sc();	// save cursor position
     public void op_rc();	// restore saved cursor position
     public void op_margin(int from, int to);	// set vertical scroll margins
@@ -135,4 +135,6 @@ interface Ops {
     public void op_ed(int i);           // Erase in Display
     public void op_cbt(int n);          // Cursor Backward Tabulation
     public void op_cht(int n);          // Cursor Horizontal Tabulation
+    public void op_ri(int n);           // Reverse Index == op_up()
+    public void op_cuu(int n);          // Cursor Up (doesn't scroll)
 }

@@ -209,7 +209,7 @@ class InterpProtoANSI extends InterpDumb {
 	static final class ACT_M implements Actor {
             @Override
 	    public String action(AbstractInterp ai, char c) {
-		ai.ops.op_up(1);
+		ai.ops.op_ri(1);
 		return null;
 	    }
 	}
@@ -281,9 +281,9 @@ class InterpProtoANSI extends InterpDumb {
 	    @Override
 	    public String action(AbstractInterp ai, char c) {
 		if (ai.noNumber())
-		    ai.ops.op_up(1);
+		    ai.ops.op_cuu(1);
 		else
-		    ai.ops.op_up(ai.numberAt(0));
+		    ai.ops.op_cuu(ai.numberAt(0));
 		return null;
 	    }
 	}
@@ -291,6 +291,7 @@ class InterpProtoANSI extends InterpDumb {
 	static final class ACT_DO implements Actor {
 	    @Override
 	    public String action(AbstractInterp ai, char c) {
+                // no scroll
 		if (ai.noNumber())
 		    ai.ops.op_do(1);
 		else

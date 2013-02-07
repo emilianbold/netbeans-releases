@@ -135,6 +135,7 @@ class InterpProtoANSIX extends InterpProtoANSI {
 	static final class ACT_D implements Actor {
             @Override
 	    public String action(AbstractInterp ai, char c) {
+                // scroll
 		ai.ops.op_do(1);
 		return null;
 	    }
