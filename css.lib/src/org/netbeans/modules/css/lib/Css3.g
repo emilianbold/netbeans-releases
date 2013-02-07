@@ -70,7 +70,7 @@
 grammar Css3;
 
 //options {
-//	output=AST;
+//	k='*';
 //}
 
 @header {
@@ -436,7 +436,8 @@ webkitKeyframes
 webkitKeyframesBlock
 	:
 	webkitKeyframeSelectors ws?
-	LBRACE  ws? syncToDeclarationsRule
+//	LBRACE  ws? syncToDeclarationsRule
+	LBRACE  ws? syncToFollow
 		declarations
 	RBRACE 
 	;	
@@ -499,9 +500,8 @@ pseudoPage
     ;
     
 operator
-    : SOLIDUS ws?
-    | COMMA ws?
-    |
+    : SOLIDUS
+    | COMMA
     ;
     
 combinator
@@ -517,41 +517,58 @@ unaryOperator
     ;  
     
 property
-    : (IDENT | GEN) ws?
+    : (IDENT | GEN | less_variable) ws?
     ;
     
 rule 
     :   ( selectorsGroup | less_mixin_declaration )
-        LBRACE ws? syncToDeclarationsRule
+//        LBRACE ws? syncToDeclarationsRule
+        LBRACE ws? syncToFollow
             declarations
         RBRACE
     ;
     	catch[ RecognitionException rce] {
         reportError(rce);
         consumeUntil(input, BitSet.of(RBRACE));
-        input.consume(); //consume the RBRACE as well
+        input.consume(); //consume the RBRACE as well   
         }
     
-less_rule
-        
-    :   ( (cssClass ws?) | less_mixin_declaration ) 
-        LBRACE ws? syncToDeclarationsRule
-            declarations
-        RBRACE
-        ws?
-    ;
-    	catch[ RecognitionException rce] {
-        reportError(rce);
-        consumeUntil(input, BitSet.of(RBRACE));
-        input.consume(); //consume the RBRACE as well
-        }
 
 declarations
     :
-        //Allow empty rule. Allows? multiple semicolons
-        //http://en.wikipedia.org/wiki/CSS_filter#Star_hack        
-        declaration? 
-        ( ( ( SEMI ws? ) | less_rule )  declaration?)* 
+         ( 
+            (
+                (rulePredicate)=>rule
+                | 
+                ( (declarationPredicate)=>declaration SEMI )
+                |
+                less_mixin_call
+            )            
+            ws?
+        )*
+        
+//        ((lastDeclarationPredicate)=>declaration)
+    ;
+    
+rulePredicate
+    options { k = 1; }
+    :
+//    ( ~ (LBRACE ))+ LBRACE
+    ( ~ (LBRACE | SEMI | RBRACE ))+ LBRACE
+    ;
+    
+declarationPredicate
+    options { k = 1; }
+    :
+//    ( ~SEMI )+ SEMI
+    ( ~ (LBRACE | SEMI | RBRACE ))+ SEMI
+    ;
+    
+lastDeclarationPredicate
+    options { k = 1; }
+    :
+//    ( ~RBRACE )+ RBRACE
+    ( ~ (LBRACE | SEMI | RBRACE ))+ RBRACE
     ;
     
 selectorsGroup
@@ -566,9 +583,9 @@ selector
 simpleSelectorSequence
 	:   
         //using typeSelector even for the universal selector since the lookahead would have to be 3 (IDENT PIPE (IDENT|STAR) :-(
-	( typeSelector ((esPred)=>elementSubsequent)* )
+	( typeSelector ((esPred)=>elementSubsequent ws?)* )
 	| 
-	( ((esPred)=>elementSubsequent)+ )
+	( ((esPred)=>elementSubsequent ws?)+ )
 	;
 	catch[ RecognitionException rce] {
             reportError(rce);
@@ -583,6 +600,7 @@ esPred
 typeSelector 
 	options { k = 2; }
  	:  ((nsPred)=>namespacePrefix)? ( elementName ws? )
+// 	:  ((nsPred)=>namespacePrefix)? ( elementName ) 	
  	;
 
 //predicate
@@ -604,7 +622,6 @@ elementSubsequent
         | slAttribute
         | pseudo
     )
-    ws?
     ;
     
 //Error Recovery: Allow the parser to enter the cssId rule even if there's just hash char.
@@ -626,7 +643,7 @@ cssClass
     
 //using typeSelector even for the universal selector since the lookahead would have to be 3 (IDENT PIPE (IDENT|STAR) :-(
 elementName
-    : ( IDENT | GEN ) | '*'
+    : ( IDENT | GEN | LESS_AND) | '*'
     ;
 
 slAttribute
@@ -724,11 +741,11 @@ syncToFollow
     	;
     
 prio
-    : IMPORTANT_SYM ws?
+    : IMPORTANT_SYM
     ;
     
 expression
-    : term (operator term)*
+    : term ( (operator ws?)? term)*
     ;
     
 term
@@ -761,7 +778,7 @@ term
 function
 	: 	functionName ws?
 		LPAREN ws?
-		( 
+		(
 			expression
 		| 
 		  	(
@@ -779,7 +796,8 @@ functionName
         //css spec allows? here just IDENT, 
         //but due to some nonstandart MS extension like progid:DXImageTransform.Microsoft.gradien
         //the function name can be a bit more complicated
-	: (IDENT COLON)? IDENT (DOT IDENT)*
+	//: (IDENT COLON)? IDENT (DOT IDENT)*
+	: IDENT
     	;
     	
 fnAttribute
@@ -806,7 +824,7 @@ ws
 //Some additional modifications to the standard syntax rules has also been done.
 
 less_variable_declaration
-    : less_variable ws? COLON ws? expression SEMI
+    : less_variable ws? COLON ws? less_expression SEMI
     ;
     
 less_variable
@@ -814,11 +832,11 @@ less_variable
     ;
 
 less_function
-    : LPAREN ws? less_expression RPAREN
+    : LPAREN ws? less_expression  RPAREN
     ;
 
 less_expression
-    : term (less_expression_operator term)*    
+    : term (less_expression_operator ws? term)*    
     ;
     
 less_expression_operator
@@ -828,7 +846,7 @@ less_expression_operator
         | STAR 
         | PLUS
         | MINUS
-      ) ws?
+      )
     ;
 
 //parametric mixins: 
@@ -840,7 +858,18 @@ less_mixin_declaration
     :
     cssClass ws? LPAREN less_args_list? RPAREN ws? (less_mixin_guarded ws?)?
     ;
+
+//allow: .mixin; .mixin(); .mixin(@param, #77aa00); 
+less_mixin_call
+    :
+    cssClass ws? (LPAREN less_mixin_call_args? RPAREN)? SEMI
+    ;
     
+less_mixin_call_args
+    : 
+    term ( COMMA ws? term)*     
+    ;
+
 //.box-shadow ("@x: 0, @y: 0, @blur: 1px, @color: #000")
 less_args_list
     : 
@@ -1220,6 +1249,7 @@ LESS            : '<'       ;
 GREATER_OR_EQ   : '>='      ;
 LESS_OR_EQ      : '=<'      ;
 LESS_WHEN       : 'WHEN'    ;
+LESS_AND        : '&'     ;
 
 // -----------------
 // Literal strings. Delimited by either ' or "

@@ -156,6 +156,12 @@ public final class CssCaretAwareSourceTask extends ParserResultTask<CssParserRes
 
         //find rule corresponding to the offset
         Rule rule = findRuleAtOffset(result.getSnapshot(), model, caretOffset);
+        //>>hack, remove once the css.lib css grammar gets finalized
+        if(rule != null && rule.getSelectorsGroup() == null) {
+            rule = null;
+        }
+        //<<hack
+        
         
         if(rule != null) {
             //check whether the rule is virtual

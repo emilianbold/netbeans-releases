@@ -61,7 +61,9 @@ public class Css3ParserLessTest extends CssTestBase {
 
     public void testAllANTLRRulesHaveNodeTypes() {
         for (String rule : Css3Parser.ruleNames) {
-            assertNotNull(NodeType.valueOf(rule));
+            if (!rule.startsWith("synpred") && !rule.toLowerCase().endsWith("predicate")) {
+                assertNotNull(NodeType.valueOf(rule));
+            }
         }
     }
 
@@ -78,6 +80,30 @@ public class Css3ParserLessTest extends CssTestBase {
         CssParserResult result = TestUtil.parse(source);
 
 //        NodeUtil.dumpTree(result.getParseTree());
+        assertResultOK(result);
+    }
+    
+    public void testVariable2() {
+        String source = "#header {\n"
+                + "  border: 2px @color solid;\n"  
+                + "}\n";
+
+        CssParserResult result = TestUtil.parse(source);
+
+//        NodeUtil.dumpTree(result.getParseTree());
+        assertResultOK(result);
+    }
+
+    public void testVariableAsPropertyName() {
+        String source = ".class {\n"
+                + "    @var: 2;\n"
+                + "    three: @var;\n"
+                + "    @var: 3;\n"
+                + "  }";
+
+        CssParserResult result = TestUtil.parse(source);
+
+        NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
     }
 
@@ -98,8 +124,8 @@ public class Css3ParserLessTest extends CssTestBase {
     public void testFunction2() {
         String source =
                 "#footer {\n"
-                + "  color: (@base-color + #003300);\n"
                 + "  border-color: desaturate(@red, 10%);\n"
+                + "  color: (@base-color + #003300);\n"
                 + "}";
         ;
 
@@ -204,6 +230,43 @@ public class Css3ParserLessTest extends CssTestBase {
         assertResultOK(result);
     }
 
+    public void testMixinNesting() {
+        String source =
+                  ".class {\n"
+                + "  .mixin(@switch, #888);\n"
+                + "}";
+
+        CssParserResult result = TestUtil.parse(source);
+
+        NodeUtil.dumpTree(result.getParseTree());
+        assertResultOK(result);
+    }
+
+    public void testMixinNesting2() {
+        String source =
+                ".class {\n"
+                + "  .mixin(@switch, #888);\n"
+                + "}";
+
+        CssParserResult result = TestUtil.parse(source);
+
+//        NodeUtil.dumpTree(result.getParseTree());
+        assertResultOK(result);
+    }
+
+    public void testMixinNesting3() {
+        String source =
+                "#menu a {\n"
+                + "  color: #111;\n"
+                + "  .bordered;\n"
+                + "}";
+
+        CssParserResult result = TestUtil.parse(source);
+
+        NodeUtil.dumpTree(result.getParseTree());
+        assertResultOK(result);
+    }
+
     public void testFunctions() {
         String source = ".class {\n"
                 + "  width: percentage(0.5);\n"
@@ -236,15 +299,38 @@ public class Css3ParserLessTest extends CssTestBase {
 
     public void testAmpCombinatorInNestedRules() {
         String source = "#header        { color: black;\n"
-                + "  .navigation  { font-size: 12px }\n"
+                + "  .navigation  { font-size: 12px; }\n"
                 + "  .logo        { width: 300px;\n"
-                + "    &:hover    { text-decoration: none }\n"
+                + "    &:hover    { text-decoration: none; }\n"
                 + "  }\n"
                 + "}";
-        
-         CssParserResult result = TestUtil.parse(source);
 
-        NodeUtil.dumpTree(result.getParseTree());
+        CssParserResult result = TestUtil.parse(source);
+
+//        NodeUtil.dumpTree(result.getParseTree());
+        assertResultOK(result);
+
+    }
+
+    public void testNestedRules() {
+        String source = "#header{\n"
+                + "    /* #header styles */\n"
+                + "    h1{\n"
+                + "        /* #header h1 styles */\n"
+                + "    }\n"
+                + "}";
+        CssParserResult result = TestUtil.parse(source);
+
+//        NodeUtil.dumpTree(result.getParseTree());
+        assertResultOK(result);
+
+    }
+
+    public void testOperationsInVariableDeclaration() {
+        String source = "@darkBlue: @lightBlue - #555;";
+        CssParserResult result = TestUtil.parse(source);
+
+//        NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
 
     }

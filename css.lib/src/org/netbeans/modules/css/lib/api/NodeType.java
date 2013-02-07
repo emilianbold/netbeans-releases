@@ -370,6 +370,9 @@ public enum NodeType {
     less_function_in_condition,
     less_fn_name,
     
-    less_rule;
+    less_rule,
+    
+    less_mixin_call,
+    less_mixin_call_args;
     
 }
