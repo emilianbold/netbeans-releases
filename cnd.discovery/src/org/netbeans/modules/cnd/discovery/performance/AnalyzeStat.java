@@ -47,6 +47,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.logging.Level;
 
 /**
  *
@@ -94,7 +95,7 @@ public class AnalyzeStat {
             }
         });
         for (Map.Entry<String, AgregatedStat> entry : orphan) {
-            PerformanceIssueDetector.LOG.log(PerformanceIssueDetector.level, "Unused folder {0} contains {1} items and consumes {2}s.", // NOI18N
+            PerformanceIssueDetector.LOG.log(Level.INFO, "Unused folder {0} contains {1} items and consumes {2}s.", // NOI18N
                     new Object[]{entry.getKey(),
                                  PerformanceIssueDetector.format(entry.getValue().itemNumber),
                                  PerformanceIssueDetector.format(entry.getValue().itemTime/PerformanceIssueDetector.NANO_TO_SEC)});
@@ -129,7 +130,7 @@ public class AnalyzeStat {
             }
         });
         for (Map.Entry<String, AgregatedStat> entry : slow) {
-             PerformanceIssueDetector.LOG.log(PerformanceIssueDetector.level, "Slow reading files in the folder {0}. Reading {1} lines consumes {2}s.", // NOI18N
+             PerformanceIssueDetector.LOG.log(Level.INFO, "Slow reading files in the folder {0}. Reading {1} lines consumes {2}s.", // NOI18N
                      new Object[]{entry.getKey(),
                                   PerformanceIssueDetector.format(entry.getValue().readLines),
                                   PerformanceIssueDetector.format(entry.getValue().readTime/PerformanceIssueDetector.NANO_TO_SEC)});
