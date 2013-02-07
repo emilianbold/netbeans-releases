@@ -218,13 +218,13 @@ public class SemanticAnalysis extends SemanticAnalyzer {
 
         private final Model model;
 
-        private final Set<TypeElement> deprecatedTypes;
+        private Set<TypeElement> deprecatedTypes;
 
-        private final Set<MethodElement> deprecatedMethods;
+        private Set<MethodElement> deprecatedMethods;
 
-        private final Set<FieldElement> deprecatedFields;
+        private Set<FieldElement> deprecatedFields;
 
-        private final Set<TypeConstantElement> deprecatedConstants;
+        private Set<TypeConstantElement> deprecatedConstants;
 
         // last visited type declaration
         private TypeDeclaration typeDeclaration;
@@ -235,10 +235,34 @@ public class SemanticAnalysis extends SemanticAnalyzer {
             privateUnusedMethods = new HashMap<UnusedIdentifier, ASTNodeColoring>();
             this.snapshot = snapshot;
             this.model = model;
-            deprecatedTypes = ElementFilter.forDeprecated(true).filter(model.getIndexScope().getIndex().getTypes(NameKind.empty()));
-            deprecatedMethods = ElementFilter.forDeprecated(true).filter(model.getIndexScope().getIndex().getMethods(NameKind.empty()));
-            deprecatedFields = ElementFilter.forDeprecated(true).filter(model.getIndexScope().getIndex().getFields(NameKind.empty()));
-            deprecatedConstants = ElementFilter.forDeprecated(true).filter(model.getIndexScope().getIndex().getTypeConstants(NameKind.empty()));
+        }
+
+        private Set<TypeElement> getDeprecatedTypes() {
+            if (deprecatedTypes == null) {
+                deprecatedTypes = ElementFilter.forDeprecated(true).filter(model.getIndexScope().getIndex().getTypes(NameKind.empty()));
+            }
+            return deprecatedTypes;
+        }
+
+        private Set<MethodElement> getDeprecatedMethods() {
+            if (deprecatedMethods == null) {
+                deprecatedMethods = ElementFilter.forDeprecated(true).filter(model.getIndexScope().getIndex().getMethods(NameKind.empty()));
+            }
+            return deprecatedMethods;
+        }
+
+        private Set<FieldElement> getDeprecatedFields() {
+            if (deprecatedFields == null) {
+                deprecatedFields = ElementFilter.forDeprecated(true).filter(model.getIndexScope().getIndex().getFields(NameKind.empty()));
+            }
+            return deprecatedFields;
+        }
+
+        private Set<TypeConstantElement> getDeprecatedConstants() {
+            if (deprecatedConstants == null) {
+                deprecatedConstants = ElementFilter.forDeprecated(true).filter(model.getIndexScope().getIndex().getTypeConstants(NameKind.empty()));
+            }
+            return deprecatedConstants;
         }
 
         private void addOffsetRange(ASTNode node, Set<ColoringAttributes> coloring) {
@@ -324,7 +348,7 @@ public class SemanticAnalysis extends SemanticAnalyzer {
             boolean isDeprecated = false;
             VariableScope variableScope = model.getVariableScope(typeName.getStartOffset());
             QualifiedName fullyQualifiedName = VariousUtils.getFullyQualifiedName(QualifiedName.create(typeName), typeName.getStartOffset(), variableScope);
-            for (TypeElement typeElement : deprecatedTypes) {
+            for (TypeElement typeElement : getDeprecatedTypes()) {
                 if (typeElement.getFullyQualifiedName().equals(fullyQualifiedName)) {
                     isDeprecated = true;
                     break;
@@ -370,7 +394,7 @@ public class SemanticAnalysis extends SemanticAnalyzer {
             boolean isDeprecated = false;
             VariableScope variableScope = model.getVariableScope(methodName.getStartOffset());
             QualifiedName typeFullyQualifiedName = VariousUtils.getFullyQualifiedName(QualifiedName.create(typeDeclaration.getName()), methodName.getStartOffset(), variableScope);
-            for (MethodElement methodElement : deprecatedMethods) {
+            for (MethodElement methodElement : getDeprecatedMethods()) {
                 if (methodElement.getName().equals(methodName.getName()) && methodElement.getType().getFullyQualifiedName().equals(typeFullyQualifiedName)) {
                     isDeprecated = true;
                     break;
@@ -491,7 +515,7 @@ public class SemanticAnalysis extends SemanticAnalyzer {
                     QualifiedName.create(typeDeclaration.getName()),
                     variable.getStartOffset(),
                     variableScope);
-            for (FieldElement fieldElement : deprecatedFields) {
+            for (FieldElement fieldElement : getDeprecatedFields()) {
                 if (fieldElement.getName().equals(variableName) && fieldElement.getType().getFullyQualifiedName().equals(typeFullyQualifiedName)) {
                     isDeprecated = true;
                     break;
@@ -615,7 +639,7 @@ public class SemanticAnalysis extends SemanticAnalyzer {
                     QualifiedName.create(typeDeclaration.getName()),
                     constantName.getStartOffset(),
                     variableScope);
-            for (TypeConstantElement constantElement : deprecatedConstants) {
+            for (TypeConstantElement constantElement : getDeprecatedConstants()) {
                 if (constantElement.getName().equals(constantName.getName()) && constantElement.getType().getFullyQualifiedName().equals(typeFullyQualifiedName)) {
                     isDeprecated = true;
                     break;
