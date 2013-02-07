@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,77 +34,99 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.web.project;
+package org.netbeans.modules.j2ee.common.project;
 
 import java.io.IOException;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.common.queries.api.InjectionTargetQuery;
+import org.netbeans.modules.j2ee.core.api.support.classpath.ContainerClassPathModifier;
 import org.netbeans.modules.j2ee.core.api.support.java.SourceUtils;
-import org.netbeans.modules.j2ee.persistence.spi.entitymanagergenerator.ApplicationManagedResourceTransactionInjectableInWeb;
-import org.netbeans.modules.j2ee.persistence.spi.entitymanagergenerator.ApplicationManagedResourceTransactionNonInjectableInWeb;
-import org.netbeans.modules.j2ee.persistence.spi.entitymanagergenerator.EntityManagerGenerationStrategy;
-import org.netbeans.modules.j2ee.persistence.spi.entitymanagergenerator.EntityManagerGenerationStrategyResolver;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
 import org.netbeans.modules.j2ee.persistence.dd.PersistenceMetadata;
 import org.netbeans.modules.j2ee.persistence.dd.common.Persistence;
 import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
+import org.netbeans.modules.j2ee.persistence.spi.entitymanagergenerator.ApplicationManagedResourceTransactionInjectableInWeb;
+import org.netbeans.modules.j2ee.persistence.spi.entitymanagergenerator.ApplicationManagedResourceTransactionNonInjectableInWeb;
 import org.netbeans.modules.j2ee.persistence.spi.entitymanagergenerator.ContainerManagedJTAInjectableInEJB;
 import org.netbeans.modules.j2ee.persistence.spi.entitymanagergenerator.ContainerManagedJTANonInjectableInWeb;
+import org.netbeans.modules.j2ee.persistence.spi.entitymanagergenerator.EntityManagerGenerationStrategy;
+import org.netbeans.modules.j2ee.persistence.spi.entitymanagergenerator.EntityManagerGenerationStrategyResolver;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
 /**
- * An implementation of EntityManagerGenerationStrategyResolver for web projects.
+ * General implementation of EntityManagerGenerationStrategyResolver. Any project
+ * type which need to use {@link EntityManagerGenerationStrategyResolver} should
+ * either put the instance to the project lookup or better register it using
+ * {@link org.netbeans.spi.project.ProjectServiceProvider}.
  *
- * @author Erno Mononen
+ * @author Martin Janicek
  */
-public class WebEMGenStrategyResolver implements EntityManagerGenerationStrategyResolver{
-    
-    
-    /** Creates a new instance of WebEMGenStrategyResolver */
-    public WebEMGenStrategyResolver() {
+public class EMGenStrategyResolverImpl implements EntityManagerGenerationStrategyResolver {
+
+    private Project project;
+
+
+    public EMGenStrategyResolverImpl(Project project) {
+        this.project = project;
     }
-    
+
     @Override
     public Class<? extends EntityManagerGenerationStrategy> resolveStrategy(final FileObject target) {
-        
+
         PersistenceUnit persistenceUnit = getPersistenceUnit(target);
         String jtaDataSource = persistenceUnit.getJtaDataSource();
         String transactionType = persistenceUnit.getTransactionType();
         boolean isInjectionTarget = isInjectionTarget(target);
         boolean isJTA = (transactionType == null || transactionType.equals("JTA")); // JTA is default value for transaction type in non-J2SE projects
         boolean isContainerManaged = (jtaDataSource != null && !jtaDataSource.equals("")) && isJTA; //NO18N
- 
+
+        ContainerClassPathModifier modifier = project.getLookup().lookup(ContainerClassPathModifier.class);
+        if (modifier != null) {
+            modifier.extendClasspath(target,
+                new String[] {
+                    ContainerClassPathModifier.API_ANNOTATION,
+                    ContainerClassPathModifier.API_PERSISTENCE,
+                    ContainerClassPathModifier.API_TRANSACTION
+                });
+
+        }
+
         if (isContainerManaged) { // Container-managed persistence context
             if (isInjectionTarget) { // servlet, JSF managed bean ...
                 return ContainerManagedJTAInjectableInEJB.class;
             } else { // other classes
                 return ContainerManagedJTANonInjectableInWeb.class;
             }
-        } else if (!isJTA){ // Application-managed persistence context (Resource-transaction)
+        } else if (!isJTA) { // Application-managed persistence context (Resource-transaction)
             if (isInjectionTarget) { // servlet, JSF managed bean ...
                 return ApplicationManagedResourceTransactionInjectableInWeb.class;
             } else { // other classes
                 return ApplicationManagedResourceTransactionNonInjectableInWeb.class;
             }
         }
-        
+
         return null;
     }
-    
+
     private boolean isInjectionTarget(FileObject target) {
         final boolean[] result = new boolean[1];
         JavaSource source = JavaSource.forFileObject(target);
         if (source == null) {
             return false;
         }
-        try{
-            source.runModificationTask(new Task<WorkingCopy>(){
+        try {
+            source.runModificationTask(new Task<WorkingCopy>() {
                 @Override
                 public void run(WorkingCopy parameter) throws Exception {
                     parameter.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
@@ -118,24 +134,23 @@ public class WebEMGenStrategyResolver implements EntityManagerGenerationStrategy
                     result[0] = InjectionTargetQuery.isInjectionTarget(parameter, typeElement);
                 }
             });
-        } catch (IOException ioe){
+        } catch (IOException ioe) {
             Exceptions.printStackTrace(ioe);
         }
         return result[0];
     }
-    
-    
+
+
     private PersistenceUnit getPersistenceUnit(FileObject target) {
-        
         PersistenceScope persistenceScope = PersistenceScope.getPersistenceScope(target);
-        if (persistenceScope == null){
+        if (persistenceScope == null) {
             return null;
         }
-        
+
         try {
             // TODO: fix ASAP! 1st PU is taken, needs to find the one which realy owns given file
             Persistence persistence = PersistenceMetadata.getDefault().getRoot(persistenceScope.getPersistenceXml());
-            if(persistence != null){
+            if (persistence != null) {
                 return persistence.getPersistenceUnit(0);
             }
         } catch (IOException ex) {
@@ -143,7 +158,4 @@ public class WebEMGenStrategyResolver implements EntityManagerGenerationStrategy
         }
         return null;
     }
-    
-    
-    
 }

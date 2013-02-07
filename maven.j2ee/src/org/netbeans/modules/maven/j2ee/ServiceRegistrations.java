@@ -43,7 +43,9 @@
 package org.netbeans.modules.maven.j2ee;
 
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.common.project.EMGenStrategyResolverImpl;
 import org.netbeans.modules.j2ee.common.project.PersistenceProviderSupplierImpl;
+import org.netbeans.modules.j2ee.persistence.spi.entitymanagergenerator.EntityManagerGenerationStrategyResolver;
 import org.netbeans.modules.j2ee.persistence.spi.provider.PersistenceProviderSupplier;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.spi.project.ProjectServiceProvider;
@@ -67,7 +69,19 @@ public final class ServiceRegistrations {
             "org-netbeans-modules-maven/" + NbMavenProject.TYPE_APPCLIENT
         }
     )
-    public static PersistenceProviderSupplier create(Project project) {
+    public static PersistenceProviderSupplier createPersistenceProviderSupplier(Project project) {
         return new PersistenceProviderSupplierImpl(project);
+    }
+
+    @ProjectServiceProvider(
+        service =
+            EntityManagerGenerationStrategyResolver.class,
+        projectType = {
+            "org-netbeans-modules-maven/" + NbMavenProject.TYPE_WAR,
+            "org-netbeans-modules-maven/" + NbMavenProject.TYPE_EJB
+        }
+    )
+    public static EntityManagerGenerationStrategyResolver createEntityManagerGenerationStrategyResolver(Project project) {
+        return new EMGenStrategyResolverImpl(project);
     }
 }
