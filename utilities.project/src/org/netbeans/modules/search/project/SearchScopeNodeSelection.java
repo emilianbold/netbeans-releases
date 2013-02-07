@@ -44,15 +44,20 @@
 
 package org.netbeans.modules.search.project;
 
+import java.awt.Image;
+import java.beans.BeanInfo;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.swing.Icon;
+import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.search.provider.SearchInfo;
 import org.netbeans.api.search.provider.SearchInfoUtils;
 import org.netbeans.spi.search.SearchScopeDefinition;
 import org.openide.nodes.Node;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -69,9 +74,19 @@ import org.openide.windows.TopComponent;
  */
 final class SearchScopeNodeSelection extends SearchScopeDefinition
                                      implements LookupListener {
-    
+
+    @StaticResource
+    private static final String MULTI_SELECTION_ID =
+            "org/netbeans/modules/search/project/resources/multi_selection.png"; //NOI18N
+    private static final Icon MULTI_SELECTION_ICON;
+
     private final Lookup.Result<Node> lookupResult;
     private LookupListener lookupListener;
+
+    static {
+        MULTI_SELECTION_ICON = ImageUtilities.loadImageIcon(
+                MULTI_SELECTION_ID, false);
+    }
 
     public SearchScopeNodeSelection() {
         Lookup lookup = Utilities.actionsGlobalContext();
@@ -323,5 +338,23 @@ final class SearchScopeNodeSelection extends SearchScopeDefinition
     @Override
     public void resultChanged(LookupEvent ev) {
         notifyListeners();
+    }
+
+    @Override
+    public Icon getIcon() {
+        Node[] nodes = getNodes();
+        if (nodes.length > 1) {
+            return MULTI_SELECTION_ICON;
+        } else if (nodes.length == 1 && nodes[0] != null) {
+            Node n = nodes[0];
+            Image image = n.getIcon(BeanInfo.ICON_COLOR_16x16);
+            if (image != null) {
+                return ImageUtilities.image2Icon(image);
+            } else {
+                return null;
+            }
+        } else {
+            return null;
+        }
     }
 }

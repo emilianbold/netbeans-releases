@@ -57,6 +57,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.libs.git.GitBranch;
@@ -149,23 +150,6 @@ public class CloneAction implements ActionListener, HelpCtx.Provider {
         performClone(cloneFromPath, null);
     }
 
-    public static void scanForProjects(File workingFolder, GitProgressSupport support) {
-        Map<Project, Set<Project>> checkedOutProjects = new HashMap<Project, Set<Project>>();
-        checkedOutProjects.put(null, new HashSet<Project>()); // initialize root project container
-        File normalizedWorkingFolder = FileUtil.normalizeFile(workingFolder);
-        FileObject fo = FileUtil.toFileObject(normalizedWorkingFolder);
-        if (fo == null || !fo.isFolder()) {
-            return;
-        } else {
-            ProjectUtilities.scanForProjects(fo, checkedOutProjects);
-        }
-        if (support != null && support.isCanceled()) {
-            return;
-        }
-        // open project selection
-        ProjectUtilities.openClonedOutProjects(checkedOutProjects, workingFolder);
-    }
-
     private static void performClone(String url, PasswordAuthentication pa) throws MissingResourceException {
         performClone(url, pa, false);
     }
@@ -194,26 +178,32 @@ public class CloneAction implements ActionListener, HelpCtx.Provider {
                 @Override
                 protected void perform () {
                     try {
-                        GitClient client = getClient();
-                        client.init(getProgressMonitor());
-                        Map<String, GitTransportUpdate> updates = client.fetch(remoteUri.toPrivateString(), refSpecs, getProgressMonitor());
-                        log(updates);
-                        
-                        if(isCanceled()) {
-                            return;
-                        }
+                        GitUtils.runWithoutIndexing(new Callable<Void>() {
+                            @Override
+                            public Void call () throws Exception {
+                                GitClient client = getClient();
+                                client.init(getProgressMonitor());
+                                Map<String, GitTransportUpdate> updates = client.fetch(remoteUri.toPrivateString(), refSpecs, getProgressMonitor());
+                                log(updates);
 
-                        client.setRemote(new CloneRemoteConfig(remoteName, remoteUri, refSpecs).toGitRemote(), getProgressMonitor());
-                        org.netbeans.modules.versioning.util.Utils.logVCSExternalRepository("GIT", remoteUri.toString()); //NOI18N
-                        client.createBranch(branch.getName(), remoteName + "/" + branch.getName(), getProgressMonitor());
-                        client.checkoutRevision(branch.getName(), true, getProgressMonitor());
+                                if(isCanceled()) {
+                                    return null;
+                                }
 
-                        Git.getInstance().getFileStatusCache().refreshAllRoots(destination);
-                        Git.getInstance().versionedFilesChanged();                       
-                        
-                        if(scan && !isCanceled()) {
-                            scanForProjects(destination, this);
-                        }
+                                client.setRemote(new CloneRemoteConfig(remoteName, remoteUri, refSpecs).toGitRemote(), getProgressMonitor());
+                                org.netbeans.modules.versioning.util.Utils.logVCSExternalRepository("GIT", remoteUri.toString()); //NOI18N
+                                client.createBranch(branch.getName(), remoteName + "/" + branch.getName(), getProgressMonitor());
+                                client.checkoutRevision(branch.getName(), true, getProgressMonitor());
+
+                                Git.getInstance().getFileStatusCache().refreshAllRoots(destination);
+                                Git.getInstance().versionedFilesChanged();                       
+
+                                if(scan && !isCanceled()) {
+                                    scanForProjects(destination);
+                                }
+                                return null;
+                            }
+                        }, destination);
                         
                     } catch (GitException ex) {
                         GitClientExceptionHandler.notifyException(ex, true);
@@ -242,6 +232,23 @@ public class CloneAction implements ActionListener, HelpCtx.Provider {
                             }
                         }
                     }
+                }
+
+                public void scanForProjects (File workingFolder) {
+                    Map<Project, Set<Project>> checkedOutProjects = new HashMap<Project, Set<Project>>();
+                    checkedOutProjects.put(null, new HashSet<Project>()); // initialize root project container
+                    File normalizedWorkingFolder = FileUtil.normalizeFile(workingFolder);
+                    FileObject fo = FileUtil.toFileObject(normalizedWorkingFolder);
+                    if (fo == null || !fo.isFolder()) {
+                        return;
+                    } else {
+                        ProjectUtilities.scanForProjects(fo, checkedOutProjects);
+                    }
+                    if (isCanceled()) {
+                        return;
+                    }
+                    // open project selection
+                    ProjectUtilities.openClonedOutProjects(checkedOutProjects, workingFolder);
                 }
             };
             Task task = supp.start(Git.getInstance().getRequestProcessor(destination), destination, NbBundle.getMessage(CloneAction.class, "LBL_CloneAction.progressName")); //NOI18N

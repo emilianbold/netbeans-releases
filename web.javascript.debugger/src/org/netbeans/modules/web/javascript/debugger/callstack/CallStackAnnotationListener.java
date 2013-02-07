@@ -99,7 +99,7 @@ public class CallStackAnnotationListener extends DebuggerManagerAdapter
             d.removeListener(this);
             d.removePropertyChangeListener(this);
             pc = null;
-            updateAnnotations(Collections.EMPTY_LIST);
+            updateAnnotations(Collections.<CallFrame>emptyList());
         }
     }
 
@@ -110,7 +110,7 @@ public class CallStackAnnotationListener extends DebuggerManagerAdapter
 
     @Override
     public void resumed() {
-        updateAnnotations(Collections.EMPTY_LIST);
+        updateAnnotations(Collections.<CallFrame>emptyList());
     }
 
     @Override

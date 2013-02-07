@@ -259,6 +259,19 @@ public class J2eeProjectSupport {
         return false;
     }
 
+    /**
+     * Closes all opened projects.
+     */
+    public static void closeAllProjects() {
+        // posting the to AWT event thread
+        Mutex.EVENT.writeAccess(new Runnable() {
+            @Override
+            public void run() {
+                OpenProjectList.getDefault().close(OpenProjectList.getDefault().getOpenProjects(), true);
+            }
+        });
+    }
+
     /** Waits until metadata scanning is finished. */
     public static void waitScanFinished() {
         WatchProjects.waitScanFinished();

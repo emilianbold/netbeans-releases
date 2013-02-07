@@ -41,12 +41,16 @@
  */
 package org.netbeans.api.search.ui;
 
+import java.awt.Component;
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.HierarchyEvent;
 import java.awt.event.HierarchyListener;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -84,6 +88,7 @@ public final class ScopeController extends ComponentController<JComboBox> {
         this.extraSearchScopes = extraSearchScopes;
         component.addHierarchyListener(new ScopeComboBoxHierarchyListener());
         component.setEditable(false);
+        component.setRenderer(new ScopeCellRenderer());
     }
 
     private String chooseId() {
@@ -292,6 +297,24 @@ public final class ScopeController extends ComponentController<JComboBox> {
             component.removeActionListener(manualSelectionListener);
             manualSelectionListener = null;
             active = false;
+        }
+    }
+
+    private static class ScopeCellRenderer extends DefaultListCellRenderer {
+
+        @Override
+        public Component getListCellRendererComponent(JList list, Object value,
+                int index, boolean isSelected, boolean cellHasFocus) {
+            Component component = super.getListCellRendererComponent(
+                    list, value, index, isSelected, cellHasFocus);
+            if (component instanceof JLabel) {
+                JLabel label = (JLabel) component;
+                if (value instanceof ScopeItem) {
+                    ScopeItem item = (ScopeItem) value;
+                    label.setIcon(item.getSearchScope().getIcon());
+                }
+            }
+            return component;
         }
     }
 };

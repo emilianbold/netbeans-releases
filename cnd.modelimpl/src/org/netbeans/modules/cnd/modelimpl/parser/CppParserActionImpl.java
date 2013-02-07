@@ -162,7 +162,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         this.wrapper = wrapper;
         this.contexts = new ArrayDeque<Pair>();
         currentContext = new Pair(params.getMainFile());
-        this.contexts.push(currentContext);
+//        this.contexts.push(currentContext);
         this.globalSymTab = createGlobal();
         this.builderContext = new CppParserBuilderContext();
     }
@@ -1264,6 +1264,7 @@ public class CppParserActionImpl implements CppParserActionEx {
      
     @Override
     public void pushFile(CsmFile file) {
+        if (TRACE) System.err.println(contexts.size() + ":" + currentContext.file.getAbsolutePath() + " >>> " + file.getAbsolutePath());
         this.contexts.push(currentContext);
         currentContext = new Pair(file);
     }
@@ -1273,6 +1274,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         assert !contexts.isEmpty();
         CsmFile out = currentContext.file;
         currentContext = contexts.pop();
+        if (TRACE) System.err.println(contexts.size() + ":" + currentContext.file.getAbsolutePath() + " <<< " + out.getAbsolutePath());
         return out;
     }
 

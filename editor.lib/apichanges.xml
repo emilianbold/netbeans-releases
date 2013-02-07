@@ -107,6 +107,53 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="moving-find">
+            <summary>Moving find implementations to module editor.search</summary>
+            <version major="3" minor="36"/>
+            <date day="6" month="2" year="2013"/>
+            <author login="mkristofic"/>
+            <compatibility binary="incompatible" source="incompatible" semantic="incompatible" addition="no" deprecation="yes" deletion="yes" modification="yes"/>
+            <description>
+                <p>
+                    The search actions from ActionFactory where moved to editor.search module. DocumentFinder was removed as unused by new search implementation.
+                </p>
+
+                <pre>
+                    check-sigtest:
+                    [mkdir] Created dir: /home/mito/nb/develop/editor.lib/build/test/sigtest/results
+                    [sigtest] /home/mito/nb/develop/editor.lib/build/test/sigtest/results/org.netbeans.modules.editor.lib
+                    [sigtest] Packages: org.netbeans.editor.*, org.netbeans.editor.ext.*, org.netbeans.editor.view.spi.*, org.netbeans.lib.editor.hyperlink.spi.*, org.netbeans.lib.editor.view.*
+                    [sigtest]
+                    [sigtest] email: api-changes@netbeans.org
+                    [sigtest] SignatureTest report
+                    [sigtest] Base version: 3.34.0
+                    [sigtest] Tested version: 3.34.0
+                    [sigtest] Check mode: bin [throws removed]
+                    [sigtest] Constant checking: on
+                    [sigtest]
+                    [sigtest]
+                    [sigtest] Class org.netbeans.editor.ActionFactory$FindNextAction
+                    [sigtest]   "E1.2 - API type removed" : CLASS public static org.netbeans.editor.ActionFactory$FindNextAction
+                    [sigtest]
+                    [sigtest] Class org.netbeans.editor.ActionFactory$FindPreviousAction
+                    [sigtest]   "E1.2 - API type removed" : CLASS public static org.netbeans.editor.ActionFactory$FindPreviousAction
+                    [sigtest]
+                    [sigtest] Class org.netbeans.editor.ActionFactory$FindSelectionAction
+                    [sigtest]   "E1.2 - API type removed" : CLASS public static org.netbeans.editor.ActionFactory$FindSelectionAction
+                    [sigtest]
+                    [sigtest] Class org.netbeans.editor.ActionFactory$ToggleHighlightSearchAction
+                    [sigtest]   "E1.2 - API type removed" : CLASS public static org.netbeans.editor.ActionFactory$ToggleHighlightSearchAction
+                    [sigtest]
+                    [sigtest] Class org.netbeans.editor.DocumentFinder
+                    [sigtest]   "E1.2 - API type removed" : CLASS public org.netbeans.editor.DocumentFinder
+                    [sigtest]
+                    [sigtest] Class org.netbeans.editor.DocumentFinder$FindReplaceResult
+                    [sigtest]   "E1.2 - API type removed" : CLASS public static org.netbeans.editor.DocumentFinder$FindReplaceResult
+                    [sigtest]
+                    [sigtest] /home/mito/nb/develop/editor.lib/build/test/sigtest/results/org-netbeans-modules-editor-lib.xml: 1 failures in /home/mito/nb/develop/editor.lib/nbproject/org-netbeans-modules-editor-lib.sig
+                </pre>
+            </description>
+        </change>
         <change id="pasive.corrected.to.passive">
             <summary>Spelling error in the API corrected</summary>
             <version major="3" minor="33"/>

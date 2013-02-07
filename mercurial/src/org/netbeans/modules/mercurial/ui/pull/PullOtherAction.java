@@ -147,8 +147,11 @@ public class PullOtherAction extends ContextAction {
          
         RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(root);
         HgProgressSupport support = new HgProgressSupport() {
-                        public void perform() { 
-                            PullAction.performPull(PullAction.PullType.OTHER, ctx, root, pullSource, fromPrjName, toPrjName, this.getLogger()); } };
+            @Override
+            public void perform() { 
+                PullAction.performPull(PullAction.PullType.OTHER, root, pullSource, fromPrjName, toPrjName, null, this);
+            }
+        };
 
         support.start(rp, root,
                 org.openide.util.NbBundle.getMessage(PullAction.class, "MSG_PULL_PROGRESS")); // NOI18N

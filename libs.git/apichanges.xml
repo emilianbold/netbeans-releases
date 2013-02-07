@@ -111,6 +111,19 @@ is the proper place.
         
         <change>
             <api name="gitlibrary_api"/>
+            <summary>Adding new method to GitClient: commit(), amending the last commit</summary>
+            <version major="1" minor="7"/>
+            <date day="6" month="2" year="2013"/>
+            <author login="ovrabec"/>
+            <compatibility addition="yes"/>
+            <description>
+                Git supports commit amendments, in other words modifying the last commit and changing its
+                commit message or modified files. Another commit method allows API clients to specify
+                either to amend the last commit or to make a fresh new commit on top of current HEAD.
+            </description>
+        </change>
+        <change>
+            <api name="gitlibrary_api"/>
             <summary>Adding new method to GitClient: release()</summary>
             <version major="1" minor="5"/>
             <date day="16" month="11" year="2012"/>

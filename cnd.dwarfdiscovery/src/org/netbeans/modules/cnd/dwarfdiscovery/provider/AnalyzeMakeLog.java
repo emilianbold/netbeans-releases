@@ -252,22 +252,23 @@ public class AnalyzeMakeLog extends BaseDwarfProvider {
     }
 
     @Override
-    protected List<SourceFileProperties> getSourceFileProperties(String objFileName, Map<String,SourceFileProperties> map, ProjectProxy project, Set<String> dlls, CompileLineStorage storage){
+    protected List<SourceFileProperties> getSourceFileProperties(String objFileName, Map<String,SourceFileProperties> map, ProjectProxy project, Set<String> dlls, List<String> buildArtifacts, CompileLineStorage storage){
         ProviderProperty p = getProperty(RESTRICT_COMPILE_ROOT);
         String root = "";
         if (p != null) {
             root = (String)p.getValue();
         }
-        List<SourceFileProperties> res = runLogReader(objFileName, root, progress, project, storage);
+        List<SourceFileProperties> res = runLogReader(objFileName, root, progress, project, buildArtifacts, storage);
         progress = null;
         return res;
 
     }
     
-    /* package-local */ List<SourceFileProperties> runLogReader(String objFileName, String root, Progress progress, ProjectProxy project, CompileLineStorage storage){
+    /* package-local */ List<SourceFileProperties> runLogReader(String objFileName, String root, Progress progress, ProjectProxy project, List<String> buildArtifacts, CompileLineStorage storage){
         FileSystem fileSystem = getFileSystem(project);
         LogReader clrf = new LogReader(objFileName, root, project, getRelocatablePathMapper(), fileSystem);
         List<SourceFileProperties> list = clrf.getResults(progress, isStoped, storage);
+        buildArtifacts.addAll(clrf.getArtifacts(progress, isStoped, storage));
         return list;
     }
 
@@ -281,6 +282,7 @@ public class AnalyzeMakeLog extends BaseDwarfProvider {
         if (!isStoped.get()){
             Configuration conf = new Configuration(){
                 private List<SourceFileProperties> myFileProperties;
+                private List<String> myBuildArtifacts;
                 private List<String> myIncludedFiles;
                 @Override
                 public List<ProjectProperties> getProjectConfiguration() {
@@ -291,6 +293,21 @@ public class AnalyzeMakeLog extends BaseDwarfProvider {
                 public List<String> getDependencies() {
                     return null;
                 }
+
+                @Override
+                public List<String> getBuildArtifacts() {
+                    if (myBuildArtifacts == null){
+                        String set = (String)getProperty(MAKE_LOG_KEY).getValue();
+                        if (set == null || set.length() == 0) {
+                            set = detectMakeLog(project);
+                        }
+                        if (set != null && set.length() > 0) {
+                            myBuildArtifacts = Collections.synchronizedList(new ArrayList<String>());
+                            myFileProperties = getSourceFileProperties(new String[]{set},null, project, null, myBuildArtifacts, new CompileLineStorage());
+                        }
+                    }
+                    return myBuildArtifacts;
+                }
                 
                 @Override
                 public List<SourceFileProperties> getSourcesConfiguration() {
@@ -300,7 +317,8 @@ public class AnalyzeMakeLog extends BaseDwarfProvider {
                             set = detectMakeLog(project);
                         }
                         if (set != null && set.length() > 0) {
-                            myFileProperties = getSourceFileProperties(new String[]{set},null, project, null, new CompileLineStorage());
+                            myBuildArtifacts = Collections.synchronizedList(new ArrayList<String>());
+                            myFileProperties = getSourceFileProperties(new String[]{set},null, project, null, myBuildArtifacts, new CompileLineStorage());
                         }
                     }
                     return myFileProperties;

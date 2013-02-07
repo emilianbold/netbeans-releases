@@ -42,6 +42,7 @@
 package org.netbeans.modules.dlight.libs.common;
 
 import java.lang.management.ManagementFactory;
+import java.lang.management.RuntimeMXBean;
 import java.lang.management.ThreadMXBean;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -91,6 +92,7 @@ public class PerformanceLogger {
          * Event will be automatically logged after time out.
          * By default time out is infinite.
          * The automatic logging does not prevent final logging by method log.
+         * It is ensured that timeout event is sent before regular logging event or is not sent.
          * 
          * @param timeOut in seconds
          */
@@ -148,6 +150,12 @@ public class PerformanceLogger {
 
         /**
          *
+         * @return event start time in nanoseconds
+         */
+        long getStartTime();
+
+        /**
+         *
          * @return wall time from start to log event in nanoseconds
          */
         long getTime();
@@ -182,7 +190,23 @@ public class PerformanceLogger {
     private static final ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
     
     static {
-        PROFILING_ENABLED = "true".equals(System.getProperty("dlight.libs.common.profiling.enabled", "true")); // NOI18N;
+        boolean isDebugMode = false;
+        RuntimeMXBean runtime = ManagementFactory.getRuntimeMXBean();
+        try {
+            List<String> args = runtime.getInputArguments();
+            if (args.contains("-Xdebug")) { //NOI18N
+                isDebugMode = true;
+            }
+        } catch (SecurityException ex) {
+        }
+        String enabled = System.getProperty("dlight.libs.common.profiling.enabled", "auto"); //NOI18N
+        if ("true".equals(enabled)) { //NOI18N
+            PROFILING_ENABLED = true;
+        } else if ("false".equals(enabled)) { //NOI18N
+            PROFILING_ENABLED = false;
+        } else {
+            PROFILING_ENABLED = !isDebugMode;
+        }
         boolean cpu = true;
         if (PROFILING_ENABLED) {
             try {
@@ -290,7 +314,7 @@ public class PerformanceLogger {
                 cpuTime = 0;
                 userTime = 0;
             }
-            PerformanceEvent event = new PerformanceEventImpl(action.id, action.source, delta, cpuTime, userTime, usedMemeory, extra);
+            PerformanceEvent event = new PerformanceEventImpl(action.id, action.source, action.start, delta, cpuTime, userTime, usedMemeory, extra);
             lineLock.writeLock().lock();
             try {
                 register.remove(action);
@@ -308,7 +332,7 @@ public class PerformanceLogger {
             long usedMemeory = runtime.totalMemory() - runtime.freeMemory();
             long cpuTime = 0;
             long userTime = 0;
-            PerformanceEvent event = new PerformanceEventImpl(action.id, action.source, delta, cpuTime, userTime, usedMemeory, new Object[0]);
+            PerformanceEvent event = new PerformanceEventImpl(action.id, action.source, action.start, delta, cpuTime, userTime, usedMemeory, new Object[0]);
             lineLock.writeLock().lock();
             try {
                 Integer remove = register.remove(action);
@@ -353,15 +377,17 @@ public class PerformanceLogger {
 
         private final String id;
         private final Object source;
+        private final long startTime;
         private final long time;
         private final long cpu;
         private final long user;
         private final Object[] extra;
         private final long usedMemeory;
 
-        private PerformanceEventImpl(String id, Object source, long time, long cpu, long user, long usedMemeory, Object[] extra) {
+        private PerformanceEventImpl(String id, Object source, long startTime, long time, long cpu, long user, long usedMemeory, Object[] extra) {
             this.id = id;
             this.source = source;
+            this.startTime = startTime;
             this.time = time;
             this.cpu = cpu;
             this.user = user;
@@ -382,6 +408,11 @@ public class PerformanceLogger {
         @Override
         public Object[] getAttrs() {
             return extra;
+        }
+
+        @Override
+        public long getStartTime() {
+            return startTime;
         }
 
         @Override

@@ -328,4 +328,11 @@ System.err.println("Need width calc for "+tree);
 	width+=2;
     }
 
+    @Override
+    public void visitTypeApply(JCTypeApply that) {
+        width(that.clazz);
+        width(that.arguments);
+        width += 2 * that.arguments.size();
+    }
+
 }

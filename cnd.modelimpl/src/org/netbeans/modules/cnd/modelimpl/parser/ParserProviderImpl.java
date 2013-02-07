@@ -42,6 +42,8 @@
 
 package org.netbeans.modules.cnd.modelimpl.parser;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import org.antlr.runtime.tree.CommonTree;
@@ -375,8 +377,6 @@ public final class ParserProviderImpl extends CsmParserProvider {
             CXXParserActionEx cppCallback = (CXXParserActionEx)callback;
             if (cppCallback == null) {
                 cppCallback = new CXXParserActionImpl(params);
-            } else {
-                cppCallback.pushFile(file);
             }            
             if (cppCallback instanceof CXXParserActionImpl) {
                 objects = ((CXXParserActionImpl) cppCallback).getObjectsMap();
@@ -636,39 +636,14 @@ public final class ParserProviderImpl extends CsmParserProvider {
                 this.cppCallback = cppCallback;
             }
             
-            private int nMarkers = 0;
             private static final boolean TRACE = false;
-            @Override
-            public int mark() {
-                nMarkers++;
-                int mark = super.mark();
-                if (TRACE) System.err.println("mark " + mark);
-                return mark;
-            }
-
-            @Override
-            public void rewind(int pos) {
-                nMarkers--;
-                if (TRACE) System.err.println("rewind to " + pos);
-                super.rewind(pos);
-            }
-
-            @Override
-            public void rewind() {
-                if (TRACE) System.err.println("rewind");
-                super.rewind();
-            }
-
-            @Override
-            public void seek(int arg0) {
-                if (TRACE) System.err.println("seek to " + arg0);
-                super.seek(arg0);
-            }
 
             @Override
             public int LA(int i) {
                 if (i == 0) {
+                    if (TRACE) System.err.println("LA(0)=" + lastConsumed + " C="+canUseCallback());
                     assert lastConsumed != null;
+                    assert canUseCallback();
                     return lastConsumed.getType();
                 }
                 final int newIndex = skipIncludeTokensIfNeeded(i);
@@ -680,7 +655,9 @@ public final class ParserProviderImpl extends CsmParserProvider {
             @Override
             public Antlr2ToAntlr3TokenAdapter LT(int i) {
                 if (i == 0) {
+                    if (TRACE) System.err.println("LT(0)=" + lastConsumed + " C="+canUseCallback());
                     assert lastConsumed != null;
+                    assert canUseCallback();
                     assert !isIncludeToken(lastConsumed.getType()) : lastConsumed + " not expected ";
                     return lastConsumed;
                 }
@@ -692,15 +669,17 @@ public final class ParserProviderImpl extends CsmParserProvider {
             private Antlr2ToAntlr3TokenAdapter lastConsumed;
             @Override
             public void consume() {
-                if (TRACE) System.err.println("consuming LT(1)=" + super.LT(1) + " LT(0)=" + super.LT(0));
+                if (TRACE) System.err.println("consuming LT(1)=" + super.LT(1) + " LT(0)=" + super.LT(0) + "; lastConsumed=" + lastConsumed + " C="+canUseCallback());
                 assert !isIncludeToken(super.LA(1)) : super.LT(1) + " not expected ";
-                lastConsumed = super.LT(1);
+                if (canUseCallback()) {
+                    lastConsumed = super.LT(1);
+                }
                 super.consume();
-                if (TRACE) System.err.println("after consume LT(1)=" + super.LT(1) + "; consumed LT(0)=" + super.LT(0));
+                if (TRACE) System.err.println("after consume LT(1)=" + super.LT(1) + "; consumed LT(0)=" + super.LT(0) + "; lastConsumed=" + lastConsumed + " C="+canUseCallback());
                 if (false) { // DISABLED: let LA to be the only one consumer
                     // consume following includes as well
                     while (isIncludeToken(super.LA(1))) {
-                        if (nMarkers == 0 && canUseCallback()) {
+                        if (canUseCallback()) {
                             org.antlr.runtime.Token t = super.LT(1);
                             onIncludeToken(t);
                             if (TRACE) System.err.println("extra consuming LT(1)=" + t + " LT(0)=" + super.LT(0));
@@ -727,7 +706,7 @@ public final class ParserProviderImpl extends CsmParserProvider {
                     int LA = super.LA(superIndex);
                     assert LA == super.LA(superIndex) : "how can LA be different?";
                     if (isIncludeToken(LA)) {
-                        if (nMarkers == 0 && superIndex == 1 && canUseCallback()) {
+                        if (superIndex == 1 && canUseCallback()) {
                             // consume if the first and no markers
                             Antlr2ToAntlr3TokenAdapter t = super.LT(1);
                             if (TRACE) System.err.println("CONSUMING include token: " + t + " for LA(" + i + ")");
@@ -737,7 +716,7 @@ public final class ParserProviderImpl extends CsmParserProvider {
                             super.consume();
                             superIndex = 0;
                         } else {
-                            if (TRACE) System.err.println("NOT consumed include token: " + nMarkers + " superIndex=" + superIndex + " canUseCallback=" + canUseCallback());
+                            if (TRACE) System.err.println("NOT consumed include token: superIndex=" + superIndex + " canUseCallback=" + canUseCallback());
                         }
                     } else {
                         nonIncludeTokens++;
@@ -759,11 +738,13 @@ public final class ParserProviderImpl extends CsmParserProvider {
                     CsmFile inclFile = (CsmFile) aptToken.getProperty(CsmFile.class);
                     if (inclFile != null) {
                         if (preInclude == Boolean.TRUE) {
+                            if (TRACE) System.err.println(" >>> " + inclFile.getAbsolutePath());
                             cppCallback.pushFile(inclFile);
                             assert inclFile instanceof FileImpl;
                         } else {
                             CsmFile popFile = cppCallback.popFile();
-                            assert popFile == inclFile;
+                            if (TRACE) System.err.println(" <<< " + popFile.getAbsolutePath());
+                            assert popFile == inclFile : "EXPECTED: " + inclFile + "\n POPED: " + popFile;
                         }
                     }
                 }

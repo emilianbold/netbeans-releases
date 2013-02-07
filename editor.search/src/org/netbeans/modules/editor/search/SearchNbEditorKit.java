@@ -43,8 +43,10 @@ package org.netbeans.modules.editor.search;
 
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import javax.swing.Action;
 import javax.swing.BoxLayout;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
@@ -52,6 +54,7 @@ import javax.swing.text.EditorKit;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
+import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.EditorUI;
 import org.netbeans.editor.SideBarFactory;
 import org.netbeans.editor.ext.ExtKit;
@@ -149,6 +152,18 @@ public final class SearchNbEditorKit extends NbEditorKit {
                 }
             };
             EditorRegistry.addPropertyChangeListener(searchAndReplaceBarPersistentListener);
+        }
+    }
+
+    public static void openFindIfNecessary(EditorUI eui, ActionEvent evt) {
+        Object findWhat = EditorFindSupport.getInstance().getFindProperty(EditorFindSupport.FIND_WHAT);
+        if (findWhat == null || !(findWhat instanceof String) || ((String) findWhat).isEmpty()) {
+
+            Action findAction = ((BaseKit) eui.getComponent().getUI().getEditorKit(
+                    eui.getComponent())).getActionByName("find");
+            if (findAction != null) {
+                findAction.actionPerformed(evt);
+            }
         }
     }
 }

@@ -54,13 +54,13 @@ import org.netbeans.modules.mercurial.OutputLogger;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import javax.swing.*;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.mercurial.util.HgCommand;
 import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.mercurial.ui.actions.ContextAction;
 import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.netbeans.modules.mercurial.HgProgressSupport;
@@ -156,18 +156,25 @@ public class MergeAction extends ContextAction {
         support.start(rp, root, NbBundle.getMessage(MergeAction.class, "MSG_MERGE_PROGRESS")); // NOI18N
     }
 
-    public static List<String> doMergeAction(File root, String revStr, OutputLogger logger) throws HgException {
-        List<String> listMerge = HgCommand.doMerge(root, revStr);
+    public static List<String> doMergeAction(final File root, final String revStr, OutputLogger logger) throws HgException {
+        List<String> listMerge = HgUtils.runWithoutIndexing(new Callable<List<String>>() {
+            @Override
+            public List<String> call () throws Exception {
+                return HgCommand.doMerge(root, revStr);
+            }
+        }, root);
         
         if (listMerge != null && !listMerge.isEmpty()) {
             logger.output(listMerge);
-            handleMergeOutput(root, listMerge, true, logger);
+            if (handleMergeOutput(root, listMerge, logger)) {
+                logger.outputInRed(NbBundle.getMessage(MergeAction.class, "MSG_MERGE_DONE")); //NOI18N
+            }
         }
         return listMerge;
     }
 
-    public static void handleMergeOutput(File root, List<String> listMerge, boolean bDone, OutputLogger logger) throws HgException {
-        if (listMerge == null || listMerge.isEmpty()) return;
+    public static boolean handleMergeOutput(File root, List<String> listMerge, OutputLogger logger) throws HgException {
+        if (listMerge == null || listMerge.isEmpty()) return true;
 
         Boolean bConflicts = false;
         Boolean bMergeFailed = false;
@@ -225,10 +232,7 @@ public class MergeAction extends ContextAction {
             logger.outputInRed(NbBundle.getMessage(MergeAction.class, "MSG_MERGE_DONE_CONFLICTS")); // NOI18N
             DialogDisplayer.getDefault().notify(new DialogDescriptor.Message(NbBundle.getMessage(MergeAction.class, "MSG_Merge.ConflictsCreated"))); //NOI18N
         }
-        if (!bMergeFailed && !bConflicts && bDone) {
-            logger.outputInRed(NbBundle.getMessage(MergeAction.class,
-                    "MSG_MERGE_DONE")); // NOI18N
-        }
+        return !bMergeFailed && !bConflicts;
     }
 
     public static void printMergeWarning(List<String> list, OutputLogger logger){

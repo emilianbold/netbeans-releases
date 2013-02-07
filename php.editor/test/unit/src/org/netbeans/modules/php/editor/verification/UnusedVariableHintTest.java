@@ -61,6 +61,14 @@ public class UnusedVariableHintTest extends PHPHintsTestBase {
         checkHintsInStartEndFile(new UnusedVariableHintStub(false), "testUnusedVariableHint.php");
     }
 
+    public void testUnusedInGlobalProgramContext() throws Exception {
+        checkHintsInStartEndFile(new UnusedVariableHintStub(false), "testUnusedInGlobalProgramContext.php");
+    }
+
+    public void testUnusedInGlobalNamespaceContext() throws Exception {
+        checkHintsInStartEndFile(new UnusedVariableHintStub(false), "testUnusedInGlobalNamespaceContext.php");
+    }
+
     private class UnusedVariableHintStub extends UnusedVariableHint {
         private final boolean unusedFormalParameters;
 

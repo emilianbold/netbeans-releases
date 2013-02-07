@@ -53,7 +53,7 @@ import org.netbeans.modules.php.editor.parser.PHPParseResult;
  *
  * @author Tomasz.Slota@Sun.COM
  */
-class PHPRuleContext extends RuleContext {
+public class PHPRuleContext extends RuleContext {
     private ElementQuery.Index index;
     @NullAllowed
     FileScope fileScope;

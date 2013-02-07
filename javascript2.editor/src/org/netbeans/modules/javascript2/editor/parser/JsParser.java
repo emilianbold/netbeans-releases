@@ -88,7 +88,7 @@ public class JsParser extends SanitizingParser {
             "--debug-lines=false"}); // NOI18N
 
         errorManager.setLimit(0);
-        jdk.nashorn.internal.runtime.Context nashornContext = new jdk.nashorn.internal.runtime.Context(options, errorManager);
+        jdk.nashorn.internal.runtime.Context nashornContext = new jdk.nashorn.internal.runtime.Context(options, errorManager, JsParser.class.getClassLoader());
         // XXX
         //jdk.nashorn.internal.runtime.Context.setContext(contextN);
         jdk.nashorn.internal.codegen.Compiler compiler = jdk.nashorn.internal.codegen.Compiler.compiler(source, nashornContext);

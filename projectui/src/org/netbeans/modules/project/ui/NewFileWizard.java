@@ -47,8 +47,11 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.text.MessageFormat;
 import javax.swing.JComponent;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.project.uiapi.ProjectChooserFactory;
 import org.netbeans.spi.project.ui.templates.support.Templates;
@@ -62,18 +65,21 @@ import org.openide.util.Utilities;
 
 public final class NewFileWizard extends TemplateWizard {
 
+    @NullAllowed
     private Project currP;
     private MessageFormat format;
     // private String[] recommendedTypes;
+
+    @CheckForNull
     private Project getCurrentProject() {
         return currP;
     }
 
-    private void setCurrentProject(Project p) {
+    private void setCurrentProject(@NullAllowed Project p) {
         this.currP = p;
     }
 
-    public NewFileWizard(Project project /*, String recommendedTypes[] */) {
+    public NewFileWizard(@NullAllowed Project project /*, String recommendedTypes[] */) {
         setCurrentProject(project);
         putProperty(ProjectChooserFactory.WIZARD_KEY_PROJECT, getCurrentProject());
         format = new MessageFormat(NbBundle.getBundle(NewFileWizard.class).getString("LBL_NewFileWizard_MessageFormat"));
@@ -151,8 +157,17 @@ public final class NewFileWizard extends TemplateWizard {
 
     @Override
     protected WizardDescriptor.Panel<WizardDescriptor> createTargetChooser() {
-        Sources c = ProjectUtils.getSources(getCurrentProject());
-        return Templates.buildSimpleTargetChooser(getCurrentProject(), c.getSourceGroups(Sources.TYPE_GENERIC)).create();
+        Project project = getCurrentProject();
+        SourceGroup[] sourceGroups;
+        if (project != null) {
+            Sources c = ProjectUtils.getSources(project);
+            sourceGroups = c.getSourceGroups(Sources.TYPE_GENERIC);
+        }
+        else {
+            sourceGroups = new SourceGroup[0];
+        }
+
+        return Templates.buildSimpleTargetChooser(project, sourceGroups).create();
     }
 }
  

@@ -176,6 +176,10 @@ public class HintsTestBase extends NbTestCase {
         return DATA_EXTENSION;
     }
     
+    protected boolean onlyMainResource() {
+        return false;
+    }
+    
     protected String layer() {
         return "org/netbeans/modules/java/hints/resources/layer.xml";
     }
@@ -208,10 +212,11 @@ public class HintsTestBase extends NbTestCase {
         
         String testPackagePath = testDataExtension();
         File   testPackageFile = new File(getDataDir(), testPackagePath);
+        final String testFileName = capitalizedName.substring(capitalizedName.lastIndexOf('.') + 1) + ".java";
         
         String[] names = testPackageFile.list(new FilenameFilter() {
             public boolean accept(File dir, String name) {
-                if (name.endsWith(".java"))
+                if (name.equals(testFileName) || (!onlyMainResource() && name.endsWith(".java")))
                     return true;
                 
                 return false;
@@ -228,9 +233,7 @@ public class HintsTestBase extends NbTestCase {
         
         packageRoot.refresh();
         
-        capitalizedName = capitalizedName.substring(capitalizedName.lastIndexOf('.') + 1);
-        
-        testSource = packageRoot.getFileObject(capitalizedName + ".java");
+        testSource = packageRoot.getFileObject(testFileName);
         
         assertNotNull(testSource);
 

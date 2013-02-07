@@ -146,6 +146,7 @@ public class TemplateProcessor extends LayerGeneratingProcessor {
             }
             f.stringvalue("templateCategory", sb.toString());
         }
+        f.boolvalue("requireProject", t.requireProject());
         f.write();
     }
 

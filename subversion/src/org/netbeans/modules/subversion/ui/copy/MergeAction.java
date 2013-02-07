@@ -45,6 +45,7 @@
 package org.netbeans.modules.subversion.ui.copy;
 
 import java.io.File;
+import java.util.concurrent.Callable;
 import org.netbeans.modules.subversion.FileInformation;
 import org.netbeans.modules.subversion.RepositoryFile;
 import org.netbeans.modules.subversion.Subversion;
@@ -147,9 +148,9 @@ public class MergeAction extends ContextAction {
      * @param support
      * @param partOfMultiFile 
      */
-    private void performMerge(Merge merge, RepositoryFile repositoryRoot, File file, SvnProgressSupport support, boolean partOfMultiFile) {
+    private void performMerge(final Merge merge, RepositoryFile repositoryRoot, final File file, SvnProgressSupport support, boolean partOfMultiFile) {
         File[][] split = Utils.splitFlatOthers(new File[] {file} );
-        boolean recursive;
+        final boolean recursive;
         // there can be only 1 root file
         if(split[0].length > 0) {
             recursive = false;
@@ -158,7 +159,7 @@ public class MergeAction extends ContextAction {
         }                
 
         try {
-            SvnClient client;
+            final SvnClient client;
             try {
                 client = Subversion.getInstance().getClient(repositoryRoot.getRepositoryUrl());
             } catch (SVNClientException ex) {
@@ -171,7 +172,7 @@ public class MergeAction extends ContextAction {
             }
             
             SVNUrl endUrl = merge.getMergeEndRepositoryFile().getFileUrl();
-            SVNRevision endRevision = merge.getMergeEndRevision();
+            final SVNRevision endRevision = merge.getMergeEndRevision();
 
             final RepositoryFile mergeStartRepositoryFile = merge.getMergeStartRepositoryFile();
             SVNUrl startUrl = mergeStartRepositoryFile != null ? mergeStartRepositoryFile.getFileUrl() : null;
@@ -203,15 +204,28 @@ public class MergeAction extends ContextAction {
             if(support.isCanceled()) {
                 return;
             }
-            client.merge(startUrl,
-                         startRevision,
-                         endUrl,
-                         endRevision,
-                         file,
-                         false,
-                         recursive,
-                         false,
-                         merge.isIgnoreAncestry());                              
+            final SVNUrl fStartUrl = startUrl;
+            final SVNUrl fEndUrl = endUrl;
+            final SVNRevision fStartRevision = startRevision;
+            SvnUtils.runWithoutIndexing(new Callable<Void>() {
+                @Override
+                public Void call () throws Exception {
+                    if (endRevision == null) {
+                        client.mergeReintegrate(fEndUrl, SVNRevision.HEAD, file, false, false);
+                    } else {
+                        client.merge(fStartUrl,
+                                 fStartRevision,
+                                 fEndUrl,
+                                 endRevision,
+                                 file,
+                                 false,
+                                 recursive,
+                                 false,
+                                 merge.isIgnoreAncestry());
+                    }
+                    return null;
+                }
+            }, file);
 
         } catch (SVNClientException ex) {
             support.annotate(ex);

@@ -48,6 +48,7 @@
 #define _WIN32_WINNT 0x05010100
 #endif
 
+#include <shlobj.h>
 #include "nblauncher.h"
 #include "../../../o.n.bootstrap/launcher/windows/utilsfuncs.h"
 #include "../../../o.n.bootstrap/launcher/windows/argnames.h"
@@ -98,9 +99,9 @@ int NbLauncher::start(char *cmdLine) {
 
 int NbLauncher::start(int argc, char *argv[]) {
     SetErrorMode(SetErrorMode(0) | SEM_FAILCRITICALERRORS | SEM_NOOPENFILEERRORBOX);
-
+    
     DWORD parentProcID = 0;
-    if (!checkLoggingArg(argc, argv, true) || !setupProcess(argc, argv, parentProcID, CON_ATTACH_MSG) || !initBaseNames() || !readClusterFile()) {
+    if (!initBaseNames() || !checkLoggingArg(argc, argv, true) || !setupProcess(argc, argv, parentProcID, CON_ATTACH_MSG) ||  !readClusterFile()) {
         return -1;
     }
 
@@ -204,9 +205,18 @@ bool NbLauncher::initBaseNames() {
     if (!bslash) {
         return false;
     }
-    *bslash = '\0';
+    *bslash = '\0';        
 
     baseDir = path;
+    
+    //check baseDir for non-ASCII chars
+    for (size_t i = 0; i < baseDir.size(); ++i) {
+        if (!(baseDir[i]>=' ' && baseDir[i]<='~')) {
+            logErr(false, true, "Cannot be run from folder that contains non-ASCII characters in path.");
+            return false;
+        }
+    }
+    
     logMsg("Base dir: %s", baseDir.c_str());
     return true;
 }

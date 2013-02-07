@@ -85,7 +85,7 @@ public class MergeTest extends AbstractHgTestCase {
         File mainFile;
         commit(mainFile = createFile(mainFol, "file2"));
         // fetch the changes to the clone
-        HgCommand.doFetch(newRepo, new HgURL(getWorkTreeDir()), NULL_LOGGER);
+        HgCommand.doFetch(newRepo, new HgURL(getWorkTreeDir()), null, true, NULL_LOGGER);
 
         // do changes in the default repo
         write(mainFile, "a");
@@ -94,7 +94,7 @@ public class MergeTest extends AbstractHgTestCase {
         write(fileInOtherRepo, "b");
         HgCommand.doCommit(newRepo, Collections.singletonList(fileInOtherRepo), "conflict", NULL_LOGGER);
         // fetch
-        final List<String> list = HgCommand.doFetch(newRepo, new HgURL(getWorkTreeDir()), NULL_LOGGER);
+        final List<String> list = HgCommand.doFetch(newRepo, new HgURL(getWorkTreeDir()), null, true, NULL_LOGGER);
         assertFalse(list.isEmpty());
         Logger LOG = Logger.getLogger(MergeAction.class.getName());
         final Set<String> conflictedPaths = new HashSet<String>();
@@ -120,7 +120,7 @@ public class MergeTest extends AbstractHgTestCase {
             @Override
             public void run() {
                 try {
-                    MergeAction.handleMergeOutput(newRepo, list, true, NULL_LOGGER);
+                    MergeAction.handleMergeOutput(newRepo, list, NULL_LOGGER);
                 } catch (HgException ex) {
                     Exceptions.printStackTrace(ex);
                 }

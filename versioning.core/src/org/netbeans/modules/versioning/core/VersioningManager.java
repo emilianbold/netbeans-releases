@@ -574,9 +574,10 @@ public class VersioningManager implements PropertyChangeListener, ChangeListener
 
     public void versionedRootsChanged() {
         versionedRootsChanged(null);
+        propertyChangeSupport.firePropertyChange(EVENT_VERSIONED_ROOTS, null, null);
     }
     
-    public void versionedRootsChanged(VersioningSystem owner) {
+    private void versionedRootsChanged(VersioningSystem owner) {
         flushCachedContext();
         flushFileOwnerCache();
         fireFileStatusChanged(null);

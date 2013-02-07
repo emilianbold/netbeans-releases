@@ -63,7 +63,6 @@ import org.netbeans.modules.mercurial.ui.branch.HgBranch;
 import org.netbeans.modules.mercurial.ui.diff.DiffSetupSource;
 import org.netbeans.modules.mercurial.ui.diff.ExportDiffAction;
 import org.netbeans.modules.mercurial.ui.diff.Setup;
-import org.netbeans.modules.mercurial.ui.rollback.BackoutAction;
 import org.netbeans.modules.mercurial.ui.update.RevertModificationsAction;
 import org.netbeans.modules.versioning.history.AbstractSummaryView;
 import org.netbeans.modules.versioning.history.AbstractSummaryView.SummaryViewMaster.SearchHighlight;
@@ -188,8 +187,8 @@ final class SummaryView extends AbstractSummaryView implements DiffSetupSource {
                         diffPrevious(master, revision);
                     }
                 });
-                actions.addAll(Arrays.asList(revision.getActions()));
             }
+            actions.addAll(Arrays.asList(revision.getActions()));
             return actions.toArray(new Action[actions.size()]);
         }
 
@@ -388,9 +387,6 @@ final class SummaryView extends AbstractSummaryView implements DiffSetupSource {
 
     @Override
     protected void onPopup (JComponent invoker, Point p, final Object[] selection) {
-        if (master.isIncomingSearch()) {
-            return;
-        }
         JPopupMenu menu = new JPopupMenu();
         
         String previousRevision = null;
@@ -442,78 +438,80 @@ final class SummaryView extends AbstractSummaryView implements DiffSetupSource {
         final boolean annotationsEnabled = viewEnabled;
         final boolean diffToPrevEnabled = selection.length == 1;
         
-        if (revision > 0) {
-            menu.add(new JMenuItem(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_DiffToPrevious", "" + previousRevision )) { // NOI18N
-                {
-                    setEnabled(diffToPrevEnabled);
+        if (master.isIncomingSearch()) {
+            if (revisionSelected) {
+                for (Action a : container.getActions()) {
+                    menu.add(new JMenuItem(a));
                 }
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    diffPrevious(master, selection[0]);
-                }
-            }));
-        }
+            } else {
+                return;
+            }
+        } else {
+            if (revision > 0) {
+                menu.add(new JMenuItem(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_DiffToPrevious", "" + previousRevision )) { // NOI18N
+                    {
+                        setEnabled(diffToPrevEnabled);
+                    }
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        diffPrevious(master, selection[0]);
+                    }
+                }));
+            }
 
-        if (revisionSelected) {
-            menu.add(new JMenuItem(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_RollbackChange")) { // NOI18N
+            if (revisionSelected) {
+                for (Action a : container.getActions()) {
+                    menu.add(new JMenuItem(a));
+                }
+            } else {
+                menu.add(new JMenuItem(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_RollbackTo", "" + revision)) { // NOI18N
+                    {                    
+                        setEnabled(revertToEnabled);
+                    }
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        revertModifications(selection);
+                    }                
+                }));
 
-                {
-                    setEnabled(backoutChangeEnabled);
-                }
-
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    container.backout();
-                }
-            }));
-        }else{
-            menu.add(new JMenuItem(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_RollbackTo", "" + revision)) { // NOI18N
-                {                    
-                    setEnabled(revertToEnabled);
-                }
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    revertModifications(selection);
-                }                
-            }));
-            
-            menu.add(new JMenuItem(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_View")) { // NOI18N
-                {
-                    setEnabled(viewEnabled);
-                }
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    Mercurial.getInstance().getParallelRequestProcessor().post(new Runnable() {
-                        @Override
-                        public void run() {
-                            drev[0].viewFile(false);
-                        }
-                    });
-                }
-            }));
-            menu.add(new JMenuItem(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_ShowAnnotations")) { // NOI18N
-                {
-                    setEnabled(annotationsEnabled);
-                }
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    Mercurial.getInstance().getParallelRequestProcessor().post(new Runnable() {
-                        @Override
-                        public void run() {
-                            drev[0].viewFile(true);
-                        }
-                    });
-                }
-            }));
-            menu.add(new JMenuItem(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_ExportFileDiff")) { // NOI18N
-                {
-                    setEnabled(viewEnabled);
-                }
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    exportFileDiff(drev[0]);
-                }
-            }));
+                menu.add(new JMenuItem(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_View")) { // NOI18N
+                    {
+                        setEnabled(viewEnabled);
+                    }
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        Mercurial.getInstance().getParallelRequestProcessor().post(new Runnable() {
+                            @Override
+                            public void run() {
+                                drev[0].viewFile(false);
+                            }
+                        });
+                    }
+                }));
+                menu.add(new JMenuItem(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_ShowAnnotations")) { // NOI18N
+                    {
+                        setEnabled(annotationsEnabled);
+                    }
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        Mercurial.getInstance().getParallelRequestProcessor().post(new Runnable() {
+                            @Override
+                            public void run() {
+                                drev[0].viewFile(true);
+                            }
+                        });
+                    }
+                }));
+                menu.add(new JMenuItem(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_ExportFileDiff")) { // NOI18N
+                    {
+                        setEnabled(viewEnabled);
+                    }
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        exportFileDiff(drev[0]);
+                    }
+                }));
+            }
         }
 
         menu.show(invoker, p.x, p.y);

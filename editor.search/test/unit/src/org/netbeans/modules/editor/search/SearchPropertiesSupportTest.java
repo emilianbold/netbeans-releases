@@ -43,7 +43,6 @@ package org.netbeans.modules.editor.search;
 
 import org.junit.Test;
 import static org.junit.Assert.*;
-import org.netbeans.modules.editor.lib2.search.EditorFindSupport;
 import org.netbeans.modules.editor.search.SearchPropertiesSupport.SearchProperties;
 
 public class SearchPropertiesSupportTest {

@@ -310,13 +310,8 @@ final class ViewBuilder {
             // Either endAffectedOffset points to begining of paragraph or inside it
             endCreationOffset = endPView.getStartOffset();
             if (endCreationOffset < endAffectedOffset) { // Inside paragraph
+                endCreationOffset += endPView.getLength();
                 endCreationIndex++;
-                if (endCreationIndex < docView.getViewCount()) {
-                    endPView = docView.getParagraphView(endCreationIndex);
-                    endCreationOffset = endPView.getStartOffset();
-                } else {
-                    endCreationOffset = docView.getDocument().getLength();
-                }
             }
             modOffset = endModOffset = Integer.MIN_VALUE; // No mod
             matchOffset = endCreationOffset;
@@ -458,9 +453,9 @@ final class ViewBuilder {
                     startCreationPIndex = -1;
                 } else { // inside or past docView's end
                     // docView.startOffset stays at current value
-                    if (modOffset == startOffset) {
+                    if (modOffset == startOffset) { // Removal right at docView's start offset
                         startCreationPIndex = 0;
-                    } else {
+                    } else { // Removal starts inside docView
                         // Search for modOffset - 1 since (multiple) positions might get moved to modOffset
                         // due to removal and bin-search would find first one of them for modOffset
                         startCreationPIndex = docView.getViewIndex(modOffset - 1);
@@ -487,15 +482,16 @@ final class ViewBuilder {
                 lastAffectedPView = startCreationPView;
                 int lastAffectedPViewOffset = startCreationPViewOffset;
                 // If local offset not within view then goto next pView if it exists
-                int pViewLen;
-                while ((lastAffectedLocalOffset = Math.min(endRemoveOffset, endOffset) - lastAffectedPViewOffset) >
-                            (pViewLen = lastAffectedPView.getLength()) &&
-                        (lastAffectedPIndex + 1 < pViewCount))
-                {
+                int pViewLen = lastAffectedPView.getLength();
+                lastAffectedLocalOffset = endRemoveOffset - lastAffectedPViewOffset;
+                while (lastAffectedLocalOffset > pViewLen && lastAffectedPIndex + 1 < pViewCount) {
                     lastAffectedPViewOffset += pViewLen;
                     lastAffectedPIndex++;
                     lastAffectedPView = docView.getParagraphView(lastAffectedPIndex);
+                    pViewLen = lastAffectedPView.getLength();
+                    lastAffectedLocalOffset = endRemoveOffset - lastAffectedPViewOffset;
                 }
+                lastAffectedLocalOffset = Math.min(lastAffectedLocalOffset, pViewLen);
             }
         } // END-of-REMOVAL handling
         
@@ -820,7 +816,6 @@ final class ViewBuilder {
                 // Only the bottommost highlights-view-factory should always respect the the limitOffset.
                 EditorView createdView = null;
                 int createdViewEndOffset;
-                boolean creationFailed = false;
                 if (createLocalViews) { // Regular views creation
                     // Prepare original view if possible
                     EditorView origView; // null means no view to reuse
@@ -897,7 +892,6 @@ final class ViewBuilder {
                     
                     createdView = state.factory.createView(creationOffset, limitOffset, forcedLimit, origView, nextOrigViewOffset);
                     if (createdView == null) { // Creation refused
-                        creationFailed = true;
                         createdViewEndOffset = -1; // Ignored; will not reach updateLine()
                     } else {
                         int viewLength = createdView.getLength();
@@ -906,13 +900,11 @@ final class ViewBuilder {
                     }
 
                 } else { // Do not create local views
+                    // createdViewEndOffset may be -1 to signal that factory does not want to create view here.
                     createdViewEndOffset = state.factory.viewEndOffset(creationOffset, limitOffset, forcedLimit);
-                    if (createdViewEndOffset == -1) { // Refused => Use a next factory
-                        creationFailed = true;
-                    }
                 }
 
-                if (creationFailed) {
+                if (createdViewEndOffset == -1) { // View creation refused by this factory
                     // Rescan the factory at next offset since it may request another view creation
                     // within the area which may lower limitOffset
                     state.updateNextViewStartOffset(creationOffset + 1);
@@ -920,7 +912,7 @@ final class ViewBuilder {
                         forcedLimit = true;
                         limitOffset = state.nextViewStartOffset;
                     }
-                    continue;
+                    continue; // Continue with next factory to possibly create a view
                 }
 
                 updateLine(createdViewEndOffset);
@@ -933,26 +925,23 @@ final class ViewBuilder {
                 // If firstReplace is not active then remove full paragraph views
                 // (again to avoid re-parenting of local views to new paragraph views).
                 if (eolView && inFirstReplace) { // Rest of views on first pagaraph view will be thrown away
-                    // Remove local views till end of first paragraph view
-                    firstReplace.setRemoveCount(firstReplace.view.getViewCount() - firstReplace.index);
-                    int index = docReplace.removeEndIndex();
-                    if (index < docView.getViewCount()) {
-                        matchOffset = docView.getParagraphView(index).getStartOffset();
-                    } else {
-                        matchOffset = docView.getEndOffset();
+                    // Ensure that local views till end of first paragraph view will be thrown away
+                    if (!firstReplace.isRemovedTillEnd()) {
+                        // Increase matchOffset by remaining views on firstReplace's view
+                        int remainingLenOnParagraph = firstReplace.view.getLength() - 
+                                firstReplace.view.getLocalOffset(firstReplace.removeEndIndex());
+                        matchOffset += remainingLenOnParagraph;
+                        firstReplace.removeTillEnd();
                     }
                 }
                 if (createdViewEndOffset > matchOffset) {
                     boolean matchOffsetValid = false;
                     if (inFirstReplace) { // Replacing in firstReplace
-                        int index = firstReplace.removeEndIndex();
-                        int localViewCount = firstReplace.view.getViewCount();
-                        while (index < localViewCount) {
+                        while (!firstReplace.isRemovedTillEnd()) {
                             // Use getLength() instead of getEndOffset() since for intra-line mods
                             // with modLength != 0 the views do not have updated offsets
-                            matchOffset += localReplace.view.getEditorView(index).getLength();
+                            matchOffset += localReplace.view.getEditorView(firstReplace.removeEndIndex()).getLength();
                             localReplace.setRemoveCount(localReplace.getRemoveCount() + 1);
-                            index++;
                             // For eolView remove all till end; otherwise only until matchOffset is ok
                             if (createdViewEndOffset <= matchOffset) {
                                 matchOffsetValid = true;
@@ -961,12 +950,9 @@ final class ViewBuilder {
                         }
                     }
                     if (!matchOffsetValid) {
-                        int pViewCount = docView.getViewCount();
-                        int index = docReplace.removeEndIndex();
-                        while (index < pViewCount) {
-                            matchOffset += docView.getParagraphView(index).getLength();
+                        while (!docReplace.isRemovedTillEnd()) {
+                            matchOffset += docView.getParagraphView(docReplace.removeEndIndex()).getLength();
                             docReplace.setRemoveCount(docReplace.getRemoveCount() + 1);
-                            index++;
                             if (createdViewEndOffset <= matchOffset) {
                                 break;
                             }
@@ -977,13 +963,10 @@ final class ViewBuilder {
                     // Check for condition in ViewUpdatesTest.testInsertAndRemoveNewline()
                     // when backspace pressed on begining of an empty line then rebuilding
                     // could end up with a line not ended by NewlineView.
-                    if (inFirstReplace && !eolView && localReplace.removeEndIndex() ==
-                            localReplace.view.getViewCount()) // Would end up without NewlineView
-                    {
+                    if (inFirstReplace && !eolView && localReplace.isRemovedTillEnd()) {
                         // Rebuild next paragraph
-                        int index = docReplace.removeEndIndex();
-                        if (index < docView.getViewCount()) {
-                            matchOffset += docView.getParagraphView(index).getLength();
+                        if (!docReplace.isRemovedTillEnd()) {
+                            matchOffset += docView.getParagraphView(docReplace.removeEndIndex()).getLength();
                             docReplace.setRemoveCount(docReplace.getRemoveCount() + 1);
                         }
                     }
@@ -1232,6 +1215,9 @@ final class ViewBuilder {
             endY = docView.getY(docReplace.index);
             deltaY = 0d;
         }
+        // Update end offset of the docView since it might extend beyond boundary computed
+        // before view building process.
+        docView.updateEndOffset();
         
         // For accurate span force computation of text layouts
         Rectangle2D.Double docViewRect = docView.getAllocationCopy();
@@ -1244,7 +1230,12 @@ final class ViewBuilder {
             for (; pIndex < endIndex; pIndex++) {
                 ParagraphView pView = docView.getParagraphView(pIndex);
                 Shape pAlloc = docView.getChildAllocation(pIndex, docViewRect);
-                assert (!pView.isChildrenNull()) : "Null children for accurate span"; // NOI18N
+                if (pView.isChildrenNull()) {
+                    LOG.info("Null children for accurate span at pIndex=" + // NOI18N
+                        pIndex + "\nviewBuilder:\n" + this); // NOI18N
+//                        "\n\ndocView:\n" + docView.toStringDetailNeedsLock()); // NOI18N
+                    break;
+                }
                 pView.checkLayoutUpdate(pIndex, ViewUtils.shapeAsRect(pAlloc));
             }
         }
@@ -1292,6 +1283,7 @@ final class ViewBuilder {
     public String toString() {
         StringBuilder sb = new StringBuilder(200);
         sb.append("-------- ViewBuilder dump -------\n"). // NOI18N
+                append("docLen=").append(docReplace.view.getDocument().getLength()).append('\n'). // NOI18N
                 append("start/endCreationOffset:<").append(startCreationOffset). // NOI18N
                 append(",").append(endCreationOffset).append(">\n").
                 append("creationOffset=").append(creationOffset).append('\n').

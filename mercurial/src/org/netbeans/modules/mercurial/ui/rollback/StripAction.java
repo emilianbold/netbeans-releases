@@ -47,6 +47,7 @@ import org.netbeans.modules.versioning.spi.VCSContext;
 
 import java.io.File;
 import java.util.List;
+import java.util.concurrent.Callable;
 import org.netbeans.modules.mercurial.FileInformation;
 import org.netbeans.modules.mercurial.HgException;
 import org.netbeans.modules.mercurial.HgProgressSupport;
@@ -59,8 +60,6 @@ import org.netbeans.modules.mercurial.ui.update.ConflictResolvedAction;
 import org.netbeans.modules.mercurial.ui.actions.ContextAction;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
 
 /**
@@ -114,7 +113,7 @@ public class StripAction extends ContextAction {
                         return;
                     }
                 }
-                OutputLogger logger = getLogger();
+                final OutputLogger logger = getLogger();
                 try {
                     logger.outputInRed(
                                 NbBundle.getMessage(StripAction.class,
@@ -125,7 +124,15 @@ public class StripAction extends ContextAction {
                     logger.output(
                                 NbBundle.getMessage(StripAction.class,
                                 "MSG_STRIP_INFO_SEP", revStr, root.getAbsolutePath())); // NOI18N
-                    List<String> list = HgCommand.doStrip(root, revStr, false, doBackup, logger);
+                    final String revision = revStr;
+                    List<String> list = HgUtils.runWithoutIndexing(new Callable<List<String>>() {
+
+                        @Override
+                        public List<String> call () throws HgException {
+                            return HgCommand.doStrip(root, revision, false, doBackup, logger);
+                        }
+
+                    }, root);
                     
                     if(list != null && !list.isEmpty()){                      
                         logger.output(list);

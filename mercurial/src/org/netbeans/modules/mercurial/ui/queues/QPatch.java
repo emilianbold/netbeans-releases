@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.mercurial.ui.queues;
 
+import org.openide.util.NbBundle;
+
 /**
  *
  * @author ondra
@@ -51,10 +53,13 @@ public class QPatch {
     private final String id;
     private final String message;
     private final boolean applied;
+    private final Queue queue;
 
-    public QPatch (String id, String message, boolean applied) {
+    @NbBundle.Messages("MSG_QPatch_Unknown_Message=Unknown")
+    public QPatch (String id, String message, Queue queue, boolean applied) {
         this.id = id;
-        this.message = message;
+        this.message = message == null ? Bundle.MSG_QPatch_Unknown_Message() : message;
+        this.queue = queue;
         this.applied = applied;
     }
 
@@ -68,6 +73,10 @@ public class QPatch {
 
     public boolean isApplied () {
         return applied;
+    }
+
+    public Queue getQueue () {
+        return queue;
     }
 
 }

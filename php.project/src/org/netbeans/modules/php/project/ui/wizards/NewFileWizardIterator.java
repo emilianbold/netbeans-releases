@@ -246,7 +246,7 @@ public final class NewFileWizardIterator implements WizardDescriptor.Instantiati
         PhpProject phpProject = getPhpProject();
         if (phpProject != null) {
             // php project found
-            if (groups != null && groups.length == 0 && !PhpProjectValidator.isFatallyBroken(phpProject)) {
+            if (groups.length == 0 && !PhpProjectValidator.isFatallyBroken(phpProject)) {
                 // sources found but no source roots?!
                 FileObject sources = ProjectPropertiesSupport.getSourcesDirectory(phpProject);
                 FileObject tests = ProjectPropertiesSupport.getTestDirectory(phpProject, false);

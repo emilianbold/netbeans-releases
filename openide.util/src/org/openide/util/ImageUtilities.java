@@ -44,6 +44,7 @@
 
 package org.openide.util;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.HeadlessException;
@@ -77,6 +78,7 @@ import javax.imageio.stream.ImageInputStream;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
+import javax.swing.UIManager;
 
 /** 
  * Useful static methods for manipulation with images/icons, results are cached.
@@ -94,6 +96,8 @@ public final class ImageUtilities {
     private static final Map<String,ActiveRef<String>> localizedCache = new HashMap<String,ActiveRef<String>>(128);
     private static final Map<CompositeImageKey,ActiveRef<CompositeImageKey>> compositeCache = new HashMap<CompositeImageKey,ActiveRef<CompositeImageKey>>(128);
     private static final Map<ToolTipImageKey, ActiveRef<ToolTipImageKey>> imageToolTipCache = new HashMap<ToolTipImageKey, ActiveRef<ToolTipImageKey>>(128);
+
+    private static RGBImageFilter imageIconFilter = null;
 
     /** Resource paths for which we have had to strip initial slash.
      * @see "#20072"
@@ -160,9 +164,26 @@ public final class ImageUtilities {
      * @return ImageIcon or null, if the icon cannot be loaded.
      * @since 7.22
      */
-    public static final ImageIcon loadImageIcon(String resource, boolean localized) {
-        Image image = getIcon(resource, localized);
-        return image == null ? null : (ImageIcon) image2Icon(image);
+    public static final ImageIcon loadImageIcon( String resource, boolean localized ) {
+        Image image = getIcon( resource, localized );
+        if( image == null ) {
+            return null;
+        }
+        RGBImageFilter imageFilter = getImageIconFilter();
+        if( null != imageFilter ) {
+            image = Toolkit.getDefaultToolkit().createImage( new FilteredImageSource( image.getSource(), imageFilter ) );
+        }
+        return ( ImageIcon ) image2Icon( image );
+    }
+
+    private static RGBImageFilter getImageIconFilter() {
+        if( null == imageIconFilter ) {
+            Object obj = UIManager.get( "nb.imageicon.filter"); //NOI18N
+            if( obj instanceof RGBImageFilter ) {
+                imageIconFilter = ( RGBImageFilter ) obj;
+            }
+        }
+        return imageIconFilter;
     }
 
     /** This method merges two images into the new one. The second image is drawn

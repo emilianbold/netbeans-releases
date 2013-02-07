@@ -49,6 +49,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import javax.swing.JOptionPane;
 import org.netbeans.modules.mercurial.FileInformation;
@@ -67,7 +68,6 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -114,32 +114,42 @@ public final class DeleteLocalAction extends ContextAction {
         HgProgressSupport support = new HgProgressSupport() {
             @Override
             public void perform() {
-                Map<File, Set<File>> sortedFiles = HgUtils.sortUnderRepository(files);
-                for (Map.Entry<File, Set<File>> e : sortedFiles.entrySet()) {
-                    try {
-                        HgCommand.doRevert(e.getKey(), new ArrayList<File>(e.getValue()), null, false, OutputLogger.getLogger(null));
-                    } catch (HgException ex) {
-                        Mercurial.LOG.log(Level.INFO, null, ex);
-                    }
-                    for (File file : e.getValue()) {
-                        if(isCanceled()) {
-                            return;
-                        }
-                        FileObject fo = FileUtil.toFileObject(file);
-                        if (fo != null) {
-                            FileLock lock = null;
-                            try {
-                                lock = fo.lock();                    
-                                fo.delete(lock);       
-                            } catch (IOException ex) {
-                                Mercurial.LOG.log(Level.SEVERE, NbBundle.getMessage(DeleteLocalAction.class, "MSG_Cannot_lock", file.getAbsolutePath()), e); //NOI18N
-                            } finally {
-                                if (lock != null) {
-                                    lock.releaseLock();
+                final Map<File, Set<File>> sortedFiles = HgUtils.sortUnderRepository(files);
+                try {
+                    HgUtils.runWithoutIndexing(new Callable<Void>() {
+                        @Override
+                        public Void call () throws Exception {
+                            for (Map.Entry<File, Set<File>> e : sortedFiles.entrySet()) {
+                                try {
+                                    HgCommand.doRevert(e.getKey(), new ArrayList<File>(e.getValue()), null, false, OutputLogger.getLogger(null));
+                                } catch (HgException ex) {
+                                    Mercurial.LOG.log(Level.INFO, null, ex);
+                                }
+                                for (File file : e.getValue()) {
+                                    if(isCanceled()) {
+                                        return null;
+                                    }
+                                    FileObject fo = FileUtil.toFileObject(file);
+                                    if (fo != null) {
+                                        FileLock lock = null;
+                                        try {
+                                            lock = fo.lock();                    
+                                            fo.delete(lock);       
+                                        } catch (IOException ex) {
+                                            Mercurial.LOG.log(Level.SEVERE, NbBundle.getMessage(DeleteLocalAction.class, "MSG_Cannot_lock", file.getAbsolutePath()), e); //NOI18N
+                                        } finally {
+                                            if (lock != null) {
+                                                lock.releaseLock();
+                                            }
+                                        }
+                                    }
                                 }
                             }
+                            return null;
                         }
-                    }
+                    }, files.toArray(new File[files.size()]));
+                } catch (HgException ex) {
+                    HgUtils.notifyException(ex);
                 }
             }
         };

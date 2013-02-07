@@ -213,7 +213,9 @@ public final class HighlightsViewFactory extends EditorViewFactory implements Hi
     @Override
     public EditorView createView(int startOffset, int limitOffset, boolean forcedLimit,
     EditorView origView, int nextOrigViewOffset) {
-        assert (startOffset < limitOffset) : "startOffset=" + startOffset + " >= limitOffset=" + limitOffset; // NOI18N
+        assert (startOffset >= 0) : "Invalid startOffset=" + startOffset + " < 0\nHVF: " + this; // NOI18N
+        assert (startOffset < limitOffset) : "startOffset=" + startOffset + // NOI18N
+                " >= limitOffset=" + limitOffset + "\nHVF: " + this; // NOI18N
         // Possibly update lineEndOffset since updateHighlight() will read till it
         updateLineEndOffset(startOffset);
         HighlightsList hList = highlightsReader.highlightsList();
@@ -406,6 +408,18 @@ public final class HighlightsViewFactory extends EditorViewFactory implements Hi
                 } // else: can happen when updateHighlightsContainer() being called => ignore
             }
         });
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder(100);
+        sb.append("lineIndex=").append(lineIndex). // NOI18N
+                append(", lineEndOffset=").append(lineEndOffset). // NOI18N
+                append(", charType=").append(charType). // NOI18N
+                append(", nextTabOrRTLOffset=").append(nextTabOrRTLOffset). // NOI18N
+                append(", nextCharType=").append(nextCharType); // NOI18N
+        sb.append(", ").append(super.toString());
+        return sb.toString();
     }
 
     public static final class HighlightsFactory implements EditorViewFactory.Factory {

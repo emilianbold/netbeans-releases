@@ -54,6 +54,7 @@ import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -79,7 +80,6 @@ import org.openide.util.RequestProcessor.Task;
  */
 public class GitClientTest extends AbstractGitTestCase {
     private Logger indexingLogger;
-    private Logger invocationHandlerLogger;
 
     public GitClientTest(String name) {
         super(name);
@@ -94,94 +94,6 @@ public class GitClientTest extends AbstractGitTestCase {
         Field f = IndexingBridge.class.getDeclaredField("LOG");
         f.setAccessible(true);
         indexingLogger = (Logger) f.get(bridge);
-        f = GitClient.class.getDeclaredField("LOG");
-        f.setAccessible(true);
-        invocationHandlerLogger = (Logger) f.get(GitClient.class);
-    }
-
-    /**
-     * tests that we don't miss any command that needs to run in indexing bridge.
-     * If a method is added to GitClient, we NEED to evaluate and decide if it's a command running in the IB. If it is and we miss the command,
-     * the IDE might start scanning during the command execution.
-     * @throws Exception
-     */
-    public void testMethodsRunningInIndexingBridge () throws Exception {
-        Set<String> allTestedMethods = new HashSet<String>(Arrays.asList(
-                "add",
-                "addNotificationListener",
-                "blame",
-                "catFile",
-                "catIndexEntry",
-                "checkout",
-                "checkoutRevision",
-                "clean",
-                "commit",
-                "copyAfter",
-                "createBranch",
-                "createTag",
-                "deleteBranch",
-                "deleteTag",
-                "exportCommit",
-                "exportDiff",
-                "fetch",
-                "getBranches",
-                "getCommonAncestor",
-                "getConflicts",
-                "getPreviousRevision",
-                "getRemote",
-                "getRemotes",
-                "getRepositoryState",
-                "getStatus",
-                "getTags",
-                "getUser",
-                "ignore",
-                "init",
-                "listModifiedIndexEntries",
-                "listRemoteBranches",
-                "listRemoteTags",
-                "log",
-                "merge",
-                "pull",
-                "push",
-                "release",
-                "remove",
-                "removeNotificationListener",
-                "removeRemote",
-                "rename",
-                "reset",
-                "revert",
-                "setCallback",
-                "setRemote",
-                "unignore"));
-        Set<String> indexingBridgeMethods = new HashSet<String>(Arrays.asList(
-                "checkout",
-                "checkoutRevision",
-                "merge",
-                "pull",
-                "remove",
-                "reset",
-                "revert",
-                "clean"));
-        Field f = GitClient.class.getDeclaredField("INDEXING_BRIDGE_COMMANDS");
-        f.setAccessible(true);
-        Set<String> actualIBCommands = (Set<String>) f.get(GitClient.class);
-
-        Method[] methods = getClientMethods();
-        Arrays.sort(methods, new Comparator<Method>() {
-            @Override
-            public int compare(Method o1, Method o2) {
-                return o1.getName().compareTo(o2.getName());
-            }
-        });
-        for (Method m : methods) {
-            String methodName = m.getName();
-            assertTrue(methodName, allTestedMethods.contains(methodName));
-            if (indexingBridgeMethods.contains(methodName)) {
-                assertTrue(methodName, actualIBCommands.contains(methodName));
-                indexingBridgeMethods.remove(methodName);
-            }
-        }
-        assertTrue(indexingBridgeMethods.isEmpty());
     }
 
     /**
@@ -466,49 +378,88 @@ public class GitClientTest extends AbstractGitTestCase {
     }
 
     public void testIndexingBridge () throws Exception {
+        Git.LOG.setLevel(Level.ALL);
         indexingLogger.setLevel(Level.ALL);
         LogHandler h = new LogHandler();
         indexingLogger.addHandler(h);
+        Git.LOG.addHandler(h);
 
-        GitClient client = Git.getInstance().getClient(repositoryLocation);
-
-        File folder = new File(repositoryLocation, "folder");
-        File file = new File(folder, "file");
+        final File folder = new File(repositoryLocation, "folder");
+        final File file = new File(folder, "file");
         folder.mkdirs();
         file.createNewFile();
+        
         h.reset();
-        client.add(new File[] { file }, GitUtils.NULL_PROGRESS_MONITOR);
-        assertFalse(h.bridgeAccessed);
-
-        h.reset();
-        client.commit(new File[] { file }, "aaa", null, null, GitUtils.NULL_PROGRESS_MONITOR);
-        assertFalse(h.bridgeAccessed);
-
-        h.reset();
-        client.copyAfter(file, new File(folder, "file2"), GitUtils.NULL_PROGRESS_MONITOR);
-        assertFalse(h.bridgeAccessed);
-
-        h.reset();
-        client.getStatus(new File[] { file }, GitUtils.NULL_PROGRESS_MONITOR);
-        assertFalse(h.bridgeAccessed);
-
-        h.reset();
-        File anotherRepo = new File(repositoryLocation.getParentFile(), "wc2");
-        anotherRepo.mkdirs();
-        GitClient client2 = Git.getInstance().getClient(anotherRepo);
-        client2.init(GitUtils.NULL_PROGRESS_MONITOR);
-        assertFalse(h.bridgeAccessed);
-
-        h.reset();
-        h.setExpectedParents(new File[] { file.getParentFile() });
-        client.remove(new File[] { file }, false, GitUtils.NULL_PROGRESS_MONITOR);
-        assertTrue(h.bridgeAccessed);
+        h.setExpectedParents(new File[] { folder.getParentFile() });
+        GitUtils.runWithoutIndexing(new Callable<Void>() {
+            @Override
+            public Void call () throws Exception {
+                return null;
+            }
+        }, folder);
+        assertEquals(1, h.bridgeAccessed);
         assertTrue(h.expectedParents.isEmpty());
-
+        
         h.reset();
-        write(file, "aaa");
-        client.rename(file, new File(folder, "file2"), false, GitUtils.NULL_PROGRESS_MONITOR);
-        assertFalse(h.bridgeAccessed);
+        h.setExpectedParents(new File[0]);
+        // does not throw err
+        GitUtils.runWithoutIndexing(new Callable<Void>() {
+            @Override
+            public Void call () throws Exception {
+                return null;
+            }
+        });
+        assertEquals(0, h.bridgeAccessed);
+        
+        h.reset();
+        h.setExpectedParents(new File[] { folder.getParentFile(), folder });
+        GitUtils.runWithoutIndexing(new Callable<Void>() {
+            @Override
+            public Void call () throws Exception {
+                return null;
+            }
+        }, file, folder);
+        assertEquals(2, h.bridgeAccessed);
+        assertTrue(h.expectedParents.isEmpty());
+        
+        h.reset();
+        h.setExpectedParents(new File[] { folder.getParentFile() });
+        GitUtils.runWithoutIndexing(new Callable<Void>() {
+            @Override
+            public Void call () throws Exception {
+                GitUtils.runWithoutIndexing(new Callable<Void>() {
+                    @Override
+                    public Void call () throws Exception {
+                        return null;
+                    }
+                }, file);
+                return null;
+            }
+        }, folder);
+        assertEquals(1, h.bridgeAccessed);
+        assertTrue(h.expectedParents.isEmpty());
+        
+        h.reset();
+        h.setExpectedParents(new File[] { folder.getParentFile() });
+        GitUtils.runWithoutIndexing(new Callable<Void>() {
+            @Override
+            public Void call () throws Exception {
+                boolean error = false;
+                try {
+                    return GitUtils.runWithoutIndexing(new Callable<Void>() {
+                        @Override
+                        public Void call () throws Exception {
+                            return null;
+                        }
+                    }, folder);
+                } catch (AssertionError err) {
+                    assertTrue(err.getMessage().startsWith("Recursive call does not permit different roots"));
+                    error = true;
+                }
+                assertTrue(error);
+                return null;
+            }
+        }, file);
     }
 
     /**
@@ -669,9 +620,9 @@ public class GitClientTest extends AbstractGitTestCase {
             }
         });
 
-        invocationHandlerLogger.setLevel(Level.ALL);
+        Git.LOG.setLevel(Level.ALL);
         LogHandler handler = new LogHandler();
-        invocationHandlerLogger.addHandler(handler);
+        Git.LOG.addHandler(handler);
         Thread t2 = new Thread(new Runnable() {
             @Override
             public void run() {
@@ -703,9 +654,9 @@ public class GitClientTest extends AbstractGitTestCase {
         client.commit(new File[] { file }, "msg", null, null, GitUtils.NULL_PROGRESS_MONITOR);
 
         FileObject fo = FileUtil.toFileObject(file);
-        invocationHandlerLogger.setLevel(Level.ALL);
+        Git.LOG.setLevel(Level.ALL);
         LogHandler handler = new LogHandler();
-        invocationHandlerLogger.addHandler(handler);
+        Git.LOG.addHandler(handler);
 
         assertTrue(client.getStatus(new File[] { file }, GitUtils.NULL_PROGRESS_MONITOR).get(file).getStatusHeadIndex() == GitStatus.Status.STATUS_NORMAL);
         fo.delete();
@@ -1026,22 +977,22 @@ public class GitClientTest extends AbstractGitTestCase {
 
     private class LogHandler extends Handler {
 
-        boolean bridgeAccessed;
+        int bridgeAccessed;
         private HashSet<File> expectedParents;
         private boolean indexingBridgeCalled;
 
         @Override
         public void publish (LogRecord record) {
             if (record.getLoggerName().equals(indexingLogger.getName())) {
-                bridgeAccessed = true;
+                ++bridgeAccessed;
                 for (File f : expectedParents) {
                     if (record.getMessage().equals("scheduling for fs refresh: [" + f + "]")) {
                         expectedParents.remove(f);
                         break;
                     }
                 }
-            } else if (record.getLoggerName().equals(invocationHandlerLogger.getName())) {
-                if (record.getMessage().contains("Running command in indexing bridge")) {
+            } else if (record.getLoggerName().equals(Git.LOG.getName())) {
+                if (record.getMessage().contains("Running block in indexing bridge")) {
                     indexingBridgeCalled = true;
                 }
             }
@@ -1056,7 +1007,7 @@ public class GitClientTest extends AbstractGitTestCase {
         }
 
         private void reset() {
-            bridgeAccessed = false;
+            bridgeAccessed = 0;
             indexingBridgeCalled = false;
         }
 

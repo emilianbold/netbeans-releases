@@ -57,6 +57,9 @@ import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.HistoryRegistry;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.ui.diff.ExportDiffAction;
+import org.netbeans.modules.mercurial.ui.pull.FetchAction;
+import org.netbeans.modules.mercurial.ui.pull.PullAction;
+import org.netbeans.modules.mercurial.ui.push.PushAction;
 import org.netbeans.modules.mercurial.ui.rollback.BackoutAction;
 import org.netbeans.modules.mercurial.util.HgCommand;
 import org.netbeans.modules.mercurial.util.HgUtils;
@@ -87,14 +90,20 @@ public class RepositoryRevision {
      */ 
     private final List<Event> events = new ArrayList<Event>(5);
     private final List<Event> dummyEvents;
-    private final boolean incoming;
     private final Set<String> headOfBranches;
+    private final Kind kind;
+    
+    public static enum Kind {
+        INCOMING,
+        OUTGOING,
+        LOCAL
+    }
 
-    public RepositoryRevision(HgLogMessage message, File repositoryRoot, File[] selectionRoots, boolean isIncoming, Set<String> headOfBranches) {
+    public RepositoryRevision(HgLogMessage message, File repositoryRoot, Kind kind, File[] selectionRoots, Set<String> headOfBranches) {
         this.message = message;
         this.repositoryRoot = repositoryRoot;
         this.selectionRoots = selectionRoots;
-        this.incoming = isIncoming;
+        this.kind = kind;
         this.headOfBranches = headOfBranches;
         support = new PropertyChangeSupport(this);
         dummyEvents = prepareEvents(message.getDummyChangedPaths());
@@ -164,20 +173,85 @@ public class RepositoryRevision {
     boolean isHeadOfBranch (String branchName) {
         return headOfBranches.contains(branchName);
     }
-    
+
+    @NbBundle.Messages({
+        "CTL_SearchHistory.action.push=Push to default",
+        "# {0} - revision id", "MSG_SearchHistory.pushing=Pushing {0}",
+        "CTL_SearchHistory.action.pull=Pull from default",
+        "# {0} - revision id", "MSG_SearchHistory.pulling=Pulling {0}",
+        "CTL_SearchHistory.action.fetch=Fetch from default",
+        "# {0} - revision id", "MSG_SearchHistory.fetching=Fetching {0}"
+    })
     Action[] getActions () {
         List<Action> actions = new ArrayList<Action>();
-        actions.add(new AbstractAction(NbBundle.getMessage(RepositoryRevision.class, "CTL_SummaryView_BackoutRevision")) { //NOI18N
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                backout();
-            }
-        });
+        if (kind != Kind.INCOMING) {
+            actions.add(new AbstractAction(NbBundle.getMessage(RepositoryRevision.class, "CTL_SummaryView_BackoutRevision")) { //NOI18N
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    backout();
+                }
+            });
+        }
+        if (kind == Kind.OUTGOING) {
+            actions.add(new AbstractAction(Bundle.CTL_SearchHistory_action_push()) {
+                @Override
+                public void actionPerformed (ActionEvent e) {
+                    push();
+                }
+            });
+        }
+        if (kind == Kind.INCOMING) {
+            actions.add(new AbstractAction(Bundle.CTL_SearchHistory_action_pull()) {
+                @Override
+                public void actionPerformed (ActionEvent e) {
+                    pull();
+                }
+            });
+            actions.add(new AbstractAction(Bundle.CTL_SearchHistory_action_fetch()) {
+                @Override
+                public void actionPerformed (ActionEvent e) {
+                    fetch();
+                }
+            });
+        }
         return actions.toArray(new Action[actions.size()]);
     }
     
     void backout () {
         BackoutAction.backout(this);
+    }
+
+    void push () {
+        final String revision = getLog().getCSetShortID();
+        HgProgressSupport supp = new HgProgressSupport() {
+            @Override
+            protected void perform () {
+                PushAction.getDefaultAndPerformPush(repositoryRoot, revision, getLogger());
+            }
+        };
+        supp.start(Mercurial.getInstance().getRequestProcessor(repositoryRoot), repositoryRoot, Bundle.MSG_SearchHistory_pushing(revision));
+    }
+
+    void pull () {
+        final String revision = getLog().getCSetShortID();
+        HgProgressSupport supp = new HgProgressSupport() {
+            @Override
+            protected void perform () {
+                PullAction.getDefaultAndPerformPull(repositoryRoot, revision, this);
+            }
+        };
+        supp.start(Mercurial.getInstance().getRequestProcessor(repositoryRoot), repositoryRoot, Bundle.MSG_SearchHistory_pulling(revision));
+    }
+    
+    void fetch () {
+        final String revision = getLog().getCSetShortID();
+        HgProgressSupport supp = new HgProgressSupport() {
+            @Override
+            protected void perform () {
+                FetchAction.performFetch(repositoryRoot, revision, this);
+            }
+        };
+        supp.start(Mercurial.getInstance().getRequestProcessor(repositoryRoot), repositoryRoot, Bundle.MSG_SearchHistory_fetching(revision));
     }
     
     public class Event {
@@ -352,7 +426,7 @@ public class RepositoryRevision {
         protected void perform () {
             HgLogMessageChangedPath[] paths;
             if (getLog().getChangedPaths().length == 0) {
-                HistoryRegistry.ChangePathCollector coll = incoming
+                HistoryRegistry.ChangePathCollector coll = kind == Kind.INCOMING
                         ? new HistoryRegistry.ChangePathCollector() {
                             @Override
                             public HgLogMessageChangedPath[] getChangePaths () {

@@ -87,6 +87,7 @@ public class Merge extends CopyDialog implements ItemListener {
 
         panel.typeComboBox.setModel(new DefaultComboBoxModel(
                 new MergeType[] {
+                       new MergeBranchType(repositoryRoot, root),
                        new MergeSinceOriginType(repositoryRoot, root),
                        new MergeOneFolderType(repositoryRoot, root),
                        new MergeTwoFoldersType(repositoryRoot, root)                       
@@ -149,7 +150,7 @@ public class Merge extends CopyDialog implements ItemListener {
         final MergeType type = (MergeType) e.getItem();                
         
         JTextComponent text;
-        if(type instanceof MergeSinceOriginType) {
+        if(type instanceof MergeSinceOriginType || type instanceof MergeBranchType) {
             text = (JTextComponent) type.getEndUrlComboBox().getEditor().getEditorComponent();    
         } else {
             text = (JTextComponent) type.getStartUrlComboBox().getEditor().getEditorComponent();    
@@ -635,4 +636,113 @@ public class Merge extends CopyDialog implements ItemListener {
         }
 
     }               
+
+    @NbBundle.Messages({
+        "CTL_Merge_ReintegrateBranch=Reintegrate Feature Branch",
+        "CTL_Merge_ReintegrateBranchDesc=Merge all changes from a feature branch not yet present in the working copy."
+    })
+    private class MergeBranchType extends MergeType {
+
+        private final MergeBranchPanel panel;
+        private final RepositoryPaths mergeEndRepositoryPaths;
+        private final ReintegrateBranchPreviewPanel previewPanel;
+
+        public MergeBranchType (RepositoryFile repositoryRoot, File root) {
+            super(repositoryRoot);
+            
+            panel = new MergeBranchPanel();
+            previewPanel = new ReintegrateBranchPreviewPanel();
+
+            mergeEndRepositoryPaths =
+                new RepositoryPaths(
+                    repositoryRoot,
+                    (JTextComponent) panel.mergeEndUrlComboBox.getEditor().getEditorComponent(),
+                    panel.mergeEndBrowseButton,
+                    null,
+                    null
+                );      
+            
+            init(null, null, mergeEndRepositoryPaths, panel.mergeEndRepositoryFolderLabel, root);
+            previewPanel.localFolderTextField.setText(root.getAbsolutePath());
+            ((JTextComponent) panel.mergeEndUrlComboBox.getEditor().getEditorComponent()).getDocument().addDocumentListener(this);                     
+        }
+
+        @Override
+        public String getDisplayName() {
+            return Bundle.CTL_Merge_ReintegrateBranch();
+        }
+
+        @Override
+        public String getDescription() {
+            return Bundle.CTL_Merge_ReintegrateBranchDesc();
+        }
+
+        @Override
+        public JPanel getFieldsPanel() {
+            return panel;
+        }
+
+        @Override
+        public JPanel getPreviewPanel() {
+            return previewPanel;
+        }
+
+        @Override
+        public RepositoryFile getMergeStartRepositoryFile() {
+            return null;
+        }
+
+        @Override
+        public SVNRevision getMergeStartRevision() {
+            return null;
+        }
+
+        public SVNUrl getMergeEndUrl() {
+            try {
+                return mergeEndRepositoryPaths.getRepositoryFiles()[0].getFileUrl();
+            } catch (MalformedURLException ex) {
+                // should be already checked and
+                // not happen at this place anymore
+                Subversion.LOG.log(Level.INFO, null, ex);
+            }
+            return null;
+        }
+
+        @Override
+        public SVNRevision getMergeEndRevision() {
+            // keep null, because actually whole branch is integrated, revision makes no difference
+            return null;
+        }
+
+        @Override
+        RepositoryPaths getMergeStartRepositoryPath() {
+            return null;
+        }
+
+        @Override
+        RepositoryPaths getMergeEndRepositoryPath() {
+            return mergeEndRepositoryPaths;
+        }
+
+        @Override
+        public JComboBox getStartUrlComboBox() {
+            return null;
+        }
+
+        @Override
+        public JComboBox getEndUrlComboBox() {
+            return panel.mergeEndUrlComboBox;
+        }
+
+        @Override
+        protected void setPreviewLabels() {            
+            previewPanel.repositoryFolderTextField.setText(getRepositoryFile().getRepositoryUrl() + "/" + panel.mergeEndUrlComboBox.getEditor().getItem().toString()); // NOI18N
+        }
+
+        @Override
+        public boolean isIgnoreAncestry () {
+            return false;
+        }
+
+    }
 }

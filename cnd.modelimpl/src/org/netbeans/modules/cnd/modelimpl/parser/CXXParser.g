@@ -221,19 +221,24 @@ translation_unit:
 statement
 @init                                                                           {if(state.backtracking == 0){action.statement(input.LT(1));}}
     :
-        labeled_statement
-    |
-        expression_or_declaration_statement
-    |
-        compound_statement[false]
-    |
-        selection_statement
-    |
-        iteration_statement
-    |
-        jump_statement
-    |
-        try_block
+        // In standard there is no attribute_specifiers rule before declaration_statement
+        // It's added here to avoid additional predicates
+        attribute_specifiers?
+        (
+            labeled_statement
+        |
+            expression_or_declaration_statement
+        |
+            compound_statement[false]
+        |
+            selection_statement
+        |
+            iteration_statement
+        |
+            jump_statement
+        |
+            try_block
+        )
     ;
 finally                                                                         {if(state.backtracking == 0){action.end_statement(input.LT(0));}}
 
@@ -306,7 +311,7 @@ scope Declaration;
 @init { init_declaration(CTX, blockscope_decl); }
     :                                                                           {action.condition(input.LT(1));}
     (
-        (type_specifier+ declarator EQUAL)=>
+        (attribute_specifiers? type_specifier+ declarator EQUAL)=>
             condition_declaration
     |
         condition_expression
@@ -316,6 +321,7 @@ scope Declaration;
 condition_declaration
 @init                                                                           {if(state.backtracking == 0){action.condition_declaration(input.LT(1));}}
     :
+        attribute_specifiers?
         type_specifier+ declarator 
         EQUAL                                                                   {action.condition(action.CONDITION__EQUAL, input.LT(0));}
         assignment_expression
@@ -378,7 +384,7 @@ for_init_statement
 
 for_range_declaration:
                                                                                 {action.for_range_declaration(input.LT(1));}
-    type_specifier+ declarator                                                  {action.end_for_range_declaration(input.LT(0));}
+    attribute_specifiers? type_specifier+ declarator                            {action.end_for_range_declaration(input.LT(0));}
     ;
 
 for_range_initializer
@@ -618,6 +624,7 @@ simple_declaration_or_function_definition [decl_kind kind]
 scope Declaration;
 @init                                                                           {if(state.backtracking == 0){action.simple_declaration(input.LT(1));}}
     :
+        gnu_attribute_specifiers?
                                                                                 {action.decl_specifiers(input.LT(1));}
         decl_specifier*                                                         {action.end_decl_specifiers(input.LT(0));}
         (
@@ -660,7 +667,7 @@ static_assert_declaration:
     ;
 
 attribute_declaration:
-        LITERAL_attribute
+        cpp11_attribute_specifiers SEMICOLON
     ;
 
 decl_specifier
@@ -736,7 +743,7 @@ type_specifier returns [type_specifier_t ts]
             class_specifier
     |
         // enum_specifier start sequence is simple
-        (LITERAL_enum IDENT? LCURLY)=>
+        (LITERAL_enum attribute_specifiers? IDENT? LCURLY)=>
             enum_specifier
     |
         trailing_type_specifier
@@ -744,7 +751,7 @@ type_specifier returns [type_specifier_t ts]
 finally                                                                         {if(state.backtracking == 0){action.end_type_specifier(input.LT(0));}}
 
 trailing_type_specifier
-@init                                                                           {action.trailing_type_specifier(input.LT(1));}
+@init                                                                           {if(state.backtracking == 0){action.trailing_type_specifier(input.LT(1));}}
     :   
         simple_type_specifier
     |
@@ -754,7 +761,7 @@ trailing_type_specifier
     |
         cv_qualifier
     ;
-finally                                                                         {action.end_trailing_type_specifier(input.LT(0));}
+finally                                                                         {if(state.backtracking == 0){action.end_trailing_type_specifier(input.LT(0));}}
 
 simple_type_specifier returns [type_specifier_t ts_val]
 scope QualName;
@@ -838,7 +845,7 @@ elaborated_type_specifier:
 
 decltype_specifier
     :
-    LITERAL_decltype                                                            {action.decltype_specifier(input.LT(0));}
+    (literal_decltype | literal_typeof)                                         {action.decltype_specifier(input.LT(0));}
     LPAREN                                                                      {action.decltype_specifier(action.DECLTYPE_SPECIFIER__LPAREN, input.LT(0));}
     expression 
     RPAREN                                                                      {action.decltype_specifier(action.DECLTYPE_SPECIFIER__RPAREN, input.LT(0));}
@@ -849,7 +856,7 @@ elaborated_type_specifier
 @init                                                                           {if(state.backtracking == 0){action.elaborated_type_specifier(input.LT(1));}}
     :                                                                           //{action.elaborated_type_specifier(input.LT(1));}
     (
-        class_key SCOPE?         
+        class_key attribute_specifiers? SCOPE?         
         (
             (IDENT SCOPE) =>
                 nested_name_specifier (simple_template_id_or_IDENT | LITERAL_template simple_template_id_nocheck)
@@ -903,7 +910,7 @@ enum_specifier:
         )
     ;
 enum_head:
-    enum_key 
+    enum_key attribute_specifiers?
     (
         nested_name_specifier IDENT                                             {action.enum_name(input.LT(0));}
     |
@@ -982,7 +989,8 @@ namespace_definition:
         LITERAL_namespace                                                       {action.namespace_declaration($LITERAL_namespace);}
         (   
             IDENT                                                               {action.namespace_name($IDENT);}
-        )? 
+        )?
+        gnu_attribute_specifiers?
         LCURLY                                                                  {action.namespace_body($LCURLY);}
         namespace_body 
         RCURLY                                                                  {action.end_namespace_body($RCURLY);} 
@@ -1051,7 +1059,7 @@ using_directive:
 
 
 asm_definition:
-        LITERAL_asm LPAREN STRING_LITERAL RPAREN SEMICOLON                      {action.asm_definition($LITERAL_asm, $LPAREN, $STRING_LITERAL, $RPAREN, $SEMICOLON);}
+        literal_asm LPAREN STRING_LITERAL RPAREN SEMICOLON                      //{action.asm_definition($LITERAL_asm, $LPAREN, $STRING_LITERAL, $RPAREN, $SEMICOLON);}
     ;
 
 linkage_specification [decl_kind kind]:
@@ -1063,6 +1071,80 @@ linkage_specification [decl_kind kind]:
     |
             declaration[kind]
         )                                                                       {action.end_linkage_specification(input.LT(0));}
+    ;
+
+attribute_specifiers:
+        (attribute_specifier | gnu_attribute_specifier)+
+    ;
+
+cpp11_attribute_specifiers:
+        attribute_specifier+
+    ;
+
+attribute_specifier:
+        LSQUARE LSQUARE attribute_list RSQUARE RSQUARE
+    |
+        aligment_specifier
+    ;
+
+aligment_specifier:
+        LITERAL_alignas LPAREN
+        (
+            (type_id)=> type_id
+        |
+            assignment_expression
+        )
+        ELLIPSIS? RPAREN
+    ;
+
+attribute_list:
+        (attribute ELLIPSIS? (COLON (attribute ELLIPSIS?)?)?)?
+    ;
+
+attribute:
+        attribute_token attribute_argument_clouse?
+    ;
+
+attribute_token:
+        IDENT
+    |
+        attribute_scoped_token
+    ;
+
+attribute_scoped_token:
+        attribute_namespace SCOPE IDENT
+    ;
+
+attribute_namespace:
+        IDENT
+    ;
+
+attribute_argument_clouse:
+        LPAREN balanced_tokens RPAREN
+    ;
+
+balanced_tokens:
+        balanced_token+
+    ;
+
+balanced_token:
+        LPAREN balanced_tokens RPAREN
+    |
+        LSQUARE balanced_tokens RSQUARE
+    |
+        LCURLY balanced_tokens RCURLY
+    |
+        ~(RCURLY | LCURLY | LSQUARE | RSQUARE | LPAREN | RPAREN)
+    ;
+
+gnu_attribute_specifiers:
+        gnu_attribute_specifier+
+    ;
+
+gnu_attribute_specifier:
+        LITERAL___attribute__ LPAREN balanced_tokens RPAREN
+    |
+        LITERAL___extension__
     ;
 
 init_declarator_list
@@ -1119,7 +1201,7 @@ declarator returns [declarator_type_t type]
     :                                                                           {action.declarator(input.LT(1));}
     (
         (ptr_operator)=>
-            ptr_operator nested=declarator
+            ptr_operator literal_restrict? nested=declarator
 //                {{ type = $nested.type;
 //                   type.apply_ptr($ptr_operator.type);
 //                }}
@@ -1133,7 +1215,7 @@ declarator returns [declarator_type_t type]
 noptr_declarator returns [declarator_type_t type]
     :                                                                           {action.noptr_declarator(input.LT(1));}
         (
-            declarator_id
+            declarator_id attribute_specifiers?
 //                {{ type = $declarator_id.type; }}
         |
             LPAREN                                                              {action.noptr_declarator(action.NOPTR_DECLARATOR__LPAREN, input.LT(0));}
@@ -1148,6 +1230,7 @@ noptr_declarator returns [declarator_type_t type]
             LSQUARE                                                             {action.noptr_declarator(action.NOPTR_DECLARATOR__LSQUARE, input.LT(0));}
             constant_expression? 
             RSQUARE                                                             {action.noptr_declarator(action.NOPTR_DECLARATOR__RSQUARE, input.LT(0));}
+            attribute_specifiers?
 //                {{ type.apply_array($constant_expression.expr); }}
         )*
         trailing_return_type?                                                   {action.end_noptr_declarator(input.LT(0));}
@@ -1206,7 +1289,7 @@ abstract_declarator returns [declarator_type_t type]
         //{{ type = $noptr_abstract_declarator.type; }}
         trailing_return_type?
     |
-        ptr_operator ((abstract_declarator) => abstract_declarator)? // review: predicate to avoid ambiguity around ELLIPSIS
+        ptr_operator literal_restrict? ((abstract_declarator) => abstract_declarator)? // review: predicate to avoid ambiguity around ELLIPSIS
 //            {{ type = $decl.type;
 //               type.apply_ptr($ptr_operator.type);
 //            }}
@@ -1270,7 +1353,7 @@ greedy_nonptr_declarator returns [declarator_type_t type]
     :                                                                           {action.greedy_nonptr_declarator(input.LT(1));}
     (
         (
-            declarator_id
+            declarator_id attribute_specifiers?
                 //{{ type = $declarator_id.type; }}
         |
             LPAREN                                                              {action.greedy_nonptr_declarator(action.GREEDY_NONPTR_DECLARATOR__LPAREN, input.LT(0));}
@@ -1314,7 +1397,7 @@ ptr_operator returns [ declarator_type_t type ]
     ;
 
 cv_qualifier returns [ qualifier_t qual ]:
-        LITERAL_const                                                           {action.cv_qualifier(action.CV_QUALIFIER__CONST, input.LT(0));}
+        literal_const                                                           {action.cv_qualifier(action.CV_QUALIFIER__CONST, input.LT(0));}
         //{{ qual = LITERAL_const; }}
     |
         LITERAL_volatile                                                        {action.cv_qualifier(action.CV_QUALIFIER__VOLATILE, input.LT(0));}
@@ -1362,6 +1445,7 @@ parameters_and_qualifiers returns [ parameters_and_qualifiers_t pq ]
         LPAREN                                                                  {action.parameters_and_qualifiers(action.PARAMETERS_AND_QUALIFIERS__LPAREN, input.LT(0));}
         parameter_declaration_clause 
         RPAREN                                                                  {action.parameters_and_qualifiers(action.PARAMETERS_AND_QUALIFIERS__RPAREN, input.LT(0));}
+        attribute_specifiers?
         cv_qualifier* 
         ref_qualifier? 
         exception_specification?                                                {action.end_parameters_and_qualifiers(input.LT(0));}
@@ -1396,6 +1480,7 @@ parameter_declaration [decl_kind kind]
 scope Declaration;
 @init { init_declaration(CTX, kind); }
     :                                                                           {action.parameter_declaration(input.LT(1));}
+        attribute_specifiers?
         decl_specifier
         decl_specifier*
         universal_declarator? 
@@ -1553,6 +1638,7 @@ optionally_qualified_name
 class_head
     :                                                                           {action.class_head(input.LT(1));}
         class_key 
+        attribute_specifiers?
         optionally_qualified_name? 
         class_virtual_specifier* 
         base_clause?                                                            {action.end_class_head(input.LT(0));}
@@ -1583,6 +1669,68 @@ member_specification[boolean class_late_binding_lookup]
     ;
 finally                                                                         {if(state.backtracking == 0){action.end_member_specification(input.LT(0));}}
 
+protected
+literal_asm : LITERAL_asm | LITERAL__asm | LITERAL___asm|LITERAL___asm__;
+
+protected
+literal_cdecl : LITERAL__cdecl | LITERAL___cdecl;
+
+protected
+literal_const : LITERAL_const | LITERAL___const | LITERAL___const__;
+
+protected
+literal_declspec : LITERAL__declspec | LITERAL___declspec;
+
+protected
+literal_far : LITERAL__far | LITERAL___far;
+
+protected
+literal_inline : LITERAL_inline | LITERAL__inline | LITERAL___inline | LITERAL___inline__ | LITERAL___forceinline;
+
+protected
+literal_int64 : LITERAL__int64 | LITERAL___int64;
+
+protected
+literal_signed: LITERAL_signed | LITERAL___signed | LITERAL___signed__;
+
+protected
+literal_unsigned: LITERAL_unsigned | LITERAL___unsigned__;
+
+protected
+literal_near : LITERAL__near | LITERAL___near;
+
+protected
+literal_pascal : LITERAL_pascal | LITERAL__pascal | LITERAL___pascal;
+
+protected
+literal_stdcall : LITERAL__stdcall | LITERAL___stdcall;
+
+protected
+literal_clrcall : LITERAL___clrcall;
+
+protected
+literal_volatile : LITERAL_volatile | LITERAL___volatile | LITERAL___volatile__;
+
+protected
+literal_typeof : LITERAL_typeof | LITERAL___typeof | LITERAL___typeof__ ;
+
+protected
+literal_restrict : LITERAL_restrict | LITERAL___restrict | LITERAL___restrict__;
+
+protected
+literal_complex : LITERAL__Complex | LITERAL___complex__ | LITERAL___complex;
+
+protected
+literal_attribute : LITERAL___attribute | LITERAL___attribute__;
+
+protected
+literal_try : LITERAL_try | LITERAL___try;
+
+protected
+literal_finally : LITERAL___finally;
+
+protected
+literal_decltype : LITERAL_decltype | LITERAL___decltype;
 
 /*
  * original rule (part that was rewritten)
@@ -1614,7 +1762,7 @@ member_declarator:
 member_declaration [decl_kind kind, boolean class_late_binding_lookup]
 @init                                                                           {if(state.backtracking == 0){action.member_declaration(input.LT(1));}}
     :
-        simple_member_declaration_or_function_definition[kind, class_late_binding_lookup]
+        attribute_specifiers? simple_member_declaration_or_function_definition[kind, class_late_binding_lookup]
     |
         /* this is likely to be covered by decl_specifier/declarator part of member_declarator
             SCOPE? nested_name_specifier LITERAL_template? unqualified_id SEMICOLON
@@ -1742,11 +1890,14 @@ base_specifier_list
         )*                                                                      {action.end_base_specifier_list(input.LT(0));}
     ;
 base_specifier:
+    attribute_specifiers?
+    (
         base_type_specifier
     |
         LITERAL_virtual access_specifier? base_type_specifier
     |
         access_specifier LITERAL_virtual? base_type_specifier
+    )
     ;
 class_or_decltype
     :                                                                           {action.class_or_decltype(input.LT(1));}
@@ -2071,7 +2222,7 @@ exception_declaration
 scope Declaration;
 @init { init_declaration(CTX, blockscope_decl); }
     :
-        type_specifier+ universal_declarator?
+        attribute_specifiers? type_specifier+ universal_declarator?
     |
         ELLIPSIS
     ;
@@ -2079,9 +2230,9 @@ throw_expression:
         LITERAL_throw assignment_expression? 
     ;
 exception_specification:
-        dynamic_exception_specification
+        dynamic_exception_specification gnu_attribute_specifiers?
     |
-        noexcept_specification
+        noexcept_specification gnu_attribute_specifiers?
     ;
 dynamic_exception_specification:
         LITERAL_throw LPAREN type_id_list? RPAREN 
@@ -2554,7 +2705,7 @@ lookahead_tokenset_arg_syms
         MODEQUAL|TIMESEQUAL|BITWISEOREQUAL|BITWISEXOREQUAL|DOT|MOD|
         POINTERTO|QUESTIONMARK|COLON|SCOPE|DOTMBR|POINTERTOMBR|COMMA|ELLIPSIS|
         LITERAL_typedef|LITERAL_extern|LITERAL_static|LITERAL_auto|LITERAL_register|LITERAL___thread|
-        LITERAL_const|LITERAL_volatile|LITERAL_struct|LITERAL_union|LITERAL_class|LITERAL_enum|LITERAL_typename|
+        literal_const|LITERAL_volatile|LITERAL_struct|LITERAL_union|LITERAL_class|LITERAL_enum|LITERAL_typename|
         LITERAL___offsetof|LITERAL___alignof|LITERAL_throw|LITERAL_wchar_t|LITERAL_typeid|
         LITERAL_const_cast|LITERAL_static_cast|LITERAL_dynamic_cast|LITERAL_reinterpret_cast|
         LITERAL_bool|LITERAL_true|LITERAL_false|
@@ -2607,7 +2758,7 @@ skip_balanced_Curl
             :
             LCURLY                                                              {if(state.backtracking == 0){action.skip_balanced_curlies(input.LT(0));}}
             (options {greedy=false;}:
-                skip_balanced_Curl | .                                          {if(state.backtracking == 0){action.skip_balanced_curlies(input.LT(0));}}
+                skip_balanced_Curl | ~(RCURLY | LCURLY)                                          {if(state.backtracking == 0){action.skip_balanced_curlies(input.LT(0));}}
             )*
             RCURLY                                                              {if(state.backtracking == 0){action.skip_balanced_curlies(input.LT(0));}}
         ;

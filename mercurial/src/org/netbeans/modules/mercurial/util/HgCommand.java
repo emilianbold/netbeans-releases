@@ -49,6 +49,7 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -71,6 +72,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
@@ -95,11 +97,11 @@ import org.netbeans.modules.mercurial.ui.branch.HgBranch;
 import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
 import org.netbeans.modules.mercurial.ui.log.HgLogMessage.HgRevision;
 import org.netbeans.modules.mercurial.ui.queues.QPatch;
+import org.netbeans.modules.mercurial.ui.queues.Queue;
 import org.netbeans.modules.mercurial.ui.repository.HgURL;
 import org.netbeans.modules.mercurial.ui.repository.Repository;
 import org.netbeans.modules.mercurial.ui.repository.UserCredentialsSupport;
 import org.netbeans.modules.mercurial.ui.tag.HgTag;
-import org.netbeans.modules.versioning.util.IndexingBridge;
 import org.netbeans.modules.versioning.util.KeyringSupport;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.filesystems.FileUtil;
@@ -215,8 +217,11 @@ public class HgCommand {
     private static final String HG_RESOLVE_MARK_RESOLVED = "--mark";   //NOI18N
     
     private static final String HG_MQ_EXT_CMD = "extensions.mq="; //NOI18N
+    private static final String HG_QPATCHES_NAME = "patches"; //NOI18N
+    private static final String HG_QQUEUE_CMD = "qqueue"; //NOI18N
     private static final String HG_QSERIES_CMD = "qseries"; //NOI18N
     private static final String HG_OPT_SUMMARY = "--summary"; //NOI18N
+    private static final String HG_OPT_LIST = "--list"; //NOI18N
     private static final String HG_QGOTO_CMD = "qgoto"; //NOI18N
     private static final String HG_QPOP_CMD = "qpop"; //NOI18N
     private static final String HG_QPUSH_CMD = "qpush"; //NOI18N
@@ -226,6 +231,7 @@ public class HgCommand {
     private static final String HG_OPT_EXCLUDE = "--exclude"; //NOI18N
     private static final String HG_OPT_SHORT = "--short"; //NOI18N
     private static final String HG_QFINISH_CMD = "qfinish"; //NOI18N
+    private static final String QUEUE_ACTIVE = "(active)"; //NOI18N
 
     // TODO: replace this hack
     // Causes /usr/bin/hgmerge script to return when a merge
@@ -395,20 +401,6 @@ public class HgCommand {
         MAX_COMMANDLINE_SIZE = maxCmdSize;
     }
 
-    private static final HashSet<String> GUARDED_COMMANDS = new HashSet<String>(Arrays.asList(
-            HG_BACKOUT_CMD,
-            HG_CLONE_CMD,
-            HG_IMPORT_CMD,
-            HG_FETCH_CMD,
-            HG_PULL_CMD,
-            HG_MERGE_CMD,
-            HG_QGOTO_CMD,
-            HG_QPOP_CMD,
-            HG_QPUSH_CMD,
-            HG_UNBUNDLE_CMD,
-            HG_UPDATE_ALL_CMD
-    ));
-
     private static final HashSet<String> WORKING_COPY_PARENT_MODIFYING_COMMANDS = new HashSet<String>(Arrays.asList(
         HG_BACKOUT_CMD,
         HG_CLONE_CMD,
@@ -447,6 +439,7 @@ public class HgCommand {
         HG_PUSH_CMD,
         HG_RESOLVE_CMD,
         HG_QSERIES_CMD,
+        HG_QQUEUE_CMD,
         HG_STATUS_CMD,
         HG_TAG_CMD,
         HG_TAGS_CMD,
@@ -683,7 +676,7 @@ public class HgCommand {
      * @return hg pull output
      * @throws org.netbeans.modules.mercurial.HgException
      */
-    public static List<String> doPull(File repository, OutputLogger logger) throws HgException {
+    public static List<String> doPull (File repository, String revision, OutputLogger logger) throws HgException {
         if (repository == null ) return null;
         List<String> command = new ArrayList<String>();
 
@@ -696,6 +689,10 @@ public class HgCommand {
         if (HgModuleConfig.getDefault().isInternalMergeToolEnabled()) {
             command.add(HG_CONFIG_OPTION_CMD);
             command.add(HG_MERGE_SIMPLE_TOOL);
+        }
+        if (revision != null) {
+            command.add(HG_FLAG_REV_CMD);
+            command.add(revision);            
         }
 
         List<String> list;
@@ -714,38 +711,6 @@ public class HgCommand {
             handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_COMMAND_ABORTED"), logger);
         }
         return list;
-    }
-
-    /**
-     * Pull changes from the specified repository and
-     * update working directory.
-     * By default, update will refuse to run if doing so would require
-     * merging or discarding local changes.
-     *
-     * @param File repository of the mercurial repository's root directory
-     * @param String source repository to pull from
-     * @return hg pull output
-     * @throws org.netbeans.modules.mercurial.HgException
-     */
-    public static List<String> doPull(File repository, HgURL from, OutputLogger logger, boolean showSaveCredentialsOption) throws HgException {
-        if (repository == null || from == null) return null;
-
-        InterRepositoryCommand command = new InterRepositoryCommand();
-        command.defaultUrl = new HgConfigFiles(repository).getDefaultPull(false);
-        command.hgCommandType = HG_PULL_CMD;
-        command.logger = logger;
-        command.remoteUrl = from;
-        command.repository = repository;
-        command.additionalOptions.add(HG_VERBOSE_CMD);
-        command.additionalOptions.add(HG_UPDATE_CMD);
-        if (HgModuleConfig.getDefault().isInternalMergeToolEnabled()) {
-            command.additionalOptions.add(HG_CONFIG_OPTION_CMD);
-            command.additionalOptions.add(HG_MERGE_SIMPLE_TOOL);
-        }
-        command.urlPathProperties = new String[] {HgConfigFiles.HG_DEFAULT_PULL_VALUE, HgConfigFiles.HG_DEFAULT_PULL};
-        List<String> retval = command.invoke();
-
-        return retval;
     }
 
     /**
@@ -793,7 +758,7 @@ public class HgCommand {
      * @return hg incoming output
      * @throws org.netbeans.modules.mercurial.HgException
      */
-    public static List<String> doIncoming(File repository, OutputLogger logger) throws HgException {
+    public static List<String> doIncoming(File repository, String revision, OutputLogger logger) throws HgException {
         if (repository == null ) return null;
         List<Object> command = new ArrayList<Object>();
 
@@ -802,6 +767,10 @@ public class HgCommand {
         command.add(HG_VERBOSE_CMD);
         command.add(HG_OPT_REPOSITORY);
         command.add(repository.getAbsolutePath());
+        if (revision != null) {
+            command.add(HG_FLAG_REV_CMD);
+            command.add(revision);            
+        }
 
         List<String> cmdOutput;
         String defaultPull = new HgConfigFiles(repository).getDefaultPull(false);
@@ -831,7 +800,7 @@ public class HgCommand {
      * @return hg incoming output
      * @throws org.netbeans.modules.mercurial.HgException
      */
-    public static List<String> doIncoming(File repository, HgURL from, File bundle, OutputLogger logger, boolean showSaveCredentialsOption) throws HgException {
+    public static List<String> doIncoming(File repository, HgURL from, String revision, File bundle, OutputLogger logger, boolean showSaveCredentialsOption) throws HgException {
         if (repository == null || from == null) return null;
 
         InterRepositoryCommand command = new InterRepositoryCommand();
@@ -841,6 +810,10 @@ public class HgCommand {
         command.outputDetails = false;
         command.remoteUrl = from;
         command.repository = repository;
+        if (revision != null) {
+            command.additionalOptions.add(HG_FLAG_REV_CMD);
+            command.additionalOptions.add(revision);
+        }
         command.additionalOptions.add(HG_VERBOSE_CMD);
         command.showSaveOption = showSaveCredentialsOption;
         if (bundle != null) {
@@ -863,7 +836,7 @@ public class HgCommand {
      * @return hg outgoing output
      * @throws org.netbeans.modules.mercurial.HgException
      */
-    public static List<String> doOutgoing(File repository, HgURL toUrl, OutputLogger logger, boolean showSaveCredentialsOption) throws HgException {
+    public static List<String> doOutgoing(File repository, HgURL toUrl, String revision, OutputLogger logger, boolean showSaveCredentialsOption) throws HgException {
         if (repository == null || toUrl == null) return null;
 
         InterRepositoryCommand command = new InterRepositoryCommand();
@@ -873,6 +846,10 @@ public class HgCommand {
         command.outputDetails = false;
         command.remoteUrl = toUrl;
         command.repository = repository;
+        if (revision != null) {
+            command.additionalOptions.add(HG_FLAG_REV_CMD);
+            command.additionalOptions.add(revision);
+        }
         command.additionalOptions.add(HG_VERBOSE_CMD);
         File tempFolder = Utils.getTempFolder(false);
         try {
@@ -898,7 +875,7 @@ public class HgCommand {
      * @return hg push output
      * @throws org.netbeans.modules.mercurial.HgException
      */
-    public static List<String> doPush(File repository, final HgURL toUrl, OutputLogger logger, boolean showSaveCredentialsOption) throws HgException {
+    public static List<String> doPush(File repository, final HgURL toUrl, String revision, OutputLogger logger, boolean showSaveCredentialsOption) throws HgException {
         if (repository == null || toUrl == null) return null;
 
         InterRepositoryCommand command = new InterRepositoryCommand();
@@ -908,6 +885,10 @@ public class HgCommand {
         command.logger = logger;
         command.remoteUrl = toUrl;
         command.repository = repository;
+        if (revision != null) {
+            command.additionalOptions.add(HG_FLAG_REV_CMD);
+            command.additionalOptions.add(revision);
+        }
         command.urlPathProperties = new String[] {HgConfigFiles.HG_DEFAULT_PUSH};
 
         List<String> retval = command.invoke();
@@ -984,17 +965,8 @@ public class HgCommand {
         }
         return proxy;
     }
-    /**
-     * Run the fetch extension for the specified repository
-     *
-     * @param File repository of the mercurial repository's root directory
-     * @throws org.netbeans.modules.mercurial.HgException
-     */
-    public static List<String> doFetch(File repository, HgURL from, OutputLogger logger) throws HgException {
-        return doFetch(repository, from, true, logger);
-    }
-
-    public static List<String> doFetch(File repository, HgURL from, boolean enableFetchExtension, OutputLogger logger) throws HgException {
+    
+    public static List<String> doFetch(File repository, HgURL from, String revision, boolean enableFetchExtension, OutputLogger logger) throws HgException {
         if (repository == null || from == null) return null;
 
         InterRepositoryCommand command = new InterRepositoryCommand();
@@ -1004,6 +976,10 @@ public class HgCommand {
         command.outputDetails = false;
         command.remoteUrl = from;
         command.repository = repository;
+        if (revision != null) {
+            command.additionalOptions.add(HG_FLAG_REV_CMD);
+            command.additionalOptions.add(revision);
+        }
         command.additionalOptions.add(HG_VERBOSE_CMD);
         if (enableFetchExtension && !"false".equals(System.getProperty("versioning.mercurial.enableFetchExtension"))) { //NOI18N
             command.additionalOptions.add(HG_CONFIG_OPTION_CMD);
@@ -2484,14 +2460,7 @@ public class HgCommand {
         for(File f: revertFiles){
             command.add(f.getAbsolutePath());
         }
-        List<String> list;
-        Callable<List<String>> callable = new Callable<List<String>>() {
-            @Override
-            public List<String> call() throws Exception {
-                return exec(command);
-            }
-        };
-        list = runWithoutIndexing(callable, revertFiles, HG_REVERT_CMD);
+        List<String> list = exec(command);
         if (!list.isEmpty() && isErrorNoChangeNeeded(list.get(0)))
             handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_REVERT_FAILED"), logger);
     }
@@ -2518,14 +2487,7 @@ public class HgCommand {
         for (File f : revertFiles){
             command.add(f.getAbsolutePath());
         }
-        List<String> list;
-        Callable<List<String>> callable = new Callable<List<String>>() {
-            @Override
-            public List<String> call() throws Exception {
-                return exec(command);
-            }
-        };
-        list = runWithoutIndexing(callable, revertFiles, HG_PURGE_CMD);
+        List<String> list = exec(command);
         if (!list.isEmpty())
             handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_REVERT_FAILED"), logger);
     }
@@ -3411,6 +3373,16 @@ public class HgCommand {
     }
 
     public static QPatch[] qListSeries (File repository) throws HgException {
+        Queue activeQueue = null;
+        for (Queue q : qListQueues(repository)) {
+            if (q.isActive()) {
+                activeQueue = q;
+            }
+        }
+        if (activeQueue == null) {
+            return new QPatch[0];
+        }
+        
         List<String> command = new ArrayList<String>();
 
         command.add(getHgCommand());
@@ -3430,9 +3402,94 @@ public class HgCommand {
         if (list.isEmpty()) {
             patches = new QPatch[0];
         } else {
-            patches = parsePatches(list);
+            patches = parsePatches(list, activeQueue);
         }
         return patches;
+    }
+
+    public static Map<Queue, QPatch[]> qListAvailablePatches (File repository) throws HgException {
+        Map<Queue, QPatch[]> patches = new LinkedHashMap<Queue, QPatch[]>();
+        Map<Queue, QPatch[]> otherPatches = new LinkedHashMap<Queue, QPatch[]>();
+        for (Queue q : qListQueues(repository)) {
+            if (q.isActive()) {
+                patches.put(q, qListSeries(repository));
+            } else {
+                otherPatches.put(q, qListSeries(repository, q.getName()));
+            }
+        }
+        patches.putAll(otherPatches);
+        return patches;
+    }
+
+    private static QPatch[] qListSeries (File repository, String queueName) throws HgException {
+        Queue q = new Queue(queueName, false);
+        List<QPatch> patches = new LinkedList<QPatch>();
+        File seriesFile = getQSeriesFile(repository, queueName);
+        BufferedReader br = null;
+        try {
+            br = new BufferedReader(new FileReader(seriesFile));
+            for (String line = br.readLine(); line != null; line = br.readLine()) {
+                line = line.trim();
+                if (!line.startsWith("#")) {
+                    patches.add(new QPatch(line, null, q, false));
+                }
+            }
+        } catch (IOException ex) {
+            Mercurial.LOG.log(Level.INFO, ex.getMessage());
+            Mercurial.LOG.log(Level.FINE, null, ex);
+        } finally {
+            if (br != null) {
+                try {
+                    br.close();
+                } catch (IOException ex) {
+                }
+            }
+        }
+        return patches.toArray(new QPatch[patches.size()]);
+    }
+
+    public static Queue[] qListQueues (File repository) throws HgException {
+        List<String> command = new ArrayList<String>();
+
+        command.add(getHgCommand());
+        command.add(HG_QQUEUE_CMD);
+        
+        command.add(HG_CONFIG_OPTION_CMD);
+        command.add(HG_MQ_EXT_CMD);
+        command.add(HG_OPT_REPOSITORY);
+        command.add(repository.getAbsolutePath());
+        command.add(HG_OPT_CWD_CMD);
+        command.add(repository.getAbsolutePath());
+        command.add(HG_OPT_LIST);
+        
+        List<String> list = exec(command);
+        Queue[] queues;
+        if (list.isEmpty()) {
+            queues = new Queue[0];
+        } else {
+            queues = parseQueues(list);
+        }
+        return queues;
+    }
+
+    public static void qSwitchQueue (File repository, String queueName, OutputLogger logger) throws HgException {
+        List<String> command = new ArrayList<String>();
+
+        command.add(getHgCommand());
+        command.add(HG_QQUEUE_CMD);
+        
+        command.add(HG_CONFIG_OPTION_CMD);
+        command.add(HG_MQ_EXT_CMD);
+        command.add(HG_OPT_REPOSITORY);
+        command.add(repository.getAbsolutePath());
+        command.add(HG_OPT_CWD_CMD);
+        command.add(repository.getAbsolutePath());
+        command.add(queueName);
+        
+        List<String> list = exec(command);
+        if (!list.isEmpty() && isErrorAbort(list.get(0))) {
+            handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_QQUEUE_SWITCH_FAILED"), logger); //NOI18N
+        }
     }
 
     public static List<String> qPushPatches (File repository, String onTopPatch, OutputLogger logger) throws HgException {
@@ -3505,7 +3562,7 @@ public class HgCommand {
         return list;
     }
 
-    private static QPatch[] parsePatches (List<String> list) {
+    private static QPatch[] parsePatches (List<String> list, Queue q) {
         List<QPatch> patches = new ArrayList<QPatch>(list.size());
         Pattern p = Pattern.compile("^\\s*(\\b\\d+)\\s([AU])\\s([^:]+?):\\s?(.*)$"); //NOI18N
         for (String line : list) {
@@ -3514,13 +3571,30 @@ public class HgCommand {
                 String status = m.group(2);
                 String id = m.group(3);
                 String message = m.group(4);
-                patches.add(new QPatch(id, message, "A".equals(status))); //NOI18N
+                patches.add(new QPatch(id, message, q, "A".equals(status))); //NOI18N
             }
         }
         if (patches.isEmpty() && !list.isEmpty()) {
             Mercurial.LOG.log(Level.INFO, "parsePatches(): No qpatches found: {0}", list);
         }
         return patches.toArray(new QPatch[patches.size()]);
+    }
+
+    private static Queue[] parseQueues (List<String> list) {
+        List<Queue> queues = new ArrayList<Queue>(list.size());
+        for (String line : list) {
+            line = line.trim();
+            boolean active = false;
+            if (line.endsWith(QUEUE_ACTIVE)) {
+                active = true;
+                line = line.substring(0, line.length() - QUEUE_ACTIVE.length()).trim();
+            }
+            queues.add(new Queue(line, active));
+        }
+        if (queues.isEmpty() && !list.isEmpty()) {
+            Mercurial.LOG.log(Level.INFO, "parseQueues(): No qqueue found: {0}", list);
+        }
+        return queues.toArray(new Queue[queues.size()]);
     }
 
     public static void qCreatePatch (File repository, Collection<File> includedFiles, Collection<File> excludedFiles, String patchId, String commitMessage, OutputLogger logger) throws HgException {
@@ -3688,17 +3762,7 @@ public class HgCommand {
                 Callable<List<String>> callable = new Callable<List<String>>() {
                     @Override
                     public List<String> call () throws HgException {
-                        if (isGuardedCommand(hgCommand) && repository != null) {
-                            // indexing is supposed to be disabled for the time the command is running
-                            return runWithoutIndexing(new Callable<List<String>>() {
-                                @Override
-                                public List<String> call() throws Exception {
-                                    return exec(commandLine, pb);
-                                }
-                            }, Collections.singletonList(repository), hgCommand);
-                        } else {
-                            return exec(commandLine, pb);
-                        }
+                        return exec(commandLine, pb);
                     }
                 };
                 if (repository != null) {
@@ -4509,15 +4573,6 @@ public class HgCommand {
         return commandName;
     }
 
-    /**
-     * Returns true if the hgCommand belongs among guarded commands for which indexing shall be disabled
-     * @param hgCommand
-     * @return
-     */
-    private static boolean isGuardedCommand(String hgCommand) {
-        return GUARDED_COMMANDS.contains(hgCommand);
-    }
-
     private static boolean changesParents (String hgCommand) {
         return WORKING_COPY_PARENT_MODIFYING_COMMANDS.contains(hgCommand);
     }
@@ -4545,21 +4600,6 @@ public class HgCommand {
             }
         }
         return repositoryFile;
-    }
-
-    private static List<String> runWithoutIndexing(Callable<List<String>> callable, List<File> files, String hgCommand) throws HgException {
-        try {
-            if (Mercurial.LOG.isLoggable(Level.FINER)) {
-                Mercurial.LOG.log(Level.FINER, "Running command with disabled indexing: [hg {0}] on {1}", //NOI18N
-                        new Object[] {hgCommand, files});
-            }
-            return IndexingBridge.getInstance().runWithoutIndexing(callable, files.toArray(new File[files.size()]));
-        } catch (HgException ex) {
-            throw ex;
-        } catch (Exception ex) {
-            Mercurial.LOG.log(Level.INFO, "Cannot run command hg " + hgCommand + " without indexing", ex); //NOI18N
-            throw new HgException("Cannot run command hg " + hgCommand + " due to: " + ex.getMessage()); //NOI18N
-        }
     }
 
     private static final Set<File> loggedRepositories = new HashSet<File>();
@@ -4606,6 +4646,14 @@ public class HgCommand {
             }
         }
         return enc;
+    }
+
+    private static File getQSeriesFile (File repository, String queueName) {
+        String folderName = HG_QPATCHES_NAME;
+        if (!HG_QPATCHES_NAME.equals(queueName)) {
+            folderName += "-" + queueName; //NOI18N
+        }
+        return new File(HgUtils.getHgFolderForRoot(repository), folderName + File.separatorChar + "series");
     }
 
     /**
