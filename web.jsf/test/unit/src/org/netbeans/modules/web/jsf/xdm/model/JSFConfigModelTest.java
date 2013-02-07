@@ -153,7 +153,7 @@ public class JSFConfigModelTest extends NbTestCase {
     }
 
     public void testReadJSFJPAExample() throws Exception {
-        JSFConfigModel model = Util.loadRegistryModel("faces-config-jsfjpa-example.xml");
+        JSFConfigModel model = Util.loadRegistryModel("faces-config-jsfjpa-example2.xml");
         FacesConfig facesConfig = model.getRootComponent();
         assertNotNull(facesConfig);
         // testing managed bean
