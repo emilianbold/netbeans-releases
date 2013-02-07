@@ -250,6 +250,11 @@ function params() {
 	    -J*)
 		    DEFS="${DEFS} ${1#-J}"
 		    ;;
+            -c|--clean)
+                    shift 
+                    echo "clean userdir ${USERDIR}"
+                    rm -rf $USERDIR
+                    ;;
 	    --nb)
 		    shift
 		    echo "Using NB from $1"
@@ -326,10 +331,11 @@ function main() {
     PARAMS=""
     
     DBGPORT=${DBGPORT-5858}
+    USERDIR=/tmp/${USER}/cnd-userdir
 
     DEFS="${DEFS} -Dnetbeans.dirs=${nbdist}:${cnddist}:${dlightdist}"
     DEFS="${DEFS} -Dnetbeans.home=${nbdist}/platform"
-    DEFS="${DEFS} -Dnetbeans.user=/tmp/${USER}/cnd-userdir"
+    DEFS="${DEFS} -Dnetbeans.user=${USERDIR}"
     #DEFS="${DEFS} -Dcnd.modelimpl.trace=true"
     #DEFS="${DEFS} -Dparser.cache=true"
     DEFS="${DEFS} -Dparser.report.errors=true"
