@@ -450,20 +450,13 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                 jsfLibrary = LibraryManager.getDefault().getLibrary(panel.getNewLibraryName());
             }
 
-            JSFVersion jsfVersion = null;
+            JSFVersion jsfVersion;
             if (jsfLibrary != null) {
                 List<URL> content = jsfLibrary.getContent("classpath"); //NOI18N
-                jsfVersion = JSFUtils.getJSFVersion(content);
+                jsfVersion = JSFVersion.forClasspath(content);
             } else {
                 if (panel.getLibraryType() == JSFConfigurationPanel.LibraryType.SERVER && panel.getServerLibrary() != null) {
-                    Version specVersion = panel.getServerLibrary().getSpecificationVersion();
-                    if (Version.fromJsr277NotationWithFallback("2.2").isAboveOrEqual(specVersion)) { //NOI18N
-                        jsfVersion = JSFVersion.JSF_2_2;
-                    } else if (Version.fromJsr277NotationWithFallback("2.1").isAboveOrEqual(specVersion)) { //NOI18N
-                        jsfVersion = JSFVersion.JSF_2_1;
-                    } else if (Version.fromJsr277NotationWithFallback("2.0").isBelowOrEqual(specVersion)) { //NOI18N
-                        jsfVersion = JSFVersion.JSF_2_0;
-                    }
+                    jsfVersion = JSFVersion.forServerLibrary(panel.getServerLibrary());
                 } else {
                     jsfVersion = JSFVersion.forWebModule(webModule, true);
                 }

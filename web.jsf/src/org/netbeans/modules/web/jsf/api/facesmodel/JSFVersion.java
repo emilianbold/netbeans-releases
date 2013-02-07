@@ -45,16 +45,29 @@ package org.netbeans.modules.web.jsf.api.facesmodel;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.common.Util;
+import org.netbeans.modules.j2ee.deployment.common.api.Version;
+import org.netbeans.modules.j2ee.deployment.plugins.api.ServerLibrary;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsf.JSFUtils;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
+import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 
@@ -63,14 +76,25 @@ import org.openide.util.WeakListeners;
  * @author Petr Pisl, ads, Martin Fousek
  */
 public enum JSFVersion {
-    JSF_1_0,
-    JSF_1_1,
-    JSF_1_2,
-    JSF_2_0,
-    JSF_2_1,
-    JSF_2_2;
+    JSF_1_0("JSF 1.0"),
+    JSF_1_1("JSF 1.1"),
+    JSF_1_2("JSF 1.2"),
+    JSF_2_0("JSF 2.0"),
+    JSF_2_1("JSF 2.1"),
+    JSF_2_2("JSF 2.2");
+
+    private final String shortName;
+
+    private JSFVersion(String shortName) {
+        this.shortName = shortName;
+    }
+
+    public String getShortName() {
+        return shortName;
+    }
     
     private static final RequestProcessor RP = new RequestProcessor(JSFVersion.class);
+    private static final Logger LOG = Logger.getLogger(JSFVersion.class.getName());
 
     // caches for holding JSF version and the project CP listeners
     private static final Map<WebModule, JSFVersion> projectVersionCache = new WeakHashMap<WebModule, JSFVersion>();
@@ -111,6 +135,92 @@ public enum JSFVersion {
             });
         }
         return version;
+    }
+
+    /**
+     * Gets the highest JSF version found on the classpath. This method can
+     * be slow and sholdn't be called within AWT EDT.
+     *
+     * @param classpath consists of jar files and folders containing classes
+     * @return JSF version if any found on the classpath, {@code null} otherwise
+     * @since 1.46
+     */
+    @CheckForNull
+    public static synchronized JSFVersion forClasspath(@NonNull Collection<File> classpath) {
+        Parameters.notNull("classpath", classpath); //NOI18N
+        try {
+            if (Util.containsClass(classpath, JSFUtils.JSF_2_2__API_SPECIFIC_CLASS)) {
+                return JSFVersion.JSF_2_2;
+            } else if (Util.containsClass(classpath, JSFUtils.JSF_2_1__API_SPECIFIC_CLASS)) {
+                return JSFVersion.JSF_2_1;
+            } else if (Util.containsClass(classpath, JSFUtils.JSF_2_0__API_SPECIFIC_CLASS)) {
+                return JSFVersion.JSF_2_0;
+            } else if (Util.containsClass(classpath, JSFUtils.JSF_1_2__API_SPECIFIC_CLASS)) {
+                return JSFVersion.JSF_1_2;
+            } else if (Util.containsClass(classpath, JSFUtils.FACES_EXCEPTION)) {
+                return JSFVersion.JSF_1_1;
+            }
+        } catch (IOException ex) {
+            LOG.log(Level.INFO, "", ex);
+        }
+        return null;
+    }
+
+    /**
+     * Gets the highest JSF version found on the classpath. This method can
+     * be slow and sholdn't be called within AWT EDT.
+     *
+     * @param classpath consists of jar files and folders containing classes
+     * @return JSF version if any found on the classpath, {@code null} otherwise
+     * @since 1.46
+     */
+    @CheckForNull
+    public static JSFVersion forClasspath(@NonNull List<URL> classpath) {
+        Parameters.notNull("classpath", classpath); //NOI18N
+        try {
+            if (Util.containsClass(classpath, JSFUtils.JSF_2_2__API_SPECIFIC_CLASS)) {
+                return JSFVersion.JSF_2_2;
+            } else if (Util.containsClass(classpath, JSFUtils.JSF_2_1__API_SPECIFIC_CLASS)) {
+                return JSFVersion.JSF_2_1;
+            } else if (Util.containsClass(classpath, JSFUtils.JSF_2_0__API_SPECIFIC_CLASS)) {
+                return JSFVersion.JSF_2_0;
+            } else if (Util.containsClass(classpath, JSFUtils.JSF_1_2__API_SPECIFIC_CLASS)) {
+                return JSFVersion.JSF_1_2;
+            } else if (Util.containsClass(classpath, JSFUtils.FACES_EXCEPTION)) {
+                return JSFVersion.JSF_1_1;
+            }
+        } catch (IOException ex) {
+            LOG.log(Level.INFO, "", ex);
+        }
+        return null;
+    }
+
+    /**
+     * Gets the JSF version of the server library if any.
+     *
+     * @param lib server library to detect
+     * @return JSF version if valid JSF server library, {@code null} otherwise
+     * @since 1.46
+     */
+    @CheckForNull
+    public static JSFVersion forServerLibrary(@NonNull ServerLibrary lib) {
+        Parameters.notNull("serverLibrary", lib); //NOI18N
+        if ("JavaServer Faces".equals(lib.getSpecificationTitle())) { // NOI18N
+            if (Version.fromJsr277NotationWithFallback("2.2").equals(lib.getSpecificationVersion())) { //NOI18N
+                return JSFVersion.JSF_2_2;
+            } else if (Version.fromJsr277NotationWithFallback("2.1").equals(lib.getSpecificationVersion())) { //NOI18N
+                return JSFVersion.JSF_2_1;
+            } else if (Version.fromJsr277NotationWithFallback("2.0").equals(lib.getSpecificationVersion())) { // NOI18N
+                return JSFVersion.JSF_2_0;
+            } else if (Version.fromJsr277NotationWithFallback("1.2").equals(lib.getSpecificationVersion())) { // NOI18N
+                return JSFVersion.JSF_1_2;
+            } else if (Version.fromJsr277NotationWithFallback("1.1").equals(lib.getSpecificationVersion())) { // NOI18N
+                return JSFVersion.JSF_1_1;
+            } else {
+                LOG.log(Level.INFO, "Unknown JSF version {0}", lib.getSpecificationVersion());
+            }
+        }
+        return null;
     }
 
     /**
