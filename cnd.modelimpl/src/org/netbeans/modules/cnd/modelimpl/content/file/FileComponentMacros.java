@@ -116,7 +116,8 @@ public class FileComponentMacros extends FileComponent implements Persistent, Se
 
     void clean() {
         _clearMacros();
-        put();
+        // PUT should be done by FileContent
+//        put();
     }
 
     private void _clearMacros() {
@@ -207,7 +208,8 @@ public class FileComponentMacros extends FileComponent implements Persistent, Se
         } finally {
             macrosLock.writeLock().unlock();
         }
-        put();
+        // PUT should be done by FileContent
+//        put();
     }
 
     public static final class NameSortedKey implements Comparable<NameSortedKey>, Persistent, SelfPersistent {

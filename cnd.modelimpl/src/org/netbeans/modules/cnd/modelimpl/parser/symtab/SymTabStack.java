@@ -78,17 +78,19 @@ public final class SymTabStack {
     }
     
     public SymTab pop() {
-        assert stack.size() > 1;
-        return stack.remove(stack.size() - 1);
+        if(!stack.isEmpty()) {
+            return stack.remove(stack.size() - 1);
+        }
+        return null;
     }
 
     public SymTab pop(CharSequence name) {
-        assert stack.size() > 1;
-        if(stack.get(stack.size() - 1).getName().equals(name)) {
-            return stack.remove(stack.size() - 1);
-        } else {
-            return null;
+        if(!stack.isEmpty()) {
+            if(stack.get(stack.size() - 1).getName().equals(name)) {
+                return stack.remove(stack.size() - 1);
+            }
         }
+        return null;
     }
     
     public SymTabEntry lookupLocal(CharSequence entry) {

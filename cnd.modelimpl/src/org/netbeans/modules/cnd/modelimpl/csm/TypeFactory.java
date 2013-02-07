@@ -348,6 +348,10 @@ public class TypeFactory {
             this.nameBuilder = nameBuilder;
         }
 
+        public NameBuilder getNameBuilder() {
+            return nameBuilder;
+        }
+        
         public void setClassifier(CsmClassifier cls) {
             this.cls = cls;
         }

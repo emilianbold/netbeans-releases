@@ -75,7 +75,7 @@ public class AnalyzeStat {
             Map.Entry<String, AgregatedStat> entry = list.get(i);
             String path = entry.getKey();
             AgregatedStat stat = entry.getValue();
-            if (stat.readNumber == 0 && stat.parseNumber == 0 && stat.itemTime > 10) {
+            if (stat.readNumber == 0 && stat.parseNumber == 0 && stat.itemTime / PerformanceIssueDetector.NANO_TO_SEC > 10) {
                 if (i + 1 < list.size()) {
                     Map.Entry<String, AgregatedStat> next = list.get(i + 1);
                     if (!(next.getKey().startsWith(path + "/") || next.getKey().startsWith(path + "\\"))) { // NOI18N
