@@ -48,6 +48,8 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -84,6 +86,7 @@ import org.netbeans.modules.php.project.classpath.IncludePathClassPathProvider;
 import org.netbeans.modules.php.project.copysupport.CopySupport;
 import org.netbeans.modules.php.project.internalserver.InternalWebServer;
 import org.netbeans.modules.php.project.problems.ProjectPropertiesProblemProvider;
+import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
 import org.netbeans.modules.php.project.ui.actions.support.ConfigAction;
 import org.netbeans.modules.php.project.ui.codecoverage.PhpCoverageProvider;
 import org.netbeans.modules.php.project.ui.customizer.CustomizerProviderImpl;
@@ -96,6 +99,7 @@ import org.netbeans.modules.php.spi.framework.PhpFrameworkProvider;
 import org.netbeans.modules.php.spi.framework.PhpModuleIgnoredFilesExtender;
 import org.netbeans.modules.php.spi.testing.PhpTestingProvider;
 import org.netbeans.modules.web.common.spi.ProjectWebRootProvider;
+import org.netbeans.modules.web.common.spi.ServerURLMappingImplementation;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.AntBasedProjectRegistration;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
@@ -613,7 +617,8 @@ public final class PhpProject implements Project {
                 InternalWebServer.createForProject(this),
                 ProjectPropertiesProblemProvider.createForProject(this),
                 UILookupMergerSupport.createProjectProblemsProviderMerger(),
-                new ProjectWebRootProviderImpl()
+                new ProjectWebRootProviderImpl(),
+                ServerMapping.create(this),
                 // ?? getRefHelper()
         });
     }
@@ -1002,4 +1007,88 @@ public final class PhpProject implements Project {
             return Collections.unmodifiableList(list);
         }
     }
+
+    private static final class ServerMapping implements ServerURLMappingImplementation, PropertyChangeListener {
+
+        private final PhpProject project;
+
+        private volatile String projectRootUrl;
+
+
+        private ServerMapping(PhpProject project) {
+            assert project != null;
+            this.project = project;
+        }
+
+        public static ServerMapping create(PhpProject project) {
+            ServerMapping serverMapping = new ServerMapping(project);
+            ProjectPropertiesSupport.addWeakPropertyEvaluatorListener(project, serverMapping);
+            return serverMapping;
+        }
+
+        @Override
+        public URL toServer(int projectContext, FileObject projectFile) {
+            init();
+            if (projectRootUrl == null) {
+                return null;
+            }
+            FileObject webRoot = project.getWebRootDirectory();
+            if (webRoot == null) {
+                return null;
+            }
+            String relPath = FileUtil.getRelativePath(webRoot, projectFile);
+            if (relPath == null) {
+                return null;
+            }
+            try {
+                return new URL(projectRootUrl + relPath);
+            } catch (MalformedURLException ex) {
+                return null;
+            }
+        }
+
+        @Override
+        public FileObject fromServer(int projectContext, URL serverURL) {
+            init();
+            if (projectRootUrl == null) {
+                return null;
+            }
+            FileObject webRoot = project.getWebRootDirectory();
+            if (webRoot == null) {
+                return null;
+            }
+            String url = CommandUtils.urlToString(serverURL, true);
+            if (url.startsWith(projectRootUrl)) {
+                return webRoot.getFileObject(url.substring(projectRootUrl.length()));
+            }
+            return null;
+        }
+
+        private void init() {
+            if (projectRootUrl == null) {
+                projectRootUrl = getProjectRootUrl();
+            }
+        }
+
+        private String getProjectRootUrl() {
+            try {
+                String url = CommandUtils.urlToString(CommandUtils.getBaseURL(project, true), true);
+                if (!url.endsWith("/")) { // NOI18N
+                    url += "/"; // NOI18N
+                }
+                return url;
+            } catch (MalformedURLException ex) {
+                return null;
+            }
+        }
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (PhpProjectProperties.URL.equals(evt.getPropertyName())) {
+                projectRootUrl = null;
+            }
+        }
+
+    }
+
 }
