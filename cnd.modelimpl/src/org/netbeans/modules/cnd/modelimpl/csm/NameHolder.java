@@ -51,6 +51,7 @@ import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
+import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableBase;
 import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
@@ -223,6 +224,20 @@ public class NameHolder {
                     @Override
                     public CsmObject getClosestTopLevelObject() {
                         return decl;
+                    }
+
+                    @Override
+                    public String toString() {
+                        FileImpl file = fileContent.getFile();
+                        String strSt = "" + start; // NOI18N
+                        String strEnd = "" + end; // NOI18N
+                        if (file != null) {
+                            int[] lineColumnSt = file.getLineColumn(start);
+                            int[] lineColumnEnd = file.getLineColumn(end);
+                            strSt = lineColumnSt[0] + ":" + lineColumnSt[1] + "/" + start; // NOI18N
+                            strEnd = lineColumnEnd[0] + ":" + lineColumnEnd[1] + "/" + end; // NOI18N
+                        }
+                        return "NameRef{" + name + "[" + strSt + "-" + strEnd + "] " + kind + ":" + decl + "}"; // NOI18N
                     }
                 };
                 fileContent.addReference(ref, decl);
