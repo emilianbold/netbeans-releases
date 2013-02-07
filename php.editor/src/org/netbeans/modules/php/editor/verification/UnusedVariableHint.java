@@ -267,9 +267,13 @@ public class UnusedVariableHint extends HintRule implements CustomisableRule {
         @Override
         public void visit(Variable node) {
             Identifier identifier = getIdentifier(node);
-            if (identifier != null) {
+            if (identifier != null && !isInGlobalContext()) {
                 process(HintVariable.create(node, identifier.getName()));
             }
+        }
+
+        private boolean isInGlobalContext() {
+            return (parentNodes.peek() instanceof Program) || (parentNodes.peek() instanceof NamespaceDeclaration);
         }
 
         private void process(HintVariable hintVariable) {
