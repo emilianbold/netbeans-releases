@@ -63,12 +63,11 @@ import org.openide.util.lookup.InstanceContent;
  * @author Alexander Simon
  */
 public class NavigatorPanelUI extends JPanel implements ExplorerManager.Provider, PropertyChangeListener {
-    private NavigatorContent content = new NavigatorContent();
-    private BeanTreeView navigatorPane;
-    private ExplorerManager explorerManager = new ExplorerManager();
+    private final NavigatorContent content = new NavigatorContent();
+    private final BeanTreeView navigatorPane;
+    private final ExplorerManager explorerManager = new ExplorerManager();
     private final InstanceContent selectedNodes = new InstanceContent();
     private final Lookup lookup = new AbstractLookup(selectedNodes);
-    private boolean isBusy = false;
     
     /** Creates new form NavigatorPanel */
     public NavigatorPanelUI() {
@@ -107,7 +106,7 @@ public class NavigatorPanelUI extends JPanel implements ExplorerManager.Provider
     
     void setBusyState(boolean busy){
         Cursor cursor;
-        if (isBusy) {
+        if (busy) {
             cursor = Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR);
         } else {
             cursor = Cursor.getDefaultCursor();
