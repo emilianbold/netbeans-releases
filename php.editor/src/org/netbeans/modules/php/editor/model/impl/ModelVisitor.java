@@ -1366,19 +1366,6 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
                         retval = varScope;
                     }
                 }
-            } else if (modelElement instanceof ClassScope) {
-                //TODO: remove this block of code
-                assert false : "This block of code should be never called (ClassScope extends VariableScope)";
-                ClassScope clsScope = (ClassScope) modelElement;
-                Collection<? extends MethodScope> allMethods = clsScope.getDeclaredMethods();
-                for (MethodScope methodScope : allMethods) {
-                    OffsetRange blockRange = methodScope.getBlockRange();
-                    if (blockRange != null && blockRange.containsInclusive(offset)) {
-                        if (retval == null || retval.getBlockRange().overlaps(methodScope.getBlockRange())) {
-                            retval = methodScope;
-                        }
-                    }
-                }
             }
         }
         return retval;
