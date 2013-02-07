@@ -76,14 +76,16 @@ public class LessCssEditorModule extends CssEditorModule {
             public boolean visit(Node node) {
                 switch (node.type()) {
                     case less_variable:
-                        int dso = snapshot.getOriginalOffset(node.from());
-                        int deo = snapshot.getOriginalOffset(node.to());
+                    case less_mixin_declaration:
+                        
+                    int dso = snapshot.getOriginalOffset(node.from());
+                    int deo = snapshot.getOriginalOffset(node.to());
                         if (dso >= 0 && deo >= 0) { //filter virtual nodes
-                            //check vendor speficic property
-                            OffsetRange range = new OffsetRange(dso, deo);
-                            getResult().put(range, Collections.singleton(ColoringAttributes.LOCAL_VARIABLE));
+                        //check vendor speficic property
+                        OffsetRange range = new OffsetRange(dso, deo);
+                        getResult().put(range, Collections.singleton(ColoringAttributes.LOCAL_VARIABLE));
 
-                        }
+                    }
                         break;
                 }
                 return false;
