@@ -188,7 +188,8 @@ public class FileComponentDeclarations extends FileComponent implements Persiste
         } finally {
             staticLock.writeLock().unlock();
         }
-        put();
+        // PUT should be done by FileContent
+//        put();
         return uids;
     }
 
@@ -434,7 +435,7 @@ public class FileComponentDeclarations extends FileComponent implements Persiste
         return new OffsetSortedKey(declaration);
     }
 
-    public CsmUID<CsmOffsetableDeclaration> addDeclaration(CsmOffsetableDeclaration decl) {
+    CsmUID<CsmOffsetableDeclaration> addDeclaration(CsmOffsetableDeclaration decl) {
         CsmUID<CsmOffsetableDeclaration> uidDecl = RepositoryUtils.put(decl);
         try {
             declarationsLock.writeLock().lock();
@@ -460,7 +461,8 @@ public class FileComponentDeclarations extends FileComponent implements Persiste
                 }
             }
         }
-        put();
+        // PUT should be done by FileContent
+//        put();
         return uidDecl;
     }
 
@@ -484,7 +486,7 @@ public class FileComponentDeclarations extends FileComponent implements Persiste
         }
     }
 
-    public void removeDeclaration(CsmOffsetableDeclaration declaration) {
+    void removeDeclaration(CsmOffsetableDeclaration declaration) {
         CsmUID<CsmOffsetableDeclaration> uidDecl;
         try {
             declarationsLock.writeLock().lock();
@@ -495,7 +497,8 @@ public class FileComponentDeclarations extends FileComponent implements Persiste
         }
         RepositoryUtils.remove(uidDecl, declaration);
         // update repository
-        put();
+        // PUT should be done by FileContent
+//        put();
     }
 
     @Override
