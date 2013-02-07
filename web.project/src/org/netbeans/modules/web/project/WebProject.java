@@ -117,6 +117,8 @@ import org.netbeans.modules.j2ee.common.SharabilityUtility;
 import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.common.dd.DDHelper;
 import org.netbeans.modules.j2ee.common.project.ArtifactCopyOnSaveSupport;
+import org.netbeans.modules.j2ee.common.project.EMGenStrategyResolverImpl;
+import org.netbeans.modules.j2ee.common.project.PersistenceProviderSupplierImpl;
 import org.netbeans.modules.j2ee.common.project.WhiteListUpdater;
 import org.netbeans.modules.java.api.common.classpath.ClassPathModifier;
 import org.netbeans.modules.java.api.common.classpath.ClassPathModifierSupport;
@@ -588,7 +590,8 @@ public final class WebProject implements Project {
             cpMod.getClassPathModifier(),
             new WebProjectOperations(this),
             new WebPersistenceProvider(this, evaluator(), cpProvider),
-            new WebEMGenStrategyResolver(),
+            new PersistenceProviderSupplierImpl(this),
+            new EMGenStrategyResolverImpl(this),
             new WebJPADataSourceSupport(this), 
             Util.createServerStatusProvider(getWebModule()),
             new WebJPAModuleInfo(this),

@@ -170,7 +170,6 @@ public class ServerSelectionHelper {
                 profiles.add(Profile.JAVA_EE_6_FULL);
             }
             profiles.add(Profile.JAVA_EE_5);
-            profiles.add(Profile.J2EE_14);
         } else {
             try {
                 profiles.addAll(findServerInstance(serverInstance).getJ2eePlatform().getSupportedProfiles(projectType));
@@ -179,10 +178,14 @@ public class ServerSelectionHelper {
                 initServerModel(null);
             }
 
-            // We don't support J2EE 1.3 anymore
+            // We don't support J2EE 1.3 and J2EE 1.4 anymore
             if (profiles.contains(Profile.J2EE_13)) {
                 profiles.remove(Profile.J2EE_13);
             }
+            if (profiles.contains(Profile.J2EE_14)) {
+                profiles.remove(Profile.J2EE_14);
+            }
+
             // We want to have Java EE 6 Full profile for all project types except Web project
             if (J2eeModule.Type.WAR.equals(projectType)) {
                 profiles.remove(Profile.JAVA_EE_7_FULL);
