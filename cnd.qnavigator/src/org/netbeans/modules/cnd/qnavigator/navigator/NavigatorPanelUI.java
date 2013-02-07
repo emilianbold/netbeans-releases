@@ -48,6 +48,7 @@ import java.awt.Cursor;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
+import java.util.Arrays;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import org.openide.explorer.ExplorerManager;
@@ -168,12 +169,8 @@ public class NavigatorPanelUI extends JPanel implements ExplorerManager.Provider
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {
-            for (Node n : (Node[]) evt.getOldValue()) {
-                selectedNodes.remove(n);
-            }
-            for (Node n : (Node[]) evt.getNewValue()) {
-                selectedNodes.add(n);
-            }
+            final Node[] val = (Node[]) evt.getNewValue();
+            selectedNodes.set(Arrays.asList(val), null);
         }
     }
 }
