@@ -62,6 +62,8 @@ import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.dd.api.common.InitParam;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
+import org.netbeans.modules.j2ee.deployment.common.api.Version;
+import org.netbeans.modules.j2ee.deployment.plugins.api.ServerLibrary;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsf.api.ConfigurationUtils;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFVersion;
@@ -79,6 +81,8 @@ import org.openide.util.Parameters;
  * @author Petr Pisl, Radko Najman, Martin Fousek
  */
 public class JSFUtils {
+
+    private static final Logger LOG = Logger.getLogger(JSFUtils.class.getName()); // NOI18N
 
     private static final String LIB_FOLDER = "lib";         //NOI18N
 
@@ -352,27 +356,6 @@ public class JSFUtils {
                     return source;
                 }
             }
-        }
-        return null;
-    }
-
-    /**
-     * Gets the JSF version supported by the WebModule. It seeks for the JSF only in the given content. This method can
-     * be slow and sholdn't be called within AWT EDT.
-     *
-     * @param content content to search in (mostly classpath content)
-     * @return JSF version if any found in the URL locations, {@code null} otherwise
-     */
-    @CheckForNull
-    public static JSFVersion getJSFVersion(@NonNull List<URL> content) throws IOException {
-        if (Util.containsClass(content, JSFUtils.JSF_2_2__API_SPECIFIC_CLASS)) {
-            return JSFVersion.JSF_2_2;
-        } else if (Util.containsClass(content, JSFUtils.JSF_2_1__API_SPECIFIC_CLASS)) {
-            return JSFVersion.JSF_2_1;
-        } else if (Util.containsClass(content, JSFUtils.JSF_2_0__API_SPECIFIC_CLASS)) {
-            return JSFVersion.JSF_2_0;
-        } else if (Util.containsClass(content, JSFUtils.JSF_1_2__API_SPECIFIC_CLASS)) {
-            return JSFVersion.JSF_1_2;
         }
         return null;
     }
