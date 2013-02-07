@@ -1087,8 +1087,6 @@ public class JavaCompletionProvider implements CompletionProvider {
                             case ANNOTATION_TYPE:
                                 addKeyword(env, DEFAULT_KEYWORD, SPACE, false);
                                 break;
-                            case INTERFACE:
-                                addKeyword(env, DEFAULT_KEYWORD, SPACE, false);
                             default:
                                 addKeyword(env, THROWS_KEYWORD, SPACE, false);
                         }
@@ -3671,6 +3669,11 @@ public class JavaCompletionProvider implements CompletionProvider {
             for (String kw : CLASS_BODY_KEYWORDS)
                 if (Utilities.startsWith(kw, prefix))
                     results.add(JavaCompletionItem.createKeywordItem(kw, SPACE, anchorOffset, false));
+            if (env.getController().getSourceVersion().compareTo(SourceVersion.RELEASE_8) >= 0
+                    && Utilities.startsWith(DEFAULT_KEYWORD, prefix)
+                    && Utilities.getPathElementOfKind(Tree.Kind.INTERFACE, env.getPath()) != null) {
+                results.add(JavaCompletionItem.createKeywordItem(DEFAULT_KEYWORD, SPACE, anchorOffset, false));
+            }
             addPrimitiveTypeKeywords(env);
         }
         
@@ -3841,22 +3844,40 @@ public class JavaCompletionProvider implements CompletionProvider {
                     kws.add(PROTECTED_KEYWORD);
                     kws.add(PRIVATE_KEYWORD);
                 }
-                if (!modifiers.contains(FINAL) && !modifiers.contains(ABSTRACT)) {
-                    kws.add(ABSTRACT_KEYWORD);
+                if (env.getController().getSourceVersion().compareTo(SourceVersion.RELEASE_8) >= 0
+                        && Utilities.getPathElementOfKind(Tree.Kind.INTERFACE, env.getPath()) != null
+                        && !modifiers.contains(STATIC) && !modifiers.contains(ABSTRACT) /*TODO: && !modifiers.contains(DEFAULT)*/) {
+                        kws.add(DEFAULT_KEYWORD);
+                }
+                if (!modifiers.contains(FINAL) && !modifiers.contains(ABSTRACT) && !modifiers.contains(VOLATILE)) {
                     kws.add(FINAL_KEYWORD);
                 }
-                if (!modifiers.contains(STATIC)) {
+                if (!modifiers.contains(FINAL) && !modifiers.contains(ABSTRACT) /*TODO: && !modifiers.contains(DEFAULT)*/
+                        && !modifiers.contains(NATIVE) && !modifiers.contains(SYNCHRONIZED)) {
+                    kws.add(ABSTRACT_KEYWORD);
+                }
+                if (!modifiers.contains(STATIC) /*TODO: && !modifiers.contains(DEFAULT)*/) {
                     kws.add(STATIC_KEYWORD);
                 }
+                if (!modifiers.contains(ABSTRACT) && !modifiers.contains(NATIVE)) {
+                    kws.add(NATIVE_KEYWORD);
+                }
+                if (!modifiers.contains(STRICTFP)) {
+                    kws.add(STRICT_KEYWORD);
+                }
+                if (!modifiers.contains(SYNCHRONIZED) && !modifiers.contains(ABSTRACT)) {
+                    kws.add(SYNCHRONIZED_KEYWORD);
+                }
+                if (!modifiers.contains(TRANSIENT)) {
+                    kws.add(TRANSIENT_KEYWORD);
+                }
+                if (!modifiers.contains(FINAL) && !modifiers.contains(VOLATILE)) {
+                    kws.add(VOLATILE_KEYWORD);
+                }
+                kws.add(VOID_KEYWORD);
                 kws.add(CLASS_KEYWORD);
                 kws.add(INTERFACE_KEYWORD);
                 kws.add(ENUM_KEYWORD);
-                kws.add(NATIVE_KEYWORD);
-                kws.add(STRICT_KEYWORD);
-                kws.add(SYNCHRONIZED_KEYWORD);
-                kws.add(TRANSIENT_KEYWORD);
-                kws.add(VOID_KEYWORD);
-                kws.add(VOLATILE_KEYWORD);
             }
             for (String kw : kws) {
                 if (Utilities.startsWith(kw, prefix))
