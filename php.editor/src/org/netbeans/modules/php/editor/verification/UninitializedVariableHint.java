@@ -331,7 +331,8 @@ public class UninitializedVariableHint extends HintRule implements CustomisableR
 
         private boolean isProcessableVariable(Variable node) {
             Identifier identifier = getIdentifier(node);
-            return identifier != null && !UNCHECKED_VARIABLES.contains(identifier.getName()) && !isInitialized(node) && !isUninitialized(node);
+            return !(parentNodes.peek() instanceof NamespaceDeclaration) && identifier != null
+                    && !UNCHECKED_VARIABLES.contains(identifier.getName()) && !isInitialized(node) && !isUninitialized(node);
         }
 
         private void initializeVariable(Variable variable) {
