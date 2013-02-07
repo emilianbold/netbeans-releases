@@ -704,7 +704,7 @@ public class SemanticAnalysis extends SemanticAnalyzer {
             boolean isDeprecated = false;
             VariableScope variableScope = model.getVariableScope(offset);
             QualifiedName fullyQualifiedName = VariousUtils.getFullyQualifiedName(qualifiedName, offset, variableScope);
-            for (TypeElement typeElement : deprecatedTypes) {
+            for (TypeElement typeElement : getDeprecatedTypes()) {
                 if (typeElement.getFullyQualifiedName().equals(fullyQualifiedName)) {
                     isDeprecated = true;
                     break;
