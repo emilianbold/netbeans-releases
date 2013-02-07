@@ -138,8 +138,12 @@ public abstract class AbstractC2CTestCase extends NbTestCase  {
         System.setProperty("netbeans.user", getWorkDir().getAbsolutePath());
 //        taskRepository = new TaskRepository(rc.getConnectorKind(), "https://q.tasktop.com/alm/s/anagramgame/tasks");
         taskRepository = new TaskRepository(rc.getConnectorKind(), "http://qa-dev.developer.us.oracle.com/s/qa-dev_netbeans-test/tasks");
+//        taskRepository = new TaskRepository(rc.getConnectorKind(), "http://qa-dev.developer.us.oracle.com");
+//        taskRepository.setProperty("cloud-dev-project", "qa-dev_netbeans-test");
+        
         
         AuthenticationCredentials authenticationCredentials = new AuthenticationCredentials(uname, passw);
+        taskRepository.setCredentials(AuthenticationType.HTTP, authenticationCredentials, false);
         taskRepository.setCredentials(AuthenticationType.REPOSITORY, authenticationCredentials, false);
         
         if(proxyHost != null && !proxyHost.isEmpty()) {

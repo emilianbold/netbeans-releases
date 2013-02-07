@@ -45,6 +45,8 @@ package org.netbeans.modules.odcs.tasks;
 import com.tasktop.c2c.server.common.service.domain.criteria.ColumnCriteria;
 import com.tasktop.c2c.server.common.service.domain.criteria.Criteria;
 import com.tasktop.c2c.server.common.service.domain.criteria.CriteriaBuilder;
+import com.tasktop.c2c.server.tasks.domain.PredefinedTaskQuery;
+import com.tasktop.c2c.server.tasks.domain.SavedTaskQuery;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
@@ -62,6 +64,7 @@ import org.eclipse.mylyn.tasks.core.data.TaskDataCollector;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.odcs.tasks.query.QueryParameters;
 import org.netbeans.modules.odcs.tasks.spi.C2CData;
+import org.netbeans.modules.odcs.tasks.spi.C2CExtender;
 
 /**
  *
@@ -126,6 +129,13 @@ public class ODCSQueryTestCase extends AbstractC2CTestCase {
 //        }
 //    }
 
+    public void testGetSavedQueries() throws IOException {
+        C2CData clientData = C2CExtender.getData(rc, taskRepository, false);
+        List<SavedTaskQuery> l = clientData.getRepositoryConfiguration().getSavedTaskQueries();
+        assertNotNull(l);
+        assertFalse(l.isEmpty());
+    }
+    
     public void testEqualsQueryCriteria() throws IOException {
         IRepositoryQuery query = new RepositoryQuery(taskRepository.getConnectorKind(), ""); // NOI18N
         
@@ -212,7 +222,7 @@ public class ODCSQueryTestCase extends AbstractC2CTestCase {
         Collector c = new Collector();
         IStatus status = rc.performQuery(taskRepository, query, c, null, new NullProgressMonitor());
         assertEquals("Status is OK", status.getCode(), IStatus.OK);
-        assertEquals(2, c.arr.size());
+        assertEquals(3, c.arr.size());
         for (TaskData td : c.arr) {
             assertTrue(td.getRoot().getMappedAttribute(TaskAttribute.COMPONENT).getValue().equals(TEST_COMPONENT2) ||
                        td.getRoot().getMappedAttribute(TaskAttribute.COMPONENT).getValue().equals(TEST_COMPONENT3));
@@ -236,7 +246,7 @@ public class ODCSQueryTestCase extends AbstractC2CTestCase {
         Collector c = new Collector();
         IStatus status = rc.performQuery(taskRepository, query, c, null, new NullProgressMonitor());
         assertEquals("Status is OK", status.getCode(), IStatus.OK);
-        assertEquals(2, c.arr.size());
+        assertEquals(3, c.arr.size());
         for (TaskData td : c.arr) {
             assertTrue(td.getRoot().getMappedAttribute(TaskAttribute.COMPONENT).getValue().equals(TEST_COMPONENT2) ||
                        td.getRoot().getMappedAttribute(TaskAttribute.COMPONENT).getValue().equals(TEST_COMPONENT3));
