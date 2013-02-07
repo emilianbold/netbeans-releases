@@ -129,6 +129,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedExcept
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.j2ee.common.project.PersistenceProviderSupplierImpl;
 import org.netbeans.modules.j2ee.common.project.WhiteListUpdater;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule.Type;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener;
@@ -455,6 +456,7 @@ public class EjbJarProject implements Project, FileChangeListener {
                 classPathModifier,
                 new EjbJarProjectOperations(this),
                 new EjbJarPersistenceProvider(this, evaluator(), cpProvider),
+                new PersistenceProviderSupplierImpl(this),
                 new EjbJarEMGenStrategyResolver(),
                 new EjbJarJPASupport(this),
                 Util.createServerStatusProvider(getEjbModule()),

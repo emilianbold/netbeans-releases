@@ -60,7 +60,6 @@ import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
 import org.netbeans.modules.j2ee.persistence.spi.provider.PersistenceProviderSupplier;
 import org.netbeans.modules.javaee.specs.support.api.JpaProvider;
 import org.netbeans.modules.javaee.specs.support.api.JpaSupport;
-import org.netbeans.spi.project.ProjectServiceProvider;
 
 /**
  * Common implementation of {@link PersistenceProviderSupplier}. Any project type
@@ -70,17 +69,6 @@ import org.netbeans.spi.project.ProjectServiceProvider;
  *
  * @author Martin Janicek
  */
-@ProjectServiceProvider(
-    service =
-        PersistenceProviderSupplier.class,
-    projectType = {
-        "org-netbeans-modules-maven/war",
-        "org-netbeans-modules-maven/ejb",
-        "org-netbeans-modules-maven/app-client",
-        "org-netbeans-modules-web-project",
-        "org-netbeans-modules-j2ee-ejbjarproject"
-    }
-)
 public final class PersistenceProviderSupplierImpl implements PersistenceProviderSupplier {
 
     private final Project project;
