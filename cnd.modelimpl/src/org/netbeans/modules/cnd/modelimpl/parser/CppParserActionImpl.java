@@ -56,6 +56,7 @@ import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
+import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
 import org.netbeans.modules.cnd.modelimpl.csm.ClassForwardDeclarationImpl.ClassForwardDeclarationBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.ClassImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.ClassImpl.ClassBuilder;
@@ -138,6 +139,7 @@ public class CppParserActionImpl implements CppParserActionEx {
     
     private final CppParserBuilderContext builderContext;
     private final SymTabStack globalSymTab;
+    private final FileContent mainFileContent;
     private Pair currentContext;
     private final Deque<Pair> contexts;
     private CsmParserProvider.CsmParserParameters params;
@@ -162,6 +164,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         this.wrapper = wrapper;
         this.contexts = new ArrayDeque<Pair>();
         currentContext = new Pair(params.getMainFile());
+        mainFileContent = currentContext.file.getParsingFileContent();
 //        this.contexts.push(currentContext);
         this.globalSymTab = createGlobal();
         this.builderContext = new CppParserBuilderContext();
@@ -1267,6 +1270,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         if (TRACE) System.err.println(contexts.size() + ":" + currentContext.file.getAbsolutePath() + " >>> " + file.getAbsolutePath());
         this.contexts.push(currentContext);
         currentContext = new Pair(file);
+        mainFileContent.addIncludedFileContent(currentContext.file.getParsingFileContent());
     }
 
     @Override

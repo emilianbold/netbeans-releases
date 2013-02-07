@@ -270,6 +270,18 @@ public final class FileContent implements MutableDeclarationsContainer {
         return fakeIncludeRegistrations;
     }
     
+    private final Set<FileContent> includedFileContents = new HashSet<FileContent>(0);
+
+    public final void addIncludedFileContent(FileContent includedFileContent) {
+        assert TraceFlags.PARSE_HEADERS_WITH_SOURCES;
+        boolean added = includedFileContents.add(includedFileContent);
+        traceAddRemove(added ? "+FILE" : "SKIP", includedFileContent.fileImpl.getAbsolutePath()); // NOI18N
+    }
+
+    public Set<FileContent> getIncludedFileContents() {
+        return Collections.unmodifiableSet(includedFileContents);
+    }
+
     public void addError(ErrorDirectiveImpl error) {
         checkValid();
         traceAddRemove("ERROR", error); // NOI18N
@@ -511,7 +523,7 @@ public final class FileContent implements MutableDeclarationsContainer {
     @Override
     public void removeDeclaration(CsmOffsetableDeclaration declaration) {
         FileComponentDeclarations fileDeclarations = getFileDeclarations();
-        traceAddRemove("remove", declaration);
+        traceAddRemove("remove", declaration); // NOI18N
         fileDeclarations.removeDeclaration(declaration);
         if (persistent) {
             fileDeclarations.put();
@@ -567,12 +579,12 @@ public final class FileContent implements MutableDeclarationsContainer {
     }
 
     private static final boolean TRACE = false;
-    private void traceAddRemove(String mark, CsmObject inst) {
+    private void traceAddRemove(String mark, Object obj) {
         if (TRACE) {
             CharSequence path = fileImpl.getAbsolutePath();
             CndUtils.assertTrueInConsole(persistent, "MODIFYING ", path);
             if (path.toString().contains("NetBeansProjects")) { // NOI18N
-                System.err.printf("%-65s %-5s %s\n", path, mark, inst);
+                System.err.printf("%-65s %-5s %s\n", path, mark, obj);
             }
         }
     }
