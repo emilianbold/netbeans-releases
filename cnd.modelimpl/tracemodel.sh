@@ -121,6 +121,7 @@ function classpath() {
     CP=${CP}${path_sep}${ide}/modules/org-netbeans-modules-parsing-lucene.jar
     CP=${CP}${path_sep}${ide}/modules/org-netbeans-libs-lucene.jar
     CP=${CP}${path_sep}${ide}/modules/org-netbeans-libs-antlr3-runtime.jar
+    CP=${CP}${path_sep}${ide}/modules/com-jcraft-jsch.jar
     CP=${CP}${path_sep}${ide}/modules/ext/antlr-runtime-3.4.jar
 
     CP=${CP}${path_sep}${platform}/lib/org-openide-util.jar
