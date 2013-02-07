@@ -119,6 +119,11 @@ public class NBClassReader extends JavadocClassReader {
                     attachParameterAnnotations(sym);
                 }
             },
+            new NBAttributeReader(nbNames._org_netbeans_SourceLevelTypeAnnotations, Version.V52, CLASS_OR_MEMBER_ATTRIBUTE) {
+                protected void read(Symbol sym, int attrLen) {
+                    attachTypeAnnotations(sym);
+                }
+            },
         };
 
         for (NBAttributeReader r: readers)

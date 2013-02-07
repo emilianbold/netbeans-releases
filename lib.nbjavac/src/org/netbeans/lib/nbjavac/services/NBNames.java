@@ -75,6 +75,7 @@ public class NBNames {
     public final Name _org_netbeans_ParameterNames;
     public final Name _org_netbeans_SourceLevelAnnotations;
     public final Name _org_netbeans_SourceLevelParameterAnnotations;
+    public final Name _org_netbeans_SourceLevelTypeAnnotations;
 
     protected NBNames(Context context) {
         Names n = Names.instance(context);
@@ -84,6 +85,7 @@ public class NBNames {
         _org_netbeans_ParameterNames = n.fromString("org.netbeans.ParameterNames");
         _org_netbeans_SourceLevelAnnotations = n.fromString("org.netbeans.SourceLevelAnnotations");
         _org_netbeans_SourceLevelParameterAnnotations = n.fromString("org.netbeans.SourceLevelParameterAnnotations");
+        _org_netbeans_SourceLevelTypeAnnotations = n.fromString("org.netbeans.SourceLevelTypeAnnotations");
     }
 
 }
