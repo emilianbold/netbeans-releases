@@ -156,7 +156,7 @@ public class FileComponentReferences extends FileComponent implements Persistent
         fileUID = null;
     }
 
-    public void clean() {
+    void clean() {
         referencesLock.writeLock().lock();
         try {
             references.clear();
@@ -165,7 +165,8 @@ public class FileComponentReferences extends FileComponent implements Persistent
         } finally {
             referencesLock.writeLock().unlock();
         }
-        put();
+        // PUT should be done by FileContent
+        //put();
     }
 
     public Collection<CsmReference> getReferences(Collection<CsmObject> objects) {
@@ -261,6 +262,7 @@ public class FileComponentReferences extends FileComponent implements Persistent
             referencesLock.writeLock().unlock();
         }
         if (remove != null) {
+            // TODO: PUT should be done by FileContent?
             put();
         }
     }
@@ -320,6 +322,7 @@ public class FileComponentReferences extends FileComponent implements Persistent
         } finally {
             referencesLock.writeLock().unlock();
         }
+        // TODO: PUT should be done by FileContent?
         put();
         //respons_hit++;
         if (index) {
