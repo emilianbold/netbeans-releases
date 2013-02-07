@@ -1,5 +1,6 @@
 <?php
 //START
+function createsLocalVarScope() {
 class UnusedVariableClassName {
     public static $staticField;
     public function __construct() {}
@@ -118,7 +119,7 @@ function test3() {
     function ($index) { };
     function () { $index = 5; };
 }
-
+}
 ?>
 
 <?= $usedShortEcho; ?>
