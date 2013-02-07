@@ -3421,19 +3421,14 @@ public class Term extends JComponent implements Accessible {
 
 	@Override
         public void op_line_feed() {
-            // NL line feed ctrl-J
+            // \LF line feed ctrl-J
             // move cursor down one line and if goes past the screen
             // add a new line.
             if (debugOps()) {
                 System.out.println("op_line_feed"); // NOI18N
             }
-            Line last_line = cursor_line();
-            /* DEBUG
-            if (last_line == null) {
-            Thread.dumpStack();
-            printStats("last_line == null in op_line_feed()");// NOI18N
-            }
-             */
+            boolean old_atw = cursor_line().setAboutToWrap(false);
+
             st.cursor.row++;
             if (possiblyScrollDown()) {
                 buf.addLineAt(st.cursor.row);
@@ -3442,15 +3437,9 @@ public class Term extends JComponent implements Accessible {
                     System.out.println("op_line_feed ADJUSTED"); // NOI18N
                 }
             }
-            // have new line inherit cursorAtEnd
-            boolean atw = last_line.isAboutToWrap();
-            cursor_line().setAboutToWrap(atw);
-            last_line.setAboutToWrap(false);
+            cursor_line().setAboutToWrap(old_atw);
 
             n_linefeeds++;
-
-        // See repaint() for an explanation of this.
-        // repaint(false);
         }
 
 	@Override

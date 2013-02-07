@@ -2,6 +2,20 @@
 187345 - wrong characters in Terminals
 
 	Implement
+		IND (Index)		\ESCD		scrolls
+		line feed		\LF		== IND
+		CUD (CUrsor Down)	\ESC[%dB	doesn't scroll
+	using op_ind() and op_cud(). op_line_feed() maps to op_ind() for
+	bwd compatibility.
+
+	This fixes a bug where \ESC[%dB would previously scroll.
+
+207965 - Terminal incorrectly displays prompt string
+187345 - wrong characters in Terminals
+
+	changeset   : 242712:a9901f0515a4
+
+	Implement
 		RI (Reverse Index)	\ESCM		scrolls
 		CUU (Cursor up)		\ESC[%dA	doesn't scroll
 	using op_ri() and op_cuu(). op_up() maps to op_ri() for bwd
