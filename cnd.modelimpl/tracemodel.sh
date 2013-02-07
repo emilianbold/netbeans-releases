@@ -251,9 +251,13 @@ function params() {
 		    DEFS="${DEFS} ${1#-J}"
 		    ;;
             -c|--clean)
-                    shift 
                     echo "clean userdir ${USERDIR}"
                     rm -rf $USERDIR
+                    ;;
+            --cxx|-cxx)
+                    echo "use new straight parser"
+                    DEFS="${DEFS} -Dcnd.modelimpl.cpp.parser.new.grammar=true"
+                    DEFS="${DEFS} -Dcnd.modelimpl.parse.headers.with.sources=true"
                     ;;
 	    --nb)
 		    shift
@@ -308,7 +312,7 @@ function params() {
                     echo "using $1 parser threads"
                     DEFS="${DEFS} -Dcnd.modelimpl.parser.threads=$1"
                     ;;
-            --quite|--q*) 
+            --quite|-q*) 
                     QUITE="y"
                     ;;
 	    *)
