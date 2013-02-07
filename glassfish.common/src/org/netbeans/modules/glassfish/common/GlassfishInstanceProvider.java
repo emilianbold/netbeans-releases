@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -119,7 +119,6 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
                             new String[]{EE6_INSTANCES_PATH, EE6WC_INSTANCES_PATH},
                             null,
                             true, 
-                            new String[]{"docs/javaee-doc-api.jar"}, // NOI18N
                             new String[]{"--nopassword"}, // NOI18N
                             new CommandFactory()  {
 
@@ -154,7 +153,6 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
                             org.openide.util.NbBundle.getMessage(GlassfishInstanceProvider.class,
                                 "STR_PRELUDE_SERVER_NAME", new Object[]{}), // NOI18N
                             false,
-                            new String[]{"docs/javaee-doc-api.jar"}, // NOI18N
                             null,
                             new CommandFactory()  {
 
@@ -185,7 +183,6 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
     final private String displayName;
     final private String[] uriFragments;
     final private boolean needsJdk6;
-    final private String[] javadocFilenames;
     final private List<String> noPasswordOptions;
     final private CommandFactory cf;
     final private Lookup.Result<RegisteredDDCatalog> lookupResult = Lookups.forPath(Util.GF_LOOKUP_PATH).lookupResult(RegisteredDDCatalog.class);
@@ -196,7 +193,6 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
             String[] instancesDirNames,
             String displayName, 
             boolean needsJdk6,
-            String[] javadocFilenames,
             String[] noPasswordOptionsArray, 
             CommandFactory cf 
             ) {
@@ -204,7 +200,6 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
         this.displayName = displayName;
         this.uriFragments = uriFragments;
         this.needsJdk6 = needsJdk6;
-        this.javadocFilenames = javadocFilenames;
         this.noPasswordOptions = new ArrayList<String>();
         if (null != noPasswordOptionsArray) {
             noPasswordOptions.addAll(Arrays.asList(noPasswordOptionsArray));
@@ -252,10 +247,6 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
         if (null != firstInstance) {
             catalog.refreshRunTimeDDCatalog(gip, firstInstance.getGlassfishRoot());
         }
-    }
-
-    public String[] getAssociatedJavaDoc() {
-        return javadocFilenames.clone();
     }
 
     private GlassfishInstance getFirstServerInstance() {

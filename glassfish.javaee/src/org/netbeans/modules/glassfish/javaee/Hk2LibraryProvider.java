@@ -41,7 +41,9 @@
  */
 package org.netbeans.modules.glassfish.javaee;
 
+import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -59,9 +61,12 @@ import org.glassfish.tools.ide.server.config.LibraryConfig;
 import org.glassfish.tools.ide.utils.ServerUtils;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
+import static org.netbeans.modules.glassfish.javaee.ide.Hk2PluginProperties.fileToUrl;
 import org.netbeans.modules.j2ee.deployment.common.api.J2eeLibraryTypeProvider;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
+import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
+import org.openide.modules.InstalledFileLocator;
 
 /**
  * GlassFish bundled libraries provider.
@@ -430,7 +435,9 @@ public class Hk2LibraryProvider /*implements JaxRsStackSupportImplementation*/ {
         List<GlassFishLibrary> gfLibs = lb.getLibraries(serverVersion);
         for (GlassFishLibrary gfLib : gfLibs) {
             if (namePattern.matcher(gfLib.getLibraryID()).matches()) {
+                List<String> javadocLookups = gfLib.getJavadocLookups();
                 lib.setName(libraryName);
+                // Build class path
                 List<URL> cp = new ArrayList<URL>();
                 for (URL url : gfLib.getClasspath()) {
                     if (FileUtil.isArchiveFile(url)) {
@@ -439,10 +446,26 @@ public class Hk2LibraryProvider /*implements JaxRsStackSupportImplementation*/ {
                         cp.add(url);
                     }
                 }
+                // Build java docs
+                List<URL> javadoc = new ArrayList<URL>();
+                if (javadocLookups != null) {
+                    for (String lookup : javadocLookups) {
+                        try {
+                            File j2eeDoc = InstalledFileLocator
+                                    .getDefault().locate(lookup, null, false);
+                            if (j2eeDoc != null) {
+                                javadoc.add(fileToUrl(j2eeDoc));
+                            }
+                        } catch (MalformedURLException e) {
+                            ErrorManager.getDefault()
+                                    .notify(ErrorManager.INFORMATIONAL, e);
+                        }
+                    }
+                }
                 lib.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_CLASSPATH,
                         cp);
                 lib.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_JAVADOC,
-                        gfLib.getJavadocs());
+                        javadoc);
             }
         }
     }

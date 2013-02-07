@@ -150,30 +150,6 @@ public class Hk2PluginProperties {
     }
 
     /**
-     *
-     * @return
-     */
-    public List<URL> getJavadocs() {
-        String path = ip.getProperty(PROP_JAVADOCS);
-        if (path == null) {
-            ArrayList<URL> list = new ArrayList<URL>();
-            for (String possible: su.getAssociatedJavaDoc()) {
-                try {
-                    File j2eeDoc = InstalledFileLocator.getDefault().locate(possible, null, false); // NOI18N
-
-                    if (j2eeDoc != null) {
-                        list.add(fileToUrl(j2eeDoc));
-                    }
-                } catch (MalformedURLException e) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-                }
-            }
-            return list;
-        }
-        return tokenizePath(path);
-    }
-
-    /**
      * Splits an Ant-style path specification into the list of URLs.  Tokenizes on
      * <code>:</code> and <code>;</code>, paying attention to DOS-style components
      * such as <samp>C:\FOO</samp>. Also removes any empty components.
