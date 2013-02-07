@@ -9,8 +9,8 @@
                 <subpackages>jdk.nashorn</subpackages>
             </public-packages>
             <class-path-extension>
-                <runtime-relative-path>ext/nashorn-5f2db2d8a7fa-patched.jar</runtime-relative-path>
-                <binary-origin>external/nashorn-5f2db2d8a7fa-patched.jar</binary-origin>
+                <runtime-relative-path>ext/nashorn-02f810c26ff9-patched.jar</runtime-relative-path>
+                <binary-origin>external/nashorn-02f810c26ff9-patched.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/asm-all-4.0.jar</runtime-relative-path>

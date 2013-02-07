@@ -1185,7 +1185,7 @@ public class FormatVisitor extends NodeVisitor {
         return ret;
     }
 
-    private static int getStart(Node node) {
+    private int getStart(Node node) {
         // unfortunately in binary node the token represents operator
         // so string fix would not work
         if (node instanceof BinaryNode) {
@@ -1198,13 +1198,19 @@ public class FormatVisitor extends NodeVisitor {
         long firstToken = node.getToken();
         TokenType type = jdk.nashorn.internal.parser.Token.descType(firstToken);
         if (type.equals(TokenType.STRING) || type.equals(TokenType.ESCSTRING)) {
-            start--;
+            ts.move(start - 1);
+            if (ts.moveNext()) {
+                Token<? extends JsTokenId> token = ts.token();
+                if (token.id() == JsTokenId.STRING_BEGIN) {
+                    start--;
+                }
+            }
         }
 
         return start;
     }
 
-    private static int getStart(BinaryNode node) {
+    private int getStart(BinaryNode node) {
         return getStart(node.lhs());
     }
 
