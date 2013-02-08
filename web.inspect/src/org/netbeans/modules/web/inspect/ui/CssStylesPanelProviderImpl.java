@@ -119,7 +119,7 @@ public abstract class CssStylesPanelProviderImpl extends JPanel implements CssSt
     /**
      * Wrapper for the lookup of the current view.
      */
-    private MatchedRulesLookup lookup;
+    private final MatchedRulesLookup lookup;
     /**
      * Determines whether the view is active or not.
      */
@@ -361,8 +361,8 @@ public abstract class CssStylesPanelProviderImpl extends JPanel implements CssSt
     @ServiceProvider(service = CssStylesPanelProvider.class, position = 1000)
     public static class SelectionView extends CssStylesPanelProviderImpl {
 
-        private static String SELECTION_PANEL_ID = "selection"; //NOI18N
-        private static Collection<String> MIME_TYPES = new HashSet(Arrays.asList(new String[]{"text/html", "text/xhtml"}));
+        private static final String SELECTION_PANEL_ID = "selection"; //NOI18N
+        private static final Collection<String> MIME_TYPES = new HashSet(Arrays.asList(new String[]{"text/html", "text/xhtml"}));
 
         @Override
         public String getPanelID() {

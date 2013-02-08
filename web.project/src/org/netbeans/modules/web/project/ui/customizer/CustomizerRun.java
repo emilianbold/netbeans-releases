@@ -45,7 +45,6 @@
 package org.netbeans.modules.web.project.ui.customizer;
 
 
-import java.awt.Component;
 import java.io.IOException;
 import javax.swing.*;
 import javax.swing.event.TableModelEvent;
@@ -61,7 +60,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
-import org.netbeans.spi.project.ProjectConfiguration;
+import org.netbeans.modules.web.browser.api.WebBrowserSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -107,27 +106,9 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
             jTextFieldJ2EE_Display.setText(j2eeProfile.getDisplayName());
         }
         jBrowserCombo.setModel(uiProperties.BROWSERS_MODEL);
-        jBrowserCombo.setRenderer(new BrowserRenderer(jBrowserCombo.getRenderer()));
+        jBrowserCombo.setRenderer(WebBrowserSupport.createBrowserRenderer());
 
         setDeployOnSaveState();
-    }
-
-    private static final class BrowserRenderer implements ListCellRenderer {
-
-        private final ListCellRenderer original;
-
-        public BrowserRenderer(ListCellRenderer original) {
-            this.original = original;
-        }
-
-        @Override
-        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-            if (value instanceof WebProjectProperties.BrowserWrapper) {
-                value = ((WebProjectProperties.BrowserWrapper) value).getDesc();
-            }
-            return original.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-        }
-
     }
 
     /** This method is called from within the constructor to

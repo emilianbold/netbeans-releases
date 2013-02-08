@@ -70,6 +70,7 @@ import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -156,8 +157,14 @@ public class CSSStylesSelectionPanel extends JPanel {
     private ListView rulePane;
     /** Explorer manager for Style Cascade. */
     private ExplorerManager rulePaneManager;
+    /** Panel for messages. */
+    private JPanel messagePanel;
     /** Label for messages. */
     private JLabel messageLabel;
+    /** Select mode button next to the property pane. */
+    private AbstractButton selectModeButton1;
+    /** Select mode button next to the message label. */
+    private AbstractButton selectModeButton2;
     /** Header of Property Summary section. */
     private JLabel propertySummaryLabel;
     /** Component showing the style information for the current selection. */
@@ -176,7 +183,7 @@ public class CSSStylesSelectionPanel extends JPanel {
         splitPane.setResizeWeight(0.5);
         splitPane.setBorder(null);
         selectionView = splitPane;
-        initMessageLabel();
+        initMessagePanel();
         initSelectionOfOwningRule();
         add(selectionView, BorderLayout.CENTER);
         updateContent(null, false);
@@ -223,12 +230,14 @@ public class CSSStylesSelectionPanel extends JPanel {
         propertySummaryLabel.setBorder(BorderFactory.createEmptyBorder(0, 2, 0, 0));
         titlePanel.add(propertySummaryLabel);
         titlePanel.add(Box.createHorizontalGlue());
+        selectModeButton1 = createSelectModeButton();
         JToggleButton pseudoClassToggle = new JToggleButton();
         pseudoClassToggle.setFocusPainted(false);
         pseudoClassToggle.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/web/inspect/resources/elementStates.png", true)); // NOI18N
         pseudoClassToggle.setToolTipText(NbBundle.getMessage(CSSStylesSelectionPanel.class, "CSSStylesSelectionPanel.pseudoClasses")); // NOI18N
         CustomToolbar toolBar = new CustomToolbar();
         toolBar.addButton(pseudoClassToggle);
+        toolBar.addButton(selectModeButton1);
         titlePanel.add(toolBar);
         headerPanel.add(titlePanel, BorderLayout.PAGE_START);
         headerPanel.add(createPseudoClassPanel(pseudoClassToggle), BorderLayout.CENTER);
@@ -274,7 +283,7 @@ public class CSSStylesSelectionPanel extends JPanel {
     /** Name of the client property that holds a pseudo-class that is affected by the check-box. */
     private static final String PSEUDO_CLASS = "pseudoClass"; // NOI18N
     /** Check-boxes that can be used to force pseudo-classes. */
-    private List<JCheckBox> pseudoClassCheckBoxes = new ArrayList<JCheckBox>(4);
+    private final List<JCheckBox> pseudoClassCheckBoxes = new ArrayList<JCheckBox>(4);
 
     /**
      * Creates a check-box that can be used to force the specified pseudo-class.
@@ -480,15 +489,56 @@ public class CSSStylesSelectionPanel extends JPanel {
     }
 
     /**
-     * Initializes the label used to display messages.
+     * Initializes the panel used to display messages.
      */
-    private void initMessageLabel() {
+    private void initMessagePanel() {
         messageLabel = new JLabel();
         messageLabel.setHorizontalAlignment(SwingConstants.CENTER);
         messageLabel.setVerticalAlignment(SwingConstants.CENTER);
         messageLabel.setEnabled(false);
         messageLabel.setBackground(new BeanTreeView().getViewport().getView().getBackground());
         messageLabel.setOpaque(true);
+
+        selectModeButton2 = createSelectModeButton();
+
+        CustomToolbar toolbar = new CustomToolbar();
+        toolbar.addButton(selectModeButton2);
+
+        JPanel titlePanel = new JPanel();
+        titlePanel.setLayout(new BoxLayout(titlePanel, BoxLayout.X_AXIS));
+        titlePanel.add(Box.createHorizontalGlue());
+        titlePanel.add(toolbar);
+
+        messagePanel = new JPanel();
+        messagePanel.setLayout(new BorderLayout());
+        messagePanel.add(titlePanel, BorderLayout.PAGE_START);
+        messagePanel.add(messageLabel, BorderLayout.CENTER);
+    }
+
+    /**
+     * Creates a button that controls the select mode in the browser.
+     * 
+     * @return button that controls the select mode in the browser.
+     */
+    private AbstractButton createSelectModeButton() {
+        AbstractButton button = new JToggleButton();
+        button.setFocusPainted(false);
+        button.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/web/inspect/resources/selectionMode.png", true)); // NOI18N
+        button.setToolTipText(NbBundle.getMessage(CSSStylesSelectionPanel.class, "CSSStylesSelectionPanel.inspectMode")); // NOI18N
+        button.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                AbstractButton button = (AbstractButton)e.getSource();
+                final boolean selectMode = button.isSelected();
+                RequestProcessor.getDefault().post(new Runnable() {
+                    @Override
+                    public void run() {
+                        pageModel.setSelectionMode(selectMode);
+                    }
+                });
+            }
+        });
+        return button;
     }
 
     /**
@@ -670,6 +720,26 @@ public class CSSStylesSelectionPanel extends JPanel {
     }
 
     /**
+     * Updates the select mode button(s).
+     * 
+     * @param pageModel page model to use for the update.
+     */
+    void updateSelectMode(final PageModel pageModel) {
+        if (EventQueue.isDispatchThread()) {
+            boolean selectMode = pageModel.isSelectionMode();
+            selectModeButton1.setSelected(selectMode);
+            selectModeButton2.setSelected(selectMode);
+        } else {
+            EventQueue.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    updateSelectMode(pageModel);
+                }
+            });
+        }
+    }
+
+    /**
      * Pre-selects the first property in the property pane (and
      * the corresponding rule in the rule pane) or just the first
      * rule in the rule pane.
@@ -702,11 +772,11 @@ public class CSSStylesSelectionPanel extends JPanel {
     private void showLabel(String key) {
         if ((key == null) != (selectionView.getParent() != null)) {
             if (key == null) {
-                remove(messageLabel);
+                remove(messagePanel);
                 add(selectionView);
             } else {
                 remove(selectionView);
-                add(messageLabel);
+                add(messagePanel);
             }
         }
         if (key != null) {
@@ -759,6 +829,8 @@ public class CSSStylesSelectionPanel extends JPanel {
             String propertyName = evt.getPropertyName();
             if (PageModel.PROP_SELECTED_NODES.equals(propertyName)) {
                 updateContentImpl(pageModel, false);
+            } else if (PageModel.PROP_SELECTION_MODE.equals(propertyName)) {
+                updateSelectMode(pageModel);
             }
         }
 
@@ -769,9 +841,9 @@ public class CSSStylesSelectionPanel extends JPanel {
      */
     static class ExplorerManagerProviderPanel extends JPanel implements ExplorerManager.Provider, Lookup.Provider {
         /** Explorer manager provided by this panel. */
-        private ExplorerManager manager = new ExplorerManager();
+        private final ExplorerManager manager = new ExplorerManager();
         /** Lookup provided by this panel. */
-        private Lookup lookup = ExplorerUtils.createLookup(manager, getActionMap());
+        private final Lookup lookup = ExplorerUtils.createLookup(manager, getActionMap());
 
         @Override
         public final ExplorerManager getExplorerManager() {
@@ -819,7 +891,7 @@ public class CSSStylesSelectionPanel extends JPanel {
                 // Text rendered in the first column of tree-table (i.e. in the tree)
                 // is not baseline-aligned with the text in the other columns for some reason.
                 // This border attempts to work around this problem.
-                private Border border[] = {
+                private final Border border[] = {
                     BorderFactory.createEmptyBorder(1,0,0,0),
                     BorderFactory.createEmptyBorder(1,3,0,0),
                 };
@@ -887,19 +959,19 @@ public class CSSStylesSelectionPanel extends JPanel {
      */
     static class StylesRenderer extends DefaultListCellRenderer {
         /** Component used for rendering. */
-        private JPanel renderer = new JPanel();
+        private final JPanel renderer = new JPanel();
         /** Label showing information about the matched node. */
-        private JLabel matchedNodeLabel = new JLabel();
+        private final JLabel matchedNodeLabel = new JLabel();
         /** Label showing the selector. */
-        private JLabel selectorLabel = new JLabel();
+        private final JLabel selectorLabel = new JLabel();
         /** Label showing the media query. */
-        private JLabel mediaLabel = new JLabel();
+        private final JLabel mediaLabel = new JLabel();
         /** Label showing the location of the rule. */
-        private JLabel ruleLocationLabel = new JLabel();
+        private final JLabel ruleLocationLabel = new JLabel();
         /** Panel showing the location of the rule. */
-        private JPanel ruleLocationPanel = new JPanel();
+        private final JPanel ruleLocationPanel = new JPanel();
         /** HTML renderer used to obtain background color. */
-        private ListCellRenderer htmlRenderer = HtmlRenderer.createRenderer();
+        private final ListCellRenderer htmlRenderer = HtmlRenderer.createRenderer();
 
         /**
          * Creates a new {@code StylesRenderer}.

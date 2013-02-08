@@ -111,7 +111,8 @@ public class FileComponentInstantiations extends FileComponent implements Persis
 
     void clean() {
         _clearInstantiations();
-        put();
+        // PUT should be done by FileContent
+//        put();
     }
 
     private void _clearInstantiations() {
@@ -125,6 +126,7 @@ public class FileComponentInstantiations extends FileComponent implements Persis
     }
 
     public void addInstantiation(CsmInstantiation inst) {
+        // TODO: is it safe to put smth into repository directly?
         CsmUID<CsmInstantiation> instUID = RepositoryUtils.put(inst);
         assert instUID != null;
         try {
@@ -133,6 +135,7 @@ public class FileComponentInstantiations extends FileComponent implements Persis
         } finally {
             instantiationsLock.writeLock().unlock();
         }
+        // TODO: PUT should be done by FileContent?
         put();
     }
 

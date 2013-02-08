@@ -47,7 +47,10 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
+import java.io.FileFilter;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -84,6 +87,7 @@ import org.netbeans.modules.php.project.classpath.IncludePathClassPathProvider;
 import org.netbeans.modules.php.project.copysupport.CopySupport;
 import org.netbeans.modules.php.project.internalserver.InternalWebServer;
 import org.netbeans.modules.php.project.problems.ProjectPropertiesProblemProvider;
+import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
 import org.netbeans.modules.php.project.ui.actions.support.ConfigAction;
 import org.netbeans.modules.php.project.ui.codecoverage.PhpCoverageProvider;
 import org.netbeans.modules.php.project.ui.customizer.CustomizerProviderImpl;
@@ -95,7 +99,12 @@ import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.netbeans.modules.php.spi.framework.PhpFrameworkProvider;
 import org.netbeans.modules.php.spi.framework.PhpModuleIgnoredFilesExtender;
 import org.netbeans.modules.php.spi.testing.PhpTestingProvider;
+import org.netbeans.modules.web.browser.api.BrowserSupport;
+import org.netbeans.modules.web.browser.api.WebBrowser;
+import org.netbeans.modules.web.browser.api.WebBrowserSupport;
+import org.netbeans.modules.web.browser.spi.PageInspectorCustomizer;
 import org.netbeans.modules.web.common.spi.ProjectWebRootProvider;
+import org.netbeans.modules.web.common.spi.ServerURLMappingImplementation;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.AntBasedProjectRegistration;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
@@ -114,6 +123,7 @@ import org.netbeans.spi.search.SearchFilterDefinition;
 import org.netbeans.spi.search.SearchInfoDefinition;
 import org.netbeans.spi.search.SearchInfoDefinitionFactory;
 import org.netbeans.spi.search.SubTreeSearchOptions;
+import org.openide.awt.HtmlBrowser;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -177,7 +187,8 @@ public final class PhpProject implements Project {
     final TestingProviders testingProviders;
     private final ChangeListener frameworksListener;
 
-    volatile FileChangeListener sourceDirectoryFileChangeListener = null;
+    // FS changes
+    private final SourceDirectoryFileChangeListener sourceDirectoryFileChangeListener = new SourceDirectoryFileChangeListener();
 
     // project's property changes
     public static final String PROP_FRAMEWORKS = "frameworks"; // NOI18N
@@ -210,7 +221,8 @@ public final class PhpProject implements Project {
         sourceRoots.addPropertyChangeListener(new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
-                sourceDirectoryFileChangeListener = null;
+                removeSourceDirListener();
+                addSourceDirListener();
             }
         });
         frameworksListener = new ChangeListener() {
@@ -304,11 +316,6 @@ public final class PhpProject implements Project {
 
     FileObject getSourcesDirectory() {
         for (FileObject root : sourceRoots.getRoots()) {
-            if (sourceDirectoryFileChangeListener == null) {
-                // no locks here, it is ok if the listener is created and attached more times (gc takes care of it)
-                sourceDirectoryFileChangeListener = new SourceDirectoryFileChangeListener();
-                root.addFileChangeListener(FileUtil.weakFileChangeListener(sourceDirectoryFileChangeListener, root));
-            }
             // return the first one
             return root;
         }
@@ -353,6 +360,7 @@ public final class PhpProject implements Project {
             return null;
         }
         FileObject sources = getSourcesDirectory();
+        assert sources != null;
         String webRootProperty = eval.getProperty(PhpProjectProperties.WEB_ROOT);
         if (webRootProperty == null) {
             // web root directory not set, return sources
@@ -365,6 +373,36 @@ public final class PhpProject implements Project {
         LOGGER.log(Level.INFO, "Web root directory {0} not found for project {1}", new Object[] {webRootProperty, getName()});
         // web root directory not found, return sources
         return sources;
+    }
+
+    void addSourceDirListener() {
+        FileObject sourcesDirectory = getSourcesDirectory();
+        if (sourcesDirectory == null) {
+            return;
+        }
+        synchronized (sourceDirectoryFileChangeListener) {
+            sourceDirectoryFileChangeListener.setSourceDir(sourcesDirectory);
+            FileUtil.addRecursiveListener(sourceDirectoryFileChangeListener, FileUtil.toFile(sourcesDirectory), new FileFilter() {
+                @Override
+                public boolean accept(File pathname) {
+                    return isVisible(pathname);
+                }
+            }, null);
+        }
+    }
+
+    void removeSourceDirListener() {
+        FileObject sourceDir = sourceDirectoryFileChangeListener.getSourceDir();
+        assert sourceDir != null;
+        synchronized (sourceDirectoryFileChangeListener) {
+            try {
+                FileUtil.removeRecursiveListener(sourceDirectoryFileChangeListener, FileUtil.toFile(sourceDir));
+            } catch (IllegalArgumentException ex) {
+                LOGGER.log(Level.INFO, null, ex);
+            } finally {
+                sourceDirectoryFileChangeListener.setSourceDir(null);
+            }
+        }
     }
 
     public PhpModule getPhpModule() {
@@ -613,7 +651,8 @@ public final class PhpProject implements Project {
                 InternalWebServer.createForProject(this),
                 ProjectPropertiesProblemProvider.createForProject(this),
                 UILookupMergerSupport.createProjectProblemsProviderMerger(),
-                new ProjectWebRootProviderImpl()
+                new ProjectWebRootProviderImpl(),
+                ClientSideDevelopmentSupport.create(this),
                 // ?? getRefHelper()
         });
     }
@@ -626,6 +665,7 @@ public final class PhpProject implements Project {
         resetIgnoredFolders();
         ignoredFoldersChangeSupport.fireChange();
     }
+
 
     private final class Info implements ProjectInformation {
 
@@ -672,6 +712,8 @@ public final class PhpProject implements Project {
         protected void projectOpened() {
             new ProjectUpgrader(PhpProject.this).upgrade();
 
+            addSourceDirListener();
+
             testingProviders.projectOpened();
             frameworks.projectOpened();
 
@@ -707,6 +749,8 @@ public final class PhpProject implements Project {
         @Override
         protected void projectClosed() {
             try {
+                removeSourceDirListener();
+
                 testingProviders.projectClosed();
                 frameworks.projectClosed();
 
@@ -803,43 +847,83 @@ public final class PhpProject implements Project {
         }
     }
 
-    // if source folder changes, reset frameworks (new framework can be found in project)
     private final class SourceDirectoryFileChangeListener implements FileChangeListener {
+
+        // @GuardedBy("this")
+        private FileObject sourceDir;
+
+
+        public synchronized FileObject getSourceDir() {
+            return sourceDir;
+        }
+
+        public synchronized void setSourceDir(FileObject sourceDir) {
+            this.sourceDir = sourceDir;
+        }
 
         @Override
         public void fileFolderCreated(FileEvent fe) {
-            processFileChange();
+            FileObject file = fe.getFile();
+            frameworksReset(file);
         }
 
         @Override
         public void fileDataCreated(FileEvent fe) {
-            processFileChange();
+            FileObject file = fe.getFile();
+            frameworksReset(file);
+            browserReload(file);
         }
 
         @Override
         public void fileChanged(FileEvent fe) {
-            // probably not interesting for us
+            FileObject file = fe.getFile();
+            browserReload(file);
         }
 
         @Override
         public void fileDeleted(FileEvent fe) {
-            processFileChange();
+            FileObject file = fe.getFile();
+            frameworksReset(file);
+            browserReload(file);
         }
 
         @Override
         public void fileRenamed(FileRenameEvent fe) {
-            processFileChange();
+            FileObject file = fe.getFile();
+            frameworksReset(file);
         }
 
         @Override
         public void fileAttributeChanged(FileAttributeEvent fe) {
-            // probably not interesting for us
+            // noop
         }
 
-        void processFileChange() {
-            LOGGER.fine("file change, frameworks back to null");
-            resetFrameworks();
+        // if any direct child of source folder changes, reset frameworks (new framework can be found in project)
+        private void frameworksReset(FileObject file) {
+            FileObject sourcesDirectory = getSourcesDirectory();
+            if (sourcesDirectory == null) {
+                // corrupted project
+                return;
+            }
+            if (file.getParent().equals(sourcesDirectory)) {
+                LOGGER.fine("file change, frameworks back to null");
+                resetFrameworks();
+            }
         }
+
+        // possible browser reload, if nb integration is present
+        private void browserReload(FileObject file) {
+            if (file.hasExt("css")) { // NOI18N
+                // #217284 - ignore changes in CSS
+                return;
+            }
+            ClientSideDevelopmentSupport easelSupport = PhpProject.this.getLookup().lookup(ClientSideDevelopmentSupport.class);
+            assert easelSupport != null;
+            if (easelSupport.canReload()) {
+                easelSupport.reload();
+            }
+        }
+
     }
 
     private final class PhpAntProjectListener implements AntProjectListener {
@@ -1002,4 +1086,156 @@ public final class PhpProject implements Project {
             return Collections.unmodifiableList(list);
         }
     }
+
+    public static final class ClientSideDevelopmentSupport implements ServerURLMappingImplementation, PageInspectorCustomizer, PropertyChangeListener {
+
+        private final PhpProject project;
+
+        private volatile String projectRootUrl;
+
+        // @GuardedBy("this")
+        private BrowserSupport browserSupport = null;
+        // @GuardedBy("this")
+        private boolean browserSupportInitialized = false;
+
+
+        private ClientSideDevelopmentSupport(PhpProject project) {
+            assert project != null;
+            this.project = project;
+        }
+
+        public static ClientSideDevelopmentSupport create(PhpProject project) {
+            ClientSideDevelopmentSupport serverMapping = new ClientSideDevelopmentSupport(project);
+            ProjectPropertiesSupport.addWeakPropertyEvaluatorListener(project, serverMapping);
+            return serverMapping;
+        }
+
+        @Override
+        public URL toServer(int projectContext, FileObject projectFile) {
+            init();
+            if (projectRootUrl == null) {
+                return null;
+            }
+            FileObject webRoot = project.getWebRootDirectory();
+            if (webRoot == null) {
+                return null;
+            }
+            String relPath = FileUtil.getRelativePath(webRoot, projectFile);
+            if (relPath == null) {
+                return null;
+            }
+            try {
+                return new URL(projectRootUrl + relPath);
+            } catch (MalformedURLException ex) {
+                return null;
+            }
+        }
+
+        @Override
+        public FileObject fromServer(int projectContext, URL serverURL) {
+            init();
+            if (projectRootUrl == null) {
+                return null;
+            }
+            FileObject webRoot = project.getWebRootDirectory();
+            if (webRoot == null) {
+                return null;
+            }
+            String url = CommandUtils.urlToString(serverURL, true);
+            if (url.startsWith(projectRootUrl)) {
+                return webRoot.getFileObject(url.substring(projectRootUrl.length()));
+            }
+            return null;
+        }
+
+        @Override
+        public boolean isHighlightSelectionEnabled() {
+            return true;
+        }
+
+        @Override
+        public void addPropertyChangeListener(PropertyChangeListener l) {
+            // noop
+        }
+
+        @Override
+        public void removePropertyChangeListener(PropertyChangeListener l) {
+            // noop
+        }
+
+        public void showFileUrl(URL url, FileObject file) {
+            BrowserSupport support = getBrowserSupport();
+            if (support != null) {
+                support.load(url, file);
+            } else {
+                HtmlBrowser.URLDisplayer.getDefault().showURL(url);
+            }
+        }
+
+        private void init() {
+            if (projectRootUrl == null) {
+                projectRootUrl = getProjectRootUrl();
+            }
+        }
+
+        private String getProjectRootUrl() {
+            try {
+                String url = CommandUtils.urlToString(CommandUtils.getBaseURL(project, true), true);
+                if (!url.endsWith("/")) { // NOI18N
+                    url += "/"; // NOI18N
+                }
+                return url;
+            } catch (MalformedURLException ex) {
+                return null;
+            }
+        }
+
+        public boolean canReload() {
+            String selectedBrowser = project.getEvaluator().getProperty(PhpProjectProperties.BROWSER_ID);
+            return WebBrowserSupport.isIntegratedBrowser(selectedBrowser);
+        }
+
+        public void reload() {
+            BrowserSupport support = getBrowserSupport();
+            if (support == null) {
+                return;
+            }
+            support.reload();
+        }
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (PhpProjectProperties.URL.equals(evt.getPropertyName())) {
+                projectRootUrl = null;
+            } else if (PhpProjectProperties.BROWSER_ID.equals(evt.getPropertyName())) {
+                resetBrowserSupport();
+            }
+        }
+
+        private synchronized void resetBrowserSupport() {
+            if (browserSupport != null) {
+                browserSupport.close(false);
+            }
+            browserSupport = null;
+            browserSupportInitialized = false;
+        }
+
+        private synchronized BrowserSupport getBrowserSupport() {
+            if (browserSupportInitialized) {
+                return browserSupport;
+            }
+            browserSupportInitialized = true;
+            String selectedBrowser = project.getEvaluator().getProperty(PhpProjectProperties.BROWSER_ID);
+            WebBrowser browser = WebBrowserSupport.getBrowser(selectedBrowser);
+            if (browser == null) {
+                browserSupport = null;
+                return null;
+            }
+            boolean integrated = WebBrowserSupport.isIntegratedBrowser(selectedBrowser);
+            browserSupport = BrowserSupport.create(browser, !integrated);
+            return browserSupport;
+        }
+
+    }
+
 }

@@ -100,12 +100,12 @@ public class CSSStylesDocumentPanel extends JPanel implements ExplorerManager.Pr
     /** Tree view showing the style sheet information. */
     private BeanTreeView treeView;
     /** Explorer manager provided by this panel. */
-    private ExplorerManager manager = new ExplorerManager();
+    private final ExplorerManager manager = new ExplorerManager();
     /** Lookup of this panel. */
     @org.netbeans.api.annotations.common.SuppressWarnings(value="SE_TRANSIENT_FIELD_NOT_RESTORED", justification="The instances are never serialized.") // NOI18N
-    private transient Lookup lookup = ExplorerUtils.createLookup(getExplorerManager(), getActionMap());
+    private final transient Lookup lookup = ExplorerUtils.createLookup(getExplorerManager(), getActionMap());
     /** Filter for the tree displayed in this panel. */
-    private transient Filter filter = new Filter();
+    private final transient Filter filter = new Filter();
 
     /**
      * Creates a new {@code CSSStylesDocumentPanel}.

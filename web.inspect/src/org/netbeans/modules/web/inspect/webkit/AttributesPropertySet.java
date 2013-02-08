@@ -55,7 +55,7 @@ class AttributesPropertySet extends SortedPropertySet<AttributesPropertySet.Attr
     /** Name of attributes property set. */
     private static final String NAME = "attributes"; // NOI18N
     /** The owner of this property set. */
-    private DOMNode node;
+    private final DOMNode node;
 
     /**
      * Creates a new {@code AttributesPropertySet}.
@@ -93,7 +93,7 @@ class AttributesPropertySet extends SortedPropertySet<AttributesPropertySet.Attr
      */
     static class AttributeProperty extends PropertySupport.ReadOnly<String> {
         /** Attribute represented by this property. */
-        private Node.Attribute attribute;
+        private final Node.Attribute attribute;
 
         /**
          * Creates a new {@code AttributeProperty}.

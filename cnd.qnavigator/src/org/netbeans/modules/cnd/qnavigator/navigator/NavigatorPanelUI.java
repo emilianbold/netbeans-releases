@@ -48,6 +48,7 @@ import java.awt.Cursor;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
+import java.util.Arrays;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import org.openide.explorer.ExplorerManager;
@@ -62,12 +63,11 @@ import org.openide.util.lookup.InstanceContent;
  * @author Alexander Simon
  */
 public class NavigatorPanelUI extends JPanel implements ExplorerManager.Provider, PropertyChangeListener {
-    private NavigatorContent content = new NavigatorContent();
-    private BeanTreeView navigatorPane;
-    private ExplorerManager explorerManager = new ExplorerManager();
+    private final NavigatorContent content = new NavigatorContent();
+    private final BeanTreeView navigatorPane;
+    private final ExplorerManager explorerManager = new ExplorerManager();
     private final InstanceContent selectedNodes = new InstanceContent();
     private final Lookup lookup = new AbstractLookup(selectedNodes);
-    private boolean isBusy = false;
     
     /** Creates new form NavigatorPanel */
     public NavigatorPanelUI() {
@@ -106,7 +106,7 @@ public class NavigatorPanelUI extends JPanel implements ExplorerManager.Provider
     
     void setBusyState(boolean busy){
         Cursor cursor;
-        if (isBusy) {
+        if (busy) {
             cursor = Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR);
         } else {
             cursor = Cursor.getDefaultCursor();
@@ -168,12 +168,8 @@ public class NavigatorPanelUI extends JPanel implements ExplorerManager.Provider
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {
-            for (Node n : (Node[]) evt.getOldValue()) {
-                selectedNodes.remove(n);
-            }
-            for (Node n : (Node[]) evt.getNewValue()) {
-                selectedNodes.add(n);
-            }
+            final Node[] val = (Node[]) evt.getNewValue();
+            selectedNodes.set(Arrays.asList(val), null);
         }
     }
 }

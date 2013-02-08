@@ -64,11 +64,11 @@ import org.openide.util.NbBundle;
  */
 public class MatchedRulesNode extends AbstractNode {
     /** Owning project of the inspected page. */
-    private Project project;
+    private final Project project;
     /** Node that was matched by the displayed rules. */
-    private Node node;
+    private final Node node;
     /** Rules matching the selected element. */
-    private MatchedStyles matchedStyles;
+    private final MatchedStyles matchedStyles;
 
     /**
      * Creates a new {@code MatchedRulesNode}.
