@@ -133,9 +133,9 @@ public class GoToRuleSourceAction extends NodeAction {
      */
     static class GoToRuleTask extends UserTask {
         /** Rule to jump to. */
-        private org.netbeans.modules.web.webkit.debugging.api.css.Rule rule;
+        private final org.netbeans.modules.web.webkit.debugging.api.css.Rule rule;
         /** File to jump into. */
-        private FileObject fob;
+        private final FileObject fob;
 
         /**
          * Creates a new {@code GoToRuleTask}.

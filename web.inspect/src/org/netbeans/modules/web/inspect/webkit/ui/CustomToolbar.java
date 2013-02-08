@@ -58,7 +58,7 @@ import javax.swing.border.EmptyBorder;
 
 public class CustomToolbar extends Box {
 
-    private static Dimension space = new Dimension(4, 0);
+    private static final Dimension space = new Dimension(4, 0);
     private JToolBar toolbar;
 
     public CustomToolbar() {

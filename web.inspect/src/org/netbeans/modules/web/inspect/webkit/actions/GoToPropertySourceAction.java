@@ -135,11 +135,11 @@ public class GoToPropertySourceAction extends NodeAction {
      */
     static class GoToPropertyTask extends UserTask {
         /** File to jump into. */
-        private FileObject fob;
+        private final FileObject fob;
         /** Rule to jump into. */
-        private org.netbeans.modules.web.webkit.debugging.api.css.Rule rule;
+        private final org.netbeans.modules.web.webkit.debugging.api.css.Rule rule;
         /** Property to jump to. */
-        private Property property;
+        private final Property property;
 
         /**
          * Creates a new {@code GoToPropertyTask}.

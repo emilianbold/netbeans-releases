@@ -136,9 +136,9 @@ public class GoToNodeSourceAction extends NodeAction  {
      */
     static class GoToNodeTask extends UserTask {
         /** Node to jump to. */
-        private org.netbeans.modules.web.webkit.debugging.api.dom.Node node;
+        private final org.netbeans.modules.web.webkit.debugging.api.dom.Node node;
         /** File to jump into. */
-        private FileObject fob;
+        private final FileObject fob;
 
         /**
          * Creates a new {@code GoToNodeTask} for the specified file and node.

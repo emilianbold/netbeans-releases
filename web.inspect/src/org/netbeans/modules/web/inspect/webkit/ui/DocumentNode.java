@@ -84,11 +84,11 @@ public class DocumentNode extends AbstractNode {
      */
     static class DocumentChildFactory extends ChildFactory<StyleSheetHeader> {
         /** CSS domain of the corresponding WebKit debugging. */
-        private CSS css;
+        private final CSS css;
         /** Filter for the subtree of the node. */
-        private Filter filter;
+        private final Filter filter;
         /** Owning project of the inspected page. */
-        private Project project;
+        private final Project project;
 
         /**
          * Creates a new {@code DocumentChildFactory}.
