@@ -125,7 +125,7 @@ public class CSS {
      * @return specified stylesheet.
      */
     public StyleSheetBody getStyleSheet(String styleSheetId) {
-        StyleSheetBody body = null;
+        StyleSheetBody body;
         synchronized (this) {
             body = styleSheets.get(styleSheetId);
             if (body != null) {
