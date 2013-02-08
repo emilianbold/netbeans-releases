@@ -56,6 +56,7 @@ import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
+import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
 import org.netbeans.modules.cnd.modelimpl.csm.ClassForwardDeclarationImpl.ClassForwardDeclarationBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.ClassImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.ClassImpl.ClassBuilder;
@@ -138,6 +139,7 @@ public class CppParserActionImpl implements CppParserActionEx {
     
     private final CppParserBuilderContext builderContext;
     private final SymTabStack globalSymTab;
+    private final FileContent mainFileContent;
     private Pair currentContext;
     private final Deque<Pair> contexts;
     private CsmParserProvider.CsmParserParameters params;
@@ -162,7 +164,8 @@ public class CppParserActionImpl implements CppParserActionEx {
         this.wrapper = wrapper;
         this.contexts = new ArrayDeque<Pair>();
         currentContext = new Pair(params.getMainFile());
-        this.contexts.push(currentContext);
+        mainFileContent = currentContext.file.getParsingFileContent();
+//        this.contexts.push(currentContext);
         this.globalSymTab = createGlobal();
         this.builderContext = new CppParserBuilderContext();
     }
@@ -1264,8 +1267,10 @@ public class CppParserActionImpl implements CppParserActionEx {
      
     @Override
     public void pushFile(CsmFile file) {
+        if (TRACE) System.err.println(contexts.size() + ":" + currentContext.file.getAbsolutePath() + " >>> " + file.getAbsolutePath());
         this.contexts.push(currentContext);
         currentContext = new Pair(file);
+        mainFileContent.addIncludedFileContent(currentContext.file.getParsingFileContent());
     }
 
     @Override
@@ -1273,6 +1278,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         assert !contexts.isEmpty();
         CsmFile out = currentContext.file;
         currentContext = contexts.pop();
+        if (TRACE) System.err.println(contexts.size() + ":" + currentContext.file.getAbsolutePath() + " <<< " + out.getAbsolutePath());
         return out;
     }
 
@@ -1693,7 +1699,8 @@ public class CppParserActionImpl implements CppParserActionEx {
                 declBuilder.setDeclaratorBuilder(declaratorBuilder);
                 
                 
-                if(declBuilder.getTemplateDescriptorBuilder() != null) {
+                if(declBuilder.getTemplateDescriptorBuilder() != null &&
+                        !declBuilder.isConstructor() && !declBuilder.isDestructor()) {
                     SymTabEntry classEntry = globalSymTab.lookupLocal(declaratorBuilder.getName());
                     if (classEntry == null) {
                         classEntry = globalSymTab.enterLocal(declaratorBuilder.getName());
@@ -1728,10 +1735,16 @@ public class CppParserActionImpl implements CppParserActionEx {
         declarator(token);        
         DeclaratorBuilder declaratorBuilder = (DeclaratorBuilder) builderContext.top();
         SimpleDeclarationBuilder declBuilder = (SimpleDeclarationBuilder) builderContext.top(1);
-        CharSequence name = declBuilder.getTypeBuilder().getName();
-        declaratorBuilder.setName(name);
+        NameBuilder nameBuilder = declBuilder.getTypeBuilder().getNameBuilder();
+        CharSequence newName;
+        if(nameBuilder != null && !nameBuilder.getNames().isEmpty()) {
+            newName = nameBuilder.getLastNamePart();
+        } else {
+            newName = declBuilder.getTypeBuilder().getName();
+        }        
+        declaratorBuilder.setName(newName);
         declBuilder.setTypeBuilder(null);
-        if(name != null && name.toString().contains("~")) { // NOI18N
+        if(newName != null && newName.toString().contains("~")) { // NOI18N
             declBuilder.setDestructor();
         } else {
             declBuilder.setConstructor();

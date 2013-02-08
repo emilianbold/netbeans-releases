@@ -121,9 +121,7 @@ public final class ClasspathInfo {
     private final ChangeSupport listenerList;
     private final FileManagerTransaction fmTx;
     private final ProcessorGenerated pgTx;
-
-    //@GuardedBy("this")
-    private JavaFileManager fileManager;
+    
     //@GuardedBy("this")
     private ClassIndex usagesQuery;
     
@@ -188,6 +186,7 @@ public final class ClasspathInfo {
         }
         assert fmTx != null : "No file manager transaction.";   //NOI18N
         assert pgTx != null : "No processor generated transaction.";   //NOI18N
+        pgTx.bind(this, this.cachedSrcClassPath, this.cachedAptSrcClassPath);
     }
 
     @Override
@@ -386,13 +385,12 @@ public final class ClasspathInfo {
     }
     
     // Package private methods -------------------------------------------------
-    
-    private synchronized JavaFileManager getFileManager() {
-        if (this.fileManager == null) {
-            boolean hasSources = this.cachedSrcClassPath != EMPTY_PATH;
-            pgTx.bind(this, this.cachedSrcClassPath, this.cachedAptSrcClassPath);
+
+    @NonNull
+    private synchronized JavaFileManager createFileManager() {
+            final boolean hasSources = this.cachedSrcClassPath != EMPTY_PATH;
             final SiblingSource siblings = SiblingSupport.create();
-            this.fileManager = new ProxyFileManager (
+            final JavaFileManager fileManager = new ProxyFileManager (
                 new CachingFileManager (this.archiveProvider, this.cachedBootClassPath, true, true),
                 new CachingFileManager (this.archiveProvider, this.cachedCompileClassPath, false, true),
                 hasSources ? (!useModifiedFiles ? new CachingFileManager (this.archiveProvider, this.cachedSrcClassPath, filter, false, ignoreExcludes)
@@ -415,8 +413,7 @@ public final class ClasspathInfo {
                 this.memoryFileManager,
                 this.pgTx,
                 siblings);
-        }
-        return this.fileManager;
+        return fileManager;
     }
     
     
@@ -438,15 +435,10 @@ public final class ClasspathInfo {
 	
     }
     
-    private class ClassPathListener implements PropertyChangeListener {	
-		
+    private class ClassPathListener implements PropertyChangeListener {			
         @Override
         public void propertyChange (PropertyChangeEvent event) {
-            if (ClassPath.PROP_ROOTS.equals(event.getPropertyName())) {
-                synchronized (this) {
-                    // Kill FileManager
-                    fileManager = null;
-                }
+            if (ClassPath.PROP_ROOTS.equals(event.getPropertyName())) {                
                 fireChangeListenerStateChanged();
             }
         }
@@ -455,8 +447,9 @@ public final class ClasspathInfo {
     private static class ClasspathInfoAccessorImpl extends ClasspathInfoAccessor {
         
         @Override
-        public JavaFileManager getFileManager(ClasspathInfo cpInfo) {
-            return cpInfo.getFileManager();
+        @NonNull
+        public JavaFileManager createFileManager(@NonNull final ClasspathInfo cpInfo) {
+            return cpInfo.createFileManager();
         }
         
         @Override

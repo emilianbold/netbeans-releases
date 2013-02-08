@@ -184,16 +184,24 @@
                 <contains string="${version-output}" substring="java version &quot;1.7.0_05"/>
             </or>
         </condition>
-        <condition property="have-jdk7-css2bin-bug">
+        <condition property="have-jdk-pre7u14">
             <or>
-                <contains string="${version-output}" substring="java version &quot;1.7.0_04"/>
-                <contains string="${version-output}" substring="java version &quot;1.7.0_05"/>
+                <isset property="have-jdk-pre7u6"/>
                 <contains string="${version-output}" substring="java version &quot;1.7.0_06"/>
                 <contains string="${version-output}" substring="java version &quot;1.7.0_07"/>
                 <contains string="${version-output}" substring="java version &quot;1.7.0_08"/>
                 <contains string="${version-output}" substring="java version &quot;1.7.0_09"/>
                 <contains string="${version-output}" substring="java version &quot;1.7.0_10"/>
                 <contains string="${version-output}" substring="java version &quot;1.7.0_11"/>
+                <contains string="${version-output}" substring="java version &quot;1.7.0_12"/>
+                <contains string="${version-output}" substring="java version &quot;1.7.0_13"/>
+            </or>
+        </condition>
+        <condition property="have-jdk7-css2bin-bug">
+            <!-- as of NB7.3 release date the external css-to-bss converter is unreliable in almost all JDK7/8 versions -->
+            <or>
+                <contains string="${version-output}" substring="java version &quot;1.7"/>
+                <contains string="${version-output}" substring="java version &quot;1.8"/>
             </or>
         </condition>
         <property name="jdk-version-checked-in-jfximpl" value="true"/>
@@ -1567,6 +1575,10 @@
             <echo message="JavaScript: deploy-jar" level="verbose"/>
             <script language="javascript">
                 <![CDATA[
+                    function isTrue(prop) {
+                        return prop != null && 
+                           (prop.toLowerCase()=="true" || prop.toLowerCase()=="yes" || prop.toLowerCase()=="on");
+                    }                    
                     var S = java.io.File.separator;
                     var JFXPAR = "javafx.param";
                     var JFXPARN = "name";
@@ -1608,7 +1620,7 @@
                     var app = jar.createApplication();
                     app.setProject(project);
                     var title = project.getProperty("application.title");
-                    if(fx_in_swing_app == "true" && fx_ant_api_1_2 == "true") {
+                    if(isTrue(fx_in_swing_app) && isTrue(fx_ant_api_1_2)) {
                         var mainclass = project.getProperty("main.class");
                         app.setToolkit("swing");
                     } else {
@@ -1618,7 +1630,7 @@
                     app.setName(title);
                     app.setMainClass(mainclass);
                     app.setFallbackClass(fallback);
-                    if(withpreloader == "true") {
+                    if(isTrue(withpreloader)) {
                         preloaderclass = project.getProperty("javafx.preloader.class");
                         app.setPreloaderClass(preloaderclass);
                     }
@@ -1636,7 +1648,7 @@
                                     par.setName(propn);
                                     par.setValue(propv);
                                 } else {
-                                    if(fx_ant_api_1_1 == "true") {
+                                    if(isTrue(fx_ant_api_1_1)) {
                                         var arg = app.createArgument();
                                         arg.addText(propn);
                                     }
@@ -1649,7 +1661,7 @@
                     var res = jar.createResources();
                     res.setProject(project);
                     var pdir = project.getProperty("pp_jar_dir");
-                    if(withpreloader == "true") {
+                    if(isTrue(withpreloader)) {
                         var f1 = res.createFileSet();
                         f1.setProject(project);
                         f1.setDir(new java.io.File(pdir));
@@ -1816,6 +1828,7 @@
                     var withpreloader = project.getProperty("app-with-preloader");
                     var fx_ant_api_1_1 = project.getProperty("have-fx-ant-api-1.1");
                     var fx_ant_api_1_2 = project.getProperty("have-fx-ant-api-1.2");
+                    var have_jdk_pre7u14 = project.getProperty("have-jdk-pre7u14");
                     var fx_in_swing_app = project.getProperty("fx-in-swing-app");
 
                     // get jars with lazy download mode property set
@@ -1838,6 +1851,21 @@
                             fsLazy.setIncludes("lib" + S + jars[i]);
                         }
                     }
+                    // convert path to absolute if relative
+                    function derelativizePath(path) {
+                        var f = new java.io.File(path);
+                        if(!f.exists()) {
+                            f = new java.io.File(project.getBaseDir() + S + path);
+                        }
+                        if(f.exists()) {
+                            try {
+                                return f.getCanonicalPath();
+                            } catch(err) {
+                                return path;
+                            }
+                        }
+                        return path;
+                    }
                     
                     // fx:deploy
                     var deploy = project.createTask("fx_deploy");
@@ -1858,7 +1886,7 @@
                     deploy.setOutfile(outfile);
                     deploy.setIncludeDT(isTrue(includeDT));
                     if(offline != null) {
-                        if(fx_ant_api_1_1 == "true") {
+                        if(isTrue(fx_ant_api_1_1)) {
                             deploy.setOfflineAllowed(isTrue(offline));
                         } else {
                             println("Warning: offlineAllowed not supported by this version of JavaFX SDK deployment Ant task. Please upgrade JavaFX to 2.0.2 or higher.");
@@ -1872,7 +1900,7 @@
                     var projStatePrf = project.getProperty("project.state.profiling");
                     if(isTrue(nativeEnabled) && nativeType != null && nativeType != "none") {
                         if(!isTrue(projStateRun) && !isTrue(projStateDbg) && !isTrue(projStatePrf)) {
-                            if(fx_ant_api_1_2 == "true") {
+                            if(isTrue(fx_ant_api_1_2)) {
                                 deploy.setNativeBundles(nativeType);
                                 println("Note: To create native bundles the <fx:deploy> task may require external tools. See JavaFX 2.2+ documentation for details.");
                                 println("");
@@ -1887,7 +1915,7 @@
                     var app = deploy.createApplication();
                     app.setProject(project);
                     var title = project.getProperty("application.title");
-                    if(fx_in_swing_app == "true" && fx_ant_api_1_2 == "true") {
+                    if(isTrue(fx_in_swing_app) && isTrue(fx_ant_api_1_2)) {
                         var mainclass = project.getProperty("main.class");
                         app.setToolkit("swing");
                     } else {
@@ -1897,7 +1925,7 @@
                     app.setName(title);
                     app.setMainClass(mainclass);
                     app.setFallbackClass(fallback);
-                    if(withpreloader == "true") {
+                    if(isTrue(withpreloader)) {
                         preloaderclass = project.getProperty("javafx.preloader.class");
                         app.setPreloaderClass(preloaderclass);
                     }
@@ -1915,7 +1943,7 @@
                                     par.setName(propn);
                                     par.setValue(propv);
                                 } else {
-                                    if(fx_ant_api_1_1 == "true") {
+                                    if(isTrue(fx_ant_api_1_1)) {
                                         var arg = app.createArgument();
                                         arg.addText(propn);
                                     } else {
@@ -1930,7 +1958,7 @@
                     var res = deploy.createResources();
                     res.setProject(project);
                     var deploydir = project.getProperty("pp_deploy_dir");
-                    if(withpreloader == "true") {
+                    if(isTrue(withpreloader)) {
                         var f1 = res.createFileSet();
                         f1.setProject(project);
                         f1.setDir(new java.io.File(deploydir));
@@ -1982,13 +2010,39 @@
                     info.setTitle(title); // title known from before
                     info.setVendor(vendor);
                     info.setDescription(description);
-                    var icon = project.getProperty("javafx.deploy.icon");
-                    if(icon != null) {
-                        if(fx_ant_api_1_1 == "true") {
-                            var iicon = info.createIcon();
-                            iicon.setHref(icon);
+                    var splash = project.getProperty("javafx.deploy.splash");
+                    if(splash != null && splash.length() > 0) {
+                        if(isTrue(fx_ant_api_1_1)) {
+                            var sicon = info.createSplash();
+                            sicon.setHref(splash);
+                            sicon.setMode("any");
+                            println("Adding splash image reference: " + splash);
                         } else {
-                            println("Warning: Icon not supported by this version of JavaFX SDK deployment Ant task. Please upgrade JavaFX to 2.0.2 or higher.");
+                            println("Warning: Splash Image not supported by this version of JavaFX SDK deployment Ant task. Please upgrade JavaFX to 2.0.2 or higher.");
+                        }
+                    }
+                    if(isTrue(nativeEnabled) && nativeType != null && nativeType != "none") {
+                        var icon = project.getProperty("javafx.deploy.icon.native");
+                        if(icon != null && icon.length() > 0) {
+                            if(isTrue(fx_ant_api_1_2) && !isTrue(have_jdk_pre7u14)) {
+                                var dicon = derelativizePath(icon);
+                                var nicon = info.createIcon();
+                                nicon.setHref(dicon);
+                                println("Adding native icon reference: " + dicon);
+                            } else {
+                                println("Warning: Native Package icon not supported by this version of JavaFX SDK deployment Ant task. Please upgrade to JDK7u14 or higher.");
+                            }
+                        }
+                    } else {
+                        var icon = project.getProperty("javafx.deploy.icon");
+                        if(icon != null && icon.length() > 0) {
+                            if(isTrue(fx_ant_api_1_1)) {
+                                var iicon = info.createIcon();
+                                iicon.setHref(icon);
+                                println("Adding WebStart icon reference: " + icon);
+                            } else {
+                                println("Warning: WebStart Icon not supported by this version of JavaFX SDK deployment Ant task. Please upgrade JavaFX to 2.0.2 or higher.");
+                            }
                         }
                     }
                     

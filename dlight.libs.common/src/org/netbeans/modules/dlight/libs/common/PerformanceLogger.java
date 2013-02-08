@@ -106,6 +106,7 @@ public class PerformanceLogger {
         private final long start;
         private final long cpuTime;
         private final long userTime;
+        private final long threadID;
 
         private PerformaceAction(String id, Object source) {
             this.id = id;
@@ -115,14 +116,17 @@ public class PerformanceLogger {
                 if (CPU_TIME_AVAILABLE) {
                     cpuTime = threadMXBean.getCurrentThreadCpuTime();
                     userTime = threadMXBean.getCurrentThreadUserTime();
+                    threadID = Thread.currentThread().getId();
                 } else {
-                    cpuTime = 0;
-                    userTime = 0;
+                    cpuTime = -1;
+                    userTime = -1;
+                    threadID = -1;
                 }
             } else {
                 start = 0;
-                cpuTime = 0;
-                userTime = 0;
+                cpuTime = -1;
+                userTime = -1;
+                threadID = -1;
             }
         }
         //</editor-fold>
@@ -199,13 +203,15 @@ public class PerformanceLogger {
             }
         } catch (SecurityException ex) {
         }
-        String enabled = System.getProperty("dlight.libs.common.profiling.enabled", "auto"); //NOI18N
+        String enabled = System.getProperty("dlight.libs.common.profiling.enabled", "false"); //NOI18N
         if ("true".equals(enabled)) { //NOI18N
             PROFILING_ENABLED = true;
         } else if ("false".equals(enabled)) { //NOI18N
             PROFILING_ENABLED = false;
-        } else {
+        }  else if ("auto".equals(enabled)) { //NOI18N
             PROFILING_ENABLED = !isDebugMode;
+        } else {
+            PROFILING_ENABLED = false;
         }
         boolean cpu = true;
         if (PROFILING_ENABLED) {
@@ -330,8 +336,15 @@ public class PerformanceLogger {
             long delta = System.nanoTime() - action.start;
             Runtime runtime = Runtime.getRuntime();
             long usedMemeory = runtime.totalMemory() - runtime.freeMemory();
-            long cpuTime = 0;
-            long userTime = 0;
+            long cpuTime;
+            long userTime;
+            if (CPU_TIME_AVAILABLE && action.cpuTime != -1 && action.userTime != -1 && action.threadID >= 0) {
+                cpuTime = threadMXBean.getThreadCpuTime(action.threadID) - action.cpuTime;
+                userTime = threadMXBean.getThreadUserTime(action.threadID) - action.userTime;
+            } else {
+                cpuTime = 0;
+                userTime = 0;
+            }
             PerformanceEvent event = new PerformanceEventImpl(action.id, action.source, action.start, delta, cpuTime, userTime, usedMemeory, new Object[0]);
             lineLock.writeLock().lock();
             try {

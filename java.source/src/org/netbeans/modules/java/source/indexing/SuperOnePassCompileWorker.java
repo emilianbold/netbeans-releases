@@ -97,7 +97,6 @@ final class SuperOnePassCompileWorker extends CompileWorker {
             final Context context,
             final JavaParsingContext javaContext,
             final Collection<? extends CompileTuple> files) {
-        final JavaFileManager fileManager = ClasspathInfoAccessor.getINSTANCE().getFileManager(javaContext.getClasspathInfo());
         final Map<JavaFileObject, List<String>> file2FQNs = previous != null ? previous.file2FQNs : new HashMap<JavaFileObject, List<String>>();
         final Set<ElementHandle<TypeElement>> addedTypes = previous != null ? previous.addedTypes : new HashSet<ElementHandle<TypeElement>>();
         final Set<File> createdFiles = previous != null ? previous.createdFiles : new HashSet<File>();
@@ -247,10 +246,10 @@ final class SuperOnePassCompileWorker extends CompileWorker {
                 javaContext.getFQNs().set(activeTypes, active.indexable.getURL());
                 boolean[] main = new boolean[1];
                 if (javaContext.getCheckSums().checkAndSet(active.indexable.getURL(), activeTypes, jt.getElements()) || context.isSupplementaryFilesIndexing()) {
-                    javaContext.analyze(Collections.singleton(unit.getKey()), jt, fileManager, unit.getValue(), addedTypes, main);
+                    javaContext.analyze(Collections.singleton(unit.getKey()), jt, unit.getValue(), addedTypes, main);
                 } else {
                     final Set<ElementHandle<TypeElement>> aTypes = new HashSet<ElementHandle<TypeElement>>();
-                    javaContext.analyze(Collections.singleton(unit.getKey()), jt, fileManager, unit.getValue(), aTypes, main);
+                    javaContext.analyze(Collections.singleton(unit.getKey()), jt, unit.getValue(), aTypes, main);
                     addedTypes.addAll(aTypes);
                     modifiedTypes.addAll(aTypes);
                 }

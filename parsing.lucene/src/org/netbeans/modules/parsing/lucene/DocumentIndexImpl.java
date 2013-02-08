@@ -69,22 +69,24 @@ import org.netbeans.modules.parsing.lucene.support.Queries.QueryKind;
  * @author Tomas Zezula
  */
 public class DocumentIndexImpl implements DocumentIndex, Runnable {
+                            
+    private static final Convertor<IndexDocument,Document> DEFAULT_ADD_CONVERTOR = Convertors.newIndexDocumentToDocumentConvertor();    
+    private static final Convertor<Document,IndexDocumentImpl> DEFAULT_QUERY_CONVERTOR = Convertors.newDocumentToIndexDocumentConvertor();
+    private static final Convertor<String,Query> REMOVE_CONVERTOR = Convertors.newSourceNameToQueryConvertor();
+    private static final Logger LOGGER = Logger.getLogger(DocumentIndexImpl.class.getName());
     
-    private final Index luceneIndex;
-    //@GuardedBy (this)
+    private final Set</*@GuardedBy("this")*/String> dirtyKeys = new HashSet<String>();
+    //@GuardedBy ("this")
     private final DocumentIndexCache cache;
+    private final Index luceneIndex;
+    private final Convertor<? super IndexDocument, ? extends Document> addConvertor;
+    private final Convertor<? super Document, ? extends IndexDocument> queryConvertor;
     /**
      * Transactional extension to the index
      */
     final Index.Transactional txLuceneIndex;
-            
-    private static final Convertor<IndexDocument,Document> ADD_CONVERTOR = Convertors.newIndexDocumentToDocumentConvertor();
-    private static final Convertor<String,Query> REMOVE_CONVERTOR = Convertors.newSourceNameToQueryConvertor();
-    private static final Convertor<Document,IndexDocumentImpl> QUERY_CONVERTOR = Convertors.newDocumentToIndexDocumentConvertor();
-    private static final Logger LOGGER = Logger.getLogger(DocumentIndexImpl.class.getName());
-    
-    private final Set</*@GuardedBy("this")*/String> dirtyKeys = new HashSet<String>();
     final AtomicBoolean requiresRollBack = new AtomicBoolean();
+
 
     private DocumentIndexImpl (
             @NonNull final Index index,
@@ -93,6 +95,16 @@ public class DocumentIndexImpl implements DocumentIndex, Runnable {
         assert cache != null;
         this.luceneIndex = index;
         this.cache = cache;
+        Convertor<IndexDocument,Document> _addConvertor = null;
+        Convertor<Document,IndexDocument> _queryConvertor = null;
+        if (cache instanceof DocumentIndexCache.WithCustomIndexDocument) {
+            final DocumentIndexCache.WithCustomIndexDocument cacheWithCustomDoc =
+                    (DocumentIndexCache.WithCustomIndexDocument) cache;
+            _addConvertor = cacheWithCustomDoc.createAddConvertor();
+            _queryConvertor = cacheWithCustomDoc.createQueryConvertor();
+        }
+        addConvertor = _addConvertor != null ? _addConvertor : DEFAULT_ADD_CONVERTOR;
+        queryConvertor = _queryConvertor != null ? _queryConvertor : DEFAULT_QUERY_CONVERTOR;
         if (index instanceof Index.Transactional) {
             this.txLuceneIndex = (Index.Transactional)index;
         } else {
@@ -204,14 +216,14 @@ public class DocumentIndexImpl implements DocumentIndex, Runnable {
                 txLuceneIndex.txStore(
                         _toAdd,
                         _toRemove,
-                        ADD_CONVERTOR,
+                        addConvertor,
                         REMOVE_CONVERTOR
                 );
             } else {
                 luceneIndex.store(
                         _toAdd,
                         _toRemove,
-                        ADD_CONVERTOR,
+                        addConvertor,
                         REMOVE_CONVERTOR,
                         optimize);
             }
@@ -236,7 +248,7 @@ public class DocumentIndexImpl implements DocumentIndex, Runnable {
         assert fieldName != null;
         assert value != null;
         assert kind != null;
-        final List<IndexDocumentImpl> result = new LinkedList<IndexDocumentImpl>();
+        final List<IndexDocument> result = new LinkedList<IndexDocument>();
         final Query query = Queries.createQuery(fieldName, fieldName, value, kind);
         FieldSelector selector = null;
         if (fieldsToLoad != null && fieldsToLoad.length > 0) {
@@ -245,7 +257,7 @@ public class DocumentIndexImpl implements DocumentIndex, Runnable {
             fieldsWithSource[fieldsToLoad.length] = IndexDocumentImpl.FIELD_PRIMARY_KEY;
             selector = Queries.createFieldSelector(fieldsWithSource);
         }        
-        luceneIndex.query(result, QUERY_CONVERTOR, selector, null, query);
+        luceneIndex.query(result, queryConvertor, selector, null, query);
         return result;
     }
     

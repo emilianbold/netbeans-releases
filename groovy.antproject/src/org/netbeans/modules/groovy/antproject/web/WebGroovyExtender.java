@@ -71,4 +71,14 @@ public class WebGroovyExtender extends AbstractGroovyExtender {
     protected URL getGroovyBuildXls() {
         return BuildScriptType.WEB.getStylesheet();
     }
+
+    @Override
+    public boolean activate() {
+        return addClasspath() && addBuildScript() && addDisableCompileOnSaveProperty();
+    }
+
+    @Override
+    public boolean deactivate() {
+        return removeClasspath() && removeBuildScript() && removeDisableCompileOnSaveProperty();
+    }
 }

@@ -47,7 +47,6 @@ import junit.framework.Test;
 import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestSuite;
-import org.netbeans.test.j2ee.wizard.NewProjectWizardsTest.NewProjectWizardsTest4;
 
 /** Tests new file wizard for Java EE 1.4 projects.
  *
@@ -61,7 +60,7 @@ public class WizardsTest extends J2eeTestCase {
 
     public static Test suite() {
         NbModuleSuite.Configuration conf = emptyConfiguration();
-        conf = addServerTests(Server.GLASSFISH, conf, NewProjectWizardsTest4.class, "testEJBModWizard");
+        addServerTests(Server.GLASSFISH, conf);  // register server
         if (isRegistered(Server.GLASSFISH)) {
             conf = conf.addTest(Suite.class);
         }
@@ -92,12 +91,9 @@ public class WizardsTest extends J2eeTestCase {
             addTest(new NewFileWizardsTest("testRemoteBeanEntityBean", "1.4"));
             addTest(new NewFileWizardsTest("testLocalRemoteBeanEntityBean", "1.4"));
             // web project
-            addTest(new NewProjectWizardsTest("testWebModWizard", "1.4"));
             addTest(new NewFileWizardsTest("testServiceLocatorInWeb", "1.4"));
             addTest(new NewFileWizardsTest("testCachingServiceLocatorInWeb", "1.4"));
             addTest(new NewFileWizardsTest("testBuildDefaultNewWebMod", "1.4"));
-            // EAR project
-            addTest(new NewProjectWizardsTest("testEnterpriseAppWizard", "1.4"));
             addTest(new NewProjectWizardsTest("closeProjects", "1.4"));
         }
     }

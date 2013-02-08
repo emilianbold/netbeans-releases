@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.cnd.discovery.performance;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -48,19 +49,28 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmListeners;
+import org.netbeans.modules.cnd.api.model.CsmProgressListener;
+import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.remote.RemoteProject;
+import org.netbeans.modules.cnd.discovery.performance.AnalyzeStat.AgregatedStat;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.dlight.libs.common.PerformanceLogger;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.filesystems.FileObject;
@@ -71,7 +81,7 @@ import org.openide.util.RequestProcessor;
  *
  * @author Alexander Simon
  */
-public class PerformanceIssueDetector implements PerformanceLogger.PerformanceListener {
+public class PerformanceIssueDetector implements PerformanceLogger.PerformanceListener, CsmProgressListener {
     private final Set<Project> projects = new HashSet<Project>();
     private final Map<String,ReadEntry> readPerformance = new HashMap<String,ReadEntry>();
     private final Map<String,CreateEntry> createPerformance = new HashMap<String,CreateEntry>();
@@ -80,13 +90,17 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
     private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
     private final ScheduledFuture<?> periodicTask;
     private static final int SCHEDULE = 15; // period in seconds
-    private static final long NANO_TO_SEC = 1000*1000*1000;
+    static final long NANO_TO_SEC = 1000*1000*1000;
     private static final long NANO_TO_MILLI = 1000*1000;
     private boolean slowItemCreation = false;
     private boolean slowFileRead = false;
     private boolean slowParsed = false;
-    private static final Logger LOG = Logger.getLogger(PerformanceIssueDetector.class.getName());
-    private static final Level level = Level.FINE;
+    // 0 - not performed
+    // 1 - scheduled
+    // 2 - performed
+    private final AtomicInteger  fullAnalyze = new AtomicInteger(0);
+    static final Logger LOG = Logger.getLogger(PerformanceIssueDetector.class.getName());
+    static final Level level = Level.FINE;
     private static final Level timeOutLevel = Level.INFO;
 
     public PerformanceIssueDetector() {
@@ -105,12 +119,18 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
     public void start(Project project) {
         synchronized(projects) {
             projects.add(project);
+            if (projects.size() == 1) {
+                CsmListeners.getDefault().addProgressListener(this);
+            }
         }
     }
 
     public void stop(Project project) {
         synchronized(projects) {
             projects.remove(project);
+            if (projects.isEmpty()) {
+                CsmListeners.getDefault().removeProgressListener(this);
+            }
         }
     }
     
@@ -118,6 +138,8 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
     public void processEvent(PerformanceLogger.PerformanceEvent event) {
         if (Folder.LS_FOLDER_PERFORMANCE_EVENT.equals(event.getId())) {
             processCreateFolder(event);
+        } else if (CndFileUtils.LS_FOLDER_UTILS_PERFORMANCE_EVENT.equals(event.getId())) {
+            processCreateFolderIO(event);
         } else if (Folder.CREATE_ITEM_PERFORMANCE_EVENT.equals(event.getId())) {
             processCreateItem(event);
         } else if (Folder.GET_ITEM_FILE_OBJECT_PERFORMANCE_EVENT.equals(event.getId())) {
@@ -129,6 +151,22 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
         }
     }
     
+    private boolean isNotNormalized(String path) {
+       if (path.endsWith("/.") || path.endsWith("\\.")) { // NOI18N
+           return true;
+       }
+       if (path.contains("/./")) { // NOI18N
+           return true;
+       }
+       if (path.contains("\\.\\")) { // NOI18N
+           return true;
+       }
+       if (path.contains("..")) { // NOI18N
+           return true;
+       }
+       return false;
+    }
+    
     private void processCreateFolder(PerformanceLogger.PerformanceEvent event) {
         FileObject fo = (FileObject) event.getSource();
         String dirName = fo.getPath();
@@ -136,6 +174,41 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
         if (event.getAttrs().length == 0) {
             //TODO: process timeout
             LOG.log(timeOutLevel, "Timeout {0}s of directory list {1}", new Object[]{time/NANO_TO_SEC, dirName}); //NOI18N
+            return;
+        }
+        if (isNotNormalized(dirName)) {
+            // Ignore not normalized paths
+            return;
+        }
+        long cpu = event.getCpuTime();
+        long user = event.getUserTime();
+        lock.writeLock().lock();
+        try {
+            CreateEntry entry = createPerformance.get(dirName);
+            if (entry == null) {
+                entry = new CreateEntry();
+                createPerformance.put(dirName, entry);
+            }
+            entry.number++;
+            entry.time += time;
+            entry.cpu += cpu;
+            entry.user += user;
+        } finally {
+            lock.writeLock().unlock();
+        }
+    }
+
+    private void processCreateFolderIO(PerformanceLogger.PerformanceEvent event) {
+        File fo = (File) event.getSource();
+        String dirName = fo.getPath();
+        long time = event.getTime();
+        if (event.getAttrs().length == 0) {
+            //TODO: process timeout
+            LOG.log(timeOutLevel, "Timeout {0}s of directory list {1}", new Object[]{time/NANO_TO_SEC, dirName}); //NOI18N
+            return;
+        }
+        if (isNotNormalized(dirName)) {
+            // Ignore not normalized paths
             return;
         }
         long cpu = event.getCpuTime();
@@ -177,6 +250,10 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
             Item item = (Item) event.getAttrs()[0];
             dirName = CndPathUtilitities.getDirName(item.getAbsolutePath());
         }
+        if (isNotNormalized(dirName)) {
+            // Ignore not normalized paths
+            return;
+        }
         long cpu = event.getCpuTime();
         long user = event.getUserTime();
         lock.writeLock().lock();
@@ -205,6 +282,10 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
             return;
         }
         String dirName = CndPathUtilitities.getDirName(path);
+        if (isNotNormalized(dirName)) {
+            // Ignore not normalized paths
+            return;
+        }
         long cpu = event.getCpuTime();
         long user = event.getUserTime();
         lock.writeLock().lock();
@@ -230,11 +311,15 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
             //TODO: process timeout
             return;
         }
+        String dirName = CndPathUtilitities.getDirName(fo.getPath());
+        if (isNotNormalized(dirName)) {
+            // Ignore not normalized paths
+            return;
+        }
         int readChars = ((Integer) event.getAttrs()[0]).intValue();
         int readLines = ((Integer) event.getAttrs()[1]).intValue();
         long cpu = event.getCpuTime();
         long user = event.getUserTime();
-        String dirName = CndPathUtilitities.getDirName(fo.getPath());
         lock.writeLock().lock();
         try {
             ReadEntry entry = readPerformance.get(dirName);
@@ -256,9 +341,18 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
     private void processParse(PerformanceLogger.PerformanceEvent event) {
         FileObject fo = (FileObject) event.getSource();
         long time = event.getTime();
+        long cpu = event.getCpuTime();
         if (event.getAttrs().length == 0) {
             //TODO: process timeout
-            LOG.log(timeOutLevel, "Timeout {0}s of parsing file{1}", new Object[]{time/NANO_TO_SEC, fo.getPath()}); //NOI18N
+            if (time > cpu && cpu > 0) {
+                if (time/cpu < 5) {
+                    LOG.log(timeOutLevel, "Timeout {0}s of parsing file {1}. The parsing already consumes {2}s CPU time", new Object[]{time/NANO_TO_SEC, fo.getPath(), cpu/NANO_TO_SEC}); //NOI18N
+                } else {
+                    LOG.log(timeOutLevel, "Timeout {0}s of parsing file {1}. The parsing spends {2}s on waiting resources.", new Object[]{time/NANO_TO_SEC, fo.getPath(), (time-cpu)/NANO_TO_SEC}); //NOI18N
+                }
+            } else {
+                LOG.log(timeOutLevel, "Timeout {0}s of parsing file {1}", new Object[]{time/NANO_TO_SEC, fo.getPath()}); //NOI18N
+            }
             lock.writeLock().lock();
             try {
                 parseTimeOut.put(fo, event);
@@ -267,10 +361,13 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
             }
             return;
         }
-        int readLines = ((Integer) event.getAttrs()[0]).intValue();
-        long cpu = event.getCpuTime();
-        long user = event.getUserTime();
         String dirName = CndPathUtilitities.getDirName(fo.getPath());
+        if (isNotNormalized(dirName)) {
+            // Ignore not normalized paths
+            return;
+        }
+        int readLines = ((Integer) event.getAttrs()[0]).intValue();
+        long user = event.getUserTime();
         lock.writeLock().lock();
         try {
             parseTimeOut.remove(fo);
@@ -284,6 +381,17 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
             entry.time += time;
             entry.cpu += cpu;
             entry.user += user;
+        } finally {
+            lock.writeLock().unlock();
+        }
+    }
+
+    private void processParseFinished(Project makeProject) {
+        lock.writeLock().lock();
+        try {
+            if (fullAnalyze.get() == 0) {
+                fullAnalyze.set(1);
+            }
         } finally {
             lock.writeLock().unlock();
         }
@@ -320,18 +428,79 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
             }
         });
     }
+    
     private void analyze() {
+        boolean doFullAnalyze = false;
+        TreeMap<String, AgregatedStat> gatherStat = null;
+        lock.writeLock().lock();
+        try {
+            if (fullAnalyze.get() == 1) {
+                doFullAnalyze = true;
+                fullAnalyze.set(2);
+            }
+            
+        } finally {
+            lock.writeLock().unlock();
+        }
+        
         lock.readLock().lock();
         try {
             analyzeCreateItems();
             analyzeReadFile();
             analyzeParseFile();
             analyzeInfiniteParseFile();
+            if (doFullAnalyze) {
+                gatherStat = gatherStat();
+            }
         } catch (Throwable ex) {
             ex.printStackTrace(System.err);
         } finally {
             lock.readLock().unlock();
         }
+        if (gatherStat != null) {
+            new AnalyzeStat(gatherStat).process();
+        }
+    }
+
+    private TreeMap<String, AgregatedStat> gatherStat() {
+        TreeMap<String, AgregatedStat> map = new TreeMap<String, AgregatedStat>();
+        for(Map.Entry<String,CreateEntry> entry : createPerformance.entrySet()) {
+            AgregatedStat state = map.get(entry.getKey());
+            if (state == null) {
+                state = new AgregatedStat();
+                map.put(entry.getKey(), state);
+            }
+            state.itemNumber = entry.getValue().number;
+            state.itemTime = entry.getValue().time;
+            state.itemCPU = entry.getValue().cpu;
+            state.itemUser = entry.getValue().user;
+        }
+        for(Map.Entry<String,ReadEntry> entry : readPerformance.entrySet()) {
+            AgregatedStat state = map.get(entry.getKey());
+            if (state == null) {
+                state = new AgregatedStat();
+                map.put(entry.getKey(), state);
+            }
+            state.readNumber = entry.getValue().number;
+            state.readBytes = entry.getValue().read;
+            state.readLines = entry.getValue().lines;
+            state.readTime = entry.getValue().time;
+            state.readCPU = entry.getValue().cpu;
+            state.readUser = entry.getValue().user;
+        }
+        for(Map.Entry<String,ParseEntry> entry : parsePerformance.entrySet()) {
+            AgregatedStat state = map.get(entry.getKey());
+            if (state == null) {
+                state = new AgregatedStat();
+                map.put(entry.getKey(), state);
+            }
+            state.parseNumber = entry.getValue().number;
+            state.parseLines = entry.getValue().lines;
+            state.parseTime = entry.getValue().time;
+            state.parseCPU = entry.getValue().cpu;
+            state.parseUser = entry.getValue().user;
+        }
+        return map;
     }
     
     @Messages({
@@ -470,13 +639,13 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
          "# {0} - table"
         ,"Details.infinite.files.parse=The parsing of the files:\n"
                                      +"<table><tbody>\n"
-                                     +"<tr><th>File</th><th>Time, s</th><tr>\n"
+                                     +"<tr><th>File</th><th>Time, s</th></tr>\n"
                                      +"{0}\n"
                                      +"</tbody></table>\n"
                                      +"are nether finished or consumes too much time.<br>\n"
         ,"# {0} - file"
         ,"# {1} - time"
-        ,"Details.infinite.file.parse=<tr><td>{0}</td><td>{1}</td>\n"
+        ,"Details.infinite.file.parse=<tr><td>{0}</td><td>{1}</td></tr>\n"
     })
     private void analyzeInfiniteParseFile() {
         StringBuilder buf = new StringBuilder();
@@ -500,7 +669,7 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
         }
     }
 
-    private String format(long val) {
+    static String format(long val) {
         String res = Long.toString(val);
         StringBuilder buf = new StringBuilder();
         for(int i = 0; i < res.length(); i++) {
@@ -512,7 +681,52 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
         }
         return buf.toString();
     }
-    
+
+    @Override
+    public void projectParsingStarted(CsmProject project) {
+    }
+
+    @Override
+    public void projectFilesCounted(CsmProject project, int filesCount) {
+    }
+
+    @Override
+    public void projectParsingFinished(CsmProject project) {
+        Object platformProject = project.getPlatformProject();
+        if (platformProject instanceof NativeProject) {
+            Project makeProject = (Project)((NativeProject)platformProject).getProject();
+            processParseFinished(makeProject);
+        }
+    }
+
+    @Override
+    public void projectParsingCancelled(CsmProject project) {
+    }
+
+    @Override
+    public void projectLoaded(CsmProject project) {
+    }
+
+    @Override
+    public void fileInvalidated(CsmFile file) {
+    }
+
+    @Override
+    public void fileAddedToParse(CsmFile file) {
+    }
+
+    @Override
+    public void fileParsingStarted(CsmFile file) {
+    }
+
+    @Override
+    public void fileParsingFinished(CsmFile file) {
+    }
+
+    @Override
+    public void parserIdle() {
+    }
+
     private static final class CreateEntry {
         private int number;
         private long time;
@@ -536,4 +750,5 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
         private long cpu;
         private long user;
     }
+    
 }

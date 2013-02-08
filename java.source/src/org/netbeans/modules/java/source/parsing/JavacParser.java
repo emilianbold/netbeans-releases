@@ -789,7 +789,7 @@ public class JavacParser extends Parser {
         //need to preregister the Messages here, because the getTask below requires Log instance:
         Messager.preRegister(context, null, DEV_NULL, DEV_NULL, DEV_NULL);
         JavacTaskImpl task = (JavacTaskImpl)JavacTool.create().getTask(null, 
-                ClasspathInfoAccessor.getINSTANCE().getFileManager(cpInfo),
+                ClasspathInfoAccessor.getINSTANCE().createFileManager(cpInfo),
                 diagnosticListener, options, null, Collections.<JavaFileObject>emptySet(),
                 context);
         if (aptEnabled) {

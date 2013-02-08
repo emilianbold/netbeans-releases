@@ -43,6 +43,8 @@
  */
 package org.netbeans.modules.cnd.editor.cplusplus;
 
+import java.util.EnumSet;
+import java.util.Set;
 import java.util.Stack;
 import java.util.prefs.Preferences;
 import javax.swing.text.BadLocationException;
@@ -50,7 +52,7 @@ import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.settings.SimpleValueNames;
-import org.netbeans.api.lexer.PartType;
+import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
@@ -65,6 +67,7 @@ import org.netbeans.editor.TokenProcessor;
 import org.netbeans.editor.TokenContextPath;
 import org.netbeans.editor.Utilities;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
+import org.netbeans.spi.editor.typinghooks.TypedTextInterceptor;
 
 /**
  * This static class groups the whole aspect of bracket
@@ -98,36 +101,10 @@ public class BracketCompletion {
         if (tokenAtDot == null) {
             return;
         }
-        if (ch == ')' || ch == ']' || ch == '(' || ch == '[') {
-            TokenId id = tokenAtDot.id();
-            if(id instanceof CppTokenId) {
-                switch ((CppTokenId)id) {
-                    case RBRACKET:
-                    case RPAREN:
-                        skipClosingBracket(doc, caret, ch);
-                        break;
-                    case LBRACKET:
-                    case LPAREN:
-                        completeOpeningBracket(doc, dotPos, caret, ch);
-                        break;
-                }
-            }
-        } else if (ch == '\"' || ch == '\'') {
+        if (ch == '\"' || ch == '\'') {
             completeQuote(doc, dotPos, caret, ch);
         } else if (ch == ';') {
             moveSemicolon(doc, dotPos, caret);
-        } else if (ch == '<') {
-            if (tokenAtDot.id() == CppTokenId.PREPROCESSOR_SYS_INCLUDE &&
-                    tokenAtDot.partType() == PartType.START) {
-                completeOpeningBracket(doc, dotPos, caret, ch);
-            }
-        } else if (ch == '>') {
-            if (tokenAtDot.id() == CppTokenId.PREPROCESSOR_SYS_INCLUDE) {
-                char match[] = doc.getChars(dotPos + 1, 1);
-                if (match != null && match[0] == '>') {
-                    doc.remove(dotPos + 1, 1);
-                }
-            }
         } else if (ch == '.') {
             if (dotPos > 0) {
                 tokenAtDot = CndTokenUtilities.getToken(doc, dotPos - 1, true);
@@ -402,28 +379,7 @@ public class BracketCompletion {
         return tp.getBalance();
     }
 
-    /**
-     * A hook to be called after closing bracket ) or ] was inserted into
-     * the document. The method checks if the bracket should stay there
-     * or be removed and some exisitng bracket just skipped.
-     *
-     * @param doc the document
-     * @param dotPos position of the inserted bracket
-     * @param caret caret
-     * @param theBracket the bracket character ']' or ')'
-     */
-    private static void skipClosingBracket(BaseDocument doc, Caret caret, char theBracket)
-            throws BadLocationException {
-        CppTokenId bracketId = (theBracket == ')')
-                ? CppTokenId.RPAREN
-                : CppTokenId.RBRACKET;
-        int caretOffset = caret.getDot();
-        if (isSkipClosingBracket(doc, caretOffset, bracketId)) {
-            doc.remove(caretOffset - 1, 1);
-            caret.setDot(caretOffset); // skip closing bracket
-        }
-    }
-
+    private static Set<? extends TokenId> STOP_TOKENS_FOR_SKIP_CLOSING_BRACKET = EnumSet.of(CppTokenId.LBRACE, CppTokenId.RBRACE, CppTokenId.SEMICOLON);
     /**
      * Check whether the typed bracket should stay in the document
      * or be removed.
@@ -433,171 +389,118 @@ public class BracketCompletion {
      * @param doc document into which typing was done.
      * @param caretOffset
      */
-    static boolean isSkipClosingBracket(BaseDocument doc, int caretOffset, CppTokenId bracketId)
-            throws BadLocationException {
-        // First check whether the caret is not after the last char in the document
-        // because no bracket would follow then so it could not be skipped.
-        if (caretOffset == doc.getLength()) {
-            return false; // no skip in this case
-        }
-
-        boolean skipClosingBracket = false; // by default do not remove
-        // Examine token at the caret offset
-        TokenSequence<TokenId> ts = cppTokenSequence(doc, caretOffset, false);
-        if (ts == null) {
+    private static boolean isSkipClosingBracket(TypedTextInterceptor.MutableContext context, TokenSequence<TokenId> cppTS, CppTokenId bracketId) throws BadLocationException {
+        if (context.getOffset() == context.getDocument().getLength()) {
             return false;
         }
-        // Check whether character follows the bracket is the same bracket
-        if (ts.token().id() == bracketId) {
-            CppTokenId leftBracketId = (ts.token().id() == CppTokenId.RPAREN) ? CppTokenId.LPAREN : CppTokenId.LBRACKET;
 
-            // Skip all the brackets of the same type that follow the last one
-            int lastRBracketIndex = ts.index();
-            while (ts.moveNext() && ts.token().id() == bracketId) {
-                lastRBracketIndex = ts.index();
+        boolean skipClosingBracket = false;
+        TokenId id = cppTS.token().id();
+        if ((Language<?>) cppTS.language() == CppTokenId.languagePreproc()) {
+            if (id == CppTokenId.PREPROCESSOR_SYS_INCLUDE && bracketId == CppTokenId.GT) {
+                char chr = context.getDocument().getText(context.getOffset(), 1).charAt(0);
+                return chr == '>';
             }
+            return false;
+        }
+        if (id == bracketId) {
+            CppTokenId leftBracketId = matching(bracketId);
+            // Skip all the brackets of the same type that follow the last one
+            do {
+                if (STOP_TOKENS_FOR_SKIP_CLOSING_BRACKET.contains(cppTS.token().id())
+                        || (cppTS.token().id() == CppTokenId.WHITESPACE && cppTS.token().text().toString().contains("\n"))) {  // NOI18N
+                    while (cppTS.token().id() != bracketId) {
+                        boolean isPrevious = cppTS.movePrevious();
+                        if (!isPrevious) {
+                            break;
+                        }
+                    }
+                    break;
+                }
+            } while (cppTS.moveNext());
+
             // token var points to the last bracket in a group of two or more right brackets
             // Attempt to find the left matching bracket for it
             // Search would stop on an extra opening left brace if found
             int braceBalance = 0; // balance of '{' and '}'
             int bracketBalance = -1; // balance of the brackets or parenthesis
+            int numOfSemi = 0;
             boolean finished = false;
-            while (!finished && ts.movePrevious()) {
-                TokenId id = ts.token().id();
-                if(id instanceof CppTokenId) {
-                    switch ((CppTokenId)id) {
-                        case LPAREN:
-                        case LBRACKET:
-                            if (id == bracketId) {
-                                bracketBalance++;
-                                if (bracketBalance == 0) {
-                                    if (braceBalance != 0) {
-                                        // Here the bracket is matched but it is located
-                                        // inside an unclosed brace block
-                                        // e.g. ... ->( } a()|)
-                                        // which is in fact illegal but it's a question
-                                        // of what's best to do in this case.
-                                        // We chose to leave the typed bracket
-                                        // by setting bracketBalance to 1.
-                                        // It can be revised in the future.
-                                        bracketBalance = 1;
-                                    }
-                                    finished = true;
+            while (!finished && cppTS.movePrevious()) {
+                id = cppTS.token().id();
+                switch ((CppTokenId) id) {
+                    case LPAREN:
+                    case LBRACKET:
+                        if (id == leftBracketId) {
+                            bracketBalance++;
+                            if (bracketBalance == 1) {
+                                if (braceBalance != 0) {
+                                    // Here the bracket is matched but it is located
+                                    // inside an unclosed brace block
+                                    // e.g. ... ->( } a()|)
+                                    // which is in fact illegal but it's a question
+                                    // of what's best to do in this case.
+                                    // We chose to leave the typed bracket
+                                    // by setting bracketBalance to 1.
+                                    // It can be revised in the future.
+                                    bracketBalance = 2;
                                 }
+                                finished = cppTS.offset() < context.getOffset();
                             }
-                            break;
-
-                        case RPAREN:
-                        case RBRACKET:
-                            if (id == bracketId) {
-                                bracketBalance--;
-                            }
-                            break;
-                        case LBRACE:
-                            braceBalance++;
-                            if (braceBalance > 0) { // stop on extra left brace
-                                finished = true;
-                            }
-                            break;
-
-                        case RBRACE:
-                            braceBalance--;
-                            break;
-
-                    }
-                }
-            // done regardless of finished flag state
-            }
-
-            if (bracketBalance != 0) { // not found matching bracket
-                // Remove the typed bracket as it's unmatched
-                skipClosingBracket = true;
-
-            } else { // the bracket is matched
-                // Now check whether the bracket would be matched
-                // when the closing bracket would be removed
-                // i.e. starting from the original lastRBracket token
-                // and search for the same bracket to the right in the text
-                // The search would stop on an extra right brace if found
-                braceBalance = 0;
-                bracketBalance = 1; // simulate one extra left bracket
-                ts.moveIndex(lastRBracketIndex);
-                ts.moveNext();
-//                token = lastRBracket.getNext();
-                ts.moveNext(); // ???
-                finished = false;
-                while (!finished && ts.movePrevious()) {
-                    TokenId id = ts.token().id();
-                    if(id instanceof CppTokenId) {
-                        switch ((CppTokenId)id) {
-                            case LPAREN:
-                            case LBRACKET:
-                                if (id == leftBracketId) {
-                                    bracketBalance++;
-                                }
-                                break;
-
-                            case RPAREN:
-                            case RBRACKET:
-                                if (id == bracketId) {
-                                    bracketBalance--;
-                                    if (bracketBalance == 0) {
-                                        if (braceBalance != 0) {
-                                            // Here the bracket is matched but it is located
-                                            // inside an unclosed brace block
-                                            // which is in fact illegal but it's a question
-                                            // of what's best to do in this case.
-                                            // We chose to leave the typed bracket
-                                            // by setting bracketBalance to -1.
-                                            // It can be revised in the future.
-                                            bracketBalance = -1;
-                                        }
-                                        finished = true;
-                                    }
-                                }
-                                break;
-
-                            case LBRACE:
-                                braceBalance++;
-                                break;
-
-                            case RBRACE:
-                                braceBalance--;
-                                if (braceBalance < 0) { // stop on extra right brace
-                                    finished = true;
-                                }
-                                break;
                         }
-                        
-                    }
-                // done regardless of finished flag state
-                }
+                        break;
 
-                // If bracketBalance == 0 the bracket would be matched
-                // by the bracket that follows the last right bracket.
-                skipClosingBracket = (bracketBalance == 0);
+                    case RPAREN:
+                    case RBRACKET:
+                        if (id == bracketId) {
+                            bracketBalance--;
+                        }
+                        break;
+                    case LBRACE:
+                        braceBalance++;
+                        if (braceBalance > 0) { // stop on extra left brace
+                            finished = true;
+                        }
+                        break;
+
+                    case RBRACE:
+                        braceBalance--;
+                        break;
+
+                    case SEMICOLON:
+                        numOfSemi++;
+                        break;
+                }
             }
+
+            if (bracketBalance == 1 && numOfSemi < 2) {
+                finished = false;
+                while (!finished && cppTS.movePrevious()) {
+                    switch ((CppTokenId) cppTS.token().id()) {
+                        case WHITESPACE:
+                        case LINE_COMMENT:
+                        case BLOCK_COMMENT:
+                        case DOXYGEN_COMMENT:
+                        case DOXYGEN_LINE_COMMENT:
+                            break;
+                        case FOR:
+                            bracketBalance--;
+                        default:
+                            finished = true;
+                            break;
+                    }
+                }
+            }
+
+            skipClosingBracket = bracketBalance != 1;
         }
         return skipClosingBracket;
-    }
 
-    /**
-     * Check for various conditions and possibly add a pairing bracket
-     * to the already inserted.
-     * @param doc the document
-     * @param dotPos position of the opening bracket (already in the doc)
-     * @param caret caret
-     * @param theBracket the bracket that was inserted
-     */
-    private static void completeOpeningBracket(BaseDocument doc,
-            int dotPos,
-            Caret caret,
-            char theBracket) throws BadLocationException {
-        if (isCompletablePosition(doc, dotPos + 1)) {
-            String matchinBracket = "" + matching(theBracket);
-            doc.insertString(dotPos + 1, matchinBracket, null);
-            caret.setDot(dotPos + 1);
-        }
+    }
+    private static Set<? extends TokenId> STRING_AND_COMMENT_TOKENS = EnumSet.of(CppTokenId.STRING_LITERAL, CppTokenId.LINE_COMMENT, CppTokenId.DOXYGEN_COMMENT, CppTokenId.DOXYGEN_LINE_COMMENT, CppTokenId.BLOCK_COMMENT);
+
+    private static boolean isStringOrComment(TokenId tokenId) {
+        return STRING_AND_COMMENT_TOKENS.contains(tokenId);
     }
 
     private static boolean isEscapeSequence(BaseDocument doc, int dotPos) throws BadLocationException {
@@ -647,13 +550,13 @@ public class BracketCompletion {
      * @param doc the document
      * @param dotPos position to be tested
      */
-    private static boolean isCompletablePosition(BaseDocument doc, int dotPos)
+    private static boolean isCompletablePosition(Document doc, int dotPos)
             throws BadLocationException {
         if (dotPos == doc.getLength()) {// there's no other character to test
             return true;
         } else {
             // test that we are in front of ) , " or '
-            char chr = doc.getChars(dotPos, 1)[0];
+            char chr = doc.getText(dotPos, 1).charAt(0);
             return (chr == ')' ||
                     chr == ',' ||
                     chr == '\"' ||
@@ -789,6 +692,94 @@ public class BracketCompletion {
         return false;
     }
 
+    /**
+     * Check for various conditions and possibly add a pairing bracket.
+     *
+     * @param context
+     * @throws BadLocationException
+     */
+    static void completeOpeningBracket(TypedTextInterceptor.MutableContext context) throws BadLocationException {
+        TokenSequence<TokenId> cppTS = cppTokenSequence(context.getDocument(), context.getOffset(), false);
+        if (isStringOrComment(cppTS.token().id())) {
+            return;
+        }
+        char insChr = context.getText().charAt(0);
+        char chr = context.getDocument().getText(context.getOffset(), 1).charAt(0);
+        if (insChr == '<') {
+            if (chr == '\n') {
+                if (((Language<?>)cppTS.language()) == ((Language<?>)CppTokenId.languagePreproc())) {
+                    // autocomple if system includes directive
+                    cppTS.moveStart();
+                    if (cppTS.moveNext() && cppTS.moveNext()) {
+                        TokenId id = cppTS.token().id();
+                        if (id == CppTokenId.PREPROCESSOR_INCLUDE || id == CppTokenId.PREPROCESSOR_INCLUDE_NEXT) {
+                            context.setText("" + insChr + matching(insChr) , 1);  // NOI18N
+                        }
+                    }
+                }
+            }
+            return;
+        }
+        if (isCompletablePosition(context.getDocument(), context.getOffset())) {
+            context.setText("" + insChr + matching(insChr) , 1);  // NOI18N
+        }
+    }
+
+    static int skipClosingBracket(TypedTextInterceptor.MutableContext context) throws BadLocationException {
+        TokenSequence<TokenId> cppTS = cppTokenSequence(context.getDocument(), context.getOffset(), false);
+        if (cppTS == null || isStringOrComment(cppTS.token().id())) {
+            return -1;
+        }
+        CppTokenId rightBracketId = bracketCharToId(context.getText().charAt(0));
+        if (isSkipClosingBracket(context, cppTS, rightBracketId)) {
+            context.setText("", 0);  // NOI18N
+            return context.getOffset() + 1;
+        }
+        return -1;
+    }
+
+    private static CppTokenId bracketCharToId(char bracket) {
+        switch (bracket) {
+            case '(':
+                return CppTokenId.LPAREN;
+            case ')':
+                return CppTokenId.RPAREN;
+            case '[':
+                return CppTokenId.LBRACKET;
+            case ']':
+                return CppTokenId.RBRACKET;
+            case '{':
+                return CppTokenId.LBRACE;
+            case '}':
+                return CppTokenId.RBRACE;
+            case '<':
+                return CppTokenId.LT;
+            case '>':
+                return CppTokenId.GT;
+            default:
+                throw new IllegalArgumentException("Not a bracket char '" + bracket + '\'');  // NOI18N
+        }
+    }
+
+    private static CppTokenId matching(CppTokenId id) {
+        switch (id) {
+            case LPAREN:
+                return CppTokenId.RPAREN;
+            case LBRACKET:
+                return CppTokenId.RBRACKET;
+            case RPAREN:
+                return CppTokenId.LPAREN;
+            case RBRACKET:
+                return CppTokenId.LBRACKET;
+            case LT:
+                return CppTokenId.GT;
+            case GT:
+                return CppTokenId.LT;
+            default:
+                return null;
+        }
+    }    
+    
     /**
      * A token processor used to find out the length of a token.
      */

@@ -42,105 +42,124 @@
 
 package org.netbeans.modules.php.project.ui.testrunner;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.io.UnsupportedEncodingException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.api.extexecution.input.LineProcessors;
-import org.netbeans.api.extexecution.print.LineConvertor;
-import org.netbeans.api.extexecution.print.LineConvertors;
 import org.netbeans.modules.gsf.testrunner.api.Manager;
 import org.netbeans.modules.gsf.testrunner.api.OutputLineHandler;
-import org.netbeans.modules.gsf.testrunner.api.RerunHandler;
+import org.netbeans.modules.gsf.testrunner.api.Status;
 import org.netbeans.modules.gsf.testrunner.api.TestSession;
 import org.netbeans.modules.gsf.testrunner.api.TestSuite;
 import org.netbeans.modules.gsf.testrunner.api.Testcase;
 import org.netbeans.modules.gsf.testrunner.api.Trouble;
 import org.netbeans.modules.php.project.PhpProject;
-import org.netbeans.modules.php.project.ui.testrunner.TestSessionVO.TestCaseVO.Diff;
-import org.netbeans.modules.php.project.ui.testrunner.TestSessionVO.TestSuiteVO;
-import org.netbeans.modules.php.project.ui.testrunner.TestSessionVO.TestCaseVO;
-import org.netbeans.modules.php.project.phpunit.PhpUnit;
-import org.netbeans.modules.php.project.phpunit.PhpUnitTestRunInfo;
-import org.openide.util.Exceptions;
+import org.netbeans.modules.php.project.ui.codecoverage.PhpCoverageProvider;
+import org.netbeans.modules.php.spi.testing.locate.Locations;
+import org.netbeans.modules.php.spi.testing.PhpTestingProvider;
+import org.netbeans.modules.php.spi.testing.coverage.Coverage;
+import org.netbeans.modules.php.spi.testing.run.TestCase;
+import org.netbeans.modules.php.spi.testing.run.TestCase.Diff;
+import org.netbeans.modules.php.spi.testing.run.TestRunException;
+import org.netbeans.modules.php.spi.testing.run.TestRunInfo;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.windows.OutputWriter;
 
 /**
- * Test runner UI for PHP unit tests. One must call {@link #start()} first
- * and after the test results are available, {@link #showResults()} will show them.
+ * Test runner UI for PHP unit tests.
  * <p>
- * Currently, only PHPUnit is supported.
  * All the times are in milliseconds.
- * @author Tomas Mysik
  */
 public final class UnitTestRunner {
     private static final Logger LOGGER = Logger.getLogger(UnitTestRunner.class.getName());
     private static final Manager MANAGER = Manager.getInstance();
-    private static final PhpOutputLineHandler PHP_OUTPUT_LINE_HANDLER = new PhpOutputLineHandler();
 
     private final PhpProject project;
     private final TestSession testSession;
-    private final PhpUnitTestRunInfo info;
+    private final TestRunInfo info;
+    private final ControllableRerunHandler rerunHandler;
+    private final PhpCoverageProvider coverageProvider;
+    private final PhpTestingProvider testingProvider;
 
-    private volatile boolean started = false;
 
-    public UnitTestRunner(PhpProject project, TestSession.SessionType sessionType, RerunHandler rerunHandler, PhpUnitTestRunInfo info) {
+    public UnitTestRunner(PhpProject project, TestRunInfo info, ControllableRerunHandler rerunHandler) {
         assert project != null;
-        assert sessionType != null;
         assert rerunHandler != null;
         assert info != null;
 
         this.project = project;
         this.info = info;
+        this.rerunHandler = rerunHandler;
+        coverageProvider = project.getLookup().lookup(PhpCoverageProvider.class);
+        assert coverageProvider != null;
+        // XXX use all test providers
+        testingProvider = project.getFirstTestingProvider();
+        assert testingProvider != null;
 
-        testSession = new TestSession(getOutputTitle(project, info), project, sessionType, new PhpTestRunnerNodeFactory());
+        testSession = new TestSession(getOutputTitle(project, info), project, map(info.getSessionType()), new PhpTestRunnerNodeFactory(new CallStackCallback(project)));
         testSession.setRerunHandler(rerunHandler);
-        testSession.setOutputLineHandler(PHP_OUTPUT_LINE_HANDLER);
     }
 
-    public void start() {
-        MANAGER.testStarted(testSession);
-        started = true;
-        deleteOldLogFiles();
-    }
-
-    public void showResults() {
-        if (!started) {
-            throw new IllegalStateException("Test runner must be started. Call start() method first.");
-        }
-        TestSessionVO session = createTestSession();
-        if (session == null) {
-            // some error occured
+    public void run() {
+        if (!checkTestingProviders()) {
             return;
         }
-
-        if (info.allTests()) {
-            // custom suite?
-            File customSuite = PhpUnit.getCustomSuite(project);
-            if (customSuite != null) {
-                MANAGER.displayOutput(testSession, NbBundle.getMessage(UnitTestRunner.class, "MSG_CustomSuiteUsed", customSuite.getAbsolutePath()), false);
-                MANAGER.displayOutput(testSession, "", false); // NOI18N
+        try {
+            rerunHandler.disable();
+            MANAGER.testStarted(testSession);
+            org.netbeans.modules.php.spi.testing.run.TestSession session = runInternal();
+            if (session != null) {
+                handleCodeCoverage(session.getCoverage());
             }
+        } catch (Exception ex) {
+            LOGGER.log(Level.SEVERE, null, ex);
+        } finally {
+            MANAGER.sessionFinished(testSession);
+            rerunHandler.enable();
+        }
+    }
+
+    private org.netbeans.modules.php.spi.testing.run.TestSession runInternal() {
+        org.netbeans.modules.php.spi.testing.run.TestSession session;
+        try {
+            session = testingProvider.runTests(project.getPhpModule(), info);
+        } catch (TestRunException exc) {
+            LOGGER.log(Level.INFO, null, exc);
+            MANAGER.displayOutput(testSession, NbBundle.getMessage(UnitTestRunner.class, "MSG_PerhapsError"), true);
+            return null;
+        }
+        if (session == null) {
+            // some error occured
+            return null;
         }
 
-        for (TestSuiteVO suite : session.getTestSuites()) {
+        org.netbeans.modules.php.spi.testing.run.OutputLineHandler outputLineHandler = session.getOutputLineHandler();
+        if (outputLineHandler != null) {
+            testSession.setOutputLineHandler(map(outputLineHandler));
+        }
+
+        String initMessage = session.getInitMessage();
+        if (initMessage != null) {
+            MANAGER.displayOutput(testSession, initMessage, false);
+            MANAGER.displayOutput(testSession, "", false); // NOI18N
+        }
+
+        for (org.netbeans.modules.php.spi.testing.run.TestSuite suite : session.getTestSuites()) {
             MANAGER.displaySuiteRunning(testSession, suite.getName());
 
             TestSuite testSuite = new TestSuite(suite.getName());
             testSession.addSuite(testSuite);
 
-            for (TestCaseVO kase : suite.getTestCases()) {
-                Testcase testCase = new Testcase(kase.getName(), "PHPUnit test case", testSession); // NOI18N
+            for (TestCase kase : suite.getTestCases()) {
+                Testcase testCase = new Testcase(kase.getName(), kase.getType(), testSession);
+                testCase.setClassName(getClassName(kase, suite));
+                testCase.setLocation(getLocation(kase, suite));
                 testCase.setTimeMillis(kase.getTime());
-                testCase.setStatus(kase.getStatus());
+                testCase.setStatus(map(kase.getStatus()));
 
-                String[] stacktrace = kase.getStacktrace();
+                String[] stacktrace = kase.getStackTrace();
                 if (stacktrace.length > 0) {
                     boolean isError = kase.isError();
                     Trouble trouble = new Trouble(isError);
@@ -148,11 +167,11 @@ public final class UnitTestRunner {
 
                     Diff diff = kase.getDiff();
                     if (diff.isValid()) {
-                        Trouble.ComparisonFailure failure = new Trouble.ComparisonFailure(diff.expected, diff.actual);
+                        Trouble.ComparisonFailure failure = new Trouble.ComparisonFailure(diff.getExpected(), diff.getActual());
                         trouble.setComparisonFailure(failure);
                     }
                     testCase.setTrouble(trouble);
-                    MANAGER.displayOutput(testSession, suite.getName() + "::"  + kase.getName() + "()", isError); // NOI18N
+                    MANAGER.displayOutput(testSession, getClassName(kase, suite) + "::"  + kase.getName() + "()", isError); // NOI18N
                     testSession.addOutput("<u>" + kase.getName() + ":</u>"); // NOI18N
                     for (String s : stacktrace) {
                         MANAGER.displayOutput(testSession, s, isError);
@@ -166,57 +185,42 @@ public final class UnitTestRunner {
             MANAGER.displayReport(testSession, testSession.getReport(suite.getTime()));
         }
 
-        MANAGER.displayOutput(testSession, NbBundle.getMessage(UnitTestRunner.class, "MSG_OutputInOutput"), false);
-        MANAGER.sessionFinished(testSession);
-    }
-
-    private void processPhpUnitError() {
-        LOGGER.info(String.format("File %s not found or cannot be parsed. If there are no errors in PHPUnit output (verify in Output window), "
-                + "please report an issue (http://www.netbeans.org/issues/).", PhpUnit.XML_LOG));
-        MANAGER.displayOutput(testSession, NbBundle.getMessage(UnitTestRunner.class, "MSG_PerhapsError"), true);
-        MANAGER.sessionFinished(testSession);
-    }
-
-    private void deleteOldLogFiles() {
-        if (PhpUnit.XML_LOG.exists()) {
-            if (!PhpUnit.XML_LOG.delete()) {
-                LOGGER.log(Level.INFO, "Cannot delete PHPUnit log {0}", PhpUnit.XML_LOG);
-            }
-        }
-        if (PhpUnit.COVERAGE_LOG.exists()) {
-            if (!PhpUnit.COVERAGE_LOG.delete()) {
-                LOGGER.log(Level.INFO, "Cannot delete code coverage log {0}", PhpUnit.COVERAGE_LOG);
-            }
-        }
-    }
-
-    private TestSessionVO createTestSession() {
-        Reader reader;
-        try {
-            // #163633 - php unit always uses utf-8 for its xml logs
-            reader = new BufferedReader(new InputStreamReader(new FileInputStream(PhpUnit.XML_LOG), "UTF-8")); // NOI18N
-        } catch (UnsupportedEncodingException ex) {
-            Exceptions.printStackTrace(ex);
-            return null;
-        } catch (FileNotFoundException ex) {
-            processPhpUnitError();
-            return null;
-        }
-        TestSessionVO session = new TestSessionVO();
-        boolean parsed = PhpUnitLogParser.parse(reader, session);
-        if (!PhpUnit.KEEP_LOGS) {
-            if (!PhpUnit.XML_LOG.delete()) {
-                LOGGER.log(Level.INFO, "Cannot delete PHPUnit log {0}", PhpUnit.XML_LOG);
-            }
-        }
-        if (!parsed) {
-            processPhpUnitError();
-            return null;
+        String finishMessage = session.getFinishMessage();
+        if (finishMessage != null) {
+            MANAGER.displayOutput(testSession, finishMessage, false);
         }
         return session;
     }
 
-    private String getOutputTitle(PhpProject project, PhpUnitTestRunInfo info) {
+    @NbBundle.Messages("UnitTestRunner.error.noProviders=No PHP testing provider found, install one via Plugins (e.g. PHPUnit).")
+    private boolean checkTestingProviders() {
+        if (!project.getTestingProviders().isEmpty()) {
+            return true;
+        }
+        DialogDisplayer.getDefault().notifyLater(
+                new NotifyDescriptor.Message(Bundle.UnitTestRunner_error_noProviders(), NotifyDescriptor.INFORMATION_MESSAGE));
+        return false;
+    }
+
+    private void handleCodeCoverage(Coverage coverage) {
+        if (!coverageProvider.isEnabled()) {
+            return;
+        }
+        if (!testingProvider.isCoverageSupported(project.getPhpModule())) {
+            return;
+        }
+        if (coverage == null) {
+            // some error
+            return;
+        }
+        if (info.allTests()) {
+            coverageProvider.setCoverage(coverage);
+        } else {
+            coverageProvider.updateCoverage(coverage);
+        }
+    }
+
+    private String getOutputTitle(PhpProject project, TestRunInfo info) {
         StringBuilder sb = new StringBuilder(30);
         sb.append(project.getName());
         String testName = info.getTestName();
@@ -227,12 +231,67 @@ public final class UnitTestRunner {
         return sb.toString();
     }
 
-    private static final class PhpOutputLineHandler implements OutputLineHandler {
-        private static final LineConvertor CONVERTOR = LineConvertors.filePattern(null, PhpUnit.LINE_PATTERN, null, 1, 2);
+    private String getClassName(TestCase testCase, org.netbeans.modules.php.spi.testing.run.TestSuite testSuite) {
+        String className = testCase.getClassName();
+        if (className != null) {
+            return className;
+        }
+        className = testSuite.getName();
+        assert className != null;
+        return className;
+    }
+
+    private String getLocation(TestCase testCase, org.netbeans.modules.php.spi.testing.run.TestSuite testSuite) {
+        Locations.Line locationWithLine = testCase.getLocation();
+        if (locationWithLine != null) {
+            return FileUtil.toFile(locationWithLine.getFile()).getAbsolutePath();
+        }
+        FileObject location = testSuite.getLocation();
+        assert location != null;
+        return FileUtil.toFile(location).getAbsolutePath();
+    }
+
+    //~ Mappers
+
+    private OutputLineHandler map(final org.netbeans.modules.php.spi.testing.run.OutputLineHandler outputLineHandler) {
+        return new OutputLineHandler() {
+            @Override
+            public void handleLine(OutputWriter out, String text) {
+                outputLineHandler.handleLine(out, text);
+            }
+        };
+    }
+
+    private Status map(TestCase.Status status) {
+        return Status.valueOf(status.name());
+    }
+
+    private TestSession.SessionType map(TestRunInfo.SessionType type) {
+        return TestSession.SessionType.valueOf(type.name());
+    }
+
+    //~ Inner classes
+
+    private static final class CallStackCallback implements JumpToCallStackAction.Callback {
+
+        private final PhpProject project;
+
+        public CallStackCallback(PhpProject project) {
+            assert project != null;
+            this.project = project;
+        }
 
         @Override
-        public void handleLine(OutputWriter out, String text) {
-            LineProcessors.printing(out, CONVERTOR, true).processLine(text);
+        public Locations.Line parseLocation(String callStack) {
+            for (PhpTestingProvider testingProvider : project.getTestingProviders()) {
+                Locations.Line location = testingProvider.parseFileFromOutput(callStack);
+                if (location != null) {
+                    return location;
+                }
+            }
+            return null;
         }
+
     }
+
 }

@@ -299,7 +299,7 @@ public class PullAction extends ContextAction {
     @NbBundle.Messages({
         "MSG_PullAction.popingPatches=Popping applied patches",
         "MSG_PullAction.pulling=Pulling changesets",
-        "MSG_PullAction.pushingPatches=Pushing patches",
+        "MSG_PullAction.pushingPatches=Pushing patches"
     })
     static void performPull(final PullType type, final File root, final HgURL pullSource, final String fromPrjName, final String toPrjName, final String revision, final HgProgressSupport supp) {
         if(root == null || pullSource == null) return;

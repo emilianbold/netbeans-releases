@@ -101,7 +101,7 @@ public class ElementNode extends AbstractNode {
     private OpenAction openAction;
     private StructureItem description;
     private ClassMemberPanelUI ui;
-    private FileObject fileObject; // For the root description
+    private final FileObject fileObject; // For the root description
            
     /** Creates a new instance of TreeNode */
     public ElementNode( StructureItem description, ClassMemberPanelUI ui, FileObject fileObject) {
@@ -132,7 +132,11 @@ public class ElementNode extends AbstractNode {
                    
     @Override
     public java.lang.String getDisplayName() {
-        return description.getName();
+        if (description.getName() == null) {
+            return fileObject.getNameExt();
+        } else {
+            return description.getName();
+        }
     }
             
     @Override

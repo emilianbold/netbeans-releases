@@ -46,13 +46,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.php.editor.model.ClassScope;
+import org.netbeans.modules.php.editor.model.FunctionScope;
 import org.netbeans.modules.php.editor.model.InterfaceScope;
 import org.netbeans.modules.php.editor.model.MethodScope;
 import org.netbeans.modules.php.editor.model.NamespaceScope;
 import org.netbeans.modules.php.editor.model.Scope;
 import org.netbeans.modules.php.editor.model.TraitScope;
 import org.netbeans.modules.php.editor.model.TypeScope;
+import org.netbeans.modules.php.editor.model.nodes.ClassConstantDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.ClassDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.IncludeInfo;
 import org.netbeans.modules.php.editor.model.nodes.InterfaceDeclarationInfo;
@@ -62,6 +65,7 @@ import org.netbeans.modules.php.editor.model.nodes.NamespaceDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.SingleFieldDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.TraitDeclarationInfo;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.ConstantDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.FieldsDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Include;
 import org.netbeans.modules.php.editor.parser.astnodes.InterfaceDeclaration;
@@ -123,6 +127,13 @@ class ModelBuilder {
         for (SingleFieldDeclarationInfo sfdi : infos) {
             FieldElementImpl fei = ModelElementFactory.create(sfdi, this);
             occurencesBuilder.prepare(sfdi, fei);
+        }
+    }
+
+    void build(ConstantDeclaration node, OccurenceBuilder occurencesBuilder) {
+        List<? extends ClassConstantDeclarationInfo> infos = ClassConstantDeclarationInfo.create(node);
+        for (ClassConstantDeclarationInfo nodeInfo : infos) {
+            occurencesBuilder.prepare(nodeInfo, ModelElementFactory.create(nodeInfo, this));
         }
     }
 
@@ -234,5 +245,65 @@ class ModelBuilder {
      */
     Map<VariableNameFactory, Map<String, VariableNameImpl>> getVars() {
         return vars;
+    }
+
+    private static final class ModelElementFactory {
+
+        private ModelElementFactory() {
+        }
+
+        static NamespaceScopeImpl create(NamespaceDeclarationInfo nodeInfo, ModelBuilder context) {
+            NamespaceScopeImpl namespaceScope = new NamespaceScopeImpl(context.getFileScope(), nodeInfo);
+            return namespaceScope;
+        }
+
+        @CheckForNull
+        static IncludeElementImpl create(IncludeInfo info, ModelBuilder context) {
+            return new IncludeElementImpl(context.getCurrentScope(), info);
+        }
+
+        static ClassScopeImpl create(ClassDeclarationInfo nodeInfo, ModelBuilder context) {
+            Scope currentScope = context.getCurrentScope();
+            if (currentScope == null) {
+                currentScope = context.getCurrentNameSpace();
+            }
+            if (currentScope instanceof FunctionScope) {
+                currentScope = currentScope.getInScope();
+            }
+            boolean isDeprecated = VariousUtils.isDeprecatedFromPHPDoc(context.getProgram(), nodeInfo.getOriginalNode());
+            ClassScopeImpl clz = new ClassScopeImpl(currentScope, nodeInfo, isDeprecated);
+            return clz;
+        }
+
+        static InterfaceScopeImpl create(InterfaceDeclarationInfo nodeInfo, ModelBuilder context) {
+            boolean isDeprecated = VariousUtils.isDeprecatedFromPHPDoc(context.getProgram(), nodeInfo.getOriginalNode());
+            return new InterfaceScopeImpl(context.getCurrentScope(), nodeInfo, isDeprecated);
+        }
+
+        static TraitScopeImpl create(TraitDeclarationInfo nodeInfo, ModelBuilder context) {
+            boolean isDeprecated = VariousUtils.isDeprecatedFromPHPDoc(context.getProgram(), nodeInfo.getOriginalNode());
+            return new TraitScopeImpl(context.getCurrentScope(), nodeInfo, isDeprecated);
+        }
+
+        static MethodScopeImpl create(MethodDeclarationInfo nodeInfo, ModelBuilder context, ModelVisitor visitor) {
+            String returnType = VariousUtils.getReturnTypeFromPHPDoc(context.getProgram(), nodeInfo.getOriginalNode().getFunction());
+            boolean isDeprecated = VariousUtils.isDeprecatedFromPHPDoc(context.getProgram(), nodeInfo.getOriginalNode().getFunction());
+            String qualifiedReturnType = VariousUtils.qualifyTypeNames(returnType, nodeInfo.getOriginalNode().getStartOffset(), context.getCurrentScope());
+            MethodScopeImpl method = new MethodScopeImpl(context.getCurrentScope(), qualifiedReturnType, nodeInfo, visitor, isDeprecated);
+            return method;
+        }
+
+        static FieldElementImpl create(SingleFieldDeclarationInfo nodeInfo, ModelBuilder context) {
+            String returnType = VariousUtils.getFieldTypeFromPHPDoc(context.getProgram(), nodeInfo.getOriginalNode());
+            boolean isDeprecated = VariousUtils.isDeprecatedFromPHPDoc(context.getProgram(), nodeInfo.getOriginalNode());
+            String returnFQType = VariousUtils.qualifyTypeNames(returnType, nodeInfo.getRange().getStart(), context.getCurrentScope());
+            FieldElementImpl fei = new FieldElementImpl(context.getCurrentScope(), returnType, returnFQType, nodeInfo, isDeprecated);
+            return fei;
+        }
+
+        static ClassConstantElementImpl create(ClassConstantDeclarationInfo clsConst, ModelBuilder context) {
+            boolean isDeprecated = VariousUtils.isDeprecatedFromPHPDoc(context.getProgram(), clsConst.getOriginalNode());
+            return new ClassConstantElementImpl(context.getCurrentScope(), clsConst, isDeprecated);
+        }
     }
 }

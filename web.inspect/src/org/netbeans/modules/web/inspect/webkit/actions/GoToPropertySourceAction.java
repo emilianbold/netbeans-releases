@@ -57,8 +57,10 @@ import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.web.inspect.CSSUtils;
 import org.netbeans.modules.web.inspect.actions.Resource;
+import org.netbeans.modules.web.inspect.webkit.RemoteStyleSheetCache;
 import org.netbeans.modules.web.inspect.webkit.Utilities;
 import org.netbeans.modules.web.webkit.debugging.api.css.Property;
+import org.netbeans.modules.web.webkit.debugging.api.css.StyleSheetBody;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
@@ -81,6 +83,13 @@ public class GoToPropertySourceAction extends NodeAction {
         Property property = lookup.lookup(Property.class);
         Resource resource = lookup.lookup(Resource.class);
         FileObject fob = resource.toFileObject();
+        if (fob == null) {
+            StyleSheetBody body = rule.getParentStyleSheet();
+            fob = RemoteStyleSheetCache.getDefault().getFileObject(body);
+            if (fob == null) {
+                return;
+            }
+        }
         try {
             Source source = Source.create(fob);
             ParserManager.parse(Collections.singleton(source), new GoToPropertySourceAction.GoToPropertyTask(fob, rule, property));
@@ -99,7 +108,7 @@ public class GoToPropertySourceAction extends NodeAction {
             Property property = lookup.lookup(Property.class);
             Resource resource = lookup.lookup(Resource.class);
             if ((rule != null) && (property != null) && (resource != null)) {
-                enabled = (resource.toFileObject() != null);
+                enabled = (resource.toFileObject() != null) || (rule.getParentStyleSheet() != null);
             }
         }
         return enabled;
@@ -126,11 +135,11 @@ public class GoToPropertySourceAction extends NodeAction {
      */
     static class GoToPropertyTask extends UserTask {
         /** File to jump into. */
-        private FileObject fob;
+        private final FileObject fob;
         /** Rule to jump into. */
-        private org.netbeans.modules.web.webkit.debugging.api.css.Rule rule;
+        private final org.netbeans.modules.web.webkit.debugging.api.css.Rule rule;
         /** Property to jump to. */
-        private Property property;
+        private final Property property;
 
         /**
          * Creates a new {@code GoToPropertyTask}.

@@ -210,7 +210,10 @@ public class MergeAction extends ContextAction {
             SvnUtils.runWithoutIndexing(new Callable<Void>() {
                 @Override
                 public Void call () throws Exception {
-                    client.merge(fStartUrl,
+                    if (endRevision == null) {
+                        client.mergeReintegrate(fEndUrl, SVNRevision.HEAD, file, false, false);
+                    } else {
+                        client.merge(fStartUrl,
                                  fStartRevision,
                                  fEndUrl,
                                  endRevision,
@@ -218,7 +221,8 @@ public class MergeAction extends ContextAction {
                                  false,
                                  recursive,
                                  false,
-                                 merge.isIgnoreAncestry());                              
+                                 merge.isIgnoreAncestry());
+                    }
                     return null;
                 }
             }, file);

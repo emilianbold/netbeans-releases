@@ -79,10 +79,12 @@ import org.netbeans.modules.web.inspect.CSSUtils;
 import org.netbeans.modules.web.inspect.PageInspectorImpl;
 import org.netbeans.modules.web.inspect.PageModel;
 import org.netbeans.modules.web.inspect.actions.Resource;
+import org.netbeans.modules.web.inspect.webkit.RemoteStyleSheetCache;
 import org.netbeans.modules.web.inspect.webkit.Utilities;
 import org.netbeans.modules.web.inspect.webkit.WebKitPageModel;
 import org.netbeans.modules.web.webkit.debugging.api.css.CSS;
 import org.netbeans.modules.web.webkit.debugging.api.css.Rule;
+import org.netbeans.modules.web.webkit.debugging.api.css.StyleSheetBody;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -108,13 +110,13 @@ public class CSSStylesPanel extends JPanel implements PageModel.CSSStylesView {
     /** The default instance of this class. */
     private static final CSSStylesPanel DEFAULT = new CSSStylesPanel();
     /** Selection section of CSS Styles view. */
-    private CSSStylesSelectionPanel selectionPanel = new CSSStylesSelectionPanel();
+    private final CSSStylesSelectionPanel selectionPanel = new CSSStylesSelectionPanel();
     /** The current inspected page. */
     transient WebKitPageModel pageModel;
     /** Lookup of this panel. */
-    private transient CSSStylesLookup lookup = new CSSStylesLookup();
+    private final transient CSSStylesLookup lookup = new CSSStylesLookup();
     /** Node lookup of this panel. */
-    private transient CSSStylesNodeLookup nodeLookup = new CSSStylesNodeLookup();
+    private final transient CSSStylesNodeLookup nodeLookup = new CSSStylesNodeLookup();
     /** Lookup result with rules selected in the panel. */
     transient Lookup.Result<Rule> ruleLookupResult;
     /** Determines whether the view is active (i.e. whether it manages the rule controller). */
@@ -169,6 +171,7 @@ public class CSSStylesPanel extends JPanel implements PageModel.CSSStylesView {
             pageModel.removePropertyChangeListener(getListener());
             pageModel.getWebKit().getCSS().removeListener(getListener());
         }
+        RemoteStyleSheetCache.getDefault().clear();
         if (page instanceof WebKitPageModel) {
             pageModel = (WebKitPageModel)page;
         } else {
@@ -263,6 +266,10 @@ public class CSSStylesPanel extends JPanel implements PageModel.CSSStylesView {
                                 project = pageModel.getProject();
                             }
                             FileObject fob = new Resource(project, resourceName).toFileObject();
+                            if (fob == null) {
+                                StyleSheetBody body = rule.getParentStyleSheet();
+                                fob = RemoteStyleSheetCache.getDefault().getFileObject(body);
+                            }
                             if (fob == null) {
                                 controller.setNoRuleState();
                             } else {
@@ -370,11 +377,11 @@ public class CSSStylesPanel extends JPanel implements PageModel.CSSStylesView {
      */
     class RuleEditorTask extends UserTask {
         /** Rule to show in the rules editor. */
-        private Rule rule;
+        private final Rule rule;
         /** Additional rule information. */
-        private RuleInfo ruleInfo;
+        private final RuleInfo ruleInfo;
         /** Controller of the rule editor where the rule should be shown. */
-        private RuleEditorController controller;
+        private final RuleEditorController controller;
 
         /**
          * Creates a new {@code RuleEditorTask}.

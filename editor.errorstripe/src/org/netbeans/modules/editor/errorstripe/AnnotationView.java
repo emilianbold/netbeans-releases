@@ -84,7 +84,7 @@ import org.netbeans.api.editor.fold.FoldHierarchyListener;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.BaseTextUI;
 import org.netbeans.editor.Utilities;
-import org.netbeans.lib.editor.util.swing.DocumentUtilities;
+import org.netbeans.lib.editor.util.StringEscapeUtils;
 import org.netbeans.modules.editor.errorstripe.caret.CaretMark;
 import org.netbeans.modules.editor.errorstripe.privatespi.Mark;
 import org.netbeans.spi.editor.errorstripe.UpToDateStatus;
@@ -128,7 +128,7 @@ public class AnnotationView extends JComponent implements FoldHierarchyListener,
     private final Insets scrollBar;
     private final AnnotationViewData data;
     
-    private static Icon busyIcon;
+    private static final Icon busyIcon;
     
     static {
         busyIcon = new ImageIcon(AnnotationView.class.getResource("resources/hodiny.gif"));
@@ -322,6 +322,7 @@ public class AnnotationView extends JComponent implements FoldHierarchyListener,
     }
 
     
+    @Override
     public void paintComponent(Graphics g) {
         if (isWriteLocked(doc)) {
             // Try a little bit later ;-)
@@ -465,12 +466,14 @@ public class AnnotationView extends JComponent implements FoldHierarchyListener,
             return result;
         }
         
+        @Override
         public void run() {
             final boolean clearMarksCache = readAndDestroyClearMarksCache();
             final boolean clearModelToViewCache= readAndDestroyClearModelToViewCache();
             
             //Fix for #54193:
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     synchronized (AnnotationView.this) {
                         if (clearMarksCache) {
@@ -734,42 +737,52 @@ public class AnnotationView extends JComponent implements FoldHierarchyListener,
         return a;
     }
     
+    @Override
     public Dimension getMaximumSize() {
         return new Dimension(THICKNESS, Integer.MAX_VALUE);
     }
 
+    @Override
     public Dimension getMinimumSize() {
         return new Dimension(THICKNESS, Integer.MIN_VALUE);
     }
 
+    @Override
     public Dimension getPreferredSize() {
         return new Dimension(THICKNESS, Integer.MIN_VALUE);
     }
 
+    @Override
     public void mouseReleased(MouseEvent e) {
         //NOTHING:
         resetCursor();
     }
 
+    @Override
     public void mousePressed(MouseEvent e) {
         resetCursor();
     }
 
+    @Override
     public void mouseMoved(MouseEvent e) {
         checkCursor(e);
     }
 
+    @Override
     public void mouseExited(MouseEvent e) {
         resetCursor();
     }
 
+    @Override
     public void mouseEntered(MouseEvent e) {
         checkCursor(e);
     }
 
+    @Override
     public void mouseDragged(MouseEvent e) {
     }
 
+    @Override
     public void mouseClicked(MouseEvent e) {
         resetCursor();
         
@@ -795,6 +808,7 @@ public class AnnotationView extends JComponent implements FoldHierarchyListener,
         setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
     }
 
+    @Override
     public String getToolTipText(MouseEvent event) {
         if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
             ERR.log(ErrorManager.INFORMATIONAL, "getToolTipText: event=" + event); // NOI18N
@@ -832,7 +846,7 @@ public class AnnotationView extends JComponent implements FoldHierarchyListener,
                     if (description.startsWith(HTML_PREFIX_LOWERCASE) || description.startsWith(HTML_PREFIX_UPPERCASE)) {
                         return description;
                     } else {
-                        return "<html><body>" + translate(description); // NOI18N
+                        return "<html><body>" + StringEscapeUtils.escapeHtml(description); // NOI18N
                     }
                 }
             }
@@ -843,35 +857,30 @@ public class AnnotationView extends JComponent implements FoldHierarchyListener,
     
     private static final String HTML_PREFIX_LOWERCASE = "<html"; //NOI18N
     private static final String HTML_PREFIX_UPPERCASE = "<HTML"; //NOI18N
-    private static String[] c = new String[] {"&", "<", ">", "\n", "\""}; // NOI18N
-    private static String[] tags = new String[] {"&amp;", "&lt;", "&gt;", "<br>", "&quot;"}; // NOI18N
-    
-    private String translate(String input) {
-        for (int cntr = 0; cntr < c.length; cntr++) {
-            input = input.replaceAll(c[cntr], tags[cntr]);
-        }
-        
-        return input;
-    }
 
+    @Override
     public void foldHierarchyChanged(FoldHierarchyEvent evt) {
         //fix for #63402: clear the modelToViewCache after folds changed:
         //#64498: do not take monitor on this here:
         fullRepaint(false, true);
     }
 
+    @Override
     public void removeUpdate(DocumentEvent e) {
         documentChange();
     }
     
+    @Override
     public void insertUpdate(DocumentEvent e) {
         documentChange();
     }
     
+    @Override
     public void changedUpdate(DocumentEvent e) {
         //ignored...
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (evt.getSource() == this.pane && "document".equals(evt.getPropertyName())) {
             updateForNewDocument();
@@ -881,9 +890,11 @@ public class AnnotationView extends JComponent implements FoldHierarchyListener,
         fullRepaint();
     }
     
+    @Override
     public AccessibleContext getAccessibleContext() {
         if (accessibleContext == null) {
             accessibleContext = new AccessibleJComponent() {
+                @Override
                 public AccessibleRole getAccessibleRole() {
                     return AccessibleRole.PANEL;
                 }

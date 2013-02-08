@@ -46,6 +46,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
@@ -66,7 +67,7 @@ import org.openide.util.NbBundle;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class NestedBlocksHint extends AbstractHint implements PHPRuleWithPreferences {
+public class NestedBlocksHint extends HintRule implements CustomisableRule {
     private static final String HINT_ID = "Nested.Blocks.Hint"; //NOI18N
     private static final String NUMBER_OF_ALLOWED_NESTED_BLOCKS = "php.verification.number.of.allowed.nested.blocks"; //NOI18N
     private static final int DEFAULT_NUMBER_OF_ALLOWED_NESTED_BLOCKS = 2;
@@ -75,12 +76,12 @@ public class NestedBlocksHint extends AbstractHint implements PHPRuleWithPrefere
     private Preferences preferences;
 
     @Override
-    void compute(PHPRuleContext context, List<Hint> hints) {
+    public void invoke(PHPRuleContext context, List<Hint> hints) {
         PHPParseResult phpParseResult = (PHPParseResult) context.parserResult;
         if (phpParseResult.getProgram() != null) {
             FileObject fileObject = phpParseResult.getSnapshot().getSource().getFileObject();
             if (fileObject != null) {
-                CheckVisitor checkVisitor = new CheckVisitor(fileObject);
+                CheckVisitor checkVisitor = new CheckVisitor(fileObject, context.doc);
                 phpParseResult.getProgram().accept(checkVisitor);
                 hints.addAll(checkVisitor.getHints());
             }
@@ -89,13 +90,17 @@ public class NestedBlocksHint extends AbstractHint implements PHPRuleWithPrefere
 
     private final class CheckVisitor extends DefaultTreePathVisitor {
         private final FileObject fileObject;
+        private final BaseDocument baseDocument;
         private final List<ASTNode> unallowedNestedBlocks;
+        private final List<Hint> hints;
         private boolean isInFunctionDeclaration;
         private int countOfNestedBlocks;
 
-        private CheckVisitor(FileObject fileObject) {
+        private CheckVisitor(FileObject fileObject, BaseDocument baseDocument) {
             this.fileObject = fileObject;
+            this.baseDocument = baseDocument;
             unallowedNestedBlocks = new LinkedList<ASTNode>();
+            hints = new LinkedList<Hint>();
         }
 
         @NbBundle.Messages(
@@ -103,12 +108,17 @@ public class NestedBlocksHint extends AbstractHint implements PHPRuleWithPrefere
                 + "\n- It is a good practise to introduce a new function rather than to use more nested blocks."
         )
         private Collection<? extends Hint> getHints() {
-            List<Hint> hints = new LinkedList<Hint>();
             for (ASTNode block : unallowedNestedBlocks) {
-                OffsetRange offsetRange = new OffsetRange(block.getStartOffset(), block.getEndOffset());
-                hints.add(new Hint(NestedBlocksHint.this, Bundle.NestedBlocksHintText(), fileObject, offsetRange, null, 500));
+                createHint(block);
             }
             return hints;
+        }
+
+        private void createHint(ASTNode block) {
+            OffsetRange offsetRange = new OffsetRange(block.getStartOffset(), block.getEndOffset());
+            if (showHint(offsetRange, baseDocument)) {
+                hints.add(new Hint(NestedBlocksHint.this, Bundle.NestedBlocksHintText(), fileObject, offsetRange, null, 500));
+            }
         }
 
         @Override

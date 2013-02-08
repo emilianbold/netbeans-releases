@@ -127,9 +127,9 @@ public class PHPCodeCompletionTest extends PHPCodeCompletionTestBase {
         checkCompletion("testfiles/completion/lib/comments.php", "multiline comment ^", false);
     }
 
-    public void testComments3() throws Exception {
-        checkCompletion("testfiles/completion/lib/comments.php", "PHPDoc comment @^", false);
-    }
+//    public void testComments3() throws Exception {
+//        checkCompletion("testfiles/completion/lib/comments.php", "PHPDoc comment @^", false);
+//    }
 
     public void testFunctionReturnType1() throws Exception {
         checkCompletion("testfiles/completion/lib/function_return_type.php", "$result_from_self->^", false);

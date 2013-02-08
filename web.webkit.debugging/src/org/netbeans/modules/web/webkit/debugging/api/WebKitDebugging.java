@@ -161,6 +161,9 @@ public class WebKitDebugging {
         if (dom != null) {
             dom.reset();
         }
+        if (css != null) {
+            css.reset();
+        }
         if (console != null) {
             console.reset();
         }

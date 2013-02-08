@@ -43,21 +43,23 @@
 package org.netbeans.modules.php.project.ui.testrunner;
 
 import java.awt.event.ActionEvent;
-import java.io.File;
-import java.util.regex.Matcher;
 import javax.swing.AbstractAction;
 import org.netbeans.modules.php.project.util.PhpProjectUtils;
-import org.netbeans.modules.php.project.phpunit.PhpUnit;
+import org.netbeans.modules.php.spi.testing.locate.Locations;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 public class JumpToCallStackAction extends AbstractAction {
     private static final long serialVersionUID = -14558324203007090L;
 
     private final String callstackFrameInfo;
+    private final Callback callback;
 
-    public JumpToCallStackAction(String callstackFrameInfo) {
+
+    public JumpToCallStackAction(String callstackFrameInfo, Callback callback) {
         assert callstackFrameInfo != null;
         this.callstackFrameInfo = callstackFrameInfo;
+        this.callback = callback;
 
         String name = NbBundle.getMessage(JumpToCallStackAction.class, "LBL_GoToSource");
         putValue(NAME, name);
@@ -66,11 +68,18 @@ public class JumpToCallStackAction extends AbstractAction {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        Matcher matcher = PhpUnit.LINE_PATTERN.matcher(callstackFrameInfo);
-        if (matcher.matches()) {
-            String path = matcher.group(1);
-            String line = matcher.group(2);
-            PhpProjectUtils.openFile(new File(path), Integer.valueOf(line));
+        if (callback != null) {
+            Locations.Line location = callback.parseLocation(callstackFrameInfo);
+            if (location != null) {
+                PhpProjectUtils.openFile(FileUtil.toFile(location.getFile()), location.getLine());
+            }
         }
     }
+
+    //~ Inner classes
+
+    public interface Callback {
+        Locations.Line parseLocation(String callStack);
+    }
+
 }

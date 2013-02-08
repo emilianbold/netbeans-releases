@@ -85,20 +85,6 @@ public class Factory implements HighlightsLayerFactory {
         );
 
         layers.add(HighlightsLayer.create(
-            BLOCK_SEARCH_LAYER, 
-            ZOrder.SHOW_OFF_RACK.forPosition(100),
-            true,
-            new BlockHighlighting(BLOCK_SEARCH_LAYER, context.getComponent()))
-        );
-
-        layers.add(HighlightsLayer.create(
-            TextSearchHighlighting.LAYER_TYPE_ID,
-            ZOrder.SHOW_OFF_RACK.forPosition(200),
-            true,
-            new TextSearchHighlighting(context.getComponent()))
-        );
-
-        layers.add(HighlightsLayer.create(
             INC_SEARCH_LAYER, 
             ZOrder.SHOW_OFF_RACK.forPosition(300),
             true,

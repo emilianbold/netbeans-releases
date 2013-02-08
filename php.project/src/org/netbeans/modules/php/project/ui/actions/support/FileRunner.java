@@ -67,7 +67,7 @@ import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
-import org.netbeans.modules.php.project.spi.XDebugStarter;
+import org.netbeans.modules.php.spi.executable.DebugStarter;
 import org.netbeans.modules.php.project.ui.options.PhpOptions;
 import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.openide.awt.HtmlBrowser;
@@ -207,12 +207,13 @@ public final class FileRunner {
         };
     }
 
+    // XXX use php api executable for debugging
     @NbBundle.Messages({
         "# {0} - project or file name",
         "FileRunner.debug.displayName={0} (debug)"
     })
     private void debugInternal() {
-        XDebugStarter dbgStarter =  XDebugStarterFactory.getInstance();
+        DebugStarter dbgStarter =  XDebugStarterFactory.getInstance();
         assert dbgStarter != null;
         if (dbgStarter.isAlreadyRunning()) {
             if (CommandUtils.warnNoMoreDebugSession()) {
@@ -221,13 +222,14 @@ public final class FileRunner {
             }
         } else {
             Callable<Cancellable> callable = getRunCallable(Bundle.FileRunner_debug_displayName(getDisplayName()), true);
-            XDebugStarter.Properties props = XDebugStarter.Properties.create(
-                    FileUtil.toFileObject(file),
-                    true,
+            DebugStarter.Properties props = new DebugStarter.Properties.Builder()
+                    .setStartFile(FileUtil.toFileObject(file))
+                    .setCloseSession(true)
                     // #209682 - "run as script" always from project files
-                    Collections.<Pair<String, String>>emptyList(),
-                    null, // no debug proxy for files (valid only for server urls)
-                    getEncoding());
+                    .setPathMapping(Collections.<Pair<String, String>>emptyList())
+                    .setDebugProxy(null) // no debug proxy for files (valid only for server urls)
+                    .setEncoding(getEncoding())
+                    .build();
             dbgStarter.start(project != null ? project : DUMMY_PROJECT, callable, props);
         }
     }

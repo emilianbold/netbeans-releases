@@ -48,6 +48,7 @@
 #define _WIN32_WINNT 0x05010100
 #endif
 
+#include <shlobj.h>
 #include "nblauncher.h"
 #include "../../../o.n.bootstrap/launcher/windows/utilsfuncs.h"
 #include "../../../o.n.bootstrap/launcher/windows/argnames.h"

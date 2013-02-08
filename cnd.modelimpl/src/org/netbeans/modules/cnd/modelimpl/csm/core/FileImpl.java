@@ -146,10 +146,11 @@ public final class FileImpl implements CsmFile,
         return parsingFileContentRef.get().get();
     }
     
-    public void prepareIncludedFileParsingContent() {
+    public FileContent prepareIncludedFileParsingContent() {
         if (getParsingFileContent() == null) {
             parsingFileContentRef.get().set(FileContent.getHardReferenceBasedCopy(this.currentFileContent, true));
         }
+        return getParsingFileContent();
     }
     
     public static final boolean reportErrors = TraceFlags.REPORT_PARSING_ERRORS | TraceFlags.DEBUG;
@@ -570,7 +571,7 @@ public final class FileImpl implements CsmFile,
                                         break; // does not make sense parsing old data
                                     }
                                 }
-                                updateModelAfterParsing(parseParams);
+                                updateModelAfterParsing(parseParams.content);
                             } finally {
                                 postParse();
                                 synchronized (changeStateLock) {
@@ -609,7 +610,7 @@ public final class FileImpl implements CsmFile,
                                         break; // does not make sense parsing old data
                                     }
                                 }
-                                updateModelAfterParsing(parseParams);
+                                updateModelAfterParsing(parseParams.content);
                                 if (tryPartialReparse) {
                                     assert lastFileBasedSignature != null;
                                     newSignature = FileContentSignature.create(this);
@@ -710,7 +711,7 @@ public final class FileImpl implements CsmFile,
                         break; // does not make sense parsing old data
                     }
                 }
-                updateModelAfterParsing(parseParams);
+                updateModelAfterParsing(parseParams.content);
             } finally {
                 synchronized (changeStateLock) {
                     final int val = inEnsureParsed.decrementAndGet();
@@ -1510,18 +1511,28 @@ public final class FileImpl implements CsmFile,
         return lastParsed;
     }
 
-    void updateModelAfterParsing(ParseDescriptor parseParams) {
-        Map<CsmUID<FunctionImplEx<?>>, AST> fakeASTs = parseParams.content.getFakeASTs();
+    void updateModelAfterParsing(FileContent fileContent) {
+        Map<CsmUID<FunctionImplEx<?>>, AST> fakeASTs = fileContent.getFakeASTs();
         ProjectBase projectImpl = getProjectImpl(true);
         CsmUID<CsmFile> thisFileUID = getUID();
         for (Map.Entry<CsmUID<FunctionImplEx<?>>, AST> entry : fakeASTs.entrySet()) {
             projectImpl.trackFakeFunctionAST(thisFileUID, entry.getKey(), entry.getValue());
         }
-        hasBrokenIncludes.set(parseParams.content.hasBrokenIncludes());
+        hasBrokenIncludes.set(fileContent.hasBrokenIncludes());
         // handle file content
-        currentFileContent = parseParams.content.toWeakReferenceBasedCopy();
+        currentFileContent = fileContent.toWeakReferenceBasedCopy();
         currentFileContent.put();
         RepositoryUtils.put(this);
+        if (TraceFlags.PARSE_HEADERS_WITH_SOURCES) {
+            for (FileContent includedFileContent : fileContent.getIncludedFileContents()) {
+                FileImpl fileImplIncluded = includedFileContent.getFile();
+                fileImplIncluded.updateModelAfterParsing(includedFileContent);
+                fileImplIncluded.parsingFileContentRef.get().set(null);
+                synchronized (fileImplIncluded.changeStateLock) {
+                    fileImplIncluded.state = State.PARSED;
+                }
+            }
+        }
     }
 
     public void addInstantiation(CsmInstantiation inst) {

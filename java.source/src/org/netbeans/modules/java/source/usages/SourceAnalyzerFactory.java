@@ -139,9 +139,13 @@ public final class SourceAnalyzerFactory {
          * @param mainMethod holder for main class flag, set to true if class has a main method
          * @throws IOException in case of IO error
          */
-        public void analyse (final Iterable<? extends CompilationUnitTree> data, JavacTaskImpl jt, JavaFileManager manager,
-            final JavaCustomIndexer.CompileTuple tuple,
-            Set<? super ElementHandle<TypeElement>> newTypes, /*out*/boolean[] mainMethod) throws IOException {
+        public void analyse (
+                final Iterable<? extends CompilationUnitTree> data,
+                final JavacTaskImpl jt,
+                final JavaCustomIndexer.CompileTuple tuple,
+                final Set<? super ElementHandle<TypeElement>> newTypes,
+                final /*out*/boolean[] mainMethod) throws IOException {
+            final JavaFileManager manager = jt.getContext().get(JavaFileManager.class);
             final Map<Pair<String, String>,Data> usages = new HashMap<Pair<String,String>,Data>();
             for (CompilationUnitTree cu : data) {
                 try {
@@ -240,7 +244,9 @@ public final class SourceAnalyzerFactory {
          * @throws IOException in case of IO error
          */
         @CheckForNull
-        public List<Pair<Pair<String, String>, Object[]>> analyseUnit (final CompilationUnitTree cu, final JavacTaskImpl jt, final JavaFileManager manager) throws IOException {
+        public List<Pair<Pair<String, String>, Object[]>> analyseUnit (
+                @NonNull final CompilationUnitTree cu,
+                @NonNull final JavacTaskImpl jt) throws IOException {
             if (used) {
                 throw new IllegalStateException("Trying to reuse SimpleAnalyzer");  //NOI18N
             }
@@ -248,7 +254,8 @@ public final class SourceAnalyzerFactory {
             try {
                 final Map<Pair<String,String>,Data> usages = new HashMap<Pair<String,String>,Data> ();
                 final Set<Pair<String,String>> topLevels = new HashSet<Pair<String,String>>();
-                final UsagesVisitor uv = new UsagesVisitor (jt, cu, manager, cu.getSourceFile(), topLevels);
+                final JavaFileManager jfm = jt.getContext().get(JavaFileManager.class);
+                final UsagesVisitor uv = new UsagesVisitor (jt, cu, jfm, cu.getSourceFile(), topLevels);
                 uv.scan(cu,usages);
                 for (Map.Entry<Pair<String,String>,Data> oe : usages.entrySet()) {
                     final Pair<String,String> key = oe.getKey();

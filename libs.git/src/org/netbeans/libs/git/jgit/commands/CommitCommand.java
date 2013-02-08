@@ -89,15 +89,16 @@ public class CommitCommand extends GitCommand {
     private final GitUser author;
     private final GitUser commiter;
     public GitRevisionInfo revision;
+    private final boolean amend;
 
-    public CommitCommand (Repository repository, GitClassFactory gitFactory, File[] roots, String message, GitUser author, GitUser commiter, ProgressMonitor monitor) {
+    public CommitCommand (Repository repository, GitClassFactory gitFactory, File[] roots, String message, GitUser author, GitUser commiter, boolean amend, ProgressMonitor monitor) {
         super(repository, gitFactory, monitor);
         this.roots = roots;
         this.message = message;
         this.monitor = monitor;
-                
         this.author = author;
         this.commiter = commiter;
+        this.amend = amend;
     }
 
     @Override
@@ -151,6 +152,7 @@ public class CommitCommand extends GitCommand {
                 }
                 
                 commit.setMessage(message);
+                commit.setAmend(amend);
                 RevCommit rev = commit.call();
                 revision = getClassFactory().createRevisionInfo(rev, repository);
             } finally {
@@ -242,6 +244,9 @@ public class CommitCommand extends GitCommand {
     @Override
     protected String getCommandDescription () {
         StringBuilder sb = new StringBuilder("git commit -m ").append(message); //NOI18N
+        if (amend) {
+            sb.append(" --amend"); //NOI18N
+        }
         for (File root : roots) {
             sb.append(" ").append(root); //NOI18N
         }
