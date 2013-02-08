@@ -44,11 +44,20 @@
 
 package org.netbeans.modules.j2ee.ejbcore.api.codegeneration;
 
+import com.sun.source.tree.AnnotationTree;
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.ModifiersTree;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.lang.model.element.TypeElement;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.Task;
+import org.netbeans.api.java.source.TreeMaker;
+import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.core.api.support.java.GenerationUtils;
@@ -66,6 +75,7 @@ import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.ejbcore.EjbGenerationUtil;
 import org.netbeans.modules.j2ee.ejbcore.naming.EJBNameOptions;
+import org.netbeans.modules.javaee.resources.api.JndiResourcesDefinition;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
@@ -84,6 +94,7 @@ public final class MessageGenerator {
     private final MessageDestination messageDestination;
     private final boolean isSimplified;
     private final boolean isXmlBased;
+    private final Map<String, String> properties;
 
     // EJB naming options
     private final EJBNameOptions ejbNameOptions;
@@ -105,6 +116,7 @@ public final class MessageGenerator {
         this.messageDestination = messageDestination;
         this.isSimplified = isSimplified;
         this.isXmlBased = !isSimplified;
+        this.properties = properties;
         this.ejbNameOptions = new EJBNameOptions();
         this.ejbName = ejbNameOptions.getMessageDrivenEjbNamePrefix() + wizardTargetName + ejbNameOptions.getMessageDrivenEjbNameSuffix();
         this.ejbClassName = ejbNameOptions.getMessageDrivenEjbClassPrefix() + wizardTargetName + ejbNameOptions.getMessageDrivenEjbClassSuffix();
@@ -172,7 +184,38 @@ public final class MessageGenerator {
     }
     
     private FileObject generateEJB30Classes() throws IOException {
-        return GenerationUtils.createClass(EJB30_MESSAGE_DRIVEN_BEAN,  pkg, ejbClassName, null, templateParameters);
+        FileObject mdb = GenerationUtils.createClass(EJB30_MESSAGE_DRIVEN_BEAN,  pkg, ejbClassName, null, templateParameters);
+        if (messageDestination instanceof JmsDestinationDefinition
+                && ((JmsDestinationDefinition) messageDestination).isToGenerate()) {
+            generateJMSDestinationDefinition(mdb);
+        }
+        return mdb;
+    }
+
+    private void generateJMSDestinationDefinition(FileObject classFile) throws IOException {
+        JavaSource js = JavaSource.forFileObject(classFile);
+        js.runModificationTask(new Task<WorkingCopy>() {
+            @Override
+            public void run(WorkingCopy parameter) throws Exception {
+                parameter.toPhase(JavaSource.Phase.RESOLVED);
+                TypeElement classElement = parameter.getElements().getTypeElement(packageNameWithDot + ejbClassName);
+                ClassTree classTree = parameter.getTrees().getTree(classElement);
+                ModifiersTree modifiers = classTree.getModifiers();
+                TypeElement el = parameter.getElements().getTypeElement(JndiResourcesDefinition.ANN_JMS_DESTINATION);
+
+                TreeMaker tm = parameter.getTreeMaker();
+                List<ExpressionTree> values = new ArrayList<ExpressionTree>(2);
+                ExpressionTree nameQualIdent = tm.QualIdent("name"); //NOI18N
+                values.add(tm.Assignment(nameQualIdent, tm.Literal(properties.get("destinationLookup")))); //NOI18N
+                ExpressionTree classnameQualIdent = tm.QualIdent("className"); //NOI18N
+                values.add(tm.Assignment(classnameQualIdent, tm.Literal(properties.get("destinationType")))); //NOI18N
+
+                List<AnnotationTree> annotations = new ArrayList<AnnotationTree>(modifiers.getAnnotations());
+                annotations.add(0, tm.Annotation(tm.QualIdent(el), values));
+                ModifiersTree nueMods = tm.Modifiers(modifiers, annotations);
+                parameter.rewrite(modifiers, nueMods);
+            }
+        }).commit();
     }
     
     @SuppressWarnings("deprecation") //NOI18N

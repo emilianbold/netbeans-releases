@@ -191,6 +191,7 @@ public class MdbLocationPanel implements WizardDescriptor.FinishablePanel {
             MessageDestinationUiSupport.DestinationsHolder holder =
                     MessageDestinationUiSupport.getDestinations(project, j2eeModuleProvider);
             locationPanel = MdbLocationPanelVisual.newInstance(
+                    project,
                     j2eeModuleProvider,
                     holder.getModuleDestinations(),
                     holder.getServerDestinations());
