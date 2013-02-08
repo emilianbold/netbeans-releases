@@ -606,6 +606,8 @@ final class TemplateWizard1 extends javax.swing.JPanel implements DataFilter,
             tree.setEditable(false);
             // install proper border
             setBorder((Border)UIManager.get("Nb.ScrollPane.border")); // NOI18N
+            //#219709 - workaround for JDK bug http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=8003400
+            tree.setLargeModel( false );
         }
         
         protected NodeTreeModel createModel() {
