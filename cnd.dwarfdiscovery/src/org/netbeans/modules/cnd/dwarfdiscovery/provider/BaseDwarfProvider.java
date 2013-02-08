@@ -435,20 +435,9 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
                     }
                     if (findMain && position == null) {
                         if (cu.hasMain()) {
-                            if (cu instanceof CompilationUnit) {
-                                List<DwarfEntry> topLevelEntries = ((CompilationUnit)cu).getTopLevelEntries();
-                                for(DwarfEntry entry : topLevelEntries) {
-                                    if (entry.getKind() == TAG.DW_TAG_subprogram) {
-                                        if ("main".equals(entry.getName())) { // NOI18N
-                                            if (entry.isExternal()) {
-                                                //VIS visibility = entry.getVisibility();
-                                                //if (visibility == VIS.DW_VIS_exported) {
-                                                    position = new MyPosition(path, entry.getLine());
-                                                //}
-                                            }
-                                        }
-                                    }
-                                }
+                            int line = cu.getMainLine();
+                            if (line >0 ) {
+                                position = new MyPosition(path, line);
                             } else {
                                 position = new MyPosition(path, 1);
                             }
