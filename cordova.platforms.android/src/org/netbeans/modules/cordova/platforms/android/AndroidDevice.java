@@ -92,7 +92,7 @@ public class AndroidDevice implements Device {
     @Override
     public void openUrl(String url) {
         try {
-            String s = ProcessUtils.callProcess(getPlatform().getSdkLocation() + "/platform-tools/adb", true, isEmulator() ? "-e" : "-d", "wait-for-device", "shell", "am", "start", "-a", "android.intent.action.VIEW", "-n", getPrefferedBrowser(), url); //NOI18N
+            String s = ProcessUtils.callProcess(((AndroidPlatform) getPlatform()).getAdbCommand(), true, isEmulator() ? "-e" : "-d", "wait-for-device", "shell", "am", "start", "-a", "android.intent.action.VIEW", "-n", getPrefferedBrowser(), url); //NOI18N
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
