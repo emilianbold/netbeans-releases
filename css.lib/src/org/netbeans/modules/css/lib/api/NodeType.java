@@ -373,6 +373,14 @@ public enum NodeType {
     less_rule,
     
     less_mixin_call,
-    less_mixin_call_args;
+    less_mixin_call_args,
+    
+    less_additionExp,
+    less_multiplyExp,
+    less_atomExp,
+    
+    less_term;
+    
+    
     
 }

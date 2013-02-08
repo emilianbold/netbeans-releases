@@ -62,7 +62,7 @@ import org.openide.filesystems.FileObject;
  * @author marekfukala
  */
 public class Css3ParserTest extends CssTestBase {
-
+    
     public Css3ParserTest(String testName) {
         super(testName);
     }

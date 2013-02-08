@@ -712,9 +712,21 @@ declaration
     }
 
 propertyValue
-	:	expression | less_function
+	:
+        (expressionPredicate)=>expression 
+        | 
+        less_expression 
+//        | 
+//        less_function 
 	;
 
+//an expression wich doesn't contain less expression operators
+expressionPredicate
+    options { k = 1; }
+    :
+    ( ~ (PLUS | MINUS | STAR | SOLIDUS | LBRACE | SEMI | RBRACE ))+ ( SEMI | RBRACE )
+    ;
+    
 //recovery: syncs the parser to the first identifier in the token input stream or the closing curly bracket
 //since the rule matches epsilon it will always be entered
 syncToDeclarationsRule
@@ -831,23 +843,70 @@ less_variable
     : AT_IDENT | MEDIA_SYM //TODO add all meaningful at-rules here
     ;
 
-less_function
-    : LPAREN ws? less_expression  RPAREN
+less_expression
+    :    less_additionExp
     ;
 
-less_expression
-    : term (less_expression_operator ws? term)*    
+less_additionExp
+    :    less_multiplyExp 
+         ( PLUS ws? less_multiplyExp
+         | MINUS ws? less_multiplyExp
+         )* 
     ;
-    
-less_expression_operator
-    : (
-        SOLIDUS 
-//        | COMMA
-        | STAR 
-        | PLUS
-        | MINUS
-      )
+
+less_multiplyExp
+    :    less_atomExp
+         ( STAR ws? less_atomExp 
+         | SOLIDUS ws? less_atomExp
+         )* 
     ;
+
+less_atomExp
+    :    term ((term)=>term)* //multiple terms separated just by whitespace
+    |    LPAREN ws? less_additionExp RPAREN ws?
+    ;
+
+//term w/o unary operators
+less_term
+    : 
+        (
+        ( 
+              NUMBER
+            | PERCENTAGE
+            | LENGTH
+            | EMS
+            | REM
+            | EXS
+            | ANGLE
+            | TIME
+            | FREQ
+            | RESOLUTION
+            | DIMENSION     //so we can match expression like a:nth-child(3n+1) -- the "3n" is lexed as dimension
+        )
+    | STRING
+    | IDENT
+    | GEN
+    | URI
+    | hexColor
+    | function
+    | less_variable
+    )
+    ws?
+    ;
+
+//less_expression
+//    : term ( (less_expression_operator ws?)? term)*    
+//    ;
+//    
+//less_expression_operator
+//    : (
+//        SOLIDUS 
+////        | COMMA
+//        | STAR 
+////        | PLUS //are covered by term's unary operator
+////        | MINUS
+//      )
+//    ;
 
 //parametric mixins: 
 //    .border-radius (@radius) 
@@ -862,18 +921,22 @@ less_mixin_declaration
 //allow: .mixin; .mixin(); .mixin(@param, #77aa00); 
 less_mixin_call
     :
-    cssClass ws? (LPAREN less_mixin_call_args? RPAREN)? SEMI
+    cssClass (ws? LPAREN less_mixin_call_args? RPAREN)? (ws? SEMI)?
     ;
     
 less_mixin_call_args
     : 
-    term ( COMMA ws? term)*     
+    //the term separatos is supposed to be just COMMA, but in some weird old? samples
+    //I found semicolon used as a delimiter between arguments
+    term ( (COMMA | SEMI) ws? term)*     
     ;
 
 //.box-shadow ("@x: 0, @y: 0, @blur: 1px, @color: #000")
 less_args_list
     : 
-    ( less_arg ( COMMA ws? less_arg)* (COMMA ws? ('...' | '@rest...'))?)
+    //the term separatos is supposed to be just COMMA, but in some weird old? samples
+    //I found semicolon used as a delimiter between arguments
+    ( less_arg ( ( COMMA | SEMI ) ws? less_arg)* ( ( COMMA | SEMI ) ws? ('...' | '@rest...'))?)
     | 
     ('...' | '@rest...')
     ;
