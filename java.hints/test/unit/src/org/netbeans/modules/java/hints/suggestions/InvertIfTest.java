@@ -476,4 +476,31 @@ public class InvertIfTest {
                               "    }\n" +
                               "}\n");
     }
+    
+    @Test
+    public void testWithoutElse225913() throws Exception {
+        HintTest.create()
+                .setCaretMarker('^')
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    public static void main(String[] args) {\n" +
+                       "        i^f (args.length >= 5) {\n" +
+                       "            System.err.println(\"too many\");\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}\n")
+                .run(InvertIf.class)
+                .findWarning("3:9-3:9:verifier:" + Bundle.ERR_InvertIf())
+                .applyFix()
+                .assertCompilable()
+                .assertOutput("package test;\n" +
+                              "public class Test {\n" +
+                              "    public static void main(String[] args) {\n" +
+                              "        if (args.length < 5) {\n" +
+                              "        } else {\n" +
+                              "            System.err.println(\"too many\");\n" +
+                              "        }\n" +
+                              "    }\n" +
+                              "}\n");
+    }
 }

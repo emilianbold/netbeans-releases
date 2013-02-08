@@ -220,13 +220,12 @@ final class JavaParsingContext {
     void analyze(
             @NonNull final Iterable<? extends CompilationUnitTree> trees,
             @NonNull final JavacTaskImpl jt,
-            @NonNull final JavaFileManager fileManager,
             @NonNull final CompileTuple active,
             @NonNull final Set<? super ElementHandle<TypeElement>> newTypes,
             @NonNull /*@Out*/ final boolean[] mainMethod) throws IOException {
         final SourceAnalyzerFactory.StorableAnalyzer analyzer = getSourceAnalyzer();
         assert analyzer != null;
-        analyzer.analyse(trees, jt, fileManager, active, newTypes, mainMethod);
+        analyzer.analyse(trees, jt, active, newTypes, mainMethod);
         final Lookup pluginServices = getPluginServices(jt);
         for (CompilationUnitTree cu : trees) {
             for (JavaIndexerPlugin plugin : getPlugins()) {
