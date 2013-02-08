@@ -43,7 +43,6 @@
 package org.netbeans.modules.php.project.ui.actions.support;
 
 import java.net.MalformedURLException;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
@@ -54,7 +53,6 @@ import org.netbeans.modules.php.project.runconfigs.validation.RunConfigLocalVali
 import org.netbeans.modules.php.spi.executable.DebugStarter;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.DebugUrl;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.XDebugUrlArguments;
-import org.openide.awt.HtmlBrowser;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Cancellable;
@@ -108,7 +106,7 @@ class ConfigActionLocal extends ConfigAction {
     @Override
     public void runProject() {
         try {
-            HtmlBrowser.URLDisplayer.getDefault().showURL(CommandUtils.urlForProject(project));
+            showProjectUrl(CommandUtils.urlForProject(project));
         } catch (MalformedURLException ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -133,7 +131,7 @@ class ConfigActionLocal extends ConfigAction {
             @Override
             public void run() {
                 if (urlToShow[0] != null) {
-                    HtmlBrowser.URLDisplayer.getDefault().showURL(urlToShow[0]);
+                    showProjectUrl(urlToShow[0]);
                 }
             }
         };
@@ -142,7 +140,7 @@ class ConfigActionLocal extends ConfigAction {
             @Override
             public boolean cancel() {
                 if (urlToShow[1] != null) {
-                    HtmlBrowser.URLDisplayer.getDefault().showURL(urlToShow[1]);
+                    showProjectUrl(urlToShow[1]);
                 }
                 return true;
             }
@@ -172,7 +170,7 @@ class ConfigActionLocal extends ConfigAction {
 
             preShowUrl(context);
 
-            HtmlBrowser.URLDisplayer.getDefault().showURL(url);
+            showContextUrl(url, context);
         } catch (MalformedURLException ex) {
             //TODO: improve error handling
             Exceptions.printStackTrace(ex);
@@ -234,7 +232,7 @@ class ConfigActionLocal extends ConfigAction {
             @Override
             public void run() {
                 if (urlForStartDebugging != null) {
-                    HtmlBrowser.URLDisplayer.getDefault().showURL(urlForStartDebugging);
+                    showFileUrl(urlForStartDebugging, selectedFile);
                 }
             }
         };
@@ -243,7 +241,7 @@ class ConfigActionLocal extends ConfigAction {
             @Override
             public boolean cancel() {
                 if (urlForStopDebugging != null) {
-                    HtmlBrowser.URLDisplayer.getDefault().showURL(urlForStopDebugging);
+                    showFileUrl(urlForStopDebugging, selectedFile);
                 }
                 return true;
             }
@@ -280,7 +278,28 @@ class ConfigActionLocal extends ConfigAction {
         dbgStarter.start(project, initDebuggingCallable, props);
     }
 
+    void showProjectUrl(URL url) {
+        showFileUrl(url, CommandUtils.fileForProject(project, webRoot));
+    }
+
+    private void showContextUrl(URL url, Lookup context) {
+        FileObject file = CommandUtils.fileForContextOrSelectedNodes(context);
+        if (file != null) {
+            showFileUrl(url, file);
+        } else {
+            assert false : "FO should be found for context"; // NOI18N
+            showProjectUrl(url);
+        }
+    }
+
+    void showFileUrl(URL url, FileObject file) {
+        project.getLookup().lookup(PhpProject.ClientSideDevelopmentSupport.class).showFileUrl(url, file);
+    }
+
+    //~ Inner classes
+
     private static final class StopDebuggingException extends Exception {
         private static final long serialVersionUID = -22807171434417714L;
     }
+
 }

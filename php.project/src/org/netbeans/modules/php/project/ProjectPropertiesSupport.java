@@ -48,6 +48,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.modules.php.api.executable.InvalidPhpExecutableException;
 import org.netbeans.modules.php.api.executable.PhpInterpreter;
@@ -57,6 +58,8 @@ import org.netbeans.modules.php.project.api.PhpLanguageProperties;
 import org.netbeans.modules.php.project.api.PhpOptions;
 import org.netbeans.modules.php.project.ui.BrowseTestSources;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
+import org.netbeans.modules.web.browser.api.WebBrowser;
+import org.netbeans.modules.web.browser.api.WebBrowserSupport;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
@@ -169,6 +172,12 @@ public final class ProjectPropertiesSupport {
             }
         }
         return seleniumDirectory;
+    }
+
+    @CheckForNull
+    public static WebBrowser getWebBrowser(PhpProject project) {
+        String browserId = project.getEvaluator().getProperty(PhpProjectProperties.BROWSER_ID);
+        return WebBrowserSupport.getBrowser(browserId);
     }
 
     public static String getWebRoot(PhpProject project) {
