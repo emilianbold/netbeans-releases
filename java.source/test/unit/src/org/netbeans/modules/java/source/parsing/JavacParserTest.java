@@ -140,7 +140,7 @@ public class JavacParserTest extends NbTestCase {
         }, true);
     }
     
-    public void testPartialReparse() throws Exception {
+    public void testPartialReparseSanity() throws Exception {
         FileObject f2 = createFile("test/Test2.java", "package test; class Test2 { private void test() { System.err.println(\"\"); System.err.println(1); } }");
         DataObject d = DataObject.find(f2);
         EditorCookie ec = d.getLookup().lookup(EditorCookie.class);
@@ -190,6 +190,43 @@ public class JavacParserTest extends NbTestCase {
                     }
                     
                 }.scan(parameter.getCompilationUnit(), null);
+            }
+        }, true);
+    }
+    
+    public void testPartialReparseAnonymous() throws Exception {
+        FileObject f2 = createFile("test/Test2.java", "package test; class Test2 { private void test() { new Runnable() { public void run() {} }; } }");
+        DataObject d = DataObject.find(f2);
+        EditorCookie ec = d.getLookup().lookup(EditorCookie.class);
+        Document doc = ec.openDocument();
+        JavaSource js = JavaSource.forFileObject(f2);
+
+        doc.putProperty(Language.class, JavaTokenId.language());
+        
+        //initialize the tokens hierarchy:
+        TokenSequence<?> ts = TokenHierarchy.get(doc).tokenSequence();
+        
+        ts.moveStart();
+        
+        while (ts.moveNext());
+        
+        final AtomicReference<CompilationUnitTree> tree = new AtomicReference<CompilationUnitTree>();
+        
+        js.runUserActionTask(new Task<CompilationController>() {
+            public void run(CompilationController parameter) throws Exception {
+                assertTrue(Phase.RESOLVED.compareTo(parameter.toPhase(Phase.RESOLVED)) <= 0);
+                tree.set(parameter.getCompilationUnit());
+            }
+        }, true);
+        
+        doc.insertString(doc.getText(0, doc.getLength()).indexOf("new"), "int i = 0;", null);
+        
+        js.runUserActionTask(new Task<CompilationController>() {
+            public void run(final CompilationController parameter) throws Exception {
+                assertTrue(Phase.RESOLVED.compareTo(parameter.toPhase(Phase.RESOLVED)) <= 0);
+                System.err.println(parameter.getText());
+                assertSame(tree.get(), parameter.getCompilationUnit());
+                assertEquals(parameter.getDiagnostics().toString(), 0, parameter.getDiagnostics().size());
             }
         }, true);
     }
