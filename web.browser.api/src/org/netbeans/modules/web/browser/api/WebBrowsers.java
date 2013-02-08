@@ -60,6 +60,7 @@ import org.openide.util.NbPreferences;
 
 /**
  * Access to browsers available in the IDE.
+ * @see WebBrowserSupport
  */
 public final class WebBrowsers {
 

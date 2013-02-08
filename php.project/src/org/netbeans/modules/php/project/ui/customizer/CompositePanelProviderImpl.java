@@ -68,6 +68,7 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
 
     public static final String SOURCES = "Sources"; // NOI18N
     public static final String RUN = "Run"; // NOI18N
+    public static final String BROWSER = "Browser"; // NOI18N
     public static final String PHP_INCLUDE_PATH = "PhpIncludePath"; // NOI18N
     public static final String IGNORE_PATH = "IgnorePath"; // NOI18N
     public static final String FRAMEWORKS = "Frameworks"; // NOI18N
@@ -85,6 +86,7 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
         }
     }
 
+    @NbBundle.Messages("CompositePanelProviderImpl.category.browser.title=Browser")
     @Override
     public ProjectCustomizer.Category createCategory(Lookup context) {
         ProjectCustomizer.Category toReturn = null;
@@ -99,6 +101,12 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
             toReturn = ProjectCustomizer.Category.create(
                     RUN,
                     NbBundle.getMessage(CustomizerProviderImpl.class, "LBL_Config_RunConfig"),
+                    null,
+                    categories);
+        } else if (BROWSER.equals(name)) {
+            toReturn = ProjectCustomizer.Category.create(
+                    BROWSER,
+                    Bundle.CompositePanelProviderImpl_category_browser_title(),
                     null,
                     categories);
         } else if (PHP_INCLUDE_PATH.equals(name)) {
@@ -137,6 +145,8 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
             return new CustomizerSources(category, uiProps);
         } else if (RUN.equals(nm)) {
             return new CustomizerRun(uiProps, category);
+        } else if (BROWSER.equals(nm)) {
+            return new CustomizerBrowser(category, uiProps);
         } else if (PHP_INCLUDE_PATH.equals(nm)) {
             return new CustomizerPhpIncludePath(category, uiProps);
         } else if (IGNORE_PATH.equals(nm)) {
@@ -169,6 +179,14 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
     )
     public static CompositePanelProviderImpl createRunConfig() {
         return new CompositePanelProviderImpl(RUN);
+    }
+
+    @ProjectCustomizer.CompositeCategoryProvider.Registration(
+        projectType = UiUtils.CUSTOMIZER_PATH,
+        position = 180
+    )
+    public static CompositePanelProviderImpl createBrowser() {
+        return new CompositePanelProviderImpl(BROWSER);
     }
 
     @ProjectCustomizer.CompositeCategoryProvider.Registration(

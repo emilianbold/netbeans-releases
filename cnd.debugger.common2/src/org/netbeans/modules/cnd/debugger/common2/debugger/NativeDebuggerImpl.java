@@ -75,7 +75,6 @@ import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.api.toolchain.Tool;
-import org.netbeans.modules.cnd.api.toolchain.ToolchainManager;
 import org.netbeans.modules.cnd.api.toolchain.ui.BuildToolsAction;
 import org.netbeans.modules.cnd.api.toolchain.ui.LocalToolsPanelModel;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelModel;
@@ -108,8 +107,6 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Host;
 import org.netbeans.modules.cnd.debugger.common2.capture.ExternalStartManager;
 import org.netbeans.modules.cnd.debugger.common2.capture.CaptureInfo;
 import org.netbeans.modules.cnd.debugger.common2.capture.ExternalStart;
-import org.netbeans.modules.cnd.debugger.common2.debugger.api.EngineType;
-import org.netbeans.modules.cnd.debugger.common2.debugger.api.EngineTypeManager;
 import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.Disassembly;
 import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.DisassemblyUtils;
 import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.MemoryWindow;
@@ -876,36 +873,44 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
      * available, bring up the disassembler.
      */
     private void updateLocation(final boolean andShow, final ShowMode showModeOverride, final boolean focus) {
-        SwingUtilities.invokeLater(new Runnable() {
+        
+        NativeDebuggerManager.getRequestProcessor().post(new Runnable() {
+            final boolean haveSource = haveSource();
+            // Locations should already be in local path form.
+            final Line l = !haveSource ? null : EditorBridge.getLine(fmap().engineToWorld(getVisitedLocation().src()), getVisitedLocation().line(),
+                    NativeDebuggerImpl.this);            
+            @Override
             public void run() {
-                if (haveSource()) {
-                    // Locations should already be in local path form.
-		    final String mFileName = fmap().engineToWorld(getVisitedLocation().src());
-		    Line l = EditorBridge.getLine(mFileName, getVisitedLocation().line(), 
-                            NativeDebuggerImpl.this);
-		    if (l != null) {
-                        ShowMode showMode = ShowMode.NONE;
-                        if (andShow) {
-                            showMode = showModeOverride;
-                            NativeBreakpoint breakpoint = getVisitedLocation().getBreakpoint();
-                            if (breakpoint != null) {
-                                if (breakpoint instanceof InstructionBreakpoint) {
-                                    showMode = ShowMode.DIS;
-                                } else {
-                                    showMode = ShowMode.SOURCE;
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (haveSource) {
+                            if (l != null) {
+                                ShowMode showMode = ShowMode.NONE;
+                                if (andShow) {
+                                    showMode = showModeOverride;
+                                    NativeBreakpoint breakpoint = getVisitedLocation().getBreakpoint();
+                                    if (breakpoint != null) {
+                                        if (breakpoint instanceof InstructionBreakpoint) {
+                                            showMode = ShowMode.DIS;
+                                        } else {
+                                            showMode = ShowMode.SOURCE;
+                                        }
+                                    }
                                 }
+                                setCurrentLine(l, getVisitedLocation().visited(), getVisitedLocation().srcOutOfdate(), showMode, focus);
+                            }
+                        } else {
+                            if (getVisitedLocation() != null && getVisitedLocation().pc() != 0) {
+                                Disassembly.open();
+                                annotateDis(andShow);   // In order to update current line when source is unavailable
                             }
                         }
-			setCurrentLine(l, getVisitedLocation().visited(), getVisitedLocation().srcOutOfdate(), showMode, focus);
                     }
-                } else {
-                    if (getVisitedLocation() != null && getVisitedLocation().pc() != 0) {
-                        Disassembly.open();
-                        annotateDis(andShow);   // In order to update current line when source is unavailable
-                    }
-                }
+                });
             }
         });
+
     }
 
     private boolean haveSource() {
