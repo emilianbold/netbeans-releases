@@ -59,7 +59,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ButtonModel;
 import javax.swing.ComboBoxModel;
-import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListModel;
 import javax.swing.JToggleButton;
 import javax.swing.ListCellRenderer;
@@ -104,9 +103,7 @@ import org.netbeans.modules.java.api.common.project.ui.customizer.ClassPathListC
 import org.netbeans.modules.java.api.common.ui.PlatformUiSupport;
 import org.netbeans.modules.web.api.webmodule.WebFrameworks;
 import org.netbeans.modules.web.api.webmodule.WebModule;
-import org.netbeans.modules.web.browser.api.BrowserFamilyId;
-import org.netbeans.modules.web.browser.api.WebBrowser;
-import org.netbeans.modules.web.browser.api.WebBrowsers;
+import org.netbeans.modules.web.browser.api.WebBrowserSupport;
 import org.netbeans.modules.web.project.UpdateProjectImpl;
 import org.netbeans.modules.web.project.Utils;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -290,7 +287,7 @@ final public class WebProjectProperties {
     ButtonModel DISPLAY_BROWSER_MODEL;
     JToggleButton.ToggleButtonModel DEPLOY_ON_SAVE_MODEL; 
     ComboBoxModel J2EE_SERVER_INSTANCE_MODEL; 
-    ComboBoxModel BROWSERS_MODEL;
+    WebBrowserSupport.BrowserComboBoxModel BROWSERS_MODEL;
     Document RUNMAIN_JVM_MODEL;
     
     // for ui logging added frameworks
@@ -493,7 +490,7 @@ final public class WebProjectProperties {
         } catch (BadLocationException exc) {
             //ignore
         }
-        BROWSERS_MODEL = createBrowserModel(projectProperties.get(SELECTED_BROWSER));
+        BROWSERS_MODEL = WebBrowserSupport.createBrowserModel(projectProperties.get(SELECTED_BROWSER));
         loadingFrameworksTask = RP.post(new Runnable() {
                 public void run() {
                     loadCurrentFrameworks();
@@ -793,7 +790,7 @@ final public class WebProjectProperties {
             //ignore
         }
 
-        projectProperties.setProperty(SELECTED_BROWSER, ((BrowserWrapper)BROWSERS_MODEL.getSelectedItem()).getId());
+        projectProperties.setProperty(SELECTED_BROWSER, BROWSERS_MODEL.getSelectedBrowserId());
 
         projectProperties.putAll(additionalProperties);
 
@@ -1121,96 +1118,6 @@ final public class WebProjectProperties {
                 }
             }
         }
-    }
-
-    private static ComboBoxModel createBrowserModel(String selectedBrowser) {
-        List<BrowserWrapper> l = new ArrayList<BrowserWrapper>();
-        int chrome = 200;
-        int chromium = 300;
-        int others = 400;
-        l.add(new BrowserWrapper(null, 1, true));
-        for (WebBrowser browser : WebBrowsers.getInstance().getAll(false)) {
-            if (browser.getBrowserFamily() == BrowserFamilyId.JAVAFX_WEBVIEW) {
-                l.add(new BrowserWrapper(browser, 100, false));
-            } else if (browser.getBrowserFamily() == BrowserFamilyId.CHROME || browser.getId().endsWith("ChromeBrowser")) { //NOI18N
-                l.add(new BrowserWrapper(browser, chrome++, false));
-                l.add(new BrowserWrapper(browser, chrome++, true));
-            } else if (browser.getBrowserFamily() == BrowserFamilyId.CHROMIUM || browser.getId().endsWith("ChromiumBrowser")) { //NOI18N
-                l.add(new BrowserWrapper(browser, chromium++, false));
-                l.add(new BrowserWrapper(browser, chromium++, true));
-            } else {
-                l.add(new BrowserWrapper(browser, others++, true));
-            }
-        }
-        Collections.sort(l, new Comparator<BrowserWrapper>() {
-            @Override
-            public int compare(BrowserWrapper o1, BrowserWrapper o2) {
-                return o1.getOrder() - o2.getOrder();
-            }
-        });
-        DefaultComboBoxModel model = new DefaultComboBoxModel(l.toArray());
-        if (selectedBrowser == null || "default".equals(selectedBrowser)) {
-            return model;
-        }
-        for (int i = 0; i < model.getSize(); i++) {
-            BrowserWrapper browserWrapper = (BrowserWrapper)model.getElementAt(i);
-            if (browserWrapper.getId().equals(selectedBrowser)) {
-                model.setSelectedItem(browserWrapper);
-                break;
-            }
-        }
-        return model;
-    }
-
-    @Messages({
-        "WebProjectProperties.ide_browser=IDE's default browser",
-        "# {0} - web browser", "WebProjectProperties.integrated_browser={0} with NetBeans Integration"
-    })
-    public static final class BrowserWrapper {
-        private WebBrowser browser;
-        private int order;
-        private boolean disableIntegration;
-
-        public BrowserWrapper(WebBrowser browser, int order, boolean disableIntegration) {
-            this.browser = browser;
-            this.order = order;
-            this.disableIntegration = disableIntegration;
-        }
-
-        public String getDesc() {
-            return browser == null ? Bundle.WebProjectProperties_ide_browser() :
-                    disableIntegration || browser.getBrowserFamily() == BrowserFamilyId.JAVAFX_WEBVIEW ?
-                        browser.getName() : Bundle.WebProjectProperties_integrated_browser(browser.getName());
-        }
-
-        public boolean isDisableIntegration() {
-            return disableIntegration;
-        }
-
-        public WebBrowser getBrowser() {
-            return browser;
-        }
-
-        int getOrder() {
-            return order;
-        }
-
-        String getId() {
-            return browser == null ? "default" :  // NOI18N
-                    browser.getId()+(disableIntegration ? "" : ".INTEGRATED"); //NOI18N
-        }
-    }
-
-    public static boolean isIntegratedBrowser(String browserId) {
-        return browserId != null && browserId.endsWith(".INTEGRATED"); // NOI18N
-    }
-
-    public static WebBrowser getSelectedBrowser(String selectedBrowser) {
-        if (selectedBrowser == null || "default".equals(selectedBrowser)) { // NOI18N
-            return null;
-        }
-        ComboBoxModel model = createBrowserModel(selectedBrowser);
-        return ((BrowserWrapper)model.getSelectedItem()).getBrowser();
     }
 
     private static class CallbackImpl implements J2EEProjectProperties.Callback {

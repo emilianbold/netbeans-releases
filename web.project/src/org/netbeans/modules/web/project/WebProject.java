@@ -161,6 +161,7 @@ import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
 import org.netbeans.modules.web.browser.api.BrowserSupport;
 import org.netbeans.modules.web.browser.api.WebBrowser;
+import org.netbeans.modules.web.browser.api.WebBrowserSupport;
 import org.netbeans.modules.web.browser.spi.PageInspectorCustomizer;
 import org.netbeans.modules.web.browser.spi.URLDisplayerImplementation;
 import org.netbeans.modules.web.common.api.WebUtils;
@@ -2406,7 +2407,7 @@ public final class WebProject implements Project {
 
         boolean canReload() {
             String selectedBrowser = evaluator().getProperty(WebProjectProperties.SELECTED_BROWSER);
-            return WebProjectProperties.isIntegratedBrowser(selectedBrowser);
+            return WebBrowserSupport.isIntegratedBrowser(selectedBrowser);
         }
 
         void reload(FileObject fo) {
@@ -2460,8 +2461,8 @@ public final class WebProject implements Project {
                 return browserSupport;
             }
             String selectedBrowser = evaluator().getProperty(WebProjectProperties.SELECTED_BROWSER);
-            WebBrowser browser = WebProjectProperties.getSelectedBrowser(selectedBrowser);
-            boolean integrated = WebProjectProperties.isIntegratedBrowser(selectedBrowser);
+            WebBrowser browser = WebBrowserSupport.getBrowser(selectedBrowser);
+            boolean integrated = WebBrowserSupport.isIntegratedBrowser(selectedBrowser);
             if (browser == null) {
                 browserSupport = null;
             } else {
