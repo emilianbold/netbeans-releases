@@ -46,10 +46,12 @@ import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IfTree;
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.ParenthesizedTree;
+import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.util.TreePath;
+import java.util.Collections;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
@@ -69,7 +71,7 @@ import org.openide.util.NbBundle.Messages;
 })
 public class InvertIf {
 
-    @TriggerPattern(value = "if ($cond) $then; else $else;")
+    @TriggerPattern(value = "if ($cond) $then; else $else$;")
     @Messages({"ERR_InvertIf=Invert If",
                "FIX_InvertIf=Invert If"})
     public static ErrorDescription computeWarning(HintContext ctx) {
@@ -94,8 +96,11 @@ public class InvertIf {
         @Override
         protected void performRewrite(final TransformationContext ctx) throws Exception {
             IfTree toRewrite = (IfTree) ctx.getPath().getLeaf();
+            StatementTree elseStatement = toRewrite.getElseStatement();
             
-            ctx.getWorkingCopy().rewrite(toRewrite, ctx.getWorkingCopy().getTreeMaker().If(toRewrite.getCondition(), toRewrite.getElseStatement(), toRewrite.getThenStatement()));
+            if (elseStatement == null) elseStatement = ctx.getWorkingCopy().getTreeMaker().Block(Collections.<StatementTree>emptyList(), false);
+            
+            ctx.getWorkingCopy().rewrite(toRewrite, ctx.getWorkingCopy().getTreeMaker().If(toRewrite.getCondition(), elseStatement, toRewrite.getThenStatement()));
             negate(ctx.getWorkingCopy(), toRewrite.getCondition(), toRewrite);
         }
         

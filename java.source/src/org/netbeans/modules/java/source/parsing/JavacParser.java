@@ -785,7 +785,7 @@ public class JavacParser extends Parser {
 
         JavaCompiler tool = JavacTool.create();
         JavacTaskImpl task = (JavacTaskImpl)tool.getTask(null, 
-                ClasspathInfoAccessor.getINSTANCE().getFileManager(cpInfo),
+                ClasspathInfoAccessor.getINSTANCE().createFileManager(cpInfo),
                 diagnosticListener, options, null, Collections.<JavaFileObject>emptySet());
         if (aptEnabled) {
             task.setProcessors(processors);

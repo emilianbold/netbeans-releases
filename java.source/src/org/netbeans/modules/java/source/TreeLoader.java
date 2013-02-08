@@ -170,6 +170,7 @@ public class TreeLoader extends LazyTreeLoader {
                     if (fo != null && jti != null) {
                         final Log log = Log.instance(context);
                         log.nerrors = 0;
+                        final JavaFileManager jfm = context.get(JavaFileManager.class);
                         JavaFileObject jfo = FileObjects.nbFileObject(fo, null);
                         Map<ClassSymbol, StringBuilder> oldCouplingErrors = couplingErrors;
                         boolean oldSkipAPT = jc.skipAnnotationProcessing;
@@ -181,7 +182,7 @@ public class TreeLoader extends LazyTreeLoader {
                                 if (canWrite(cpInfo)) {
                                     Env<AttrContext> env = Enter.instance(context).getEnv(clazz);
                                     if (env != null && pruneTree(env.tree, Symtab.instance(context))) {
-                                        dumpSymFile(ClasspathInfoAccessor.getINSTANCE().getFileManager(cpInfo), jti, clazz);
+                                        dumpSymFile(jfm, jti, clazz);
                                     }
                                 } else {
                                     final JavaFileObject cfo = clazz.classfile;
