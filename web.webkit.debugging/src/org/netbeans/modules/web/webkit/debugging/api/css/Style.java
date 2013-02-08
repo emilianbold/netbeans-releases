@@ -56,11 +56,11 @@ public class Style {
     /** Identifier of the style. */
     private StyleId id;
     /** Properties in the style. */
-    private List<Property> properties;
+    private final List<Property> properties;
     /** Computed values for all shorthands found in the style. */
-    private JSONArray shorthandEntries;
+    private final JSONArray shorthandEntries;
     /** Style declaration text (if available). */
-    private String text;
+    private final String text;
     /** Style declaration range in the enclosing stylesheet (if available). */
     private SourceRange range;
 

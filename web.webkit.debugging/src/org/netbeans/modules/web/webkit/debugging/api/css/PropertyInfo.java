@@ -53,9 +53,9 @@ import org.json.simple.JSONObject;
  */
 public class PropertyInfo {
     /** Property name. */
-    private String name;
+    private final String name;
     /** Longhand property names. */
-    private List<String> longhands;
+    private final List<String> longhands;
 
     /**
      * Creates a new {@code PropertyInfo} that corresponds to the given JSONObject.

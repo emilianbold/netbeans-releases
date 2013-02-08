@@ -54,7 +54,7 @@ import org.json.simple.JSONObject;
  */
 public class MatchedStyles {
     /** CSS rules matching the node, from all applicable stylesheets. */
-    private List<Rule> matchedRules;
+    private final List<Rule> matchedRules;
     /** Pseudo style rules for the node. */
     private List<PseudoIdRules> pseudoRules;
     /** A chain of inherited styles (from the immediate node parent up to the DOM tree root). */

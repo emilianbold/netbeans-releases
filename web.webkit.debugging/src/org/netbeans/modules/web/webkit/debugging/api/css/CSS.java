@@ -63,13 +63,13 @@ import org.netbeans.modules.web.webkit.debugging.spi.ResponseCallback;
  */
 public class CSS {
     /** Transport used by this instance. */
-    private TransportHelper transport;
+    private final TransportHelper transport;
     /** Callback for CSS event notifications. */
-    private ResponseCallback callback;
+    private final ResponseCallback callback;
     /** Registered listeners. */
-    private List<Listener> listeners = new CopyOnWriteArrayList<Listener>();
+    private final List<Listener> listeners = new CopyOnWriteArrayList<Listener>();
     /** Cache of style-sheets. */
-    private Map<String, StyleSheetBody> styleSheets = new HashMap<String, StyleSheetBody>();
+    private final Map<String, StyleSheetBody> styleSheets = new HashMap<String, StyleSheetBody>();
 
     /**
      * Creates a new wrapper for the CSS domain of WebKit Remote Debugging Protocol.
@@ -190,7 +190,7 @@ public class CSS {
     }
 
     /** Determines whether styleSheetChanged event was fired. */
-    private AtomicBoolean styleSheetChanged = new AtomicBoolean();
+    private final AtomicBoolean styleSheetChanged = new AtomicBoolean();
     /**
      * Supported CSS properties. A mapping from a property name
      * to information about the property.
@@ -529,7 +529,7 @@ public class CSS {
     public static enum PseudoClass {
         ACTIVE("active"), FOCUS("focus"), HOVER("hover"), VISITED("visited"); // NOI18N
         /** Code of the pseudo class. */
-        private String code;
+        private final String code;
 
         /**
          * Creates a new {@code PseudoClass} with the specified code.

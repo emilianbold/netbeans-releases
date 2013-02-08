@@ -62,7 +62,7 @@ import org.netbeans.modules.web.webkit.debugging.spi.TransportImplementation;
  */
 public class DOMTest {
     /** ID of the root node. */
-    private static int ROOT_NODE_ID = 1;
+    private static final int ROOT_NODE_ID = 1;
 
     /**
      * Test of {@code handleDocumentUpdated} method.
