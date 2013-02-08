@@ -98,6 +98,10 @@ import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.netbeans.modules.php.spi.framework.PhpFrameworkProvider;
 import org.netbeans.modules.php.spi.framework.PhpModuleIgnoredFilesExtender;
 import org.netbeans.modules.php.spi.testing.PhpTestingProvider;
+import org.netbeans.modules.web.browser.api.BrowserSupport;
+import org.netbeans.modules.web.browser.api.WebBrowser;
+import org.netbeans.modules.web.browser.api.WebBrowserSupport;
+import org.netbeans.modules.web.browser.spi.PageInspectorCustomizer;
 import org.netbeans.modules.web.common.spi.ProjectWebRootProvider;
 import org.netbeans.modules.web.common.spi.ServerURLMappingImplementation;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
@@ -118,6 +122,7 @@ import org.netbeans.spi.search.SearchFilterDefinition;
 import org.netbeans.spi.search.SearchInfoDefinition;
 import org.netbeans.spi.search.SearchInfoDefinitionFactory;
 import org.netbeans.spi.search.SubTreeSearchOptions;
+import org.openide.awt.HtmlBrowser;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -618,7 +623,7 @@ public final class PhpProject implements Project {
                 ProjectPropertiesProblemProvider.createForProject(this),
                 UILookupMergerSupport.createProjectProblemsProviderMerger(),
                 new ProjectWebRootProviderImpl(),
-                ServerMapping.create(this),
+                ClientSideDevelopmentSupport.create(this),
                 // ?? getRefHelper()
         });
     }
@@ -1008,20 +1013,25 @@ public final class PhpProject implements Project {
         }
     }
 
-    private static final class ServerMapping implements ServerURLMappingImplementation, PropertyChangeListener {
+    public static final class ClientSideDevelopmentSupport implements ServerURLMappingImplementation, PageInspectorCustomizer, PropertyChangeListener {
 
         private final PhpProject project;
 
         private volatile String projectRootUrl;
 
+        // @GuardedBy("this")
+        private BrowserSupport browserSupport = null;
+        // @GuardedBy("this")
+        private boolean browserSupportInitialized = false;
 
-        private ServerMapping(PhpProject project) {
+
+        private ClientSideDevelopmentSupport(PhpProject project) {
             assert project != null;
             this.project = project;
         }
 
-        public static ServerMapping create(PhpProject project) {
-            ServerMapping serverMapping = new ServerMapping(project);
+        public static ClientSideDevelopmentSupport create(PhpProject project) {
+            ClientSideDevelopmentSupport serverMapping = new ClientSideDevelopmentSupport(project);
             ProjectPropertiesSupport.addWeakPropertyEvaluatorListener(project, serverMapping);
             return serverMapping;
         }
@@ -1064,6 +1074,30 @@ public final class PhpProject implements Project {
             return null;
         }
 
+        @Override
+        public boolean isHighlightSelectionEnabled() {
+            return true;
+        }
+
+        @Override
+        public void addPropertyChangeListener(PropertyChangeListener l) {
+            // noop
+        }
+
+        @Override
+        public void removePropertyChangeListener(PropertyChangeListener l) {
+            // noop
+        }
+
+        public void showFileUrl(URL url, FileObject file) {
+            BrowserSupport support = getBrowserSupport();
+            if (support != null) {
+                support.load(url, file);
+            } else {
+                HtmlBrowser.URLDisplayer.getDefault().showURL(url);
+            }
+        }
+
         private void init() {
             if (projectRootUrl == null) {
                 projectRootUrl = getProjectRootUrl();
@@ -1086,7 +1120,33 @@ public final class PhpProject implements Project {
         public void propertyChange(PropertyChangeEvent evt) {
             if (PhpProjectProperties.URL.equals(evt.getPropertyName())) {
                 projectRootUrl = null;
+            } else if (PhpProjectProperties.BROWSER_ID.equals(evt.getPropertyName())) {
+                resetBrowserSupport();
             }
+        }
+
+        private synchronized void resetBrowserSupport() {
+            if (browserSupport != null) {
+                browserSupport.close(false);
+            }
+            browserSupport = null;
+            browserSupportInitialized = false;
+        }
+
+        private synchronized BrowserSupport getBrowserSupport() {
+            if (browserSupportInitialized) {
+                return browserSupport;
+            }
+            browserSupportInitialized = true;
+            String selectedBrowser = project.getEvaluator().getProperty(PhpProjectProperties.BROWSER_ID);
+            WebBrowser browser = WebBrowserSupport.getBrowser(selectedBrowser);
+            if (browser == null) {
+                browserSupport = null;
+                return null;
+            }
+            boolean integrated = WebBrowserSupport.isIntegratedBrowser(selectedBrowser);
+            browserSupport = BrowserSupport.create(browser, !integrated);
+            return browserSupport;
         }
 
     }

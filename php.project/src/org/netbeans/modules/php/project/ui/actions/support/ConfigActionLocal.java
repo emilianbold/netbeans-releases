@@ -53,8 +53,6 @@ import org.netbeans.modules.php.project.runconfigs.validation.RunConfigLocalVali
 import org.netbeans.modules.php.spi.executable.DebugStarter;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.DebugUrl;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.XDebugUrlArguments;
-import org.netbeans.modules.web.browser.api.BrowserSupport;
-import org.openide.awt.HtmlBrowser;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Cancellable;
@@ -295,7 +293,7 @@ class ConfigActionLocal extends ConfigAction {
     }
 
     void showFileUrl(URL url, FileObject file) {
-        BrowserSupport.getDefault().load(url, file);
+        project.getLookup().lookup(PhpProject.ClientSideDevelopmentSupport.class).showFileUrl(url, file);
     }
 
     //~ Inner classes
