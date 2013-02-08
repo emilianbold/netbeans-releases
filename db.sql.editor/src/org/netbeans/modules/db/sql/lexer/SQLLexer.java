@@ -197,10 +197,8 @@ public class SQLLexer implements Lexer<SQLTokenId> {
                         if (!isEndIdentifierQuoteChar(startQuoteChar, actChar)) {
                             break;
                         } else {
-                            if (actChar == '"') {
                                 state = State.ISA_QUOTE_IN_IDENTIFIER;
                                 break;
-                        }
                         }
                     } else {
                         if (Character.isLetterOrDigit(actChar) || actChar == '_' || actChar == '#') {
@@ -214,11 +212,9 @@ public class SQLLexer implements Lexer<SQLTokenId> {
                     return factory.createToken(testKeyword(input.readText()));
 
                 case ISA_QUOTE_IN_IDENTIFIER:
-                    switch (actChar) {
-                        case '"':
-                            state = State.ISI_IDENTIFIER;
-                            break;
-                        default:
+                    if (isEndIdentifierQuoteChar(startQuoteChar, actChar)) {
+                        state = State.ISI_IDENTIFIER;
+                    } else {
                             state = State.INIT;
                             startQuoteChar = -1;
                             input.backup(1);

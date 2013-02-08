@@ -80,6 +80,17 @@ public class SQLLexerTest extends NbTestCase {
                 SQLTokenId.WHITESPACE);
     }
 
+    /**
+     * Test escape in quoted identifiers following SQL99 methology
+     */
+    public void testQuotedIdentifiers2() throws Exception {
+        TokenSequence<SQLTokenId> seq = getTokenSequence("\"derby\"\"\",`mysql```,[mssql]]]");
+        assertTokens(seq, SQLTokenId.IDENTIFIER,
+                SQLTokenId.COMMA, SQLTokenId.IDENTIFIER,
+                SQLTokenId.COMMA, SQLTokenId.IDENTIFIER,
+                SQLTokenId.WHITESPACE);
+    }
+
     public void testSimpleSQL99Quoting() throws Exception {
         TokenSequence<SQLTokenId> seq = getTokenSequence("select -/ from 'a''' + 1, dto");
         assertTokens(seq, SQLTokenId.KEYWORD, SQLTokenId.WHITESPACE, SQLTokenId.OPERATOR,
@@ -199,11 +210,13 @@ public class SQLLexerTest extends NbTestCase {
     }
 
     private static TokenSequence<SQLTokenId> getTokenSequence(String sql) throws BadLocationException {
-        Document doc = new ModificationTextDocument();
+        ModificationTextDocument doc = new ModificationTextDocument();
         doc.insertString(0, sql, null);
         doc.putProperty(Language.class, SQLTokenId.language());
         TokenHierarchy<?> hi = TokenHierarchy.get(doc);
+        doc.readLock();
         TokenSequence<SQLTokenId> seq = hi.tokenSequence(SQLTokenId.language());
+        doc.readUnlock();
         seq.moveStart();
         return seq;
     }
