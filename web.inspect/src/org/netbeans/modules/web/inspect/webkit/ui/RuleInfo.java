@@ -51,7 +51,7 @@ import java.util.Set;
  */
 public class RuleInfo {
     /** Names of properties that are overriden by other rules. */
-    private Set<String> overridenProperties = new HashSet<String>();
+    private final Set<String> overridenProperties = new HashSet<String>();
     /**
      * Determines whether the rules matches the selected element or whether
      * it matches some parent of the selected element (i.e., is inherited).

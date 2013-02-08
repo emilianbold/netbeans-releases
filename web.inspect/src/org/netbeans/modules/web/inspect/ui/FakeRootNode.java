@@ -56,9 +56,9 @@ import org.openide.nodes.Node;
  */
 public class FakeRootNode<T extends Node> extends AbstractNode {
     /** Real root node, i.e., the only child of this fake root. */
-    private T realRoot;
+    private final T realRoot;
     /** Actions of this node. */
-    private Action[] actions;
+    private final Action[] actions;
 
     /**
      * Creates a new {@code FakeRootNode}.
@@ -96,7 +96,7 @@ public class FakeRootNode<T extends Node> extends AbstractNode {
         /** Key for the real root node. */
         private static final String ROOT_KEY = "root"; // NOI18N
         /** Real root node. */
-        private T realRoot;
+        private final T realRoot;
 
         /**
          * Creates a new {@code FakeRootChildren}.

@@ -80,9 +80,9 @@ public class DOMNode extends AbstractNode {
     /** Property sets of the node. */
     private PropertySet[] propertySets;
     /** Determines whether nodeId should be appended to display name. */
-    private boolean nodeIdInDisplayName = Boolean.getBoolean("org.netbeans.modules.web.inspect.nodeIdInDisplayName"); // NOI18N
+    private final boolean nodeIdInDisplayName = Boolean.getBoolean("org.netbeans.modules.web.inspect.nodeIdInDisplayName"); // NOI18N
     /** Page model this node belongs to. */
-    private WebKitPageModel model;
+    private final WebKitPageModel model;
 
     /**
      * Creates a new {@code DOMNode}.
@@ -295,7 +295,7 @@ public class DOMNode extends AbstractNode {
      */
     static class DOMChildren extends Children.Keys<Integer> {
         /** Page model this node belongs to. */
-        private WebKitPageModel pageModel;
+        private final WebKitPageModel pageModel;
 
         /**
          * Creates a new {@code DOMChildren}.
