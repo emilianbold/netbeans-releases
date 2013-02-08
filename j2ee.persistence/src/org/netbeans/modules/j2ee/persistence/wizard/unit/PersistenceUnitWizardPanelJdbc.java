@@ -215,7 +215,7 @@ public class PersistenceUnitWizardPanelJdbc extends PersistenceUnitWizardPanel{
                         warning  = NbBundle.getMessage(PersistenceUnitWizard.class, "ERR_WrongSourceLevel", sourceLevel);
                     }
                 } else {
-                    warning  = NbBundle.getMessage(PersistenceUnitWizard.class, "ERR_UnsupportedJpaVersion", ver);
+                    warning  = NbBundle.getMessage(PersistenceUnitWizard.class, "ERR_UnsupportedJpaVersion", ver, Util.getJPAVersionSupported(project, ver));
                 }
             }
         }

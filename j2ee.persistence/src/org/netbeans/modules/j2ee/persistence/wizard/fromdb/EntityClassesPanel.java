@@ -366,7 +366,7 @@ public class EntityClassesPanel extends javax.swing.JPanel {
                             if(Util.isJPAVersionSupported(project, ver)){
                                 warning  = NbBundle.getMessage(RelatedCMPWizard.class, "ERR_WrongSourceLevel", sourceLevel);
                             } else {
-                                warning  = NbBundle.getMessage(RelatedCMPWizard.class, "ERR_UnsupportedJpaVersion", ver);
+                                warning  = NbBundle.getMessage(RelatedCMPWizard.class, "ERR_UnsupportedJpaVersion", ver, Util.getJPAVersionSupported(project, ver));
                             }
                         }
                     }
