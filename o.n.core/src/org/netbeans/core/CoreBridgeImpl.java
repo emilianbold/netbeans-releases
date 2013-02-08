@@ -216,7 +216,7 @@ public final class CoreBridgeImpl extends CoreBridge {
      * @return Look and feel class selected in Options window or null.
      */
     private static Class getPreferredUIClass() {
-        Preferences prefs = NbPreferences.forModule( CoreBridgeImpl.class );
+        Preferences prefs = NbPreferences.root().node( "laf" ); //NOI18N
         String uiClassName = prefs.get( "laf", null ); //NOI18N
         if( null == uiClassName )
             return null;
