@@ -93,6 +93,7 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
     public static final String SOURCE_ENCODING = "source.encoding"; // NOI18N
     public static final String COPY_SRC_FILES = "copy.src.files"; // NOI18N
     public static final String COPY_SRC_TARGET = "copy.src.target"; // NOI18N
+    public static final String BROWSER_ID = "browser.id"; // NOI18N
     public static final String WEB_ROOT = "web.root"; // NOI18N
     public static final String URL = "url"; // NOI18N
     public static final String INDEX_FILE = "index.file"; // NOI18N
@@ -218,6 +219,7 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
     private boolean testDirRemoved = false;
     private String copySrcFiles;
     private String copySrcTarget;
+    private String browserId;
     private String webRoot;
     private String url;
     private String indexFile;
@@ -301,6 +303,17 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
 
     public void setPhpVersion(String phpVersion) {
         this.phpVersion = phpVersion;
+    }
+
+    public String getBrowserId() {
+        if (browserId == null) {
+            browserId = ProjectPropertiesSupport.getPropertyEvaluator(project).getProperty(BROWSER_ID);
+        }
+        return browserId;
+    }
+
+    public void setBrowserId(String browserId) {
+        this.browserId = browserId;
     }
 
     /**
@@ -501,6 +514,9 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
         }
         if (encoding != null) {
             projectProperties.setProperty(SOURCE_ENCODING, encoding);
+        }
+        if (browserId != null) {
+            projectProperties.setProperty(BROWSER_ID, browserId);
         }
         if (webRoot != null) {
             projectProperties.setProperty(WEB_ROOT, webRoot);

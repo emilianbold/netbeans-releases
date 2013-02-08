@@ -48,6 +48,8 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -84,6 +86,7 @@ import org.netbeans.modules.php.project.classpath.IncludePathClassPathProvider;
 import org.netbeans.modules.php.project.copysupport.CopySupport;
 import org.netbeans.modules.php.project.internalserver.InternalWebServer;
 import org.netbeans.modules.php.project.problems.ProjectPropertiesProblemProvider;
+import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
 import org.netbeans.modules.php.project.ui.actions.support.ConfigAction;
 import org.netbeans.modules.php.project.ui.codecoverage.PhpCoverageProvider;
 import org.netbeans.modules.php.project.ui.customizer.CustomizerProviderImpl;
@@ -95,7 +98,12 @@ import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.netbeans.modules.php.spi.framework.PhpFrameworkProvider;
 import org.netbeans.modules.php.spi.framework.PhpModuleIgnoredFilesExtender;
 import org.netbeans.modules.php.spi.testing.PhpTestingProvider;
+import org.netbeans.modules.web.browser.api.BrowserSupport;
+import org.netbeans.modules.web.browser.api.WebBrowser;
+import org.netbeans.modules.web.browser.api.WebBrowserSupport;
+import org.netbeans.modules.web.browser.spi.PageInspectorCustomizer;
 import org.netbeans.modules.web.common.spi.ProjectWebRootProvider;
+import org.netbeans.modules.web.common.spi.ServerURLMappingImplementation;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.AntBasedProjectRegistration;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
@@ -114,6 +122,7 @@ import org.netbeans.spi.search.SearchFilterDefinition;
 import org.netbeans.spi.search.SearchInfoDefinition;
 import org.netbeans.spi.search.SearchInfoDefinitionFactory;
 import org.netbeans.spi.search.SubTreeSearchOptions;
+import org.openide.awt.HtmlBrowser;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -613,7 +622,8 @@ public final class PhpProject implements Project {
                 InternalWebServer.createForProject(this),
                 ProjectPropertiesProblemProvider.createForProject(this),
                 UILookupMergerSupport.createProjectProblemsProviderMerger(),
-                new ProjectWebRootProviderImpl()
+                new ProjectWebRootProviderImpl(),
+                ClientSideDevelopmentSupport.create(this),
                 // ?? getRefHelper()
         });
     }
@@ -1002,4 +1012,143 @@ public final class PhpProject implements Project {
             return Collections.unmodifiableList(list);
         }
     }
+
+    public static final class ClientSideDevelopmentSupport implements ServerURLMappingImplementation, PageInspectorCustomizer, PropertyChangeListener {
+
+        private final PhpProject project;
+
+        private volatile String projectRootUrl;
+
+        // @GuardedBy("this")
+        private BrowserSupport browserSupport = null;
+        // @GuardedBy("this")
+        private boolean browserSupportInitialized = false;
+
+
+        private ClientSideDevelopmentSupport(PhpProject project) {
+            assert project != null;
+            this.project = project;
+        }
+
+        public static ClientSideDevelopmentSupport create(PhpProject project) {
+            ClientSideDevelopmentSupport serverMapping = new ClientSideDevelopmentSupport(project);
+            ProjectPropertiesSupport.addWeakPropertyEvaluatorListener(project, serverMapping);
+            return serverMapping;
+        }
+
+        @Override
+        public URL toServer(int projectContext, FileObject projectFile) {
+            init();
+            if (projectRootUrl == null) {
+                return null;
+            }
+            FileObject webRoot = project.getWebRootDirectory();
+            if (webRoot == null) {
+                return null;
+            }
+            String relPath = FileUtil.getRelativePath(webRoot, projectFile);
+            if (relPath == null) {
+                return null;
+            }
+            try {
+                return new URL(projectRootUrl + relPath);
+            } catch (MalformedURLException ex) {
+                return null;
+            }
+        }
+
+        @Override
+        public FileObject fromServer(int projectContext, URL serverURL) {
+            init();
+            if (projectRootUrl == null) {
+                return null;
+            }
+            FileObject webRoot = project.getWebRootDirectory();
+            if (webRoot == null) {
+                return null;
+            }
+            String url = CommandUtils.urlToString(serverURL, true);
+            if (url.startsWith(projectRootUrl)) {
+                return webRoot.getFileObject(url.substring(projectRootUrl.length()));
+            }
+            return null;
+        }
+
+        @Override
+        public boolean isHighlightSelectionEnabled() {
+            return true;
+        }
+
+        @Override
+        public void addPropertyChangeListener(PropertyChangeListener l) {
+            // noop
+        }
+
+        @Override
+        public void removePropertyChangeListener(PropertyChangeListener l) {
+            // noop
+        }
+
+        public void showFileUrl(URL url, FileObject file) {
+            BrowserSupport support = getBrowserSupport();
+            if (support != null) {
+                support.load(url, file);
+            } else {
+                HtmlBrowser.URLDisplayer.getDefault().showURL(url);
+            }
+        }
+
+        private void init() {
+            if (projectRootUrl == null) {
+                projectRootUrl = getProjectRootUrl();
+            }
+        }
+
+        private String getProjectRootUrl() {
+            try {
+                String url = CommandUtils.urlToString(CommandUtils.getBaseURL(project, true), true);
+                if (!url.endsWith("/")) { // NOI18N
+                    url += "/"; // NOI18N
+                }
+                return url;
+            } catch (MalformedURLException ex) {
+                return null;
+            }
+        }
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (PhpProjectProperties.URL.equals(evt.getPropertyName())) {
+                projectRootUrl = null;
+            } else if (PhpProjectProperties.BROWSER_ID.equals(evt.getPropertyName())) {
+                resetBrowserSupport();
+            }
+        }
+
+        private synchronized void resetBrowserSupport() {
+            if (browserSupport != null) {
+                browserSupport.close(false);
+            }
+            browserSupport = null;
+            browserSupportInitialized = false;
+        }
+
+        private synchronized BrowserSupport getBrowserSupport() {
+            if (browserSupportInitialized) {
+                return browserSupport;
+            }
+            browserSupportInitialized = true;
+            String selectedBrowser = project.getEvaluator().getProperty(PhpProjectProperties.BROWSER_ID);
+            WebBrowser browser = WebBrowserSupport.getBrowser(selectedBrowser);
+            if (browser == null) {
+                browserSupport = null;
+                return null;
+            }
+            boolean integrated = WebBrowserSupport.isIntegratedBrowser(selectedBrowser);
+            browserSupport = BrowserSupport.create(browser, !integrated);
+            return browserSupport;
+        }
+
+    }
+
 }

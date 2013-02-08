@@ -43,6 +43,8 @@ package org.netbeans.modules.php.project.ui.actions.support;
 
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
@@ -51,6 +53,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.PhpActionProvider;
@@ -74,6 +78,9 @@ import org.openide.windows.TopComponent;
  * @author Radek Matous, Tomas Mysik
  */
 public final class CommandUtils {
+
+    private static final Logger LOGGER = Logger.getLogger(CommandUtils.class.getName());
+
     private static final String HTML_MIME_TYPE = "text/html"; // NOI18N
 
     private CommandUtils() {
@@ -415,6 +422,41 @@ public final class CommandUtils {
             baseURLPath += "/"; // NOI18N
         }
         return new URL(baseURLPath);
+    }
+
+    public static String urlToString(URL url, boolean pathOnly) {
+        URI uri;
+        try {
+            uri = url.toURI();
+        } catch (URISyntaxException ex) {
+            // fallback:
+            LOGGER.log(Level.FINE, "URL '{0}' cannot be converted to URI.", url);
+            String res = url.toExternalForm();
+            int end = res.lastIndexOf('?'); // NOI18N
+            if (end == -1) {
+                end = res.lastIndexOf('#'); // NOI18N
+            }
+            if (pathOnly && end != -1) {
+                res = res.substring(0, end);
+            }
+            return res;
+        }
+        StringBuilder sb = new StringBuilder(100);
+        sb.append(uri.getScheme());
+        sb.append("://"); // NOI18N
+        if (uri.getAuthority() != null) {
+            sb.append(uri.getAuthority());
+        }
+        sb.append(uri.getPath());
+        if (!pathOnly && uri.getQuery() != null) {
+            sb.append("?"); // NOI18N
+            sb.append(uri.getQuery());
+        }
+        if (!pathOnly && uri.getFragment() != null) {
+            sb.append("#"); // NOI18N
+            sb.append(uri.getFragment());
+        }
+        return sb.toString();
     }
 
     /**
