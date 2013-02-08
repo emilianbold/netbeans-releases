@@ -222,6 +222,19 @@ public final class BrowserSupport {
     }
     
     /**
+     * Reloads the current URL if it is set.
+     * @return {@code true} if the browser is reloaded, {@code false} otherwise
+     * @since 1.10
+     */
+    public boolean reload() {
+        if (currentURL == null) {
+            return false;
+        }
+        getWebBrowserPane().reload();
+        return true;
+    }
+
+    /**
      * Has this URL being previous opened via load() method or not? BrowserSupport
      * remember last URL opened.
      */
