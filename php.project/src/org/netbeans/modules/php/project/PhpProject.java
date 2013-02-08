@@ -47,6 +47,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
+import java.io.FileFilter;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -186,7 +187,8 @@ public final class PhpProject implements Project {
     final TestingProviders testingProviders;
     private final ChangeListener frameworksListener;
 
-    volatile FileChangeListener sourceDirectoryFileChangeListener = null;
+    // FS changes
+    private final SourceDirectoryFileChangeListener sourceDirectoryFileChangeListener = new SourceDirectoryFileChangeListener();
 
     // project's property changes
     public static final String PROP_FRAMEWORKS = "frameworks"; // NOI18N
@@ -219,7 +221,8 @@ public final class PhpProject implements Project {
         sourceRoots.addPropertyChangeListener(new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
-                sourceDirectoryFileChangeListener = null;
+                removeSourceDirListener();
+                addSourceDirListener();
             }
         });
         frameworksListener = new ChangeListener() {
@@ -313,11 +316,6 @@ public final class PhpProject implements Project {
 
     FileObject getSourcesDirectory() {
         for (FileObject root : sourceRoots.getRoots()) {
-            if (sourceDirectoryFileChangeListener == null) {
-                // no locks here, it is ok if the listener is created and attached more times (gc takes care of it)
-                sourceDirectoryFileChangeListener = new SourceDirectoryFileChangeListener();
-                root.addFileChangeListener(FileUtil.weakFileChangeListener(sourceDirectoryFileChangeListener, root));
-            }
             // return the first one
             return root;
         }
@@ -362,6 +360,7 @@ public final class PhpProject implements Project {
             return null;
         }
         FileObject sources = getSourcesDirectory();
+        assert sources != null;
         String webRootProperty = eval.getProperty(PhpProjectProperties.WEB_ROOT);
         if (webRootProperty == null) {
             // web root directory not set, return sources
@@ -374,6 +373,36 @@ public final class PhpProject implements Project {
         LOGGER.log(Level.INFO, "Web root directory {0} not found for project {1}", new Object[] {webRootProperty, getName()});
         // web root directory not found, return sources
         return sources;
+    }
+
+    void addSourceDirListener() {
+        FileObject sourcesDirectory = getSourcesDirectory();
+        if (sourcesDirectory == null) {
+            return;
+        }
+        synchronized (sourceDirectoryFileChangeListener) {
+            sourceDirectoryFileChangeListener.setSourceDir(sourcesDirectory);
+            FileUtil.addRecursiveListener(sourceDirectoryFileChangeListener, FileUtil.toFile(sourcesDirectory), new FileFilter() {
+                @Override
+                public boolean accept(File pathname) {
+                    return isVisible(pathname);
+                }
+            }, null);
+        }
+    }
+
+    void removeSourceDirListener() {
+        FileObject sourceDir = sourceDirectoryFileChangeListener.getSourceDir();
+        assert sourceDir != null;
+        synchronized (sourceDirectoryFileChangeListener) {
+            try {
+                FileUtil.removeRecursiveListener(sourceDirectoryFileChangeListener, FileUtil.toFile(sourceDir));
+            } catch (IllegalArgumentException ex) {
+                LOGGER.log(Level.INFO, null, ex);
+            } finally {
+                sourceDirectoryFileChangeListener.setSourceDir(null);
+            }
+        }
     }
 
     public PhpModule getPhpModule() {
@@ -637,6 +666,7 @@ public final class PhpProject implements Project {
         ignoredFoldersChangeSupport.fireChange();
     }
 
+
     private final class Info implements ProjectInformation {
 
         private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
@@ -682,6 +712,8 @@ public final class PhpProject implements Project {
         protected void projectOpened() {
             new ProjectUpgrader(PhpProject.this).upgrade();
 
+            addSourceDirListener();
+
             testingProviders.projectOpened();
             frameworks.projectOpened();
 
@@ -717,6 +749,8 @@ public final class PhpProject implements Project {
         @Override
         protected void projectClosed() {
             try {
+                removeSourceDirListener();
+
                 testingProviders.projectClosed();
                 frameworks.projectClosed();
 
@@ -813,43 +847,83 @@ public final class PhpProject implements Project {
         }
     }
 
-    // if source folder changes, reset frameworks (new framework can be found in project)
     private final class SourceDirectoryFileChangeListener implements FileChangeListener {
+
+        // @GuardedBy("this")
+        private FileObject sourceDir;
+
+
+        public synchronized FileObject getSourceDir() {
+            return sourceDir;
+        }
+
+        public synchronized void setSourceDir(FileObject sourceDir) {
+            this.sourceDir = sourceDir;
+        }
 
         @Override
         public void fileFolderCreated(FileEvent fe) {
-            processFileChange();
+            FileObject file = fe.getFile();
+            frameworksReset(file);
         }
 
         @Override
         public void fileDataCreated(FileEvent fe) {
-            processFileChange();
+            FileObject file = fe.getFile();
+            frameworksReset(file);
+            browserReload(file);
         }
 
         @Override
         public void fileChanged(FileEvent fe) {
-            // probably not interesting for us
+            FileObject file = fe.getFile();
+            browserReload(file);
         }
 
         @Override
         public void fileDeleted(FileEvent fe) {
-            processFileChange();
+            FileObject file = fe.getFile();
+            frameworksReset(file);
+            browserReload(file);
         }
 
         @Override
         public void fileRenamed(FileRenameEvent fe) {
-            processFileChange();
+            FileObject file = fe.getFile();
+            frameworksReset(file);
         }
 
         @Override
         public void fileAttributeChanged(FileAttributeEvent fe) {
-            // probably not interesting for us
+            // noop
         }
 
-        void processFileChange() {
-            LOGGER.fine("file change, frameworks back to null");
-            resetFrameworks();
+        // if any direct child of source folder changes, reset frameworks (new framework can be found in project)
+        private void frameworksReset(FileObject file) {
+            FileObject sourcesDirectory = getSourcesDirectory();
+            if (sourcesDirectory == null) {
+                // corrupted project
+                return;
+            }
+            if (file.getParent().equals(sourcesDirectory)) {
+                LOGGER.fine("file change, frameworks back to null");
+                resetFrameworks();
+            }
         }
+
+        // possible browser reload, if nb integration is present
+        private void browserReload(FileObject file) {
+            if (file.hasExt("css")) { // NOI18N
+                // #217284 - ignore changes in CSS
+                return;
+            }
+            ClientSideDevelopmentSupport easelSupport = PhpProject.this.getLookup().lookup(ClientSideDevelopmentSupport.class);
+            assert easelSupport != null;
+            if (easelSupport.canReload()) {
+                easelSupport.reload();
+            }
+        }
+
     }
 
     private final class PhpAntProjectListener implements AntProjectListener {
@@ -1114,6 +1188,19 @@ public final class PhpProject implements Project {
             } catch (MalformedURLException ex) {
                 return null;
             }
+        }
+
+        public boolean canReload() {
+            String selectedBrowser = project.getEvaluator().getProperty(PhpProjectProperties.BROWSER_ID);
+            return WebBrowserSupport.isIntegratedBrowser(selectedBrowser);
+        }
+
+        public void reload() {
+            BrowserSupport support = getBrowserSupport();
+            if (support == null) {
+                return;
+            }
+            support.reload();
         }
 
         @Override
