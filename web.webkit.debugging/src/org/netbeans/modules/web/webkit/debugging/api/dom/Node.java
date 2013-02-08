@@ -55,7 +55,7 @@ import org.json.simple.JSONObject;
  */
 public class Node {
     /** Properties of the node. */
-    private JSONObject properties;
+    private final JSONObject properties;
     /** Children of the node ({@code nul} when the children are not known yet). */
     private List<Node> children;
     /** Attributes of the node. */
@@ -417,7 +417,7 @@ public class Node {
      */
     public static class Attribute {
         /** Name of this attribute. */
-        private String name;
+        private final String name;
         /** Value of this attribute. */
         private String value;
 
