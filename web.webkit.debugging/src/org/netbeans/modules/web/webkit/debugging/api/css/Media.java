@@ -50,9 +50,9 @@ import org.json.simple.JSONObject;
  */
 public class Media {
     /** Media query text. */
-    private String text;
+    private final String text;
     /** Source of the media query. */
-    private Source source;
+    private final Source source;
 
     /**
      * Creates a new {@code Media} that corresponds to the given JSONObject.

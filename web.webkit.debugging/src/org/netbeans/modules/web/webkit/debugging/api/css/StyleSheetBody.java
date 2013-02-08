@@ -54,11 +54,11 @@ import org.json.simple.JSONObject;
  */
 public class StyleSheetBody {
     /** Identifier of the stylesheet. */
-    private String styleSheetId;
+    private final String styleSheetId;
     /** Rules of the stylesheet. */
-    private List<Rule> rules;
+    private final List<Rule> rules;
     /** Text of the stylesheet (if available). */
-    private String text;
+    private final String text;
 
     /**
      * Creates a new {@code StyleSheetBody} that corresponds to the given JSONObject.

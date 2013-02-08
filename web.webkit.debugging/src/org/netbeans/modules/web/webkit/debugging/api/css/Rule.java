@@ -56,26 +56,26 @@ public class Rule {
     /** Identifier of the rule (absent for user agent stylesheet and user-specified stylesheet rules). */
     private RuleId id;
     /*** Selector of the rule. */
-    private String selector;
+    private final String selector;
     /** Parent stylesheet resource URL. */
-    private String sourceURL;
+    private final String sourceURL;
     /** Line number of the first character of the selector. */
-    private int sourceLine;
+    private final int sourceLine;
     /** Origin of the parent stylesheet. */
-    private StyleSheetOrigin origin;
+    private final StyleSheetOrigin origin;
     /** Associated style declaration. */
-    private Style style;
+    private final Style style;
     /** Rule selector range in the underlying resource (if available). */
     private SourceRange selectorRange;
     /**
      * Media list (for rules involving media queries). It enumerates media
      * queries starting with the innermost one, going outwards.
      */
-    private List<Media> media;
+    private final List<Media> media;
     /** Parent stylesheet of the rule. */
     private StyleSheetBody parentStyleSheet;
     /** JSON object this rule is based on. */
-    private JSONObject json;
+    private final JSONObject json;
 
     /**
      * Creates a new {@code Rule} that corresponds to the given JSONObject.
