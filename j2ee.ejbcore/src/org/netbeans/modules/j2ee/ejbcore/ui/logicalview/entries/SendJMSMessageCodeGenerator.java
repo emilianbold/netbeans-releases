@@ -151,6 +151,7 @@ public class SendJMSMessageCodeGenerator implements CodeGenerator {
             MessageDestinationUiSupport.DestinationsHolder holder = 
                     SendJMSMessageUiSupport.getDestinations(enterpriseProject, provider);
             final SendJmsMessagePanel sendJmsMessagePanel = SendJmsMessagePanel.newInstance(
+                    enterpriseProject,
                     provider,
                     holder.getModuleDestinations(),
                     holder.getServerDestinations(),

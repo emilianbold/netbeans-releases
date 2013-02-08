@@ -49,11 +49,13 @@ import java.awt.event.ActionListener;
 import java.util.Set;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
 import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination.Type;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.j2ee.ejbcore.api.codegeneration.JmsDestinationDefinition;
 import org.openide.WizardDescriptor;
 
 /**
@@ -65,15 +67,17 @@ public class MdbLocationPanelVisual extends javax.swing.JPanel {
     
     public static final String CHANGED = MdbLocationPanelVisual.class.getName() + ".CHANGED";
 
+    private final Project project;
     private final J2eeModuleProvider provider;
     private final Set<MessageDestination> moduleDestinations;
     private final Set<MessageDestination> serverDestinations;
     private final boolean isDestinationCreationSupportedByServerPlugin;
     
     // private because correct initialization is needed
-    private MdbLocationPanelVisual(J2eeModuleProvider provider, Set<MessageDestination> moduleDestinations, Set<MessageDestination> serverDestinations) {
+    private MdbLocationPanelVisual(Project project, J2eeModuleProvider provider, Set<MessageDestination> moduleDestinations, Set<MessageDestination> serverDestinations) {
         initComponents();
 
+        this.project = project;
         this.provider = provider;
         this.moduleDestinations = moduleDestinations;
         this.serverDestinations = serverDestinations;
@@ -87,15 +91,17 @@ public class MdbLocationPanelVisual extends javax.swing.JPanel {
      * @param serverDestinations server message destinations.
      * @return MessageEJBWizardVisualPanel instance.
      */
-    public static MdbLocationPanelVisual newInstance(final J2eeModuleProvider provider,
+    public static MdbLocationPanelVisual newInstance(final Project project, final J2eeModuleProvider provider,
             final Set<MessageDestination> moduleDestinations, final Set<MessageDestination> serverDestinations) {
-        MdbLocationPanelVisual mdp = new MdbLocationPanelVisual(provider, moduleDestinations, serverDestinations);
+        MdbLocationPanelVisual mdp = new MdbLocationPanelVisual(project, provider, moduleDestinations, serverDestinations);
         mdp.initialize();
         return mdp;
     }
-    
+
     /**
-     * Get the message destination.
+     * Get the message destination. If the destination is instance of the {@code JmsDestinationDefinition} and its
+     * flag {@code toGenerate} is set to {@code true} the destination should be generated into the target file.
+     *
      * @return selected destination or <code>null</code> if no destination type is selected.
      */
     public MessageDestination getDestination() {
@@ -112,17 +118,7 @@ public class MdbLocationPanelVisual extends javax.swing.JPanel {
                     }
                 }
                 // message destination is unknown
-                return new MessageDestination() {
-                    @Override
-                    public String getName() {
-                        return selectedDestination;
-                    }
-                    @Override
-                    public Type getType() {
-                        // we don't know anything about the destination type, just return some one
-                        return Type.QUEUE;
-                    }
-                };
+                return new JmsDestinationDefinition(selectedDestination, Type.QUEUE, false);
             }
         } else if (serverDestinationsRadio.isSelected()) {
             return (MessageDestination) serverDestinationsCombo.getSelectedItem();
@@ -274,7 +270,7 @@ public class MdbLocationPanelVisual extends javax.swing.JPanel {
 
     private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
         MessageDestination destination = 
-                MessageDestinationUiSupport.createMessageDestination(provider, moduleDestinations, serverDestinations);
+                MessageDestinationUiSupport.prepareMessageDestination(project, provider, moduleDestinations, serverDestinations);
         if (destination != null) {
             moduleDestinations.add(destination);
             MessageDestinationUiSupport.populateDestinations(moduleDestinations, projectDestinationsCombo, destination);
