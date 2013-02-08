@@ -53,6 +53,7 @@ import org.netbeans.modules.php.editor.model.NamespaceScope;
 import org.netbeans.modules.php.editor.model.Scope;
 import org.netbeans.modules.php.editor.model.TraitScope;
 import org.netbeans.modules.php.editor.model.TypeScope;
+import org.netbeans.modules.php.editor.model.nodes.ClassConstantDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.ClassDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.IncludeInfo;
 import org.netbeans.modules.php.editor.model.nodes.InterfaceDeclarationInfo;
@@ -62,6 +63,7 @@ import org.netbeans.modules.php.editor.model.nodes.NamespaceDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.SingleFieldDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.TraitDeclarationInfo;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.ConstantDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.FieldsDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Include;
 import org.netbeans.modules.php.editor.parser.astnodes.InterfaceDeclaration;
@@ -123,6 +125,13 @@ class ModelBuilder {
         for (SingleFieldDeclarationInfo sfdi : infos) {
             FieldElementImpl fei = ModelElementFactory.create(sfdi, this);
             occurencesBuilder.prepare(sfdi, fei);
+        }
+    }
+
+    void build(ConstantDeclaration node, OccurenceBuilder occurencesBuilder) {
+        List<? extends ClassConstantDeclarationInfo> infos = ClassConstantDeclarationInfo.create(node);
+        for (ClassConstantDeclarationInfo nodeInfo : infos) {
+            occurencesBuilder.prepare(nodeInfo, ModelElementFactory.create(nodeInfo, this));
         }
     }
 
