@@ -109,6 +109,8 @@ import org.openide.util.NbBundle;
  */
 public class Util {
 
+    private static final String[] JPA_VERSIONS = {Persistence.VERSION_1_0, Persistence.VERSION_2_0, Persistence.VERSION_2_1};
+    
     /*
      * Changes the text of a JLabel in component from oldLabel to newLabel
      */
@@ -548,6 +550,29 @@ public class Util {
 
     }
 
+    /**
+     * return jpa version supported in the project and no more then top bound
+     * @param top - upper bound for jpa version to return
+     * @return return top most supported version less or equal to 'top'
+     */
+    public static String getJPAVersionSupported(Project project, String top){
+        JPAModuleInfo info = project.getLookup().lookup(JPAModuleInfo.class);
+        boolean top_found = false;
+        if(info!=null){
+            for(int i=JPA_VERSIONS.length-1;i>=0;i--){
+                if(JPA_VERSIONS[i].equals(top)){
+                    top_found = true;
+                } 
+                if(top_found){
+                    if(!Boolean.FALSE.equals(info.isJPAVersionSupported(JPA_VERSIONS[i]))){
+                        return JPA_VERSIONS[i];
+                    }//null return considerd valid too and the same as true
+                }
+            }
+        }
+        return JPA_VERSIONS[0];//can't verify and return lowest
+    }    
+    
     /**
      * Creates a persistence unit using the PU wizard and adds the created
      * persistence unit to the given project's <code>PUDataObject</code> and saves it.

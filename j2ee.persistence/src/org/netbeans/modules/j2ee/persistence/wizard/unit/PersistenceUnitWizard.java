@@ -208,11 +208,15 @@ public class PersistenceUnitWizard implements WizardDescriptor.ProgressInstantia
         if (selectedProvider != null && version != null) {
             String provVersion = ProviderUtil.getVersion(selectedProvider);
             if (provVersion != null) {
-                //even if project support jpa 2.0 etc, but selected provider is reported as jpa1.0 use jpa1.0
+                //even if project support jpa 2.x etc, but selected provider is reported as jpa1.0 use jpa1.0
                 if (Double.parseDouble(version) > Double.parseDouble(provVersion)) {
                     version = provVersion;
                 }
             }
+        }
+        if(version != null && descriptor.isContainerManaged()){
+            //version may be limited by server
+            version = Util.getJPAVersionSupported(project, version);
         }
         try{
             LOG.fine("Retrieving PUDataObject");

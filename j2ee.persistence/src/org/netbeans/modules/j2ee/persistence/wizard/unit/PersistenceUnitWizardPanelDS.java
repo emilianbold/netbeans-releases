@@ -467,7 +467,7 @@ public class PersistenceUnitWizardPanelDS extends PersistenceUnitWizardPanel imp
                         warning  = NbBundle.getMessage(PersistenceUnitWizard.class, "ERR_WrongSourceLevel", sourceLevel);
                     }
                 } else {
-                    warning  = NbBundle.getMessage(PersistenceUnitWizard.class, "ERR_UnsupportedJpaVersion", ver);
+                    warning  = NbBundle.getMessage(PersistenceUnitWizard.class, "ERR_UnsupportedJpaVersion", ver, Util.getJPAVersionSupported(project, ver));
                 }
             }
         }
