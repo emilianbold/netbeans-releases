@@ -89,23 +89,27 @@ public final class WebBrowserSupport {
         int chrome = 200;
         int chromium = 300;
         int others = 400;
+        BrowserWrapper nbChrome = null;
+        BrowserWrapper nbChromium = null;
+        BrowserWrapper nbInternal = null;
         browsers.add(new BrowserWrapper(null, 1, true));
         for (WebBrowser browser : WebBrowsers.getInstance().getAll(false)) {
             if (browser.getBrowserFamily() == BrowserFamilyId.JAVAFX_WEBVIEW) {
-                browsers.add(new BrowserWrapper(browser, 100, false));
+                nbInternal = new BrowserWrapper(browser, 100, false);
+                browsers.add(nbInternal);
             } else if (browser.getBrowserFamily() == BrowserFamilyId.CHROME || browser.getId().endsWith("ChromeBrowser")) { // NOI18N
-                BrowserWrapper nbChrome = new BrowserWrapper(browser, chrome++, false);
-                if (selectedBrowserId == null) {
-                    selectedBrowserId = nbChrome.getId();
+                BrowserWrapper wrapper = new BrowserWrapper(browser, chrome++, false);
+                if (nbChrome == null) {
+                    nbChrome = wrapper;
                 }
-                browsers.add(nbChrome);
+                browsers.add(wrapper);
                 browsers.add(new BrowserWrapper(browser, chrome++, true));
             } else if (browser.getBrowserFamily() == BrowserFamilyId.CHROMIUM || browser.getId().endsWith("ChromiumBrowser")) { // NOI18N
-                BrowserWrapper nbChromium = new BrowserWrapper(browser, chromium++, false);
-                if (selectedBrowserId == null) {
-                    selectedBrowserId = nbChromium.getId();
+                BrowserWrapper wrapper = new BrowserWrapper(browser, chromium++, false);
+                if (nbChromium == null) {
+                    nbChromium = wrapper;
                 }
-                browsers.add(nbChromium);
+                browsers.add(wrapper);
                 browsers.add(new BrowserWrapper(browser, chromium++, true));
             } else {
                 browsers.add(new BrowserWrapper(browser, others++, true));
@@ -117,6 +121,15 @@ public final class WebBrowserSupport {
                 return o1.getOrder() - o2.getOrder();
             }
         });
+        if (selectedBrowserId == null) {
+            if (nbChrome != null) {
+                selectedBrowserId = nbChrome.getId();
+            } else if (nbChromium != null) {
+                selectedBrowserId = nbChromium.getId();
+            } else if (nbInternal != null) {
+                selectedBrowserId = nbInternal.getId();
+            }
+        }
         BrowserComboBoxModel model = new BrowserComboBoxModel(browsers);
         for (int i = 0; i < model.getSize(); i++) {
             BrowserWrapper browserWrapper = (BrowserWrapper) model.getElementAt(i);

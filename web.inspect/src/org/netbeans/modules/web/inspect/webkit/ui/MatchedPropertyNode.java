@@ -117,7 +117,7 @@ public class MatchedPropertyNode extends AbstractNode {
     private PropertySet[] createPropertySets() {
         String displayName = NbBundle.getMessage(MatchedPropertyNode.class, "MatchedPropertyNode.displayName"); // NOI18N
         PropertySet set = new PropertySet(Sheet.PROPERTIES, displayName, null) {
-            private Property<?> valueProperty = new PropertySupport.ReadOnly<String>(
+            private final Property<?> valueProperty = new PropertySupport.ReadOnly<String>(
                     PROPERTY_VALUE, String.class, null, null) {
                 @Override
                 public String getValue() throws IllegalAccessException, InvocationTargetException {

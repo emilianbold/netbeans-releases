@@ -64,7 +64,7 @@ public abstract class PageModel extends Page {
     /** Name of the property that is fired when a rule is highlighted. */
     public static final String PROP_HIGHLIGHTED_RULE = "highlightedRule"; // NOI18N
     /** Property change support. */
-    private PropertyChangeSupport propChangeSupport = new PropertyChangeSupport(this);
+    private final PropertyChangeSupport propChangeSupport = new PropertyChangeSupport(this);
 
     /**
      * Returns the document node.

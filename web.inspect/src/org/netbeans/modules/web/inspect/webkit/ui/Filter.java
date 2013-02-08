@@ -55,7 +55,7 @@ public class Filter {
     /** Pattern of this filter. */
     private String pattern;
     /** Property change support. */
-    private PropertyChangeSupport changeSupport = new PropertyChangeSupport(this);
+    private final PropertyChangeSupport changeSupport = new PropertyChangeSupport(this);
 
     /**
      * Returns the pattern of this filter.
