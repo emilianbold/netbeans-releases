@@ -77,7 +77,10 @@ public final class WebBrowserSupport {
     /**
      * Create model for component with browsers, possibly with the
      * {@link BrowserComboBoxModel#getSelectedBrowserId() selected browser identifier}.
-     * @param selectedBrowserId browser identifier, can be {@code null}
+     * <p>
+     * If the browser identifier is {@code null} (likely not set yet?), then the first (external,
+     * if possible) browser with NetBeans integration is selected.
+     * @param selectedBrowserId browser identifier, can be {@code null} if e.g. not set yet
      * @return model for component with browsers
      * @see #createBrowserRenderer()
      */
@@ -91,10 +94,18 @@ public final class WebBrowserSupport {
             if (browser.getBrowserFamily() == BrowserFamilyId.JAVAFX_WEBVIEW) {
                 browsers.add(new BrowserWrapper(browser, 100, false));
             } else if (browser.getBrowserFamily() == BrowserFamilyId.CHROME || browser.getId().endsWith("ChromeBrowser")) { // NOI18N
-                browsers.add(new BrowserWrapper(browser, chrome++, false));
+                BrowserWrapper nbChrome = new BrowserWrapper(browser, chrome++, false);
+                if (selectedBrowserId == null) {
+                    selectedBrowserId = nbChrome.getId();
+                }
+                browsers.add(nbChrome);
                 browsers.add(new BrowserWrapper(browser, chrome++, true));
             } else if (browser.getBrowserFamily() == BrowserFamilyId.CHROMIUM || browser.getId().endsWith("ChromiumBrowser")) { // NOI18N
-                browsers.add(new BrowserWrapper(browser, chromium++, false));
+                BrowserWrapper nbChromium = new BrowserWrapper(browser, chromium++, false);
+                if (selectedBrowserId == null) {
+                    selectedBrowserId = nbChromium.getId();
+                }
+                browsers.add(nbChromium);
                 browsers.add(new BrowserWrapper(browser, chromium++, true));
             } else {
                 browsers.add(new BrowserWrapper(browser, others++, true));
@@ -107,12 +118,12 @@ public final class WebBrowserSupport {
             }
         });
         BrowserComboBoxModel model = new BrowserComboBoxModel(browsers);
-        if (selectedBrowserId == null || DEFAULT.equals(selectedBrowserId)) {
-            return model;
-        }
         for (int i = 0; i < model.getSize(); i++) {
             BrowserWrapper browserWrapper = (BrowserWrapper) model.getElementAt(i);
-            if (browserWrapper.getId().equals(selectedBrowserId)) {
+            assert browserWrapper != null;
+            if ((selectedBrowserId == null
+                    && !browserWrapper.isDisableIntegration())
+                    || browserWrapper.getId().equals(selectedBrowserId)) {
                 model.setSelectedItem(browserWrapper);
                 break;
             }
@@ -131,24 +142,32 @@ public final class WebBrowserSupport {
 
     /**
      * Check whether the given {@link BrowserComboBoxModel#getSelectedBrowserId() browser identifier} represents browser with NetBeans integration.
-     * @param browserId browser identifier, can be {@code null}
+     * <p>
+     * If the browser identifier is {@code null} (likely not set yet?), then the first (external,
+     * if possible) browser with NetBeans integration is used.
+     * @param browserId browser identifier, can be {@code null} if e.g. not set yet
      * @return {@code true} if the given browser identifier represents browser with NetBeans integration
      */
     public static boolean isIntegratedBrowser(@NullAllowed String browserId) {
-        return browserId != null
-                && browserId.endsWith(INTEGRATED);
+        if (browserId != null
+                && browserId.endsWith(INTEGRATED)) {
+            return true;
+        }
+        ComboBoxModel model = createBrowserModel(browserId);
+        return !((BrowserWrapper) model.getSelectedItem()).isDisableIntegration();
     }
 
     /**
      * Get browser for the given {@link BrowserComboBoxModel#getSelectedBrowserId() browser identifier}. Returns {@code null}
      * for the default IDE browser (set in IDE Options).
-     * @param browserId browser identifier, can be {@code null}
+     * If the browser identifier is {@code null} (likely not set yet?), then the first (external,
+     * if possible) browser with NetBeans integration is returned.
+     * @param browserId browser identifier, can be {@code null} if e.g. not set yet
      * @return browser for the given browser identifier or {@code null} for the default IDE browser
      */
     @CheckForNull
     public static WebBrowser getBrowser(@NullAllowed String browserId) {
-        if (browserId == null
-                || DEFAULT.equals(browserId)) {
+        if (DEFAULT.equals(browserId)) {
             return null;
         }
         ComboBoxModel model = createBrowserModel(browserId);
