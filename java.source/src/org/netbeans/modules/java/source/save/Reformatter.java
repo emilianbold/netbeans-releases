@@ -1128,7 +1128,7 @@ public class Reformatter implements ReformatTask {
                 int lbl = lastBlankLines;
                 int lblti = lastBlankLinesTokenIndex;
                 Diff lbld = lastBlankLinesDiff;
-                id = accept(PRIVATE, PROTECTED, PUBLIC, STATIC, TRANSIENT, FINAL,
+                id = accept(PRIVATE, PROTECTED, PUBLIC, STATIC, DEFAULT, TRANSIENT, FINAL,
                         ABSTRACT, NATIVE, VOLATILE, SYNCHRONIZED, STRICTFP, AT);
                 if (id == null)
                     break;
