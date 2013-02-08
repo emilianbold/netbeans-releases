@@ -61,8 +61,8 @@ public class AnalyzeStat {
     }
     
     void process() {
-        dumpAll();
         upEmptyFolder();
+        dumpAll();
         getBigUnused();
         groupByReadingSpeed();
         getSlowReading();
