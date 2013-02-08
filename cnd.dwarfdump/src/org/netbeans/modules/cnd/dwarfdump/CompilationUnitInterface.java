@@ -55,5 +55,6 @@ public interface CompilationUnitInterface {
     String getSourceFileAbsolutePath() throws IOException;
     String getSourceLanguage() throws IOException;
     boolean hasMain() throws IOException;
+    int getMainLine() throws IOException;
     DwarfEntry getRoot();
 }
