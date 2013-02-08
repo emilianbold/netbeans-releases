@@ -90,7 +90,7 @@ public class PageInspectorImpl extends PageInspector {
     /** Request processor for this class. */
     static final RequestProcessor RP = new RequestProcessor(PageInspectorImpl.class.getName());
     /** Property change support. */
-    private PropertyChangeSupport propChangeSupport = new PropertyChangeSupport(this);
+    private final PropertyChangeSupport propChangeSupport = new PropertyChangeSupport(this);
     /** Current inspected page. */
     private PageModel pageModel;
     /** Message listener for the inspected page. */
@@ -341,9 +341,9 @@ public class PageInspectorImpl extends PageInspector {
         /** Name of the attribute holding the new value of the selection mode. */
         private static final String MESSAGE_SELECTION_MODE_ATTR = "selectionMode"; // NOI18N
         /** Page model this message listener is related to. */
-        private PageModel pageModel;
+        private final PageModel pageModel;
         /** Context of the page this listener is related to. */
-        private Lookup pageContext;
+        private final Lookup pageContext;
 
         /**
          * Creates a new {@code InspectionMessageListener}.

@@ -283,7 +283,7 @@ public class CSSStylesSelectionPanel extends JPanel {
     /** Name of the client property that holds a pseudo-class that is affected by the check-box. */
     private static final String PSEUDO_CLASS = "pseudoClass"; // NOI18N
     /** Check-boxes that can be used to force pseudo-classes. */
-    private List<JCheckBox> pseudoClassCheckBoxes = new ArrayList<JCheckBox>(4);
+    private final List<JCheckBox> pseudoClassCheckBoxes = new ArrayList<JCheckBox>(4);
 
     /**
      * Creates a check-box that can be used to force the specified pseudo-class.
@@ -841,9 +841,9 @@ public class CSSStylesSelectionPanel extends JPanel {
      */
     static class ExplorerManagerProviderPanel extends JPanel implements ExplorerManager.Provider, Lookup.Provider {
         /** Explorer manager provided by this panel. */
-        private ExplorerManager manager = new ExplorerManager();
+        private final ExplorerManager manager = new ExplorerManager();
         /** Lookup provided by this panel. */
-        private Lookup lookup = ExplorerUtils.createLookup(manager, getActionMap());
+        private final Lookup lookup = ExplorerUtils.createLookup(manager, getActionMap());
 
         @Override
         public final ExplorerManager getExplorerManager() {
@@ -891,7 +891,7 @@ public class CSSStylesSelectionPanel extends JPanel {
                 // Text rendered in the first column of tree-table (i.e. in the tree)
                 // is not baseline-aligned with the text in the other columns for some reason.
                 // This border attempts to work around this problem.
-                private Border border[] = {
+                private final Border border[] = {
                     BorderFactory.createEmptyBorder(1,0,0,0),
                     BorderFactory.createEmptyBorder(1,3,0,0),
                 };
@@ -959,19 +959,19 @@ public class CSSStylesSelectionPanel extends JPanel {
      */
     static class StylesRenderer extends DefaultListCellRenderer {
         /** Component used for rendering. */
-        private JPanel renderer = new JPanel();
+        private final JPanel renderer = new JPanel();
         /** Label showing information about the matched node. */
-        private JLabel matchedNodeLabel = new JLabel();
+        private final JLabel matchedNodeLabel = new JLabel();
         /** Label showing the selector. */
-        private JLabel selectorLabel = new JLabel();
+        private final JLabel selectorLabel = new JLabel();
         /** Label showing the media query. */
-        private JLabel mediaLabel = new JLabel();
+        private final JLabel mediaLabel = new JLabel();
         /** Label showing the location of the rule. */
-        private JLabel ruleLocationLabel = new JLabel();
+        private final JLabel ruleLocationLabel = new JLabel();
         /** Panel showing the location of the rule. */
-        private JPanel ruleLocationPanel = new JPanel();
+        private final JPanel ruleLocationPanel = new JPanel();
         /** HTML renderer used to obtain background color. */
-        private ListCellRenderer htmlRenderer = HtmlRenderer.createRenderer();
+        private final ListCellRenderer htmlRenderer = HtmlRenderer.createRenderer();
 
         /**
          * Creates a new {@code StylesRenderer}.

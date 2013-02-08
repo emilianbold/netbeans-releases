@@ -67,11 +67,11 @@ import org.openide.util.NbBundle;
  */
 public class MatchedPropertiesNode extends AbstractNode {
     /** Rules matching a node. */
-    private MatchedStyles matchedStyles;
+    private final MatchedStyles matchedStyles;
     /** Information about the supported properties. */
-    private Map<String,PropertyInfo> propertyInfos;
+    private final Map<String,PropertyInfo> propertyInfos;
     /** Owning project of the inspected page. */
-    private Project project;
+    private final Project project;
 
     /**
      * Creates a new {@code MatchedPropertiesNode}.

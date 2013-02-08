@@ -110,13 +110,13 @@ public class CSSStylesPanel extends JPanel implements PageModel.CSSStylesView {
     /** The default instance of this class. */
     private static final CSSStylesPanel DEFAULT = new CSSStylesPanel();
     /** Selection section of CSS Styles view. */
-    private CSSStylesSelectionPanel selectionPanel = new CSSStylesSelectionPanel();
+    private final CSSStylesSelectionPanel selectionPanel = new CSSStylesSelectionPanel();
     /** The current inspected page. */
     transient WebKitPageModel pageModel;
     /** Lookup of this panel. */
-    private transient CSSStylesLookup lookup = new CSSStylesLookup();
+    private final transient CSSStylesLookup lookup = new CSSStylesLookup();
     /** Node lookup of this panel. */
-    private transient CSSStylesNodeLookup nodeLookup = new CSSStylesNodeLookup();
+    private final transient CSSStylesNodeLookup nodeLookup = new CSSStylesNodeLookup();
     /** Lookup result with rules selected in the panel. */
     transient Lookup.Result<Rule> ruleLookupResult;
     /** Determines whether the view is active (i.e. whether it manages the rule controller). */
@@ -377,11 +377,11 @@ public class CSSStylesPanel extends JPanel implements PageModel.CSSStylesView {
      */
     class RuleEditorTask extends UserTask {
         /** Rule to show in the rules editor. */
-        private Rule rule;
+        private final Rule rule;
         /** Additional rule information. */
-        private RuleInfo ruleInfo;
+        private final RuleInfo ruleInfo;
         /** Controller of the rule editor where the rule should be shown. */
-        private RuleEditorController controller;
+        private final RuleEditorController controller;
 
         /**
          * Creates a new {@code RuleEditorTask}.
