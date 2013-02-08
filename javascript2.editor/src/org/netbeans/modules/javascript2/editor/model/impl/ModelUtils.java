@@ -203,11 +203,13 @@ public class ModelUtils {
     }
 
     public static DeclarationScope getDeclarationScope(JsObject object) {
+        assert object != null;
+
         JsObject result =  object;
         while (result.getParent() != null && !(result.getParent() instanceof DeclarationScope)) {
             result = result.getParent();
         }
-        if (result != null && result.getParent() != null) {
+        if (result.getParent() != null) {
             result = result.getParent();
         } 
         return (DeclarationScope)result;
