@@ -44,15 +44,23 @@
 
 package org.netbeans.modules.j2ee.ejbcore.action;
 
+import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.ModifiersTree;
+import com.sun.source.tree.VariableTree;
+import com.sun.source.util.TreePath;
 import java.io.IOException;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
 import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
@@ -64,10 +72,12 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.j2ee.api.ejbjar.EnterpriseReferenceContainer;
 import org.netbeans.modules.j2ee.api.ejbjar.MessageDestinationReference;
 import org.netbeans.modules.j2ee.api.ejbjar.ResourceReference;
+import org.netbeans.modules.j2ee.common.J2eeProjectCapabilities;
 import org.netbeans.modules.j2ee.common.method.MethodModel;
 import org.netbeans.modules.j2ee.common.method.MethodModelSupport;
 import org.netbeans.modules.j2ee.common.queries.api.InjectionTargetQuery;
 import org.netbeans.modules.j2ee.core.api.support.classpath.ContainerClassPathModifier;
+import org.netbeans.modules.j2ee.core.api.support.java.GenerationUtils;
 import org.netbeans.modules.j2ee.dd.api.common.ResourceRef;
 import org.netbeans.modules.j2ee.dd.api.ejb.Ejb;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
@@ -77,6 +87,7 @@ import org.netbeans.modules.j2ee.dd.api.ejb.MessageDriven;
 import org.netbeans.modules.j2ee.dd.api.ejb.Session;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
+import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination.Type;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.ejbcore.Utils;
@@ -84,6 +95,7 @@ import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entries.ServiceLocatorSt
 import org.netbeans.modules.j2ee.ejbcore.util._RetoucheUtil;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
+import org.netbeans.modules.web.beans.CdiUtil;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
@@ -123,26 +135,39 @@ public final class SendJMSGenerator {
         JavaSource javaSource = JavaSource.forFileObject(fileObject);
         final boolean[] isInjectionTarget = new boolean[1];
         javaSource.runUserActionTask(new Task<CompilationController>() {
+            @Override
             public void run(CompilationController controller) throws IOException {
                 controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                 TypeElement typeElement = controller.getElements().getTypeElement(className);
                 isInjectionTarget[0] = InjectionTargetQuery.isInjectionTarget(controller, typeElement);
             }
         }, true);
-        supportsInjection = isInjectionTarget[0];
+        InjectionStrategy injectStrategy = getInjectionStrategy(project, isInjectionTarget[0]);
         String destinationFieldName = null;
         String connectionFactoryFieldName = null;
         String factoryName = connectionFactoryName;
         String destinationName = null;
-        
-        if (supportsInjection){
-            destinationName = messageDestination.getName();
-            connectionFactoryFieldName = createInjectedField(fileObject, className, factoryName, "javax.jms.ConnectionFactory"); // NO18N
-            String type = messageDestination.getType() == MessageDestination.Type.QUEUE ? "javax.jms.Queue" : "javax.jms.Topic"; // NO18N
-            destinationFieldName = createInjectedField(fileObject, className, destinationName, type);
-        } else {
-            factoryName = generateConnectionFactoryReference(container, factoryName, fileObject, className);
-            destinationName = generateDestinationReference(container, fileObject, className);
+
+        switch (injectStrategy) {
+            case NO_INJECT:
+                factoryName = generateConnectionFactoryReference(container, factoryName, fileObject, className);
+                destinationName = generateDestinationReference(container, fileObject, className);
+                break;
+
+            case INJ_EE7_SOURCES:
+            case INJ_COMMON:
+                destinationName = messageDestination.getName();
+                connectionFactoryFieldName = createInjectedResource(fileObject, className, factoryName, "javax.jms.ConnectionFactory"); // NO18N
+                destinationFieldName = createInjectedResource(fileObject, className, destinationName,
+                        messageDestination.getType() == Type.QUEUE ? "javax.jms.Queue" : "javax.jms.Topic"); //NOI18N
+                break;
+
+            case INJ_EE7_CDI:
+                destinationName = messageDestination.getName();
+                connectionFactoryFieldName = createInjectedFactory(fileObject, className, factoryName, "javax.jms.JMSContext"); // NO18N
+                destinationFieldName = createInjectedResource(fileObject, className, destinationName,
+                        messageDestination.getType() == Type.QUEUE ? "javax.jms.Queue" : "javax.jms.Topic"); //NOI18N
+                break;
         }
         String sendMethodName = createSendMethod(fileObject, className, messageDestination.getName());
         createJMSProducer(fileObject, className, factoryName, connectionFactoryFieldName, destinationName,
@@ -177,6 +202,7 @@ public final class SendJMSGenerator {
         final String[] ejbType = new String[1];
         
         metadataModel.runReadAction(new MetadataModelAction<EjbJarMetadata, Void>() {
+            @Override
             public Void run(EjbJarMetadata metadata) throws Exception {
                 Ejb ejb = metadata.findByEjbClass(className);
                 if (ejb != null) {
@@ -236,17 +262,54 @@ public final class SendJMSGenerator {
      * @param fieldType the class of the field.
      * @return name of the created field.
      */
-    private String createInjectedField(FileObject fileObject, String className, String destinationName, String fieldType) throws IOException {
-        String fieldName = Utils.makeJavaIdentifierPart(Utils.jndiNameToCamelCase(destinationName, true, "jms"));
+    private String createInjectedResource(FileObject fileObject, String className, String destinationName, String fieldType) throws IOException {
+        String fieldName = Utils.makeJavaIdentifierPart(Utils.jndiNameToCamelCase(destinationName, true, "jms")); //NOI18N
         _RetoucheUtil.generateAnnotatedField(
                 fileObject,
                 className,
-                "javax.annotation.Resource",
+                "javax.annotation.Resource", //NOI18N
                 fieldName,
                 fieldType,
                 Collections.singletonMap("mappedName", destinationName),  //NOI18N
                 InjectionTargetQuery.isStaticReferenceRequired(fileObject, className)
                 );
+        return fieldName;
+    }
+
+    /**
+     * Creates an injected JMSConnectionFactory field for the given <code>target</code>. The name
+     * of the field will be derivated from the given <code>destinationName</code>.
+     * @param target the target class
+     * @param mappedName the value for resource's mappedName attribute
+     * @param fieldType the class of the field.
+     * @return name of the created field.
+     */
+    private String createInjectedFactory(FileObject fileObject, String className, String destinationName, String fieldType) throws IOException {
+        String fieldName = "context"; //NOI18N
+        final ElementHandle<VariableElement> field = _RetoucheUtil.generateAnnotatedField(
+                fileObject,
+                className,
+                "javax.jms.JMSConnectionFactory", //NOI18N
+                fieldName,
+                fieldType,
+                Collections.singletonMap("value", destinationName),  //NOI18N
+                InjectionTargetQuery.isStaticReferenceRequired(fileObject, className)
+                );
+        JavaSource javaSource = JavaSource.forFileObject(fileObject);
+        javaSource.runModificationTask(new Task<WorkingCopy>() {
+            @Override
+            public void run(WorkingCopy parameter) throws Exception {
+                parameter.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                GenerationUtils genUtils = GenerationUtils.newInstance(parameter);
+                TreePath fieldTree = parameter.getTrees().getPath(field.resolve(parameter));
+                VariableTree originalTree = (VariableTree) fieldTree.getLeaf();
+                ModifiersTree modifiers = originalTree.getModifiers();
+                List<AnnotationTree> annotations = new ArrayList<AnnotationTree>(modifiers.getAnnotations());
+                annotations.add(0, genUtils.createAnnotation("javax.inject.Inject")); //NOI18N
+                ModifiersTree nueMods = parameter.getTreeMaker().Modifiers(modifiers, annotations);
+                parameter.rewrite(modifiers, nueMods);
+            }
+        }).commit();
         return fieldName;
     }
     
@@ -416,5 +479,29 @@ public final class SendJMSGenerator {
                 "'}'\n",
                 new Object[] {connectionName, destinationName, messageMethodName});
     }
-    
+
+    public static InjectionStrategy getInjectionStrategy(Project project, boolean injectable) {
+        if (!injectable) {
+            return InjectionStrategy.NO_INJECT;
+        }
+
+        J2eeProjectCapabilities capabilities = J2eeProjectCapabilities.forProject(project);
+        if (!capabilities.isEjb32LiteSupported()) {
+            return InjectionStrategy.INJ_COMMON;
+        } else {
+            CdiUtil cdiUtil = project.getLookup().lookup(CdiUtil.class);
+            if (cdiUtil.isCdiEnabled()) {
+                return InjectionStrategy.INJ_EE7_CDI;
+            } else {
+                return InjectionStrategy.INJ_EE7_SOURCES;
+            }
+        }
+    }
+
+    public static enum InjectionStrategy {
+        INJ_EE7_CDI,
+        INJ_EE7_SOURCES,
+        INJ_COMMON,
+        NO_INJECT
+    }
 }

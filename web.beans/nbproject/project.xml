@@ -349,6 +349,7 @@
                 </test-type>
             </test-dependencies>
             <friend-packages>
+                <friend>org.netbeans.modules.j2ee.ejbcore</friend>
                 <friend>org.netbeans.modules.web.el</friend>
                 <friend>org.netbeans.modules.web.jsf</friend>
                 <friend>org.netbeans.modules.web.jsf.editor</friend>
