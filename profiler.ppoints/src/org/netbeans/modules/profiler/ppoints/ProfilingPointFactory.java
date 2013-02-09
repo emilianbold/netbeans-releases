@@ -55,8 +55,8 @@ import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.InvalidPropertiesFormatException;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
 import javax.swing.Icon;
@@ -169,7 +169,7 @@ public abstract class ProfilingPointFactory {
 
     ProfilingPoint[] loadProfilingPoints(Lookup.Provider project, FileObject projectSettingsFolder)
                                   throws IOException, InvalidPropertiesFormatException {
-        List<ProfilingPoint> profilingPoints = new LinkedList();
+        List<ProfilingPoint> profilingPoints = new ArrayList();
         Properties properties = new Properties();
         final FileObject profilingPointsStorage = getProfilingPointsStorage(projectSettingsFolder);
 
