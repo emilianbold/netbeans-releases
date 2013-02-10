@@ -154,6 +154,15 @@ public final class WebBrowserSupport {
     }
 
     /**
+     * Returns an ID of default IDE's browser, that is not really a browser instance
+     * but an artificial browser item representing whatever is IDE's default browser.
+     * @since 1.11
+     */
+    public static String getDefaultBrowserId() {
+        return DEFAULT;
+    }
+
+    /**
      * Check whether the given {@link BrowserComboBoxModel#getSelectedBrowserId() browser identifier} represents browser with NetBeans integration.
      * <p>
      * If the browser identifier is {@code null} (likely not set yet?), then the first (external,
