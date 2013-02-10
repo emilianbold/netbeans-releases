@@ -101,7 +101,7 @@ int NbLauncher::start(int argc, char *argv[]) {
     SetErrorMode(SetErrorMode(0) | SEM_FAILCRITICALERRORS | SEM_NOOPENFILEERRORBOX);
     
     DWORD parentProcID = 0;
-    if (!initBaseNames() || !checkLoggingArg(argc, argv, true) || !setupProcess(argc, argv, parentProcID, CON_ATTACH_MSG) ||  !readClusterFile()) {
+    if (!checkLoggingArg(argc, argv, true) || !setupProcess(argc, argv, parentProcID, CON_ATTACH_MSG) || !initBaseNames() || !readClusterFile()) {
         return -1;
     }
 
@@ -386,16 +386,10 @@ bool NbLauncher::findUserDir(const char *str) {
             logMsg("User home: %s", userHome.c_str());
         }
         userDir = userHome + (str + strlen(HOME_TOKEN));
-    } else if (strncmp(str, DEFAULT_USERDIR_ROOT_TOKEN, strlen(DEFAULT_USERDIR_ROOT_TOKEN)) == 0) {
-        TCHAR defUserDirRootChar[MAX_PATH];
-        if (FAILED(SHGetFolderPath(NULL, CSIDL_APPDATA, NULL, 0, defUserDirRootChar))) {
-            return false;
-        }
-        defUserDirRoot = ((string) defUserDirRootChar) + NETBEANS_DIRECTORY;
-        defUserDirRoot.erase(defUserDirRoot.rfind('\\'));
-        logMsg("Default Userdir Root: %s", defUserDirRoot.c_str());
-        userDir = defUserDirRoot + (str + strlen(DEFAULT_USERDIR_ROOT_TOKEN));
+    } else if (strncmp(str, DEFAULT_USERDIR_ROOT_TOKEN, strlen(DEFAULT_USERDIR_ROOT_TOKEN)) == 0) {       
+        userDir = getDefaultUserDirRoot() + (str + strlen(DEFAULT_USERDIR_ROOT_TOKEN));
     } else {
+        getDefaultUserDirRoot();
         userDir = str;
     }
     return true;
@@ -419,19 +413,35 @@ bool NbLauncher::findCacheDir(const char *str) {
             logMsg("User home: %s", userHome.c_str());
         }
         cacheDir = userHome + (str + strlen(HOME_TOKEN));
-    } else if (strncmp(str, DEFAULT_CACHEDIR_ROOT_TOKEN, strlen(DEFAULT_CACHEDIR_ROOT_TOKEN)) == 0) {
-        TCHAR defCacheDirRootChar[MAX_PATH];
-        if (FAILED(SHGetFolderPath(NULL, CSIDL_LOCAL_APPDATA, NULL, 0, defCacheDirRootChar))) {
-            return false;
-        }
-        defCacheDirRoot = ((string) defCacheDirRootChar) + NETBEANS_CACHES_DIRECTORY;
-        defCacheDirRoot.erase(defCacheDirRoot.rfind('\\'));
-        logMsg("Default Cachedir Root: %s", defCacheDirRoot.c_str());
-        cacheDir = defCacheDirRoot + (str + strlen(DEFAULT_CACHEDIR_ROOT_TOKEN));
-    } else {               
+    } else if (strncmp(str, DEFAULT_CACHEDIR_ROOT_TOKEN, strlen(DEFAULT_CACHEDIR_ROOT_TOKEN)) == 0) {        
+        cacheDir = getDefaultCacheDirRoot() + (str + strlen(DEFAULT_CACHEDIR_ROOT_TOKEN));
+    } else {
+        getDefaultCacheDirRoot();
         cacheDir = str;
     }
     return true;
+}
+
+string NbLauncher::getDefaultUserDirRoot() {
+    TCHAR defUserDirRootChar[MAX_PATH];
+    if (FAILED(SHGetFolderPath(NULL, CSIDL_APPDATA, NULL, 0, defUserDirRootChar))) {
+        return false;
+    }
+    defUserDirRoot = ((string) defUserDirRootChar) + NETBEANS_DIRECTORY;
+    defUserDirRoot.erase(defUserDirRoot.rfind('\\'));
+    logMsg("Default Userdir Root: %s", defUserDirRoot.c_str());
+    return defUserDirRoot;
+}
+
+string NbLauncher::getDefaultCacheDirRoot() {
+    TCHAR defCacheDirRootChar[MAX_PATH];
+    if (FAILED(SHGetFolderPath(NULL, CSIDL_LOCAL_APPDATA, NULL, 0, defCacheDirRootChar))) {
+        return false;
+    }
+    defCacheDirRoot = ((string) defCacheDirRootChar) + NETBEANS_CACHES_DIRECTORY;
+    defCacheDirRoot.erase(defCacheDirRoot.rfind('\\'));
+    logMsg("Default Cachedir Root: %s", defCacheDirRoot.c_str());
+    return defCacheDirRoot;
 }
 
 bool NbLauncher::getOption(char *&str, const char *opt) {
