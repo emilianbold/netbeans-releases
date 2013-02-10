@@ -73,7 +73,7 @@ public class GeneralHTMLProject extends JellyTestCase {
      */
     private static final int WAIT_INSPECTION_TIME = 20000;
     protected EventTool evt;
-    public static final String PROJECT_CATEGORY_NAME = "HTML/JavaScript";
+    public static final String PROJECT_CATEGORY_NAME = "HTML5";
     public static final String PROJECT_NAME = "HTML5 Application";
     public static final String SAMPLES = "Samples";
     public static final String SAMPLES_CATEGORY = "HTML5";
