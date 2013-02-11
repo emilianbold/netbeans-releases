@@ -675,7 +675,7 @@ public class HgCommand {
      * @return hg pull output
      * @throws org.netbeans.modules.mercurial.HgException
      */
-    public static List<String> doPull (File repository, String revision, OutputLogger logger) throws HgException {
+    public static List<String> doPull (File repository, String revision, String branch, OutputLogger logger) throws HgException {
         if (repository == null ) return null;
         List<String> command = new ArrayList<String>();
 
@@ -692,6 +692,10 @@ public class HgCommand {
         if (revision != null) {
             command.add(HG_FLAG_REV_CMD);
             command.add(revision);            
+        }
+        if (branch != null) {
+            command.add(HG_PARAM_BRANCH);
+            command.add(branch);            
         }
 
         List<String> list;
@@ -757,7 +761,7 @@ public class HgCommand {
      * @return hg incoming output
      * @throws org.netbeans.modules.mercurial.HgException
      */
-    public static List<String> doIncoming(File repository, String revision, OutputLogger logger) throws HgException {
+    public static List<String> doIncoming(File repository, String revision, String branch, OutputLogger logger) throws HgException {
         if (repository == null ) return null;
         List<Object> command = new ArrayList<Object>();
 
@@ -769,6 +773,10 @@ public class HgCommand {
         if (revision != null) {
             command.add(HG_FLAG_REV_CMD);
             command.add(revision);            
+        }
+        if (branch != null) {
+            command.add(HG_PARAM_BRANCH);
+            command.add(branch);            
         }
 
         List<String> cmdOutput;
@@ -799,7 +807,7 @@ public class HgCommand {
      * @return hg incoming output
      * @throws org.netbeans.modules.mercurial.HgException
      */
-    public static List<String> doIncoming(File repository, HgURL from, String revision, File bundle, OutputLogger logger, boolean showSaveCredentialsOption) throws HgException {
+    public static List<String> doIncoming(File repository, HgURL from, String revision, String branch, File bundle, OutputLogger logger, boolean showSaveCredentialsOption) throws HgException {
         if (repository == null || from == null) return null;
 
         InterRepositoryCommand command = new InterRepositoryCommand();
@@ -812,6 +820,10 @@ public class HgCommand {
         if (revision != null) {
             command.additionalOptions.add(HG_FLAG_REV_CMD);
             command.additionalOptions.add(revision);
+        }
+        if (branch != null) {
+            command.additionalOptions.add(HG_PARAM_BRANCH);
+            command.additionalOptions.add(branch);            
         }
         command.additionalOptions.add(HG_VERBOSE_CMD);
         command.showSaveOption = showSaveCredentialsOption;
@@ -835,7 +847,7 @@ public class HgCommand {
      * @return hg outgoing output
      * @throws org.netbeans.modules.mercurial.HgException
      */
-    public static List<String> doOutgoing(File repository, HgURL toUrl, String revision, OutputLogger logger, boolean showSaveCredentialsOption) throws HgException {
+    public static List<String> doOutgoing(File repository, HgURL toUrl, String revision, String branch, OutputLogger logger, boolean showSaveCredentialsOption) throws HgException {
         if (repository == null || toUrl == null) return null;
 
         InterRepositoryCommand command = new InterRepositoryCommand();
@@ -848,6 +860,10 @@ public class HgCommand {
         if (revision != null) {
             command.additionalOptions.add(HG_FLAG_REV_CMD);
             command.additionalOptions.add(revision);
+        }
+        if (branch != null) {
+            command.additionalOptions.add(HG_PARAM_BRANCH);
+            command.additionalOptions.add(branch);            
         }
         command.additionalOptions.add(HG_VERBOSE_CMD);
         File tempFolder = Utils.getTempFolder(false);
@@ -874,7 +890,7 @@ public class HgCommand {
      * @return hg push output
      * @throws org.netbeans.modules.mercurial.HgException
      */
-    public static List<String> doPush(File repository, final HgURL toUrl, String revision, OutputLogger logger, boolean showSaveCredentialsOption) throws HgException {
+    public static List<String> doPush(File repository, final HgURL toUrl, String revision, String branch, OutputLogger logger, boolean showSaveCredentialsOption) throws HgException {
         if (repository == null || toUrl == null) return null;
 
         InterRepositoryCommand command = new InterRepositoryCommand();
@@ -887,6 +903,10 @@ public class HgCommand {
         if (revision != null) {
             command.additionalOptions.add(HG_FLAG_REV_CMD);
             command.additionalOptions.add(revision);
+        }
+        if (branch != null) {
+            command.additionalOptions.add(HG_PARAM_BRANCH);
+            command.additionalOptions.add(branch);            
         }
         command.urlPathProperties = new String[] {HgConfigFiles.HG_DEFAULT_PUSH};
 
