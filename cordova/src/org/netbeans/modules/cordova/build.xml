@@ -68,18 +68,20 @@ made subject to such option by the copyright holder.
     <target name="create-android" depends="check-android-template,check-phonegap-version" unless="android.generated.exists">
         <mkdir dir="${android.generated.dir}"/>
         
-        <exec executable="/bin/sh" osfamily="unix" resolveexecutable="true" failonerror="true">
+        <exec dir="${android.generated.dir}" executable="/bin/sh" osfamily="unix" resolveexecutable="true" failonerror="true">
             <env key="PATH" path="/usr/bin:/bin:${android.sdk.home}/tools"/>
             <arg value="${cordova.home}/lib/android/bin/create"/>
-            <arg value="${android.generated.dir}/${project.name}" />
+            <arg value="${project.name}" />
             <arg value="${android.project.package}"/>
             <arg value="${android.project.activity}"/>
         </exec>
 
-        <exec dir="." executable="cmd" osfamily="windows">
+        <exec dir="${android.generated.dir}" executable="cmd" osfamily="windows" resolveexecutable="true" failonerror="true" >
+            <env key="PATH" path="%PATH%;c:\Windows\System32;${android.sdk.home}\tools;${ant.home}\bin;${jdk.home}\bin"/>
+            <env key="JAVA_HOME" path="${jdk.home}"/>
             <arg value="/C"/>
             <arg value="${cordova.home}/lib/android/bin/create.bat"/>
-            <arg value="${android.generated.dir}" />
+            <arg value="${project.name}" />
             <arg value="${android.project.package}"/>
             <arg value="${android.project.activity}"/>
         </exec>

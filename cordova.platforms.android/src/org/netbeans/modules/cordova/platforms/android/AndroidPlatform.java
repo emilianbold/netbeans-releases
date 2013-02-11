@@ -170,9 +170,7 @@ public class AndroidPlatform implements MobilePlatform {
                     return t;
                 }
             }
-            //TODO: uncomment!
-            //return targets1.get(targets.size()-1).getName();
-            return null;
+            return targets1.iterator().next();
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
