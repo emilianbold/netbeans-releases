@@ -127,6 +127,7 @@ public abstract class IssueProvider<I> {
      * @param closeAsFixed 
      */
     // XXX throw exception
+    // XXX provide way so that we know commit hooks are supported
     public abstract void addComment(I data, String comment, boolean closeAsFixed);
 
     /**
@@ -135,6 +136,7 @@ public abstract class IssueProvider<I> {
      * @param description 
      */
     // XXX throw exception; attach Patch or attachFile?
+    // XXX provide way so that we know patch attachemnts are supported
     public abstract void attachPatch(I data, File file, String description);
 
     /**

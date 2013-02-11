@@ -67,4 +67,9 @@ public class DereferencedArrayAccess extends Dispatch {
         visitor.visit(this);
     }
 
+    @Override
+    public String toString() {
+        return "" + getMember() + getDimension(); //NOI18N
+    }
+
 }

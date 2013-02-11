@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<configurationDescriptor version="80">
+<configurationDescriptor version="84">
   <logicalFolder name="root" displayName="root" projectFiles="true" kind="ROOT">
     <logicalFolder name="HeaderFiles"
                    displayName="Header Files"
@@ -51,8 +51,8 @@
           <stripSymbols>true</stripSymbols>
           <architecture>1</architecture>
           <incDir>
-            <pElem>C:/Program Files/Java/jdk1.7.0_04/include</pElem>
-            <pElem>C:/Program Files/Java/jdk1.7.0_04/include/win32</pElem>
+            <pElem>C:/Program Files/Java/jdk1.6.0_38/include</pElem>
+            <pElem>C:/Program Files/Java/jdk1.6.0_38/include/win32</pElem>
           </incDir>
           <commandLine>-mno-cygwin</commandLine>
           <preprocessorList>
@@ -67,7 +67,7 @@
           </linkerLibItems>
         </linkerTool>
       </compileType>
-      <item path="nbexec.rc" ex="false" tool="3" flavor="0">
+      <item path="nbexec.rc" ex="false" tool="3" flavor2="0">
         <customTool>
           <customToolCommandline>windres.exe -Ocoff nbexec.rc ${OBJECTDIR}/nbexec.res</customToolCommandline>
           <customToolDescription>Compiling Resource files...</customToolDescription>
@@ -75,7 +75,7 @@
           <customToolAdditionalDep>version.h</customToolAdditionalDep>
         </customTool>
       </item>
-      <item path="nbexec_exe.rc" ex="false" tool="3" flavor="0">
+      <item path="nbexec_exe.rc" ex="false" tool="3" flavor2="0">
         <customTool>
           <customToolDescription></customToolDescription>
         </customTool>
@@ -95,8 +95,8 @@
           <stripSymbols>true</stripSymbols>
           <architecture>2</architecture>
           <incDir>
-            <pElem>C:/Program Files/Java/jdk1.6.0_30/include</pElem>
-            <pElem>C:/Program Files/Java/jdk1.6.0_30/include/win32</pElem>
+            <pElem>C:/Program Files/Java/jdk1.6.0_38/include</pElem>
+            <pElem>C:/Program Files/Java/jdk1.6.0_38/include/win32</pElem>
           </incDir>
           <commandLine>-mno-cygwin -static-libgcc -static-libstdc++</commandLine>
           <preprocessorList>
@@ -111,7 +111,7 @@
           </linkerLibItems>
         </linkerTool>
       </compileType>
-      <item path="nbexec.rc" ex="false" tool="3" flavor="0">
+      <item path="nbexec.rc" ex="false" tool="3" flavor2="0">
         <customTool>
           <customToolCommandline>x86_64-w64-mingw32-windres.exe -Ocoff nbexec.rc ${OBJECTDIR}/nbexec64.res</customToolCommandline>
           <customToolDescription>Compiling Resource files...</customToolDescription>
@@ -119,7 +119,7 @@
           <customToolAdditionalDep>version.h</customToolAdditionalDep>
         </customTool>
       </item>
-      <item path="nbexec_exe.rc" ex="false" tool="3" flavor="0">
+      <item path="nbexec_exe.rc" ex="false" tool="3" flavor2="0">
         <customTool>
           <customToolDescription></customToolDescription>
         </customTool>

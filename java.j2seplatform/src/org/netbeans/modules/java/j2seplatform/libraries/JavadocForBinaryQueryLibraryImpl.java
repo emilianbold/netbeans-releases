@@ -46,6 +46,8 @@ package org.netbeans.modules.java.j2seplatform.libraries;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -57,13 +59,12 @@ import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.spi.java.project.support.JavadocAndSourceRootDetection;
 import org.netbeans.spi.java.queries.JavadocForBinaryQueryImplementation;
-import org.openide.ErrorManager;
 import org.openide.util.WeakListeners;
 import org.openide.filesystems.URLMapper;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
+import org.openide.util.Exceptions;
 
 /**
  * Implementation of Javadoc query for the library.
@@ -71,12 +72,13 @@ import org.openide.util.ChangeSupport;
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.java.queries.JavadocForBinaryQueryImplementation.class, position=150)
 public class JavadocForBinaryQueryLibraryImpl implements JavadocForBinaryQueryImplementation {
     
-    private final Map<URL,URL> normalizedURLCache = new HashMap<URL, URL>();
+    private final Map<URI,URL> normalizedURLCache = new HashMap<URI, URL>();
 
     /** Default constructor for lookup. */
     public JavadocForBinaryQueryLibraryImpl() {
     }
 
+    @Override
     public JavadocForBinaryQuery.Result findJavadoc(final URL b) {
         class R implements JavadocForBinaryQuery.Result, PropertyChangeListener {
 
@@ -90,6 +92,7 @@ public class JavadocForBinaryQueryLibraryImpl implements JavadocForBinaryQueryIm
                 this.lib.addPropertyChangeListener (WeakListeners.propertyChange(this,this.lib));
             }
 
+            @Override
             public synchronized URL[] getRoots() {
                 if (this.cachedRoots == null) {
                     List<URL> result = new ArrayList<URL>();
@@ -101,16 +104,19 @@ public class JavadocForBinaryQueryLibraryImpl implements JavadocForBinaryQueryIm
                 return this.cachedRoots;
             }
             
-            public synchronized void addChangeListener(ChangeListener l) {
+            @Override
+            public void addChangeListener(ChangeListener l) {
                 assert l != null : "Listener can not be null";
                 cs.addChangeListener(l);
             }
             
-            public synchronized void removeChangeListener(ChangeListener l) {
+            @Override
+            public void removeChangeListener(ChangeListener l) {
                 assert l != null : "Listener can not be null";
                 cs.removeChangeListener(l);
             }
             
+            @Override
             public void propertyChange (PropertyChangeEvent event) {
                 if (Library.PROP_CONTENT.equals(event.getPropertyName())) {
                     synchronized (this) {
@@ -158,15 +164,19 @@ public class JavadocForBinaryQueryLibraryImpl implements JavadocForBinaryQueryIm
         //Todo: Should listen on the LibrariesManager and cleanup cache
         // in this case the search can use the cache onle and can be faster
         // from O(n) to O(ln(n))
-        URL normalizedURL = normalizedURLCache.get(url);
+        URI uri = null;
+        try {
+            uri = url.toURI();
+        } catch (URISyntaxException e) {
+            Exceptions.printStackTrace(e);
+        }
+        URL normalizedURL = uri == null ? null : normalizedURLCache.get(uri);
         if (normalizedURL == null) {
-            FileObject fo = URLMapper.findFileObject(url);
+            final FileObject fo = URLMapper.findFileObject(url);
             if (fo != null) {
-                try {
-                    normalizedURL = fo.getURL();
-                    this.normalizedURLCache.put (url, normalizedURL);
-                } catch (FileStateInvalidException e) {
-                    ErrorManager.getDefault().notify(e);
+                normalizedURL = fo.toURL();
+                if (uri != null) {
+                    this.normalizedURLCache.put (uri, normalizedURL);
                 }
             }
         }
@@ -200,12 +210,7 @@ public class JavadocForBinaryQueryLibraryImpl implements JavadocForBinaryQueryIm
         if (index == null) {
             return url;
         }
-        try {
-            return index.getURL();
-        } catch (FileStateInvalidException e) {
-            e.printStackTrace();
-            return url;
-        }
+        return index.toURL();
     }
     
 }

@@ -115,7 +115,7 @@ public final class NamespaceAliasImpl extends OffsetableDeclarationBase<CsmNames
         }
         else {
             for( token = token.getNextSibling() ; token != null; token = token.getNextSibling() ) {
-                sb.append(token.getText());
+                sb.append(AstUtil.getText(token));
             }
             namespace = QualifiedNameCache.getManager().getString(sb.toString());
         }

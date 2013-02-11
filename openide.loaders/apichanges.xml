@@ -109,6 +109,23 @@ is the proper place.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
   <changes>
+      <change id="TemplateRegistration.requireProject">
+          <api name="loaders"/>
+          <summary>Allow registration of templates which do not require a Project instance</summary>
+          <version major="7" minor="46"/>
+          <date day="25" month="1" year="2013"/>
+          <author login="280Z28"/>
+          <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+          <description>
+              <p>Templates may be registered with <code>requireProject = false</code>
+              in the annotation to indicate the template does not require a Project
+              instance to be created. These templates show in the New File dialog
+              even when no project is open in the IDE.
+              </p>
+          </description>
+          <class package="org.netbeans.api.templates" name="TemplateRegistration"/>
+          <issue number="186943"/>
+      </change>
       <change id="lazymenu.properties">
           <api name="awt"/>
           <summary>Control what client properties pulldown menus have</summary>

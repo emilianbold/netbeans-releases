@@ -89,6 +89,9 @@ public final class ComponentUtils {
         // TODO: fix this, do not use reflection
         try {
             Object editorUI = getEditorUI(c);
+            if (editorUI == null) {
+                return;
+            }
             Method getSbMethod = editorUI.getClass().getMethod("getStatusBar");
             Object statusBar = getSbMethod.invoke(editorUI);
             Method setTextMethod = statusBar.getClass().getMethod("setText", String.class, String.class);
@@ -106,6 +109,9 @@ public final class ComponentUtils {
         // TODO: fix this, do not use reflection
         try {
             Object editorUI = getEditorUI(c);
+            if (editorUI == null) {
+                return;
+            }
             Method getSbMethod = editorUI.getClass().getMethod("getStatusBar");
             Object statusBar = getSbMethod.invoke(editorUI);
             Method setTextMethod = statusBar.getClass().getMethod("setText", String.class, int.class);
@@ -139,6 +145,9 @@ public final class ComponentUtils {
         // TODO: fix this, do not use reflection
         try {
             Object editorUI = getEditorUI(c);
+            if (editorUI == null) {
+                return;
+            }
             Method getSbMethod = editorUI.getClass().getMethod("getStatusBar"); //NOI18N
             Object statusBar = getSbMethod.invoke(editorUI);
             Method setTextMethod = statusBar.getClass().getMethod("setBoldText", String.class, String.class); //NOI18N
@@ -156,6 +165,9 @@ public final class ComponentUtils {
         // TODO: fix this, do not use reflection
         try {
             Object editorUI = getEditorUI(c);
+            if (editorUI == null) {
+                return "";
+            }
             Method getSbMethod = editorUI.getClass().getMethod("getStatusBar"); //NOI18N
             Object statusBar = getSbMethod.invoke(editorUI);
             Method getTextMethod = statusBar.getClass().getMethod("getText", String.class); //NOI18N
@@ -176,8 +188,17 @@ public final class ComponentUtils {
     private static Object getEditorUI(JTextComponent c) throws Exception {
         // TODO: fix this, do not use reflection
         TextUI textUI = c.getUI();
-        Method getEuiMethod = textUI.getClass().getMethod("getEditorUI"); //NOI18N
-        return getEuiMethod.invoke(textUI);
+        Method getEuiMethod = null;
+        try {
+            getEuiMethod = textUI.getClass().getMethod("getEditorUI"); //NOI18N
+        } catch (NoSuchMethodException nsme) {
+            LOG.log(Level.INFO, nsme.getMessage(), nsme);
+        }
+        if (getEuiMethod != null) {
+            return getEuiMethod.invoke(textUI);
+        } else {
+            return null;
+        }
     }
     
     private static Frame getParentFrame(Component c) {

@@ -828,11 +828,15 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
         return delegateIC.instanceOf (type);
     }
 
-    /*
-    * @return an object to work with
-    * @exception IOException an I/O error occured
-    * @exception ClassNotFoundException the class has not been found
-    */
+    /* Obtains the instance represented by the underlying file. The instance
+     * is held in a weak cache and thus subsequent calls to this method are
+     * likely to return the same instance (until it get garbage collected
+     * or the content of the file on disk changes).
+     * 
+     * @return an object to work with
+     * @exception IOException an I/O error occured
+     * @exception ClassNotFoundException the class has not been found
+     */
     public Object instanceCreate ()
     throws IOException, ClassNotFoundException {
         InstanceCookie delegateIC = delegateIC ();

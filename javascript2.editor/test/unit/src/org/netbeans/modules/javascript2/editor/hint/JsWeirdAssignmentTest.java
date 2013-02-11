@@ -62,4 +62,8 @@ public class JsWeirdAssignmentTest extends HintTestBase {
     public void testSimple01() throws Exception {
         checkHints(this, createRule(), "testfiles/hints/weirdAssignment.js", null);
     }
+    
+    public void testIssue224918() throws Exception {
+        checkHints(this, createRule(), "testfiles/hints/issue224918.js", null);
+    }
 }

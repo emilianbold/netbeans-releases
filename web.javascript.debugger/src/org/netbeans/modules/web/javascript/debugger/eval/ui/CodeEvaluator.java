@@ -117,7 +117,7 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
     // Solves the problem with calling getText() in non-AWT thread.
     private volatile String codeText = "";
     private History history;
-    private Reference<Debugger> debuggerRef = new WeakReference(null);
+    private Reference<Debugger> debuggerRef = new WeakReference<Debugger>(null);
     private DbgManagerListener dbgManagerListener;
     private TopComponent resultView;
     private Set<String> editItemsSet = new HashSet<String>();
@@ -334,7 +334,7 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
                 Exceptions.printStackTrace(ex);
             }
         }
-        instanceRef = new WeakReference(result[0]);
+        instanceRef = new WeakReference<CodeEvaluator>(result[0]);
         return result[0];
     }
 
@@ -412,11 +412,11 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
                 if (lastDebugger != null && debugger != lastDebugger) {
                     lastDebugger.removePropertyChangeListener(CodeEvaluator.this);
                     lastDebugger.removeListener(CodeEvaluator.this);
-                    debuggerRef = new WeakReference(null);
+                    debuggerRef = new WeakReference<Debugger>(null);
                     displayResult(null);
                 }
                 if (debugger != null) {
-                    debuggerRef = new WeakReference(debugger);
+                    debuggerRef = new WeakReference<Debugger>(debugger);
                     debugger.addListener(CodeEvaluator.this);
                     debugger.addPropertyChangeListener(CodeEvaluator.this);
                 } else {
@@ -598,9 +598,11 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
+                boolean isMinimized = false;
                 if (preferences.getBoolean("show_evaluator_result", true)) {
                     TopComponent view = WindowManager.getDefault().findTopComponent("localsView"); // NOI18N [TODO]
                     view.open();
+                    isMinimized = WindowManager.getDefault().isTopComponentMinimized(view);
                     view.requestActive();
                 } else {
                     if (resultView == null) {
@@ -608,10 +610,13 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
                     }
                     if (result != null) {
                         resultView.open();
+                        isMinimized = WindowManager.getDefault().isTopComponentMinimized(resultView);
                         resultView.requestActive();
                     }
                 }
-                getInstance().requestActive();
+                if (!isMinimized) {
+                    getInstance().requestActive();
+                }
                 fireResultChange();
             }
         });
@@ -900,7 +905,7 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
 
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
-            CodeEvaluator evaluator = (CodeEvaluator) codeEvaluatorRef.get();
+            CodeEvaluator evaluator = codeEvaluatorRef.get();
             if (evaluator != null) {
                 evaluator.checkDebuggerState();
             }

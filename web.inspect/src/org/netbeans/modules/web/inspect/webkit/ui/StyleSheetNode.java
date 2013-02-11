@@ -72,9 +72,9 @@ public class StyleSheetNode extends AbstractNode {
     /** Icon base of the node. */
     static final String ICON_BASE = "org/netbeans/modules/web/inspect/resources/matchedRules.png"; // NOI18N
     /** Header of the style sheet. */
-    private StyleSheetHeader header;
+    private final StyleSheetHeader header;
     /** Owning project of the inspected page. */
-    private Project project;
+    private final Project project;
 
     /**
      * Creates a new {@code StyleSheetNode}.
@@ -123,15 +123,15 @@ public class StyleSheetNode extends AbstractNode {
      */
     static class StyleSheetChildFactory extends ChildFactory<Rule> {
         /** Owning project of the inspected page. */
-        private Project project;
+        private final Project project;
         /** CSS domain of the corresponding WebKit debugging. */
-        private CSS css;
+        private final CSS css;
         /** Header of the style sheet. */
-        private StyleSheetHeader header;
+        private final StyleSheetHeader header;
         /** Body of the style sheet. */
         private StyleSheetBody body;
         /** Filter of the subtree of the node. */
-        private Filter filter;
+        private final Filter filter;
 
         /**
          * Creates a new {@code StyleSheetChildFactory}.

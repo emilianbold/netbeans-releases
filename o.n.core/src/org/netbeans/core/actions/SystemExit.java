@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -55,6 +55,8 @@ import org.openide.util.RequestProcessor;
  * @author Ian Formanek, Jesse Glick, et al.
  */
 public class SystemExit extends CallableSystemAction implements Runnable {
+    
+    private static final RequestProcessor RP = new RequestProcessor(SystemExit.class.getName(), 3);
 
     /** generated Serialized Version UID */
     private static final long serialVersionUID = 5198683109749927396L;
@@ -63,32 +65,38 @@ public class SystemExit extends CallableSystemAction implements Runnable {
      * presented as an item in a menu.
      * @return the name of the action
      */
+    @Override
     public String getName() {
-        return NbBundle.getBundle(SystemExit.class).getString("Exit");
+        return NbBundle.getMessage(SystemExit.class, "Exit");
     }
 
     /** Help context where to find more about the action.
     * @return the help context for this action
     */
+    @Override
     public HelpCtx getHelpCtx() {
-        return new HelpCtx (SystemExit.class);
+        return new HelpCtx("org.netbeans.core.actions.SystemExit");
     }
     
+    @Override
     protected boolean asynchronous() {
         // Not managed alongside other actions.
         return false;
     }
 
+    @Override
     public void performAction() {
         // Do not run in AWT.
-        RequestProcessor.getDefault().post(this);
+        RP.post(this);
     }
 
     /* Performs the exit (by calling LifecycleManager).*/
+    @Override
     public void run() {
         LifecycleManager.getDefault().exit();
     }
 
+    @Override
     protected void initialize() {
         super.initialize();
         putValue("noIconInMenu", Boolean.TRUE); // NOI18N

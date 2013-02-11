@@ -109,4 +109,14 @@ public class SwitchCase extends Statement {
     public void accept(Visitor visitor) {
         visitor.visit(this);
     }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        for (Statement statement : getActions()) {
+            sb.append(statement).append(";"); //NOI18N
+        }
+        return "case " + getValue() + ":" + sb.toString(); //NOI18N
+    }
+
 }

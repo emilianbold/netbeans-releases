@@ -1364,7 +1364,9 @@ abstract public class CsmCompletionQuery {
                                     cls = lastType.getClassifier();
                                 }
                                 if (cls != null) {
-                                    res.add(cls);
+                                    if (!CsmKindUtilities.isBuiltIn(cls)) {
+                                        res.add(cls);
+                                    }
                                 }
                             } else { // not source-help
                                 res = findFieldsAndMethods(finder, contextElement, cls, "", false, staticOnly && !memberPointer, false, true, this.scopeAccessedClassifier, true, sort); // NOI18N
@@ -1420,7 +1422,9 @@ abstract public class CsmCompletionQuery {
                                     cls = lastType.getClassifier();
                                 } 
                                 if (cls != null) {
-                                    res.add(cls);
+                                    if (!CsmKindUtilities.isBuiltIn(cls)) {
+                                        res.add(cls);
+                                    }
                                 }
                             } else { // not source-help
 //                            CsmClass curCls = sup.getClass(exp.getTokenOffset(tokenCntM1));

@@ -1083,17 +1083,22 @@ private void buttonWebPageActionPerformed(java.awt.event.ActionEvent evt) {//GEN
 
 private void buttonParamsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonParamsActionPerformed
     List<Map<String, String>> props = configs.getActiveParamsTransparent();
-    TableModel appParametersTableModel = new JFXProjectProperties.PropertiesTableModel(props, JFXProjectConfigurations.APP_PARAM_SUFFIXES, appParamsColumnNames);
-    JPanel panel = new JFXApplicationParametersPanel((PropertiesTableModel) appParametersTableModel);
+    JFXProjectProperties.PropertiesTableModel appParametersTableModel = new JFXProjectProperties.PropertiesTableModel(props, JFXProjectConfigurations.APP_PARAM_SUFFIXES, appParamsColumnNames);
+    JFXApplicationParametersPanel panel = new JFXApplicationParametersPanel(appParametersTableModel);
     DialogDescriptor dialogDesc = new DialogDescriptor(panel, NbBundle.getMessage(JFXRunPanel.class, "TITLE_ApplicationParameters"), true, null);
+    panel.registerListeners();
+    panel.setDialogDescriptor(dialogDesc);
+    //panel.setColumnRenderer();
     Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDesc);
     dialog.setVisible(true);
     if (dialogDesc.getValue() == DialogDescriptor.OK_OPTION) {
+        appParametersTableModel.removeEmptyRows();
         configs.setActiveParamsTransparent(props);
         String paramString = configs.getActiveParamsTransparentAsString(false);
         textFieldParams.setText(paramString);
         setEmphasizedFont(labelParams, !JFXProjectProperties.isEqualText(paramString, configs.getDefaultParamsAsString(false)));
     }
+    panel.unregisterListeners();
     dialog.dispose();
 }//GEN-LAST:event_buttonParamsActionPerformed
 

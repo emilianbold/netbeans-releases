@@ -167,5 +167,10 @@ public class OrigUncaughtExceptionTest extends HintsTestBase {
         fail("cannot file golden file: " + goldenFile.getAbsolutePath());
         return null;
     }
+
+    @Override
+    protected boolean onlyMainResource() {
+        return true;
+    }
     
 }

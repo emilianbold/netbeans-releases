@@ -43,6 +43,7 @@
  */
 package org.netbeans.test.j2ee.wizard;
 
+import java.io.File;
 import javax.swing.JComboBox;
 import org.netbeans.api.project.Project;
 import org.netbeans.jellytools.Bundle;
@@ -123,5 +124,50 @@ public class WizardUtils {
         cboVersion.selectItem(version);
         return op;
     }
+
+    /**
+     * Creates new EJB project.
+     * @param parentDir parent dir of project
+     * @param projectName project name
+     * @param version sub string of requested Java EE version
+     * @throws Exception 
+     */
+    public static void createEJBProject(String parentDir, String projectName, String version) throws Exception {
+        File targetDir = new File(parentDir, projectName);
+        deleteAll(targetDir);
+        NewProjectWizardOperator wiz = WizardUtils.createNewProject("Java EE", "EJB Module");
+        NewJavaProjectNameLocationStepOperator op = WizardUtils.setProjectNameLocation(projectName, parentDir);
+        WizardUtils.setJ2eeSpecVersion(op, version);
+        wiz.finish();
+    }
     
+    /**
+     * Creates new Web project.
+     * @param parentDir parent dir of project
+     * @param projectName project name
+     * @param version sub string of requested Java EE version
+     * @throws Exception 
+     */
+    public static void createWebProject(String parentDir, String projectName, String version) throws Exception {
+        File targetDir = new File(parentDir, projectName);
+        deleteAll(targetDir);
+        NewProjectWizardOperator wiz = WizardUtils.createNewProject("Java Web", "Web Application");
+        NewJavaProjectNameLocationStepOperator op = WizardUtils.setProjectNameLocation(projectName, parentDir);
+        WizardUtils.setJ2eeSpecVersion(op, version);
+        wiz.finish();
+    }
+    
+    /** Deletes specified file/directory and its sub directories.
+     * @param file file to be deleted
+     * @throws IOException if cannot delete file
+     */
+    static void deleteAll(File file) {
+        File files[] = file.listFiles();
+        if (files != null && files.length != 0) {
+            for (File f : files) {
+                deleteAll(f);
+            }
+        }
+        file.delete();
+    }
 }

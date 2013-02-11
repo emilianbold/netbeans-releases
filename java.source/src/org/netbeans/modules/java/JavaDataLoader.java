@@ -265,15 +265,6 @@ public final class JavaDataLoader extends UniFileLoader {
         // part of refactoring stuff only.
         
         @Override
-        public FileObject rename(String name) throws IOException {
-            if (!PACKAGE_INFO.equals(name) && !Utilities.isJavaIdentifier(name)) // NOI18N
-                throw new IOException(NbBundle.getMessage(JavaDataObject.class, "FMT_Not_Valid_FileName", name));
-            
-            FileObject fo = super.rename(name);
-            return fo;
-        }
-        
-        @Override
         public FileObject createFromTemplate(FileObject f, String name) throws IOException {
             if (getFile().getAttribute(/* ScriptingCreateFromTemplateHandler.SCRIPT_ENGINE_ATTR */"javax.script.ScriptEngine") == null) {
                 Logger.getLogger(JavaDataLoader.class.getName()).log(Level.WARNING, "Please replace template {0} with the new scripting support. See http://bits.netbeans.org/7.1/javadoc/org-openide-loaders/apichanges.html#scripting", getFile().getPath());

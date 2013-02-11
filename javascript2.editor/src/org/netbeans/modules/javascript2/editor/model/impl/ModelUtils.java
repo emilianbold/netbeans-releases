@@ -41,30 +41,33 @@
  */
 package org.netbeans.modules.javascript2.editor.model.impl;
 
-import com.oracle.nashorn.ir.AccessNode;
-import com.oracle.nashorn.ir.BinaryNode;
-import com.oracle.nashorn.ir.CallNode;
-import com.oracle.nashorn.ir.FunctionNode;
-import com.oracle.nashorn.ir.IdentNode;
-import com.oracle.nashorn.ir.IndexNode;
-import com.oracle.nashorn.ir.LiteralNode;
-import com.oracle.nashorn.ir.Node;
-import com.oracle.nashorn.ir.ObjectNode;
-import com.oracle.nashorn.ir.ReferenceNode;
-import com.oracle.nashorn.ir.UnaryNode;
-import com.oracle.nashorn.parser.Lexer;
-import com.oracle.nashorn.parser.TokenType;
+import jdk.nashorn.internal.ir.AccessNode;
+import jdk.nashorn.internal.ir.BinaryNode;
+import jdk.nashorn.internal.ir.CallNode;
+import jdk.nashorn.internal.ir.FunctionNode;
+import jdk.nashorn.internal.ir.IdentNode;
+import jdk.nashorn.internal.ir.IndexNode;
+import jdk.nashorn.internal.ir.LiteralNode;
+import jdk.nashorn.internal.ir.Node;
+import jdk.nashorn.internal.ir.ObjectNode;
+import jdk.nashorn.internal.ir.ReferenceNode;
+import jdk.nashorn.internal.ir.UnaryNode;
+import jdk.nashorn.internal.parser.Lexer;
+import jdk.nashorn.internal.parser.TokenType;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.SortedMap;
 import java.util.StringTokenizer;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.html.editor.lib.api.elements.Declaration;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
 import org.netbeans.modules.javascript2.editor.embedding.JsEmbeddingProvider;
 import org.netbeans.modules.javascript2.editor.index.IndexedElement;
@@ -109,7 +112,7 @@ public class ModelUtils {
             }
         }
         if (tmpObject == null) {
-            DeclarationScope scope = builder.getCurrentDeclarationScope();
+            DeclarationScope scope = builder.getCurrentDeclarationFunction();
             while (scope != null && tmpObject == null && scope.getInScope() != null) {
                 tmpObject = ((JsFunction)scope).getParameter(firstName);
                 scope = scope.getInScope();
@@ -200,11 +203,16 @@ public class ModelUtils {
     }
 
     public static DeclarationScope getDeclarationScope(JsObject object) {
+        assert object != null;
+
         JsObject result =  object;
         while (result.getParent() != null && !(result.getParent() instanceof DeclarationScope)) {
             result = result.getParent();
         }
-        return (DeclarationScope)result.getParent();
+        if (result.getParent() != null) {
+            result = result.getParent();
+        } 
+        return (DeclarationScope)result;
     }
 
     public static DeclarationScope getDeclarationScope(Model model, int offset) {
@@ -217,17 +225,24 @@ public class ModelUtils {
         return result;
     }
     
-    private static DeclarationScope getDeclarationScope(DeclarationScope scope, int offset) {
+    public static DeclarationScope getDeclarationScope(DeclarationScope scope, int offset) {
+        
         DeclarationScopeImpl dScope = (DeclarationScopeImpl)scope;
-        DeclarationScope result = null;
-        DeclarationScope function = null;
-        if (dScope.getOffsetRange().containsInclusive(offset)) {
-            result = dScope;
-            for (DeclarationScope innerScope : dScope.getDeclarationsScope()) {
-                function = getDeclarationScope(innerScope, offset);
-                if (function != null) {
-                    result = function;
-                    break;
+        DeclarationScope result = null; 
+        if (result == null) {
+            if (dScope.getOffsetRange().containsInclusive(offset)) {
+                result = dScope;
+                boolean deep = true;
+                while (deep) {
+                    deep = false;
+                    for (DeclarationScope innerScope : result.getDeclarationsScope()) {
+                        if (((DeclarationScopeImpl)innerScope).getOffsetRange().containsInclusive(offset)) {
+                            result = innerScope;
+                            deep = true;
+                            break;
+                        }
+                        
+                    }
                 }
             }
         }
@@ -824,22 +839,29 @@ public class ModelUtils {
     }
 
     public static Collection<String> findPrototypeChain(String fqn, JsIndex jsIndex) {
+        return findPrototypeChain(fqn, jsIndex, new HashSet<String>());
+    }
+
+    private static Collection<String> findPrototypeChain(String fqn, JsIndex jsIndex, Set<String> alreadyCheck) {
         Collection<String> result = new ArrayList<String>();
-        Collection<IndexedElement> properties = jsIndex.getProperties(fqn);
-        for (IndexedElement property : properties) {
-            if("prototype".equals(property.getName())) {  //NOI18N
-                Collection<? extends IndexResult> indexResults = jsIndex.findFQN(property.getFQN());
-                for (IndexResult indexResult : indexResults) {
-                    Collection<TypeUsage> assignments = IndexedElement.getAssignments(indexResult);
-                    for (TypeUsage typeUsage : assignments) {
-                        result.add(typeUsage.getType());
-                    }
-                    for (TypeUsage typeUsage : assignments) {
-                        result.addAll(findPrototypeChain(typeUsage.getType(), jsIndex));
+        if (!alreadyCheck.contains(fqn)) {
+            alreadyCheck.add(fqn);
+            Collection<IndexedElement> properties = jsIndex.getProperties(fqn);
+            for (IndexedElement property : properties) {
+                if("prototype".equals(property.getName())) {  //NOI18N
+                    Collection<? extends IndexResult> indexResults = jsIndex.findFQN(property.getFQN());
+                    for (IndexResult indexResult : indexResults) {
+                        Collection<TypeUsage> assignments = IndexedElement.getAssignments(indexResult);
+                        for (TypeUsage typeUsage : assignments) {
+                            result.add(typeUsage.getType());
+                        }
+                        for (TypeUsage typeUsage : assignments) {
+                            result.addAll(findPrototypeChain(typeUsage.getType(), jsIndex, alreadyCheck));
+                        }
                     }
                 }
-            }
-        }
+            } 
+        } 
         return result;
     }
     
@@ -1075,7 +1097,7 @@ public class ModelUtils {
 
         @Override
         public Node enter(UnaryNode uNode) {
-            if (com.oracle.nashorn.parser.Token.descType(uNode.getToken()) == TokenType.NEW) {
+            if (jdk.nashorn.internal.parser.Token.descType(uNode.getToken()) == TokenType.NEW) {
                 if (uNode.rhs() instanceof CallNode
                     && ((CallNode)uNode.rhs()).getFunction() instanceof IdentNode) {
                         IdentNode iNode = ((IdentNode)((CallNode)uNode.rhs()).getFunction());

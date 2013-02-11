@@ -109,6 +109,13 @@ import org.openide.util.RequestProcessor;
     private void fireChange() {
         hostFound = null;
         wizardListener.stateChanged(null);
+        // This is a hack - now there is no way to pass *changed* execution
+        // environment to a configuration panel..
+        // (The problem is that exec env could change after the panel creation)
+        configurationPanel.putClientProperty("ExecutionEnvironment", // NOI18N
+                textLoginName.getText().concat("@"). // NOI18N
+                concat(data.getHostName()).concat(":") // NOI18N
+                .concat(Integer.toString(data.getPort())));
     }
 
     @Override
@@ -117,6 +124,13 @@ import org.openide.util.RequestProcessor;
     }
 
     void init() {
+        // This is a hack - now there is no way to pass *changed* execution
+        // environment to a configuration panel..
+        // (The problem is that exec env is null when panel is created)
+        configurationPanel.putClientProperty("ExecutionEnvironment", // NOI18N
+                data.getUserName().concat("@"). // NOI18N
+                concat(data.getHostName()).concat(":") // NOI18N
+                .concat(Integer.toString(data.getPort())));
     }
 
     private String getLoginName() {

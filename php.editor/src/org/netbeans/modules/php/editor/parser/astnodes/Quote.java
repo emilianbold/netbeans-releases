@@ -96,4 +96,14 @@ public class Quote extends Expression {
     public void accept(Visitor visitor) {
         visitor.visit(this);
     }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        for (Expression expression : getExpressions()) {
+            sb.append(expression).append(","); //NOI18N
+        }
+        return getQuoteType() + " " + sb.toString();
+    }
+
 }

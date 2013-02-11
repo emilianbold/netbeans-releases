@@ -117,7 +117,7 @@ public class BreakpointModel extends ViewModelSupport
             DOMBreakpoint breakpoint = (DOMBreakpoint) node;
             String nodeName = breakpoint.getNode().getNodeName();
             List<? extends NodeId> nodePath = breakpoint.getNode().getPath();
-            if (!nodePath.isEmpty()) {
+            if (nodePath != null && !nodePath.isEmpty()) {
                 int chn = nodePath.get(nodePath.size() - 1).getChildNumber();
                 if (chn >= 0) {
                     nodeName = nodeName + '[' + chn + ']';

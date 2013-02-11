@@ -66,6 +66,7 @@ made subject to such option by the copyright holder.
                 <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.xml.wizard.impl.XMLWizardIterator.singleton"/>
                 <attr name="templateCategory" stringvalue="XML"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="requireProject" boolvalue="false"/>
             </file>
             
             <file name="emptyDTD.dtd" url="templates/emptyDTD.dtd.template">
@@ -77,6 +78,7 @@ made subject to such option by the copyright holder.
                 <attr name="templateWizardIterator" newvalue="org.netbeans.modules.xml.wizard.impl.DTDWizardIterator"/>
                 <attr name="templateCategory" stringvalue="XML"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="requireProject" boolvalue="false"/>
             </file>
                         
             <file name="XmlSchema.xsd" url="templates/emptyXmlSchema.xsd.template">
@@ -87,6 +89,7 @@ made subject to such option by the copyright holder.
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/xml/resources/emptySchema.html"/>
                 <attr name="templateCategory" stringvalue="XML"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="requireProject" boolvalue="false"/>
             </file>
                         
             <file name="xml_entity.ent" url="templates/xml_entity.ent.template">
@@ -97,6 +100,7 @@ made subject to such option by the copyright holder.
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/xml/resources/xml_entity.html"/>
                 <attr name="templateCategory" stringvalue="oasis-XML-catalogs"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="requireProject" boolvalue="false"/>
             </file>
 
         </folder> <!-- XML -->

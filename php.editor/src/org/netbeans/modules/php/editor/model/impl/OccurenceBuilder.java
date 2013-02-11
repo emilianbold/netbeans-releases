@@ -2000,7 +2000,7 @@ class OccurenceBuilder {
         if (nextElementInfo != null && offset >= 0) {
             if (nextElementInfo.getName() != null && nextElementInfo.getName().trim().length() > 0) {
                 OffsetRange range = nextElementInfo.getRange();
-                if (range.containsInclusive(offset)) {
+                if (range != null && range.containsInclusive(offset)) {
                     elementInfo = nextElementInfo;
                 }
             }

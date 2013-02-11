@@ -62,4 +62,13 @@ public @interface SuppressWarnings {
      */
     String[] value() default {};
 
+    /**
+     * The justification for the suppression. Should be human readable
+     * description explaining why it is ok to suppress the message(s).
+     *
+     * @return the justification for the suppression
+     * @since 1.19
+     */
+    String justification() default "";
+
 }

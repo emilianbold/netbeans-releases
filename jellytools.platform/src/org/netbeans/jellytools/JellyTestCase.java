@@ -55,7 +55,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import javax.swing.JDialog;
@@ -76,6 +75,7 @@ import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.nodes.NodeOp;
 import org.openide.util.Exceptions;
 
 /** JUnit test case with implemented Jemmy/JellyTools support stuff.
@@ -143,30 +143,30 @@ public class JellyTestCase extends NbTestCase {
                         // OK
                         return;
                     }
-                    // CoreBridgeImpl.editorsRegistered = false;
-                    // CoreBridgeImpl.doRegisterPropertyEditors();
-                    Class cl = Class.forName("org.netbeans.core.CoreBridgeImpl");
-                    Field fieldReg = cl.getDeclaredField("editorsRegistered");
+                    ClassLoader loader = Thread.currentThread().getContextClassLoader();
+                    if (loader == null) {
+                        loader = getClass().getClassLoader();
+                    }
+                    // reset previously set fields
+                    Class cl = Class.forName("org.netbeans.modules.openide.nodes.NodesRegistrationSupport", true, loader);
+                    Field fieldReg = cl.getDeclaredField("clsReg");
                     fieldReg.setAccessible(true);
-                    fieldReg.setBoolean(null, false);
-                    Method methodRegisterPE = cl.getDeclaredMethod("doRegisterPropertyEditors");
-                    methodRegisterPE.setAccessible(true);
-                    methodRegisterPE.invoke(null);
+                    fieldReg.set(null, null);
+                    fieldReg = cl.getDeclaredField("beanInfoReg");
+                    fieldReg.setAccessible(true);
+                    fieldReg.set(null, null);
+                    fieldReg = cl.getDeclaredField("pkgReg");
+                    fieldReg.setAccessible(true);
+                    fieldReg.set(null, null);
+                    // register editors again in AWT thread
+                    NodeOp.registerPropertyEditors();
                 } catch (Exception e) {
                     throw new JemmyException("Cannot call CoreBridgeImpl.doRegisterPropertyEditors().", e);
-                }
-                // Add core.execution property editor search path.
-                String coreExecutionPath = "org.netbeans.core.execution.beaninfo.editors";
-                List<String> paths = Arrays.asList(PropertyEditorManager.getEditorSearchPath());
-                if (!paths.contains(coreExecutionPath)) {
-                    paths = new ArrayList<String>(paths);
-                    paths.add(coreExecutionPath);
-                    PropertyEditorManager.setEditorSearchPath(paths.toArray(new String[0]));
                 }
             }
         });
     }
-
+    
     /** Overridden method from JUnit framework execution to perform conditional
      * screen shot and conversion from TimeoutExpiredException to AssertionFailedError. <br>
      * Waits a second before test execution.

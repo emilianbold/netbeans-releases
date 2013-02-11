@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -182,6 +182,7 @@ public class NbMainSequence extends WizardSequence {
             boolean installJUnit = nbJavaSE != null && Boolean.parseBoolean(nbJavaSE.getProperty(NbPreInstallSummaryPanel.JUNIT_ACCEPTED_PROPERTY));
             final boolean installJUnitOrig = installJUnit;
             boolean checkForUpdate = Boolean.getBoolean(NbPreInstallSummaryPanel.CHECK_FOR_UPDATES_CHECKBOX_PROPERTY);
+            final boolean checkForUpdateOrig = checkForUpdate;
             
             ExecutionResults executeResult;
             boolean start = true;
@@ -235,11 +236,11 @@ public class NbMainSequence extends WizardSequence {
                             String msg = "";
                             switch (executeResult.getErrorCode()) {
                                 case 31: // network problem
-                                    if (installJUnit && checkForUpdate) {
+                                    if (installJUnit && checkForUpdateOrig) {
                                         msg = ResourceUtils.getString(NbMainSequence.class, "NBMS.CACHE.NetworkProblemBoth"); // NOI18N
                                     } else if (installJUnit) {
                                         msg = ResourceUtils.getString(NbMainSequence.class, "NBMS.CACHE.NetworkProblemJunit"); // NOI18N
-                                    } else if (checkForUpdate) {
+                                    } else if (checkForUpdateOrig) {
                                         msg = ResourceUtils.getString(NbMainSequence.class, "NBMS.CACHE.NetworkProblemUpdates"); // NOI18N
                                     }
                                     break;
@@ -258,11 +259,19 @@ public class NbMainSequence extends WizardSequence {
                             }
                             nbBase.setProperty(NbPostInstallSummaryPanel.NETBEANS_SUMMARY_MESSAGE_TEXT_PROPERTY, msg);
                         } else {
+                            if (installJUnit && sumOfUpdates == 0 && sumOfModules > 0) {
+                                LogManager.log("    ... caches don't contain JUnit - run the IDE again. See #224078");
+                                start = true;
+                                installJUnit = false;
+                                checkForUpdate = false;
+                                downloadIsRunning = false;
+                                continue;
+                            }
                             LogManager.log("    .... success ");
                             LogManager.log("    ...... installed " + sumOfModules + " new modules");
                             LogManager.log("    ...... installed " + sumOfUpdates + " updates");
                             String msg = "";
-                            if (installJUnitOrig && checkForUpdate) {
+                            if (installJUnitOrig && checkForUpdateOrig) {
                                 if (sumOfUpdates > 0 && sumOfModules > 0) {
                                     // installed JUnit and updates
                                     msg = ResourceUtils.getString(NbMainSequence.class, "NBMS.CACHE.SuccessIfBoth_JUnitInstalled_UpdatesInstalled", sumOfUpdates);
@@ -282,7 +291,7 @@ public class NbMainSequence extends WizardSequence {
                                         ResourceUtils.getString(NbMainSequence.class, "NBMS.CACHE.SuccessIfJunit_JUnitInstalled") : // NOI18N
                                         // JUnit not found
                                         ResourceUtils.getString(NbMainSequence.class, "NBMS.CACHE.SuccessIfJunit_JUnitNotFound"); // NOI18N
-                            } else if (checkForUpdate) {
+                            } else if (checkForUpdateOrig) {
                                 msg = sumOfUpdates > 0 ?
                                         // Updates installed
                                         ResourceUtils.getString(NbMainSequence.class, "NBMS.CACHE.SuccessIfCheck_UpdatesInstalled", sumOfUpdates) : // NOI18N

@@ -54,6 +54,8 @@ import java.awt.event.MouseEvent;
 import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.GroupLayout;
@@ -98,11 +100,12 @@ public class CSSStylesDocumentPanel extends JPanel implements ExplorerManager.Pr
     /** Tree view showing the style sheet information. */
     private BeanTreeView treeView;
     /** Explorer manager provided by this panel. */
-    private ExplorerManager manager = new ExplorerManager();
+    private final ExplorerManager manager = new ExplorerManager();
     /** Lookup of this panel. */
-    private Lookup lookup = ExplorerUtils.createLookup(getExplorerManager(), getActionMap());
+    @org.netbeans.api.annotations.common.SuppressWarnings(value="SE_TRANSIENT_FIELD_NOT_RESTORED", justification="The instances are never serialized.") // NOI18N
+    private final transient Lookup lookup = ExplorerUtils.createLookup(getExplorerManager(), getActionMap());
     /** Filter for the tree displayed in this panel. */
-    private Filter filter = new Filter();
+    private final transient Filter filter = new Filter();
 
     /**
      * Creates a new {@code CSSStylesDocumentPanel}.
@@ -261,7 +264,9 @@ public class CSSStylesDocumentPanel extends JPanel implements ExplorerManager.Pr
                             }
                             try {
                                 manager.setSelectedNodes(selection.toArray(new Node[selection.size()]));
-                            } catch (PropertyVetoException pvex) {}
+                            } catch (PropertyVetoException pvex) {
+                                Logger.getLogger(CSSStylesDocumentPanel.class.getName()).log(Level.FINEST, null, pvex);
+                            }
                         }
                     });
                 }

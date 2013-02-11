@@ -60,6 +60,8 @@ public class MavenCatalog implements CatalogReader, CatalogDescriptor, org.xml.s
     private static final String ID_POM_4_0_0 = "SCHEMA:" + POM_4_0_0; // NOI18N
     private static final String SETTINGS_1_0_0 = "http://maven.apache.org/xsd/settings-1.0.0.xsd"; // NOI18N
     private static final String ID_SETTINGS_1_0_0 = "SCHEMA:" + SETTINGS_1_0_0; // NOI18N
+    public static final String SETTINGS_1_1_0 = "http://maven.apache.org/xsd/settings-1.1.0.xsd"; // NOI18N
+    private static final String ID_SETTINGS_1_1_0 = "SCHEMA:" + SETTINGS_1_1_0; // NOI18N
     private static final String ASSEMBLY_1_0_0 = "http://maven.apache.org/xsd/assembly-1.0.0.xsd"; // NOI18N
     private static final String ID_ASSEMBLY_1_0_0 = "SCHEMA:" + ASSEMBLY_1_0_0; // NOI18N
     private static final String ASSEMBLY_1_1_0 = "http://maven.apache.org/xsd/assembly-1.1.0.xsd"; // NOI18N
@@ -75,6 +77,7 @@ public class MavenCatalog implements CatalogReader, CatalogDescriptor, org.xml.s
             
     private static final String URL_POM_4_0_0 ="nbres:/org/netbeans/modules/maven/grammar/maven-4.0.0.xsd"; // NOI18N
     private static final String URL_SETTINGS_1_0_0 ="nbres:/org/netbeans/modules/maven/grammar/settings-1.0.0.xsd"; // NOI18N
+    private static final String URL_SETTINGS_1_1_0 ="nbres:/org/netbeans/modules/maven/grammar/settings-1.1.0.xsd"; // NOI18N
     private static final String URL_ASSEMBLY_1_0_0 ="nbres:/org/netbeans/modules/maven/grammar/assembly-1.0.0.xsd"; // NOI18N
     private static final String URL_ASSEMBLY_1_1_0 ="nbres:/org/netbeans/modules/maven/grammar/assembly-1.1.0.xsd"; // NOI18N
     private static final String URL_ASSEMBLY_1_1_1 ="nbres:/org/netbeans/modules/maven/grammar/assembly-1.1.1.xsd"; // NOI18N
@@ -95,6 +98,7 @@ public class MavenCatalog implements CatalogReader, CatalogDescriptor, org.xml.s
         List<String> list = new ArrayList<String>();
         list.add(ID_POM_4_0_0);
         list.add(ID_SETTINGS_1_0_0);
+        list.add(ID_SETTINGS_1_1_0);
         list.add(ID_ASSEMBLY_1_0_0);
         list.add(ID_ASSEMBLY_1_1_0);
         list.add(ID_ASSEMBLY_1_1_1);
@@ -114,6 +118,8 @@ public class MavenCatalog implements CatalogReader, CatalogDescriptor, org.xml.s
             return URL_POM_4_0_0;
         else if (ID_SETTINGS_1_0_0.equals(publicId))
             return URL_SETTINGS_1_0_0;
+        else if (ID_SETTINGS_1_1_0.equals(publicId))
+            return URL_SETTINGS_1_1_0;
         else if (ID_ASSEMBLY_1_0_0.equals(publicId))
             return URL_ASSEMBLY_1_0_0;
         else if (ID_ASSEMBLY_1_1_0.equals(publicId))
@@ -197,6 +203,8 @@ public class MavenCatalog implements CatalogReader, CatalogDescriptor, org.xml.s
             return new org.xml.sax.InputSource(URL_POM_4_0_0);
         } else if (SETTINGS_1_0_0.equals(systemId)) {
             return new org.xml.sax.InputSource(URL_SETTINGS_1_0_0);
+        } else if (SETTINGS_1_1_0.equals(systemId)) {
+            return new org.xml.sax.InputSource(URL_SETTINGS_1_1_0);
         } else if (ASSEMBLY_1_0_0.equals(systemId)) {
             return new org.xml.sax.InputSource(URL_ASSEMBLY_1_0_0);
         } else if (ASSEMBLY_1_1_0.equals(systemId)) {

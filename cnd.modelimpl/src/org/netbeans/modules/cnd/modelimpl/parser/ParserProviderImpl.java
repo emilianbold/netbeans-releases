@@ -42,11 +42,11 @@
 
 package org.netbeans.modules.cnd.modelimpl.parser;
 
-import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import org.antlr.runtime.tree.CommonTree;
-import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.modules.cnd.antlr.Token;
 import org.netbeans.modules.cnd.antlr.TokenStream;
 import org.netbeans.modules.cnd.antlr.collections.AST;
@@ -57,6 +57,7 @@ import org.netbeans.modules.cnd.api.model.CsmScopeElement;
 import org.netbeans.modules.cnd.api.model.CsmVisibility;
 import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
 import org.netbeans.modules.cnd.apt.support.lang.APTLanguageSupport;
 import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
@@ -73,7 +74,6 @@ import org.netbeans.modules.cnd.modelimpl.fsm.core.DataRenderer;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.FortranParser;
 import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
-import org.openide.util.Exceptions;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -130,7 +130,7 @@ public final class ParserProviderImpl extends CsmParserProvider {
             CppParserActionEx cppCallback = (CppParserActionEx)callback;
             if (cppCallback == null) {
                 if(TraceFlags.CPP_PARSER_ACTION && ((FileImpl)params.getMainFile()).getParsingFileContent() != null) {
-                    cppCallback = new CppParserActionImpl(params);
+                    cppCallback = new CppParserActionImpl(params, null);
                 } else {
                     cppCallback = new CppParserEmptyActionImpl(file);
                 }
@@ -353,10 +353,10 @@ public final class ParserProviderImpl extends CsmParserProvider {
 
     static Token convertToken(org.antlr.runtime.Token token) {
         //assert token == null || token instanceof Antlr3CXXParser.MyToken;
-        return (token instanceof Antlr3CXXParser.MyToken) ? ((Antlr3CXXParser.MyToken) token).t : null;
+        return (token instanceof Antlr3CXXParser.Antlr2ToAntlr3TokenAdapter) ? ((Antlr3CXXParser.Antlr2ToAntlr3TokenAdapter) token).t : null;
     }
 
-    private final static class Antlr3CXXParser implements CsmParserProvider.CsmParser, CsmParserProvider.CsmParserResult {
+    final static class Antlr3CXXParser implements CsmParserProvider.CsmParser, CsmParserProvider.CsmParserResult {
         private final FileImpl file;
         private final CsmParserProvider.CsmParserParameters params;
         private CXXParserEx parser;
@@ -377,15 +377,19 @@ public final class ParserProviderImpl extends CsmParserProvider {
             CXXParserActionEx cppCallback = (CXXParserActionEx)callback;
             if (cppCallback == null) {
                 cppCallback = new CXXParserActionImpl(params);
-            } else {
-                cppCallback.pushFile(file);
             }            
             if (cppCallback instanceof CXXParserActionImpl) {
                 objects = ((CXXParserActionImpl) cppCallback).getObjectsMap();
             }            
-            org.netbeans.modules.cnd.antlr.TokenBuffer tb = new org.netbeans.modules.cnd.antlr.TokenBuffer(ts);            
-            org.antlr.runtime.TokenStream tokens = new MyTokenStream(tb);
+            org.netbeans.modules.cnd.antlr.TokenBuffer tb = new org.netbeans.modules.cnd.antlr.TokenBuffer(ts);
+            Antrl2ToAntlr3TokenStreamAdapter tokens;
+            if (TraceFlags.PARSE_HEADERS_WITH_SOURCES) {
+                tokens = new PPTokensBasedTokenStream(tb, cppCallback);
+            } else {
+                tokens = new Antrl2ToAntlr3TokenStreamAdapter(tb);
+            }
             parser = new CXXParserEx(tokens, cppCallback);
+            tokens.setParser(parser);
         }
 
         @Override
@@ -397,6 +401,9 @@ public final class ParserProviderImpl extends CsmParserProvider {
                     case TRANSLATION_UNIT:
                         parser.compilation_unit();
                         break;
+                    case COMPOUND_STATEMENT:
+                        parser.compound_statement(false);
+                        break;                        
                 }
             } catch (Throwable ex) {
                 System.err.println(ex.getClass().getName() + " at parsing file " + file.getAbsolutePath()); // NOI18N
@@ -433,13 +440,13 @@ public final class ParserProviderImpl extends CsmParserProvider {
             parser.setErrorDelegate(delegate);
         }
         
-        private static final class MyToken implements org.antlr.runtime.Token {
+        private static final class Antlr2ToAntlr3TokenAdapter implements org.antlr.runtime.Token {
 
             org.netbeans.modules.cnd.antlr.Token t;
             org.antlr.runtime.CharStream s = null;
 
-            public MyToken(org.netbeans.modules.cnd.antlr.Token t) {
-                this.t = t;
+            public Antlr2ToAntlr3TokenAdapter(org.netbeans.modules.cnd.antlr.Token antlr2Token) {
+                this.t = antlr2Token;
             }
 
             @Override
@@ -454,7 +461,7 @@ public final class ParserProviderImpl extends CsmParserProvider {
 
             @Override
             public int getType() {
-                return t.getType() == APTTokenTypes.EOF ? -1 : t.getType();
+                return t.getType() == APTTokenTypes.EOF ? CXXParserEx.EOF : t.getType();
             }
 
             @Override
@@ -512,21 +519,26 @@ public final class ParserProviderImpl extends CsmParserProvider {
                 s = arg0;
             }
 
+            @Override
+            public String toString() {
+                return t.toString();
+            }            
         }
 
 
-        static private class MyTokenStream implements org.antlr.runtime.TokenStream {
+        static private class Antrl2ToAntlr3TokenStreamAdapter implements org.antlr.runtime.TokenStream {
             org.netbeans.modules.cnd.antlr.TokenBuffer tb;
 
             int lastMark;
+            protected CXXParserEx parser;
             
-            public MyTokenStream(org.netbeans.modules.cnd.antlr.TokenBuffer tb) {
-                this.tb = tb;
+            public Antrl2ToAntlr3TokenStreamAdapter(org.netbeans.modules.cnd.antlr.TokenBuffer antrl2TokenBuffer) {
+                this.tb = antrl2TokenBuffer;
             }
 
             @Override
-            public org.antlr.runtime.Token LT(int arg0) {
-                return new MyToken(tb.LT(arg0));
+            public Antlr2ToAntlr3TokenAdapter LT(int arg0) {
+                return new Antlr2ToAntlr3TokenAdapter(tb.LT(arg0));
             }
 
             @Override
@@ -536,7 +548,8 @@ public final class ParserProviderImpl extends CsmParserProvider {
 
             @Override
             public int LA(int arg0) {
-                return tb.LA(arg0) == APTTokenTypes.EOF ? -1 : tb.LA(arg0);
+                int LA = tb.LA(arg0);
+                return LA == APTTokenTypes.EOF ? CXXParserEx.EOF : LA;
             }
 
             @Override
@@ -605,7 +618,138 @@ public final class ParserProviderImpl extends CsmParserProvider {
             public int range() {
                 throw new UnsupportedOperationException("Not supported yet."); // NOI18N
             }
+
+            public void setParser(CXXParserEx parser) {
+                this.parser = parser;
+            }
+
+            protected final boolean canUseCallback() {
+                return parser == null ? true : parser.backtrackingLevel() == 0;
+            }
         }
 
+        private static class PPTokensBasedTokenStream extends Antrl2ToAntlr3TokenStreamAdapter {
+            private final CXXParserActionEx cppCallback;
+
+            public PPTokensBasedTokenStream(org.netbeans.modules.cnd.antlr.TokenBuffer tb, CXXParserActionEx cppCallback) {
+                super(tb);
+                this.cppCallback = cppCallback;
+            }
+            
+            private static final boolean TRACE = false;
+
+            @Override
+            public int LA(int i) {
+                if (i == 0) {
+                    if (TRACE) System.err.println("LA(0)=" + lastConsumed + " C="+canUseCallback());
+                    assert lastConsumed != null;
+                    assert canUseCallback();
+                    return lastConsumed.getType();
+                }
+                final int newIndex = skipIncludeTokensIfNeeded(i);
+                int LA = super.LA(newIndex);
+                assert !isIncludeToken(LA) : super.LT(newIndex) + " not expected";
+                return LA;
+            }
+
+            @Override
+            public Antlr2ToAntlr3TokenAdapter LT(int i) {
+                if (i == 0) {
+                    if (TRACE) System.err.println("LT(0)=" + lastConsumed + " C="+canUseCallback());
+                    assert lastConsumed != null;
+                    assert canUseCallback();
+                    assert !isIncludeToken(lastConsumed.getType()) : lastConsumed + " not expected ";
+                    return lastConsumed;
+                }
+                Antlr2ToAntlr3TokenAdapter LT = super.LT(skipIncludeTokensIfNeeded(i));
+                assert !isIncludeToken(LT.getType()) : LT + " not expected ";
+                return LT;
+            }
+
+            private Antlr2ToAntlr3TokenAdapter lastConsumed;
+            @Override
+            public void consume() {
+                if (TRACE) System.err.println("consuming LT(1)=" + super.LT(1) + " LT(0)=" + super.LT(0) + "; lastConsumed=" + lastConsumed + " C="+canUseCallback());
+                assert !isIncludeToken(super.LA(1)) : super.LT(1) + " not expected ";
+                if (canUseCallback()) {
+                    lastConsumed = super.LT(1);
+                }
+                super.consume();
+                if (TRACE) System.err.println("after consume LT(1)=" + super.LT(1) + "; consumed LT(0)=" + super.LT(0) + "; lastConsumed=" + lastConsumed + " C="+canUseCallback());
+                if (false) { // DISABLED: let LA to be the only one consumer
+                    // consume following includes as well
+                    while (isIncludeToken(super.LA(1))) {
+                        if (canUseCallback()) {
+                            org.antlr.runtime.Token t = super.LT(1);
+                            onIncludeToken(t);
+                            if (TRACE) System.err.println("extra consuming LT(1)=" + t + " LT(0)=" + super.LT(0));
+                            super.consume();
+                            if (TRACE) System.err.println("after extra consume LT(1)=" + super.LT(1) + "; consumed LT(0)=" + super.LT(0));
+                        } else {
+                            if (TRACE) System.err.println("skipping LT(1)=" + super.LT(1) + " LT(0)=" + super.LT(0));
+                            super.consume();
+                            if (TRACE) System.err.println("after skipping LT(1)=" + super.LT(1) + "; skipped LT(0)=" + super.LT(0));
+                        }
+                    }
+                }
+            }
+
+            private int skipIncludeTokensIfNeeded(int i) {
+                if (i == 0) {
+                    assert !isIncludeToken(super.LA(0)) : super.LT(0) + " not expected ";
+                    return 0;
+                }
+                int superIndex = 0;
+                int nonIncludeTokens = 0;
+                do {
+                    superIndex++;
+                    int LA = super.LA(superIndex);
+                    assert LA == super.LA(superIndex) : "how can LA be different?";
+                    if (isIncludeToken(LA)) {
+                        if (superIndex == 1 && canUseCallback()) {
+                            // consume if the first and no markers
+                            Antlr2ToAntlr3TokenAdapter t = super.LT(1);
+                            if (TRACE) System.err.println("CONSUMING include token: " + t + " for LA(" + i + ")");
+                            assert isIncludeToken(t.getType()) : t + " not expected ";
+                            onIncludeToken(t);
+                            assert super.LT(1).t == t.t : t + " have to be the same as " + super.LT(1).t;
+                            super.consume();
+                            superIndex = 0;
+                        } else {
+                            if (TRACE) System.err.println("NOT consumed include token: superIndex=" + superIndex + " canUseCallback=" + canUseCallback());
+                        }
+                    } else {
+                        nonIncludeTokens++;
+                    }
+                } while (nonIncludeTokens < i);
+                assert (superIndex >= i) && nonIncludeTokens == i : "LA(" + i + ") => LA(" + superIndex + ") " + nonIncludeTokens + ")" + super.LT(superIndex);
+                return superIndex;
+            }
+
+            private static boolean isIncludeToken(int LA) {
+                return LA == APTTokenTypes.INCLUDE || LA == APTTokenTypes.INCLUDE_NEXT;
+            }
+
+            private void onIncludeToken(org.antlr.runtime.Token t) {
+                assert t instanceof Antlr2ToAntlr3TokenAdapter : t.getClass();
+                if (((Antlr2ToAntlr3TokenAdapter)t).t instanceof APTToken) {
+                    APTToken aptToken = (APTToken) ((Antlr2ToAntlr3TokenAdapter)t).t;
+                    Boolean preInclude = (Boolean) aptToken.getProperty(Boolean.class);
+                    CsmFile inclFile = (CsmFile) aptToken.getProperty(CsmFile.class);
+                    if (inclFile != null) {
+                        if (preInclude == Boolean.TRUE) {
+                            if (TRACE) System.err.println(" >>> " + inclFile.getAbsolutePath());
+                            cppCallback.pushFile(inclFile);
+                            assert inclFile instanceof FileImpl;
+                        } else {
+                            CsmFile popFile = cppCallback.popFile();
+                            if (TRACE) System.err.println(" <<< " + popFile.getAbsolutePath());
+                            assert popFile == inclFile : "EXPECTED: " + inclFile + "\n POPED: " + popFile;
+                        }
+                    }
+                }
+            }
+        }
     }        
+
 }

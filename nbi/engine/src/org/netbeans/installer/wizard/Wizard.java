@@ -492,7 +492,9 @@ public class Wizard {
                 try {
                     UiUtils.initializeLookAndFeel();
                 } catch (InitializationException e) {
-                    ErrorManager.notifyWarning(e.getMessage(), e.getCause());
+                    // error in UI init, no UI is available, no warning dialog can't be opened
+                    UiMode.setCurrentUiMode(UiMode.SILENT);
+                    ErrorManager.notifyCritical(e.getMessage(), e.getCause());
                 }
                 return new SwingFrameContainer();
             case SILENT:

@@ -52,15 +52,12 @@ import java.util.logging.Logger;
 import junit.framework.Assert;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.junit.MockServices;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.api.PhpLanguageProperties.PhpVersion;
 import org.netbeans.modules.project.ui.test.ProjectSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.modules.InstalledFileLocator;
-import org.openide.util.Exceptions;
 
 /**
  * @author Tomas Mysik
@@ -70,12 +67,6 @@ public final class TestUtils {
     private static final Logger PHP_PROJECT_LOGGER = Logger.getLogger(PhpProject.class.getName());
     private static final TestLogHandler TEST_LOG_HANDLER = new TestLogHandler();
 
-    static {
-        MockServices.setServices(MockInstalledFileLocator.class);
-    }
-
-    private TestUtils() {
-    }
 
     public static PhpProject createPhpProject(File workDir) throws IOException {
         String projectName;
@@ -158,27 +149,6 @@ public final class TestUtils {
             PHP_PROJECT_LOGGER.removeHandler(TEST_LOG_HANDLER);
         }
         return result;
-    }
-
-    //~ Inner classes
-
-    public static final class MockInstalledFileLocator extends InstalledFileLocator {
-
-        @Override
-        public File locate(String name, String codeNameBase, boolean localized) {
-            if (name.equals("phpunit/NetBeansSuite.php")) {
-                try {
-                    // create dummy file and return it
-                    File tmpFile = File.createTempFile("nb-test-file", null);
-                    tmpFile.deleteOnExit();
-                    return tmpFile;
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            }
-            return null;
-        }
-
     }
 
 }

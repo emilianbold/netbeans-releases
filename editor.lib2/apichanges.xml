@@ -107,6 +107,21 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="TypedTextInterceptor.getReplacedText">
+            <summary>OnSaveTask interface added</summary>
+            <version major="1" minor="73"/>
+            <date day="30" month="1" year="2013"/>
+            <author login="mkristofic"/>
+            <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes"/>
+            <description>
+                <p>
+                    Added method getReplacedText() in TypedTextInterceptor to get replaced text after it's removed.
+                    This enables to use this text in some typing actions.
+                </p>
+            </description>
+            <issue number="225293"/>
+        </change>
+
         <change id="OnSaveTask">
             <summary>OnSaveTask interface added</summary>
             <version major="1" minor="66"/>

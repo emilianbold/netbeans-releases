@@ -80,11 +80,11 @@ public class AndroidDebugTransport extends MobileDebugTransport {
     @Override
     public boolean attach() {
         try {
-            String s = ProcessUtils.callProcess(PlatformManager.getPlatform(PlatformManager.ANDROID_TYPE).getSdkLocation() + "/platform-tools/adb", true, "forward", "tcp:9222", "localabstract:chrome_devtools_remote"); //NOI18N
+            String s = ProcessUtils.callProcess(((AndroidPlatform) PlatformManager.getPlatform(PlatformManager.ANDROID_TYPE)).getAdbCommand(), true, "forward", "tcp:9222", "localabstract:chrome_devtools_remote"); //NOI18N
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
-        return super.attach(); //To change body of generated methods, choose Tools | Templates.
+        return super.attach(); 
     }
     
     
@@ -104,15 +104,16 @@ public class AndroidDebugTransport extends MobileDebugTransport {
             JSONArray array = (JSONArray) obj;
             for (int i=0; i<array.size(); i++) {
                 JSONObject object = (JSONObject) array.get(i);
-                if (getConnectionURL().toString().equals(object.get("url"))) {
+                String urlFromBrowser = object.get("url").toString();
+                int hash = urlFromBrowser.indexOf("#");
+                if (hash != -1) {
+                    urlFromBrowser = urlFromBrowser.substring(0, hash); 
+                }
+                if (getConnectionURL().toString().equals(urlFromBrowser)) {
                     return new URI(object.get("webSocketDebuggerUrl").toString());
                 }
             }
-        } catch (IOException ex) {
-            throw new IllegalStateException("Cannot get websocket address", ex);
-        } catch (ParseException ex) {
-            throw new IllegalStateException("Cannot get websocket address", ex);
-        } catch (URISyntaxException ex) {
+        } catch (Exception ex) {
             throw new IllegalStateException("Cannot get websocket address", ex);
         }
         throw new IllegalStateException("Cannot get websocket address");

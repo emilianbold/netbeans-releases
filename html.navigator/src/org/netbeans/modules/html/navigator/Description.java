@@ -149,8 +149,6 @@ public abstract class Description {
                 .append(getName())
                 .append("(ahash=")
                 .append(getAttributesHash())
-                .append(", idx=")
-                .append(Diff.getIndexInParent(this, false))
                 .append(')')
                 .toString();
     }

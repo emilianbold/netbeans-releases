@@ -64,6 +64,8 @@ import org.netbeans.modules.java.j2seproject.ui.J2SELogicalViewProvider;
 import org.netbeans.spi.java.project.support.ui.SharableLibrariesUtils;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -1083,9 +1085,23 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
             String s[] = splitPath(librariesLocation.getText().trim());
             String loc = SharableLibrariesUtils.browseForLibraryLocation(s[0], this, prjLoc);
             if (loc != null) {
-                librariesLocation.setText(s[1] != null ? loc + File.separator + s[1] : 
-                    loc + File.separator + SharableLibrariesUtils.DEFAULT_LIBRARIES_FILENAME);
-                switchLibrary();
+                final String path = s[1] != null ? loc + File.separator + s[1] :
+                    loc + File.separator + SharableLibrariesUtils.DEFAULT_LIBRARIES_FILENAME;
+                final File base = FileUtil.toFile(uiProperties.getProject().getProjectDirectory());
+                final File location = FileUtil.normalizeFile(PropertyUtils.resolveFile(base, path));
+                if (location.exists()) {
+                    librariesLocation.setText(path);
+                    switchLibrary();
+                } else {
+                    DialogDisplayer.getDefault().notify(
+                        new NotifyDescriptor(
+                            NbBundle.getMessage(CustomizerLibraries.class, "ERR_InvalidProjectLibrariesFolder"),
+                            NbBundle.getMessage(CustomizerLibraries.class, "TITLE_InvalidProjectLibrariesFolder"),
+                            NotifyDescriptor.DEFAULT_OPTION,
+                            NotifyDescriptor.ERROR_MESSAGE,
+                            new Object[] {NotifyDescriptor.OK_OPTION},
+                            NotifyDescriptor.OK_OPTION));
+                }
             }
         }
 }//GEN-LAST:event_librariesBrowseActionPerformed

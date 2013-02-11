@@ -78,6 +78,7 @@ public class JsStructureScanner implements StructureScanner {
     public List<? extends StructureItem> scan(ParserResult info) {
         final List<StructureItem> items = new ArrayList<StructureItem>();
         long start = System.currentTimeMillis();
+        LOGGER.log(Level.FINE, "Structure scanner started at {0} ms", start);
         JsParserResult result = (JsParserResult) info;
         final Model model = result.getModel();
         JsObject globalObject = model.getGlobalObject();
@@ -110,7 +111,7 @@ public class JsStructureScanner implements StructureScanner {
                         collectedItems.add(new JsFunctionStructureItem(function, children, result));
                     }
                 }
-            } else if ((child.getJSKind() == JsElement.Kind.OBJECT || child.getJSKind() == JsElement.Kind.OBJECT_LITERAL || child.getJSKind() == JsElement.Kind.ANONYMOUS_OBJECT) 
+            } else if (((child.getJSKind() == JsElement.Kind.OBJECT && hasDeclaredProperty(child)) || child.getJSKind() == JsElement.Kind.OBJECT_LITERAL || child.getJSKind() == JsElement.Kind.ANONYMOUS_OBJECT) 
                     && (children.size() > 0 || child.isDeclared())) {
                 collectedItems.add(new JsObjectStructureItem(child, children, result));
             } else if (child.getJSKind() == JsElement.Kind.PROPERTY) {
@@ -219,14 +220,12 @@ public class JsStructureScanner implements StructureScanner {
 
     private boolean hasDeclaredProperty(JsObject jsObject) {
         boolean result =  false;
-        if (jsObject.isDeclared()) {
-            result = true;
-        } else {
-            Iterator <? extends JsObject> it = jsObject.getProperties().values().iterator();
-            while (!result && it.hasNext()) {
-                result = hasDeclaredProperty(it.next());
-            }
+        
+        Iterator<? extends JsObject> it = jsObject.getProperties().values().iterator();
+        while (!result && it.hasNext()) {
+            result = it.next().isDeclared();
         }
+
         return result;
     }
     
@@ -238,11 +237,13 @@ public class JsStructureScanner implements StructureScanner {
         final private List<? extends StructureItem> children;
         final private String sortPrefix;
         final protected JsParserResult parserResult;
+        final private String fqn;
         
         public JsStructureItem(JsObject elementHandle, List<? extends StructureItem> children, String sortPrefix, JsParserResult parserResult) {
             this.modelElement = elementHandle;
             this.sortPrefix = sortPrefix;
             this.parserResult = parserResult;
+            this.fqn = ModelUtils.createFQN(modelElement);
             if (children != null) {
                 this.children = children;
             } else {
@@ -255,9 +256,8 @@ public class JsStructureScanner implements StructureScanner {
             boolean thesame = false;
             if (obj instanceof JsStructureItem) {
                 JsStructureItem item = (JsStructureItem) obj;
-                if (item.getName() != null && this.getName() != null) {
-                    thesame = item.modelElement.getName().equals(modelElement.getName()) 
-                            && item.modelElement.getOffsetRange().equals(modelElement.getOffsetRange());
+                if (item.fqn != null && this.fqn != null) {
+                    thesame = item.fqn.equals(this.fqn);
                 }
             }
             return thesame;
@@ -265,12 +265,7 @@ public class JsStructureScanner implements StructureScanner {
         
         @Override
         public int hashCode() {
-            int hashCode = 11;
-            if (getName() != null) {
-                hashCode = 31 * getName().hashCode() + hashCode;
-            }
-            hashCode = (int) (31 * getPosition() + hashCode);
-            return hashCode;
+            return this.fqn.hashCode();
         }
         
         @Override

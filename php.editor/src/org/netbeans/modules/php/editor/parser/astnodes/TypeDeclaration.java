@@ -92,4 +92,14 @@ public abstract class TypeDeclaration extends Statement {
     public List<Expression> getInterfaes() {
         return this.interfaces;
     }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        for (Expression expression : getInterfaes()) {
+            sb.append(expression).append(","); //NOI18N
+        }
+        return getName() + (sb.length() > 0 ? " " + sb.toString() : " ") + getBody(); //NOI18N
+    }
+
 }

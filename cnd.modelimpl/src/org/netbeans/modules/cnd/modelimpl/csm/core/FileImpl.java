@@ -82,6 +82,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.*;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
+import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
 import org.netbeans.modules.cnd.apt.support.APTFileCacheEntry;
@@ -114,6 +115,7 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.dlight.libs.common.PathUtilities;
+import org.netbeans.modules.dlight.libs.common.PerformanceLogger;
 import org.openide.filesystems.FileObject;
 import org.openide.util.CharSequences;
 import org.openide.util.Exceptions;
@@ -144,7 +146,17 @@ public final class FileImpl implements CsmFile,
         return parsingFileContentRef.get().get();
     }
     
+    public FileContent prepareIncludedFileParsingContent() {
+        if (getParsingFileContent() == null) {
+            parsingFileContentRef.get().set(FileContent.getHardReferenceBasedCopy(this.currentFileContent, true));
+        }
+        return getParsingFileContent();
+    }
+    
     public static final boolean reportErrors = TraceFlags.REPORT_PARSING_ERRORS | TraceFlags.DEBUG;
+    public static final int PARSE_FILE_TIMEOUT = 30;
+    public static final String PARSE_FILE_PERFORMANCE_EVENT = "PARSE_FILE_PERFORMANCE_EVENT"; //NOI18N
+    public static final String READ_FILE_PERFORMANCE_EVENT = "READ_FILE_PERFORMANCE_EVENT"; //NOI18N
     private static final boolean reportParse = Boolean.getBoolean("parser.log.parse");
     // the next flag(s) make sense only in the casew reportParse is true
     private static final boolean logState = Boolean.getBoolean("parser.log.state");
@@ -559,7 +571,7 @@ public final class FileImpl implements CsmFile,
                                         break; // does not make sense parsing old data
                                     }
                                 }
-                                updateModelAfterParsing(parseParams);
+                                updateModelAfterParsing(parseParams.content);
                             } finally {
                                 postParse();
                                 synchronized (changeStateLock) {
@@ -598,7 +610,7 @@ public final class FileImpl implements CsmFile,
                                         break; // does not make sense parsing old data
                                     }
                                 }
-                                updateModelAfterParsing(parseParams);
+                                updateModelAfterParsing(parseParams.content);
                                 if (tryPartialReparse) {
                                     assert lastFileBasedSignature != null;
                                     newSignature = FileContentSignature.create(this);
@@ -699,7 +711,7 @@ public final class FileImpl implements CsmFile,
                         break; // does not make sense parsing old data
                     }
                 }
-                updateModelAfterParsing(parseParams);
+                updateModelAfterParsing(parseParams.content);
             } finally {
                 synchronized (changeStateLock) {
                     final int val = inEnsureParsed.decrementAndGet();
@@ -1037,7 +1049,9 @@ public final class FileImpl implements CsmFile,
 
     private CsmParserResult _parse(ParseDescriptor parseParams) {
         parsingFileContentRef.get().set(parseParams.content);
+        PerformanceLogger.PerformaceAction performanceEvent = PerformanceLogger.getLogger().start(FileImpl.PARSE_FILE_PERFORMANCE_EVENT, getFileObject());
         try {
+            performanceEvent.setTimeOut(FileImpl.PARSE_FILE_TIMEOUT);
             Diagnostic.StopWatch sw = TraceFlags.TIMING_PARSE_PER_FILE_DEEP ? new Diagnostic.StopWatch() : null;
             if (reportParse || logState || TraceFlags.DEBUG) {
                 logParse("Parsing", parseParams.getCurrentPreprocHandler()); //NOI18N
@@ -1057,6 +1071,29 @@ public final class FileImpl implements CsmFile,
             }
             return parsing;
         } finally {
+            ProjectBase projectImpl = getProjectImpl(false);
+            if (projectImpl != null) {
+                if (projectImpl.isArtificial()) {
+                    Collection<ProjectBase> dependentProjects = ((LibProjectImpl)projectImpl).getDependentProjects();
+                    if (dependentProjects.size() > 0) {
+                        projectImpl = dependentProjects.iterator().next();
+                    }
+                }
+            }
+            Object platformProject = null;
+            if (projectImpl != null) {
+                platformProject = projectImpl.getPlatformProject();
+            }
+            int lines = 0;
+            try {
+                lines = getBuffer().getLineCount();
+            } catch (IOException ex) {
+            }
+            if (platformProject instanceof NativeProject) {
+                performanceEvent.log(lines, ((NativeProject)platformProject).getProject());
+            } else {
+                performanceEvent.log(lines);
+            }
             parsingFileContentRef.get().set(null);
         }
     }
@@ -1474,18 +1511,28 @@ public final class FileImpl implements CsmFile,
         return lastParsed;
     }
 
-    void updateModelAfterParsing(ParseDescriptor parseParams) {
-        Map<CsmUID<FunctionImplEx<?>>, AST> fakeASTs = parseParams.content.getFakeASTs();
+    void updateModelAfterParsing(FileContent fileContent) {
+        Map<CsmUID<FunctionImplEx<?>>, AST> fakeASTs = fileContent.getFakeASTs();
         ProjectBase projectImpl = getProjectImpl(true);
         CsmUID<CsmFile> thisFileUID = getUID();
         for (Map.Entry<CsmUID<FunctionImplEx<?>>, AST> entry : fakeASTs.entrySet()) {
             projectImpl.trackFakeFunctionAST(thisFileUID, entry.getKey(), entry.getValue());
         }
-        hasBrokenIncludes.set(parseParams.content.hasBrokenIncludes());
+        hasBrokenIncludes.set(fileContent.hasBrokenIncludes());
         // handle file content
-        currentFileContent = parseParams.content.toWeakReferenceBasedCopy();
+        currentFileContent = fileContent.toWeakReferenceBasedCopy();
         currentFileContent.put();
         RepositoryUtils.put(this);
+        if (TraceFlags.PARSE_HEADERS_WITH_SOURCES) {
+            for (FileContent includedFileContent : fileContent.getIncludedFileContents()) {
+                FileImpl fileImplIncluded = includedFileContent.getFile();
+                fileImplIncluded.updateModelAfterParsing(includedFileContent);
+                fileImplIncluded.parsingFileContentRef.get().set(null);
+                synchronized (fileImplIncluded.changeStateLock) {
+                    fileImplIncluded.state = State.PARSED;
+                }
+            }
+        }
     }
 
     public void addInstantiation(CsmInstantiation inst) {

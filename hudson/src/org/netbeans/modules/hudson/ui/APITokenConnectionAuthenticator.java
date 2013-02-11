@@ -90,6 +90,7 @@ public class APITokenConnectionAuthenticator extends JPanel {
         }
 
         @Messages({"# {0} - server location", "# {1} - user name", "APITokenConnectionAuthenticator.password_description=API token for {1} on {0}"})
+        @org.netbeans.api.annotations.common.SuppressWarnings("DM_DEFAULT_ENCODING")
         @Override public URLConnection forbidden(URLConnection conn, URL home) {
             String version = conn.getHeaderField("X-Jenkins");
             if (version == null) {
@@ -127,7 +128,7 @@ public class APITokenConnectionAuthenticator extends JPanel {
             String token = new String(panel.tokField.getPassword());
             panel.tokField.setText("");
             Keyring.save(key, token.toCharArray(), APITokenConnectionAuthenticator_password_description(home, username));
-            BASIC_AUTH.put(home.toString(), new Base64().encodeToString((username + ':' + token).getBytes()).trim());
+            BASIC_AUTH.put(home.toString(), new Base64(0).encodeToString((username + ':' + token).getBytes()).trim());
             try {
                 return conn.getURL().openConnection();
             } catch (IOException x) {

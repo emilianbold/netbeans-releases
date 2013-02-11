@@ -209,6 +209,9 @@ public class BuildArtifactMapperImpl {
         
         for (URL u : binaryRoots.getRoots()) {
             assert u != null : "Null in BinaryForSourceQuery.Result.roots: " + binaryRoots; //NOI18N
+            if (u == null) {
+                continue;
+            }
             File f = FileUtil.archiveOrDirForURL(u);
 
             try {

@@ -58,7 +58,7 @@ public class MavenValidators {
                     StringValidators.REQUIRE_NON_EMPTY_STRING,
 //                  ValidatorUtils.merge(StringValidators.MAY_NOT_START_WITH_DIGIT,
                     ValidatorUtils.merge(StringValidators.NO_WHITESPACE,
-                    StringValidators.regexp("[a-zA-Z0-9_\\-.]+", NbBundle.getMessage(MavenValidators.class, "ERR_Coordinate_Invalid"), false)
+                    StringValidators.regexp("[a-zA-Z0-9_\\-.]*[a-zA-Z0-9]{1}", NbBundle.getMessage(MavenValidators.class, "ERR_Coordinate_Invalid"), false)
                ));
     }
 
@@ -67,7 +67,7 @@ public class MavenValidators {
                     StringValidators.REQUIRE_NON_EMPTY_STRING,
 //                  ValidatorUtils.merge(StringValidators.MAY_NOT_START_WITH_DIGIT,
                     ValidatorUtils.merge(StringValidators.NO_WHITESPACE,
-                    StringValidators.regexp("[a-zA-Z0-9_\\-.]+", NbBundle.getMessage(MavenValidators.class, "ERR_Coordinate_Invalid"), false)
+                    StringValidators.regexp("[a-zA-Z0-9_\\-.]*[a-zA-Z0-9]{1}", NbBundle.getMessage(MavenValidators.class, "ERR_Coordinate_Invalid"), false)
                ));
     }
 
@@ -76,7 +76,7 @@ public class MavenValidators {
                     StringValidators.REQUIRE_NON_EMPTY_STRING,
 //                  ValidatorUtils.merge(StringValidators.MAY_NOT_START_WITH_DIGIT,
                     ValidatorUtils.merge(StringValidators.NO_WHITESPACE,
-                    StringValidators.regexp("[a-zA-Z0-9_\\-.]+", NbBundle.getMessage(MavenValidators.class, "ERR_Coordinate_Invalid"),  false)
+                    StringValidators.regexp("[a-zA-Z0-9_\\-.]*[a-zA-Z0-9]{1}", NbBundle.getMessage(MavenValidators.class, "ERR_Coordinate_Invalid"),  false)
                ));
     }
     private MavenValidators() {

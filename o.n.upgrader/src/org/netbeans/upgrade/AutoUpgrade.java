@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -43,6 +43,7 @@
  */
 
 package org.netbeans.upgrade;
+import java.awt.BorderLayout;
 import java.beans.PropertyVetoException;
 import java.io.*;
 import java.net.URL;
@@ -50,9 +51,11 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Logger;
+import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JOptionPane;
-import org.netbeans.upgrade.systemoptions.Importer;
+import javax.swing.JPanel;
+import javax.swing.JProgressBar;
 import org.netbeans.util.Util;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
@@ -89,9 +92,6 @@ public final class AutoUpgrade {
             if (!showUpgradeDialog (sourceFolder, noteChangedDefaults)) {
                 throw new org.openide.util.UserCancelException ();
             }
-            copyToUserdir(sourceFolder);
-            //migrates SystemOptions, converts them as a Preferences
-            Importer.doImport();
         } else if (! noteChangedDefaults.isEmpty()) {
             // show a note only
             showNoteDialog(noteChangedDefaults);
@@ -117,7 +117,7 @@ public final class AutoUpgrade {
     
     // userdir on OS specific root of userdir (see issue 196075)
     static final List<String> NEWER_VERSION_TO_CHECK =
-            Arrays.asList ("7.2.1", "7.2"); //NOI18N
+            Arrays.asList ("7.3", "7.2.1", "7.2"); //NOI18N
 
             
     private static File checkPreviousOnOsSpecificPlace (final List<String> versionsToCheck) {
@@ -185,12 +185,19 @@ public final class AutoUpgrade {
     
     private static boolean showUpgradeDialog (final File source, String note) {
         Util.setDefaultLookAndFeel();
-        JOptionPane p = new JOptionPane (
-            new AutoUpgradePanel (source.getAbsolutePath (), note),
-            JOptionPane.QUESTION_MESSAGE,
-            JOptionPane.YES_NO_OPTION
-        );
-        JDialog d = Util.createJOptionDialog(p, NbBundle.getMessage (AutoUpgrade.class, "MSG_Confirmation_Title"));
+
+	JPanel panel = new JPanel(new BorderLayout());
+	panel.add(new AutoUpgradePanel (source.getAbsolutePath (), note), BorderLayout.CENTER);
+	JProgressBar progressBar = new JProgressBar(0, 100);
+	progressBar.setValue(0);
+	progressBar.setStringPainted(true);
+	progressBar.setIndeterminate(true);
+	panel.add(progressBar, BorderLayout.SOUTH);
+	progressBar.setVisible(false);
+	
+	JButton[] options = new JButton[] {new JButton("Yes"), new JButton("No")};
+        JOptionPane p = new JOptionPane (panel, JOptionPane.QUESTION_MESSAGE, JOptionPane.YES_NO_OPTION, null, options);
+        JDialog d = Util.createJOptionProgressDialog(p, NbBundle.getMessage (AutoUpgrade.class, "MSG_Confirmation_Title"), source, progressBar);
         d.setVisible (true);
 
         return new Integer (JOptionPane.YES_OPTION).equals (p.getValue ());
@@ -297,5 +304,9 @@ public final class AutoUpgrade {
         LOGGER.fine("Import file: " + importFile);
         LOGGER.info("Importing from " + source + " to " + userdir); // NOI18N
         CopyFiles.copyDeep(source, userdir, importFile);
+    }
+
+    public static void doCopyToUserDir(File source) throws IOException, PropertyVetoException {
+	copyToUserdir(source);
     }
 }

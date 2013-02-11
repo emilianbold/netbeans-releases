@@ -137,7 +137,8 @@ public class Attributes extends DefaultAttributes {
     @Override
     public Object readAttribute(String name, String attrName) {
         final String translatedName = translateName(name);
-        Object retVal = getPreferedAttributes().readAttribute(translatedName, attrName);
+        final DefaultAttributes pa = getPreferedAttributes();
+        Object retVal = pa == null ? null : pa.readAttribute(translatedName, attrName);
         if (retVal == null && isBackwardCompatible()) {
             retVal = super.readAttribute(name, attrName);
             if (retVal != null) {

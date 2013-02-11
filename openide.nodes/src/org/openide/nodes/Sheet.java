@@ -239,8 +239,8 @@ public final class Sheet extends Object {
 
         for (int i = 0; i < s; i++) {
             Node.PropertySet p = (Node.PropertySet) sets.get(i);
-
-            if (p.getName().equals(name)) {
+            final String pn = p.getName();
+            if (pn != null && pn.equals(name)) {
                 return i;
             }
         }

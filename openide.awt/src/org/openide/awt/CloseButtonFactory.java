@@ -45,9 +45,9 @@
 package org.openide.awt;
 
 import java.awt.Dimension;
-import java.awt.Image;
 import java.awt.Toolkit;
 import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.UIManager;
 import org.openide.util.ImageUtilities;
@@ -60,12 +60,12 @@ import org.openide.util.ImageUtilities;
  */
 public final class CloseButtonFactory{
 
-    private static Image closeTabImage;
-    private static Image closeTabPressedImage;
-    private static Image closeTabMouseOverImage;
-    private static Image bigCloseTabImage;
-    private static Image bigCloseTabPressedImage;
-    private static Image bigCloseTabMouseOverImage;
+    private static ImageIcon closeTabImage;
+    private static ImageIcon closeTabPressedImage;
+    private static ImageIcon closeTabMouseOverImage;
+    private static ImageIcon bigCloseTabImage;
+    private static ImageIcon bigCloseTabPressedImage;
+    private static ImageIcon bigCloseTabMouseOverImage;
 
     private CloseButtonFactory() {
     }
@@ -84,9 +84,9 @@ public final class CloseButtonFactory{
         closeButton.setBorder(BorderFactory.createEmptyBorder());
         closeButton.setBorderPainted(false);
         closeButton.setRolloverEnabled(true);
-        closeButton.setIcon(ImageUtilities.image2Icon(getCloseTabImage()));
-        closeButton.setRolloverIcon(ImageUtilities.image2Icon(getCloseTabRolloverImage()));
-        closeButton.setPressedIcon(ImageUtilities.image2Icon(getCloseTabPressedImage()));
+        closeButton.setIcon(getCloseTabImage());
+        closeButton.setRolloverIcon(getCloseTabRolloverImage());
+        closeButton.setPressedIcon(getCloseTabPressedImage());
         return closeButton;
     }
 
@@ -104,9 +104,9 @@ public final class CloseButtonFactory{
         closeButton.setBorder(BorderFactory.createEmptyBorder());
         closeButton.setBorderPainted(false);
         closeButton.setRolloverEnabled(true);
-        closeButton.setIcon(ImageUtilities.image2Icon(getBigCloseTabImage()));
-        closeButton.setRolloverIcon(ImageUtilities.image2Icon(getBigCloseTabRolloverImage()));
-        closeButton.setPressedIcon(ImageUtilities.image2Icon(getBigCloseTabPressedImage()));
+        closeButton.setIcon(getBigCloseTabImage());
+        closeButton.setRolloverIcon(getBigCloseTabRolloverImage());
+        closeButton.setPressedIcon(getBigCloseTabPressedImage());
         return closeButton;
     }
 
@@ -155,128 +155,128 @@ public final class CloseButtonFactory{
         return "GTK".equals( UIManager.getLookAndFeel().getID() ); //NOI18N
     }
 
-    private static Image getCloseTabImage() {
+    private static ImageIcon getCloseTabImage() {
         if( null == closeTabImage ) {
             if( isWindows8LaF() ) {
-                closeTabImage = ImageUtilities.loadImage("org/openide/awt/resources/win8_bigclose_enabled.png"); // NOI18N
+                closeTabImage = ImageUtilities.loadImageIcon("org/openide/awt/resources/win8_bigclose_enabled.png", true); // NOI18N
             } else if( isWindowsVistaLaF() ) {
-                closeTabImage = ImageUtilities.loadImage("org/openide/awt/resources/vista_close_enabled.png"); // NOI18N
+                closeTabImage = ImageUtilities.loadImageIcon("org/openide/awt/resources/vista_close_enabled.png", true); // NOI18N
             } else if( isWindowsXPLaF() ) {
-                closeTabImage = ImageUtilities.loadImage("org/openide/awt/resources/xp_close_enabled.png"); // NOI18N
+                closeTabImage = ImageUtilities.loadImageIcon("org/openide/awt/resources/xp_close_enabled.png", true); // NOI18N
             } else if( isWindowsLaF() ) {
-                closeTabImage = ImageUtilities.loadImage("org/openide/awt/resources/win_close_enabled.png"); // NOI18N
+                closeTabImage = ImageUtilities.loadImageIcon("org/openide/awt/resources/win_close_enabled.png", true); // NOI18N
             } else if( isAquaLaF() ) {
-                closeTabImage = ImageUtilities.loadImage("org/openide/awt/resources/mac_close_enabled.png"); // NOI18N
+                closeTabImage = ImageUtilities.loadImageIcon("org/openide/awt/resources/mac_close_enabled.png", true); // NOI18N
             } else if( isGTKLaF() ) {
-                closeTabImage = ImageUtilities.loadImage("org/openide/awt/resources/gtk_close_enabled.png"); // NOI18N
+                closeTabImage = ImageUtilities.loadImageIcon("org/openide/awt/resources/gtk_close_enabled.png", true); // NOI18N
             } else {
-                closeTabImage = ImageUtilities.loadImage("org/openide/awt/resources/metal_close_enabled.png"); // NOI18N
+                closeTabImage = ImageUtilities.loadImageIcon("org/openide/awt/resources/metal_close_enabled.png", true); // NOI18N
             }
         }
         return closeTabImage;
     }
 
-    private static Image getCloseTabPressedImage() {
+    private static ImageIcon getCloseTabPressedImage() {
         if( null == closeTabPressedImage ) {
             if( isWindows8LaF() ) {
-                closeTabPressedImage = ImageUtilities.loadImage("org/openide/awt/resources/win8_bigclose_pressed.png"); // NOI18N
+                closeTabPressedImage = ImageUtilities.loadImageIcon("org/openide/awt/resources/win8_bigclose_pressed.png", true); // NOI18N
             } else if( isWindowsVistaLaF() ) {
-                closeTabPressedImage = ImageUtilities.loadImage("org/openide/awt/resources/vista_close_pressed.png"); // NOI18N
+                closeTabPressedImage = ImageUtilities.loadImageIcon("org/openide/awt/resources/vista_close_pressed.png", true); // NOI18N
             } else if( isWindowsXPLaF() ) {
-                closeTabPressedImage = ImageUtilities.loadImage("org/openide/awt/resources/xp_close_pressed.png"); // NOI18N
+                closeTabPressedImage = ImageUtilities.loadImageIcon("org/openide/awt/resources/xp_close_pressed.png", true); // NOI18N
             } else if( isWindowsLaF() ) {
-                closeTabPressedImage = ImageUtilities.loadImage("org/openide/awt/resources/win_close_pressed.png"); // NOI18N
+                closeTabPressedImage = ImageUtilities.loadImageIcon("org/openide/awt/resources/win_close_pressed.png", true); // NOI18N
             } else if( isAquaLaF() ) {
-                closeTabPressedImage = ImageUtilities.loadImage("org/openide/awt/resources/mac_close_pressed.png"); // NOI18N
+                closeTabPressedImage = ImageUtilities.loadImageIcon("org/openide/awt/resources/mac_close_pressed.png", true); // NOI18N
             } else if( isGTKLaF() ) {
-                closeTabPressedImage = ImageUtilities.loadImage("org/openide/awt/resources/gtk_close_pressed.png"); // NOI18N
+                closeTabPressedImage = ImageUtilities.loadImageIcon("org/openide/awt/resources/gtk_close_pressed.png", true); // NOI18N
             } else {
-                closeTabPressedImage = ImageUtilities.loadImage("org/openide/awt/resources/metal_close_pressed.png"); // NOI18N
+                closeTabPressedImage = ImageUtilities.loadImageIcon("org/openide/awt/resources/metal_close_pressed.png", true); // NOI18N
             }
         }
         return closeTabPressedImage;
     }
 
-    private static Image getCloseTabRolloverImage() {
+    private static ImageIcon getCloseTabRolloverImage() {
         if( null == closeTabMouseOverImage ) {
             if( isWindows8LaF() ) {
-                closeTabMouseOverImage = ImageUtilities.loadImage("org/openide/awt/resources/win8_bigclose_rollover.png"); // NOI18N
+                closeTabMouseOverImage = ImageUtilities.loadImageIcon("org/openide/awt/resources/win8_bigclose_rollover.png", true); // NOI18N
             } else if( isWindowsVistaLaF() ) {
-                closeTabMouseOverImage = ImageUtilities.loadImage("org/openide/awt/resources/vista_close_rollover.png"); // NOI18N
+                closeTabMouseOverImage = ImageUtilities.loadImageIcon("org/openide/awt/resources/vista_close_rollover.png", true); // NOI18N
             } else if( isWindowsXPLaF() ) {
-                closeTabMouseOverImage = ImageUtilities.loadImage("org/openide/awt/resources/xp_close_rollover.png"); // NOI18N
+                closeTabMouseOverImage = ImageUtilities.loadImageIcon("org/openide/awt/resources/xp_close_rollover.png", true); // NOI18N
             } else if( isWindowsLaF() ) {
-                closeTabMouseOverImage = ImageUtilities.loadImage("org/openide/awt/resources/win_close_rollover.png"); // NOI18N
+                closeTabMouseOverImage = ImageUtilities.loadImageIcon("org/openide/awt/resources/win_close_rollover.png", true); // NOI18N
             } else if( isAquaLaF() ) {
-                closeTabMouseOverImage = ImageUtilities.loadImage("org/openide/awt/resources/mac_close_rollover.png"); // NOI18N
+                closeTabMouseOverImage = ImageUtilities.loadImageIcon("org/openide/awt/resources/mac_close_rollover.png", true); // NOI18N
             } else if( isGTKLaF() ) {
-                closeTabMouseOverImage = ImageUtilities.loadImage("org/openide/awt/resources/gtk_close_rollover.png"); // NOI18N
+                closeTabMouseOverImage = ImageUtilities.loadImageIcon("org/openide/awt/resources/gtk_close_rollover.png", true); // NOI18N
             } else {
-                closeTabMouseOverImage = ImageUtilities.loadImage("org/openide/awt/resources/metal_close_rollover.png"); // NOI18N
+                closeTabMouseOverImage = ImageUtilities.loadImageIcon("org/openide/awt/resources/metal_close_rollover.png", true); // NOI18N
             }
         }
         return closeTabMouseOverImage;
     }
 
 
-    private static Image getBigCloseTabImage() {
+    private static ImageIcon getBigCloseTabImage() {
         if( null == bigCloseTabImage ) {
             if( isWindows8LaF() ) {
-                bigCloseTabImage = ImageUtilities.loadImage("org/openide/awt/resources/win8_bigclose_enabled.png"); // NOI18N
+                bigCloseTabImage = ImageUtilities.loadImageIcon("org/openide/awt/resources/win8_bigclose_enabled.png", true); // NOI18N
             } else if( isWindowsVistaLaF() ) {
-                bigCloseTabImage = ImageUtilities.loadImage("org/openide/awt/resources/vista_bigclose_enabled.png"); // NOI18N
+                bigCloseTabImage = ImageUtilities.loadImageIcon("org/openide/awt/resources/vista_bigclose_enabled.png", true); // NOI18N
             } else if( isWindowsXPLaF() ) {
-                bigCloseTabImage = ImageUtilities.loadImage("org/openide/awt/resources/xp_bigclose_enabled.png"); // NOI18N
+                bigCloseTabImage = ImageUtilities.loadImageIcon("org/openide/awt/resources/xp_bigclose_enabled.png", true); // NOI18N
             } else if( isWindowsLaF() ) {
-                bigCloseTabImage = ImageUtilities.loadImage("org/openide/awt/resources/win_bigclose_enabled.png"); // NOI18N
+                bigCloseTabImage = ImageUtilities.loadImageIcon("org/openide/awt/resources/win_bigclose_enabled.png", true); // NOI18N
             } else if( isAquaLaF() ) {
-                bigCloseTabImage = ImageUtilities.loadImage("org/openide/awt/resources/mac_bigclose_enabled.png"); // NOI18N
+                bigCloseTabImage = ImageUtilities.loadImageIcon("org/openide/awt/resources/mac_bigclose_enabled.png", true); // NOI18N
             } else if( isGTKLaF() ) {
-                bigCloseTabImage = ImageUtilities.loadImage("org/openide/awt/resources/gtk_bigclose_enabled.png"); // NOI18N
+                bigCloseTabImage = ImageUtilities.loadImageIcon("org/openide/awt/resources/gtk_bigclose_enabled.png", true); // NOI18N
             } else {
-                bigCloseTabImage = ImageUtilities.loadImage("org/openide/awt/resources/metal_bigclose_enabled.png"); // NOI18N
+                bigCloseTabImage = ImageUtilities.loadImageIcon("org/openide/awt/resources/metal_bigclose_enabled.png", true); // NOI18N
             }
         }
         return bigCloseTabImage;
     }
 
-    private static  Image getBigCloseTabPressedImage() {
+    private static  ImageIcon getBigCloseTabPressedImage() {
         if( null == bigCloseTabPressedImage ) {
             if( isWindows8LaF() ) {
-                bigCloseTabPressedImage = ImageUtilities.loadImage("org/openide/awt/resources/win8_bigclose_pressed.png"); // NOI18N
+                bigCloseTabPressedImage = ImageUtilities.loadImageIcon("org/openide/awt/resources/win8_bigclose_pressed.png", true); // NOI18N
             } else if( isWindowsVistaLaF() ) {
-                bigCloseTabPressedImage = ImageUtilities.loadImage("org/openide/awt/resources/vista_bigclose_pressed.png"); // NOI18N
+                bigCloseTabPressedImage = ImageUtilities.loadImageIcon("org/openide/awt/resources/vista_bigclose_pressed.png", true); // NOI18N
             } else if( isWindowsXPLaF() ) {
-                bigCloseTabPressedImage = ImageUtilities.loadImage("org/openide/awt/resources/xp_bigclose_pressed.png"); // NOI18N
+                bigCloseTabPressedImage = ImageUtilities.loadImageIcon("org/openide/awt/resources/xp_bigclose_pressed.png", true); // NOI18N
             } else if( isWindowsLaF() ) {
-                bigCloseTabPressedImage = ImageUtilities.loadImage("org/openide/awt/resources/win_bigclose_pressed.png"); // NOI18N
+                bigCloseTabPressedImage = ImageUtilities.loadImageIcon("org/openide/awt/resources/win_bigclose_pressed.png", true); // NOI18N
             } else if( isAquaLaF() ) {
-                bigCloseTabPressedImage = ImageUtilities.loadImage("org/openide/awt/resources/mac_bigclose_pressed.png"); // NOI18N
+                bigCloseTabPressedImage = ImageUtilities.loadImageIcon("org/openide/awt/resources/mac_bigclose_pressed.png", true); // NOI18N
             } else if( isGTKLaF() ) {
-                bigCloseTabPressedImage = ImageUtilities.loadImage("org/openide/awt/resources/gtk_bigclose_pressed.png"); // NOI18N
+                bigCloseTabPressedImage = ImageUtilities.loadImageIcon("org/openide/awt/resources/gtk_bigclose_pressed.png", true); // NOI18N
             } else {
-                bigCloseTabPressedImage = ImageUtilities.loadImage("org/openide/awt/resources/metal_bigclose_pressed.png"); // NOI18N
+                bigCloseTabPressedImage = ImageUtilities.loadImageIcon("org/openide/awt/resources/metal_bigclose_pressed.png", true); // NOI18N
             }
         }
         return bigCloseTabPressedImage;
     }
 
-    private static Image getBigCloseTabRolloverImage() {
+    private static ImageIcon getBigCloseTabRolloverImage() {
         if( null == bigCloseTabMouseOverImage ) {
             if( isWindows8LaF() ) {
-                bigCloseTabMouseOverImage = ImageUtilities.loadImage("org/openide/awt/resources/win8_bigclose_rollover.png"); // NOI18N
+                bigCloseTabMouseOverImage = ImageUtilities.loadImageIcon("org/openide/awt/resources/win8_bigclose_rollover.png", true); // NOI18N
             } else if( isWindowsVistaLaF() ) {
-                bigCloseTabMouseOverImage = ImageUtilities.loadImage("org/openide/awt/resources/vista_bigclose_rollover.png"); // NOI18N
+                bigCloseTabMouseOverImage = ImageUtilities.loadImageIcon("org/openide/awt/resources/vista_bigclose_rollover.png", true); // NOI18N
             } else if( isWindowsXPLaF() ) {
-                bigCloseTabMouseOverImage = ImageUtilities.loadImage("org/openide/awt/resources/xp_bigclose_rollover.png"); // NOI18N
+                bigCloseTabMouseOverImage = ImageUtilities.loadImageIcon("org/openide/awt/resources/xp_bigclose_rollover.png", true); // NOI18N
             } else if( isWindowsLaF() ) {
-                bigCloseTabMouseOverImage = ImageUtilities.loadImage("org/openide/awt/resources/win_bigclose_rollover.png"); // NOI18N
+                bigCloseTabMouseOverImage = ImageUtilities.loadImageIcon("org/openide/awt/resources/win_bigclose_rollover.png", true); // NOI18N
             } else if( isAquaLaF() ) {
-                bigCloseTabMouseOverImage = ImageUtilities.loadImage("org/openide/awt/resources/mac_bigclose_rollover.png"); // NOI18N
+                bigCloseTabMouseOverImage = ImageUtilities.loadImageIcon("org/openide/awt/resources/mac_bigclose_rollover.png", true); // NOI18N
             } else if( isGTKLaF() ) {
-                bigCloseTabMouseOverImage = ImageUtilities.loadImage("org/openide/awt/resources/gtk_bigclose_rollover.png"); // NOI18N
+                bigCloseTabMouseOverImage = ImageUtilities.loadImageIcon("org/openide/awt/resources/gtk_bigclose_rollover.png", true); // NOI18N
             } else {
-                bigCloseTabMouseOverImage = ImageUtilities.loadImage("org/openide/awt/resources/metal_bigclose_rollover.png"); // NOI18N
+                bigCloseTabMouseOverImage = ImageUtilities.loadImageIcon("org/openide/awt/resources/metal_bigclose_rollover.png", true); // NOI18N
             }
         }
         return bigCloseTabMouseOverImage;

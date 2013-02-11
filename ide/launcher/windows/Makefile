@@ -28,10 +28,10 @@ build: .build-post-$(CONF)
 # Add your pre 'build' code here...
 
 .build-pre-netbeans.exe: netbeans.rc
-	windres -onetbeans.res -Ocoff netbeans.rc
+	windres -DMANIFEST_FILE="netbeans.exe.manifest" -onetbeans.res -Ocoff netbeans.rc
 
 .build-pre-netbeans64.exe: netbeans.rc
-	x86_64-w64-mingw32-windres.exe -onetbeans64.res -Ocoff netbeans.rc
+	x86_64-w64-mingw32-windres.exe -DMANIFEST_FILE="netbeans64.exe.manifest" -onetbeans64.res -Ocoff netbeans.rc
 
 .build-post-netbeans.exe: .build-impl
 	cp netbeans.exe ../../../nbbuild/netbeans/bin/netbeans.exe

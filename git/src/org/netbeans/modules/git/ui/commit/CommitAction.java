@@ -52,12 +52,14 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.libs.git.GitBranch;
 import org.netbeans.modules.git.client.GitClient;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitRepositoryState;
@@ -77,6 +79,7 @@ import org.netbeans.modules.versioning.hooks.GitHook;
 import org.netbeans.modules.versioning.hooks.GitHookContext;
 import org.netbeans.modules.versioning.hooks.GitHookContext.LogEntry;
 import org.netbeans.modules.versioning.spi.VCSContext;
+import org.netbeans.modules.versioning.util.FileUtils;
 import org.netbeans.modules.versioning.util.common.VCSCommitFilter;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -104,31 +107,20 @@ public class CommitAction extends SingleRepositoryAction {
 
     @Override
     protected void performAction (final File repository, final File[] roots, final VCSContext context) {
-        if (!canCommit(repository)) {
+        RepositoryInfo info = RepositoryInfo.getInstance(repository);
+        info.refresh();
+        if (!canCommit(repository, info)) {
             return;
         }
-        RepositoryInfo info = RepositoryInfo.getInstance(repository);
         final GitRepositoryState state = info.getRepositoryState();
+        final GitUser user = identifyUser(repository);
+        final String mergeCommitMessage = getMergeCommitMessage(repository, state);
         EventQueue.invokeLater(new Runnable() {
             @Override
             public void run() {
                 
-                GitUser user = null;
-                GitClient client = null;
-                try {
-                    client = Git.getInstance().getClient(repository);
-                    user = client.getUser();
-                } catch (GitException ex) {
-                    GitClientExceptionHandler.notifyException(ex, true);
-                    return;
-                } finally {
-                    if (client != null) {
-                        client.release();
-                    }
-                }
-                
                 GitCommitPanel panel = state == GitRepositoryState.MERGING_RESOLVED
-                        ? GitCommitPanelMerged.create(roots, repository, user)
+                        ? GitCommitPanelMerged.create(roots, repository, user, mergeCommitMessage)
                         : GitCommitPanel.create(roots, repository, user, isFromGitView(context));
                 VCSCommitTable<GitFileNode> table = panel.getCommitTable();
                 boolean ok = panel.open(context, new HelpCtx(CommitAction.class));
@@ -148,6 +140,35 @@ public class CommitAction extends SingleRepositoryAction {
                 }
             }
         });
+    }
+
+    private GitUser identifyUser (File repository) {
+        GitUser user = null;
+        GitClient client = null;
+        try {
+            client = Git.getInstance().getClient(repository);
+            user = client.getUser();
+        } catch (GitException ex) {
+            GitClientExceptionHandler.notifyException(ex, true);
+        } finally {
+            if (client != null) {
+                client.release();
+            }
+        }
+        return user;
+    }
+
+    private String getMergeCommitMessage (File repository, GitRepositoryState state) {
+        String message = null;
+        if (EnumSet.of(GitRepositoryState.MERGING, GitRepositoryState.MERGING_RESOLVED).contains(state)) {
+            File f = new File(GitUtils.getGitFolderForRoot(repository), "MERGE_MSG"); //NOI18N
+            try {
+                message = new String(FileUtils.getFileContentsAsByteArray(f), "UTF-8"); //NOI18N
+            } catch (IOException ex) {
+                LOG.log(Level.FINE, null, ex);
+            }
+        }
+        return message;
     }
 
     private static class CommitProgressSupport extends GitProgressSupport {
@@ -181,6 +202,8 @@ public class CommitAction extends SingleRepositoryAction {
                 String message = parameters.getCommitMessage();
                 GitUser author = parameters.getAuthor();
                 GitUser commiter = parameters.getCommiter();
+                boolean amend = parameters.isAmend();
+                
                 Collection<GitHook> hooks = panel.getHooks();
                 try {
 
@@ -200,7 +223,7 @@ public class CommitAction extends SingleRepositoryAction {
                     String origMessage = message;
                     message = beforeCommitHook(commitCandidates, hooks, message);
 
-                    GitRevisionInfo info = commit(commitCandidates, message, author, commiter);
+                    GitRevisionInfo info = commit(commitCandidates, message, author, commiter, amend);
 
                     GitModuleConfig.getDefault().putRecentCommitAuthors(GitCommitParameters.getUserString(author));
                     GitModuleConfig.getDefault().putRecentCommiter(GitCommitParameters.getUserString(commiter));
@@ -295,11 +318,11 @@ public class CommitAction extends SingleRepositoryAction {
             }
         }
 
-        private GitRevisionInfo commit (List<File> commitCandidates, String message, GitUser author, GitUser commiter) throws GitException {
+        private GitRevisionInfo commit (List<File> commitCandidates, String message, GitUser author, GitUser commiter, boolean amend) throws GitException {
             try {
                 GitRevisionInfo info = getClient().commit(
                         state == GitRepositoryState.MERGING_RESOLVED ? new File[0] : commitCandidates.toArray(new File[commitCandidates.size()]),
-                        message, author, commiter, getProgressMonitor());
+                        message, author, commiter, amend, getProgressMonitor());
                 printInfo(info);
                 return info;
             } catch (GitException ex) {
@@ -323,9 +346,15 @@ public class CommitAction extends SingleRepositoryAction {
         }, 100);
     }
 
-    private boolean canCommit (File repository) {
+    @NbBundle.Messages({
+        "# {0} - repository folder name",
+        "MSG_CommitAction.detachedHeadState.warning=HEAD is detached in the repository {0}.\n"
+            + "It is recommended to switch to a branch before committing your changes.\n\n"
+            + "Do you still want to commit?",
+        "LBL_CommitAction.detachedHeadState.title=Detached HEAD State"
+    })
+    private boolean canCommit (File repository, RepositoryInfo info) {
         boolean commitPermitted = true;
-        RepositoryInfo info = RepositoryInfo.getInstance(repository);
         GitRepositoryState state = info.getRepositoryState();
         if (!state.canCommit()) {
             commitPermitted = false;
@@ -355,6 +384,12 @@ public class CommitAction extends SingleRepositoryAction {
             if (retval == NotifyDescriptor.YES_OPTION) {
                 GitUtils.openInVersioningView(conflicts.keySet(), repository, GitUtils.NULL_PROGRESS_MONITOR);
             }
+        } else if (GitBranch.NO_BRANCH == info.getActiveBranch().getName()) {
+            NotifyDescriptor nd = new NotifyDescriptor.Confirmation(Bundle.MSG_CommitAction_detachedHeadState_warning(repository.getName()),
+                    Bundle.LBL_CommitAction_detachedHeadState_title(),
+                    NotifyDescriptor.YES_NO_OPTION, NotifyDescriptor.WARNING_MESSAGE);
+            Object retval = DialogDisplayer.getDefault().notify(nd);
+            commitPermitted = retval == NotifyDescriptor.YES_OPTION;
         }
         return commitPermitted;
     }

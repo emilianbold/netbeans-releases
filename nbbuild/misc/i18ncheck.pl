@@ -128,6 +128,18 @@ LOOP:
             }
         }
 
+        if (m,\@Messages\(\{,) {
+            while ($lineno <= $#lines) {
+                $_ = $lines[$lineno - 1];
+                if (! m,\}\),) {
+                    $lineno++;
+                    next;
+                } else {
+                    last;
+                }
+            }
+        }
+
         # skip line comment
         if (m,(^ *//.*$),) {
             $_ = $`;

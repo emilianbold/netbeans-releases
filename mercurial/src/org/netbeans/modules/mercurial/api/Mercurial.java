@@ -327,8 +327,9 @@ public class Mercurial {
 
         RequestProcessor rp = org.netbeans.modules.mercurial.Mercurial.getInstance().getRequestProcessor(repository);
         HgProgressSupport support = new HgProgressSupport() {
+            @Override
             public void perform() {
-                PushAction.getDefaultAndPerformPush(repository, this.getLogger());
+                PushAction.getDefaultAndPerformPush(repository, null, null, this.getLogger());
             }
         };
         support.start(rp, repository, org.openide.util.NbBundle.getMessage(PushAction.class, "MSG_PUSH_PROGRESS")).waitFinished(); //NOI18N

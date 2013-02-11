@@ -39,7 +39,7 @@ import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.php.api.util.Pair;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
-import org.netbeans.modules.php.project.spi.XDebugStarter;
+import org.netbeans.modules.php.spi.executable.DebugStarter;
 import org.netbeans.modules.php.project.ui.options.PhpOptions;
 import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.openide.filesystems.FileObject;
@@ -65,7 +65,7 @@ public class DebugScript  extends RunScript {
             public void run() {
                 //temporary; after narrowing deps. will be changed
                 Callable<Cancellable> callable = getCallable();
-                XDebugStarter dbgStarter =  XDebugStarterFactory.getInstance();
+                DebugStarter dbgStarter =  XDebugStarterFactory.getInstance();
                 assert dbgStarter != null;
                 if (dbgStarter.isAlreadyRunning()) {
                     if (CommandUtils.warnNoMoreDebugSession()) {
@@ -76,13 +76,14 @@ public class DebugScript  extends RunScript {
                     PhpProject phpProject = PhpProjectUtils.getPhpProject(provider.getStartFile());
                     // #198753 - debug file without project
                     String encoding = phpProject != null ? ProjectPropertiesSupport.getEncoding(phpProject) : FileEncodingQuery.getDefaultEncoding().name();
-                    XDebugStarter.Properties props = XDebugStarter.Properties.create(
-                            provider.getStartFile(),
-                            true,
+                    DebugStarter.Properties props = new DebugStarter.Properties.Builder()
+                            .setStartFile(provider.getStartFile())
+                            .setCloseSession(true)
                             // #209682 - "run as script" always from project files
-                            Collections.<Pair<String, String>>emptyList(),
-                            provider.getDebugProxy(),
-                            encoding);
+                            .setPathMapping(Collections.<Pair<String, String>>emptyList())
+                            .setDebugProxy(provider.getDebugProxy())
+                            .setEncoding(encoding)
+                            .build();
                     dbgStarter.start(provider.getProject(), callable, props);
                 }
             }

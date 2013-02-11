@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.j2ee.jboss4.config.mdb;
 
+import org.netbeans.modules.j2ee.jboss4.config.JBossMessageDestination;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
@@ -132,7 +133,7 @@ public class MessageDestinationSupport {
 //---------------------------------------- READING --------------------------------------
 
     public Set<MessageDestination> getMessageDestinations() throws ConfigurationException {
-        return getMessageDestinations(getMessageDestinationModel());
+        return getMessageDestinations(getMessageDestinationModel(false));
     }
     
     private static Set<MessageDestination> getMessageDestinations(Server model) throws ConfigurationException {
@@ -183,7 +184,7 @@ public class MessageDestinationSupport {
      *
      * @return Destination service graph or null if the jboss#-netbeans-destinations-service.xml file is not parseable.
      */
-    private synchronized Server getMessageDestinationModel() {
+    private synchronized Server getMessageDestinationModel(boolean create) {
         
         try {
             if (destinationsFile.exists()) {
@@ -196,7 +197,7 @@ public class MessageDestinationSupport {
                 } catch (RuntimeException re) {
                     // netbeans-destinations-service.xml is not parseable, do nothing
                 }
-            } else {
+            } else if (create) {
                 // create netbeans-destinations-service.xml if it does not exist yet
                 destinationServiceModel = new Server();
                 ResourceConfigurationHelper.writeFile(destinationsFile, destinationServiceModel);
@@ -222,7 +223,7 @@ public class MessageDestinationSupport {
         }
 
         if (!destinationsFile.exists()) {
-            getMessageDestinationModel();
+            getMessageDestinationModel(true);
         }
         
         DataObject destinationsDO = null;
@@ -256,7 +257,7 @@ public class MessageDestinationSupport {
             // this should not occur, just log it if it happens
             Logger.getLogger("global").log(Level.INFO, null, ble);
         } catch (RuntimeException e) {
-            Server oldDestinationServiceModel = getMessageDestinationModel();
+            Server oldDestinationServiceModel = getMessageDestinationModel(true);
             if (oldDestinationServiceModel == null) {
                 // neither the old graph is parseable, there is not much we can do here
                 // TODO: should we notify the user?

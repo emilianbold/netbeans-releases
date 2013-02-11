@@ -43,7 +43,6 @@
  */
 package org.netbeans.modules.subversion.client;
 
-import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
@@ -52,9 +51,6 @@ import java.net.MalformedURLException;
 import java.security.InvalidKeyException;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.net.ssl.SSLKeyException;
@@ -62,7 +58,6 @@ import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.client.SvnClientFactory.ConnectionType;
 import org.netbeans.modules.subversion.config.SvnConfigFiles;
 import org.netbeans.modules.subversion.util.SvnUtils;
-import org.netbeans.modules.versioning.util.IndexingBridge;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.util.Cancellable;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
@@ -83,7 +78,6 @@ public class SvnClientInvocationHandler implements InvocationHandler {
     protected static final String GET_INFO_FROM_WORKING_COPY = "getInfoFromWorkingCopy"; // NOI18N
     protected static final String CANCEL_OPERATION = "cancel"; //NOI18N
     private static final String DISPOSE_METHOD = "dispose"; //NOI18N
-    private static final String DISABLE_IB_METHOD = "setIndexingBridgeDisabled"; //NOI18N
     private static final HashSet<String> PARALLELIZABLE_METHODS = new HashSet<String>(Arrays.asList(new String[] {
         "setConfigDirectory",                                           //NOI18N
         "getSvnUrl",                                                    //NOI18N
@@ -91,7 +85,6 @@ public class SvnClientInvocationHandler implements InvocationHandler {
         "getIgnoredPatterns",                                           //NOI18N
         "getStatus",                                                    //NOI18N
         "removeNotifyListener",                                         //NOI18N
-        DISABLE_IB_METHOD,
         DISPOSE_METHOD
     }));
     
@@ -105,7 +98,6 @@ public class SvnClientInvocationHandler implements InvocationHandler {
     private static boolean metricsAlreadyLogged = false;
     private final ConnectionType connectionType;
     private volatile boolean disposed;
-    private final ThreadLocal<Boolean> indexingBridgeDisabled;
     
     public SvnClientInvocationHandler (ISVNClientAdapter adapter, SvnClientDescriptor desc, SvnProgressSupport support, int handledExceptions, SvnClientFactory.ConnectionType connType) {
         
@@ -129,7 +121,6 @@ public class SvnClientInvocationHandler implements InvocationHandler {
             }
         };
         this.connectionType = connType;
-        this.indexingBridgeDisabled = new ThreadLocal<Boolean>();
     }
 
     private static String print(Object[] args) {
@@ -166,31 +157,14 @@ public class SvnClientInvocationHandler implements InvocationHandler {
                 //new Throwable("~~~ SVN: invoking '" + method.getName() + "'").printStackTrace();
             }
 
-            Callable<Object> c = new Callable<Object>() {
-                @Override
-                public Object call() throws Exception {
-                    if(parallelizable(method, args)) {
-                        return invokeMethod(method, args);
-                    } else {
-                        synchronized (semaphor) {
-                            return invokeMethod(method, args);
-                        }
-                    }
-                }
-            };
             if (DISPOSE_METHOD.equals(method.getName())) {
                 disposed = true;
             }
-            if (fsReadOnlyAction || Boolean.TRUE.equals(indexingBridgeDisabled.get())) {
-                return c.call();
+            if(parallelizable(method, args)) {
+                return invokeMethod(method, args);
             } else {
-                List<File> files = getFileParameters(args);
-                if(files.size() > 0) {
-                    return IndexingBridge.getInstance().runWithoutIndexing(c, files.toArray(new File[files.size()]));
-                } else {
-                    // no file arguments - seems there is no need to stop indexing
-                    //                     or refresh the FS
-                    return c.call();
+                synchronized (semaphor) {
+                    return invokeMethod(method, args);
                 }
             }
         } catch (Exception e) {
@@ -252,21 +226,6 @@ public class SvnClientInvocationHandler implements InvocationHandler {
                 Subversion.getInstance().getRefreshHandler().refresh();
             }
         }
-    }
-
-    private List<File> getFileParameters(final Object[] args) {
-        List<File> files = new LinkedList<File>();
-        if (args != null && args.length > 0) {
-            for (Object arg : args) {
-                if (arg instanceof File) {
-                    files.add((File) arg);
-                } else if (arg instanceof File[]) {
-                    File[] fs = (File[]) arg;
-                    files.addAll(Arrays.asList(fs));
-                }
-            }
-        }
-        return files;
     }
 
     private boolean isFSWrittingCommand(final Method method) {
@@ -355,16 +314,6 @@ public class SvnClientInvocationHandler implements InvocationHandler {
         }
 
         if( ISVNClientAdapter.class.isAssignableFrom(declaringClass) ) {
-            if (DISABLE_IB_METHOD.equals(proxyMethod.getName())) {
-                if (args != null && args.length == 1 && args[0] instanceof Boolean) {
-                    if (Boolean.TRUE.equals(args[0])) {
-                        indexingBridgeDisabled.set(Boolean.TRUE);
-                    } else {
-                        indexingBridgeDisabled.remove();
-                    }
-                    return null;
-                }
-            }
             // Cliet Adapter
             if(support != null) {
                 support.setCancellableDelegate(cancellable);

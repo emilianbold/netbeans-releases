@@ -55,7 +55,6 @@ import org.netbeans.modules.versioning.core.spi.VCSVisibilityQuery;
 import org.netbeans.modules.versioning.core.api.VersioningSupport;
 import org.netbeans.modules.versioning.core.spi.*;
 import org.netbeans.spi.queries.CollocationQueryImplementation2;
-import org.openide.util.NbPreferences;
 import org.openide.util.test.MockLookup;
 
 /**
@@ -77,7 +76,7 @@ public class ConnectDisconnectTest extends NbTestCase {
         System.setProperty("netbeans.user", userdir.getAbsolutePath());
         
         // cleanup disconnected folders
-        Utils.put(NbPreferences.forModule(VersioningConfig.class), "disconnectedFolders", new ArrayList<String>());
+        Utils.put(VersioningConfig.getDefault().getPreferences(), "disconnectedFolders", new ArrayList<String>());
         
         super.setUp();
     }

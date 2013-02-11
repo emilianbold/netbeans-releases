@@ -417,7 +417,7 @@ class ConnectionCustomEditor extends javax.swing.JPanel {
             selectedProperty = selectedItem.getPropertyDescriptor();
             if (selectedProperty == null)
                 propertyEditor.setValue(new RADConnectionPropertyEditor.RADConnectionDesignValue(selectedItem.getReadMethodName()));                
-            else if (selectedComponent != null && selectedProperty != null)
+            else if (selectedComponent != null)
                 propertyEditor.setValue(new RADConnectionPropertyEditor.RADConnectionDesignValue(selectedComponent, selectedProperty));
             else                
                 propertyEditor.setValue(BeanSupport.NO_VALUE);

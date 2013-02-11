@@ -101,6 +101,7 @@ public class DynamicVerifyTest extends NbTestCase {
             addTest(MenuProfileActionsCheck.class, "testCheckAllReal").
             addTest(LibrariesCheck.class, "testCheckLibrariesReal").
             addTest(OptionsCheck.class, "testCheckKeywordsReal").
+            addTest(BundleFormatCheck.class).
             gui(false).
             clusters("ergonomics.*").
             clusters("^(?!(mobility)).*$").

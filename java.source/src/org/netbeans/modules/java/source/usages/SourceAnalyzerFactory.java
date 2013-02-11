@@ -55,6 +55,7 @@ import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
+import java.text.MessageFormat;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -75,6 +76,7 @@ import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.SourceUtils;
+import org.netbeans.modules.java.source.ElementHandleAccessor;
 import org.netbeans.modules.java.source.indexing.JavaCustomIndexer;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.parsing.OutputFileManager;
@@ -137,9 +139,13 @@ public final class SourceAnalyzerFactory {
          * @param mainMethod holder for main class flag, set to true if class has a main method
          * @throws IOException in case of IO error
          */
-        public void analyse (final Iterable<? extends CompilationUnitTree> data, JavacTaskImpl jt, JavaFileManager manager,
-            final JavaCustomIndexer.CompileTuple tuple,
-            Set<? super ElementHandle<TypeElement>> newTypes, /*out*/boolean[] mainMethod) throws IOException {
+        public void analyse (
+                final Iterable<? extends CompilationUnitTree> data,
+                final JavacTaskImpl jt,
+                final JavaCustomIndexer.CompileTuple tuple,
+                final Set<? super ElementHandle<TypeElement>> newTypes,
+                final /*out*/boolean[] mainMethod) throws IOException {
+            final JavaFileManager manager = jt.getContext().get(JavaFileManager.class);
             final Map<Pair<String, String>,Data> usages = new HashMap<Pair<String,String>,Data>();
             for (CompilationUnitTree cu : data) {
                 try {
@@ -238,7 +244,9 @@ public final class SourceAnalyzerFactory {
          * @throws IOException in case of IO error
          */
         @CheckForNull
-        public List<Pair<Pair<String, String>, Object[]>> analyseUnit (final CompilationUnitTree cu, final JavacTaskImpl jt, final JavaFileManager manager) throws IOException {
+        public List<Pair<Pair<String, String>, Object[]>> analyseUnit (
+                @NonNull final CompilationUnitTree cu,
+                @NonNull final JavacTaskImpl jt) throws IOException {
             if (used) {
                 throw new IllegalStateException("Trying to reuse SimpleAnalyzer");  //NOI18N
             }
@@ -246,7 +254,8 @@ public final class SourceAnalyzerFactory {
             try {
                 final Map<Pair<String,String>,Data> usages = new HashMap<Pair<String,String>,Data> ();
                 final Set<Pair<String,String>> topLevels = new HashSet<Pair<String,String>>();
-                final UsagesVisitor uv = new UsagesVisitor (jt, cu, manager, cu.getSourceFile(), topLevels);
+                final JavaFileManager jfm = jt.getContext().get(JavaFileManager.class);
+                final UsagesVisitor uv = new UsagesVisitor (jt, cu, jfm, cu.getSourceFile(), topLevels);
                 uv.scan(cu,usages);
                 for (Map.Entry<Pair<String,String>,Data> oe : usages.entrySet()) {
                     final Pair<String,String> key = oe.getKey();
@@ -593,6 +602,7 @@ public final class SourceAnalyzerFactory {
             boolean topLevel = false;
             String className = null;
             Pair<String,String> name = null;
+            int nameFrom = -1;
             String simpleName = null;
 
             if (sym != null) {
@@ -600,6 +610,7 @@ public final class SourceAnalyzerFactory {
                 if (errorInDecl) {
                     if (!activeClass.isEmpty()) {
                         name = activeClass.get(0);
+                        nameFrom = 0;
                     } else {
                         topLevel = true;
                         className = getResourceName (this.cu);
@@ -607,6 +618,7 @@ public final class SourceAnalyzerFactory {
                             final String classNameType = className + DocumentUtil.encodeKind(ElementKind.CLASS);
                             name = Pair.<String,String>of(classNameType, null);
                             simpleName = className.substring(className.lastIndexOf('.') + 1);
+                            nameFrom = 1;
                         } else {
                             LOG.log(
                                 Level.WARNING,
@@ -646,6 +658,7 @@ public final class SourceAnalyzerFactory {
                             resourceName = activeClass.peek().second;
                         }
                         name = Pair.<String,String>of(classNameType, resourceName);
+                        nameFrom = 2;
                         simpleName = sym.getSimpleName().toString();
                     } else {
                         LOG.log(
@@ -666,13 +679,38 @@ public final class SourceAnalyzerFactory {
                         if (topLevels != null) {
                             topLevels.add (Pair.<String,String>of(className, name.second));
                         }
-                        addAndClearImports(name, p);
+                        try {
+                            addAndClearImports(name, p);
+                        } catch (IllegalArgumentException iae) {
+                            String msg;
+                            switch (nameFrom) {
+                                case 0:
+                                    msg = MessageFormat.format("Name from enclosing class: {0}",   //NOI18N
+                                            activeClass);
+                                    break;
+                                case 1:
+                                    msg = MessageFormat.format("Name from compilation unit name: {0}",  //NOI18N
+                                            cu instanceof JCTree.JCCompilationUnit ?
+                                                ((JCTree.JCCompilationUnit)cu).sourcefile != null ?
+                                                    ((JCTree.JCCompilationUnit)cu).sourcefile.toUri() :
+                                                    null :
+                                                null);
+                                    break;
+                                case 2:
+                                    msg = MessageFormat.format("Name from symbol: {0}",  //NOI18N
+                                            sym);
+                                    break;
+                                default:
+                                    msg = MessageFormat.format("Unknown state: {0}", nameFrom); //NOI18N
+                            }
+                            throw Exceptions.attachMessage(iae, msg);
+                        }
                     }
                     addUsage (className, name, p, ClassIndexImpl.UsageType.TYPE_REFERENCE);
                     // index only simple name, not FQN for classes
                     addIdent(name, simpleName, p, true);
                     if (newTypes !=null) {
-                        newTypes.add ((ElementHandle<TypeElement>)ElementHandle.createTypeElementHandle(ElementKind.CLASS,className));
+                        newTypes.add ((ElementHandle<TypeElement>)ElementHandleAccessor.getInstance().create(ElementKind.OTHER,className));
                     }
                 }
             }
@@ -892,7 +930,9 @@ public final class SourceAnalyzerFactory {
         private Data getData (@NonNull final Pair<String,String>owner, @NonNull final Map<Pair<String,String>, Data> map) {
             Data data = map.get(owner);
             if (data == null) {
-                assert owner.first.charAt(owner.first.length()-2) != '.';   //NOI18N
+                if (owner.first.charAt(owner.first.length()-2) == '.') {    //NOI18N
+                    throw new IllegalArgumentException(owner.first);
+                }
                 data = new Data ();
                 map.put(owner,data);
             }

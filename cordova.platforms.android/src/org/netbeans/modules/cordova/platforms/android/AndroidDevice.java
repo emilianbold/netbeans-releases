@@ -79,7 +79,8 @@ public class AndroidDevice implements Device {
         while (r.ready() && ((line = r.readLine()) != null)) {
             Matcher m = pattern.matcher(line);
             if (m.matches()) {
-                AndroidDevice device = new AndroidDevice(m.group(1), Browser.DEFAULT);
+                final String name = m.group(1);
+                AndroidDevice device = new AndroidDevice(name, Browser.DEFAULT, name.startsWith("emulator"));
                 result.add(device);
             }
         }
@@ -91,32 +92,34 @@ public class AndroidDevice implements Device {
     @Override
     public void openUrl(String url) {
         try {
-            String s = ProcessUtils.callProcess(getPlatform().getSdkLocation() + "/platform-tools/adb", true, isEmulator() ? "-d" : "-e", "wait-for-device", "shell", "am", "start", "-a", "android.intent.action.VIEW", "-n", getPrefferedBrowser(), url); //NOI18N
+            String s = ProcessUtils.callProcess(((AndroidPlatform) getPlatform()).getAdbCommand(), true, isEmulator() ? "-e" : "-d", "wait-for-device", "shell", "am", "start", "-a", "android.intent.action.VIEW", "-n", getPrefferedBrowser(), url); //NOI18N
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
     }
     
     static Device get(String name, EditableProperties props) {
-        final String property = props.getProperty(Device.VIRTUAL_DEVICE_PROP);
-        final boolean b = Boolean.parseBoolean(property);
+        final String property = props.getProperty(Device.DEVICE_PROP);
+        final boolean b = Device.EMULATOR.equals(property);
         String property1 = props.getProperty(Device.BROWSER_PROP);
         if (property1!=null && property1.equals(Browser.CHROME.getName())) {
-            return new AndroidDevice(b ? "emulator" + name: name, Browser.CHROME);
+            return new AndroidDevice(name, Browser.CHROME, b);
         }
 
-        return new AndroidDevice(b ? "emulator" + name: name, Browser.DEFAULT);
+        return new AndroidDevice(name, Browser.DEFAULT, b);
     }
     
     private final String name;
+    private boolean emulator;
 
-    private AndroidDevice(String name, Browser browser) {
+    private AndroidDevice(String name, Browser browser, boolean emulator) {
         this.name = name;
         this.browser = browser;
+        this.emulator = emulator;
     }
     
     public boolean isEmulator() {
-        return name.startsWith("emulator"); //NOI18N
+        return emulator; //NOI18N
     }
 
     public String getName() {
@@ -136,7 +139,7 @@ public class AndroidDevice implements Device {
     @Override
     public void addProperties(Properties props) {
         final MobilePlatform android = getPlatform();
-        props.put("android.build.target", android.getPrefferedTarget());//NOI18N
+        props.put("android.build.target", android.getPrefferedTarget().getName());//NOI18N
         props.put("android.sdk.home", android.getSdkLocation());//NOI18N
         props.put("android.target.device.arg", isEmulator() ? "-e" : "-d");//NOI18N
     }

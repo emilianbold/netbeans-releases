@@ -46,10 +46,13 @@ import org.netbeans.modules.db.mysql.*;
 import org.netbeans.modules.db.mysql.actions.ConnectAction;
 import org.netbeans.modules.db.mysql.DatabaseServer;
 import javax.swing.Action;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.actions.DeleteAction;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 
 /**
@@ -90,8 +93,21 @@ class DatabaseNode extends AbstractNode implements Comparable {
         return true;
     }
     
+    @NbBundle.Messages({
+        "# {0} - Database name",
+        "MSG_Confirm_DB_Delete=Really delete database {0}?",
+        "MSG_Confirm_DB_Delete_Title=Delete Database"})
     @Override
     public void destroy() {
+        NotifyDescriptor d =
+                new NotifyDescriptor.Confirmation(
+                Bundle.MSG_Confirm_DB_Delete(model.getDbName()),
+                Bundle.MSG_Confirm_DB_Delete_Title(),
+                NotifyDescriptor.YES_NO_OPTION);
+        Object result = DialogDisplayer.getDefault().notify(d);
+        if (!NotifyDescriptor.OK_OPTION.equals(result)) {
+            return;
+        }
         DatabaseServer server = model.getServer();
         String dbname = model.getDbName();
 

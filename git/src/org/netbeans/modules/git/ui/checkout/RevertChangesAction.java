@@ -47,6 +47,7 @@ import java.io.File;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.git.client.GitClient;
@@ -87,37 +88,44 @@ public class RevertChangesAction extends SingleRepositoryAction {
                 @Override
                 protected void perform () {
                     final Collection<File> notifiedFiles = new HashSet<File>();
-                    File[] actionRoots = GitUtils.listFiles(roots, FileInformation.STATUS_LOCAL_CHANGES);
+                    final File[] actionRoots = GitUtils.listFiles(roots, FileInformation.STATUS_LOCAL_CHANGES);
                     if (actionRoots.length == 0) {
                         return;
                     }
                     try {
-                        // init client
-                        GitClient client = getClient();
-                        client.addNotificationListener(new FileListener() {
+                        GitUtils.runWithoutIndexing(new Callable<Void>() {
+
                             @Override
-                            public void notifyFile (File file, String relativePathToRoot) {
-                                notifiedFiles.add(file);
+                            public Void call () throws Exception {
+                                // init client
+                                GitClient client = getClient();
+                                client.addNotificationListener(new FileListener() {
+                                    @Override
+                                    public void notifyFile (File file, String relativePathToRoot) {
+                                        notifiedFiles.add(file);
+                                    }
+                                });
+                                client.addNotificationListener(new DefaultFileListener(actionRoots));
+
+                                // revert
+                                if(revert.isRevertAll()) {
+                                    logRevert("revert all", actionRoots, repository);
+                                    client.checkout(actionRoots, "HEAD", true, getProgressMonitor()); // XXX no constant for HEAD???
+                                } else if (revert.isRevertIndex()) {
+                                    logRevert("revert index", actionRoots, repository);
+                                    client.reset(actionRoots, "HEAD", true, getProgressMonitor());
+                                } else if (revert.isRevertWT()) {
+                                    logRevert("revert wt", actionRoots, repository);
+                                    client.checkout(actionRoots, null, true, getProgressMonitor());                             
+                                }
+
+                                if(revert.isRemove()) {
+                                    logRevert("clean ", actionRoots, repository);
+                                    client.clean(actionRoots, getProgressMonitor());
+                                }
+                                return null;
                             }
-                        });
-                        client.addNotificationListener(new DefaultFileListener(actionRoots));
-                        
-                        // revert
-                        if(revert.isRevertAll()) {
-                            logRevert("revert all", actionRoots, repository);
-                            client.checkout(actionRoots, "HEAD", true, getProgressMonitor()); // XXX no constant for HEAD???
-                        } else if (revert.isRevertIndex()) {
-                            logRevert("revert index", actionRoots, repository);
-                            client.reset(actionRoots, "HEAD", true, getProgressMonitor());
-                        } else if (revert.isRevertWT()) {
-                            logRevert("revert wt", actionRoots, repository);
-                            client.checkout(actionRoots, null, true, getProgressMonitor());                             
-                        }
-                        
-                        if(revert.isRemove()) {
-                            logRevert("clean ", actionRoots, repository);
-                            client.clean(actionRoots, getProgressMonitor());
-                        }
+                        }, actionRoots);
                         
                     } catch (GitException ex) {
                         GitClientExceptionHandler.notifyException(ex, true);

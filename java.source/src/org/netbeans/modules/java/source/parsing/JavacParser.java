@@ -328,7 +328,7 @@ public class JavacParser extends Parser {
         }
     }
 
-    public void invalidate () {
+    private void invalidate () {
         this.invalid = true;
     }
 
@@ -438,9 +438,11 @@ public class JavacParser extends Parser {
 
     //@GuardedBy (org.netbeans.modules.parsing.impl.TaskProcessor.parserLock)
     @Override
-    public JavacParserResult getResult (final Task task) throws ParseException {
-        assert ciImpl != null || invalid;
+    public JavacParserResult getResult (final Task task) throws ParseException {        
         assert privateParser || Utilities.holdsParserLock();
+        if (ciImpl == null && !invalid) {
+            throw new IllegalStateException("No CompilationInfoImpl in valid parser");      //NOI18N
+        }
         LOGGER.log (Level.FINE, "getResult: task:{0}", task.toString());                     //NOI18N
 
         final boolean isJavaParserResultTask = task instanceof JavaParserResultTask;
@@ -783,7 +785,7 @@ public class JavacParser extends Parser {
 
         JavaCompiler tool = JavacTool.create();
         JavacTaskImpl task = (JavacTaskImpl)tool.getTask(null, 
-                ClasspathInfoAccessor.getINSTANCE().getFileManager(cpInfo),
+                ClasspathInfoAccessor.getINSTANCE().createFileManager(cpInfo),
                 diagnosticListener, options, null, Collections.<JavaFileObject>emptySet());
         if (aptEnabled) {
             task.setProcessors(processors);

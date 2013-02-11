@@ -272,6 +272,34 @@ class UpdateResultsTable implements MouseListener, ListSelectionListener, Ancest
             performOpen(row);
         }
     }
+    
+    private void onPopup (final MouseEvent e) {
+        int row = table.rowAtPoint(e.getPoint());
+        if (row != -1) {
+            boolean makeRowSelected = true;
+            int [] selectedrows = table.getSelectedRows();
+
+            for (int i = 0; i < selectedrows.length; i++) {
+                if (row == selectedrows[i]) {
+                    makeRowSelected = false;
+                    break;
+                }
+            }
+            if (makeRowSelected) {
+                table.getSelectionModel().setSelectionInterval(row, row);
+            }
+        }
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                // invoke later so the selection on the table will be set first
+                if (table.isShowing()) {
+                    JPopupMenu menu = getPopup();
+                    menu.show(e.getComponent(), e.getX(), e.getY());
+                }
+            }
+        });
+    }
 
     
     private interface ActionEvaluator {
@@ -287,7 +315,7 @@ class UpdateResultsTable implements MouseListener, ListSelectionListener, Ancest
             return (info.getAction() & ~FileUpdateInfo.ACTION_DELETED) != 0; 
         } 
     };    
-    private void onPopup(MouseEvent e) {
+    private JPopupMenu getPopup () {
         final int[] selection = table.getSelectedRows();
         JPopupMenu menu = new JPopupMenu();        
         menu.add(new JMenuItem(new AbstractAction(NbBundle.getMessage(UpdateResultsTable.class, "CTL_MenuItem_Open")) { // NOI18N
@@ -300,13 +328,13 @@ class UpdateResultsTable implements MouseListener, ListSelectionListener, Ancest
         }));        
         menu.add(new JMenuItem(new AbstractAction(NbBundle.getMessage(UpdateResultsTable.class, "CTL_MenuItem_ResolveConflicts")) { // NOI18N
             {
-                setEnabled(selection.length > -1 && hasAction(selection, conflictEvaluator));
+                setEnabled(selection.length > 0 && hasAction(selection, conflictEvaluator));
             }
             public void actionPerformed(ActionEvent e) {                
                 ResolveConflictsAction.resolveConflicts(getSelectedFiles(selection));
             }
         }));                
-        menu.show(e.getComponent(), e.getX(), e.getY());
+        return menu;
     }
     
     private boolean hasAction(int[] selection, ActionEvaluator ae) {

@@ -73,7 +73,7 @@ public class MavenProjectTypeStrategy extends ProjectTypeStrategy {
         super(project);
         pom = project.getProjectDirectory().getFileObject("pom.xml"); //NOI18N
     }
-    
+
     @Override
     public JUnit findJUnitVersion() {
         performOperation(new FindJUnitDependencyVersion());
@@ -105,7 +105,7 @@ public class MavenProjectTypeStrategy extends ProjectTypeStrategy {
      * @return true if the src/test/groovy folder exists, false otherwise
      */
     @Override
-    protected boolean existsGroovyTestFolder(List<SourceGroup> groups) {
+    public boolean existsGroovyTestFolder(List<SourceGroup> groups) {
         return existsFolder(groups, "/test/groovy"); //NOI18N
     }
 
@@ -116,7 +116,7 @@ public class MavenProjectTypeStrategy extends ProjectTypeStrategy {
      * @return true if the src/main/groovy folder exists, false otherwise
      */
     @Override
-    protected boolean existsGroovySourceFolder(List<SourceGroup> groups) {
+    public boolean existsGroovySourceFolder(List<SourceGroup> groups) {
         return existsFolder(groups, "/main/groovy"); //NOI18N
     }
 
@@ -130,14 +130,14 @@ public class MavenProjectTypeStrategy extends ProjectTypeStrategy {
     }
 
     @Override
-    protected void createGroovyTestFolder() {
+    public void createGroovyTestFolder() {
         FileObject childFolder = createFolder(project.getProjectDirectory(), "src"); // NOI18N
         FileObject testFolder = createFolder(childFolder, "test"); // NOI18N
         createFolder(testFolder, "groovy"); // NOI18N
     }
 
     @Override
-    protected void createGroovySourceFolder() {
+    public void createGroovySourceFolder() {
         FileObject childFolder = createFolder(project.getProjectDirectory(), "src"); // NOI18N
         FileObject testFolder = createFolder(childFolder, "main"); // NOI18N
         createFolder(testFolder, "groovy"); // NOI18N
@@ -152,7 +152,7 @@ public class MavenProjectTypeStrategy extends ProjectTypeStrategy {
      * @return reordered source groups
      */
     @Override
-    protected List<SourceGroup> moveTestFolderAsFirst(List<SourceGroup> groups) {
+    public List<SourceGroup> moveTestFolderAsFirst(List<SourceGroup> groups) {
         return moveAsFirst(groups, "/test/groovy").subList(0, 1); //NOI18N, #219766
     }
 
@@ -165,7 +165,7 @@ public class MavenProjectTypeStrategy extends ProjectTypeStrategy {
      * @return reordered source groups
      */
     @Override
-    protected List<SourceGroup> moveSourceFolderAsFirst(List<SourceGroup> groups) {
+    public List<SourceGroup> moveSourceFolderAsFirst(List<SourceGroup> groups) {
         return moveAsFirst(groups, "/main/groovy"); //NOI18N
     }
 
@@ -174,25 +174,26 @@ public class MavenProjectTypeStrategy extends ProjectTypeStrategy {
         @Override
         public void performOperation(POMModel model) {
             Dependency jUnitDependency = ModelUtils.checkModelDependency(model, JUNIT_GROUP_ID, JUNIT_ARTIFACT_ID, false);
-            if (jUnitDependency == null) {
-                MavenProjectTypeStrategy.this.jUnitVersion = JUnit.NOT_DECLARED;
-            } else {
-                String declaredVersion = jUnitDependency.getVersion();
-                int indexOfFirstDot = declaredVersion.indexOf("."); //NOI18N
-                if (indexOfFirstDot == -1) {
-                    indexOfFirstDot = declaredVersion.length();
-                }
-                String majorVersion = declaredVersion.substring(0, indexOfFirstDot);
+            if (jUnitDependency != null) {
+                final String declaredVersion = jUnitDependency.getVersion();
 
-                try {
+                if (declaredVersion != null) {
+                    int indexOfFirstDot = declaredVersion.indexOf("."); //NOI18N
+                    if (indexOfFirstDot == -1) {
+                        indexOfFirstDot = declaredVersion.length();
+                    }
+                    String majorVersion = declaredVersion.substring(0, indexOfFirstDot);
+
                     if (Integer.parseInt(majorVersion) < 4) {
                         MavenProjectTypeStrategy.this.jUnitVersion = JUnit.JUNIT3;
                     } else {
                         MavenProjectTypeStrategy.this.jUnitVersion = JUnit.JUNIT4;
                     }
-                } catch (NumberFormatException exception) {
-                    MavenProjectTypeStrategy.this.jUnitVersion = JUnit.NOT_DECLARED;
                 }
+            }
+
+            if (MavenProjectTypeStrategy.this.jUnitVersion == null) {
+                MavenProjectTypeStrategy.this.jUnitVersion = JUnit.NOT_DECLARED;
             }
         }
     }

@@ -49,8 +49,10 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayDeque;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.ConcurrentModificationException;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
@@ -101,8 +103,11 @@ public final class ProxyFileManager implements JavaFileManager {
     
     private final ProcessorGenerated processorGeneratedFiles;
     private final SiblingSource siblings;
+    private final Object ownerThreadLock = new Object();
     private JavaFileObject lastInfered;
     private String lastInferedResult;
+    //@GuardedBy("ownerThreadLock")
+    private Thread ownerThread;
     
 
     /** Creates a new instance of ProxyFileManager */
@@ -176,29 +181,34 @@ public final class ProxyFileManager implements JavaFileManager {
             @NonNull final String packageName,
             @NonNull final Set<JavaFileObject.Kind> kinds,
             final boolean recurse) throws IOException {
-        List<Iterable<JavaFileObject>> iterables = new LinkedList<Iterable<JavaFileObject>>();
-        JavaFileManager[] fms = getFileManagers (l);
-        for (JavaFileManager fm : fms) {
-            iterables.add( fm.list(l, packageName, kinds, recurse));
-        }
-        final Iterable<JavaFileObject> result = Iterators.chained(iterables);
-        if (LOG.isLoggable(Level.FINER)) {
-            final StringBuilder urls = new StringBuilder ();
-            for (JavaFileObject jfo : result ) {
-                urls.append(jfo.toUri().toString());
-                urls.append(", ");  //NOI18N
+        checkSingleOwnerThread();
+        try {
+            List<Iterable<JavaFileObject>> iterables = new LinkedList<Iterable<JavaFileObject>>();
+            JavaFileManager[] fms = getFileManagers (l);
+            for (JavaFileManager fm : fms) {
+                iterables.add( fm.list(l, packageName, kinds, recurse));
             }
-            LOG.log(
-                Level.FINER,
-                "List {0} Package: {1} Kinds: {2} -> {3}", //NOI18N
-                new Object[] {
-                    l,
-                    packageName,
-                    kinds,
-                    urls
-                });
+            final Iterable<JavaFileObject> result = Iterators.chained(iterables);
+            if (LOG.isLoggable(Level.FINER)) {
+                final StringBuilder urls = new StringBuilder ();
+                for (JavaFileObject jfo : result ) {
+                    urls.append(jfo.toUri().toString());
+                    urls.append(", ");  //NOI18N
+                }
+                LOG.log(
+                    Level.FINER,
+                    "List {0} Package: {1} Kinds: {2} -> {3}", //NOI18N
+                    new Object[] {
+                        l,
+                        packageName,
+                        kinds,
+                        urls
+                    });
+            }
+            return result;
+        } finally {
+            clearOwnerThread();
         }
-        return result;
     }
 
     @Override
@@ -207,14 +217,19 @@ public final class ProxyFileManager implements JavaFileManager {
             @NonNull final Location l,
             @NonNull final String packageName,
             @NonNull final String relativeName) throws IOException {
-        JavaFileManager[] fms = getFileManagers(l);
-        for (JavaFileManager fm : fms) {
-            FileObject result = fm.getFileForInput(l, packageName, relativeName);
-            if (result != null) {
-                return result;
+        checkSingleOwnerThread();
+        try {
+            JavaFileManager[] fms = getFileManagers(l);
+            for (JavaFileManager fm : fms) {
+                FileObject result = fm.getFileForInput(l, packageName, relativeName);
+                if (result != null) {
+                    return result;
+                }
             }
+            return null;
+        } finally {
+            clearOwnerThread();
         }
-        return null;
     }
 
     @Override
@@ -225,106 +240,140 @@ public final class ProxyFileManager implements JavaFileManager {
             @NonNull final String relativeName,
             @NullAllowed final FileObject sibling)
         throws IOException, UnsupportedOperationException, IllegalArgumentException {
-        JavaFileManager[] fms = getFileManagers(
-                l == StandardLocation.SOURCE_PATH ?
-                    SOURCE_PATH_WRITE : l);
-        assert fms.length <=1;
-        if (fms.length == 0) {
-            return null;
-        }
-        else {
-            return mark(fms[0].getFileForOutput(l, packageName, relativeName, sibling), l);
+        checkSingleOwnerThread();
+        try {
+            JavaFileManager[] fms = getFileManagers(
+                    l == StandardLocation.SOURCE_PATH ?
+                        SOURCE_PATH_WRITE : l);
+            assert fms.length <=1;
+            if (fms.length == 0) {
+                return null;
+            } else {
+                return mark(fms[0].getFileForOutput(l, packageName, relativeName, sibling), l);
+            }
+        } finally {
+            clearOwnerThread();
         }
     }
 
     @Override
     @CheckForNull
     public ClassLoader getClassLoader (@NonNull final Location l) {
-        return null;
+        checkSingleOwnerThread();
+        try {
+            return null;
+        } finally {
+            clearOwnerThread();
+        }
     }
 
     @Override
     public void flush() throws IOException {
-        for (JavaFileManager fm : getFileManagers(ALL)) {
-            fm.flush();
+        checkSingleOwnerThread();
+        try {
+            for (JavaFileManager fm : getFileManagers(ALL)) {
+                fm.flush();
+            }
+        } finally {
+            clearOwnerThread();
         }
     }
 
     @Override
     public void close() throws IOException {
-        for (JavaFileManager fm : getFileManagers(ALL)) {
-            fm.close();
+        checkSingleOwnerThread();
+        try {
+            for (JavaFileManager fm : getFileManagers(ALL)) {
+                fm.close();
+            }
+        } finally {
+            clearOwnerThread();
         }
     }
 
     @Override
     public int isSupportedOption(@NonNull final String string) {
-        return -1;
+        checkSingleOwnerThread();
+        try {
+            return -1;
+        } finally {
+            clearOwnerThread();
+        }
     }
 
     @Override
     public boolean handleOption (
             @NonNull final String current,
             @NonNull final Iterator<String> remains) {
-        boolean isSourceElement;        
-        if (AptSourceFileManager.ORIGIN_FILE.equals(current)) {
-            if (!remains.hasNext()) {
-                throw new IllegalArgumentException("The apt-source-root requires folder.");    //NOI18N
-            }
-            final String sib = remains.next();
-            if(sib.length() != 0) {
-                final URL sibling = asURL(sib);
-                final boolean inSourceRoot =
-                    processorGeneratedFiles.findSibling(Collections.singleton(sibling)) != null;
-                siblings.push(sibling, inSourceRoot);
-            } else {
-                siblings.pop();
-            }
-            return true;
-        } else if ((isSourceElement=AptSourceFileManager.ORIGIN_SOURCE_ELEMENT_URL.equals(current)) || 
-                   AptSourceFileManager.ORIGIN_RESOURCE_ELEMENT_URL.equals(current)) {
-            if (remains.hasNext()) {
-                final Collection<? extends URL> urls = asURLs(remains);
-                URL sibling = processorGeneratedFiles.findSibling(urls);
-                boolean inSourceRoot = true;
-                if (sibling == null) {
-                    sibling = siblings.getProvider().getSibling();
-                    inSourceRoot = siblings.getProvider().isInSourceRoot();
+        checkSingleOwnerThread();
+        try {
+            boolean isSourceElement;
+            if (AptSourceFileManager.ORIGIN_FILE.equals(current)) {
+                if (!remains.hasNext()) {
+                    throw new IllegalArgumentException("The apt-source-root requires folder.");    //NOI18N
                 }
-                siblings.push(sibling, inSourceRoot);
-                if (LOG.isLoggable(Level.INFO) && isSourceElement && urls.size() > 1) {
-                    final StringBuilder sb = new StringBuilder();
-                    for (URL url : urls) {
-                        if (sb.length() > 0) {
-                            sb.append(", ");    //NOI18N
-                        }
-                        sb.append(url);
+                final String sib = remains.next();
+                if(sib.length() != 0) {
+                    final URL sibling = asURL(sib);
+                    final boolean inSourceRoot =
+                        processorGeneratedFiles.findSibling(Collections.singleton(sibling)) != null;
+                    siblings.push(sibling, inSourceRoot);
+                } else {
+                    siblings.pop();
+                }
+                return true;
+            } else if ((isSourceElement=AptSourceFileManager.ORIGIN_SOURCE_ELEMENT_URL.equals(current)) ||
+                       AptSourceFileManager.ORIGIN_RESOURCE_ELEMENT_URL.equals(current)) {
+                if (remains.hasNext()) {
+                    final Collection<? extends URL> urls = asURLs(remains);
+                    URL sibling = processorGeneratedFiles.findSibling(urls);
+                    boolean inSourceRoot = true;
+                    if (sibling == null) {
+                        sibling = siblings.getProvider().getSibling();
+                        inSourceRoot = siblings.getProvider().isInSourceRoot();
                     }
-                    LOG.log(
-                        Level.FINE,
-                        "Multiple source files passed as ORIGIN_SOURCE_ELEMENT_URL: {0}; using: {1}",  //NOI18N
-                        new Object[]{
-                            sb,
-                            siblings.getProvider().getSibling()
-                        });
+                    siblings.push(sibling, inSourceRoot);
+                    if (LOG.isLoggable(Level.INFO) && isSourceElement && urls.size() > 1) {
+                        final StringBuilder sb = new StringBuilder();
+                        for (URL url : urls) {
+                            if (sb.length() > 0) {
+                                sb.append(", ");    //NOI18N
+                            }
+                            sb.append(url);
+                        }
+                        LOG.log(
+                            Level.FINE,
+                            "Multiple source files passed as ORIGIN_SOURCE_ELEMENT_URL: {0}; using: {1}",  //NOI18N
+                            new Object[]{
+                                sb,
+                                siblings.getProvider().getSibling()
+                            });
+                    }
+                } else {
+                    siblings.pop();
                 }
-            } else {
-                siblings.pop();
-            }
-            return true;
-        }
-        final Collection<String> defensiveCopy = copy(remains);
-        for (JavaFileManager m : getFileManagers(ALL)) {
-            if (m.handleOption(current, defensiveCopy.iterator())) {
                 return true;
             }
+            final Collection<String> defensiveCopy = copy(remains);
+            for (JavaFileManager m : getFileManagers(ALL)) {
+                if (m.handleOption(current, defensiveCopy.iterator())) {
+                    return true;
+                }
+            }
+            return false;
+        } finally {
+            clearOwnerThread();
         }
-        return false;
     }    
 
     @Override
     public boolean hasLocation(@NonNull final JavaFileManager.Location location) {
-        return fileManagers.containsKey(location);
+        checkSingleOwnerThread();
+        try {
+            return fileManagers.containsKey(location);
+        } finally {
+            clearOwnerThread();
+        }
     }
 
     @Override
@@ -333,14 +382,19 @@ public final class ProxyFileManager implements JavaFileManager {
             @NonNull final Location l,
             @NonNull final String className,
             @NonNull final JavaFileObject.Kind kind) throws IOException {
-        JavaFileManager[] fms = getFileManagers (l);
-        for (JavaFileManager fm : fms) {
-            JavaFileObject result = fm.getJavaFileForInput(l,className,kind);
-            if (result != null) {
-                return result;
+        checkSingleOwnerThread();
+        try {
+            JavaFileManager[] fms = getFileManagers (l);
+            for (JavaFileManager fm : fms) {
+                JavaFileObject result = fm.getJavaFileForInput(l,className,kind);
+                if (result != null) {
+                    return result;
+                }
             }
+            return null;
+        } finally {
+            clearOwnerThread();
         }
-        return null;
     }
 
     @Override
@@ -351,13 +405,18 @@ public final class ProxyFileManager implements JavaFileManager {
             @NonNull final JavaFileObject.Kind kind,
             @NonNull final FileObject sibling)
         throws IOException, UnsupportedOperationException, IllegalArgumentException {
-        JavaFileManager[] fms = getFileManagers (l);
-        assert fms.length <=1;
-        if (fms.length == 0) {
-            return null;
-        } else {
-            final JavaFileObject result = fms[0].getJavaFileForOutput (l, className, kind, sibling);
-            return mark (result,l);
+        checkSingleOwnerThread();
+        try {
+            JavaFileManager[] fms = getFileManagers (l);
+            assert fms.length <=1;
+            if (fms.length == 0) {
+                return null;
+            } else {
+                final JavaFileObject result = fms[0].getJavaFileForOutput (l, className, kind, sibling);
+                return mark (result,l);
+            }
+        } finally {
+            clearOwnerThread();
         }
     }
 
@@ -367,44 +426,54 @@ public final class ProxyFileManager implements JavaFileManager {
     public String inferBinaryName(
             @NonNull final JavaFileManager.Location location,
             @NonNull final JavaFileObject javaFileObject) {
-        assert javaFileObject != null;
-        //If cached return it dirrectly
-        if (javaFileObject == lastInfered) {
-            return lastInferedResult;
-        }
-        String result;
-        //If instanceof FileObject.Base no need to delegate it
-        if (javaFileObject instanceof InferableJavaFileObject) {
-            final InferableJavaFileObject ifo = (InferableJavaFileObject) javaFileObject;
-            result = ifo.inferBinaryName();
-            if (result != null) {
-                this.lastInfered = javaFileObject;
-                this.lastInferedResult = result;
-                return result;
+        checkSingleOwnerThread();
+        try {
+            assert javaFileObject != null;
+            //If cached return it dirrectly
+            if (javaFileObject == lastInfered) {
+                return lastInferedResult;
             }
-        }
-        //Ask delegates to infer the binary name
-        JavaFileManager[] fms = getFileManagers (location);
-        for (JavaFileManager fm : fms) {
-            result = fm.inferBinaryName (location, javaFileObject);
-            if (result != null && result.length() > 0) {
-                this.lastInfered = javaFileObject;
-                this.lastInferedResult = result;
-                return result;
+            String result;
+            //If instanceof FileObject.Base no need to delegate it
+            if (javaFileObject instanceof InferableJavaFileObject) {
+                final InferableJavaFileObject ifo = (InferableJavaFileObject) javaFileObject;
+                result = ifo.inferBinaryName();
+                if (result != null) {
+                    this.lastInfered = javaFileObject;
+                    this.lastInferedResult = result;
+                    return result;
+                }
             }
+            //Ask delegates to infer the binary name
+            JavaFileManager[] fms = getFileManagers (location);
+            for (JavaFileManager fm : fms) {
+                result = fm.inferBinaryName (location, javaFileObject);
+                if (result != null && result.length() > 0) {
+                    this.lastInfered = javaFileObject;
+                    this.lastInferedResult = result;
+                    return result;
+                }
+            }
+            return null;
+        } finally {
+            clearOwnerThread();
         }
-        return null;
     }
 
     @Override
     public boolean isSameFile(FileObject fileObject, FileObject fileObject0) {
-        final JavaFileManager[] fms = getFileManagers(ALL);
-        for (JavaFileManager fm : fms) {
-            if (fm.isSameFile(fileObject, fileObject0)) {
-                return true;
+        checkSingleOwnerThread();
+        try {
+            final JavaFileManager[] fms = getFileManagers(ALL);
+            for (JavaFileManager fm : fms) {
+                if (fm.isSameFile(fileObject, fileObject0)) {
+                    return true;
+                }
             }
+            return fileObject.toUri().equals (fileObject0.toUri());
+        } finally {
+            clearOwnerThread();
         }
-        return fileObject.toUri().equals (fileObject0.toUri());
     }
 
     @SuppressWarnings("unchecked")
@@ -448,7 +517,29 @@ public final class ProxyFileManager implements JavaFileManager {
     private JavaFileManager[] getFileManagers (final Location location) {
         final JavaFileManager[] result = fileManagers.get(location);
         return result != null ? result : new JavaFileManager[0];
-    }    
+    }
+
+    private void checkSingleOwnerThread() {
+        final Thread currentThread = Thread.currentThread();
+        synchronized (ownerThreadLock) {
+            if (ownerThread == null) {
+                ownerThread = currentThread;
+            } else if (ownerThread != currentThread) {
+                //Dump both stacks and throw ISE.
+                throw new ConcurrentModificationException(
+                    String.format(
+                        "Current owner: %s, New Owner: %s", //NOI18N
+                        Arrays.asList(ownerThread.getStackTrace()),
+                        Arrays.asList(currentThread.getStackTrace())));
+            }
+        }
+    }
+
+    private void clearOwnerThread() {
+        synchronized (ownerThreadLock) {
+            ownerThread = null;
+        }
+    }
 
     private static URL asURL(final String url) throws IllegalArgumentException {
         try {

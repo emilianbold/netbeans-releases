@@ -48,6 +48,7 @@ import java.awt.event.ActionEvent;
 import java.io.File;
 import java.util.List;
 import java.util.MissingResourceException;
+import java.util.concurrent.Callable;
 import javax.swing.AbstractAction;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -127,27 +128,30 @@ public class SwitchToBranchAction extends ContextAction {
         HgProgressSupport support = new HgProgressSupport() {
             @Override
             public void perform() {
-                boolean bNoUpdates = true;
-                OutputLogger logger = getLogger();
+                final OutputLogger logger = getLogger();
                 try {
                     logger.outputInRed(NbBundle.getMessage(SwitchToBranchAction.class, "MSG_SWITCH_TITLE")); //NOI18N
                     logger.outputInRed(NbBundle.getMessage(SwitchToBranchAction.class, "MSG_SWITCH_TITLE_SEP")); //NOI18N
                     logger.output(NbBundle.getMessage(SwitchToBranchAction.class, "MSG_SWITCH_INFO_SEP", revStr, root.getAbsolutePath())); //NOI18N
-                    List<String> list = HgCommand.doUpdateAll(root, doForcedUpdate, revStr);
-                    Utils.insert(NbPreferences.forModule(SwitchToBranchAction.class), PREF_KEY_RECENT_BRANCHES + root.getAbsolutePath(), revStr, 5);
-                    
-                    if (list != null && !list.isEmpty()){
-                        bNoUpdates = HgCommand.isNoUpdates(list.get(0));
-                        // Force Status Refresh from this dir and below
-                        if(!bNoUpdates) {
-                            HgUtils.notifyUpdatedFiles(root, list);
-                            HgUtils.forceStatusRefreshProject(ctx);
-                        }
-                        //logger.clearOutput();
-                        logger.output(list);
-                        logger.output(""); // NOI18N
-                    }
+                    HgUtils.runWithoutIndexing(new Callable<Void>() {
+                        @Override
+                        public Void call () throws Exception {
+                            List<String> list = HgCommand.doUpdateAll(root, doForcedUpdate, revStr);
+                            Utils.insert(NbPreferences.forModule(SwitchToBranchAction.class), PREF_KEY_RECENT_BRANCHES + root.getAbsolutePath(), revStr, 5);
 
+                            if (list != null && !list.isEmpty()){
+                                // Force Status Refresh from this dir and below
+                                if(!HgCommand.isNoUpdates(list.get(0))) {
+                                    HgUtils.notifyUpdatedFiles(root, list);
+                                    HgUtils.forceStatusRefreshProject(ctx);
+                                }
+                                //logger.clearOutput();
+                                logger.output(list);
+                                logger.output(""); // NOI18N
+                            }
+                            return null;
+                        }
+                    }, root);
                 } catch (HgException.HgCommandCanceledException ex) {
                     // canceled by user, do nothing
                 } catch (HgException ex) {

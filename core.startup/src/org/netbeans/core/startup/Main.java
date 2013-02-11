@@ -62,7 +62,6 @@ import org.openide.LifecycleManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
-import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -148,9 +147,21 @@ public final class Main extends Object {
   }
     /** Get and initialize module subsystem.  */
     public static ModuleSystem getModuleSystem() {
+        return getModuleSystem(true);
+    }
+    
+    /** Get and possibly initialize module subsystem.  
+     * @param init <code>true</code> to initialize the system if it has not been initialized yet
+     * @return the module system or <code>null</code> (if the initialization is not requested)
+     * @since 1.47
+     */
+    public static ModuleSystem getModuleSystem(boolean init) {
         synchronized (Main.class) {
             if (moduleSystem != null) {
                 return moduleSystem;
+            }
+            if (!init) {
+                return null;
             }
 
             StartLog.logStart ("Modules initialization"); // NOI18N
@@ -175,8 +186,10 @@ public final class Main extends Object {
         return moduleSystem;
     }
     
-    /** Is used to find out whether the system has already been initialized
-     * for the first time or not yet.
+    /** Is used to find out whether the system has already been fully initialized
+     * or not yet. In case you need to access module system that is just being
+     * initialized consider using {@link #getModuleSystem(boolean)}.
+     * 
      * @return true if changes in the lookup shall mean real changes, false if it just
      *   the first initalization
      */

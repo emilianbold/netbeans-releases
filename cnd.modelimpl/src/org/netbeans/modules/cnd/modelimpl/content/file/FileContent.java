@@ -46,6 +46,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -71,6 +72,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.MutableDeclarationsContainer;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ErrorDirectiveImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
+import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.repository.FileDeclarationsKey;
 import org.netbeans.modules.cnd.modelimpl.repository.FileIncludesKey;
 import org.netbeans.modules.cnd.modelimpl.repository.FileInstantiationsKey;
@@ -81,6 +83,7 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.util.Union2;
 
 /**
@@ -94,7 +97,7 @@ import org.openide.util.Union2;
 public final class FileContent implements MutableDeclarationsContainer {
 
     private final FileImpl fileImpl;
-    private boolean persistent;
+    private final boolean persistent;
     private final List<FakeIncludePair> fakeIncludeRegistrations;
     private final List<CsmUID<FunctionImplEx<?>>> fakeFunctionRegistrations;
     private int parserErrorsCount;    
@@ -267,21 +270,43 @@ public final class FileContent implements MutableDeclarationsContainer {
         return fakeIncludeRegistrations;
     }
     
+    private final Set<FileContent> includedFileContents = new HashSet<FileContent>(0);
+
+    public final void addIncludedFileContent(FileContent includedFileContent) {
+        assert TraceFlags.PARSE_HEADERS_WITH_SOURCES;
+        boolean added = includedFileContents.add(includedFileContent);
+        traceAddRemove(added ? "+FILE" : "SKIP", includedFileContent.fileImpl.getAbsolutePath()); // NOI18N
+    }
+
+    public Set<FileContent> getIncludedFileContents() {
+        return Collections.unmodifiableSet(includedFileContents);
+    }
+
     public void addError(ErrorDirectiveImpl error) {
         checkValid();
+        traceAddRemove("ERROR", error); // NOI18N
         errors.add(error);
     }
     
     public void addMacro(CsmMacro macro) {
         checkValid();
-        getFileMacros().addMacro(macro);
+        traceAddRemove("MACRO", macro); // NOI18N
+        FileComponentMacros fileMacros = getFileMacros();
+        fileMacros.addMacro(macro);
+        if (persistent) {
+            fileMacros.put();
+        }
     }       
 
     @Override
     public void addDeclaration(CsmOffsetableDeclaration decl) {
         checkValid();
-        getFileDeclarations().addDeclaration(decl);
-//        fileImpl.addDeclaration(decl);
+        traceAddRemove("DECL", decl); // NOI18N
+        FileComponentDeclarations fileDeclarations = getFileDeclarations();
+        fileDeclarations.addDeclaration(decl);
+        if (persistent) {
+            fileDeclarations.put();
+        }
     }
 
     @Override
@@ -303,23 +328,45 @@ public final class FileContent implements MutableDeclarationsContainer {
     
     public void addInclude(IncludeImpl includeImpl, boolean broken) {
         checkValid();
+        traceAddRemove("INCL", includeImpl); // NOI18N
+        FileComponentIncludes fileIncludes = getFileIncludes();
         // addInclude can remove added one from list of broken includes =>
-        hasBrokenIncludes.set(getFileIncludes().addInclude(includeImpl, broken));
+        hasBrokenIncludes.set(fileIncludes.addInclude(includeImpl, broken));
+        if (persistent) {
+            fileIncludes.put();
+        }
     }
 
     public void addInstantiation(CsmInstantiation inst) {
         checkValid();
-        getFileInstantiations().addInstantiation(inst);
+        traceAddRemove("INST", inst); // NOI18N
+        FileComponentInstantiations fileInstantiations = getFileInstantiations();
+        fileInstantiations.addInstantiation(inst);
+        if (persistent) {
+            fileInstantiations.put();
+        }
     }
 
     public boolean addReference(CsmReference ref, CsmObject referencedObject) {
         checkValid();
-        return getFileReferences().addReference(ref, referencedObject);
+        traceAddRemove("REF", ref); // NOI18N
+        FileComponentReferences fileReferences = getFileReferences();
+        boolean out = fileReferences.addReference(ref, referencedObject);
+        if (persistent) {
+            fileReferences.put();
+        }
+        return out;
     }
 
     public boolean addResolvedReference(CsmReference ref, CsmObject referencedObject) {
         checkValid();
-        return getFileReferences().addResolvedReference(ref, referencedObject);
+        traceAddRemove("RREF", ref); // NOI18N
+        FileComponentReferences fileReferences = getFileReferences();
+        boolean out = fileReferences.addResolvedReference(ref, referencedObject);
+        if (persistent) {
+            fileReferences.put();
+        }
+        return out;
     }
 
     @Override
@@ -327,7 +374,7 @@ public final class FileContent implements MutableDeclarationsContainer {
         return ((parserErrorsCount < 0) ? "INVALID " :"") + (persistent ? "PERSISTENT " :"") + "File Content for " + fileImpl; // NOI18N
     }
 
-    static private List<CsmUID<FunctionImplEx<?>>> createFakeFunctions(List<CsmUID<FunctionImplEx<?>>> in) {
+    private static List<CsmUID<FunctionImplEx<?>>> createFakeFunctions(List<CsmUID<FunctionImplEx<?>>> in) {
         return new CopyOnWriteArrayList<CsmUID<FunctionImplEx<?>>>(in);
     }
     
@@ -335,7 +382,7 @@ public final class FileContent implements MutableDeclarationsContainer {
         return new CopyOnWriteArrayList<FakeIncludePair>(in);
     }
     
-    static private Set<ErrorDirectiveImpl> createErrors(Set<ErrorDirectiveImpl> in) {
+    private static Set<ErrorDirectiveImpl> createErrors(Set<ErrorDirectiveImpl> in) {
         Set<ErrorDirectiveImpl> out = new TreeSet<ErrorDirectiveImpl>(FileImpl.START_OFFSET_COMPARATOR);
         out.addAll(in);
         return out;
@@ -470,12 +517,17 @@ public final class FileContent implements MutableDeclarationsContainer {
     }
 
     private void checkValid() {
-        assert this.parserErrorsCount >= 0 : "invalid object " + parserErrorsCount;
+        assert this.parserErrorsCount >= 0 : "invalid object for " + fileImpl.getAbsolutePath();
     }
 
     @Override
     public void removeDeclaration(CsmOffsetableDeclaration declaration) {
-        getFileDeclarations().removeDeclaration(declaration);
+        FileComponentDeclarations fileDeclarations = getFileDeclarations();
+        traceAddRemove("remove", declaration); // NOI18N
+        fileDeclarations.removeDeclaration(declaration);
+        if (persistent) {
+            fileDeclarations.put();
+        }
     }
 
     @Override
@@ -484,18 +536,33 @@ public final class FileContent implements MutableDeclarationsContainer {
     }
 
     public void cleanOther() {
-        getFileIncludes().clean();
-        getFileMacros().clean();
-        getFileReferences().clean();
-        getFileInstantiations().clean();
+        FileComponentIncludes fileIncludes = getFileIncludes();
+        fileIncludes.clean();
+        FileComponentMacros fileMacros = getFileMacros();
+        fileMacros.clean();
+        FileComponentReferences fileReferences = getFileReferences();
+        fileReferences.clean();
+        FileComponentInstantiations fileInstantiations = getFileInstantiations();
+        fileInstantiations.clean();
+        if (persistent) {
+            fileIncludes.put();
+            fileMacros.put();
+            fileReferences.put();
+            fileInstantiations.put();
+        }
     }
 
     public Collection<CsmUID<CsmOffsetableDeclaration>> cleanDeclarations() {
-        Collection<CsmUID<CsmOffsetableDeclaration>> uids = getFileDeclarations().clean();
+        FileComponentDeclarations fileDeclarations = getFileDeclarations();
+        Collection<CsmUID<CsmOffsetableDeclaration>> uids = fileDeclarations.clean();
+        if (persistent) {
+            fileDeclarations.put();
+        }
         return uids;
     }
     
     public void put() {
+        assert persistent;
         getFileIncludes().put();
         getFileMacros().put();
         getFileReferences().put();
@@ -509,5 +576,16 @@ public final class FileContent implements MutableDeclarationsContainer {
 
     public Map<CsmUID<FunctionImplEx<?>>, AST> getFakeASTs() {
         return this.fileASTs;
+    }
+
+    private static final boolean TRACE = false;
+    private void traceAddRemove(String mark, Object obj) {
+        if (TRACE) {
+            CharSequence path = fileImpl.getAbsolutePath();
+            CndUtils.assertTrueInConsole(persistent, "MODIFYING ", path);
+            if (path.toString().contains("NetBeansProjects")) { // NOI18N
+                System.err.printf("%-65s %-5s %s\n", path, mark, obj);
+            }
+        }
     }
 }

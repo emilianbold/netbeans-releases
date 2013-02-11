@@ -47,9 +47,9 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
-import org.netbeans.modules.editor.lib2.search.EditorFindSupport;
-import org.netbeans.modules.editor.lib2.search.EditorFindSupport.RP;
-import org.netbeans.modules.editor.lib2.search.EditorFindSupport.SPW;
+import org.netbeans.modules.editor.search.EditorFindSupport;
+import org.netbeans.modules.editor.search.EditorFindSupport.RP;
+import org.netbeans.modules.editor.search.EditorFindSupport.SPW;
 import org.netbeans.modules.editor.search.SearchBar;
 import org.netbeans.modules.editor.search.SearchNbEditorKit;
 import org.netbeans.spi.editor.completion.CompletionProvider;
@@ -80,11 +80,12 @@ public class SearchCompletion implements CompletionProvider {
 
     static class Query extends AsyncCompletionQuery {
 
-        private SearchBar searchBar = SearchBar.getInstance();
         private Set<SearchCompletionItem> results;
 
         @Override
         protected void query(CompletionResultSet resultSet, Document doc, int caretOffset) {
+            SearchBar searchBar = SearchBar.getInstance();
+            searchBar.setPopupMenuWasCanceled(true);
             String queryText = "";
             results = new HashSet<SearchCompletionItem>();
             try {

@@ -43,6 +43,8 @@ package org.netbeans.modules.php.project.ui.actions.support;
 
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
@@ -51,20 +53,16 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
-import org.netbeans.modules.php.project.deprecated.PhpProgram.InvalidPhpProgramException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.api.util.StringUtils;
-import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.project.PhpActionProvider;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
-import org.netbeans.modules.php.project.phpunit.PhpUnit;
-import org.netbeans.modules.php.project.phpunit.PhpUnitSkelGen;
 import org.netbeans.modules.php.project.ui.actions.Command;
-import org.netbeans.modules.php.project.ui.customizer.CompositePanelProviderImpl;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.XDebugUrlArguments;
 import org.netbeans.modules.php.project.ui.options.PhpOptions;
-import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
@@ -80,6 +78,9 @@ import org.openide.windows.TopComponent;
  * @author Radek Matous, Tomas Mysik
  */
 public final class CommandUtils {
+
+    private static final Logger LOGGER = Logger.getLogger(CommandUtils.class.getName());
+
     private static final String HTML_MIME_TYPE = "text/html"; // NOI18N
 
     private CommandUtils() {
@@ -96,52 +97,6 @@ public final class CommandUtils {
         String message = NbBundle.getMessage(CommandUtils.class, "MSG_NoMoreDebugSession");
         NotifyDescriptor descriptor = new NotifyDescriptor.Confirmation(message, NotifyDescriptor.OK_CANCEL_OPTION);
         return DialogDisplayer.getDefault().notify(descriptor) == NotifyDescriptor.OK_OPTION;
-    }
-
-    /**
-     * Get valid {@link PhpUnit} instance (script for project if provided or from IDE options) or {@code null}.
-     * @param project project to get PhpUnit for
-     * @param showCustomizer if @code true}, IDE options dialog is shown if the path of PHPUnit is not valid
-     * @return valid {@link PhpUnit} instance or <code>null</code> if the path of PHP Unit is not valid
-     */
-    public static PhpUnit getPhpUnit(PhpProject project, boolean showCustomizer) {
-        // project first
-        try {
-            PhpUnit phpUnit = PhpUnit.forProject(project);
-            if (phpUnit != null) {
-                return phpUnit;
-            }
-        } catch (InvalidPhpProgramException ex) {
-            if (showCustomizer) {
-                PhpProjectUtils.openCustomizer(project, CompositePanelProviderImpl.PHP_UNIT);
-            }
-            return null;
-        }
-        // then general
-        try {
-            return PhpUnit.getDefault();
-        } catch (InvalidPhpProgramException ex) {
-            if (showCustomizer) {
-                UiUtils.invalidScriptProvided(ex.getLocalizedMessage(), PhpUnit.OPTIONS_SUB_PATH);
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Get valid {@link PhpUnitSkelGen} instance (path from IDE options used) or {@code null}.
-     * @param showCustomizer if @code true}, IDE options dialog is shown if the path of PhpUnitSkelGen is not valid
-     * @return valid {@link PhpUnitSkelGen} instance or <code>null</code> if the path of PhpUnitSkelGen is not valid
-     */
-    public static PhpUnitSkelGen getPhpUnitSkelGen(boolean showCustomizer) {
-        try {
-            return PhpUnitSkelGen.getDefault();
-        } catch (InvalidPhpProgramException ex) {
-            if (showCustomizer) {
-                UiUtils.invalidScriptProvided(ex.getLocalizedMessage(), PhpUnit.OPTIONS_SUB_PATH);
-            }
-        }
-        return null;
     }
 
     /**
@@ -467,6 +422,41 @@ public final class CommandUtils {
             baseURLPath += "/"; // NOI18N
         }
         return new URL(baseURLPath);
+    }
+
+    public static String urlToString(URL url, boolean pathOnly) {
+        URI uri;
+        try {
+            uri = url.toURI();
+        } catch (URISyntaxException ex) {
+            // fallback:
+            LOGGER.log(Level.FINE, "URL '{0}' cannot be converted to URI.", url);
+            String res = url.toExternalForm();
+            int end = res.lastIndexOf('?'); // NOI18N
+            if (end == -1) {
+                end = res.lastIndexOf('#'); // NOI18N
+            }
+            if (pathOnly && end != -1) {
+                res = res.substring(0, end);
+            }
+            return res;
+        }
+        StringBuilder sb = new StringBuilder(100);
+        sb.append(uri.getScheme());
+        sb.append("://"); // NOI18N
+        if (uri.getAuthority() != null) {
+            sb.append(uri.getAuthority());
+        }
+        sb.append(uri.getPath());
+        if (!pathOnly && uri.getQuery() != null) {
+            sb.append("?"); // NOI18N
+            sb.append(uri.getQuery());
+        }
+        if (!pathOnly && uri.getFragment() != null) {
+            sb.append("#"); // NOI18N
+            sb.append(uri.getFragment());
+        }
+        return sb.toString();
     }
 
     /**

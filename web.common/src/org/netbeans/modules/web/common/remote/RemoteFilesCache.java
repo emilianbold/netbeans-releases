@@ -94,19 +94,27 @@ public class RemoteFilesCache {
     }
     
     public FileObject getRemoteFile(final URL url) throws IOException {
+        return getRemoteFile(url, true);
+    }
+    
+    FileObject getRemoteFile(final URL url, boolean asynchronous) throws IOException {
         final File f = getCachedFileName(url);
         if (!f.exists()) {
             f.createNewFile();
-            RP2.post(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        fetchRemoteFile(f, url);
-                    } catch (IOException ex) {
-                        Exceptions.printStackTrace(ex);
+            if (asynchronous) {
+                RP2.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            fetchRemoteFile(f, url);
+                        } catch (IOException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
                     }
-                }
-            });
+                });
+            } else {
+                fetchRemoteFile(f, url);
+            }
         }
         FileObject fo = FileUtil.toFileObject(f);
         fo.setAttribute(REMOTE_URL, url.toExternalForm());

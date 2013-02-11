@@ -46,13 +46,15 @@ import java.net.URL;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedList;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
+import org.netbeans.modules.javascript2.editor.model.JsFunction;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.model.Model;
+import org.netbeans.modules.javascript2.editor.model.TypeUsage;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.Parser.Result;
@@ -62,7 +64,7 @@ import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexDocument;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexingSupport;
-import org.openide.filesystems.FileObject;
+import org.openide.util.Parameters;
 
 /**
  *
@@ -98,23 +100,36 @@ public class JsIndexer extends EmbeddingIndexer {
     }
 
     private void storeObject(JsObject object, IndexingSupport support, Indexable indexable) {
-        if (object.isDeclared() || object.getName().equals("prototype")) {
-            // if it's delcared, then store in the index as new document.
-            support.addDocument(IndexedElement.createDocument(object, support, indexable));
-        }
-        // look for all other properties. Even if the object doesn't have to be delcared in the file
-        // there can be declared it's properties or methods
-        for (JsObject property : object.getProperties().values()) {
-            storeObject(property, support, indexable);
+        if (!isInvisibleFunction(object)) {
+            if (object.isDeclared() || object.getName().equals("prototype")) {
+                // if it's delcared, then store in the index as new document.
+                IndexDocument document = IndexedElement.createDocument(object, support, indexable);
+                support.addDocument(document);
+            }
+            // look for all other properties. Even if the object doesn't have to be delcared in the file
+            // there can be declared it's properties or methods
+            for (JsObject property : object.getProperties().values()) {
+                storeObject(property, support, indexable);
+            }
         }
     }
-   
     
+    private boolean isInvisibleFunction(JsObject object) {
+        if (object.getJSKind().isFunction() && (object.isAnonymous() || object.getModifiers().contains(Modifier.PRIVATE))) {
+                Collection<? extends TypeUsage> returnTypes = ((JsFunction)object).getReturnTypes();
+                if (returnTypes.size() == 1 && (returnTypes.iterator().next()).getType().equals("undefined")) {
+                    return true;
+                }
+            }
+        return false;
+    }
     
     public static final class Factory extends EmbeddingIndexerFactory {
 
         public static final String NAME = "js"; // NOI18N
-        public static final int VERSION = 4;
+        public static final int VERSION = 5;
+
+        private static final ThreadLocal<Collection<Runnable>> postScanTasks = new ThreadLocal<Collection<Runnable>>();
 
         @Override
         public EmbeddingIndexer createIndexer(final Indexable indexable, final Snapshot snapshot) {
@@ -166,5 +181,37 @@ public class JsIndexer extends EmbeddingIndexer {
                 LOG.log(Level.WARNING, null, ioe);
             }
         }
+
+        @Override
+        public boolean scanStarted(Context context) {
+            postScanTasks.set(new LinkedList<Runnable>());
+            return super.scanStarted(context);
+        }
+
+        @Override
+        public void scanFinished(Context context) {
+            try {
+                for (Runnable task : postScanTasks.get()) {
+                    task.run();
+                }
+            } finally {
+                postScanTasks.remove();
+                super.scanFinished(context);
+            }
+        }
+
+        public static boolean isScannerThread() {
+            return postScanTasks.get() != null;
+        }
+
+        public static void addPostScanTask(@NonNull final Runnable task) {
+            Parameters.notNull("task", task);   //NOI18N
+            final Collection<Runnable> tasks = postScanTasks.get();
+            if (tasks == null) {
+                throw new IllegalStateException("JsIndexer.postScanTask can be called only from scanner thread.");  //NOI18N
+            }                        
+            tasks.add(task);
+        }
+
     } // End of Factory class
 }

@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.groovy.support.wizard;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -75,13 +74,13 @@ public abstract class ProjectTypeStrategy {
     }
 
 
-    protected abstract boolean existsGroovyTestFolder(List<SourceGroup> groups);
+    public abstract boolean existsGroovyTestFolder(List<SourceGroup> groups);
 
-    protected abstract boolean existsGroovySourceFolder(List<SourceGroup> groups);
+    public abstract boolean existsGroovySourceFolder(List<SourceGroup> groups);
 
-    protected abstract void createGroovyTestFolder();
+    public abstract void createGroovyTestFolder();
 
-    protected abstract void createGroovySourceFolder();
+    public abstract void createGroovySourceFolder();
 
     /**
      * Enables to change the order of the given source groups.
@@ -89,24 +88,24 @@ public abstract class ProjectTypeStrategy {
      * @param groups source groups
      * @return regrouped source groups
      */
-    protected abstract List<SourceGroup> moveTestFolderAsFirst(List<SourceGroup> groups);
+    public abstract List<SourceGroup> moveTestFolderAsFirst(List<SourceGroup> groups);
 
-    protected abstract List<SourceGroup> moveSourceFolderAsFirst(List<SourceGroup> groups);
+    public abstract List<SourceGroup> moveSourceFolderAsFirst(List<SourceGroup> groups);
 
-    protected final List<SourceGroup> getOnlyTestSourceGroups(List<SourceGroup> groups) {
+    public final List<SourceGroup> getOnlyTestSourceGroups(List<SourceGroup> groups) {
         List<SourceGroup> reorderedGroup = new ArrayList<SourceGroup>();
         for (SourceGroup group : groups) {
             final String groupPath = group.getRootFolder().getPath();
 
             // Two check because of issue #221727
-            if (groupPath.endsWith(File.separator + "test") || groupPath.contains(File.separator + "test" + File.separator)) { // NOI18N
+            if (groupPath.endsWith("/test") || groupPath.contains("/test/")) { // NOI18N
                 reorderedGroup.add(group);
             }
         }
         return reorderedGroup;
     }
 
-    protected final List<SourceGroup> moveAsFirst(List<SourceGroup> groups, String folderName) {
+    public final List<SourceGroup> moveAsFirst(List<SourceGroup> groups, String folderName) {
         List<SourceGroup> reorderedGroup = new ArrayList<SourceGroup>();
         for (SourceGroup group : groups) {
             if (group.getRootFolder().getPath().contains(folderName)) { // NOI18N
@@ -137,7 +136,7 @@ public abstract class ProjectTypeStrategy {
      * @param wizardDescriptor current wizard descriptor
      * @return Groovy JUnit Test template based on JUnit version declared in pom.xml
      */
-    protected FileObject findTemplate(WizardDescriptor wizardDescriptor) {
+    public FileObject findTemplate(WizardDescriptor wizardDescriptor) {
         // Let's find out parent for declared templates --> This allows
         // to find templates marked with category = "invisible"
         final FileObject templatesParent = Templates.getTemplate(wizardDescriptor).getParent();

@@ -76,5 +76,7 @@ public interface FileBuffer extends APTFileBuffer {
 
     int[] getLineColumnByOffset(int offset) throws IOException;
 
+    int getLineCount() throws IOException;
+
     int getOffsetByLineColumn(int line, int column) throws IOException;
 }

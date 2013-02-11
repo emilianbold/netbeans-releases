@@ -119,6 +119,7 @@ import javax.swing.text.Position;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.ElementUtilities.ElementAcceptor;
 import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.ModificationResult;
@@ -188,22 +189,18 @@ public class Utilities {
     }
 
     private static String guessLiteralName(String str) {
-        StringBuffer sb = new StringBuffer();
-        if(str.length() == 0)
+        if(str.isEmpty())
             return null;
-        char first = str.charAt(0);
-        if(Character.isJavaIdentifierStart(str.charAt(0)))
-            sb.append(first);
+        
+        StringBuilder sb = new StringBuilder();
 
-        for (int i = 1; i < str.length(); i++) {
+        for (int i = 0; i < str.length(); i++) {
             char ch = str.charAt(i);
             if(ch == ' ') {
                 sb.append('_');
-                continue;
-            }
-            if (Character.isJavaIdentifierPart(ch))
+            } else if (sb.length() == 0 ? Character.isJavaIdentifierStart(ch) : Character.isJavaIdentifierPart(ch))
                 sb.append(ch);
-            if (i > 40)
+            if (sb.length() > 40)
                 break;
         }
         if (sb.length() == 0)
@@ -323,13 +320,13 @@ public class Utilities {
         case IDENTIFIER:
             return ((IdentifierTree) et).getName().toString();
         case METHOD_INVOCATION:
-            return getName(((MethodInvocationTree) et).getMethodSelect());
+            return getNameRaw(((MethodInvocationTree) et).getMethodSelect());
         case MEMBER_SELECT:
             return ((MemberSelectTree) et).getIdentifier().toString();
         case NEW_CLASS:
-            return firstToLower(getName(((NewClassTree) et).getIdentifier()));
+            return firstToLower(getNameRaw(((NewClassTree) et).getIdentifier()));
         case PARAMETERIZED_TYPE:
-            return firstToLower(getName(((ParameterizedTypeTree) et).getType()));
+            return firstToLower(getNameRaw(((ParameterizedTypeTree) et).getType()));
         case STRING_LITERAL:
             String name = guessLiteralName((String) ((LiteralTree) et).getValue());
             if(name == null) {
@@ -378,7 +375,7 @@ public class Utilities {
         char last = Character.toLowerCase(name.charAt(0));
 
         for (int i = 1; i < name.length(); i++) {
-            if (toLower && Character.isUpperCase(name.charAt(i))) {
+            if (toLower && (Character.isUpperCase(name.charAt(i)) || name.charAt(i) == '_')) {
                 result.append(Character.toLowerCase(last));
             } else {
                 result.append(last);
@@ -388,7 +385,7 @@ public class Utilities {
 
         }
 
-        result.append(last);
+        result.append(toLower ? Character.toLowerCase(last) : last);
         
         if (SourceVersion.isKeyword(result)) {
             return "a" + name;
@@ -1249,17 +1246,30 @@ public class Utilities {
     }
 
     public enum Visibility {
-        PRIVATE,
-        PACKAGE_PRIVATE,
-        PROTECTED,
-        PUBLIC;
+        PRIVATE(EnumSet.of(Modifier.PRIVATE)),
+        PACKAGE_PRIVATE(EnumSet.noneOf(Modifier.class)),
+        PROTECTED(EnumSet.of(Modifier.PROTECTED)),
+        PUBLIC(EnumSet.of(Modifier.PUBLIC));
+        private final Set<Modifier> modifiers;
+        private Visibility(Set<Modifier> modifiers) {
+            this.modifiers = modifiers;
+        }
         public Visibility enclosedBy(Visibility encl) {
             return Visibility.values()[Math.min(ordinal(), encl.ordinal())];
+        }
+        public Set<Modifier> getRequiredModifiers() {
+            return modifiers;
         }
         public static Visibility forModifiers(ModifiersTree mt) {
             if (mt.getFlags().contains(Modifier.PUBLIC)) return PUBLIC;
             if (mt.getFlags().contains(Modifier.PROTECTED)) return PROTECTED;
             if (mt.getFlags().contains(Modifier.PRIVATE)) return PRIVATE;
+            return PACKAGE_PRIVATE;
+        }
+        public static Visibility forElement(Element el) {
+            if (el.getModifiers().contains(Modifier.PUBLIC)) return PUBLIC;
+            if (el.getModifiers().contains(Modifier.PROTECTED)) return PROTECTED;
+            if (el.getModifiers().contains(Modifier.PRIVATE)) return PRIVATE;
             return PACKAGE_PRIVATE;
         }
         public static Visibility forTree(Tree t) {
@@ -1273,5 +1283,51 @@ public class Utilities {
                 default: return null;
             }
         }
+    }
+
+    /**
+     * Detects if targets file is non-null and writable
+     * @return true if target's file is writable
+     */
+    public static boolean isTargetWritable(@NonNull TypeElement target, @NonNull CompilationInfo info) {
+        TypeElement outermostType = info.getElementUtilities().outermostTypeElement(target);
+        FileObject fo = SourceUtils.getFile(ElementHandle.create(outermostType), info.getClasspathInfo());
+	if(fo != null && fo.canWrite())
+	    return true;
+	else
+	    return false;
+    }
+
+
+    public static Visibility getAccessModifiers(@NonNull CompilationInfo info, @NullAllowed TypeElement source, @NonNull TypeElement target) {
+        if (target.getKind().isInterface()) {
+            return Visibility.PUBLIC;
+        }
+
+        TypeElement outterMostSource = source != null ? info.getElementUtilities().outermostTypeElement(source) : null;
+        TypeElement outterMostTarget = info.getElementUtilities().outermostTypeElement(target);
+
+        if (outterMostTarget.equals(outterMostSource)) {
+            return Visibility.PRIVATE;
+        }
+
+        Element sourcePackage;
+
+        if (outterMostSource != null) {
+            sourcePackage = outterMostSource.getEnclosingElement();
+        } else if (info.getCompilationUnit().getPackageName() != null) {
+            sourcePackage = info.getTrees().getElement(new TreePath(new TreePath(info.getCompilationUnit()), info.getCompilationUnit().getPackageName()));
+        } else {
+            sourcePackage = info.getElements().getPackageElement("");
+        }
+
+        Element targetPackage = outterMostTarget.getEnclosingElement();
+
+        if (sourcePackage.equals(targetPackage)) {
+            return Visibility.PACKAGE_PRIVATE;
+        }
+
+        //TODO: protected?
+        return Visibility.PUBLIC;
     }
 }

@@ -43,8 +43,10 @@ package org.netbeans.modules.editor.search;
 
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import javax.swing.Action;
 import javax.swing.BoxLayout;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
@@ -52,6 +54,7 @@ import javax.swing.text.EditorKit;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
+import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.EditorUI;
 import org.netbeans.editor.SideBarFactory;
 import org.netbeans.editor.ext.ExtKit;
@@ -109,45 +112,58 @@ public final class SearchNbEditorKit extends NbEditorKit {
                             && SearchBar.getInstance().getActualTextComponent() != EditorRegistry.lastFocusedComponent()
                             && SearchBar.getInstance().isVisible()) {
                         JTextComponent target = EditorRegistry.lastFocusedComponent();
-                        EditorUI eui = org.netbeans.editor.Utilities.getEditorUI(target);
-                        if (eui != null) {
-                            JPanel jp = null;
-                            Object clientProperty = target.getClientProperty(SearchNbEditorKit.PROP_SEARCH_CONTAINER);
-                            if (clientProperty instanceof JPanel) {
-                                jp = (JPanel) clientProperty;
-                            } else {
+                        JPanel jp = null;
+                        Object clientProperty = target.getClientProperty(SearchNbEditorKit.PROP_SEARCH_CONTAINER);
+                        if (clientProperty instanceof JPanel) {
+                            jp = (JPanel) clientProperty;
+                        } else {
+                            EditorUI eui = org.netbeans.editor.Utilities.getEditorUI(target);
+                            if (eui != null) {
+
                                 JComponent comp = eui.hasExtComponent() ? eui.getExtComponent() : null;
                                 if (comp != null) {
                                     jp = SearchNbEditorKit.findComponent(comp, SearchNbEditorKit.SearchJPanel.class, 5);
                                 }
                             }
-                            if (jp != null) {
-                                SearchBar searchBarInstance = SearchBar.getInstance(eui.getComponent());
-                                ReplaceBar replaceBarInstance = ReplaceBar.getInstance(searchBarInstance);
-                                jp.add(searchBarInstance);
-                                if (replaceBarInstance.isVisible()) {
-                                    jp.add(replaceBarInstance);
-                                    if (searchBarInstance.hadFocusOnTextField()) {
-                                        replaceBarInstance.gainFocus();
-                                    }
-                                    if (!target.isEditable()) {
-                                        replaceBarInstance.looseFocus();
-                                    }
-                                }
-
-
-                                jp.revalidate();
-
+                        }
+                        if (jp != null) {
+                            SearchBar searchBarInstance = SearchBar.getInstance(target);
+                            ReplaceBar replaceBarInstance = ReplaceBar.getInstance(searchBarInstance);
+                            jp.add(searchBarInstance);
+                            if (replaceBarInstance.isVisible()) {
+                                jp.add(replaceBarInstance);
                                 if (searchBarInstance.hadFocusOnTextField()) {
-                                    searchBarInstance.gainFocus();
+                                    replaceBarInstance.gainFocus();
+                                }
+                                if (!target.isEditable()) {
+                                    replaceBarInstance.looseFocus();
                                 }
                             }
-                        }
 
+
+                            jp.revalidate();
+
+                            if (searchBarInstance.hadFocusOnTextField()) {
+                                searchBarInstance.gainFocus();
+                            }
+                        }
                     }
+
                 }
             };
             EditorRegistry.addPropertyChangeListener(searchAndReplaceBarPersistentListener);
+        }
+    }
+
+    public static void openFindIfNecessary(EditorUI eui, ActionEvent evt) {
+        Object findWhat = EditorFindSupport.getInstance().getFindProperty(EditorFindSupport.FIND_WHAT);
+        if (findWhat == null || !(findWhat instanceof String) || ((String) findWhat).isEmpty()) {
+
+            Action findAction = ((BaseKit) eui.getComponent().getUI().getEditorKit(
+                    eui.getComponent())).getActionByName("find");
+            if (findAction != null) {
+                findAction.actionPerformed(evt);
+            }
         }
     }
 }

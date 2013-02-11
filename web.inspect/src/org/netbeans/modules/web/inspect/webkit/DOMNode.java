@@ -44,6 +44,7 @@ package org.netbeans.modules.web.inspect.webkit;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.ResourceBundle;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
@@ -79,9 +80,9 @@ public class DOMNode extends AbstractNode {
     /** Property sets of the node. */
     private PropertySet[] propertySets;
     /** Determines whether nodeId should be appended to display name. */
-    private boolean nodeIdInDisplayName = Boolean.getBoolean("org.netbeans.modules.web.inspect.nodeIdInDisplayName"); // NOI18N
+    private final boolean nodeIdInDisplayName = Boolean.getBoolean("org.netbeans.modules.web.inspect.nodeIdInDisplayName"); // NOI18N
     /** Page model this node belongs to. */
-    private WebKitPageModel model;
+    private final WebKitPageModel model;
 
     /**
      * Creates a new {@code DOMNode}.
@@ -125,7 +126,7 @@ public class DOMNode extends AbstractNode {
         if (nodeType == org.w3c.dom.Node.ELEMENT_NODE) {
             // Element
             String pattern = bundle.getString("DOMNode.elementDisplayName"); //NOI18N
-            String tagName = node.getNodeName().toLowerCase();
+            String tagName = node.getNodeName().toLowerCase(Locale.ENGLISH);
             String selector = getSelector();
             displayName = MessageFormat.format(pattern, tagName, selector);
         } else if (nodeType == org.w3c.dom.Node.DOCUMENT_NODE) {
@@ -205,7 +206,7 @@ public class DOMNode extends AbstractNode {
      * Forces update of the display name.
      */
     private void updateDisplayName() {
-        String tagName = node.getNodeName().toLowerCase();
+        String tagName = node.getNodeName().toLowerCase(Locale.ENGLISH);
         String selector = getSelector();
         setDisplayName(tagName+selector);
     }
@@ -294,7 +295,7 @@ public class DOMNode extends AbstractNode {
      */
     static class DOMChildren extends Children.Keys<Integer> {
         /** Page model this node belongs to. */
-        private WebKitPageModel pageModel;
+        private final WebKitPageModel pageModel;
 
         /**
          * Creates a new {@code DOMChildren}.

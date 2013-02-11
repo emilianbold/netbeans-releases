@@ -93,6 +93,9 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
 
     private CharSequence qualifiedName;
     private static final byte FAKE_QUALIFIED_NAME = 1 << (FunctionImpl.LAST_USED_FLAG_INDEX+1);
+    private static final byte FUNC_LIKE_VARIABLE  = 1 << (FunctionImpl.LAST_USED_FLAG_INDEX+2);
+    protected static final int LAST_USED_FLAG_INDEX_EX = FunctionImpl.LAST_USED_FLAG_INDEX+2;
+    
     private CharSequence[] classOrNspNames;   
     
     protected FunctionImplEx(CharSequence name, CharSequence rawName, CsmScope scope, boolean _static, boolean _const, CsmFile file, int startOffset, int endOffset, boolean global) {
@@ -116,7 +119,7 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
         scope = AstRenderer.FunctionRenderer.getScope(scope, file, _static, false);
 
         FunctionImplEx<T> functionImplEx = new FunctionImplEx<T>(name, rawName, scope, _static, _const, file, startOffset, endOffset, global);        
-        
+        functionImplEx.setFlags(FUNC_LIKE_VARIABLE, ast.getType() == CPPTokenTypes.CSM_FUNCTION_LIKE_VARIABLE_DECLARATION);
         temporaryRepositoryRegistration(global, functionImplEx);
         
         StringBuilder clsTemplateSuffix = new StringBuilder();
@@ -224,7 +227,7 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
                 int type2 = token.getType();
                 switch (type2) {
                     case CPPTokenTypes.IDENT:
-                        id = new StringBuilder(token.getText());
+                        id = new StringBuilder(AstUtil.getText(token));
                         break;
                     case CPPTokenTypes.GREATERTHAN:
                         level--;
@@ -349,6 +352,7 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
                     FileImpl aFile = (FileImpl) getContainingFile();
                     FunctionImpl<?> fi = FunctionImpl.create(fixFakeRegistrationAst, getContainingFile(), null, null, this.getScope(),true,null);
                     fixFakeRegistrationAst = null;
+                    //TODO: it is safer to unregister/remove before FunctionImpl.create
                     aFile.getProjectImpl(true).unregisterDeclaration(this);
                     fileContent.removeDeclaration(this);
                     fi.registerInProject();
@@ -369,6 +373,7 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
                 ProjectBase aProject = ((FileImpl)getContainingFile()).getProjectImpl(true);
                 aProject.unregisterDeclaration(this);
                 this.cleanUID();
+                //TODO: need to create the new FunctionImpl instead
                 qualifiedName = newQname;
                 registerInProject();
                 postFunctionImpExCreateRegistration(fileContent, true, this);
@@ -406,7 +411,9 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
     
     public static boolean isFakeFunction(CsmObject declaration) {
         if (declaration instanceof FunctionImplEx<?>) {
-            return FunctionImplEx.class.equals(declaration.getClass()) && ((FunctionImplEx)declaration).hasFlags(FAKE_QUALIFIED_NAME);
+            // TODO: remove usage of non-final FAKE_QUALIFIED_NAME flag
+            return FunctionImplEx.class.equals(declaration.getClass()) &&
+                    (((FunctionImplEx)declaration).hasFlags(FUNC_LIKE_VARIABLE) || ((FunctionImplEx)declaration).hasFlags(FAKE_QUALIFIED_NAME));
         } else {
             return false;
         }

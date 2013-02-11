@@ -65,6 +65,7 @@ import java.text.MessageFormat;
 import java.util.*;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -81,6 +82,7 @@ import org.netbeans.modules.subversion.ui.history.SearchHistoryAction;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.spi.VersioningSupport;
 import org.netbeans.modules.versioning.util.FileSelector;
+import org.netbeans.modules.versioning.util.IndexingBridge;
 import org.netbeans.modules.versioning.util.ProjectUtilities;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.cookies.EditorCookie;
@@ -938,7 +940,7 @@ public class SvnUtils {
         return info;
     }
 
-    public static void rollback (File file, SVNUrl repoUrl, SVNUrl fileUrl, SVNRevision.Number revision, boolean wasDeleted, OutputLogger logger) {
+    public static void rollback (File file, SVNUrl repoUrl, SVNUrl fileUrl, SVNRevision revision, boolean wasDeleted, OutputLogger logger) {
         if (wasDeleted) {
             // it was deleted, lets delete it again
             if (file.exists()) {
@@ -958,7 +960,7 @@ public class SvnUtils {
         OutputStream os = null;
         InputStream is = null;
         try {
-            File oldFile = VersionsCache.getInstance().getFileRevision(repoUrl, fileUrl, Long.toString(revision.getNumber()), file.getName());
+            File oldFile = VersionsCache.getInstance().getFileRevision(repoUrl, fileUrl, revision.toString(), file.getName());
             FileObject fo = FileUtil.toFileObject(file);
             if (fo == null) {
                 fo = FileUtil.toFileObject(parent).createData(file.getName());
@@ -1445,15 +1447,6 @@ public class SvnUtils {
         return ret;
     }
 
-    public static SvnFileNode [] getNodes(Context context, int includeStatus) {
-        File [] files = Subversion.getInstance().getStatusCache().listFiles(context, includeStatus);
-        SvnFileNode [] nodes = new SvnFileNode[files.length];
-        for (int i = 0; i < files.length; i++) {
-            nodes[i] = new SvnFileNode(files[i]);
-        }
-        return nodes;
-    }
-
     public static SVNRevision toSvnRevision(String revision) {
         SVNRevision svnrevision;
         if (Setup.REVISION_HEAD.equals(revision) || SVNRevision.HEAD.toString().equals(revision)) {
@@ -1750,5 +1743,54 @@ public class SvnUtils {
                 }
             }, 100);
         }
+    }
+
+    static ThreadLocal<Set<File>> indexingFiles = new ThreadLocal<Set<File>>();
+    public static <T> T runWithoutIndexing (Callable<T> callable, List<File> files) throws SVNClientException {
+        return runWithoutIndexing(callable, files.toArray(new File[files.size()]));
+    }
+
+    public static <T> T runWithoutIndexing (Callable<T> callable, File... files) throws SVNClientException {
+        try {
+            Set<File> recursiveRoots = indexingFiles.get();
+            if (recursiveRoots != null) {
+                assert indexingFilesSubtree(recursiveRoots, files) 
+                        : "Recursive call does not permit different roots: " 
+                        + recursiveRoots + " vs. " + Arrays.asList(files);
+                return callable.call();
+            } else {
+                try {
+                    if (Subversion.LOG.isLoggable(Level.FINER)) {
+                        Subversion.LOG.log(Level.FINER, "Running block with disabled indexing: on {0}", Arrays.asList(files)); //NOI18N
+                    }
+                    indexingFiles.set(new HashSet<File>(Arrays.asList(files)));
+                    return IndexingBridge.getInstance().runWithoutIndexing(callable, files);
+                } finally {
+                    indexingFiles.remove();
+                }
+            }
+        } catch (SVNClientException ex) {
+            throw ex;
+        } catch (Exception ex) {
+            throw new SVNClientException("Cannot run without indexing due to: " + ex.getMessage(), ex); //NOI18N
+        }
+    }
+
+    private static boolean indexingFilesSubtree (Set<File> recursiveRoots, File[] files) {
+        for (File f : files) {
+            if (!recursiveRoots.contains(f)) {
+                boolean contained = false;
+                for (File root : recursiveRoots) {
+                    if (Utils.isAncestorOrEqual(root, f)) {
+                        contained = true;
+                        break;
+                    }
+                }
+                if (!contained) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 }

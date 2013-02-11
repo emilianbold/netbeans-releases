@@ -50,7 +50,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
-import java.util.logging.Level;
 import javax.swing.SwingUtilities;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.InvalidArtifactRTException;
@@ -441,6 +440,10 @@ public final class NbMavenProject {
                         index++;
                     }
                 } catch (ThreadDeath d) { // download interrupted
+                } catch (IllegalStateException ise) { //download interrupted in dependent thread. #213812
+                    if (!(ise.getCause() instanceof ThreadDeath)) {
+                        throw ise;
+                    }
                 } finally {
                     handle.finish();
                     ProgressTransferListener.clearAggregateHandle();

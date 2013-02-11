@@ -41,7 +41,7 @@
  */
 package org.netbeans.modules.javascript2.editor.doc.spi;
 
-import com.oracle.nashorn.ir.Node;
+import jdk.nashorn.internal.ir.Node;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -221,6 +221,14 @@ public abstract class JsDocumentationHolder {
         return null;
     }
 
+    /**
+     * 
+     * @return snapshot
+     */
+    public Snapshot getSnapshot() {
+        return this.snapshot;
+    }
+    
     @SuppressWarnings("empty-statement")
     private int getEndOffsetOfAssociatedComment(int offset) {
         TokenHierarchy<?> tokenHierarchy = snapshot.getTokenHierarchy();

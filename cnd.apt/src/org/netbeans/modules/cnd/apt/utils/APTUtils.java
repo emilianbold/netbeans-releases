@@ -702,7 +702,7 @@ public class APTUtils {
     }
     
     public static final APTToken EOF_TOKEN = new APTEOFToken();
-    public static final APTToken EOF_TOKEN2 = new APTEOFToken2();
+    public static final APTToken EOF_TOKEN2 = new APTEOFTokenAntlr3();
     
     public static final TokenStream EMPTY_STREAM = new TokenStream() {
         @Override
@@ -799,8 +799,8 @@ public class APTUtils {
     }
 
 
-    private static final class APTEOFToken2 extends APTTokenAbstact {
-        public APTEOFToken2() {
+    private static final class APTEOFTokenAntlr3 extends APTTokenAbstact {
+        public APTEOFTokenAntlr3() {
         }
 
         @Override

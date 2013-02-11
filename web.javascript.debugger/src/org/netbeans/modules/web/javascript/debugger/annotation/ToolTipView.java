@@ -59,6 +59,7 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -338,12 +339,21 @@ public class ToolTipView extends JComponent implements org.openide.util.HelpCtx.
 
         @Override
         public void resumed() {
-            closeToolTip();
+            doCloseToolTip();
         }
 
         @Override
         public void reset() {
-            closeToolTip();
+            doCloseToolTip();
+        }
+        
+        private void doCloseToolTip() {
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    closeToolTip();
+                }
+            });
         }
         
     }

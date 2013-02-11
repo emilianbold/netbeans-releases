@@ -222,6 +222,8 @@ public class HistoryRegistry {
             if(LOG.isLoggable(Level.FINE)) {
                 LOG.log(Level.FINE, " loading changePaths for {0} took {1}", new Object[] { changesetId, System.currentTimeMillis() - t1}); // NOI18N
             }
+        } else {
+            lm.refreshChangedPaths(changePaths.toArray(new HgLogMessageChangedPath[changePaths.size()]));
         }
         return changePaths;
     }

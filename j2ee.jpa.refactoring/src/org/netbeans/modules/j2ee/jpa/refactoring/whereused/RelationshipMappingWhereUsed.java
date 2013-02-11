@@ -107,7 +107,7 @@ public final class RelationshipMappingWhereUsed implements JPARefactoring {
         if(handle.getKind() == Kind.VARIABLE) {
             Element resElement = handle.resolveElement(RefactoringUtil.getCompilationInfo(handle, whereUsedQuery));
             VariableElement var = (VariableElement) resElement;
-            Element mainEntTmp = var.getEnclosingElement();
+            Element mainEntTmp = var!=null ? var.getEnclosingElement() : null;
             TypeElement mainEnt = mainEntTmp instanceof TypeElement ? (TypeElement)mainEntTmp : null;
             if(mainEnt == null) {
                 return null;

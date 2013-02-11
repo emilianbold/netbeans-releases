@@ -219,7 +219,8 @@ public class VersioningManager implements PropertyChangeListener, ChangeListener
     
     private void init() {
         try {
-            refreshVersioningSystems();
+            // do not fire events under lock but asynchronously
+            refreshVersioningSystems(true);
             VersioningSupport.getPreferences().addPreferenceChangeListener(this);
         } finally {
             initialized = true;                                    
@@ -229,7 +230,7 @@ public class VersioningManager implements PropertyChangeListener, ChangeListener
     /**
      * List of versioning systems changed.
      */
-    private void refreshVersioningSystems() {
+    private void refreshVersioningSystems (boolean fireAsync) {
         synchronized(versioningSystems) {
             // inline unloadVersioningSystems();
             for (VCSSystemProvider.VersioningSystem system : versioningSystems) {
@@ -254,7 +255,17 @@ public class VersioningManager implements PropertyChangeListener, ChangeListener
             }
         }
 
-        versionedRootsChanged();
+        if (fireAsync) {
+            // this happens only once, default RP is fine
+            RequestProcessor.getDefault().post(new Runnable() {
+                @Override
+                public void run () {
+                    versionedRootsChanged();
+                }
+            });
+        } else {
+            versionedRootsChanged();
+        }
     }
 
     private void fireFileStatusChanged(Set<VCSFileProxy> files) {
@@ -534,7 +545,7 @@ public class VersioningManager implements PropertyChangeListener, ChangeListener
 
     @Override
     public void stateChanged(ChangeEvent e) {
-        refreshVersioningSystems();
+        refreshVersioningSystems(false);
     }
     
     /**
@@ -563,9 +574,10 @@ public class VersioningManager implements PropertyChangeListener, ChangeListener
 
     public void versionedRootsChanged() {
         versionedRootsChanged(null);
+        propertyChangeSupport.firePropertyChange(EVENT_VERSIONED_ROOTS, null, null);
     }
     
-    public void versionedRootsChanged(VersioningSystem owner) {
+    private void versionedRootsChanged(VersioningSystem owner) {
         flushCachedContext();
         flushFileOwnerCache();
         fireFileStatusChanged(null);

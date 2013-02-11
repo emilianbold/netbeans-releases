@@ -73,6 +73,8 @@ import org.netbeans.modules.maven.api.ModelUtils;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.embedder.exec.ProgressTransferListener;
 import static org.netbeans.modules.maven.nodes.Bundle.*;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Children;
@@ -157,8 +159,7 @@ public class DependenciesNode extends AbstractNode {
         
         @Override
         protected Node createNodeForKey(DependencyWrapper wr) {
-            Artifact art = wr.getArtifact();
-            return new DependencyNode(dependencies.project, art, true);
+            return new DependencyNode(dependencies.project, wr.getArtifact(), wr.getFileObject(), true);
         }
 
         @Override public void stateChanged(ChangeEvent e) {
@@ -244,12 +245,19 @@ public class DependenciesNode extends AbstractNode {
     private final static class DependencyWrapper {
 
         private Artifact artifact;
+        
+        private FileObject fileObject;
 
         public DependencyWrapper(Artifact artifact) {
             this.artifact = artifact;
             assert artifact.getFile() != null : "#200927 Artifact.getFile() is null: " + artifact;
             assert artifact.getDependencyTrail() != null : "#200927 Artifact.getDependencyTrail() is null:" + artifact;
             assert artifact.getVersion() != null : "200927 Artifact.getVersion() is null: " + artifact;
+            fileObject = FileUtil.toFileObject(artifact.getFile());
+        }
+        
+        public FileObject getFileObject() {
+            return fileObject;
         }
 
         public Artifact getArtifact() {

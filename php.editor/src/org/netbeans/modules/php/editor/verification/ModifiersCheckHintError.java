@@ -70,14 +70,14 @@ import org.openide.util.NbBundle.Messages;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class ModifiersCheckHintError extends AbstractHintError {
+public class ModifiersCheckHintError extends HintErrorRule {
     private List<Hint> hints;
     private FileObject fileObject;
     private BaseDocument doc;
     private boolean currectClassHasAbstractMethod = false;
 
     @Override
-    void compute(PHPRuleContext context, List<Hint> hints) {
+    public void invoke(PHPRuleContext context, List<Hint> hints) {
         PHPParseResult phpParseResult = (PHPParseResult) context.parserResult;
         if (phpParseResult.getProgram() == null) {
             return;

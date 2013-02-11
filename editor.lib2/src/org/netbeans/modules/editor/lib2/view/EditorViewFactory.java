@@ -295,6 +295,12 @@ public abstract class EditorViewFactory {
         this.viewBuilder = viewBuilder;
     }
 
+    @Override
+    public String toString() {
+        ViewBuilder vb = viewBuilder;
+        return "viewBuilder:\n" + vb; // NOI18N
+    }
+
     /**
      * Change that occurred in a view factory either due to insert/remove in a document
      * or due to some other cause.
@@ -302,9 +308,9 @@ public abstract class EditorViewFactory {
      */
     public static final class Change {
 
-        private int startOffset;
+        private final int startOffset;
 
-        private int endOffset;
+        private final int endOffset;
 
         Change(int startOffset, int endOffset) {
             this.startOffset = startOffset;

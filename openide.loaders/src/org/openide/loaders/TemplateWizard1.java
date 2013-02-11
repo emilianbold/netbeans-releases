@@ -604,6 +604,8 @@ final class TemplateWizard1 extends javax.swing.JPanel implements DataFilter,
     private static final class TemplatesTreeView extends BeanTreeView {
         TemplatesTreeView() {
             tree.setEditable(false);
+            //#219709 - workaround for JDK bug http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=8003400
+            tree.setLargeModel( false );
             // install proper border
             setBorder((Border)UIManager.get("Nb.ScrollPane.border")); // NOI18N
         }

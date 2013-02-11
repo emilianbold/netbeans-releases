@@ -56,7 +56,7 @@ public class InheritedStyleEntry {
     /** Ancestor node's inline style, if any. */
     private Style inlineStyle;
     /** Rules matching the ancestor node in the style inheritance chain. */
-    private List<Rule> matchedRules;
+    private final List<Rule> matchedRules;
 
     /**
      * Creates a new {@code InheritedStyleEntry} that corresponds to the given JSONObject.

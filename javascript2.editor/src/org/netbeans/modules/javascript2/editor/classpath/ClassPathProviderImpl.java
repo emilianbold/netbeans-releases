@@ -43,14 +43,16 @@ package org.netbeans.modules.javascript2.editor.classpath;
 
 import java.io.File;
 import java.net.URISyntaxException;
-import java.util.Arrays;
-import java.util.LinkedList;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
+import org.netbeans.modules.javascript2.editor.index.JsIndex;
+import org.netbeans.modules.javascript2.editor.index.JsIndexer;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
@@ -74,8 +76,11 @@ public class ClassPathProviderImpl implements ClassPathProvider {
     public static final String BOOT_CP = "classpath/javascript-boot"; //NOI18N
     public static final AtomicBoolean JS_CLASSPATH_REGISTERED = new AtomicBoolean(false);
 
-    // GuardedBy(this)
+    // GuardedBy(ClassPathProviderImpl.class)
     private static ClassPath cachedBootClassPath;
+
+    // GuardedBy(ClassPathProviderImpl.class)
+    private static List<FileObject> roots;
 
     /** Names of JavaScript signature bundles. */
     private static final StubsBundle[] STUBS_BUNDLES = {
@@ -94,34 +99,38 @@ public class ClassPathProviderImpl implements ClassPathProvider {
 
     public static synchronized ClassPath getBootClassPath() {
         if (cachedBootClassPath == null) {
-            cachedBootClassPath = ClassPathSupport.createClassPath(getJsStubs());
+            List<FileObject> stubs = getJsStubs();
+            cachedBootClassPath = ClassPathSupport.createClassPath(stubs.toArray(new FileObject[stubs.size()]));
         }
         return cachedBootClassPath;
     }
 
-    protected static synchronized FileObject[] getJsStubs() {
-        List<FileObject> roots = new LinkedList<FileObject>();
-        for (StubsBundle bundle : STUBS_BUNDLES) {
-            File stubFile = InstalledFileLocator.getDefault().locate("jsstubs/" + bundle.getNameOfDocumented(), "org.netbeans.modules.javascript2.editor", false); //NOI18N
-            if (stubFile == null || !stubFile.exists()) {
-                stubFile = InstalledFileLocator.getDefault().locate("jsstubs/" + bundle.getNameOfPruned(), "org.netbeans.modules.javascript2.editor", false); //NOI18N
-            }
-            if (stubFile == null) {
-                // Probably inside unit test.
-                try {
-                    File moduleJar = Utilities.toFile(ClassPathProviderImpl.class.getProtectionDomain().getCodeSource().getLocation().toURI());
-                    stubFile = new File(moduleJar.getParentFile().getParentFile(), "jsstubs/" + bundle.getNameOfPruned()); //NOI18N
-                } catch (URISyntaxException x) {
-                    assert false : x;
+    public static synchronized List<FileObject> getJsStubs() {
+        if (roots == null) {
+            List<FileObject> result = new ArrayList<FileObject>(STUBS_BUNDLES.length);
+            for (StubsBundle bundle : STUBS_BUNDLES) {
+                File stubFile = InstalledFileLocator.getDefault().locate("jsstubs/" + bundle.getNameOfDocumented(), "org.netbeans.modules.javascript2.editor", false); //NOI18N
+                if (stubFile == null || !stubFile.exists()) {
+                    stubFile = InstalledFileLocator.getDefault().locate("jsstubs/" + bundle.getNameOfPruned(), "org.netbeans.modules.javascript2.editor", false); //NOI18N
+                }
+                if (stubFile == null) {
+                    // Probably inside unit test.
+                    try {
+                        File moduleJar = Utilities.toFile(ClassPathProviderImpl.class.getProtectionDomain().getCodeSource().getLocation().toURI());
+                        stubFile = new File(moduleJar.getParentFile().getParentFile(), "jsstubs/" + bundle.getNameOfPruned()); //NOI18N
+                    } catch (URISyntaxException x) {
+                        assert false : x;
+                    }
+                }
+                if (!stubFile.isFile() || !stubFile.exists()) {
+                    LOG.log(Level.WARNING, "JavaScript stubs file was not found: {0}", stubFile.getAbsolutePath());
+                } else {
+                    result.add(FileUtil.getArchiveRoot(FileUtil.toFileObject(stubFile)));
                 }
             }
-            if (!stubFile.isFile() || !stubFile.exists()) {
-                LOG.log(Level.WARNING, "JavaScript stubs file was not found: {0}", stubFile.getAbsolutePath());
-            } else {
-                roots.add(FileUtil.getArchiveRoot(FileUtil.toFileObject(stubFile)));
-            }
+            roots = result;
         }
-        return roots.toArray(new FileObject[roots.size()]);
+        return Collections.unmodifiableList(roots);
     }
 
     /**
@@ -130,9 +139,23 @@ public class ClassPathProviderImpl implements ClassPathProvider {
      * JavaScript classpath is properly initialized after returning from this method. <p> The JavaScript classpath
      * unregistration is done in module's install class.
      */
-    public static synchronized void registerJsClassPathIfNeeded() {
-        if (!JS_CLASSPATH_REGISTERED.get()) {
-            JS_CLASSPATH_REGISTERED.set(true);
+    public static void registerJsClassPathIfNeeded() {
+        final Runnable action = new Runnable() {
+            @Override
+            public void run() {
+                registerJsClassPathIfNeededImpl();
+            }            
+        };
+        if (JsIndexer.Factory.isScannerThread()) {
+            JsIndexer.Factory.addPostScanTask(action);
+        } else {
+            action.run();
+        }
+        
+    }
+
+    private static void registerJsClassPathIfNeededImpl() {
+        if (JS_CLASSPATH_REGISTERED.compareAndSet(false, true)) {
             RP.post(new Runnable() {
                 @Override
                 public void run() {

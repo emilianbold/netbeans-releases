@@ -43,6 +43,8 @@
  */
 package org.netbeans.modules.javafx2.project;
 
+import java.awt.Color;
+import java.awt.Component;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -52,11 +54,21 @@ import java.net.URL;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.DefaultCellEditor;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.JTable;
+import javax.swing.JTextField;
 import javax.swing.JToggleButton;
+import javax.swing.UIManager;
+import javax.swing.event.CellEditorListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.table.AbstractTableModel;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.TableModel;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -94,6 +106,7 @@ import org.openide.util.RequestProcessor;
 public final class JFXProjectProperties {
 
     private static final Logger LOG = Logger.getLogger(JFXProjectProperties.class.getName());
+    private static final Color INVALID_CELL_CONTENT_COLOR = Color.RED;
     
     public static final String JAVAFX_ENABLED = "javafx.enabled"; // NOI18N
     public static final String JAVAFX_PRELOADER = "javafx.preloader"; // NOI18N
@@ -166,6 +179,8 @@ public final class JFXProjectProperties {
     public static final String ADD_DESKTOP_SHORTCUT = "javafx.deploy.adddesktopshortcut"; // NOI18N
     public static final String ADD_STARTMENU_SHORTCUT = "javafx.deploy.addstartmenushortcut"; // NOI18N
     public static final String ICON_FILE = "javafx.deploy.icon"; // NOI18N
+    public static final String NATIVE_ICON_FILE = "javafx.deploy.icon.native"; // NOI18N
+    public static final String SPLASH_IMAGE_FILE = "javafx.deploy.splash"; // NOI18N
     public static final String PERMISSIONS_ELEVATED = "javafx.deploy.permissionselevated"; // NOI18N
 
     // Deployment - signing
@@ -298,11 +313,29 @@ public final class JFXProjectProperties {
     public JToggleButton.ToggleButtonModel getAddStartMenuShortcutModel() {
         return addStartMenuShortcut;
     }
-    Document iconDocument;
-    public Document getIconDocumentModel() {
-        return iconDocument;
-    }
 
+    String wsIconPath;
+    String splashImagePath;
+    String nativeIconPath;
+    public String getWSIconPath() {
+        return wsIconPath;
+    }
+    public void setWSIconPath(String path) {
+        this.wsIconPath = path;
+    }
+    public String getSplashImagePath() {
+        return splashImagePath;
+    }
+    public void setSplashImagePath(String path) {
+        this.splashImagePath = path;
+    }
+    public String getNativeIconPath() {
+        return nativeIconPath;
+    }
+    public void setNativeIconPath(String path) {
+        this.nativeIconPath = path;
+    }
+    
     // Deployment - Signing
     public enum SigningType {
         NOSIGN("notsigned"), // NOI18N
@@ -570,15 +603,15 @@ public final class JFXProjectProperties {
             installPermanently = fxPropGroup.createToggleButtonModel(evaluator, INSTALL_PERMANENTLY);
             addDesktopShortcut = fxPropGroup.createToggleButtonModel(evaluator, ADD_DESKTOP_SHORTCUT);
             addStartMenuShortcut = fxPropGroup.createToggleButtonModel(evaluator, ADD_STARTMENU_SHORTCUT);
-            iconDocument = fxPropGroup.createStringDocument(evaluator, ICON_FILE);
-
+            
             // CustomizerRun
             CONFIGS = new JFXConfigs();
             CONFIGS.read();
             initPreloaderArtifacts(project, CONFIGS);
             CONFIGS.setActive(evaluator.getProperty(ProjectProperties.PROP_PROJECT_CONFIGURATION_CONFIG));
             preloaderClassModel = new PreloaderClassComboBoxModel();
-            
+
+            initIcons(evaluator);
             initSigning(evaluator);
             initNativeBundling(evaluator);
             initResources(evaluator, project, CONFIGS);
@@ -612,6 +645,11 @@ public final class JFXProjectProperties {
                 (s1 != null && s2 != null && s1.equals(s2));
     }                                   
     
+    /**
+     * Used to display named and unnamed parameters in table. The point
+     * here is to keep consistency by forbidding invalid parameters, i.e.,
+     * named parameters with value but without name.
+     */
     public static class PropertiesTableModel extends AbstractTableModel {
         
         private List<Map<String,String>> properties;
@@ -625,6 +663,40 @@ public final class JFXProjectProperties {
             properties = props;
             propSuffixes = sfxs;
             columnNames = clmns;
+        }
+        
+        public boolean isValid() {
+            assert properties != null;
+            for(Map<String,String> map : properties) {
+                String left = map.get(propSuffixes[0]);
+                if(left == null || left.trim().isEmpty()) {
+                    for(int c=1; c<columnNames.length; c++) {
+                        String right = map.get(propSuffixes[c]);
+                        if(right != null && !right.isEmpty()) {
+                            return false;
+                        }
+                    }
+                }
+            }
+            return true;
+        }
+        
+        public boolean isRowEmpty(int index) {
+            if(!properties.isEmpty() && index < properties.size()) {
+                Map<String,String> last = properties.get(index);
+                for(int c=0; c<columnNames.length; c++) {
+                    String value = last.get(propSuffixes[c]);
+                    if(value != null && !value.isEmpty()) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+            return false;
+        }
+
+        public boolean isLastRowEmpty() {
+            return isRowEmpty(properties.size()-1);
         }
         
         @Override
@@ -644,12 +716,19 @@ public final class JFXProjectProperties {
         
         @Override
         public boolean isCellEditable(int rowIndex, int columnIndex) {
+            if(columnIndex>0) {
+                String left = properties.get(rowIndex).get(propSuffixes[columnIndex-1]);
+                if(left == null || left.isEmpty()) {
+                    return false;
+                }
+            }
             return true;
         }
         
         @Override
         public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
             properties.get(rowIndex).put(propSuffixes[columnIndex], (String) aValue);
+            fireTableCellUpdated(rowIndex, columnIndex);
         }
         
         @Override
@@ -663,13 +742,142 @@ public final class JFXProjectProperties {
                 emptyMap.put(suffix, "");
             }
             properties.add(emptyMap);
+            fireTableDataChanged();
         }
         
         public void removeRow(int index) {
             properties.remove(index);
+            fireTableDataChanged();
+        }
+        
+        private int getEmptyRow() {
+            for(int i = 0; i < properties.size(); i++) {
+                if(isRowEmpty(i)) {
+                    return i;
+                }
+            }
+            return -1;
+        }
+        
+        public void removeEmptyRows() {
+            boolean removed = false;
+            while(true) {
+                int i = getEmptyRow();
+                if(i == -1) {
+                    if(removed) {
+                        fireTableDataChanged();
+                    }
+                    return;
+                }
+                removeRow(i);
+                removed = true;
+            }
         }
 
     }
+
+    /**
+     * May not be necessary but improves user experience - updates OK button state
+     * immediately while editing text in table, i.e., not only after cell editing
+     * has finished.
+     */
+    public static class PropertyCellEditor extends DefaultCellEditor implements CellEditorListener {
+
+        private DocumentListener listener = null;
+        private Document document = null;
+
+        public PropertyCellEditor() {
+            super(new JTextField());
+        }
+
+        public void registerCellEditorListener() {
+            addCellEditorListener(this);
+        }
+        
+        public void unregisterCellEditorListener() {
+            removeCellEditorListener(this);
+        }
+        
+        @Override
+        public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
+            if(document != null) {
+                document.removeDocumentListener(listener);
+            }
+            JTextField editor = (JTextField) super.getTableCellEditorComponent(table, value, isSelected, row, column);
+            document = editor.getDocument();
+            listener = new CellEditorDocumentListener(table.getModel(), row, column);
+            document.addDocumentListener(listener);
+            return editor;
+        }
+
+        @Override
+        public void editingStopped(ChangeEvent e) {
+            removeDocumentListenerReference();
+        }
+
+        @Override
+        public void editingCanceled(ChangeEvent e) {
+            removeDocumentListenerReference();
+        }
+
+        private void removeDocumentListenerReference() {
+            if(document != null) {
+                document.removeDocumentListener(listener);
+                document = null;
+            }
+            listener = null;
+        }
+
+        private class CellEditorDocumentListener implements DocumentListener {
+            private TableModel model;
+            private int row;
+            private int column;
+
+            private CellEditorDocumentListener(TableModel model, int row, int column) {
+                this.model = model;
+                this.row = row;
+                this.column = column;
+            }
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                update(e);
+            }
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                update(e);
+            }
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                update(e);
+            }
+
+            private void update(DocumentEvent e) {
+                Document d = e.getDocument();
+                try {
+                    model.setValueAt(d.getText(0, d.getLength()), row, column);
+                } catch (BadLocationException ex) {
+                    // can be ignored
+                }
+            }
+        }
+    }
+
+    /**
+     * Content in invalid cells is rendered in emphasized color.
+     */
+    public static class PropertyCellRenderer extends DefaultTableCellRenderer {
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object o, boolean isSelected, boolean hasFocus, int row, int column) {
+            Component cell = super.getTableCellRendererComponent(table, o, isSelected, hasFocus, row, column);
+            if(!table.getModel().isCellEditable(row, column)) {
+                cell.setForeground(INVALID_CELL_CONTENT_COLOR);
+            } else {
+                cell.setForeground(UIManager.getColor("textText")); //NOI18N
+            }
+            return cell;
+        }
+    }
+    
     
     private FileObject getSrcRoot(@NonNull Project project)
     {
@@ -878,6 +1086,10 @@ public final class JFXProjectProperties {
         // store native bundling info
         editableProps.setProperty(JAVAFX_NATIVE_BUNDLING_ENABLED, nativeBundlingEnabled ? "true" : "false"); //NOI18N
         editableProps.setProperty(JAVAFX_NATIVE_BUNDLING_TYPE, nativeBundlingType.getString().toLowerCase());
+        // store icons
+        setOrRemove(editableProps, ICON_FILE, wsIconPath);
+        setOrRemove(editableProps, SPLASH_IMAGE_FILE, splashImagePath);
+        setOrRemove(editableProps, NATIVE_ICON_FILE, nativeIconPath);
         // store resources
         storeResources(editableProps);
         // store JavaScript callbacks
@@ -982,6 +1194,12 @@ public final class JFXProjectProperties {
         }
     }
 
+    private void initIcons(PropertyEvaluator eval) {
+        wsIconPath = eval.getProperty(ICON_FILE);
+        splashImagePath = eval.getProperty(SPLASH_IMAGE_FILE);
+        nativeIconPath = eval.getProperty(NATIVE_ICON_FILE);
+    }
+    
     private void initSigning(PropertyEvaluator eval) {
         String enabled = eval.getProperty(JAVAFX_SIGNING_ENABLED);
         String signedProp = eval.getProperty(JAVAFX_SIGNING_TYPE);

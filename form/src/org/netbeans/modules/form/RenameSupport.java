@@ -259,7 +259,7 @@ public class RenameSupport {
                             int idx = line.indexOf(attr);
                             if (idx > 0) {
                                 // get the value of the attribute - string enclosed in ""
-                                int idx1 = idx1 = idx + attr.length();
+                                int idx1 = idx + attr.length();
                                 if (!attr.endsWith("\"")) { // NOI18N
                                     while (idx1 < line.length() && line.charAt(idx1) != '\"') { // NOI18N
                                         idx1++;

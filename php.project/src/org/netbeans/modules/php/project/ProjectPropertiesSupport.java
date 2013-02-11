@@ -48,6 +48,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.modules.php.api.executable.InvalidPhpExecutableException;
 import org.netbeans.modules.php.api.executable.PhpInterpreter;
@@ -57,6 +58,8 @@ import org.netbeans.modules.php.project.api.PhpLanguageProperties;
 import org.netbeans.modules.php.project.api.PhpOptions;
 import org.netbeans.modules.php.project.ui.BrowseTestSources;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
+import org.netbeans.modules.web.browser.api.WebBrowser;
+import org.netbeans.modules.web.browser.api.WebBrowserSupport;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
@@ -169,6 +172,12 @@ public final class ProjectPropertiesSupport {
             }
         }
         return seleniumDirectory;
+    }
+
+    @CheckForNull
+    public static WebBrowser getWebBrowser(PhpProject project) {
+        String browserId = project.getEvaluator().getProperty(PhpProjectProperties.BROWSER_ID);
+        return WebBrowserSupport.getBrowser(browserId);
     }
 
     public static String getWebRoot(PhpProject project) {
@@ -417,56 +426,6 @@ public final class ProjectPropertiesSupport {
         return Pair.of(host, getInt(project, PhpProjectProperties.DEBUG_PROXY_PORT, PhpProjectProperties.DEFAULT_DEBUG_PROXY_PORT));
     }
 
-    /**
-     * @return file (which can be invalid!) or <code>null</code>
-     */
-    public static File getPhpUnitBootstrap(PhpProject project) {
-        return getFile(project, PhpProjectProperties.PHP_UNIT_BOOTSTRAP);
-    }
-
-    /**
-     * @return {@code true} if bootstrap file should be used for creating new unit tests, {@code false} otherwise; the default value is {@code false}
-     */
-    public static boolean usePhpUnitBootstrapForCreateTests(PhpProject project) {
-        return getBoolean(project, PhpProjectProperties.PHP_UNIT_BOOTSTRAP_FOR_CREATE_TESTS, false);
-    }
-
-    /**
-     * @return file (which can be invalid!) or <code>null</code>
-     */
-    public static File getPhpUnitConfiguration(PhpProject project) {
-        return getFile(project, PhpProjectProperties.PHP_UNIT_CONFIGURATION);
-    }
-
-    /**
-     * @return file (which can be invalid!) or <code>null</code>
-     */
-    public static File getPhpUnitSuite(PhpProject project) {
-        return getFile(project, PhpProjectProperties.PHP_UNIT_SUITE);
-    }
-
-    /**
-     * @return file (which can be invalid!) or <code>null</code>
-     */
-    public static File getPhpUnitScript(PhpProject project) {
-        return getFile(project, PhpProjectProperties.PHP_UNIT_SCRIPT);
-    }
-
-    /**
-     * @return {@code true} if all *Test files should be run via PhpUnit (default is {@code false})
-     */
-    public static boolean runAllTestFilesUsingPhpUnit(PhpProject project) {
-        return getBoolean(project, PhpProjectProperties.PHP_UNIT_RUN_TEST_FILES, false);
-    }
-
-    public static boolean askForTestGroups(PhpProject project) {
-        return getBoolean(project, PhpProjectProperties.PHP_UNIT_ASK_FOR_TEST_GROUPS, false);
-    }
-
-    public static String getPhpUnitLastUsedTestGroups(PhpProject project) {
-        return getString(project, PhpProjectProperties.PHP_UNIT_LAST_USED_TEST_GROUPS, null);
-    }
-
     public static String getHostname(PhpProject project) {
         return getString(project, PhpProjectProperties.HOSTNAME, null);
     }
@@ -523,14 +482,6 @@ public final class ProjectPropertiesSupport {
             }
         }
         return defaultValue;
-    }
-
-    private static File getFile(PhpProject project, String property) {
-        String file = project.getEvaluator().getProperty(property);
-        if (!StringUtils.hasText(file)) {
-            return null;
-        }
-        return project.getHelper().resolveFile(file);
     }
 
     @NbBundle.Messages("ProjectPropertiesSupport.project.metadata.saving=Saving project metadata...")

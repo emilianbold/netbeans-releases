@@ -100,8 +100,10 @@ public final class CloneWizardAction extends CallableSystemAction implements Cha
         boolean cancelled = wizardDescriptor.getValue() != WizardDescriptor.FINISH_OPTION;
         File cloneFile = null;
         if (!cancelled) {
+            String targetFolderPath = (String) wizardDescriptor.getProperty("directory"); //NOI18N
+            HgModuleConfig.getDefault().getPreferences().put(CloneDestinationDirectoryWizardPanel.CLONE_TARGET_DIRECTORY, targetFolderPath);
             final HgURL repository = (HgURL) wizardDescriptor.getProperty("repository"); // NOI18N
-            final File directory = (File) wizardDescriptor.getProperty("directory"); // NOI18N
+            final File directory = new File(targetFolderPath);
             final String cloneName = (String) wizardDescriptor.getProperty("cloneName"); // NOI18N
             final HgURL pullPath = (HgURL) wizardDescriptor.getProperty("defaultPullPath"); // NOI18N
             final HgURL pushPath = (HgURL) wizardDescriptor.getProperty("defaultPushPath"); // NOI18N

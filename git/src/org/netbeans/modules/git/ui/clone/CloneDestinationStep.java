@@ -70,6 +70,8 @@ import org.openide.util.NbBundle;
  */
 public class CloneDestinationStep extends AbstractWizardPanel implements DocumentListener, ItemListener, WizardDescriptor.FinishablePanel<WizardDescriptor> {
     
+    static final String CLONE_TARGET_DIRECTORY = "cloneDestinationStep.cloneDirectory"; //NOI18N
+    
     /**
      * The visual component that displays this panel. If you need to access the
      * component from this class, just use getComponent().

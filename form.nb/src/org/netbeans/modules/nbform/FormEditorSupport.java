@@ -432,12 +432,16 @@ public class FormEditorSupport extends DataEditorSupport implements EditorSuppor
 
     boolean startFormLoading() {
         if (!formEditor.prepareLoading()) {
-            reportErrors();
-            // switch to Source tab - later because now in middle of switching to Design
+            // report errors and switch to Source tab - later because now in the
+            // middle of switching to Design (error dialog would run event queue
+            // and process waiting tasks too soon, e.g. closing - bug 223487)
             EventQueue.invokeLater(new Runnable() {
                 @Override
                 public void run() {
-                    selectJavaEditor();
+                    if (formEditor != null) { // not closed yet
+                        reportErrors();
+                        selectJavaEditor();
+                    }
                 }
             });
             return false;
@@ -1355,13 +1359,13 @@ public class FormEditorSupport extends DataEditorSupport implements EditorSuppor
                && p.getClass().getName().endsWith("Project"); // NOI18N
     }
 
-    private final class FormGEditor implements GuardedEditorSupport {
+    private static final class FormGEditor implements GuardedEditorSupport {
         
         StyledDocument doc = null;
         
         @Override
         public StyledDocument getDocument() {
-            return FormGEditor.this.doc;
+            return doc;
         }
     }
     

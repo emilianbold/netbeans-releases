@@ -427,7 +427,7 @@ public class Annotator {
         List<Action> actions = new ArrayList<Action>(20);
         File[] files = ctx.getRootFiles().toArray(new File[ctx.getRootFiles().size()]);
         boolean noneVersioned;
-        if (!Subversion.getInstance().getStatusCache().ready()) {
+        if (EventQueue.isDispatchThread() && !Subversion.getInstance().getStatusCache().ready()) {
             noneVersioned = true;
             Subversion.LOG.log(Level.INFO, "Cache not yet initialized, showing default actions"); //NOI18N
         } else {

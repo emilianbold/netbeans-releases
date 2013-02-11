@@ -734,4 +734,18 @@ public class CompilationUnit implements CompilationUnitInterface{
         }
         return false;
     }
+
+    public int getMainLine() throws IOException {
+        List<DwarfEntry> topLevelEntries = getTopLevelEntries();
+        for(DwarfEntry entry : topLevelEntries) {
+            if (entry.getKind() == TAG.DW_TAG_subprogram) {
+                if ("main".equals(entry.getName())) { // NOI18N
+                    if (entry.isExternal()) {
+                        return entry.getLine();
+                    }
+                }
+            }
+        }
+        return 0;
+    }
 }

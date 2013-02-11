@@ -120,7 +120,7 @@ public class FindUsagesClassTest extends FindUsagesTestCase {
         fuDialog = new FindUsagesDialogOperator();
         ref(fuDialog.getSearchInComments().isSelected());
         ref(fuDialog.getFindDirectSubtypesOnly().isSelected());
-        ref(fuDialog.getSelectedScopeItem() + "\n");
+        ref(fuDialog.getSelectedScopeItem());
         fuDialog.getSearchInComments().setSelected(true);
         fuDialog.getFindUsages().setSelected(true);
         fuDialog.setScope(REFACTORING_TEST);
@@ -133,7 +133,7 @@ public class FindUsagesClassTest extends FindUsagesTestCase {
         fuDialog = new FindUsagesDialogOperator();
         ref(fuDialog.getSearchInComments().isSelected());
         ref(fuDialog.getFindUsages().isSelected());
-        ref(fuDialog.getSelectedScopeItem() + "\n");
+        ref(fuDialog.getSelectedScopeItem());
         fuDialog.cancel();
         result.close();
     }
@@ -282,6 +282,6 @@ public class FindUsagesClassTest extends FindUsagesTestCase {
         JTabbedPaneOperator tabbedPane = furo.getTabbedPane();
         assertNotNull(tabbedPane);
         String title = tabbedPane.getTitleAt(tabbedPane.getTabCount() - 1);
-        ref(title + "\n");
+        ref(title);
     }
 }
