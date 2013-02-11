@@ -147,14 +147,15 @@ public class StabIndexSection extends ElfSection {
                         line = s;
                         state = 3;
                         break;
-                    case N_FUN:
-                        if (mainLine == 0 && "main".equals(s)) { //NOI18N
-                            mainLine = value;
-                        }
-                        break;
+                    //case N_FUN:
+                    //    if (mainLine == 0 && "main".equals(s)) { //NOI18N
+                    //        mainLine = value;
+                    //    }
+                    //    break;
                     case N_MAIN:
                         //System.err.println("Main function\t"+s);
                         isMain = true;
+                        mainLine = value;
                         break;
                     default:
                         //System.err.println(""+type+" "+s);
