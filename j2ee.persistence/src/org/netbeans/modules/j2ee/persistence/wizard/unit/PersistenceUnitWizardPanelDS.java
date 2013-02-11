@@ -458,15 +458,16 @@ public class PersistenceUnitWizardPanelDS extends PersistenceUnitWizardPanel imp
         Provider prov = (Provider) (provObj instanceof Provider ? provObj : null);
         String warning = null;
         if(prov != null){
-            if(Persistence.VERSION_2_0.equals(ProviderUtil.getVersion(prov))){
-                if(Util.isJPAVersionSupported(project, Persistence.VERSION_2_0)){
+               String ver = ProviderUtil.getVersion(prov);
+               if(ver!=null && !Persistence.VERSION_1_0.equals(ver)){
+                   if(Util.isJPAVersionSupported(project, ver)){
                     String sourceLevel = SourceLevelChecker.getSourceLevel(project);
                     if(sourceLevel !=null ){
                         if(sourceLevel.matches("1\\.[0-5]([^0-9].*)?"))//1.0-1.5
                         warning  = NbBundle.getMessage(PersistenceUnitWizard.class, "ERR_WrongSourceLevel", sourceLevel);
                     }
                 } else {
-                    warning  = NbBundle.getMessage(PersistenceUnitWizard.class, "ERR_UnsupportedJpaVersion", Persistence.VERSION_2_0);
+                    warning  = NbBundle.getMessage(PersistenceUnitWizard.class, "ERR_UnsupportedJpaVersion", ver, Util.getJPAVersionSupported(project, ver));
                 }
             }
         }

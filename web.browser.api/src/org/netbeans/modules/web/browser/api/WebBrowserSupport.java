@@ -309,7 +309,7 @@ public final class WebBrowserSupport {
         @NbBundle.Messages({
             "WebBrowserSupport.browser.ideDefault=IDE's default browser",
             "# {0} - web browser",
-            "WebBrowserSupport.browser.integrated={0} with NetBeans Integration",
+            "WebBrowserSupport.browser.integrated={0} with NetBeans Integration"
         })
         public String getDesc() {
             if (browser == null) {

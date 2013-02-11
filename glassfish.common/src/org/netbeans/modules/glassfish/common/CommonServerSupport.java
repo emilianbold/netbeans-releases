@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -1409,9 +1409,11 @@ public class CommonServerSupport
                 Logger.getLogger("glassfish").log(Level.INFO, null, mue); // NOI18N
             } catch (java.net.ConnectException ce) {
                 // we expect this...
-                Logger.getLogger("glassfish").log(Level.FINE, url.toString(), ce); // NOI18N
+                Logger.getLogger("glassfish").log(Level.FINE,
+                        url != null ? url.toString() : "null", ce); // NOI18N
             } catch (java.io.IOException ioe) {
-                Logger.getLogger("glassfish").log(Level.INFO, url.toString(), ioe); // NOI18N
+                Logger.getLogger("glassfish").log(Level.INFO,
+                        url != null ? url.toString() : "null", ioe); // NOI18N
             } finally {
                 if (null != httpConn) {
                     httpConn.disconnect();

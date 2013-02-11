@@ -47,7 +47,8 @@ import java.util.*;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.eclipse.persistence.jpa.jpql.ContentAssistProposals;
-import org.eclipse.persistence.jpa.jpql.JPQLQueryHelper;
+import org.eclipse.persistence.jpa.jpql.DefaultJPQLQueryHelper;
+import org.eclipse.persistence.jpa.jpql.parser.DefaultJPQLGrammar;
 import org.eclipse.persistence.jpa.jpql.spi.IEntity;
 import org.eclipse.persistence.jpa.jpql.spi.IMapping;
 import org.netbeans.api.editor.completion.Completion;
@@ -276,7 +277,7 @@ public class JPQLEditorCodeCompletionProvider implements CompletionProvider {
             }
 
             private List completeJPQLContext(EntityMappings mappings, String completedValue, List<JPACompletionItem> results) {
-                JPQLQueryHelper helper = new JPQLQueryHelper();
+                DefaultJPQLQueryHelper helper = new DefaultJPQLQueryHelper(DefaultJPQLGrammar.instance());
 
                 Project project = FileOwnerQuery.getOwner(fo);
                 helper.setQuery(new Query(null, completedValue, new ManagedTypeProvider(project, mappings, controller.getElements())));
