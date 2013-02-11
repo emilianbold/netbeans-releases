@@ -117,7 +117,7 @@ public final class SkeletonGenerator {
         String relativePath = PropertyUtils.relativizeFile(FileUtil.toFile(phpModule.getSourceDirectory()), FileUtil.toFile(sourceClassFile));
         assert relativePath != null;
         assert !relativePath.startsWith("../") : "Unexpected relative path: " + relativePath + " for " + phpModule.getSourceDirectory() + " and " + sourceClassFile;
-        String relativeTestPath = relativePath.substring(0, relativePath.length() - sourceClassFile.getExt().length() + 1);
+        String relativeTestPath = relativePath.substring(0, relativePath.length() - sourceClassFile.getExt().length() - 1);
         File testFile = PropertyUtils.resolveFile(FileUtil.toFile(phpModule.getTestDirectory()), PhpUnit.makeTestFile(relativeTestPath));
         FileObject testFo = FileUtil.toFileObject(testFile);
         if (testFo != null && testFo.isValid()) {
