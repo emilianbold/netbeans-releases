@@ -129,6 +129,11 @@ public class NBParserFactory extends ParserFactory {
                     public int replaceTree(JCTree oldtree, JCTree newtree) {
                         return endPos.replaceTree(oldtree, newtree);
                     }
+
+                    @Override
+                    protected void setErrorEndPos(int errPos) {
+                        ((EndPosTableImpl)endPos).setErrorEndPos(errPos);
+                    }
                 };
             }
         };
@@ -198,6 +203,11 @@ public class NBParserFactory extends ParserFactory {
             @Override public void storeEnd(JCTree tree, int endpos) {
                 if (endpos >= 0)
                     super.storeEnd(tree, endpos);
+            }
+
+            @Override
+            protected void setErrorEndPos(int errPos) {
+                super.setErrorEndPos(errPos);
             }
         }
     }
