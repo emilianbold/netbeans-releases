@@ -51,9 +51,8 @@ import java.net.URL;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
-import org.netbeans.junit.Manager;
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.openide.filesystems.FileUtil;
 
@@ -67,7 +66,28 @@ public class UtilTest extends NbTestCase {
     public UtilTest(String testName) {
         super(testName);
     }
-    
+
+    public void testIsHigherJavaEEVersionJavaEE5() {
+        assertFalse(Util.isAtLeastJavaEE5(Profile.J2EE_13));
+        assertFalse(Util.isAtLeastJavaEE5(Profile.J2EE_14));
+
+        assertTrue(Util.isAtLeastJavaEE5(Profile.JAVA_EE_5));
+        assertTrue(Util.isAtLeastJavaEE5(Profile.JAVA_EE_6_FULL));
+        assertTrue(Util.isAtLeastJavaEE5(Profile.JAVA_EE_6_WEB));
+        assertTrue(Util.isAtLeastJavaEE5(Profile.JAVA_EE_7_FULL));
+        assertTrue(Util.isAtLeastJavaEE5(Profile.JAVA_EE_7_WEB));
+    }
+
+    public void testIsHigherJavaEEVersionJavaEE6full() {
+        assertFalse(Util.isAtLeastJavaEE6Web(Profile.J2EE_13));
+        assertFalse(Util.isAtLeastJavaEE6Web(Profile.J2EE_14));
+        assertFalse(Util.isAtLeastJavaEE6Web(Profile.JAVA_EE_5));
+
+        assertTrue(Util.isAtLeastJavaEE6Web(Profile.JAVA_EE_6_WEB));
+        assertTrue(Util.isAtLeastJavaEE6Web(Profile.JAVA_EE_6_FULL));
+        assertTrue(Util.isAtLeastJavaEE6Web(Profile.JAVA_EE_7_WEB));
+        assertTrue(Util.isAtLeastJavaEE6Web(Profile.JAVA_EE_7_FULL));
+    }
     
     public void testContainsClass() throws IOException {
         File dataDir = getDataDir();
