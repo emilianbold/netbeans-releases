@@ -72,6 +72,7 @@ import org.netbeans.api.search.provider.SearchListener;
 import org.netbeans.modules.web.clientproject.api.ClientSideModule;
 import org.netbeans.modules.web.clientproject.problems.ProjectPropertiesProblemProvider;
 import org.netbeans.modules.web.clientproject.remote.RemoteFiles;
+import org.netbeans.modules.web.clientproject.spi.RefreshOnSaveSupport;
 import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectConfigurationImplementation;
 import org.netbeans.modules.web.clientproject.spi.platform.RefreshOnSaveListener;
 import org.netbeans.modules.web.clientproject.ui.ClientSideProjectLogicalView;
@@ -508,8 +509,7 @@ public class ClientSideProject implements Project {
         public void fileChanged(FileEvent fe) {
             RefreshOnSaveListener r = p.getRefreshOnSaveListener();
             if (r != null) {
-                // #217284 - ignore changes in CSS
-                if (!fe.getFile().hasExt("css")) { //NOI18N
+                if (RefreshOnSaveSupport.canRefreshOnSaveFileFilter(fe.getFile())) {
                     r.fileChanged(fe.getFile());
                 }
             }
@@ -519,8 +519,7 @@ public class ClientSideProject implements Project {
         public void fileDeleted(FileEvent fe) {
             RefreshOnSaveListener r = p.getRefreshOnSaveListener();
             if (r != null) {
-                // #217284 - ignore changes in CSS
-                if (!fe.getFile().hasExt("css")) { //NOI18N
+                if (RefreshOnSaveSupport.canRefreshOnSaveFileFilter(fe.getFile())) {
                     r.fileDeleted(fe.getFile());
                 }
             }
