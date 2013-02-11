@@ -380,6 +380,11 @@ public final class PhpProject implements Project {
         if (sourcesDirectory == null) {
             return;
         }
+        if (sourcesDirectory.equals(sourceDirectoryFileChangeListener.getSourceDir())) {
+            // already listening to this source dir
+            // this usually happens for new project - property change is fired _before_ project open
+            return;
+        }
         synchronized (sourceDirectoryFileChangeListener) {
             sourceDirectoryFileChangeListener.setSourceDir(sourcesDirectory);
             FileUtil.addRecursiveListener(sourceDirectoryFileChangeListener, FileUtil.toFile(sourcesDirectory), new FileFilter() {
@@ -393,7 +398,10 @@ public final class PhpProject implements Project {
 
     void removeSourceDirListener() {
         FileObject sourceDir = sourceDirectoryFileChangeListener.getSourceDir();
-        assert sourceDir != null;
+        if (sourceDir == null) {
+            // not listening
+            return;
+        }
         synchronized (sourceDirectoryFileChangeListener) {
             try {
                 FileUtil.removeRecursiveListener(sourceDirectoryFileChangeListener, FileUtil.toFile(sourceDir));
@@ -849,15 +857,15 @@ public final class PhpProject implements Project {
 
     private final class SourceDirectoryFileChangeListener implements FileChangeListener {
 
-        // @GuardedBy("this")
-        private FileObject sourceDir;
+        private volatile FileObject sourceDir;
 
 
-        public synchronized FileObject getSourceDir() {
+        @CheckForNull
+        public FileObject getSourceDir() {
             return sourceDir;
         }
 
-        public synchronized void setSourceDir(FileObject sourceDir) {
+        public void setSourceDir(FileObject sourceDir) {
             this.sourceDir = sourceDir;
         }
 
