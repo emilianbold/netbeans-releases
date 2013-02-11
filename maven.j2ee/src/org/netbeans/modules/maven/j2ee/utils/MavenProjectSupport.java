@@ -51,6 +51,7 @@ import javax.swing.Action;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.j2ee.common.dd.DDHelper;
 import org.netbeans.modules.j2ee.common.ui.BrokenServerLibrarySupport;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
@@ -65,7 +66,6 @@ import org.netbeans.modules.maven.api.problem.ProblemReport;
 import org.netbeans.modules.maven.api.problem.ProblemReporter;
 import org.netbeans.modules.maven.j2ee.MavenJavaEEConstants;
 import org.netbeans.modules.maven.j2ee.SessionContent;
-import org.netbeans.modules.maven.j2ee.Wrapper;
 import org.netbeans.modules.maven.j2ee.ear.EarModuleProviderImpl;
 import org.netbeans.modules.maven.j2ee.ejb.EjbModuleProviderImpl;
 import org.netbeans.modules.maven.j2ee.web.WebModuleImpl;
@@ -264,7 +264,7 @@ public class MavenProjectSupport {
                 try {
                     return si.getDisplayName();
                 } catch (InstanceRemovedException ex) {
-                    Logger.getLogger(Wrapper.class.getName()).log(Level.FINE, "", ex);
+                    Logger.getLogger(MavenProjectSupport.class.getName()).log(Level.FINE, "", ex);
                 }
             }
         }
@@ -391,7 +391,7 @@ public class MavenProjectSupport {
      * @return server ID
      */
     public static String readServerInstanceID(Project project) {
-        return readSettings(project, MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_ID, false);
+        return readSettings(project, MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_ID, true);
     }
 
     /**
@@ -401,7 +401,7 @@ public class MavenProjectSupport {
      * @return J2EE version
      */
     public static String readJ2eeVersion(Project project)  {
-        return readSettings(project, MavenJavaEEConstants.HINT_J2EE_VERSION, false);
+        return readSettings(project, MavenJavaEEConstants.HINT_J2EE_VERSION, true);
     }
     
     private static String readSettings(Project project, String propertyName, boolean shared) {
@@ -411,7 +411,7 @@ public class MavenProjectSupport {
     
     
     public static void setJ2eeVersion(Project project, String value) {
-        setSettings(project, MavenJavaEEConstants.HINT_J2EE_VERSION, value, false);
+        setSettings(project, MavenJavaEEConstants.HINT_J2EE_VERSION, value, true);
     }
     
     public static void setServerID(Project project, String value) {
@@ -423,7 +423,7 @@ public class MavenProjectSupport {
     }
     
     public static void setServerInstanceID(Project project, String value) {
-        setSettings(project, MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_ID, value, false);
+        setSettings(project, MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_ID, value, true);
     }
     
     private static void setSettings(Project project, String key, String value, boolean shared) {

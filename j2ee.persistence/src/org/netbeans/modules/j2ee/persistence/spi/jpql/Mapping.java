@@ -66,13 +66,6 @@ public class Mapping implements IMapping {
         this.attribute = attrib;
     }
     
-    @Override
-    public IMappingType getMappingType() {
-        if(mappingType == null){
-            mappingType = attribute.getMappingType();
-        }
-        return mappingType;
-    }
 
     @Override
     public String getName() {
@@ -115,6 +108,32 @@ public class Mapping implements IMapping {
     @Override
     public int compareTo(IMapping o) {
         return getName().compareTo(o.getName());
+    }
+
+    @Override
+    public int getMappingType() {
+        return attribute.getMappingType();
+    }
+
+    @Override
+    public boolean isCollection() {
+        return (attribute.getMappingType() == IMappingType.ELEMENT_COLLECTION);
+    }
+
+    @Override
+    public boolean isProperty() {
+        return (attribute.getMappingType() == IMappingType.BASIC) || (attribute.getMappingType() == IMappingType.ID);
+    }
+
+    @Override
+    public boolean isRelationship() {
+        return (attribute.getMappingType() == IMappingType.MANY_TO_MANY) || (attribute.getMappingType() == IMappingType.MANY_TO_ONE) || (attribute.getMappingType() == IMappingType.ONE_TO_MANY) || (attribute.getMappingType() == IMappingType.ONE_TO_ONE);
+        
+    }
+
+    @Override
+    public boolean isTransient() {
+        return (attribute.getMappingType() == IMappingType.TRANSIENT);
     }
     
 }

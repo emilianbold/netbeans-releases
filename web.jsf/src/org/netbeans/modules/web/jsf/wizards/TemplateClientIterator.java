@@ -58,7 +58,9 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
 import org.netbeans.modules.web.jsf.JSFFrameworkProvider;
 import org.netbeans.modules.web.jsf.JSFUtils;
+import org.netbeans.modules.web.jsf.JsfConstants;
 import org.netbeans.modules.web.jsf.palette.JSFPaletteUtilities;
+import org.netbeans.modules.web.jsf.wizards.TemplateClientPanel.TemplateEntry;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -80,7 +82,6 @@ public class TemplateClientIterator implements TemplateWizard.Iterator {
     private transient WizardDescriptor.Panel[] panels;
     
     private TemplateClientPanel templateClientPanel;
-    private transient SourceGroup[] sourceGroups;
     private static final String ENCODING = "UTF-8"; //NOI18N
     
     private static String END_LINE = System.getProperty("line.separator"); //NOI18N
@@ -100,7 +101,8 @@ public class TemplateClientIterator implements TemplateWizard.Iterator {
                 InputStream is = templateClientPanel.getTemplateClient();
                 String content = JSFFrameworkProvider.readResource(is, ENCODING);
                 FileObject target = df.getPrimaryFile().createData(targetName, "xhtml");
-                String relativePath = JSFUtils.getRelativePath(target, templateClientPanel.getTemplate());
+                TemplateEntry templateEntry = templateClientPanel.getTemplate();
+                String relativePath = getTemplatePath(target, templateEntry);
                 String definedTags = createDefineTags(templateClientPanel.getTemplateData(),
                         ((content.indexOf("<html") == -1)?1:3));    //NOI18N
                 
@@ -126,6 +128,15 @@ public class TemplateClientIterator implements TemplateWizard.Iterator {
             JSFPaletteUtilities.reformat(dob);
         }
         return Collections.singleton(dob);
+    }
+
+    private static String getTemplatePath(FileObject target, TemplateEntry templateEntry) {
+        if (!templateEntry.isResourceLibraryContract()) {
+            return JSFUtils.getRelativePath(target, templateEntry.getTemplate());
+        } else {
+            String fullpath = templateEntry.getTemplate().getPath();
+            return TemplateClientPanelVisual.getRelativePathInsideResourceLibrary(fullpath);
+        }
     }
     
     public void initialize(TemplateWizard wiz) {

@@ -343,9 +343,9 @@ public class ConfigManager {
                 }
 
                 // process the ordered documents
-                FACES_CONFIG_PROCESSOR_CHAIN.process(null, facesDocuments);
+                FACES_CONFIG_PROCESSOR_CHAIN.process(sc, facesDocuments);
                 if (!isFaceletsDisabled) {
-                    FACELET_TAGLIB_CONFIG_PROCESSOR_CHAIN.process(null,
+                    FACELET_TAGLIB_CONFIG_PROCESSOR_CHAIN.process(sc,
                           getConfigDocuments(sc,
                                              getFaceletConfigResourceProviders(),
                                              executor,
@@ -889,20 +889,8 @@ public class ConfigManager {
                 if (JAVAEE_SCHEMA_DEFAULT_NS.equals(documentNS)) {
                     Attr version = (Attr)
                             documentElement.getAttributes().getNamedItem("version");
-                    DbfFactory.FacesSchema schema;
                     if (version != null) {
-                        String versionStr = version.getValue();
-                        if ("2.0".equals(versionStr)) {
-                            if ("facelet-taglib".equals(documentElement.getLocalName())) {
-                                schema = DbfFactory.FacesSchema.FACELET_TAGLIB_20;
-                            } else {
-                                schema = DbfFactory.FacesSchema.FACES_20;
-                            }
-                        } else if ("1.2".equals(versionStr)) {
-                            schema = DbfFactory.FacesSchema.FACES_12;
-                        } else {
-                            throw new ConfigurationException("Unknown Schema version: " + versionStr);
-                        }
+                        DbfFactory.FacesSchema schema = resolveFacesSchema(version.getValue(), documentElement);
                         DocumentBuilder builder = getBuilderForSchema(schema);
                         if (builder.isValidating()) {
                             builder.getSchema().newValidator().validate(domSource);
@@ -928,7 +916,7 @@ public class ConfigManager {
                     if (FACES_CONFIG_1_X_DEFAULT_NS.equals(documentNS)) {
                         schemaToApply = DbfFactory.FacesSchema.FACES_11;
                     } else if (FACELETS_1_0_DEFAULT_NS.equals(documentNS)) {
-                        schemaToApply = DbfFactory.FacesSchema.FACELET_TAGLIB_20;
+                        schemaToApply = DbfFactory.FacesSchema.FACELET_TAGLIB_22;
                     } else {
                         throw new IllegalStateException();
                     }
@@ -954,6 +942,39 @@ public class ConfigManager {
             }
             return returnDoc;
 
+        }
+
+        /**
+         * Resolves faces schema on base of the version and documentElement.
+         *
+         * @return resolved FacesSchema
+         * @throws ConfigurationException if no adequate schema found
+         */
+        private static DbfFactory.FacesSchema resolveFacesSchema(String versionString,
+                Node documentElement) throws ConfigurationException {
+            if ("2.2".equals(versionString)) {
+                if ("facelet-taglib".equals(documentElement.getLocalName())) {
+                    return DbfFactory.FacesSchema.FACELET_TAGLIB_22;
+                } else {
+                    return DbfFactory.FacesSchema.FACES_22;
+                }
+            } else if ("2.1".equals(versionString)) {
+                if ("facelet-taglib".equals(documentElement.getLocalName())) {
+                    return DbfFactory.FacesSchema.FACELET_TAGLIB_20;
+                } else {
+                    return DbfFactory.FacesSchema.FACES_21;
+                }
+            } else if ("2.0".equals(versionString)) {
+                if ("facelet-taglib".equals(documentElement.getLocalName())) {
+                    return DbfFactory.FacesSchema.FACELET_TAGLIB_20;
+                } else {
+                    return DbfFactory.FacesSchema.FACES_20;
+                }
+            } else if ("1.2".equals(versionString)) {
+                return DbfFactory.FacesSchema.FACES_12;
+            } else {
+                throw new ConfigurationException("Unknown Schema version: " + versionString);
+            }
         }
 
 

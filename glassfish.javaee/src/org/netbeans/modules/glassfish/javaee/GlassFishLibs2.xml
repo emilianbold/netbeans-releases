@@ -2,7 +2,7 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+Copyright 2012-2013 Oracle and/or its affiliates. All rights reserved
 
 Oracle and Java are registered trademarks of Oracle and/or its affiliates.
 Other names may be trademarks of their respective owners.
@@ -49,7 +49,6 @@ Portions Copyrighted 2012 Sun Microsystems, Inc.
                 <include name="jaxb-osgi.jar"/>
                 <include name="jaxr-api-osgi.jar"/>
                 <include name="jaxrpc-api-osgi.jar"/>
-                <include name="jsr250-api.jar"/>
                 <include name="webservices-osgi.jar"/>
                 <include name="weld-osgi-bundle.jar"/>
             </fileset>            
@@ -61,6 +60,7 @@ Portions Copyrighted 2012 Sun Microsystems, Inc.
             </fileset>
         </classpath>
         <javadocs>
+            <lookup path="docs/javaee-doc-api.jar"/>
         </javadocs>
         <sources>
         </sources>
