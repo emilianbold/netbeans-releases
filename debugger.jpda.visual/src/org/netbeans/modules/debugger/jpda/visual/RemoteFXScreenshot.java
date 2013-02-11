@@ -118,28 +118,38 @@ public class RemoteFXScreenshot {
         final ClassType imageClass = getClass(vm, tr, "javafx.scene.image.Image");
         final ClassType sceneClass = getClass(vm, tr, "javafx.scene.Scene");
         final ClassType windowClass = getClass(vm, tr, "javafx.stage.Window");
+        final ClassType utilsClass = getClass(vm, tr, "javafx.embed.swing.SwingFXUtils");
 
+        final Method getScene = windowClass.concreteMethodByName("getScene", "()Ljavafx/scene/Scene;");
+        //pre-FX 2.2 API (removed in FX 8)
         final Method fromPlatformImage = imageClass.concreteMethodByName("impl_fromPlatformImage", "(Ljava/lang/Object;)Ljavafx/scene/image/Image;"); 
         final Method convertImage = imageClass.concreteMethodByName("impl_toExternalImage", "(Ljava/lang/Object;)Ljava/lang/Object;");
         final Method renderImage = sceneClass.concreteMethodByName("renderToImage", "(Ljava/lang/Object;FZ)Ljava/lang/Object;");
+        // FX 2.2 API (works in FX 8)
+        final Method fromFXImage = utilsClass.concreteMethodByName("fromFXImage", "(Ljavafx/scene/image/Image;Ljava/awt/image/BufferedImage;)Ljava/awt/image/BufferedImage;");
         final Method snapshot = sceneClass.concreteMethodByName("snapshot", "(Ljavafx/scene/image/WritableImage;)Ljavafx/scene/image/WritableImage;");
-        final Method getScene = windowClass.concreteMethodByName("getScene", "()Ljavafx/scene/Scene;");
 
         ObjectReference scene = (ObjectReference) window.invokeMethod(tr, getScene, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
 
         FloatValue factor = vm.mirrorOf(1.0f);
         BooleanValue syncNeeded = vm.mirrorOf(false);
 
+        // first try FX2.2 API, then try fallback to pre-2.2 API
         ObjectReference image = null;
-        if (renderImage != null) {
+        if (snapshot != null) {
+            image = (ObjectReference)scene.invokeMethod(tr, snapshot, Arrays.asList(new Value[]{null}), ObjectReference.INVOKE_SINGLE_THREADED);
+        } else if (renderImage != null) {
             ObjectReference pImage = (ObjectReference)scene.invokeMethod(tr, renderImage, Arrays.asList(null, factor, syncNeeded), ObjectReference.INVOKE_SINGLE_THREADED);
             image = (ObjectReference)imageClass.invokeMethod(tr, fromPlatformImage, Arrays.asList(pImage), ObjectReference.INVOKE_SINGLE_THREADED);             
-        } else if (snapshot != null) {
-            image = (ObjectReference)scene.invokeMethod(tr, snapshot, Arrays.asList(new Value[]{null}), ObjectReference.INVOKE_SINGLE_THREADED);
         }
 
-        // if an internal API method is removed from the JavaFX RT again an NPE will be thrown somewhere; nothing really to do here, just deal with it        
-        ObjectReference bufImage = (ObjectReference)image.invokeMethod(tr, convertImage, Arrays.asList(bufImageClass.classObject()), ObjectReference.INVOKE_SINGLE_THREADED);
+        // first try FX2.2 API, then try fallback to pre-2.2 API
+        ObjectReference bufImage = null;
+        if (fromFXImage != null) {
+            bufImage = (ObjectReference)utilsClass.invokeMethod(tr, fromFXImage, Arrays.asList(image, null), ObjectReference.INVOKE_SINGLE_THREADED);
+        } else if (convertImage != null) {
+            bufImage = (ObjectReference)image.invokeMethod(tr, convertImage, Arrays.asList(bufImageClass.classObject()), ObjectReference.INVOKE_SINGLE_THREADED);
+        }
 
         Method getData = ((ClassType)bufImage.referenceType()).concreteMethodByName("getData", "()Ljava/awt/image/Raster;");
         ObjectReference rasterRef = (ObjectReference) bufImage.invokeMethod(tr, getData, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
