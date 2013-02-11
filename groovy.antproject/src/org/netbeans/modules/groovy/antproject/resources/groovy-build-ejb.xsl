@@ -75,7 +75,7 @@ made subject to such option by the copyright holder.
                     </attribute>
                     <attribute>
                         <xsl:attribute name="name">classpath</xsl:attribute>
-                        <xsl:attribute name="default">${javac.classpath}</xsl:attribute>
+                        <xsl:attribute name="default">${javac.classpath}:${j2ee.platform.classpath}</xsl:attribute>
                     </attribute>
                     <attribute>
                         <xsl:attribute name="name">includes</xsl:attribute>
