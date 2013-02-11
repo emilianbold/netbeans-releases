@@ -43,6 +43,7 @@
 package org.netbeans.modules.php.editor.elements;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.php.editor.api.QualifiedName;
@@ -57,25 +58,23 @@ import org.netbeans.modules.php.editor.api.elements.TypeResolver;
  * @author Radek Matous
  */
 public class BaseFunctionElementSupport  {
-    private final List<ParameterElement> parameters;
-    private final Set<TypeResolver> returnTypes;
+    private final Parameters parameters;
+    private final ReturnTypes returnTypes;
 
-    protected BaseFunctionElementSupport(
-            final List<ParameterElement> parameters,
-            final Set<TypeResolver> returnTypes) {
-
+    protected BaseFunctionElementSupport(Parameters parameters, ReturnTypes returnTypes) {
+        assert parameters != null;
+        assert returnTypes != null;
         this.parameters = parameters;
         this.returnTypes = returnTypes;
     }
 
     public final List<ParameterElement> getParameters() {
-        return parameters;
+        return parameters.getParameters();
     }
 
     public final Collection<TypeResolver> getReturnTypes() {
-        return returnTypes;
+        return returnTypes.getReturnTypes();
     }
-
 
     public final String asString(PrintAs as, BaseFunctionElement element, TypeNameResolver typeNameResolver) {
         StringBuilder template = new StringBuilder();
@@ -169,6 +168,58 @@ public class BaseFunctionElementSupport  {
             }
         }
         return template.toString();
+    }
+
+    public interface Parameters {
+        List<ParameterElement> getParameters();
+    }
+
+    public static final class ParametersImpl implements Parameters {
+        private final List<ParameterElement> parameters;
+
+        public static Parameters create(List<ParameterElement> parameters) {
+            return new ParametersImpl(parameters);
+        }
+
+        private ParametersImpl(List<ParameterElement> parameters) {
+            this.parameters = parameters;
+        }
+
+        @Override
+        public List<ParameterElement> getParameters() {
+            return parameters;
+        }
+
+    }
+
+    public interface ReturnTypes {
+        ReturnTypes NONE = new ReturnTypes() {
+
+            @Override
+            public Set<TypeResolver> getReturnTypes() {
+                return Collections.<TypeResolver>emptySet();
+            }
+        };
+
+        Set<TypeResolver> getReturnTypes();
+    }
+
+    public static final class ReturnTypesImpl implements ReturnTypes {
+        private final Set<TypeResolver> returnTypes;
+
+        public static ReturnTypes create(Set<TypeResolver> returnTypes) {
+            return new ReturnTypesImpl(returnTypes);
+        }
+
+        private ReturnTypesImpl(Set<TypeResolver> returnTypes) {
+            this.returnTypes = returnTypes;
+        }
+
+        @Override
+        public Set<TypeResolver> getReturnTypes() {
+            return returnTypes;
+        }
+
     }
 
 }
