@@ -41,9 +41,9 @@
  */
 
 /**
- * C++ grammar.
+ * Original C++ grammar.
  * @author Fedor Sergeev
- * C++11 standard extensions.
+ * C++ grammar. C++11 standard extensions.
  * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
 
@@ -512,11 +512,70 @@ block_declaration
 id_expression
     :                                                                           {action.id_expression(input.LT(1));}
     (
-        // TODO: review temp predicate
-        ((simple_template_id_or_IDENT)? SCOPE) => qualified_id
-    |
-        unqualified_id
+        unqualified_or_qualified_id
     )                                                                           {action.end_id_expression(input.LT(0));}
+    ;
+
+unqualified_or_qualified_id
+@init {Token t = input.LT(1);}
+    :
+        (LITERAL_OPERATOR operator_id)=>
+            operator_function_id
+    |
+        conversion_function_id
+    |
+        literal_operator_id
+    |
+        TILDE class_name
+    |
+        simple_template_id_or_IDENT
+        (
+            SCOPE 
+            (
+                LITERAL_template? 
+                (
+                    (LITERAL_OPERATOR operator_id)=>
+                        operator_function_id
+                |
+                    conversion_function_id
+                |
+                    literal_operator_id
+                |
+                    TILDE class_name
+                |
+                    simple_template_id_or_IDENT_nested[t]
+                )
+            )
+        )*
+    |
+        SCOPE (
+            (simple_template_id_or_IDENT SCOPE) =>
+            nested_name_specifier LITERAL_template? unqualified_id
+        |
+            (LITERAL_OPERATOR STRING_LITERAL IDENT) =>
+            literal_operator_id
+        |
+            simple_template_id_or_IDENT
+        )
+    ;
+
+
+
+
+nested_simple_template_id_or_IDENT
+@init {Token startToken = input.LT(1);}
+    :
+        simple_template_id_or_IDENT
+        (
+            SCOPE 
+            (
+                (LITERAL_template lookup_simple_template_id_nocheck SCOPE )=> 
+                    LITERAL_template simple_template_id_nocheck
+            |   
+                simple_template_id_or_IDENT_nested[startToken]
+            )
+        )*
+        
     ;
 
 unqualified_id:
@@ -1877,9 +1936,7 @@ class_or_decltype
         (
             SCOPE                                                               {action.class_or_decltype(action.CLASS_OR_DECLTYPE__SCOPE, input.LT(0));}
         )? 
-        // TODO: review temp predicate
-        ((simple_template_id_or_IDENT SCOPE) => nested_name_specifier)?
-        class_name
+        nested_simple_template_id_or_IDENT
     |
         decltype_specifier
     )                                                                           {action.end_class_or_decltype(input.LT(0));}
@@ -2089,6 +2146,22 @@ simple_template_id_or_IDENT
     :
         ( (IDENT LESSTHAN) => 
                 ( { action.identifier_is(IDT_TEMPLATE_NAME, input.LT(1)) }? =>
+                IDENT                                                           {action.simple_template_id_or_ident(input.LT(0));}
+                LESSTHAN                                                        {action.simple_template_id_or_ident(action.SIMPLE_TEMPLATE_ID_OR_IDENT__TEMPLATE_ARGUMENT_LIST, $LESSTHAN);}
+                template_argument_list?
+                GREATERTHAN                                                     {action.simple_template_id_or_ident(action.SIMPLE_TEMPLATE_ID_OR_IDENT__END_TEMPLATE_ARGUMENT_LIST, $GREATERTHAN);}
+            |   
+                IDENT                                                           {action.simple_template_id_or_ident(input.LT(0));}
+            )
+        |   
+            IDENT                                                               {action.simple_template_id_or_ident(input.LT(0));}
+        )
+    ;
+
+simple_template_id_or_IDENT_nested [Token t]
+    :
+        ( (IDENT LESSTHAN) => 
+                ( { action.identifier_is(IDT_TEMPLATE_NAME, t) }? =>
                 IDENT                                                           {action.simple_template_id_or_ident(input.LT(0));}
                 LESSTHAN                                                        {action.simple_template_id_or_ident(action.SIMPLE_TEMPLATE_ID_OR_IDENT__TEMPLATE_ARGUMENT_LIST, $LESSTHAN);}
                 template_argument_list?
