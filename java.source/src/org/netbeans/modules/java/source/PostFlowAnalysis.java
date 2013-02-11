@@ -214,7 +214,7 @@ public class PostFlowAnalysis extends TreeScanner {
     @Override
     public void visitSelect(JCFieldAccess tree) {
         super.visitSelect(tree);
-        if ((tree.name == names._this || tree.name == names._super) && tree.selected.type != null)
+        if (tree.selected.type != null && (tree.name == names._this || (tree.name == names._super && !types.isDirectSuperInterface(tree.selected.type.tsym, currentClass))))
             checkThis(tree.pos(), tree.selected.type.tsym);
     }
 
