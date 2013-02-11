@@ -489,7 +489,7 @@ public class BaseDocumentEvent extends AbstractDocument.DefaultDocumentEvent {
                 if ((getLength() == 1 || (getLength() > 1 && Analyzer.isSpace(text)))
                         && (evt.getLength() == 1 || (evt.getLength() > 1
                                                      && Analyzer.isSpace(evtText)))
-                        && (evt.getOffset() - evt.getLength() == getOffset()) // this follows the previous
+                        && (evt.getOffset() - evt.getLength() == getOffset() || evt.getOffset() == getOffset()) // this follows the previous
                    ) {
                     BaseDocument doc = (BaseDocument)getDocument();
                     boolean thisWord = doc.isIdentifierPart(text.charAt(0));
