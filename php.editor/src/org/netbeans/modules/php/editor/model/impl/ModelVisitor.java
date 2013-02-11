@@ -1342,10 +1342,12 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
     }
 
     public VariableScope getVariableScope(int offset) {
+        return getVariableScope(getFileScope().getElements(), offset);
+    }
+
+    private VariableScope getVariableScope(List<? extends ModelElement> elements, int offset) {
         VariableScope retval = null;
-        List<ModelElement> elements = new ArrayList<ModelElement>();
-        elements.add(getFileScope());
-        elements.addAll(ModelUtils.getElements(getFileScope(), true));
+        List<ModelElement> subElements = new LinkedList<ModelElement>();
         for (ModelElement modelElement : elements) {
             if (modelElement instanceof VariableScope) {
                 VariableScope varScope = (VariableScope) modelElement;
@@ -1360,11 +1362,13 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
                     if (possibleScope && blockRange.containsInclusive(offset)
                             && (retval == null || retval.getBlockRange().overlaps(varScope.getBlockRange()))) {
                         retval = varScope;
+                        subElements.addAll(varScope.getElements());
                     }
                 }
             }
         }
-        return retval;
+        VariableScope subResult = subElements.isEmpty() ? null : getVariableScope(subElements, offset);
+        return subResult == null ? retval : subResult;
     }
 
     private void buildCodeMarks(final int offset) {
