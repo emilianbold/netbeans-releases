@@ -93,7 +93,7 @@ class EclipseLinkProvider extends Provider {
 
     @Override
     public String getAnnotationProcessor() {
-        return Persistence.VERSION_2_0.equals(getVersion()) ? "org.eclipse.persistence.internal.jpa.modelgen.CanonicalModelProcessor" : super.getAnnotationProcessor();
+        return (getVersion()!=null && !Persistence.VERSION_1_0.equals(getVersion())) ? "org.eclipse.persistence.internal.jpa.modelgen.CanonicalModelProcessor" : super.getAnnotationProcessor();
     }
 
     @Override

@@ -10,13 +10,13 @@
                 <subpackages>javax.persistence</subpackages>
             </public-packages>
             <class-path-extension>
-                <runtime-relative-path>ext/eclipselink/eclipselink-2.3.2.jar</runtime-relative-path>
+                <runtime-relative-path>ext/eclipselink/eclipselink.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/eclipselink/javax.persistence-2.0.3.jar</runtime-relative-path>
+                <runtime-relative-path>ext/eclipselink/javax.persistence_2.0.105.v201212201717.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/eclipselink/org.eclipse.persistence.jpa.jpql_1.0.1.jar</runtime-relative-path>
+                <runtime-relative-path>ext/eclipselink/org.eclipse.persistence.jpa.jpql_2.1.0.v20130110-d839ca4.jar</runtime-relative-path>
             </class-path-extension>
         </data>
     </configuration>

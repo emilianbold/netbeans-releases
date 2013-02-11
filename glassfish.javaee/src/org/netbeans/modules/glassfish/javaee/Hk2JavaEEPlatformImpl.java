@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -77,6 +77,7 @@ import org.netbeans.modules.javaee.specs.support.spi.JaxRsStackSupportImplementa
 import org.netbeans.modules.websvc.wsstack.api.WSStack;
 import org.netbeans.modules.websvc.wsstack.spi.WSStackFactory;
 import org.netbeans.api.project.libraries.Library;
+import org.netbeans.modules.glassfish.spi.Utils;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.openide.filesystems.*;
 import org.openide.util.ImageUtilities;
@@ -111,7 +112,8 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl2 {
     public Hk2JavaEEPlatformImpl(Hk2DeploymentManager dm, Hk2JavaEEPlatformFactory pf) {
         this.dm = dm;
         this.pf = pf;
-        this.libraryProvider = new Hk2LibraryProvider(dm);
+        this.libraryProvider = Hk2LibraryProvider.getProvider(
+                dm.getCommonServerSupport().getInstance());
         addFcl();
         initLibraries();
     }
@@ -204,7 +206,7 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl2 {
         if("defaultPersistenceProviderJavaEE5".equals(toolName)) {  //NOI18N
             return true;
         }
-        if("eclipseLinkPersistenceProviderIsDefault".equals(toolName)) {
+        if("eclipseLinkPersistenceProviderIsDefault2.0".equals(toolName)) {
             return true;
         }
         String gfRootStr = dm.getProperties().getGlassfishRoot();
@@ -303,7 +305,7 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl2 {
 
             File domainDir;
             File gfRoot = new File(gfRootStr);
-            if ((gfRoot != null) && (gfRoot.exists())) {
+            if (gfRoot.exists()) {
                 String domainDirName = dm.getProperties().getDomainDir();
                 if (domainDirName != null) {
                     domainDir = new File(domainDirName);
@@ -345,6 +347,13 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl2 {
         if (!descriminator.exists()) {
             retVal.remove(Profile.JAVA_EE_6_FULL);
         }
+	// XXX: hack instead of issue EE.4 from http://wiki.netbeans.org/JavaEE7
+	descriminator = Utils.getFileFromPattern("lib/install/applications/__admingui/WEB-INF/lib/console-core-4.0"+ServerUtilities.GFV3_VERSION_MATCHER, new File(gfRootStr));
+        if (descriminator != null) {
+            retVal.add(Profile.JAVA_EE_7_FULL);
+            retVal.add(Profile.JAVA_EE_7_WEB);
+	}
+	
         return retVal;
     }
 
@@ -451,9 +460,8 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl2 {
 
             @Override
             public void run() {
-                lib.setName(pf.getLibraryName());
-                lib.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_CLASSPATH, dm.getProperties().getClasses());
-                lib.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_JAVADOC, dm.getProperties().getJavadocs());
+                libraryProvider.setJavaEELibraryImplementation(
+                        lib, pf.getLibraryName());
                 firePropertyChange(PROP_LIBRARIES, null, libraries.clone());
             }
         });
@@ -478,8 +486,10 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl2 {
                             new Hk2JaxWsStack(gfRootStr, this), WSStack.Source.SERVER);
                     WSStack<JaxRpc> rpcStack = WSStackFactory.createWSStack(JaxRpc.class,
                             new Hk2JaxRpcStack(gfRootStr), WSStack.Source.SERVER);
-                    Lookup baseLookup = Lookups.fixed(gfRootStr, new JaxRsStackSupportImpl(),
-                            wsStack, rpcStack);
+                    Lookup baseLookup = Lookups.fixed(gfRootStr,
+                            new JaxRsStackSupportImpl(), wsStack, rpcStack,
+                            new Hk2JpaSupportImpl(
+                            dm.getCommonServerSupport().getInstance()));
                     lkp = LookupProviderSupport.createCompositeLookup(baseLookup, pf.getLookupKey());
                 }
             }
