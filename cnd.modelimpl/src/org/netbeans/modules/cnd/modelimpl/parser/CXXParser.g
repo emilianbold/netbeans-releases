@@ -1703,68 +1703,6 @@ member_specification[boolean class_late_binding_lookup]
     ;
 finally                                                                         {if(state.backtracking == 0){action.end_member_specification(input.LT(0));}}
 
-protected
-literal_asm : LITERAL_asm | LITERAL__asm | LITERAL___asm|LITERAL___asm__;
-
-protected
-literal_cdecl : LITERAL__cdecl | LITERAL___cdecl;
-
-protected
-literal_const : LITERAL_const | LITERAL___const | LITERAL___const__;
-
-protected
-literal_declspec : LITERAL__declspec | LITERAL___declspec;
-
-protected
-literal_far : LITERAL__far | LITERAL___far;
-
-protected
-literal_inline : LITERAL_inline | LITERAL__inline | LITERAL___inline | LITERAL___inline__ | LITERAL___forceinline;
-
-protected
-literal_int64 : LITERAL__int64 | LITERAL___int64;
-
-protected
-literal_signed: LITERAL_signed | LITERAL___signed | LITERAL___signed__;
-
-protected
-literal_unsigned: LITERAL_unsigned | LITERAL___unsigned__;
-
-protected
-literal_near : LITERAL__near | LITERAL___near;
-
-protected
-literal_pascal : LITERAL_pascal | LITERAL__pascal | LITERAL___pascal;
-
-protected
-literal_stdcall : LITERAL__stdcall | LITERAL___stdcall;
-
-protected
-literal_clrcall : LITERAL___clrcall;
-
-protected
-literal_volatile : LITERAL_volatile | LITERAL___volatile | LITERAL___volatile__;
-
-protected
-literal_typeof : LITERAL_typeof | LITERAL___typeof | LITERAL___typeof__ ;
-
-protected
-literal_restrict : LITERAL_restrict | LITERAL___restrict | LITERAL___restrict__;
-
-protected
-literal_complex : LITERAL__Complex | LITERAL___complex__ | LITERAL___complex;
-
-protected
-literal_attribute : LITERAL___attribute | LITERAL___attribute__;
-
-protected
-literal_try : LITERAL_try | LITERAL___try;
-
-protected
-literal_finally : LITERAL___finally;
-
-protected
-literal_decltype : LITERAL_decltype | LITERAL___decltype;
 
 /*
  * original rule (part that was rewritten)
@@ -2817,6 +2755,68 @@ lazy_template
         GREATERTHAN
     ;
 
+protected
+literal_asm : LITERAL_asm | LITERAL__asm | LITERAL___asm|LITERAL___asm__;
+
+protected
+literal_cdecl : LITERAL__cdecl | LITERAL___cdecl;
+
+protected
+literal_const : LITERAL_const | LITERAL___const | LITERAL___const__;
+
+protected
+literal_declspec : LITERAL__declspec | LITERAL___declspec;
+
+protected
+literal_far : LITERAL__far | LITERAL___far;
+
+protected
+literal_inline : LITERAL_inline | LITERAL__inline | LITERAL___inline | LITERAL___inline__ | LITERAL___forceinline;
+
+protected
+literal_int64 : LITERAL__int64 | LITERAL___int64;
+
+protected
+literal_signed: LITERAL_signed | LITERAL___signed | LITERAL___signed__;
+
+protected
+literal_unsigned: LITERAL_unsigned | LITERAL___unsigned__;
+
+protected
+literal_near : LITERAL__near | LITERAL___near;
+
+protected
+literal_pascal : LITERAL_pascal | LITERAL__pascal | LITERAL___pascal;
+
+protected
+literal_stdcall : LITERAL__stdcall | LITERAL___stdcall;
+
+protected
+literal_clrcall : LITERAL___clrcall;
+
+protected
+literal_volatile : LITERAL_volatile | LITERAL___volatile | LITERAL___volatile__;
+
+protected
+literal_typeof : LITERAL_typeof | LITERAL___typeof | LITERAL___typeof__ ;
+
+protected
+literal_restrict : LITERAL_restrict | LITERAL___restrict | LITERAL___restrict__;
+
+protected
+literal_complex : LITERAL__Complex | LITERAL___complex__ | LITERAL___complex;
+
+protected
+literal_attribute : LITERAL___attribute | LITERAL___attribute__;
+
+protected
+literal_try : LITERAL_try | LITERAL___try;
+
+protected
+literal_finally : LITERAL___finally;
+
+protected
+literal_decltype : LITERAL_decltype | LITERAL___decltype;
 
 // $>
 // ==============
