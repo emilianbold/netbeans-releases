@@ -579,8 +579,10 @@ private void isSnappingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         boolean darkTheme = Boolean.getBoolean("netbeans.plaf.dark.theme"); //NOI18N
         LookAndFeelInfo currentLaf = null;
         String currentLAFClassName = UIManager.getLookAndFeel().getClass().getName();
+        boolean isAqua = "Aqua".equals(UIManager.getLookAndFeel().getID()); //NOI18N
         for( LookAndFeelInfo li : lafs ) {
-            if( currentLAFClassName.equals( li.getClassName() ) ) {
+            if( currentLAFClassName.equals( li.getClassName() ) 
+                    || (isAqua && li.getClassName().contains("apple.laf.AquaLookAndFeel")) ) { //NOI18N
                 currentLaf = li;
                 if( darkTheme ) {
                     if( MetalLookAndFeel.class.getName().equals( currentLAFClassName ) ) {
