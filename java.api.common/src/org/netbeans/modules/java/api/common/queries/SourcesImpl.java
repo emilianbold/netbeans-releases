@@ -142,6 +142,15 @@ final class SourcesImpl implements Sources, SourceGroupModifierImplementation, P
                 if (type.equals(Sources.TYPE_GENERIC)) {
                     FileObject libLoc = getSharedLibraryFolderLocation();
                     if (libLoc != null) {
+                        //#204232 only return as separate source group if not inside the default project one.
+                        boolean isIncluded = false;
+                        for (SourceGroup sg : groups) {
+                            if (FileUtil.isParentOf(sg.getRootFolder(), libLoc)) {
+                                isIncluded = true;
+                                break;
+                            }
+                        }
+                        if (!isIncluded) {
                         SourceGroup[] grps = new SourceGroup[groups.length + 1];
                         System.arraycopy(groups, 0, grps, 0, groups.length);
                         grps[grps.length - 1] = GenericSources.group(project, libLoc,
@@ -149,6 +158,7 @@ final class SourcesImpl implements Sources, SourceGroupModifierImplementation, P
                                 NbBundle.getMessage(SourcesImpl.class, "LibrarySourceGroup_DisplayName"),
                                 null, null);
                         groups = grps;
+                        }
                     }
                 }
                 synchronized (SourcesImpl.this) {
