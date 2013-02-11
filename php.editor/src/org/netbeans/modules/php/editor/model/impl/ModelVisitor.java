@@ -630,7 +630,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
             Expression name = functionName.getName();
             if (name instanceof Variable) {
                 Variable variable = (Variable) name;
-                if (variable.isDollared()) {
+                if (variable.isDollared() || (name instanceof ReflectionVariable)) {
                     result = false;
                 } else {
                     result = true;
@@ -764,15 +764,6 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
             }
         }
         scan(node.getDispatcher());
-    }
-
-    @Override
-    public void visit(FunctionName node) {
-        //intentionally ommited - if deleted, golden tests will fail and will show the reason
-        //super.visit(node);
-        if (node.getName() instanceof Variable) {
-            occurencesBuilder.prepare((Variable) node.getName(), modelBuilder.getCurrentScope());
-        }
     }
 
     private Map<String, AssignmentImpl> getAssignmentMap(Scope scope, final VariableBase leftHandSide) {

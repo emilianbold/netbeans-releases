@@ -1148,6 +1148,14 @@ public class OccurrencesFinderImplTest extends PHPNavTestBase {
         checkOccurrences(getTestPath(), "retur^n 10;", true);
     }
 
+    public void testReflectionVariableInMethodInvocation_01() throws Exception {
+        checkOccurrences(getTestPath(), "private $cont^ext;", true);
+    }
+
+    public void testReflectionVariableInMethodInvocation_02() throws Exception {
+        checkOccurrences(getTestPath(), "$this->cont^ext[0]", true);
+    }
+
     @Override
     protected FileObject[] createSourceClassPathsForTest() {
         return new FileObject[]{FileUtil.toFileObject(new File(getDataDir(), getTestFolderPath()))};
