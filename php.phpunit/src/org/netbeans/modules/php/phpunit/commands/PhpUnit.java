@@ -437,7 +437,7 @@ public final class PhpUnit {
         "PhpUnit.debug.single=PHPUnit (debug)",
         "PhpUnit.debug.single.custom=PHPUnit (debug, custom)",
         "PhpUnit.debug.all=PHPUnit (debug all)",
-        "PhpUnit.debug.all.custom=PHPUnit (debug all, custom)",
+        "PhpUnit.debug.all.custom=PHPUnit (debug all, custom)"
     })
     private String getOutputTitle(TestRunInfo runInfo, boolean customSuiteEnabled) {
         boolean allTests = runInfo.allTests();
