@@ -246,7 +246,7 @@ public class JoinLexerInputOperation<T extends TokenId> extends LexerInputOperat
     protected AbstractToken<T> createPropertyTokenInstance(T id,
     TokenPropertyProvider<T> propertyProvider, PartType partType) {
         if (recognizedTokenJoined) {
-            return createJoinToken(id, null, partType);
+            return createJoinToken(id, propertyProvider, partType);
         } else { // Regular case
             return super.createPropertyTokenInstance(id, propertyProvider, partType);
         }
