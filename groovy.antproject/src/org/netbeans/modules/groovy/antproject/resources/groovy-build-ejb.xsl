@@ -112,7 +112,7 @@ made subject to such option by the copyright holder.
                     <sequential>
                         <taskdef>
                             <xsl:attribute name="name">groovyc</xsl:attribute>
-                            <xsl:attribute name="classpath">${javac.classpath}</xsl:attribute>
+                            <xsl:attribute name="classpath">${javac.classpath}:${j2ee.platform.classpath}</xsl:attribute>
                             <xsl:attribute name="classname">org.codehaus.groovy.ant.Groovyc</xsl:attribute>
                         </taskdef>
                         <property name="empty.dir" location="${{build.dir}}/empty"/>
@@ -171,7 +171,7 @@ made subject to such option by the copyright holder.
                     </attribute>
                     <attribute>
                         <xsl:attribute name="name">classpath</xsl:attribute>
-                        <xsl:attribute name="default">${javac.classpath}</xsl:attribute>
+                        <xsl:attribute name="default">${javac.classpath}:${j2ee.platform.classpath}</xsl:attribute>
                     </attribute>
                     <sequential>
                         <depend>
