@@ -42,32 +42,32 @@
 
 package org.netbeans.modules.web.jsf.editor.el;
 
-import java.util.Map;
-import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
-import org.netbeans.modules.parsing.spi.Parser.Result;
-import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibraryDescriptor;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.web.el.spi.ELPlugin;
 import org.netbeans.modules.web.el.spi.Function;
 import org.netbeans.modules.web.el.spi.ImplicitObject;
 import org.netbeans.modules.web.el.spi.ImplicitObjectType;
+import static org.netbeans.modules.web.el.spi.ImplicitObjectType.*;
+import org.netbeans.modules.web.el.spi.ResolverContext;
 import org.netbeans.modules.web.el.spi.ResourceBundle;
 import org.netbeans.modules.web.jsf.api.editor.JSFResourceBundlesProvider;
 import org.netbeans.modules.web.jsf.editor.JsfUtils;
 import org.netbeans.modules.web.jsf.editor.facelets.DefaultFaceletLibraries;
-import static org.netbeans.modules.web.el.spi.ImplicitObjectType.*;
-import org.netbeans.modules.web.el.spi.ResolverContext;
+import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibraryDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.lookup.ServiceProvider;
@@ -144,11 +144,12 @@ public class FaceletsELPlugin extends ELPlugin {
      * @return the implicit scope objects, i.e. {@code requestScope, sessionScope} etc.
      */
     private static Collection<ImplicitObject> getScopeObjects() {
-        Collection<ImplicitObject> result = new ArrayList<ImplicitObject>(4);
+        Collection<ImplicitObject> result = new ArrayList<ImplicitObject>(5);
         result.add(new JsfImplicitObject("sessionScope", null, SCOPE_TYPE)); // NOI18N
         result.add(new JsfImplicitObject("applicationScope", null, SCOPE_TYPE)); // NOI18N
-        result.add(new JsfImplicitObject("requestScope", null, SCOPE_TYPE));
-        result.add(new JsfImplicitObject("viewScope", null, SCOPE_TYPE));
+        result.add(new JsfImplicitObject("requestScope", null, SCOPE_TYPE)); // NOI18N
+        result.add(new JsfImplicitObject("viewScope", null, SCOPE_TYPE)); // NOI18N
+        result.add(new JsfImplicitObject("facesFlowScope", null, SCOPE_TYPE)); // NOI18N
         return result;
     }
 

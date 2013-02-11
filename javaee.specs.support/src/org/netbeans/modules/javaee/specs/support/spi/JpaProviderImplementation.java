@@ -50,6 +50,8 @@ public interface JpaProviderImplementation {
     boolean isJpa1Supported();
     
     boolean isJpa2Supported();
+
+    boolean isJpa21Supported();
     
     boolean isDefault();
     
