@@ -375,16 +375,16 @@ public class JavacParser extends Parser {
     }
     
     
-    private boolean shouldParse(@NonNull Task task) {        
-        if (invalid) {
-            currentSource = null;
-            return true;
-        }
+    private boolean shouldParse(@NonNull Task task) {                
         if (!(task instanceof MimeTask)) {
             currentSource = null;
             return true;
         }
         final JavaSource newSource = ((MimeTask)task).getJavaSource();
+        if (invalid) {
+            currentSource = new WeakReference<JavaSource>(newSource);
+            return true;
+        }
         final JavaSource oldSource = currentSource == null ?
                 null :
                 currentSource.get();
@@ -392,7 +392,7 @@ public class JavacParser extends Parser {
             currentSource = new WeakReference<JavaSource>(newSource);
             return true;
         }
-        if (newSource.equals(oldSource)) {
+        if (newSource.equals(oldSource)) {            
             return false;
         } else {
             currentSource = new WeakReference<JavaSource>(newSource);
@@ -486,7 +486,7 @@ public class JavacParser extends Parser {
             }            
             if (invalid) {
                 assert cachedSnapShot != null || sourceCount == 0;
-                try {
+                try {                    
                     parseImpl(cachedSnapShot, task);
                 } catch (FileObjects.InvalidFileException ife) {
                     //Deleted file
