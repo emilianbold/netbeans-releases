@@ -73,7 +73,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
@@ -1008,7 +1007,7 @@ public class HgCommand {
     }
 
     public static List<HgLogMessage> processLogMessages (File root, List<File> files, List<String> list, boolean revertOrder) {
-        List<HgLogMessage> messages = new LinkedList<HgLogMessage>();
+        List<HgLogMessage> messages = new ArrayList<HgLogMessage>();
         String rev, author, username, desc, date, id, parents, fm, fa, fd, fc, branches, tags;
         List<String> filesShortPaths = new ArrayList<String>();
 
@@ -1089,15 +1088,14 @@ public class HgCommand {
 
                 if (rev != null & bEnd) {
                     HgLogMessage hgMsg = new HgLogMessage(rootPath, filesShortPaths, rev, author, username, desc, date, id, parents, fm, fa, fd, fc, branches, tags);
-                    if (revertOrder) {
-                        messages.add(0, hgMsg);
-                    } else {
-                        messages.add(hgMsg);
-                    }
+                    messages.add(hgMsg);
                     rev = author = desc = date = id = parents = fm = fa = fd = fc = null;
                     bEnd = false;
                 }
             }
+        }
+        if (revertOrder) {
+            Collections.reverse(messages);
         }
         return messages;
     }
@@ -1252,9 +1250,8 @@ public class HgCommand {
                 return messages.toArray(new HgLogMessage[0]);
             }
 
-            List<String> list = new LinkedList<String>();
             List<File> filesList = files != null ? new ArrayList<File>(files) : null;
-            list = HgCommand.doLog(root,
+            List<String> list = HgCommand.doLog(root,
                     filesList,
                     fromRevision, toRevision, headRev, bShowMerges, bGetFileInfo, getParents, limit, branchNames, logger);
             messages = processLogMessages(root, filesList, list, ascOrder);
@@ -1387,7 +1384,7 @@ public class HgCommand {
      */
     private static List<String> doLog(File repository, List<File> files,
             String from, String to, String headRev, boolean bShowMerges, boolean bGetFileInfo, boolean getAllParents, int limit, List<String> branchNames, OutputLogger logger) throws HgException {
-        List<String> dateConstraints = new LinkedList<String>();
+        List<String> dateConstraints = new ArrayList<String>();
         String dateStr = handleRevDates(from, to);
         if (dateStr != null) {
             dateConstraints.add(HG_FLAG_DATE_CMD);
@@ -1401,7 +1398,7 @@ public class HgCommand {
                 // from is probably higher than head revision, it's useless to run the command
                 return Collections.emptyList();
             }
-            List<String> constraints = new LinkedList<String>(dateConstraints);
+            List<String> constraints = new ArrayList<String>(dateConstraints);
             if (dateStr == null) {
                 constraints.add(HG_FLAG_REV_CMD);
                 constraints.add(revStr);
@@ -1417,7 +1414,7 @@ public class HgCommand {
     }
 
     private static List<String> doLog(File repository, List<String> revisions, int limit, OutputLogger logger) throws HgException {
-        List<String> constraints = new LinkedList<String>();
+        List<String> constraints = new ArrayList<String>(revisions.size() * 2);
         for (String rev : revisions) {
             constraints.add(HG_FLAG_REV_CMD);
             constraints.add(rev);
@@ -2417,7 +2414,7 @@ public class HgCommand {
 
         List<List<String>> attributeGroups = splitAttributes(repository, basicCommand, addFiles, false);
         for (List<String> attributes : attributeGroups) {
-            List<String> command = new LinkedList<String>(basicCommand);
+            List<String> command = new ArrayList<String>(basicCommand);
             command.addAll(attributes);
             List<String> list = exec(command);
             if (!list.isEmpty() && !isErrorAlreadyTracked(list.get(0)) && !isAddingLine(list.get(0))) {
@@ -2945,7 +2942,7 @@ public class HgCommand {
 
         List<List<String>> attributeGroups = splitAttributes(repository, basicCommand, removeFiles, false);
         for (List<String> attributes : attributeGroups) {
-            List<String> command = new LinkedList<String>(basicCommand);
+            List<String> command = new ArrayList<String>(basicCommand);
             command.addAll(attributes);
             List<String> list = exec(command);
             if (!list.isEmpty()) {
@@ -3316,9 +3313,9 @@ public class HgCommand {
                 workDirStatus = false;
             }
         }
-        List<String> commandOutput = new LinkedList<String>();
+        List<String> commandOutput = new ArrayList<String>();
         for (List<String> attributes : attributeGroups) {
-            List<String> finalCommand = new LinkedList<String>(command);
+            List<String> finalCommand = new ArrayList<String>(command);
             finalCommand.addAll(attributes);
             List<String> list = exec(finalCommand);
             if (!list.isEmpty() && isErrorNoRepository(list.get(0))) {
@@ -3423,7 +3420,7 @@ public class HgCommand {
 
     private static QPatch[] qListSeries (File repository, String queueName) throws HgException {
         Queue q = new Queue(queueName, false);
-        List<QPatch> patches = new LinkedList<QPatch>();
+        List<QPatch> patches = new ArrayList<QPatch>();
         File seriesFile = getQSeriesFile(repository, queueName);
         BufferedReader br = null;
         try {
@@ -3834,9 +3831,9 @@ public class HgCommand {
                     ? new InputStreamReader(proc.getErrorStream())
                     : new InputStreamReader(proc.getErrorStream(), ENCODING));
             final BufferedReader errorReader = error;
-            final LinkedList<String> errorOutput = new LinkedList<String>();
+            final List<String> errorOutput = new ArrayList<String>();
             final BufferedReader inputReader = input;
-            final LinkedList<String> inputOutput = new LinkedList<String>();
+            final List<String> inputOutput = new ArrayList<String>();
             Thread errorThread = new Thread(new Runnable () {
                 @Override
                 public void run() {
@@ -4346,7 +4343,7 @@ public class HgCommand {
     }
 
     private static List<String> getFilesWithPerformanceWarning (List<String> list) {
-        List<String> fileList = new LinkedList<String>();
+        List<String> fileList = new ArrayList<String>();
         for (String line : list) {
             int pos;
             if ((pos = line.indexOf(HG_WARNING_PERFORMANCE_FILES_OVER)) > 0 && line.contains(HG_WARNING_PERFORMANCE_CAUSE_PROBLEMS)) {
@@ -4679,7 +4676,7 @@ public class HgCommand {
         public InterRepositoryCommand () {
             hgCommand = getHgCommand();
             outputDetails = true;
-            additionalOptions = new LinkedList<String>();
+            additionalOptions = new ArrayList<String>();
             urlPathProperties = new String[0];
         }
 
@@ -4829,7 +4826,7 @@ public class HgCommand {
      * @return
      */
     private static List<List<String>> splitAttributes (File repository, List<String> basicCommand, List<File> files, boolean includeFolders) {
-        List<List<String>> attributes = new LinkedList<List<String>>();
+        List<List<String>> attributes = new ArrayList<List<String>>();
         int basicCommandSize = 0, commandSize;
         boolean cwdParamIncluded = false;
         for (String s : basicCommand) {
@@ -4849,7 +4846,7 @@ public class HgCommand {
         ListIterator<File> iterator = files.listIterator();
         while (iterator.hasNext()) {
             // each loop will call one add command
-            List<String> commandAttributes = new LinkedList<String>();
+            List<String> commandAttributes = new ArrayList<String>();
             commandSize = basicCommandSize;
             boolean fileAdded = false;
             while (iterator.hasNext()) {
